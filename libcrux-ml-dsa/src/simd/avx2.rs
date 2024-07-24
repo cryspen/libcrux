@@ -4,6 +4,8 @@ use libcrux_intrinsics;
 use crate::simd::portable::PortableSIMDUnit;
 
 mod arithmetic;
+mod encoding;
+mod ntt;
 
 #[derive(Clone, Copy)]
 pub struct AVX2SIMDUnit {
@@ -55,12 +57,10 @@ impl Operations for AVX2SIMDUnit {
             coefficients: arithmetic::montgomery_multiply(lhs.coefficients, rhs.coefficients),
         }
     }
-    fn shift_left_then_reduce(simd_unit: Self, shift_by: usize) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::shift_left_then_reduce(simd_unit, shift_by);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Self) -> Self {
+        Self {
+            coefficients: arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit.coefficients),
+        }
     }
 
     fn power2round(simd_unit: Self) -> (Self, Self) {
@@ -133,15 +133,11 @@ impl Operations for AVX2SIMDUnit {
     }
 
     fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        PortableSIMDUnit::commitment_serialize::<{ OUTPUT_SIZE }>(simd_unit)
+        encoding::commitment::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
     }
 
     fn error_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        PortableSIMDUnit::error_serialize(simd_unit)
+        encoding::error::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
     }
     fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self {
         let result = PortableSIMDUnit::error_deserialize::<{ ETA }>(serialized);
@@ -161,9 +157,7 @@ impl Operations for AVX2SIMDUnit {
     }
 
     fn t1_serialize(simd_unit: Self) -> [u8; 10] {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        PortableSIMDUnit::t1_serialize(simd_unit)
+        encoding::t1::serialize(simd_unit.coefficients)
     }
     fn t1_deserialize(serialized: &[u8]) -> Self {
         let result = PortableSIMDUnit::t1_deserialize(serialized);
@@ -172,25 +166,19 @@ impl Operations for AVX2SIMDUnit {
     }
 
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::ntt_at_layer_0(simd_unit, zeta0, zeta1, zeta2, zeta3);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: ntt::ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3),
+        }
     }
     fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::ntt_at_layer_1(simd_unit, zeta0, zeta1);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: ntt::ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1),
+        }
     }
     fn ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::ntt_at_layer_2(simd_unit, zeta);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: ntt::ntt_at_layer_2(simd_unit.coefficients, zeta),
+        }
     }
 
     fn invert_ntt_at_layer_0(
@@ -200,24 +188,24 @@ impl Operations for AVX2SIMDUnit {
         zeta2: i32,
         zeta3: i32,
     ) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::invert_ntt_at_layer_0(simd_unit, zeta0, zeta1, zeta2, zeta3);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: ntt::invert_ntt_at_layer_0(
+                simd_unit.coefficients,
+                zeta0,
+                zeta1,
+                zeta2,
+                zeta3,
+            ),
+        }
     }
     fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::invert_ntt_at_layer_1(simd_unit, zeta0, zeta1);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1),
+        }
     }
     fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::invert_ntt_at_layer_2(simd_unit, zeta);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta),
+        }
     }
 }

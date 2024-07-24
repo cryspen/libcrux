@@ -155,7 +155,8 @@ pub(crate) fn compute_w_approx<
             result[i] = PolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
         }
 
-        let t1_shifted = shift_left_then_reduce::<SIMDUnit>(t1[i], BITS_IN_LOWER_PART_OF_T);
+        let t1_shifted =
+            shift_left_then_reduce::<SIMDUnit, { BITS_IN_LOWER_PART_OF_T as i32 }>(t1[i]);
         let challenge_times_t1_shifted =
             ntt_multiply_montgomery(&verifier_challenge_as_ntt, &ntt(t1_shifted));
         result[i] = invert_ntt_montgomery(PolynomialRingElement::<SIMDUnit>::subtract(
