@@ -51,11 +51,13 @@ fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; 32];
 
-    const GAMMA1 : i32 = 1 << 19;
+    const GAMMA1: i32 = 1 << 19;
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1), simd_unit);
 
-    let adjacent_2_combined =
-        mm256_sllv_epi32(simd_unit_shifted, mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12));
+    let adjacent_2_combined = mm256_sllv_epi32(
+        simd_unit_shifted,
+        mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12),
+    );
     let adjacent_2_combined = mm256_srli_epi64::<12>(adjacent_2_combined);
 
     let adjacent_4_combined = mm256_shuffle_epi8(
