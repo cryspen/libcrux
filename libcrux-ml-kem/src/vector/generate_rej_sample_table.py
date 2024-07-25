@@ -15,8 +15,10 @@ with open("rej_sample_table.rs", "w+") as f:
         while bit_pattern > 0:
             next_nonzero_index = trailing_zeros(bit_pattern)
 
-            byte_shuffle_indices[counter * 2] = next_nonzero_index * 2
-            byte_shuffle_indices[counter * 2 + 1] = next_nonzero_index * 2 + 1
+            byte_shuffle_indices[counter] = next_nonzero_index * 2
+            counter = counter + 1
+
+            byte_shuffle_indices[counter] = (next_nonzero_index * 2) + 1
             counter = counter + 1
 
             bit_pattern = bit_pattern & (bit_pattern - 1)

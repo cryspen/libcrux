@@ -6,6 +6,8 @@ use crate::simd::portable::PortableSIMDUnit;
 mod arithmetic;
 mod encoding;
 mod ntt;
+mod sample;
+mod uniform_rej_sample_table;
 
 #[derive(Clone, Copy)]
 pub struct AVX2SIMDUnit {
@@ -112,7 +114,7 @@ impl Operations for AVX2SIMDUnit {
     }
 
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
-        PortableSIMDUnit::rejection_sample_less_than_field_modulus(randomness, out)
+        sample::rejection_sample_less_than_field_modulus(randomness, out)
     }
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
         PortableSIMDUnit::rejection_sample_less_than_eta_equals_2(randomness, out)
