@@ -2,6 +2,9 @@ use super::vector_type::*;
 use crate::vector::{
     traits::FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
 };
+#[cfg(hax)]
+use hax_lib::*;
+#[cfg(hax)]
 use hax_lib::int::*;
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
@@ -22,7 +25,7 @@ pub(crate) const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
 pub(crate) const BARRETT_MULTIPLIER: i32 = 20159;
 
-#[cfg_attr(hax, hax_lib::requires(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT))]
+#[cfg_attr(hax, requires(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT))]
 // We will disable the post-conditions for now
 // #[cfg_attr(hax, hax_lib::ensures(|result| result < 2u32.pow(n.into())))]
 #[inline(always)]
@@ -71,7 +74,7 @@ pub fn bitwise_and_with_constant(mut v: PortableVector, c: i16) -> PortableVecto
     v
 }
 
-#[cfg_attr(hax, hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16))]
+#[cfg_attr(hax, requires(SHIFT_BY >= 0 && SHIFT_BY < 16))]
 #[inline(always)]
 pub fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
@@ -112,7 +115,7 @@ pub fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
 /// `|result| ≤ FIELD_MODULUS / 2 · (|value|/BARRETT_R + 1)
 ///
 /// In particular, if `|value| < BARRETT_R`, then `|result| < FIELD_MODULUS`.
-#[cfg_attr(hax, hax_lib::requires((i32::from(value) > -BARRETT_R && i32::from(value) < BARRETT_R)))]
+#[cfg_attr(hax, requires((i32::from(value) > -BARRETT_R && i32::from(value) < BARRETT_R)))]
 // We will disable the post-conditions for now
 // #[cfg_attr(hax, hax_lib::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
 pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
@@ -128,7 +131,8 @@ pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
 
     hax_lib::assert!(quotient <= i16::MAX / FIELD_MODULUS);
     hax_lib::assert!(quotient >= i16::MIN / FIELD_MODULUS);
-    hax_lib::assert!(value >= quotient * FIELD_MODULUS);
+    hax_lib::assert!(value - (quotient * FIELD_MODULUS) >=  i16::MIN);
+    hax_lib::assert!(value - (quotient * FIELD_MODULUS) <=  i16::MAX);
     let result = value - (quotient * FIELD_MODULUS);
 
     // hax_debug_assert!(
@@ -185,7 +189,8 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;
     let value_high = (value >> MONTGOMERY_SHIFT) as i16;
 
-    hax_lib::assert!(value_high >= c);
+    hax_lib::assert!(value_high - c >=  i16::MIN);
+    hax_lib::assert!(value_high - c <=  i16::MAX);
     value_high - c
 }
 
@@ -202,8 +207,8 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     fe: FieldElement,
     fer: FieldElementTimesMontgomeryR,
 ) -> FieldElement {
-    hax_lib::assert!(fe.lift() * fer.lift() <= i32::MAX.lift());
-    hax_lib::assert!(fe.lift() * fer.lift() >= i32::MIN.lift());
+    hax_lib::assert!((fe as i32).lift() * (fer as i32).lift() <= i32::MAX.lift());
+    hax_lib::assert!((fe as i32).lift() * (fer as i32).lift() >= i32::MIN.lift());
     montgomery_reduce_element((fe as i32) * (fer as i32))
 }
 

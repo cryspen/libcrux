@@ -39,7 +39,18 @@ let barrett_reduce_element (value: i16) =
         bool)
   in
   let _:Prims.unit =
-    Hax_lib.v_assert (value >=. (quotient *! Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16)
+    Hax_lib.v_assert ((value -! (quotient *! Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16)
+          <:
+          i16) >=.
+        Core.Num.impl__i16__MIN
+        <:
+        bool)
+  in
+  let _:Prims.unit =
+    Hax_lib.v_assert ((value -! (quotient *! Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16)
+          <:
+          i16) <=.
+        Core.Num.impl__i16__MAX
         <:
         bool)
   in
@@ -93,13 +104,20 @@ let montgomery_reduce_element (value: i32) =
   in
   let c:i16 = cast (k_times_modulus >>! v_MONTGOMERY_SHIFT <: i32) <: i16 in
   let value_high:i16 = cast (value >>! v_MONTGOMERY_SHIFT <: i32) <: i16 in
-  let _:Prims.unit = Hax_lib.v_assert (value_high >=. c <: bool) in
+  let _:Prims.unit =
+    Hax_lib.v_assert ((value_high -! c <: i16) >=. Core.Num.impl__i16__MIN <: bool)
+  in
+  let _:Prims.unit =
+    Hax_lib.v_assert ((value_high -! c <: i16) <=. Core.Num.impl__i16__MAX <: bool)
+  in
   value_high -! c
 
 let montgomery_multiply_fe_by_fer (fe fer: i16) =
   let _:Prims.unit =
-    Hax_lib.v_assert (((Rust_primitives.Hax.Int.from_machine fe <: Hax_lib.Int.t_Int) *
-          (Rust_primitives.Hax.Int.from_machine fer <: Hax_lib.Int.t_Int)
+    Hax_lib.v_assert (((Rust_primitives.Hax.Int.from_machine (cast (fe <: i16) <: i32)
+            <:
+            Hax_lib.Int.t_Int) *
+          (Rust_primitives.Hax.Int.from_machine (cast (fer <: i16) <: i32) <: Hax_lib.Int.t_Int)
           <:
           Hax_lib.Int.t_Int) <=
         (Rust_primitives.Hax.Int.from_machine Core.Num.impl__i32__MAX <: Hax_lib.Int.t_Int)
@@ -107,8 +125,10 @@ let montgomery_multiply_fe_by_fer (fe fer: i16) =
         bool)
   in
   let _:Prims.unit =
-    Hax_lib.v_assert (((Rust_primitives.Hax.Int.from_machine fe <: Hax_lib.Int.t_Int) *
-          (Rust_primitives.Hax.Int.from_machine fer <: Hax_lib.Int.t_Int)
+    Hax_lib.v_assert (((Rust_primitives.Hax.Int.from_machine (cast (fe <: i16) <: i32)
+            <:
+            Hax_lib.Int.t_Int) *
+          (Rust_primitives.Hax.Int.from_machine (cast (fer <: i16) <: i32) <: Hax_lib.Int.t_Int)
           <:
           Hax_lib.Int.t_Int) >=
         (Rust_primitives.Hax.Int.from_machine Core.Num.impl__i32__MIN <: Hax_lib.Int.t_Int)
