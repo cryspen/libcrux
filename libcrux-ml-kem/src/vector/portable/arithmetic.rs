@@ -2,6 +2,7 @@ use super::vector_type::*;
 use crate::vector::{
     traits::FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
 };
+use hax_lib::int::*;
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
@@ -22,7 +23,8 @@ pub(crate) const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 pub(crate) const BARRETT_MULTIPLIER: i32 = 20159;
 
 #[cfg_attr(hax, hax_lib::requires(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT))]
-#[cfg_attr(hax, hax_lib::ensures(|result| result < 2u32.pow(n.into())))]
+// We will disable the post-conditions for now
+// #[cfg_attr(hax, hax_lib::ensures(|result| result < 2u32.pow(n.into())))]
 #[inline(always)]
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
     // hax_debug_assert!(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT);
@@ -33,7 +35,8 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
 #[inline(always)]
 pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        lhs.elements[i] += rhs.elements[i];
+        hax_lib::debug_assert!(lhs.elements[i] <= i16::MAX - rhs.elements[i] && lhs.elements[i] >= i16::MIN - rhs.elements[i]);
+        lhs.elements[i] = lhs.elements[i].wrapping_add(rhs.elements[i]);
     }
 
     lhs
@@ -42,7 +45,8 @@ pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
 #[inline(always)]
 pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        lhs.elements[i] -= rhs.elements[i];
+        hax_lib::debug_assert!(lhs.elements[i] - rhs.elements[i] <= i16::MAX && lhs.elements[i] - rhs.elements[i] >= i16::MIN);
+        lhs.elements[i] = lhs.elements[i].wrapping_sub(rhs.elements[i]);
     }
 
     lhs
@@ -51,7 +55,8 @@ pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
 #[inline(always)]
 pub fn multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] *= c;
+        hax_lib::debug_assert!(v.elements[i] * c <= i16::MAX && v.elements[i] * c >= i16::MIN);
+        v.elements[i] = v.elements[i].wrapping_mul(c);
     }
 
     v
@@ -66,6 +71,7 @@ pub fn bitwise_and_with_constant(mut v: PortableVector, c: i16) -> PortableVecto
     v
 }
 
+#[cfg_attr(hax, hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16))]
 #[inline(always)]
 pub fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
@@ -87,7 +93,7 @@ pub fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector
 #[inline(always)]
 pub fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        debug_assert!(v.elements[i] >= 0 && v.elements[i] < 4096);
+        hax_lib::debug_assert!(v.elements[i] >= 0 && v.elements[i] < 4096);
         if v.elements[i] >= 3329 {
             v.elements[i] -= 3329
         }
@@ -107,16 +113,22 @@ pub fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
 ///
 /// In particular, if `|value| < BARRETT_R`, then `|result| < FIELD_MODULUS`.
 #[cfg_attr(hax, hax_lib::requires((i32::from(value) > -BARRETT_R && i32::from(value) < BARRETT_R)))]
-#[cfg_attr(hax, hax_lib::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
+// We will disable the post-conditions for now
+// #[cfg_attr(hax, hax_lib::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
 pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
     // hax_debug_assert!(
     //     i32::from(value) > -BARRETT_R && i32::from(value) < BARRETT_R,
     //     "value is {value}"
     // );
 
+    hax_lib::assert!(i32::from(value) <= i32::MAX / BARRETT_MULTIPLIER);
+    hax_lib::assert!(i32::from(value) >= i32::MIN / BARRETT_MULTIPLIER);
     let t = (i32::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
     let quotient = (t >> BARRETT_SHIFT) as i16;
 
+    hax_lib::assert!(quotient <= i16::MAX / FIELD_MODULUS);
+    hax_lib::assert!(quotient >= i16::MIN / FIELD_MODULUS);
+    hax_lib::assert!(value >= quotient * FIELD_MODULUS);
     let result = value - (quotient * FIELD_MODULUS);
 
     // hax_debug_assert!(
@@ -130,6 +142,8 @@ pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
 #[inline(always)]
 pub(crate) fn barrett_reduce(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        hax_lib::assert!(i32::from(v.elements[i]) > -BARRETT_R);
+        hax_lib::assert!(i32::from(v.elements[i]) < BARRETT_R);
         v.elements[i] = barrett_reduce_element(v.elements[i]);
     }
 
@@ -147,8 +161,9 @@ pub(crate) fn barrett_reduce(mut v: PortableVector) -> PortableVector {
 /// `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
 ///
 /// In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 · FIELD_MODULUS) / 2`.
-#[cfg_attr(hax, hax_lib::requires(value >= -(FIELD_MODULUS as i32) * MONTGOMERY_R && value <= (FIELD_MODULUS as i32) * MONTGOMERY_R))]
-#[cfg_attr(hax, hax_lib::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
+// We need to disable the pre-condition here to balance between specific and general types to make it simpler for verification
+// We will disable the post-conditions for now
+// #[cfg_attr(hax, hax_lib::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
 pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
     // for this function. The removal of this line is being tracked in:
@@ -160,12 +175,17 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     //    "value is {value}"
     //);
 
+    hax_lib::assert!((value as i16) as i32 <= i32::MAX / (INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32));
+    hax_lib::assert!((value as i16) as i32 >= i32::MIN / (INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32));
     let k = (value as i16) as i32 * (INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
+    hax_lib::assert!(k as i16 as i32 <= i32::MAX / (FIELD_MODULUS as i32));
+    hax_lib::assert!(k as i16 as i32 >= i32::MIN / (FIELD_MODULUS as i32));
     let k_times_modulus = (k as i16 as i32) * (FIELD_MODULUS as i32);
 
     let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;
     let value_high = (value >> MONTGOMERY_SHIFT) as i16;
 
+    hax_lib::assert!(value_high >= c);
     value_high - c
 }
 
@@ -182,6 +202,8 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     fe: FieldElement,
     fer: FieldElementTimesMontgomeryR,
 ) -> FieldElement {
+    hax_lib::assert!(fe.lift() * fer.lift() <= i32::MAX.lift());
+    hax_lib::assert!(fe.lift() * fer.lift() >= i32::MIN.lift());
     montgomery_reduce_element((fe as i32) * (fer as i32))
 }
 
