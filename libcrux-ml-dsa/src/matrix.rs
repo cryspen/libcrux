@@ -38,6 +38,8 @@ pub(crate) fn expand_to_A<
         A[i][2] = samples.2;
         A[i][3] = samples.3;
 
+        // TODO: We could do more in parallel if we think that may speed
+        //       things up.
         for j in 4..COLUMNS_IN_A {
             seed[32] = j as u8;
             seed[33] = i as u8;

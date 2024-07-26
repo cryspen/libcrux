@@ -79,6 +79,11 @@ type Shake128X4 = crate::hash_functions::simd256::Shake128;
 #[cfg(not(feature = "simd256"))]
 type Shake128X4 = crate::hash_functions::portable::Shake128X4;
 
+#[cfg(feature = "simd256")]
+type Shake256X4 = crate::hash_functions::simd256::Shake256X4;
+#[cfg(not(feature = "simd256"))]
+type Shake256X4 = crate::hash_functions::portable::Shake256X4;
+
 // TODO: This is all portable for now.
 #[cfg(feature = "simd256")]
 type Shake256 = crate::hash_functions::portable::Shake256;
@@ -92,6 +97,7 @@ pub fn generate_key_pair(randomness: [u8; 32]) -> MLDSA87KeyPair {
         Shake128,
         Shake128X4,
         Shake256,
+        Shake256X4,
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,

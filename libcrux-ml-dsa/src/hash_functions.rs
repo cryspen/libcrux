@@ -11,6 +11,26 @@ pub(crate) mod shake256 {
         fn squeeze_first_block(&mut self) -> [u8; BLOCK_SIZE];
         fn squeeze_next_block(&mut self) -> [u8; BLOCK_SIZE];
     }
+
+    pub(crate) trait XofX4 {
+        fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self;
+        fn squeeze_first_block(
+            &mut self,
+        ) -> (
+            [u8; BLOCK_SIZE],
+            [u8; BLOCK_SIZE],
+            [u8; BLOCK_SIZE],
+            [u8; BLOCK_SIZE],
+        );
+        fn squeeze_next_block(
+            &mut self,
+        ) -> (
+            [u8; BLOCK_SIZE],
+            [u8; BLOCK_SIZE],
+            [u8; BLOCK_SIZE],
+            [u8; BLOCK_SIZE],
+        );
+    }
 }
 
 /// Abstraction and platform multiplexing for SHAKE 128
@@ -31,8 +51,8 @@ pub(crate) mod shake128 {
     /// When sampling matrix A we always want to do 4 absorb/squeeze calls in
     /// parallel.
     pub(crate) trait XofX4 {
-        fn init_absorb_four(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self;
-        fn squeeze_four_times_five_blocks(
+        fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self;
+        fn squeeze_first_five_blocks(
             &mut self,
         ) -> (
             [u8; FIVE_BLOCKS_SIZE],
@@ -40,7 +60,7 @@ pub(crate) mod shake128 {
             [u8; FIVE_BLOCKS_SIZE],
             [u8; FIVE_BLOCKS_SIZE],
         );
-        fn squeeze_four_times_one_block(
+        fn squeeze_next_block(
             &mut self,
         ) -> (
             [u8; BLOCK_SIZE],
@@ -100,7 +120,7 @@ pub(crate) mod portable {
     }
 
     impl shake128::XofX4 for Shake128X4 {
-        fn init_absorb_four(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
+        fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
             #[inline(always)]
             fn init_absorb(input: &[u8]) -> KeccakState {
                 let mut state = shake128_init();
@@ -122,7 +142,7 @@ pub(crate) mod portable {
             }
         }
 
-        fn squeeze_four_times_five_blocks(
+        fn squeeze_first_five_blocks(
             &mut self,
         ) -> (
             [u8; shake128::FIVE_BLOCKS_SIZE],
@@ -142,7 +162,7 @@ pub(crate) mod portable {
             (out0, out1, out2, out3)
         }
 
-        fn squeeze_four_times_one_block(
+        fn squeeze_next_block(
             &mut self,
         ) -> (
             [u8; shake128::BLOCK_SIZE],
@@ -193,9 +213,82 @@ pub(crate) mod portable {
             out
         }
     }
+
+    /// Portable SHAKE 256 x4 state.
+    ///
+    /// We're using a portable implementation so this is actually sequential.
+    pub(crate) struct Shake256X4 {
+        state0: KeccakState,
+        state1: KeccakState,
+        state2: KeccakState,
+        state3: KeccakState,
+    }
+
+    impl shake256::XofX4 for Shake256X4 {
+        fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
+            let mut state0 = incremental::shake256_init();
+            incremental::shake256_absorb_final(&mut state0, input0);
+
+            let mut state1 = incremental::shake256_init();
+            incremental::shake256_absorb_final(&mut state1, input1);
+
+            let mut state2 = incremental::shake256_init();
+            incremental::shake256_absorb_final(&mut state2, input2);
+
+            let mut state3 = incremental::shake256_init();
+            incremental::shake256_absorb_final(&mut state3, input3);
+
+            Self {
+                state0,
+                state1,
+                state2,
+                state3,
+            }
+        }
+
+        fn squeeze_first_block(
+            &mut self,
+        ) -> (
+            [u8; shake256::BLOCK_SIZE],
+            [u8; shake256::BLOCK_SIZE],
+            [u8; shake256::BLOCK_SIZE],
+            [u8; shake256::BLOCK_SIZE],
+        ) {
+            let mut out0 = [0u8; shake256::BLOCK_SIZE];
+            incremental::shake256_squeeze_first_block(&mut self.state0, &mut out0);
+            let mut out1 = [0u8; shake256::BLOCK_SIZE];
+            incremental::shake256_squeeze_first_block(&mut self.state1, &mut out1);
+            let mut out2 = [0u8; shake256::BLOCK_SIZE];
+            incremental::shake256_squeeze_first_block(&mut self.state2, &mut out2);
+            let mut out3 = [0u8; shake256::BLOCK_SIZE];
+            incremental::shake256_squeeze_first_block(&mut self.state3, &mut out3);
+
+            (out0, out1, out2, out3)
+        }
+
+        fn squeeze_next_block(
+            &mut self,
+        ) -> (
+            [u8; shake256::BLOCK_SIZE],
+            [u8; shake256::BLOCK_SIZE],
+            [u8; shake256::BLOCK_SIZE],
+            [u8; shake256::BLOCK_SIZE],
+        ) {
+            let mut out0 = [0u8; shake256::BLOCK_SIZE];
+            incremental::shake256_squeeze_next_block(&mut self.state0, &mut out0);
+            let mut out1 = [0u8; shake256::BLOCK_SIZE];
+            incremental::shake256_squeeze_next_block(&mut self.state1, &mut out1);
+            let mut out2 = [0u8; shake256::BLOCK_SIZE];
+            incremental::shake256_squeeze_next_block(&mut self.state2, &mut out2);
+            let mut out3 = [0u8; shake256::BLOCK_SIZE];
+            incremental::shake256_squeeze_next_block(&mut self.state3, &mut out3);
+
+            (out0, out1, out2, out3)
+        }
+    }
 }
 
-#[cfg(feature = "simd256")]
+// #[cfg(feature = "simd256")]
 /// A SIMD256 implementation of [`shake128::XofX4`] and [`shake256::Xof`] for AVX2.
 pub(crate) mod simd256 {
 
@@ -216,13 +309,13 @@ pub(crate) mod simd256 {
 
     impl shake128::XofX4 for Shake128 {
         /// Init the state and absorb 4 blocks in parallel.
-        fn init_absorb_four(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
-            let mut state = x4::incremental::shake128_init();
+        fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
+            let mut state = x4::incremental::init();
             x4::incremental::shake128_absorb_final(&mut state, &input0, &input1, &input2, &input3);
             Self { state }
         }
 
-        fn squeeze_four_times_five_blocks(
+        fn squeeze_first_five_blocks(
             &mut self,
         ) -> (
             [u8; shake128::FIVE_BLOCKS_SIZE],
@@ -245,7 +338,7 @@ pub(crate) mod simd256 {
             (out0, out1, out2, out3)
         }
 
-        fn squeeze_four_times_one_block(
+        fn squeeze_next_block(
             &mut self,
         ) -> (
             [u8; shake128::BLOCK_SIZE],
@@ -302,6 +395,65 @@ pub(crate) mod simd256 {
             out
         }
     }
+
+    /// AVX2 SHAKE 256 x4 state.
+    pub(crate) struct Shake256X4 {
+        state: KeccakState,
+    }
+
+    impl shake256::XofX4 for Shake256X4 {
+        fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
+            let mut state = x4::incremental::init();
+            x4::incremental::shake256_absorb_final(&mut state, &input0, &input1, &input2, &input3);
+            Self { state }
+        }
+
+        fn squeeze_first_block(
+            &mut self,
+        ) -> (
+            [u8; shake256::BLOCK_SIZE],
+            [u8; shake256::BLOCK_SIZE],
+            [u8; shake256::BLOCK_SIZE],
+            [u8; shake256::BLOCK_SIZE],
+        ) {
+            let mut out0 = [0u8; shake256::BLOCK_SIZE];
+            let mut out1 = [0u8; shake256::BLOCK_SIZE];
+            let mut out2 = [0u8; shake256::BLOCK_SIZE];
+            let mut out3 = [0u8; shake256::BLOCK_SIZE];
+            x4::incremental::shake256_squeeze_first_block(
+                &mut self.state,
+                &mut out0,
+                &mut out1,
+                &mut out2,
+                &mut out3,
+            );
+
+            (out0, out1, out2, out3)
+        }
+
+        fn squeeze_next_block(
+            &mut self,
+        ) -> (
+            [u8; shake256::BLOCK_SIZE],
+            [u8; shake256::BLOCK_SIZE],
+            [u8; shake256::BLOCK_SIZE],
+            [u8; shake256::BLOCK_SIZE],
+        ) {
+            let mut out0 = [0u8; shake256::BLOCK_SIZE];
+            let mut out1 = [0u8; shake256::BLOCK_SIZE];
+            let mut out2 = [0u8; shake256::BLOCK_SIZE];
+            let mut out3 = [0u8; shake256::BLOCK_SIZE];
+            x4::incremental::shake256_squeeze_next_block(
+                &mut self.state,
+                &mut out0,
+                &mut out1,
+                &mut out2,
+                &mut out3,
+            );
+
+            (out0, out1, out2, out3)
+        }
+    }
 }
 
 /// A SIMD256 implementation of [`shake128::Xof`] and [`shake256::Xof`] for Neon.
@@ -350,11 +502,11 @@ pub(crate) mod neon {
     impl shake128::XofX4 for PortableShake128 {
         /// Init the state and absorb 4 blocks in parallel.
         /// We're using a portable implementation so this is actually sequential.
-        fn init_absorb_four(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
+        fn init_absorb(_input0: &[u8], _input1: &[u8], _input2: &[u8], _input3: &[u8]) -> Self {
             todo!()
         }
 
-        fn squeeze_four_times_five_blocks(
+        fn squeeze_first_five_blocks(
             &mut self,
         ) -> (
             [u8; shake128::FIVE_BLOCKS_SIZE],
@@ -365,7 +517,7 @@ pub(crate) mod neon {
             todo!()
         }
 
-        fn squeeze_four_times_one_block(
+        fn squeeze_next_block(
             &mut self,
         ) -> (
             [u8; shake128::BLOCK_SIZE],
