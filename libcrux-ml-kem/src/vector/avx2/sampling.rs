@@ -44,7 +44,7 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     let lower_coefficients = mm_shuffle_epi8(lower_coefficients, lower_shuffles);
 
     // ... then write them out ...
-    mm_storeu_si128(output, lower_coefficients);
+    mm_storeu_si128(&mut output[0..8], lower_coefficients);
 
     // ... and finally count the number of bits of |good[0]| so we know how many
     // were actually sampled

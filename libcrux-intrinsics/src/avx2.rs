@@ -26,7 +26,7 @@ pub fn mm256_storeu_si256_i32(output: &mut [i32], vector: Vec256) {
 }
 
 pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
-    //debug_assert_eq!(output.len(), 8);
+    debug_assert_eq!(output.len(), 8);
     unsafe {
         _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
     }
