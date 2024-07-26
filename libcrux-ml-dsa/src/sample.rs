@@ -52,8 +52,8 @@ pub(crate) fn sample_four_ring_element_uniform<SIMDUnit: Operations, Shake128: s
     let mut seed3 = seed0;
     seed3[32] = 3;
 
-    let mut state = Shake128::init_absorb_four(&seed0, &seed1, &seed2, &seed3);
-    let randomnesses = state.squeeze_four_times_five_blocks();
+    let mut state = Shake128::init_absorb(&seed0, &seed1, &seed2, &seed3);
+    let randomnesses = state.squeeze_first_five_blocks();
 
     // Every call to |rejection_sample_less_than_field_modulus|
     // will result in a call to |PortableSIMDUnit::rejection_sample_less_than_field_modulus|;
@@ -94,28 +94,36 @@ pub(crate) fn sample_four_ring_element_uniform<SIMDUnit: Operations, Shake128: s
         &mut coefficients3,
     );
 
-    while !done0 && !done1 && !done2 && !done3 {
-        let randomnesses = state.squeeze_four_times_one_block();
-        done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-            &randomnesses.0,
-            &mut sampled0,
-            &mut coefficients0,
-        );
-        done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-            &randomnesses.1,
-            &mut sampled1,
-            &mut coefficients1,
-        );
-        done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-            &randomnesses.2,
-            &mut sampled2,
-            &mut coefficients2,
-        );
-        done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-            &randomnesses.3,
-            &mut sampled3,
-            &mut coefficients3,
-        );
+    while !done0 || !done1 || !done2 || !done3 {
+        let randomnesses = state.squeeze_next_block();
+        if !done0 {
+            done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+                &randomnesses.0,
+                &mut sampled0,
+                &mut coefficients0,
+            );
+        }
+        if !done1 {
+            done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+                &randomnesses.1,
+                &mut sampled1,
+                &mut coefficients1,
+            );
+        }
+        if !done2 {
+            done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+                &randomnesses.2,
+                &mut sampled2,
+                &mut coefficients2,
+            );
+        }
+        if !done3 {
+            done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+                &randomnesses.3,
+                &mut sampled3,
+                &mut coefficients3,
+            );
+        }
     }
 
     (
@@ -124,15 +132,6 @@ pub(crate) fn sample_four_ring_element_uniform<SIMDUnit: Operations, Shake128: s
         PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients2),
         PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients3),
     )
-
-    // let re0 = finish_sampling(randomnesses.0, state);
-    // let re1 = finish_sampling(randomnesses.1, state);
-    // let re2 = finish_sampling(randomnesses.2, state);
-    // let re3 = finish_sampling(randomnesses.3, state);
-
-    // todo!()
-
-    // (re0, re1, re2, re3)
 }
 
 #[inline(always)]
@@ -235,6 +234,7 @@ pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: us
         _ => unreachable!(),
     }
 }
+
 #[allow(non_snake_case)]
 #[inline(always)]
 fn sample_error_ring_element<SIMDUnit: Operations, Shake256: shake256::Xof, const ETA: usize>(
@@ -262,12 +262,101 @@ fn sample_error_ring_element<SIMDUnit: Operations, Shake256: shake256::Xof, cons
         done = rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomness, &mut sampled, &mut out);
     }
 
-    PolynomialRingElement::<SIMDUnit>::from_i32_array(&out[0..256])
+    PolynomialRingElement::<SIMDUnit>::from_i32_array(&out)
 }
+
+#[inline(always)]
+fn sample_four_error_ring_element<
+    SIMDUnit: Operations,
+    Shake256: shake256::XofX4,
+    const ETA: usize,
+>(
+    seed0: [u8; 66],
+    seed1: [u8; 66],
+    seed2: [u8; 66],
+    seed3: [u8; 66],
+) -> (
+    PolynomialRingElement<SIMDUnit>,
+    PolynomialRingElement<SIMDUnit>,
+    PolynomialRingElement<SIMDUnit>,
+    PolynomialRingElement<SIMDUnit>,
+) {
+    let mut state = Shake256::init_absorb(&seed0, &seed1, &seed2, &seed3);
+    let randomnesses = state.squeeze_first_block();
+
+    // Every call to |rejection_sample_less_than_field_modulus|
+    // will result in a call to |SIMDUnit::rejection_sample_less_than_field_modulus|;
+    // this latter function performs no bounds checking and can write up to 8
+    // elements to its output. It is therefore possible that 255 elements have
+    // already been sampled and we call the function again.
+    //
+    // To ensure we don't overflow the buffer in this case, we allocate 255 + 8
+    // = 263 elements.
+    let mut out0 = [0i32; 263];
+    let mut out1 = [0i32; 263];
+    let mut out2 = [0i32; 263];
+    let mut out3 = [0i32; 263];
+
+    let mut sampled0 = 0;
+    let mut sampled1 = 0;
+    let mut sampled2 = 0;
+    let mut sampled3 = 0;
+
+    let mut done0 =
+        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomnesses.0, &mut sampled0, &mut out0);
+    let mut done1 =
+        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomnesses.1, &mut sampled1, &mut out1);
+    let mut done2 =
+        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomnesses.2, &mut sampled2, &mut out2);
+    let mut done3 =
+        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomnesses.3, &mut sampled3, &mut out3);
+
+    while !done0 || !done1 || !done2 || !done3 {
+        // Always sample another 4, but we only use it if we actually need it.
+        let randomnesses = state.squeeze_next_block();
+        if !done0 {
+            done0 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+                &randomnesses.0,
+                &mut sampled0,
+                &mut out0,
+            );
+        }
+        if !done1 {
+            done1 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+                &randomnesses.1,
+                &mut sampled1,
+                &mut out1,
+            );
+        }
+        if !done2 {
+            done2 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+                &randomnesses.2,
+                &mut sampled2,
+                &mut out2,
+            );
+        }
+        if !done3 {
+            done3 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+                &randomnesses.3,
+                &mut sampled3,
+                &mut out3,
+            );
+        }
+    }
+
+    (
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&out0),
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&out1),
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&out2),
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&out3),
+    )
+}
+
 #[inline(always)]
 pub(crate) fn sample_error_vector<
     SIMDUnit: Operations,
     Shake256: shake256::Xof,
+    Shake256X4: shake256::XofX4,
     const DIMENSION: usize,
     const ETA: usize,
 >(
@@ -276,12 +365,40 @@ pub(crate) fn sample_error_vector<
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
     let mut error = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
+    // DIMENSION is either COLUMNS_IN_A or ROWS_IN_A
+    debug_assert!(
+        DIMENSION == 4 || DIMENSION == 5 || DIMENSION == 6 || DIMENSION == 7 || DIMENSION == 8
+    );
+    // So we can always sample 4 ring elements first before sampling the remaining.
+
+    #[inline(always)]
+    fn update_seed(mut seed: [u8; 66], domain_separator: &mut u16) -> [u8; 66] {
+        seed[64] = *domain_separator as u8;
+        seed[65] = (*domain_separator >> 8) as u8;
+        *domain_separator += 1;
+        seed
+    }
+
+    let seed0 = update_seed(seed, domain_separator);
+    let seed1 = update_seed(seed, domain_separator);
+    let seed2 = update_seed(seed, domain_separator);
+    let seed3 = update_seed(seed, domain_separator);
+
+    let errors =
+        sample_four_error_ring_element::<SIMDUnit, Shake256X4, ETA>(seed0, seed1, seed2, seed3);
+    error[0] = errors.0;
+    error[1] = errors.1;
+    error[2] = errors.2;
+    error[3] = errors.3;
+
     #[allow(clippy::needless_range_loop)]
-    for i in 0..DIMENSION {
+    for i in 4..DIMENSION {
         seed[64] = *domain_separator as u8;
         seed[65] = (*domain_separator >> 8) as u8;
         *domain_separator += 1;
 
+        // TODO: We could sample up to 4 in parallel in some cases if we think
+        //       that makes it faster.
         error[i] = sample_error_ring_element::<SIMDUnit, Shake256, ETA>(seed);
     }
 

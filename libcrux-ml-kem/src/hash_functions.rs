@@ -255,7 +255,7 @@ pub(crate) mod avx2 {
     #[inline(always)]
     fn shake128_init_absorb<const K: usize>(input: [[u8; 34]; K]) -> Simd256Hash {
         debug_assert!(K == 2 || K == 3 || K == 4);
-        let mut state = x4::incremental::shake128_init();
+        let mut state = x4::incremental::init();
 
         match K as u8 {
             2 => {

@@ -34,6 +34,7 @@ pub(crate) fn generate_key_pair<
     Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
+    Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
@@ -56,11 +57,11 @@ pub(crate) fn generate_key_pair<
         into_padded_array(seed_for_A),
     );
 
-    let s1 = sample_error_vector::<SIMDUnit, Shake256, COLUMNS_IN_A, ETA>(
+    let s1 = sample_error_vector::<SIMDUnit, Shake256, Shake256X4, COLUMNS_IN_A, ETA>(
         into_padded_array(seed_for_error_vectors),
         &mut domain_separator,
     );
-    let s2 = sample_error_vector::<SIMDUnit, Shake256, ROWS_IN_A, ETA>(
+    let s2 = sample_error_vector::<SIMDUnit, Shake256, Shake256X4, ROWS_IN_A, ETA>(
         into_padded_array(seed_for_error_vectors),
         &mut domain_separator,
     );
