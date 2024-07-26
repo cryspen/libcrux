@@ -1,11 +1,14 @@
 use libcrux_intrinsics::avx2::*;
 
+use crate::simd::portable::{
+    PortableSIMDUnit,
+    encoding,
+};
+
 #[inline(always)]
 fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
     simd_unit: Vec256,
 ) -> [u8; OUTPUT_SIZE] {
-    const GAMMA1: i32 = 1 << 17;
-
     // TODO: The official reference code does not vectorize this (see
     // https://github.com/pq-crystals/dilithium/blob/master/avx2/poly.c#L962)
     // so for the moment we'll just write out the coefficients to array and serialize
@@ -14,35 +17,7 @@ fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
     let mut coefficients = [0i32; 8];
     mm256_storeu_si256_i32(&mut coefficients, simd_unit);
 
-    let mut serialized = [0u8; OUTPUT_SIZE];
-
-    for (i, coefficients) in coefficients.chunks_exact(4).enumerate() {
-        let coefficient0 = GAMMA1 - coefficients[0];
-        let coefficient1 = GAMMA1 - coefficients[1];
-        let coefficient2 = GAMMA1 - coefficients[2];
-        let coefficient3 = GAMMA1 - coefficients[3];
-
-        serialized[9 * i] = coefficient0 as u8;
-        serialized[9 * i + 1] = (coefficient0 >> 8) as u8;
-
-        serialized[9 * i + 2] = (coefficient0 >> 16) as u8;
-        serialized[9 * i + 2] |= (coefficient1 << 2) as u8;
-
-        serialized[9 * i + 3] = (coefficient1 >> 6) as u8;
-
-        serialized[9 * i + 4] = (coefficient1 >> 14) as u8;
-        serialized[9 * i + 4] |= (coefficient2 << 4) as u8;
-
-        serialized[9 * i + 5] = (coefficient2 >> 4) as u8;
-
-        serialized[9 * i + 6] = (coefficient2 >> 12) as u8;
-        serialized[9 * i + 6] |= (coefficient3 << 6) as u8;
-
-        serialized[9 * i + 7] = (coefficient3 >> 2) as u8;
-        serialized[9 * i + 8] = (coefficient3 >> 10) as u8;
-    }
-
-    serialized
+    encoding::gamma1::serialize_when_gamma1_is_2_pow_17(PortableSIMDUnit {coefficients})
 }
 
 #[inline(always)]

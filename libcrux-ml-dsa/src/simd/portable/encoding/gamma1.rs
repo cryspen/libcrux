@@ -1,7 +1,8 @@
 use crate::simd::{portable::PortableSIMDUnit, traits::Operations};
 
+// This function is marked public since it is called in the corresponding AVX2 code.
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
+pub fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
     simd_unit: PortableSIMDUnit,
 ) -> [u8; OUTPUT_SIZE] {
     const GAMMA1: i32 = 1 << 17;
