@@ -10,15 +10,16 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     let mut group = c.benchmark_group("ML-DSA-65 Key Generation");
     group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux portable (external random)", |b| {
-        let mut randomness = [0; 32];
-        rng.fill_bytes(&mut randomness);
+    let mut randomness = [0; 32];
+    rng.fill_bytes(&mut randomness);
+
+    group.bench_function("libcrux (external random)", move |b| {
         b.iter(|| {
             let _ = ml_dsa_65::generate_key_pair(randomness);
         })
     });
 
-    group.bench_function("pqclean reference implementation (internal random)", |b| {
+    group.bench_function("pqclean (internal random)", move |b| {
         b.iter(|| {
             let (_, _) = pqcrypto_dilithium::dilithium3::keypair();
         })
@@ -33,19 +34,20 @@ pub fn comparisons_signing(c: &mut Criterion) {
     let mut message = [0u8; 511];
     rng.fill_bytes(&mut message);
 
-    group.bench_function("libcrux portable (external random)", |b| {
-        let mut randomness = [0; 32];
-        rng.fill_bytes(&mut randomness);
-        let keypair = ml_dsa_65::generate_key_pair(randomness);
+    let mut randomness = [0; 32];
+    rng.fill_bytes(&mut randomness);
+    let keypair = ml_dsa_65::generate_key_pair(randomness);
 
-        rng.fill_bytes(&mut randomness);
+    rng.fill_bytes(&mut randomness);
+
+    group.bench_function("libcrux (external random)", move |b| {
         b.iter(|| {
             let _ = ml_dsa_65::sign(&keypair.signing_key, &message, randomness);
         })
     });
 
-    group.bench_function("pqclean reference implementation (internal random)", |b| {
-        let (_, sk) = pqcrypto_dilithium::dilithium3::keypair();
+    let (_, sk) = pqcrypto_dilithium::dilithium3::keypair();
+    group.bench_function("pqclean (internal random)", move |b| {
         b.iter(|| {
             let _ = pqcrypto_dilithium::dilithium3::detached_sign(&message, &sk);
         })
@@ -60,21 +62,23 @@ pub fn comparisons_verification(c: &mut Criterion) {
     let mut message = [0u8; 511];
     rng.fill_bytes(&mut message);
 
-    group.bench_function("libcrux portable", |b| {
-        let mut randomness = [0; 32];
-        rng.fill_bytes(&mut randomness);
-        let keypair = ml_dsa_65::generate_key_pair(randomness);
+    let mut randomness = [0; 32];
+    rng.fill_bytes(&mut randomness);
+    let keypair = ml_dsa_65::generate_key_pair(randomness);
 
-        rng.fill_bytes(&mut randomness);
-        let signature = ml_dsa_65::sign(&keypair.signing_key, &message, randomness);
+    rng.fill_bytes(&mut randomness);
+    let signature = ml_dsa_65::sign(&keypair.signing_key, &message, randomness);
+
+    group.bench_function("libcrux", move |b| {
         b.iter(|| {
             let _ = ml_dsa_65::verify(&keypair.verification_key, &message, &signature).unwrap();
         })
     });
 
-    group.bench_function("pqclean reference implementation", |b| {
-        let (vk, sk) = pqcrypto_dilithium::dilithium3::keypair();
-        let signature = pqcrypto_dilithium::dilithium3::detached_sign(&message, &sk);
+    let (vk, sk) = pqcrypto_dilithium::dilithium3::keypair();
+    let signature = pqcrypto_dilithium::dilithium3::detached_sign(&message, &sk);
+
+    group.bench_function("pqclean", move |b| {
         b.iter(|| {
             let _ = pqcrypto_dilithium::dilithium3::verify_detached_signature(
                 &signature, &message, &vk,
