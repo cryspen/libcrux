@@ -123,6 +123,7 @@ pub fn sign(
         Shake128,
         Shake128X4,
         Shake256,
+        Shake256X4,
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
