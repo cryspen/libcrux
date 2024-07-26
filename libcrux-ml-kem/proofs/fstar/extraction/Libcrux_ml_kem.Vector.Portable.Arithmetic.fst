@@ -9,7 +9,27 @@ let _ =
   let open Hax_bounded_integers in
   ()
 
-let get_n_least_significant_bits (n: u8) (value: u32) = value &. ((1ul <<! n <: u32) -! 1ul <: u32)
+let get_n_least_significant_bits (n: u8) (value: u32) =
+  let res:u32 = value &. ((1ul <<! n <: u32) -! 1ul <: u32) in
+  let _:Prims.unit =
+    calc ( == ) {
+      v res;
+      ( == ) { () }
+      v (logand value ((1ul <<! n) -! 1ul));
+      ( == ) { mk_int_equiv_lemma #u32_inttype 1 }
+      v (logand value (((mk_int 1) <<! n) -! (mk_int 1)));
+      ( == ) { () }
+      v (logand value (mk_int ((1 * pow2 (v n)) % pow2 32) -! (mk_int 1)));
+      ( == ) { (Math.Lemmas.small_mod (pow2 (v n)) (pow2 32);
+        Math.Lemmas.pow2_lt_compat 32 (v n)) }
+      v (logand value ((mk_int (pow2 (v n))) -! (mk_int 1)));
+      ( == ) { (Math.Lemmas.pow2_lt_compat 32 (v n);
+        logand_mask_lemma value (v n)) }
+      v value % (pow2 (v n));
+    };
+    assert (v res < pow2 (v n))
+  in
+  res
 
 let barrett_reduce_element (value: i16) =
   let t:i32 =

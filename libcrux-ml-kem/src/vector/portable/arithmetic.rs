@@ -26,9 +26,22 @@ pub(crate) const BARRETT_MULTIPLIER: i32 = 20159;
 #[cfg_attr(hax, hax_lib::ensures(|result| result < 2u32.pow(n.into())))]
 #[inline(always)]
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
-    // hax_debug_assert!(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT);
-
-    value & ((1 << n) - 1)
+    let res = value & ((1 << n) - 1);
+    hax_lib::fstar!("calc (==) {
+            v res;
+            (==) { }
+            v (logand value ((1ul <<! n) -! 1ul));
+            (==) {mk_int_equiv_lemma #u32_inttype 1} 
+            v (logand value (((mk_int 1) <<! n) -! (mk_int 1)));
+            (==) { }
+            v (logand value (mk_int ((1 * pow2 (v n)) % pow2 32) -! (mk_int 1)));
+            (==) {Math.Lemmas.small_mod (pow2 (v n)) (pow2 32); Math.Lemmas.pow2_lt_compat 32 (v n)}
+            v (logand value ((mk_int (pow2 (v n))) -! (mk_int 1)));
+            (==) {Math.Lemmas.pow2_lt_compat 32 (v n); logand_mask_lemma value (v n)}
+            v value % (pow2 (v n));
+        };
+        assert (v res < pow2 (v n))");
+    res
 }
 
 #[inline(always)]
