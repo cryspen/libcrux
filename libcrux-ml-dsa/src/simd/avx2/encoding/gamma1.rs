@@ -1,9 +1,6 @@
 use libcrux_intrinsics::avx2::*;
 
-use crate::simd::portable::{
-    PortableSIMDUnit,
-    encoding,
-};
+use crate::simd::portable::{encoding, PortableSIMDUnit};
 
 #[inline(always)]
 fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
@@ -17,7 +14,7 @@ fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
     let mut coefficients = [0i32; 8];
     mm256_storeu_si256_i32(&mut coefficients, simd_unit);
 
-    encoding::gamma1::serialize_when_gamma1_is_2_pow_17(PortableSIMDUnit {coefficients})
+    encoding::gamma1::serialize_when_gamma1_is_2_pow_17(PortableSIMDUnit { coefficients })
 }
 
 #[inline(always)]
