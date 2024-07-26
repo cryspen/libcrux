@@ -32,6 +32,7 @@ pub(crate) struct Signature<
 pub(crate) fn generate_key_pair<
     SIMDUnit: Operations,
     Shake128: shake128::Xof,
+    Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
@@ -51,8 +52,9 @@ pub(crate) fn generate_key_pair<
 
     let mut domain_separator: u16 = 0;
 
-    let A_as_ntt =
-        expand_to_A::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_A));
+    let A_as_ntt = expand_to_A::<SIMDUnit, Shake128, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+        into_padded_array(seed_for_A),
+    );
 
     let s1 = sample_error_vector::<SIMDUnit, Shake256, COLUMNS_IN_A, ETA>(
         into_padded_array(seed_for_error_vectors),
@@ -104,6 +106,7 @@ pub enum VerificationError {
 pub(crate) fn sign<
     SIMDUnit: Operations,
     Shake128: shake128::Xof,
+    Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
@@ -134,8 +137,9 @@ pub(crate) fn sign<
             SIGNING_KEY_SIZE,
         >(signing_key);
 
-    let A_as_ntt =
-        expand_to_A::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+    let A_as_ntt = expand_to_A::<SIMDUnit, Shake128, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+        into_padded_array(&seed_for_A),
+    );
 
     // TODO: Remove the use of to_vec with an incremental SHAKE-256 absorb API.
     let message_representative = {
@@ -268,6 +272,7 @@ pub(crate) fn sign<
 pub(crate) fn verify<
     SIMDUnit: Operations,
     Shake128: shake128::Xof,
+    Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
@@ -305,7 +310,7 @@ pub(crate) fn verify<
         signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
-        let A_as_ntt = expand_to_A::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
+        let A_as_ntt = expand_to_A::<SIMDUnit, Shake128, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
             into_padded_array(&seed_for_A),
         );
 
