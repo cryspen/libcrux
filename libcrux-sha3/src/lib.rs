@@ -828,6 +828,7 @@ pub mod avx2 {
 
         /// An incremental API to perform 4 operations in parallel
         pub mod incremental {
+            use crate::generic_keccak::squeeze_first_five_blocks;
             #[cfg(feature = "simd256")]
             use crate::generic_keccak::{
                 absorb_final, squeeze_first_three_blocks, squeeze_next_block,
@@ -989,6 +990,21 @@ pub mod avx2 {
                     &mut s.state,
                     [out0, out1, out2, out3],
                 );
+            }
+
+            /// Squeeze five blocks
+            #[inline(always)]
+            pub fn shake128_squeeze_first_five_blocks(
+                s: &mut KeccakState,
+                out0: &mut [u8],
+                out1: &mut [u8],
+                out2: &mut [u8],
+                out3: &mut [u8],
+            ) {
+                #[cfg(not(feature = "simd256"))]
+                unimplemented!();
+                #[cfg(feature = "simd256")]
+                squeeze_first_five_blocks::<4, Vec256, 168>(&mut s.state, [out0, out1, out2, out3]);
             }
 
             /// Squeeze up to 3 x 4 (N) blocks in parallel, using two [`KeccakState`].

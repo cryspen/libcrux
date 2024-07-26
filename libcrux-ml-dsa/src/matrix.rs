@@ -13,6 +13,7 @@ use crate::{
 pub(crate) fn expand_to_A<
     SIMDUnit: Operations,
     Shake128: shake128::Xof,
+    Shake128X4: shake128::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
@@ -31,11 +32,12 @@ pub(crate) fn expand_to_A<
     // We always do 4 in parallel first and then one at a time.
     #[allow(clippy::needless_range_loop)]
     for i in 0..ROWS_IN_A {
-        let samples = sample_four_ring_element_uniform::<SIMDUnit, Shake128>(seed, i);
+        let samples = sample_four_ring_element_uniform::<SIMDUnit, Shake128X4>(seed, i);
         A[i][0] = samples.0;
         A[i][1] = samples.1;
         A[i][2] = samples.2;
         A[i][3] = samples.3;
+
         for j in 4..COLUMNS_IN_A {
             seed[32] = j as u8;
             seed[33] = i as u8;

@@ -32,8 +32,8 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-pub(crate) fn sample_four_ring_element_uniform<SIMDUnit: Operations, Shake128: shake128::Xof>(
-    mut seed: [u8; 34],
+pub(crate) fn sample_four_ring_element_uniform<SIMDUnit: Operations, Shake128: shake128::XofX4>(
+    mut seed0: [u8; 34],
     i: usize,
 ) -> (
     PolynomialRingElement<SIMDUnit>,
@@ -41,18 +41,98 @@ pub(crate) fn sample_four_ring_element_uniform<SIMDUnit: Operations, Shake128: s
     PolynomialRingElement<SIMDUnit>,
     PolynomialRingElement<SIMDUnit>,
 ) {
-    seed[33] = i as u8;
+    seed0[33] = i as u8;
 
-    seed[32] = 0;
-    let re0 = sample_ring_element_uniform::<SIMDUnit, Shake128>(seed);
-    seed[32] = 1;
-    let re1 = sample_ring_element_uniform::<SIMDUnit, Shake128>(seed);
-    seed[32] = 2;
-    let re2 = sample_ring_element_uniform::<SIMDUnit, Shake128>(seed);
-    seed[32] = 3;
-    let re3 = sample_ring_element_uniform::<SIMDUnit, Shake128>(seed);
+    // Prepare 4 seeds
+    seed0[32] = 0;
+    let mut seed1 = seed0;
+    seed1[32] = 1;
+    let mut seed2 = seed0;
+    seed2[32] = 2;
+    let mut seed3 = seed0;
+    seed3[32] = 3;
 
-    (re0, re1, re2, re3)
+    let mut state = Shake128::init_absorb_four(&seed0, &seed1, &seed2, &seed3);
+    let randomnesses = state.squeeze_four_times_five_blocks();
+
+    // Every call to |rejection_sample_less_than_field_modulus|
+    // will result in a call to |PortableSIMDUnit::rejection_sample_less_than_field_modulus|;
+    // this latter function performs no bounds checking and can write up to 8
+    // elements to its output. It is therefore possible that 255 elements have
+    // already been sampled and we call the function again.
+    //
+    // To ensure we don't overflow the buffer in this case, we allocate 255 + 8
+    // = 263 elements.
+    let mut coefficients0 = [0i32; 263];
+    let mut coefficients1 = [0i32; 263];
+    let mut coefficients2 = [0i32; 263];
+    let mut coefficients3 = [0i32; 263];
+
+    let mut sampled0 = 0;
+    let mut sampled1 = 0;
+    let mut sampled2 = 0;
+    let mut sampled3 = 0;
+
+    let mut done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+        &randomnesses.0,
+        &mut sampled0,
+        &mut coefficients0,
+    );
+    let mut done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+        &randomnesses.1,
+        &mut sampled1,
+        &mut coefficients1,
+    );
+    let mut done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+        &randomnesses.2,
+        &mut sampled2,
+        &mut coefficients2,
+    );
+    let mut done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+        &randomnesses.3,
+        &mut sampled3,
+        &mut coefficients3,
+    );
+
+    while !done0 && !done1 && !done2 && !done3 {
+        let randomnesses = state.squeeze_four_times_one_block();
+        done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+            &randomnesses.0,
+            &mut sampled0,
+            &mut coefficients0,
+        );
+        done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+            &randomnesses.1,
+            &mut sampled1,
+            &mut coefficients1,
+        );
+        done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+            &randomnesses.2,
+            &mut sampled2,
+            &mut coefficients2,
+        );
+        done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+            &randomnesses.3,
+            &mut sampled3,
+            &mut coefficients3,
+        );
+    }
+
+    (
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients0),
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients1),
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients2),
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients3),
+    )
+
+    // let re0 = finish_sampling(randomnesses.0, state);
+    // let re1 = finish_sampling(randomnesses.1, state);
+    // let re2 = finish_sampling(randomnesses.2, state);
+    // let re3 = finish_sampling(randomnesses.3, state);
+
+    // todo!()
+
+    // (re0, re1, re2, re3)
 }
 
 #[inline(always)]
@@ -539,7 +619,7 @@ mod tests {
     fn test_sample_ring_element_uniform_portable() {
         test_sample_ring_element_uniform_generic::<
             simd::portable::PortableSIMDUnit,
-            hash_functions::portable::PortableShake128,
+            hash_functions::portable::Shake128,
         >();
     }
     #[cfg(not(feature = "simd256"))]
@@ -547,7 +627,7 @@ mod tests {
     fn test_sample_error_ring_element_portable() {
         test_sample_error_ring_element_generic::<
             simd::portable::PortableSIMDUnit,
-            hash_functions::portable::PortableShake256,
+            hash_functions::portable::Shake256,
         >();
     }
     #[cfg(not(feature = "simd256"))]
@@ -555,7 +635,7 @@ mod tests {
     fn test_sample_challenge_ring_element_portable() {
         test_sample_challenge_ring_element_generic::<
             simd::portable::PortableSIMDUnit,
-            hash_functions::portable::PortableShake256,
+            hash_functions::portable::Shake256,
         >();
     }
 
@@ -564,7 +644,7 @@ mod tests {
     fn test_sample_ring_element_uniform_simd256() {
         test_sample_ring_element_uniform_generic::<
             simd::avx2::AVX2SIMDUnit,
-            hash_functions::simd256::PortableShake128,
+            hash_functions::portable::Shake128,
         >();
     }
     #[cfg(feature = "simd256")]
@@ -572,7 +652,7 @@ mod tests {
     fn test_sample_error_ring_element_simd256() {
         test_sample_error_ring_element_generic::<
             simd::avx2::AVX2SIMDUnit,
-            hash_functions::simd256::PortableShake256,
+            hash_functions::portable::Shake256,
         >();
     }
     #[cfg(feature = "simd256")]
@@ -580,7 +660,7 @@ mod tests {
     fn test_sample_challenge_ring_element_simd256() {
         test_sample_challenge_ring_element_generic::<
             simd::avx2::AVX2SIMDUnit,
-            hash_functions::simd256::PortableShake256,
+            hash_functions::portable::Shake256,
         >();
     }
 }
