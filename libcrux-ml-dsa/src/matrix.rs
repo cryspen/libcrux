@@ -4,7 +4,7 @@ use crate::{
     hash_functions::shake128,
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
     polynomial::PolynomialRingElement,
-    sample::sample_ring_element_uniform,
+    sample::{sample_four_ring_element_uniform, sample_ring_element_uniform},
     simd::traits::Operations,
 };
 
@@ -21,9 +21,22 @@ pub(crate) fn expand_to_A<
     let mut A = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
 
     // Mutable iterators won't go through hax, so we need these range loops.
+
+    // | Key size | ROWS_IN_A | COLUMNS_IN_A |
+    // | -------- | --------- | ------------ |
+    // | 44       | 4         | 4            |
+    // | 65       | 6         | 5            |
+    // | 87       | 8         | 7            |
+    //
+    // We always do 4 in parallel first and then one at a time.
     #[allow(clippy::needless_range_loop)]
     for i in 0..ROWS_IN_A {
-        for j in 0..COLUMNS_IN_A {
+        let samples = sample_four_ring_element_uniform::<SIMDUnit, Shake128>(seed, i);
+        A[i][0] = samples.0;
+        A[i][1] = samples.1;
+        A[i][2] = samples.2;
+        A[i][3] = samples.3;
+        for j in 4..COLUMNS_IN_A {
             seed[32] = j as u8;
             seed[33] = i as u8;
 

@@ -30,6 +30,31 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
 
     done
 }
+
+#[inline(always)]
+pub(crate) fn sample_four_ring_element_uniform<SIMDUnit: Operations, Shake128: shake128::Xof>(
+    mut seed: [u8; 34],
+    i: usize,
+) -> (
+    PolynomialRingElement<SIMDUnit>,
+    PolynomialRingElement<SIMDUnit>,
+    PolynomialRingElement<SIMDUnit>,
+    PolynomialRingElement<SIMDUnit>,
+) {
+    seed[33] = i as u8;
+
+    seed[32] = 0;
+    let re0 = sample_ring_element_uniform::<SIMDUnit, Shake128>(seed);
+    seed[32] = 1;
+    let re1 = sample_ring_element_uniform::<SIMDUnit, Shake128>(seed);
+    seed[32] = 2;
+    let re2 = sample_ring_element_uniform::<SIMDUnit, Shake128>(seed);
+    seed[32] = 3;
+    let re3 = sample_ring_element_uniform::<SIMDUnit, Shake128>(seed);
+
+    (re0, re1, re2, re3)
+}
+
 #[inline(always)]
 pub(crate) fn sample_ring_element_uniform<SIMDUnit: Operations, Shake128: shake128::Xof>(
     seed: [u8; 34],
