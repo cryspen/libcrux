@@ -106,6 +106,9 @@ pub(crate) const UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 16] = [
 mod tests {
     #[test]
     fn test_generate_uniform_rejection_sample_shuffle_table() {
-        assert_eq!(super::generate_uniform_rejection_sample_shuffle_table(), super::UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE);
+        assert_eq!(
+            super::generate_uniform_rejection_sample_shuffle_table(),
+            super::UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE
+        );
     }
 }
