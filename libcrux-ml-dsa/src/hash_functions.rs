@@ -5,7 +5,7 @@ pub(crate) mod shake256 {
     pub(crate) const BLOCK_SIZE: usize = 136;
 
     pub(crate) trait Xof {
-        fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8]) -> [u8; OUTPUT_LENGTH];
+        fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]);
         fn init_absorb(input: &[u8]) -> Self;
         // TODO: There should only be a `squeeze_block`
         fn squeeze_first_block(&mut self) -> [u8; BLOCK_SIZE];
@@ -13,6 +13,16 @@ pub(crate) mod shake256 {
     }
 
     pub(crate) trait XofX4 {
+        fn shake256<const OUT_LEN: usize>(
+            input0: &[u8],
+            input1: &[u8],
+            input2: &[u8],
+            input3: &[u8],
+            out0: &mut [u8; OUT_LEN],
+            out1: &mut [u8; OUT_LEN],
+            out2: &mut [u8; OUT_LEN],
+            out3: &mut [u8; OUT_LEN],
+        );
         fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self;
         fn squeeze_first_block(
             &mut self,
@@ -54,11 +64,10 @@ pub(crate) mod shake128 {
         fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self;
         fn squeeze_first_five_blocks(
             &mut self,
-        ) -> (
-            [u8; FIVE_BLOCKS_SIZE],
-            [u8; FIVE_BLOCKS_SIZE],
-            [u8; FIVE_BLOCKS_SIZE],
-            [u8; FIVE_BLOCKS_SIZE],
+            out0: &mut [u8; FIVE_BLOCKS_SIZE],
+            out1: &mut [u8; FIVE_BLOCKS_SIZE],
+            out2: &mut [u8; FIVE_BLOCKS_SIZE],
+            out3: &mut [u8; FIVE_BLOCKS_SIZE],
         );
         fn squeeze_next_block(
             &mut self,
@@ -144,22 +153,15 @@ pub(crate) mod portable {
 
         fn squeeze_first_five_blocks(
             &mut self,
-        ) -> (
-            [u8; shake128::FIVE_BLOCKS_SIZE],
-            [u8; shake128::FIVE_BLOCKS_SIZE],
-            [u8; shake128::FIVE_BLOCKS_SIZE],
-            [u8; shake128::FIVE_BLOCKS_SIZE],
+            out0: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+            out1: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+            out2: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+            out3: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
         ) {
-            let mut out0 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-            incremental::shake128_squeeze_first_five_blocks(&mut self.state0, &mut out0);
-            let mut out1 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-            incremental::shake128_squeeze_first_five_blocks(&mut self.state1, &mut out1);
-            let mut out2 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-            incremental::shake128_squeeze_first_five_blocks(&mut self.state2, &mut out2);
-            let mut out3 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-            incremental::shake128_squeeze_first_five_blocks(&mut self.state3, &mut out3);
-
-            (out0, out1, out2, out3)
+            incremental::shake128_squeeze_first_five_blocks(&mut self.state0, out0);
+            incremental::shake128_squeeze_first_five_blocks(&mut self.state1, out1);
+            incremental::shake128_squeeze_first_five_blocks(&mut self.state2, out2);
+            incremental::shake128_squeeze_first_five_blocks(&mut self.state3, out3);
         }
 
         fn squeeze_next_block(
@@ -188,10 +190,8 @@ pub(crate) mod portable {
         state: KeccakState,
     }
     impl shake256::Xof for Shake256 {
-        fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8]) -> [u8; OUTPUT_LENGTH] {
-            let mut out = [0u8; OUTPUT_LENGTH];
-            shake256(&mut out, input);
-            out
+        fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
+            shake256(out, input);
         }
 
         fn init_absorb(input: &[u8]) -> Self {
@@ -285,6 +285,22 @@ pub(crate) mod portable {
 
             (out0, out1, out2, out3)
         }
+
+        fn shake256<const OUT_LEN: usize>(
+            input0: &[u8],
+            input1: &[u8],
+            input2: &[u8],
+            input3: &[u8],
+            out0: &mut [u8; OUT_LEN],
+            out1: &mut [u8; OUT_LEN],
+            out2: &mut [u8; OUT_LEN],
+            out3: &mut [u8; OUT_LEN],
+        ) {
+            shake256(out0, input0);
+            shake256(out1, input1);
+            shake256(out2, input2);
+            shake256(out3, input3);
+        }
     }
 }
 
@@ -317,25 +333,18 @@ pub(crate) mod simd256 {
 
         fn squeeze_first_five_blocks(
             &mut self,
-        ) -> (
-            [u8; shake128::FIVE_BLOCKS_SIZE],
-            [u8; shake128::FIVE_BLOCKS_SIZE],
-            [u8; shake128::FIVE_BLOCKS_SIZE],
-            [u8; shake128::FIVE_BLOCKS_SIZE],
+            out0: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+            out1: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+            out2: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+            out3: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
         ) {
-            let mut out0 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-            let mut out1 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-            let mut out2 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-            let mut out3 = [0u8; shake128::FIVE_BLOCKS_SIZE];
             x4::incremental::shake128_squeeze_first_five_blocks(
                 &mut self.state,
-                &mut out0,
-                &mut out1,
-                &mut out2,
-                &mut out3,
+                out0,
+                out1,
+                out2,
+                out3,
             );
-
-            (out0, out1, out2, out3)
         }
 
         fn squeeze_next_block(
@@ -370,10 +379,8 @@ pub(crate) mod simd256 {
         state: portable::KeccakState,
     }
     impl shake256::Xof for Shake256 {
-        fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8]) -> [u8; OUTPUT_LENGTH] {
-            let mut out = [0u8; OUTPUT_LENGTH];
-            portable::shake256(&mut out, input);
-            out
+        fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
+            portable::shake256(out, input);
         }
 
         fn init_absorb(input: &[u8]) -> Self {
@@ -453,6 +460,19 @@ pub(crate) mod simd256 {
 
             (out0, out1, out2, out3)
         }
+
+        fn shake256<const OUT_LEN: usize>(
+            input0: &[u8],
+            input1: &[u8],
+            input2: &[u8],
+            input3: &[u8],
+            out0: &mut [u8; OUT_LEN],
+            out1: &mut [u8; OUT_LEN],
+            out2: &mut [u8; OUT_LEN],
+            out3: &mut [u8; OUT_LEN],
+        ) {
+            x4::shake256(input0, input1, input2, input3, out0, out1, out2, out3);
+        }
     }
 }
 
@@ -508,11 +528,10 @@ pub(crate) mod neon {
 
         fn squeeze_first_five_blocks(
             &mut self,
-        ) -> (
-            [u8; shake128::FIVE_BLOCKS_SIZE],
-            [u8; shake128::FIVE_BLOCKS_SIZE],
-            [u8; shake128::FIVE_BLOCKS_SIZE],
-            [u8; shake128::FIVE_BLOCKS_SIZE],
+            _out0: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+            _out1: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+            _out2: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+            _out3: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
         ) {
             todo!()
         }
@@ -534,10 +553,8 @@ pub(crate) mod neon {
         state: KeccakState,
     }
     impl shake256::Xof for PortableShake256 {
-        fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8]) -> [u8; OUTPUT_LENGTH] {
-            let mut out = [0u8; OUTPUT_LENGTH];
-            shake256(&mut out, input);
-            out
+        fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
+            shake256(out, input);
         }
 
         fn init_absorb(input: &[u8]) -> Self {
