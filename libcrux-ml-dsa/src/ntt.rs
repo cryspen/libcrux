@@ -34,6 +34,79 @@ const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 256] = [
     -1362209, 3937738, 1400424, -846154, 1976782,
 ];
 
+// FIXME: When we start unrolling more, we get stack overflows in tests.
+//        So we probably use more than 4MiB stack. Tests can be run with `RUST_MIN_STACK=8388608`
+//        to increase the stack size. But we really should use less stack.
+//        The question is why the unrolled version uses that much more stack.
+macro_rules! unroll_32 {
+    (|$i:ident| $e:expr) => {
+        let mut $i = 0; // 0
+        $e
+        $i += 1; // 1
+        $e
+        $i += 1; // 2
+        $e
+        $i += 1; // 3
+        $e
+        $i += 1; // 4
+        $e
+        $i += 1; // 5
+        $e
+        $i += 1; // 6
+        $e
+        $i += 1; // 7
+        $e
+        $i += 1; // 8
+        $e
+        $i += 1; // 9
+        $e
+        $i += 1; // 10
+        $e
+        $i += 1; // 11
+        $e
+        $i += 1; // 12
+        $e
+        $i += 1; // 13
+        $e
+        $i += 1; // 14
+        $e
+        $i += 1; // 15
+        $e
+        $i += 1; // 16
+        $e
+        $i += 1; // 17
+        $e
+        $i += 1; // 18
+        $e
+        $i += 1; // 19
+        $e
+        $i += 1; // 20
+        $e
+        $i += 1; // 21
+        $e
+        $i += 1; // 22
+        $e
+        $i += 1; // 23
+        $e
+        $i += 1; // 24
+        $e
+        $i += 1; // 25
+        $e
+        $i += 1; // 26
+        $e
+        $i += 1; // 27
+        $e
+        $i += 1; // 28
+        $e
+        $i += 1; // 29
+        $e
+        $i += 1; // 30
+        $e
+        $i += 1; // 31
+        $e
+    };
+}
+
 #[inline(always)]
 fn ntt_at_layer_0<SIMDUnit: Operations>(
     zeta_i: &mut usize,
@@ -41,7 +114,7 @@ fn ntt_at_layer_0<SIMDUnit: Operations>(
 ) {
     *zeta_i += 1;
 
-    for round in 0..re.simd_units.len() {
+    unroll_32!(|round| {
         re.simd_units[round] = SIMDUnit::ntt_at_layer_0(
             re.simd_units[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
@@ -51,10 +124,11 @@ fn ntt_at_layer_0<SIMDUnit: Operations>(
         );
 
         *zeta_i += 4;
-    }
+    });
 
     *zeta_i -= 1;
 }
+
 #[inline(always)]
 fn ntt_at_layer_1<SIMDUnit: Operations>(
     zeta_i: &mut usize,
@@ -62,7 +136,7 @@ fn ntt_at_layer_1<SIMDUnit: Operations>(
 ) {
     *zeta_i += 1;
 
-    for round in 0..re.simd_units.len() {
+    unroll_32!(|round| {
         re.simd_units[round] = SIMDUnit::ntt_at_layer_1(
             re.simd_units[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
@@ -70,21 +144,23 @@ fn ntt_at_layer_1<SIMDUnit: Operations>(
         );
 
         *zeta_i += 2;
-    }
+    });
 
     *zeta_i -= 1;
 }
+
 #[inline(always)]
 fn ntt_at_layer_2<SIMDUnit: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
-    for round in 0..re.simd_units.len() {
+    unroll_32!(|round| {
         *zeta_i += 1;
         re.simd_units[round] =
             SIMDUnit::ntt_at_layer_2(re.simd_units[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
-    }
+    });
 }
+
 #[inline(always)]
 fn ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
     zeta_i: &mut usize,
@@ -135,7 +211,7 @@ fn invert_ntt_at_layer_0<SIMDUnit: Operations>(
 ) {
     *zeta_i -= 1;
 
-    for round in 0..re.simd_units.len() {
+    unroll_32!(|round| {
         re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_0(
             re.simd_units[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
@@ -145,10 +221,11 @@ fn invert_ntt_at_layer_0<SIMDUnit: Operations>(
         );
 
         *zeta_i -= 4;
-    }
+    });
 
     *zeta_i += 1;
 }
+
 #[inline(always)]
 fn invert_ntt_at_layer_1<SIMDUnit: Operations>(
     zeta_i: &mut usize,
@@ -156,30 +233,32 @@ fn invert_ntt_at_layer_1<SIMDUnit: Operations>(
 ) {
     *zeta_i -= 1;
 
-    for round in 0..(256 / COEFFICIENTS_IN_SIMD_UNIT) {
+    unroll_32!(|round| {
         re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_1(
             re.simd_units[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
         );
         *zeta_i -= 2;
-    }
+    });
 
     *zeta_i += 1;
 }
+
 #[inline(always)]
 fn invert_ntt_at_layer_2<SIMDUnit: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
-    for round in 0..(256 / COEFFICIENTS_IN_SIMD_UNIT) {
+    unroll_32!(|round| {
         *zeta_i -= 1;
         re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_2(
             re.simd_units[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
         );
-    }
+    });
 }
+
 #[inline(always)]
 fn invert_ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
     zeta_i: &mut usize,
@@ -236,9 +315,9 @@ pub(crate) fn ntt_multiply_montgomery<SIMDUnit: Operations>(
 ) -> PolynomialRingElement<SIMDUnit> {
     let mut out = PolynomialRingElement::ZERO();
 
-    for i in 0..out.simd_units.len() {
+    unroll_32!(|i| {
         out.simd_units[i] = SIMDUnit::montgomery_multiply(lhs.simd_units[i], rhs.simd_units[i]);
-    }
+    });
 
     out
 }
