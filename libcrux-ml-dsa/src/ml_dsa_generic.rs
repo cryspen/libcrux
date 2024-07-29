@@ -146,7 +146,6 @@ pub(crate) fn sign<
         into_padded_array(&seed_for_A),
     );
 
-    // TODO: Remove the use of to_vec with an incremental SHAKE-256 absorb API.
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     {
         let mut shake = incremental::Xof::new();
@@ -158,11 +157,12 @@ pub(crate) fn sign<
 
     let mut mask_seed = [0; MASK_SEED_SIZE];
     {
-        let mut hash_input = seed_for_signing.to_vec();
-        hash_input.extend_from_slice(&randomness);
-        hash_input.extend_from_slice(&message_representative);
+        let mut shake = incremental::Xof::new();
+        shake.absorb(&seed_for_signing);
+        shake.absorb(&randomness);
+        shake.absorb_final(&message_representative);
 
-        Shake256::shake256::<MASK_SEED_SIZE>(&hash_input, &mut mask_seed);
+        shake.squeeze(&mut mask_seed);
     }
 
     let mut domain_separator_for_mask: u16 = 0;
@@ -204,10 +204,11 @@ pub(crate) fn sign<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut hash_input = message_representative.to_vec();
-            hash_input.extend_from_slice(&commitment_serialized);
+            let mut shake = incremental::Xof::new();
+            shake.absorb(&message_representative);
+            shake.absorb_final(&commitment_serialized);
 
-            Shake256::shake256::<COMMITMENT_HASH_SIZE>(&hash_input, &mut commitment_hash);
+            shake.squeeze(&mut commitment_hash);
         }
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
@@ -331,13 +332,11 @@ pub(crate) fn verify<
         );
         let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
         {
-            let mut hash_input = verification_key_hash.to_vec();
-            hash_input.extend_from_slice(message);
+            let mut shake = incremental::Xof::new();
+            shake.absorb(&verification_key_hash);
+            shake.absorb_final(&message);
 
-            Shake256::shake256::<MESSAGE_REPRESENTATIVE_SIZE>(
-                &hash_input,
-                &mut message_representative,
-            )
+            shake.squeeze(&mut message_representative);
         };
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
@@ -367,10 +366,11 @@ pub(crate) fn verify<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut hash_input = message_representative.to_vec();
-            hash_input.extend_from_slice(&commitment_serialized);
+            let mut shake = incremental::Xof::new();
+            shake.absorb(&message_representative);
+            shake.absorb_final(&commitment_serialized);
 
-            Shake256::shake256::<COMMITMENT_HASH_SIZE>(&hash_input, &mut commitment_hash);
+            shake.squeeze(&mut commitment_hash);
         }
 
         if signature.commitment_hash != commitment_hash {
