@@ -1,3 +1,35 @@
+// These functions constitute an executable specification for generating
+// |UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE| below. It is written in Rust
+// so the code can be formally verified. They are not called anywhere
+// except in a unit-test in this file.
+//
+// |UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE| was originally generated using a
+// python script.
+#[allow(dead_code)]
+fn is_bit_set(number: usize, bit_position: u8) -> bool {
+    ((number & (1 << bit_position)) >> bit_position) == 1
+}
+#[allow(dead_code)]
+fn generate_uniform_rejection_sample_shuffle_table() -> [[u8; 16]; 1 << 8] {
+    let mut byte_shuffles = [[255u8; 16]; 1 << 8];
+
+    for bit_pattern in 0..(1 << 8) {
+        let mut byte_shuffles_index = 0;
+
+        for bit_position in 0..8 {
+            if is_bit_set(bit_pattern, bit_position) {
+                byte_shuffles[bit_pattern][byte_shuffles_index] = bit_position * 2;
+                byte_shuffles_index += 1;
+
+                byte_shuffles[bit_pattern][byte_shuffles_index] = (bit_position * 2) + 1;
+                byte_shuffles_index += 1;
+            }
+        }
+    }
+
+    byte_shuffles
+}
+
 pub(super) const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [
     [0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,],
     [0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,],
@@ -256,3 +288,13 @@ pub(super) const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [
     [0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0xff, 0xff,],
     [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,],
 ];
+
+mod tests {
+    #[test]
+    fn test_generate_uniform_rejection_sample_shuffle_table() {
+        assert_eq!(
+            super::generate_uniform_rejection_sample_shuffle_table(),
+            super::REJECTION_SAMPLE_SHUFFLE_TABLE
+        );
+    }
+}
