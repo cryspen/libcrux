@@ -86,14 +86,14 @@ jobs:
       - name: 🔨 Build
         run: |
           rustc --print=cfg
-          cargo build --verbose $RUST_TARGET_FLAG
+          cargo build --verbose $RUST_TARGET_FLAG --features pre-verification
 
       - name: 🔨 Build Release
-        run: cargo build --verbose --release $RUST_TARGET_FLAG
+        run: cargo build --verbose --release $RUST_TARGET_FLAG --features pre-verification
 
       - name: 🏃🏻 Asan MacOS
         if: ${{ matrix.os == 'macos-latest' }}
-        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
+        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin --features pre-verification
 
       # - name: ⬆ Upload build
       #   uses: ./.github/actions/upload_artifacts
@@ -136,22 +136,22 @@ jobs:
       - name: 🏃🏻‍♀️ Test
         run: |
           cargo clean
-          cargo test --verbose $RUST_TARGET_FLAG
+          cargo test --verbose $RUST_TARGET_FLAG --features pre-verification
 
       - name: 🏃🏻‍♀️ Test Release
         run: |
           cargo clean
-          cargo test --verbose --release $RUST_TARGET_FLAG
+          cargo test --verbose --release $RUST_TARGET_FLAG --features pre-verification
 
       - name: 🏃🏻‍♀️ Test Portable
         run: |
           cargo clean
-          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose $RUST_TARGET_FLAG
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose $RUST_TARGET_FLAG --features pre-verification
 
       - name: 🏃🏻‍♀️ Test Portable Release
         run: |
           cargo clean
-          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG --features pre-verification
 
       - name: 🏃🏻‍♀️ Test Kyber
         run: |
