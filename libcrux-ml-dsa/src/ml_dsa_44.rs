@@ -1,4 +1,4 @@
-use crate::{constants::*, ml_dsa_generic, types::*, VerificationError};
+use crate::{constants::*, ml_dsa_generic, print_stack, types::*, VerificationError};
 
 // ML-DSA-44-specific parameters
 
@@ -87,6 +87,7 @@ type Shake256 = crate::hash_functions::portable::Shake256;
 
 /// Generate an ML-DSA-44 Key Pair
 pub fn generate_key_pair(randomness: [u8; 32]) -> MLDSA44KeyPair {
+    print_stack("generate_key_pair");
     let (signing_key, verification_key) = ml_dsa_generic::generate_key_pair::<
         SIMDUnit, // TODO: Multiplex this based on platform detection.
         Shake128,

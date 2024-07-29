@@ -1,3 +1,11 @@
+pub(crate) fn print_stack(f: &str) {
+    eprintln!(
+        "{f} remaining stack: {} KiB | stack pointer: {:p}",
+        stacker::remaining_stack().unwrap() / 1024,
+        &psm::stack_pointer()
+    );
+}
+
 mod arithmetic;
 mod constants;
 mod encoding;

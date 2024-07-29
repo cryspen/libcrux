@@ -2,6 +2,7 @@ use crate::{
     arithmetic::FieldElementTimesMontgomeryR,
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     polynomial::PolynomialRingElement,
+    print_stack,
     simd::traits::{montgomery_multiply_by_fer, Operations, COEFFICIENTS_IN_SIMD_UNIT},
 };
 
@@ -112,6 +113,7 @@ fn ntt_at_layer_0<SIMDUnit: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
+    print_stack("ntt_at_layer_0");
     *zeta_i += 1;
 
     unroll_32!(|round| {
@@ -134,6 +136,7 @@ fn ntt_at_layer_1<SIMDUnit: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
+    print_stack("ntt_at_layer_1");
     *zeta_i += 1;
 
     unroll_32!(|round| {
@@ -154,6 +157,7 @@ fn ntt_at_layer_2<SIMDUnit: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
+    print_stack("ntt_at_layer_2");
     unroll_32!(|round| {
         *zeta_i += 1;
         re.simd_units[round] =
@@ -166,6 +170,7 @@ fn ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
+    print_stack("ntt_at_layer_3_plus");
     let step = 1 << LAYER;
 
     for round in 0..(128 >> LAYER) {
@@ -184,12 +189,14 @@ fn ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
             re.simd_units[j] = SIMDUnit::add(&re.simd_units[j], &t);
         }
     }
+    println!("zeta_i: {zeta_i}");
 }
 
 #[inline(always)]
 pub(crate) fn ntt<SIMDUnit: Operations>(
     mut re: PolynomialRingElement<SIMDUnit>,
 ) -> PolynomialRingElement<SIMDUnit> {
+    print_stack("ntt");
     let mut zeta_i = 0;
 
     ntt_at_layer_3_plus::<SIMDUnit, 7>(&mut zeta_i, &mut re);
