@@ -3,30 +3,9 @@ use crate::simd::traits::FIELD_MODULUS;
 
 use libcrux_intrinsics::avx2::*;
 
-// Partition a stream of bytes into 24-bit values, and then clear the most
-// significant bit to turn them into 23-bit ones.
+// Partition a stream of bytes into 4-bit values.
 #[inline(always)]
 fn bytestream_to_potential_coefficients(serialized: &[u8]) -> Vec256 {
-    debug_assert_eq!(serialized.len(), 24);
-
-    let mut serialized_extended = [0u8; 32];
-    serialized_extended[..24].copy_from_slice(&serialized);
-
-    const COEFFICIENT_MASK: i32 = (1 << 23) - 1;
-
-    let coefficients = mm256_loadu_si256_u8(&serialized_extended);
-    let coefficients =
-        mm256_permutevar8x32_epi32(coefficients, mm256_set_epi32(0, 5, 4, 3, 0, 2, 1, 0));
-
-    let coefficients = mm256_shuffle_epi8(
-        coefficients,
-        mm256_set_epi8(
-            -1, 11, 10, 9, -1, 8, 7, 6, -1, 5, 4, 3, -1, 2, 1, 0, -1, 11, 10, 9, -1, 8, 7, 6, -1,
-            5, 4, 3, -1, 2, 1, 0,
-        ),
-    );
-
-    mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK))
 }
 
 #[inline(always)]

@@ -139,9 +139,9 @@ impl Operations for AVX2SIMDUnit {
         encoding::error::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
     }
     fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self {
-        let result = PortableSIMDUnit::error_deserialize::<{ ETA }>(serialized);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        AVX2SIMDUnit {
+            coefficients: encoding::error::deserialize::<ETA>(serialized)
+        }
     }
 
     fn t0_serialize(simd_unit: Self) -> [u8; 13] {
