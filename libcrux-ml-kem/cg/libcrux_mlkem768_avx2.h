@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 920e78bb15250348a7a7a938e8023148e0a249bf
- * Eurydice: 4d6cf6308cb714aadcd1df0ba5f71977ec6c4a99
- * Karamel: 65aab550cf3ba36d52ae6ad1ad962bb573406395
+ * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
+ * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
+ * Karamel: 1ed8ba551e8c65fdbad1bb7833bd7837be0d89b9
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: c9c098bdea22047a1eb811ddf3468543855da224
+ * Libcrux: ad4ce19c3a5be12e25aefc8fa206b0d6335f2b81
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -2635,7 +2635,7 @@ static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
 libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb___3size_t(
     uint8_t input[3U][34U]) {
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
-      state = libcrux_sha3_avx2_x4_incremental_shake128_init();
+      state = libcrux_sha3_avx2_x4_incremental_init();
   libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
       &state,
       Eurydice_array_to_slice((size_t)34U, input[0U], uint8_t, Eurydice_slice),
