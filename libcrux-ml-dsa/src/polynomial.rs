@@ -31,7 +31,7 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     // This is useful for debugging.
     #[allow(dead_code)]
     pub(crate) fn from_i32_array(array: &[i32]) -> Self {
-        debug_assert!(array.len() == 256);
+        debug_assert!(array.len() >= 256);
 
         let mut array_chunks = array.chunks(COEFFICIENTS_IN_SIMD_UNIT);
 
