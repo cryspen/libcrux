@@ -26,7 +26,13 @@ pub fn mm256_storeu_si256_i32(output: &mut [i32], vector: Vec256) {
 }
 
 pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
-    // debug_assert_eq!(output.len(), 8);
+    debug_assert!(output.len() >= 8);
+    unsafe {
+        _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
+    }
+}
+pub fn mm_storeu_si128_i32(output: &mut [i32], vector: Vec128) {
+    debug_assert_eq!(output.len(), 4);
     unsafe {
         _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
     }
@@ -235,6 +241,9 @@ pub fn mm_mullo_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
 
 pub fn mm256_cmpgt_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_cmpgt_epi16(lhs, rhs) }
+}
+pub fn mm256_cmpgt_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unsafe { _mm256_cmpgt_epi32(lhs, rhs) }
 }
 
 pub fn mm_mulhi_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
