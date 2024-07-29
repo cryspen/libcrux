@@ -1,7 +1,11 @@
 use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT};
 
 mod arithmetic;
-mod encoding;
+
+// Some of the portable implementations are used in lieu of vectorized ones in
+// the AVX2 module.
+pub(crate) mod encoding;
+
 mod ntt;
 mod sample;
 
