@@ -82,45 +82,48 @@ impl<
     /// This works best with relatively small `inputs`.
     #[inline(always)]
     pub(crate) fn absorb(&mut self, inputs: [&[u8]; PARALLEL_LANES]) {
-        println!("state before absorb (xof)");
-        for s in self.inner.st {
-            println!(
-                " {} {} {} {} {}",
-                STATE::print(&s[0]),
-                STATE::print(&s[1]),
-                STATE::print(&s[2]),
-                STATE::print(&s[3]),
-                STATE::print(&s[4])
-            );
-        }
+        // eprintln!("absorb ...");
+        // eprintln!("state before absorb (xof)");
+        // for s in self.inner.st {
+        //     println!(
+        //         " {} {} {} {} {}",
+        //         STATE::print(&s[0]),
+        //         STATE::print(&s[1]),
+        //         STATE::print(&s[2]),
+        //         STATE::print(&s[3]),
+        //         STATE::print(&s[4])
+        //     );
+        // }
 
         let remainder = self.absorb_full(inputs);
 
+        // eprintln!("remainder: {remainder}");
         // ... buffer the rest if there's not enough input (left).
         if remainder > 0 {
             debug_assert!(
                 self.buf_len == 0  // We consumed everything (or it was empty all along).
                  || self.buf_len + remainder <= BLOCK_SIZE
             );
-            eprintln!("buffering: {} bytes", remainder);
+            // eprintln!("buffering: {} bytes", remainder);
 
             let input_len = inputs[0].len();
             for i in 0..PARALLEL_LANES {
                 self.buf[i][self.buf_len..self.buf_len + remainder]
                     .copy_from_slice(&inputs[i][input_len - remainder..]);
             }
+            self.buf_len += remainder;
         }
-        println!("state after absorb (xof)");
-        for s in self.inner.st {
-            println!(
-                " {} {} {} {} {}",
-                STATE::print(&s[0]),
-                STATE::print(&s[1]),
-                STATE::print(&s[2]),
-                STATE::print(&s[3]),
-                STATE::print(&s[4])
-            );
-        }
+        // eprintln!("state after absorb (xof)");
+        // for s in self.inner.st {
+        //     eprintln!(
+        //         " {} {} {} {} {}",
+        //         STATE::print(&s[0]),
+        //         STATE::print(&s[1]),
+        //         STATE::print(&s[2]),
+        //         STATE::print(&s[3]),
+        //         STATE::print(&s[4])
+        //     );
+        // }
     }
 
     fn absorb_full(&mut self, inputs: [&[u8]; PARALLEL_LANES]) -> usize {
@@ -135,8 +138,8 @@ impl<
 
         // Check if there are buffered bytes to absorb first and consume them.
         let input_consumed = self.fill_buffer(inputs);
-        eprintln!("consumed: {input_consumed}");
-        eprintln!("need to consume: {}", inputs[0].len() / BLOCK_SIZE);
+        // eprintln!("consumed: {input_consumed}");
+        // eprintln!("need to consume: {}", inputs[0].len() / BLOCK_SIZE);
 
         if input_consumed > 0 {
             // We have a full block in the local buffer now.
@@ -159,11 +162,7 @@ impl<
             // We only get in here if `input_len / RATE > 0`.
             STATE::load_block::<BLOCK_SIZE>(
                 &mut self.inner.st,
-                STATE::slice_n(
-                    inputs,
-                    input_consumed * BLOCK_SIZE + i * BLOCK_SIZE,
-                    BLOCK_SIZE,
-                ),
+                STATE::slice_n(inputs, input_consumed + i * BLOCK_SIZE, BLOCK_SIZE),
             );
             keccakf1600(&mut self.inner);
         }
@@ -179,6 +178,7 @@ impl<
     /// If `consumed > 0` is returned, `self.buf` contains a full block to be
     /// loaded.
     fn fill_buffer(&mut self, inputs: [&[u8]; PARALLEL_LANES]) -> usize {
+        // eprintln!("fill_buffer");
         let input_len = inputs[0].len();
         let mut consumed = 0;
         if self.buf_len > 0 {
@@ -190,6 +190,7 @@ impl<
                 for i in 0..PARALLEL_LANES {
                     self.buf[i][self.buf_len..].copy_from_slice(&inputs[i][..consumed]);
                 }
+                self.buf_len += consumed;
             }
         }
         consumed
@@ -203,53 +204,62 @@ impl<
     pub(crate) fn absorb_final<const DELIMITER: u8>(&mut self, inputs: [&[u8]; PARALLEL_LANES]) {
         let remainder = self.absorb_full(inputs);
 
-        // ... buffer the rest if there's not enough input (left).
-        if remainder > 0 {
-            debug_assert!(
-                self.buf_len == 0  // We consumed everything (or it was empty all along).
-                 || self.buf_len + remainder <= BLOCK_SIZE
-            );
-            eprintln!("buffering: {} bytes", remainder);
-        }
+        // // Consume the remaining bytes.
+        // if remainder > 0 {
+        //     debug_assert!(
+        //         self.buf_len == 0  // We consumed everything (or it was empty all along).
+        //          || self.buf_len + remainder <= BLOCK_SIZE
+        //     );
+        //     eprintln!("buffering: {} bytes", remainder);
+        // }
 
         // Consume the remaining bytes.
+        // This may be in the local buffer or in the input.
+        let input_len = inputs[0].len();
         let mut blocks = [[0u8; 200]; PARALLEL_LANES];
+        // eprintln!("local buf: ({}) {:x?}", self.buf_len, self.buf);
         for i in 0..PARALLEL_LANES {
-            blocks[i][0..input_len].copy_from_slice(&inputs[i][consumed..]);
-            blocks[i][input_len] = DELIMITER;
+            if self.buf_len > 0 {
+                blocks[i][0..self.buf_len].copy_from_slice(&self.buf[i][0..self.buf_len]);
+            }
+            if remainder > 0 {
+                blocks[i][self.buf_len..self.buf_len + remainder]
+                    .copy_from_slice(&inputs[i][input_len - remainder..]);
+            }
+            blocks[i][self.buf_len + remainder] = DELIMITER;
             blocks[i][BLOCK_SIZE - 1] |= 0x80;
         }
-        eprintln!("loading: {blocks:x?}");
+        // eprintln!("loading: {blocks:x?}");
         STATE::load_block_full::<BLOCK_SIZE>(&mut self.inner.st, blocks);
         keccakf1600(&mut self.inner);
 
-        println!("state after absorb final (xof)");
-        for s in self.inner.st {
-            println!(
-                " {} {} {} {} {}",
-                STATE::print(&s[0]),
-                STATE::print(&s[1]),
-                STATE::print(&s[2]),
-                STATE::print(&s[3]),
-                STATE::print(&s[4])
-            );
-        }
+        // println!("state after absorb final (xof)");
+        // for s in self.inner.st {
+        //     println!(
+        //         " {} {} {} {} {}",
+        //         STATE::print(&s[0]),
+        //         STATE::print(&s[1]),
+        //         STATE::print(&s[2]),
+        //         STATE::print(&s[3]),
+        //         STATE::print(&s[4])
+        //     );
+        // }
     }
 
     /// Squeeze `N` x `LEN` bytes.
     #[inline(always)]
     pub(crate) fn squeeze(&mut self, out: [&mut [u8]; PARALLEL_LANES]) {
-        println!("state before squeeze (xof)");
-        for s in self.inner.st {
-            println!(
-                " {} {} {} {} {}",
-                STATE::print(&s[0]),
-                STATE::print(&s[1]),
-                STATE::print(&s[2]),
-                STATE::print(&s[3]),
-                STATE::print(&s[4])
-            );
-        }
+        // println!("state before squeeze (xof)");
+        // for s in self.inner.st {
+        //     println!(
+        //         " {} {} {} {} {}",
+        //         STATE::print(&s[0]),
+        //         STATE::print(&s[1]),
+        //         STATE::print(&s[2]),
+        //         STATE::print(&s[3]),
+        //         STATE::print(&s[4])
+        //     );
+        // }
         if self.sponge {
             // If we called `squeeze` before, call f1600 first.
             // We do it this way around so that we don't call f1600 at the end
@@ -555,17 +565,17 @@ pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, c
     let blocks = outlen / RATE;
     let last = outlen - (outlen % RATE);
 
-    println!("state before squeeze");
-    for s in s.st {
-        println!(
-            " {} {} {} {} {}",
-            T::print(&s[0]),
-            T::print(&s[1]),
-            T::print(&s[2]),
-            T::print(&s[3]),
-            T::print(&s[4])
-        );
-    }
+    // println!("state before squeeze");
+    // for s in s.st {
+    //     println!(
+    //         " {} {} {} {} {}",
+    //         T::print(&s[0]),
+    //         T::print(&s[1]),
+    //         T::print(&s[2]),
+    //         T::print(&s[3]),
+    //         T::print(&s[4])
+    //     );
+    // }
 
     if blocks == 0 {
         squeeze_first_and_last::<N, T, RATE>(&s, out)

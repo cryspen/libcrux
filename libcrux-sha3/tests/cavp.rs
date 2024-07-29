@@ -16,9 +16,9 @@ macro_rules! sha3_test {
                 c += 1;
                 let my_digest: $digest = sha3($algorithm, &test.msg[0..test.msg_length / 8]);
                 assert_eq!(&my_digest, &test.digest[..]);
-                if c == 2 {
-                    break;
-                }
+                // if c == 2 {
+                //     break;
+                // }
             }
         }
     };

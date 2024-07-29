@@ -215,14 +215,14 @@ pub mod portable {
 
     #[inline(always)]
     fn keccakx1<const RATE: usize, const DELIM: u8>(data: [&[u8]; 1], out: [&mut [u8]; 1]) {
-        keccak_xof::<1, u64, RATE, DELIM>(data, out);
+        // or keccak_xof
+        generic_keccak::keccak::<1, u64, RATE, DELIM>(data, out);
     }
 
     /// A portable SHA3 224 implementation.
     #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
         keccakx1::<144, 0x06u8>([data], [digest]);
-        // generic_keccak::keccak::<1, u64, 144, 0x06u8>([data], [digest]);
     }
 
     /// A portable SHA3 256 implementation.
@@ -259,10 +259,40 @@ pub mod portable {
     pub mod incremental {
         use generic_keccak::{
             absorb_final, squeeze_first_block, squeeze_first_five_blocks,
-            squeeze_first_three_blocks, squeeze_next_block,
+            squeeze_first_three_blocks, squeeze_next_block, KeccakXofState,
         };
 
         use super::*;
+
+        /// Incremental Xof state
+        pub struct Xof<const BLOCK_SIZE: usize> {
+            state: KeccakXofState<1, BLOCK_SIZE, u64>,
+        }
+
+        /// Shake256
+        impl Xof<136> {
+            /// Shake256 new state
+            pub fn new() -> Self {
+                Self {
+                    state: KeccakXofState::<1, 136, u64>::new(),
+                }
+            }
+
+            /// Shake256 absorb
+            pub fn absorb(&mut self, input: &[u8]) {
+                self.state.absorb([input]);
+            }
+
+            /// Shake256 absorb final
+            pub fn absorb_final(&mut self, input: &[u8]) {
+                self.state.absorb_final::<0x1fu8>([input]);
+            }
+
+            /// Shake256 squeeze
+            pub fn squeeze(&mut self, out: &mut [u8]) {
+                self.state.squeeze([out]);
+            }
+        }
 
         /// Create a new SHAKE-128 state object.
         #[inline(always)]
@@ -303,6 +333,7 @@ pub mod portable {
                 state: GenericState::<1, u64>::new(),
             }
         }
+
         /// Absorb some data for SHAKE-256 for the last time
         #[inline(always)]
         pub fn shake256_absorb_final(s: &mut KeccakState, data: &[u8]) {

@@ -1,3 +1,5 @@
+use libcrux_sha3::portable::incremental;
+
 use crate::{
     arithmetic::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
@@ -147,10 +149,11 @@ pub(crate) fn sign<
     // TODO: Remove the use of to_vec with an incremental SHAKE-256 absorb API.
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     {
-        let mut hash_input = verification_key_hash.to_vec();
-        hash_input.extend_from_slice(message);
+        let mut shake = incremental::Xof::new();
+        shake.absorb(&verification_key_hash);
+        shake.absorb_final(message);
 
-        Shake256::shake256::<MESSAGE_REPRESENTATIVE_SIZE>(&hash_input, &mut message_representative);
+        shake.squeeze(&mut message_representative);
     }
 
     let mut mask_seed = [0; MASK_SEED_SIZE];
