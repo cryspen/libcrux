@@ -1,4 +1,4 @@
-use crate::simd::avx2::uniform_rej_sample_table::UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE;
+use super::uniform_rejection_sample_table::UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE;
 use crate::simd::traits::FIELD_MODULUS;
 
 use libcrux_intrinsics::avx2::*;
@@ -51,7 +51,7 @@ fn extract_least_significant_bits(simd_unit: Vec256) -> u8 {
 }
 
 #[inline(always)]
-pub(crate) fn rejection_sample_less_than_field_modulus(input: &[u8], output: &mut [i32]) -> usize {
+pub(crate) fn sample(input: &[u8], output: &mut [i32]) -> usize {
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
 
     // The input bytes can be interpreted as a sequence of serialized
