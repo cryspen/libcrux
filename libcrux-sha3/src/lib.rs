@@ -2,7 +2,7 @@
 //!
 //! A SHA3 implementation with optional simd optimisations.
 
-// #![no_std]
+#![no_std]
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
@@ -205,7 +205,7 @@ pub fn shake256_ema(out: &mut [u8], data: &[u8]) {
 /// A portable SHA3 implementations without platform dependent optimisations.
 pub mod portable {
     use super::*;
-    use generic_keccak::{keccak_xof, KeccakState as GenericState};
+    use generic_keccak::KeccakState as GenericState;
 
     /// The Keccak state for the incremental API.
     #[derive(Clone, Copy)]
@@ -1073,11 +1073,11 @@ pub mod avx2 {
             /// Squeeze five blocks
             #[inline(always)]
             pub fn shake128_squeeze_first_five_blocks(
-                s: &mut KeccakState,
-                out0: &mut [u8],
-                out1: &mut [u8],
-                out2: &mut [u8],
-                out3: &mut [u8],
+                _s: &mut KeccakState,
+                _out0: &mut [u8],
+                _out1: &mut [u8],
+                _out2: &mut [u8],
+                _out3: &mut [u8],
             ) {
                 #[cfg(not(feature = "simd256"))]
                 unimplemented!();

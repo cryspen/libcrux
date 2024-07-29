@@ -191,11 +191,7 @@ impl KeccakItem<2> for uint64x2_t {
         split_at_mut_2(a, mid)
     }
 
-    fn store<const BLOCKSIZE: usize>(state: &[[Self; 5]; 5], out: [&mut [u8]; 2]) {
-        todo!()
-    }
-    
-    fn print(&self) -> std::string::String {
+    fn store<const BLOCKSIZE: usize>(_state: &[[Self; 5]; 5], _out: [&mut [u8]; 2]) {
         todo!()
     }
 }

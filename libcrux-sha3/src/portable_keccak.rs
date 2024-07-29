@@ -146,8 +146,4 @@ impl KeccakItem<1> for u64 {
             );
         }
     }
-
-    fn print(&self) -> std::string::String {
-        format!("{:x?}", self).to_string()
-    }
 }
