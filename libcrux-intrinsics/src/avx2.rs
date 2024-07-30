@@ -66,6 +66,9 @@ pub fn mm256_loadu_si256_i32(input: &[i32]) -> Vec256 {
 pub fn mm256_setzero_si256() -> Vec256 {
     unsafe { _mm256_setzero_si256() }
 }
+pub fn mm256_set_m128i(hi: Vec128, lo: Vec128) -> Vec256 {
+    unsafe { _mm256_set_m128i(hi, lo) }
+}
 
 pub fn mm_set_epi8(
     byte15: u8,

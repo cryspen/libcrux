@@ -161,9 +161,9 @@ impl Operations for AVX2SIMDUnit {
         encoding::t1::serialize(simd_unit.coefficients)
     }
     fn t1_deserialize(serialized: &[u8]) -> Self {
-        let result = PortableSIMDUnit::t1_deserialize(serialized);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: encoding::t1::deserialize(serialized)
+        }
     }
 
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
