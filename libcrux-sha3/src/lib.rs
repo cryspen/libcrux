@@ -1073,11 +1073,11 @@ pub mod avx2 {
             /// Squeeze five blocks
             #[inline(always)]
             pub fn shake128_squeeze_first_five_blocks(
-                _s: &mut KeccakState,
-                _out0: &mut [u8],
-                _out1: &mut [u8],
-                _out2: &mut [u8],
-                _out3: &mut [u8],
+                s: &mut KeccakState,
+                out0: &mut [u8],
+                out1: &mut [u8],
+                out2: &mut [u8],
+                out3: &mut [u8],
             ) {
                 #[cfg(not(feature = "simd256"))]
                 unimplemented!();
