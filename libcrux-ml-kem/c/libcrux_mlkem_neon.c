@@ -8,7 +8,7 @@
  * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
  * Karamel: d5759a8b96e9f104664a88a83043d5761fcc9732
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: 3c17ede9a23cf909c9b39d1789bb88291c7d6896
+ * Libcrux: a8aed6b3b2719e05848a3889ebc02cd5917cc6fc
  */
 
 #include "internal/libcrux_mlkem_neon.h"
@@ -1762,7 +1762,7 @@ static KRML_MUSTINLINE
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
-    libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
+    result.coefficients[i0] =
         libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___from_i16_array(
             Eurydice_slice_subslice(
                 a,
@@ -1770,7 +1770,6 @@ static KRML_MUSTINLINE
                     .start = i0 * (size_t)16U,
                     .end = (i0 + (size_t)1U) * (size_t)16U}),
                 int16_t, core_ops_range_Range__size_t, Eurydice_slice));
-    result.coefficients[i0] = uu____0;
   }
   return result;
 }
@@ -3077,11 +3076,10 @@ compute_vector_u__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_2size_t(
 static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 decompress_1__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
   return libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___bitwise_and_with_constant(
       libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___sub(
-          uu____0, &v),
+          libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO(),
+          &v),
       (int16_t)1665);
 }
 
@@ -4483,13 +4481,12 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked__libcrux_ml_kem_vector_neon_vec
   uint8_t expected_ciphertext[768U];
   encrypt_unpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_2size_t_768size_t_768size_t_640size_t_128size_t_10size_t_4size_t_320size_t_3size_t_192size_t_2size_t_128size_t(
       uu____3, uu____4, pseudorandomness, expected_ciphertext);
-  Eurydice_slice uu____5 =
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___768size_t(
-          ciphertext);
   uint8_t selector =
       libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
-          uu____5, Eurydice_array_to_slice((size_t)768U, expected_ciphertext,
-                                           uint8_t, Eurydice_slice));
+          libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___768size_t(
+              ciphertext),
+          Eurydice_array_to_slice((size_t)768U, expected_ciphertext, uint8_t,
+                                  Eurydice_slice));
   uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
       shared_secret,
@@ -4662,12 +4659,10 @@ void libcrux_ml_kem_ind_cca_decapsulate__libcrux_ml_kem_vector_neon_vector_type_
   uint8_t shared_secret[32U];
   kdf__libcrux_ml_kem_hash_functions_neon_Simd128Hash_2size_t_768size_t(
       shared_secret0, shared_secret);
-  Eurydice_slice uu____7 =
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___768size_t(
-          ciphertext);
   uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
-      uu____7,
+      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___768size_t(
+          ciphertext),
       Eurydice_array_to_slice((size_t)768U, expected_ciphertext, uint8_t,
                               Eurydice_slice),
       Eurydice_array_to_slice((size_t)32U, shared_secret, uint8_t,
@@ -6330,13 +6325,12 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked__libcrux_ml_kem_vector_neon_vec
   uint8_t expected_ciphertext[1088U];
   encrypt_unpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_3size_t_1088size_t_1152size_t_960size_t_128size_t_10size_t_4size_t_320size_t_2size_t_128size_t_2size_t_128size_t(
       uu____3, uu____4, pseudorandomness, expected_ciphertext);
-  Eurydice_slice uu____5 =
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1088size_t(
-          ciphertext);
   uint8_t selector =
       libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
-          uu____5, Eurydice_array_to_slice((size_t)1088U, expected_ciphertext,
-                                           uint8_t, Eurydice_slice));
+          libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1088size_t(
+              ciphertext),
+          Eurydice_array_to_slice((size_t)1088U, expected_ciphertext, uint8_t,
+                                  Eurydice_slice));
   uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
       shared_secret,
@@ -6484,12 +6478,10 @@ void libcrux_ml_kem_ind_cca_decapsulate__libcrux_ml_kem_vector_neon_vector_type_
   uint8_t shared_secret[32U];
   kdf__libcrux_ml_kem_hash_functions_neon_Simd128Hash_3size_t_1088size_t(
       shared_secret0, shared_secret);
-  Eurydice_slice uu____7 =
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1088size_t(
-          ciphertext);
   uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
-      uu____7,
+      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1088size_t(
+          ciphertext),
       Eurydice_array_to_slice((size_t)1088U, expected_ciphertext, uint8_t,
                               Eurydice_slice),
       Eurydice_array_to_slice((size_t)32U, shared_secret, uint8_t,
@@ -8257,13 +8249,12 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked__libcrux_ml_kem_vector_neon_vec
   uint8_t expected_ciphertext[1568U];
   encrypt_unpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_4size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t(
       uu____3, uu____4, pseudorandomness, expected_ciphertext);
-  Eurydice_slice uu____5 =
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1568size_t(
-          ciphertext);
   uint8_t selector =
       libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
-          uu____5, Eurydice_array_to_slice((size_t)1568U, expected_ciphertext,
-                                           uint8_t, Eurydice_slice));
+          libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1568size_t(
+              ciphertext),
+          Eurydice_array_to_slice((size_t)1568U, expected_ciphertext, uint8_t,
+                                  Eurydice_slice));
   uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
       shared_secret,
@@ -8412,12 +8403,10 @@ void libcrux_ml_kem_ind_cca_decapsulate__libcrux_ml_kem_vector_neon_vector_type_
   uint8_t shared_secret[32U];
   kdf__libcrux_ml_kem_hash_functions_neon_Simd128Hash_4size_t_1568size_t(
       shared_secret0, shared_secret);
-  Eurydice_slice uu____7 =
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1568size_t(
-          ciphertext);
   uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
-      uu____7,
+      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1568size_t(
+          ciphertext),
       Eurydice_array_to_slice((size_t)1568U, expected_ciphertext, uint8_t,
                               Eurydice_slice),
       Eurydice_array_to_slice((size_t)32U, shared_secret, uint8_t,
