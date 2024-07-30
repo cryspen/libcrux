@@ -2,6 +2,9 @@ use crate::simd::avx2::{encoding, rejection_sample::{utils, shuffle_table::SHUFF
 
 use libcrux_intrinsics::avx2::*;
 
+// TODO: This code seems to slow the implementation down, but stabilizes
+// benchmarks. Revisit this once the other functions are vectorized.
+
 #[inline(always)]
 fn shift_interval<const ETA: usize>(coefficients: Vec256) -> Vec256 {
     match ETA {
