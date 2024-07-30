@@ -20,4 +20,3 @@ pub(crate) fn extract_least_significant_bits(simd_unit: Vec256) -> u8 {
 
     (bits & 0xFF) as u8
 }
-

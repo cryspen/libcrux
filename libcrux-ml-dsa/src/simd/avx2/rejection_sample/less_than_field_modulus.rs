@@ -1,4 +1,7 @@
-use crate::simd::{avx2::rejection_sample::{utils, shuffle_table::SHUFFLE_TABLE}, traits::FIELD_MODULUS};
+use crate::simd::{
+    avx2::rejection_sample::{shuffle_table::SHUFFLE_TABLE, utils},
+    traits::FIELD_MODULUS,
+};
 
 use libcrux_intrinsics::avx2::*;
 

@@ -109,7 +109,10 @@ pub fn infinity_norm_exceeds(simd_unit: Vec256, bound: i32) -> bool {
 pub fn power2round(r: Vec256) -> (Vec256, Vec256) {
     let r = to_unsigned_representatives(r);
 
-    let r1 = mm256_add_epi32(r, mm256_set1_epi32((1 << (BITS_IN_LOWER_PART_OF_T - 1)) - 1));
+    let r1 = mm256_add_epi32(
+        r,
+        mm256_set1_epi32((1 << (BITS_IN_LOWER_PART_OF_T - 1)) - 1),
+    );
     let r1 = mm256_srai_epi32::<{ BITS_IN_LOWER_PART_OF_T as i32 }>(r1);
 
     let r0 = mm256_slli_epi32::<{ BITS_IN_LOWER_PART_OF_T as i32 }>(r1);
@@ -127,7 +130,7 @@ pub fn decompose<const GAMMA2: i32>(r: Vec256) -> (Vec256, Vec256) {
 
     // When const-generic expressions are table, this could be turned into a
     // const value.
-    let ALPHA : i32 = GAMMA2 * 2;
+    let ALPHA: i32 = GAMMA2 * 2;
 
     let r1 = {
         let ceil_of_r_by_128 = mm256_add_epi32(r, mm256_set1_epi32(127));
@@ -148,7 +151,7 @@ pub fn decompose<const GAMMA2: i32>(r: Vec256) -> (Vec256, Vec256) {
                 let not_result = mm256_xor_si256(result, mask);
 
                 mm256_and_si256(result, not_result)
-            },
+            }
 
             523_776 => {
                 // We approximate 1 / 4092 as:
@@ -159,7 +162,7 @@ pub fn decompose<const GAMMA2: i32>(r: Vec256) -> (Vec256, Vec256) {
 
                 // For the corner-case a₁ = (q-1)/α = 16, we have to set a₁=0.
                 mm256_and_si256(result, mm256_set1_epi32(15))
-            },
+            }
 
             _ => unreachable!(),
         }

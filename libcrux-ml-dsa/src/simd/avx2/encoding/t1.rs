@@ -31,7 +31,7 @@ pub(crate) fn serialize(simd_unit: Vec256) -> [u8; 10] {
 pub(crate) fn deserialize(bytes: &[u8]) -> Vec256 {
     debug_assert_eq!(bytes.len(), 10);
 
-    const COEFFICIENT_MASK : i32 = (1 << 10) - 1;
+    const COEFFICIENT_MASK: i32 = (1 << 10) - 1;
 
     let mut bytes_extended = [0u8; 16];
     bytes_extended[0..10].copy_from_slice(bytes);
@@ -42,8 +42,8 @@ pub(crate) fn deserialize(bytes: &[u8]) -> Vec256 {
     let coefficients = mm256_shuffle_epi8(
         bytes_loaded,
         mm256_set_epi8(
-            -1, -1, 9, 8, -1, -1, 8, 7, -1, -1, 7, 6, -1, -1, 6, 5, -1, -1, 4, 3, -1,
-            -1, 3, 2, -1, -1, 2, 1, -1, -1, 1, 0,
+            -1, -1, 9, 8, -1, -1, 8, 7, -1, -1, 7, 6, -1, -1, 6, 5, -1, -1, 4, 3, -1, -1, 3, 2, -1,
+            -1, 2, 1, -1, -1, 1, 0,
         ),
     );
 

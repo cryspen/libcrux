@@ -68,10 +68,10 @@ impl Operations for AVX2SIMDUnit {
         let (lower, upper) = arithmetic::power2round(simd_unit.coefficients);
 
         let lower = Self {
-            coefficients: lower
+            coefficients: lower,
         };
         let upper = Self {
-            coefficients: upper
+            coefficients: upper,
         };
 
         (lower, upper)
@@ -85,10 +85,10 @@ impl Operations for AVX2SIMDUnit {
         let (lower, upper) = arithmetic::decompose::<GAMMA2>(simd_unit.coefficients);
 
         let lower = Self {
-            coefficients: lower
+            coefficients: lower,
         };
         let upper = Self {
-            coefficients: upper
+            coefficients: upper,
         };
 
         (lower, upper)
@@ -162,7 +162,7 @@ impl Operations for AVX2SIMDUnit {
     }
     fn t1_deserialize(serialized: &[u8]) -> Self {
         Self {
-            coefficients: encoding::t1::deserialize(serialized)
+            coefficients: encoding::t1::deserialize(serialized),
         }
     }
 

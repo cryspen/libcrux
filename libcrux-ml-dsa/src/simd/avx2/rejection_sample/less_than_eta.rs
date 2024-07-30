@@ -1,4 +1,7 @@
-use crate::simd::avx2::{encoding, rejection_sample::{utils, shuffle_table::SHUFFLE_TABLE}};
+use crate::simd::avx2::{
+    encoding,
+    rejection_sample::{shuffle_table::SHUFFLE_TABLE, utils},
+};
 
 use libcrux_intrinsics::avx2::*;
 
