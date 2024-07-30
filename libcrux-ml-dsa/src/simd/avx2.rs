@@ -116,10 +116,10 @@ impl Operations for AVX2SIMDUnit {
         rejection_sample::less_than_field_modulus::sample(randomness, out)
     }
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
-        PortableSIMDUnit::rejection_sample_less_than_eta_equals_2(randomness, out)
+        rejection_sample::less_than_eta::sample::<2>(randomness, out)
     }
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
-        PortableSIMDUnit::rejection_sample_less_than_eta_equals_4(randomness, out)
+        rejection_sample::less_than_eta::sample::<4>(randomness, out)
     }
 
     fn gamma1_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {

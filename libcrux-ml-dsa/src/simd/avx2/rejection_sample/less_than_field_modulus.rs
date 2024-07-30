@@ -1,5 +1,7 @@
-use super::uniform_rejection_sample_table::UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE;
-use crate::simd::traits::FIELD_MODULUS;
+use crate::simd::{
+    traits::FIELD_MODULUS,
+    avx2::rejection_sample::shuffle_table::SHUFFLE_TABLE,
+};
 
 use libcrux_intrinsics::avx2::*;
 
@@ -86,7 +88,7 @@ pub(crate) fn sample(input: &[u8], output: &mut [i32]) -> usize {
     // For e.g. if the lower 4 bits of good = 0b_0_0_1_0, we need to move the
     // element in the 2-nd 32-bit lane to the first. To do this, we need the
     // byte-level shuffle indices to be 2 3 4 5 X X ...
-    let lower_shuffles = UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE[good_lower_half as usize];
+    let lower_shuffles = SHUFFLE_TABLE[good_lower_half as usize];
 
     // Shuffle the lower 4 32-bits accordingly ...
     let lower_shuffles = mm_loadu_si128(&lower_shuffles);
@@ -101,7 +103,7 @@ pub(crate) fn sample(input: &[u8], output: &mut [i32]) -> usize {
     let sampled_count = good_lower_half.count_ones() as usize;
 
     // Do the same for |good_upper_half|
-    let upper_shuffles = UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE[good_upper_half as usize];
+    let upper_shuffles = SHUFFLE_TABLE[good_upper_half as usize];
     let upper_shuffles = mm_loadu_si128(&upper_shuffles);
     let upper_coefficients = mm256_extracti128_si256::<1>(potential_coefficients);
     let upper_coefficients = mm_shuffle_epi8(upper_coefficients, upper_shuffles);
