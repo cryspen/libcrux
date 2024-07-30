@@ -6,9 +6,9 @@
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
  * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
- * Karamel: 1ed8ba551e8c65fdbad1bb7833bd7837be0d89b9
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: ad4ce19c3a5be12e25aefc8fa206b0d6335f2b81
+ * Karamel: d5759a8b96e9f104664a88a83043d5761fcc9732
+ * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
+ * Libcrux: d992e8bff91dab77b6f0abebf16384ce422b310c
  */
 
 #ifndef __libcrux_core_H
@@ -38,6 +38,35 @@ typedef struct core_option_Option__size_t_s {
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
+
+typedef struct libcrux_ml_kem_types_MlKemPublicKey____800size_t_s {
+  uint8_t value[800U];
+} libcrux_ml_kem_types_MlKemPublicKey____800size_t;
+
+typedef struct
+    core_option_Option__libcrux_ml_kem_types_MlKemPublicKey___800size_t___s {
+  core_option_Option__int32_t_tags tag;
+  libcrux_ml_kem_types_MlKemPublicKey____800size_t f0;
+} core_option_Option__libcrux_ml_kem_types_MlKemPublicKey___800size_t__;
+
+typedef struct libcrux_ml_kem_types_MlKemPrivateKey____1632size_t_s {
+  uint8_t value[1632U];
+} libcrux_ml_kem_types_MlKemPrivateKey____1632size_t;
+
+typedef struct libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t_s {
+  libcrux_ml_kem_types_MlKemPrivateKey____1632size_t sk;
+  libcrux_ml_kem_types_MlKemPublicKey____800size_t pk;
+} libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t;
+
+typedef struct libcrux_ml_kem_types_MlKemCiphertext____768size_t_s {
+  uint8_t value[768U];
+} libcrux_ml_kem_types_MlKemCiphertext____768size_t;
+
+typedef struct
+    K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t__s {
+  libcrux_ml_kem_types_MlKemCiphertext____768size_t fst;
+  uint8_t snd[32U];
+} K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_;
 
 typedef struct libcrux_ml_kem_types_MlKemPublicKey____1568size_t_s {
   uint8_t value[1568U];
@@ -96,35 +125,6 @@ typedef struct
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext fst;
   uint8_t snd[32U];
 } K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_;
-
-typedef struct libcrux_ml_kem_types_MlKemPublicKey____800size_t_s {
-  uint8_t value[800U];
-} libcrux_ml_kem_types_MlKemPublicKey____800size_t;
-
-typedef struct
-    core_option_Option__libcrux_ml_kem_types_MlKemPublicKey___800size_t___s {
-  core_option_Option__int32_t_tags tag;
-  libcrux_ml_kem_types_MlKemPublicKey____800size_t f0;
-} core_option_Option__libcrux_ml_kem_types_MlKemPublicKey___800size_t__;
-
-typedef struct libcrux_ml_kem_types_MlKemPrivateKey____1632size_t_s {
-  uint8_t value[1632U];
-} libcrux_ml_kem_types_MlKemPrivateKey____1632size_t;
-
-typedef struct libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t_s {
-  libcrux_ml_kem_types_MlKemPrivateKey____1632size_t sk;
-  libcrux_ml_kem_types_MlKemPublicKey____800size_t pk;
-} libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t;
-
-typedef struct libcrux_ml_kem_types_MlKemCiphertext____768size_t_s {
-  uint8_t value[768U];
-} libcrux_ml_kem_types_MlKemCiphertext____768size_t;
-
-typedef struct
-    K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t__s {
-  libcrux_ml_kem_types_MlKemCiphertext____768size_t fst;
-  uint8_t snd[32U];
-} K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_;
 
 #define core_result_Ok 0
 #define core_result_Err 1
