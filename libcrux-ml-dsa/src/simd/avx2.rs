@@ -140,7 +140,7 @@ impl Operations for AVX2SIMDUnit {
     }
     fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self {
         AVX2SIMDUnit {
-            coefficients: encoding::error::deserialize::<ETA>(serialized)
+            coefficients: encoding::error::deserialize::<ETA>(serialized),
         }
     }
 

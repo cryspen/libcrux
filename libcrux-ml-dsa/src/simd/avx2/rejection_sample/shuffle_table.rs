@@ -106,9 +106,6 @@ pub(crate) const SHUFFLE_TABLE: [[u8; 16]; 16] = [
 mod tests {
     #[test]
     fn test_generate_shuffle_table() {
-        assert_eq!(
-            super::generate_shuffle_table(),
-            super::SHUFFLE_TABLE
-        );
+        assert_eq!(super::generate_shuffle_table(), super::SHUFFLE_TABLE);
     }
 }

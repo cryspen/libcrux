@@ -1,7 +1,4 @@
-use crate::simd::avx2::{
-    encoding,
-    rejection_sample::shuffle_table::SHUFFLE_TABLE,
-};
+use crate::simd::avx2::{encoding, rejection_sample::shuffle_table::SHUFFLE_TABLE};
 
 use libcrux_intrinsics::avx2::*;
 
@@ -50,13 +47,14 @@ pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usiz
     // values that are 4-bits wide.
     let potential_coefficients = encoding::error::deserialize_to_unsigned::<4>(input);
 
-    let interval_boundary : i32 = match ETA {
+    let interval_boundary: i32 = match ETA {
         2 => 15,
         4 => 9,
         _ => unreachable!(),
     };
 
-    let compare_with_interval_boundary = mm256_cmpgt_epi32(mm256_set1_epi32(interval_boundary), potential_coefficients);
+    let compare_with_interval_boundary =
+        mm256_cmpgt_epi32(mm256_set1_epi32(interval_boundary), potential_coefficients);
 
     // Since every bit in each lane is either 0 or all 1s, we only need one bit
     // from each lane to tell us what coefficients to keep and what to throw-away.
