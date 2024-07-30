@@ -71,3 +71,63 @@ pub fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZ
         _ => unreachable!(),
     }
 }
+
+#[inline(always)]
+fn deserialize_to_unsigned_when_eta_is_2(bytes: &[u8]) -> Vec256 {
+    debug_assert!(bytes.len() == 3);
+
+    const COEFFICIENT_MASK: i32 = (1 << 3) - 1;
+
+    let bytes_in_simd_unit = mm256_set_epi32(
+        bytes[2] as i32,
+        bytes[2] as i32,
+        ((bytes[2] as i32) << 8) | (bytes[1] as i32),
+        bytes[1] as i32,
+        bytes[1] as i32,
+        ((bytes[1] as i32) << 8) | (bytes[0] as i32),
+        bytes[0] as i32,
+        bytes[0] as i32,
+    );
+
+    let coefficients =
+        mm256_srlv_epi32(bytes_in_simd_unit, mm256_set_epi32(5, 2, 7, 4, 1, 6, 3, 0));
+
+    mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK))
+}
+#[inline(always)]
+fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
+    debug_assert!(bytes.len() == 4);
+
+    const COEFFICIENT_MASK: i32 = (1 << 4) - 1;
+
+    let bytes_in_simd_unit = mm256_set_epi32(
+        bytes[3] as i32,
+        bytes[3] as i32,
+        bytes[2] as i32,
+        bytes[2] as i32,
+        bytes[1] as i32,
+        bytes[1] as i32,
+        bytes[0] as i32,
+        bytes[0] as i32,
+    );
+
+    let coefficients =
+        mm256_srlv_epi32(bytes_in_simd_unit, mm256_set_epi32(4, 0, 4, 0, 4, 0, 4, 0));
+
+    mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK))
+}
+#[inline(always)]
+pub(crate) fn deserialize_to_unsigned<const ETA: usize>(serialized: &[u8]) -> Vec256 {
+    match ETA {
+        2 => deserialize_to_unsigned_when_eta_is_2(serialized),
+        4 => deserialize_to_unsigned_when_eta_is_4(serialized),
+        _ => unreachable!(),
+    }
+}
+
+#[inline(always)]
+pub(crate) fn deserialize<const ETA: usize>(serialized: &[u8]) -> Vec256 {
+    let unsigned = deserialize_to_unsigned::<ETA>(serialized);
+
+    mm256_sub_epi32(mm256_set1_epi32(ETA as i32), unsigned)
+}

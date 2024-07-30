@@ -6,8 +6,7 @@ use crate::simd::portable::PortableSIMDUnit;
 mod arithmetic;
 mod encoding;
 mod ntt;
-mod sample;
-mod uniform_rej_sample_table;
+mod rejection_sample;
 
 #[derive(Clone, Copy)]
 pub struct AVX2SIMDUnit {
@@ -114,13 +113,13 @@ impl Operations for AVX2SIMDUnit {
     }
 
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
-        sample::rejection_sample_less_than_field_modulus(randomness, out)
+        rejection_sample::less_than_field_modulus::sample(randomness, out)
     }
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
-        PortableSIMDUnit::rejection_sample_less_than_eta_equals_2(randomness, out)
+        rejection_sample::less_than_eta::sample::<2>(randomness, out)
     }
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
-        PortableSIMDUnit::rejection_sample_less_than_eta_equals_4(randomness, out)
+        rejection_sample::less_than_eta::sample::<4>(randomness, out)
     }
 
     fn gamma1_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
@@ -140,9 +139,9 @@ impl Operations for AVX2SIMDUnit {
         encoding::error::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
     }
     fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self {
-        let result = PortableSIMDUnit::error_deserialize::<{ ETA }>(serialized);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        AVX2SIMDUnit {
+            coefficients: encoding::error::deserialize::<ETA>(serialized),
+        }
     }
 
     fn t0_serialize(simd_unit: Self) -> [u8; 13] {
