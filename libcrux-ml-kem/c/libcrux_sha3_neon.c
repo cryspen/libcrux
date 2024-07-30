@@ -8,7 +8,7 @@
  * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
  * Karamel: d5759a8b96e9f104664a88a83043d5761fcc9732
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: d992e8bff91dab77b6f0abebf16384ce422b310c
+ * Libcrux: 3c17ede9a23cf909c9b39d1789bb88291c7d6896
  */
 
 #include "libcrux_sha3_neon.h"
@@ -45,12 +45,11 @@ xor5(core_core_arch_arm_shared_neon_uint64x2_t a,
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___1int32_t_63int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)1, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)63, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)1, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)63, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -71,9 +70,8 @@ static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 _vbcaxq_u64(core_core_arch_arm_shared_neon_uint64x2_t a,
             core_core_arch_arm_shared_neon_uint64x2_t b,
             core_core_arch_arm_shared_neon_uint64x2_t c) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 = a;
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vbicq_u64(b, c));
+      a, libcrux_intrinsics_arm64__vbicq_u64(b, c));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -103,12 +101,11 @@ xor0(core_core_arch_arm_shared_neon_uint64x2_t a,
 
 static KRML_MUSTINLINE void slice_2(Eurydice_slice a[2U], size_t start,
                                     size_t len, Eurydice_slice ret[2U]) {
-  Eurydice_slice uu____0 = Eurydice_slice_subslice(
-      a[0U],
-      (CLITERAL(core_ops_range_Range__size_t){.start = start,
-                                              .end = start + len}),
-      uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
-  ret[0U] = uu____0;
+  ret[0U] = Eurydice_slice_subslice(a[0U],
+                                    (CLITERAL(core_ops_range_Range__size_t){
+                                        .start = start, .end = start + len}),
+                                    uint8_t, core_ops_range_Range__size_t,
+                                    Eurydice_slice);
   ret[1U] = Eurydice_slice_subslice(a[1U],
                                     (CLITERAL(core_ops_range_Range__size_t){
                                         .start = start, .end = start + len}),
@@ -208,26 +205,22 @@ static KRML_MUSTINLINE void load_block___72size_t(
                 .start = (size_t)16U * i0,
                 .end = (size_t)16U * (i0 + (size_t)1U)}),
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice));
-    core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-        s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U];
-    core_core_arch_arm_shared_neon_uint64x2_t uu____1 =
+    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] =
         libcrux_intrinsics_arm64__veorq_u64(
-            uu____0, libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
-    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] = uu____1;
-    core_core_arch_arm_shared_neon_uint64x2_t uu____2 =
-        s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-         [((size_t)2U * i0 + (size_t)1U) % (size_t)5U];
-    core_core_arch_arm_shared_neon_uint64x2_t uu____3 =
-        libcrux_intrinsics_arm64__veorq_u64(
-            uu____2, libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
+            s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
+            libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
     s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] = uu____3;
+     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] =
+         libcrux_intrinsics_arm64__veorq_u64(
+             s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
+              [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
+             libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
   }
   if ((size_t)72U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)72U / (size_t)8U - (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)72U / (size_t)8U - (size_t)1U) % (size_t)5U;
     uint64_t u[2U] = {0U};
-    uint8_t ret[8U];
+    uint8_t uu____0[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst0;
     Eurydice_slice_to_array2(
         &dst0,
@@ -238,10 +231,9 @@ static KRML_MUSTINLINE void load_block___72size_t(
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
     core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst0, ret);
-    uint64_t uu____4 = core_num__u64_9__from_le_bytes(ret);
-    u[0U] = uu____4;
-    uint8_t ret0[8U];
+        dst0, uu____0);
+    u[0U] = core_num__u64_9__from_le_bytes(uu____0);
+    uint8_t uu____1[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst;
     Eurydice_slice_to_array2(
         &dst,
@@ -252,15 +244,12 @@ static KRML_MUSTINLINE void load_block___72size_t(
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
     core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst, ret0);
-    uint64_t uu____5 = core_num__u64_9__from_le_bytes(ret0);
-    u[1U] = uu____5;
+        dst, uu____1);
+    u[1U] = core_num__u64_9__from_le_bytes(uu____1);
     core_core_arch_arm_shared_neon_uint64x2_t uvec =
         libcrux_intrinsics_arm64__vld1q_u64(
             Eurydice_array_to_slice((size_t)2U, u, uint64_t, Eurydice_slice));
-    core_core_arch_arm_shared_neon_uint64x2_t uu____6 =
-        libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
-    s[i][j] = uu____6;
+    s[i][j] = libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
   }
 }
 
@@ -274,12 +263,11 @@ static KRML_MUSTINLINE void load_block___72size_t0(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___36int32_t_28int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)36, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)28, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)36, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)28, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -299,12 +287,11 @@ xor_and_rotate___36int32_t_28int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___3int32_t_61int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)3, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)61, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)3, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)61, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -324,12 +311,11 @@ xor_and_rotate___3int32_t_61int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___41int32_t_23int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)41, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)23, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)41, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)23, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -349,12 +335,11 @@ xor_and_rotate___41int32_t_23int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___18int32_t_46int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)18, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)46, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)18, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)46, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -389,12 +374,11 @@ xor_and_rotate___1int32_t_63int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___44int32_t_20int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)44, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)20, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)44, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)20, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -414,12 +398,11 @@ xor_and_rotate___44int32_t_20int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___10int32_t_54int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)10, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)54, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)10, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)54, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -439,12 +422,11 @@ xor_and_rotate___10int32_t_54int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___45int32_t_19int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)45, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)19, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)45, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)19, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -464,12 +446,11 @@ xor_and_rotate___45int32_t_19int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___2int32_t_62int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)2, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)62, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)2, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)62, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -489,12 +470,11 @@ xor_and_rotate___2int32_t_62int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___62int32_t_2int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)62, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)2, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)62, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)2, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -514,12 +494,11 @@ xor_and_rotate___62int32_t_2int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___6int32_t_58int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)6, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)58, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)6, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)58, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -539,12 +518,11 @@ xor_and_rotate___6int32_t_58int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___43int32_t_21int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)43, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)21, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)43, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)21, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -564,12 +542,11 @@ xor_and_rotate___43int32_t_21int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___15int32_t_49int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)15, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)49, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)15, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)49, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -589,12 +566,11 @@ xor_and_rotate___15int32_t_49int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___61int32_t_3int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)61, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)3, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)61, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)3, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -614,12 +590,11 @@ xor_and_rotate___61int32_t_3int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___28int32_t_36int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)28, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)36, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)28, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)36, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -639,12 +614,11 @@ xor_and_rotate___28int32_t_36int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___55int32_t_9int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)55, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)9, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)55, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)9, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -664,12 +638,11 @@ xor_and_rotate___55int32_t_9int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___25int32_t_39int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)25, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)39, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)25, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)39, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -689,12 +662,11 @@ xor_and_rotate___25int32_t_39int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___21int32_t_43int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)21, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)43, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)21, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)43, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -714,12 +686,11 @@ xor_and_rotate___21int32_t_43int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___56int32_t_8int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)56, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)8, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)56, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)8, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -739,12 +710,11 @@ xor_and_rotate___56int32_t_8int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___27int32_t_37int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)27, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)37, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)27, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)37, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -764,12 +734,11 @@ xor_and_rotate___27int32_t_37int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___20int32_t_44int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)20, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)44, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)20, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)44, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -789,12 +758,11 @@ xor_and_rotate___20int32_t_44int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___39int32_t_25int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)39, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)25, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)39, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)25, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -814,12 +782,11 @@ xor_and_rotate___39int32_t_25int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___8int32_t_56int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)8, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)56, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)8, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)56, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -839,12 +806,11 @@ xor_and_rotate___8int32_t_56int32_t(
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 rotate_left___14int32_t_50int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
-  core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-      libcrux_intrinsics_arm64__vshlq_n_u64(
-          (int32_t)14, x, core_core_arch_arm_shared_neon_uint64x2_t);
   return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, libcrux_intrinsics_arm64__vshrq_n_u64(
-                   (int32_t)50, x, core_core_arch_arm_shared_neon_uint64x2_t));
+      libcrux_intrinsics_arm64__vshlq_n_u64(
+          (int32_t)14, x, core_core_arch_arm_shared_neon_uint64x2_t),
+      libcrux_intrinsics_arm64__vshrq_n_u64(
+          (int32_t)50, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -1367,26 +1333,22 @@ static KRML_MUSTINLINE void load_block___136size_t(
                 .start = (size_t)16U * i0,
                 .end = (size_t)16U * (i0 + (size_t)1U)}),
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice));
-    core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-        s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U];
-    core_core_arch_arm_shared_neon_uint64x2_t uu____1 =
+    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] =
         libcrux_intrinsics_arm64__veorq_u64(
-            uu____0, libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
-    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] = uu____1;
-    core_core_arch_arm_shared_neon_uint64x2_t uu____2 =
-        s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-         [((size_t)2U * i0 + (size_t)1U) % (size_t)5U];
-    core_core_arch_arm_shared_neon_uint64x2_t uu____3 =
-        libcrux_intrinsics_arm64__veorq_u64(
-            uu____2, libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
+            s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
+            libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
     s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] = uu____3;
+     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] =
+         libcrux_intrinsics_arm64__veorq_u64(
+             s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
+              [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
+             libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
   }
   if ((size_t)136U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)136U / (size_t)8U - (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)136U / (size_t)8U - (size_t)1U) % (size_t)5U;
     uint64_t u[2U] = {0U};
-    uint8_t ret[8U];
+    uint8_t uu____0[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst0;
     Eurydice_slice_to_array2(
         &dst0,
@@ -1397,10 +1359,9 @@ static KRML_MUSTINLINE void load_block___136size_t(
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
     core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst0, ret);
-    uint64_t uu____4 = core_num__u64_9__from_le_bytes(ret);
-    u[0U] = uu____4;
-    uint8_t ret0[8U];
+        dst0, uu____0);
+    u[0U] = core_num__u64_9__from_le_bytes(uu____0);
+    uint8_t uu____1[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst;
     Eurydice_slice_to_array2(
         &dst,
@@ -1411,15 +1372,12 @@ static KRML_MUSTINLINE void load_block___136size_t(
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
     core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst, ret0);
-    uint64_t uu____5 = core_num__u64_9__from_le_bytes(ret0);
-    u[1U] = uu____5;
+        dst, uu____1);
+    u[1U] = core_num__u64_9__from_le_bytes(uu____1);
     core_core_arch_arm_shared_neon_uint64x2_t uvec =
         libcrux_intrinsics_arm64__vld1q_u64(
             Eurydice_array_to_slice((size_t)2U, u, uint64_t, Eurydice_slice));
-    core_core_arch_arm_shared_neon_uint64x2_t uu____6 =
-        libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
-    s[i][j] = uu____6;
+    s[i][j] = libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
   }
 }
 
@@ -1871,26 +1829,22 @@ static KRML_MUSTINLINE void load_block___168size_t(
                 .start = (size_t)16U * i0,
                 .end = (size_t)16U * (i0 + (size_t)1U)}),
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice));
-    core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-        s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U];
-    core_core_arch_arm_shared_neon_uint64x2_t uu____1 =
+    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] =
         libcrux_intrinsics_arm64__veorq_u64(
-            uu____0, libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
-    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] = uu____1;
-    core_core_arch_arm_shared_neon_uint64x2_t uu____2 =
-        s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-         [((size_t)2U * i0 + (size_t)1U) % (size_t)5U];
-    core_core_arch_arm_shared_neon_uint64x2_t uu____3 =
-        libcrux_intrinsics_arm64__veorq_u64(
-            uu____2, libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
+            s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
+            libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
     s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] = uu____3;
+     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] =
+         libcrux_intrinsics_arm64__veorq_u64(
+             s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
+              [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
+             libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
   }
   if ((size_t)168U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)168U / (size_t)8U - (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)168U / (size_t)8U - (size_t)1U) % (size_t)5U;
     uint64_t u[2U] = {0U};
-    uint8_t ret[8U];
+    uint8_t uu____0[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst0;
     Eurydice_slice_to_array2(
         &dst0,
@@ -1901,10 +1855,9 @@ static KRML_MUSTINLINE void load_block___168size_t(
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
     core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst0, ret);
-    uint64_t uu____4 = core_num__u64_9__from_le_bytes(ret);
-    u[0U] = uu____4;
-    uint8_t ret0[8U];
+        dst0, uu____0);
+    u[0U] = core_num__u64_9__from_le_bytes(uu____0);
+    uint8_t uu____1[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst;
     Eurydice_slice_to_array2(
         &dst,
@@ -1915,15 +1868,12 @@ static KRML_MUSTINLINE void load_block___168size_t(
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
     core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst, ret0);
-    uint64_t uu____5 = core_num__u64_9__from_le_bytes(ret0);
-    u[1U] = uu____5;
+        dst, uu____1);
+    u[1U] = core_num__u64_9__from_le_bytes(uu____1);
     core_core_arch_arm_shared_neon_uint64x2_t uvec =
         libcrux_intrinsics_arm64__vld1q_u64(
             Eurydice_array_to_slice((size_t)2U, u, uint64_t, Eurydice_slice));
-    core_core_arch_arm_shared_neon_uint64x2_t uu____6 =
-        libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
-    s[i][j] = uu____6;
+    s[i][j] = libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
   }
 }
 
@@ -2133,26 +2083,22 @@ static KRML_MUSTINLINE void load_block___144size_t(
                 .start = (size_t)16U * i0,
                 .end = (size_t)16U * (i0 + (size_t)1U)}),
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice));
-    core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-        s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U];
-    core_core_arch_arm_shared_neon_uint64x2_t uu____1 =
+    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] =
         libcrux_intrinsics_arm64__veorq_u64(
-            uu____0, libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
-    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] = uu____1;
-    core_core_arch_arm_shared_neon_uint64x2_t uu____2 =
-        s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-         [((size_t)2U * i0 + (size_t)1U) % (size_t)5U];
-    core_core_arch_arm_shared_neon_uint64x2_t uu____3 =
-        libcrux_intrinsics_arm64__veorq_u64(
-            uu____2, libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
+            s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
+            libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
     s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] = uu____3;
+     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] =
+         libcrux_intrinsics_arm64__veorq_u64(
+             s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
+              [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
+             libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
   }
   if ((size_t)144U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)144U / (size_t)8U - (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)144U / (size_t)8U - (size_t)1U) % (size_t)5U;
     uint64_t u[2U] = {0U};
-    uint8_t ret[8U];
+    uint8_t uu____0[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst0;
     Eurydice_slice_to_array2(
         &dst0,
@@ -2163,10 +2109,9 @@ static KRML_MUSTINLINE void load_block___144size_t(
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
     core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst0, ret);
-    uint64_t uu____4 = core_num__u64_9__from_le_bytes(ret);
-    u[0U] = uu____4;
-    uint8_t ret0[8U];
+        dst0, uu____0);
+    u[0U] = core_num__u64_9__from_le_bytes(uu____0);
+    uint8_t uu____1[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst;
     Eurydice_slice_to_array2(
         &dst,
@@ -2177,15 +2122,12 @@ static KRML_MUSTINLINE void load_block___144size_t(
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
     core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst, ret0);
-    uint64_t uu____5 = core_num__u64_9__from_le_bytes(ret0);
-    u[1U] = uu____5;
+        dst, uu____1);
+    u[1U] = core_num__u64_9__from_le_bytes(uu____1);
     core_core_arch_arm_shared_neon_uint64x2_t uvec =
         libcrux_intrinsics_arm64__vld1q_u64(
             Eurydice_array_to_slice((size_t)2U, u, uint64_t, Eurydice_slice));
-    core_core_arch_arm_shared_neon_uint64x2_t uu____6 =
-        libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
-    s[i][j] = uu____6;
+    s[i][j] = libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
   }
 }
 
@@ -2518,26 +2460,22 @@ static KRML_MUSTINLINE void load_block___104size_t(
                 .start = (size_t)16U * i0,
                 .end = (size_t)16U * (i0 + (size_t)1U)}),
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice));
-    core_core_arch_arm_shared_neon_uint64x2_t uu____0 =
-        s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U];
-    core_core_arch_arm_shared_neon_uint64x2_t uu____1 =
+    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] =
         libcrux_intrinsics_arm64__veorq_u64(
-            uu____0, libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
-    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] = uu____1;
-    core_core_arch_arm_shared_neon_uint64x2_t uu____2 =
-        s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-         [((size_t)2U * i0 + (size_t)1U) % (size_t)5U];
-    core_core_arch_arm_shared_neon_uint64x2_t uu____3 =
-        libcrux_intrinsics_arm64__veorq_u64(
-            uu____2, libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
+            s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
+            libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
     s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] = uu____3;
+     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] =
+         libcrux_intrinsics_arm64__veorq_u64(
+             s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
+              [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
+             libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
   }
   if ((size_t)104U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)104U / (size_t)8U - (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)104U / (size_t)8U - (size_t)1U) % (size_t)5U;
     uint64_t u[2U] = {0U};
-    uint8_t ret[8U];
+    uint8_t uu____0[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst0;
     Eurydice_slice_to_array2(
         &dst0,
@@ -2548,10 +2486,9 @@ static KRML_MUSTINLINE void load_block___104size_t(
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
     core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst0, ret);
-    uint64_t uu____4 = core_num__u64_9__from_le_bytes(ret);
-    u[0U] = uu____4;
-    uint8_t ret0[8U];
+        dst0, uu____0);
+    u[0U] = core_num__u64_9__from_le_bytes(uu____0);
+    uint8_t uu____1[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst;
     Eurydice_slice_to_array2(
         &dst,
@@ -2562,15 +2499,12 @@ static KRML_MUSTINLINE void load_block___104size_t(
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
     core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst, ret0);
-    uint64_t uu____5 = core_num__u64_9__from_le_bytes(ret0);
-    u[1U] = uu____5;
+        dst, uu____1);
+    u[1U] = core_num__u64_9__from_le_bytes(uu____1);
     core_core_arch_arm_shared_neon_uint64x2_t uvec =
         libcrux_intrinsics_arm64__vld1q_u64(
             Eurydice_array_to_slice((size_t)2U, u, uint64_t, Eurydice_slice));
-    core_core_arch_arm_shared_neon_uint64x2_t uu____6 =
-        libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
-    s[i][j] = uu____6;
+    s[i][j] = libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
   }
 }
 

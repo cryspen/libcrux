@@ -8,7 +8,7 @@
  * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
  * Karamel: d5759a8b96e9f104664a88a83043d5761fcc9732
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: d992e8bff91dab77b6f0abebf16384ce422b310c
+ * Libcrux: 3c17ede9a23cf909c9b39d1789bb88291c7d6896
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -3735,13 +3735,12 @@ compress_then_serialize_4__libcrux_ml_kem_vector_portable_vector_type_PortableVe
     uint8_t bytes[8U];
     libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___serialize_4(
         coefficient, bytes);
-    Eurydice_slice uu____0 = Eurydice_slice_subslice(
-        serialized,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = (size_t)8U * i0, .end = (size_t)8U * i0 + (size_t)8U}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     core_slice___Slice_T___copy_from_slice(
-        uu____0,
+        Eurydice_slice_subslice(
+            serialized,
+            (CLITERAL(core_ops_range_Range__size_t){
+                .start = (size_t)8U * i0, .end = (size_t)8U * i0 + (size_t)8U}),
+            uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_array_to_slice((size_t)8U, bytes, uint8_t, Eurydice_slice),
         uint8_t, void *);
   }
@@ -3782,13 +3781,13 @@ compress_then_serialize_5__libcrux_ml_kem_vector_portable_vector_type_PortableVe
     uint8_t bytes[10U];
     libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___serialize_5(
         coefficients, bytes);
-    Eurydice_slice uu____0 = Eurydice_slice_subslice(
-        serialized,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = (size_t)10U * i0, .end = (size_t)10U * i0 + (size_t)10U}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     core_slice___Slice_T___copy_from_slice(
-        uu____0,
+        Eurydice_slice_subslice(serialized,
+                                (CLITERAL(core_ops_range_Range__size_t){
+                                    .start = (size_t)10U * i0,
+                                    .end = (size_t)10U * i0 + (size_t)10U}),
+                                uint8_t, core_ops_range_Range__size_t,
+                                Eurydice_slice),
         Eurydice_array_to_slice((size_t)10U, bytes, uint8_t, Eurydice_slice),
         uint8_t, void *);
   }

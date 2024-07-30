@@ -109,6 +109,9 @@ echo " */" >> header.txt
 
 # Run eurydice to extract the C code
 echo "Running eurydice ..."
+echo $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
+    --header header.txt \
+    ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
 $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
     --header header.txt \
     ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
@@ -122,8 +125,8 @@ if [[ "$karamel_include" = 1 ]]; then
     cp -R $KRML_HOME/include karamel/
 fi
 
-find . -type f -name "*.c" -exec clang-format --style=Google -i "{}" \;
-find . -type f -name "*.h" -exec clang-format --style=Google -i "{}" \;
+find . -type f -name '*.c' -and -not -path '*_deps*' -exec clang-format --style=Google -i "{}" \;
+find . -type f -name '*.h' -and -not -path '*_deps*' -exec clang-format --style=Google -i "{}" \;
 if [ -d "internal" ]; then
     clang-format --style=Google -i internal/*.h
 fi
