@@ -5,18 +5,17 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
+ * Eurydice: c959e0871805e4cc6ced4bde7d8493f1dccfdcc3
  * Karamel: d5759a8b96e9f104664a88a83043d5761fcc9732
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: 3c5d3c5f94d5a7630aa83a84d6f06452e6c18807
+ * Libcrux: b0f7867cb06d9c10ffe0dbca8cdaefffb202f3a8
  */
 
 #include "internal/libcrux_core.h"
 
 static uint8_t inz(uint8_t value) {
   uint16_t value0 = (uint16_t)value;
-  uint16_t uu____0 = value0;
-  uint16_t result = (((uint32_t)uu____0 |
+  uint16_t result = (((uint32_t)value0 |
                       (uint32_t)core_num__u16_7__wrapping_add(~value0, 1U)) &
                      0xFFFFU) >>
                         8U &
@@ -31,10 +30,8 @@ static uint8_t compare(Eurydice_slice lhs, Eurydice_slice rhs) {
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(lhs, uint8_t, size_t); i++) {
     size_t i0 = i;
-    uint8_t uu____0 =
-        Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *, uint8_t);
     r = (uint32_t)r |
-        ((uint32_t)uu____0 ^
+        ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *, uint8_t) ^
          (uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *, uint8_t));
   }
   return is_non_zero(r);
@@ -53,12 +50,11 @@ static void select_ct(Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE;
        i++) {
     size_t i0 = i;
-    uint8_t uu____0 =
-        (uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *, uint8_t) &
-        (uint32_t)mask;
-    uint8_t *uu____1 =
-        &Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *, uint8_t);
-    out[i0] = (uint32_t)uu____0 | ((uint32_t)uu____1[0U] & (uint32_t)~mask);
+    out[i0] =
+        ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *, uint8_t) &
+         (uint32_t)mask) |
+        ((uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *, uint8_t) &
+         (uint32_t)~mask);
   }
   memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
@@ -67,9 +63,7 @@ KRML_NOINLINE void
 libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
     Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
     uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  select_ct(lhs, rhs, selector, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  select_ct(lhs, rhs, selector, ret);
 }
 
 void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(

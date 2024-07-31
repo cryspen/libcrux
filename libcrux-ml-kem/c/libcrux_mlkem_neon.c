@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
+ * Eurydice: c959e0871805e4cc6ced4bde7d8493f1dccfdcc3
  * Karamel: d5759a8b96e9f104664a88a83043d5761fcc9732
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: 3c5d3c5f94d5a7630aa83a84d6f06452e6c18807
+ * Libcrux: b0f7867cb06d9c10ffe0dbca8cdaefffb202f3a8
  */
 
 #include "internal/libcrux_mlkem_neon.h"
@@ -84,9 +84,7 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_vector_type_to_i16_array(
 
 void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___to_i16_array(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector x, int16_t ret[16U]) {
-  int16_t ret0[16U];
-  libcrux_ml_kem_vector_neon_vector_type_to_i16_array(x, ret0);
-  memcpy(ret, ret0, (size_t)16U * sizeof(int16_t));
+  libcrux_ml_kem_vector_neon_vector_type_to_i16_array(x, ret);
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -685,9 +683,7 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_1(
 
 void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_1(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[2U]) {
-  uint8_t ret0[2U];
-  libcrux_ml_kem_vector_neon_serialize_serialize_1(a, ret0);
-  memcpy(ret, ret0, (size_t)2U * sizeof(uint8_t));
+  libcrux_ml_kem_vector_neon_serialize_serialize_1(a, ret);
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -749,9 +745,7 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_4(
 
 void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_4(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[8U]) {
-  uint8_t ret0[8U];
-  libcrux_ml_kem_vector_neon_serialize_serialize_4(a, ret0);
-  memcpy(ret, ret0, (size_t)8U * sizeof(uint8_t));
+  libcrux_ml_kem_vector_neon_serialize_serialize_4(a, ret);
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -798,9 +792,7 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_5(
 
 void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_5(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[10U]) {
-  uint8_t ret0[10U];
-  libcrux_ml_kem_vector_neon_serialize_serialize_5(a, ret0);
-  memcpy(ret, ret0, (size_t)10U * sizeof(uint8_t));
+  libcrux_ml_kem_vector_neon_serialize_serialize_5(a, ret);
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -943,9 +935,7 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_10(
 
 void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_10(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[20U]) {
-  uint8_t ret0[20U];
-  libcrux_ml_kem_vector_neon_serialize_serialize_10(a, ret0);
-  memcpy(ret, ret0, (size_t)20U * sizeof(uint8_t));
+  libcrux_ml_kem_vector_neon_serialize_serialize_10(a, ret);
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -992,9 +982,7 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_11(
 
 void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_11(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[22U]) {
-  uint8_t ret0[22U];
-  libcrux_ml_kem_vector_neon_serialize_serialize_11(a, ret0);
-  memcpy(ret, ret0, (size_t)22U * sizeof(uint8_t));
+  libcrux_ml_kem_vector_neon_serialize_serialize_11(a, ret);
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -1137,9 +1125,7 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_12(
 
 void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_12(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[24U]) {
-  uint8_t ret0[24U];
-  libcrux_ml_kem_vector_neon_serialize_serialize_12(a, ret0);
-  memcpy(ret, ret0, (size_t)24U * sizeof(uint8_t));
+  libcrux_ml_kem_vector_neon_serialize_serialize_12(a, ret);
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -1243,9 +1229,8 @@ libcrux_ml_kem_vector_neon_rej_sample(Eurydice_slice a, Eurydice_slice result) {
       int16_t uu____7;
       if (d1 < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS) {
         if (sampled < (size_t)16U) {
-          int16_t uu____8 = d1;
           Eurydice_slice_index(result, sampled, int16_t, int16_t *, int16_t) =
-              uu____8;
+              d1;
           sampled++;
           uu____2 = d2;
           uu____7 = LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
@@ -1545,25 +1530,16 @@ typedef struct
 
 static KRML_MUSTINLINE void G___2size_t(Eurydice_slice input,
                                         uint8_t ret[64U]) {
-  uint8_t ret0[64U];
-  libcrux_ml_kem_hash_functions_neon_G(input, ret0);
-  memcpy(ret, ret0, (size_t)64U * sizeof(uint8_t));
+  libcrux_ml_kem_hash_functions_neon_G(input, ret);
 }
 
 static void
 closure__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_2size_t(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[2U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      ret0[2U];
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U,
-      ret0[i] = ZERO__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(););
-  memcpy(
-      ret, ret0,
-      (size_t)2U *
-          sizeof(
-              libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector));
+      ret[i] = ZERO__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(););
 }
 
 typedef struct Simd128Hash_s {
@@ -1621,9 +1597,7 @@ static KRML_MUSTINLINE void shake128_squeeze_three_blocks___2size_t(
 
 static KRML_MUSTINLINE void shake128_squeeze_three_blocks___2size_t0(
     Simd128Hash *self, uint8_t ret[2U][504U]) {
-  uint8_t ret0[2U][504U];
-  shake128_squeeze_three_blocks___2size_t(self, ret0);
-  memcpy(ret, ret0, (size_t)2U * sizeof(uint8_t[504U]));
+  shake128_squeeze_three_blocks___2size_t(self, ret);
 }
 
 static KRML_MUSTINLINE bool
@@ -1691,9 +1665,7 @@ static KRML_MUSTINLINE void shake128_squeeze_block___2size_t(
 
 static KRML_MUSTINLINE void shake128_squeeze_block___2size_t0(
     Simd128Hash *self, uint8_t ret[2U][168U]) {
-  uint8_t ret0[2U][168U];
-  shake128_squeeze_block___2size_t(self, ret0);
-  memcpy(ret, ret0, (size_t)2U * sizeof(uint8_t[168U]));
+  shake128_squeeze_block___2size_t(self, ret);
 }
 
 static KRML_MUSTINLINE bool
@@ -1898,9 +1870,7 @@ static KRML_MUSTINLINE void PRFxN___2size_t_192size_t(uint8_t (*input)[33U],
 
 static KRML_MUSTINLINE void PRFxN___2size_t_192size_t0(uint8_t (*input)[33U],
                                                        uint8_t ret[2U][192U]) {
-  uint8_t ret0[2U][192U];
-  PRFxN___2size_t_192size_t(input, ret0);
-  memcpy(ret, ret0, (size_t)2U * sizeof(uint8_t[192U]));
+  PRFxN___2size_t_192size_t(input, ret);
 }
 
 static KRML_MUSTINLINE
@@ -1916,20 +1886,18 @@ static KRML_MUSTINLINE
     Eurydice_slice byte_chunk = Eurydice_slice_subslice2(
         randomness, chunk_number * (size_t)4U,
         chunk_number * (size_t)4U + (size_t)4U, uint8_t, Eurydice_slice);
-    uint32_t uu____0 = (uint32_t)Eurydice_slice_index(
-        byte_chunk, (size_t)0U, uint8_t, uint8_t *, uint8_t);
-    uint32_t uu____1 =
-        uu____0 | (uint32_t)Eurydice_slice_index(byte_chunk, (size_t)1U,
-                                                 uint8_t, uint8_t *, uint8_t)
-                      << 8U;
-    uint32_t uu____2 =
-        uu____1 | (uint32_t)Eurydice_slice_index(byte_chunk, (size_t)2U,
-                                                 uint8_t, uint8_t *, uint8_t)
-                      << 16U;
     uint32_t random_bits_as_u32 =
-        uu____2 | (uint32_t)Eurydice_slice_index(byte_chunk, (size_t)3U,
-                                                 uint8_t, uint8_t *, uint8_t)
-                      << 24U;
+        (((uint32_t)Eurydice_slice_index(byte_chunk, (size_t)0U, uint8_t,
+                                         uint8_t *, uint8_t) |
+          (uint32_t)Eurydice_slice_index(byte_chunk, (size_t)1U, uint8_t,
+                                         uint8_t *, uint8_t)
+              << 8U) |
+         (uint32_t)Eurydice_slice_index(byte_chunk, (size_t)2U, uint8_t,
+                                        uint8_t *, uint8_t)
+             << 16U) |
+        (uint32_t)Eurydice_slice_index(byte_chunk, (size_t)3U, uint8_t,
+                                       uint8_t *, uint8_t)
+            << 24U;
     uint32_t even_bits = random_bits_as_u32 & 1431655765U;
     uint32_t odd_bits = random_bits_as_u32 >> 1U & 1431655765U;
     uint32_t coin_toss_outcomes = even_bits + odd_bits;
@@ -1962,16 +1930,15 @@ static KRML_MUSTINLINE
     Eurydice_slice byte_chunk = Eurydice_slice_subslice2(
         randomness, chunk_number * (size_t)3U,
         chunk_number * (size_t)3U + (size_t)3U, uint8_t, Eurydice_slice);
-    uint32_t uu____0 = (uint32_t)Eurydice_slice_index(
-        byte_chunk, (size_t)0U, uint8_t, uint8_t *, uint8_t);
-    uint32_t uu____1 =
-        uu____0 | (uint32_t)Eurydice_slice_index(byte_chunk, (size_t)1U,
-                                                 uint8_t, uint8_t *, uint8_t)
-                      << 8U;
     uint32_t random_bits_as_u24 =
-        uu____1 | (uint32_t)Eurydice_slice_index(byte_chunk, (size_t)2U,
-                                                 uint8_t, uint8_t *, uint8_t)
-                      << 16U;
+        ((uint32_t)Eurydice_slice_index(byte_chunk, (size_t)0U, uint8_t,
+                                        uint8_t *, uint8_t) |
+         (uint32_t)Eurydice_slice_index(byte_chunk, (size_t)1U, uint8_t,
+                                        uint8_t *, uint8_t)
+             << 8U) |
+        (uint32_t)Eurydice_slice_index(byte_chunk, (size_t)2U, uint8_t,
+                                       uint8_t *, uint8_t)
+            << 16U;
     uint32_t first_bits = random_bits_as_u24 & 2396745U;
     uint32_t second_bits = random_bits_as_u24 >> 1U & 2396745U;
     uint32_t third_bits = random_bits_as_u24 >> 2U & 2396745U;
@@ -2477,16 +2444,9 @@ static void
 closure__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_2size_t_768size_t_1632size_t_800size_t_768size_t_3size_t_192size_t(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[2U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      ret0[2U];
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U,
-      ret0[i] = ZERO__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(););
-  memcpy(
-      ret, ret0,
-      (size_t)2U *
-          sizeof(
-              libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector));
+      ret[i] = ZERO__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(););
 }
 
 static inline libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -2507,9 +2467,7 @@ clone__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
 
 static KRML_MUSTINLINE void H___2size_t(Eurydice_slice input,
                                         uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  libcrux_ml_kem_hash_functions_neon_H(input, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  libcrux_ml_kem_hash_functions_neon_H(input, ret);
 }
 
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__2size_t
@@ -2755,9 +2713,7 @@ static KRML_MUSTINLINE void PRFxN___2size_t_128size_t(uint8_t (*input)[33U],
 
 static KRML_MUSTINLINE void PRFxN___2size_t_128size_t0(uint8_t (*input)[33U],
                                                        uint8_t ret[2U][128U]) {
-  uint8_t ret0[2U][128U];
-  PRFxN___2size_t_128size_t(input, ret0);
-  memcpy(ret, ret0, (size_t)2U * sizeof(uint8_t[128U]));
+  PRFxN___2size_t_128size_t(input, ret);
 }
 
 static KRML_MUSTINLINE
@@ -2832,9 +2788,7 @@ static KRML_MUSTINLINE void PRF___128size_t(Eurydice_slice input,
 
 static KRML_MUSTINLINE void PRF___2size_t_128size_t(Eurydice_slice input,
                                                     uint8_t ret[128U]) {
-  uint8_t ret0[128U];
-  PRF___128size_t(input, ret0);
-  memcpy(ret, ret0, (size_t)128U * sizeof(uint8_t));
+  PRF___128size_t(input, ret);
 }
 
 static KRML_MUSTINLINE void
@@ -4378,9 +4332,7 @@ static KRML_MUSTINLINE void PRF___32size_t(Eurydice_slice input,
 
 static KRML_MUSTINLINE void PRF___2size_t_32size_t(Eurydice_slice input,
                                                    uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  PRF___32size_t(input, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  PRF___32size_t(input, ret);
 }
 
 void libcrux_ml_kem_ind_cca_decapsulate_unpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_2size_t_1632size_t_768size_t_800size_t_768size_t_768size_t_640size_t_128size_t_10size_t_4size_t_320size_t_3size_t_192size_t_2size_t_128size_t_800size_t(
@@ -4755,25 +4707,16 @@ typedef struct
 
 static KRML_MUSTINLINE void G___3size_t(Eurydice_slice input,
                                         uint8_t ret[64U]) {
-  uint8_t ret0[64U];
-  libcrux_ml_kem_hash_functions_neon_G(input, ret0);
-  memcpy(ret, ret0, (size_t)64U * sizeof(uint8_t));
+  libcrux_ml_kem_hash_functions_neon_G(input, ret);
 }
 
 static void
 closure__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_3size_t(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[3U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      ret0[3U];
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U,
-      ret0[i] = ZERO__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(););
-  memcpy(
-      ret, ret0,
-      (size_t)3U *
-          sizeof(
-              libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector));
+      ret[i] = ZERO__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(););
 }
 
 static KRML_MUSTINLINE Simd128Hash
@@ -4835,9 +4778,7 @@ static KRML_MUSTINLINE void shake128_squeeze_three_blocks___3size_t(
 
 static KRML_MUSTINLINE void shake128_squeeze_three_blocks___3size_t0(
     Simd128Hash *self, uint8_t ret[3U][504U]) {
-  uint8_t ret0[3U][504U];
-  shake128_squeeze_three_blocks___3size_t(self, ret0);
-  memcpy(ret, ret0, (size_t)3U * sizeof(uint8_t[504U]));
+  shake128_squeeze_three_blocks___3size_t(self, ret);
 }
 
 static KRML_MUSTINLINE bool
@@ -4910,9 +4851,7 @@ static KRML_MUSTINLINE void shake128_squeeze_block___3size_t(
 
 static KRML_MUSTINLINE void shake128_squeeze_block___3size_t0(
     Simd128Hash *self, uint8_t ret[3U][168U]) {
-  uint8_t ret0[3U][168U];
-  shake128_squeeze_block___3size_t(self, ret0);
-  memcpy(ret, ret0, (size_t)3U * sizeof(uint8_t[168U]));
+  shake128_squeeze_block___3size_t(self, ret);
 }
 
 static KRML_MUSTINLINE bool
@@ -5105,9 +5044,7 @@ static KRML_MUSTINLINE void PRFxN___3size_t_128size_t(uint8_t (*input)[33U],
 
 static KRML_MUSTINLINE void PRFxN___3size_t_128size_t0(uint8_t (*input)[33U],
                                                        uint8_t ret[3U][128U]) {
-  uint8_t ret0[3U][128U];
-  PRFxN___3size_t_128size_t(input, ret0);
-  memcpy(ret, ret0, (size_t)3U * sizeof(uint8_t[128U]));
+  PRFxN___3size_t_128size_t(input, ret);
 }
 
 static KRML_MUSTINLINE
@@ -5355,23 +5292,14 @@ static void
 closure__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_3size_t_1152size_t_2400size_t_1184size_t_1152size_t_2size_t_128size_t(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[3U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      ret0[3U];
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U,
-      ret0[i] = ZERO__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(););
-  memcpy(
-      ret, ret0,
-      (size_t)3U *
-          sizeof(
-              libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector));
+      ret[i] = ZERO__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(););
 }
 
 static KRML_MUSTINLINE void H___3size_t(Eurydice_slice input,
                                         uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  libcrux_ml_kem_hash_functions_neon_H(input, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  libcrux_ml_kem_hash_functions_neon_H(input, ret);
 }
 
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__3size_t
@@ -5641,9 +5569,7 @@ static KRML_MUSTINLINE
 
 static KRML_MUSTINLINE void PRF___3size_t_128size_t(Eurydice_slice input,
                                                     uint8_t ret[128U]) {
-  uint8_t ret0[128U];
-  PRF___128size_t(input, ret0);
-  memcpy(ret, ret0, (size_t)128U * sizeof(uint8_t));
+  PRF___128size_t(input, ret);
 }
 
 static KRML_MUSTINLINE void
@@ -6213,9 +6139,7 @@ decrypt_unpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_3size_t_1
 
 static KRML_MUSTINLINE void PRF___3size_t_32size_t(Eurydice_slice input,
                                                    uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  PRF___32size_t(input, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  PRF___32size_t(input, ret);
 }
 
 void libcrux_ml_kem_ind_cca_decapsulate_unpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_3size_t_2400size_t_1152size_t_1184size_t_1088size_t_1152size_t_960size_t_128size_t_10size_t_4size_t_320size_t_2size_t_128size_t_2size_t_128size_t_1120size_t(
@@ -6566,25 +6490,16 @@ typedef struct
 
 static KRML_MUSTINLINE void G___4size_t(Eurydice_slice input,
                                         uint8_t ret[64U]) {
-  uint8_t ret0[64U];
-  libcrux_ml_kem_hash_functions_neon_G(input, ret0);
-  memcpy(ret, ret0, (size_t)64U * sizeof(uint8_t));
+  libcrux_ml_kem_hash_functions_neon_G(input, ret);
 }
 
 static void
 closure__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_4size_t(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[4U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      ret0[4U];
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U,
-      ret0[i] = ZERO__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(););
-  memcpy(
-      ret, ret0,
-      (size_t)4U *
-          sizeof(
-              libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector));
+      ret[i] = ZERO__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(););
 }
 
 static KRML_MUSTINLINE Simd128Hash
@@ -6649,9 +6564,7 @@ static KRML_MUSTINLINE void shake128_squeeze_three_blocks___4size_t(
 
 static KRML_MUSTINLINE void shake128_squeeze_three_blocks___4size_t0(
     Simd128Hash *self, uint8_t ret[4U][504U]) {
-  uint8_t ret0[4U][504U];
-  shake128_squeeze_three_blocks___4size_t(self, ret0);
-  memcpy(ret, ret0, (size_t)4U * sizeof(uint8_t[504U]));
+  shake128_squeeze_three_blocks___4size_t(self, ret);
 }
 
 static KRML_MUSTINLINE bool
@@ -6727,9 +6640,7 @@ static KRML_MUSTINLINE void shake128_squeeze_block___4size_t(
 
 static KRML_MUSTINLINE void shake128_squeeze_block___4size_t0(
     Simd128Hash *self, uint8_t ret[4U][168U]) {
-  uint8_t ret0[4U][168U];
-  shake128_squeeze_block___4size_t(self, ret0);
-  memcpy(ret, ret0, (size_t)4U * sizeof(uint8_t[168U]));
+  shake128_squeeze_block___4size_t(self, ret);
 }
 
 static KRML_MUSTINLINE bool
@@ -6925,9 +6836,7 @@ static KRML_MUSTINLINE void PRFxN___4size_t_128size_t(uint8_t (*input)[33U],
 
 static KRML_MUSTINLINE void PRFxN___4size_t_128size_t0(uint8_t (*input)[33U],
                                                        uint8_t ret[4U][128U]) {
-  uint8_t ret0[4U][128U];
-  PRFxN___4size_t_128size_t(input, ret0);
-  memcpy(ret, ret0, (size_t)4U * sizeof(uint8_t[128U]));
+  PRFxN___4size_t_128size_t(input, ret);
 }
 
 static KRML_MUSTINLINE
@@ -7175,23 +7084,14 @@ static void
 closure__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_4size_t_1536size_t_3168size_t_1568size_t_1536size_t_2size_t_128size_t(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[4U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      ret0[4U];
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U,
-      ret0[i] = ZERO__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(););
-  memcpy(
-      ret, ret0,
-      (size_t)4U *
-          sizeof(
-              libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector));
+      ret[i] = ZERO__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(););
 }
 
 static KRML_MUSTINLINE void H___4size_t(Eurydice_slice input,
                                         uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  libcrux_ml_kem_hash_functions_neon_H(input, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  libcrux_ml_kem_hash_functions_neon_H(input, ret);
 }
 
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
@@ -7461,9 +7361,7 @@ static KRML_MUSTINLINE
 
 static KRML_MUSTINLINE void PRF___4size_t_128size_t(Eurydice_slice input,
                                                     uint8_t ret[128U]) {
-  uint8_t ret0[128U];
-  PRF___128size_t(input, ret0);
-  memcpy(ret, ret0, (size_t)128U * sizeof(uint8_t));
+  PRF___128size_t(input, ret);
 }
 
 static KRML_MUSTINLINE void
@@ -8128,9 +8026,7 @@ decrypt_unpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_4size_t_1
 
 static KRML_MUSTINLINE void PRF___4size_t_32size_t(Eurydice_slice input,
                                                    uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  PRF___32size_t(input, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  PRF___32size_t(input, ret);
 }
 
 void libcrux_ml_kem_ind_cca_decapsulate_unpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(

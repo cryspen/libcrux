@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
+ * Eurydice: c959e0871805e4cc6ced4bde7d8493f1dccfdcc3
  * Karamel: d5759a8b96e9f104664a88a83043d5761fcc9732
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: 3c5d3c5f94d5a7630aa83a84d6f06452e6c18807
+ * Libcrux: b0f7867cb06d9c10ffe0dbca8cdaefffb202f3a8
  */
 
 #include "libcrux_mlkem1024_neon.h"
@@ -20,20 +20,16 @@ decapsulate___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_140
     libcrux_ml_kem_types_MlKemPrivateKey____3168size_t *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
-  uint8_t ret0[32U];
   libcrux_ml_kem_ind_cca_decapsulate__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_libcrux_ml_kem_ind_cca_MlKem_4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
-      private_key, ciphertext, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+      private_key, ciphertext, ret);
 }
 
 void libcrux_ml_kem_mlkem1024_neon_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey____3168size_t *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
-  uint8_t ret0[32U];
   decapsulate___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
-      private_key, ciphertext, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+      private_key, ciphertext, ret);
 }
 
 static void
@@ -42,10 +38,8 @@ decapsulate_unpacked___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536s
         *key_pair,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
-  uint8_t ret0[32U];
   libcrux_ml_kem_ind_cca_decapsulate_unpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_hash_functions_neon_Simd128Hash_4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
-      key_pair, ciphertext, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+      key_pair, ciphertext, ret);
 }
 
 void libcrux_ml_kem_mlkem1024_neon_decapsulate_unpacked(
@@ -53,10 +47,8 @@ void libcrux_ml_kem_mlkem1024_neon_decapsulate_unpacked(
         *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
-  uint8_t ret0[32U];
   decapsulate_unpacked___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
-      private_key, ciphertext, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+      private_key, ciphertext, ret);
 }
 
 static K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_

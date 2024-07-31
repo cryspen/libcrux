@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
+ * Eurydice: c959e0871805e4cc6ced4bde7d8493f1dccfdcc3
  * Karamel: d5759a8b96e9f104664a88a83043d5761fcc9732
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: 3c5d3c5f94d5a7630aa83a84d6f06452e6c18807
+ * Libcrux: b0f7867cb06d9c10ffe0dbca8cdaefffb202f3a8
  */
 
 #include "libcrux_sha3_neon.h"
@@ -1119,9 +1119,7 @@ static KRML_MUSTINLINE void store_block_full___72size_t(
 
 static KRML_MUSTINLINE void store_block_full___72size_t0(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t ret[2U][200U]) {
-  uint8_t ret0[2U][200U];
-  store_block_full___72size_t(a, ret0);
-  memcpy(ret, ret0, (size_t)2U * sizeof(uint8_t[200U]));
+  store_block_full___72size_t(a, ret);
 }
 
 static KRML_MUSTINLINE void
@@ -1473,9 +1471,7 @@ static KRML_MUSTINLINE void store_block_full___136size_t(
 
 static KRML_MUSTINLINE void store_block_full___136size_t0(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t ret[2U][200U]) {
-  uint8_t ret0[2U][200U];
-  store_block_full___136size_t(a, ret0);
-  memcpy(ret, ret0, (size_t)2U * sizeof(uint8_t[200U]));
+  store_block_full___136size_t(a, ret);
 }
 
 static KRML_MUSTINLINE void
@@ -2179,9 +2175,7 @@ static KRML_MUSTINLINE void store_block_full___144size_t(
 
 static KRML_MUSTINLINE void store_block_full___144size_t0(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t ret[2U][200U]) {
-  uint8_t ret0[2U][200U];
-  store_block_full___144size_t(a, ret0);
-  memcpy(ret, ret0, (size_t)2U * sizeof(uint8_t[200U]));
+  store_block_full___144size_t(a, ret);
 }
 
 static KRML_MUSTINLINE void
@@ -2534,9 +2528,7 @@ static KRML_MUSTINLINE void store_block_full___104size_t(
 
 static KRML_MUSTINLINE void store_block_full___104size_t0(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t ret[2U][200U]) {
-  uint8_t ret0[2U][200U];
-  store_block_full___104size_t(a, ret0);
-  memcpy(ret, ret0, (size_t)2U * sizeof(uint8_t[200U]));
+  store_block_full___104size_t(a, ret);
 }
 
 static KRML_MUSTINLINE void
