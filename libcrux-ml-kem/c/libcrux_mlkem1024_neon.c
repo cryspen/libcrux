@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: c959e0871805e4cc6ced4bde7d8493f1dccfdcc3
- * Karamel: d5759a8b96e9f104664a88a83043d5761fcc9732
+ * Eurydice: 58573385962a4c5d09c564f4b32549bad6c6efe9
+ * Karamel: 5a2983a0e117205380661087ffa52b16da0c6321
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: b5ddab9fb634b6e85a54bb44b7c32a3fba483843
+ * Libcrux: bf6f43daf933dde5ff5bfe79598132f3433e1b77
  */
 
 #include "libcrux_mlkem1024_neon.h"

@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: c959e0871805e4cc6ced4bde7d8493f1dccfdcc3
- * Karamel: d5759a8b96e9f104664a88a83043d5761fcc9732
+ * Eurydice: 58573385962a4c5d09c564f4b32549bad6c6efe9
+ * Karamel: 5a2983a0e117205380661087ffa52b16da0c6321
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: b5ddab9fb634b6e85a54bb44b7c32a3fba483843
+ * Libcrux: bf6f43daf933dde5ff5bfe79598132f3433e1b77
  */
 
 #include "internal/libcrux_mlkem_neon.h"
@@ -1845,12 +1845,8 @@ static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
     sample_from_binomial_distribution__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_3size_t(
         Eurydice_slice randomness) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      uu____0;
-  uu____0 =
-      sample_from_binomial_distribution_3__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
-          randomness);
-  return uu____0;
+  return sample_from_binomial_distribution_3__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
+      randomness);
 }
 
 static KRML_MUSTINLINE void
@@ -2586,12 +2582,8 @@ static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
     sample_from_binomial_distribution__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_2size_t(
         Eurydice_slice randomness) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      uu____0;
-  uu____0 =
-      sample_from_binomial_distribution_2__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
-          randomness);
-  return uu____0;
+  return sample_from_binomial_distribution_2__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
+      randomness);
 }
 
 static KRML_MUSTINLINE
@@ -3827,12 +3819,8 @@ static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
     deserialize_then_decompress_ring_element_u__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_10size_t(
         Eurydice_slice serialized) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      uu____0;
-  uu____0 =
-      deserialize_then_decompress_10__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
-          serialized);
-  return uu____0;
+  return deserialize_then_decompress_10__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
+      serialized);
 }
 
 static KRML_MUSTINLINE void
@@ -4065,12 +4053,8 @@ static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
     deserialize_then_decompress_ring_element_v__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_4size_t(
         Eurydice_slice serialized) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      uu____0;
-  uu____0 =
-      deserialize_then_decompress_4__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
-          serialized);
-  return uu____0;
+  return deserialize_then_decompress_4__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
+      serialized);
 }
 
 static KRML_MUSTINLINE
@@ -7660,12 +7644,8 @@ static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
     deserialize_then_decompress_ring_element_u__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_11size_t(
         Eurydice_slice serialized) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      uu____0;
-  uu____0 =
-      deserialize_then_decompress_11__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
-          serialized);
-  return uu____0;
+  return deserialize_then_decompress_11__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
+      serialized);
 }
 
 static KRML_MUSTINLINE void
@@ -7738,12 +7718,8 @@ static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
     deserialize_then_decompress_ring_element_v__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_5size_t(
         Eurydice_slice serialized) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      uu____0;
-  uu____0 =
-      deserialize_then_decompress_5__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
-          serialized);
-  return uu____0;
+  return deserialize_then_decompress_5__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
+      serialized);
 }
 
 static KRML_MUSTINLINE
