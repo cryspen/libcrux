@@ -8,7 +8,7 @@
  * Eurydice: 013beb9e4046a151131c6a56dfe25e606b49c4a1
  * Karamel: 4626e5fcb3787a47c806d160539342ade4b0809c
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: 8a3c1c4c84f258580d53bfef5ad2b1b7d5ef5fca
+ * Libcrux: a0db75c27aa09b79eae1c2315196383465857308
  */
 
 #include "internal/libcrux_mlkem_neon.h"
@@ -41,9 +41,12 @@ libcrux_ml_kem_vector_neon_vector_type_ZERO(void) {
       .high = libcrux_intrinsics_arm64__vdupq_n_s16((int16_t)0)});
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO(
-    void) {
+libcrux_ml_kem_vector_neon_ZERO_20(void) {
   return libcrux_ml_kem_vector_neon_vector_type_ZERO();
 }
 
@@ -56,9 +59,12 @@ libcrux_ml_kem_vector_neon_vector_type_from_i16_array(Eurydice_slice array) {
           array, (size_t)8U, (size_t)16U, int16_t, Eurydice_slice))});
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___from_i16_array(
-    Eurydice_slice array) {
+libcrux_ml_kem_vector_neon_from_i16_array_20(Eurydice_slice array) {
   return libcrux_ml_kem_vector_neon_vector_type_from_i16_array(array);
 }
 
@@ -76,7 +82,11 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_vector_type_to_i16_array(
   memcpy(ret, out, (size_t)16U * sizeof(int16_t));
 }
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___to_i16_array(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_to_i16_array_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector x, int16_t ret[16U]) {
   libcrux_ml_kem_vector_neon_vector_type_to_i16_array(x, ret);
 }
@@ -90,8 +100,12 @@ libcrux_ml_kem_vector_neon_arithmetic_add(
   return lhs;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
+libcrux_ml_kem_vector_neon_add_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lhs,
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *rhs) {
   return libcrux_ml_kem_vector_neon_arithmetic_add(lhs, rhs);
@@ -106,8 +120,12 @@ libcrux_ml_kem_vector_neon_arithmetic_sub(
   return lhs;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___sub(
+libcrux_ml_kem_vector_neon_sub_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lhs,
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *rhs) {
   return libcrux_ml_kem_vector_neon_arithmetic_sub(lhs, rhs);
@@ -121,8 +139,12 @@ libcrux_ml_kem_vector_neon_arithmetic_multiply_by_constant(
   return v;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___multiply_by_constant(
+libcrux_ml_kem_vector_neon_multiply_by_constant_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t c) {
   return libcrux_ml_kem_vector_neon_arithmetic_multiply_by_constant(v, c);
 }
@@ -137,8 +159,12 @@ libcrux_ml_kem_vector_neon_arithmetic_bitwise_and_with_constant(
   return v;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___bitwise_and_with_constant(
+libcrux_ml_kem_vector_neon_bitwise_and_with_constant_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t c) {
   return libcrux_ml_kem_vector_neon_arithmetic_bitwise_and_with_constant(v, c);
 }
@@ -163,8 +189,12 @@ libcrux_ml_kem_vector_neon_arithmetic_cond_subtract_3329(
   return v;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___cond_subtract_3329(
+libcrux_ml_kem_vector_neon_cond_subtract_3329_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
   return libcrux_ml_kem_vector_neon_arithmetic_cond_subtract_3329(v);
 }
@@ -197,8 +227,12 @@ libcrux_ml_kem_vector_neon_arithmetic_barrett_reduce(
   return v;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___barrett_reduce(
+libcrux_ml_kem_vector_neon_barrett_reduce_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
   return libcrux_ml_kem_vector_neon_arithmetic_barrett_reduce(v);
 }
@@ -247,8 +281,12 @@ libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_by_constant(
   return v;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___montgomery_multiply_by_constant(
+libcrux_ml_kem_vector_neon_montgomery_multiply_by_constant_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t c) {
   return libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_by_constant(
       v, c);
@@ -294,8 +332,12 @@ libcrux_ml_kem_vector_neon_compress_compress_1(
   return v;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___compress_1(
+libcrux_ml_kem_vector_neon_compress_1_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
   return libcrux_ml_kem_vector_neon_compress_compress_1(v);
 }
@@ -379,8 +421,12 @@ libcrux_ml_kem_vector_neon_ntt_ntt_layer_1_step(
   return v;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ntt_layer_1_step(
+libcrux_ml_kem_vector_neon_ntt_layer_1_step_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, int16_t zeta1,
     int16_t zeta2, int16_t zeta3, int16_t zeta4) {
   return libcrux_ml_kem_vector_neon_ntt_ntt_layer_1_step(a, zeta1, zeta2, zeta3,
@@ -423,8 +469,12 @@ libcrux_ml_kem_vector_neon_ntt_ntt_layer_2_step(
   return v;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ntt_layer_2_step(
+libcrux_ml_kem_vector_neon_ntt_layer_2_step_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, int16_t zeta1,
     int16_t zeta2) {
   return libcrux_ml_kem_vector_neon_ntt_ntt_layer_2_step(a, zeta1, zeta2);
@@ -443,8 +493,12 @@ libcrux_ml_kem_vector_neon_ntt_ntt_layer_3_step(
   return v;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ntt_layer_3_step(
+libcrux_ml_kem_vector_neon_ntt_layer_3_step_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, int16_t zeta) {
   return libcrux_ml_kem_vector_neon_ntt_ntt_layer_3_step(a, zeta);
 }
@@ -487,8 +541,12 @@ libcrux_ml_kem_vector_neon_ntt_inv_ntt_layer_1_step(
   return v;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___inv_ntt_layer_1_step(
+libcrux_ml_kem_vector_neon_inv_ntt_layer_1_step_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, int16_t zeta1,
     int16_t zeta2, int16_t zeta3, int16_t zeta4) {
   return libcrux_ml_kem_vector_neon_ntt_inv_ntt_layer_1_step(a, zeta1, zeta2,
@@ -531,8 +589,12 @@ libcrux_ml_kem_vector_neon_ntt_inv_ntt_layer_2_step(
   return v;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___inv_ntt_layer_2_step(
+libcrux_ml_kem_vector_neon_inv_ntt_layer_2_step_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, int16_t zeta1,
     int16_t zeta2) {
   return libcrux_ml_kem_vector_neon_ntt_inv_ntt_layer_2_step(a, zeta1, zeta2);
@@ -551,8 +613,12 @@ libcrux_ml_kem_vector_neon_ntt_inv_ntt_layer_3_step(
   return v;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___inv_ntt_layer_3_step(
+libcrux_ml_kem_vector_neon_inv_ntt_layer_3_step_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, int16_t zeta) {
   return libcrux_ml_kem_vector_neon_ntt_inv_ntt_layer_3_step(a, zeta);
 }
@@ -649,8 +715,12 @@ libcrux_ml_kem_vector_neon_ntt_ntt_multiply(
       .low = low2, .high = high2});
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ntt_multiply(
+libcrux_ml_kem_vector_neon_ntt_multiply_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *lhs,
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *rhs, int16_t zeta1,
     int16_t zeta2, int16_t zeta3, int16_t zeta4) {
@@ -675,7 +745,11 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_1(
   ret[1U] = (uint8_t)high;
 }
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_1(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_serialize_1_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[2U]) {
   libcrux_ml_kem_vector_neon_serialize_serialize_1(a, ret);
 }
@@ -704,9 +778,12 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_1(Eurydice_slice a) {
       .high = libcrux_intrinsics_arm64__vandq_s16(high, one)});
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_1(
-    Eurydice_slice a) {
+libcrux_ml_kem_vector_neon_deserialize_1_20(Eurydice_slice a) {
   return libcrux_ml_kem_vector_neon_serialize_deserialize_1(a);
 }
 
@@ -737,7 +814,11 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_4(
   memcpy(ret, ret0, (size_t)8U * sizeof(uint8_t));
 }
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_4(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_serialize_4_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[8U]) {
   libcrux_ml_kem_vector_neon_serialize_serialize_4(a, ret);
 }
@@ -745,11 +826,9 @@ void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_serialize_deserialize_4(Eurydice_slice v) {
   libcrux_ml_kem_vector_portable_vector_type_PortableVector input =
-      libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___deserialize_4(
-          v);
+      libcrux_ml_kem_vector_portable_deserialize_4_0d(v);
   int16_t input_i16s[16U];
-  libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___to_i16_array(
-      input, input_i16s);
+  libcrux_ml_kem_vector_portable_to_i16_array_0d(input, input_i16s);
   libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lit;
   lit.low = libcrux_intrinsics_arm64__vld1q_s16(Eurydice_array_to_subslice2(
       input_i16s, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice));
@@ -758,9 +837,12 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_4(Eurydice_slice v) {
   return lit;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_4(
-    Eurydice_slice a) {
+libcrux_ml_kem_vector_neon_deserialize_4_20(Eurydice_slice a) {
   return libcrux_ml_kem_vector_neon_serialize_deserialize_4(a);
 }
 
@@ -769,16 +851,18 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_5(
   int16_t out_i16s[16U];
   libcrux_ml_kem_vector_neon_vector_type_to_i16_array(v, out_i16s);
   libcrux_ml_kem_vector_portable_vector_type_PortableVector out =
-      libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___from_i16_array(
-          Eurydice_array_to_slice((size_t)16U, out_i16s, int16_t,
-                                  Eurydice_slice));
+      libcrux_ml_kem_vector_portable_from_i16_array_0d(Eurydice_array_to_slice(
+          (size_t)16U, out_i16s, int16_t, Eurydice_slice));
   uint8_t ret0[10U];
-  libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___serialize_5(
-      out, ret0);
+  libcrux_ml_kem_vector_portable_serialize_5_0d(out, ret0);
   memcpy(ret, ret0, (size_t)10U * sizeof(uint8_t));
 }
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_5(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_serialize_5_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[10U]) {
   libcrux_ml_kem_vector_neon_serialize_serialize_5(a, ret);
 }
@@ -786,11 +870,9 @@ void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_serialize_deserialize_5(Eurydice_slice v) {
   libcrux_ml_kem_vector_portable_vector_type_PortableVector output =
-      libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___deserialize_5(
-          v);
+      libcrux_ml_kem_vector_portable_deserialize_5_0d(v);
   int16_t array[16U];
-  libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___to_i16_array(
-      output, array);
+  libcrux_ml_kem_vector_portable_to_i16_array_0d(output, array);
   libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lit;
   lit.low = libcrux_intrinsics_arm64__vld1q_s16(Eurydice_array_to_subslice2(
       array, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice));
@@ -799,9 +881,12 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_5(Eurydice_slice v) {
   return lit;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_5(
-    Eurydice_slice a) {
+libcrux_ml_kem_vector_neon_deserialize_5_20(Eurydice_slice a) {
   return libcrux_ml_kem_vector_neon_serialize_deserialize_5(a);
 }
 
@@ -885,7 +970,11 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_10(
   memcpy(ret, result, (size_t)20U * sizeof(uint8_t));
 }
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_10(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_serialize_10_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[20U]) {
   libcrux_ml_kem_vector_neon_serialize_serialize_10(a, ret);
 }
@@ -893,11 +982,9 @@ void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_serialize_deserialize_10(Eurydice_slice v) {
   libcrux_ml_kem_vector_portable_vector_type_PortableVector output =
-      libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___deserialize_10(
-          v);
+      libcrux_ml_kem_vector_portable_deserialize_10_0d(v);
   int16_t array[16U];
-  libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___to_i16_array(
-      output, array);
+  libcrux_ml_kem_vector_portable_to_i16_array_0d(output, array);
   libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lit;
   lit.low = libcrux_intrinsics_arm64__vld1q_s16(Eurydice_array_to_subslice2(
       array, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice));
@@ -906,9 +993,12 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_10(Eurydice_slice v) {
   return lit;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_10(
-    Eurydice_slice a) {
+libcrux_ml_kem_vector_neon_deserialize_10_20(Eurydice_slice a) {
   return libcrux_ml_kem_vector_neon_serialize_deserialize_10(a);
 }
 
@@ -917,16 +1007,18 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_11(
   int16_t out_i16s[16U];
   libcrux_ml_kem_vector_neon_vector_type_to_i16_array(v, out_i16s);
   libcrux_ml_kem_vector_portable_vector_type_PortableVector out =
-      libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___from_i16_array(
-          Eurydice_array_to_slice((size_t)16U, out_i16s, int16_t,
-                                  Eurydice_slice));
+      libcrux_ml_kem_vector_portable_from_i16_array_0d(Eurydice_array_to_slice(
+          (size_t)16U, out_i16s, int16_t, Eurydice_slice));
   uint8_t ret0[22U];
-  libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___serialize_11(
-      out, ret0);
+  libcrux_ml_kem_vector_portable_serialize_11_0d(out, ret0);
   memcpy(ret, ret0, (size_t)22U * sizeof(uint8_t));
 }
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_11(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_serialize_11_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[22U]) {
   libcrux_ml_kem_vector_neon_serialize_serialize_11(a, ret);
 }
@@ -934,11 +1026,9 @@ void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_serialize_deserialize_11(Eurydice_slice v) {
   libcrux_ml_kem_vector_portable_vector_type_PortableVector output =
-      libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___deserialize_11(
-          v);
+      libcrux_ml_kem_vector_portable_deserialize_11_0d(v);
   int16_t array[16U];
-  libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___to_i16_array(
-      output, array);
+  libcrux_ml_kem_vector_portable_to_i16_array_0d(output, array);
   libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lit;
   lit.low = libcrux_intrinsics_arm64__vld1q_s16(Eurydice_array_to_subslice2(
       array, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice));
@@ -947,9 +1037,12 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_11(Eurydice_slice v) {
   return lit;
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_11(
-    Eurydice_slice a) {
+libcrux_ml_kem_vector_neon_deserialize_11_20(Eurydice_slice a) {
   return libcrux_ml_kem_vector_neon_serialize_deserialize_11(a);
 }
 
@@ -1033,7 +1126,11 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_12(
   memcpy(ret, result, (size_t)24U * sizeof(uint8_t));
 }
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_12(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_serialize_12_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[24U]) {
   libcrux_ml_kem_vector_neon_serialize_serialize_12(a, ret);
 }
@@ -1094,9 +1191,12 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_12(Eurydice_slice v) {
       .low = low, .high = high});
 }
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_12(
-    Eurydice_slice a) {
+libcrux_ml_kem_vector_neon_deserialize_12_20(Eurydice_slice a) {
   return libcrux_ml_kem_vector_neon_serialize_deserialize_12(a);
 }
 
@@ -1174,78 +1274,66 @@ libcrux_ml_kem_vector_neon_rej_sample(Eurydice_slice a, Eurydice_slice result) {
   return sampled;
 }
 
-size_t
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___rej_sample(
-    Eurydice_slice a, Eurydice_slice out) {
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+size_t libcrux_ml_kem_vector_neon_rej_sample_20(Eurydice_slice a,
+                                                Eurydice_slice out) {
   return libcrux_ml_kem_vector_neon_rej_sample(a, out);
 }
 
+/**
+This function found in impl {(core::clone::Clone for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 inline libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon_vector_type___core__clone__Clone_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___clone(
+libcrux_ml_kem_vector_neon_vector_type_clone_ed(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *self) {
   return self[0U];
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.ZERO
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+This function found in impl
+{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.ZERO_89 with types
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-ZERO_c1(void) {
+ZERO_89_01(void) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       lit;
-  lit.coefficients[0U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[1U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[2U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[3U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[4U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[5U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[6U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[7U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[8U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[9U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[10U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[11U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[12U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[13U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[14U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
-  lit.coefficients[15U] =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO();
+  lit.coefficients[0U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[1U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[2U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[3U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[4U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[5U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[6U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[7U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[8U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[9U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[10U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[11U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[12U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[13U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[14U] = libcrux_ml_kem_vector_neon_ZERO_20();
+  lit.coefficients[15U] = libcrux_ml_kem_vector_neon_ZERO_20();
   return lit;
 }
 
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_to_reduced_ring_element with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    deserialize_to_reduced_ring_element_c1(Eurydice_slice serialized) {
+    deserialize_to_reduced_ring_element_01(Eurydice_slice serialized) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      re = ZERO_c1();
+      re = ZERO_89_01();
   for (size_t i = (size_t)0U;
        i <
        core_slice___Slice_T___len(serialized, uint8_t, size_t) / (size_t)24U;
@@ -1255,11 +1343,9 @@ static KRML_MUSTINLINE
         serialized, i0 * (size_t)24U, i0 * (size_t)24U + (size_t)24U, uint8_t,
         Eurydice_slice);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_12(
-            bytes);
+        libcrux_ml_kem_vector_neon_deserialize_12_20(bytes);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___cond_subtract_3329(
-            coefficient);
+        libcrux_ml_kem_vector_neon_cond_subtract_3329_20(coefficient);
     re.coefficients[i0] = uu____0;
   }
   return re;
@@ -1271,9 +1357,6 @@ libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - PUBLIC_KEY_SIZE = 800
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void deserialize_ring_elements_reduced_30(
     Eurydice_slice public_key,
@@ -1282,7 +1365,7 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_30(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       deserialized_pk[2U];
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
-                  deserialized_pk[i] = ZERO_c1(););
+                  deserialized_pk[i] = ZERO_89_01(););
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(public_key, uint8_t, size_t) /
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
@@ -1294,7 +1377,7 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_30(
             LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        uu____0 = deserialize_to_reduced_ring_element_c1(ring_element);
+        uu____0 = deserialize_to_reduced_ring_element_01(ring_element);
     deserialized_pk[i0] = uu____0;
   }
   memcpy(
@@ -1319,12 +1402,15 @@ shift_right_d2(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.vector.neon.{(libcrux_ml_kem::vector::traits::Operations␣for␣libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}.shift_right
-with const generics:
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.neon.shift_right_20 with const
+generics:
 - SHIFT_BY = 15
 */
-static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector shift_right_d20(
+static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector shift_right_20_d2(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
   return shift_right_d2(v);
 }
@@ -1332,31 +1418,24 @@ static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector shift_right_d20(
 /**
 A monomorphic instance of
 libcrux_ml_kem.vector.traits.to_unsigned_representative with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-to_unsigned_representative_c1(
+to_unsigned_representative_01(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a) {
-  libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector t = shift_right_d20(a);
+  libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector t = shift_right_20_d2(a);
   libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector fm =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___bitwise_and_with_constant(
+      libcrux_ml_kem_vector_neon_bitwise_and_with_constant_20(
           t, LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  return libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
-      a, &fm);
+  return libcrux_ml_kem_vector_neon_add_20(a, &fm);
 }
 
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.serialize_uncompressed_ring_element with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void serialize_uncompressed_ring_element_c1(
+static KRML_MUSTINLINE void serialize_uncompressed_ring_element_01(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re,
     uint8_t ret[384U]) {
@@ -1365,10 +1444,9 @@ static KRML_MUSTINLINE void serialize_uncompressed_ring_element_c1(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
-        to_unsigned_representative_c1(re->coefficients[i0]);
+        to_unsigned_representative_01(re->coefficients[i0]);
     uint8_t bytes[24U];
-    libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_12(
-        coefficient, bytes);
+    libcrux_ml_kem_vector_neon_serialize_12_20(coefficient, bytes);
     Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
         serialized, (size_t)24U * i0, (size_t)24U * i0 + (size_t)24U, uint8_t,
         Eurydice_slice);
@@ -1385,9 +1463,6 @@ A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_secret_key with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 2
 - OUT_LEN = 768
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void serialize_secret_key_d4(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -1413,7 +1488,7 @@ static KRML_MUSTINLINE void serialize_secret_key_d4(
         (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t, Eurydice_slice);
     uint8_t ret0[384U];
-    serialize_uncompressed_ring_element_c1(&re, ret0);
+    serialize_uncompressed_ring_element_01(&re, ret0);
     core_slice___Slice_T___copy_from_slice(
         uu____0,
         Eurydice_array_to_slice((size_t)384U, ret0, uint8_t, Eurydice_slice),
@@ -1428,9 +1503,6 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 2
 - RANKED_BYTES_PER_RING_ELEMENT = 768
 - PUBLIC_KEY_SIZE = 800
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void serialize_public_key_41(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -1459,9 +1531,6 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 2
 - RANKED_BYTES_PER_RING_ELEMENT = 768
 - PUBLIC_KEY_SIZE = 800
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_41(uint8_t *public_key) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -1491,12 +1560,15 @@ typedef struct
 } __libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector___2size_t___libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector___2size_t__;
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.G
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.G_48 with const
+generics:
 - K = 2
 */
-static KRML_MUSTINLINE void G_e3(Eurydice_slice input, uint8_t ret[64U]) {
+static KRML_MUSTINLINE void G_48_e3(Eurydice_slice input, uint8_t ret[64U]) {
   libcrux_ml_kem_hash_functions_neon_G(input, ret);
 }
 
@@ -1505,14 +1577,12 @@ A monomorphic instance of libcrux_ml_kem.matrix.sample_matrix_A.closure with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void closure_67(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[2U]) {
-  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, ret[i] = ZERO_c1(););
+  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
+                  ret[i] = ZERO_89_01(););
 }
 
 typedef struct Simd128Hash_s {
@@ -1545,13 +1615,16 @@ shake128_init_absorb_e3(uint8_t input[2U][34U]) {
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.shake128_init_absorb
-with const generics:
+libcrux_ml_kem.hash_functions.neon.shake128_init_absorb_48 with const generics:
 - K = 2
 */
 static KRML_MUSTINLINE Simd128Hash
-shake128_init_absorb_e30(uint8_t input[2U][34U]) {
+shake128_init_absorb_48_e3(uint8_t input[2U][34U]) {
   uint8_t uu____0[2U][34U];
   memcpy(uu____0, input, (size_t)2U * sizeof(uint8_t[34U]));
   return shake128_init_absorb_e3(uu____0);
@@ -1586,12 +1659,16 @@ static KRML_MUSTINLINE void shake128_squeeze_three_blocks_e3(
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.shake128_squeeze_three_blocks
-with const generics:
+libcrux_ml_kem.hash_functions.neon.shake128_squeeze_three_blocks_48 with const
+generics:
 - K = 2
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_e30(
+static KRML_MUSTINLINE void shake128_squeeze_three_blocks_48_e3(
     Simd128Hash *self, uint8_t ret[2U][504U]) {
   shake128_squeeze_three_blocks_e3(self, ret);
 }
@@ -1602,9 +1679,6 @@ libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 2
 - N = 504
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_a3(
     uint8_t randomness[2U][504U], size_t *sampled_coefficients,
@@ -1618,12 +1692,11 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_a3(
           Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
               randomness[i1], r * (size_t)24U, r * (size_t)24U + (size_t)24U,
               uint8_t, Eurydice_slice);
-          size_t sampled =
-              libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___rej_sample(
-                  uu____0, Eurydice_array_to_subslice2(
-                               out[i1], sampled_coefficients[i1],
-                               sampled_coefficients[i1] + (size_t)16U, int16_t,
-                               Eurydice_slice));
+          size_t sampled = libcrux_ml_kem_vector_neon_rej_sample_20(
+              uu____0, Eurydice_array_to_subslice2(
+                           out[i1], sampled_coefficients[i1],
+                           sampled_coefficients[i1] + (size_t)16U, int16_t,
+                           Eurydice_slice));
           size_t uu____1 = i1;
           sampled_coefficients[uu____1] =
               sampled_coefficients[uu____1] + sampled;
@@ -1668,13 +1741,17 @@ static KRML_MUSTINLINE void shake128_squeeze_block_e3(Simd128Hash *st,
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.shake128_squeeze_block
-with const generics:
+libcrux_ml_kem.hash_functions.neon.shake128_squeeze_block_48 with const
+generics:
 - K = 2
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_e30(Simd128Hash *self,
-                                                       uint8_t ret[2U][168U]) {
+static KRML_MUSTINLINE void shake128_squeeze_block_48_e3(
+    Simd128Hash *self, uint8_t ret[2U][168U]) {
   shake128_squeeze_block_e3(self, ret);
 }
 
@@ -1684,9 +1761,6 @@ libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 2
 - N = 168
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_0a(
     uint8_t randomness[2U][168U], size_t *sampled_coefficients,
@@ -1700,12 +1774,11 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_0a(
           Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
               randomness[i1], r * (size_t)24U, r * (size_t)24U + (size_t)24U,
               uint8_t, Eurydice_slice);
-          size_t sampled =
-              libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___rej_sample(
-                  uu____0, Eurydice_array_to_subslice2(
-                               out[i1], sampled_coefficients[i1],
-                               sampled_coefficients[i1] + (size_t)16U, int16_t,
-                               Eurydice_slice));
+          size_t sampled = libcrux_ml_kem_vector_neon_rej_sample_20(
+              uu____0, Eurydice_array_to_subslice2(
+                           out[i1], sampled_coefficients[i1],
+                           sampled_coefficients[i1] + (size_t)16U, int16_t,
+                           Eurydice_slice));
           size_t uu____1 = i1;
           sampled_coefficients[uu____1] =
               sampled_coefficients[uu____1] + sampled;
@@ -1723,26 +1796,25 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_0a(
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.from_i16_array
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+This function found in impl
+{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.from_i16_array_89 with types
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    from_i16_array_c1(Eurydice_slice a) {
+    from_i16_array_89_01(Eurydice_slice a) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      result = ZERO_c1();
+      result = ZERO_89_01();
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     result.coefficients[i0] =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___from_i16_array(
-            Eurydice_slice_subslice2(a, i0 * (size_t)16U,
-                                     (i0 + (size_t)1U) * (size_t)16U, int16_t,
-                                     Eurydice_slice));
+        libcrux_ml_kem_vector_neon_from_i16_array_20(Eurydice_slice_subslice2(
+            a, i0 * (size_t)16U, (i0 + (size_t)1U) * (size_t)16U, int16_t,
+            Eurydice_slice));
   }
   return result;
 }
@@ -1752,13 +1824,10 @@ A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.closure with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 closure_670(int16_t s[272U]) {
-  return from_i16_array_c1(Eurydice_array_to_subslice2(
+  return from_i16_array_89_01(Eurydice_array_to_subslice2(
       s, (size_t)0U, (size_t)256U, int16_t, Eurydice_slice));
 }
 
@@ -1767,9 +1836,6 @@ A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void sample_from_xof_67(
     uint8_t seeds[2U][34U],
@@ -1779,9 +1845,9 @@ static KRML_MUSTINLINE void sample_from_xof_67(
   int16_t out[2U][272U] = {{0U}};
   uint8_t uu____0[2U][34U];
   memcpy(uu____0, seeds, (size_t)2U * sizeof(uint8_t[34U]));
-  Simd128Hash xof_state = shake128_init_absorb_e30(uu____0);
+  Simd128Hash xof_state = shake128_init_absorb_48_e3(uu____0);
   uint8_t randomness0[2U][504U];
-  shake128_squeeze_three_blocks_e30(&xof_state, randomness0);
+  shake128_squeeze_three_blocks_48_e3(&xof_state, randomness0);
   uint8_t uu____1[2U][504U];
   memcpy(uu____1, randomness0, (size_t)2U * sizeof(uint8_t[504U]));
   bool done = sample_from_uniform_distribution_next_a3(
@@ -1791,7 +1857,7 @@ static KRML_MUSTINLINE void sample_from_xof_67(
       break;
     } else {
       uint8_t randomness[2U][168U];
-      shake128_squeeze_block_e30(&xof_state, randomness);
+      shake128_squeeze_block_48_e3(&xof_state, randomness);
       uint8_t uu____2[2U][168U];
       memcpy(uu____2, randomness, (size_t)2U * sizeof(uint8_t[168U]));
       done = sample_from_uniform_distribution_next_0a(
@@ -1816,9 +1882,6 @@ A monomorphic instance of libcrux_ml_kem.matrix.sample_matrix_A with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void sample_matrix_A_67(
     uint8_t seed[34U], bool transpose,
@@ -1906,28 +1969,28 @@ static KRML_MUSTINLINE void PRFxN_52(uint8_t (*input)[33U],
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.PRFxN
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.PRFxN_48 with const
+generics:
 - K = 2
 - LEN = 192
 */
-static KRML_MUSTINLINE void PRFxN_520(uint8_t (*input)[33U],
-                                      uint8_t ret[2U][192U]) {
+static KRML_MUSTINLINE void PRFxN_48_52(uint8_t (*input)[33U],
+                                        uint8_t ret[2U][192U]) {
   PRFxN_52(input, ret);
 }
 
 /**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_binomial_distribution_2 with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    sample_from_binomial_distribution_2_c1(Eurydice_slice randomness) {
+    sample_from_binomial_distribution_2_01(Eurydice_slice randomness) {
   int16_t sampled_i16s[256U] = {0U};
   for (size_t i0 = (size_t)0U;
        i0 <
@@ -1963,21 +2026,18 @@ static KRML_MUSTINLINE
       sampled_i16s[(size_t)8U * chunk_number + offset] = outcome_1 - outcome_2;
     }
   }
-  return from_i16_array_c1(Eurydice_array_to_slice((size_t)256U, sampled_i16s,
-                                                   int16_t, Eurydice_slice));
+  return from_i16_array_89_01(Eurydice_array_to_slice(
+      (size_t)256U, sampled_i16s, int16_t, Eurydice_slice));
 }
 
 /**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_binomial_distribution_3 with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    sample_from_binomial_distribution_3_c1(Eurydice_slice randomness) {
+    sample_from_binomial_distribution_3_01(Eurydice_slice randomness) {
   int16_t sampled_i16s[256U] = {0U};
   for (size_t i0 = (size_t)0U;
        i0 <
@@ -2012,8 +2072,8 @@ static KRML_MUSTINLINE
       sampled_i16s[(size_t)4U * chunk_number + offset] = outcome_1 - outcome_2;
     }
   }
-  return from_i16_array_c1(Eurydice_array_to_slice((size_t)256U, sampled_i16s,
-                                                   int16_t, Eurydice_slice));
+  return from_i16_array_89_01(Eurydice_array_to_slice(
+      (size_t)256U, sampled_i16s, int16_t, Eurydice_slice));
 }
 
 /**
@@ -2021,39 +2081,31 @@ A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_binomial_distribution with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - ETA = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    sample_from_binomial_distribution_bc(Eurydice_slice randomness) {
-  return sample_from_binomial_distribution_3_c1(randomness);
+    sample_from_binomial_distribution_fc(Eurydice_slice randomness) {
+  return sample_from_binomial_distribution_3_01(randomness);
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.ntt.ntt_at_layer_7 with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void ntt_at_layer_7_c1(
+static KRML_MUSTINLINE void ntt_at_layer_7_01(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
   size_t step = LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT / (size_t)2U;
   for (size_t i = (size_t)0U; i < step; i++) {
     size_t j = i;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector t =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___multiply_by_constant(
+        libcrux_ml_kem_vector_neon_multiply_by_constant_20(
             re->coefficients[j + step], (int16_t)-1600);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___sub(
-            re->coefficients[j], &t);
+        libcrux_ml_kem_vector_neon_sub_20(re->coefficients[j], &t);
     re->coefficients[j + step] = uu____0;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____1 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
-            re->coefficients[j], &t);
+        libcrux_ml_kem_vector_neon_add_20(re->coefficients[j], &t);
     re->coefficients[j] = uu____1;
   }
 }
@@ -2066,37 +2118,28 @@ typedef struct
 
 /**
 A monomorphic instance of libcrux_ml_kem.vector.traits.montgomery_multiply_fe
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-montgomery_multiply_fe_c1(
+montgomery_multiply_fe_01(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t fer) {
-  return libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___montgomery_multiply_by_constant(
-      v, fer);
+  return libcrux_ml_kem_vector_neon_montgomery_multiply_by_constant_20(v, fer);
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.ntt.ntt_layer_int_vec_step with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     __libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    ntt_layer_int_vec_step_c1(
+    ntt_layer_int_vec_step_01(
         libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a,
         libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector b,
         int16_t zeta_r) {
   libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector t =
-      montgomery_multiply_fe_c1(b, zeta_r);
-  b = libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___sub(
-      a, &t);
-  a = libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
-      a, &t);
+      montgomery_multiply_fe_01(b, zeta_r);
+  b = libcrux_ml_kem_vector_neon_sub_20(a, &t);
+  a = libcrux_ml_kem_vector_neon_add_20(a, &t);
   return (CLITERAL(
       __libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector){
       .fst = a, .snd = b});
@@ -2104,12 +2147,9 @@ static KRML_MUSTINLINE
 
 /**
 A monomorphic instance of libcrux_ml_kem.ntt.ntt_at_layer_4_plus with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void ntt_at_layer_4_plus_c1(
+static KRML_MUSTINLINE void ntt_at_layer_4_plus_01(
     size_t *zeta_i,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re,
@@ -2124,7 +2164,7 @@ static KRML_MUSTINLINE void ntt_at_layer_4_plus_c1(
     for (size_t i = offset_vec; i < offset_vec + step_vec; i++) {
       size_t j = i;
       __libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          uu____0 = ntt_layer_int_vec_step_c1(
+          uu____0 = ntt_layer_int_vec_step_01(
               re->coefficients[j], re->coefficients[j + step_vec],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
       libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector x = uu____0.fst;
@@ -2137,12 +2177,9 @@ static KRML_MUSTINLINE void ntt_at_layer_4_plus_c1(
 
 /**
 A monomorphic instance of libcrux_ml_kem.ntt.ntt_at_layer_3 with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void ntt_at_layer_3_c1(
+static KRML_MUSTINLINE void ntt_at_layer_3_01(
     size_t *zeta_i,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
@@ -2150,7 +2187,7 @@ static KRML_MUSTINLINE void ntt_at_layer_3_c1(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] + (size_t)1U;
       libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-          libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ntt_layer_3_step(
+          libcrux_ml_kem_vector_neon_ntt_layer_3_step_20(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
       re->coefficients[round] = uu____0;);
@@ -2158,12 +2195,9 @@ static KRML_MUSTINLINE void ntt_at_layer_3_c1(
 
 /**
 A monomorphic instance of libcrux_ml_kem.ntt.ntt_at_layer_2 with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void ntt_at_layer_2_c1(
+static KRML_MUSTINLINE void ntt_at_layer_2_01(
     size_t *zeta_i,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
@@ -2171,7 +2205,7 @@ static KRML_MUSTINLINE void ntt_at_layer_2_c1(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] + (size_t)1U;
       libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-          libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ntt_layer_2_step(
+          libcrux_ml_kem_vector_neon_ntt_layer_2_step_20(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
@@ -2181,12 +2215,9 @@ static KRML_MUSTINLINE void ntt_at_layer_2_c1(
 
 /**
 A monomorphic instance of libcrux_ml_kem.ntt.ntt_at_layer_1 with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void ntt_at_layer_1_c1(
+static KRML_MUSTINLINE void ntt_at_layer_1_01(
     size_t *zeta_i,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
@@ -2194,7 +2225,7 @@ static KRML_MUSTINLINE void ntt_at_layer_1_c1(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] + (size_t)1U;
       libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-          libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ntt_layer_1_step(
+          libcrux_ml_kem_vector_neon_ntt_layer_1_step_20(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
@@ -2207,45 +2238,41 @@ static KRML_MUSTINLINE void ntt_at_layer_1_c1(
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.poly_barrett_reduce
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+This function found in impl
+{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
 */
-static KRML_MUSTINLINE void poly_barrett_reduce_c1(
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.poly_barrett_reduce_89 with
+types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
+*/
+static KRML_MUSTINLINE void poly_barrett_reduce_89_01(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *self) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___barrett_reduce(
-            self->coefficients[i0]);
+        libcrux_ml_kem_vector_neon_barrett_reduce_20(self->coefficients[i0]);
     self->coefficients[i0] = uu____0;
   }
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.ntt.ntt_binomially_sampled_ring_element
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void ntt_binomially_sampled_ring_element_c1(
+static KRML_MUSTINLINE void ntt_binomially_sampled_ring_element_01(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
-  ntt_at_layer_7_c1(re);
+  ntt_at_layer_7_01(re);
   size_t zeta_i = (size_t)1U;
-  ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)6U);
-  ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)5U);
-  ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)4U);
-  ntt_at_layer_3_c1(&zeta_i, re);
-  ntt_at_layer_2_c1(&zeta_i, re);
-  ntt_at_layer_1_c1(&zeta_i, re);
-  poly_barrett_reduce_c1(re);
+  ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)6U);
+  ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)5U);
+  ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)4U);
+  ntt_at_layer_3_01(&zeta_i, re);
+  ntt_at_layer_2_01(&zeta_i, re);
+  ntt_at_layer_1_01(&zeta_i, re);
+  poly_barrett_reduce_89_01(re);
 }
 
 /**
@@ -2255,9 +2282,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 2
 - ETA = 3
 - ETA_RANDOMNESS_SIZE = 192
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     __libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_2size_t__uint8_t
@@ -2266,7 +2290,7 @@ static KRML_MUSTINLINE
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       re_as_ntt[2U];
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
-                  re_as_ntt[i] = ZERO_c1(););
+                  re_as_ntt[i] = ZERO_89_01(););
   uint8_t uu____0[33U];
   memcpy(uu____0, prf_input, (size_t)33U * sizeof(uint8_t));
   uint8_t prf_inputs[2U][33U];
@@ -2277,15 +2301,15 @@ static KRML_MUSTINLINE
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[2U][192U];
-  PRFxN_520(prf_inputs, prf_outputs);
+  PRFxN_48_52(prf_inputs, prf_outputs);
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
           uu____1 =
-              sample_from_binomial_distribution_bc(Eurydice_array_to_slice(
+              sample_from_binomial_distribution_fc(Eurydice_array_to_slice(
                   (size_t)192U, prf_outputs[i0], uint8_t, Eurydice_slice));
       re_as_ntt[i0] = uu____1;
-      ntt_binomially_sampled_ring_element_c1(&re_as_ntt[i0]););
+      ntt_binomially_sampled_ring_element_01(&re_as_ntt[i0]););
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____2[2U];
   memcpy(
@@ -2305,27 +2329,27 @@ static KRML_MUSTINLINE
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.ntt_multiply
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+This function found in impl
+{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.ntt_multiply_89 with types
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    ntt_multiply_c1(
+    ntt_multiply_89_01(
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *self,
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *rhs) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      out = ZERO_c1();
+      out = ZERO_89_01();
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ntt_multiply(
+        libcrux_ml_kem_vector_neon_ntt_multiply_20(
             &self->coefficients[i0], &rhs->coefficients[i0],
             libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[(size_t)64U +
                                                                (size_t)4U * i0],
@@ -2344,16 +2368,16 @@ static KRML_MUSTINLINE
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.add_to_ring_element
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
+This function found in impl
+{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.add_to_ring_element_89 with
+types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void add_to_ring_element_35(
+static KRML_MUSTINLINE void add_to_ring_element_89_99(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -2368,34 +2392,31 @@ static KRML_MUSTINLINE void add_to_ring_element_35(
        i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
-            self->coefficients[i0], &rhs->coefficients[i0]);
+        libcrux_ml_kem_vector_neon_add_20(self->coefficients[i0],
+                                          &rhs->coefficients[i0]);
     self->coefficients[i0] = uu____0;
   }
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.vector.traits.to_standard_domain with
-types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this
-instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-to_standard_domain_c1(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  return libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___montgomery_multiply_by_constant(
+to_standard_domain_01(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
+  return libcrux_ml_kem_vector_neon_montgomery_multiply_by_constant_20(
       v, LIBCRUX_ML_KEM_VECTOR_TRAITS_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS);
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.add_standard_error_reduce
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+This function found in impl
+{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
 */
-static KRML_MUSTINLINE void add_standard_error_reduce_c1(
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.add_standard_error_reduce_89
+with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
+*/
+static KRML_MUSTINLINE void add_standard_error_reduce_89_01(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -2404,11 +2425,11 @@ static KRML_MUSTINLINE void add_standard_error_reduce_c1(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t j = i;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        coefficient_normal_form = to_standard_domain_c1(self->coefficients[j]);
+        coefficient_normal_form = to_standard_domain_01(self->coefficients[j]);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___barrett_reduce(
-            libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
-                coefficient_normal_form, &error->coefficients[j]));
+        libcrux_ml_kem_vector_neon_barrett_reduce_20(
+            libcrux_ml_kem_vector_neon_add_20(coefficient_normal_form,
+                                              &error->coefficients[j]));
     self->coefficients[j] = uu____0;
   }
 }
@@ -2417,11 +2438,8 @@ static KRML_MUSTINLINE void add_standard_error_reduce_c1(
 A monomorphic instance of libcrux_ml_kem.matrix.compute_As_plus_e with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void compute_As_plus_e_35(
+static KRML_MUSTINLINE void compute_As_plus_e_99(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector (
         *matrix_A)[2U],
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -2433,7 +2451,7 @@ static KRML_MUSTINLINE void compute_As_plus_e_35(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       result[2U];
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
-                  result[i] = ZERO_c1(););
+                  result[i] = ZERO_89_01(););
   for (
       size_t i0 = (size_t)0U;
       i0 <
@@ -2465,10 +2483,10 @@ static KRML_MUSTINLINE void compute_As_plus_e_35(
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
           *matrix_element = &row[j];
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          product = ntt_multiply_c1(matrix_element, &s_as_ntt[j]);
-      add_to_ring_element_35(&result[i1], &product);
+          product = ntt_multiply_89_01(matrix_element, &s_as_ntt[j]);
+      add_to_ring_element_89_99(&result[i1], &product);
     }
-    add_standard_error_reduce_c1(&result[i1], &error_as_ntt[i1]);
+    add_standard_error_reduce_89_01(&result[i1], &error_as_ntt[i1]);
   }
   memcpy(
       ret, result,
@@ -2484,14 +2502,11 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 2
 - ETA1 = 3
 - ETA1_RANDOMNESS_SIZE = 192
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static __libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector___2size_t___libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector___2size_t__
 generate_keypair_unpacked_32(Eurydice_slice key_generation_seed) {
   uint8_t hashed[64U];
-  G_e3(key_generation_seed, hashed);
+  G_48_e3(key_generation_seed, hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____0 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -2531,12 +2546,12 @@ generate_keypair_unpacked_32(Eurydice_slice key_generation_seed) {
               libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector));
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       t_as_ntt[2U];
-  compute_As_plus_e_35(A_transpose, secret_as_ntt, error_as_ntt, t_as_ntt);
+  compute_As_plus_e_99(A_transpose, secret_as_ntt, error_as_ntt, t_as_ntt);
   uint8_t seed_for_A[32U];
   core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
   Eurydice_slice_to_array2(&dst, seed_for_A0, Eurydice_slice, uint8_t[32U],
                            void *);
-  core_result__core__result__Result_T__E___unwrap_fb(dst, seed_for_A);
+  core_result_unwrap_41_fb(dst, seed_for_A);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____4[2U];
   memcpy(
@@ -2599,26 +2614,24 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 768
 - ETA1 = 3
 - ETA1_RANDOMNESS_SIZE = 192
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void closure_32(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[2U]) {
-  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, ret[i] = ZERO_c1(););
+  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
+                  ret[i] = ZERO_89_01(););
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{(core::clone::Clone␣for␣libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@1])#1}.clone
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+This function found in impl {(core::clone::Clone for
+libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@1])#1}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.clone_d5 with types
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static inline libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-clone_c1(
+clone_d5_01(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *self) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -2634,12 +2647,15 @@ clone_c1(
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.H
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.H_48 with const
+generics:
 - K = 2
 */
-static KRML_MUSTINLINE void H_e3(Eurydice_slice input, uint8_t ret[32U]) {
+static KRML_MUSTINLINE void H_48_e3(Eurydice_slice input, uint8_t ret[32U]) {
   libcrux_ml_kem_hash_functions_neon_H(input, ret);
 }
 
@@ -2654,9 +2670,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 768
 - ETA1 = 3
 - ETA1_RANDOMNESS_SIZE = 192
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__2size_t
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked_32(uint8_t randomness[64U]) {
@@ -2681,7 +2694,7 @@ libcrux_ml_kem_ind_cca_generate_keypair_unpacked_32(uint8_t randomness[64U]) {
       i0, (size_t)0U, (size_t)2U, (size_t)1U, size_t i1 = i0; KRML_MAYBE_FOR2(
           i, (size_t)0U, (size_t)2U, (size_t)1U, size_t j = i;
           libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-              uu____1 = clone_c1(&ind_cpa_public_key.A[j][i1]);
+              uu____1 = clone_d5_01(&ind_cpa_public_key.A[j][i1]);
           A[i1][j] = uu____1;););
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____2[2U][2U];
@@ -2704,15 +2717,14 @@ libcrux_ml_kem_ind_cca_generate_keypair_unpacked_32(uint8_t randomness[64U]) {
                               uint8_t, Eurydice_slice),
       pk_serialized);
   uint8_t public_key_hash[32U];
-  H_e3(Eurydice_array_to_slice((size_t)800U, pk_serialized, uint8_t,
-                               Eurydice_slice),
-       public_key_hash);
+  H_48_e3(Eurydice_array_to_slice((size_t)800U, pk_serialized, uint8_t,
+                                  Eurydice_slice),
+          public_key_hash);
   uint8_t implicit_rejection_value[32U];
   core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
   Eurydice_slice_to_array2(&dst, implicit_rejection_value0, Eurydice_slice,
                            uint8_t[32U], void *);
-  core_result__core__result__Result_T__E___unwrap_fb(dst,
-                                                     implicit_rejection_value);
+  core_result_unwrap_41_fb(dst, implicit_rejection_value);
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__2size_t
       uu____3 = ind_cpa_private_key;
   uint8_t uu____4[32U];
@@ -2745,9 +2757,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - RANKED_BYTES_PER_RING_ELEMENT = 768
 - ETA1 = 3
 - ETA1_RANDOMNESS_SIZE = 192
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static libcrux_ml_kem_utils_extraction_helper_Keypair512 generate_keypair_32(
     Eurydice_slice key_generation_seed) {
@@ -2809,7 +2818,7 @@ static KRML_MUSTINLINE void serialize_kem_secret_key_140(
       out, pointer, pointer + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
       Eurydice_slice);
   uint8_t ret0[32U];
-  H_e3(public_key, ret0);
+  H_48_e3(public_key, ret0);
   core_slice___Slice_T___copy_from_slice(
       uu____6,
       Eurydice_array_to_slice((size_t)32U, ret0, uint8_t, Eurydice_slice),
@@ -2839,9 +2848,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 768
 - ETA1 = 3
 - ETA1_RANDOMNESS_SIZE = 192
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t
 libcrux_ml_kem_ind_cca_generate_keypair_32(uint8_t randomness[64U]) {
@@ -2869,15 +2875,12 @@ libcrux_ml_kem_ind_cca_generate_keypair_32(uint8_t randomness[64U]) {
   uint8_t uu____1[1632U];
   memcpy(uu____1, secret_key_serialized, (size_t)1632U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemPrivateKey____1632size_t private_key =
-      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPrivateKey_SIZE___8__from_e0(
-          uu____1);
+      libcrux_ml_kem_types_from_05_e0(uu____1);
   libcrux_ml_kem_types_MlKemPrivateKey____1632size_t uu____2 = private_key;
   uint8_t uu____3[800U];
   memcpy(uu____3, public_key, (size_t)800U * sizeof(uint8_t));
-  return libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemKeyPair_PRIVATE_KEY_SIZE__PUBLIC_KEY_SIZE___from_8e0(
-      uu____2,
-      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPublicKey_SIZE___14__from_72(
-          uu____3));
+  return libcrux_ml_kem_types_from_17_8e0(
+      uu____2, libcrux_ml_kem_types_from_b6_72(uu____3));
 }
 
 /**
@@ -2910,14 +2913,17 @@ static KRML_MUSTINLINE void PRFxN_10(uint8_t (*input)[33U],
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.PRFxN
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.PRFxN_48 with const
+generics:
 - K = 2
 - LEN = 128
 */
-static KRML_MUSTINLINE void PRFxN_100(uint8_t (*input)[33U],
-                                      uint8_t ret[2U][128U]) {
+static KRML_MUSTINLINE void PRFxN_48_10(uint8_t (*input)[33U],
+                                        uint8_t ret[2U][128U]) {
   PRFxN_10(input, ret);
 }
 
@@ -2926,14 +2932,11 @@ A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_binomial_distribution with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - ETA = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    sample_from_binomial_distribution_35(Eurydice_slice randomness) {
-  return sample_from_binomial_distribution_2_c1(randomness);
+    sample_from_binomial_distribution_99(Eurydice_slice randomness) {
+  return sample_from_binomial_distribution_2_01(randomness);
 }
 
 /**
@@ -2943,9 +2946,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - ETA2 = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     __libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_2size_t__uint8_t
@@ -2954,7 +2954,7 @@ static KRML_MUSTINLINE
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       error_1[2U];
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
-                  error_1[i] = ZERO_c1(););
+                  error_1[i] = ZERO_89_01(););
   uint8_t uu____0[33U];
   memcpy(uu____0, prf_input, (size_t)33U * sizeof(uint8_t));
   uint8_t prf_inputs[2U][33U];
@@ -2965,12 +2965,12 @@ static KRML_MUSTINLINE
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[2U][128U];
-  PRFxN_100(prf_inputs, prf_outputs);
+  PRFxN_48_10(prf_inputs, prf_outputs);
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
           uu____1 =
-              sample_from_binomial_distribution_35(Eurydice_array_to_slice(
+              sample_from_binomial_distribution_99(Eurydice_array_to_slice(
                   (size_t)128U, prf_outputs[i0], uint8_t, Eurydice_slice));
       error_1[i0] = uu____1;);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -3007,24 +3007,24 @@ static KRML_MUSTINLINE void PRF_9b(Eurydice_slice input, uint8_t ret[128U]) {
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.PRF
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.PRF_48 with const
+generics:
 - K = 2
 - LEN = 128
 */
-static KRML_MUSTINLINE void PRF_10(Eurydice_slice input, uint8_t ret[128U]) {
+static KRML_MUSTINLINE void PRF_48_10(Eurydice_slice input, uint8_t ret[128U]) {
   PRF_9b(input, ret);
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.invert_ntt.invert_ntt_at_layer_1 with
-types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this
-instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void invert_ntt_at_layer_1_c1(
+static KRML_MUSTINLINE void invert_ntt_at_layer_1_01(
     size_t *zeta_i,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
@@ -3032,7 +3032,7 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_1_c1(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] - (size_t)1U;
       libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-          libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___inv_ntt_layer_1_step(
+          libcrux_ml_kem_vector_neon_inv_ntt_layer_1_step_20(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] -
@@ -3046,12 +3046,9 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_1_c1(
 
 /**
 A monomorphic instance of libcrux_ml_kem.invert_ntt.invert_ntt_at_layer_2 with
-types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this
-instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void invert_ntt_at_layer_2_c1(
+static KRML_MUSTINLINE void invert_ntt_at_layer_2_01(
     size_t *zeta_i,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
@@ -3059,7 +3056,7 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_2_c1(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] - (size_t)1U;
       libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-          libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___inv_ntt_layer_2_step(
+          libcrux_ml_kem_vector_neon_inv_ntt_layer_2_step_20(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] -
@@ -3069,12 +3066,9 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_2_c1(
 
 /**
 A monomorphic instance of libcrux_ml_kem.invert_ntt.invert_ntt_at_layer_3 with
-types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this
-instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void invert_ntt_at_layer_3_c1(
+static KRML_MUSTINLINE void invert_ntt_at_layer_3_01(
     size_t *zeta_i,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
@@ -3082,7 +3076,7 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_3_c1(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] - (size_t)1U;
       libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-          libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___inv_ntt_layer_3_step(
+          libcrux_ml_kem_vector_neon_inv_ntt_layer_3_step_20(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
       re->coefficients[round] = uu____0;);
@@ -3091,24 +3085,19 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_3_c1(
 /**
 A monomorphic instance of
 libcrux_ml_kem.invert_ntt.inv_ntt_layer_int_vec_step_reduce with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     __libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    inv_ntt_layer_int_vec_step_reduce_c1(
+    inv_ntt_layer_int_vec_step_reduce_01(
         libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a,
         libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector b,
         int16_t zeta_r) {
   libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a_minus_b =
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___sub(
-          b, &a);
-  a = libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___barrett_reduce(
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
-          a, &b));
-  b = montgomery_multiply_fe_c1(a_minus_b, zeta_r);
+      libcrux_ml_kem_vector_neon_sub_20(b, &a);
+  a = libcrux_ml_kem_vector_neon_barrett_reduce_20(
+      libcrux_ml_kem_vector_neon_add_20(a, &b));
+  b = montgomery_multiply_fe_01(a_minus_b, zeta_r);
   return (CLITERAL(
       __libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector){
       .fst = a, .snd = b});
@@ -3116,12 +3105,9 @@ static KRML_MUSTINLINE
 
 /**
 A monomorphic instance of libcrux_ml_kem.invert_ntt.invert_ntt_at_layer_4_plus
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void invert_ntt_at_layer_4_plus_c1(
+static KRML_MUSTINLINE void invert_ntt_at_layer_4_plus_01(
     size_t *zeta_i,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re,
@@ -3138,7 +3124,7 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_4_plus_c1(
     for (size_t i = offset_vec; i < offset_vec + step_vec; i++) {
       size_t j = i;
       __libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          uu____0 = inv_ntt_layer_int_vec_step_reduce_c1(
+          uu____0 = inv_ntt_layer_int_vec_step_reduce_01(
               re->coefficients[j], re->coefficients[j + step_vec],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
       libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector x = uu____0.fst;
@@ -3154,34 +3140,31 @@ A monomorphic instance of libcrux_ml_kem.invert_ntt.invert_ntt_montgomery with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void invert_ntt_montgomery_35(
+static KRML_MUSTINLINE void invert_ntt_montgomery_99(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
   size_t zeta_i =
       LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT / (size_t)2U;
-  invert_ntt_at_layer_1_c1(&zeta_i, re);
-  invert_ntt_at_layer_2_c1(&zeta_i, re);
-  invert_ntt_at_layer_3_c1(&zeta_i, re);
-  invert_ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)4U);
-  invert_ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)5U);
-  invert_ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)6U);
-  invert_ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)7U);
-  poly_barrett_reduce_c1(re);
+  invert_ntt_at_layer_1_01(&zeta_i, re);
+  invert_ntt_at_layer_2_01(&zeta_i, re);
+  invert_ntt_at_layer_3_01(&zeta_i, re);
+  invert_ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)4U);
+  invert_ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)5U);
+  invert_ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)6U);
+  invert_ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)7U);
+  poly_barrett_reduce_89_01(re);
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.add_error_reduce
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+This function found in impl
+{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
 */
-static KRML_MUSTINLINE void add_error_reduce_c1(
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.add_error_reduce_89 with
+types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
+*/
+static KRML_MUSTINLINE void add_error_reduce_89_01(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -3189,13 +3172,14 @@ static KRML_MUSTINLINE void add_error_reduce_c1(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t j = i;
-    libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient_normal_form =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___montgomery_multiply_by_constant(
-            self->coefficients[j], (int16_t)1441);
+    libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
+        coefficient_normal_form =
+            libcrux_ml_kem_vector_neon_montgomery_multiply_by_constant_20(
+                self->coefficients[j], (int16_t)1441);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___barrett_reduce(
-            libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
-                coefficient_normal_form, &error->coefficients[j]));
+        libcrux_ml_kem_vector_neon_barrett_reduce_20(
+            libcrux_ml_kem_vector_neon_add_20(coefficient_normal_form,
+                                              &error->coefficients[j]));
     self->coefficients[j] = uu____0;
   }
 }
@@ -3204,11 +3188,8 @@ static KRML_MUSTINLINE void add_error_reduce_c1(
 A monomorphic instance of libcrux_ml_kem.matrix.compute_vector_u with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void compute_vector_u_35(
+static KRML_MUSTINLINE void compute_vector_u_99(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector (
         *a_as_ntt)[2U],
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -3220,7 +3201,7 @@ static KRML_MUSTINLINE void compute_vector_u_35(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       result[2U];
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
-                  result[i] = ZERO_c1(););
+                  result[i] = ZERO_89_01(););
   for (
       size_t i0 = (size_t)0U;
       i0 <
@@ -3252,11 +3233,11 @@ static KRML_MUSTINLINE void compute_vector_u_35(
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
           *a_element = &row[j];
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          product = ntt_multiply_c1(a_element, &r_as_ntt[j]);
-      add_to_ring_element_35(&result[i1], &product);
+          product = ntt_multiply_89_01(a_element, &r_as_ntt[j]);
+      add_to_ring_element_89_99(&result[i1], &product);
     }
-    invert_ntt_montgomery_35(&result[i1]);
-    add_error_reduce_c1(&result[i1], &error_1[i1]);
+    invert_ntt_montgomery_99(&result[i1]);
+    add_error_reduce_89_01(&result[i1], &error_1[i1]);
   }
   memcpy(
       ret, result,
@@ -3267,57 +3248,50 @@ static KRML_MUSTINLINE void compute_vector_u_35(
 
 /**
 A monomorphic instance of libcrux_ml_kem.vector.traits.decompress_1 with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector decompress_1_c1(
+static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector decompress_1_01(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  return libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___bitwise_and_with_constant(
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___sub(
-          libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO(),
-          &v),
+  return libcrux_ml_kem_vector_neon_bitwise_and_with_constant_20(
+      libcrux_ml_kem_vector_neon_sub_20(libcrux_ml_kem_vector_neon_ZERO_20(),
+                                        &v),
       (int16_t)1665);
 }
 
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_then_decompress_message with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    deserialize_then_decompress_message_c1(uint8_t serialized[32U]) {
+    deserialize_then_decompress_message_01(uint8_t serialized[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      re = ZERO_c1();
+      re = ZERO_89_01();
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t i0 = i;
-      libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient_compressed =
-          libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_1(
+      libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
+          coefficient_compressed = libcrux_ml_kem_vector_neon_deserialize_1_20(
               Eurydice_array_to_subslice2(serialized, (size_t)2U * i0,
                                           (size_t)2U * i0 + (size_t)2U, uint8_t,
                                           Eurydice_slice));
       libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-          decompress_1_c1(coefficient_compressed);
+          decompress_1_01(coefficient_compressed);
       re.coefficients[i0] = uu____0;);
   return re;
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.add_message_error_reduce
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+This function found in impl
+{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.add_message_error_reduce_89
+with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    add_message_error_reduce_c1(
+    add_message_error_reduce_89_01(
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *self,
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -3327,18 +3301,17 @@ static KRML_MUSTINLINE
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
-    libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient_normal_form =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___montgomery_multiply_by_constant(
-            result.coefficients[i0], (int16_t)1441);
+    libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
+        coefficient_normal_form =
+            libcrux_ml_kem_vector_neon_montgomery_multiply_by_constant_20(
+                result.coefficients[i0], (int16_t)1441);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector tmp =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
-            self->coefficients[i0], &message->coefficients[i0]);
+        libcrux_ml_kem_vector_neon_add_20(self->coefficients[i0],
+                                          &message->coefficients[i0]);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector tmp0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
-            coefficient_normal_form, &tmp);
+        libcrux_ml_kem_vector_neon_add_20(coefficient_normal_form, &tmp);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___barrett_reduce(
-            tmp0);
+        libcrux_ml_kem_vector_neon_barrett_reduce_20(tmp0);
     result.coefficients[i0] = uu____0;
   }
   return result;
@@ -3349,13 +3322,10 @@ A monomorphic instance of libcrux_ml_kem.matrix.compute_ring_element_v with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    compute_ring_element_v_35(
+    compute_ring_element_v_99(
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *t_as_ntt,
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -3365,14 +3335,14 @@ static KRML_MUSTINLINE
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *message) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      result = ZERO_c1();
+      result = ZERO_89_01();
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          product = ntt_multiply_c1(&t_as_ntt[i0], &r_as_ntt[i0]);
-      add_to_ring_element_35(&result, &product););
-  invert_ntt_montgomery_35(&result);
-  result = add_message_error_reduce_c1(error_2, message, result);
+          product = ntt_multiply_89_01(&t_as_ntt[i0], &r_as_ntt[i0]);
+      add_to_ring_element_89_99(&result, &product););
+  invert_ntt_montgomery_99(&result);
+  result = add_message_error_reduce_89_01(error_2, message, result);
   return result;
 }
 
@@ -3446,12 +3416,15 @@ compress_a5(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.vector.neon.{(libcrux_ml_kem::vector::traits::Operations␣for␣libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}.compress
-with const generics:
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.neon.compress_20 with const
+generics:
 - COEFFICIENT_BITS = 10
 */
-static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector compress_a50(
+static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector compress_20_a5(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
   return compress_a5(v);
 }
@@ -3461,11 +3434,8 @@ A monomorphic instance of libcrux_ml_kem.serialize.compress_then_serialize_10
 with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - OUT_LEN = 320
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void compress_then_serialize_10_de(
+static KRML_MUSTINLINE void compress_then_serialize_10_b1(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re,
     uint8_t ret[320U]) {
@@ -3474,10 +3444,9 @@ static KRML_MUSTINLINE void compress_then_serialize_10_de(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
-        compress_a50(to_unsigned_representative_c1(re->coefficients[i0]));
+        compress_20_a5(to_unsigned_representative_01(re->coefficients[i0]));
     uint8_t bytes[20U];
-    libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_10(
-        coefficient, bytes);
+    libcrux_ml_kem_vector_neon_serialize_10_20(coefficient, bytes);
     Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
         serialized, (size_t)20U * i0, (size_t)20U * i0 + (size_t)20U, uint8_t,
         Eurydice_slice);
@@ -3559,12 +3528,15 @@ compress_93(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.vector.neon.{(libcrux_ml_kem::vector::traits::Operations␣for␣libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}.compress
-with const generics:
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.neon.compress_20 with const
+generics:
 - COEFFICIENT_BITS = 11
 */
-static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector compress_930(
+static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector compress_20_93(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
   return compress_93(v);
 }
@@ -3575,16 +3547,13 @@ libcrux_ml_kem.serialize.compress_then_serialize_ring_element_u with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - COMPRESSION_FACTOR = 10
 - OUT_LEN = 320
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void compress_then_serialize_ring_element_u_f1(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re,
     uint8_t ret[320U]) {
   uint8_t uu____0[320U];
-  compress_then_serialize_10_de(re, uu____0);
+  compress_then_serialize_10_b1(re, uu____0);
   memcpy(ret, uu____0, (size_t)320U * sizeof(uint8_t));
 }
 
@@ -3596,9 +3565,6 @@ generics:
 - OUT_LEN = 640
 - COMPRESSION_FACTOR = 10
 - BLOCK_LEN = 320
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void compress_then_serialize_u_a4(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -3701,24 +3667,24 @@ compress_3d(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.vector.neon.{(libcrux_ml_kem::vector::traits::Operations␣for␣libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}.compress
-with const generics:
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.neon.compress_20 with const
+generics:
 - COEFFICIENT_BITS = 4
 */
-static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector compress_3d0(
+static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector compress_20_3d(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
   return compress_3d(v);
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.serialize.compress_then_serialize_4
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void compress_then_serialize_4_c1(
+static KRML_MUSTINLINE void compress_then_serialize_4_01(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         re,
     Eurydice_slice serialized) {
@@ -3726,10 +3692,9 @@ static KRML_MUSTINLINE void compress_then_serialize_4_c1(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
-        compress_3d0(to_unsigned_representative_c1(re.coefficients[i0]));
+        compress_20_3d(to_unsigned_representative_01(re.coefficients[i0]));
     uint8_t bytes[8U];
-    libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_4(
-        coefficient, bytes);
+    libcrux_ml_kem_vector_neon_serialize_4_20(coefficient, bytes);
     core_slice___Slice_T___copy_from_slice(
         Eurydice_slice_subslice2(serialized, (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t,
@@ -3809,24 +3774,24 @@ compress_c8(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.vector.neon.{(libcrux_ml_kem::vector::traits::Operations␣for␣libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}.compress
-with const generics:
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.neon.compress_20 with const
+generics:
 - COEFFICIENT_BITS = 5
 */
-static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector compress_c80(
+static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector compress_20_c8(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
   return compress_c8(v);
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.serialize.compress_then_serialize_5
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void compress_then_serialize_5_c1(
+static KRML_MUSTINLINE void compress_then_serialize_5_01(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         re,
     Eurydice_slice serialized) {
@@ -3834,10 +3799,9 @@ static KRML_MUSTINLINE void compress_then_serialize_5_c1(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficients =
-        compress_c80(to_unsigned_representative_c1(re.coefficients[i0]));
+        compress_20_c8(to_unsigned_representative_01(re.coefficients[i0]));
     uint8_t bytes[10U];
-    libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_5(
-        coefficients, bytes);
+    libcrux_ml_kem_vector_neon_serialize_5_20(coefficients, bytes);
     core_slice___Slice_T___copy_from_slice(
         Eurydice_slice_subslice2(serialized, (size_t)10U * i0,
                                  (size_t)10U * i0 + (size_t)10U, uint8_t,
@@ -3853,15 +3817,12 @@ libcrux_ml_kem.serialize.compress_then_serialize_ring_element_v with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - COMPRESSION_FACTOR = 4
 - OUT_LEN = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void compress_then_serialize_ring_element_v_59(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         re,
     Eurydice_slice out) {
-  compress_then_serialize_4_c1(re, out);
+  compress_then_serialize_4_01(re, out);
 }
 
 /**
@@ -3880,9 +3841,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA1_RANDOMNESS_SIZE = 192
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void encrypt_unpacked_32(
     libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__2size_t
@@ -3916,21 +3874,21 @@ static void encrypt_unpacked_32(
   uint8_t domain_separator = uu____3.snd;
   prf_input[32U] = domain_separator;
   uint8_t prf_output[128U];
-  PRF_10(
+  PRF_48_10(
       Eurydice_array_to_slice((size_t)33U, prf_input, uint8_t, Eurydice_slice),
       prf_output);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      error_2 = sample_from_binomial_distribution_35(Eurydice_array_to_slice(
+      error_2 = sample_from_binomial_distribution_99(Eurydice_array_to_slice(
           (size_t)128U, prf_output, uint8_t, Eurydice_slice));
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       u[2U];
-  compute_vector_u_35(public_key->A, r_as_ntt, error_1, u);
+  compute_vector_u_99(public_key->A, r_as_ntt, error_1, u);
   uint8_t uu____4[32U];
   memcpy(uu____4, message, (size_t)32U * sizeof(uint8_t));
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      message_as_ring_element = deserialize_then_decompress_message_c1(uu____4);
+      message_as_ring_element = deserialize_then_decompress_message_01(uu____4);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      v = compute_ring_element_v_35(public_key->t_as_ntt, r_as_ntt, &error_2,
+      v = compute_ring_element_v_99(public_key->t_as_ntt, r_as_ntt, &error_2,
                                     &message_as_ring_element);
   uint8_t ciphertext[768U] = {0U};
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -3969,9 +3927,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA1_RANDOMNESS_SIZE = 192
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_
 libcrux_ml_kem_ind_cca_encapsulate_unpacked_32(
@@ -3991,8 +3946,9 @@ libcrux_ml_kem_ind_cca_encapsulate_unpacked_32(
                               Eurydice_slice),
       uint8_t, void *);
   uint8_t hashed[64U];
-  G_e3(Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
-       hashed);
+  G_48_e3(
+      Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
+      hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____1 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -4014,8 +3970,7 @@ libcrux_ml_kem_ind_cca_encapsulate_unpacked_32(
   uint8_t uu____4[768U];
   memcpy(uu____4, ciphertext, (size_t)768U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemCiphertext____768size_t uu____5 =
-      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from_e3(
-          uu____4);
+      libcrux_ml_kem_types_from_01_e3(uu____4);
   uint8_t uu____6[32U];
   memcpy(uu____6, shared_secret_array, (size_t)32U * sizeof(uint8_t));
   K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_ lit;
@@ -4025,14 +3980,16 @@ libcrux_ml_kem_ind_cca_encapsulate_unpacked_32(
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.{(libcrux_ml_kem::ind_cca::Variant␣for␣libcrux_ml_kem::ind_cca::MlKem)}.entropy_preprocess
-with types libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const
-generics:
+This function found in impl {(libcrux_ml_kem::ind_cca::Variant for
+libcrux_ml_kem::ind_cca::MlKem)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.entropy_preprocess_af with
+types libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 2
 */
-static KRML_MUSTINLINE void entropy_preprocess_8c(Eurydice_slice randomness,
-                                                  uint8_t ret[32U]) {
+static KRML_MUSTINLINE void entropy_preprocess_af_8c(Eurydice_slice randomness,
+                                                     uint8_t ret[32U]) {
   uint8_t out[32U] = {0U};
   core_slice___Slice_T___copy_from_slice(
       Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
@@ -4046,9 +4003,6 @@ libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - PUBLIC_KEY_SIZE = 768
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void deserialize_ring_elements_reduced_b50(
     Eurydice_slice public_key,
@@ -4057,7 +4011,7 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_b50(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       deserialized_pk[2U];
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
-                  deserialized_pk[i] = ZERO_c1(););
+                  deserialized_pk[i] = ZERO_89_01(););
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(public_key, uint8_t, size_t) /
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
@@ -4069,7 +4023,7 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_b50(
             LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        uu____0 = deserialize_to_reduced_ring_element_c1(ring_element);
+        uu____0 = deserialize_to_reduced_ring_element_01(ring_element);
     deserialized_pk[i0] = uu____0;
   }
   memcpy(
@@ -4095,9 +4049,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA1_RANDOMNESS_SIZE = 192
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void encrypt_32(Eurydice_slice public_key, uint8_t message[32U],
                        Eurydice_slice randomness, uint8_t ret[768U]) {
@@ -4117,7 +4068,7 @@ static void encrypt_32(Eurydice_slice public_key, uint8_t message[32U],
   uint8_t seed_for_A[32U];
   core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
   Eurydice_slice_to_array2(&dst, seed, Eurydice_slice, uint8_t[32U], void *);
-  core_result__core__result__Result_T__E___unwrap_fb(dst, seed_for_A);
+  core_result_unwrap_41_fb(dst, seed_for_A);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____0[2U];
   memcpy(
@@ -4160,15 +4111,17 @@ static void encrypt_32(Eurydice_slice public_key, uint8_t message[32U],
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.{(libcrux_ml_kem::ind_cca::Variant␣for␣libcrux_ml_kem::ind_cca::MlKem)}.kdf
-with types libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const
-generics:
+This function found in impl {(libcrux_ml_kem::ind_cca::Variant for
+libcrux_ml_kem::ind_cca::MlKem)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.kdf_af with types
+libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 2
 - CIPHERTEXT_SIZE = 768
 */
-static KRML_MUSTINLINE void kdf_eb(Eurydice_slice shared_secret,
-                                   uint8_t ret[32U]) {
+static KRML_MUSTINLINE void kdf_af_eb(Eurydice_slice shared_secret,
+                                      uint8_t ret[32U]) {
   uint8_t out[32U] = {0U};
   core_slice___Slice_T___copy_from_slice(
       Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
@@ -4194,17 +4147,13 @@ with const generics:
 - ETA1_RANDOMNESS_SIZE = 192
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::ind_cca::Variant for libcrux_ml_kem::ind_cca::MlKem)}
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_
 libcrux_ml_kem_ind_cca_encapsulate_24(
     libcrux_ml_kem_types_MlKemPublicKey____800size_t *public_key,
     uint8_t randomness[32U]) {
   uint8_t randomness0[32U];
-  entropy_preprocess_8c(
+  entropy_preprocess_af_8c(
       Eurydice_array_to_slice((size_t)32U, randomness, uint8_t, Eurydice_slice),
       randomness0);
   uint8_t to_hash[64U];
@@ -4216,20 +4165,18 @@ libcrux_ml_kem_ind_cca_encapsulate_24(
       (size_t)64U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
       size_t, Eurydice_slice);
   uint8_t ret[32U];
-  H_e3(
-      Eurydice_array_to_slice(
-          (size_t)800U,
-          libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemPublicKey_SIZE__18__as_slice_72(
-              public_key),
-          uint8_t, Eurydice_slice),
-      ret);
+  H_48_e3(Eurydice_array_to_slice(
+              (size_t)800U, libcrux_ml_kem_types_as_slice_cb_72(public_key),
+              uint8_t, Eurydice_slice),
+          ret);
   core_slice___Slice_T___copy_from_slice(
       uu____0,
       Eurydice_array_to_slice((size_t)32U, ret, uint8_t, Eurydice_slice),
       uint8_t, void *);
   uint8_t hashed[64U];
-  G_e3(Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
-       hashed);
+  G_48_e3(
+      Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
+      hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____1 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -4238,10 +4185,8 @@ libcrux_ml_kem_ind_cca_encapsulate_24(
   Eurydice_slice shared_secret = uu____1.fst;
   Eurydice_slice pseudorandomness = uu____1.snd;
   Eurydice_slice uu____2 = Eurydice_array_to_slice(
-      (size_t)800U,
-      libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemPublicKey_SIZE__18__as_slice_72(
-          public_key),
-      uint8_t, Eurydice_slice);
+      (size_t)800U, libcrux_ml_kem_types_as_slice_cb_72(public_key), uint8_t,
+      Eurydice_slice);
   uint8_t uu____3[32U];
   memcpy(uu____3, randomness0, (size_t)32U * sizeof(uint8_t));
   uint8_t ciphertext[768U];
@@ -4249,10 +4194,9 @@ libcrux_ml_kem_ind_cca_encapsulate_24(
   uint8_t uu____4[768U];
   memcpy(uu____4, ciphertext, (size_t)768U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemCiphertext____768size_t ciphertext0 =
-      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from_e3(
-          uu____4);
+      libcrux_ml_kem_types_from_01_e3(uu____4);
   uint8_t shared_secret_array[32U];
-  kdf_eb(shared_secret, shared_secret_array);
+  kdf_af_eb(shared_secret, shared_secret_array);
   libcrux_ml_kem_types_MlKemCiphertext____768size_t uu____5 = ciphertext0;
   uint8_t uu____6[32U];
   memcpy(uu____6, shared_secret_array, (size_t)32U * sizeof(uint8_t));
@@ -4324,13 +4268,17 @@ decompress_ciphertext_coefficient_a5(
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.vector.neon.{(libcrux_ml_kem::vector::traits::Operations␣for␣libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}.decompress_ciphertext_coefficient
-with const generics:
+libcrux_ml_kem.vector.neon.decompress_ciphertext_coefficient_20 with const
+generics:
 - COEFFICIENT_BITS = 10
 */
 static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-decompress_ciphertext_coefficient_a50(
+decompress_ciphertext_coefficient_20_a5(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
   return decompress_ciphertext_coefficient_a5(v);
 }
@@ -4338,16 +4286,13 @@ decompress_ciphertext_coefficient_a50(
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_then_decompress_10 with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    deserialize_then_decompress_10_c1(Eurydice_slice serialized) {
+    deserialize_then_decompress_10_01(Eurydice_slice serialized) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      re = ZERO_c1();
+      re = ZERO_89_01();
   for (size_t i = (size_t)0U;
        i <
        core_slice___Slice_T___len(serialized, uint8_t, size_t) / (size_t)20U;
@@ -4357,10 +4302,9 @@ static KRML_MUSTINLINE
         serialized, i0 * (size_t)20U, i0 * (size_t)20U + (size_t)20U, uint8_t,
         Eurydice_slice);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_10(
-            bytes);
+        libcrux_ml_kem_vector_neon_deserialize_10_20(bytes);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        decompress_ciphertext_coefficient_a50(coefficient);
+        decompress_ciphertext_coefficient_20_a5(coefficient);
     re.coefficients[i0] = uu____0;
   }
   return re;
@@ -4428,13 +4372,17 @@ decompress_ciphertext_coefficient_93(
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.vector.neon.{(libcrux_ml_kem::vector::traits::Operations␣for␣libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}.decompress_ciphertext_coefficient
-with const generics:
+libcrux_ml_kem.vector.neon.decompress_ciphertext_coefficient_20 with const
+generics:
 - COEFFICIENT_BITS = 11
 */
 static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-decompress_ciphertext_coefficient_930(
+decompress_ciphertext_coefficient_20_93(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
   return decompress_ciphertext_coefficient_93(v);
 }
@@ -4442,16 +4390,13 @@ decompress_ciphertext_coefficient_930(
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_then_decompress_11 with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    deserialize_then_decompress_11_c1(Eurydice_slice serialized) {
+    deserialize_then_decompress_11_01(Eurydice_slice serialized) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      re = ZERO_c1();
+      re = ZERO_89_01();
   for (size_t i = (size_t)0U;
        i <
        core_slice___Slice_T___len(serialized, uint8_t, size_t) / (size_t)22U;
@@ -4461,10 +4406,9 @@ static KRML_MUSTINLINE
         serialized, i0 * (size_t)22U, i0 * (size_t)22U + (size_t)22U, uint8_t,
         Eurydice_slice);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_11(
-            bytes);
+        libcrux_ml_kem_vector_neon_deserialize_11_20(bytes);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        decompress_ciphertext_coefficient_930(coefficient);
+        decompress_ciphertext_coefficient_20_93(coefficient);
     re.coefficients[i0] = uu____0;
   }
   return re;
@@ -4475,36 +4419,30 @@ A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_then_decompress_ring_element_u with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - COMPRESSION_FACTOR = 10
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    deserialize_then_decompress_ring_element_u_89(Eurydice_slice serialized) {
-  return deserialize_then_decompress_10_c1(serialized);
+    deserialize_then_decompress_ring_element_u_bf(Eurydice_slice serialized) {
+  return deserialize_then_decompress_10_01(serialized);
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.ntt.ntt_vector_u with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - VECTOR_U_COMPRESSION_FACTOR = 10
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void ntt_vector_u_89(
+static KRML_MUSTINLINE void ntt_vector_u_bf(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
   size_t zeta_i = (size_t)0U;
-  ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)7U);
-  ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)6U);
-  ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)5U);
-  ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)4U);
-  ntt_at_layer_3_c1(&zeta_i, re);
-  ntt_at_layer_2_c1(&zeta_i, re);
-  ntt_at_layer_1_c1(&zeta_i, re);
-  poly_barrett_reduce_c1(re);
+  ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)7U);
+  ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)6U);
+  ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)5U);
+  ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)4U);
+  ntt_at_layer_3_01(&zeta_i, re);
+  ntt_at_layer_2_01(&zeta_i, re);
+  ntt_at_layer_1_01(&zeta_i, re);
+  poly_barrett_reduce_89_01(re);
 }
 
 /**
@@ -4514,9 +4452,6 @@ generics:
 - K = 2
 - CIPHERTEXT_SIZE = 768
 - U_COMPRESSION_FACTOR = 10
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void deserialize_then_decompress_u_41(
     uint8_t *ciphertext,
@@ -4525,7 +4460,7 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_41(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       u_as_ntt[2U];
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
-                  u_as_ntt[i] = ZERO_c1(););
+                  u_as_ntt[i] = ZERO_89_01(););
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(
                Eurydice_array_to_slice((size_t)768U, ciphertext, uint8_t,
@@ -4545,9 +4480,9 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_41(
                 (size_t)10U / (size_t)8U,
         uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        uu____0 = deserialize_then_decompress_ring_element_u_89(u_bytes);
+        uu____0 = deserialize_then_decompress_ring_element_u_bf(u_bytes);
     u_as_ntt[i0] = uu____0;
-    ntt_vector_u_89(&u_as_ntt[i0]);
+    ntt_vector_u_bf(&u_as_ntt[i0]);
   }
   memcpy(
       ret, u_as_ntt,
@@ -4618,29 +4553,30 @@ decompress_ciphertext_coefficient_3d(
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.vector.neon.{(libcrux_ml_kem::vector::traits::Operations␣for␣libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}.decompress_ciphertext_coefficient
-with const generics:
+libcrux_ml_kem.vector.neon.decompress_ciphertext_coefficient_20 with const
+generics:
 - COEFFICIENT_BITS = 4
 */
 static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-decompress_ciphertext_coefficient_3d0(
+decompress_ciphertext_coefficient_20_3d(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
   return decompress_ciphertext_coefficient_3d(v);
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.serialize.deserialize_then_decompress_4
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    deserialize_then_decompress_4_c1(Eurydice_slice serialized) {
+    deserialize_then_decompress_4_01(Eurydice_slice serialized) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      re = ZERO_c1();
+      re = ZERO_89_01();
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(serialized, uint8_t, size_t) / (size_t)8U;
        i++) {
@@ -4649,10 +4585,9 @@ static KRML_MUSTINLINE
         serialized, i0 * (size_t)8U, i0 * (size_t)8U + (size_t)8U, uint8_t,
         Eurydice_slice);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_4(
-            bytes);
+        libcrux_ml_kem_vector_neon_deserialize_4_20(bytes);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        decompress_ciphertext_coefficient_3d0(coefficient);
+        decompress_ciphertext_coefficient_20_3d(coefficient);
     re.coefficients[i0] = uu____0;
   }
   return re;
@@ -4720,29 +4655,30 @@ decompress_ciphertext_coefficient_c8(
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.vector.neon.{(libcrux_ml_kem::vector::traits::Operations␣for␣libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}.decompress_ciphertext_coefficient
-with const generics:
+libcrux_ml_kem.vector.neon.decompress_ciphertext_coefficient_20 with const
+generics:
 - COEFFICIENT_BITS = 5
 */
 static libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-decompress_ciphertext_coefficient_c80(
+decompress_ciphertext_coefficient_20_c8(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
   return decompress_ciphertext_coefficient_c8(v);
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.serialize.deserialize_then_decompress_5
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    deserialize_then_decompress_5_c1(Eurydice_slice serialized) {
+    deserialize_then_decompress_5_01(Eurydice_slice serialized) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      re = ZERO_c1();
+      re = ZERO_89_01();
   for (size_t i = (size_t)0U;
        i <
        core_slice___Slice_T___len(serialized, uint8_t, size_t) / (size_t)10U;
@@ -4752,11 +4688,10 @@ static KRML_MUSTINLINE
         serialized, i0 * (size_t)10U, i0 * (size_t)10U + (size_t)10U, uint8_t,
         Eurydice_slice);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_5(
-            bytes);
+        libcrux_ml_kem_vector_neon_deserialize_5_20(bytes);
     re.coefficients[i0] = uu____0;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____1 =
-        decompress_ciphertext_coefficient_c80(re.coefficients[i0]);
+        decompress_ciphertext_coefficient_20_c8(re.coefficients[i0]);
     re.coefficients[i0] = uu____1;
   }
   return re;
@@ -4767,27 +4702,24 @@ A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_then_decompress_ring_element_v with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - COMPRESSION_FACTOR = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    deserialize_then_decompress_ring_element_v_e3(Eurydice_slice serialized) {
-  return deserialize_then_decompress_4_c1(serialized);
+    deserialize_then_decompress_ring_element_v_af(Eurydice_slice serialized) {
+  return deserialize_then_decompress_4_01(serialized);
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.subtract_reduce
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore,
-this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+This function found in impl
+{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.subtract_reduce_89 with
+types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    subtract_reduce_c1(
+    subtract_reduce_89_01(
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *self,
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -4795,13 +4727,14 @@ static KRML_MUSTINLINE
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
-    libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient_normal_form =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___montgomery_multiply_by_constant(
-            b.coefficients[i0], (int16_t)1441);
+    libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
+        coefficient_normal_form =
+            libcrux_ml_kem_vector_neon_montgomery_multiply_by_constant_20(
+                b.coefficients[i0], (int16_t)1441);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___barrett_reduce(
-            libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___sub(
-                self->coefficients[i0], &coefficient_normal_form));
+        libcrux_ml_kem_vector_neon_barrett_reduce_20(
+            libcrux_ml_kem_vector_neon_sub_20(self->coefficients[i0],
+                                              &coefficient_normal_form));
     b.coefficients[i0] = uu____0;
   }
   return b;
@@ -4811,13 +4744,10 @@ static KRML_MUSTINLINE
 A monomorphic instance of libcrux_ml_kem.matrix.compute_message with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    compute_message_35(
+    compute_message_99(
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *v,
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -4825,26 +4755,23 @@ static KRML_MUSTINLINE
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *u_as_ntt) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      result = ZERO_c1();
+      result = ZERO_89_01();
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          product = ntt_multiply_c1(&secret_as_ntt[i0], &u_as_ntt[i0]);
-      add_to_ring_element_35(&result, &product););
-  invert_ntt_montgomery_35(&result);
-  result = subtract_reduce_c1(v, result);
+          product = ntt_multiply_89_01(&secret_as_ntt[i0], &u_as_ntt[i0]);
+      add_to_ring_element_89_99(&result, &product););
+  invert_ntt_montgomery_99(&result);
+  result = subtract_reduce_89_01(v, result);
   return result;
 }
 
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.compress_then_serialize_message with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
-static KRML_MUSTINLINE void compress_then_serialize_message_c1(
+static KRML_MUSTINLINE void compress_then_serialize_message_01(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         re,
     uint8_t ret[32U]) {
@@ -4852,13 +4779,12 @@ static KRML_MUSTINLINE void compress_then_serialize_message_c1(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
-          to_unsigned_representative_c1(re.coefficients[i0]);
-      libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient_compressed =
-          libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___compress_1(
-              coefficient);
+          to_unsigned_representative_01(re.coefficients[i0]);
+      libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
+          coefficient_compressed =
+              libcrux_ml_kem_vector_neon_compress_1_20(coefficient);
       uint8_t bytes[2U];
-      libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_1(
-          coefficient_compressed, bytes);
+      libcrux_ml_kem_vector_neon_serialize_1_20(coefficient_compressed, bytes);
       Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
           serialized, (size_t)2U * i0, (size_t)2U * i0 + (size_t)2U, uint8_t,
           Eurydice_slice);
@@ -4877,9 +4803,6 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - VECTOR_U_ENCODED_SIZE = 640
 - U_COMPRESSION_FACTOR = 10
 - V_COMPRESSION_FACTOR = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void decrypt_unpacked_41(
     libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__2size_t
@@ -4889,14 +4812,14 @@ static void decrypt_unpacked_41(
       u_as_ntt[2U];
   deserialize_then_decompress_u_41(ciphertext, u_as_ntt);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      v = deserialize_then_decompress_ring_element_v_e3(
+      v = deserialize_then_decompress_ring_element_v_af(
           Eurydice_array_to_subslice_from((size_t)768U, ciphertext,
                                           (size_t)640U, uint8_t, size_t,
                                           Eurydice_slice));
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      message = compute_message_35(&v, secret_key->secret_as_ntt, u_as_ntt);
+      message = compute_message_99(&v, secret_key->secret_as_ntt, u_as_ntt);
   uint8_t ret0[32U];
-  compress_then_serialize_message_c1(message, ret0);
+  compress_then_serialize_message_01(message, ret0);
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
 
@@ -4916,13 +4839,16 @@ static KRML_MUSTINLINE void PRF_5b(Eurydice_slice input, uint8_t ret[32U]) {
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.PRF
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.PRF_48 with const
+generics:
 - K = 2
 - LEN = 32
 */
-static KRML_MUSTINLINE void PRF_c4(Eurydice_slice input, uint8_t ret[32U]) {
+static KRML_MUSTINLINE void PRF_48_c4(Eurydice_slice input, uint8_t ret[32U]) {
   PRF_5b(input, ret);
 }
 
@@ -4946,9 +4872,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE = 800
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 void libcrux_ml_kem_ind_cca_decapsulate_unpacked_32(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__2size_t
@@ -4971,8 +4894,9 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_32(
                               uint8_t, Eurydice_slice),
       uint8_t, void *);
   uint8_t hashed[64U];
-  G_e3(Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
-       hashed);
+  G_48_e3(
+      Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
+      hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____1 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -4990,12 +4914,9 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_32(
       (size_t)800U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE,
       uint8_t, size_t, Eurydice_slice);
   core_slice___Slice_T___copy_from_slice(
-      uu____2,
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref_e3(
-          ciphertext),
-      uint8_t, void *);
+      uu____2, libcrux_ml_kem_types_as_ref_00_e3(ciphertext), uint8_t, void *);
   uint8_t implicit_rejection_shared_secret[32U];
-  PRF_c4(
+  PRF_48_c4(
       Eurydice_array_to_slice((size_t)800U, to_hash, uint8_t, Eurydice_slice),
       implicit_rejection_shared_secret);
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__2size_t
@@ -5006,8 +4927,7 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_32(
   encrypt_unpacked_32(uu____3, uu____4, pseudorandomness, expected_ciphertext);
   uint8_t selector =
       libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
-          libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref_e3(
-              ciphertext),
+          libcrux_ml_kem_types_as_ref_00_e3(ciphertext),
           Eurydice_array_to_slice((size_t)768U, expected_ciphertext, uint8_t,
                                   Eurydice_slice));
   uint8_t ret0[32U];
@@ -5022,16 +4942,13 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_32(
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_to_uncompressed_ring_element with types
-libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector Furthermore, this instances
-features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    deserialize_to_uncompressed_ring_element_c1(Eurydice_slice serialized) {
+    deserialize_to_uncompressed_ring_element_01(Eurydice_slice serialized) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      re = ZERO_c1();
+      re = ZERO_89_01();
   for (size_t i = (size_t)0U;
        i <
        core_slice___Slice_T___len(serialized, uint8_t, size_t) / (size_t)24U;
@@ -5041,8 +4958,7 @@ static KRML_MUSTINLINE
         serialized, i0 * (size_t)24U, i0 * (size_t)24U + (size_t)24U, uint8_t,
         Eurydice_slice);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_12(
-            bytes);
+        libcrux_ml_kem_vector_neon_deserialize_12_20(bytes);
     re.coefficients[i0] = uu____0;
   }
   return re;
@@ -5053,18 +4969,15 @@ A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_secret_key with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - K = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void deserialize_secret_key_35(
+static KRML_MUSTINLINE void deserialize_secret_key_99(
     Eurydice_slice secret_key,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[2U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       secret_as_ntt[2U];
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
-                  secret_as_ntt[i] = ZERO_c1(););
+                  secret_as_ntt[i] = ZERO_89_01(););
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(secret_key, uint8_t, size_t) /
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
@@ -5076,7 +4989,7 @@ static KRML_MUSTINLINE void deserialize_secret_key_35(
             LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        uu____0 = deserialize_to_uncompressed_ring_element_c1(secret_bytes);
+        uu____0 = deserialize_to_uncompressed_ring_element_01(secret_bytes);
     secret_as_ntt[i0] = uu____0;
   }
   memcpy(
@@ -5094,15 +5007,12 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - VECTOR_U_ENCODED_SIZE = 640
 - U_COMPRESSION_FACTOR = 10
 - V_COMPRESSION_FACTOR = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void decrypt_41(Eurydice_slice secret_key, uint8_t *ciphertext,
                        uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       secret_as_ntt[2U];
-  deserialize_secret_key_35(secret_key, secret_as_ntt);
+  deserialize_secret_key_99(secret_key, secret_as_ntt);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____0[2U];
   memcpy(
@@ -5143,10 +5053,6 @@ with const generics:
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE = 800
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::ind_cca::Variant for libcrux_ml_kem::ind_cca::MlKem)}
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 void libcrux_ml_kem_ind_cca_decapsulate_24(
     libcrux_ml_kem_types_MlKemPrivateKey____1632size_t *private_key,
@@ -5184,8 +5090,9 @@ void libcrux_ml_kem_ind_cca_decapsulate_24(
           uint8_t, size_t, Eurydice_slice),
       ind_cpa_public_key_hash, uint8_t, void *);
   uint8_t hashed[64U];
-  G_e3(Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
-       hashed);
+  G_48_e3(
+      Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
+      hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____3 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -5199,12 +5106,9 @@ void libcrux_ml_kem_ind_cca_decapsulate_24(
       (size_t)800U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE,
       uint8_t, size_t, Eurydice_slice);
   core_slice___Slice_T___copy_from_slice(
-      uu____4,
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref_e3(
-          ciphertext),
-      uint8_t, void *);
+      uu____4, libcrux_ml_kem_types_as_ref_00_e3(ciphertext), uint8_t, void *);
   uint8_t implicit_rejection_shared_secret0[32U];
-  PRF_c4(
+  PRF_48_c4(
       Eurydice_array_to_slice((size_t)800U, to_hash, uint8_t, Eurydice_slice),
       implicit_rejection_shared_secret0);
   Eurydice_slice uu____5 = ind_cpa_public_key;
@@ -5213,15 +5117,15 @@ void libcrux_ml_kem_ind_cca_decapsulate_24(
   uint8_t expected_ciphertext[768U];
   encrypt_32(uu____5, uu____6, pseudorandomness, expected_ciphertext);
   uint8_t implicit_rejection_shared_secret[32U];
-  kdf_eb(Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret0,
-                                 uint8_t, Eurydice_slice),
-         implicit_rejection_shared_secret);
+  kdf_af_eb(
+      Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret0,
+                              uint8_t, Eurydice_slice),
+      implicit_rejection_shared_secret);
   uint8_t shared_secret[32U];
-  kdf_eb(shared_secret0, shared_secret);
+  kdf_af_eb(shared_secret0, shared_secret);
   uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref_e3(
-          ciphertext),
+      libcrux_ml_kem_types_as_ref_00_e3(ciphertext),
       Eurydice_array_to_slice((size_t)768U, expected_ciphertext, uint8_t,
                               Eurydice_slice),
       Eurydice_array_to_slice((size_t)32U, shared_secret, uint8_t,
@@ -5238,9 +5142,6 @@ libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - PUBLIC_KEY_SIZE = 1184
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void deserialize_ring_elements_reduced_04(
     Eurydice_slice public_key,
@@ -5249,7 +5150,7 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_04(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       deserialized_pk[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                  deserialized_pk[i] = ZERO_c1(););
+                  deserialized_pk[i] = ZERO_89_01(););
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(public_key, uint8_t, size_t) /
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
@@ -5261,7 +5162,7 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_04(
             LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        uu____0 = deserialize_to_reduced_ring_element_c1(ring_element);
+        uu____0 = deserialize_to_reduced_ring_element_01(ring_element);
     deserialized_pk[i0] = uu____0;
   }
   memcpy(
@@ -5276,9 +5177,6 @@ A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_secret_key with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 3
 - OUT_LEN = 1152
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void serialize_secret_key_8f(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -5304,7 +5202,7 @@ static KRML_MUSTINLINE void serialize_secret_key_8f(
         (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t, Eurydice_slice);
     uint8_t ret0[384U];
-    serialize_uncompressed_ring_element_c1(&re, ret0);
+    serialize_uncompressed_ring_element_01(&re, ret0);
     core_slice___Slice_T___copy_from_slice(
         uu____0,
         Eurydice_array_to_slice((size_t)384U, ret0, uint8_t, Eurydice_slice),
@@ -5319,9 +5217,6 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 3
 - RANKED_BYTES_PER_RING_ELEMENT = 1152
 - PUBLIC_KEY_SIZE = 1184
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void serialize_public_key_62(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -5351,9 +5246,6 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 3
 - RANKED_BYTES_PER_RING_ELEMENT = 1152
 - PUBLIC_KEY_SIZE = 1184
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_62(uint8_t *public_key) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -5383,12 +5275,15 @@ typedef struct
 } __libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector___3size_t___libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector___3size_t__;
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.G
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.G_48 with const
+generics:
 - K = 3
 */
-static KRML_MUSTINLINE void G_c4(Eurydice_slice input, uint8_t ret[64U]) {
+static KRML_MUSTINLINE void G_48_c4(Eurydice_slice input, uint8_t ret[64U]) {
   libcrux_ml_kem_hash_functions_neon_G(input, ret);
 }
 
@@ -5397,14 +5292,12 @@ A monomorphic instance of libcrux_ml_kem.matrix.sample_matrix_A.closure with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void closure_08(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[3U]) {
-  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, ret[i] = ZERO_c1(););
+  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
+                  ret[i] = ZERO_89_01(););
 }
 
 /**
@@ -5436,13 +5329,16 @@ shake128_init_absorb_c4(uint8_t input[3U][34U]) {
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.shake128_init_absorb
-with const generics:
+libcrux_ml_kem.hash_functions.neon.shake128_init_absorb_48 with const generics:
 - K = 3
 */
 static KRML_MUSTINLINE Simd128Hash
-shake128_init_absorb_c40(uint8_t input[3U][34U]) {
+shake128_init_absorb_48_c4(uint8_t input[3U][34U]) {
   uint8_t uu____0[3U][34U];
   memcpy(uu____0, input, (size_t)3U * sizeof(uint8_t[34U]));
   return shake128_init_absorb_c4(uu____0);
@@ -5482,12 +5378,16 @@ static KRML_MUSTINLINE void shake128_squeeze_three_blocks_c4(
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.shake128_squeeze_three_blocks
-with const generics:
+libcrux_ml_kem.hash_functions.neon.shake128_squeeze_three_blocks_48 with const
+generics:
 - K = 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_c40(
+static KRML_MUSTINLINE void shake128_squeeze_three_blocks_48_c4(
     Simd128Hash *self, uint8_t ret[3U][504U]) {
   shake128_squeeze_three_blocks_c4(self, ret);
 }
@@ -5498,9 +5398,6 @@ libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 3
 - N = 504
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_3e(
     uint8_t randomness[3U][504U], size_t *sampled_coefficients,
@@ -5514,12 +5411,11 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_3e(
           Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
               randomness[i1], r * (size_t)24U, r * (size_t)24U + (size_t)24U,
               uint8_t, Eurydice_slice);
-          size_t sampled =
-              libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___rej_sample(
-                  uu____0, Eurydice_array_to_subslice2(
-                               out[i1], sampled_coefficients[i1],
-                               sampled_coefficients[i1] + (size_t)16U, int16_t,
-                               Eurydice_slice));
+          size_t sampled = libcrux_ml_kem_vector_neon_rej_sample_20(
+              uu____0, Eurydice_array_to_subslice2(
+                           out[i1], sampled_coefficients[i1],
+                           sampled_coefficients[i1] + (size_t)16U, int16_t,
+                           Eurydice_slice));
           size_t uu____1 = i1;
           sampled_coefficients[uu____1] =
               sampled_coefficients[uu____1] + sampled;
@@ -5569,13 +5465,17 @@ static KRML_MUSTINLINE void shake128_squeeze_block_c4(Simd128Hash *st,
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.shake128_squeeze_block
-with const generics:
+libcrux_ml_kem.hash_functions.neon.shake128_squeeze_block_48 with const
+generics:
 - K = 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_c40(Simd128Hash *self,
-                                                       uint8_t ret[3U][168U]) {
+static KRML_MUSTINLINE void shake128_squeeze_block_48_c4(
+    Simd128Hash *self, uint8_t ret[3U][168U]) {
   shake128_squeeze_block_c4(self, ret);
 }
 
@@ -5585,9 +5485,6 @@ libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 3
 - N = 168
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_27(
     uint8_t randomness[3U][168U], size_t *sampled_coefficients,
@@ -5601,12 +5498,11 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_27(
           Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
               randomness[i1], r * (size_t)24U, r * (size_t)24U + (size_t)24U,
               uint8_t, Eurydice_slice);
-          size_t sampled =
-              libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___rej_sample(
-                  uu____0, Eurydice_array_to_subslice2(
-                               out[i1], sampled_coefficients[i1],
-                               sampled_coefficients[i1] + (size_t)16U, int16_t,
-                               Eurydice_slice));
+          size_t sampled = libcrux_ml_kem_vector_neon_rej_sample_20(
+              uu____0, Eurydice_array_to_subslice2(
+                           out[i1], sampled_coefficients[i1],
+                           sampled_coefficients[i1] + (size_t)16U, int16_t,
+                           Eurydice_slice));
           size_t uu____1 = i1;
           sampled_coefficients[uu____1] =
               sampled_coefficients[uu____1] + sampled;
@@ -5628,13 +5524,10 @@ A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.closure with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 closure_080(int16_t s[272U]) {
-  return from_i16_array_c1(Eurydice_array_to_subslice2(
+  return from_i16_array_89_01(Eurydice_array_to_subslice2(
       s, (size_t)0U, (size_t)256U, int16_t, Eurydice_slice));
 }
 
@@ -5643,9 +5536,6 @@ A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void sample_from_xof_08(
     uint8_t seeds[3U][34U],
@@ -5655,9 +5545,9 @@ static KRML_MUSTINLINE void sample_from_xof_08(
   int16_t out[3U][272U] = {{0U}};
   uint8_t uu____0[3U][34U];
   memcpy(uu____0, seeds, (size_t)3U * sizeof(uint8_t[34U]));
-  Simd128Hash xof_state = shake128_init_absorb_c40(uu____0);
+  Simd128Hash xof_state = shake128_init_absorb_48_c4(uu____0);
   uint8_t randomness0[3U][504U];
-  shake128_squeeze_three_blocks_c40(&xof_state, randomness0);
+  shake128_squeeze_three_blocks_48_c4(&xof_state, randomness0);
   uint8_t uu____1[3U][504U];
   memcpy(uu____1, randomness0, (size_t)3U * sizeof(uint8_t[504U]));
   bool done = sample_from_uniform_distribution_next_3e(
@@ -5667,7 +5557,7 @@ static KRML_MUSTINLINE void sample_from_xof_08(
       break;
     } else {
       uint8_t randomness[3U][168U];
-      shake128_squeeze_block_c40(&xof_state, randomness);
+      shake128_squeeze_block_48_c4(&xof_state, randomness);
       uint8_t uu____2[3U][168U];
       memcpy(uu____2, randomness, (size_t)3U * sizeof(uint8_t[168U]));
       done = sample_from_uniform_distribution_next_27(
@@ -5692,9 +5582,6 @@ A monomorphic instance of libcrux_ml_kem.matrix.sample_matrix_A with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void sample_matrix_A_08(
     uint8_t seed[34U], bool transpose,
@@ -5788,14 +5675,17 @@ static KRML_MUSTINLINE void PRFxN_17(uint8_t (*input)[33U],
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.PRFxN
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.PRFxN_48 with const
+generics:
 - K = 3
 - LEN = 128
 */
-static KRML_MUSTINLINE void PRFxN_170(uint8_t (*input)[33U],
-                                      uint8_t ret[3U][128U]) {
+static KRML_MUSTINLINE void PRFxN_48_17(uint8_t (*input)[33U],
+                                        uint8_t ret[3U][128U]) {
   PRFxN_17(input, ret);
 }
 
@@ -5806,9 +5696,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 3
 - ETA = 2
 - ETA_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     __libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_3size_t__uint8_t
@@ -5817,7 +5704,7 @@ static KRML_MUSTINLINE
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       re_as_ntt[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                  re_as_ntt[i] = ZERO_c1(););
+                  re_as_ntt[i] = ZERO_89_01(););
   uint8_t uu____0[33U];
   memcpy(uu____0, prf_input, (size_t)33U * sizeof(uint8_t));
   uint8_t prf_inputs[3U][33U];
@@ -5828,15 +5715,15 @@ static KRML_MUSTINLINE
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[3U][128U];
-  PRFxN_170(prf_inputs, prf_outputs);
+  PRFxN_48_17(prf_inputs, prf_outputs);
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
           uu____1 =
-              sample_from_binomial_distribution_35(Eurydice_array_to_slice(
+              sample_from_binomial_distribution_99(Eurydice_array_to_slice(
                   (size_t)128U, prf_outputs[i0], uint8_t, Eurydice_slice));
       re_as_ntt[i0] = uu____1;
-      ntt_binomially_sampled_ring_element_c1(&re_as_ntt[i0]););
+      ntt_binomially_sampled_ring_element_01(&re_as_ntt[i0]););
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____2[3U];
   memcpy(
@@ -5856,16 +5743,16 @@ static KRML_MUSTINLINE
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.add_to_ring_element
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
+This function found in impl
+{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.add_to_ring_element_89 with
+types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void add_to_ring_element_bc(
+static KRML_MUSTINLINE void add_to_ring_element_89_fc(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -5880,8 +5767,8 @@ static KRML_MUSTINLINE void add_to_ring_element_bc(
        i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
-            self->coefficients[i0], &rhs->coefficients[i0]);
+        libcrux_ml_kem_vector_neon_add_20(self->coefficients[i0],
+                                          &rhs->coefficients[i0]);
     self->coefficients[i0] = uu____0;
   }
 }
@@ -5890,11 +5777,8 @@ static KRML_MUSTINLINE void add_to_ring_element_bc(
 A monomorphic instance of libcrux_ml_kem.matrix.compute_As_plus_e with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void compute_As_plus_e_bc(
+static KRML_MUSTINLINE void compute_As_plus_e_fc(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector (
         *matrix_A)[3U],
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -5906,7 +5790,7 @@ static KRML_MUSTINLINE void compute_As_plus_e_bc(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       result[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                  result[i] = ZERO_c1(););
+                  result[i] = ZERO_89_01(););
   for (
       size_t i0 = (size_t)0U;
       i0 <
@@ -5938,10 +5822,10 @@ static KRML_MUSTINLINE void compute_As_plus_e_bc(
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
           *matrix_element = &row[j];
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          product = ntt_multiply_c1(matrix_element, &s_as_ntt[j]);
-      add_to_ring_element_bc(&result[i1], &product);
+          product = ntt_multiply_89_01(matrix_element, &s_as_ntt[j]);
+      add_to_ring_element_89_fc(&result[i1], &product);
     }
-    add_standard_error_reduce_c1(&result[i1], &error_as_ntt[i1]);
+    add_standard_error_reduce_89_01(&result[i1], &error_as_ntt[i1]);
   }
   memcpy(
       ret, result,
@@ -5957,14 +5841,11 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 3
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static __libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector___3size_t___libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector___3size_t__
 generate_keypair_unpacked_d7(Eurydice_slice key_generation_seed) {
   uint8_t hashed[64U];
-  G_c4(key_generation_seed, hashed);
+  G_48_c4(key_generation_seed, hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____0 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -6004,12 +5885,12 @@ generate_keypair_unpacked_d7(Eurydice_slice key_generation_seed) {
               libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector));
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       t_as_ntt[3U];
-  compute_As_plus_e_bc(A_transpose, secret_as_ntt, error_as_ntt, t_as_ntt);
+  compute_As_plus_e_fc(A_transpose, secret_as_ntt, error_as_ntt, t_as_ntt);
   uint8_t seed_for_A[32U];
   core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
   Eurydice_slice_to_array2(&dst, seed_for_A0, Eurydice_slice, uint8_t[32U],
                            void *);
-  core_result__core__result__Result_T__E___unwrap_fb(dst, seed_for_A);
+  core_result_unwrap_41_fb(dst, seed_for_A);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____4[3U];
   memcpy(
@@ -6072,23 +5953,24 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 1152
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void closure_d7(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[3U]) {
-  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, ret[i] = ZERO_c1(););
+  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
+                  ret[i] = ZERO_89_01(););
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.H
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.H_48 with const
+generics:
 - K = 3
 */
-static KRML_MUSTINLINE void H_c4(Eurydice_slice input, uint8_t ret[32U]) {
+static KRML_MUSTINLINE void H_48_c4(Eurydice_slice input, uint8_t ret[32U]) {
   libcrux_ml_kem_hash_functions_neon_H(input, ret);
 }
 
@@ -6103,9 +5985,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 1152
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__3size_t
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked_d7(uint8_t randomness[64U]) {
@@ -6130,7 +6009,7 @@ libcrux_ml_kem_ind_cca_generate_keypair_unpacked_d7(uint8_t randomness[64U]) {
       i0, (size_t)0U, (size_t)3U, (size_t)1U, size_t i1 = i0; KRML_MAYBE_FOR3(
           i, (size_t)0U, (size_t)3U, (size_t)1U, size_t j = i;
           libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-              uu____1 = clone_c1(&ind_cpa_public_key.A[j][i1]);
+              uu____1 = clone_d5_01(&ind_cpa_public_key.A[j][i1]);
           A[i1][j] = uu____1;););
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____2[3U][3U];
@@ -6153,15 +6032,14 @@ libcrux_ml_kem_ind_cca_generate_keypair_unpacked_d7(uint8_t randomness[64U]) {
                               uint8_t, Eurydice_slice),
       pk_serialized);
   uint8_t public_key_hash[32U];
-  H_c4(Eurydice_array_to_slice((size_t)1184U, pk_serialized, uint8_t,
-                               Eurydice_slice),
-       public_key_hash);
+  H_48_c4(Eurydice_array_to_slice((size_t)1184U, pk_serialized, uint8_t,
+                                  Eurydice_slice),
+          public_key_hash);
   uint8_t implicit_rejection_value[32U];
   core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
   Eurydice_slice_to_array2(&dst, implicit_rejection_value0, Eurydice_slice,
                            uint8_t[32U], void *);
-  core_result__core__result__Result_T__E___unwrap_fb(dst,
-                                                     implicit_rejection_value);
+  core_result_unwrap_41_fb(dst, implicit_rejection_value);
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__3size_t
       uu____3 = ind_cpa_private_key;
   uint8_t uu____4[32U];
@@ -6194,9 +6072,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - RANKED_BYTES_PER_RING_ELEMENT = 1152
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static libcrux_ml_kem_utils_extraction_helper_Keypair768 generate_keypair_d7(
     Eurydice_slice key_generation_seed) {
@@ -6258,7 +6133,7 @@ static KRML_MUSTINLINE void serialize_kem_secret_key_08(
       out, pointer, pointer + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
       Eurydice_slice);
   uint8_t ret0[32U];
-  H_c4(public_key, ret0);
+  H_48_c4(public_key, ret0);
   core_slice___Slice_T___copy_from_slice(
       uu____6,
       Eurydice_array_to_slice((size_t)32U, ret0, uint8_t, Eurydice_slice),
@@ -6288,9 +6163,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 1152
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_ind_cca_generate_keypair_d7(uint8_t randomness[64U]) {
@@ -6318,15 +6190,12 @@ libcrux_ml_kem_ind_cca_generate_keypair_d7(uint8_t randomness[64U]) {
   uint8_t uu____1[2400U];
   memcpy(uu____1, secret_key_serialized, (size_t)2400U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemPrivateKey____2400size_t private_key =
-      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPrivateKey_SIZE___8__from_99(
-          uu____1);
+      libcrux_ml_kem_types_from_05_99(uu____1);
   libcrux_ml_kem_types_MlKemPrivateKey____2400size_t uu____2 = private_key;
   uint8_t uu____3[1184U];
   memcpy(uu____3, public_key, (size_t)1184U * sizeof(uint8_t));
-  return libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemKeyPair_PRIVATE_KEY_SIZE__PUBLIC_KEY_SIZE___from_b5(
-      uu____2,
-      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPublicKey_SIZE___14__from_fb(
-          uu____3));
+  return libcrux_ml_kem_types_from_17_b5(
+      uu____2, libcrux_ml_kem_types_from_b6_fb(uu____3));
 }
 
 /**
@@ -6336,9 +6205,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 3
 - ETA2_RANDOMNESS_SIZE = 128
 - ETA2 = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     __libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_3size_t__uint8_t
@@ -6347,7 +6213,7 @@ static KRML_MUSTINLINE
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       error_1[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                  error_1[i] = ZERO_c1(););
+                  error_1[i] = ZERO_89_01(););
   uint8_t uu____0[33U];
   memcpy(uu____0, prf_input, (size_t)33U * sizeof(uint8_t));
   uint8_t prf_inputs[3U][33U];
@@ -6358,12 +6224,12 @@ static KRML_MUSTINLINE
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[3U][128U];
-  PRFxN_170(prf_inputs, prf_outputs);
+  PRFxN_48_17(prf_inputs, prf_outputs);
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
           uu____1 =
-              sample_from_binomial_distribution_35(Eurydice_array_to_slice(
+              sample_from_binomial_distribution_99(Eurydice_array_to_slice(
                   (size_t)128U, prf_outputs[i0], uint8_t, Eurydice_slice));
       error_1[i0] = uu____1;);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -6385,13 +6251,16 @@ static KRML_MUSTINLINE
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.PRF
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.PRF_48 with const
+generics:
 - K = 3
 - LEN = 128
 */
-static KRML_MUSTINLINE void PRF_17(Eurydice_slice input, uint8_t ret[128U]) {
+static KRML_MUSTINLINE void PRF_48_17(Eurydice_slice input, uint8_t ret[128U]) {
   PRF_9b(input, ret);
 }
 
@@ -6400,34 +6269,28 @@ A monomorphic instance of libcrux_ml_kem.invert_ntt.invert_ntt_montgomery with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void invert_ntt_montgomery_bc(
+static KRML_MUSTINLINE void invert_ntt_montgomery_fc(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
   size_t zeta_i =
       LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT / (size_t)2U;
-  invert_ntt_at_layer_1_c1(&zeta_i, re);
-  invert_ntt_at_layer_2_c1(&zeta_i, re);
-  invert_ntt_at_layer_3_c1(&zeta_i, re);
-  invert_ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)4U);
-  invert_ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)5U);
-  invert_ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)6U);
-  invert_ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)7U);
-  poly_barrett_reduce_c1(re);
+  invert_ntt_at_layer_1_01(&zeta_i, re);
+  invert_ntt_at_layer_2_01(&zeta_i, re);
+  invert_ntt_at_layer_3_01(&zeta_i, re);
+  invert_ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)4U);
+  invert_ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)5U);
+  invert_ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)6U);
+  invert_ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)7U);
+  poly_barrett_reduce_89_01(re);
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_vector_u with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void compute_vector_u_bc(
+static KRML_MUSTINLINE void compute_vector_u_fc(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector (
         *a_as_ntt)[3U],
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -6439,7 +6302,7 @@ static KRML_MUSTINLINE void compute_vector_u_bc(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       result[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                  result[i] = ZERO_c1(););
+                  result[i] = ZERO_89_01(););
   for (
       size_t i0 = (size_t)0U;
       i0 <
@@ -6471,11 +6334,11 @@ static KRML_MUSTINLINE void compute_vector_u_bc(
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
           *a_element = &row[j];
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          product = ntt_multiply_c1(a_element, &r_as_ntt[j]);
-      add_to_ring_element_bc(&result[i1], &product);
+          product = ntt_multiply_89_01(a_element, &r_as_ntt[j]);
+      add_to_ring_element_89_fc(&result[i1], &product);
     }
-    invert_ntt_montgomery_bc(&result[i1]);
-    add_error_reduce_c1(&result[i1], &error_1[i1]);
+    invert_ntt_montgomery_fc(&result[i1]);
+    add_error_reduce_89_01(&result[i1], &error_1[i1]);
   }
   memcpy(
       ret, result,
@@ -6489,13 +6352,10 @@ A monomorphic instance of libcrux_ml_kem.matrix.compute_ring_element_v with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    compute_ring_element_v_bc(
+    compute_ring_element_v_fc(
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *t_as_ntt,
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -6505,14 +6365,14 @@ static KRML_MUSTINLINE
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *message) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      result = ZERO_c1();
+      result = ZERO_89_01();
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          product = ntt_multiply_c1(&t_as_ntt[i0], &r_as_ntt[i0]);
-      add_to_ring_element_bc(&result, &product););
-  invert_ntt_montgomery_bc(&result);
-  result = add_message_error_reduce_c1(error_2, message, result);
+          product = ntt_multiply_89_01(&t_as_ntt[i0], &r_as_ntt[i0]);
+      add_to_ring_element_89_fc(&result, &product););
+  invert_ntt_montgomery_fc(&result);
+  result = add_message_error_reduce_89_01(error_2, message, result);
   return result;
 }
 
@@ -6524,9 +6384,6 @@ generics:
 - OUT_LEN = 960
 - COMPRESSION_FACTOR = 10
 - BLOCK_LEN = 320
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void compress_then_serialize_u_18(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -6575,9 +6432,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA1_RANDOMNESS_SIZE = 128
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void encrypt_unpacked_d7(
     libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__3size_t
@@ -6611,21 +6465,21 @@ static void encrypt_unpacked_d7(
   uint8_t domain_separator = uu____3.snd;
   prf_input[32U] = domain_separator;
   uint8_t prf_output[128U];
-  PRF_17(
+  PRF_48_17(
       Eurydice_array_to_slice((size_t)33U, prf_input, uint8_t, Eurydice_slice),
       prf_output);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      error_2 = sample_from_binomial_distribution_35(Eurydice_array_to_slice(
+      error_2 = sample_from_binomial_distribution_99(Eurydice_array_to_slice(
           (size_t)128U, prf_output, uint8_t, Eurydice_slice));
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       u[3U];
-  compute_vector_u_bc(public_key->A, r_as_ntt, error_1, u);
+  compute_vector_u_fc(public_key->A, r_as_ntt, error_1, u);
   uint8_t uu____4[32U];
   memcpy(uu____4, message, (size_t)32U * sizeof(uint8_t));
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      message_as_ring_element = deserialize_then_decompress_message_c1(uu____4);
+      message_as_ring_element = deserialize_then_decompress_message_01(uu____4);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      v = compute_ring_element_v_bc(public_key->t_as_ntt, r_as_ntt, &error_2,
+      v = compute_ring_element_v_fc(public_key->t_as_ntt, r_as_ntt, &error_2,
                                     &message_as_ring_element);
   uint8_t ciphertext[1088U] = {0U};
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -6664,9 +6518,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA1_RANDOMNESS_SIZE = 128
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_
 libcrux_ml_kem_ind_cca_encapsulate_unpacked_d7(
@@ -6686,8 +6537,9 @@ libcrux_ml_kem_ind_cca_encapsulate_unpacked_d7(
                               Eurydice_slice),
       uint8_t, void *);
   uint8_t hashed[64U];
-  G_c4(Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
-       hashed);
+  G_48_c4(
+      Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
+      hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____1 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -6709,8 +6561,7 @@ libcrux_ml_kem_ind_cca_encapsulate_unpacked_d7(
   uint8_t uu____4[1088U];
   memcpy(uu____4, ciphertext, (size_t)1088U * sizeof(uint8_t));
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext uu____5 =
-      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from_e6(
-          uu____4);
+      libcrux_ml_kem_types_from_01_e6(uu____4);
   uint8_t uu____6[32U];
   memcpy(uu____6, shared_secret_array, (size_t)32U * sizeof(uint8_t));
   K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_ lit;
@@ -6720,14 +6571,16 @@ libcrux_ml_kem_ind_cca_encapsulate_unpacked_d7(
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.{(libcrux_ml_kem::ind_cca::Variant␣for␣libcrux_ml_kem::ind_cca::MlKem)}.entropy_preprocess
-with types libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const
-generics:
+This function found in impl {(libcrux_ml_kem::ind_cca::Variant for
+libcrux_ml_kem::ind_cca::MlKem)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.entropy_preprocess_af with
+types libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 3
 */
-static KRML_MUSTINLINE void entropy_preprocess_35(Eurydice_slice randomness,
-                                                  uint8_t ret[32U]) {
+static KRML_MUSTINLINE void entropy_preprocess_af_35(Eurydice_slice randomness,
+                                                     uint8_t ret[32U]) {
   uint8_t out[32U] = {0U};
   core_slice___Slice_T___copy_from_slice(
       Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
@@ -6741,9 +6594,6 @@ libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - PUBLIC_KEY_SIZE = 1152
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void deserialize_ring_elements_reduced_7e(
     Eurydice_slice public_key,
@@ -6752,7 +6602,7 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_7e(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       deserialized_pk[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                  deserialized_pk[i] = ZERO_c1(););
+                  deserialized_pk[i] = ZERO_89_01(););
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(public_key, uint8_t, size_t) /
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
@@ -6764,7 +6614,7 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_7e(
             LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        uu____0 = deserialize_to_reduced_ring_element_c1(ring_element);
+        uu____0 = deserialize_to_reduced_ring_element_01(ring_element);
     deserialized_pk[i0] = uu____0;
   }
   memcpy(
@@ -6790,9 +6640,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA1_RANDOMNESS_SIZE = 128
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void encrypt_d7(Eurydice_slice public_key, uint8_t message[32U],
                        Eurydice_slice randomness, uint8_t ret[1088U]) {
@@ -6812,7 +6659,7 @@ static void encrypt_d7(Eurydice_slice public_key, uint8_t message[32U],
   uint8_t seed_for_A[32U];
   core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
   Eurydice_slice_to_array2(&dst, seed, Eurydice_slice, uint8_t[32U], void *);
-  core_result__core__result__Result_T__E___unwrap_fb(dst, seed_for_A);
+  core_result_unwrap_41_fb(dst, seed_for_A);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____0[3U];
   memcpy(
@@ -6855,15 +6702,17 @@ static void encrypt_d7(Eurydice_slice public_key, uint8_t message[32U],
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.{(libcrux_ml_kem::ind_cca::Variant␣for␣libcrux_ml_kem::ind_cca::MlKem)}.kdf
-with types libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const
-generics:
+This function found in impl {(libcrux_ml_kem::ind_cca::Variant for
+libcrux_ml_kem::ind_cca::MlKem)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.kdf_af with types
+libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 3
 - CIPHERTEXT_SIZE = 1088
 */
-static KRML_MUSTINLINE void kdf_0e(Eurydice_slice shared_secret,
-                                   uint8_t ret[32U]) {
+static KRML_MUSTINLINE void kdf_af_0e(Eurydice_slice shared_secret,
+                                      uint8_t ret[32U]) {
   uint8_t out[32U] = {0U};
   core_slice___Slice_T___copy_from_slice(
       Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
@@ -6889,17 +6738,13 @@ with const generics:
 - ETA1_RANDOMNESS_SIZE = 128
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::ind_cca::Variant for libcrux_ml_kem::ind_cca::MlKem)}
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_
 libcrux_ml_kem_ind_cca_encapsulate_40(
     libcrux_ml_kem_types_MlKemPublicKey____1184size_t *public_key,
     uint8_t randomness[32U]) {
   uint8_t randomness0[32U];
-  entropy_preprocess_35(
+  entropy_preprocess_af_35(
       Eurydice_array_to_slice((size_t)32U, randomness, uint8_t, Eurydice_slice),
       randomness0);
   uint8_t to_hash[64U];
@@ -6911,20 +6756,18 @@ libcrux_ml_kem_ind_cca_encapsulate_40(
       (size_t)64U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
       size_t, Eurydice_slice);
   uint8_t ret[32U];
-  H_c4(
-      Eurydice_array_to_slice(
-          (size_t)1184U,
-          libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemPublicKey_SIZE__18__as_slice_fb(
-              public_key),
-          uint8_t, Eurydice_slice),
-      ret);
+  H_48_c4(Eurydice_array_to_slice(
+              (size_t)1184U, libcrux_ml_kem_types_as_slice_cb_fb(public_key),
+              uint8_t, Eurydice_slice),
+          ret);
   core_slice___Slice_T___copy_from_slice(
       uu____0,
       Eurydice_array_to_slice((size_t)32U, ret, uint8_t, Eurydice_slice),
       uint8_t, void *);
   uint8_t hashed[64U];
-  G_c4(Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
-       hashed);
+  G_48_c4(
+      Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
+      hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____1 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -6933,10 +6776,8 @@ libcrux_ml_kem_ind_cca_encapsulate_40(
   Eurydice_slice shared_secret = uu____1.fst;
   Eurydice_slice pseudorandomness = uu____1.snd;
   Eurydice_slice uu____2 = Eurydice_array_to_slice(
-      (size_t)1184U,
-      libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemPublicKey_SIZE__18__as_slice_fb(
-          public_key),
-      uint8_t, Eurydice_slice);
+      (size_t)1184U, libcrux_ml_kem_types_as_slice_cb_fb(public_key), uint8_t,
+      Eurydice_slice);
   uint8_t uu____3[32U];
   memcpy(uu____3, randomness0, (size_t)32U * sizeof(uint8_t));
   uint8_t ciphertext[1088U];
@@ -6944,10 +6785,9 @@ libcrux_ml_kem_ind_cca_encapsulate_40(
   uint8_t uu____4[1088U];
   memcpy(uu____4, ciphertext, (size_t)1088U * sizeof(uint8_t));
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext ciphertext0 =
-      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from_e6(
-          uu____4);
+      libcrux_ml_kem_types_from_01_e6(uu____4);
   uint8_t shared_secret_array[32U];
-  kdf_0e(shared_secret, shared_secret_array);
+  kdf_af_0e(shared_secret, shared_secret_array);
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext uu____5 = ciphertext0;
   uint8_t uu____6[32U];
   memcpy(uu____6, shared_secret_array, (size_t)32U * sizeof(uint8_t));
@@ -6964,9 +6804,6 @@ generics:
 - K = 3
 - CIPHERTEXT_SIZE = 1088
 - U_COMPRESSION_FACTOR = 10
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void deserialize_then_decompress_u_b5(
     uint8_t *ciphertext,
@@ -6975,7 +6812,7 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_b5(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       u_as_ntt[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                  u_as_ntt[i] = ZERO_c1(););
+                  u_as_ntt[i] = ZERO_89_01(););
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(
                Eurydice_array_to_slice((size_t)1088U, ciphertext, uint8_t,
@@ -6995,9 +6832,9 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_b5(
                 (size_t)10U / (size_t)8U,
         uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        uu____0 = deserialize_then_decompress_ring_element_u_89(u_bytes);
+        uu____0 = deserialize_then_decompress_ring_element_u_bf(u_bytes);
     u_as_ntt[i0] = uu____0;
-    ntt_vector_u_89(&u_as_ntt[i0]);
+    ntt_vector_u_bf(&u_as_ntt[i0]);
   }
   memcpy(
       ret, u_as_ntt,
@@ -7010,13 +6847,10 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_b5(
 A monomorphic instance of libcrux_ml_kem.matrix.compute_message with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    compute_message_bc(
+    compute_message_fc(
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *v,
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -7024,14 +6858,14 @@ static KRML_MUSTINLINE
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *u_as_ntt) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      result = ZERO_c1();
+      result = ZERO_89_01();
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          product = ntt_multiply_c1(&secret_as_ntt[i0], &u_as_ntt[i0]);
-      add_to_ring_element_bc(&result, &product););
-  invert_ntt_montgomery_bc(&result);
-  result = subtract_reduce_c1(v, result);
+          product = ntt_multiply_89_01(&secret_as_ntt[i0], &u_as_ntt[i0]);
+      add_to_ring_element_89_fc(&result, &product););
+  invert_ntt_montgomery_fc(&result);
+  result = subtract_reduce_89_01(v, result);
   return result;
 }
 
@@ -7043,9 +6877,6 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - VECTOR_U_ENCODED_SIZE = 960
 - U_COMPRESSION_FACTOR = 10
 - V_COMPRESSION_FACTOR = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void decrypt_unpacked_b5(
     libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__3size_t
@@ -7055,25 +6886,28 @@ static void decrypt_unpacked_b5(
       u_as_ntt[3U];
   deserialize_then_decompress_u_b5(ciphertext, u_as_ntt);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      v = deserialize_then_decompress_ring_element_v_e3(
+      v = deserialize_then_decompress_ring_element_v_af(
           Eurydice_array_to_subslice_from((size_t)1088U, ciphertext,
                                           (size_t)960U, uint8_t, size_t,
                                           Eurydice_slice));
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      message = compute_message_bc(&v, secret_key->secret_as_ntt, u_as_ntt);
+      message = compute_message_fc(&v, secret_key->secret_as_ntt, u_as_ntt);
   uint8_t ret0[32U];
-  compress_then_serialize_message_c1(message, ret0);
+  compress_then_serialize_message_01(message, ret0);
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.PRF
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.PRF_48 with const
+generics:
 - K = 3
 - LEN = 32
 */
-static KRML_MUSTINLINE void PRF_f6(Eurydice_slice input, uint8_t ret[32U]) {
+static KRML_MUSTINLINE void PRF_48_f6(Eurydice_slice input, uint8_t ret[32U]) {
   PRF_5b(input, ret);
 }
 
@@ -7097,9 +6931,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1120
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 void libcrux_ml_kem_ind_cca_decapsulate_unpacked_d7(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__3size_t
@@ -7121,8 +6952,9 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_d7(
                               uint8_t, Eurydice_slice),
       uint8_t, void *);
   uint8_t hashed[64U];
-  G_c4(Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
-       hashed);
+  G_48_c4(
+      Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
+      hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____1 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -7140,12 +6972,9 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_d7(
       (size_t)1120U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE,
       uint8_t, size_t, Eurydice_slice);
   core_slice___Slice_T___copy_from_slice(
-      uu____2,
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref_e6(
-          ciphertext),
-      uint8_t, void *);
+      uu____2, libcrux_ml_kem_types_as_ref_00_e6(ciphertext), uint8_t, void *);
   uint8_t implicit_rejection_shared_secret[32U];
-  PRF_f6(
+  PRF_48_f6(
       Eurydice_array_to_slice((size_t)1120U, to_hash, uint8_t, Eurydice_slice),
       implicit_rejection_shared_secret);
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__3size_t
@@ -7156,8 +6985,7 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_d7(
   encrypt_unpacked_d7(uu____3, uu____4, pseudorandomness, expected_ciphertext);
   uint8_t selector =
       libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
-          libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref_e6(
-              ciphertext),
+          libcrux_ml_kem_types_as_ref_00_e6(ciphertext),
           Eurydice_array_to_slice((size_t)1088U, expected_ciphertext, uint8_t,
                                   Eurydice_slice));
   uint8_t ret0[32U];
@@ -7174,18 +7002,15 @@ A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_secret_key with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - K = 3
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void deserialize_secret_key_bc(
+static KRML_MUSTINLINE void deserialize_secret_key_fc(
     Eurydice_slice secret_key,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[3U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       secret_as_ntt[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                  secret_as_ntt[i] = ZERO_c1(););
+                  secret_as_ntt[i] = ZERO_89_01(););
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(secret_key, uint8_t, size_t) /
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
@@ -7197,7 +7022,7 @@ static KRML_MUSTINLINE void deserialize_secret_key_bc(
             LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        uu____0 = deserialize_to_uncompressed_ring_element_c1(secret_bytes);
+        uu____0 = deserialize_to_uncompressed_ring_element_01(secret_bytes);
     secret_as_ntt[i0] = uu____0;
   }
   memcpy(
@@ -7215,15 +7040,12 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - VECTOR_U_ENCODED_SIZE = 960
 - U_COMPRESSION_FACTOR = 10
 - V_COMPRESSION_FACTOR = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void decrypt_b5(Eurydice_slice secret_key, uint8_t *ciphertext,
                        uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       secret_as_ntt[3U];
-  deserialize_secret_key_bc(secret_key, secret_as_ntt);
+  deserialize_secret_key_fc(secret_key, secret_as_ntt);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____0[3U];
   memcpy(
@@ -7264,10 +7086,6 @@ with const generics:
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1120
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::ind_cca::Variant for libcrux_ml_kem::ind_cca::MlKem)}
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 void libcrux_ml_kem_ind_cca_decapsulate_40(
     libcrux_ml_kem_types_MlKemPrivateKey____2400size_t *private_key,
@@ -7304,8 +7122,9 @@ void libcrux_ml_kem_ind_cca_decapsulate_40(
           uint8_t, size_t, Eurydice_slice),
       ind_cpa_public_key_hash, uint8_t, void *);
   uint8_t hashed[64U];
-  G_c4(Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
-       hashed);
+  G_48_c4(
+      Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
+      hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____3 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -7319,12 +7138,9 @@ void libcrux_ml_kem_ind_cca_decapsulate_40(
       (size_t)1120U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE,
       uint8_t, size_t, Eurydice_slice);
   core_slice___Slice_T___copy_from_slice(
-      uu____4,
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref_e6(
-          ciphertext),
-      uint8_t, void *);
+      uu____4, libcrux_ml_kem_types_as_ref_00_e6(ciphertext), uint8_t, void *);
   uint8_t implicit_rejection_shared_secret0[32U];
-  PRF_f6(
+  PRF_48_f6(
       Eurydice_array_to_slice((size_t)1120U, to_hash, uint8_t, Eurydice_slice),
       implicit_rejection_shared_secret0);
   Eurydice_slice uu____5 = ind_cpa_public_key;
@@ -7333,15 +7149,15 @@ void libcrux_ml_kem_ind_cca_decapsulate_40(
   uint8_t expected_ciphertext[1088U];
   encrypt_d7(uu____5, uu____6, pseudorandomness, expected_ciphertext);
   uint8_t implicit_rejection_shared_secret[32U];
-  kdf_0e(Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret0,
-                                 uint8_t, Eurydice_slice),
-         implicit_rejection_shared_secret);
+  kdf_af_0e(
+      Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret0,
+                              uint8_t, Eurydice_slice),
+      implicit_rejection_shared_secret);
   uint8_t shared_secret[32U];
-  kdf_0e(shared_secret0, shared_secret);
+  kdf_af_0e(shared_secret0, shared_secret);
   uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref_e6(
-          ciphertext),
+      libcrux_ml_kem_types_as_ref_00_e6(ciphertext),
       Eurydice_array_to_slice((size_t)1088U, expected_ciphertext, uint8_t,
                               Eurydice_slice),
       Eurydice_array_to_slice((size_t)32U, shared_secret, uint8_t,
@@ -7358,9 +7174,6 @@ libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - PUBLIC_KEY_SIZE = 1568
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void deserialize_ring_elements_reduced_45(
     Eurydice_slice public_key,
@@ -7369,7 +7182,7 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_45(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       deserialized_pk[4U];
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                  deserialized_pk[i] = ZERO_c1(););
+                  deserialized_pk[i] = ZERO_89_01(););
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(public_key, uint8_t, size_t) /
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
@@ -7381,7 +7194,7 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_45(
             LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        uu____0 = deserialize_to_reduced_ring_element_c1(ring_element);
+        uu____0 = deserialize_to_reduced_ring_element_01(ring_element);
     deserialized_pk[i0] = uu____0;
   }
   memcpy(
@@ -7396,9 +7209,6 @@ A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_secret_key with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 4
 - OUT_LEN = 1536
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void serialize_secret_key_d2(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -7424,7 +7234,7 @@ static KRML_MUSTINLINE void serialize_secret_key_d2(
         (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t, Eurydice_slice);
     uint8_t ret0[384U];
-    serialize_uncompressed_ring_element_c1(&re, ret0);
+    serialize_uncompressed_ring_element_01(&re, ret0);
     core_slice___Slice_T___copy_from_slice(
         uu____0,
         Eurydice_array_to_slice((size_t)384U, ret0, uint8_t, Eurydice_slice),
@@ -7439,9 +7249,6 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 4
 - RANKED_BYTES_PER_RING_ELEMENT = 1536
 - PUBLIC_KEY_SIZE = 1568
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void serialize_public_key_ae(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -7471,9 +7278,6 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 4
 - RANKED_BYTES_PER_RING_ELEMENT = 1536
 - PUBLIC_KEY_SIZE = 1568
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_ae(uint8_t *public_key) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -7503,12 +7307,15 @@ typedef struct
 } __libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector___4size_t___libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector___4size_t__;
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.G
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.G_48 with const
+generics:
 - K = 4
 */
-static KRML_MUSTINLINE void G_c3(Eurydice_slice input, uint8_t ret[64U]) {
+static KRML_MUSTINLINE void G_48_c3(Eurydice_slice input, uint8_t ret[64U]) {
   libcrux_ml_kem_hash_functions_neon_G(input, ret);
 }
 
@@ -7517,14 +7324,12 @@ A monomorphic instance of libcrux_ml_kem.matrix.sample_matrix_A.closure with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void closure_f5(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[4U]) {
-  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, ret[i] = ZERO_c1(););
+  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
+                  ret[i] = ZERO_89_01(););
 }
 
 /**
@@ -7556,13 +7361,16 @@ shake128_init_absorb_c3(uint8_t input[4U][34U]) {
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.shake128_init_absorb
-with const generics:
+libcrux_ml_kem.hash_functions.neon.shake128_init_absorb_48 with const generics:
 - K = 4
 */
 static KRML_MUSTINLINE Simd128Hash
-shake128_init_absorb_c30(uint8_t input[4U][34U]) {
+shake128_init_absorb_48_c3(uint8_t input[4U][34U]) {
   uint8_t uu____0[4U][34U];
   memcpy(uu____0, input, (size_t)4U * sizeof(uint8_t[34U]));
   return shake128_init_absorb_c3(uu____0);
@@ -7605,12 +7413,16 @@ static KRML_MUSTINLINE void shake128_squeeze_three_blocks_c3(
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.shake128_squeeze_three_blocks
-with const generics:
+libcrux_ml_kem.hash_functions.neon.shake128_squeeze_three_blocks_48 with const
+generics:
 - K = 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_c30(
+static KRML_MUSTINLINE void shake128_squeeze_three_blocks_48_c3(
     Simd128Hash *self, uint8_t ret[4U][504U]) {
   shake128_squeeze_three_blocks_c3(self, ret);
 }
@@ -7621,9 +7433,6 @@ libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 4
 - N = 504
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_ef(
     uint8_t randomness[4U][504U], size_t *sampled_coefficients,
@@ -7637,12 +7446,11 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_ef(
           Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
               randomness[i1], r * (size_t)24U, r * (size_t)24U + (size_t)24U,
               uint8_t, Eurydice_slice);
-          size_t sampled =
-              libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___rej_sample(
-                  uu____0, Eurydice_array_to_subslice2(
-                               out[i1], sampled_coefficients[i1],
-                               sampled_coefficients[i1] + (size_t)16U, int16_t,
-                               Eurydice_slice));
+          size_t sampled = libcrux_ml_kem_vector_neon_rej_sample_20(
+              uu____0, Eurydice_array_to_subslice2(
+                           out[i1], sampled_coefficients[i1],
+                           sampled_coefficients[i1] + (size_t)16U, int16_t,
+                           Eurydice_slice));
           size_t uu____1 = i1;
           sampled_coefficients[uu____1] =
               sampled_coefficients[uu____1] + sampled;
@@ -7695,13 +7503,17 @@ static KRML_MUSTINLINE void shake128_squeeze_block_c3(Simd128Hash *st,
 }
 
 /**
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.shake128_squeeze_block
-with const generics:
+libcrux_ml_kem.hash_functions.neon.shake128_squeeze_block_48 with const
+generics:
 - K = 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_c30(Simd128Hash *self,
-                                                       uint8_t ret[4U][168U]) {
+static KRML_MUSTINLINE void shake128_squeeze_block_48_c3(
+    Simd128Hash *self, uint8_t ret[4U][168U]) {
   shake128_squeeze_block_c3(self, ret);
 }
 
@@ -7711,9 +7523,6 @@ libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 4
 - N = 168
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_e1(
     uint8_t randomness[4U][168U], size_t *sampled_coefficients,
@@ -7727,12 +7536,11 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_e1(
           Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
               randomness[i1], r * (size_t)24U, r * (size_t)24U + (size_t)24U,
               uint8_t, Eurydice_slice);
-          size_t sampled =
-              libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___rej_sample(
-                  uu____0, Eurydice_array_to_subslice2(
-                               out[i1], sampled_coefficients[i1],
-                               sampled_coefficients[i1] + (size_t)16U, int16_t,
-                               Eurydice_slice));
+          size_t sampled = libcrux_ml_kem_vector_neon_rej_sample_20(
+              uu____0, Eurydice_array_to_subslice2(
+                           out[i1], sampled_coefficients[i1],
+                           sampled_coefficients[i1] + (size_t)16U, int16_t,
+                           Eurydice_slice));
           size_t uu____1 = i1;
           sampled_coefficients[uu____1] =
               sampled_coefficients[uu____1] + sampled;
@@ -7754,13 +7562,10 @@ A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.closure with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 closure_f50(int16_t s[272U]) {
-  return from_i16_array_c1(Eurydice_array_to_subslice2(
+  return from_i16_array_89_01(Eurydice_array_to_subslice2(
       s, (size_t)0U, (size_t)256U, int16_t, Eurydice_slice));
 }
 
@@ -7769,9 +7574,6 @@ A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void sample_from_xof_f5(
     uint8_t seeds[4U][34U],
@@ -7781,9 +7583,9 @@ static KRML_MUSTINLINE void sample_from_xof_f5(
   int16_t out[4U][272U] = {{0U}};
   uint8_t uu____0[4U][34U];
   memcpy(uu____0, seeds, (size_t)4U * sizeof(uint8_t[34U]));
-  Simd128Hash xof_state = shake128_init_absorb_c30(uu____0);
+  Simd128Hash xof_state = shake128_init_absorb_48_c3(uu____0);
   uint8_t randomness0[4U][504U];
-  shake128_squeeze_three_blocks_c30(&xof_state, randomness0);
+  shake128_squeeze_three_blocks_48_c3(&xof_state, randomness0);
   uint8_t uu____1[4U][504U];
   memcpy(uu____1, randomness0, (size_t)4U * sizeof(uint8_t[504U]));
   bool done = sample_from_uniform_distribution_next_ef(
@@ -7793,7 +7595,7 @@ static KRML_MUSTINLINE void sample_from_xof_f5(
       break;
     } else {
       uint8_t randomness[4U][168U];
-      shake128_squeeze_block_c30(&xof_state, randomness);
+      shake128_squeeze_block_48_c3(&xof_state, randomness);
       uint8_t uu____2[4U][168U];
       memcpy(uu____2, randomness, (size_t)4U * sizeof(uint8_t[168U]));
       done = sample_from_uniform_distribution_next_e1(
@@ -7818,9 +7620,6 @@ A monomorphic instance of libcrux_ml_kem.matrix.sample_matrix_A with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void sample_matrix_A_f5(
     uint8_t seed[34U], bool transpose,
@@ -7917,14 +7716,17 @@ static KRML_MUSTINLINE void PRFxN_38(uint8_t (*input)[33U],
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.PRFxN
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.PRFxN_48 with const
+generics:
 - K = 4
 - LEN = 128
 */
-static KRML_MUSTINLINE void PRFxN_380(uint8_t (*input)[33U],
-                                      uint8_t ret[4U][128U]) {
+static KRML_MUSTINLINE void PRFxN_48_38(uint8_t (*input)[33U],
+                                        uint8_t ret[4U][128U]) {
   PRFxN_38(input, ret);
 }
 
@@ -7935,9 +7737,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 4
 - ETA = 2
 - ETA_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     __libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_4size_t__uint8_t
@@ -7946,7 +7745,7 @@ static KRML_MUSTINLINE
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       re_as_ntt[4U];
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                  re_as_ntt[i] = ZERO_c1(););
+                  re_as_ntt[i] = ZERO_89_01(););
   uint8_t uu____0[33U];
   memcpy(uu____0, prf_input, (size_t)33U * sizeof(uint8_t));
   uint8_t prf_inputs[4U][33U];
@@ -7957,15 +7756,15 @@ static KRML_MUSTINLINE
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[4U][128U];
-  PRFxN_380(prf_inputs, prf_outputs);
+  PRFxN_48_38(prf_inputs, prf_outputs);
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
           uu____1 =
-              sample_from_binomial_distribution_35(Eurydice_array_to_slice(
+              sample_from_binomial_distribution_99(Eurydice_array_to_slice(
                   (size_t)128U, prf_outputs[i0], uint8_t, Eurydice_slice));
       re_as_ntt[i0] = uu____1;
-      ntt_binomially_sampled_ring_element_c1(&re_as_ntt[i0]););
+      ntt_binomially_sampled_ring_element_01(&re_as_ntt[i0]););
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____2[4U];
   memcpy(
@@ -7985,16 +7784,16 @@ static KRML_MUSTINLINE
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.add_to_ring_element
-with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
+This function found in impl
+{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.add_to_ring_element_89 with
+types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void add_to_ring_element_e3(
+static KRML_MUSTINLINE void add_to_ring_element_89_af(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -8009,8 +7808,8 @@ static KRML_MUSTINLINE void add_to_ring_element_e3(
        i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
-            self->coefficients[i0], &rhs->coefficients[i0]);
+        libcrux_ml_kem_vector_neon_add_20(self->coefficients[i0],
+                                          &rhs->coefficients[i0]);
     self->coefficients[i0] = uu____0;
   }
 }
@@ -8019,11 +7818,8 @@ static KRML_MUSTINLINE void add_to_ring_element_e3(
 A monomorphic instance of libcrux_ml_kem.matrix.compute_As_plus_e with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void compute_As_plus_e_e3(
+static KRML_MUSTINLINE void compute_As_plus_e_af(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector (
         *matrix_A)[4U],
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -8035,7 +7831,7 @@ static KRML_MUSTINLINE void compute_As_plus_e_e3(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       result[4U];
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                  result[i] = ZERO_c1(););
+                  result[i] = ZERO_89_01(););
   for (
       size_t i0 = (size_t)0U;
       i0 <
@@ -8067,10 +7863,10 @@ static KRML_MUSTINLINE void compute_As_plus_e_e3(
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
           *matrix_element = &row[j];
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          product = ntt_multiply_c1(matrix_element, &s_as_ntt[j]);
-      add_to_ring_element_e3(&result[i1], &product);
+          product = ntt_multiply_89_01(matrix_element, &s_as_ntt[j]);
+      add_to_ring_element_89_af(&result[i1], &product);
     }
-    add_standard_error_reduce_c1(&result[i1], &error_as_ntt[i1]);
+    add_standard_error_reduce_89_01(&result[i1], &error_as_ntt[i1]);
   }
   memcpy(
       ret, result,
@@ -8086,14 +7882,11 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 4
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static __libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector___4size_t___libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector___4size_t__
 generate_keypair_unpacked_91(Eurydice_slice key_generation_seed) {
   uint8_t hashed[64U];
-  G_c3(key_generation_seed, hashed);
+  G_48_c3(key_generation_seed, hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____0 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -8133,12 +7926,12 @@ generate_keypair_unpacked_91(Eurydice_slice key_generation_seed) {
               libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector));
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       t_as_ntt[4U];
-  compute_As_plus_e_e3(A_transpose, secret_as_ntt, error_as_ntt, t_as_ntt);
+  compute_As_plus_e_af(A_transpose, secret_as_ntt, error_as_ntt, t_as_ntt);
   uint8_t seed_for_A[32U];
   core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
   Eurydice_slice_to_array2(&dst, seed_for_A0, Eurydice_slice, uint8_t[32U],
                            void *);
-  core_result__core__result__Result_T__E___unwrap_fb(dst, seed_for_A);
+  core_result_unwrap_41_fb(dst, seed_for_A);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____4[4U];
   memcpy(
@@ -8201,23 +7994,24 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 1536
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void closure_91(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[4U]) {
-  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, ret[i] = ZERO_c1(););
+  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
+                  ret[i] = ZERO_89_01(););
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.H
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.H_48 with const
+generics:
 - K = 4
 */
-static KRML_MUSTINLINE void H_c3(Eurydice_slice input, uint8_t ret[32U]) {
+static KRML_MUSTINLINE void H_48_c3(Eurydice_slice input, uint8_t ret[32U]) {
   libcrux_ml_kem_hash_functions_neon_H(input, ret);
 }
 
@@ -8232,9 +8026,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 1536
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked_91(uint8_t randomness[64U]) {
@@ -8259,7 +8050,7 @@ libcrux_ml_kem_ind_cca_generate_keypair_unpacked_91(uint8_t randomness[64U]) {
       i0, (size_t)0U, (size_t)4U, (size_t)1U, size_t i1 = i0; KRML_MAYBE_FOR4(
           i, (size_t)0U, (size_t)4U, (size_t)1U, size_t j = i;
           libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-              uu____1 = clone_c1(&ind_cpa_public_key.A[j][i1]);
+              uu____1 = clone_d5_01(&ind_cpa_public_key.A[j][i1]);
           A[i1][j] = uu____1;););
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____2[4U][4U];
@@ -8282,15 +8073,14 @@ libcrux_ml_kem_ind_cca_generate_keypair_unpacked_91(uint8_t randomness[64U]) {
                               uint8_t, Eurydice_slice),
       pk_serialized);
   uint8_t public_key_hash[32U];
-  H_c3(Eurydice_array_to_slice((size_t)1568U, pk_serialized, uint8_t,
-                               Eurydice_slice),
-       public_key_hash);
+  H_48_c3(Eurydice_array_to_slice((size_t)1568U, pk_serialized, uint8_t,
+                                  Eurydice_slice),
+          public_key_hash);
   uint8_t implicit_rejection_value[32U];
   core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
   Eurydice_slice_to_array2(&dst, implicit_rejection_value0, Eurydice_slice,
                            uint8_t[32U], void *);
-  core_result__core__result__Result_T__E___unwrap_fb(dst,
-                                                     implicit_rejection_value);
+  core_result_unwrap_41_fb(dst, implicit_rejection_value);
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
       uu____3 = ind_cpa_private_key;
   uint8_t uu____4[32U];
@@ -8323,9 +8113,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - RANKED_BYTES_PER_RING_ELEMENT = 1536
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static libcrux_ml_kem_utils_extraction_helper_Keypair1024 generate_keypair_91(
     Eurydice_slice key_generation_seed) {
@@ -8387,7 +8174,7 @@ static KRML_MUSTINLINE void serialize_kem_secret_key_2f(
       out, pointer, pointer + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
       Eurydice_slice);
   uint8_t ret0[32U];
-  H_c3(public_key, ret0);
+  H_48_c3(public_key, ret0);
   core_slice___Slice_T___copy_from_slice(
       uu____6,
       Eurydice_array_to_slice((size_t)32U, ret0, uint8_t, Eurydice_slice),
@@ -8417,9 +8204,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 1536
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_ind_cca_generate_keypair_91(uint8_t randomness[64U]) {
@@ -8447,15 +8231,12 @@ libcrux_ml_kem_ind_cca_generate_keypair_91(uint8_t randomness[64U]) {
   uint8_t uu____1[3168U];
   memcpy(uu____1, secret_key_serialized, (size_t)3168U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemPrivateKey____3168size_t private_key =
-      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPrivateKey_SIZE___8__from_df(
-          uu____1);
+      libcrux_ml_kem_types_from_05_df(uu____1);
   libcrux_ml_kem_types_MlKemPrivateKey____3168size_t uu____2 = private_key;
   uint8_t uu____3[1568U];
   memcpy(uu____3, public_key, (size_t)1568U * sizeof(uint8_t));
-  return libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemKeyPair_PRIVATE_KEY_SIZE__PUBLIC_KEY_SIZE___from_8e(
-      uu____2,
-      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPublicKey_SIZE___14__from_a7(
-          uu____3));
+  return libcrux_ml_kem_types_from_17_8e(
+      uu____2, libcrux_ml_kem_types_from_b6_a7(uu____3));
 }
 
 /**
@@ -8465,9 +8246,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 4
 - ETA2_RANDOMNESS_SIZE = 128
 - ETA2 = 2
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     __libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_4size_t__uint8_t
@@ -8476,7 +8254,7 @@ static KRML_MUSTINLINE
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       error_1[4U];
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                  error_1[i] = ZERO_c1(););
+                  error_1[i] = ZERO_89_01(););
   uint8_t uu____0[33U];
   memcpy(uu____0, prf_input, (size_t)33U * sizeof(uint8_t));
   uint8_t prf_inputs[4U][33U];
@@ -8487,12 +8265,12 @@ static KRML_MUSTINLINE
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[4U][128U];
-  PRFxN_380(prf_inputs, prf_outputs);
+  PRFxN_48_38(prf_inputs, prf_outputs);
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
           uu____1 =
-              sample_from_binomial_distribution_35(Eurydice_array_to_slice(
+              sample_from_binomial_distribution_99(Eurydice_array_to_slice(
                   (size_t)128U, prf_outputs[i0], uint8_t, Eurydice_slice));
       error_1[i0] = uu____1;);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -8514,13 +8292,16 @@ static KRML_MUSTINLINE
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.PRF
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.PRF_48 with const
+generics:
 - K = 4
 - LEN = 128
 */
-static KRML_MUSTINLINE void PRF_38(Eurydice_slice input, uint8_t ret[128U]) {
+static KRML_MUSTINLINE void PRF_48_38(Eurydice_slice input, uint8_t ret[128U]) {
   PRF_9b(input, ret);
 }
 
@@ -8529,34 +8310,28 @@ A monomorphic instance of libcrux_ml_kem.invert_ntt.invert_ntt_montgomery with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void invert_ntt_montgomery_e3(
+static KRML_MUSTINLINE void invert_ntt_montgomery_af(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
   size_t zeta_i =
       LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT / (size_t)2U;
-  invert_ntt_at_layer_1_c1(&zeta_i, re);
-  invert_ntt_at_layer_2_c1(&zeta_i, re);
-  invert_ntt_at_layer_3_c1(&zeta_i, re);
-  invert_ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)4U);
-  invert_ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)5U);
-  invert_ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)6U);
-  invert_ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)7U);
-  poly_barrett_reduce_c1(re);
+  invert_ntt_at_layer_1_01(&zeta_i, re);
+  invert_ntt_at_layer_2_01(&zeta_i, re);
+  invert_ntt_at_layer_3_01(&zeta_i, re);
+  invert_ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)4U);
+  invert_ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)5U);
+  invert_ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)6U);
+  invert_ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)7U);
+  poly_barrett_reduce_89_01(re);
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_vector_u with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void compute_vector_u_e3(
+static KRML_MUSTINLINE void compute_vector_u_af(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector (
         *a_as_ntt)[4U],
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -8568,7 +8343,7 @@ static KRML_MUSTINLINE void compute_vector_u_e3(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       result[4U];
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                  result[i] = ZERO_c1(););
+                  result[i] = ZERO_89_01(););
   for (
       size_t i0 = (size_t)0U;
       i0 <
@@ -8600,11 +8375,11 @@ static KRML_MUSTINLINE void compute_vector_u_e3(
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
           *a_element = &row[j];
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          product = ntt_multiply_c1(a_element, &r_as_ntt[j]);
-      add_to_ring_element_e3(&result[i1], &product);
+          product = ntt_multiply_89_01(a_element, &r_as_ntt[j]);
+      add_to_ring_element_89_af(&result[i1], &product);
     }
-    invert_ntt_montgomery_e3(&result[i1]);
-    add_error_reduce_c1(&result[i1], &error_1[i1]);
+    invert_ntt_montgomery_af(&result[i1]);
+    add_error_reduce_89_01(&result[i1], &error_1[i1]);
   }
   memcpy(
       ret, result,
@@ -8618,13 +8393,10 @@ A monomorphic instance of libcrux_ml_kem.matrix.compute_ring_element_v with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    compute_ring_element_v_e3(
+    compute_ring_element_v_af(
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *t_as_ntt,
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -8634,14 +8406,14 @@ static KRML_MUSTINLINE
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *message) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      result = ZERO_c1();
+      result = ZERO_89_01();
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          product = ntt_multiply_c1(&t_as_ntt[i0], &r_as_ntt[i0]);
-      add_to_ring_element_e3(&result, &product););
-  invert_ntt_montgomery_e3(&result);
-  result = add_message_error_reduce_c1(error_2, message, result);
+          product = ntt_multiply_89_01(&t_as_ntt[i0], &r_as_ntt[i0]);
+      add_to_ring_element_89_af(&result, &product););
+  invert_ntt_montgomery_af(&result);
+  result = add_message_error_reduce_89_01(error_2, message, result);
   return result;
 }
 
@@ -8650,11 +8422,8 @@ A monomorphic instance of libcrux_ml_kem.serialize.compress_then_serialize_11
 with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - OUT_LEN = 352
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void compress_then_serialize_11_cc(
+static KRML_MUSTINLINE void compress_then_serialize_11_d2(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re,
     uint8_t ret[352U]) {
@@ -8663,10 +8432,9 @@ static KRML_MUSTINLINE void compress_then_serialize_11_cc(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
-        compress_930(to_unsigned_representative_c1(re->coefficients[i0]));
+        compress_20_93(to_unsigned_representative_01(re->coefficients[i0]));
     uint8_t bytes[22U];
-    libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_11(
-        coefficient, bytes);
+    libcrux_ml_kem_vector_neon_serialize_11_20(coefficient, bytes);
     Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
         serialized, (size_t)22U * i0, (size_t)22U * i0 + (size_t)22U, uint8_t,
         Eurydice_slice);
@@ -8684,16 +8452,13 @@ libcrux_ml_kem.serialize.compress_then_serialize_ring_element_u with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - COMPRESSION_FACTOR = 11
 - OUT_LEN = 352
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void compress_then_serialize_ring_element_u_7f(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re,
     uint8_t ret[352U]) {
   uint8_t uu____0[352U];
-  compress_then_serialize_11_cc(re, uu____0);
+  compress_then_serialize_11_d2(re, uu____0);
   memcpy(ret, uu____0, (size_t)352U * sizeof(uint8_t));
 }
 
@@ -8705,9 +8470,6 @@ generics:
 - OUT_LEN = 1408
 - COMPRESSION_FACTOR = 11
 - BLOCK_LEN = 352
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void compress_then_serialize_u_23(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -8746,15 +8508,12 @@ libcrux_ml_kem.serialize.compress_then_serialize_ring_element_v with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - COMPRESSION_FACTOR = 5
 - OUT_LEN = 160
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void compress_then_serialize_ring_element_v_6a(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         re,
     Eurydice_slice out) {
-  compress_then_serialize_5_c1(re, out);
+  compress_then_serialize_5_01(re, out);
 }
 
 /**
@@ -8773,9 +8532,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA1_RANDOMNESS_SIZE = 128
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void encrypt_unpacked_91(
     libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
@@ -8809,21 +8565,21 @@ static void encrypt_unpacked_91(
   uint8_t domain_separator = uu____3.snd;
   prf_input[32U] = domain_separator;
   uint8_t prf_output[128U];
-  PRF_38(
+  PRF_48_38(
       Eurydice_array_to_slice((size_t)33U, prf_input, uint8_t, Eurydice_slice),
       prf_output);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      error_2 = sample_from_binomial_distribution_35(Eurydice_array_to_slice(
+      error_2 = sample_from_binomial_distribution_99(Eurydice_array_to_slice(
           (size_t)128U, prf_output, uint8_t, Eurydice_slice));
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       u[4U];
-  compute_vector_u_e3(public_key->A, r_as_ntt, error_1, u);
+  compute_vector_u_af(public_key->A, r_as_ntt, error_1, u);
   uint8_t uu____4[32U];
   memcpy(uu____4, message, (size_t)32U * sizeof(uint8_t));
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      message_as_ring_element = deserialize_then_decompress_message_c1(uu____4);
+      message_as_ring_element = deserialize_then_decompress_message_01(uu____4);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      v = compute_ring_element_v_e3(public_key->t_as_ntt, r_as_ntt, &error_2,
+      v = compute_ring_element_v_af(public_key->t_as_ntt, r_as_ntt, &error_2,
                                     &message_as_ring_element);
   uint8_t ciphertext[1568U] = {0U};
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -8863,9 +8619,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA1_RANDOMNESS_SIZE = 128
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_
 libcrux_ml_kem_ind_cca_encapsulate_unpacked_91(
@@ -8885,8 +8638,9 @@ libcrux_ml_kem_ind_cca_encapsulate_unpacked_91(
                               Eurydice_slice),
       uint8_t, void *);
   uint8_t hashed[64U];
-  G_c3(Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
-       hashed);
+  G_48_c3(
+      Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
+      hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____1 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -8908,8 +8662,7 @@ libcrux_ml_kem_ind_cca_encapsulate_unpacked_91(
   uint8_t uu____4[1568U];
   memcpy(uu____4, ciphertext, (size_t)1568U * sizeof(uint8_t));
   libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext uu____5 =
-      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from_a7(
-          uu____4);
+      libcrux_ml_kem_types_from_01_a7(uu____4);
   uint8_t uu____6[32U];
   memcpy(uu____6, shared_secret_array, (size_t)32U * sizeof(uint8_t));
   K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_ lit;
@@ -8919,14 +8672,16 @@ libcrux_ml_kem_ind_cca_encapsulate_unpacked_91(
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.{(libcrux_ml_kem::ind_cca::Variant␣for␣libcrux_ml_kem::ind_cca::MlKem)}.entropy_preprocess
-with types libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const
-generics:
+This function found in impl {(libcrux_ml_kem::ind_cca::Variant for
+libcrux_ml_kem::ind_cca::MlKem)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.entropy_preprocess_af with
+types libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 4
 */
-static KRML_MUSTINLINE void entropy_preprocess_77(Eurydice_slice randomness,
-                                                  uint8_t ret[32U]) {
+static KRML_MUSTINLINE void entropy_preprocess_af_77(Eurydice_slice randomness,
+                                                     uint8_t ret[32U]) {
   uint8_t out[32U] = {0U};
   core_slice___Slice_T___copy_from_slice(
       Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
@@ -8940,9 +8695,6 @@ libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - PUBLIC_KEY_SIZE = 1536
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void deserialize_ring_elements_reduced_b5(
     Eurydice_slice public_key,
@@ -8951,7 +8703,7 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_b5(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       deserialized_pk[4U];
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                  deserialized_pk[i] = ZERO_c1(););
+                  deserialized_pk[i] = ZERO_89_01(););
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(public_key, uint8_t, size_t) /
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
@@ -8963,7 +8715,7 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_b5(
             LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        uu____0 = deserialize_to_reduced_ring_element_c1(ring_element);
+        uu____0 = deserialize_to_reduced_ring_element_01(ring_element);
     deserialized_pk[i0] = uu____0;
   }
   memcpy(
@@ -8989,9 +8741,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA1_RANDOMNESS_SIZE = 128
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void encrypt_91(Eurydice_slice public_key, uint8_t message[32U],
                        Eurydice_slice randomness, uint8_t ret[1568U]) {
@@ -9011,7 +8760,7 @@ static void encrypt_91(Eurydice_slice public_key, uint8_t message[32U],
   uint8_t seed_for_A[32U];
   core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
   Eurydice_slice_to_array2(&dst, seed, Eurydice_slice, uint8_t[32U], void *);
-  core_result__core__result__Result_T__E___unwrap_fb(dst, seed_for_A);
+  core_result_unwrap_41_fb(dst, seed_for_A);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____0[4U];
   memcpy(
@@ -9054,15 +8803,17 @@ static void encrypt_91(Eurydice_slice public_key, uint8_t message[32U],
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.{(libcrux_ml_kem::ind_cca::Variant␣for␣libcrux_ml_kem::ind_cca::MlKem)}.kdf
-with types libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const
-generics:
+This function found in impl {(libcrux_ml_kem::ind_cca::Variant for
+libcrux_ml_kem::ind_cca::MlKem)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.kdf_af with types
+libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - K = 4
 - CIPHERTEXT_SIZE = 1568
 */
-static KRML_MUSTINLINE void kdf_05(Eurydice_slice shared_secret,
-                                   uint8_t ret[32U]) {
+static KRML_MUSTINLINE void kdf_af_05(Eurydice_slice shared_secret,
+                                      uint8_t ret[32U]) {
   uint8_t out[32U] = {0U};
   core_slice___Slice_T___copy_from_slice(
       Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
@@ -9088,17 +8839,13 @@ with const generics:
 - ETA1_RANDOMNESS_SIZE = 128
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::ind_cca::Variant for libcrux_ml_kem::ind_cca::MlKem)}
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_
 libcrux_ml_kem_ind_cca_encapsulate_51(
     libcrux_ml_kem_types_MlKemPublicKey____1568size_t *public_key,
     uint8_t randomness[32U]) {
   uint8_t randomness0[32U];
-  entropy_preprocess_77(
+  entropy_preprocess_af_77(
       Eurydice_array_to_slice((size_t)32U, randomness, uint8_t, Eurydice_slice),
       randomness0);
   uint8_t to_hash[64U];
@@ -9110,20 +8857,18 @@ libcrux_ml_kem_ind_cca_encapsulate_51(
       (size_t)64U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
       size_t, Eurydice_slice);
   uint8_t ret[32U];
-  H_c3(
-      Eurydice_array_to_slice(
-          (size_t)1568U,
-          libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemPublicKey_SIZE__18__as_slice_a7(
-              public_key),
-          uint8_t, Eurydice_slice),
-      ret);
+  H_48_c3(Eurydice_array_to_slice(
+              (size_t)1568U, libcrux_ml_kem_types_as_slice_cb_a7(public_key),
+              uint8_t, Eurydice_slice),
+          ret);
   core_slice___Slice_T___copy_from_slice(
       uu____0,
       Eurydice_array_to_slice((size_t)32U, ret, uint8_t, Eurydice_slice),
       uint8_t, void *);
   uint8_t hashed[64U];
-  G_c3(Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
-       hashed);
+  G_48_c3(
+      Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
+      hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____1 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -9132,10 +8877,8 @@ libcrux_ml_kem_ind_cca_encapsulate_51(
   Eurydice_slice shared_secret = uu____1.fst;
   Eurydice_slice pseudorandomness = uu____1.snd;
   Eurydice_slice uu____2 = Eurydice_array_to_slice(
-      (size_t)1568U,
-      libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemPublicKey_SIZE__18__as_slice_a7(
-          public_key),
-      uint8_t, Eurydice_slice);
+      (size_t)1568U, libcrux_ml_kem_types_as_slice_cb_a7(public_key), uint8_t,
+      Eurydice_slice);
   uint8_t uu____3[32U];
   memcpy(uu____3, randomness0, (size_t)32U * sizeof(uint8_t));
   uint8_t ciphertext[1568U];
@@ -9143,10 +8886,9 @@ libcrux_ml_kem_ind_cca_encapsulate_51(
   uint8_t uu____4[1568U];
   memcpy(uu____4, ciphertext, (size_t)1568U * sizeof(uint8_t));
   libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext ciphertext0 =
-      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from_a7(
-          uu____4);
+      libcrux_ml_kem_types_from_01_a7(uu____4);
   uint8_t shared_secret_array[32U];
-  kdf_05(shared_secret, shared_secret_array);
+  kdf_af_05(shared_secret, shared_secret_array);
   libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext uu____5 = ciphertext0;
   uint8_t uu____6[32U];
   memcpy(uu____6, shared_secret_array, (size_t)32U * sizeof(uint8_t));
@@ -9161,36 +8903,30 @@ A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_then_decompress_ring_element_u with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - COMPRESSION_FACTOR = 11
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    deserialize_then_decompress_ring_element_u_19(Eurydice_slice serialized) {
-  return deserialize_then_decompress_11_c1(serialized);
+    deserialize_then_decompress_ring_element_u_62(Eurydice_slice serialized) {
+  return deserialize_then_decompress_11_01(serialized);
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.ntt.ntt_vector_u with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - VECTOR_U_COMPRESSION_FACTOR = 11
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void ntt_vector_u_19(
+static KRML_MUSTINLINE void ntt_vector_u_62(
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         *re) {
   size_t zeta_i = (size_t)0U;
-  ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)7U);
-  ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)6U);
-  ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)5U);
-  ntt_at_layer_4_plus_c1(&zeta_i, re, (size_t)4U);
-  ntt_at_layer_3_c1(&zeta_i, re);
-  ntt_at_layer_2_c1(&zeta_i, re);
-  ntt_at_layer_1_c1(&zeta_i, re);
-  poly_barrett_reduce_c1(re);
+  ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)7U);
+  ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)6U);
+  ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)5U);
+  ntt_at_layer_4_plus_01(&zeta_i, re, (size_t)4U);
+  ntt_at_layer_3_01(&zeta_i, re);
+  ntt_at_layer_2_01(&zeta_i, re);
+  ntt_at_layer_1_01(&zeta_i, re);
+  poly_barrett_reduce_89_01(re);
 }
 
 /**
@@ -9200,9 +8936,6 @@ generics:
 - K = 4
 - CIPHERTEXT_SIZE = 1568
 - U_COMPRESSION_FACTOR = 11
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE void deserialize_then_decompress_u_6a(
     uint8_t *ciphertext,
@@ -9211,7 +8944,7 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_6a(
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       u_as_ntt[4U];
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                  u_as_ntt[i] = ZERO_c1(););
+                  u_as_ntt[i] = ZERO_89_01(););
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(
                Eurydice_array_to_slice((size_t)1568U, ciphertext, uint8_t,
@@ -9231,9 +8964,9 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_6a(
                 (size_t)11U / (size_t)8U,
         uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        uu____0 = deserialize_then_decompress_ring_element_u_19(u_bytes);
+        uu____0 = deserialize_then_decompress_ring_element_u_62(u_bytes);
     u_as_ntt[i0] = uu____0;
-    ntt_vector_u_19(&u_as_ntt[i0]);
+    ntt_vector_u_62(&u_as_ntt[i0]);
   }
   memcpy(
       ret, u_as_ntt,
@@ -9247,27 +8980,21 @@ A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_then_decompress_ring_element_v with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - COMPRESSION_FACTOR = 5
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    deserialize_then_decompress_ring_element_v_0d(Eurydice_slice serialized) {
-  return deserialize_then_decompress_5_c1(serialized);
+    deserialize_then_decompress_ring_element_v_09(Eurydice_slice serialized) {
+  return deserialize_then_decompress_5_01(serialized);
 }
 
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_message with types
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-    compute_message_e3(
+    compute_message_af(
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *v,
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -9275,14 +9002,14 @@ static KRML_MUSTINLINE
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
             *u_as_ntt) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      result = ZERO_c1();
+      result = ZERO_89_01();
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-          product = ntt_multiply_c1(&secret_as_ntt[i0], &u_as_ntt[i0]);
-      add_to_ring_element_e3(&result, &product););
-  invert_ntt_montgomery_e3(&result);
-  result = subtract_reduce_c1(v, result);
+          product = ntt_multiply_89_01(&secret_as_ntt[i0], &u_as_ntt[i0]);
+      add_to_ring_element_89_af(&result, &product););
+  invert_ntt_montgomery_af(&result);
+  result = subtract_reduce_89_01(v, result);
   return result;
 }
 
@@ -9294,9 +9021,6 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - VECTOR_U_ENCODED_SIZE = 1408
 - U_COMPRESSION_FACTOR = 11
 - V_COMPRESSION_FACTOR = 5
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void decrypt_unpacked_6a(
     libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
@@ -9306,25 +9030,28 @@ static void decrypt_unpacked_6a(
       u_as_ntt[4U];
   deserialize_then_decompress_u_6a(ciphertext, u_as_ntt);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      v = deserialize_then_decompress_ring_element_v_0d(
+      v = deserialize_then_decompress_ring_element_v_09(
           Eurydice_array_to_subslice_from((size_t)1568U, ciphertext,
                                           (size_t)1408U, uint8_t, size_t,
                                           Eurydice_slice));
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-      message = compute_message_e3(&v, secret_key->secret_as_ntt, u_as_ntt);
+      message = compute_message_af(&v, secret_key->secret_as_ntt, u_as_ntt);
   uint8_t ret0[32U];
-  compress_then_serialize_message_c1(message, ret0);
+  compress_then_serialize_message_01(message, ret0);
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.neon.{(libcrux_ml_kem::hash_functions::Hash<K>␣for␣libcrux_ml_kem::hash_functions::neon::Simd128Hash)}.PRF
-with const generics:
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::neon::Simd128Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.neon.PRF_48 with const
+generics:
 - K = 4
 - LEN = 32
 */
-static KRML_MUSTINLINE void PRF_f8(Eurydice_slice input, uint8_t ret[32U]) {
+static KRML_MUSTINLINE void PRF_48_f8(Eurydice_slice input, uint8_t ret[32U]) {
   PRF_5b(input, ret);
 }
 
@@ -9348,9 +9075,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1600
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 void libcrux_ml_kem_ind_cca_decapsulate_unpacked_91(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
@@ -9373,8 +9097,9 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_91(
                               uint8_t, Eurydice_slice),
       uint8_t, void *);
   uint8_t hashed[64U];
-  G_c3(Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
-       hashed);
+  G_48_c3(
+      Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
+      hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____1 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -9392,12 +9117,9 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_91(
       (size_t)1600U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE,
       uint8_t, size_t, Eurydice_slice);
   core_slice___Slice_T___copy_from_slice(
-      uu____2,
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref_a7(
-          ciphertext),
-      uint8_t, void *);
+      uu____2, libcrux_ml_kem_types_as_ref_00_a7(ciphertext), uint8_t, void *);
   uint8_t implicit_rejection_shared_secret[32U];
-  PRF_f8(
+  PRF_48_f8(
       Eurydice_array_to_slice((size_t)1600U, to_hash, uint8_t, Eurydice_slice),
       implicit_rejection_shared_secret);
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
@@ -9408,8 +9130,7 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_91(
   encrypt_unpacked_91(uu____3, uu____4, pseudorandomness, expected_ciphertext);
   uint8_t selector =
       libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
-          libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref_a7(
-              ciphertext),
+          libcrux_ml_kem_types_as_ref_00_a7(ciphertext),
           Eurydice_array_to_slice((size_t)1568U, expected_ciphertext, uint8_t,
                                   Eurydice_slice));
   uint8_t ret0[32U];
@@ -9426,18 +9147,15 @@ A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_secret_key with
 types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const
 generics:
 - K = 4
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
-static KRML_MUSTINLINE void deserialize_secret_key_e3(
+static KRML_MUSTINLINE void deserialize_secret_key_af(
     Eurydice_slice secret_key,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         ret[4U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       secret_as_ntt[4U];
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                  secret_as_ntt[i] = ZERO_c1(););
+                  secret_as_ntt[i] = ZERO_89_01(););
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(secret_key, uint8_t, size_t) /
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
@@ -9449,7 +9167,7 @@ static KRML_MUSTINLINE void deserialize_secret_key_e3(
             LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-        uu____0 = deserialize_to_uncompressed_ring_element_c1(secret_bytes);
+        uu____0 = deserialize_to_uncompressed_ring_element_01(secret_bytes);
     secret_as_ntt[i0] = uu____0;
   }
   memcpy(
@@ -9467,15 +9185,12 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - VECTOR_U_ENCODED_SIZE = 1408
 - U_COMPRESSION_FACTOR = 11
 - V_COMPRESSION_FACTOR = 5
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 static void decrypt_6a(Eurydice_slice secret_key, uint8_t *ciphertext,
                        uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       secret_as_ntt[4U];
-  deserialize_secret_key_e3(secret_key, secret_as_ntt);
+  deserialize_secret_key_af(secret_key, secret_as_ntt);
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
       uu____0[4U];
   memcpy(
@@ -9516,10 +9231,6 @@ with const generics:
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1600
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::ind_cca::Variant for libcrux_ml_kem::ind_cca::MlKem)}
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 void libcrux_ml_kem_ind_cca_decapsulate_51(
     libcrux_ml_kem_types_MlKemPrivateKey____3168size_t *private_key,
@@ -9557,8 +9268,9 @@ void libcrux_ml_kem_ind_cca_decapsulate_51(
           uint8_t, size_t, Eurydice_slice),
       ind_cpa_public_key_hash, uint8_t, void *);
   uint8_t hashed[64U];
-  G_c3(Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
-       hashed);
+  G_48_c3(
+      Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
+      hashed);
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____3 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
@@ -9572,12 +9284,9 @@ void libcrux_ml_kem_ind_cca_decapsulate_51(
       (size_t)1600U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE,
       uint8_t, size_t, Eurydice_slice);
   core_slice___Slice_T___copy_from_slice(
-      uu____4,
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref_a7(
-          ciphertext),
-      uint8_t, void *);
+      uu____4, libcrux_ml_kem_types_as_ref_00_a7(ciphertext), uint8_t, void *);
   uint8_t implicit_rejection_shared_secret0[32U];
-  PRF_f8(
+  PRF_48_f8(
       Eurydice_array_to_slice((size_t)1600U, to_hash, uint8_t, Eurydice_slice),
       implicit_rejection_shared_secret0);
   Eurydice_slice uu____5 = ind_cpa_public_key;
@@ -9586,15 +9295,15 @@ void libcrux_ml_kem_ind_cca_decapsulate_51(
   uint8_t expected_ciphertext[1568U];
   encrypt_91(uu____5, uu____6, pseudorandomness, expected_ciphertext);
   uint8_t implicit_rejection_shared_secret[32U];
-  kdf_05(Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret0,
-                                 uint8_t, Eurydice_slice),
-         implicit_rejection_shared_secret);
+  kdf_af_05(
+      Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret0,
+                              uint8_t, Eurydice_slice),
+      implicit_rejection_shared_secret);
   uint8_t shared_secret[32U];
-  kdf_05(shared_secret0, shared_secret);
+  kdf_af_05(shared_secret0, shared_secret);
   uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
-      libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref_a7(
-          ciphertext),
+      libcrux_ml_kem_types_as_ref_00_a7(ciphertext),
       Eurydice_array_to_slice((size_t)1568U, expected_ciphertext, uint8_t,
                               Eurydice_slice),
       Eurydice_array_to_slice((size_t)32U, shared_secret, uint8_t,

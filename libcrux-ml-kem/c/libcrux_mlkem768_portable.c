@@ -8,7 +8,7 @@
  * Eurydice: 013beb9e4046a151131c6a56dfe25e606b49c4a1
  * Karamel: 4626e5fcb3787a47c806d160539342ade4b0809c
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: 8a3c1c4c84f258580d53bfef5ad2b1b7d5ef5fca
+ * Libcrux: a0db75c27aa09b79eae1c2315196383465857308
  */
 
 #include "libcrux_mlkem768_portable.h"

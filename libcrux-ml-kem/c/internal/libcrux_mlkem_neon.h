@@ -8,7 +8,7 @@
  * Eurydice: 013beb9e4046a151131c6a56dfe25e606b49c4a1
  * Karamel: 4626e5fcb3787a47c806d160539342ade4b0809c
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: 8a3c1c4c84f258580d53bfef5ad2b1b7d5ef5fca
+ * Libcrux: a0db75c27aa09b79eae1c2315196383465857308
  */
 
 #ifndef __internal_libcrux_mlkem_neon_H
@@ -29,9 +29,6 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 2
 - RANKED_BYTES_PER_RING_ELEMENT = 768
 - PUBLIC_KEY_SIZE = 800
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_41(uint8_t *public_key);
 
@@ -46,9 +43,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 768
 - ETA1 = 3
 - ETA1_RANDOMNESS_SIZE = 192
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__2size_t
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked_32(uint8_t randomness[64U]);
@@ -64,9 +58,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 768
 - ETA1 = 3
 - ETA1_RANDOMNESS_SIZE = 192
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t
 libcrux_ml_kem_ind_cca_generate_keypair_32(uint8_t randomness[64U]);
@@ -88,9 +79,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA1_RANDOMNESS_SIZE = 192
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_
 libcrux_ml_kem_ind_cca_encapsulate_unpacked_32(
@@ -116,10 +104,6 @@ with const generics:
 - ETA1_RANDOMNESS_SIZE = 192
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::ind_cca::Variant for libcrux_ml_kem::ind_cca::MlKem)}
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_
 libcrux_ml_kem_ind_cca_encapsulate_24(
@@ -146,9 +130,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE = 800
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 void libcrux_ml_kem_ind_cca_decapsulate_unpacked_32(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__2size_t
@@ -177,10 +158,6 @@ with const generics:
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE = 800
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::ind_cca::Variant for libcrux_ml_kem::ind_cca::MlKem)}
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 void libcrux_ml_kem_ind_cca_decapsulate_24(
     libcrux_ml_kem_types_MlKemPrivateKey____1632size_t *private_key,
@@ -193,9 +170,6 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 3
 - RANKED_BYTES_PER_RING_ELEMENT = 1152
 - PUBLIC_KEY_SIZE = 1184
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_62(uint8_t *public_key);
 
@@ -210,9 +184,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 1152
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__3size_t
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked_d7(uint8_t randomness[64U]);
@@ -228,9 +199,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 1152
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_ind_cca_generate_keypair_d7(uint8_t randomness[64U]);
@@ -252,9 +220,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA1_RANDOMNESS_SIZE = 128
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_
 libcrux_ml_kem_ind_cca_encapsulate_unpacked_d7(
@@ -280,10 +245,6 @@ with const generics:
 - ETA1_RANDOMNESS_SIZE = 128
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::ind_cca::Variant for libcrux_ml_kem::ind_cca::MlKem)}
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_
 libcrux_ml_kem_ind_cca_encapsulate_40(
@@ -310,9 +271,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1120
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 void libcrux_ml_kem_ind_cca_decapsulate_unpacked_d7(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__3size_t
@@ -340,10 +298,6 @@ with const generics:
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1120
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::ind_cca::Variant for libcrux_ml_kem::ind_cca::MlKem)}
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 void libcrux_ml_kem_ind_cca_decapsulate_40(
     libcrux_ml_kem_types_MlKemPrivateKey____2400size_t *private_key,
@@ -355,9 +309,6 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector and with const generics:
 - K = 4
 - RANKED_BYTES_PER_RING_ELEMENT = 1536
 - PUBLIC_KEY_SIZE = 1568
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_ae(uint8_t *public_key);
 
@@ -372,9 +323,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 1536
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked_91(uint8_t randomness[64U]);
@@ -390,9 +338,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - BYTES_PER_RING_ELEMENT = 1536
 - ETA1 = 2
 - ETA1_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_ind_cca_generate_keypair_91(uint8_t randomness[64U]);
@@ -414,9 +359,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA1_RANDOMNESS_SIZE = 128
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_
 libcrux_ml_kem_ind_cca_encapsulate_unpacked_91(
@@ -442,10 +384,6 @@ with const generics:
 - ETA1_RANDOMNESS_SIZE = 128
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::ind_cca::Variant for libcrux_ml_kem::ind_cca::MlKem)}
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_
 libcrux_ml_kem_ind_cca_encapsulate_51(
@@ -472,9 +410,6 @@ libcrux_ml_kem_hash_functions_neon_Simd128Hash and with const generics:
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1600
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 void libcrux_ml_kem_ind_cca_decapsulate_unpacked_91(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
@@ -502,10 +437,6 @@ with const generics:
 - ETA2 = 2
 - ETA2_RANDOMNESS_SIZE = 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1600
-Furthermore, this instances features the following traits:
-- {(libcrux_ml_kem::ind_cca::Variant for libcrux_ml_kem::ind_cca::MlKem)}
-- {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
 */
 void libcrux_ml_kem_ind_cca_decapsulate_51(
     libcrux_ml_kem_types_MlKemPrivateKey____3168size_t *private_key,

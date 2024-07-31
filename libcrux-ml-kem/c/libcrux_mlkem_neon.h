@@ -8,7 +8,7 @@
  * Eurydice: 013beb9e4046a151131c6a56dfe25e606b49c4a1
  * Karamel: 4626e5fcb3787a47c806d160539342ade4b0809c
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: 8a3c1c4c84f258580d53bfef5ad2b1b7d5ef5fca
+ * Libcrux: a0db75c27aa09b79eae1c2315196383465857308
  */
 
 #ifndef __libcrux_mlkem_neon_H
@@ -37,21 +37,31 @@ typedef struct libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_s {
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_vector_type_ZERO(void);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ZERO(
-    void);
+libcrux_ml_kem_vector_neon_ZERO_20(void);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_vector_type_from_i16_array(Eurydice_slice array);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___from_i16_array(
-    Eurydice_slice array);
+libcrux_ml_kem_vector_neon_from_i16_array_20(Eurydice_slice array);
 
 void libcrux_ml_kem_vector_neon_vector_type_to_i16_array(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t ret[16U]);
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___to_i16_array(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_to_i16_array_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector x, int16_t ret[16U]);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -59,8 +69,12 @@ libcrux_ml_kem_vector_neon_arithmetic_add(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lhs,
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *rhs);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___add(
+libcrux_ml_kem_vector_neon_add_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lhs,
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *rhs);
 
@@ -69,8 +83,12 @@ libcrux_ml_kem_vector_neon_arithmetic_sub(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lhs,
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *rhs);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___sub(
+libcrux_ml_kem_vector_neon_sub_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lhs,
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *rhs);
 
@@ -78,24 +96,36 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_arithmetic_multiply_by_constant(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t c);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___multiply_by_constant(
+libcrux_ml_kem_vector_neon_multiply_by_constant_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t c);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_arithmetic_bitwise_and_with_constant(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t c);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___bitwise_and_with_constant(
+libcrux_ml_kem_vector_neon_bitwise_and_with_constant_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t c);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_arithmetic_cond_subtract_3329(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___cond_subtract_3329(
+libcrux_ml_kem_vector_neon_cond_subtract_3329_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v);
 
 #define LIBCRUX_ML_KEM_VECTOR_NEON_ARITHMETIC_BARRETT_MULTIPLIER \
@@ -109,8 +139,12 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_arithmetic_barrett_reduce(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___barrett_reduce(
+libcrux_ml_kem_vector_neon_barrett_reduce_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v);
 
 core_core_arch_arm_shared_neon_int16x8_t
@@ -126,16 +160,24 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_by_constant(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t c);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___montgomery_multiply_by_constant(
+libcrux_ml_kem_vector_neon_montgomery_multiply_by_constant_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t c);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_compress_compress_1(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___compress_1(
+libcrux_ml_kem_vector_neon_compress_1_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v);
 
 int16_t libcrux_ml_kem_vector_neon_compress_mask_n_least_significant_bits(
@@ -151,8 +193,12 @@ libcrux_ml_kem_vector_neon_ntt_ntt_layer_1_step(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t zeta1,
     int16_t zeta2, int16_t zeta3, int16_t zeta4);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ntt_layer_1_step(
+libcrux_ml_kem_vector_neon_ntt_layer_1_step_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, int16_t zeta1,
     int16_t zeta2, int16_t zeta3, int16_t zeta4);
 
@@ -161,8 +207,12 @@ libcrux_ml_kem_vector_neon_ntt_ntt_layer_2_step(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t zeta1,
     int16_t zeta2);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ntt_layer_2_step(
+libcrux_ml_kem_vector_neon_ntt_layer_2_step_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, int16_t zeta1,
     int16_t zeta2);
 
@@ -170,8 +220,12 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_ntt_ntt_layer_3_step(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t zeta);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ntt_layer_3_step(
+libcrux_ml_kem_vector_neon_ntt_layer_3_step_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, int16_t zeta);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -179,8 +233,12 @@ libcrux_ml_kem_vector_neon_ntt_inv_ntt_layer_1_step(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t zeta1,
     int16_t zeta2, int16_t zeta3, int16_t zeta4);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___inv_ntt_layer_1_step(
+libcrux_ml_kem_vector_neon_inv_ntt_layer_1_step_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, int16_t zeta1,
     int16_t zeta2, int16_t zeta3, int16_t zeta4);
 
@@ -189,8 +247,12 @@ libcrux_ml_kem_vector_neon_ntt_inv_ntt_layer_2_step(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t zeta1,
     int16_t zeta2);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___inv_ntt_layer_2_step(
+libcrux_ml_kem_vector_neon_inv_ntt_layer_2_step_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, int16_t zeta1,
     int16_t zeta2);
 
@@ -198,8 +260,12 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_ntt_inv_ntt_layer_3_step(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t zeta);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___inv_ntt_layer_3_step(
+libcrux_ml_kem_vector_neon_inv_ntt_layer_3_step_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, int16_t zeta);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -208,8 +274,12 @@ libcrux_ml_kem_vector_neon_ntt_ntt_multiply(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *rhs, int16_t zeta1,
     int16_t zeta2, int16_t zeta3, int16_t zeta4);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___ntt_multiply(
+libcrux_ml_kem_vector_neon_ntt_multiply_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *lhs,
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *rhs, int16_t zeta1,
     int16_t zeta2, int16_t zeta3, int16_t zeta4);
@@ -217,90 +287,139 @@ libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libc
 void libcrux_ml_kem_vector_neon_serialize_serialize_1(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, uint8_t ret[2U]);
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_1(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_serialize_1_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[2U]);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_serialize_deserialize_1(Eurydice_slice a);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_1(
-    Eurydice_slice a);
+libcrux_ml_kem_vector_neon_deserialize_1_20(Eurydice_slice a);
 
 void libcrux_ml_kem_vector_neon_serialize_serialize_4(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, uint8_t ret[8U]);
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_4(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_serialize_4_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[8U]);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_serialize_deserialize_4(Eurydice_slice v);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_4(
-    Eurydice_slice a);
+libcrux_ml_kem_vector_neon_deserialize_4_20(Eurydice_slice a);
 
 void libcrux_ml_kem_vector_neon_serialize_serialize_5(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, uint8_t ret[10U]);
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_5(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_serialize_5_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[10U]);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_serialize_deserialize_5(Eurydice_slice v);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_5(
-    Eurydice_slice a);
+libcrux_ml_kem_vector_neon_deserialize_5_20(Eurydice_slice a);
 
 void libcrux_ml_kem_vector_neon_serialize_serialize_10(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, uint8_t ret[20U]);
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_10(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_serialize_10_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[20U]);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_serialize_deserialize_10(Eurydice_slice v);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_10(
-    Eurydice_slice a);
+libcrux_ml_kem_vector_neon_deserialize_10_20(Eurydice_slice a);
 
 void libcrux_ml_kem_vector_neon_serialize_serialize_11(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, uint8_t ret[22U]);
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_11(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_serialize_11_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[22U]);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_serialize_deserialize_11(Eurydice_slice v);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_11(
-    Eurydice_slice a);
+libcrux_ml_kem_vector_neon_deserialize_11_20(Eurydice_slice a);
 
 void libcrux_ml_kem_vector_neon_serialize_serialize_12(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, uint8_t ret[24U]);
 
-void libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_12(
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+void libcrux_ml_kem_vector_neon_serialize_12_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector a, uint8_t ret[24U]);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_serialize_deserialize_12(Eurydice_slice v);
 
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_12(
-    Eurydice_slice a);
+libcrux_ml_kem_vector_neon_deserialize_12_20(Eurydice_slice a);
 
 size_t libcrux_ml_kem_vector_neon_rej_sample(Eurydice_slice a,
                                              Eurydice_slice result);
 
-size_t
-libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___rej_sample(
-    Eurydice_slice a, Eurydice_slice out);
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
+size_t libcrux_ml_kem_vector_neon_rej_sample_20(Eurydice_slice a,
+                                                Eurydice_slice out);
 
+/**
+This function found in impl {(core::clone::Clone for
+libcrux_ml_kem::vector::neon::vector_type::SIMD128Vector)}
+*/
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
-libcrux_ml_kem_vector_neon_vector_type___core__clone__Clone_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___clone(
+libcrux_ml_kem_vector_neon_vector_type_clone_ed(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *self);
 
 typedef struct

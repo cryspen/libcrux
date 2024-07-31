@@ -8,7 +8,7 @@
  * Eurydice: 013beb9e4046a151131c6a56dfe25e606b49c4a1
  * Karamel: 4626e5fcb3787a47c806d160539342ade4b0809c
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: 8a3c1c4c84f258580d53bfef5ad2b1b7d5ef5fca
+ * Libcrux: a0db75c27aa09b79eae1c2315196383465857308
  */
 
 #ifndef __libcrux_core_H
@@ -142,10 +142,13 @@ typedef struct
 } core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError;
 
 /**
-A monomorphic instance of core.result.{core::result::Result<T,␣E>}.unwrap with
-types uint8_t[8size_t], core_array_TryFromSliceError
+This function found in impl {core::result::Result<T, E>}
 */
-void core_result__core__result__Result_T__E___unwrap_15(
+/**
+A monomorphic instance of core.result.unwrap_41 with types uint8_t[8size_t],
+core_array_TryFromSliceError
+*/
+void core_result_unwrap_41_15(
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError self,
     uint8_t ret[8U]);
 
