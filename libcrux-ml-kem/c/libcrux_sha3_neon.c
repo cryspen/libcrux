@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 58573385962a4c5d09c564f4b32549bad6c6efe9
- * Karamel: 5a2983a0e117205380661087ffa52b16da0c6321
+ * Eurydice: 013beb9e4046a151131c6a56dfe25e606b49c4a1
+ * Karamel: 4626e5fcb3787a47c806d160539342ade4b0809c
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: bf6f43daf933dde5ff5bfe79598132f3433e1b77
+ * Libcrux: 8a3c1c4c84f258580d53bfef5ad2b1b7d5ef5fca
  */
 
 #include "libcrux_sha3_neon.h"
@@ -43,8 +43,14 @@ xor5(core_core_arch_arm_shared_neon_uint64x2_t a,
   return _veor5q_u64(a, b, c, d, e);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 1
+- RIGHT = 63
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___1int32_t_63int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_70(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)1, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -56,8 +62,7 @@ static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
 _vrax1q_u64(core_core_arch_arm_shared_neon_uint64x2_t a,
             core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t uu____0 = a;
-  return libcrux_intrinsics_arm64__veorq_u64(
-      uu____0, rotate_left___1int32_t_63int32_t(b));
+  return libcrux_intrinsics_arm64__veorq_u64(uu____0, rotate_left_70(b));
 }
 
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
@@ -147,9 +152,18 @@ static KRML_MUSTINLINE
   return split_at_mut_2(a, mid);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.generic_keccak.{libcrux_sha3::generic_keccak::KeccakState<T,␣N>[TraitClause@0]#1}.new
+with types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
 static KRML_MUSTINLINE
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
-    new__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(void) {
+    new_05(void) {
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
       lit;
   lit.st[0U][0U] = zero();
@@ -180,7 +194,12 @@ static KRML_MUSTINLINE
   return lit;
 }
 
-static KRML_MUSTINLINE void load_block___72size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.load_block with const
+generics:
+- RATE = 72
+*/
+static KRML_MUSTINLINE void load_block_66(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     Eurydice_slice blocks[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)72U / (size_t)16U; i++) {
@@ -215,8 +234,7 @@ static KRML_MUSTINLINE void load_block___72size_t(
         Eurydice_slice_subslice2(blocks[0U], (size_t)72U - (size_t)8U,
                                  (size_t)72U, uint8_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
-    core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst0, uu____0);
+    core_result__core__result__Result_T__E___unwrap_15(dst0, uu____0);
     u[0U] = core_num__u64_9__from_le_bytes(uu____0);
     uint8_t uu____1[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst;
@@ -225,8 +243,7 @@ static KRML_MUSTINLINE void load_block___72size_t(
         Eurydice_slice_subslice2(blocks[1U], (size_t)72U - (size_t)8U,
                                  (size_t)72U, uint8_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
-    core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst, uu____1);
+    core_result__core__result__Result_T__E___unwrap_15(dst, uu____1);
     u[1U] = core_num__u64_9__from_le_bytes(uu____1);
     core_core_arch_arm_shared_neon_uint64x2_t uvec =
         libcrux_intrinsics_arm64__vld1q_u64(
@@ -235,16 +252,28 @@ static KRML_MUSTINLINE void load_block___72size_t(
   }
 }
 
-static KRML_MUSTINLINE void load_block___72size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.load_block
+with const generics:
+- BLOCKSIZE = 72
+*/
+static KRML_MUSTINLINE void load_block_660(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], Eurydice_slice b[2U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = a;
   Eurydice_slice uu____1[2U];
   memcpy(uu____1, b, (size_t)2U * sizeof(Eurydice_slice));
-  load_block___72size_t(uu____0, uu____1);
+  load_block_66(uu____0, uu____1);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 36
+- RIGHT = 28
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___36int32_t_28int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_71(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)36, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -252,23 +281,41 @@ rotate_left___36int32_t_28int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)28, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 36
+- RIGHT = 28
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___36int32_t_28int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_71(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___36int32_t_28int32_t(ab);
+  return rotate_left_71(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 36
+- RIGHT = 28
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___36int32_t_28int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___36int32_t_28int32_t(a, b);
+xor_and_rotate_71(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_71(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 3
+- RIGHT = 61
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___3int32_t_61int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_08(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)3, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -276,23 +323,41 @@ rotate_left___3int32_t_61int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)61, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 3
+- RIGHT = 61
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___3int32_t_61int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_08(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___3int32_t_61int32_t(ab);
+  return rotate_left_08(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 3
+- RIGHT = 61
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___3int32_t_61int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___3int32_t_61int32_t(a, b);
+xor_and_rotate_08(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_08(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 41
+- RIGHT = 23
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___41int32_t_23int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_6a(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)41, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -300,23 +365,41 @@ rotate_left___41int32_t_23int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)23, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 41
+- RIGHT = 23
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___41int32_t_23int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_6a(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___41int32_t_23int32_t(ab);
+  return rotate_left_6a(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 41
+- RIGHT = 23
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___41int32_t_23int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___41int32_t_23int32_t(a, b);
+xor_and_rotate_6a(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_6a(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 18
+- RIGHT = 46
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___18int32_t_46int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_95(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)18, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -324,38 +407,68 @@ rotate_left___18int32_t_46int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)46, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 18
+- RIGHT = 46
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___18int32_t_46int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_95(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___18int32_t_46int32_t(ab);
+  return rotate_left_95(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 18
+- RIGHT = 46
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___18int32_t_46int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___18int32_t_46int32_t(a, b);
+xor_and_rotate_95(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_95(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 1
+- RIGHT = 63
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___1int32_t_63int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_70(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___1int32_t_63int32_t(ab);
+  return rotate_left_70(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 1
+- RIGHT = 63
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___1int32_t_63int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___1int32_t_63int32_t(a, b);
+xor_and_rotate_70(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_70(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 44
+- RIGHT = 20
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___44int32_t_20int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_e1(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)44, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -363,23 +476,41 @@ rotate_left___44int32_t_20int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)20, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 44
+- RIGHT = 20
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___44int32_t_20int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_e1(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___44int32_t_20int32_t(ab);
+  return rotate_left_e1(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 44
+- RIGHT = 20
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___44int32_t_20int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___44int32_t_20int32_t(a, b);
+xor_and_rotate_e1(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_e1(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 10
+- RIGHT = 54
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___10int32_t_54int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_ce(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)10, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -387,23 +518,41 @@ rotate_left___10int32_t_54int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)54, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 10
+- RIGHT = 54
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___10int32_t_54int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_ce(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___10int32_t_54int32_t(ab);
+  return rotate_left_ce(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 10
+- RIGHT = 54
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___10int32_t_54int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___10int32_t_54int32_t(a, b);
+xor_and_rotate_ce(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_ce(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 45
+- RIGHT = 19
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___45int32_t_19int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_b6(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)45, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -411,23 +560,41 @@ rotate_left___45int32_t_19int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)19, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 45
+- RIGHT = 19
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___45int32_t_19int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_b6(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___45int32_t_19int32_t(ab);
+  return rotate_left_b6(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 45
+- RIGHT = 19
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___45int32_t_19int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___45int32_t_19int32_t(a, b);
+xor_and_rotate_b6(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_b6(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 2
+- RIGHT = 62
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___2int32_t_62int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_2a(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)2, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -435,23 +602,41 @@ rotate_left___2int32_t_62int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)62, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 2
+- RIGHT = 62
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___2int32_t_62int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_2a(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___2int32_t_62int32_t(ab);
+  return rotate_left_2a(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 2
+- RIGHT = 62
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___2int32_t_62int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___2int32_t_62int32_t(a, b);
+xor_and_rotate_2a(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_2a(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 62
+- RIGHT = 2
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___62int32_t_2int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_25(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)62, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -459,23 +644,41 @@ rotate_left___62int32_t_2int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)2, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 62
+- RIGHT = 2
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___62int32_t_2int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_25(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___62int32_t_2int32_t(ab);
+  return rotate_left_25(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 62
+- RIGHT = 2
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___62int32_t_2int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___62int32_t_2int32_t(a, b);
+xor_and_rotate_25(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_25(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 6
+- RIGHT = 58
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___6int32_t_58int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_4b(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)6, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -483,23 +686,41 @@ rotate_left___6int32_t_58int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)58, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 6
+- RIGHT = 58
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___6int32_t_58int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_4b(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___6int32_t_58int32_t(ab);
+  return rotate_left_4b(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 6
+- RIGHT = 58
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___6int32_t_58int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___6int32_t_58int32_t(a, b);
+xor_and_rotate_4b(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_4b(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 43
+- RIGHT = 21
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___43int32_t_21int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_c2(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)43, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -507,23 +728,41 @@ rotate_left___43int32_t_21int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)21, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 43
+- RIGHT = 21
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___43int32_t_21int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_c2(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___43int32_t_21int32_t(ab);
+  return rotate_left_c2(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 43
+- RIGHT = 21
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___43int32_t_21int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___43int32_t_21int32_t(a, b);
+xor_and_rotate_c2(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_c2(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 15
+- RIGHT = 49
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___15int32_t_49int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_3e(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)15, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -531,23 +770,41 @@ rotate_left___15int32_t_49int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)49, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 15
+- RIGHT = 49
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___15int32_t_49int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_3e(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___15int32_t_49int32_t(ab);
+  return rotate_left_3e(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 15
+- RIGHT = 49
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___15int32_t_49int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___15int32_t_49int32_t(a, b);
+xor_and_rotate_3e(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_3e(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 61
+- RIGHT = 3
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___61int32_t_3int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_bd(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)61, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -555,23 +812,41 @@ rotate_left___61int32_t_3int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)3, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 61
+- RIGHT = 3
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___61int32_t_3int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_bd(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___61int32_t_3int32_t(ab);
+  return rotate_left_bd(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 61
+- RIGHT = 3
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___61int32_t_3int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___61int32_t_3int32_t(a, b);
+xor_and_rotate_bd(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_bd(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 28
+- RIGHT = 36
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___28int32_t_36int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_42(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)28, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -579,23 +854,41 @@ rotate_left___28int32_t_36int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)36, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 28
+- RIGHT = 36
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___28int32_t_36int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_42(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___28int32_t_36int32_t(ab);
+  return rotate_left_42(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 28
+- RIGHT = 36
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___28int32_t_36int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___28int32_t_36int32_t(a, b);
+xor_and_rotate_42(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_42(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 55
+- RIGHT = 9
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___55int32_t_9int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_64(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)55, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -603,23 +896,41 @@ rotate_left___55int32_t_9int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)9, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 55
+- RIGHT = 9
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___55int32_t_9int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_64(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___55int32_t_9int32_t(ab);
+  return rotate_left_64(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 55
+- RIGHT = 9
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___55int32_t_9int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___55int32_t_9int32_t(a, b);
+xor_and_rotate_64(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_64(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 25
+- RIGHT = 39
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___25int32_t_39int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_cc(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)25, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -627,23 +938,41 @@ rotate_left___25int32_t_39int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)39, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 25
+- RIGHT = 39
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___25int32_t_39int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_cc(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___25int32_t_39int32_t(ab);
+  return rotate_left_cc(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 25
+- RIGHT = 39
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___25int32_t_39int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___25int32_t_39int32_t(a, b);
+xor_and_rotate_cc(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_cc(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 21
+- RIGHT = 43
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___21int32_t_43int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_d5(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)21, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -651,23 +980,41 @@ rotate_left___21int32_t_43int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)43, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 21
+- RIGHT = 43
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___21int32_t_43int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_d5(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___21int32_t_43int32_t(ab);
+  return rotate_left_d5(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 21
+- RIGHT = 43
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___21int32_t_43int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___21int32_t_43int32_t(a, b);
+xor_and_rotate_d5(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_d5(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 56
+- RIGHT = 8
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___56int32_t_8int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_61(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)56, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -675,23 +1022,41 @@ rotate_left___56int32_t_8int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)8, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 56
+- RIGHT = 8
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___56int32_t_8int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_61(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___56int32_t_8int32_t(ab);
+  return rotate_left_61(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 56
+- RIGHT = 8
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___56int32_t_8int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___56int32_t_8int32_t(a, b);
+xor_and_rotate_61(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_61(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 27
+- RIGHT = 37
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___27int32_t_37int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_6f(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)27, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -699,23 +1064,41 @@ rotate_left___27int32_t_37int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)37, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 27
+- RIGHT = 37
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___27int32_t_37int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_6f(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___27int32_t_37int32_t(ab);
+  return rotate_left_6f(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 27
+- RIGHT = 37
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___27int32_t_37int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___27int32_t_37int32_t(a, b);
+xor_and_rotate_6f(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_6f(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 20
+- RIGHT = 44
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___20int32_t_44int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_06(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)20, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -723,23 +1106,41 @@ rotate_left___20int32_t_44int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)44, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 20
+- RIGHT = 44
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___20int32_t_44int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_06(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___20int32_t_44int32_t(ab);
+  return rotate_left_06(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 20
+- RIGHT = 44
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___20int32_t_44int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___20int32_t_44int32_t(a, b);
+xor_and_rotate_06(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_06(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 39
+- RIGHT = 25
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___39int32_t_25int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_3d(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)39, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -747,23 +1148,41 @@ rotate_left___39int32_t_25int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)25, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 39
+- RIGHT = 25
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___39int32_t_25int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_3d(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___39int32_t_25int32_t(ab);
+  return rotate_left_3d(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 39
+- RIGHT = 25
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___39int32_t_25int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___39int32_t_25int32_t(a, b);
+xor_and_rotate_3d(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_3d(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 8
+- RIGHT = 56
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___8int32_t_56int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_0c(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)8, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -771,23 +1190,41 @@ rotate_left___8int32_t_56int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)56, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 8
+- RIGHT = 56
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___8int32_t_56int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_0c(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___8int32_t_56int32_t(ab);
+  return rotate_left_0c(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 8
+- RIGHT = 56
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___8int32_t_56int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___8int32_t_56int32_t(a, b);
+xor_and_rotate_0c(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_0c(a, b);
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.rotate_left with const
+generics:
+- LEFT = 14
+- RIGHT = 50
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-rotate_left___14int32_t_50int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
+rotate_left_98(core_core_arch_arm_shared_neon_uint64x2_t x) {
   return libcrux_intrinsics_arm64__veorq_u64(
       libcrux_intrinsics_arm64__vshlq_n_u64(
           (int32_t)14, x, core_core_arch_arm_shared_neon_uint64x2_t),
@@ -795,23 +1232,42 @@ rotate_left___14int32_t_50int32_t(core_core_arch_arm_shared_neon_uint64x2_t x) {
           (int32_t)50, x, core_core_arch_arm_shared_neon_uint64x2_t));
 }
 
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64._vxarq_u64 with const
+generics:
+- LEFT = 14
+- RIGHT = 50
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-_vxarq_u64___14int32_t_50int32_t(core_core_arch_arm_shared_neon_uint64x2_t a,
-                                 core_core_arch_arm_shared_neon_uint64x2_t b) {
+_vxarq_u64_98(core_core_arch_arm_shared_neon_uint64x2_t a,
+              core_core_arch_arm_shared_neon_uint64x2_t b) {
   core_core_arch_arm_shared_neon_uint64x2_t ab =
       libcrux_intrinsics_arm64__veorq_u64(a, b);
-  return rotate_left___14int32_t_50int32_t(ab);
+  return rotate_left_98(ab);
 }
 
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.xor_and_rotate
+with const generics:
+- LEFT = 14
+- RIGHT = 50
+*/
 static KRML_MUSTINLINE core_core_arch_arm_shared_neon_uint64x2_t
-xor_and_rotate___14int32_t_50int32_t(
-    core_core_arch_arm_shared_neon_uint64x2_t a,
-    core_core_arch_arm_shared_neon_uint64x2_t b) {
-  return _vxarq_u64___14int32_t_50int32_t(a, b);
+xor_and_rotate_98(core_core_arch_arm_shared_neon_uint64x2_t a,
+                  core_core_arch_arm_shared_neon_uint64x2_t b) {
+  return _vxarq_u64_98(a, b);
 }
 
-static KRML_MUSTINLINE void
-theta_rho__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.theta_rho with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void theta_rho_05(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s) {
   core_core_arch_arm_shared_neon_uint64x2_t c[5U] = {
@@ -843,81 +1299,88 @@ theta_rho__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(
                            c[((size_t)4U + (size_t)1U) % (size_t)5U])};
   s->st[0U][0U] = xor0(s->st[0U][0U], t[0U]);
   core_core_arch_arm_shared_neon_uint64x2_t uu____4 =
-      xor_and_rotate___36int32_t_28int32_t(s->st[1U][0U], t[0U]);
+      xor_and_rotate_71(s->st[1U][0U], t[0U]);
   s->st[1U][0U] = uu____4;
   core_core_arch_arm_shared_neon_uint64x2_t uu____5 =
-      xor_and_rotate___3int32_t_61int32_t(s->st[2U][0U], t[0U]);
+      xor_and_rotate_08(s->st[2U][0U], t[0U]);
   s->st[2U][0U] = uu____5;
   core_core_arch_arm_shared_neon_uint64x2_t uu____6 =
-      xor_and_rotate___41int32_t_23int32_t(s->st[3U][0U], t[0U]);
+      xor_and_rotate_6a(s->st[3U][0U], t[0U]);
   s->st[3U][0U] = uu____6;
   core_core_arch_arm_shared_neon_uint64x2_t uu____7 =
-      xor_and_rotate___18int32_t_46int32_t(s->st[4U][0U], t[0U]);
+      xor_and_rotate_95(s->st[4U][0U], t[0U]);
   s->st[4U][0U] = uu____7;
   core_core_arch_arm_shared_neon_uint64x2_t uu____8 =
-      xor_and_rotate___1int32_t_63int32_t(s->st[0U][1U], t[1U]);
+      xor_and_rotate_70(s->st[0U][1U], t[1U]);
   s->st[0U][1U] = uu____8;
   core_core_arch_arm_shared_neon_uint64x2_t uu____9 =
-      xor_and_rotate___44int32_t_20int32_t(s->st[1U][1U], t[1U]);
+      xor_and_rotate_e1(s->st[1U][1U], t[1U]);
   s->st[1U][1U] = uu____9;
   core_core_arch_arm_shared_neon_uint64x2_t uu____10 =
-      xor_and_rotate___10int32_t_54int32_t(s->st[2U][1U], t[1U]);
+      xor_and_rotate_ce(s->st[2U][1U], t[1U]);
   s->st[2U][1U] = uu____10;
   core_core_arch_arm_shared_neon_uint64x2_t uu____11 =
-      xor_and_rotate___45int32_t_19int32_t(s->st[3U][1U], t[1U]);
+      xor_and_rotate_b6(s->st[3U][1U], t[1U]);
   s->st[3U][1U] = uu____11;
   core_core_arch_arm_shared_neon_uint64x2_t uu____12 =
-      xor_and_rotate___2int32_t_62int32_t(s->st[4U][1U], t[1U]);
+      xor_and_rotate_2a(s->st[4U][1U], t[1U]);
   s->st[4U][1U] = uu____12;
   core_core_arch_arm_shared_neon_uint64x2_t uu____13 =
-      xor_and_rotate___62int32_t_2int32_t(s->st[0U][2U], t[2U]);
+      xor_and_rotate_25(s->st[0U][2U], t[2U]);
   s->st[0U][2U] = uu____13;
   core_core_arch_arm_shared_neon_uint64x2_t uu____14 =
-      xor_and_rotate___6int32_t_58int32_t(s->st[1U][2U], t[2U]);
+      xor_and_rotate_4b(s->st[1U][2U], t[2U]);
   s->st[1U][2U] = uu____14;
   core_core_arch_arm_shared_neon_uint64x2_t uu____15 =
-      xor_and_rotate___43int32_t_21int32_t(s->st[2U][2U], t[2U]);
+      xor_and_rotate_c2(s->st[2U][2U], t[2U]);
   s->st[2U][2U] = uu____15;
   core_core_arch_arm_shared_neon_uint64x2_t uu____16 =
-      xor_and_rotate___15int32_t_49int32_t(s->st[3U][2U], t[2U]);
+      xor_and_rotate_3e(s->st[3U][2U], t[2U]);
   s->st[3U][2U] = uu____16;
   core_core_arch_arm_shared_neon_uint64x2_t uu____17 =
-      xor_and_rotate___61int32_t_3int32_t(s->st[4U][2U], t[2U]);
+      xor_and_rotate_bd(s->st[4U][2U], t[2U]);
   s->st[4U][2U] = uu____17;
   core_core_arch_arm_shared_neon_uint64x2_t uu____18 =
-      xor_and_rotate___28int32_t_36int32_t(s->st[0U][3U], t[3U]);
+      xor_and_rotate_42(s->st[0U][3U], t[3U]);
   s->st[0U][3U] = uu____18;
   core_core_arch_arm_shared_neon_uint64x2_t uu____19 =
-      xor_and_rotate___55int32_t_9int32_t(s->st[1U][3U], t[3U]);
+      xor_and_rotate_64(s->st[1U][3U], t[3U]);
   s->st[1U][3U] = uu____19;
   core_core_arch_arm_shared_neon_uint64x2_t uu____20 =
-      xor_and_rotate___25int32_t_39int32_t(s->st[2U][3U], t[3U]);
+      xor_and_rotate_cc(s->st[2U][3U], t[3U]);
   s->st[2U][3U] = uu____20;
   core_core_arch_arm_shared_neon_uint64x2_t uu____21 =
-      xor_and_rotate___21int32_t_43int32_t(s->st[3U][3U], t[3U]);
+      xor_and_rotate_d5(s->st[3U][3U], t[3U]);
   s->st[3U][3U] = uu____21;
   core_core_arch_arm_shared_neon_uint64x2_t uu____22 =
-      xor_and_rotate___56int32_t_8int32_t(s->st[4U][3U], t[3U]);
+      xor_and_rotate_61(s->st[4U][3U], t[3U]);
   s->st[4U][3U] = uu____22;
   core_core_arch_arm_shared_neon_uint64x2_t uu____23 =
-      xor_and_rotate___27int32_t_37int32_t(s->st[0U][4U], t[4U]);
+      xor_and_rotate_6f(s->st[0U][4U], t[4U]);
   s->st[0U][4U] = uu____23;
   core_core_arch_arm_shared_neon_uint64x2_t uu____24 =
-      xor_and_rotate___20int32_t_44int32_t(s->st[1U][4U], t[4U]);
+      xor_and_rotate_06(s->st[1U][4U], t[4U]);
   s->st[1U][4U] = uu____24;
   core_core_arch_arm_shared_neon_uint64x2_t uu____25 =
-      xor_and_rotate___39int32_t_25int32_t(s->st[2U][4U], t[4U]);
+      xor_and_rotate_3d(s->st[2U][4U], t[4U]);
   s->st[2U][4U] = uu____25;
   core_core_arch_arm_shared_neon_uint64x2_t uu____26 =
-      xor_and_rotate___8int32_t_56int32_t(s->st[3U][4U], t[4U]);
+      xor_and_rotate_0c(s->st[3U][4U], t[4U]);
   s->st[3U][4U] = uu____26;
   core_core_arch_arm_shared_neon_uint64x2_t uu____27 =
-      xor_and_rotate___14int32_t_50int32_t(s->st[4U][4U], t[4U]);
+      xor_and_rotate_98(s->st[4U][4U], t[4U]);
   s->st[4U][4U] = uu____27;
 }
 
-static KRML_MUSTINLINE void
-pi__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.pi with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void pi_05(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s) {
   core_core_arch_arm_shared_neon_uint64x2_t old[5U][5U];
@@ -949,8 +1412,15 @@ pi__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(
   s->st[4U][4U] = old[4U][1U];
 }
 
-static KRML_MUSTINLINE void
-chi__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.chi with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void chi_05(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s) {
   core_core_arch_arm_shared_neon_uint64x2_t old[5U][5U];
@@ -964,8 +1434,15 @@ chi__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(
                           old[i1][(j + (size_t)1U) % (size_t)5U]);););
 }
 
-static KRML_MUSTINLINE void
-iota__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.iota with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void iota_05(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     size_t i) {
@@ -973,51 +1450,86 @@ iota__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(
                                libcrux_sha3_generic_keccak_ROUNDCONSTANTS[i]);
 }
 
-static KRML_MUSTINLINE void
-keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.keccakf1600 with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void keccakf1600_05(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s) {
   for (size_t i = (size_t)0U; i < (size_t)24U; i++) {
     size_t i0 = i;
-    theta_rho__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
-    pi__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
-    chi__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
-    iota__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s, i0);
+    theta_rho_05(s);
+    pi_05(s);
+    chi_05(s);
+    iota_05(s, i0);
   }
 }
 
-static KRML_MUSTINLINE void
-absorb_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.absorb_block with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 72
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void absorb_block_33(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice blocks[2U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = s->st;
   Eurydice_slice uu____1[2U];
   memcpy(uu____1, blocks, (size_t)2U * sizeof(Eurydice_slice));
-  load_block___72size_t0(uu____0, uu____1);
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
+  load_block_660(uu____0, uu____1);
+  keccakf1600_05(s);
 }
 
-static KRML_MUSTINLINE void load_block_full___72size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.load_block_full with const
+generics:
+- RATE = 72
+*/
+static KRML_MUSTINLINE void load_block_full_66(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     uint8_t blocks[2U][200U]) {
   Eurydice_slice buf[2U] = {Eurydice_array_to_slice((size_t)200U, blocks[0U],
                                                     uint8_t, Eurydice_slice),
                             Eurydice_array_to_slice((size_t)200U, blocks[1U],
                                                     uint8_t, Eurydice_slice)};
-  load_block___72size_t(s, buf);
+  load_block_66(s, buf);
 }
 
-static KRML_MUSTINLINE void load_block_full___72size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.load_block_full
+with const generics:
+- BLOCKSIZE = 72
+*/
+static KRML_MUSTINLINE void load_block_full_660(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t b[2U][200U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = a;
   uint8_t uu____1[2U][200U];
   memcpy(uu____1, b, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full___72size_t(uu____0, uu____1);
+  load_block_full_66(uu____0, uu____1);
 }
 
-static KRML_MUSTINLINE void
-absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t_6uint8_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.absorb_final with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 72
+- DELIM = 6
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void absorb_final_8b(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice last[2U]) {
@@ -1036,11 +1548,16 @@ absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t_6uint8_
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____3)[5U] = s->st;
   uint8_t uu____4[2U][200U];
   memcpy(uu____4, blocks, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full___72size_t0(uu____3, uu____4);
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
+  load_block_full_660(uu____3, uu____4);
+  keccakf1600_05(s);
 }
 
-static KRML_MUSTINLINE void store_block___72size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.store_block with const
+generics:
+- RATE = 72
+*/
+static KRML_MUSTINLINE void store_block_66(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     Eurydice_slice out[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)72U / (size_t)16U; i++) {
@@ -1092,14 +1609,19 @@ static KRML_MUSTINLINE void store_block___72size_t(
   }
 }
 
-static KRML_MUSTINLINE void store_block_full___72size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.store_block_full with const
+generics:
+- RATE = 72
+*/
+static KRML_MUSTINLINE void store_block_full_66(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U], uint8_t ret[2U][200U]) {
   uint8_t out0[200U] = {0U};
   uint8_t out1[200U] = {0U};
   Eurydice_slice buf[2U] = {
       Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
       Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice)};
-  store_block___72size_t(s, buf);
+  store_block_66(s, buf);
   uint8_t uu____0[200U];
   memcpy(uu____0, out0, (size_t)200U * sizeof(uint8_t));
   uint8_t uu____1[200U];
@@ -1108,18 +1630,32 @@ static KRML_MUSTINLINE void store_block_full___72size_t(
   memcpy(ret[1U], uu____1, (size_t)200U * sizeof(uint8_t));
 }
 
-static KRML_MUSTINLINE void store_block_full___72size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.store_block_full
+with const generics:
+- BLOCKSIZE = 72
+*/
+static KRML_MUSTINLINE void store_block_full_660(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t ret[2U][200U]) {
-  store_block_full___72size_t(a, ret);
+  store_block_full_66(a, ret);
 }
 
-static KRML_MUSTINLINE void
-squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_and_last
+with types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 72
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_first_and_last_33(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
   uint8_t b[2U][200U];
-  store_block_full___72size_t0(s->st, b);
+  store_block_full_660(s->st, b);
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       Eurydice_slice uu____0 = out[i0]; uint8_t *uu____1 = b[i0];
@@ -1133,36 +1669,66 @@ squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size
           uint8_t, void *););
 }
 
-static KRML_MUSTINLINE void store_block___72size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.store_block
+with const generics:
+- BLOCKSIZE = 72
+*/
+static KRML_MUSTINLINE void store_block_660(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], Eurydice_slice b[2U]) {
-  store_block___72size_t(a, b);
+  store_block_66(a, b);
 }
 
-static KRML_MUSTINLINE void
-squeeze_first_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block with
+types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 72
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_first_block_33(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
-  store_block___72size_t0(s->st, out);
+  store_block_660(s->st, out);
 }
 
-static KRML_MUSTINLINE void
-squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_next_block with
+types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 72
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_next_block_33(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
-  store_block___72size_t0(s->st, out);
+  keccakf1600_05(s);
+  store_block_660(s->st, out);
 }
 
-static KRML_MUSTINLINE void
-squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_last with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 72
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_last_33(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         s,
     Eurydice_slice out[2U]) {
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(&s);
+  keccakf1600_05(&s);
   uint8_t b[2U][200U];
-  store_block_full___72size_t0(s.st, b);
+  store_block_full_660(s.st, b);
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       Eurydice_slice uu____0 = out[i0]; uint8_t *uu____1 = b[i0];
@@ -1176,11 +1742,20 @@ squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t(
           uint8_t, void *););
 }
 
-static KRML_MUSTINLINE void
-keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t_6uint8_t(
-    Eurydice_slice data[2U], Eurydice_slice out[2U]) {
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.keccak with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 72
+- DELIM = 6
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void keccak_8b(Eurydice_slice data[2U],
+                                      Eurydice_slice out[2U]) {
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
-      s = new__core_core_arch_arm_shared_neon_uint64x2_t_2size_t();
+      s = new_05();
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(data[0U], uint8_t, size_t) / (size_t)72U;
        i++) {
@@ -1191,8 +1766,7 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t_6uint8_t(
     memcpy(uu____1, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
     slice_n(uu____1, i0 * (size_t)72U, (size_t)72U, ret);
-    absorb_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t(
-        uu____0, ret);
+    absorb_block_33(uu____0, ret);
   }
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)72U;
@@ -1203,14 +1777,12 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t_6uint8_t(
   Eurydice_slice ret[2U];
   slice_n(uu____3, core_slice___Slice_T___len(data[0U], uint8_t, size_t) - rem,
           rem, ret);
-  absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t_6uint8_t(
-      uu____2, ret);
+  absorb_final_8b(uu____2, ret);
   size_t outlen = core_slice___Slice_T___len(out[0U], uint8_t, size_t);
   size_t blocks = outlen / (size_t)72U;
   size_t last = outlen - outlen % (size_t)72U;
   if (blocks == (size_t)0U) {
-    squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t(
-        &s, out);
+    squeeze_first_and_last_33(&s, out);
   } else {
     K___Eurydice_slice_uint8_t_2size_t__Eurydice_slice_uint8_t_2size_t_
         uu____4 = split_at_mut_n(out, (size_t)72U);
@@ -1218,8 +1790,7 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t_6uint8_t(
     memcpy(o0, uu____4.fst, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice o1[2U];
     memcpy(o1, uu____4.snd, (size_t)2U * sizeof(Eurydice_slice));
-    squeeze_first_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t(
-        &s, o0);
+    squeeze_first_block_33(&s, o0);
     core_ops_range_Range__size_t iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
             (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)1U,
@@ -1237,24 +1808,26 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t_6uint8_t(
         memcpy(o, uu____5.fst, (size_t)2U * sizeof(Eurydice_slice));
         Eurydice_slice orest[2U];
         memcpy(orest, uu____5.snd, (size_t)2U * sizeof(Eurydice_slice));
-        squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t(
-            &s, o);
+        squeeze_next_block_33(&s, o);
         memcpy(o1, orest, (size_t)2U * sizeof(Eurydice_slice));
       }
     }
     if (last < outlen) {
-      squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t(
-          s, o1);
+      squeeze_last_33(s, o1);
     }
   }
 }
 
-static KRML_MUSTINLINE void keccakx2___72size_t_6uint8_t(
-    Eurydice_slice data[2U], Eurydice_slice out[2U]) {
+/**
+A monomorphic instance of libcrux_sha3.neon.keccakx2 with const generics:
+- RATE = 72
+- DELIM = 6
+*/
+static KRML_MUSTINLINE void keccakx2_26(Eurydice_slice data[2U],
+                                        Eurydice_slice out[2U]) {
   Eurydice_slice uu____0[2U];
   memcpy(uu____0, data, (size_t)2U * sizeof(Eurydice_slice));
-  keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_72size_t_6uint8_t(
-      uu____0, out);
+  keccak_8b(uu____0, out);
 }
 
 void libcrux_sha3_neon_sha512(Eurydice_slice digest, Eurydice_slice data) {
@@ -1263,10 +1836,15 @@ void libcrux_sha3_neon_sha512(Eurydice_slice digest, Eurydice_slice data) {
   Eurydice_slice buf[2U] = {
       digest,
       Eurydice_array_to_slice((size_t)64U, dummy, uint8_t, Eurydice_slice)};
-  keccakx2___72size_t_6uint8_t(uu____0, buf);
+  keccakx2_26(uu____0, buf);
 }
 
-static KRML_MUSTINLINE void load_block___136size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.load_block with const
+generics:
+- RATE = 136
+*/
+static KRML_MUSTINLINE void load_block_35(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     Eurydice_slice blocks[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)16U; i++) {
@@ -1301,8 +1879,7 @@ static KRML_MUSTINLINE void load_block___136size_t(
         Eurydice_slice_subslice2(blocks[0U], (size_t)136U - (size_t)8U,
                                  (size_t)136U, uint8_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
-    core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst0, uu____0);
+    core_result__core__result__Result_T__E___unwrap_15(dst0, uu____0);
     u[0U] = core_num__u64_9__from_le_bytes(uu____0);
     uint8_t uu____1[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst;
@@ -1311,8 +1888,7 @@ static KRML_MUSTINLINE void load_block___136size_t(
         Eurydice_slice_subslice2(blocks[1U], (size_t)136U - (size_t)8U,
                                  (size_t)136U, uint8_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
-    core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst, uu____1);
+    core_result__core__result__Result_T__E___unwrap_15(dst, uu____1);
     u[1U] = core_num__u64_9__from_le_bytes(uu____1);
     core_core_arch_arm_shared_neon_uint64x2_t uvec =
         libcrux_intrinsics_arm64__vld1q_u64(
@@ -1321,46 +1897,80 @@ static KRML_MUSTINLINE void load_block___136size_t(
   }
 }
 
-static KRML_MUSTINLINE void load_block___136size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.load_block
+with const generics:
+- BLOCKSIZE = 136
+*/
+static KRML_MUSTINLINE void load_block_350(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], Eurydice_slice b[2U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = a;
   Eurydice_slice uu____1[2U];
   memcpy(uu____1, b, (size_t)2U * sizeof(Eurydice_slice));
-  load_block___136size_t(uu____0, uu____1);
+  load_block_35(uu____0, uu____1);
 }
 
-static KRML_MUSTINLINE void
-absorb_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.absorb_block with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 136
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void absorb_block_48(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice blocks[2U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = s->st;
   Eurydice_slice uu____1[2U];
   memcpy(uu____1, blocks, (size_t)2U * sizeof(Eurydice_slice));
-  load_block___136size_t0(uu____0, uu____1);
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
+  load_block_350(uu____0, uu____1);
+  keccakf1600_05(s);
 }
 
-static KRML_MUSTINLINE void load_block_full___136size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.load_block_full with const
+generics:
+- RATE = 136
+*/
+static KRML_MUSTINLINE void load_block_full_35(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     uint8_t blocks[2U][200U]) {
   Eurydice_slice buf[2U] = {Eurydice_array_to_slice((size_t)200U, blocks[0U],
                                                     uint8_t, Eurydice_slice),
                             Eurydice_array_to_slice((size_t)200U, blocks[1U],
                                                     uint8_t, Eurydice_slice)};
-  load_block___136size_t(s, buf);
+  load_block_35(s, buf);
 }
 
-static KRML_MUSTINLINE void load_block_full___136size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.load_block_full
+with const generics:
+- BLOCKSIZE = 136
+*/
+static KRML_MUSTINLINE void load_block_full_350(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t b[2U][200U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = a;
   uint8_t uu____1[2U][200U];
   memcpy(uu____1, b, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full___136size_t(uu____0, uu____1);
+  load_block_full_35(uu____0, uu____1);
 }
 
-static KRML_MUSTINLINE void
-absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_6uint8_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.absorb_final with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 136
+- DELIM = 6
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void absorb_final_0f(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice last[2U]) {
@@ -1379,11 +1989,16 @@ absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_6uint8
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____3)[5U] = s->st;
   uint8_t uu____4[2U][200U];
   memcpy(uu____4, blocks, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full___136size_t0(uu____3, uu____4);
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
+  load_block_full_350(uu____3, uu____4);
+  keccakf1600_05(s);
 }
 
-static KRML_MUSTINLINE void store_block___136size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.store_block with const
+generics:
+- RATE = 136
+*/
+static KRML_MUSTINLINE void store_block_35(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     Eurydice_slice out[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)16U; i++) {
@@ -1435,14 +2050,19 @@ static KRML_MUSTINLINE void store_block___136size_t(
   }
 }
 
-static KRML_MUSTINLINE void store_block_full___136size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.store_block_full with const
+generics:
+- RATE = 136
+*/
+static KRML_MUSTINLINE void store_block_full_35(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U], uint8_t ret[2U][200U]) {
   uint8_t out0[200U] = {0U};
   uint8_t out1[200U] = {0U};
   Eurydice_slice buf[2U] = {
       Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
       Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice)};
-  store_block___136size_t(s, buf);
+  store_block_35(s, buf);
   uint8_t uu____0[200U];
   memcpy(uu____0, out0, (size_t)200U * sizeof(uint8_t));
   uint8_t uu____1[200U];
@@ -1451,18 +2071,32 @@ static KRML_MUSTINLINE void store_block_full___136size_t(
   memcpy(ret[1U], uu____1, (size_t)200U * sizeof(uint8_t));
 }
 
-static KRML_MUSTINLINE void store_block_full___136size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.store_block_full
+with const generics:
+- BLOCKSIZE = 136
+*/
+static KRML_MUSTINLINE void store_block_full_350(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t ret[2U][200U]) {
-  store_block_full___136size_t(a, ret);
+  store_block_full_35(a, ret);
 }
 
-static KRML_MUSTINLINE void
-squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_and_last
+with types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 136
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_first_and_last_48(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
   uint8_t b[2U][200U];
-  store_block_full___136size_t0(s->st, b);
+  store_block_full_350(s->st, b);
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       Eurydice_slice uu____0 = out[i0]; uint8_t *uu____1 = b[i0];
@@ -1476,36 +2110,66 @@ squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136siz
           uint8_t, void *););
 }
 
-static KRML_MUSTINLINE void store_block___136size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.store_block
+with const generics:
+- BLOCKSIZE = 136
+*/
+static KRML_MUSTINLINE void store_block_350(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], Eurydice_slice b[2U]) {
-  store_block___136size_t(a, b);
+  store_block_35(a, b);
 }
 
-static KRML_MUSTINLINE void
-squeeze_first_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block with
+types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 136
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_first_block_48(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
-  store_block___136size_t0(s->st, out);
+  store_block_350(s->st, out);
 }
 
-static KRML_MUSTINLINE void
-squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_next_block with
+types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 136
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_next_block_48(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
-  store_block___136size_t0(s->st, out);
+  keccakf1600_05(s);
+  store_block_350(s->st, out);
 }
 
-static KRML_MUSTINLINE void
-squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_last with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 136
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_last_48(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         s,
     Eurydice_slice out[2U]) {
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(&s);
+  keccakf1600_05(&s);
   uint8_t b[2U][200U];
-  store_block_full___136size_t0(s.st, b);
+  store_block_full_350(s.st, b);
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       Eurydice_slice uu____0 = out[i0]; uint8_t *uu____1 = b[i0];
@@ -1519,11 +2183,20 @@ squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
           uint8_t, void *););
 }
 
-static KRML_MUSTINLINE void
-keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_6uint8_t(
-    Eurydice_slice data[2U], Eurydice_slice out[2U]) {
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.keccak with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 136
+- DELIM = 6
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void keccak_0f(Eurydice_slice data[2U],
+                                      Eurydice_slice out[2U]) {
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
-      s = new__core_core_arch_arm_shared_neon_uint64x2_t_2size_t();
+      s = new_05();
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(data[0U], uint8_t, size_t) / (size_t)136U;
        i++) {
@@ -1534,8 +2207,7 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_6uint8_t(
     memcpy(uu____1, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
     slice_n(uu____1, i0 * (size_t)136U, (size_t)136U, ret);
-    absorb_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
-        uu____0, ret);
+    absorb_block_48(uu____0, ret);
   }
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)136U;
@@ -1546,14 +2218,12 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_6uint8_t(
   Eurydice_slice ret[2U];
   slice_n(uu____3, core_slice___Slice_T___len(data[0U], uint8_t, size_t) - rem,
           rem, ret);
-  absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_6uint8_t(
-      uu____2, ret);
+  absorb_final_0f(uu____2, ret);
   size_t outlen = core_slice___Slice_T___len(out[0U], uint8_t, size_t);
   size_t blocks = outlen / (size_t)136U;
   size_t last = outlen - outlen % (size_t)136U;
   if (blocks == (size_t)0U) {
-    squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
-        &s, out);
+    squeeze_first_and_last_48(&s, out);
   } else {
     K___Eurydice_slice_uint8_t_2size_t__Eurydice_slice_uint8_t_2size_t_
         uu____4 = split_at_mut_n(out, (size_t)136U);
@@ -1561,8 +2231,7 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_6uint8_t(
     memcpy(o0, uu____4.fst, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice o1[2U];
     memcpy(o1, uu____4.snd, (size_t)2U * sizeof(Eurydice_slice));
-    squeeze_first_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
-        &s, o0);
+    squeeze_first_block_48(&s, o0);
     core_ops_range_Range__size_t iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
             (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)1U,
@@ -1580,24 +2249,26 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_6uint8_t(
         memcpy(o, uu____5.fst, (size_t)2U * sizeof(Eurydice_slice));
         Eurydice_slice orest[2U];
         memcpy(orest, uu____5.snd, (size_t)2U * sizeof(Eurydice_slice));
-        squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
-            &s, o);
+        squeeze_next_block_48(&s, o);
         memcpy(o1, orest, (size_t)2U * sizeof(Eurydice_slice));
       }
     }
     if (last < outlen) {
-      squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
-          s, o1);
+      squeeze_last_48(s, o1);
     }
   }
 }
 
-static KRML_MUSTINLINE void keccakx2___136size_t_6uint8_t(
-    Eurydice_slice data[2U], Eurydice_slice out[2U]) {
+/**
+A monomorphic instance of libcrux_sha3.neon.keccakx2 with const generics:
+- RATE = 136
+- DELIM = 6
+*/
+static KRML_MUSTINLINE void keccakx2_2f(Eurydice_slice data[2U],
+                                        Eurydice_slice out[2U]) {
   Eurydice_slice uu____0[2U];
   memcpy(uu____0, data, (size_t)2U * sizeof(Eurydice_slice));
-  keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_6uint8_t(
-      uu____0, out);
+  keccak_0f(uu____0, out);
 }
 
 void libcrux_sha3_neon_sha256(Eurydice_slice digest, Eurydice_slice data) {
@@ -1606,11 +2277,20 @@ void libcrux_sha3_neon_sha256(Eurydice_slice digest, Eurydice_slice data) {
   Eurydice_slice buf[2U] = {
       digest,
       Eurydice_array_to_slice((size_t)32U, dummy, uint8_t, Eurydice_slice)};
-  keccakx2___136size_t_6uint8_t(uu____0, buf);
+  keccakx2_2f(uu____0, buf);
 }
 
-static KRML_MUSTINLINE void
-absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_31uint8_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.absorb_final with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 136
+- DELIM = 31
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void absorb_final_0f0(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice last[2U]) {
@@ -1629,15 +2309,24 @@ absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_31uint
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____3)[5U] = s->st;
   uint8_t uu____4[2U][200U];
   memcpy(uu____4, blocks, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full___136size_t0(uu____3, uu____4);
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
+  load_block_full_350(uu____3, uu____4);
+  keccakf1600_05(s);
 }
 
-static KRML_MUSTINLINE void
-keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_31uint8_t(
-    Eurydice_slice data[2U], Eurydice_slice out[2U]) {
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.keccak with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 136
+- DELIM = 31
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void keccak_0f0(Eurydice_slice data[2U],
+                                       Eurydice_slice out[2U]) {
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
-      s = new__core_core_arch_arm_shared_neon_uint64x2_t_2size_t();
+      s = new_05();
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(data[0U], uint8_t, size_t) / (size_t)136U;
        i++) {
@@ -1648,8 +2337,7 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_31uint8_t(
     memcpy(uu____1, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
     slice_n(uu____1, i0 * (size_t)136U, (size_t)136U, ret);
-    absorb_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
-        uu____0, ret);
+    absorb_block_48(uu____0, ret);
   }
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)136U;
@@ -1660,14 +2348,12 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_31uint8_t(
   Eurydice_slice ret[2U];
   slice_n(uu____3, core_slice___Slice_T___len(data[0U], uint8_t, size_t) - rem,
           rem, ret);
-  absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_31uint8_t(
-      uu____2, ret);
+  absorb_final_0f0(uu____2, ret);
   size_t outlen = core_slice___Slice_T___len(out[0U], uint8_t, size_t);
   size_t blocks = outlen / (size_t)136U;
   size_t last = outlen - outlen % (size_t)136U;
   if (blocks == (size_t)0U) {
-    squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
-        &s, out);
+    squeeze_first_and_last_48(&s, out);
   } else {
     K___Eurydice_slice_uint8_t_2size_t__Eurydice_slice_uint8_t_2size_t_
         uu____4 = split_at_mut_n(out, (size_t)136U);
@@ -1675,8 +2361,7 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_31uint8_t(
     memcpy(o0, uu____4.fst, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice o1[2U];
     memcpy(o1, uu____4.snd, (size_t)2U * sizeof(Eurydice_slice));
-    squeeze_first_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
-        &s, o0);
+    squeeze_first_block_48(&s, o0);
     core_ops_range_Range__size_t iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
             (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)1U,
@@ -1694,39 +2379,46 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_31uint8_t(
         memcpy(o, uu____5.fst, (size_t)2U * sizeof(Eurydice_slice));
         Eurydice_slice orest[2U];
         memcpy(orest, uu____5.snd, (size_t)2U * sizeof(Eurydice_slice));
-        squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
-            &s, o);
+        squeeze_next_block_48(&s, o);
         memcpy(o1, orest, (size_t)2U * sizeof(Eurydice_slice));
       }
     }
     if (last < outlen) {
-      squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t(
-          s, o1);
+      squeeze_last_48(s, o1);
     }
   }
 }
 
-static KRML_MUSTINLINE void keccakx2___136size_t_31uint8_t(
-    Eurydice_slice data[2U], Eurydice_slice out[2U]) {
+/**
+A monomorphic instance of libcrux_sha3.neon.keccakx2 with const generics:
+- RATE = 136
+- DELIM = 31
+*/
+static KRML_MUSTINLINE void keccakx2_d2(Eurydice_slice data[2U],
+                                        Eurydice_slice out[2U]) {
   Eurydice_slice uu____0[2U];
   memcpy(uu____0, data, (size_t)2U * sizeof(Eurydice_slice));
-  keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_136size_t_31uint8_t(
-      uu____0, out);
+  keccak_0f0(uu____0, out);
 }
 
 void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0, Eurydice_slice input1,
                                    Eurydice_slice out0, Eurydice_slice out1) {
   Eurydice_slice buf0[2U] = {input0, input1};
   Eurydice_slice buf[2U] = {out0, out1};
-  keccakx2___136size_t_31uint8_t(buf0, buf);
+  keccakx2_d2(buf0, buf);
 }
 
 libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
 libcrux_sha3_neon_x2_incremental_shake128_init(void) {
-  return new__core_core_arch_arm_shared_neon_uint64x2_t_2size_t();
+  return new_05();
 }
 
-static KRML_MUSTINLINE void load_block___168size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.load_block with const
+generics:
+- RATE = 168
+*/
+static KRML_MUSTINLINE void load_block_6600(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     Eurydice_slice blocks[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)16U; i++) {
@@ -1761,8 +2453,7 @@ static KRML_MUSTINLINE void load_block___168size_t(
         Eurydice_slice_subslice2(blocks[0U], (size_t)168U - (size_t)8U,
                                  (size_t)168U, uint8_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
-    core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst0, uu____0);
+    core_result__core__result__Result_T__E___unwrap_15(dst0, uu____0);
     u[0U] = core_num__u64_9__from_le_bytes(uu____0);
     uint8_t uu____1[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst;
@@ -1771,8 +2462,7 @@ static KRML_MUSTINLINE void load_block___168size_t(
         Eurydice_slice_subslice2(blocks[1U], (size_t)168U - (size_t)8U,
                                  (size_t)168U, uint8_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
-    core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst, uu____1);
+    core_result__core__result__Result_T__E___unwrap_15(dst, uu____1);
     u[1U] = core_num__u64_9__from_le_bytes(uu____1);
     core_core_arch_arm_shared_neon_uint64x2_t uvec =
         libcrux_intrinsics_arm64__vld1q_u64(
@@ -1781,26 +2471,46 @@ static KRML_MUSTINLINE void load_block___168size_t(
   }
 }
 
-static KRML_MUSTINLINE void load_block_full___168size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.load_block_full with const
+generics:
+- RATE = 168
+*/
+static KRML_MUSTINLINE void load_block_full_6600(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     uint8_t blocks[2U][200U]) {
   Eurydice_slice buf[2U] = {Eurydice_array_to_slice((size_t)200U, blocks[0U],
                                                     uint8_t, Eurydice_slice),
                             Eurydice_array_to_slice((size_t)200U, blocks[1U],
                                                     uint8_t, Eurydice_slice)};
-  load_block___168size_t(s, buf);
+  load_block_6600(s, buf);
 }
 
-static KRML_MUSTINLINE void load_block_full___168size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.load_block_full
+with const generics:
+- BLOCKSIZE = 168
+*/
+static KRML_MUSTINLINE void load_block_full_6601(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t b[2U][200U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = a;
   uint8_t uu____1[2U][200U];
   memcpy(uu____1, b, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full___168size_t(uu____0, uu____1);
+  load_block_full_6600(uu____0, uu____1);
 }
 
-static KRML_MUSTINLINE void
-absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_168size_t_31uint8_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.absorb_final with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 168
+- DELIM = 31
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void absorb_final_f2(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice last[2U]) {
@@ -1819,8 +2529,8 @@ absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_168size_t_31uint
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____3)[5U] = s->st;
   uint8_t uu____4[2U][200U];
   memcpy(uu____4, blocks, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full___168size_t0(uu____3, uu____4);
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
+  load_block_full_6601(uu____3, uu____4);
+  keccakf1600_05(s);
 }
 
 void libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
@@ -1828,11 +2538,15 @@ void libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
         *s,
     Eurydice_slice data0, Eurydice_slice data1) {
   Eurydice_slice buf[2U] = {data0, data1};
-  absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_168size_t_31uint8_t(
-      s, buf);
+  absorb_final_f2(s, buf);
 }
 
-static KRML_MUSTINLINE void store_block___168size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.store_block with const
+generics:
+- RATE = 168
+*/
+static KRML_MUSTINLINE void store_block_6600(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     Eurydice_slice out[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)16U; i++) {
@@ -1884,18 +2598,32 @@ static KRML_MUSTINLINE void store_block___168size_t(
   }
 }
 
-static KRML_MUSTINLINE void store_block___168size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.store_block
+with const generics:
+- BLOCKSIZE = 168
+*/
+static KRML_MUSTINLINE void store_block_6601(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], Eurydice_slice b[2U]) {
-  store_block___168size_t(a, b);
+  store_block_6600(a, b);
 }
 
-static KRML_MUSTINLINE void
-squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_168size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_next_block with
+types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 168
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_next_block_c2(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
-  store_block___168size_t0(s->st, out);
+  keccakf1600_05(s);
+  store_block_6601(s->st, out);
 }
 
 void libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
@@ -1903,20 +2631,35 @@ void libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
         *s,
     Eurydice_slice out0, Eurydice_slice out1) {
   Eurydice_slice buf[2U] = {out0, out1};
-  squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_168size_t(
-      s, buf);
+  squeeze_next_block_c2(s, buf);
 }
 
-static KRML_MUSTINLINE void
-squeeze_first_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_168size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block with
+types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 168
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_first_block_c2(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
-  store_block___168size_t0(s->st, out);
+  store_block_6601(s->st, out);
 }
 
-static KRML_MUSTINLINE void
-squeeze_first_three_blocks__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_168size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_three_blocks
+with types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 168
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_first_three_blocks_c2(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
@@ -1926,18 +2669,15 @@ squeeze_first_three_blocks__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_16
   memcpy(o0, uu____0.fst, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice o10[2U];
   memcpy(o10, uu____0.snd, (size_t)2U * sizeof(Eurydice_slice));
-  squeeze_first_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_168size_t(
-      s, o0);
+  squeeze_first_block_c2(s, o0);
   K___Eurydice_slice_uint8_t_2size_t__Eurydice_slice_uint8_t_2size_t_ uu____1 =
       split_at_mut_n(o10, (size_t)168U);
   Eurydice_slice o1[2U];
   memcpy(o1, uu____1.fst, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice o2[2U];
   memcpy(o2, uu____1.snd, (size_t)2U * sizeof(Eurydice_slice));
-  squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_168size_t(
-      s, o1);
-  squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_168size_t(
-      s, o2);
+  squeeze_next_block_c2(s, o1);
+  squeeze_next_block_c2(s, o2);
 }
 
 void libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
@@ -1945,11 +2685,15 @@ void libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
         *s,
     Eurydice_slice out0, Eurydice_slice out1) {
   Eurydice_slice buf[2U] = {out0, out1};
-  squeeze_first_three_blocks__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_168size_t(
-      s, buf);
+  squeeze_first_three_blocks_c2(s, buf);
 }
 
-static KRML_MUSTINLINE void load_block___144size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.load_block with const
+generics:
+- RATE = 144
+*/
+static KRML_MUSTINLINE void load_block_f0(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     Eurydice_slice blocks[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)144U / (size_t)16U; i++) {
@@ -1984,8 +2728,7 @@ static KRML_MUSTINLINE void load_block___144size_t(
         Eurydice_slice_subslice2(blocks[0U], (size_t)144U - (size_t)8U,
                                  (size_t)144U, uint8_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
-    core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst0, uu____0);
+    core_result__core__result__Result_T__E___unwrap_15(dst0, uu____0);
     u[0U] = core_num__u64_9__from_le_bytes(uu____0);
     uint8_t uu____1[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst;
@@ -1994,8 +2737,7 @@ static KRML_MUSTINLINE void load_block___144size_t(
         Eurydice_slice_subslice2(blocks[1U], (size_t)144U - (size_t)8U,
                                  (size_t)144U, uint8_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
-    core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst, uu____1);
+    core_result__core__result__Result_T__E___unwrap_15(dst, uu____1);
     u[1U] = core_num__u64_9__from_le_bytes(uu____1);
     core_core_arch_arm_shared_neon_uint64x2_t uvec =
         libcrux_intrinsics_arm64__vld1q_u64(
@@ -2004,46 +2746,80 @@ static KRML_MUSTINLINE void load_block___144size_t(
   }
 }
 
-static KRML_MUSTINLINE void load_block___144size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.load_block
+with const generics:
+- BLOCKSIZE = 144
+*/
+static KRML_MUSTINLINE void load_block_f00(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], Eurydice_slice b[2U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = a;
   Eurydice_slice uu____1[2U];
   memcpy(uu____1, b, (size_t)2U * sizeof(Eurydice_slice));
-  load_block___144size_t(uu____0, uu____1);
+  load_block_f0(uu____0, uu____1);
 }
 
-static KRML_MUSTINLINE void
-absorb_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.absorb_block with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 144
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void absorb_block_41(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice blocks[2U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = s->st;
   Eurydice_slice uu____1[2U];
   memcpy(uu____1, blocks, (size_t)2U * sizeof(Eurydice_slice));
-  load_block___144size_t0(uu____0, uu____1);
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
+  load_block_f00(uu____0, uu____1);
+  keccakf1600_05(s);
 }
 
-static KRML_MUSTINLINE void load_block_full___144size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.load_block_full with const
+generics:
+- RATE = 144
+*/
+static KRML_MUSTINLINE void load_block_full_f0(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     uint8_t blocks[2U][200U]) {
   Eurydice_slice buf[2U] = {Eurydice_array_to_slice((size_t)200U, blocks[0U],
                                                     uint8_t, Eurydice_slice),
                             Eurydice_array_to_slice((size_t)200U, blocks[1U],
                                                     uint8_t, Eurydice_slice)};
-  load_block___144size_t(s, buf);
+  load_block_f0(s, buf);
 }
 
-static KRML_MUSTINLINE void load_block_full___144size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.load_block_full
+with const generics:
+- BLOCKSIZE = 144
+*/
+static KRML_MUSTINLINE void load_block_full_f00(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t b[2U][200U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = a;
   uint8_t uu____1[2U][200U];
   memcpy(uu____1, b, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full___144size_t(uu____0, uu____1);
+  load_block_full_f0(uu____0, uu____1);
 }
 
-static KRML_MUSTINLINE void
-absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t_6uint8_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.absorb_final with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 144
+- DELIM = 6
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void absorb_final_24(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice last[2U]) {
@@ -2062,11 +2838,16 @@ absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t_6uint8
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____3)[5U] = s->st;
   uint8_t uu____4[2U][200U];
   memcpy(uu____4, blocks, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full___144size_t0(uu____3, uu____4);
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
+  load_block_full_f00(uu____3, uu____4);
+  keccakf1600_05(s);
 }
 
-static KRML_MUSTINLINE void store_block___144size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.store_block with const
+generics:
+- RATE = 144
+*/
+static KRML_MUSTINLINE void store_block_f0(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     Eurydice_slice out[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)144U / (size_t)16U; i++) {
@@ -2118,14 +2899,19 @@ static KRML_MUSTINLINE void store_block___144size_t(
   }
 }
 
-static KRML_MUSTINLINE void store_block_full___144size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.store_block_full with const
+generics:
+- RATE = 144
+*/
+static KRML_MUSTINLINE void store_block_full_f0(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U], uint8_t ret[2U][200U]) {
   uint8_t out0[200U] = {0U};
   uint8_t out1[200U] = {0U};
   Eurydice_slice buf[2U] = {
       Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
       Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice)};
-  store_block___144size_t(s, buf);
+  store_block_f0(s, buf);
   uint8_t uu____0[200U];
   memcpy(uu____0, out0, (size_t)200U * sizeof(uint8_t));
   uint8_t uu____1[200U];
@@ -2134,18 +2920,32 @@ static KRML_MUSTINLINE void store_block_full___144size_t(
   memcpy(ret[1U], uu____1, (size_t)200U * sizeof(uint8_t));
 }
 
-static KRML_MUSTINLINE void store_block_full___144size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.store_block_full
+with const generics:
+- BLOCKSIZE = 144
+*/
+static KRML_MUSTINLINE void store_block_full_f00(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t ret[2U][200U]) {
-  store_block_full___144size_t(a, ret);
+  store_block_full_f0(a, ret);
 }
 
-static KRML_MUSTINLINE void
-squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_and_last
+with types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 144
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_first_and_last_41(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
   uint8_t b[2U][200U];
-  store_block_full___144size_t0(s->st, b);
+  store_block_full_f00(s->st, b);
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       Eurydice_slice uu____0 = out[i0]; uint8_t *uu____1 = b[i0];
@@ -2159,36 +2959,66 @@ squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144siz
           uint8_t, void *););
 }
 
-static KRML_MUSTINLINE void store_block___144size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.store_block
+with const generics:
+- BLOCKSIZE = 144
+*/
+static KRML_MUSTINLINE void store_block_f00(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], Eurydice_slice b[2U]) {
-  store_block___144size_t(a, b);
+  store_block_f0(a, b);
 }
 
-static KRML_MUSTINLINE void
-squeeze_first_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block with
+types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 144
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_first_block_41(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
-  store_block___144size_t0(s->st, out);
+  store_block_f00(s->st, out);
 }
 
-static KRML_MUSTINLINE void
-squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_next_block with
+types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 144
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_next_block_41(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
-  store_block___144size_t0(s->st, out);
+  keccakf1600_05(s);
+  store_block_f00(s->st, out);
 }
 
-static KRML_MUSTINLINE void
-squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_last with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 144
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_last_41(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         s,
     Eurydice_slice out[2U]) {
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(&s);
+  keccakf1600_05(&s);
   uint8_t b[2U][200U];
-  store_block_full___144size_t0(s.st, b);
+  store_block_full_f00(s.st, b);
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       Eurydice_slice uu____0 = out[i0]; uint8_t *uu____1 = b[i0];
@@ -2202,11 +3032,20 @@ squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t(
           uint8_t, void *););
 }
 
-static KRML_MUSTINLINE void
-keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t_6uint8_t(
-    Eurydice_slice data[2U], Eurydice_slice out[2U]) {
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.keccak with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 144
+- DELIM = 6
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void keccak_24(Eurydice_slice data[2U],
+                                      Eurydice_slice out[2U]) {
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
-      s = new__core_core_arch_arm_shared_neon_uint64x2_t_2size_t();
+      s = new_05();
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(data[0U], uint8_t, size_t) / (size_t)144U;
        i++) {
@@ -2217,8 +3056,7 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t_6uint8_t(
     memcpy(uu____1, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
     slice_n(uu____1, i0 * (size_t)144U, (size_t)144U, ret);
-    absorb_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t(
-        uu____0, ret);
+    absorb_block_41(uu____0, ret);
   }
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)144U;
@@ -2229,14 +3067,12 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t_6uint8_t(
   Eurydice_slice ret[2U];
   slice_n(uu____3, core_slice___Slice_T___len(data[0U], uint8_t, size_t) - rem,
           rem, ret);
-  absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t_6uint8_t(
-      uu____2, ret);
+  absorb_final_24(uu____2, ret);
   size_t outlen = core_slice___Slice_T___len(out[0U], uint8_t, size_t);
   size_t blocks = outlen / (size_t)144U;
   size_t last = outlen - outlen % (size_t)144U;
   if (blocks == (size_t)0U) {
-    squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t(
-        &s, out);
+    squeeze_first_and_last_41(&s, out);
   } else {
     K___Eurydice_slice_uint8_t_2size_t__Eurydice_slice_uint8_t_2size_t_
         uu____4 = split_at_mut_n(out, (size_t)144U);
@@ -2244,8 +3080,7 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t_6uint8_t(
     memcpy(o0, uu____4.fst, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice o1[2U];
     memcpy(o1, uu____4.snd, (size_t)2U * sizeof(Eurydice_slice));
-    squeeze_first_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t(
-        &s, o0);
+    squeeze_first_block_41(&s, o0);
     core_ops_range_Range__size_t iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
             (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)1U,
@@ -2263,24 +3098,26 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t_6uint8_t(
         memcpy(o, uu____5.fst, (size_t)2U * sizeof(Eurydice_slice));
         Eurydice_slice orest[2U];
         memcpy(orest, uu____5.snd, (size_t)2U * sizeof(Eurydice_slice));
-        squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t(
-            &s, o);
+        squeeze_next_block_41(&s, o);
         memcpy(o1, orest, (size_t)2U * sizeof(Eurydice_slice));
       }
     }
     if (last < outlen) {
-      squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t(
-          s, o1);
+      squeeze_last_41(s, o1);
     }
   }
 }
 
-static KRML_MUSTINLINE void keccakx2___144size_t_6uint8_t(
-    Eurydice_slice data[2U], Eurydice_slice out[2U]) {
+/**
+A monomorphic instance of libcrux_sha3.neon.keccakx2 with const generics:
+- RATE = 144
+- DELIM = 6
+*/
+static KRML_MUSTINLINE void keccakx2_d4(Eurydice_slice data[2U],
+                                        Eurydice_slice out[2U]) {
   Eurydice_slice uu____0[2U];
   memcpy(uu____0, data, (size_t)2U * sizeof(Eurydice_slice));
-  keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_144size_t_6uint8_t(
-      uu____0, out);
+  keccak_24(uu____0, out);
 }
 
 KRML_MUSTINLINE void libcrux_sha3_neon_sha224(Eurydice_slice digest,
@@ -2290,10 +3127,15 @@ KRML_MUSTINLINE void libcrux_sha3_neon_sha224(Eurydice_slice digest,
   Eurydice_slice buf[2U] = {
       digest,
       Eurydice_array_to_slice((size_t)28U, dummy, uint8_t, Eurydice_slice)};
-  keccakx2___144size_t_6uint8_t(uu____0, buf);
+  keccakx2_d4(uu____0, buf);
 }
 
-static KRML_MUSTINLINE void load_block___104size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.load_block with const
+generics:
+- RATE = 104
+*/
+static KRML_MUSTINLINE void load_block_d4(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     Eurydice_slice blocks[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)104U / (size_t)16U; i++) {
@@ -2328,8 +3170,7 @@ static KRML_MUSTINLINE void load_block___104size_t(
         Eurydice_slice_subslice2(blocks[0U], (size_t)104U - (size_t)8U,
                                  (size_t)104U, uint8_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
-    core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst0, uu____0);
+    core_result__core__result__Result_T__E___unwrap_15(dst0, uu____0);
     u[0U] = core_num__u64_9__from_le_bytes(uu____0);
     uint8_t uu____1[8U];
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError dst;
@@ -2338,8 +3179,7 @@ static KRML_MUSTINLINE void load_block___104size_t(
         Eurydice_slice_subslice2(blocks[1U], (size_t)104U - (size_t)8U,
                                  (size_t)104U, uint8_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
-    core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-        dst, uu____1);
+    core_result__core__result__Result_T__E___unwrap_15(dst, uu____1);
     u[1U] = core_num__u64_9__from_le_bytes(uu____1);
     core_core_arch_arm_shared_neon_uint64x2_t uvec =
         libcrux_intrinsics_arm64__vld1q_u64(
@@ -2348,46 +3188,80 @@ static KRML_MUSTINLINE void load_block___104size_t(
   }
 }
 
-static KRML_MUSTINLINE void load_block___104size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.load_block
+with const generics:
+- BLOCKSIZE = 104
+*/
+static KRML_MUSTINLINE void load_block_d40(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], Eurydice_slice b[2U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = a;
   Eurydice_slice uu____1[2U];
   memcpy(uu____1, b, (size_t)2U * sizeof(Eurydice_slice));
-  load_block___104size_t(uu____0, uu____1);
+  load_block_d4(uu____0, uu____1);
 }
 
-static KRML_MUSTINLINE void
-absorb_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.absorb_block with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 104
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void absorb_block_95(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice blocks[2U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = s->st;
   Eurydice_slice uu____1[2U];
   memcpy(uu____1, blocks, (size_t)2U * sizeof(Eurydice_slice));
-  load_block___104size_t0(uu____0, uu____1);
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
+  load_block_d40(uu____0, uu____1);
+  keccakf1600_05(s);
 }
 
-static KRML_MUSTINLINE void load_block_full___104size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.load_block_full with const
+generics:
+- RATE = 104
+*/
+static KRML_MUSTINLINE void load_block_full_d4(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     uint8_t blocks[2U][200U]) {
   Eurydice_slice buf[2U] = {Eurydice_array_to_slice((size_t)200U, blocks[0U],
                                                     uint8_t, Eurydice_slice),
                             Eurydice_array_to_slice((size_t)200U, blocks[1U],
                                                     uint8_t, Eurydice_slice)};
-  load_block___104size_t(s, buf);
+  load_block_d4(s, buf);
 }
 
-static KRML_MUSTINLINE void load_block_full___104size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.load_block_full
+with const generics:
+- BLOCKSIZE = 104
+*/
+static KRML_MUSTINLINE void load_block_full_d40(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t b[2U][200U]) {
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____0)[5U] = a;
   uint8_t uu____1[2U][200U];
   memcpy(uu____1, b, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full___104size_t(uu____0, uu____1);
+  load_block_full_d4(uu____0, uu____1);
 }
 
-static KRML_MUSTINLINE void
-absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t_6uint8_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.absorb_final with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 104
+- DELIM = 6
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void absorb_final_72(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice last[2U]) {
@@ -2406,11 +3280,16 @@ absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t_6uint8
   core_core_arch_arm_shared_neon_uint64x2_t(*uu____3)[5U] = s->st;
   uint8_t uu____4[2U][200U];
   memcpy(uu____4, blocks, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full___104size_t0(uu____3, uu____4);
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
+  load_block_full_d40(uu____3, uu____4);
+  keccakf1600_05(s);
 }
 
-static KRML_MUSTINLINE void store_block___104size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.store_block with const
+generics:
+- RATE = 104
+*/
+static KRML_MUSTINLINE void store_block_d4(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U],
     Eurydice_slice out[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)104U / (size_t)16U; i++) {
@@ -2462,14 +3341,19 @@ static KRML_MUSTINLINE void store_block___104size_t(
   }
 }
 
-static KRML_MUSTINLINE void store_block_full___104size_t(
+/**
+A monomorphic instance of libcrux_sha3.simd.arm64.store_block_full with const
+generics:
+- RATE = 104
+*/
+static KRML_MUSTINLINE void store_block_full_d4(
     core_core_arch_arm_shared_neon_uint64x2_t (*s)[5U], uint8_t ret[2U][200U]) {
   uint8_t out0[200U] = {0U};
   uint8_t out1[200U] = {0U};
   Eurydice_slice buf[2U] = {
       Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
       Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice)};
-  store_block___104size_t(s, buf);
+  store_block_d4(s, buf);
   uint8_t uu____0[200U];
   memcpy(uu____0, out0, (size_t)200U * sizeof(uint8_t));
   uint8_t uu____1[200U];
@@ -2478,18 +3362,32 @@ static KRML_MUSTINLINE void store_block_full___104size_t(
   memcpy(ret[1U], uu____1, (size_t)200U * sizeof(uint8_t));
 }
 
-static KRML_MUSTINLINE void store_block_full___104size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.store_block_full
+with const generics:
+- BLOCKSIZE = 104
+*/
+static KRML_MUSTINLINE void store_block_full_d40(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], uint8_t ret[2U][200U]) {
-  store_block_full___104size_t(a, ret);
+  store_block_full_d4(a, ret);
 }
 
-static KRML_MUSTINLINE void
-squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_and_last
+with types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 104
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_first_and_last_95(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
   uint8_t b[2U][200U];
-  store_block_full___104size_t0(s->st, b);
+  store_block_full_d40(s->st, b);
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       Eurydice_slice uu____0 = out[i0]; uint8_t *uu____1 = b[i0];
@@ -2503,36 +3401,66 @@ squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104siz
           uint8_t, void *););
 }
 
-static KRML_MUSTINLINE void store_block___104size_t0(
+/**
+A monomorphic instance of
+libcrux_sha3.simd.arm64.{(libcrux_sha3::traits::internal::KeccakItem<2:␣usize>␣for␣core::core_arch::arm_shared::neon::uint64x2_t)}.store_block
+with const generics:
+- BLOCKSIZE = 104
+*/
+static KRML_MUSTINLINE void store_block_d40(
     core_core_arch_arm_shared_neon_uint64x2_t (*a)[5U], Eurydice_slice b[2U]) {
-  store_block___104size_t(a, b);
+  store_block_d4(a, b);
 }
 
-static KRML_MUSTINLINE void
-squeeze_first_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block with
+types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 104
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_first_block_95(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
-  store_block___104size_t0(s->st, out);
+  store_block_d40(s->st, out);
 }
 
-static KRML_MUSTINLINE void
-squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_next_block with
+types core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 104
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_next_block_95(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         *s,
     Eurydice_slice out[2U]) {
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(s);
-  store_block___104size_t0(s->st, out);
+  keccakf1600_05(s);
+  store_block_d40(s->st, out);
 }
 
-static KRML_MUSTINLINE void
-squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t(
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_last with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 104
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void squeeze_last_95(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
         s,
     Eurydice_slice out[2U]) {
-  keccakf1600__core_core_arch_arm_shared_neon_uint64x2_t_2size_t(&s);
+  keccakf1600_05(&s);
   uint8_t b[2U][200U];
-  store_block_full___104size_t0(s.st, b);
+  store_block_full_d40(s.st, b);
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       Eurydice_slice uu____0 = out[i0]; uint8_t *uu____1 = b[i0];
@@ -2546,11 +3474,20 @@ squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t(
           uint8_t, void *););
 }
 
-static KRML_MUSTINLINE void
-keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t_6uint8_t(
-    Eurydice_slice data[2U], Eurydice_slice out[2U]) {
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.keccak with types
+core_core_arch_arm_shared_neon_uint64x2_t and with const generics:
+- N = 2
+- RATE = 104
+- DELIM = 6
+Furthermore, this instances features the following traits:
+- {(libcrux_sha3::traits::internal::KeccakItem<2: usize> for
+core::core_arch::arm_shared::neon::uint64x2_t)}
+*/
+static KRML_MUSTINLINE void keccak_72(Eurydice_slice data[2U],
+                                      Eurydice_slice out[2U]) {
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_arm_shared_neon_uint64x2_t__2size_t
-      s = new__core_core_arch_arm_shared_neon_uint64x2_t_2size_t();
+      s = new_05();
   for (size_t i = (size_t)0U;
        i < core_slice___Slice_T___len(data[0U], uint8_t, size_t) / (size_t)104U;
        i++) {
@@ -2561,8 +3498,7 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t_6uint8_t(
     memcpy(uu____1, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
     slice_n(uu____1, i0 * (size_t)104U, (size_t)104U, ret);
-    absorb_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t(
-        uu____0, ret);
+    absorb_block_95(uu____0, ret);
   }
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)104U;
@@ -2573,14 +3509,12 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t_6uint8_t(
   Eurydice_slice ret[2U];
   slice_n(uu____3, core_slice___Slice_T___len(data[0U], uint8_t, size_t) - rem,
           rem, ret);
-  absorb_final__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t_6uint8_t(
-      uu____2, ret);
+  absorb_final_72(uu____2, ret);
   size_t outlen = core_slice___Slice_T___len(out[0U], uint8_t, size_t);
   size_t blocks = outlen / (size_t)104U;
   size_t last = outlen - outlen % (size_t)104U;
   if (blocks == (size_t)0U) {
-    squeeze_first_and_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t(
-        &s, out);
+    squeeze_first_and_last_95(&s, out);
   } else {
     K___Eurydice_slice_uint8_t_2size_t__Eurydice_slice_uint8_t_2size_t_
         uu____4 = split_at_mut_n(out, (size_t)104U);
@@ -2588,8 +3522,7 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t_6uint8_t(
     memcpy(o0, uu____4.fst, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice o1[2U];
     memcpy(o1, uu____4.snd, (size_t)2U * sizeof(Eurydice_slice));
-    squeeze_first_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t(
-        &s, o0);
+    squeeze_first_block_95(&s, o0);
     core_ops_range_Range__size_t iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
             (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)1U,
@@ -2607,24 +3540,26 @@ keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t_6uint8_t(
         memcpy(o, uu____5.fst, (size_t)2U * sizeof(Eurydice_slice));
         Eurydice_slice orest[2U];
         memcpy(orest, uu____5.snd, (size_t)2U * sizeof(Eurydice_slice));
-        squeeze_next_block__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t(
-            &s, o);
+        squeeze_next_block_95(&s, o);
         memcpy(o1, orest, (size_t)2U * sizeof(Eurydice_slice));
       }
     }
     if (last < outlen) {
-      squeeze_last__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t(
-          s, o1);
+      squeeze_last_95(s, o1);
     }
   }
 }
 
-static KRML_MUSTINLINE void keccakx2___104size_t_6uint8_t(
-    Eurydice_slice data[2U], Eurydice_slice out[2U]) {
+/**
+A monomorphic instance of libcrux_sha3.neon.keccakx2 with const generics:
+- RATE = 104
+- DELIM = 6
+*/
+static KRML_MUSTINLINE void keccakx2_b6(Eurydice_slice data[2U],
+                                        Eurydice_slice out[2U]) {
   Eurydice_slice uu____0[2U];
   memcpy(uu____0, data, (size_t)2U * sizeof(Eurydice_slice));
-  keccak__core_core_arch_arm_shared_neon_uint64x2_t_2size_t_104size_t_6uint8_t(
-      uu____0, out);
+  keccak_72(uu____0, out);
 }
 
 KRML_MUSTINLINE void libcrux_sha3_neon_sha384(Eurydice_slice digest,
@@ -2634,5 +3569,5 @@ KRML_MUSTINLINE void libcrux_sha3_neon_sha384(Eurydice_slice digest,
   Eurydice_slice buf[2U] = {
       digest,
       Eurydice_array_to_slice((size_t)48U, dummy, uint8_t, Eurydice_slice)};
-  keccakx2___104size_t_6uint8_t(uu____0, buf);
+  keccakx2_b6(uu____0, buf);
 }

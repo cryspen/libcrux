@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 58573385962a4c5d09c564f4b32549bad6c6efe9
- * Karamel: 5a2983a0e117205380661087ffa52b16da0c6321
+ * Eurydice: 013beb9e4046a151131c6a56dfe25e606b49c4a1
+ * Karamel: 4626e5fcb3787a47c806d160539342ade4b0809c
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: bf6f43daf933dde5ff5bfe79598132f3433e1b77
+ * Libcrux: 8a3c1c4c84f258580d53bfef5ad2b1b7d5ef5fca
  */
 
 #include "libcrux_mlkem_avx2.h"
