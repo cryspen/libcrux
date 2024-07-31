@@ -128,7 +128,7 @@ pub fn decompose<const GAMMA2: i32>(r: Vec256) -> (Vec256, Vec256) {
 
     let field_modulus_halved = mm256_set1_epi32((FIELD_MODULUS - 1) / 2);
 
-    // When const-generic expressions are table, this could be turned into a
+    // When const-generic expressions are available, this could be turned into a
     // const value.
     let ALPHA: i32 = GAMMA2 * 2;
 
