@@ -8,7 +8,7 @@
  * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
  * Karamel: d5759a8b96e9f104664a88a83043d5761fcc9732
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: a8aed6b3b2719e05848a3889ebc02cd5917cc6fc
+ * Libcrux: 3c5d3c5f94d5a7630aa83a84d6f06452e6c18807
  */
 
 #include "internal/libcrux_mlkem_neon.h"
@@ -50,16 +50,10 @@ libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libc
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_vector_type_from_i16_array(Eurydice_slice array) {
   return (CLITERAL(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector){
-      .low = libcrux_intrinsics_arm64__vld1q_s16(Eurydice_slice_subslice(
-          array,
-          (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)0U,
-                                                  .end = (size_t)8U}),
-          int16_t, core_ops_range_Range__size_t, Eurydice_slice)),
-      .high = libcrux_intrinsics_arm64__vld1q_s16(Eurydice_slice_subslice(
-          array,
-          (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)8U,
-                                                  .end = (size_t)16U}),
-          int16_t, core_ops_range_Range__size_t, Eurydice_slice))});
+      .low = libcrux_intrinsics_arm64__vld1q_s16(Eurydice_slice_subslice2(
+          array, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice)),
+      .high = libcrux_intrinsics_arm64__vld1q_s16(Eurydice_slice_subslice2(
+          array, (size_t)8U, (size_t)16U, int16_t, Eurydice_slice))});
 }
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -1170,11 +1164,8 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_12(Eurydice_slice v) {
       uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
   core_slice___Slice_T___copy_from_slice(
       uu____0,
-      Eurydice_slice_subslice(v,
-                              (CLITERAL(core_ops_range_Range__size_t){
-                                  .start = (size_t)0U, .end = (size_t)12U}),
-                              uint8_t, core_ops_range_Range__size_t,
-                              Eurydice_slice),
+      Eurydice_slice_subslice2(v, (size_t)0U, (size_t)12U, uint8_t,
+                               Eurydice_slice),
       uint8_t, void *);
   core_core_arch_arm_shared_neon_uint8x16_t input_vec0 =
       libcrux_intrinsics_arm64__vld1q_u8(Eurydice_array_to_slice(
@@ -1187,11 +1178,8 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_12(Eurydice_slice v) {
       uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
   core_slice___Slice_T___copy_from_slice(
       uu____1,
-      Eurydice_slice_subslice(v,
-                              (CLITERAL(core_ops_range_Range__size_t){
-                                  .start = (size_t)12U, .end = (size_t)24U}),
-                              uint8_t, core_ops_range_Range__size_t,
-                              Eurydice_slice),
+      Eurydice_slice_subslice2(v, (size_t)12U, (size_t)24U, uint8_t,
+                               Eurydice_slice),
       uint8_t, void *);
   core_core_arch_arm_shared_neon_uint8x16_t input_vec1 =
       libcrux_intrinsics_arm64__vld1q_u8(Eurydice_array_to_slice(
@@ -1359,11 +1347,9 @@ static KRML_MUSTINLINE
        core_slice___Slice_T___len(serialized, uint8_t, size_t) / (size_t)24U;
        i++) {
     size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice(
-        serialized,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * (size_t)24U, .end = i0 * (size_t)24U + (size_t)24U}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice bytes = Eurydice_slice_subslice2(
+        serialized, i0 * (size_t)24U, i0 * (size_t)24U + (size_t)24U, uint8_t,
+        Eurydice_slice);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
         libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_12(
             bytes);
@@ -1391,13 +1377,11 @@ deserialize_ring_elements_reduced__libcrux_ml_kem_vector_neon_vector_type_SIMD12
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
        i++) {
     size_t i0 = i;
-    Eurydice_slice ring_element = Eurydice_slice_subslice(
-        public_key,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
-                   LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice ring_element = Eurydice_slice_subslice2(
+        public_key, i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
+            LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         uu____0 =
             deserialize_to_reduced_ring_element__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
@@ -1764,12 +1748,9 @@ static KRML_MUSTINLINE
     size_t i0 = i;
     result.coefficients[i0] =
         libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___from_i16_array(
-            Eurydice_slice_subslice(
-                a,
-                (CLITERAL(core_ops_range_Range__size_t){
-                    .start = i0 * (size_t)16U,
-                    .end = (i0 + (size_t)1U) * (size_t)16U}),
-                int16_t, core_ops_range_Range__size_t, Eurydice_slice));
+            Eurydice_slice_subslice2(a, i0 * (size_t)16U,
+                                     (i0 + (size_t)1U) * (size_t)16U, int16_t,
+                                     Eurydice_slice));
   }
   return result;
 }
@@ -1932,12 +1913,9 @@ static KRML_MUSTINLINE
        core_slice___Slice_T___len(randomness, uint8_t, size_t) / (size_t)4U;
        i0++) {
     size_t chunk_number = i0;
-    Eurydice_slice byte_chunk = Eurydice_slice_subslice(
-        randomness,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = chunk_number * (size_t)4U,
-            .end = chunk_number * (size_t)4U + (size_t)4U}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice byte_chunk = Eurydice_slice_subslice2(
+        randomness, chunk_number * (size_t)4U,
+        chunk_number * (size_t)4U + (size_t)4U, uint8_t, Eurydice_slice);
     uint32_t uu____0 = (uint32_t)Eurydice_slice_index(
         byte_chunk, (size_t)0U, uint8_t, uint8_t *, uint8_t);
     uint32_t uu____1 =
@@ -1981,12 +1959,9 @@ static KRML_MUSTINLINE
        core_slice___Slice_T___len(randomness, uint8_t, size_t) / (size_t)3U;
        i0++) {
     size_t chunk_number = i0;
-    Eurydice_slice byte_chunk = Eurydice_slice_subslice(
-        randomness,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = chunk_number * (size_t)3U,
-            .end = chunk_number * (size_t)3U + (size_t)3U}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice byte_chunk = Eurydice_slice_subslice2(
+        randomness, chunk_number * (size_t)3U,
+        chunk_number * (size_t)3U + (size_t)3U, uint8_t, Eurydice_slice);
     uint32_t uu____0 = (uint32_t)Eurydice_slice_index(
         byte_chunk, (size_t)0U, uint8_t, uint8_t *, uint8_t);
     uint32_t uu____1 =
@@ -3354,12 +3329,10 @@ compress_then_serialize_u__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_
     size_t i0 = i;
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         re = input[i0];
-    Eurydice_slice uu____0 = Eurydice_slice_subslice(
-        out,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * ((size_t)640U / (size_t)2U),
-            .end = (i0 + (size_t)1U) * ((size_t)640U / (size_t)2U)}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice uu____0 = Eurydice_slice_subslice2(
+        out, i0 * ((size_t)640U / (size_t)2U),
+        (i0 + (size_t)1U) * ((size_t)640U / (size_t)2U), uint8_t,
+        Eurydice_slice);
     uint8_t ret[320U];
     compress_then_serialize_ring_element_u__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_10size_t_320size_t(
         &re, ret);
@@ -3452,11 +3425,9 @@ compress_then_serialize_4__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
     libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_4(
         coefficient, bytes);
     core_slice___Slice_T___copy_from_slice(
-        Eurydice_slice_subslice(
-            serialized,
-            (CLITERAL(core_ops_range_Range__size_t){
-                .start = (size_t)8U * i0, .end = (size_t)8U * i0 + (size_t)8U}),
-            uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
+        Eurydice_slice_subslice2(serialized, (size_t)8U * i0,
+                                 (size_t)8U * i0 + (size_t)8U, uint8_t,
+                                 Eurydice_slice),
         Eurydice_array_to_slice((size_t)8U, bytes, uint8_t, Eurydice_slice),
         uint8_t, void *);
   }
@@ -3544,12 +3515,9 @@ compress_then_serialize_5__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
     libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___serialize_5(
         coefficients, bytes);
     core_slice___Slice_T___copy_from_slice(
-        Eurydice_slice_subslice(serialized,
-                                (CLITERAL(core_ops_range_Range__size_t){
-                                    .start = (size_t)10U * i0,
-                                    .end = (size_t)10U * i0 + (size_t)10U}),
-                                uint8_t, core_ops_range_Range__size_t,
-                                Eurydice_slice),
+        Eurydice_slice_subslice2(serialized, (size_t)10U * i0,
+                                 (size_t)10U * i0 + (size_t)10U, uint8_t,
+                                 Eurydice_slice),
         Eurydice_array_to_slice((size_t)10U, bytes, uint8_t, Eurydice_slice),
         uint8_t, void *);
   }
@@ -3724,13 +3692,11 @@ deserialize_ring_elements_reduced__libcrux_ml_kem_vector_neon_vector_type_SIMD12
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
        i++) {
     size_t i0 = i;
-    Eurydice_slice ring_element = Eurydice_slice_subslice(
-        public_key,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
-                   LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice ring_element = Eurydice_slice_subslice2(
+        public_key, i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
+            LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         uu____0 =
             deserialize_to_reduced_ring_element__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
@@ -3952,11 +3918,9 @@ static KRML_MUSTINLINE
        core_slice___Slice_T___len(serialized, uint8_t, size_t) / (size_t)20U;
        i++) {
     size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice(
-        serialized,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * (size_t)20U, .end = i0 * (size_t)20U + (size_t)20U}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice bytes = Eurydice_slice_subslice2(
+        serialized, i0 * (size_t)20U, i0 * (size_t)20U + (size_t)20U, uint8_t,
+        Eurydice_slice);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
         libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_10(
             bytes);
@@ -4034,11 +3998,9 @@ static KRML_MUSTINLINE
        core_slice___Slice_T___len(serialized, uint8_t, size_t) / (size_t)22U;
        i++) {
     size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice(
-        serialized,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * (size_t)22U, .end = i0 * (size_t)22U + (size_t)22U}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice bytes = Eurydice_slice_subslice2(
+        serialized, i0 * (size_t)22U, i0 * (size_t)22U + (size_t)22U, uint8_t,
+        Eurydice_slice);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
         libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_11(
             bytes);
@@ -4195,11 +4157,9 @@ static KRML_MUSTINLINE
        i < core_slice___Slice_T___len(serialized, uint8_t, size_t) / (size_t)8U;
        i++) {
     size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice(
-        serialized,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * (size_t)8U, .end = i0 * (size_t)8U + (size_t)8U}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice bytes = Eurydice_slice_subslice2(
+        serialized, i0 * (size_t)8U, i0 * (size_t)8U + (size_t)8U, uint8_t,
+        Eurydice_slice);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector coefficient =
         libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_4(
             bytes);
@@ -4277,11 +4237,9 @@ static KRML_MUSTINLINE
        core_slice___Slice_T___len(serialized, uint8_t, size_t) / (size_t)10U;
        i++) {
     size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice(
-        serialized,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * (size_t)10U, .end = i0 * (size_t)10U + (size_t)10U}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice bytes = Eurydice_slice_subslice2(
+        serialized, i0 * (size_t)10U, i0 * (size_t)10U + (size_t)10U, uint8_t,
+        Eurydice_slice);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
         libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_5(
             bytes);
@@ -4507,11 +4465,9 @@ static KRML_MUSTINLINE
        core_slice___Slice_T___len(serialized, uint8_t, size_t) / (size_t)24U;
        i++) {
     size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice(
-        serialized,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * (size_t)24U, .end = i0 * (size_t)24U + (size_t)24U}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice bytes = Eurydice_slice_subslice2(
+        serialized, i0 * (size_t)24U, i0 * (size_t)24U + (size_t)24U, uint8_t,
+        Eurydice_slice);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
         libcrux_ml_kem_vector_neon___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__neon__vector_type__SIMD128Vector___deserialize_12(
             bytes);
@@ -4536,13 +4492,11 @@ deserialize_secret_key__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_2si
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
        i++) {
     size_t i0 = i;
-    Eurydice_slice secret_bytes = Eurydice_slice_subslice(
-        secret_key,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
-                   LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice secret_bytes = Eurydice_slice_subslice2(
+        secret_key, i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
+            LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         uu____0 =
             deserialize_to_uncompressed_ring_element__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
@@ -4689,13 +4643,11 @@ deserialize_ring_elements_reduced__libcrux_ml_kem_vector_neon_vector_type_SIMD12
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
        i++) {
     size_t i0 = i;
-    Eurydice_slice ring_element = Eurydice_slice_subslice(
-        public_key,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
-                   LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice ring_element = Eurydice_slice_subslice2(
+        public_key, i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
+            LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         uu____0 =
             deserialize_to_reduced_ring_element__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
@@ -5829,12 +5781,10 @@ compress_then_serialize_u__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_
     size_t i0 = i;
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         re = input[i0];
-    Eurydice_slice uu____0 = Eurydice_slice_subslice(
-        out,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * ((size_t)960U / (size_t)3U),
-            .end = (i0 + (size_t)1U) * ((size_t)960U / (size_t)3U)}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice uu____0 = Eurydice_slice_subslice2(
+        out, i0 * ((size_t)960U / (size_t)3U),
+        (i0 + (size_t)1U) * ((size_t)960U / (size_t)3U), uint8_t,
+        Eurydice_slice);
     uint8_t ret[320U];
     compress_then_serialize_ring_element_u__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_10size_t_320size_t(
         &re, ret);
@@ -6005,13 +5955,11 @@ deserialize_ring_elements_reduced__libcrux_ml_kem_vector_neon_vector_type_SIMD12
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
        i++) {
     size_t i0 = i;
-    Eurydice_slice ring_element = Eurydice_slice_subslice(
-        public_key,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
-                   LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice ring_element = Eurydice_slice_subslice2(
+        public_key, i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
+            LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         uu____0 =
             deserialize_to_reduced_ring_element__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
@@ -6356,13 +6304,11 @@ deserialize_secret_key__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_3si
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
        i++) {
     size_t i0 = i;
-    Eurydice_slice secret_bytes = Eurydice_slice_subslice(
-        secret_key,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
-                   LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice secret_bytes = Eurydice_slice_subslice2(
+        secret_key, i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
+            LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         uu____0 =
             deserialize_to_uncompressed_ring_element__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
@@ -6508,13 +6454,11 @@ deserialize_ring_elements_reduced__libcrux_ml_kem_vector_neon_vector_type_SIMD12
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
        i++) {
     size_t i0 = i;
-    Eurydice_slice ring_element = Eurydice_slice_subslice(
-        public_key,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
-                   LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice ring_element = Eurydice_slice_subslice2(
+        public_key, i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
+            LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         uu____0 =
             deserialize_to_reduced_ring_element__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
@@ -7697,12 +7641,10 @@ compress_then_serialize_u__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_
     size_t i0 = i;
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         re = input[i0];
-    Eurydice_slice uu____0 = Eurydice_slice_subslice(
-        out,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * ((size_t)1408U / (size_t)4U),
-            .end = (i0 + (size_t)1U) * ((size_t)1408U / (size_t)4U)}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice uu____0 = Eurydice_slice_subslice2(
+        out, i0 * ((size_t)1408U / (size_t)4U),
+        (i0 + (size_t)1U) * ((size_t)1408U / (size_t)4U), uint8_t,
+        Eurydice_slice);
     uint8_t ret[352U];
     compress_then_serialize_ring_element_u__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_11size_t_352size_t(
         &re, ret);
@@ -7882,13 +7824,11 @@ deserialize_ring_elements_reduced__libcrux_ml_kem_vector_neon_vector_type_SIMD12
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
        i++) {
     size_t i0 = i;
-    Eurydice_slice ring_element = Eurydice_slice_subslice(
-        public_key,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
-                   LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice ring_element = Eurydice_slice_subslice2(
+        public_key, i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
+            LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         uu____0 =
             deserialize_to_reduced_ring_element__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
@@ -8280,13 +8220,11 @@ deserialize_secret_key__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_4si
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
        i++) {
     size_t i0 = i;
-    Eurydice_slice secret_bytes = Eurydice_slice_subslice(
-        secret_key,
-        (CLITERAL(core_ops_range_Range__size_t){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
-                   LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT}),
-        uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
+    Eurydice_slice secret_bytes = Eurydice_slice_subslice2(
+        secret_key, i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
+            LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        uint8_t, Eurydice_slice);
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
         uu____0 =
             deserialize_to_uncompressed_ring_element__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector(
