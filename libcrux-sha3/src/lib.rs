@@ -202,7 +202,7 @@ pub fn shake256_ema(out: &mut [u8], data: &[u8]) {
 
 //  === The portable instantiation === //
 
-/// A portable SHA3 implementations without platform dependent optimisations.
+/// A portable SHA3 implementation without platform dependent optimisations.
 pub mod portable {
     use super::*;
     use generic_keccak::KeccakState as GenericState;
@@ -215,7 +215,8 @@ pub mod portable {
 
     #[inline(always)]
     fn keccakx1<const RATE: usize, const DELIM: u8>(data: [&[u8]; 1], out: [&mut [u8]; 1]) {
-        // or keccak_xof
+        // generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out);
+        // or
         generic_keccak::keccak::<1, u64, RATE, DELIM>(data, out);
     }
 
@@ -265,8 +266,8 @@ pub mod portable {
         use super::*;
 
         /// Incremental Xof state
-        pub struct Xof<const BLOCK_SIZE: usize> {
-            state: KeccakXofState<1, BLOCK_SIZE, u64>,
+        pub struct Xof<const RATE: usize> {
+            state: KeccakXofState<1, RATE, u64>,
         }
 
         /// Shake256

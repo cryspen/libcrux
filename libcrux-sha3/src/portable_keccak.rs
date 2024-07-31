@@ -105,20 +105,20 @@ impl KeccakItem<1> for u64 {
         a ^ b
     }
     #[inline(always)]
-    fn load_block<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; 1]) {
-        load_block::<BLOCKSIZE>(a, b)
+    fn load_block<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; 1]) {
+        load_block::<RATE>(a, b)
     }
     #[inline(always)]
-    fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 1]) {
-        store_block::<BLOCKSIZE>(a, b)
+    fn store_block<const RATE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 1]) {
+        store_block::<RATE>(a, b)
     }
     #[inline(always)]
-    fn load_block_full<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; 1]) {
-        load_block_full::<BLOCKSIZE>(a, b)
+    fn load_block_full<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; 1]) {
+        load_block_full::<RATE>(a, b)
     }
     #[inline(always)]
-    fn store_block_full<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 1] {
-        store_block_full::<BLOCKSIZE>(a)
+    fn store_block_full<const RATE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 1] {
+        store_block_full::<RATE>(a)
     }
     #[inline(always)]
     fn slice_n(a: [&[u8]; 1], start: usize, len: usize) -> [&[u8]; 1] {
@@ -129,20 +129,20 @@ impl KeccakItem<1> for u64 {
         split_at_mut_1(a, mid)
     }
 
-    /// `out` has the exact size we want here. It must be less than or equal to `BLOCKSIZE`.
+    /// `out` has the exact size we want here. It must be less than or equal to `RATE`.
     #[inline(always)]
-    fn store<const BLOCKSIZE: usize>(state: &[[Self; 5]; 5], out: [&mut [u8]; 1]) {
-        debug_assert!(out.len() <= BLOCKSIZE / 8, "{} > {}", out.len(), BLOCKSIZE);
+    fn store<const RATE: usize>(state: &[[Self; 5]; 5], out: [&mut [u8]; 1]) {
+        debug_assert!(out.len() <= RATE / 8, "{} > {}", out.len(), RATE);
 
-        let num_blocks = out[0].len() / 8;
+        let num_full_blocks = out[0].len() / 8;
         let last_block_len = out[0].len() % 8;
 
-        for i in 0..num_blocks {
+        for i in 0..num_full_blocks {
             out[0][i * 8..i * 8 + 8].copy_from_slice(&state[i / 5][i % 5].to_le_bytes());
         }
         if last_block_len != 0 {
-            out[0][num_blocks * 8..num_blocks * 8 + last_block_len].copy_from_slice(
-                &state[num_blocks / 5][num_blocks % 5].to_le_bytes()[0..last_block_len],
+            out[0][num_full_blocks * 8..num_full_blocks * 8 + last_block_len].copy_from_slice(
+                &state[num_full_blocks / 5][num_full_blocks % 5].to_le_bytes()[0..last_block_len],
             );
         }
     }
