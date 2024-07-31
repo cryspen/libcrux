@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
- * Karamel: 1ed8ba551e8c65fdbad1bb7833bd7837be0d89b9
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: ad4ce19c3a5be12e25aefc8fa206b0d6335f2b81
+ * Charon: 920e78bb15250348a7a7a938e8023148e0a249bf
+ * Eurydice: 8db8a4838ea46c9ac681ba1051d1d296dd0d54b7
+ * Karamel: 65aab550cf3ba36d52ae6ad1ad962bb573406395
+ * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8
+ * Libcrux: d992e8bff91dab77b6f0abebf16384ce422b310c
  */
 
 #ifndef __internal_libcrux_core_H
@@ -172,6 +172,11 @@ void libcrux_ml_kem_utils_into_padded_array___800size_t(Eurydice_slice slice,
 void libcrux_ml_kem_utils_into_padded_array___64size_t(Eurydice_slice slice,
                                                        uint8_t ret[64U]);
 
+typedef struct core_option_Option__Eurydice_slice_uint8_t_s {
+  core_option_Option__int32_t_tags tag;
+  Eurydice_slice f0;
+} core_option_Option__Eurydice_slice_uint8_t;
+
 typedef struct
     core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_s {
   core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_tags tag;
@@ -225,10 +230,10 @@ void core_result__core__result__Result_T__E___unwrap__int16_t_16size_t__core_arr
     int16_t ret[16U]);
 
 typedef struct
-    K___Eurydice_slice_uint8_t_4size_t__Eurydice_slice_uint8_t_4size_t__s {
-  Eurydice_slice fst[4U];
-  Eurydice_slice snd[4U];
-} K___Eurydice_slice_uint8_t_4size_t__Eurydice_slice_uint8_t_4size_t_;
+    K___Eurydice_slice_uint8_t_2size_t__Eurydice_slice_uint8_t_2size_t__s {
+  Eurydice_slice fst[2U];
+  Eurydice_slice snd[2U];
+} K___Eurydice_slice_uint8_t_2size_t__Eurydice_slice_uint8_t_2size_t_;
 
 #if defined(__cplusplus)
 }

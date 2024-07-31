@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
- * Karamel: 1ed8ba551e8c65fdbad1bb7833bd7837be0d89b9
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: ad4ce19c3a5be12e25aefc8fa206b0d6335f2b81
+ * Charon: 920e78bb15250348a7a7a938e8023148e0a249bf
+ * Eurydice: 8db8a4838ea46c9ac681ba1051d1d296dd0d54b7
+ * Karamel: 65aab550cf3ba36d52ae6ad1ad962bb573406395
+ * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8
+ * Libcrux: d992e8bff91dab77b6f0abebf16384ce422b310c
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -113,6 +113,58 @@ void libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations
 extern const uint8_t
     libcrux_ml_kem_vector_rej_sample_table_REJECTION_SAMPLE_SHUFFLE_TABLE[256U]
                                                                          [16U];
+
+K___int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t
+libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
+    Eurydice_slice bytes);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_serialize_deserialize_4(Eurydice_slice bytes);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___deserialize_4(
+    Eurydice_slice a);
+
+typedef struct K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_s {
+  uint8_t fst;
+  uint8_t snd;
+  uint8_t thd;
+  uint8_t f3;
+  uint8_t f4;
+} K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t;
+
+K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
+libcrux_ml_kem_vector_portable_serialize_serialize_5_int(Eurydice_slice v);
+
+void libcrux_ml_kem_vector_portable_serialize_serialize_5(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
+    uint8_t ret[10U]);
+
+void libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___serialize_5(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
+    uint8_t ret[10U]);
+
+K___int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t
+libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
+    Eurydice_slice bytes);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_serialize_deserialize_5(Eurydice_slice bytes);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___deserialize_5(
+    Eurydice_slice a);
+
+K___int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t
+libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
+    Eurydice_slice bytes);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_serialize_deserialize_10(Eurydice_slice bytes);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___deserialize_10(
+    Eurydice_slice a);
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___ZERO(
@@ -334,47 +386,6 @@ void libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
     uint8_t ret[8U]);
 
-K___int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t
-libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
-    Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_serialize_deserialize_4(Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___deserialize_4(
-    Eurydice_slice a);
-
-typedef struct K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_s {
-  uint8_t fst;
-  uint8_t snd;
-  uint8_t thd;
-  uint8_t f3;
-  uint8_t f4;
-} K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t;
-
-K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
-libcrux_ml_kem_vector_portable_serialize_serialize_5_int(Eurydice_slice v);
-
-void libcrux_ml_kem_vector_portable_serialize_serialize_5(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
-    uint8_t ret[10U]);
-
-void libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___serialize_5(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[10U]);
-
-K___int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t
-libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
-    Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_serialize_deserialize_5(Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___deserialize_5(
-    Eurydice_slice a);
-
 K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
 libcrux_ml_kem_vector_portable_serialize_serialize_10_int(Eurydice_slice v);
 
@@ -385,17 +396,6 @@ void libcrux_ml_kem_vector_portable_serialize_serialize_10(
 void libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___serialize_10(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
     uint8_t ret[20U]);
-
-K___int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t
-libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
-    Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_serialize_deserialize_10(Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_libcrux_ml_kem__vector__portable__vector_type__PortableVector___deserialize_10(
-    Eurydice_slice a);
 
 typedef struct K___uint8_t_uint8_t_uint8_t_s {
   uint8_t fst;

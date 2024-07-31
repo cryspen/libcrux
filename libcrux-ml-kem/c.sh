@@ -23,7 +23,7 @@ clean=0
 config=c.yaml
 out=c
 glue=$EURYDICE_HOME/include/eurydice_glue.h
-features="--cargo-arg=--features=pre-verification"
+features="--cargo-arg=--features=pre-verification --cargo-arg=--features=simd128 --cargo-arg=--features=simd256"
 eurydice_glue=1
 karamel_include=1
 unrolling=16
@@ -52,7 +52,6 @@ if [[ "$portable_only" = 1 ]]; then
     export LIBCRUX_DISABLE_SIMD128=1
 fi
 
-# TODO: add LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 charon invocations
 if [[ "$no_charon" = 0 ]]; then
     rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc
     echo "Running charon (sha3) ..."
