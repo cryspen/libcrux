@@ -242,7 +242,7 @@ impl KeccakItem<4> for Vec256 {
         split_at_mut_4(a, mid)
     }
 
-    fn store<const BLOCKSIZE: usize>(state: &[[Self; 5]; 5], out: [&mut [u8]; 4]) {
+    fn store<const BLOCKSIZE: usize>(_state: &[[Self; 5]; 5], _out: [&mut [u8]; 4]) {
         todo!()
     }
 }
