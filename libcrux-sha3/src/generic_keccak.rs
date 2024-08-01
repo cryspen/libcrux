@@ -6,7 +6,7 @@ use core::ops::Index;
 use crate::traits::*;
 
 #[cfg_attr(hax, hax_lib::opaque_type)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub(crate) struct KeccakState<const N: usize, T: KeccakStateItem<N>> {
     st: [[T; 5]; 5],
 }
@@ -32,7 +32,6 @@ impl<const N: usize, T: KeccakStateItem<N>> KeccakState<N, T> {
 /// The internal keccak state that can also buffer inputs to absorb.
 /// This is used in the general xof APIs.
 #[cfg_attr(hax, hax_lib::opaque_type)]
-#[derive(Clone, Copy)]
 pub(crate) struct KeccakXofState<
     const PARALLEL_LANES: usize,
     const RATE: usize,
@@ -208,7 +207,10 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         let last = out_len - (out_len % RATE);
 
         // Squeeze out one to start with.
-        let (out0, mut out_rest) = STATE::split_at_mut_n(out, RATE.min(out_len));
+        // XXX: Eurydice does not extract `core::cmp::min`, so we do
+        // this instead. (cf. https://github.com/AeneasVerif/eurydice/issues/49)
+        let mid = if RATE >= out_len {out_len} else {RATE};
+        let (out0, mut out_rest) = STATE::split_at_mut_n(out, mid);
         STATE::store::<RATE>(&self.inner.st, out0);
 
         // If we got asked for more than one block, squeeze out more.
