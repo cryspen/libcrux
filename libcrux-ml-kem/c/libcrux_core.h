@@ -6,9 +6,9 @@
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
  * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
- * Karamel: 1ed8ba551e8c65fdbad1bb7833bd7837be0d89b9
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: ad4ce19c3a5be12e25aefc8fa206b0d6335f2b81
+ * Karamel: ab466d75991f78bb7925bf97c8ee9874f67074f5
+ * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
+ * Libcrux: 3339f719293e3d7a5747f6f6c8fecf56f308e0b6
  */
 
 #ifndef __libcrux_core_H
@@ -24,6 +24,11 @@ typedef struct core_ops_range_Range__size_t_s {
   size_t start;
   size_t end;
 } core_ops_range_Range__size_t;
+
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_____core_fmt_Error_tags;
 
 #define core_option_None 0
 #define core_option_Some 1
@@ -126,15 +131,9 @@ typedef struct
   uint8_t snd[32U];
 } K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_;
 
-#define core_result_Ok 0
-#define core_result_Err 1
-
-typedef uint8_t
-    core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_tags;
-
 typedef struct
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_tags tag;
+  core_result_Result_____core_fmt_Error_tags tag;
   union {
     uint8_t case_Ok[8U];
     core_array_TryFromSliceError case_Err;
