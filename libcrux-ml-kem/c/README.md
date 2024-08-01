@@ -71,13 +71,6 @@ cp ..\..\..\symcrypt\bin\exe\symcrypt.dll .\build\Release\
 ./build/Debug/ml_kem_test
 ```
 
-## Benchmarks
-
-```bash
-cmake -B build -G "Ninja Multi-Config"
-cmake --build build --config Release
-./build/Release/ml_kem_bench
-```
 
 [Charon]: https://github.com/AeneasVerif/charon/
 [Eurydice]: https://github.com/AeneasVerif/eurydice
