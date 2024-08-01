@@ -26,9 +26,4 @@ hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 pretty_env_logger = "0.5"
-criterion = "0.5"
-pprof = { version = "0.13.0", features = ["flamegraph", "criterion"]}
 
-[[bench]]
-name = "curve25519"
-harness = false

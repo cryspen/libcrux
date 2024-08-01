@@ -8,7 +8,7 @@
 //! | simd128     | -   | SSE2, SSE3, SSE4.1 | -     | NEON  | z14   |
 //! | simd256     | -   | AVX, AVX2          | -     | -     | -     |
 
-pub mod curve25519;
+pub(crate) mod curve25519;
 pub(crate) mod p256;
 
 /// Unified error type.
