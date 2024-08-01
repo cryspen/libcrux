@@ -264,6 +264,14 @@ pub mod portable {
         };
 
         use super::*;
+        /// Shake256 XOF in absorb state
+        pub type Shake256Absorb = XofAbsorb<136>;
+        /// Shake256 XOF in squeeze state
+        pub type Shake256Squeeze = XofSqueeze<136>;
+        /// Shake128 XOF in absorb state
+        pub type Shake128Absorb = XofAbsorb<168>;
+        /// Shake128 XOF in squeeze state
+        pub type Shake128Squeeze = XofSqueeze<168>;
 
         /// Incremental XOF absorb state
         pub struct XofAbsorb<const RATE: usize> {
@@ -273,6 +281,35 @@ pub mod portable {
         /// Incremental XOF squeeze state
         pub struct XofSqueeze<const RATE: usize> {
             state: KeccakXofState<1, RATE, u64>,
+        }
+
+        /// Shake128 XOF in absorb state
+        impl XofAbsorb<168> {
+            /// Shake128 new state
+            pub fn new() -> Self {
+                Self {
+                    state: KeccakXofState::<1, 168, u64>::new(),
+                }
+            }
+
+            /// Shake128 absorb
+            pub fn absorb(&mut self, input: &[u8]) {
+                self.state.absorb([input]);
+            }
+
+            /// Shake128 absorb final
+            pub fn absorb_final(mut self, input: &[u8]) -> XofSqueeze<168> {
+                self.state.absorb_final::<0x1fu8>([input]);
+                XofSqueeze { state: self.state }
+            }
+        }
+
+        /// Shake128 XOF in squeeze state
+        impl XofSqueeze<168> {
+            /// Shake128 squeeze
+            pub fn squeeze(&mut self, out: &mut [u8]) {
+                self.state.squeeze([out]);
+            }
         }
 
         /// Shake256 XOF in absorb state
