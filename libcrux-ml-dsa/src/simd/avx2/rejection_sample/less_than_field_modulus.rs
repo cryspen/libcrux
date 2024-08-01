@@ -1,5 +1,7 @@
-use crate::simd::avx2::uniform_rej_sample_table::UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE;
-use crate::simd::traits::FIELD_MODULUS;
+use crate::simd::{
+    avx2::rejection_sample::{shuffle_table::SHUFFLE_TABLE, utils},
+    traits::FIELD_MODULUS,
+};
 
 use libcrux_intrinsics::avx2::*;
 
@@ -30,28 +32,7 @@ fn bytestream_to_potential_coefficients(serialized: &[u8]) -> Vec256 {
 }
 
 #[inline(always)]
-fn extract_least_significant_bits(simd_unit: Vec256) -> u8 {
-    let first_byte_from_each_i32_lane = mm256_shuffle_epi8(
-        simd_unit,
-        mm256_set_epi8(
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 12, 8, 4, 0, -1, -1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1, -1, 12, 8, 4, 0,
-        ),
-    );
-
-    let bytes_grouped = mm256_permutevar8x32_epi32(
-        first_byte_from_each_i32_lane,
-        mm256_set_epi32(0, 0, 0, 0, 0, 0, 4, 0),
-    );
-    let bytes_grouped = mm256_castsi256_si128(bytes_grouped);
-
-    let bits = mm_movemask_epi8(bytes_grouped);
-
-    (bits & 0xFF) as u8
-}
-
-#[inline(always)]
-pub(crate) fn rejection_sample_less_than_field_modulus(input: &[u8], output: &mut [i32]) -> usize {
+pub(crate) fn sample(input: &[u8], output: &mut [i32]) -> usize {
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
 
     // The input bytes can be interpreted as a sequence of serialized
@@ -72,7 +53,7 @@ pub(crate) fn rejection_sample_less_than_field_modulus(input: &[u8], output: &mu
     // Since every bit in each lane is either 0 or all 1s, we only need one bit
     // from each lane to tell us what coefficients to keep and what to throw-away.
     // Combine all the bits (there are 8) into one byte.
-    let good = extract_least_significant_bits(compare_with_field_modulus);
+    let good = utils::extract_least_significant_bits(compare_with_field_modulus);
 
     let good_lower_half = good & 0x0F;
     let good_upper_half = good >> 4;
@@ -86,7 +67,7 @@ pub(crate) fn rejection_sample_less_than_field_modulus(input: &[u8], output: &mu
     // For e.g. if the lower 4 bits of good = 0b_0_0_1_0, we need to move the
     // element in the 2-nd 32-bit lane to the first. To do this, we need the
     // byte-level shuffle indices to be 2 3 4 5 X X ...
-    let lower_shuffles = UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE[good_lower_half as usize];
+    let lower_shuffles = SHUFFLE_TABLE[good_lower_half as usize];
 
     // Shuffle the lower 4 32-bits accordingly ...
     let lower_shuffles = mm_loadu_si128(&lower_shuffles);
@@ -101,7 +82,7 @@ pub(crate) fn rejection_sample_less_than_field_modulus(input: &[u8], output: &mu
     let sampled_count = good_lower_half.count_ones() as usize;
 
     // Do the same for |good_upper_half|
-    let upper_shuffles = UNIFORM_REJECTION_SAMPLE_SHUFFLE_TABLE[good_upper_half as usize];
+    let upper_shuffles = SHUFFLE_TABLE[good_upper_half as usize];
     let upper_shuffles = mm_loadu_si128(&upper_shuffles);
     let upper_coefficients = mm256_extracti128_si256::<1>(potential_coefficients);
     let upper_coefficients = mm_shuffle_epi8(upper_coefficients, upper_shuffles);

@@ -6,12 +6,17 @@ use crate::simd::portable::PortableSIMDUnit;
 mod arithmetic;
 mod encoding;
 mod ntt;
-mod sample;
-mod uniform_rej_sample_table;
+mod rejection_sample;
 
 #[derive(Clone, Copy)]
 pub struct AVX2SIMDUnit {
     pub(crate) coefficients: libcrux_intrinsics::avx2::Vec256,
+}
+
+impl From<libcrux_intrinsics::avx2::Vec256> for AVX2SIMDUnit {
+    fn from(coefficients: libcrux_intrinsics::avx2::Vec256) -> Self {
+        Self { coefficients }
+    }
 }
 
 impl Operations for AVX2SIMDUnit {
@@ -35,62 +40,37 @@ impl Operations for AVX2SIMDUnit {
     }
 
     fn add(lhs: &Self, rhs: &Self) -> Self {
-        Self {
-            coefficients: arithmetic::add(lhs.coefficients, rhs.coefficients),
-        }
+        arithmetic::add(lhs.coefficients, rhs.coefficients).into()
     }
 
     fn subtract(lhs: &Self, rhs: &Self) -> Self {
-        Self {
-            coefficients: arithmetic::subtract(lhs.coefficients, rhs.coefficients),
-        }
+        arithmetic::subtract(lhs.coefficients, rhs.coefficients).into()
     }
 
     fn montgomery_multiply_by_constant(simd_unit: Self, constant: i32) -> Self {
-        Self {
-            coefficients: arithmetic::montgomery_multiply_by_constant(
-                simd_unit.coefficients,
-                constant,
-            ),
-        }
+        arithmetic::montgomery_multiply_by_constant(simd_unit.coefficients, constant).into()
     }
     fn montgomery_multiply(lhs: Self, rhs: Self) -> Self {
-        Self {
-            coefficients: arithmetic::montgomery_multiply(lhs.coefficients, rhs.coefficients),
-        }
+        arithmetic::montgomery_multiply(lhs.coefficients, rhs.coefficients).into()
     }
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Self) -> Self {
-        Self {
-            coefficients: arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit.coefficients),
-        }
+        arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit.coefficients).into()
     }
 
     fn power2round(simd_unit: Self) -> (Self, Self) {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
+        let (lower, upper) = arithmetic::power2round(simd_unit.coefficients);
 
-        let (lower, upper) = PortableSIMDUnit::power2round(simd_unit);
-
-        (
-            Self::from_coefficient_array(&lower.to_coefficient_array()),
-            Self::from_coefficient_array(&upper.to_coefficient_array()),
-        )
+        (lower.into(), upper.into())
     }
 
     fn infinity_norm_exceeds(simd_unit: Self, bound: i32) -> bool {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        PortableSIMDUnit::infinity_norm_exceeds(simd_unit, bound)
+        arithmetic::infinity_norm_exceeds(simd_unit.coefficients, bound)
     }
 
     fn decompose<const GAMMA2: i32>(simd_unit: Self) -> (Self, Self) {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
+        let (lower, upper) = arithmetic::decompose::<GAMMA2>(simd_unit.coefficients);
 
-        let (lower, upper) = PortableSIMDUnit::decompose::<GAMMA2>(simd_unit);
-
-        (
-            Self::from_coefficient_array(&lower.to_coefficient_array()),
-            Self::from_coefficient_array(&upper.to_coefficient_array()),
-        )
+        (lower.into(), upper.into())
     }
 
     fn compute_hint<const GAMMA2: i32>(low: Self, high: Self) -> (usize, Self) {
@@ -114,13 +94,13 @@ impl Operations for AVX2SIMDUnit {
     }
 
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
-        sample::rejection_sample_less_than_field_modulus(randomness, out)
+        rejection_sample::less_than_field_modulus::sample(randomness, out)
     }
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
-        PortableSIMDUnit::rejection_sample_less_than_eta_equals_2(randomness, out)
+        rejection_sample::less_than_eta::sample::<2>(randomness, out)
     }
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
-        PortableSIMDUnit::rejection_sample_less_than_eta_equals_4(randomness, out)
+        rejection_sample::less_than_eta::sample::<4>(randomness, out)
     }
 
     fn gamma1_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
@@ -140,9 +120,7 @@ impl Operations for AVX2SIMDUnit {
         encoding::error::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
     }
     fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self {
-        let result = PortableSIMDUnit::error_deserialize::<{ ETA }>(serialized);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        encoding::error::deserialize::<ETA>(serialized).into()
     }
 
     fn t0_serialize(simd_unit: Self) -> [u8; 13] {
@@ -160,25 +138,17 @@ impl Operations for AVX2SIMDUnit {
         encoding::t1::serialize(simd_unit.coefficients)
     }
     fn t1_deserialize(serialized: &[u8]) -> Self {
-        let result = PortableSIMDUnit::t1_deserialize(serialized);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        encoding::t1::deserialize(serialized).into()
     }
 
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
-        Self {
-            coefficients: ntt::ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3),
-        }
+        ntt::ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3).into()
     }
     fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        Self {
-            coefficients: ntt::ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1),
-        }
+        ntt::ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1).into()
     }
     fn ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        Self {
-            coefficients: ntt::ntt_at_layer_2(simd_unit.coefficients, zeta),
-        }
+        ntt::ntt_at_layer_2(simd_unit.coefficients, zeta).into()
     }
 
     fn invert_ntt_at_layer_0(
@@ -188,24 +158,12 @@ impl Operations for AVX2SIMDUnit {
         zeta2: i32,
         zeta3: i32,
     ) -> Self {
-        Self {
-            coefficients: ntt::invert_ntt_at_layer_0(
-                simd_unit.coefficients,
-                zeta0,
-                zeta1,
-                zeta2,
-                zeta3,
-            ),
-        }
+        ntt::invert_ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3).into()
     }
     fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        Self {
-            coefficients: ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1),
-        }
+        ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1).into()
     }
     fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        Self {
-            coefficients: ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta),
-        }
+        ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta).into()
     }
 }
