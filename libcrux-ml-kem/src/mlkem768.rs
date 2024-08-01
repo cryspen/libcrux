@@ -394,6 +394,7 @@ pub fn decapsulate(
 
 #[cfg(feature = "kyber")]
 pub(crate) mod kyber {
+    #[cfg(not(eurydice))]
     use super::*;
 
     #[cfg(not(eurydice))]
