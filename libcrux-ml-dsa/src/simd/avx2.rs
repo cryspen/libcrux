@@ -21,15 +21,11 @@ impl From<libcrux_intrinsics::avx2::Vec256> for AVX2SIMDUnit {
 
 impl Operations for AVX2SIMDUnit {
     fn ZERO() -> Self {
-        Self {
-            coefficients: libcrux_intrinsics::avx2::mm256_setzero_si256(),
-        }
+        libcrux_intrinsics::avx2::mm256_setzero_si256().into()
     }
 
     fn from_coefficient_array(coefficient_array: &[i32]) -> Self {
-        Self {
-            coefficients: libcrux_intrinsics::avx2::mm256_loadu_si256_i32(coefficient_array),
-        }
+        libcrux_intrinsics::avx2::mm256_loadu_si256_i32(coefficient_array).into()
     }
 
     fn to_coefficient_array(&self) -> [i32; 8] {
@@ -85,12 +81,7 @@ impl Operations for AVX2SIMDUnit {
         )
     }
     fn use_hint<const GAMMA2: i32>(simd_unit: Self, hint: Self) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-        let hint = PortableSIMDUnit::from_coefficient_array(&hint.to_coefficient_array());
-
-        let result = PortableSIMDUnit::use_hint::<GAMMA2>(simd_unit, hint);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        arithmetic::use_hint::<GAMMA2>(simd_unit.coefficients, hint.coefficients).into()
     }
 
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {

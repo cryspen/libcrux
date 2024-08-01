@@ -182,17 +182,21 @@ pub fn mm256_set_epi16(
     }
 }
 
+#[inline(always)]
 pub fn mm_set1_epi16(constant: i16) -> Vec128 {
     unsafe { _mm_set1_epi16(constant) }
 }
 
+#[inline(always)]
 pub fn mm256_set1_epi32(constant: i32) -> Vec256 {
     unsafe { _mm256_set1_epi32(constant) }
 }
 
+#[inline(always)]
 pub fn mm_set_epi32(input3: i32, input2: i32, input1: i32, input0: i32) -> Vec128 {
     unsafe { _mm_set_epi32(input3, input2, input1, input0) }
 }
+#[inline(always)]
 pub fn mm256_set_epi32(
     input7: i32,
     input6: i32,
@@ -210,15 +214,19 @@ pub fn mm256_set_epi32(
     }
 }
 
+#[inline(always)]
 pub fn mm_add_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_add_epi16(lhs, rhs) }
 }
+#[inline(always)]
 pub fn mm256_add_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_add_epi16(lhs, rhs) }
 }
+#[inline(always)]
 pub fn mm256_madd_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_madd_epi16(lhs, rhs) }
 }
+#[inline(always)]
 pub fn mm256_add_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_add_epi32(lhs, rhs) }
 }
@@ -379,19 +387,37 @@ pub fn mm256_inserti128_si256<const CONTROL: i32>(vector: Vec256, vector_i128: V
     unsafe { _mm256_inserti128_si256(vector, vector_i128, CONTROL) }
 }
 
+#[inline(always)]
 pub fn mm256_blend_epi16<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
     unsafe { _mm256_blend_epi16(lhs, rhs, CONTROL) }
 }
+
+#[inline(always)]
 pub fn mm256_blend_epi32<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
     unsafe { _mm256_blend_epi32(lhs, rhs, CONTROL) }
 }
 
+// This is essentially _mm256_blendv_ps adapted for use with the Vec256 type.
+// It is not offered by the AVX2 instruction set.
+#[inline(always)]
+pub fn vec256_blendv_epi32(a: Vec256, b: Vec256, mask: Vec256) -> Vec256 {
+    unsafe {
+        _mm256_castps_si256(_mm256_blendv_ps(
+            _mm256_castsi256_ps(a),
+            _mm256_castsi256_ps(b),
+            _mm256_castsi256_ps(mask),
+        ))
+    }
+}
+
+#[inline(always)]
 pub fn mm_movemask_epi8(vector: Vec128) -> i32 {
     unsafe { _mm_movemask_epi8(vector) }
 }
 
+#[inline(always)]
 pub fn mm256_permutevar8x32_epi32(vector: Vec256, control: Vec256) -> Vec256 {
     unsafe { _mm256_permutevar8x32_epi32(vector, control) }
 }
