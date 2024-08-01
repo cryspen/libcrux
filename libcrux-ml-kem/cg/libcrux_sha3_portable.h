@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 920e78bb15250348a7a7a938e8023148e0a249bf
- * Eurydice: 4d6cf6308cb714aadcd1df0ba5f71977ec6c4a99
- * Karamel: 65aab550cf3ba36d52ae6ad1ad962bb573406395
+ * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
+ * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
+ * Karamel: 1ed8ba551e8c65fdbad1bb7833bd7837be0d89b9
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: c9c098bdea22047a1eb811ddf3468543855da224
+ * Libcrux: ad4ce19c3a5be12e25aefc8fa206b0d6335f2b81
  */
 
 #ifndef __libcrux_sha3_portable_H
@@ -2732,8 +2732,8 @@ libcrux_sha3_portable_incremental_shake128_squeeze_first_five_blocks(
 static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake256_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState__uint64_t__1size_t *s,
-    Eurydice_slice data0) {
-  Eurydice_slice buf[1U] = {data0};
+    Eurydice_slice data) {
+  Eurydice_slice buf[1U] = {data};
   libcrux_sha3_generic_keccak_absorb_final__uint64_t_1size_t_136size_t_31uint8_t(
       s, buf);
 }
@@ -2747,8 +2747,8 @@ static KRML_MUSTINLINE
 static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
     libcrux_sha3_generic_keccak_KeccakState__uint64_t__1size_t *s,
-    Eurydice_slice out0) {
-  Eurydice_slice buf[1U] = {out0};
+    Eurydice_slice out) {
+  Eurydice_slice buf[1U] = {out};
   libcrux_sha3_generic_keccak_squeeze_first_block__uint64_t_1size_t_136size_t(
       s, buf);
 }
@@ -2756,8 +2756,8 @@ libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
 static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake256_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState__uint64_t__1size_t *s,
-    Eurydice_slice out0) {
-  Eurydice_slice buf[1U] = {out0};
+    Eurydice_slice out) {
+  Eurydice_slice buf[1U] = {out};
   libcrux_sha3_generic_keccak_squeeze_next_block__uint64_t_1size_t_136size_t(
       s, buf);
 }
