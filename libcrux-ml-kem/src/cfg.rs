@@ -30,3 +30,13 @@ macro_rules! cfg_kyber {
         )*
     }
 }
+
+/// Macro to simplify `eurydice` cfg gating
+macro_rules! cfg_no_eurydice {
+    ($($item:item)*) => {
+        $(
+            #[cfg(not(eurydice))]
+            $item
+        )*
+    }
+}
