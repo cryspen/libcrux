@@ -148,19 +148,19 @@ pub(crate) fn sign<
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     {
-        let mut shake = incremental::Xof::new();
+        let mut shake = incremental::XofAbsorb::new();
         shake.absorb(&verification_key_hash);
-        shake.absorb_final(message);
+        let mut shake = shake.absorb_final(message);
 
         shake.squeeze(&mut message_representative);
     }
 
     let mut mask_seed = [0; MASK_SEED_SIZE];
     {
-        let mut shake = incremental::Xof::new();
+        let mut shake = incremental::XofAbsorb::new();
         shake.absorb(&seed_for_signing);
         shake.absorb(&randomness);
-        shake.absorb_final(&message_representative);
+        let mut shake = shake.absorb_final(&message_representative);
 
         shake.squeeze(&mut mask_seed);
     }
@@ -204,9 +204,9 @@ pub(crate) fn sign<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut shake = incremental::Xof::new();
+            let mut shake = incremental::XofAbsorb::new();
             shake.absorb(&message_representative);
-            shake.absorb_final(&commitment_serialized);
+            let mut shake = shake.absorb_final(&commitment_serialized);
 
             shake.squeeze(&mut commitment_hash);
         }
@@ -332,9 +332,9 @@ pub(crate) fn verify<
         );
         let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
         {
-            let mut shake = incremental::Xof::new();
+            let mut shake = incremental::XofAbsorb::new();
             shake.absorb(&verification_key_hash);
-            shake.absorb_final(&message);
+            let mut shake = shake.absorb_final(&message);
 
             shake.squeeze(&mut message_representative);
         };
@@ -366,9 +366,9 @@ pub(crate) fn verify<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut shake = incremental::Xof::new();
+            let mut shake = incremental::XofAbsorb::new();
             shake.absorb(&message_representative);
-            shake.absorb_final(&commitment_serialized);
+            let mut shake = shake.absorb_final(&commitment_serialized);
 
             shake.squeeze(&mut commitment_hash);
         }

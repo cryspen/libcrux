@@ -265,13 +265,18 @@ pub mod portable {
 
         use super::*;
 
-        /// Incremental Xof state
-        pub struct Xof<const RATE: usize> {
+        /// Incremental XOF absorb state
+        pub struct XofAbsorb<const RATE: usize> {
             state: KeccakXofState<1, RATE, u64>,
         }
 
-        /// Shake256
-        impl Xof<136> {
+        /// Incremental XOF squeeze state
+        pub struct XofSqueeze<const RATE: usize> {
+            state: KeccakXofState<1, RATE, u64>,
+        }
+
+        /// Shake256 XOF in absorb state
+        impl XofAbsorb<136> {
             /// Shake256 new state
             pub fn new() -> Self {
                 Self {
@@ -285,10 +290,14 @@ pub mod portable {
             }
 
             /// Shake256 absorb final
-            pub fn absorb_final(&mut self, input: &[u8]) {
+            pub fn absorb_final(mut self, input: &[u8]) -> XofSqueeze<136> {
                 self.state.absorb_final::<0x1fu8>([input]);
+                XofSqueeze { state: self.state }
             }
+        }
 
+        /// Shake256 XOF in squeeze state
+        impl XofSqueeze<136> {
             /// Shake256 squeeze
             pub fn squeeze(&mut self, out: &mut [u8]) {
                 self.state.squeeze([out]);
