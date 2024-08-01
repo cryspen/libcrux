@@ -1,3 +1,4 @@
+#[cfg(not(feature = "hacl-rs"))]
 use libcrux_hacl::{Hacl_Curve25519_51_ecdh, Hacl_Curve25519_51_secret_to_public};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -14,6 +15,7 @@ pub fn ecdh(
     public_key: impl AsRef<[u8; 32]>,
 ) -> Result<[u8; 32], Error> {
     let mut shared = [0u8; 32];
+    #[cfg(not(feature = "hacl-rs"))]
     let ok = unsafe {
         Hacl_Curve25519_51_ecdh(
             shared.as_mut_ptr(),
@@ -21,6 +23,9 @@ pub fn ecdh(
             public_key.as_ref().as_ptr() as _,
         )
     };
+    #[cfg(feature = "hacl-rs")]
+    let ok =
+        hacl_rs::hacl::curve25519_51::ecdh(&mut shared, private_key.as_ref(), public_key.as_ref());
     if !ok {
         Err(Error::InvalidInput)
     } else {
@@ -32,13 +37,17 @@ pub fn ecdh(
 /// with the base point).
 ///
 /// Returns the 32 bytes shared key.
+
 #[must_use]
 #[inline(always)]
 pub fn secret_to_public(private_key: impl AsRef<[u8; 32]>) -> [u8; 32] {
     let mut public = [0u8; 32];
+    #[cfg(not(feature = "hacl-rs"))]
     unsafe {
         Hacl_Curve25519_51_secret_to_public(public.as_mut_ptr(), private_key.as_ref().as_ptr() as _)
     };
+    #[cfg(feature = "hacl-rs")]
+    hacl_rs::hacl::curve25519_51::secret_to_public(&mut public, private_key.as_ref());
     public
 }
 
