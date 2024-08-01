@@ -1,4 +1,4 @@
-use libcrux_sha3::portable::incremental;
+use libcrux_sha3::portable::incremental::{Shake256Absorb, XofAbsorb, XofSqueeze};
 
 use crate::{
     arithmetic::{
@@ -148,7 +148,7 @@ pub(crate) fn sign<
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     {
-        let mut shake = incremental::XofAbsorb::new();
+        let mut shake = Shake256Absorb::new();
         shake.absorb(&verification_key_hash);
         let mut shake = shake.absorb_final(message);
 
@@ -157,7 +157,7 @@ pub(crate) fn sign<
 
     let mut mask_seed = [0; MASK_SEED_SIZE];
     {
-        let mut shake = incremental::XofAbsorb::new();
+        let mut shake = Shake256Absorb::new();
         shake.absorb(&seed_for_signing);
         shake.absorb(&randomness);
         let mut shake = shake.absorb_final(&message_representative);
@@ -204,7 +204,7 @@ pub(crate) fn sign<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut shake = incremental::XofAbsorb::new();
+            let mut shake = Shake256Absorb::new();
             shake.absorb(&message_representative);
             let mut shake = shake.absorb_final(&commitment_serialized);
 
@@ -332,7 +332,7 @@ pub(crate) fn verify<
         );
         let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
         {
-            let mut shake = incremental::XofAbsorb::new();
+            let mut shake = Shake256Absorb::new();
             shake.absorb(&verification_key_hash);
             let mut shake = shake.absorb_final(&message);
 
@@ -366,7 +366,7 @@ pub(crate) fn verify<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut shake = incremental::XofAbsorb::new();
+            let mut shake = Shake256Absorb::new();
             shake.absorb(&message_representative);
             let mut shake = shake.absorb_final(&commitment_serialized);
 
