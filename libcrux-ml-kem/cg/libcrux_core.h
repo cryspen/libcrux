@@ -6,9 +6,9 @@
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
  * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
- * Karamel: 1ed8ba551e8c65fdbad1bb7833bd7837be0d89b9
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: ad4ce19c3a5be12e25aefc8fa206b0d6335f2b81
+ * Karamel: ab466d75991f78bb7925bf97c8ee9874f67074f5
+ * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
+ * Libcrux: 311466858468504a1c6f5510661dc1f0adc332ba
  */
 
 #ifndef __libcrux_core_H
@@ -24,6 +24,11 @@ typedef struct core_ops_range_Range__size_t_s {
   size_t start;
   size_t end;
 } core_ops_range_Range__size_t;
+
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_____core_fmt_Error_tags;
 
 #define core_option_None 0
 #define core_option_Some 1
@@ -68,15 +73,9 @@ typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair768_s {
   uint8_t snd[1184U];
 } libcrux_ml_kem_utils_extraction_helper_Keypair768;
 
-#define core_result_Ok 0
-#define core_result_Err 1
-
-typedef uint8_t
-    core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags;
-
 typedef struct
     core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
+  core_result_Result_____core_fmt_Error_tags tag;
   union {
     uint8_t case_Ok[24U];
     core_array_TryFromSliceError case_Err;
@@ -100,7 +99,7 @@ core_result__core__result__Result_T__E___unwrap__uint8_t_24size_t__core_array_Tr
 
 typedef struct
     core_result_Result__uint8_t_20size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
+  core_result_Result_____core_fmt_Error_tags tag;
   union {
     uint8_t case_Ok[20U];
     core_array_TryFromSliceError case_Err;
@@ -124,7 +123,7 @@ core_result__core__result__Result_T__E___unwrap__uint8_t_20size_t__core_array_Tr
 
 typedef struct
     core_result_Result__uint8_t_10size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
+  core_result_Result_____core_fmt_Error_tags tag;
   union {
     uint8_t case_Ok[10U];
     core_array_TryFromSliceError case_Err;
@@ -242,7 +241,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array___33size_t(
 
 typedef struct
     core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
+  core_result_Result_____core_fmt_Error_tags tag;
   union {
     uint8_t case_Ok[32U];
     core_array_TryFromSliceError case_Err;
@@ -318,7 +317,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array___64size_t(
 
 typedef struct
     core_result_Result__int16_t_16size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
+  core_result_Result_____core_fmt_Error_tags tag;
   union {
     int16_t case_Ok[16U];
     core_array_TryFromSliceError case_Err;
@@ -342,7 +341,7 @@ core_result__core__result__Result_T__E___unwrap__int16_t_16size_t__core_array_Tr
 
 typedef struct
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
+  core_result_Result_____core_fmt_Error_tags tag;
   union {
     uint8_t case_Ok[8U];
     core_array_TryFromSliceError case_Err;
