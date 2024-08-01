@@ -209,7 +209,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         // Squeeze out one to start with.
         // XXX: Eurydice does not extract `core::cmp::min`, so we do
         // this instead. (cf. https://github.com/AeneasVerif/eurydice/issues/49)
-        let mid = if RATE >= out_len {out_len} else {RATE};
+        let mid = if RATE >= out_len { out_len } else { RATE };
         let (out0, mut out_rest) = STATE::split_at_mut_n(out, mid);
         STATE::store::<RATE>(&self.inner.st, out0);
 
