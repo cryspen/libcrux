@@ -24,6 +24,9 @@ rand = { version = "0.8" }
 libcrux-ecdh = { version = "0.0.2-alpha.3", path = "../libcrux-ecdh" }
 libcrux = { version = "0.0.2-alpha.3", path = ".." }
 
+[features]
+hacl-rs = ["libcrux-ecdh/hacl-rs"]
+
 [dev-dependencies]
 criterion = "0.5"
 
