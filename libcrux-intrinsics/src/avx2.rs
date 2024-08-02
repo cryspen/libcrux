@@ -231,6 +231,12 @@ pub fn mm256_add_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_add_epi32(lhs, rhs) }
 }
 
+
+#[inline(always)]
+pub fn mm256_add_epi64(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unsafe { _mm256_add_epi64(lhs, rhs) }
+}
+
 #[inline(always)]
 pub fn mm256_abs_epi32(a: Vec256) -> Vec256 {
     unsafe { _mm256_abs_epi32(a) }
@@ -422,9 +428,15 @@ pub fn mm256_permutevar8x32_epi32(vector: Vec256, control: Vec256) -> Vec256 {
     unsafe { _mm256_permutevar8x32_epi32(vector, control) }
 }
 
+#[inline(always)]
 pub fn mm256_srlv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unsafe { _mm256_srlv_epi32(vector, counts) }
 }
+#[inline(always)]
+pub fn mm256_srlv_epi64(vector: Vec256, counts: Vec256) -> Vec256 {
+    unsafe { _mm256_srlv_epi64(vector, counts) }
+}
+
 pub fn mm_sllv_epi32(vector: Vec128, counts: Vec128) -> Vec128 {
     unsafe { _mm_sllv_epi32(vector, counts) }
 }
@@ -438,6 +450,12 @@ pub fn mm256_slli_epi64<const LEFT: i32>(x: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+pub fn mm256_bsrli_epi128<const SHIFT_BY: i32>(x: Vec256) -> Vec256 {
+    debug_assert!(SHIFT_BY > 0 && SHIFT_BY < 16);
+    unsafe { _mm256_bsrli_epi128::<SHIFT_BY>(x) }
+}
+
+#[inline(always)]
 pub fn mm256_andnot_si256(a: Vec256, b: Vec256) -> Vec256 {
     unsafe { _mm256_andnot_si256(a, b) }
 }
@@ -445,6 +463,19 @@ pub fn mm256_andnot_si256(a: Vec256, b: Vec256) -> Vec256 {
 #[inline(always)]
 pub fn mm256_set1_epi64x(a: i64) -> Vec256 {
     unsafe { _mm256_set1_epi64x(a) }
+}
+#[inline(always)]
+pub fn mm256_set_epi64x(
+    input3: i64,
+    input2: i64,
+    input1: i64,
+    input0: i64,
+) -> Vec256 {
+    unsafe {
+        _mm256_set_epi64x(
+            input3, input2, input1, input0,
+        )
+    }
 }
 
 #[inline(always)]
