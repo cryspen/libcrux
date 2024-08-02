@@ -21,10 +21,8 @@ pub(crate) fn serialize(simd_unit: Vec256) -> [u8; 13] {
 
     let adjacent_4_combined =
         mm256_permutevar8x32_epi32(adjacent_2_combined, mm256_set_epi32(0, 0, 0, 0, 6, 4, 2, 0));
-    let adjacent_4_combined = mm256_sllv_epi32(
-        adjacent_4_combined,
-        mm256_set_epi32(0, 6, 0, 6, 0, 6, 0, 6),
-    );
+    let adjacent_4_combined =
+        mm256_sllv_epi32(adjacent_4_combined, mm256_set_epi32(0, 6, 0, 6, 0, 6, 0, 6));
     let adjacent_4_combined = mm256_srli_epi64::<6>(adjacent_4_combined);
 
     let second_4_combined = mm256_bsrli_epi128::<8>(adjacent_4_combined);

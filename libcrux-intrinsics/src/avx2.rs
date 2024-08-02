@@ -231,7 +231,6 @@ pub fn mm256_add_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_add_epi32(lhs, rhs) }
 }
 
-
 #[inline(always)]
 pub fn mm256_add_epi64(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_add_epi64(lhs, rhs) }
@@ -465,17 +464,8 @@ pub fn mm256_set1_epi64x(a: i64) -> Vec256 {
     unsafe { _mm256_set1_epi64x(a) }
 }
 #[inline(always)]
-pub fn mm256_set_epi64x(
-    input3: i64,
-    input2: i64,
-    input1: i64,
-    input0: i64,
-) -> Vec256 {
-    unsafe {
-        _mm256_set_epi64x(
-            input3, input2, input1, input0,
-        )
-    }
+pub fn mm256_set_epi64x(input3: i64, input2: i64, input1: i64, input0: i64) -> Vec256 {
+    unsafe { _mm256_set_epi64x(input3, input2, input1, input0) }
 }
 
 #[inline(always)]
