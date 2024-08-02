@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 8f3c82290a95695e4f6bbaebc8317bfbe03233be
- * Karamel: d43a65c629e989afd6b21fa4486feda78a190a47
- * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: a23ad09369f2361317bfd6fd43267bd8521048eb
+ * Eurydice: be0d5b5e1455673c2afa9592c0951def463f59ec
+ * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
+ * Libcrux: cb6da975011a1d6dfeaa6215d63a56d043b522b5
  */
 
 #include "libcrux_sha3_neon.h"
@@ -1395,75 +1395,29 @@ static KRML_MUSTINLINE void theta_rho_eb(
       rotate_left1_and_xor_fa(c[((size_t)4U + (size_t)4U) % (size_t)5U],
                               c[((size_t)4U + (size_t)1U) % (size_t)5U])};
   s->st[0U][0U] = xor_fa(s->st[0U][0U], t[0U]);
-  core_core_arch_arm_shared_neon_uint64x2_t uu____4 =
-      xor_and_rotate_fa_1f(s->st[1U][0U], t[0U]);
-  s->st[1U][0U] = uu____4;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____5 =
-      xor_and_rotate_fa_1f0(s->st[2U][0U], t[0U]);
-  s->st[2U][0U] = uu____5;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____6 =
-      xor_and_rotate_fa_1f1(s->st[3U][0U], t[0U]);
-  s->st[3U][0U] = uu____6;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____7 =
-      xor_and_rotate_fa_1f2(s->st[4U][0U], t[0U]);
-  s->st[4U][0U] = uu____7;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____8 =
-      xor_and_rotate_fa_1f3(s->st[0U][1U], t[1U]);
-  s->st[0U][1U] = uu____8;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____9 =
-      xor_and_rotate_fa_1f4(s->st[1U][1U], t[1U]);
-  s->st[1U][1U] = uu____9;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____10 =
-      xor_and_rotate_fa_1f5(s->st[2U][1U], t[1U]);
-  s->st[2U][1U] = uu____10;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____11 =
-      xor_and_rotate_fa_1f6(s->st[3U][1U], t[1U]);
-  s->st[3U][1U] = uu____11;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____12 =
-      xor_and_rotate_fa_1f7(s->st[4U][1U], t[1U]);
-  s->st[4U][1U] = uu____12;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____13 =
-      xor_and_rotate_fa_1f8(s->st[0U][2U], t[2U]);
-  s->st[0U][2U] = uu____13;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____14 =
-      xor_and_rotate_fa_1f9(s->st[1U][2U], t[2U]);
-  s->st[1U][2U] = uu____14;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____15 =
-      xor_and_rotate_fa_1f10(s->st[2U][2U], t[2U]);
-  s->st[2U][2U] = uu____15;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____16 =
-      xor_and_rotate_fa_1f11(s->st[3U][2U], t[2U]);
-  s->st[3U][2U] = uu____16;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____17 =
-      xor_and_rotate_fa_1f12(s->st[4U][2U], t[2U]);
-  s->st[4U][2U] = uu____17;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____18 =
-      xor_and_rotate_fa_1f13(s->st[0U][3U], t[3U]);
-  s->st[0U][3U] = uu____18;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____19 =
-      xor_and_rotate_fa_1f14(s->st[1U][3U], t[3U]);
-  s->st[1U][3U] = uu____19;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____20 =
-      xor_and_rotate_fa_1f15(s->st[2U][3U], t[3U]);
-  s->st[2U][3U] = uu____20;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____21 =
-      xor_and_rotate_fa_1f16(s->st[3U][3U], t[3U]);
-  s->st[3U][3U] = uu____21;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____22 =
-      xor_and_rotate_fa_1f17(s->st[4U][3U], t[3U]);
-  s->st[4U][3U] = uu____22;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____23 =
-      xor_and_rotate_fa_1f18(s->st[0U][4U], t[4U]);
-  s->st[0U][4U] = uu____23;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____24 =
-      xor_and_rotate_fa_1f19(s->st[1U][4U], t[4U]);
-  s->st[1U][4U] = uu____24;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____25 =
-      xor_and_rotate_fa_1f20(s->st[2U][4U], t[4U]);
-  s->st[2U][4U] = uu____25;
-  core_core_arch_arm_shared_neon_uint64x2_t uu____26 =
-      xor_and_rotate_fa_1f21(s->st[3U][4U], t[4U]);
-  s->st[3U][4U] = uu____26;
+  s->st[1U][0U] = xor_and_rotate_fa_1f(s->st[1U][0U], t[0U]);
+  s->st[2U][0U] = xor_and_rotate_fa_1f0(s->st[2U][0U], t[0U]);
+  s->st[3U][0U] = xor_and_rotate_fa_1f1(s->st[3U][0U], t[0U]);
+  s->st[4U][0U] = xor_and_rotate_fa_1f2(s->st[4U][0U], t[0U]);
+  s->st[0U][1U] = xor_and_rotate_fa_1f3(s->st[0U][1U], t[1U]);
+  s->st[1U][1U] = xor_and_rotate_fa_1f4(s->st[1U][1U], t[1U]);
+  s->st[2U][1U] = xor_and_rotate_fa_1f5(s->st[2U][1U], t[1U]);
+  s->st[3U][1U] = xor_and_rotate_fa_1f6(s->st[3U][1U], t[1U]);
+  s->st[4U][1U] = xor_and_rotate_fa_1f7(s->st[4U][1U], t[1U]);
+  s->st[0U][2U] = xor_and_rotate_fa_1f8(s->st[0U][2U], t[2U]);
+  s->st[1U][2U] = xor_and_rotate_fa_1f9(s->st[1U][2U], t[2U]);
+  s->st[2U][2U] = xor_and_rotate_fa_1f10(s->st[2U][2U], t[2U]);
+  s->st[3U][2U] = xor_and_rotate_fa_1f11(s->st[3U][2U], t[2U]);
+  s->st[4U][2U] = xor_and_rotate_fa_1f12(s->st[4U][2U], t[2U]);
+  s->st[0U][3U] = xor_and_rotate_fa_1f13(s->st[0U][3U], t[3U]);
+  s->st[1U][3U] = xor_and_rotate_fa_1f14(s->st[1U][3U], t[3U]);
+  s->st[2U][3U] = xor_and_rotate_fa_1f15(s->st[2U][3U], t[3U]);
+  s->st[3U][3U] = xor_and_rotate_fa_1f16(s->st[3U][3U], t[3U]);
+  s->st[4U][3U] = xor_and_rotate_fa_1f17(s->st[4U][3U], t[3U]);
+  s->st[0U][4U] = xor_and_rotate_fa_1f18(s->st[0U][4U], t[4U]);
+  s->st[1U][4U] = xor_and_rotate_fa_1f19(s->st[1U][4U], t[4U]);
+  s->st[2U][4U] = xor_and_rotate_fa_1f20(s->st[2U][4U], t[4U]);
+  s->st[3U][4U] = xor_and_rotate_fa_1f21(s->st[3U][4U], t[4U]);
   core_core_arch_arm_shared_neon_uint64x2_t uu____27 =
       xor_and_rotate_fa_1f22(s->st[4U][4U], t[4U]);
   s->st[4U][4U] = uu____27;

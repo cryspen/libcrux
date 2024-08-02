@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 8f3c82290a95695e4f6bbaebc8317bfbe03233be
- * Karamel: d43a65c629e989afd6b21fa4486feda78a190a47
- * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: a23ad09369f2361317bfd6fd43267bd8521048eb
+ * Eurydice: be0d5b5e1455673c2afa9592c0951def463f59ec
+ * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
+ * Libcrux: cb6da975011a1d6dfeaa6215d63a56d043b522b5
  */
 
 #include "internal/libcrux_mlkem_neon.h"
@@ -2081,9 +2081,8 @@ static KRML_MUSTINLINE void ntt_at_layer_7_67(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector t =
         libcrux_ml_kem_vector_neon_multiply_by_constant_20(
             re->coefficients[j + step], (int16_t)-1600);
-    libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
+    re->coefficients[j + step] =
         libcrux_ml_kem_vector_neon_sub_20(re->coefficients[j], &t);
-    re->coefficients[j + step] = uu____0;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____1 =
         libcrux_ml_kem_vector_neon_add_20(re->coefficients[j], &t);
     re->coefficients[j] = uu____1;
@@ -2184,13 +2183,12 @@ static KRML_MUSTINLINE void ntt_at_layer_2_d0(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] + (size_t)1U;
-      libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-          libcrux_ml_kem_vector_neon_ntt_layer_2_step_20(
-              re->coefficients[round],
-              libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
-              libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
-                                                                 (size_t)1U]);
-      re->coefficients[round] = uu____0; zeta_i[0U] = zeta_i[0U] + (size_t)1U;);
+      re->coefficients[round] = libcrux_ml_kem_vector_neon_ntt_layer_2_step_20(
+          re->coefficients[round],
+          libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
+          libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
+                                                             (size_t)1U]);
+      zeta_i[0U] = zeta_i[0U] + (size_t)1U;);
 }
 
 /**
@@ -2204,17 +2202,16 @@ static KRML_MUSTINLINE void ntt_at_layer_1_39(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] + (size_t)1U;
-      libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-          libcrux_ml_kem_vector_neon_ntt_layer_1_step_20(
-              re->coefficients[round],
-              libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
-              libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
-                                                                 (size_t)1U],
-              libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
-                                                                 (size_t)2U],
-              libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
-                                                                 (size_t)3U]);
-      re->coefficients[round] = uu____0; zeta_i[0U] = zeta_i[0U] + (size_t)3U;);
+      re->coefficients[round] = libcrux_ml_kem_vector_neon_ntt_layer_1_step_20(
+          re->coefficients[round],
+          libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
+          libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
+                                                             (size_t)1U],
+          libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
+                                                             (size_t)2U],
+          libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
+                                                             (size_t)3U]);
+      zeta_i[0U] = zeta_i[0U] + (size_t)3U;);
 }
 
 /**
@@ -2281,13 +2278,11 @@ static KRML_MUSTINLINE tuple_740 sample_vector_cbd_then_ntt_1f1(
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[2U][192U];
   PRFxN_48_a91(prf_inputs, prf_outputs);
-  KRML_MAYBE_FOR2(
-      i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
-      libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____1 =
-          sample_from_binomial_distribution_2c0(Eurydice_array_to_slice(
-              (size_t)192U, prf_outputs[i0], uint8_t, Eurydice_slice));
-      re_as_ntt[i0] = uu____1;
-      ntt_binomially_sampled_ring_element_cf(&re_as_ntt[i0]););
+  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
+                  re_as_ntt[i0] = sample_from_binomial_distribution_2c0(
+                      Eurydice_array_to_slice((size_t)192U, prf_outputs[i0],
+                                              uint8_t, Eurydice_slice));
+                  ntt_binomially_sampled_ring_element_cf(&re_as_ntt[i0]););
   libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____2[2U];
   memcpy(
       uu____2, re_as_ntt,
@@ -2928,7 +2923,7 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_1_9b(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] - (size_t)1U;
-      libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
+      re->coefficients[round] =
           libcrux_ml_kem_vector_neon_inv_ntt_layer_1_step_20(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
@@ -2938,7 +2933,7 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_1_9b(
                                                                  (size_t)2U],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] -
                                                                  (size_t)3U]);
-      re->coefficients[round] = uu____0; zeta_i[0U] = zeta_i[0U] - (size_t)3U;);
+      zeta_i[0U] = zeta_i[0U] - (size_t)3U;);
 }
 
 /**
@@ -2952,13 +2947,13 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_2_4b(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] - (size_t)1U;
-      libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
+      re->coefficients[round] =
           libcrux_ml_kem_vector_neon_inv_ntt_layer_2_step_20(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] -
                                                                  (size_t)1U]);
-      re->coefficients[round] = uu____0; zeta_i[0U] = zeta_i[0U] - (size_t)1U;);
+      zeta_i[0U] = zeta_i[0U] - (size_t)1U;);
 }
 
 /**
@@ -4306,9 +4301,7 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_331(
             LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT *
                 (size_t)10U / (size_t)8U,
         uint8_t, Eurydice_slice);
-    libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____0 =
-        deserialize_then_decompress_ring_element_u_060(u_bytes);
-    u_as_ntt[i0] = uu____0;
+    u_as_ntt[i0] = deserialize_then_decompress_ring_element_u_060(u_bytes);
     ntt_vector_u_3c0(&u_as_ntt[i0]);
   }
   memcpy(
@@ -4512,9 +4505,7 @@ deserialize_then_decompress_5_25(Eurydice_slice serialized) {
     Eurydice_slice bytes = Eurydice_slice_subslice2(
         serialized, i0 * (size_t)10U, i0 * (size_t)10U + (size_t)10U, uint8_t,
         Eurydice_slice);
-    libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon_deserialize_5_20(bytes);
-    re.coefficients[i0] = uu____0;
+    re.coefficients[i0] = libcrux_ml_kem_vector_neon_deserialize_5_20(bytes);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____1 =
         decompress_ciphertext_coefficient_20_212(re.coefficients[i0]);
     re.coefficients[i0] = uu____1;
@@ -5490,13 +5481,11 @@ static KRML_MUSTINLINE tuple_b00 sample_vector_cbd_then_ntt_1f0(
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[3U][128U];
   PRFxN_48_a90(prf_inputs, prf_outputs);
-  KRML_MAYBE_FOR3(
-      i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
-      libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____1 =
-          sample_from_binomial_distribution_2c(Eurydice_array_to_slice(
-              (size_t)128U, prf_outputs[i0], uint8_t, Eurydice_slice));
-      re_as_ntt[i0] = uu____1;
-      ntt_binomially_sampled_ring_element_cf(&re_as_ntt[i0]););
+  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
+                  re_as_ntt[i0] = sample_from_binomial_distribution_2c(
+                      Eurydice_array_to_slice((size_t)128U, prf_outputs[i0],
+                                              uint8_t, Eurydice_slice));
+                  ntt_binomially_sampled_ring_element_cf(&re_as_ntt[i0]););
   libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____2[3U];
   memcpy(
       uu____2, re_as_ntt,
@@ -6460,9 +6449,7 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_330(
             LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT *
                 (size_t)10U / (size_t)8U,
         uint8_t, Eurydice_slice);
-    libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____0 =
-        deserialize_then_decompress_ring_element_u_060(u_bytes);
-    u_as_ntt[i0] = uu____0;
+    u_as_ntt[i0] = deserialize_then_decompress_ring_element_u_060(u_bytes);
     ntt_vector_u_3c0(&u_as_ntt[i0]);
   }
   memcpy(
@@ -7340,13 +7327,11 @@ static KRML_MUSTINLINE tuple_71 sample_vector_cbd_then_ntt_1f(
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[4U][128U];
   PRFxN_48_a9(prf_inputs, prf_outputs);
-  KRML_MAYBE_FOR4(
-      i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
-      libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____1 =
-          sample_from_binomial_distribution_2c(Eurydice_array_to_slice(
-              (size_t)128U, prf_outputs[i0], uint8_t, Eurydice_slice));
-      re_as_ntt[i0] = uu____1;
-      ntt_binomially_sampled_ring_element_cf(&re_as_ntt[i0]););
+  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
+                  re_as_ntt[i0] = sample_from_binomial_distribution_2c(
+                      Eurydice_array_to_slice((size_t)128U, prf_outputs[i0],
+                                              uint8_t, Eurydice_slice));
+                  ntt_binomially_sampled_ring_element_cf(&re_as_ntt[i0]););
   libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____2[4U];
   memcpy(
       uu____2, re_as_ntt,
@@ -8394,9 +8379,7 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_33(
             LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT *
                 (size_t)11U / (size_t)8U,
         uint8_t, Eurydice_slice);
-    libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____0 =
-        deserialize_then_decompress_ring_element_u_06(u_bytes);
-    u_as_ntt[i0] = uu____0;
+    u_as_ntt[i0] = deserialize_then_decompress_ring_element_u_06(u_bytes);
     ntt_vector_u_3c(&u_as_ntt[i0]);
   }
   memcpy(
