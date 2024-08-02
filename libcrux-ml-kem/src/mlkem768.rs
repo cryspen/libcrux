@@ -392,12 +392,10 @@ pub fn decapsulate(
     >(private_key, ciphertext)
 }
 
-#[cfg(feature = "kyber")]
+#[cfg(all(not(eurydice), feature = "kyber"))]
 pub(crate) mod kyber {
-    #[cfg(not(eurydice))]
     use super::*;
 
-    #[cfg(not(eurydice))]
     /// Encapsulate Kyber 768
     ///
     /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
@@ -424,7 +422,6 @@ pub(crate) mod kyber {
         >(public_key, randomness)
     }
 
-    #[cfg(not(eurydice))]
     /// Decapsulate ML-KEM 768
     ///
     /// Generates an [`MlKemSharedSecret`].
@@ -453,7 +450,6 @@ pub(crate) mod kyber {
         >(private_key, ciphertext)
     }
 }
-
 #[cfg(test)]
 mod tests {
     use rand::{rngs::OsRng, RngCore};

@@ -32,7 +32,7 @@ macro_rules! cfg_kyber {
 }
 
 /// Macro to simplify `eurydice` cfg gating
-#[allow(dead_code)]
+#[allow(unused_macros)]
 macro_rules! cfg_no_eurydice {
     ($($item:item)*) => {
         $(
