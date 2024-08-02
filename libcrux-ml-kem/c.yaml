@@ -32,7 +32,7 @@ files:
         - [libcrux_sha3, neon, "*"]
         - [libcrux_sha3, simd, arm64, "*"]
       monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, "KeccakState__core_core_arch_arm_shared_neon_uint64x2_t_$2size_t"]
+        - [libcrux_sha3, generic_keccak, "KeccakState_fc"]
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_arm64.h"'
 

@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 013beb9e4046a151131c6a56dfe25e606b49c4a1
- * Karamel: 4626e5fcb3787a47c806d160539342ade4b0809c
+ * Eurydice: 8f3c82290a95695e4f6bbaebc8317bfbe03233be
+ * Karamel: d43a65c629e989afd6b21fa4486feda78a190a47
  * F*: b2931dfbe46e839cd757220c63d48c71335bb1ae
- * Libcrux: a0db75c27aa09b79eae1c2315196383465857308
+ * Libcrux: a23ad09369f2361317bfd6fd43267bd8521048eb
  */
 
 #ifndef __internal_libcrux_mlkem_portable_H
@@ -30,437 +30,423 @@ extern const int16_t libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[128U];
    LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR)
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector and with const
-generics:
-- K = 4
-- RANKED_BYTES_PER_RING_ELEMENT = 1536
-- PUBLIC_KEY_SIZE = 1568
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+- K= 4
+- RANKED_BYTES_PER_RING_ELEMENT= 1536
+- PUBLIC_KEY_SIZE= 1568
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_38(uint8_t *public_key);
+bool libcrux_ml_kem_ind_cca_validate_public_key_991(uint8_t *public_key);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair_unpacked with
-types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] and with const
-generics:
-- K = 4
-- CPA_PRIVATE_KEY_SIZE = 1536
-- PRIVATE_KEY_SIZE = 3168
-- PUBLIC_KEY_SIZE = 1568
-- BYTES_PER_RING_ELEMENT = 1536
-- ETA1 = 2
-- ETA1_RANDOMNESS_SIZE = 128
+A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair_unpacked
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] with const
+generics
+- K= 4
+- CPA_PRIVATE_KEY_SIZE= 1536
+- PRIVATE_KEY_SIZE= 3168
+- PUBLIC_KEY_SIZE= 1568
+- BYTES_PER_RING_ELEMENT= 1536
+- ETA1= 2
+- ETA1_RANDOMNESS_SIZE= 128
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_portable_vector_type_PortableVector__4size_t
-libcrux_ml_kem_ind_cca_generate_keypair_unpacked_23(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42
+libcrux_ml_kem_ind_cca_generate_keypair_unpacked_0d1(uint8_t randomness[64U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] and with const
-generics:
-- K = 4
-- CPA_PRIVATE_KEY_SIZE = 1536
-- PRIVATE_KEY_SIZE = 3168
-- PUBLIC_KEY_SIZE = 1568
-- BYTES_PER_RING_ELEMENT = 1536
-- ETA1 = 2
-- ETA1_RANDOMNESS_SIZE = 128
+A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] with const
+generics
+- K= 4
+- CPA_PRIVATE_KEY_SIZE= 1536
+- PRIVATE_KEY_SIZE= 3168
+- PUBLIC_KEY_SIZE= 1568
+- BYTES_PER_RING_ELEMENT= 1536
+- ETA1= 2
+- ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_23(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_generate_keypair_6f1(uint8_t randomness[64U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate_unpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] and with const
-generics:
-- K = 4
-- CIPHERTEXT_SIZE = 1568
-- PUBLIC_KEY_SIZE = 1568
-- T_AS_NTT_ENCODED_SIZE = 1536
-- C1_SIZE = 1408
-- C2_SIZE = 160
-- VECTOR_U_COMPRESSION_FACTOR = 11
-- VECTOR_V_COMPRESSION_FACTOR = 5
-- VECTOR_U_BLOCK_LEN = 352
-- ETA1 = 2
-- ETA1_RANDOMNESS_SIZE = 128
-- ETA2 = 2
-- ETA2_RANDOMNESS_SIZE = 128
+A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate_unpacked
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] with const
+generics
+- K= 4
+- CIPHERTEXT_SIZE= 1568
+- PUBLIC_KEY_SIZE= 1568
+- T_AS_NTT_ENCODED_SIZE= 1536
+- C1_SIZE= 1408
+- C2_SIZE= 160
+- VECTOR_U_COMPRESSION_FACTOR= 11
+- VECTOR_V_COMPRESSION_FACTOR= 5
+- VECTOR_U_BLOCK_LEN= 352
+- ETA1= 2
+- ETA1_RANDOMNESS_SIZE= 128
+- ETA2= 2
+- ETA2_RANDOMNESS_SIZE= 128
 */
-K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_
-libcrux_ml_kem_ind_cca_encapsulate_unpacked_23(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_portable_vector_type_PortableVector__4size_t
-        *public_key,
+tuple_21 libcrux_ml_kem_ind_cca_encapsulate_unpacked_861(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_42 *public_key,
     uint8_t randomness[32U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]],
-libcrux_ml_kem_ind_cca_MlKem and with const generics:
-- K = 4
-- CIPHERTEXT_SIZE = 1568
-- PUBLIC_KEY_SIZE = 1568
-- T_AS_NTT_ENCODED_SIZE = 1536
-- C1_SIZE = 1408
-- C2_SIZE = 160
-- VECTOR_U_COMPRESSION_FACTOR = 11
-- VECTOR_V_COMPRESSION_FACTOR = 5
-- VECTOR_U_BLOCK_LEN = 352
-- ETA1 = 2
-- ETA1_RANDOMNESS_SIZE = 128
-- ETA2 = 2
-- ETA2_RANDOMNESS_SIZE = 128
+libcrux_ml_kem_ind_cca_MlKem with const generics
+- K= 4
+- CIPHERTEXT_SIZE= 1568
+- PUBLIC_KEY_SIZE= 1568
+- T_AS_NTT_ENCODED_SIZE= 1536
+- C1_SIZE= 1408
+- C2_SIZE= 160
+- VECTOR_U_COMPRESSION_FACTOR= 11
+- VECTOR_V_COMPRESSION_FACTOR= 5
+- VECTOR_U_BLOCK_LEN= 352
+- ETA1= 2
+- ETA1_RANDOMNESS_SIZE= 128
+- ETA2= 2
+- ETA2_RANDOMNESS_SIZE= 128
 */
-K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_
-libcrux_ml_kem_ind_cca_encapsulate_12(
-    libcrux_ml_kem_types_MlKemPublicKey____1568size_t *public_key,
+tuple_21 libcrux_ml_kem_ind_cca_encapsulate_9d1(
+    libcrux_ml_kem_types_MlKemPublicKey_1f *public_key,
     uint8_t randomness[32U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate_unpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] and with const
-generics:
-- K = 4
-- SECRET_KEY_SIZE = 3168
-- CPA_SECRET_KEY_SIZE = 1536
-- PUBLIC_KEY_SIZE = 1568
-- CIPHERTEXT_SIZE = 1568
-- T_AS_NTT_ENCODED_SIZE = 1536
-- C1_SIZE = 1408
-- C2_SIZE = 160
-- VECTOR_U_COMPRESSION_FACTOR = 11
-- VECTOR_V_COMPRESSION_FACTOR = 5
-- C1_BLOCK_SIZE = 352
-- ETA1 = 2
-- ETA1_RANDOMNESS_SIZE = 128
-- ETA2 = 2
-- ETA2_RANDOMNESS_SIZE = 128
-- IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1600
+A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate_unpacked
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] with const
+generics
+- K= 4
+- SECRET_KEY_SIZE= 3168
+- CPA_SECRET_KEY_SIZE= 1536
+- PUBLIC_KEY_SIZE= 1568
+- CIPHERTEXT_SIZE= 1568
+- T_AS_NTT_ENCODED_SIZE= 1536
+- C1_SIZE= 1408
+- C2_SIZE= 160
+- VECTOR_U_COMPRESSION_FACTOR= 11
+- VECTOR_V_COMPRESSION_FACTOR= 5
+- C1_BLOCK_SIZE= 352
+- ETA1= 2
+- ETA1_RANDOMNESS_SIZE= 128
+- ETA2= 2
+- ETA2_RANDOMNESS_SIZE= 128
+- IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-void libcrux_ml_kem_ind_cca_decapsulate_unpacked_23(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_portable_vector_type_PortableVector__4size_t
-        *key_pair,
+void libcrux_ml_kem_ind_cca_decapsulate_unpacked_f61(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42 *key_pair,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext, uint8_t ret[32U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]],
-libcrux_ml_kem_ind_cca_MlKem and with const generics:
-- K = 4
-- SECRET_KEY_SIZE = 3168
-- CPA_SECRET_KEY_SIZE = 1536
-- PUBLIC_KEY_SIZE = 1568
-- CIPHERTEXT_SIZE = 1568
-- T_AS_NTT_ENCODED_SIZE = 1536
-- C1_SIZE = 1408
-- C2_SIZE = 160
-- VECTOR_U_COMPRESSION_FACTOR = 11
-- VECTOR_V_COMPRESSION_FACTOR = 5
-- C1_BLOCK_SIZE = 352
-- ETA1 = 2
-- ETA1_RANDOMNESS_SIZE = 128
-- ETA2 = 2
-- ETA2_RANDOMNESS_SIZE = 128
-- IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1600
+libcrux_ml_kem_ind_cca_MlKem with const generics
+- K= 4
+- SECRET_KEY_SIZE= 3168
+- CPA_SECRET_KEY_SIZE= 1536
+- PUBLIC_KEY_SIZE= 1568
+- CIPHERTEXT_SIZE= 1568
+- T_AS_NTT_ENCODED_SIZE= 1536
+- C1_SIZE= 1408
+- C2_SIZE= 160
+- VECTOR_U_COMPRESSION_FACTOR= 11
+- VECTOR_V_COMPRESSION_FACTOR= 5
+- C1_BLOCK_SIZE= 352
+- ETA1= 2
+- ETA1_RANDOMNESS_SIZE= 128
+- ETA2= 2
+- ETA2_RANDOMNESS_SIZE= 128
+- IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-void libcrux_ml_kem_ind_cca_decapsulate_12(
-    libcrux_ml_kem_types_MlKemPrivateKey____3168size_t *private_key,
+void libcrux_ml_kem_ind_cca_decapsulate_711(
+    libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext, uint8_t ret[32U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector and with const
-generics:
-- K = 2
-- RANKED_BYTES_PER_RING_ELEMENT = 768
-- PUBLIC_KEY_SIZE = 800
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+- K= 2
+- RANKED_BYTES_PER_RING_ELEMENT= 768
+- PUBLIC_KEY_SIZE= 800
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_6b(uint8_t *public_key);
+bool libcrux_ml_kem_ind_cca_validate_public_key_990(uint8_t *public_key);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair_unpacked with
-types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] and with const
-generics:
-- K = 2
-- CPA_PRIVATE_KEY_SIZE = 768
-- PRIVATE_KEY_SIZE = 1632
-- PUBLIC_KEY_SIZE = 800
-- BYTES_PER_RING_ELEMENT = 768
-- ETA1 = 3
-- ETA1_RANDOMNESS_SIZE = 192
+A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair_unpacked
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] with const
+generics
+- K= 2
+- CPA_PRIVATE_KEY_SIZE= 768
+- PRIVATE_KEY_SIZE= 1632
+- PUBLIC_KEY_SIZE= 800
+- BYTES_PER_RING_ELEMENT= 768
+- ETA1= 3
+- ETA1_RANDOMNESS_SIZE= 192
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_portable_vector_type_PortableVector__2size_t
-libcrux_ml_kem_ind_cca_generate_keypair_unpacked_60(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_ae
+libcrux_ml_kem_ind_cca_generate_keypair_unpacked_0d0(uint8_t randomness[64U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] and with const
-generics:
-- K = 2
-- CPA_PRIVATE_KEY_SIZE = 768
-- PRIVATE_KEY_SIZE = 1632
-- PUBLIC_KEY_SIZE = 800
-- BYTES_PER_RING_ELEMENT = 768
-- ETA1 = 3
-- ETA1_RANDOMNESS_SIZE = 192
+A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] with const
+generics
+- K= 2
+- CPA_PRIVATE_KEY_SIZE= 768
+- PRIVATE_KEY_SIZE= 1632
+- PUBLIC_KEY_SIZE= 800
+- BYTES_PER_RING_ELEMENT= 768
+- ETA1= 3
+- ETA1_RANDOMNESS_SIZE= 192
 */
-libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t
-libcrux_ml_kem_ind_cca_generate_keypair_60(uint8_t randomness[64U]);
+libcrux_ml_kem_types_MlKemKeyPair_cb
+libcrux_ml_kem_ind_cca_generate_keypair_6f0(uint8_t randomness[64U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate_unpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] and with const
-generics:
-- K = 2
-- CIPHERTEXT_SIZE = 768
-- PUBLIC_KEY_SIZE = 800
-- T_AS_NTT_ENCODED_SIZE = 768
-- C1_SIZE = 640
-- C2_SIZE = 128
-- VECTOR_U_COMPRESSION_FACTOR = 10
-- VECTOR_V_COMPRESSION_FACTOR = 4
-- VECTOR_U_BLOCK_LEN = 320
-- ETA1 = 3
-- ETA1_RANDOMNESS_SIZE = 192
-- ETA2 = 2
-- ETA2_RANDOMNESS_SIZE = 128
+A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate_unpacked
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] with const
+generics
+- K= 2
+- CIPHERTEXT_SIZE= 768
+- PUBLIC_KEY_SIZE= 800
+- T_AS_NTT_ENCODED_SIZE= 768
+- C1_SIZE= 640
+- C2_SIZE= 128
+- VECTOR_U_COMPRESSION_FACTOR= 10
+- VECTOR_V_COMPRESSION_FACTOR= 4
+- VECTOR_U_BLOCK_LEN= 320
+- ETA1= 3
+- ETA1_RANDOMNESS_SIZE= 192
+- ETA2= 2
+- ETA2_RANDOMNESS_SIZE= 128
 */
-K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_
-libcrux_ml_kem_ind_cca_encapsulate_unpacked_60(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_portable_vector_type_PortableVector__2size_t
-        *public_key,
+tuple_ec libcrux_ml_kem_ind_cca_encapsulate_unpacked_860(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ae *public_key,
     uint8_t randomness[32U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]],
-libcrux_ml_kem_ind_cca_MlKem and with const generics:
-- K = 2
-- CIPHERTEXT_SIZE = 768
-- PUBLIC_KEY_SIZE = 800
-- T_AS_NTT_ENCODED_SIZE = 768
-- C1_SIZE = 640
-- C2_SIZE = 128
-- VECTOR_U_COMPRESSION_FACTOR = 10
-- VECTOR_V_COMPRESSION_FACTOR = 4
-- VECTOR_U_BLOCK_LEN = 320
-- ETA1 = 3
-- ETA1_RANDOMNESS_SIZE = 192
-- ETA2 = 2
-- ETA2_RANDOMNESS_SIZE = 128
+libcrux_ml_kem_ind_cca_MlKem with const generics
+- K= 2
+- CIPHERTEXT_SIZE= 768
+- PUBLIC_KEY_SIZE= 800
+- T_AS_NTT_ENCODED_SIZE= 768
+- C1_SIZE= 640
+- C2_SIZE= 128
+- VECTOR_U_COMPRESSION_FACTOR= 10
+- VECTOR_V_COMPRESSION_FACTOR= 4
+- VECTOR_U_BLOCK_LEN= 320
+- ETA1= 3
+- ETA1_RANDOMNESS_SIZE= 192
+- ETA2= 2
+- ETA2_RANDOMNESS_SIZE= 128
 */
-K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_
-libcrux_ml_kem_ind_cca_encapsulate_8f(
-    libcrux_ml_kem_types_MlKemPublicKey____800size_t *public_key,
+tuple_ec libcrux_ml_kem_ind_cca_encapsulate_9d0(
+    libcrux_ml_kem_types_MlKemPublicKey_be *public_key,
     uint8_t randomness[32U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate_unpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] and with const
-generics:
-- K = 2
-- SECRET_KEY_SIZE = 1632
-- CPA_SECRET_KEY_SIZE = 768
-- PUBLIC_KEY_SIZE = 800
-- CIPHERTEXT_SIZE = 768
-- T_AS_NTT_ENCODED_SIZE = 768
-- C1_SIZE = 640
-- C2_SIZE = 128
-- VECTOR_U_COMPRESSION_FACTOR = 10
-- VECTOR_V_COMPRESSION_FACTOR = 4
-- C1_BLOCK_SIZE = 320
-- ETA1 = 3
-- ETA1_RANDOMNESS_SIZE = 192
-- ETA2 = 2
-- ETA2_RANDOMNESS_SIZE = 128
-- IMPLICIT_REJECTION_HASH_INPUT_SIZE = 800
+A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate_unpacked
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] with const
+generics
+- K= 2
+- SECRET_KEY_SIZE= 1632
+- CPA_SECRET_KEY_SIZE= 768
+- PUBLIC_KEY_SIZE= 800
+- CIPHERTEXT_SIZE= 768
+- T_AS_NTT_ENCODED_SIZE= 768
+- C1_SIZE= 640
+- C2_SIZE= 128
+- VECTOR_U_COMPRESSION_FACTOR= 10
+- VECTOR_V_COMPRESSION_FACTOR= 4
+- C1_BLOCK_SIZE= 320
+- ETA1= 3
+- ETA1_RANDOMNESS_SIZE= 192
+- ETA2= 2
+- ETA2_RANDOMNESS_SIZE= 128
+- IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
-void libcrux_ml_kem_ind_cca_decapsulate_unpacked_60(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_portable_vector_type_PortableVector__2size_t
-        *key_pair,
-    libcrux_ml_kem_types_MlKemCiphertext____768size_t *ciphertext,
-    uint8_t ret[32U]);
+void libcrux_ml_kem_ind_cca_decapsulate_unpacked_f60(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_ae *key_pair,
+    libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]],
-libcrux_ml_kem_ind_cca_MlKem and with const generics:
-- K = 2
-- SECRET_KEY_SIZE = 1632
-- CPA_SECRET_KEY_SIZE = 768
-- PUBLIC_KEY_SIZE = 800
-- CIPHERTEXT_SIZE = 768
-- T_AS_NTT_ENCODED_SIZE = 768
-- C1_SIZE = 640
-- C2_SIZE = 128
-- VECTOR_U_COMPRESSION_FACTOR = 10
-- VECTOR_V_COMPRESSION_FACTOR = 4
-- C1_BLOCK_SIZE = 320
-- ETA1 = 3
-- ETA1_RANDOMNESS_SIZE = 192
-- ETA2 = 2
-- ETA2_RANDOMNESS_SIZE = 128
-- IMPLICIT_REJECTION_HASH_INPUT_SIZE = 800
+libcrux_ml_kem_ind_cca_MlKem with const generics
+- K= 2
+- SECRET_KEY_SIZE= 1632
+- CPA_SECRET_KEY_SIZE= 768
+- PUBLIC_KEY_SIZE= 800
+- CIPHERTEXT_SIZE= 768
+- T_AS_NTT_ENCODED_SIZE= 768
+- C1_SIZE= 640
+- C2_SIZE= 128
+- VECTOR_U_COMPRESSION_FACTOR= 10
+- VECTOR_V_COMPRESSION_FACTOR= 4
+- C1_BLOCK_SIZE= 320
+- ETA1= 3
+- ETA1_RANDOMNESS_SIZE= 192
+- ETA2= 2
+- ETA2_RANDOMNESS_SIZE= 128
+- IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
-void libcrux_ml_kem_ind_cca_decapsulate_8f(
-    libcrux_ml_kem_types_MlKemPrivateKey____1632size_t *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext____768size_t *ciphertext,
-    uint8_t ret[32U]);
+void libcrux_ml_kem_ind_cca_decapsulate_710(
+    libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector and with const
-generics:
-- K = 3
-- RANKED_BYTES_PER_RING_ELEMENT = 1152
-- PUBLIC_KEY_SIZE = 1184
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+- K= 3
+- RANKED_BYTES_PER_RING_ELEMENT= 1152
+- PUBLIC_KEY_SIZE= 1184
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_1e(uint8_t *public_key);
+bool libcrux_ml_kem_ind_cca_validate_public_key_99(uint8_t *public_key);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair_unpacked with
-types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] and with const
-generics:
-- K = 3
-- CPA_PRIVATE_KEY_SIZE = 1152
-- PRIVATE_KEY_SIZE = 2400
-- PUBLIC_KEY_SIZE = 1184
-- BYTES_PER_RING_ELEMENT = 1152
-- ETA1 = 2
-- ETA1_RANDOMNESS_SIZE = 128
+A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair_unpacked
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] with const
+generics
+- K= 3
+- CPA_PRIVATE_KEY_SIZE= 1152
+- PRIVATE_KEY_SIZE= 2400
+- PUBLIC_KEY_SIZE= 1184
+- BYTES_PER_RING_ELEMENT= 1152
+- ETA1= 2
+- ETA1_RANDOMNESS_SIZE= 128
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_portable_vector_type_PortableVector__3size_t
-libcrux_ml_kem_ind_cca_generate_keypair_unpacked_80(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_f8
+libcrux_ml_kem_ind_cca_generate_keypair_unpacked_0d(uint8_t randomness[64U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] and with const
-generics:
-- K = 3
-- CPA_PRIVATE_KEY_SIZE = 1152
-- PRIVATE_KEY_SIZE = 2400
-- PUBLIC_KEY_SIZE = 1184
-- BYTES_PER_RING_ELEMENT = 1152
-- ETA1 = 2
-- ETA1_RANDOMNESS_SIZE = 128
+A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] with const
+generics
+- K= 3
+- CPA_PRIVATE_KEY_SIZE= 1152
+- PRIVATE_KEY_SIZE= 2400
+- PUBLIC_KEY_SIZE= 1184
+- BYTES_PER_RING_ELEMENT= 1152
+- ETA1= 2
+- ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_80(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_generate_keypair_6f(uint8_t randomness[64U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate_unpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] and with const
-generics:
-- K = 3
-- CIPHERTEXT_SIZE = 1088
-- PUBLIC_KEY_SIZE = 1184
-- T_AS_NTT_ENCODED_SIZE = 1152
-- C1_SIZE = 960
-- C2_SIZE = 128
-- VECTOR_U_COMPRESSION_FACTOR = 10
-- VECTOR_V_COMPRESSION_FACTOR = 4
-- VECTOR_U_BLOCK_LEN = 320
-- ETA1 = 2
-- ETA1_RANDOMNESS_SIZE = 128
-- ETA2 = 2
-- ETA2_RANDOMNESS_SIZE = 128
+A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate_unpacked
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] with const
+generics
+- K= 3
+- CIPHERTEXT_SIZE= 1088
+- PUBLIC_KEY_SIZE= 1184
+- T_AS_NTT_ENCODED_SIZE= 1152
+- C1_SIZE= 960
+- C2_SIZE= 128
+- VECTOR_U_COMPRESSION_FACTOR= 10
+- VECTOR_V_COMPRESSION_FACTOR= 4
+- VECTOR_U_BLOCK_LEN= 320
+- ETA1= 2
+- ETA1_RANDOMNESS_SIZE= 128
+- ETA2= 2
+- ETA2_RANDOMNESS_SIZE= 128
 */
-K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_
-libcrux_ml_kem_ind_cca_encapsulate_unpacked_80(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_portable_vector_type_PortableVector__3size_t
-        *public_key,
+tuple_3c libcrux_ml_kem_ind_cca_encapsulate_unpacked_86(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 *public_key,
     uint8_t randomness[32U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
-libcrux_ml_kem_ind_cca_MlKem and with const generics:
-- K = 3
-- CIPHERTEXT_SIZE = 1088
-- PUBLIC_KEY_SIZE = 1184
-- T_AS_NTT_ENCODED_SIZE = 1152
-- C1_SIZE = 960
-- C2_SIZE = 128
-- VECTOR_U_COMPRESSION_FACTOR = 10
-- VECTOR_V_COMPRESSION_FACTOR = 4
-- VECTOR_U_BLOCK_LEN = 320
-- ETA1 = 2
-- ETA1_RANDOMNESS_SIZE = 128
-- ETA2 = 2
-- ETA2_RANDOMNESS_SIZE = 128
+libcrux_ml_kem_ind_cca_MlKem with const generics
+- K= 3
+- CIPHERTEXT_SIZE= 1088
+- PUBLIC_KEY_SIZE= 1184
+- T_AS_NTT_ENCODED_SIZE= 1152
+- C1_SIZE= 960
+- C2_SIZE= 128
+- VECTOR_U_COMPRESSION_FACTOR= 10
+- VECTOR_V_COMPRESSION_FACTOR= 4
+- VECTOR_U_BLOCK_LEN= 320
+- ETA1= 2
+- ETA1_RANDOMNESS_SIZE= 128
+- ETA2= 2
+- ETA2_RANDOMNESS_SIZE= 128
 */
-K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_
-libcrux_ml_kem_ind_cca_encapsulate_c3(
-    libcrux_ml_kem_types_MlKemPublicKey____1184size_t *public_key,
+tuple_3c libcrux_ml_kem_ind_cca_encapsulate_9d(
+    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
     uint8_t randomness[32U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate_unpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] and with const
-generics:
-- K = 3
-- SECRET_KEY_SIZE = 2400
-- CPA_SECRET_KEY_SIZE = 1152
-- PUBLIC_KEY_SIZE = 1184
-- CIPHERTEXT_SIZE = 1088
-- T_AS_NTT_ENCODED_SIZE = 1152
-- C1_SIZE = 960
-- C2_SIZE = 128
-- VECTOR_U_COMPRESSION_FACTOR = 10
-- VECTOR_V_COMPRESSION_FACTOR = 4
-- C1_BLOCK_SIZE = 320
-- ETA1 = 2
-- ETA1_RANDOMNESS_SIZE = 128
-- ETA2 = 2
-- ETA2_RANDOMNESS_SIZE = 128
-- IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1120
+A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate_unpacked
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] with const
+generics
+- K= 3
+- SECRET_KEY_SIZE= 2400
+- CPA_SECRET_KEY_SIZE= 1152
+- PUBLIC_KEY_SIZE= 1184
+- CIPHERTEXT_SIZE= 1088
+- T_AS_NTT_ENCODED_SIZE= 1152
+- C1_SIZE= 960
+- C2_SIZE= 128
+- VECTOR_U_COMPRESSION_FACTOR= 10
+- VECTOR_V_COMPRESSION_FACTOR= 4
+- C1_BLOCK_SIZE= 320
+- ETA1= 2
+- ETA1_RANDOMNESS_SIZE= 128
+- ETA2= 2
+- ETA2_RANDOMNESS_SIZE= 128
+- IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-void libcrux_ml_kem_ind_cca_decapsulate_unpacked_80(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_portable_vector_type_PortableVector__3size_t
-        *key_pair,
+void libcrux_ml_kem_ind_cca_decapsulate_unpacked_f6(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_f8 *key_pair,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
+A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
-libcrux_ml_kem_ind_cca_MlKem and with const generics:
-- K = 3
-- SECRET_KEY_SIZE = 2400
-- CPA_SECRET_KEY_SIZE = 1152
-- PUBLIC_KEY_SIZE = 1184
-- CIPHERTEXT_SIZE = 1088
-- T_AS_NTT_ENCODED_SIZE = 1152
-- C1_SIZE = 960
-- C2_SIZE = 128
-- VECTOR_U_COMPRESSION_FACTOR = 10
-- VECTOR_V_COMPRESSION_FACTOR = 4
-- C1_BLOCK_SIZE = 320
-- ETA1 = 2
-- ETA1_RANDOMNESS_SIZE = 128
-- ETA2 = 2
-- ETA2_RANDOMNESS_SIZE = 128
-- IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1120
+libcrux_ml_kem_ind_cca_MlKem with const generics
+- K= 3
+- SECRET_KEY_SIZE= 2400
+- CPA_SECRET_KEY_SIZE= 1152
+- PUBLIC_KEY_SIZE= 1184
+- CIPHERTEXT_SIZE= 1088
+- T_AS_NTT_ENCODED_SIZE= 1152
+- C1_SIZE= 960
+- C2_SIZE= 128
+- VECTOR_U_COMPRESSION_FACTOR= 10
+- VECTOR_V_COMPRESSION_FACTOR= 4
+- C1_BLOCK_SIZE= 320
+- ETA1= 2
+- ETA1_RANDOMNESS_SIZE= 128
+- ETA2= 2
+- ETA2_RANDOMNESS_SIZE= 128
+- IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-void libcrux_ml_kem_ind_cca_decapsulate_c3(
-    libcrux_ml_kem_types_MlKemPrivateKey____2400size_t *private_key,
+void libcrux_ml_kem_ind_cca_decapsulate_71(
+    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
 
 #if defined(__cplusplus)
