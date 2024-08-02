@@ -1,4 +1,7 @@
-use crate::simd::{avx2::rejection_sample::shuffle_table::SHUFFLE_TABLE, traits::FIELD_MODULUS};
+use crate::simd::{
+    avx2::rejection_sample::{shuffle_table::SHUFFLE_TABLE, utils},
+    traits::FIELD_MODULUS,
+};
 
 use libcrux_intrinsics::avx2::*;
 
@@ -29,27 +32,6 @@ fn bytestream_to_potential_coefficients(serialized: &[u8]) -> Vec256 {
 }
 
 #[inline(always)]
-fn extract_least_significant_bits(simd_unit: Vec256) -> u8 {
-    let first_byte_from_each_i32_lane = mm256_shuffle_epi8(
-        simd_unit,
-        mm256_set_epi8(
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 12, 8, 4, 0, -1, -1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1, -1, 12, 8, 4, 0,
-        ),
-    );
-
-    let bytes_grouped = mm256_permutevar8x32_epi32(
-        first_byte_from_each_i32_lane,
-        mm256_set_epi32(0, 0, 0, 0, 0, 0, 4, 0),
-    );
-    let bytes_grouped = mm256_castsi256_si128(bytes_grouped);
-
-    let bits = mm_movemask_epi8(bytes_grouped);
-
-    (bits & 0xFF) as u8
-}
-
-#[inline(always)]
 pub(crate) fn sample(input: &[u8], output: &mut [i32]) -> usize {
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
 
@@ -71,7 +53,7 @@ pub(crate) fn sample(input: &[u8], output: &mut [i32]) -> usize {
     // Since every bit in each lane is either 0 or all 1s, we only need one bit
     // from each lane to tell us what coefficients to keep and what to throw-away.
     // Combine all the bits (there are 8) into one byte.
-    let good = extract_least_significant_bits(compare_with_field_modulus);
+    let good = utils::extract_least_significant_bits(compare_with_field_modulus);
 
     let good_lower_half = good & 0x0F;
     let good_upper_half = good >> 4;
