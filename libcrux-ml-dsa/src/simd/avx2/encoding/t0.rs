@@ -36,3 +36,29 @@ pub(crate) fn serialize(simd_unit: Vec256) -> [u8; 13] {
 
     serialized[0..13].try_into().unwrap()
 }
+
+#[inline(always)]
+pub(crate) fn deserialize(serialized: &[u8]) -> Vec256 {
+    debug_assert_eq!(serialized.len(), 13);
+
+    const COEFFICIENT_MASK: i32 = (1 << 13) - 1;
+
+    let mut serialized_extended = [0u8; 16];
+    serialized_extended[0..13].copy_from_slice(serialized);
+
+    let serialized = mm_loadu_si128(&serialized_extended);
+    let serialized = mm256_set_m128i(serialized, serialized);
+
+    let coefficients = mm256_shuffle_epi8(
+        serialized,
+        mm256_set_epi8(
+            -1, -1, 12, 11, -1, 11, 10, 9, -1, -1, 9, 8, -1, 8, 7, 6,
+            -1, 6, 5, 4, -1, -1, 4, 3, -1, 3, 2, 1, -1, -1, 1, 0,
+        ),
+    );
+
+    let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(3, 6, 1, 4, 7, 2, 5, 0));
+    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK));
+
+    change_interval(coefficients)
+}

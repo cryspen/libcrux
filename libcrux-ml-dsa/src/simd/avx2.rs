@@ -118,9 +118,7 @@ impl Operations for AVX2SIMDUnit {
         encoding::t0::serialize(simd_unit.coefficients)
     }
     fn t0_deserialize(serialized: &[u8]) -> Self {
-        let result = PortableSIMDUnit::t0_deserialize(serialized);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        encoding::t0::deserialize(serialized).into()
     }
 
     fn t1_serialize(simd_unit: Self) -> [u8; 10] {

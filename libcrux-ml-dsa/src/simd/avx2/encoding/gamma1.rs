@@ -1,20 +1,31 @@
 use libcrux_intrinsics::avx2::*;
 
-use crate::simd::portable::{encoding, PortableSIMDUnit};
-
 #[inline(always)]
 fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
     simd_unit: Vec256,
 ) -> [u8; OUTPUT_SIZE] {
-    // TODO: The official reference code does not vectorize this (see
-    // https://github.com/pq-crystals/dilithium/blob/master/avx2/poly.c#L962)
-    // so for the moment we'll just write out the coefficients to array and serialize
-    // it the way we'd do so without AVX2 instructions. After we're done vectorizing
-    // everything else, we can circle back to this and take a shot at this too.
-    let mut coefficients = [0i32; 8];
-    mm256_storeu_si256_i32(&mut coefficients, simd_unit);
+    let mut serialized = [0u8; 32];
 
-    encoding::gamma1::serialize_when_gamma1_is_2_pow_17(PortableSIMDUnit { coefficients })
+    const GAMMA1: i32 = 1 << 17;
+    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1), simd_unit);
+
+    let adjacent_2_combined =
+        mm256_sllv_epi32(simd_unit_shifted, mm256_set_epi32(0, 14, 0, 14, 0, 14, 0, 14));
+    let adjacent_2_combined = mm256_srli_epi64::<14>(adjacent_2_combined);
+
+    let every_second_element = mm256_bsrli_epi128::<8>(adjacent_2_combined);
+    let every_second_element_shifted = mm256_slli_epi64::<36>(every_second_element);
+
+    let adjacent_4_combined = mm256_add_epi64(adjacent_2_combined, every_second_element_shifted);
+    let adjacent_4_combined = mm256_srlv_epi64(adjacent_4_combined, mm256_set_epi64x(28, 0, 28, 0));
+
+    let lower_4 = mm256_castsi256_si128(adjacent_4_combined);
+    mm_storeu_bytes_si128(&mut serialized[0..16], lower_4);
+
+    let upper_4 = mm256_extracti128_si256::<1>(adjacent_4_combined);
+    mm_storeu_bytes_si128(&mut serialized[9..25], upper_4);
+
+    serialized[0..18].try_into().unwrap()
 }
 
 #[inline(always)]
