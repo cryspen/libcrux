@@ -98,9 +98,7 @@ impl Operations for AVX2SIMDUnit {
         encoding::gamma1::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
     }
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self {
-        let result = PortableSIMDUnit::gamma1_deserialize::<GAMMA1_EXPONENT>(serialized);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized).into()
     }
 
     fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
