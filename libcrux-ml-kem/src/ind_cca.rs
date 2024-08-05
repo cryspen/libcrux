@@ -13,7 +13,6 @@ use crate::{
     vector::Operations,
 };
 
-#[allow(non_snake_case)]
 /// Types for the unpacked API.
 pub mod unpacked {
     use crate::{ind_cpa::unpacked::*, vector::traits::Operations};

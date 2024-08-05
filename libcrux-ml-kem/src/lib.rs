@@ -140,30 +140,36 @@ cfg_pre_verification! {
         #[cfg_attr(docsrs, doc(cfg(all(feature = "kyber", feature = "mlkem512"))))]
         pub mod kyber512 {
             //! Kyber 512 (NIST PQC Round 3)
-            pub use crate::mlkem512::generate_key_pair;
-            pub use crate::mlkem512::kyber::decapsulate;
-            pub use crate::mlkem512::kyber::encapsulate;
-            pub use crate::mlkem512::validate_public_key;
+            cfg_no_eurydice! {
+                pub use crate::mlkem512::generate_key_pair;
+                pub use crate::mlkem512::kyber::decapsulate;
+                pub use crate::mlkem512::kyber::encapsulate;
+                pub use crate::mlkem512::validate_public_key;
+            }
         }
 
         #[cfg(feature = "mlkem768")]
         #[cfg_attr(docsrs, doc(cfg(all(feature = "kyber", feature = "mlkem768"))))]
         pub mod kyber768 {
             //! Kyber 768 (NIST PQC Round 3)
-            pub use crate::mlkem768::generate_key_pair;
-            pub use crate::mlkem768::kyber::decapsulate;
-            pub use crate::mlkem768::kyber::encapsulate;
-            pub use crate::mlkem768::validate_public_key;
+            cfg_no_eurydice! {
+                pub use crate::mlkem768::generate_key_pair;
+                pub use crate::mlkem768::kyber::decapsulate;
+                pub use crate::mlkem768::kyber::encapsulate;
+                pub use crate::mlkem768::validate_public_key;
+            }
         }
 
         #[cfg(feature = "mlkem1024")]
         #[cfg_attr(docsrs, doc(cfg(all(feature = "kyber", feature = "mlkem1024"))))]
         pub mod kyber1024 {
             //! Kyber 1024 (NIST PQC Round 3)
-            pub use crate::mlkem1024::generate_key_pair;
-            pub use crate::mlkem1024::kyber::decapsulate;
-            pub use crate::mlkem1024::kyber::encapsulate;
-            pub use crate::mlkem1024::validate_public_key;
+            cfg_no_eurydice! {
+                pub use crate::mlkem1024::generate_key_pair;
+                pub use crate::mlkem1024::kyber::decapsulate;
+                pub use crate::mlkem1024::kyber::encapsulate;
+                pub use crate::mlkem1024::validate_public_key;
+            }
         }
     }
 }

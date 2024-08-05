@@ -73,6 +73,14 @@ target_link_libraries(ml_kem_test PRIVATE
     nlohmann_json::nlohmann_json
 )
 
+add_executable(kyber_test
+    ${PROJECT_SOURCE_DIR}/tests/kyber768.cc
+)
+target_link_libraries(kyber_test PRIVATE
+    gtest_main
+    nlohmann_json::nlohmann_json
+)
+
 add_executable(sha3_test
     ${PROJECT_SOURCE_DIR}/tests/sha3.cc
 )
