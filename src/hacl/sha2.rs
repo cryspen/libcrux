@@ -130,6 +130,8 @@ pub mod streaming {
                     }
                 }
             }
+
+            unsafe impl Send for $name {}
         };
     }
 
