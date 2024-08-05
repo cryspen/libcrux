@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
- * Karamel: 1ed8ba551e8c65fdbad1bb7833bd7837be0d89b9
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: ad4ce19c3a5be12e25aefc8fa206b0d6335f2b81
+ * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
+ * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
+ * Libcrux: 46a6a7ea59db36477a4c4490625deb7e85bf7701
  */
 
 #ifndef __libcrux_mlkem512_avx2_H
@@ -23,37 +23,30 @@ extern "C" {
 #include "libcrux_mlkem_avx2.h"
 
 void libcrux_ml_kem_mlkem512_avx2_decapsulate(
-    libcrux_ml_kem_types_MlKemPrivateKey____1632size_t *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext____768size_t *ciphertext,
-    uint8_t ret[32U]);
+    libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]);
 
 void libcrux_ml_kem_mlkem512_avx2_decapsulate_unpacked(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__2size_t
-        *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext____768size_t *ciphertext,
-    uint8_t ret[32U]);
+    libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_d6 *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]);
 
-K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_
-libcrux_ml_kem_mlkem512_avx2_encapsulate(
-    libcrux_ml_kem_types_MlKemPublicKey____800size_t *public_key,
+tuple_ec libcrux_ml_kem_mlkem512_avx2_encapsulate(
+    libcrux_ml_kem_types_MlKemPublicKey_be *public_key,
     uint8_t randomness[32U]);
 
-K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_
-libcrux_ml_kem_mlkem512_avx2_encapsulate_unpacked(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__2size_t
-        *public_key,
+tuple_ec libcrux_ml_kem_mlkem512_avx2_encapsulate_unpacked(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d6 *public_key,
     uint8_t randomness[32U]);
 
-libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t
+libcrux_ml_kem_types_MlKemKeyPair_cb
 libcrux_ml_kem_mlkem512_avx2_generate_key_pair(uint8_t randomness[64U]);
 
-libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__2size_t
+libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_d6
 libcrux_ml_kem_mlkem512_avx2_generate_key_pair_unpacked(
     uint8_t randomness[64U]);
 
-core_option_Option__libcrux_ml_kem_types_MlKemPublicKey___800size_t__
-libcrux_ml_kem_mlkem512_avx2_validate_public_key(
-    libcrux_ml_kem_types_MlKemPublicKey____800size_t public_key);
+core_option_Option_04 libcrux_ml_kem_mlkem512_avx2_validate_public_key(
+    libcrux_ml_kem_types_MlKemPublicKey_be public_key);
 
 #if defined(__cplusplus)
 }
