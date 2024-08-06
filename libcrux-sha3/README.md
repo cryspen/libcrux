@@ -4,7 +4,7 @@
 
 This crate implements [SHA3] (FIPS 202).
 
-It is provides 
+It provides 
 - a portable implementation
 - an AVX2 optimised implementation
 - a Neon optimised implementation
