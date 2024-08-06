@@ -257,6 +257,7 @@ pub fn sha2_512(payload: &[u8]) -> Sha2_512Digest {
 // Streaming API - This is the recommended one.
 macro_rules! impl_streaming {
     ($name:ident, $state:ty, $result:ty) => {
+        #[derive(Clone)]
         pub struct $name {
             state: $state,
         }
