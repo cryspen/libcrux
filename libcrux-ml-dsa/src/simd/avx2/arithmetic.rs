@@ -185,6 +185,32 @@ pub fn decompose<const GAMMA2: i32>(r: Vec256) -> (Vec256, Vec256) {
 }
 
 #[inline(always)]
+pub fn compute_hint<const GAMMA2: i32>(low: Vec256, high: Vec256) -> (usize, Vec256) {
+    let gamma2 = mm256_set1_epi32(GAMMA2);
+    let minus_gamma2 = mm256_set1_epi32(-GAMMA2);
+
+    let low_within_bound = mm256_cmpgt_epi32(mm256_abs_epi32(low), gamma2);
+    let low_equals_minus_gamma2 = mm256_cmpeq_epi32(low, minus_gamma2);
+
+    // If a lane in |high| is 0, the corresponding output will be 0; the output
+    // will have its most significant bit set to 1 otherwise.
+    let low_equals_minus_gamma2_and_high_is_nonzero =
+        mm256_sign_epi32(low_equals_minus_gamma2, high);
+
+    let hints = mm256_or_si256(
+        low_within_bound,
+        low_equals_minus_gamma2_and_high_is_nonzero,
+    );
+
+    let hints_mask = mm256_movemask_ps(mm256_castsi256_ps(hints));
+
+    (
+        hints_mask.count_ones() as usize,
+        mm256_and_si256(hints, mm256_set1_epi32(0x1)),
+    )
+}
+
+#[inline(always)]
 pub(crate) fn use_hint<const GAMMA2: i32>(r: Vec256, hint: Vec256) -> Vec256 {
     let (r0, r1) = decompose::<GAMMA2>(r);
 

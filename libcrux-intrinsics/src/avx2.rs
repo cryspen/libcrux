@@ -5,6 +5,7 @@ pub use core::arch::x86_64::*;
 
 pub type Vec256 = __m256i;
 pub type Vec128 = __m128i;
+pub type Vec256Float = __m256;
 
 pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
     debug_assert_eq!(output.len(), 32);
@@ -260,11 +261,32 @@ pub fn mm_mullo_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_mullo_epi16(lhs, rhs) }
 }
 
+#[inline(always)]
 pub fn mm256_cmpgt_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_cmpgt_epi16(lhs, rhs) }
 }
+#[inline(always)]
 pub fn mm256_cmpgt_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_cmpgt_epi32(lhs, rhs) }
+}
+#[inline(always)]
+pub fn mm256_cmpeq_epi32(a: Vec256, b: Vec256) -> Vec256 {
+    unsafe { _mm256_cmpeq_epi32(a, b) }
+}
+
+#[inline(always)]
+pub fn mm256_sign_epi32(a: Vec256, b: Vec256) -> Vec256 {
+    unsafe { _mm256_sign_epi32(a, b) }
+}
+
+#[inline(always)]
+pub fn mm256_castsi256_ps(a: Vec256) -> Vec256Float {
+    unsafe { _mm256_castsi256_ps(a) }
+}
+
+#[inline(always)]
+pub fn mm256_movemask_ps(a: Vec256Float) -> i32 {
+    unsafe { _mm256_movemask_ps(a) }
 }
 
 pub fn mm_mulhi_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
@@ -283,12 +305,19 @@ pub fn mm256_mul_epu32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mul_epu32(lhs, rhs) }
 }
 
+#[inline(always)]
 pub fn mm256_mul_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mul_epi32(lhs, rhs) }
 }
 
+#[inline(always)]
 pub fn mm256_and_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_and_si256(lhs, rhs) }
+}
+
+#[inline(always)]
+pub fn mm256_or_si256(a: Vec256, b: Vec256) -> Vec256 {
+    unsafe { _mm256_or_si256(a, b) }
 }
 
 pub fn mm256_testz_si256(lhs: Vec256, rhs: Vec256) -> i32 {
