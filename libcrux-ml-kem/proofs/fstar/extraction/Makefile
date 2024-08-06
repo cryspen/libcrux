@@ -96,6 +96,7 @@ PANIC_FREE = Libcrux_ml_kem.Constant_time_ops.fst \
              Libcrux_ml_kem.Ntt.fsti \
              Libcrux_ml_kem.Polynomial.fsti \
              Libcrux_ml_kem.Sampling.fsti \
+             Libcrux_ml_kem.Serialize.fst \
              Libcrux_ml_kem.Serialize.fsti \
              Libcrux_ml_kem.Types.fst \
              Libcrux_ml_kem.Types.fsti \
