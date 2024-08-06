@@ -40,6 +40,7 @@ while [ $# -gt 0 ]; do
     --out) out="$2"; shift ;;
     --glue) glue="$2"; shift ;;
     --mlkem768) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
+    --kyber768) features="${features} --cargo-arg=--features=kyber" ;;
     --no-glue) eurydice_glue=0 ;;
     --no-karamel_include) karamel_include=0 ;;
     --no-unrolling) unrolling=0 ;;
@@ -109,6 +110,9 @@ echo " */" >> header.txt
 
 # Run eurydice to extract the C code
 echo "Running eurydice ..."
+echo $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
+    --header header.txt \
+    ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
 $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
     --header header.txt \
     ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
@@ -122,8 +126,8 @@ if [[ "$karamel_include" = 1 ]]; then
     cp -R $KRML_HOME/include karamel/
 fi
 
-find . -type f -name "*.c" -exec clang-format --style=Google -i "{}" \;
-find . -type f -name "*.h" -exec clang-format --style=Google -i "{}" \;
+find . -type f -name '*.c' -and -not -path '*_deps*' -exec clang-format --style=Google -i "{}" \;
+find . -type f -name '*.h' -and -not -path '*_deps*' -exec clang-format --style=Google -i "{}" \;
 if [ -d "internal" ]; then
     clang-format --style=Google -i internal/*.h
 fi

@@ -183,3 +183,46 @@ pub fn decompose<const GAMMA2: i32>(r: Vec256) -> (Vec256, Vec256) {
 
     (r0, r1)
 }
+
+#[inline(always)]
+pub(crate) fn use_hint<const GAMMA2: i32>(r: Vec256, hint: Vec256) -> Vec256 {
+    let (r0, r1) = decompose::<GAMMA2>(r);
+
+    let all_zeros = mm256_setzero_si256();
+
+    // If r0 is negative, we have to subtract the hint, whereas if it is positive,
+    // we have to add the hint. We thus add signs to the hint vector accordingly:
+    //
+    // With this step, |negate_hints| will match |hint| in only those lanes in
+    // which the corresponding r0 value is negative, and will be 0 elsewhere.
+    let negate_hints = vec256_blendv_epi32(all_zeros, hint, r0);
+
+    // If a lane in |negate_hints| is 1, it means the corresponding hint was 1,
+    // and the lane value will be doubled. It will remain 0 otherwise.
+    let negate_hints = mm256_slli_epi32::<1>(negate_hints);
+
+    // Suppose |hints[0]| = 1, and |r0[0]| = 1, then this will set |hints[0]| = -1.
+    // (we're indexing into an AVX2 vector, as it were).
+    let hints = mm256_sub_epi32(hint, negate_hints);
+
+    // Now add the hints to r1
+    let mut r1_plus_hints = mm256_add_epi32(r1, hints);
+
+    match GAMMA2 {
+        95_232 => {
+            let max = mm256_set1_epi32(43);
+
+            // If |r1_plus_hints[i]| is negative, it must be that |r1[i]| is
+            // 0, in this case, we'd want to return |max|.
+            r1_plus_hints = vec256_blendv_epi32(r1_plus_hints, max, r1_plus_hints);
+
+            let greater_than_or_equal_to_max = mm256_cmpgt_epi32(r1_plus_hints, max);
+
+            // If r1 is greater than equal to 43, we need to set the result to 0.
+            vec256_blendv_epi32(r1_plus_hints, all_zeros, greater_than_or_equal_to_max)
+        }
+        261_888 => mm256_and_si256(r1_plus_hints, mm256_set1_epi32(15)),
+
+        _ => unreachable!(),
+    }
+}
