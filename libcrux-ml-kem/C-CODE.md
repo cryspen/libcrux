@@ -1,6 +1,6 @@
-# ML-KEM
+# Extraction into C code
 
-This folder contains the extracted ML-KEM C code.
+The folders `./c` and `./cg` contain C code extracted from `libcrux-ml-kem`.
 
 The C code is generated from Rust using [Charon], [Eurydice] and
 [KaRaMeL]. Charon translates the Rust crate to Low-Level Borrow
