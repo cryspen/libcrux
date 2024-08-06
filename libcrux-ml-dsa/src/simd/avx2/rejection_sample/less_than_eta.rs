@@ -1,6 +1,6 @@
 use crate::simd::avx2::{
     encoding,
-    rejection_sample::{shuffle_table::SHUFFLE_TABLE, utils},
+    rejection_sample::shuffle_table::SHUFFLE_TABLE,
 };
 
 use libcrux_intrinsics::avx2::*;
@@ -44,7 +44,7 @@ pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usiz
     // Since every bit in each lane is either 0 or all 1s, we only need one bit
     // from each lane to tell us what coefficients to keep and what to throw-away.
     // Combine all the bits (there are 8) into one byte.
-    let good = utils::extract_least_significant_bits(compare_with_interval_boundary);
+    let good = mm256_movemask_ps(mm256_castsi256_ps(compare_with_interval_boundary));
 
     let good_lower_half = good & 0x0F;
     let good_upper_half = good >> 4;
