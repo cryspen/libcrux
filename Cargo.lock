@@ -701,6 +701,15 @@ dependencies = [
 [[package]]
 name = "hax-lib"
 version = "0.1.0-pre.1"
+dependencies = [
+ "hax-lib-macros 0.1.0-pre.1",
+ "num-bigint",
+ "num-traits",
+]
+
+[[package]]
+name = "hax-lib"
+version = "0.1.0-pre.1"
 source = "git+https://github.com/hacspec/hax/?branch=main#d6cc1888b7633df221e388823f9f9e5bebf42b9e"
 dependencies = [
  "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
@@ -716,6 +725,18 @@ dependencies = [
  "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
  "num-bigint",
  "num-traits",
+]
+
+[[package]]
+name = "hax-lib-macros"
+version = "0.1.0-pre.1"
+dependencies = [
+ "hax-lib-macros-types 0.1.0-pre.1",
+ "paste",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.72",
 ]
 
 [[package]]
@@ -740,6 +761,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.72",
+]
+
+[[package]]
+name = "hax-lib-macros-types"
+version = "0.1.0-pre.1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "uuid",
 ]
 
 [[package]]
@@ -1037,7 +1069,7 @@ name = "libcrux-ml-kem"
 version = "0.0.2-alpha.3"
 dependencies = [
  "criterion",
- "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
+ "hax-lib 0.1.0-pre.1",
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",
@@ -1252,6 +1284,12 @@ dependencies = [
  "primeorder",
  "sha2",
 ]
+
+[[package]]
+name = "paste"
+version = "1.0.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "pem-rfc7468"

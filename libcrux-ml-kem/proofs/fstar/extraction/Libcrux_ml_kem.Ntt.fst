@@ -200,13 +200,7 @@ let ntt_at_layer_4_plus
   let _:Prims.unit =
     if true
     then
-      let _:Prims.unit =
-        if ~.(layer >=. sz 4 <: bool)
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: layer >= 4"
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
+      let _:Prims.unit = Hax_lib.v_assert (layer >=. sz 4 <: bool) in
       ()
   in
   let step:usize = sz 1 <<! layer in
