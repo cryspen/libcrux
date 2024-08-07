@@ -19,7 +19,7 @@ done
 if [[ "$no_clean" = 0 ]]; then
     cargo clean
 fi
-./c.sh --config cg.yaml --out cg --mlkem768 \
+./c.sh --config cg.yaml --out cg --mlkem768 --kyber768 \
     --no-glue --no-unrolling --no-karamel_include --no-karamel_include
 
 clang-format --style=Google -i cg/*.h

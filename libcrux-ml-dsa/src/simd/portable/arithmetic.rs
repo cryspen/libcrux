@@ -296,20 +296,20 @@ pub(crate) fn use_one_hint<const GAMMA2: i32>(r: i32, hint: i32) -> i32 {
                 if r1 == 43 {
                     0
                 } else {
-                    r1 + 1
+                    r1 + hint
                 }
             } else if r1 == 0 {
                 43
             } else {
-                r1 - 1
+                r1 - hint
             }
         }
 
         261_888 => {
             if r0 > 0 {
-                (r1 + 1) & 15
+                (r1 + hint) & 15
             } else {
-                (r1 - 1) & 15
+                (r1 - hint) & 15
             }
         }
 
