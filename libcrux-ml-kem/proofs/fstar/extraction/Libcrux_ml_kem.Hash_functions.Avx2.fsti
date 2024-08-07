@@ -52,13 +52,16 @@ val shake128_squeeze_three_blocks (v_K: usize) (st: t_Simd256Hash)
 let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
   {
     f_G_pre = (fun (input: t_Slice u8) -> true);
-    f_G_post = (fun (input: t_Slice u8) (out: t_Array u8 (sz 64)) -> true);
+    f_G_post = (fun (input: t_Slice u8) (out: t_Array u8 (sz 64)) -> out == Spec.Utils.v_G input);
     f_G = (fun (input: t_Slice u8) -> v_G input);
     f_H_pre = (fun (input: t_Slice u8) -> true);
-    f_H_post = (fun (input: t_Slice u8) (out: t_Array u8 (sz 32)) -> true);
+    f_H_post = (fun (input: t_Slice u8) (out: t_Array u8 (sz 32)) -> out == Spec.Utils.v_H input);
     f_H = (fun (input: t_Slice u8) -> v_H input);
-    f_PRF_pre = (fun (v_LEN: usize) (input: t_Slice u8) -> true);
-    f_PRF_post = (fun (v_LEN: usize) (input: t_Slice u8) (out: t_Array u8 v_LEN) -> true);
+    f_PRF_pre = (fun (v_LEN: usize) (input: t_Slice u8) -> v v_LEN < pow2 32);
+    f_PRF_post
+    =
+    (fun (v_LEN: usize) (input: t_Slice u8) (out: t_Array u8 v_LEN) ->
+        v v_LEN < pow2 32 ==> out == Spec.Utils.v_PRF v_LEN input);
     f_PRF = (fun (v_LEN: usize) (input: t_Slice u8) -> v_PRF v_LEN input);
     f_PRFxN_pre = (fun (v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K) -> true);
     f_PRFxN_post

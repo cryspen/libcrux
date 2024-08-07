@@ -40,7 +40,8 @@ pub(crate) trait Hash<const K: usize> {
     /// PRF aka SHAKE256
     #[hax_lib::requires(fstar!("v $LEN < pow2 32"))]
     #[hax_lib::ensures(|result|
-        fstar!("$result == Spec.Utils.v_PRF $LEN $input"))
+        // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
+        fstar!("v $LEN < pow2 32 ==> $result == Spec.Utils.v_PRF $LEN $input"))
     ]
     fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN];
 
@@ -155,17 +156,32 @@ pub(crate) mod portable {
         out
     }
 
+    #[hax_lib::attributes]
     impl<const K: usize> Hash<K> for PortableHash<K> {
+        // Output name has be `out` https://github.com/hacspec/hax/issues/832
+        #[hax_lib::ensures(|out|
+            fstar!("$out == Spec.Utils.v_G $input"))
+        ]
         #[inline(always)]
         fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
             G(input)
         }
 
+        // Output name has be `out` https://github.com/hacspec/hax/issues/832
+        #[hax_lib::ensures(|out|
+            fstar!("$out == Spec.Utils.v_H $input"))
+        ]
         #[inline(always)]
         fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
             H(input)
         }
 
+        #[hax_lib::requires(fstar!("v $LEN < pow2 32"))]
+        // Output name has be `out` https://github.com/hacspec/hax/issues/832
+        #[hax_lib::ensures(|out|
+            // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
+            fstar!("v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"))
+        ]
         #[inline(always)]
         fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
             PRF::<LEN>(input)
@@ -386,17 +402,32 @@ pub(crate) mod avx2 {
         out
     }
 
+    #[hax_lib::attributes]
     impl<const K: usize> Hash<K> for Simd256Hash {
+        // Output name has be `out` https://github.com/hacspec/hax/issues/832
+        #[hax_lib::ensures(|out|
+            fstar!("$out == Spec.Utils.v_G $input"))
+        ]
         #[inline(always)]
         fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
             G(input)
         }
 
+        // Output name has be `out` https://github.com/hacspec/hax/issues/832
+        #[hax_lib::ensures(|out|
+            fstar!("$out == Spec.Utils.v_H $input"))
+        ]
         #[inline(always)]
         fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
             H(input)
         }
 
+        #[hax_lib::requires(fstar!("v $LEN < pow2 32"))]
+        // Output name has be `out` https://github.com/hacspec/hax/issues/832
+        #[hax_lib::ensures(|out|
+            // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
+            fstar!("v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"))
+        ]
         #[inline(always)]
         fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
             PRF::<LEN>(input)
@@ -645,17 +676,32 @@ pub(crate) mod neon {
         out
     }
 
+    #[hax_lib::attributes]
     impl<const K: usize> Hash<K> for Simd128Hash {
+        // Output name has be `out` https://github.com/hacspec/hax/issues/832
+        #[hax_lib::ensures(|out|
+            fstar!("$out == Spec.Utils.v_G $input"))
+        ]
         #[inline(always)]
         fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
             G(input)
         }
 
+        // Output name has be `out` https://github.com/hacspec/hax/issues/832
+        #[hax_lib::ensures(|out|
+            fstar!("$out == Spec.Utils.v_H $input"))
+        ]
         #[inline(always)]
         fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
             H(input)
         }
 
+        #[hax_lib::requires(fstar!("v $LEN < pow2 32"))]
+        // Output name has be `out` https://github.com/hacspec/hax/issues/832
+        #[hax_lib::ensures(|out|
+            // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
+            fstar!("v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"))
+        ]
         #[inline(always)]
         fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
             PRF::<LEN>(input)
