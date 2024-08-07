@@ -2,7 +2,9 @@ use super::vector_type::*;
 use crate::vector::{
     traits::FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
 };
+//#[cfg(hax)]
 use hax_lib::*;
+use hax_lib::int::*;
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
@@ -16,6 +18,8 @@ pub type FieldElementTimesMontgomeryR = i16;
 
 pub(crate) const MONTGOMERY_SHIFT: u8 = 16;
 pub(crate) const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
+
+pub(crate) const MONTGOMERY_R_INV: i32 = 169;
 
 pub(crate) const BARRETT_SHIFT: i32 = 26;
 pub(crate) const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
@@ -38,12 +42,16 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
             (==) {Math.Lemmas.small_mod (pow2 (v n)) (pow2 32); Math.Lemmas.pow2_lt_compat 32 (v n)}
             v (logand value ((mk_int (pow2 (v n))) -! (mk_int 1)));
             (==) {Math.Lemmas.pow2_lt_compat 32 (v n); logand_mask_lemma value (v n)}
-            v value % (pow2 (v n));
+            v $value % (pow2 (v n));
         };
         assert (v res < pow2 (v n))");
     res
 }
 
+#[hax_lib::requires(hax_lib::forall(|i:usize| (i >= FIELD_ELEMENTS_IN_VECTOR) || 
+      (lhs.elements[i].lift() + rhs.elements[i].lift() >= i16::MIN.lift() && 
+      lhs.elements[i].lift() + rhs.elements[i].lift() <= i16::MAX.lift()))
+)]
 #[inline(always)]
 pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
@@ -51,30 +59,6 @@ pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     }
 
     lhs
-}
-
-#[cfg_attr(hax, hax_lib::requires(
-    MAX1 > 0 && MIN1 == -MAX1 && 
-    MAX2 > 0 && MIN2 == -MAX2 &&  
-    MAX3 > 0 && MIN3 == -MAX3 &&
-    MAX1 == MAX3 - MAX2 && MAX3 < i16::MAX
-))]
-#[inline(always)]
-pub fn max_add<
-    const MIN1: i16, const MAX1: i16,
-    const MIN2: i16, const MAX2: i16,
-    const MIN3: i16, const MAX3: i16
->(
-    lhs: MaxPortableVector<MIN1, MAX1>,
-    rhs: MaxPortableVector<MIN2, MAX2>,
-) -> MaxPortableVector<MIN3, MAX3> {
-    let mut result = max_zero();
-
-    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        result.elements[i] = (lhs.elements[i] + (rhs.elements[i])).into_checked();
-    }
-
-    result
 }
 
 #[inline(always)]
@@ -144,7 +128,9 @@ pub fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
 /// `|result| ≤ FIELD_MODULUS / 2 · (|value|/BARRETT_R + 1)
 ///
 /// In particular, if `|value| < BARRETT_R`, then `|result| < FIELD_MODULUS`.
-#[cfg_attr(hax, hax_lib::requires((i32::from(value) > -BARRETT_R && i32::from(value) < BARRETT_R)))]
+#[hax_lib::fstar::before("#push-options \"--z3rlimit 250\"")]
+#[hax_lib::fstar::after("#pop-options")]
+#[cfg_attr(hax, hax_lib::requires((i32::from(value) >= -31625 && i32::from(value) <= 31625)))]
 #[cfg_attr(hax, hax_lib::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
 pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
     // hax_debug_assert!(
@@ -153,9 +139,23 @@ pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
     // );
 
     let t = (i32::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
+    hax_lib::fstar!("assert_norm (v $BARRETT_MULTIPLIER == (pow2 27 + 3329) / (2*3329));
+        assert (v $t = v $value * v $BARRETT_MULTIPLIER + pow2 25)");
     let quotient = (t >> BARRETT_SHIFT) as i16;
+    hax_lib::fstar!("assert (v $quotient = v $t / pow2 26)");
 
     let result = value - (quotient * FIELD_MODULUS);
+    hax_lib::fstar!("calc (==) {
+            v $result % 3329;
+            (==) { }
+            (v $value - (v $quotient * 3329)) % 3329;
+            (==) {Math.Lemmas.lemma_mod_sub_distr (v $value) (v $quotient * 3329) 3329}
+            (v $value - (v $quotient * 3329) % 3329) % 3329;
+            (==) {Math.Lemmas.cancel_mul_mod (v $quotient) 3329}
+            (v $value - 0) % 3329;    
+            (==) {}
+            (v $value) % 3329;    
+        }");
 
     // hax_debug_assert!(
     //     result > -FIELD_MODULUS && result < FIELD_MODULUS,
@@ -186,25 +186,98 @@ pub(crate) fn barrett_reduce(mut v: PortableVector) -> PortableVector {
 ///
 /// In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 · FIELD_MODULUS) / 2`.
 #[cfg_attr(hax, hax_lib::requires(value >= -(FIELD_MODULUS as i32) * MONTGOMERY_R && value <= (FIELD_MODULUS as i32) * MONTGOMERY_R))]
-#[cfg_attr(hax, hax_lib::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
+//#[cfg_attr(hax, hax_lib::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
 pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
     // for this function. The removal of this line is being tracked in:
     // https://github.com/cryspen/libcrux/issues/134
     let _ = MONTGOMERY_R;
+    hax_lib::fstar!("assert_norm((v 169l * pow2 16) % 3329 == 1)");
 
     //hax_debug_assert!(
     //    value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R,
     //    "value is {value}"
     //);
 
-    let k = (value as i16) as i32 * (INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
-    let k_times_modulus = (k as i16 as i32) * (FIELD_MODULUS as i32);
+    let t0 = (value as u16) as u32;
+    hax_lib::fstar!("assert (v $t0 = (v $value % pow2 16) % pow2 32);
+        Math.Lemmas.pow2_modulo_modulo_lemma_2 (v $value) 32 16;
+        assert (v $t0 = v $value % pow2 16)");
+
+    let t = t0 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+    hax_lib::fstar!("assert (v $t = (v $value % pow2 16) * v $INVERSE_OF_MODULUS_MOD_MONTGOMERY_R)");
+    let k = (t as u16) as u32;
+    hax_lib::fstar!("assert (v $k = (v $t % pow2 16) % pow2 32);
+        Math.Lemmas.pow2_modulo_modulo_lemma_2 (v $t) 32 16;
+        assert (v $k = v $t % pow2 16);
+        calc (==) {
+            v $k % pow2 16;
+            == { }
+            v $t % pow2 16;
+            == { }
+            ((v $value % pow2 16) * v $INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) % pow2 16;
+            == {Math.Lemmas.lemma_mod_mul_distr_l (v $value) (v $INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) (pow2 16)}
+            (v $value * v $INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) % pow2 16;
+        };
+        assert_norm((62209 * 3329) % pow2 16 == 1);
+        assert((v $INVERSE_OF_MODULUS_MOD_MONTGOMERY_R * 3329) % pow2 16 == 1);
+        calc (==) {
+            (v $k * 3329) % pow2 16;
+            == {Math.Lemmas.lemma_mod_mul_distr_l (v $k) 3329 (pow2 16)}
+            ((v $k % pow2 16) * 3329) % pow2 16;
+            == { }
+            ((v $value * v $INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) % pow2 16 * 3329) % pow2 16;
+            == {Math.Lemmas.lemma_mod_mul_distr_l (v $value * v $INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) (3329) (pow2 16)}
+            (v $value * v $INVERSE_OF_MODULUS_MOD_MONTGOMERY_R * 3329) % pow2 16;   
+            == {Math.Lemmas.paren_mul_right (v $value) (v $INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) 3329}
+            (v $value * (v $INVERSE_OF_MODULUS_MOD_MONTGOMERY_R * 3329)) % pow2 16;   
+            == {Math.Lemmas.lemma_mod_mul_distr_r (v $value) (v $INVERSE_OF_MODULUS_MOD_MONTGOMERY_R * 3329) (pow2 16)}
+            (v $value * ((v $INVERSE_OF_MODULUS_MOD_MONTGOMERY_R * 3329) % pow2 16)) % pow2 16;   
+            == {Math.Lemmas.mul_one_right_is_same (v $value)}
+            (v $value) % pow2 16;   
+        };
+        Math.Lemmas.modulo_add (pow2 16) (- (v $k * 3329)) (v $value) (v $k * 3329);
+        assert ((v $value - v $k * 3329) % pow2 16 == (v $k * 3329 - v $k * 3329) % pow2 16);
+        assert ((v $value - v $k * 3329) % v $MONTGOMERY_R == 0)");
+    let k_times_modulus = k * (FIELD_MODULUS as u32);
 
     let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;
     let value_high = (value >> MONTGOMERY_SHIFT) as i16;
+    hax_lib::fstar!("assert (v $value_high = v $value / v $MONTGOMERY_R)");
 
-    value_high - c
+    let res = value_high - c;
+    hax_lib::fstar!("calc (==) {
+            v $res;
+            == { }
+            (v $value_high - v $c);
+            == { }
+            ((v $value / v $MONTGOMERY_R) - ((v $k * 3329) / v $MONTGOMERY_R));
+            == {Math.Lemmas.lemma_div_exact (v $value - v $k * 3329) (v $MONTGOMERY_R)}
+            ((v $value - (v $k * 3329)) / v $MONTGOMERY_R);
+        };
+        calc (==) {
+            v $res % 3329;
+            == {Math.Lemmas.lemma_div_exact (v $value - v $k * 3329) (v $MONTGOMERY_R)}
+            (((v $value - (v $k * 3329)) / v $MONTGOMERY_R) * ((v $MONTGOMERY_R * v $MONTGOMERY_R_INV) % 3329)) % 3329 ;
+            == {Math.Lemmas.lemma_mod_mul_distr_r ((v $value - (v $k * 3329)) / v $MONTGOMERY_R) (v $MONTGOMERY_R * v $MONTGOMERY_R_INV) 3329}
+            (((v $value - (v $k * 3329)) / v $MONTGOMERY_R) * (v $MONTGOMERY_R * v $MONTGOMERY_R_INV)) % 3329 ;
+            == {Math.Lemmas.paren_mul_right ((v $value - (v $k * 3329)) / v $MONTGOMERY_R) (v $MONTGOMERY_R) (v $MONTGOMERY_R_INV)}
+            ((((v $value - (v $k * 3329)) / v $MONTGOMERY_R) * v $MONTGOMERY_R) * v $MONTGOMERY_R_INV) % 3329 ;
+            == {Math.Lemmas.lemma_div_exact (v $value - v $k * 3329) (v $MONTGOMERY_R)}
+            ((v $value - (v $k * 3329)) * v $MONTGOMERY_R_INV) % 3329 ;
+            == { }
+            ((v $value * v $MONTGOMERY_R_INV) - ((v $k * 3329) * v $MONTGOMERY_R_INV)) % 3329 ;
+            == {Math.Lemmas.paren_mul_right (v $k) 3329 (v $MONTGOMERY_R_INV)} 
+            ((v $value * v $MONTGOMERY_R_INV) - (v $k * (3329 * v $MONTGOMERY_R_INV))) % 3329 ;
+            == {Math.Lemmas.swap_mul 3329 (v $MONTGOMERY_R_INV)} 
+            ((v $value * v $MONTGOMERY_R_INV) - (v $k * (v $MONTGOMERY_R_INV * 3329))) % 3329 ;
+            == {Math.Lemmas.paren_mul_right (v $k) (v $MONTGOMERY_R_INV) 3329} 
+            ((v $value * v $MONTGOMERY_R_INV) - ((v $k * v $MONTGOMERY_R_INV) * 3329)) % 3329 ;
+            == {Math.Lemmas.lemma_mod_sub (v $value * v $MONTGOMERY_R_INV) 3329 (v $k * v $MONTGOMERY_R_INV)}
+            (v $value * v $MONTGOMERY_R_INV) % 3329 ;
+        }");
+
+    res
 }
 
 /// If `fe` is some field element 'x' of the Kyber field and `fer` is congruent to

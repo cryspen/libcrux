@@ -1,12 +1,15 @@
 use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
+//#[cfg(hax)]
 use hax_lib::*;
+//#[cfg(hax)]
 use hax_bounded_integers::*;
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.
 pub(crate) type FieldElement = i16;
 
-pub(crate) type MaxFieldElement <const MIN:i16, const MAX:i16> = BoundedI16<MIN, MAX>;
+pub(crate) type BoundedFieldElement <const MIN:i16, const MAX:i16> = BoundedI16<MIN, MAX>;
+pub(crate) type BoundedI32FieldElement <const MIN:i32, const MAX:i32> = BoundedI32<MIN, MAX>;
 
 #[derive(Clone, Copy)]
 pub struct PortableVector {
@@ -14,8 +17,8 @@ pub struct PortableVector {
 }
 
 #[derive(Clone, Copy)]
-pub struct MaxPortableVector <const MIN:i16, const MAX: i16> {
-    pub(crate) elements: [MaxFieldElement<MIN, MAX>; FIELD_ELEMENTS_IN_VECTOR],
+pub struct BoundedPortableVector <const MIN:i16, const MAX: i16> {
+    pub(crate) elements: [BoundedFieldElement<MIN, MAX>; FIELD_ELEMENTS_IN_VECTOR],
 }
 
 #[allow(non_snake_case)]
@@ -28,8 +31,8 @@ pub fn zero() -> PortableVector {
 
 #[allow(non_snake_case)]
 #[inline(always)]
-pub fn max_zero<const MIN:i16, const MAX: i16>() -> MaxPortableVector<MIN, MAX> {
-    MaxPortableVector {
+pub fn zero_bounded<const MIN:i16, const MAX: i16>() -> BoundedPortableVector<MIN, MAX> {
+    BoundedPortableVector {
         elements: [BoundedI16::new(0); FIELD_ELEMENTS_IN_VECTOR],
     }
 }
