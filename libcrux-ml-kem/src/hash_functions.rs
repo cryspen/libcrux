@@ -23,14 +23,25 @@ pub(crate) const THREE_BLOCKS: usize = BLOCK_SIZE * 3;
 /// - AVX2
 /// - NEON
 /// - Portable
+#[hax_lib::attributes]
 pub(crate) trait Hash<const K: usize> {
     /// G aka SHA3 512
+    #[hax_lib::ensures(|result|
+        fstar!("$result == Spec.Utils.v_G $input"))
+    ]
     fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE];
 
     /// H aka SHA3 256
+    #[hax_lib::ensures(|result|
+        fstar!("$result == Spec.Utils.v_H $input"))
+    ]
     fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE];
 
     /// PRF aka SHAKE256
+    #[hax_lib::requires(fstar!("v $LEN < pow2 32"))]
+    #[hax_lib::ensures(|result|
+        fstar!("$result == Spec.Utils.v_PRF $LEN $input"))
+    ]
     fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN];
 
     /// PRFxN aka N SHAKE256
