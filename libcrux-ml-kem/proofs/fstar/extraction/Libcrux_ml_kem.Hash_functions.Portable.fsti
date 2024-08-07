@@ -3,12 +3,29 @@ module Libcrux_ml_kem.Hash_functions.Portable
 open Core
 open FStar.Mul
 
-val v_G (input: t_Slice u8) : Prims.Pure (t_Array u8 (sz 64)) Prims.l_True (fun _ -> Prims.l_True)
+val v_G (input: t_Slice u8)
+    : Prims.Pure (t_Array u8 (sz 64))
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 64) = result in
+          result == Spec.Utils.v_G input)
 
-val v_H (input: t_Slice u8) : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+val v_H (input: t_Slice u8)
+    : Prims.Pure (t_Array u8 (sz 32))
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 32) = result in
+          result == Spec.Utils.v_H input)
 
 val v_PRF (v_LEN: usize) (input: t_Slice u8)
-    : Prims.Pure (t_Array u8 v_LEN) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_LEN)
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Array u8 v_LEN = result in
+          result == Spec.Utils.v_PRF v_LEN input)
 
 val v_PRFxN (v_K v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K)
     : Prims.Pure (t_Array (t_Array u8 v_LEN) v_K) Prims.l_True (fun _ -> Prims.l_True)
