@@ -35,16 +35,16 @@ val v_PRFxN (v_K v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K)
 /// All other functions don\'t actually use any members.
 val t_Simd256Hash:Type0
 
-val shake128_init_absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
+val shake128_init_absorb_final (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
     : Prims.Pure t_Simd256Hash Prims.l_True (fun _ -> Prims.l_True)
 
-val shake128_squeeze_block (v_K: usize) (st: t_Simd256Hash)
-    : Prims.Pure (t_Simd256Hash & t_Array (t_Array u8 (sz 168)) v_K)
+val shake128_squeeze_first_three_blocks (v_K: usize) (st: t_Simd256Hash)
+    : Prims.Pure (t_Simd256Hash & t_Array (t_Array u8 (sz 504)) v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val shake128_squeeze_three_blocks (v_K: usize) (st: t_Simd256Hash)
-    : Prims.Pure (t_Simd256Hash & t_Array (t_Array u8 (sz 504)) v_K)
+val shake128_squeeze_next_block (v_K: usize) (st: t_Simd256Hash)
+    : Prims.Pure (t_Simd256Hash & t_Array (t_Array u8 (sz 168)) v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
@@ -75,35 +75,35 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
     f_PRFxN
     =
     (fun (v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K) -> v_PRFxN v_K v_LEN input);
-    f_shake128_init_absorb_pre = (fun (input: t_Array (t_Array u8 (sz 34)) v_K) -> true);
-    f_shake128_init_absorb_post
+    f_shake128_init_absorb_final_pre = (fun (input: t_Array (t_Array u8 (sz 34)) v_K) -> true);
+    f_shake128_init_absorb_final_post
     =
     (fun (input: t_Array (t_Array u8 (sz 34)) v_K) (out: t_Simd256Hash) -> true);
-    f_shake128_init_absorb
+    f_shake128_init_absorb_final
     =
-    (fun (input: t_Array (t_Array u8 (sz 34)) v_K) -> shake128_init_absorb v_K input);
-    f_shake128_squeeze_three_blocks_pre = (fun (self: t_Simd256Hash) -> true);
-    f_shake128_squeeze_three_blocks_post
+    (fun (input: t_Array (t_Array u8 (sz 34)) v_K) -> shake128_init_absorb_final v_K input);
+    f_shake128_squeeze_first_three_blocks_pre = (fun (self: t_Simd256Hash) -> true);
+    f_shake128_squeeze_first_three_blocks_post
     =
     (fun (self: t_Simd256Hash) (out1: (t_Simd256Hash & t_Array (t_Array u8 (sz 504)) v_K)) -> true);
-    f_shake128_squeeze_three_blocks
+    f_shake128_squeeze_first_three_blocks
     =
     (fun (self: t_Simd256Hash) ->
         let tmp0, out:(t_Simd256Hash & t_Array (t_Array u8 (sz 504)) v_K) =
-          shake128_squeeze_three_blocks v_K self
+          shake128_squeeze_first_three_blocks v_K self
         in
         let self:t_Simd256Hash = tmp0 in
         let hax_temp_output:t_Array (t_Array u8 (sz 504)) v_K = out in
         self, hax_temp_output <: (t_Simd256Hash & t_Array (t_Array u8 (sz 504)) v_K));
-    f_shake128_squeeze_block_pre = (fun (self: t_Simd256Hash) -> true);
-    f_shake128_squeeze_block_post
+    f_shake128_squeeze_next_block_pre = (fun (self: t_Simd256Hash) -> true);
+    f_shake128_squeeze_next_block_post
     =
     (fun (self: t_Simd256Hash) (out1: (t_Simd256Hash & t_Array (t_Array u8 (sz 168)) v_K)) -> true);
-    f_shake128_squeeze_block
+    f_shake128_squeeze_next_block
     =
     fun (self: t_Simd256Hash) ->
       let tmp0, out:(t_Simd256Hash & t_Array (t_Array u8 (sz 168)) v_K) =
-        shake128_squeeze_block v_K self
+        shake128_squeeze_next_block v_K self
       in
       let self:t_Simd256Hash = tmp0 in
       let hax_temp_output:t_Array (t_Array u8 (sz 168)) v_K = out in

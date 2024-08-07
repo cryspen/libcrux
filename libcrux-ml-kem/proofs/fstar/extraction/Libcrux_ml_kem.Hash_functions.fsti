@@ -32,25 +32,26 @@ class t_Hash (v_Self: Type0) (v_K: usize) = {
     -> Prims.Pure (t_Array (t_Array u8 v_LEN) v_K)
         (f_PRFxN_pre v_LEN x0)
         (fun result -> f_PRFxN_post v_LEN x0 result);
-  f_shake128_init_absorb_pre:input: t_Array (t_Array u8 (sz 34)) v_K -> pred: Type0{true ==> pred};
-  f_shake128_init_absorb_post:t_Array (t_Array u8 (sz 34)) v_K -> v_Self -> Type0;
-  f_shake128_init_absorb:x0: t_Array (t_Array u8 (sz 34)) v_K
+  f_shake128_init_absorb_final_pre:input: t_Array (t_Array u8 (sz 34)) v_K
+    -> pred: Type0{true ==> pred};
+  f_shake128_init_absorb_final_post:t_Array (t_Array u8 (sz 34)) v_K -> v_Self -> Type0;
+  f_shake128_init_absorb_final:x0: t_Array (t_Array u8 (sz 34)) v_K
     -> Prims.Pure v_Self
-        (f_shake128_init_absorb_pre x0)
-        (fun result -> f_shake128_init_absorb_post x0 result);
-  f_shake128_squeeze_three_blocks_pre:self___: v_Self -> pred: Type0{true ==> pred};
-  f_shake128_squeeze_three_blocks_post:v_Self -> (v_Self & t_Array (t_Array u8 (sz 504)) v_K)
+        (f_shake128_init_absorb_final_pre x0)
+        (fun result -> f_shake128_init_absorb_final_post x0 result);
+  f_shake128_squeeze_first_three_blocks_pre:self___: v_Self -> pred: Type0{true ==> pred};
+  f_shake128_squeeze_first_three_blocks_post:v_Self -> (v_Self & t_Array (t_Array u8 (sz 504)) v_K)
     -> Type0;
-  f_shake128_squeeze_three_blocks:x0: v_Self
+  f_shake128_squeeze_first_three_blocks:x0: v_Self
     -> Prims.Pure (v_Self & t_Array (t_Array u8 (sz 504)) v_K)
-        (f_shake128_squeeze_three_blocks_pre x0)
-        (fun result -> f_shake128_squeeze_three_blocks_post x0 result);
-  f_shake128_squeeze_block_pre:self___: v_Self -> pred: Type0{true ==> pred};
-  f_shake128_squeeze_block_post:v_Self -> (v_Self & t_Array (t_Array u8 (sz 168)) v_K) -> Type0;
-  f_shake128_squeeze_block:x0: v_Self
+        (f_shake128_squeeze_first_three_blocks_pre x0)
+        (fun result -> f_shake128_squeeze_first_three_blocks_post x0 result);
+  f_shake128_squeeze_next_block_pre:self___: v_Self -> pred: Type0{true ==> pred};
+  f_shake128_squeeze_next_block_post:v_Self -> (v_Self & t_Array (t_Array u8 (sz 168)) v_K) -> Type0;
+  f_shake128_squeeze_next_block:x0: v_Self
     -> Prims.Pure (v_Self & t_Array (t_Array u8 (sz 168)) v_K)
-        (f_shake128_squeeze_block_pre x0)
-        (fun result -> f_shake128_squeeze_block_post x0 result)
+        (f_shake128_squeeze_next_block_pre x0)
+        (fun result -> f_shake128_squeeze_next_block_post x0 result)
 }
 
 /// The SHA3 block size.
