@@ -135,9 +135,10 @@ UNVERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(UNVERIFIE
 # *extend* the set of relevant files with the tests.
 ROOTS = $(UNVERIFIED) $(PANIC_FREE) $(VERIFIED)
 
-FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives \
+FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HACL_HOME)/specs $(HAX_PROOF_LIBS_HOME)/rust_primitives \
 	$(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME) \
-	../../../../sys/platform/proofs/fstar/extraction/ \
+	../spec/ \
+  ../../../../sys/platform/proofs/fstar/extraction/ \
 	../../../../libcrux-intrinsics/proofs/fstar/extraction/ \
 	../../../../libcrux-sha3/proofs/fstar/extraction/
 
