@@ -3,11 +3,11 @@ use crate::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
     },
     constants::*,
-    encoding,
+    encoding, expandx4,
     hash_functions::{shake128, shake256},
     matrix::{
-        add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, expand_to_A,
-        subtract_vectors, vector_times_ring_element,
+        add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
+        vector_times_ring_element,
     },
     ntt::ntt,
     polynomial::PolynomialRingElement,
@@ -54,7 +54,7 @@ pub(crate) fn generate_key_pair<
 
     let mut domain_separator: u16 = 0;
 
-    let A_as_ntt = expand_to_A::<SIMDUnit, Shake128, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+    let A_as_ntt = expandx4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
         into_padded_array(seed_for_A),
     );
 
@@ -140,7 +140,7 @@ pub(crate) fn sign<
             SIGNING_KEY_SIZE,
         >(signing_key);
 
-    let A_as_ntt = expand_to_A::<SIMDUnit, Shake128, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+    let A_as_ntt = expandx4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
         into_padded_array(&seed_for_A),
     );
 
@@ -317,7 +317,7 @@ pub(crate) fn verify<
         signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
-        let A_as_ntt = expand_to_A::<SIMDUnit, Shake128, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+        let A_as_ntt = expandx4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
             into_padded_array(&seed_for_A),
         );
 

@@ -32,25 +32,33 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-pub(crate) fn sample_four_ring_element_uniform<SIMDUnit: Operations, Shake128: shake128::XofX4>(
+pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations, Shake128: shake128::XofX4>(
     mut seed0: [u8; 34],
-    i: usize,
+    domain_separator0: u16,
+    domain_separator1: u16,
+    domain_seperator2: u16,
+    domain_separator3: u16,
 ) -> (
     PolynomialRingElement<SIMDUnit>,
     PolynomialRingElement<SIMDUnit>,
     PolynomialRingElement<SIMDUnit>,
     PolynomialRingElement<SIMDUnit>,
 ) {
-    seed0[33] = i as u8;
+    // Prepare the seeds
+    seed0[32] = domain_separator0 as u8;
+    seed0[33] = (domain_separator0 >> 8) as u8;
 
-    // Prepare 4 seeds
-    seed0[32] = 0;
     let mut seed1 = seed0;
-    seed1[32] = 1;
+    seed1[32] = domain_separator1 as u8;
+    seed1[33] = (domain_separator1 >> 8) as u8;
+
     let mut seed2 = seed0;
-    seed2[32] = 2;
+    seed2[32] = domain_seperator2 as u8;
+    seed2[33] = (domain_seperator2 >> 8) as u8;
+
     let mut seed3 = seed0;
-    seed3[32] = 3;
+    seed3[32] = domain_separator3 as u8;
+    seed3[33] = (domain_separator3 >> 8) as u8;
 
     let mut state = Shake128::init_absorb(&seed0, &seed1, &seed2, &seed3);
 
@@ -142,42 +150,6 @@ pub(crate) fn sample_four_ring_element_uniform<SIMDUnit: Operations, Shake128: s
         PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients2),
         PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients3),
     )
-}
-
-#[inline(always)]
-pub(crate) fn sample_ring_element_uniform<SIMDUnit: Operations, Shake128: shake128::Xof>(
-    seed: [u8; 34],
-) -> PolynomialRingElement<SIMDUnit> {
-    let mut state = Shake128::init_absorb(&seed);
-    let randomness = state.squeeze_first_five_blocks();
-
-    // Every call to |rejection_sample_less_than_field_modulus|
-    // will result in a call to |PortableSIMDUnit::rejection_sample_less_than_field_modulus|;
-    // this latter function performs no bounds checking and can write up to 8
-    // elements to its output. It is therefore possible that 255 elements have
-    // already been sampled and we call the function again.
-    //
-    // To ensure we don't overflow the buffer in this case, we allocate 255 + 8
-    // = 263 elements.
-    let mut coefficients = [0i32; 263];
-
-    let mut sampled = 0;
-    let mut done = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &randomness,
-        &mut sampled,
-        &mut coefficients,
-    );
-
-    while !done {
-        let randomness = state.squeeze_next_block();
-        done = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-            &randomness,
-            &mut sampled,
-            &mut coefficients,
-        );
-    }
-
-    PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients[0..256])
 }
 
 #[inline(always)]
@@ -565,7 +537,23 @@ mod tests {
         simd::{self, traits::Operations},
     };
 
-    fn test_sample_ring_element_uniform_generic<SIMDUnit: Operations, Shake128: shake128::Xof>() {
+    // This is just a wrapper around sample_four_ring_elements, for testing
+    // purposes.
+    fn sample_ring_element_uniform<SIMDUnit: Operations, Shake128: shake128::XofX4>(
+        seed: [u8; 34],
+    ) -> PolynomialRingElement<SIMDUnit> {
+        let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128>(
+            seed,
+            ((seed[33] as u16) << 8) | (seed[32] as u16),
+            0,
+            0,
+            0,
+        );
+
+        four_ring_elements.0
+    }
+
+    fn test_sample_ring_element_uniform_generic<SIMDUnit: Operations, Shake128: shake128::XofX4>() {
         let seed: [u8; 34] = [
             33, 192, 250, 216, 117, 61, 16, 12, 248, 51, 213, 110, 64, 57, 119, 80, 164, 83, 73,
             91, 80, 128, 195, 219, 203, 149, 170, 233, 16, 232, 209, 105, 4, 5,
@@ -816,7 +804,7 @@ mod tests {
     fn test_sample_ring_element_uniform_simd256() {
         test_sample_ring_element_uniform_generic::<
             simd::avx2::AVX2SIMDUnit,
-            hash_functions::portable::Shake128,
+            crate::hash_functions::simd256::Shake128,
         >();
     }
     #[cfg(feature = "simd256")]

@@ -1,6 +1,7 @@
 mod arithmetic;
 mod constants;
 mod encoding;
+mod expandx4;
 mod hash_functions;
 mod instantiations;
 mod matrix;
