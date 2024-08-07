@@ -67,9 +67,9 @@ pub(crate) mod portable {
         shake128_state: [KeccakState; K],
     }
 
-    #[cfg_attr(hax,hax_lib::ensures(|result|
+    #[hax_lib::ensures(|result|
         fstar!("$result == Spec.Utils.v_G $input"))
-    )]
+    ]
     #[inline(always)]
     fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
         let mut digest = [0u8; G_DIGEST_SIZE];
@@ -77,9 +77,9 @@ pub(crate) mod portable {
         digest
     }
 
-    #[cfg_attr(hax,hax_lib::ensures(|result|
+    #[hax_lib::ensures(|result|
         fstar!("$result == Spec.Utils.v_H $input"))
-    )]
+    ]
     #[inline(always)]
     fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
         let mut digest = [0u8; H_DIGEST_SIZE];
@@ -87,9 +87,10 @@ pub(crate) mod portable {
         digest
     }
 
-    #[cfg_attr(hax,hax_lib::ensures(|result|
+    #[hax_lib::requires(fstar!("v $LEN < pow2 32"))]
+    #[hax_lib::ensures(|result|
         fstar!("$result == Spec.Utils.v_PRF $LEN $input"))
-    )]
+    ]
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         let mut digest = [0u8; LEN];
@@ -198,9 +199,9 @@ pub(crate) mod avx2 {
         shake128_state: KeccakState,
     }
 
-    #[cfg_attr(hax,hax_lib::ensures(|result|
+    #[hax_lib::ensures(|result|
         fstar!("$result == Spec.Utils.v_G $input"))
-    )]
+    ]
     #[inline(always)]
     fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
         let mut digest = [0u8; G_DIGEST_SIZE];
@@ -208,9 +209,9 @@ pub(crate) mod avx2 {
         digest
     }
 
-    #[cfg_attr(hax,hax_lib::ensures(|result|
+    #[hax_lib::ensures(|result|
         fstar!("$result == Spec.Utils.v_H $input"))
-    )]
+    ]
     #[inline(always)]
     fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
         let mut digest = [0u8; H_DIGEST_SIZE];
@@ -218,9 +219,10 @@ pub(crate) mod avx2 {
         digest
     }
 
-    #[cfg_attr(hax,hax_lib::ensures(|result|
+    #[hax_lib::requires(fstar!("v $LEN < pow2 32"))]
+    #[hax_lib::ensures(|result|
         fstar!("$result == Spec.Utils.v_PRF $LEN $input"))
-    )]
+    ]
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         let mut digest = [0u8; LEN];
@@ -425,9 +427,9 @@ pub(crate) mod neon {
         shake128_state: [KeccakState; 2],
     }
 
-    #[cfg_attr(hax,hax_lib::ensures(|result|
+    #[hax_lib::ensures(|result|
         fstar!("$result == Spec.Utils.v_G $input"))
-    )]
+    ]
     #[inline(always)]
     fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
         let mut digest = [0u8; G_DIGEST_SIZE];
@@ -435,9 +437,9 @@ pub(crate) mod neon {
         digest
     }
 
-    #[cfg_attr(hax,hax_lib::ensures(|result|
+    #[hax_lib::ensures(|result|
         fstar!("$result == Spec.Utils.v_H $input"))
-    )]
+    ]
     #[inline(always)]
     fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
         let mut digest = [0u8; H_DIGEST_SIZE];
@@ -445,9 +447,10 @@ pub(crate) mod neon {
         digest
     }
 
-    #[cfg_attr(hax,hax_lib::ensures(|result|
+    #[hax_lib::requires(fstar!("v $LEN < pow2 32"))]
+    #[hax_lib::ensures(|result|
         fstar!("$result == Spec.Utils.v_PRF $LEN $input"))
-    )]
+    ]
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         let mut digest = [0u8; LEN];

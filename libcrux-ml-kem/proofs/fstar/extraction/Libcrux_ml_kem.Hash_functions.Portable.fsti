@@ -21,7 +21,7 @@ val v_H (input: t_Slice u8)
 
 val v_PRF (v_LEN: usize) (input: t_Slice u8)
     : Prims.Pure (t_Array u8 v_LEN)
-      Prims.l_True
+      (requires v v_LEN < pow2 32)
       (ensures
         fun result ->
           let result:t_Array u8 v_LEN = result in
