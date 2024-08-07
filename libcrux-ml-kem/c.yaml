@@ -6,12 +6,14 @@ files:
     inline_static: true
     api:
       - [libcrux_intrinsics, arm64]
+      - [libcrux_intrinsics, arm64_extract]
 
   - name: libcrux_intrinsics_avx2
     library: true
     inline_static: true
     api:
       - [libcrux_intrinsics, avx2]
+      - [libcrux_intrinsics, avx2_extract]
 
   # SHA3 (no mention of libcrux_mlkem in this section, please)
 

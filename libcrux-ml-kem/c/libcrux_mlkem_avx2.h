@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
- * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
+ * Charon: 53530427db2941ce784201e64086766504bc5642
+ * Eurydice: f4283998bcc3c86677cf0e03a6fa71913a524658
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 75bf8bca5f9903b4f6e8fba693d61af1415d512f
+ * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
+ * Libcrux: 878f09c21a4312320518388a0d902986b08e030a
  */
 
 #ifndef __libcrux_mlkem_avx2_H
@@ -30,335 +30,372 @@ void libcrux_ml_kem_hash_functions_avx2_G(Eurydice_slice input,
 void libcrux_ml_kem_hash_functions_avx2_H(Eurydice_slice input,
                                           uint8_t ret[32U]);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_zero(void);
+libcrux_intrinsics_avx2_extract_Vec256 libcrux_ml_kem_vector_avx2_zero(void);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ZERO_ea(void);
+libcrux_intrinsics_avx2_extract_Vec256 libcrux_ml_kem_vector_avx2_ZERO_ea(void);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_from_i16_array(
-    Eurydice_slice array);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)}
-*/
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_from_i16_array_ea(
-    Eurydice_slice array);
-
-void libcrux_ml_kem_vector_avx2_to_i16_array(core_core_arch_x86___m256i v,
-                                             int16_t ret[16U]);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_from_i16_array(Eurydice_slice array);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-void libcrux_ml_kem_vector_avx2_to_i16_array_ea(core_core_arch_x86___m256i x,
-                                                int16_t ret[16U]);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_from_i16_array_ea(Eurydice_slice array);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_arithmetic_add(
-    core_core_arch_x86___m256i lhs, core_core_arch_x86___m256i rhs);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)}
-*/
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_add_ea(
-    core_core_arch_x86___m256i lhs, core_core_arch_x86___m256i *rhs);
-
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_arithmetic_sub(
-    core_core_arch_x86___m256i lhs, core_core_arch_x86___m256i rhs);
+void libcrux_ml_kem_vector_avx2_to_i16_array(
+    libcrux_intrinsics_avx2_extract_Vec256 v, int16_t ret[16U]);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_sub_ea(
-    core_core_arch_x86___m256i lhs, core_core_arch_x86___m256i *rhs);
+void libcrux_ml_kem_vector_avx2_to_i16_array_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 x, int16_t ret[16U]);
 
-core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_arithmetic_add(
+    libcrux_intrinsics_avx2_extract_Vec256 lhs,
+    libcrux_intrinsics_avx2_extract_Vec256 rhs);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::avx2::SIMD256Vector)}
+*/
+libcrux_intrinsics_avx2_extract_Vec256 libcrux_ml_kem_vector_avx2_add_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 lhs,
+    libcrux_intrinsics_avx2_extract_Vec256 *rhs);
+
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_arithmetic_sub(
+    libcrux_intrinsics_avx2_extract_Vec256 lhs,
+    libcrux_intrinsics_avx2_extract_Vec256 rhs);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::avx2::SIMD256Vector)}
+*/
+libcrux_intrinsics_avx2_extract_Vec256 libcrux_ml_kem_vector_avx2_sub_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 lhs,
+    libcrux_intrinsics_avx2_extract_Vec256 *rhs);
+
+libcrux_intrinsics_avx2_extract_Vec256
 libcrux_ml_kem_vector_avx2_arithmetic_multiply_by_constant(
-    core_core_arch_x86___m256i vector, int16_t constant);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t constant);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_multiply_by_constant_ea(
-    core_core_arch_x86___m256i v, int16_t c);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_multiply_by_constant_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 v, int16_t c);
 
-core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_extract_Vec256
 libcrux_ml_kem_vector_avx2_arithmetic_bitwise_and_with_constant(
-    core_core_arch_x86___m256i vector, int16_t constant);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t constant);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_extract_Vec256
 libcrux_ml_kem_vector_avx2_bitwise_and_with_constant_ea(
-    core_core_arch_x86___m256i vector, int16_t constant);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t constant);
 
-core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_extract_Vec256
 libcrux_ml_kem_vector_avx2_arithmetic_cond_subtract_3329(
-    core_core_arch_x86___m256i vector);
+    libcrux_intrinsics_avx2_extract_Vec256 vector);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_cond_subtract_3329_ea(
-    core_core_arch_x86___m256i vector);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_cond_subtract_3329_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 vector);
 
 #define LIBCRUX_ML_KEM_VECTOR_AVX2_ARITHMETIC_BARRETT_MULTIPLIER \
   ((int16_t)20159)
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_arithmetic_barrett_reduce(
-    core_core_arch_x86___m256i vector);
+/**
+ See Section 3.2 of the implementation notes document for an explanation
+ of this code.
+*/
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_arithmetic_barrett_reduce(
+    libcrux_intrinsics_avx2_extract_Vec256 vector);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_barrett_reduce_ea(
-    core_core_arch_x86___m256i vector);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_barrett_reduce_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 vector);
 
-core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_extract_Vec256
 libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constant(
-    core_core_arch_x86___m256i vector, int16_t constant);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t constant);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_extract_Vec256
 libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_ea(
-    core_core_arch_x86___m256i vector, int16_t constant);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t constant);
 
-core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_extract_Vec256
 libcrux_ml_kem_vector_avx2_compress_compress_message_coefficient(
-    core_core_arch_x86___m256i vector);
+    libcrux_intrinsics_avx2_extract_Vec256 vector);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_compress_1_ea(
-    core_core_arch_x86___m256i vector);
+libcrux_intrinsics_avx2_extract_Vec256 libcrux_ml_kem_vector_avx2_compress_1_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 vector);
 
-core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_extract_Vec256
 libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(
-    core_core_arch_x86___m256i lhs, core_core_arch_x86___m256i rhs);
+    libcrux_intrinsics_avx2_extract_Vec256 lhs,
+    libcrux_intrinsics_avx2_extract_Vec256 rhs);
 
-core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_extract_Vec256
 libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constants(
-    core_core_arch_x86___m256i v, core_core_arch_x86___m256i c);
+    libcrux_intrinsics_avx2_extract_Vec256 v,
+    libcrux_intrinsics_avx2_extract_Vec256 c);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ntt_ntt_layer_1_step(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1,
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_ntt_ntt_layer_1_step(
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t zeta0, int16_t zeta1,
     int16_t zeta2, int16_t zeta3);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ntt_layer_1_step_ea(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1,
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_ntt_layer_1_step_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t zeta0, int16_t zeta1,
     int16_t zeta2, int16_t zeta3);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ntt_ntt_layer_2_step(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_ntt_ntt_layer_2_step(
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t zeta0,
+    int16_t zeta1);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ntt_layer_2_step_ea(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_ntt_layer_2_step_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t zeta0,
+    int16_t zeta1);
 
-core_core_arch_x86___m128i
+libcrux_intrinsics_avx2_extract_Vec128
 libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_m128i_by_constants(
-    core_core_arch_x86___m128i v, core_core_arch_x86___m128i c);
+    libcrux_intrinsics_avx2_extract_Vec128 v,
+    libcrux_intrinsics_avx2_extract_Vec128 c);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ntt_ntt_layer_3_step(
-    core_core_arch_x86___m256i vector, int16_t zeta);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_ntt_ntt_layer_3_step(
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t zeta);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ntt_layer_3_step_ea(
-    core_core_arch_x86___m256i vector, int16_t zeta);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_ntt_layer_3_step_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t zeta);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_1_step(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1,
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_1_step(
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t zeta0, int16_t zeta1,
     int16_t zeta2, int16_t zeta3);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_inv_ntt_layer_1_step_ea(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1,
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_inv_ntt_layer_1_step_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t zeta0, int16_t zeta1,
     int16_t zeta2, int16_t zeta3);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_2_step(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_2_step(
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t zeta0,
+    int16_t zeta1);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_inv_ntt_layer_2_step_ea(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_inv_ntt_layer_2_step_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t zeta0,
+    int16_t zeta1);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_3_step(
-    core_core_arch_x86___m256i vector, int16_t zeta);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_3_step(
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t zeta);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_inv_ntt_layer_3_step_ea(
-    core_core_arch_x86___m256i vector, int16_t zeta);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_inv_ntt_layer_3_step_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 vector, int16_t zeta);
 
-core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_extract_Vec256
 libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(
-    core_core_arch_x86___m256i v);
+    libcrux_intrinsics_avx2_extract_Vec256 v);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
-    core_core_arch_x86___m256i lhs, core_core_arch_x86___m256i rhs,
-    int16_t zeta0, int16_t zeta1, int16_t zeta2, int16_t zeta3);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
+    libcrux_intrinsics_avx2_extract_Vec256 lhs,
+    libcrux_intrinsics_avx2_extract_Vec256 rhs, int16_t zeta0, int16_t zeta1,
+    int16_t zeta2, int16_t zeta3);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ntt_multiply_ea(
-    core_core_arch_x86___m256i *lhs, core_core_arch_x86___m256i *rhs,
-    int16_t zeta0, int16_t zeta1, int16_t zeta2, int16_t zeta3);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_ntt_multiply_ea(
+    libcrux_intrinsics_avx2_extract_Vec256 *lhs,
+    libcrux_intrinsics_avx2_extract_Vec256 *rhs, int16_t zeta0, int16_t zeta1,
+    int16_t zeta2, int16_t zeta3);
 
 void libcrux_ml_kem_vector_avx2_serialize_serialize_1(
-    core_core_arch_x86___m256i vector, uint8_t ret[2U]);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, uint8_t ret[2U]);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 void libcrux_ml_kem_vector_avx2_serialize_1_ea(
-    core_core_arch_x86___m256i vector, uint8_t ret[2U]);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, uint8_t ret[2U]);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_1(
-    Eurydice_slice bytes);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_serialize_deserialize_1(Eurydice_slice bytes);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_deserialize_1_ea(
-    Eurydice_slice bytes);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_deserialize_1_ea(Eurydice_slice bytes);
 
 void libcrux_ml_kem_vector_avx2_serialize_serialize_4(
-    core_core_arch_x86___m256i vector, uint8_t ret[8U]);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, uint8_t ret[8U]);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 void libcrux_ml_kem_vector_avx2_serialize_4_ea(
-    core_core_arch_x86___m256i vector, uint8_t ret[8U]);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, uint8_t ret[8U]);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_4(
-    Eurydice_slice bytes);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_serialize_deserialize_4(Eurydice_slice bytes);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_deserialize_4_ea(
-    Eurydice_slice bytes);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_deserialize_4_ea(Eurydice_slice bytes);
 
 void libcrux_ml_kem_vector_avx2_serialize_serialize_5(
-    core_core_arch_x86___m256i vector, uint8_t ret[10U]);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, uint8_t ret[10U]);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 void libcrux_ml_kem_vector_avx2_serialize_5_ea(
-    core_core_arch_x86___m256i vector, uint8_t ret[10U]);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, uint8_t ret[10U]);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_5(
-    Eurydice_slice bytes);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_serialize_deserialize_5(Eurydice_slice bytes);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_deserialize_5_ea(
-    Eurydice_slice bytes);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_deserialize_5_ea(Eurydice_slice bytes);
 
 void libcrux_ml_kem_vector_avx2_serialize_serialize_10(
-    core_core_arch_x86___m256i vector, uint8_t ret[20U]);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, uint8_t ret[20U]);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 void libcrux_ml_kem_vector_avx2_serialize_10_ea(
-    core_core_arch_x86___m256i vector, uint8_t ret[20U]);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, uint8_t ret[20U]);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_10(
-    Eurydice_slice bytes);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_serialize_deserialize_10(Eurydice_slice bytes);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_deserialize_10_ea(
-    Eurydice_slice bytes);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_deserialize_10_ea(Eurydice_slice bytes);
 
 void libcrux_ml_kem_vector_avx2_serialize_serialize_11(
-    core_core_arch_x86___m256i vector, uint8_t ret[22U]);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, uint8_t ret[22U]);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 void libcrux_ml_kem_vector_avx2_serialize_11_ea(
-    core_core_arch_x86___m256i vector, uint8_t ret[22U]);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, uint8_t ret[22U]);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_11(
-    Eurydice_slice bytes);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_serialize_deserialize_11(Eurydice_slice bytes);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_deserialize_11_ea(
-    Eurydice_slice bytes);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_deserialize_11_ea(Eurydice_slice bytes);
 
 void libcrux_ml_kem_vector_avx2_serialize_serialize_12(
-    core_core_arch_x86___m256i vector, uint8_t ret[24U]);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, uint8_t ret[24U]);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 void libcrux_ml_kem_vector_avx2_serialize_12_ea(
-    core_core_arch_x86___m256i vector, uint8_t ret[24U]);
+    libcrux_intrinsics_avx2_extract_Vec256 vector, uint8_t ret[24U]);
 
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_12(
-    Eurydice_slice bytes);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_serialize_deserialize_12(Eurydice_slice bytes);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_deserialize_12_ea(
-    Eurydice_slice bytes);
+libcrux_intrinsics_avx2_extract_Vec256
+libcrux_ml_kem_vector_avx2_deserialize_12_ea(Eurydice_slice bytes);
 
 size_t libcrux_ml_kem_vector_avx2_sampling_rejection_sample(
     Eurydice_slice input, Eurydice_slice output);
@@ -374,8 +411,8 @@ size_t libcrux_ml_kem_vector_avx2_rej_sample_ea(Eurydice_slice input,
 This function found in impl {(core::clone::Clone for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)#1}
 */
-core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_clone_3a(
-    core_core_arch_x86___m256i *self);
+libcrux_intrinsics_avx2_extract_Vec256 libcrux_ml_kem_vector_avx2_clone_3a(
+    libcrux_intrinsics_avx2_extract_Vec256 *self);
 
 /**
 A monomorphic instance of libcrux_ml_kem.polynomial.PolynomialRingElement
@@ -383,7 +420,7 @@ with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 
 */
 typedef struct libcrux_ml_kem_polynomial_PolynomialRingElement_d2_s {
-  core_core_arch_x86___m256i coefficients[16U];
+  libcrux_intrinsics_avx2_extract_Vec256 coefficients[16U];
 } libcrux_ml_kem_polynomial_PolynomialRingElement_d2;
 
 /**

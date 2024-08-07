@@ -3,15 +3,15 @@
 
 #![allow(non_camel_case_types, unsafe_code, unused_variables)]
 
-pub type _uint16x4_t = u8;
-pub type _int16x4_t = u8;
-pub type _int16x8_t = u8;
-pub type _uint8x16_t = u8;
-pub type _uint16x8_t = u8;
-pub type _uint32x4_t = u8;
-pub type _int32x4_t = u8;
-pub type _uint64x2_t = u8;
-pub type _int64x2_t = u8;
+pub struct _uint16x4_t(u8);
+pub struct _int16x4_t(u8);
+pub struct _int16x8_t(u8);
+pub struct _uint8x16_t(u8);
+pub struct _uint16x8_t(u8);
+pub struct _uint32x4_t(u8);
+pub struct _int32x4_t(u8);
+pub struct _uint64x2_t(u8);
+pub struct _int64x2_t(u8);
 
 #[inline(always)]
 pub fn _vdupq_n_s16(i: i16) -> _int16x8_t {
@@ -34,7 +34,7 @@ pub fn _vld1q_s16(array: &[i16]) -> _int16x8_t {
 }
 
 #[inline(always)]
-pub fn _vld1q_bytes_u64(array: &[_int16x8_t]) -> _uint64x2_t {
+pub fn _vld1q_bytes_u64(array: &[u8]) -> _uint64x2_t {
     unimplemented!()
 }
 
@@ -49,7 +49,7 @@ pub fn _vst1q_u64(out: &mut [u64], v: _uint64x2_t) {
 }
 
 #[inline(always)]
-pub fn _vst1q_bytes_u64(out: &mut [_int16x8_t], v: _uint64x2_t) {
+pub fn _vst1q_bytes_u64(out: &mut [u8], v: _uint64x2_t) {
     unimplemented!()
 }
 

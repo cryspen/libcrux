@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
- * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
+ * Charon: 53530427db2941ce784201e64086766504bc5642
+ * Eurydice: f4283998bcc3c86677cf0e03a6fa71913a524658
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 75bf8bca5f9903b4f6e8fba693d61af1415d512f
+ * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
+ * Libcrux: 878f09c21a4312320518388a0d902986b08e030a
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -125,6 +125,68 @@ extern const uint8_t
     libcrux_ml_kem_vector_rej_sample_table_REJECTION_SAMPLE_SHUFFLE_TABLE[256U]
                                                                          [16U];
 
+int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
+    Eurydice_slice bytes);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_serialize_deserialize_4(Eurydice_slice bytes);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
+*/
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_deserialize_4_0d(Eurydice_slice a);
+
+typedef struct uint8_t_x5_s {
+  uint8_t fst;
+  uint8_t snd;
+  uint8_t thd;
+  uint8_t f3;
+  uint8_t f4;
+} uint8_t_x5;
+
+uint8_t_x5 libcrux_ml_kem_vector_portable_serialize_serialize_5_int(
+    Eurydice_slice v);
+
+void libcrux_ml_kem_vector_portable_serialize_serialize_5(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
+    uint8_t ret[10U]);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
+*/
+void libcrux_ml_kem_vector_portable_serialize_5_0d(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
+    uint8_t ret[10U]);
+
+int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
+    Eurydice_slice bytes);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_serialize_deserialize_5(Eurydice_slice bytes);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
+*/
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_deserialize_5_0d(Eurydice_slice a);
+
+int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
+    Eurydice_slice bytes);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_serialize_deserialize_10(Eurydice_slice bytes);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
+*/
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_deserialize_10_0d(Eurydice_slice a);
+
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
@@ -205,6 +267,19 @@ libcrux_ml_kem_vector_portable_cond_subtract_3329_0d(
   ((int32_t)1 << (uint32_t)                                 \
        LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_BARRETT_SHIFT)
 
+/**
+ Signed Barrett Reduction
+
+ Given an input `value`, `barrett_reduce` outputs a representative `result`
+ such that:
+
+ - result ≡ value (mod FIELD_MODULUS)
+ - the absolute value of `result` is bound as follows:
+
+ `|result| ≤ FIELD_MODULUS / 2 · (|value|/BARRETT_R + 1)
+
+ In particular, if `|value| < BARRETT_R`, then `|result| < FIELD_MODULUS`.
+*/
 int16_t libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce_element(
     int16_t value);
 
@@ -226,9 +301,34 @@ libcrux_ml_kem_vector_portable_barrett_reduce_0d(
   ((int32_t)1 << (uint32_t)                                    \
        LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT)
 
+/**
+ Signed Montgomery Reduction
+
+ Given an input `value`, `montgomery_reduce` outputs a representative `o`
+ such that:
+
+ - o ≡ value · MONTGOMERY_R^(-1) (mod FIELD_MODULUS)
+ - the absolute value of `o` is bound as follows:
+
+ `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
+
+ In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 ·
+ FIELD_MODULUS) / 2`.
+*/
 int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
     int32_t value);
 
+/**
+ If `fe` is some field element 'x' of the Kyber field and `fer` is congruent to
+ `y · MONTGOMERY_R`, this procedure outputs a value that is congruent to
+ `x · y`, as follows:
+
+    `fe · fer ≡ x · y · MONTGOMERY_R (mod FIELD_MODULUS)`
+
+ `montgomery_reduce` takes the value `x · y · MONTGOMERY_R` and outputs a
+ representative `x · y · MONTGOMERY_R * MONTGOMERY_R^{-1} ≡ x · y (mod
+ FIELD_MODULUS)`.
+*/
 int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_fe_by_fer(
     int16_t fe, int16_t fer);
 
@@ -244,6 +344,28 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t r);
 
+/**
+ The `compress_*` functions implement the `Compress` function specified in the
+ NIST FIPS 203 standard (Page 18, Expression 4.5), which is defined as:
+
+ ```plaintext
+ Compress_d: ℤq -> ℤ_{2ᵈ}
+ Compress_d(x) = ⌈(2ᵈ/q)·x⌋
+ ```
+
+ Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
+
+ ```plaintext
+ Compress_d(x) = ⌊(2ᵈ/q)·x + 1/2⌋
+               = ⌊(2^{d+1}·x + q) / 2q⌋
+ ```
+
+ For further information about the function implementations, consult the
+ `implementation_notes.pdf` document in this directory.
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 uint8_t libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(
     uint16_t fe);
 
@@ -353,6 +475,28 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_inv_ntt_layer_3_step_0d(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a, int16_t zeta);
 
+/**
+ Compute the product of two Kyber binomials with respect to the
+ modulus `X² - zeta`.
+
+ This function almost implements <strong>Algorithm 11</strong> of the
+ NIST FIPS 203 standard, which is reproduced below:
+
+ ```plaintext
+ Input:  a₀, a₁, b₀, b₁ ∈ ℤq.
+ Input: γ ∈ ℤq.
+ Output: c₀, c₁ ∈ ℤq.
+
+ c₀ ← a₀·b₀ + a₁·b₁·γ
+ c₁ ← a₀·b₁ + a₁·b₀
+ return c₀, c₁
+ ```
+ We say "almost" because the coefficients output by this function are in
+ the Montgomery domain (unlike in the specification).
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 void libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *b, int16_t zeta,
@@ -419,55 +563,6 @@ void libcrux_ml_kem_vector_portable_serialize_4_0d(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
     uint8_t ret[8U]);
 
-int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
-    Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_serialize_deserialize_4(Eurydice_slice bytes);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
-*/
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_4_0d(Eurydice_slice a);
-
-typedef struct uint8_t_x5_s {
-  uint8_t fst;
-  uint8_t snd;
-  uint8_t thd;
-  uint8_t f3;
-  uint8_t f4;
-} uint8_t_x5;
-
-uint8_t_x5 libcrux_ml_kem_vector_portable_serialize_serialize_5_int(
-    Eurydice_slice v);
-
-void libcrux_ml_kem_vector_portable_serialize_serialize_5(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
-    uint8_t ret[10U]);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
-*/
-void libcrux_ml_kem_vector_portable_serialize_5_0d(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[10U]);
-
-int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
-    Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_serialize_deserialize_5(Eurydice_slice bytes);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
-*/
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_5_0d(Eurydice_slice a);
-
 uint8_t_x5 libcrux_ml_kem_vector_portable_serialize_serialize_10_int(
     Eurydice_slice v);
 
@@ -482,19 +577,6 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
 void libcrux_ml_kem_vector_portable_serialize_10_0d(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
     uint8_t ret[20U]);
-
-int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
-    Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_serialize_deserialize_10(Eurydice_slice bytes);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
-*/
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_10_0d(Eurydice_slice a);
 
 typedef struct uint8_t_x3_s {
   uint8_t fst;

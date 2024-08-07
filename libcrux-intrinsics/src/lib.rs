@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(extern_types)]
 
 #[cfg(all(feature = "simd128", not(hax), not(eurydice)))]
 pub mod arm64;
