@@ -196,6 +196,8 @@ fn encapsulate<
     (ciphertext, shared_secret_array)
 }
 
+#[cfg_attr(hax,hax_lib::ensures(|result|
+                                 hax_lib::fstar!("$result == Spec.MLKEM.decapsulate($private_key.value, $ciphertext.value)")))]
 pub(crate) fn decapsulate<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
