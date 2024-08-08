@@ -380,7 +380,7 @@ let encapsulate
   (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
 
 let generate_keypair
-      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
+      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -411,7 +411,7 @@ let generate_keypair
     Libcrux_ml_kem.Ind_cpa.generate_keypair v_K
       v_CPA_PRIVATE_KEY_SIZE
       v_PUBLIC_KEY_SIZE
-      v_BYTES_PER_RING_ELEMENT
+      v_RANKED_BYTES_PER_RING_ELEMENT
       v_ETA1
       v_ETA1_RANDOMNESS_SIZE
       #v_Vector

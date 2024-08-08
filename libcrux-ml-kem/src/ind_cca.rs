@@ -96,7 +96,7 @@ fn validate_public_key<
     $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
-    $BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_BYTES_PER_RING_ELEMENT /\\
+    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"))]
 fn generate_keypair<
@@ -104,7 +104,7 @@ fn generate_keypair<
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
+    const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
     Vector: Operations,
@@ -119,7 +119,7 @@ fn generate_keypair<
         K,
         CPA_PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
-        BYTES_PER_RING_ELEMENT,
+        RANKED_BYTES_PER_RING_ELEMENT,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         Vector,
@@ -206,7 +206,6 @@ fn encapsulate<
     $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
-   
     $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\\
     $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\\
     $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\\
