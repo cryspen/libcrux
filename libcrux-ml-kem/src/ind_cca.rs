@@ -13,29 +13,6 @@ use crate::{
     vector::Operations,
 };
 
-/// Types for the unpacked API.
-pub mod unpacked {
-    use crate::{ind_cpa::unpacked::*, vector::traits::Operations};
-
-    /// An unpacked ML-KEM IND-CCA Private Key
-    pub struct MlKemPrivateKeyUnpacked<const K: usize, Vector: Operations> {
-        pub(crate) ind_cpa_private_key: IndCpaPrivateKeyUnpacked<K, Vector>,
-        pub(crate) implicit_rejection_value: [u8; 32],
-    }
-
-    /// An unpacked ML-KEM IND-CCA Private Key
-    pub struct MlKemPublicKeyUnpacked<const K: usize, Vector: Operations> {
-        pub(crate) ind_cpa_public_key: IndCpaPublicKeyUnpacked<K, Vector>,
-        pub(crate) public_key_hash: [u8; 32],
-    }
-
-    /// An unpacked ML-KEM KeyPair
-    pub struct MlKemKeyPairUnpacked<const K: usize, Vector: Operations> {
-        pub private_key: MlKemPrivateKeyUnpacked<K, Vector>,
-        pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
-    }
-}
-use unpacked::*;
 
 /// Seed size for key generation
 pub const KEY_GENERATION_SEED_SIZE: usize = CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
@@ -62,6 +39,11 @@ pub(crate) mod instantiations;
 
 /// Serialize the secret key.
 #[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $SERIALIZED_KEY_LEN == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
+    ${private_key.len()} == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
+    ${public_key.len()} == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+    ${implicit_rejection_value.len()} == Spec.MLKEM.v_SHARED_SECRET_SIZE"))]
 fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Hasher: Hash<K>>(
     private_key: &[u8],
     public_key: &[u8],
@@ -81,6 +63,9 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"))]
 fn validate_public_key<
     const K: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -114,9 +99,6 @@ fn validate_public_key<
     $BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_BYTES_PER_RING_ELEMENT /\\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"))]
-#[hax_lib::ensures(|result|
-    fstar!("(${result}.f_sk.f_value, ${result}.f_pk.f_value) == Spec.MLKEM.ind_cca_generate_keypair $K $randomness"))
-]
 fn generate_keypair<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -155,6 +137,19 @@ fn generate_keypair<
     MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key))
 }
 
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+    $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\\
+    $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\\
+    $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\\
+    $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR  $K /\\
+    $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR  $K /\\
+    $C1_BLOCK_SIZE == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
+    $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
+    $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K"))]
 fn encapsulate<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -164,7 +159,7 @@ fn encapsulate<
     const C2_SIZE: usize,
     const VECTOR_U_COMPRESSION_FACTOR: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
-    const VECTOR_U_BLOCK_LEN: usize,
+    const C1_BLOCK_SIZE: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
@@ -191,7 +186,7 @@ fn encapsulate<
         C2_SIZE,
         VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_V_COMPRESSION_FACTOR,
-        VECTOR_U_BLOCK_LEN,
+        C1_BLOCK_SIZE,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         ETA2,
@@ -206,6 +201,23 @@ fn encapsulate<
     (ciphertext, shared_secret_array)
 }
 
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
+    $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
+   
+    $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\\
+    $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\\
+    $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\\
+    $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR  $K /\\
+    $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR  $K /\\
+    $C1_BLOCK_SIZE == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
+    $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
+    $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
+    $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"))]
 pub(crate) fn decapsulate<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -284,185 +296,208 @@ pub(crate) fn decapsulate<
 }
 
 // Unpacked API
-// Generate Unpacked Keys
-pub(crate) fn generate_keypair_unpacked<
-    const K: usize,
-    const CPA_PRIVATE_KEY_SIZE: usize,
-    const PRIVATE_KEY_SIZE: usize,
-    const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
-    const ETA1: usize,
-    const ETA1_RANDOMNESS_SIZE: usize,
-    Vector: Operations,
-    Hasher: Hash<K>,
->(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> MlKemKeyPairUnpacked<K, Vector> {
-    let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
-    let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
-    let (ind_cpa_private_key, mut ind_cpa_public_key) =
-        crate::ind_cpa::generate_keypair_unpacked::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
-            ind_cpa_keypair_randomness,
+pub mod unpacked {
+    use crate::{ind_cpa::unpacked::*, vector::traits::Operations};
+    use super::*;
+
+    /// An unpacked ML-KEM IND-CCA Private Key
+    pub struct MlKemPrivateKeyUnpacked<const K: usize, Vector: Operations> {
+        pub(crate) ind_cpa_private_key: IndCpaPrivateKeyUnpacked<K, Vector>,
+        pub(crate) implicit_rejection_value: [u8; 32],
+    }
+
+    /// An unpacked ML-KEM IND-CCA Private Key
+    pub struct MlKemPublicKeyUnpacked<const K: usize, Vector: Operations> {
+        pub(crate) ind_cpa_public_key: IndCpaPublicKeyUnpacked<K, Vector>,
+        pub(crate) public_key_hash: [u8; 32],
+    }
+
+    /// An unpacked ML-KEM KeyPair
+    pub struct MlKemKeyPairUnpacked<const K: usize, Vector: Operations> {
+        pub private_key: MlKemPrivateKeyUnpacked<K, Vector>,
+        pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
+    }
+
+    // Generate Unpacked Keys
+    pub(crate) fn generate_keypair_unpacked<
+        const K: usize,
+        const CPA_PRIVATE_KEY_SIZE: usize,
+        const PRIVATE_KEY_SIZE: usize,
+        const PUBLIC_KEY_SIZE: usize,
+        const BYTES_PER_RING_ELEMENT: usize,
+        const ETA1: usize,
+        const ETA1_RANDOMNESS_SIZE: usize,
+        Vector: Operations,
+        Hasher: Hash<K>,
+    >(
+        randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    ) -> MlKemKeyPairUnpacked<K, Vector> {
+        let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
+        let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
+        let (ind_cpa_private_key, mut ind_cpa_public_key) =
+            crate::ind_cpa::generate_keypair_unpacked::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+                ind_cpa_keypair_randomness,
+            );
+
+        // We need to un-transpose the A_transpose matrix provided by IND-CPA
+        //  We would like to write the following but it is not supported by Eurydice yet.
+        //  https://github.com/AeneasVerif/eurydice/issues/39
+        //
+        //    let A = core::array::from_fn(|i| {
+        //        core::array::from_fn(|j| A_transpose[j][i])
+        //    });
+
+        #[allow(non_snake_case)]
+        let mut A = core::array::from_fn(|_i| {
+            core::array::from_fn(|_j| PolynomialRingElement::<Vector>::ZERO())
+        });
+        for i in 0..K {
+            for j in 0..K {
+                A[i][j] = ind_cpa_public_key.A[j][i].clone();
+            }
+        }
+        ind_cpa_public_key.A = A;
+
+        let pk_serialized = serialize_public_key::<K, BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
+            &ind_cpa_public_key.t_as_ntt,
+            &ind_cpa_public_key.seed_for_A,
         );
+        let public_key_hash = Hasher::H(&pk_serialized);
+        let implicit_rejection_value: [u8; 32] = implicit_rejection_value.try_into().unwrap();
 
-    // We need to un-transpose the A_transpose matrix provided by IND-CPA
-    //  We would like to write the following but it is not supported by Eurydice yet.
-    //  https://github.com/AeneasVerif/eurydice/issues/39
-    //
-    //    let A = core::array::from_fn(|i| {
-    //        core::array::from_fn(|j| A_transpose[j][i])
-    //    });
-
-    #[allow(non_snake_case)]
-    let mut A = core::array::from_fn(|_i| {
-        core::array::from_fn(|_j| PolynomialRingElement::<Vector>::ZERO())
-    });
-    for i in 0..K {
-        for j in 0..K {
-            A[i][j] = ind_cpa_public_key.A[j][i].clone();
+        MlKemKeyPairUnpacked {
+            private_key: MlKemPrivateKeyUnpacked {
+                ind_cpa_private_key,
+                implicit_rejection_value,
+            },
+            public_key: MlKemPublicKeyUnpacked {
+                ind_cpa_public_key,
+                public_key_hash,
+            },
         }
     }
-    ind_cpa_public_key.A = A;
 
-    let pk_serialized = serialize_public_key::<K, BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
-        &ind_cpa_public_key.t_as_ntt,
-        &ind_cpa_public_key.seed_for_A,
-    );
-    let public_key_hash = Hasher::H(&pk_serialized);
-    let implicit_rejection_value: [u8; 32] = implicit_rejection_value.try_into().unwrap();
-
-    MlKemKeyPairUnpacked {
-        private_key: MlKemPrivateKeyUnpacked {
-            ind_cpa_private_key,
-            implicit_rejection_value,
-        },
-        public_key: MlKemPublicKeyUnpacked {
-            ind_cpa_public_key,
-            public_key_hash,
-        },
-    }
-}
-
-// Encapsulate with Unpacked Public Key
-pub(crate) fn encapsulate_unpacked<
-    const K: usize,
-    const CIPHERTEXT_SIZE: usize,
-    const PUBLIC_KEY_SIZE: usize,
-    const T_AS_NTT_ENCODED_SIZE: usize,
-    const C1_SIZE: usize,
-    const C2_SIZE: usize,
-    const VECTOR_U_COMPRESSION_FACTOR: usize,
-    const VECTOR_V_COMPRESSION_FACTOR: usize,
-    const VECTOR_U_BLOCK_LEN: usize,
-    const ETA1: usize,
-    const ETA1_RANDOMNESS_SIZE: usize,
-    const ETA2: usize,
-    const ETA2_RANDOMNESS_SIZE: usize,
-    Vector: Operations,
-    Hasher: Hash<K>,
->(
-    public_key: &MlKemPublicKeyUnpacked<K, Vector>,
-    randomness: [u8; SHARED_SECRET_SIZE],
-) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
-    to_hash[H_DIGEST_SIZE..].copy_from_slice(&public_key.public_key_hash);
-
-    let hashed = Hasher::G(&to_hash);
-    let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
-
-    let ciphertext = crate::ind_cpa::encrypt_unpacked::<
-        K,
-        CIPHERTEXT_SIZE,
-        T_AS_NTT_ENCODED_SIZE,
-        C1_SIZE,
-        C2_SIZE,
-        VECTOR_U_COMPRESSION_FACTOR,
-        VECTOR_V_COMPRESSION_FACTOR,
-        VECTOR_U_BLOCK_LEN,
-        ETA1,
-        ETA1_RANDOMNESS_SIZE,
-        ETA2,
-        ETA2_RANDOMNESS_SIZE,
-        Vector,
-        Hasher,
-    >(&public_key.ind_cpa_public_key, randomness, pseudorandomness);
-    let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
-    shared_secret_array.copy_from_slice(shared_secret);
-    (MlKemCiphertext::from(ciphertext), shared_secret_array)
-}
-
-// Decapsulate with Unpacked Private Key
-pub(crate) fn decapsulate_unpacked<
-    const K: usize,
-    const SECRET_KEY_SIZE: usize,
-    const CPA_SECRET_KEY_SIZE: usize,
-    const PUBLIC_KEY_SIZE: usize,
-    const CIPHERTEXT_SIZE: usize,
-    const T_AS_NTT_ENCODED_SIZE: usize,
-    const C1_SIZE: usize,
-    const C2_SIZE: usize,
-    const VECTOR_U_COMPRESSION_FACTOR: usize,
-    const VECTOR_V_COMPRESSION_FACTOR: usize,
-    const C1_BLOCK_SIZE: usize,
-    const ETA1: usize,
-    const ETA1_RANDOMNESS_SIZE: usize,
-    const ETA2: usize,
-    const ETA2_RANDOMNESS_SIZE: usize,
-    const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
-    Vector: Operations,
-    Hasher: Hash<K>,
->(
-    key_pair: &MlKemKeyPairUnpacked<K, Vector>,
-    ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
-) -> MlKemSharedSecret {
-    let decrypted = crate::ind_cpa::decrypt_unpacked::<
-        K,
-        CIPHERTEXT_SIZE,
-        C1_SIZE,
-        VECTOR_U_COMPRESSION_FACTOR,
-        VECTOR_V_COMPRESSION_FACTOR,
-        Vector,
-    >(&key_pair.private_key.ind_cpa_private_key, &ciphertext.value);
-
-    let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
-    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&key_pair.public_key.public_key_hash);
-
-    let hashed = Hasher::G(&to_hash);
-    let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
-
-    let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
-        into_padded_array(&key_pair.private_key.implicit_rejection_value);
-    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
-    let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
-
-    let expected_ciphertext = crate::ind_cpa::encrypt_unpacked::<
-        K,
-        CIPHERTEXT_SIZE,
-        T_AS_NTT_ENCODED_SIZE,
-        C1_SIZE,
-        C2_SIZE,
-        VECTOR_U_COMPRESSION_FACTOR,
-        VECTOR_V_COMPRESSION_FACTOR,
-        C1_BLOCK_SIZE,
-        ETA1,
-        ETA1_RANDOMNESS_SIZE,
-        ETA2,
-        ETA2_RANDOMNESS_SIZE,
-        Vector,
-        Hasher,
+    // Encapsulate with Unpacked Public Key
+    pub(crate) fn encapsulate_unpacked<
+        const K: usize,
+        const CIPHERTEXT_SIZE: usize,
+        const PUBLIC_KEY_SIZE: usize,
+        const T_AS_NTT_ENCODED_SIZE: usize,
+        const C1_SIZE: usize,
+        const C2_SIZE: usize,
+        const VECTOR_U_COMPRESSION_FACTOR: usize,
+        const VECTOR_V_COMPRESSION_FACTOR: usize,
+        const VECTOR_U_BLOCK_LEN: usize,
+        const ETA1: usize,
+        const ETA1_RANDOMNESS_SIZE: usize,
+        const ETA2: usize,
+        const ETA2_RANDOMNESS_SIZE: usize,
+        Vector: Operations,
+        Hasher: Hash<K>,
     >(
-        &key_pair.public_key.ind_cpa_public_key,
-        decrypted,
-        pseudorandomness,
-    );
+        public_key: &MlKemPublicKeyUnpacked<K, Vector>,
+        randomness: [u8; SHARED_SECRET_SIZE],
+    ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
+        let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
+        to_hash[H_DIGEST_SIZE..].copy_from_slice(&public_key.public_key_hash);
 
-    let selector = compare_ciphertexts_in_constant_time(ciphertext.as_ref(), &expected_ciphertext);
+        let hashed = Hasher::G(&to_hash);
+        let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
-    select_shared_secret_in_constant_time(
-        shared_secret,
-        &implicit_rejection_shared_secret,
-        selector,
-    )
+        let ciphertext = crate::ind_cpa::encrypt_unpacked::<
+            K,
+            CIPHERTEXT_SIZE,
+            T_AS_NTT_ENCODED_SIZE,
+            C1_SIZE,
+            C2_SIZE,
+            VECTOR_U_COMPRESSION_FACTOR,
+            VECTOR_V_COMPRESSION_FACTOR,
+            VECTOR_U_BLOCK_LEN,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            Vector,
+            Hasher,
+        >(&public_key.ind_cpa_public_key, randomness, pseudorandomness);
+        let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
+        shared_secret_array.copy_from_slice(shared_secret);
+        (MlKemCiphertext::from(ciphertext), shared_secret_array)
+    }
+
+    // Decapsulate with Unpacked Private Key
+    pub(crate) fn decapsulate_unpacked<
+        const K: usize,
+        const SECRET_KEY_SIZE: usize,
+        const CPA_SECRET_KEY_SIZE: usize,
+        const PUBLIC_KEY_SIZE: usize,
+        const CIPHERTEXT_SIZE: usize,
+        const T_AS_NTT_ENCODED_SIZE: usize,
+        const C1_SIZE: usize,
+        const C2_SIZE: usize,
+        const VECTOR_U_COMPRESSION_FACTOR: usize,
+        const VECTOR_V_COMPRESSION_FACTOR: usize,
+        const C1_BLOCK_SIZE: usize,
+        const ETA1: usize,
+        const ETA1_RANDOMNESS_SIZE: usize,
+        const ETA2: usize,
+        const ETA2_RANDOMNESS_SIZE: usize,
+        const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
+        Vector: Operations,
+        Hasher: Hash<K>,
+    >(
+        key_pair: &MlKemKeyPairUnpacked<K, Vector>,
+        ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+    ) -> MlKemSharedSecret {
+        let decrypted = crate::ind_cpa::decrypt_unpacked::<
+            K,
+            CIPHERTEXT_SIZE,
+            C1_SIZE,
+            VECTOR_U_COMPRESSION_FACTOR,
+            VECTOR_V_COMPRESSION_FACTOR,
+            Vector,
+        >(&key_pair.private_key.ind_cpa_private_key, &ciphertext.value);
+
+        let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
+        to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&key_pair.public_key.public_key_hash);
+
+        let hashed = Hasher::G(&to_hash);
+        let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
+
+        let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
+            into_padded_array(&key_pair.private_key.implicit_rejection_value);
+        to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
+        let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
+
+        let expected_ciphertext = crate::ind_cpa::encrypt_unpacked::<
+            K,
+            CIPHERTEXT_SIZE,
+            T_AS_NTT_ENCODED_SIZE,
+            C1_SIZE,
+            C2_SIZE,
+            VECTOR_U_COMPRESSION_FACTOR,
+            VECTOR_V_COMPRESSION_FACTOR,
+            C1_BLOCK_SIZE,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            Vector,
+            Hasher,
+        >(
+            &key_pair.public_key.ind_cpa_public_key,
+            decrypted,
+            pseudorandomness,
+        );
+
+        let selector = compare_ciphertexts_in_constant_time(ciphertext.as_ref(), &expected_ciphertext);
+
+        select_shared_secret_in_constant_time(
+            shared_secret,
+            &implicit_rejection_shared_secret,
+            selector,
+        )
+    }
 }
 
 /// This trait collects differences in specification between ML-KEM
@@ -470,11 +505,14 @@ pub(crate) fn decapsulate_unpacked<
 /// NIST PQ competition.
 ///
 /// cf. FIPS 203 (Draft), section 1.3
+#[hax_lib::attributes]
 pub(crate) trait Variant {
+    #[requires(shared_secret.len() == 32)]
     fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
         shared_secret: &[u8],
         ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
     ) -> [u8; 32];
+    #[requires(randomness.len() == 32)]
     fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32];
 }
 
@@ -487,8 +525,10 @@ pub(crate) trait Variant {
 pub(crate) struct Kyber {}
 
 #[cfg(feature = "kyber")]
+#[hax_lib::attributes]
 impl Variant for Kyber {
     #[inline(always)]
+    #[requires(shared_secret.len() == 32)]
     fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
         shared_secret: &[u8],
         ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
@@ -499,6 +539,7 @@ impl Variant for Kyber {
     }
 
     #[inline(always)]
+    #[requires(randomness.len() == 32)]
     fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
         Hasher::H(&randomness)
     }
@@ -511,8 +552,10 @@ impl Variant for Kyber {
 /// * the derivation of the shared secret does not include a hash of the ML-KEM ciphertext.
 pub(crate) struct MlKem {}
 
+#[hax_lib::attributes]
 impl Variant for MlKem {
     #[inline(always)]
+    #[requires(shared_secret.len() == 32)]
     fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
         shared_secret: &[u8],
         _: &MlKemCiphertext<CIPHERTEXT_SIZE>,
@@ -523,6 +566,7 @@ impl Variant for MlKem {
     }
 
     #[inline(always)]
+    #[requires(randomness.len() == 32)]
     fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
         let mut out = [0u8; 32];
         out.copy_from_slice(randomness);

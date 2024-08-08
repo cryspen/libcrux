@@ -233,7 +233,7 @@ macro_rules! instantiate {
             >(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKemKeyPairUnpacked<K> {
-                crate::ind_cca::generate_keypair_unpacked::<
+                crate::ind_cca::unpacked::generate_keypair_unpacked::<
                     K,
                     CPA_PRIVATE_KEY_SIZE,
                     PRIVATE_KEY_SIZE,
@@ -265,7 +265,7 @@ macro_rules! instantiate {
                 public_key: &MlKemPublicKeyUnpacked<K>,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-                crate::ind_cca::encapsulate_unpacked::<
+                crate::ind_cca::unpacked::encapsulate_unpacked::<
                     K,
                     CIPHERTEXT_SIZE,
                     PUBLIC_KEY_SIZE,
@@ -306,7 +306,7 @@ macro_rules! instantiate {
                 key_pair: &MlKemKeyPairUnpacked<K>,
                 ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
             ) -> MlKemSharedSecret {
-                crate::ind_cca::decapsulate_unpacked::<
+                crate::ind_cca::unpacked::decapsulate_unpacked::<
                     K,
                     SECRET_KEY_SIZE,
                     CPA_SECRET_KEY_SIZE,
