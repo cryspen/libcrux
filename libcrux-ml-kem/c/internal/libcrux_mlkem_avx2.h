@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
- * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 75bf8bca5f9903b4f6e8fba693d61af1415d512f
+ * Charon: 53530427db2941ce784201e64086766504bc5642
+ * Eurydice: d6e4d1bb9c27c4eebbebcb29ba8bea1d58741421
+ * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
+ * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
+ * Libcrux: ef25d68772c7a677441e035cb3187800d831ca09
  */
 
 #ifndef __internal_libcrux_mlkem_avx2_H
@@ -49,6 +49,14 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_a0
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked_831(uint8_t randomness[64U]);
 
+/**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
@@ -186,6 +194,14 @@ libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_01
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked_830(uint8_t randomness[64U]);
 
 /**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
 libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
@@ -321,6 +337,14 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_d6
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked_83(uint8_t randomness[64U]);
 
+/**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
