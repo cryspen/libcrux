@@ -53,7 +53,7 @@ else
 FSTAR_HINTS ?= --use_hints --use_hint_hashes
 endif
 
-VERIFIED = 
+VERIFIED = Spec.Utils.fst Spec.MLKEM.fst
 
 UNVERIFIED =
 
