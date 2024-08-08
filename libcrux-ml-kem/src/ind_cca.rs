@@ -107,6 +107,16 @@ fn validate_public_key<
 ///
 /// Depending on the `Vector` and `Hasher` used, this requires different hardware
 /// features
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
+    $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+    $BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_BYTES_PER_RING_ELEMENT /\\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"))]
+#[hax_lib::ensures(|result|
+    fstar!("(${result}.f_sk.f_value, ${result}.f_pk.f_value) == Spec.MLKEM.ind_cca_generate_keypair $K $randomness"))
+]
 fn generate_keypair<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,

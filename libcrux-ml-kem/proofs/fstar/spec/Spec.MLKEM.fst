@@ -13,7 +13,7 @@ let v_BITS_PER_RING_ELEMENT: usize = sz 3072 // v_COEFFICIENTS_IN_RING_ELEMENT *
 
 let v_BYTES_PER_RING_ELEMENT: usize = sz 384 // v_BITS_PER_RING_ELEMENT /! sz 8
 
-let v_CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = sz 32
+let v_CPA_KEY_GENERATION_SEED_SIZE: usize = sz 32
 
 let v_FIELD_MODULUS: i32 = 3329l
 
@@ -24,7 +24,10 @@ let v_REJECTION_SAMPLING_SEED_SIZE: usize =  sz 840 // sz 168 *! sz 5
 
 let v_SHARED_SECRET_SIZE: usize = v_H_DIGEST_SIZE
 
-type rank = r:usize{r == sz 2 \/ r == sz 3 \/ r == sz 4}
+let is_rank (r:usize) =
+  r == sz 2 \/ r == sz 3 \/ r == sz 4
+
+type rank = r:usize{is_rank r}
 
 let v_ETA1 (r:rank) : usize = 
   if r = sz 2 then sz 3 else
@@ -54,14 +57,16 @@ val v_RANKED_BYTES_PER_RING_ELEMENT (r:rank) : u:usize{u = sz 768 \/ u = sz 1152
 let v_RANKED_BYTES_PER_RING_ELEMENT (r:rank)  = r *! v_BYTES_PER_RING_ELEMENT
 
 let v_T_AS_NTT_ENCODED_SIZE (r:rank) = v_RANKED_BYTES_PER_RING_ELEMENT r
-let v_CPA_PKE_SECRET_KEY_SIZE (r:rank) = v_RANKED_BYTES_PER_RING_ELEMENT r
+let v_CPA_PRIVATE_KEY_SIZE (r:rank) = v_RANKED_BYTES_PER_RING_ELEMENT r
 
-val v_CPA_PKE_PUBLIC_KEY_SIZE (r:rank) : u:usize{u = sz 800 \/ u = sz 1184 \/ u = sz 1568}
-let v_CPA_PKE_PUBLIC_KEY_SIZE (r:rank) = v_RANKED_BYTES_PER_RING_ELEMENT r +! sz 32
+val v_CPA_PUBLIC_KEY_SIZE (r:rank) : u:usize{u = sz 800 \/ u = sz 1184 \/ u = sz 1568}
+let v_CPA_PUBLIC_KEY_SIZE (r:rank) = v_RANKED_BYTES_PER_RING_ELEMENT r +! sz 32
 
-val v_SECRET_KEY_SIZE (r:rank) : u:usize{u = sz 1632 \/ u = sz 2400 \/ u = sz 3168}
-let v_SECRET_KEY_SIZE (r:rank) =
-  (v_CPA_PKE_SECRET_KEY_SIZE r +! v_CPA_PKE_PUBLIC_KEY_SIZE r +! v_H_DIGEST_SIZE +! v_SHARED_SECRET_SIZE)
+val v_CCA_PRIVATE_KEY_SIZE (r:rank) : u:usize{u = sz 1632 \/ u = sz 2400 \/ u = sz 3168}
+let v_CCA_PRIVATE_KEY_SIZE (r:rank) =
+  (v_CPA_PRIVATE_KEY_SIZE r +! v_CPA_PUBLIC_KEY_SIZE r +! v_H_DIGEST_SIZE +! v_SHARED_SECRET_SIZE)
+
+let v_CCA_PUBLIC_KEY_SIZE (r:rank) = v_CPA_PUBLIC_KEY_SIZE r
 
 val v_C1_BLOCK_SIZE (r:rank): u:usize{(u = sz 320 \/ u = sz 352) /\ v u == 32 * v (v_VECTOR_U_COMPRESSION_FACTOR r)}
 let v_C1_BLOCK_SIZE (r:rank) = sz 32 *! v_VECTOR_U_COMPRESSION_FACTOR r
@@ -73,29 +78,29 @@ let v_C1_SIZE (r:rank) = v_C1_BLOCK_SIZE r *! r
 val v_C2_SIZE (r:rank) : u:usize{(u = sz 128 \/ u = sz 160) /\ v u == 32 * v (v_VECTOR_V_COMPRESSION_FACTOR r)}
 let v_C2_SIZE (r:rank) = sz 32 *! v_VECTOR_V_COMPRESSION_FACTOR r
 
-val v_CPA_PKE_CIPHERTEXT_SIZE (r:rank) : u:usize {v u = v (v_C1_SIZE r) + v (v_C2_SIZE r)}
-let v_CPA_PKE_CIPHERTEXT_SIZE (r:rank) = v_C1_SIZE r +! v_C2_SIZE r
+val v_CPA_CIPHERTEXT_SIZE (r:rank) : u:usize {v u = v (v_C1_SIZE r) + v (v_C2_SIZE r)}
+let v_CPA_CIPHERTEXT_SIZE (r:rank) = v_C1_SIZE r +! v_C2_SIZE r
 
 val v_IMPLICIT_REJECTION_HASH_INPUT_SIZE (r:rank): u:usize{v u == v v_SHARED_SECRET_SIZE + 
-                                                                    v (v_CPA_PKE_CIPHERTEXT_SIZE r)}
+                                                                    v (v_CPA_CIPHERTEXT_SIZE r)}
 let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE (r:rank) =
-    v_SHARED_SECRET_SIZE +! v_CPA_PKE_CIPHERTEXT_SIZE r
+    v_SHARED_SECRET_SIZE +! v_CPA_CIPHERTEXT_SIZE r
 
 val v_KEY_GENERATION_SEED_SIZE: u:usize{u = sz 64}
 let v_KEY_GENERATION_SEED_SIZE: usize =
-  v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
+  v_CPA_KEY_GENERATION_SEED_SIZE +!
   v_SHARED_SECRET_SIZE
 
 (** ML-KEM Types *)
 
-type t_MLKEMPublicKey (r:rank) = t_Array u8 (v_CPA_PKE_PUBLIC_KEY_SIZE r)
-type t_MLKEMPrivateKey (r:rank) = t_Array u8 (v_SECRET_KEY_SIZE r)
+type t_MLKEMPublicKey (r:rank) = t_Array u8 (v_CPA_PUBLIC_KEY_SIZE r)
+type t_MLKEMPrivateKey (r:rank) = t_Array u8 (v_CCA_PRIVATE_KEY_SIZE r)
 type t_MLKEMKeyPair (r:rank) = t_MLKEMPrivateKey r & t_MLKEMPublicKey r
 
-type t_MLKEMCPAPrivateKey (r:rank) = t_Array u8 (v_CPA_PKE_SECRET_KEY_SIZE r)
+type t_MLKEMCPAPrivateKey (r:rank) = t_Array u8 (v_CPA_PRIVATE_KEY_SIZE r)
 type t_MLKEMCPAKeyPair (r:rank) = t_MLKEMCPAPrivateKey r & t_MLKEMPublicKey r
 
-type t_MLKEMCiphertext (r:rank) = t_Array u8 (v_CPA_PKE_CIPHERTEXT_SIZE r)
+type t_MLKEMCiphertext (r:rank) = t_Array u8 (v_CPA_CIPHERTEXT_SIZE r)
 type t_MLKEMSharedSecret = t_Array u8 (v_SHARED_SECRET_SIZE)
 
 (** MLKEM Math and Sampling *)
@@ -284,7 +289,7 @@ let decode_then_decompress_v (#r:rank) (#ntt:bool): t_Array u8 (v_C2_SIZE r) -> 
 /// the function itself, whereas this implementation expects it to be provided
 /// through the `key_generation_seed` parameter.
 
-val ind_cpa_generate_keypair (r:rank) (randomness:t_Array u8 v_CPA_PKE_KEY_GENERATION_SEED_SIZE) :
+val ind_cpa_generate_keypair (r:rank) (randomness:t_Array u8 v_CPA_KEY_GENERATION_SEED_SIZE) :
                              t_MLKEMCPAKeyPair r
 let ind_cpa_generate_keypair r randomness =
     let hashed = v_G randomness in
@@ -350,7 +355,7 @@ val ind_cca_generate_keypair (r:rank) (randomness:t_Array u8 v_KEY_GENERATION_SE
                              t_MLKEMKeyPair r
 let ind_cca_generate_keypair p randomness =
     let (ind_cpa_keypair_randomness, implicit_rejection_value) =
-        split randomness v_CPA_PKE_KEY_GENERATION_SEED_SIZE in
+        split randomness v_CPA_KEY_GENERATION_SEED_SIZE in
         
     let (ind_cpa_secret_key,ind_cpa_public_key) = ind_cpa_generate_keypair p ind_cpa_keypair_randomness in
     let ind_cca_secret_key = Seq.append ind_cpa_secret_key (
@@ -385,8 +390,8 @@ val ind_cca_decapsulate (r:rank) (secret_key: t_MLKEMPrivateKey r)
                         (ciphertext: t_MLKEMCiphertext r): 
                          t_MLKEMSharedSecret
 let ind_cca_decapsulate p secret_key ciphertext =
-    let (ind_cpa_secret_key,rest) = split secret_key (v_CPA_PKE_SECRET_KEY_SIZE p) in
-    let (ind_cpa_public_key,rest) = split rest (v_CPA_PKE_PUBLIC_KEY_SIZE p) in
+    let (ind_cpa_secret_key,rest) = split secret_key (v_CPA_PRIVATE_KEY_SIZE p) in
+    let (ind_cpa_public_key,rest) = split rest (v_CPA_PUBLIC_KEY_SIZE p) in
     let (ind_cpa_public_key_hash,implicit_rejection_value) = split rest v_H_DIGEST_SIZE in
     
     let decrypted = ind_cpa_decrypt p ind_cpa_secret_key ciphertext in
