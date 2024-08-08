@@ -23,11 +23,7 @@ rand_core = { version = "0.6" }
 libcrux-platform = { version = "0.0.2-alpha.3", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2-alpha.3", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-alpha.3", path = "../libcrux-intrinsics" }
-
-# This is only required for verification.
-# The hax config is set by the hax toolchain.
-[target.'cfg(hax)'.dependencies]
-hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
+hax-lib = { git = "https://github.com/hacspec/hax" }
 
 [features]
 # By default all variants and std are enabled.

@@ -54,7 +54,7 @@ class t_Variant (v_Self: Type0) = {
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
       t_Slice u8 ->
       Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE
-    -> bool;
+    -> Type0;
   f_kdf_post:
       v_K: usize ->
       v_CIPHERTEXT_SIZE: usize ->
@@ -63,7 +63,7 @@ class t_Variant (v_Self: Type0) = {
       t_Slice u8 ->
       Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE ->
       t_Array u8 (sz 32)
-    -> bool;
+    -> Type0;
   f_kdf:
       v_K: usize ->
       v_CIPHERTEXT_SIZE: usize ->
@@ -79,14 +79,14 @@ class t_Variant (v_Self: Type0) = {
       #v_Hasher: Type0 ->
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
       t_Slice u8
-    -> bool;
+    -> Type0;
   f_entropy_preprocess_post:
       v_K: usize ->
       #v_Hasher: Type0 ->
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
       t_Slice u8 ->
       t_Array u8 (sz 32)
-    -> bool;
+    -> Type0;
   f_entropy_preprocess:
       v_K: usize ->
       #v_Hasher: Type0 ->
