@@ -1,5 +1,6 @@
 #![no_std]
-#![feature(extern_types)]
+#![feature(register_tool)]
+#![register_tool(charon)]
 
 #[cfg(all(feature = "simd128", not(hax), not(eurydice)))]
 pub mod arm64;

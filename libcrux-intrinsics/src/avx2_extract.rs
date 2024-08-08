@@ -5,10 +5,12 @@
 
 // #[cfg_attr(eurydice, hax_lib::opaque_type)]
 #[derive(Copy,Clone)]
+#[charon::opaque]
 pub struct Vec256(u8);
 
 // #[cfg_attr(eurydice, hax_lib::opaque_type)]
 #[derive(Copy,Clone)]
+#[charon::opaque]
 pub struct Vec128(u8);
 
 pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
