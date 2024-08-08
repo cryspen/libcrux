@@ -4,6 +4,7 @@ on:
   push:
     branches: [main, dev]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   nix:
@@ -17,4 +18,6 @@ jobs:
           nix-env --quiet -j8 -iA cachix -f https://cachix.org/api/v1/install
           cachix use hax
       - uses: actions/checkout@v4
-      - run: nix build -L .#ml-kem
+      - run: |
+          nix flake update charon eurydice fstar karamel
+          nix build -L .#ml-kem
