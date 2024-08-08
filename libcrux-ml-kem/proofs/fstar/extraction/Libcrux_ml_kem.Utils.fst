@@ -26,4 +26,21 @@ let into_padded_array (v_LEN: usize) (slice: t_Slice u8) =
         <:
         t_Slice u8)
   in
+  let _:Prims.unit = assert (Seq.slice out 0 (Seq.length slice) == slice) in
+  let _:Prims.unit =
+    assert (Seq.slice out (Seq.length slice) (v v_LEN) ==
+        Seq.slice (Seq.create (v v_LEN) 0uy) (Seq.length slice) (v v_LEN))
+  in
+  let _:Prims.unit =
+    assert (forall i. i < Seq.length slice ==> Seq.index out i == Seq.index slice i)
+  in
+  let _:Prims.unit =
+    assert (forall i.
+          (i >= Seq.length slice && i < v v_LEN) ==>
+          Seq.index out i ==
+          Seq.index (Seq.slice out (Seq.length slice) (v v_LEN)) (i - Seq.length slice))
+  in
+  let _:Prims.unit =
+    Seq.lemma_eq_intro out (Seq.append slice (Seq.create (v v_LEN - Seq.length slice) 0uy))
+  in
   out

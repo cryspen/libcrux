@@ -329,13 +329,13 @@ let sample_from_xof
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0s (sz 272) <: t_Array i16 (sz 272)) v_K
   in
   let xof_state:v_Hasher =
-    Libcrux_ml_kem.Hash_functions.f_shake128_init_absorb #v_Hasher
+    Libcrux_ml_kem.Hash_functions.f_shake128_init_absorb_final #v_Hasher
       #v_K
       #FStar.Tactics.Typeclasses.solve
       seeds
   in
   let tmp0, out1:(v_Hasher & t_Array (t_Array u8 (sz 504)) v_K) =
-    Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_three_blocks #v_Hasher
+    Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_first_three_blocks #v_Hasher
       #v_K
       #FStar.Tactics.Typeclasses.solve
       xof_state
@@ -368,7 +368,7 @@ let sample_from_xof
             temp_0_
           in
           let tmp0, out1:(v_Hasher & t_Array (t_Array u8 (sz 168)) v_K) =
-            Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_block #v_Hasher
+            Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_next_block #v_Hasher
               #v_K
               #FStar.Tactics.Typeclasses.solve
               xof_state
