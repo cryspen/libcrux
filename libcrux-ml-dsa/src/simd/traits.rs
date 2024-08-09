@@ -6,7 +6,7 @@ pub const FIELD_MODULUS: i32 = 8_380_417;
 // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449;
 
-pub(crate) trait Operations: Copy + Clone {
+pub(crate) trait Operations: Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
 
@@ -16,10 +16,10 @@ pub(crate) trait Operations: Copy + Clone {
     // Arithmetic
     fn add(lhs: &Self, rhs: &Self) -> Self;
     fn subtract(lhs: &Self, rhs: &Self) -> Self;
-    fn infinity_norm_exceeds(simd_unit: Self, bound: i32) -> bool;
+    fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool;
     fn decompose<const GAMMA2: i32>(simd_unit: Self) -> (Self, Self);
-    fn compute_hint<const GAMMA2: i32>(low: Self, high: Self) -> (usize, Self);
-    fn use_hint<const GAMMA2: i32>(simd_unit: Self, hint: Self) -> Self;
+    fn compute_hint<const GAMMA2: i32>(low: &Self, high: &Self) -> (usize, Self);
+    fn use_hint<const GAMMA2: i32>(simd_unit: &Self, hint: &Self) -> Self;
 
     // Modular operations
     fn montgomery_multiply(lhs: Self, rhs: Self) -> Self;
@@ -50,7 +50,7 @@ pub(crate) trait Operations: Copy + Clone {
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self;
 
     // Commitment
-    fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE];
+    fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: &Self) -> [u8; OUTPUT_SIZE];
 
     // Error
     fn error_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE];

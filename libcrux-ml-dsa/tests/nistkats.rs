@@ -56,8 +56,10 @@ macro_rules! impl_nist_known_answer_tests {
                 );
 
                 let message = hex::decode(kat.message).expect("Hex-decoding the message failed.");
-
+                
+                libcrux_ml_dsa::print_stack(" --- stack before calling sign ---");
                 let signature = $sign(&key_pair.signing_key, &message, kat.signing_randomness);
+                libcrux_ml_dsa::print_stack(" --- stack after calling sign ---");
 
                 let signature_hash = libcrux_sha3::sha256(&signature.0);
                 assert_eq!(

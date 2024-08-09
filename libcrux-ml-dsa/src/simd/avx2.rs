@@ -6,7 +6,7 @@ mod encoding;
 mod ntt;
 mod rejection_sample;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct AVX2SIMDUnit {
     pub(crate) coefficients: libcrux_intrinsics::avx2::Vec256,
 }
@@ -57,7 +57,7 @@ impl Operations for AVX2SIMDUnit {
         (lower.into(), upper.into())
     }
 
-    fn infinity_norm_exceeds(simd_unit: Self, bound: i32) -> bool {
+    fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool {
         arithmetic::infinity_norm_exceeds(simd_unit.coefficients, bound)
     }
 

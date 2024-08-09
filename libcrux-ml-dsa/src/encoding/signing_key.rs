@@ -88,6 +88,7 @@ pub(crate) fn deserialize_then_ntt<
     [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],    // s2
     [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],    // t0_as_ntt
 ) {
+    debug_assert!(SEED_FOR_A_SIZE < SIGNING_KEY_SIZE);
     let (seed_for_A, remaining_serialized) = serialized.split_at(SEED_FOR_A_SIZE);
     let (seed_for_signing, remaining_serialized) =
         remaining_serialized.split_at(SEED_FOR_SIGNING_SIZE);

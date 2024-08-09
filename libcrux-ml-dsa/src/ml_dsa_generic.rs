@@ -105,6 +105,7 @@ pub enum VerificationError {
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn sign<
     SIMDUnit: Operations,
     Shake128: shake128::Xof,
@@ -130,6 +131,9 @@ pub(crate) fn sign<
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> MLDSASignature<SIGNATURE_SIZE> {
+    // crate::print_stack(" >>> sign");
+    // println!("    signing key: {:x?}", signing_key);
+    // panic!("foo");
     let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
         encoding::signing_key::deserialize_then_ntt::<
             SIMDUnit,
@@ -199,7 +203,7 @@ pub(crate) fn sign<
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
                 COMMITMENT_VECTOR_SIZE,
-            >(commitment);
+            >(&commitment);
 
             let mut hash_input = message_representative.to_vec();
             hash_input.extend_from_slice(&commitment_serialized);
@@ -226,19 +230,20 @@ pub(crate) fn sign<
             &verifier_challenge_as_ntt,
         );
 
-        let signer_response = add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mask, &challenge_times_s1);
+        let mut signer_response = mask;
+        add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mut signer_response, &challenge_times_s1);
 
         let w0_minus_challenge_times_s2 =
             subtract_vectors::<SIMDUnit, ROWS_IN_A>(&w0, &challenge_times_s2);
 
         if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
-            signer_response,
+            &signer_response,
             (1 << GAMMA1_EXPONENT) - BETA,
         ) {
             continue;
         }
         if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(
-            w0_minus_challenge_times_s2,
+            &w0_minus_challenge_times_s2,
             GAMMA2 - BETA,
         ) {
             continue;
@@ -248,12 +253,15 @@ pub(crate) fn sign<
             &t0_as_ntt,
             &verifier_challenge_as_ntt,
         );
-        if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(challenge_times_t0, GAMMA2) {
+        if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(&challenge_times_t0, GAMMA2) {
             continue;
         }
 
-        let w0_minus_c_times_s2_plus_c_times_t0 =
-            add_vectors::<SIMDUnit, ROWS_IN_A>(&w0_minus_challenge_times_s2, &challenge_times_t0);
+        let mut w0_minus_c_times_s2_plus_c_times_t0 = w0_minus_challenge_times_s2;
+        add_vectors::<SIMDUnit, ROWS_IN_A>(
+            &mut w0_minus_c_times_s2_plus_c_times_t0,
+            &challenge_times_t0,
+        );
         let (hint, ones_in_hint) = make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(
             w0_minus_c_times_s2_plus_c_times_t0,
             commitment,
@@ -314,7 +322,7 @@ pub(crate) fn verify<
 
     // We use if-else branches because early returns will not go through hax.
     if !vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
-        signature.signer_response,
+        &signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
         let A_as_ntt = expand_to_A::<SIMDUnit, Shake128, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
@@ -362,7 +370,7 @@ pub(crate) fn verify<
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
                 COMMITMENT_VECTOR_SIZE,
-            >(commitment);
+            >(&commitment);
 
             let mut hash_input = message_representative.to_vec();
             hash_input.extend_from_slice(&commitment_serialized);

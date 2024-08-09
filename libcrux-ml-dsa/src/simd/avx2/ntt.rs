@@ -5,7 +5,7 @@ use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
 pub fn ntt_at_layer_0(simd_unit: Vec256, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Vec256 {
-    print_stack("  avx2 ntt_at_layer_0");
+    // print_stack("  avx2 ntt_at_layer_0");
     let zetas = mm256_set_epi32(-zeta3, zeta3, -zeta2, zeta2, -zeta1, zeta1, -zeta0, zeta0);
     let zeta_multipliers = mm256_shuffle_epi32::<0b11_11_01_01>(simd_unit);
 
@@ -17,7 +17,7 @@ pub fn ntt_at_layer_0(simd_unit: Vec256, zeta0: i32, zeta1: i32, zeta2: i32, zet
 
 #[inline(always)]
 pub fn ntt_at_layer_1(simd_unit: Vec256, zeta0: i32, zeta1: i32) -> Vec256 {
-    print_stack("  avx2 ntt_at_layer_1");
+    // print_stack("  avx2 ntt_at_layer_1");
     let zetas = mm256_set_epi32(-zeta1, -zeta1, zeta1, zeta1, -zeta0, -zeta0, zeta0, zeta0);
     let zeta_multipliers = mm256_shuffle_epi32::<0b11_10_11_10>(simd_unit);
 
@@ -29,7 +29,7 @@ pub fn ntt_at_layer_1(simd_unit: Vec256, zeta0: i32, zeta1: i32) -> Vec256 {
 
 #[inline(always)]
 pub fn ntt_at_layer_2(simd_unit: Vec256, zeta: i32) -> Vec256 {
-    print_stack("  avx2 ntt_at_layer_2");
+    // print_stack("  avx2 ntt_at_layer_2");
     let zetas = mm256_set_epi32(-zeta, -zeta, -zeta, -zeta, zeta, zeta, zeta, zeta);
     let zeta_multipliers = mm256_permute4x64_epi64::<0b11_10_11_10>(simd_unit);
 

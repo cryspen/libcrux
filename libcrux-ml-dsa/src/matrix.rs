@@ -19,7 +19,9 @@ pub(crate) fn expand_to_A<
 >(
     mut seed: [u8; 34],
 ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
-    let mut A = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+    let mut A = core::array::from_fn(|_| {
+        core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO())
+    });
 
     // Mutable iterators won't go through hax, so we need these range loops.
 
@@ -63,17 +65,17 @@ pub(crate) fn compute_As1_plus_s2<
     s1: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
     s2: &[PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    let mut result = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
             let product =
                 ntt_multiply_montgomery::<SIMDUnit>(ring_element, &ntt::<SIMDUnit>(s1[j]));
-            result[i] = PolynomialRingElement::add(&result[i], &product);
+            PolynomialRingElement::add(&mut result[i], &product);
         }
 
         result[i] = invert_ntt_montgomery::<SIMDUnit>(result[i]);
-        result[i] = PolynomialRingElement::add(&result[i], &s2[i]);
+        PolynomialRingElement::add(&mut result[i], &s2[i]);
     }
 
     result
@@ -90,12 +92,12 @@ pub(crate) fn compute_A_times_mask<
     A_as_ntt: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
     mask: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
 ) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    let mut result = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
             let product = ntt_multiply_montgomery(&ring_element, &ntt(mask[j]));
-            result[i] = PolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
+            PolynomialRingElement::<SIMDUnit>::add(&mut result[i], &product);
         }
 
         result[i] = invert_ntt_montgomery(result[i]);
@@ -110,7 +112,7 @@ pub(crate) fn vector_times_ring_element<SIMDUnit: Operations, const DIMENSION: u
     vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
     ring_element: &PolynomialRingElement<SIMDUnit>,
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut result = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     for (i, vector_ring_element) in vector.iter().enumerate() {
         result[i] =
@@ -123,16 +125,12 @@ pub(crate) fn vector_times_ring_element<SIMDUnit: Operations, const DIMENSION: u
 #[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn add_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
-    lhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+    lhs: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
     rhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
+) {
     for i in 0..DIMENSION {
-        result[i] = PolynomialRingElement::<SIMDUnit>::add(&lhs[i], &rhs[i]);
+        PolynomialRingElement::<SIMDUnit>::add(&mut lhs[i], &rhs[i]);
     }
-
-    result
 }
 
 #[allow(non_snake_case)]
@@ -141,7 +139,7 @@ pub(crate) fn subtract_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
     lhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
     rhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut result = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     for i in 0..DIMENSION {
         result[i] = PolynomialRingElement::<SIMDUnit>::subtract(&lhs[i], &rhs[i]);
@@ -163,13 +161,12 @@ pub(crate) fn compute_w_approx<
     verifier_challenge_as_ntt: PolynomialRingElement<SIMDUnit>,
     t1: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    let mut result = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
             let product = ntt_multiply_montgomery(&ring_element, &ntt(signer_response[j]));
-
-            result[i] = PolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
+            PolynomialRingElement::<SIMDUnit>::add(&mut result[i], &product);
         }
 
         let t1_shifted =

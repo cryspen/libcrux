@@ -6,7 +6,7 @@ use crate::{
 
 #[inline(always)]
 pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations, const DIMENSION: usize>(
-    vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
     bound: i32,
 ) -> bool {
     let mut exceeds = false;
@@ -33,7 +33,7 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
     let mut out = PolynomialRingElement::ZERO();
 
     for (i, simd_unit) in re.simd_units.iter().enumerate() {
-        out.simd_units[i] = SIMDUnit::shift_left_then_reduce::<SHIFT_BY>(*simd_unit);
+        out.simd_units[i] = SIMDUnit::shift_left_then_reduce::<SHIFT_BY>(simd_unit.clone());
     }
 
     out
@@ -46,12 +46,12 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations, const DIMENSION: usize>(
     [PolynomialRingElement<SIMDUnit>; DIMENSION],
     [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) {
-    let mut t0 = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-    let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut t0 = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
+    let mut t1 = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
-    for (i, ring_element) in t.iter().enumerate() {
-        for (j, simd_unit) in ring_element.simd_units.iter().enumerate() {
-            let (t0_unit, t1_unit) = SIMDUnit::power2round(*simd_unit);
+    for (i, ring_element) in t.into_iter().enumerate() {
+        for (j, simd_unit) in ring_element.simd_units.into_iter().enumerate() {
+            let (t0_unit, t1_unit) = SIMDUnit::power2round(simd_unit);
 
             t0[i].simd_units[j] = t0_unit;
             t1[i].simd_units[j] = t1_unit;
@@ -68,12 +68,14 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations, const DIMENSION: usize, con
     [PolynomialRingElement<SIMDUnit>; DIMENSION],
     [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) {
-    let mut vector_low = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-    let mut vector_high = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut vector_low = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
+    let mut vector_high = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
-    for i in 0..DIMENSION {
-        for j in 0..SIMD_UNITS_IN_RING_ELEMENT {
-            let (low, high) = SIMDUnit::decompose::<GAMMA2>(t[i].simd_units[j]);
+    // for i in 0..DIMENSION {
+    //     for j in 0..SIMD_UNITS_IN_RING_ELEMENT {
+    for (i, ring_element) in t.into_iter().enumerate() {
+        for (j, simd_unit) in ring_element.simd_units.into_iter().enumerate() {
+            let (low, high) = SIMDUnit::decompose::<GAMMA2>(simd_unit);
 
             vector_low[i].simd_units[j] = low;
             vector_high[i].simd_units[j] = high;
@@ -96,7 +98,7 @@ pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMM
 
         for j in 0..hint_simd.simd_units.len() {
             let (one_hints_count, current_hint) =
-                SIMDUnit::compute_hint::<GAMMA2>(low[i].simd_units[j], high[i].simd_units[j]);
+                SIMDUnit::compute_hint::<GAMMA2>(&low[i].simd_units[j], &high[i].simd_units[j]);
             hint_simd.simd_units[j] = current_hint;
 
             true_hints += one_hints_count;
@@ -113,14 +115,14 @@ pub(crate) fn use_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA
     hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION],
     re_vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut result = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     for i in 0..DIMENSION {
         let hint_simd = PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i]);
 
         for j in 0..SIMD_UNITS_IN_RING_ELEMENT {
             result[i].simd_units[j] =
-                SIMDUnit::use_hint::<GAMMA2>(re_vector[i].simd_units[j], hint_simd.simd_units[j]);
+                SIMDUnit::use_hint::<GAMMA2>(&re_vector[i].simd_units[j], &hint_simd.simd_units[j]);
         }
     }
 

@@ -113,7 +113,7 @@ fn ntt_at_layer_0<SIMDUnit: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
-    print_stack("ntt_at_layer_0");
+    // print_stack("ntt_at_layer_0");
     *zeta_i += 1;
 
     unroll_32!(|round| {
@@ -136,7 +136,7 @@ fn ntt_at_layer_1<SIMDUnit: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
-    print_stack("ntt_at_layer_1");
+    // print_stack("ntt_at_layer_1");
     *zeta_i += 1;
 
     unroll_32!(|round| {
@@ -157,7 +157,7 @@ fn ntt_at_layer_2<SIMDUnit: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
-    print_stack("ntt_at_layer_2");
+    // print_stack("ntt_at_layer_2");
     unroll_32!(|round| {
         *zeta_i += 1;
         re.simd_units[round] =
@@ -170,14 +170,14 @@ fn ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
-    print_stack("ntt_at_layer_3_plus");
+    // print_stack("ntt_at_layer_3_plus");
     let step = 1 << LAYER;
+    let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
 
     for round in 0..(128 >> LAYER) {
         *zeta_i += 1;
 
         let offset = (round * step * 2) / COEFFICIENTS_IN_SIMD_UNIT;
-        let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
 
         for j in offset..offset + step_by {
             let t = montgomery_multiply_by_fer::<SIMDUnit>(
@@ -189,21 +189,49 @@ fn ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
             re.simd_units[j] = SIMDUnit::add(&re.simd_units[j], &t);
         }
     }
-    println!("zeta_i: {zeta_i}");
+    // println!("zeta_i: {zeta_i}");
+}
+
+#[inline(always)]
+fn ntt_at_layer_3<SIMDUnit: Operations>(
+    zeta_i: &mut usize,
+    re: &mut PolynomialRingElement<SIMDUnit>,
+) {
+    const STEP: usize = 1 << 3;
+    const LIMIT: usize = 128 >> 3;
+    const STEP_BY: usize = STEP / COEFFICIENTS_IN_SIMD_UNIT;
+
+    for round in 0..LIMIT {
+        *zeta_i += 1;
+
+        let offset = (round * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT;
+
+        for j in offset..offset + STEP_BY {
+            let t = montgomery_multiply_by_fer::<SIMDUnit>(
+                re.simd_units[j + STEP_BY],
+                ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            );
+
+            re.simd_units[j + STEP_BY] = SIMDUnit::subtract(&re.simd_units[j], &t);
+            re.simd_units[j] = SIMDUnit::add(&re.simd_units[j], &t);
+        }
+    }
+    // println!("zeta_i: {zeta_i}");
 }
 
 #[inline(always)]
 pub(crate) fn ntt<SIMDUnit: Operations>(
     mut re: PolynomialRingElement<SIMDUnit>,
 ) -> PolynomialRingElement<SIMDUnit> {
-    print_stack("ntt");
+    // print_stack("ntt");
     let mut zeta_i = 0;
 
     ntt_at_layer_3_plus::<SIMDUnit, 7>(&mut zeta_i, &mut re);
     ntt_at_layer_3_plus::<SIMDUnit, 6>(&mut zeta_i, &mut re);
     ntt_at_layer_3_plus::<SIMDUnit, 5>(&mut zeta_i, &mut re);
     ntt_at_layer_3_plus::<SIMDUnit, 4>(&mut zeta_i, &mut re);
-    ntt_at_layer_3_plus::<SIMDUnit, 3>(&mut zeta_i, &mut re);
+    // ntt_at_layer_3_plus::<SIMDUnit, 3>(&mut zeta_i, &mut re);
+    ntt_at_layer_3::<SIMDUnit>(&mut zeta_i, &mut re);
     ntt_at_layer_2::<SIMDUnit>(&mut zeta_i, &mut re);
     ntt_at_layer_1::<SIMDUnit>(&mut zeta_i, &mut re);
     ntt_at_layer_0::<SIMDUnit>(&mut zeta_i, &mut re);

@@ -53,7 +53,7 @@ impl Operations for PortableSIMDUnit {
         arithmetic::power2round(simd_unit)
     }
 
-    fn infinity_norm_exceeds(simd_unit: Self, bound: i32) -> bool {
+    fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool {
         arithmetic::infinity_norm_exceeds(simd_unit, bound)
     }
 

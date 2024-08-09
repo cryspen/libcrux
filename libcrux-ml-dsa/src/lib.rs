@@ -1,4 +1,4 @@
-pub(crate) fn print_stack(f: &str) {
+pub fn print_stack(f: &str) {
     eprintln!(
         "{f} remaining stack: {} KiB | stack pointer: {:p}",
         stacker::remaining_stack().unwrap() / 1024,

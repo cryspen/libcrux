@@ -2,7 +2,7 @@ use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
 fn serialize<SIMDUnit: Operations, const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement<SIMDUnit>,
+    re: &PolynomialRingElement<SIMDUnit>,
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
 
@@ -16,7 +16,7 @@ fn serialize<SIMDUnit: Operations, const OUTPUT_SIZE: usize>(
             for (i, simd_unit) in re.simd_units.iter().enumerate() {
                 serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
                     .copy_from_slice(
-                        &SIMDUnit::commitment_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(*simd_unit),
+                        &SIMDUnit::commitment_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(simd_unit),
                     );
             }
 
@@ -32,7 +32,7 @@ fn serialize<SIMDUnit: Operations, const OUTPUT_SIZE: usize>(
             for (i, simd_unit) in re.simd_units.iter().enumerate() {
                 serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
                     .copy_from_slice(
-                        &SIMDUnit::commitment_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(*simd_unit),
+                        &SIMDUnit::commitment_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(simd_unit),
                     );
             }
 
@@ -50,14 +50,14 @@ pub(crate) fn serialize_vector<
     const RING_ELEMENT_SIZE: usize,
     const OUTPUT_SIZE: usize,
 >(
-    vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
     let mut offset: usize = 0;
 
     for ring_element in vector.iter() {
         serialized[offset..offset + RING_ELEMENT_SIZE]
-            .copy_from_slice(&serialize::<SIMDUnit, RING_ELEMENT_SIZE>(*ring_element));
+            .copy_from_slice(&serialize::<SIMDUnit, RING_ELEMENT_SIZE>(ring_element));
         offset += RING_ELEMENT_SIZE;
     }
 
@@ -105,7 +105,7 @@ mod tests {
             149,
         ];
 
-        assert_eq!(serialize::<SIMDUnit, 192>(re), serialized);
+        assert_eq!(serialize::<SIMDUnit, 192>(&re), serialized);
 
         // Test serialization when LOW_ORDER_ROUNDING_RANGE = 261,888
         let coefficients = [
@@ -132,7 +132,7 @@ mod tests {
             64, 117, 190, 98, 179, 38, 80, 88, 89, 9, 34, 243, 128, 219, 98, 11,
         ];
 
-        assert_eq!(serialize::<SIMDUnit, 128>(re), serialized);
+        assert_eq!(serialize::<SIMDUnit, 128>(&re), serialized);
     }
 
     #[cfg(not(feature = "simd256"))]

@@ -381,7 +381,7 @@ pub(crate) fn sample_error_vector<
     mut seed: [u8; 66],
     domain_separator: &mut u16,
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut error = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut error = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     // DIMENSION is either COLUMNS_IN_A or ROWS_IN_A
     debug_assert!(
@@ -449,7 +449,7 @@ pub(crate) fn sample_mask_vector<
     mut seed: [u8; 66],
     domain_separator: &mut u16,
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut mask = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut mask = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     // DIMENSION is COLUMNS_IN_A
     debug_assert!(DIMENSION == 4 || DIMENSION == 5 || DIMENSION == 7);

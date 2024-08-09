@@ -141,7 +141,7 @@ pub fn power2round(simd_unit: PortableSIMDUnit) -> (PortableSIMDUnit, PortableSI
 // TODO: Revisit this function when doing the range analysis and testing
 // additional KATs.
 #[inline(always)]
-pub fn infinity_norm_exceeds(simd_unit: PortableSIMDUnit, bound: i32) -> bool {
+pub fn infinity_norm_exceeds(simd_unit: &PortableSIMDUnit, bound: i32) -> bool {
     let mut exceeds = false;
 
     // It is ok to leak which coefficient violates the bound since
