@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: d6e4d1bb9c27c4eebbebcb29ba8bea1d58741421
+ * Eurydice: 05ade3c33b87927d9873736212cc5078c1fc3d69
  * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
  * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: ef25d68772c7a677441e035cb3187800d831ca09
+ * Libcrux: 473f1937eea2d687d73072e3b0ccfaca2c7e17c3
  */
 
 #ifndef __internal_libcrux_sha3_avx2_H
@@ -23,29 +23,8 @@ extern "C" {
 #include "internal/libcrux_core.h"
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.absorb_final
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-- RATE= 136
-- DELIM= 31
-*/
-void libcrux_sha3_generic_keccak_absorb_final_5e(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice last[4U]);
-
-typedef libcrux_sha3_generic_keccak_KeccakState_29
+typedef libcrux_sha3_generic_keccak_KeccakState_f4
     libcrux_sha3_avx2_x4_incremental_KeccakState;
-
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_three_blocks
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-- RATE= 168
-*/
-void libcrux_sha3_generic_keccak_squeeze_first_three_blocks_27(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out[4U]);
 
 #if defined(__cplusplus)
 }

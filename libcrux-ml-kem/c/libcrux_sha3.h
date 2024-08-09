@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: d6e4d1bb9c27c4eebbebcb29ba8bea1d58741421
+ * Eurydice: 05ade3c33b87927d9873736212cc5078c1fc3d69
  * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
- * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: a7de672380a622d67efb35e3707a528e375cbf76
+ * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
+ * Libcrux: 473f1937eea2d687d73072e3b0ccfaca2c7e17c3
  */
 
 #ifndef __libcrux_sha3_H
@@ -29,7 +29,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_sha512(Eurydice_slice digest,
                                                          Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
-  libcrux_sha3_portable_keccakx1_fd(buf0, buf);
+  libcrux_sha3_portable_keccakx1_2a(buf0, buf);
 }
 
 /**
@@ -39,7 +39,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_sha256(Eurydice_slice digest,
                                                          Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
-  libcrux_sha3_portable_keccakx1_fd0(buf0, buf);
+  libcrux_sha3_portable_keccakx1_2a0(buf0, buf);
 }
 
 /**
@@ -49,7 +49,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_shake256(
     Eurydice_slice digest, Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
-  libcrux_sha3_portable_keccakx1_fd1(buf0, buf);
+  libcrux_sha3_portable_keccakx1_2a1(buf0, buf);
 }
 
 /**
@@ -59,7 +59,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_sha224(Eurydice_slice digest,
                                                          Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
-  libcrux_sha3_portable_keccakx1_fd2(buf0, buf);
+  libcrux_sha3_portable_keccakx1_2a2(buf0, buf);
 }
 
 /**
@@ -69,7 +69,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_sha384(Eurydice_slice digest,
                                                          Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
-  libcrux_sha3_portable_keccakx1_fd3(buf0, buf);
+  libcrux_sha3_portable_keccakx1_2a3(buf0, buf);
 }
 
 /**
@@ -158,7 +158,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_shake128(
     Eurydice_slice digest, Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
-  libcrux_sha3_portable_keccakx1_fd4(buf0, buf);
+  libcrux_sha3_portable_keccakx1_2a4(buf0, buf);
 }
 
 /**
