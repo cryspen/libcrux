@@ -498,9 +498,10 @@ mod tests {
     // This is just a wrapper around sample_four_ring_elements, for testing
     // purposes.
     fn sample_error_ring_element<
-    SIMDUnit: Operations,
-    Shake256X4: shake256::XofX4,
-    const ETA: usize>(
+        SIMDUnit: Operations,
+        Shake256X4: shake256::XofX4,
+        const ETA: usize,
+    >(
         seed_base: [u8; 66],
     ) -> PolynomialRingElement<SIMDUnit> {
         let four_ring_elements = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(

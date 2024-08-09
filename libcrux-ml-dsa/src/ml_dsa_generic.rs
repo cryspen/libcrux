@@ -3,7 +3,7 @@ use crate::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
     },
     constants::*,
-    encoding, samplex4,
+    encoding,
     hash_functions::{shake128, shake256},
     matrix::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
@@ -12,6 +12,7 @@ use crate::{
     ntt::ntt,
     polynomial::PolynomialRingElement,
     sample::{sample_challenge_ring_element, sample_mask_vector},
+    samplex4,
     simd::traits::Operations,
     utils::into_padded_array,
     MLDSASignature,
@@ -55,8 +56,10 @@ pub(crate) fn generate_key_pair<
     let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
         into_padded_array(seed_for_A),
     );
- 
-    let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(into_padded_array(seed_for_error_vectors));
+
+    let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
+        into_padded_array(seed_for_error_vectors),
+    );
 
     let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, &s1, &s2);
 
