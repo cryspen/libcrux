@@ -228,5 +228,13 @@ val generate_keypair
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (key_generation_seed: t_Slice u8)
     : Prims.Pure (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+        v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
+        v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K)
+      (ensures
+        fun result ->
+          let result:(t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE) = result in
+          result == Spec.MLKEM.ind_cpa_generate_keypair v_K key_generation_seed)

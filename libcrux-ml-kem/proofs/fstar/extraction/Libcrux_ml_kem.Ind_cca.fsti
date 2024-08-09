@@ -31,7 +31,13 @@ val serialize_kem_secret_key
         Core.Slice.impl__len #u8 private_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
         Core.Slice.impl__len #u8 public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
         Core.Slice.impl__len #u8 implicit_rejection_value == Spec.MLKEM.v_SHARED_SECRET_SIZE)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:t_Array u8 v_SERIALIZED_KEY_LEN = result in
+          result ==
+          Seq.append private_key
+            (Seq.append public_key (Seq.append (Spec.Utils.v_H public_key) implicit_rejection_value)
+            ))
 
 /// Implements [`Variant`], to perform the ML-KEM-specific actions
 /// during encapsulation and decapsulation.
@@ -258,4 +264,10 @@ val generate_keypair
         v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
         v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
         v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE =
+            result
+          in
+          (result.f_sk.f_value, result.f_pk.f_value) ==
+          Spec.MLKEM.ind_cca_generate_keypair v_K randomness)

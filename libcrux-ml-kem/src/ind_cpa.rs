@@ -209,6 +209,13 @@ pub(crate) fn generate_keypair_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"))]
+#[hax_lib::ensures(|result| fstar!("$result == Spec.MLKEM.ind_cpa_generate_keypair $K $key_generation_seed"))] 
 pub(crate) fn generate_keypair<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
