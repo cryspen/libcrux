@@ -744,7 +744,7 @@ mod tests {
         fn test_sample_ring_element_uniform() {
             test_sample_ring_element_uniform_generic::<
                 simd::portable::PortableSIMDUnit,
-                hash_functions::portable::Shake128,
+                hash_functions::portable::Shake128X4,
             >();
         }
 
