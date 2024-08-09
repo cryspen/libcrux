@@ -232,3 +232,8 @@ files:
     private:
       - [libcrux_ml_kem, "*"]
     inline_static: true
+
+naming:
+  skip_prefix:
+    - [ core, core_arch, arm_shared, neon ]
+    - [ core, core_arch, x86 ]
