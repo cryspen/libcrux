@@ -65,18 +65,18 @@ pub fn sha512(payload: &[u8]) -> [u8; 64] {
 
 pub mod streaming {
     use libcrux_hacl::{
-        Hacl_Hash_SHA2_digest_224, Hacl_Hash_SHA2_digest_256, Hacl_Hash_SHA2_digest_384,
-        Hacl_Hash_SHA2_digest_512, Hacl_Hash_SHA2_free_224, Hacl_Hash_SHA2_free_256,
-        Hacl_Hash_SHA2_free_384, Hacl_Hash_SHA2_free_512, Hacl_Hash_SHA2_malloc_224,
-        Hacl_Hash_SHA2_malloc_256, Hacl_Hash_SHA2_malloc_384, Hacl_Hash_SHA2_malloc_512,
-        Hacl_Hash_SHA2_reset_224, Hacl_Hash_SHA2_reset_256, Hacl_Hash_SHA2_reset_384,
-        Hacl_Hash_SHA2_reset_512, Hacl_Hash_SHA2_state_t_224, Hacl_Hash_SHA2_state_t_384,
-        Hacl_Hash_SHA2_update_224, Hacl_Hash_SHA2_update_256, Hacl_Hash_SHA2_update_384,
-        Hacl_Hash_SHA2_update_512,
+        Hacl_Hash_SHA2_copy_256, Hacl_Hash_SHA2_copy_512, Hacl_Hash_SHA2_digest_224,
+        Hacl_Hash_SHA2_digest_256, Hacl_Hash_SHA2_digest_384, Hacl_Hash_SHA2_digest_512,
+        Hacl_Hash_SHA2_free_224, Hacl_Hash_SHA2_free_256, Hacl_Hash_SHA2_free_384,
+        Hacl_Hash_SHA2_free_512, Hacl_Hash_SHA2_malloc_224, Hacl_Hash_SHA2_malloc_256,
+        Hacl_Hash_SHA2_malloc_384, Hacl_Hash_SHA2_malloc_512, Hacl_Hash_SHA2_reset_224,
+        Hacl_Hash_SHA2_reset_256, Hacl_Hash_SHA2_reset_384, Hacl_Hash_SHA2_reset_512,
+        Hacl_Hash_SHA2_state_t_224, Hacl_Hash_SHA2_state_t_384, Hacl_Hash_SHA2_update_224,
+        Hacl_Hash_SHA2_update_256, Hacl_Hash_SHA2_update_384, Hacl_Hash_SHA2_update_512,
     };
 
     macro_rules! impl_streaming {
-        ($name:ident, $digest_size:literal, $state:ty, $malloc:expr, $reset:expr, $update:expr, $finish:expr, $free:expr) => {
+        ($name:ident, $digest_size:literal, $state:ty, $malloc:expr, $reset:expr, $update:expr, $finish:expr, $free:expr, $copy:expr) => {
             pub struct $name {
                 state: *mut $state,
             }
@@ -120,6 +120,18 @@ pub mod streaming {
                     unsafe { $free(self.state) };
                 }
             }
+
+            impl Clone for $name {
+                fn clone(&self) -> Self {
+                    unsafe {
+                        Self {
+                            state: $copy(self.state),
+                        }
+                    }
+                }
+            }
+
+            unsafe impl Send for $name {}
         };
     }
 
@@ -131,7 +143,8 @@ pub mod streaming {
         Hacl_Hash_SHA2_reset_224,
         Hacl_Hash_SHA2_update_224,
         Hacl_Hash_SHA2_digest_224,
-        Hacl_Hash_SHA2_free_224
+        Hacl_Hash_SHA2_free_224,
+        Hacl_Hash_SHA2_copy_256
     );
 
     impl_streaming!(
@@ -142,7 +155,8 @@ pub mod streaming {
         Hacl_Hash_SHA2_reset_256,
         Hacl_Hash_SHA2_update_256,
         Hacl_Hash_SHA2_digest_256,
-        Hacl_Hash_SHA2_free_256
+        Hacl_Hash_SHA2_free_256,
+        Hacl_Hash_SHA2_copy_256
     );
 
     impl_streaming!(
@@ -153,7 +167,8 @@ pub mod streaming {
         Hacl_Hash_SHA2_reset_384,
         Hacl_Hash_SHA2_update_384,
         Hacl_Hash_SHA2_digest_384,
-        Hacl_Hash_SHA2_free_384
+        Hacl_Hash_SHA2_free_384,
+        Hacl_Hash_SHA2_copy_512
     );
 
     impl_streaming!(
@@ -164,6 +179,7 @@ pub mod streaming {
         Hacl_Hash_SHA2_reset_512,
         Hacl_Hash_SHA2_update_512,
         Hacl_Hash_SHA2_digest_512,
-        Hacl_Hash_SHA2_free_512
+        Hacl_Hash_SHA2_free_512,
+        Hacl_Hash_SHA2_copy_512
     );
 }
