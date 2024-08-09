@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: f4283998bcc3c86677cf0e03a6fa71913a524658
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * Eurydice: d6e4d1bb9c27c4eebbebcb29ba8bea1d58741421
+ * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 878f09c21a4312320518388a0d902986b08e030a
+ * Libcrux: a7de672380a622d67efb35e3707a528e375cbf76
  */
 
 #ifndef __libcrux_mlkem_neon_H
@@ -21,7 +21,6 @@ extern "C" {
 #include "eurydice_glue.h"
 #include "libcrux_core.h"
 #include "libcrux_mlkem_portable.h"
-#include "libcrux_sha3_internal.h"
 #include "libcrux_sha3_neon.h"
 
 void libcrux_ml_kem_hash_functions_neon_G(Eurydice_slice input,
@@ -31,8 +30,8 @@ void libcrux_ml_kem_hash_functions_neon_H(Eurydice_slice input,
                                           uint8_t ret[32U]);
 
 typedef struct libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector_s {
-  uint8_t low;
-  uint8_t high;
+  _int16x8_t low;
+  _int16x8_t high;
 } libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector;
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -132,8 +131,8 @@ libcrux_ml_kem_vector_neon_cond_subtract_3329_20(
 #define LIBCRUX_ML_KEM_VECTOR_NEON_ARITHMETIC_BARRETT_MULTIPLIER \
   ((int16_t)20159)
 
-uint8_t libcrux_ml_kem_vector_neon_arithmetic_barrett_reduce_int16x8_t(
-    uint8_t v);
+_int16x8_t libcrux_ml_kem_vector_neon_arithmetic_barrett_reduce_int16x8_t(
+    _int16x8_t v);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_arithmetic_barrett_reduce(
@@ -147,12 +146,12 @@ libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_barrett_reduce_20(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v);
 
-uint8_t libcrux_ml_kem_vector_neon_arithmetic_montgomery_reduce_int16x8_t(
-    uint8_t low, uint8_t high);
+_int16x8_t libcrux_ml_kem_vector_neon_arithmetic_montgomery_reduce_int16x8_t(
+    _int16x8_t low, _int16x8_t high);
 
-uint8_t
+_int16x8_t
 libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_by_constant_int16x8_t(
-    uint8_t v, int16_t c);
+    _int16x8_t v, int16_t c);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_by_constant(
@@ -181,8 +180,8 @@ libcrux_ml_kem_vector_neon_compress_1_20(
 int16_t libcrux_ml_kem_vector_neon_compress_mask_n_least_significant_bits(
     int16_t coefficient_bits);
 
-uint8_t libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_int16x8_t(
-    uint8_t v, uint8_t c);
+_int16x8_t libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_int16x8_t(
+    _int16x8_t v, _int16x8_t c);
 
 libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_ntt_ntt_layer_1_step(

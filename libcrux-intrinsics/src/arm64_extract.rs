@@ -3,22 +3,31 @@
 
 #![allow(non_camel_case_types, unsafe_code, unused_variables)]
 
+#[derive(Copy,Clone)]
 #[charon::opaque]
 pub struct _uint16x4_t(u8);
+#[derive(Copy,Clone)]
 #[charon::opaque]
 pub struct _int16x4_t(u8);
+#[derive(Copy,Clone)]
 #[charon::opaque]
 pub struct _int16x8_t(u8);
+#[derive(Copy,Clone)]
 #[charon::opaque]
 pub struct _uint8x16_t(u8);
+#[derive(Copy,Clone)]
 #[charon::opaque]
 pub struct _uint16x8_t(u8);
+#[derive(Copy,Clone)]
 #[charon::opaque]
 pub struct _uint32x4_t(u8);
+#[derive(Copy,Clone)]
 #[charon::opaque]
 pub struct _int32x4_t(u8);
+#[derive(Copy,Clone)]
 #[charon::opaque]
 pub struct _uint64x2_t(u8);
+#[derive(Copy,Clone)]
 #[charon::opaque]
 pub struct _int64x2_t(u8);
 
@@ -273,7 +282,7 @@ pub fn _vmlal_high_s16(a: _int32x4_t, b: _int16x8_t, c: _int16x8_t) -> _int32x4_
     unimplemented!()
 }
 #[inline(always)]
-pub fn _vld1q_u8(ptr: &[_int16x8_t]) -> _uint8x16_t {
+pub fn _vld1q_u8(ptr: &[u8]) -> _uint8x16_t {
     unimplemented!()
 }
 #[inline(always)]
@@ -334,7 +343,7 @@ pub fn _vreinterpretq_u8_s64(a: _int64x2_t) -> _uint8x16_t {
 }
 
 #[inline(always)]
-pub fn _vst1q_u8(out: &mut [_int16x8_t], v: _uint8x16_t) {
+pub fn _vst1q_u8(out: &mut [u8], v: _uint8x16_t) {
     unimplemented!()
 }
 #[inline(always)]

@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: f4283998bcc3c86677cf0e03a6fa71913a524658
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * Eurydice: d6e4d1bb9c27c4eebbebcb29ba8bea1d58741421
+ * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 878f09c21a4312320518388a0d902986b08e030a
+ * Libcrux: a7de672380a622d67efb35e3707a528e375cbf76
  */
 
 #include "internal/libcrux_mlkem_neon.h"
@@ -37,8 +37,7 @@ KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_neon_H(Eurydice_slice input,
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_vector_type_ZERO(void) {
   return (CLITERAL(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector){
-      .low = libcrux_intrinsics_arm64_extract__vdupq_n_s16((int16_t)0),
-      .high = libcrux_intrinsics_arm64_extract__vdupq_n_s16((int16_t)0)});
+      .low = _vdupq_n_s16((int16_t)0), .high = _vdupq_n_s16((int16_t)0)});
 }
 
 /**
@@ -53,12 +52,10 @@ libcrux_ml_kem_vector_neon_ZERO_20(void) {
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_vector_type_from_i16_array(Eurydice_slice array) {
   return (CLITERAL(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector){
-      .low =
-          libcrux_intrinsics_arm64_extract__vld1q_s16(Eurydice_slice_subslice2(
-              array, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice)),
-      .high =
-          libcrux_intrinsics_arm64_extract__vld1q_s16(Eurydice_slice_subslice2(
-              array, (size_t)8U, (size_t)16U, int16_t, Eurydice_slice))});
+      .low = _vld1q_s16(Eurydice_slice_subslice2(array, (size_t)0U, (size_t)8U,
+                                                 int16_t, Eurydice_slice)),
+      .high = _vld1q_s16(Eurydice_slice_subslice2(
+          array, (size_t)8U, (size_t)16U, int16_t, Eurydice_slice))});
 }
 
 /**
@@ -73,14 +70,12 @@ libcrux_ml_kem_vector_neon_from_i16_array_20(Eurydice_slice array) {
 KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_vector_type_to_i16_array(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t ret[16U]) {
   int16_t out[16U] = {0U};
-  libcrux_intrinsics_arm64_extract__vst1q_s16(
-      Eurydice_array_to_subslice2(out, (size_t)0U, (size_t)8U, int16_t,
-                                  Eurydice_slice),
-      v.low);
-  libcrux_intrinsics_arm64_extract__vst1q_s16(
-      Eurydice_array_to_subslice2(out, (size_t)8U, (size_t)16U, int16_t,
-                                  Eurydice_slice),
-      v.high);
+  _vst1q_s16(Eurydice_array_to_subslice2(out, (size_t)0U, (size_t)8U, int16_t,
+                                         Eurydice_slice),
+             v.low);
+  _vst1q_s16(Eurydice_array_to_subslice2(out, (size_t)8U, (size_t)16U, int16_t,
+                                         Eurydice_slice),
+             v.high);
   memcpy(ret, out, (size_t)16U * sizeof(int16_t));
 }
 
@@ -97,8 +92,8 @@ KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_arithmetic_add(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lhs,
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *rhs) {
-  lhs.low = libcrux_intrinsics_arm64_extract__vaddq_s16(lhs.low, rhs->low);
-  lhs.high = libcrux_intrinsics_arm64_extract__vaddq_s16(lhs.high, rhs->high);
+  lhs.low = _vaddq_s16(lhs.low, rhs->low);
+  lhs.high = _vaddq_s16(lhs.high, rhs->high);
   return lhs;
 }
 
@@ -117,8 +112,8 @@ KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_arithmetic_sub(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lhs,
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector *rhs) {
-  lhs.low = libcrux_intrinsics_arm64_extract__vsubq_s16(lhs.low, rhs->low);
-  lhs.high = libcrux_intrinsics_arm64_extract__vsubq_s16(lhs.high, rhs->high);
+  lhs.low = _vsubq_s16(lhs.low, rhs->low);
+  lhs.high = _vsubq_s16(lhs.high, rhs->high);
   return lhs;
 }
 
@@ -136,8 +131,8 @@ libcrux_ml_kem_vector_neon_sub_20(
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_arithmetic_multiply_by_constant(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t c) {
-  v.low = libcrux_intrinsics_arm64_extract__vmulq_n_s16(v.low, c);
-  v.high = libcrux_intrinsics_arm64_extract__vmulq_n_s16(v.high, c);
+  v.low = _vmulq_n_s16(v.low, c);
+  v.high = _vmulq_n_s16(v.high, c);
   return v;
 }
 
@@ -154,9 +149,9 @@ libcrux_ml_kem_vector_neon_multiply_by_constant_20(
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_arithmetic_bitwise_and_with_constant(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t c) {
-  uint8_t c0 = libcrux_intrinsics_arm64_extract__vdupq_n_s16(c);
-  v.low = libcrux_intrinsics_arm64_extract__vandq_s16(v.low, c0);
-  v.high = libcrux_intrinsics_arm64_extract__vandq_s16(v.high, c0);
+  _int16x8_t c0 = _vdupq_n_s16(c);
+  v.low = _vandq_s16(v.low, c0);
+  v.high = _vandq_s16(v.high, c0);
   return v;
 }
 
@@ -173,15 +168,13 @@ libcrux_ml_kem_vector_neon_bitwise_and_with_constant_20(
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_arithmetic_cond_subtract_3329(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  uint8_t c = libcrux_intrinsics_arm64_extract__vdupq_n_s16((int16_t)3329);
-  uint8_t m0 = libcrux_intrinsics_arm64_extract__vcgeq_s16(v.low, c);
-  uint8_t m1 = libcrux_intrinsics_arm64_extract__vcgeq_s16(v.high, c);
-  uint8_t c0 = libcrux_intrinsics_arm64_extract__vandq_s16(
-      c, libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u16(m0));
-  uint8_t c1 = libcrux_intrinsics_arm64_extract__vandq_s16(
-      c, libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u16(m1));
-  v.low = libcrux_intrinsics_arm64_extract__vsubq_s16(v.low, c0);
-  v.high = libcrux_intrinsics_arm64_extract__vsubq_s16(v.high, c1);
+  _int16x8_t c = _vdupq_n_s16((int16_t)3329);
+  _uint16x8_t m0 = _vcgeq_s16(v.low, c);
+  _uint16x8_t m1 = _vcgeq_s16(v.high, c);
+  _int16x8_t c0 = _vandq_s16(c, _vreinterpretq_s16_u16(m0));
+  _int16x8_t c1 = _vandq_s16(c, _vreinterpretq_s16_u16(m1));
+  v.low = _vsubq_s16(v.low, c0);
+  v.high = _vsubq_s16(v.high, c1);
   return v;
 }
 
@@ -195,17 +188,16 @@ libcrux_ml_kem_vector_neon_cond_subtract_3329_20(
   return libcrux_ml_kem_vector_neon_arithmetic_cond_subtract_3329(v);
 }
 
-KRML_MUSTINLINE uint8_t
-libcrux_ml_kem_vector_neon_arithmetic_barrett_reduce_int16x8_t(uint8_t v) {
-  uint8_t adder = libcrux_intrinsics_arm64_extract__vdupq_n_s16((int16_t)1024);
-  uint8_t vec = libcrux_intrinsics_arm64_extract__vqdmulhq_n_s16(
+KRML_MUSTINLINE _int16x8_t
+libcrux_ml_kem_vector_neon_arithmetic_barrett_reduce_int16x8_t(_int16x8_t v) {
+  _int16x8_t adder = _vdupq_n_s16((int16_t)1024);
+  _int16x8_t vec = _vqdmulhq_n_s16(
       v, LIBCRUX_ML_KEM_VECTOR_NEON_ARITHMETIC_BARRETT_MULTIPLIER);
-  uint8_t vec0 = libcrux_intrinsics_arm64_extract__vaddq_s16(vec, adder);
-  uint8_t quotient =
-      libcrux_intrinsics_arm64_extract__vshrq_n_s16((int32_t)11, vec0, uint8_t);
-  uint8_t sub = libcrux_intrinsics_arm64_extract__vmulq_n_s16(
-      quotient, LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  return libcrux_intrinsics_arm64_extract__vsubq_s16(v, sub);
+  _int16x8_t vec0 = _vaddq_s16(vec, adder);
+  _int16x8_t quotient = _vshrq_n_s16((int32_t)11, vec0, _int16x8_t);
+  _int16x8_t sub =
+      _vmulq_n_s16(quotient, LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  return _vsubq_s16(v, sub);
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
@@ -227,29 +219,26 @@ libcrux_ml_kem_vector_neon_barrett_reduce_20(
   return libcrux_ml_kem_vector_neon_arithmetic_barrett_reduce(v);
 }
 
-KRML_MUSTINLINE uint8_t
+KRML_MUSTINLINE _int16x8_t
 libcrux_ml_kem_vector_neon_arithmetic_montgomery_reduce_int16x8_t(
-    uint8_t low, uint8_t high) {
-  uint8_t k = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u16(
-      libcrux_intrinsics_arm64_extract__vmulq_n_u16(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_u16_s16(low),
-          (uint16_t)
-              LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R));
-  uint8_t c = libcrux_intrinsics_arm64_extract__vshrq_n_s16(
+    _int16x8_t low, _int16x8_t high) {
+  _int16x8_t k = _vreinterpretq_s16_u16(_vmulq_n_u16(
+      _vreinterpretq_u16_s16(low),
+      (uint16_t)
+          LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R));
+  _int16x8_t c = _vshrq_n_s16(
       (int32_t)1,
-      libcrux_intrinsics_arm64_extract__vqdmulhq_n_s16(
-          k, LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS),
-      uint8_t);
-  return libcrux_intrinsics_arm64_extract__vsubq_s16(high, c);
+      _vqdmulhq_n_s16(k, LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS),
+      _int16x8_t);
+  return _vsubq_s16(high, c);
 }
 
-KRML_MUSTINLINE uint8_t
+KRML_MUSTINLINE _int16x8_t
 libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_by_constant_int16x8_t(
-    uint8_t v, int16_t c) {
-  uint8_t v_low = libcrux_intrinsics_arm64_extract__vmulq_n_s16(v, c);
-  uint8_t v_high = libcrux_intrinsics_arm64_extract__vshrq_n_s16(
-      (int32_t)1, libcrux_intrinsics_arm64_extract__vqdmulhq_n_s16(v, c),
-      uint8_t);
+    _int16x8_t v, int16_t c) {
+  _int16x8_t v_low = _vmulq_n_s16(v, c);
+  _int16x8_t v_high =
+      _vshrq_n_s16((int32_t)1, _vqdmulhq_n_s16(v, c), _int16x8_t);
   return libcrux_ml_kem_vector_neon_arithmetic_montgomery_reduce_int16x8_t(
       v_low, v_high);
 }
@@ -280,35 +269,24 @@ libcrux_ml_kem_vector_neon_montgomery_multiply_by_constant_20(
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_compress_compress_1(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  uint8_t half = libcrux_intrinsics_arm64_extract__vdupq_n_s16((int16_t)1664);
-  uint8_t quarter = libcrux_intrinsics_arm64_extract__vdupq_n_s16((int16_t)832);
-  uint8_t shifted = libcrux_intrinsics_arm64_extract__vsubq_s16(half, v.low);
-  uint8_t mask0 = libcrux_intrinsics_arm64_extract__vshrq_n_s16(
-      (int32_t)15, shifted, uint8_t);
-  uint8_t shifted_to_positive =
-      libcrux_intrinsics_arm64_extract__veorq_s16(mask0, shifted);
-  uint8_t shifted_positive_in_range =
-      libcrux_intrinsics_arm64_extract__vsubq_s16(shifted_to_positive, quarter);
-  v.low = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u16(
-      libcrux_intrinsics_arm64_extract__vshrq_n_u16(
-          (int32_t)15,
-          libcrux_intrinsics_arm64_extract__vreinterpretq_u16_s16(
-              shifted_positive_in_range),
-          uint8_t));
-  uint8_t shifted0 = libcrux_intrinsics_arm64_extract__vsubq_s16(half, v.high);
-  uint8_t mask = libcrux_intrinsics_arm64_extract__vshrq_n_s16(
-      (int32_t)15, shifted0, uint8_t);
-  uint8_t shifted_to_positive0 =
-      libcrux_intrinsics_arm64_extract__veorq_s16(mask, shifted0);
-  uint8_t shifted_positive_in_range0 =
-      libcrux_intrinsics_arm64_extract__vsubq_s16(shifted_to_positive0,
-                                                  quarter);
-  v.high = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u16(
-      libcrux_intrinsics_arm64_extract__vshrq_n_u16(
-          (int32_t)15,
-          libcrux_intrinsics_arm64_extract__vreinterpretq_u16_s16(
-              shifted_positive_in_range0),
-          uint8_t));
+  _int16x8_t half = _vdupq_n_s16((int16_t)1664);
+  _int16x8_t quarter = _vdupq_n_s16((int16_t)832);
+  _int16x8_t shifted = _vsubq_s16(half, v.low);
+  _int16x8_t mask0 = _vshrq_n_s16((int32_t)15, shifted, _int16x8_t);
+  _int16x8_t shifted_to_positive = _veorq_s16(mask0, shifted);
+  _int16x8_t shifted_positive_in_range =
+      _vsubq_s16(shifted_to_positive, quarter);
+  v.low = _vreinterpretq_s16_u16(_vshrq_n_u16(
+      (int32_t)15, _vreinterpretq_u16_s16(shifted_positive_in_range),
+      _uint16x8_t));
+  _int16x8_t shifted0 = _vsubq_s16(half, v.high);
+  _int16x8_t mask = _vshrq_n_s16((int32_t)15, shifted0, _int16x8_t);
+  _int16x8_t shifted_to_positive0 = _veorq_s16(mask, shifted0);
+  _int16x8_t shifted_positive_in_range0 =
+      _vsubq_s16(shifted_to_positive0, quarter);
+  v.high = _vreinterpretq_s16_u16(_vshrq_n_u16(
+      (int32_t)15, _vreinterpretq_u16_s16(shifted_positive_in_range0),
+      _uint16x8_t));
   return v;
 }
 
@@ -351,13 +329,11 @@ libcrux_ml_kem_vector_neon_compress_mask_n_least_significant_bits(
   return uu____0;
 }
 
-KRML_MUSTINLINE uint8_t
-libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_int16x8_t(uint8_t v,
-                                                                    uint8_t c) {
-  uint8_t v_low = libcrux_intrinsics_arm64_extract__vmulq_s16(v, c);
-  uint8_t v_high = libcrux_intrinsics_arm64_extract__vshrq_n_s16(
-      (int32_t)1, libcrux_intrinsics_arm64_extract__vqdmulhq_s16(v, c),
-      uint8_t);
+KRML_MUSTINLINE _int16x8_t
+libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_int16x8_t(
+    _int16x8_t v, _int16x8_t c) {
+  _int16x8_t v_low = _vmulq_s16(v, c);
+  _int16x8_t v_high = _vshrq_n_s16((int32_t)1, _vqdmulhq_s16(v, c), _int16x8_t);
   return libcrux_ml_kem_vector_neon_arithmetic_montgomery_reduce_int16x8_t(
       v_low, v_high);
 }
@@ -367,29 +343,21 @@ libcrux_ml_kem_vector_neon_ntt_ntt_layer_1_step(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t zeta1,
     int16_t zeta2, int16_t zeta3, int16_t zeta4) {
   int16_t zetas[8U] = {zeta1, zeta1, zeta3, zeta3, zeta2, zeta2, zeta4, zeta4};
-  uint8_t zeta = libcrux_intrinsics_arm64_extract__vld1q_s16(
+  _int16x8_t zeta = _vld1q_s16(
       Eurydice_array_to_slice((size_t)8U, zetas, int16_t, Eurydice_slice));
-  uint8_t dup_a = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s32(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(v.low),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(v.high)));
-  uint8_t dup_b = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s32(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(v.low),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(v.high)));
-  uint8_t t =
+  _int16x8_t dup_a = _vreinterpretq_s16_s32(_vtrn1q_s32(
+      _vreinterpretq_s32_s16(v.low), _vreinterpretq_s32_s16(v.high)));
+  _int16x8_t dup_b = _vreinterpretq_s16_s32(_vtrn2q_s32(
+      _vreinterpretq_s32_s16(v.low), _vreinterpretq_s32_s16(v.high)));
+  _int16x8_t t =
       libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_int16x8_t(dup_b,
                                                                           zeta);
-  uint8_t b = libcrux_intrinsics_arm64_extract__vsubq_s16(dup_a, t);
-  uint8_t a = libcrux_intrinsics_arm64_extract__vaddq_s16(dup_a, t);
-  v.low = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s32(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(a),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(b)));
-  v.high = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s32(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(a),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(b)));
+  _int16x8_t b = _vsubq_s16(dup_a, t);
+  _int16x8_t a = _vaddq_s16(dup_a, t);
+  v.low = _vreinterpretq_s16_s32(
+      _vtrn1q_s32(_vreinterpretq_s32_s16(a), _vreinterpretq_s32_s16(b)));
+  v.high = _vreinterpretq_s16_s32(
+      _vtrn2q_s32(_vreinterpretq_s32_s16(a), _vreinterpretq_s32_s16(b)));
   return v;
 }
 
@@ -410,29 +378,21 @@ libcrux_ml_kem_vector_neon_ntt_ntt_layer_2_step(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t zeta1,
     int16_t zeta2) {
   int16_t zetas[8U] = {zeta1, zeta1, zeta1, zeta1, zeta2, zeta2, zeta2, zeta2};
-  uint8_t zeta = libcrux_intrinsics_arm64_extract__vld1q_s16(
+  _int16x8_t zeta = _vld1q_s16(
       Eurydice_array_to_slice((size_t)8U, zetas, int16_t, Eurydice_slice));
-  uint8_t dup_a = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s64(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s64(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(v.low),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(v.high)));
-  uint8_t dup_b = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s64(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s64(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(v.low),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(v.high)));
-  uint8_t t =
+  _int16x8_t dup_a = _vreinterpretq_s16_s64(_vtrn1q_s64(
+      _vreinterpretq_s64_s16(v.low), _vreinterpretq_s64_s16(v.high)));
+  _int16x8_t dup_b = _vreinterpretq_s16_s64(_vtrn2q_s64(
+      _vreinterpretq_s64_s16(v.low), _vreinterpretq_s64_s16(v.high)));
+  _int16x8_t t =
       libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_int16x8_t(dup_b,
                                                                           zeta);
-  uint8_t b = libcrux_intrinsics_arm64_extract__vsubq_s16(dup_a, t);
-  uint8_t a = libcrux_intrinsics_arm64_extract__vaddq_s16(dup_a, t);
-  v.low = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s64(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s64(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(a),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(b)));
-  v.high = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s64(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s64(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(a),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(b)));
+  _int16x8_t b = _vsubq_s16(dup_a, t);
+  _int16x8_t a = _vaddq_s16(dup_a, t);
+  v.low = _vreinterpretq_s16_s64(
+      _vtrn1q_s64(_vreinterpretq_s64_s16(a), _vreinterpretq_s64_s16(b)));
+  v.high = _vreinterpretq_s16_s64(
+      _vtrn2q_s64(_vreinterpretq_s64_s16(a), _vreinterpretq_s64_s16(b)));
   return v;
 }
 
@@ -450,12 +410,12 @@ libcrux_ml_kem_vector_neon_ntt_layer_2_step_20(
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_ntt_ntt_layer_3_step(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t zeta) {
-  uint8_t zeta0 = libcrux_intrinsics_arm64_extract__vdupq_n_s16(zeta);
-  uint8_t t =
+  _int16x8_t zeta0 = _vdupq_n_s16(zeta);
+  _int16x8_t t =
       libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_int16x8_t(
           v.high, zeta0);
-  v.high = libcrux_intrinsics_arm64_extract__vsubq_s16(v.low, t);
-  v.low = libcrux_intrinsics_arm64_extract__vaddq_s16(v.low, t);
+  v.high = _vsubq_s16(v.low, t);
+  v.low = _vaddq_s16(v.low, t);
   return v;
 }
 
@@ -474,31 +434,23 @@ libcrux_ml_kem_vector_neon_ntt_inv_ntt_layer_1_step(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t zeta1,
     int16_t zeta2, int16_t zeta3, int16_t zeta4) {
   int16_t zetas[8U] = {zeta1, zeta1, zeta3, zeta3, zeta2, zeta2, zeta4, zeta4};
-  uint8_t zeta = libcrux_intrinsics_arm64_extract__vld1q_s16(
+  _int16x8_t zeta = _vld1q_s16(
       Eurydice_array_to_slice((size_t)8U, zetas, int16_t, Eurydice_slice));
-  uint8_t a0 = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s32(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(v.low),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(v.high)));
-  uint8_t b0 = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s32(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(v.low),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(v.high)));
-  uint8_t b_minus_a = libcrux_intrinsics_arm64_extract__vsubq_s16(b0, a0);
-  uint8_t a = libcrux_intrinsics_arm64_extract__vaddq_s16(a0, b0);
-  uint8_t a1 =
+  _int16x8_t a0 = _vreinterpretq_s16_s32(_vtrn1q_s32(
+      _vreinterpretq_s32_s16(v.low), _vreinterpretq_s32_s16(v.high)));
+  _int16x8_t b0 = _vreinterpretq_s16_s32(_vtrn2q_s32(
+      _vreinterpretq_s32_s16(v.low), _vreinterpretq_s32_s16(v.high)));
+  _int16x8_t b_minus_a = _vsubq_s16(b0, a0);
+  _int16x8_t a = _vaddq_s16(a0, b0);
+  _int16x8_t a1 =
       libcrux_ml_kem_vector_neon_arithmetic_barrett_reduce_int16x8_t(a);
-  uint8_t b =
+  _int16x8_t b =
       libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_int16x8_t(
           b_minus_a, zeta);
-  v.low = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s32(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(a1),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(b)));
-  v.high = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s32(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(a1),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(b)));
+  v.low = _vreinterpretq_s16_s32(
+      _vtrn1q_s32(_vreinterpretq_s32_s16(a1), _vreinterpretq_s32_s16(b)));
+  v.high = _vreinterpretq_s16_s32(
+      _vtrn2q_s32(_vreinterpretq_s32_s16(a1), _vreinterpretq_s32_s16(b)));
   return v;
 }
 
@@ -519,29 +471,21 @@ libcrux_ml_kem_vector_neon_ntt_inv_ntt_layer_2_step(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t zeta1,
     int16_t zeta2) {
   int16_t zetas[8U] = {zeta1, zeta1, zeta1, zeta1, zeta2, zeta2, zeta2, zeta2};
-  uint8_t zeta = libcrux_intrinsics_arm64_extract__vld1q_s16(
+  _int16x8_t zeta = _vld1q_s16(
       Eurydice_array_to_slice((size_t)8U, zetas, int16_t, Eurydice_slice));
-  uint8_t a0 = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s64(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s64(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(v.low),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(v.high)));
-  uint8_t b0 = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s64(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s64(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(v.low),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(v.high)));
-  uint8_t b_minus_a = libcrux_intrinsics_arm64_extract__vsubq_s16(b0, a0);
-  uint8_t a = libcrux_intrinsics_arm64_extract__vaddq_s16(a0, b0);
-  uint8_t b =
+  _int16x8_t a0 = _vreinterpretq_s16_s64(_vtrn1q_s64(
+      _vreinterpretq_s64_s16(v.low), _vreinterpretq_s64_s16(v.high)));
+  _int16x8_t b0 = _vreinterpretq_s16_s64(_vtrn2q_s64(
+      _vreinterpretq_s64_s16(v.low), _vreinterpretq_s64_s16(v.high)));
+  _int16x8_t b_minus_a = _vsubq_s16(b0, a0);
+  _int16x8_t a = _vaddq_s16(a0, b0);
+  _int16x8_t b =
       libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_int16x8_t(
           b_minus_a, zeta);
-  v.low = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s64(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s64(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(a),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(b)));
-  v.high = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s64(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s64(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(a),
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s16(b)));
+  v.low = _vreinterpretq_s16_s64(
+      _vtrn1q_s64(_vreinterpretq_s64_s16(a), _vreinterpretq_s64_s16(b)));
+  v.high = _vreinterpretq_s16_s64(
+      _vtrn2q_s64(_vreinterpretq_s64_s16(a), _vreinterpretq_s64_s16(b)));
   return v;
 }
 
@@ -559,10 +503,9 @@ libcrux_ml_kem_vector_neon_inv_ntt_layer_2_step_20(
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_ntt_inv_ntt_layer_3_step(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, int16_t zeta) {
-  uint8_t zeta0 = libcrux_intrinsics_arm64_extract__vdupq_n_s16(zeta);
-  uint8_t b_minus_a =
-      libcrux_intrinsics_arm64_extract__vsubq_s16(v.high, v.low);
-  v.low = libcrux_intrinsics_arm64_extract__vaddq_s16(v.low, v.high);
+  _int16x8_t zeta0 = _vdupq_n_s16(zeta);
+  _int16x8_t b_minus_a = _vsubq_s16(v.high, v.low);
+  v.low = _vaddq_s16(v.low, v.high);
   v.high = libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_int16x8_t(
       b_minus_a, zeta0);
   return v;
@@ -585,73 +528,49 @@ libcrux_ml_kem_vector_neon_ntt_ntt_multiply(
     int16_t zeta2, int16_t zeta3, int16_t zeta4) {
   int16_t zetas[8U] = {zeta1, zeta3, -zeta1, -zeta3,
                        zeta2, zeta4, -zeta2, -zeta4};
-  uint8_t zeta = libcrux_intrinsics_arm64_extract__vld1q_s16(
+  _int16x8_t zeta = _vld1q_s16(
       Eurydice_array_to_slice((size_t)8U, zetas, int16_t, Eurydice_slice));
-  uint8_t a0 =
-      libcrux_intrinsics_arm64_extract__vtrn1q_s16(lhs->low, lhs->high);
-  uint8_t a1 =
-      libcrux_intrinsics_arm64_extract__vtrn2q_s16(lhs->low, lhs->high);
-  uint8_t b0 =
-      libcrux_intrinsics_arm64_extract__vtrn1q_s16(rhs->low, rhs->high);
-  uint8_t b1 =
-      libcrux_intrinsics_arm64_extract__vtrn2q_s16(rhs->low, rhs->high);
-  uint8_t a1b1 =
+  _int16x8_t a0 = _vtrn1q_s16(lhs->low, lhs->high);
+  _int16x8_t a1 = _vtrn2q_s16(lhs->low, lhs->high);
+  _int16x8_t b0 = _vtrn1q_s16(rhs->low, rhs->high);
+  _int16x8_t b1 = _vtrn2q_s16(rhs->low, rhs->high);
+  _int16x8_t a1b1 =
       libcrux_ml_kem_vector_neon_arithmetic_montgomery_multiply_int16x8_t(a1,
                                                                           b1);
-  uint8_t a1b1_low = libcrux_intrinsics_arm64_extract__vmull_s16(
-      libcrux_intrinsics_arm64_extract__vget_low_s16(a1b1),
-      libcrux_intrinsics_arm64_extract__vget_low_s16(zeta));
-  uint8_t a1b1_high =
-      libcrux_intrinsics_arm64_extract__vmull_high_s16(a1b1, zeta);
-  uint8_t fst_low = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vmlal_s16(
-          a1b1_low, libcrux_intrinsics_arm64_extract__vget_low_s16(a0),
-          libcrux_intrinsics_arm64_extract__vget_low_s16(b0)));
-  uint8_t fst_high = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vmlal_high_s16(a1b1_high, a0, b0));
-  uint8_t a0b1_low = libcrux_intrinsics_arm64_extract__vmull_s16(
-      libcrux_intrinsics_arm64_extract__vget_low_s16(a0),
-      libcrux_intrinsics_arm64_extract__vget_low_s16(b1));
-  uint8_t a0b1_high = libcrux_intrinsics_arm64_extract__vmull_high_s16(a0, b1);
-  uint8_t snd_low = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vmlal_s16(
-          a0b1_low, libcrux_intrinsics_arm64_extract__vget_low_s16(a1),
-          libcrux_intrinsics_arm64_extract__vget_low_s16(b0)));
-  uint8_t snd_high = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vmlal_high_s16(a0b1_high, a1, b0));
-  uint8_t fst_low16 =
-      libcrux_intrinsics_arm64_extract__vtrn1q_s16(fst_low, fst_high);
-  uint8_t fst_high16 =
-      libcrux_intrinsics_arm64_extract__vtrn2q_s16(fst_low, fst_high);
-  uint8_t snd_low16 =
-      libcrux_intrinsics_arm64_extract__vtrn1q_s16(snd_low, snd_high);
-  uint8_t snd_high16 =
-      libcrux_intrinsics_arm64_extract__vtrn2q_s16(snd_low, snd_high);
-  uint8_t fst =
+  _int32x4_t a1b1_low = _vmull_s16(_vget_low_s16(a1b1), _vget_low_s16(zeta));
+  _int32x4_t a1b1_high = _vmull_high_s16(a1b1, zeta);
+  _int16x8_t fst_low = _vreinterpretq_s16_s32(
+      _vmlal_s16(a1b1_low, _vget_low_s16(a0), _vget_low_s16(b0)));
+  _int16x8_t fst_high =
+      _vreinterpretq_s16_s32(_vmlal_high_s16(a1b1_high, a0, b0));
+  _int32x4_t a0b1_low = _vmull_s16(_vget_low_s16(a0), _vget_low_s16(b1));
+  _int32x4_t a0b1_high = _vmull_high_s16(a0, b1);
+  _int16x8_t snd_low = _vreinterpretq_s16_s32(
+      _vmlal_s16(a0b1_low, _vget_low_s16(a1), _vget_low_s16(b0)));
+  _int16x8_t snd_high =
+      _vreinterpretq_s16_s32(_vmlal_high_s16(a0b1_high, a1, b0));
+  _int16x8_t fst_low16 = _vtrn1q_s16(fst_low, fst_high);
+  _int16x8_t fst_high16 = _vtrn2q_s16(fst_low, fst_high);
+  _int16x8_t snd_low16 = _vtrn1q_s16(snd_low, snd_high);
+  _int16x8_t snd_high16 = _vtrn2q_s16(snd_low, snd_high);
+  _int16x8_t fst =
       libcrux_ml_kem_vector_neon_arithmetic_montgomery_reduce_int16x8_t(
           fst_low16, fst_high16);
-  uint8_t snd =
+  _int16x8_t snd =
       libcrux_ml_kem_vector_neon_arithmetic_montgomery_reduce_int16x8_t(
           snd_low16, snd_high16);
-  uint8_t low0 = libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s16(fst, snd));
-  uint8_t high0 = libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s16(fst, snd));
-  uint8_t low1 = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s32(low0, high0));
-  uint8_t high1 = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_s32(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s32(low0, high0));
+  _int32x4_t low0 = _vreinterpretq_s32_s16(_vtrn1q_s16(fst, snd));
+  _int32x4_t high0 = _vreinterpretq_s32_s16(_vtrn2q_s16(fst, snd));
+  _int16x8_t low1 = _vreinterpretq_s16_s32(_vtrn1q_s32(low0, high0));
+  _int16x8_t high1 = _vreinterpretq_s16_s32(_vtrn2q_s32(low0, high0));
   uint8_t indexes[16U] = {0U, 1U, 2U, 3U, 8U,  9U,  10U, 11U,
                           4U, 5U, 6U, 7U, 12U, 13U, 14U, 15U};
-  uint8_t index = libcrux_intrinsics_arm64_extract__vld1q_u8(
+  _uint8x16_t index = _vld1q_u8(
       Eurydice_array_to_slice((size_t)16U, indexes, uint8_t, Eurydice_slice));
-  uint8_t low2 = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u8(
-      libcrux_intrinsics_arm64_extract__vqtbl1q_u8(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_u8_s16(low1), index));
-  uint8_t high2 = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u8(
-      libcrux_intrinsics_arm64_extract__vqtbl1q_u8(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_u8_s16(high1),
-          index));
+  _int16x8_t low2 =
+      _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(low1), index));
+  _int16x8_t high2 =
+      _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(high1), index));
   return (CLITERAL(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector){
       .low = low2, .high = high2});
 }
@@ -673,12 +592,12 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_1(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, uint8_t ret[2U]) {
   int16_t shifter[8U] = {(int16_t)0, (int16_t)1, (int16_t)2, (int16_t)3,
                          (int16_t)4, (int16_t)5, (int16_t)6, (int16_t)7};
-  uint8_t shift = libcrux_intrinsics_arm64_extract__vld1q_s16(
+  _int16x8_t shift = _vld1q_s16(
       Eurydice_array_to_slice((size_t)8U, shifter, int16_t, Eurydice_slice));
-  uint8_t low0 = libcrux_intrinsics_arm64_extract__vshlq_s16(v.low, shift);
-  uint8_t high0 = libcrux_intrinsics_arm64_extract__vshlq_s16(v.high, shift);
-  int16_t low = libcrux_intrinsics_arm64_extract__vaddvq_s16(low0);
-  int16_t high = libcrux_intrinsics_arm64_extract__vaddvq_s16(high0);
+  _int16x8_t low0 = _vshlq_s16(v.low, shift);
+  _int16x8_t high0 = _vshlq_s16(v.high, shift);
+  int16_t low = _vaddvq_s16(low0);
+  int16_t high = _vaddvq_s16(high0);
   ret[0U] = (uint8_t)low;
   ret[1U] = (uint8_t)high;
 }
@@ -694,20 +613,19 @@ void libcrux_ml_kem_vector_neon_serialize_1_20(
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_serialize_deserialize_1(Eurydice_slice a) {
-  uint8_t one = libcrux_intrinsics_arm64_extract__vdupq_n_s16((int16_t)1);
-  uint8_t low0 = libcrux_intrinsics_arm64_extract__vdupq_n_s16((
-      int16_t)Eurydice_slice_index(a, (size_t)0U, uint8_t, uint8_t *, uint8_t));
-  uint8_t high0 = libcrux_intrinsics_arm64_extract__vdupq_n_s16((
-      int16_t)Eurydice_slice_index(a, (size_t)1U, uint8_t, uint8_t *, uint8_t));
+  _int16x8_t one = _vdupq_n_s16((int16_t)1);
+  _int16x8_t low0 = _vdupq_n_s16((int16_t)Eurydice_slice_index(
+      a, (size_t)0U, uint8_t, uint8_t *, uint8_t));
+  _int16x8_t high0 = _vdupq_n_s16((int16_t)Eurydice_slice_index(
+      a, (size_t)1U, uint8_t, uint8_t *, uint8_t));
   int16_t shifter[8U] = {(int16_t)0,  (int16_t)255, (int16_t)-2, (int16_t)-3,
                          (int16_t)-4, (int16_t)-5,  (int16_t)-6, (int16_t)-7};
-  uint8_t shift = libcrux_intrinsics_arm64_extract__vld1q_s16(
+  _int16x8_t shift = _vld1q_s16(
       Eurydice_array_to_slice((size_t)8U, shifter, int16_t, Eurydice_slice));
-  uint8_t low = libcrux_intrinsics_arm64_extract__vshlq_s16(low0, shift);
-  uint8_t high = libcrux_intrinsics_arm64_extract__vshlq_s16(high0, shift);
+  _int16x8_t low = _vshlq_s16(low0, shift);
+  _int16x8_t high = _vshlq_s16(high0, shift);
   return (CLITERAL(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector){
-      .low = libcrux_intrinsics_arm64_extract__vandq_s16(low, one),
-      .high = libcrux_intrinsics_arm64_extract__vandq_s16(high, one)});
+      .low = _vandq_s16(low, one), .high = _vandq_s16(high, one)});
 }
 
 /**
@@ -723,20 +641,14 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_4(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, uint8_t ret[8U]) {
   int16_t shifter[8U] = {(int16_t)0, (int16_t)4, (int16_t)8, (int16_t)12,
                          (int16_t)0, (int16_t)4, (int16_t)8, (int16_t)12};
-  uint8_t shift = libcrux_intrinsics_arm64_extract__vld1q_s16(
+  _int16x8_t shift = _vld1q_s16(
       Eurydice_array_to_slice((size_t)8U, shifter, int16_t, Eurydice_slice));
-  uint8_t lowt = libcrux_intrinsics_arm64_extract__vshlq_u16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u16_s16(v.low), shift);
-  uint8_t hight = libcrux_intrinsics_arm64_extract__vshlq_u16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u16_s16(v.high), shift);
-  uint64_t sum0 = (uint64_t)libcrux_intrinsics_arm64_extract__vaddv_u16(
-      libcrux_intrinsics_arm64_extract__vget_low_u16(lowt));
-  uint64_t sum1 = (uint64_t)libcrux_intrinsics_arm64_extract__vaddv_u16(
-      libcrux_intrinsics_arm64_extract__vget_high_u16(lowt));
-  uint64_t sum2 = (uint64_t)libcrux_intrinsics_arm64_extract__vaddv_u16(
-      libcrux_intrinsics_arm64_extract__vget_low_u16(hight));
-  uint64_t sum3 = (uint64_t)libcrux_intrinsics_arm64_extract__vaddv_u16(
-      libcrux_intrinsics_arm64_extract__vget_high_u16(hight));
+  _uint16x8_t lowt = _vshlq_u16(_vreinterpretq_u16_s16(v.low), shift);
+  _uint16x8_t hight = _vshlq_u16(_vreinterpretq_u16_s16(v.high), shift);
+  uint64_t sum0 = (uint64_t)_vaddv_u16(_vget_low_u16(lowt));
+  uint64_t sum1 = (uint64_t)_vaddv_u16(_vget_high_u16(lowt));
+  uint64_t sum2 = (uint64_t)_vaddv_u16(_vget_low_u16(hight));
+  uint64_t sum3 = (uint64_t)_vaddv_u16(_vget_high_u16(hight));
   uint64_t sum = ((sum0 | sum1 << 16U) | sum2 << 32U) | sum3 << 48U;
   uint8_t ret0[8U];
   core_num__u64_9__to_le_bytes(sum, ret0);
@@ -759,12 +671,10 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_4(Eurydice_slice v) {
   int16_t input_i16s[16U];
   libcrux_ml_kem_vector_portable_to_i16_array_0d(input, input_i16s);
   libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lit;
-  lit.low =
-      libcrux_intrinsics_arm64_extract__vld1q_s16(Eurydice_array_to_subslice2(
-          input_i16s, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice));
-  lit.high =
-      libcrux_intrinsics_arm64_extract__vld1q_s16(Eurydice_array_to_subslice2(
-          input_i16s, (size_t)8U, (size_t)16U, int16_t, Eurydice_slice));
+  lit.low = _vld1q_s16(Eurydice_array_to_subslice2(
+      input_i16s, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice));
+  lit.high = _vld1q_s16(Eurydice_array_to_subslice2(
+      input_i16s, (size_t)8U, (size_t)16U, int16_t, Eurydice_slice));
   return lit;
 }
 
@@ -805,12 +715,10 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_5(Eurydice_slice v) {
   int16_t array[16U];
   libcrux_ml_kem_vector_portable_to_i16_array_0d(output, array);
   libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lit;
-  lit.low =
-      libcrux_intrinsics_arm64_extract__vld1q_s16(Eurydice_array_to_subslice2(
-          array, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice));
-  lit.high =
-      libcrux_intrinsics_arm64_extract__vld1q_s16(Eurydice_array_to_subslice2(
-          array, (size_t)8U, (size_t)16U, int16_t, Eurydice_slice));
+  lit.low = _vld1q_s16(Eurydice_array_to_subslice2(
+      array, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice));
+  lit.high = _vld1q_s16(Eurydice_array_to_subslice2(
+      array, (size_t)8U, (size_t)16U, int16_t, Eurydice_slice));
   return lit;
 }
 
@@ -825,40 +733,25 @@ libcrux_ml_kem_vector_neon_deserialize_5_20(Eurydice_slice a) {
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_10(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, uint8_t ret[20U]) {
-  uint8_t low00 = libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s16(v.low, v.low));
-  uint8_t low10 = libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s16(v.low, v.low));
-  uint8_t mixt = libcrux_intrinsics_arm64_extract__vsliq_n_s32(
-      (int32_t)10, low00, low10, uint8_t);
-  uint8_t low0 = libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s32(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s32(mixt, mixt));
-  uint8_t low1 = libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s32(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s32(mixt, mixt));
-  uint8_t low_mix = libcrux_intrinsics_arm64_extract__vsliq_n_s64(
-      (int32_t)20, low0, low1, uint8_t);
-  uint8_t high00 = libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s16(v.high, v.high));
-  uint8_t high10 = libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s16(v.high, v.high));
-  uint8_t mixt0 = libcrux_intrinsics_arm64_extract__vsliq_n_s32(
-      (int32_t)10, high00, high10, uint8_t);
-  uint8_t high0 = libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s32(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s32(mixt0, mixt0));
-  uint8_t high1 = libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s32(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s32(mixt0, mixt0));
-  uint8_t high_mix = libcrux_intrinsics_arm64_extract__vsliq_n_s64(
-      (int32_t)20, high0, high1, uint8_t);
+  _int32x4_t low00 = _vreinterpretq_s32_s16(_vtrn1q_s16(v.low, v.low));
+  _int32x4_t low10 = _vreinterpretq_s32_s16(_vtrn2q_s16(v.low, v.low));
+  _int32x4_t mixt = _vsliq_n_s32((int32_t)10, low00, low10, _int32x4_t);
+  _int64x2_t low0 = _vreinterpretq_s64_s32(_vtrn1q_s32(mixt, mixt));
+  _int64x2_t low1 = _vreinterpretq_s64_s32(_vtrn2q_s32(mixt, mixt));
+  _int64x2_t low_mix = _vsliq_n_s64((int32_t)20, low0, low1, _int64x2_t);
+  _int32x4_t high00 = _vreinterpretq_s32_s16(_vtrn1q_s16(v.high, v.high));
+  _int32x4_t high10 = _vreinterpretq_s32_s16(_vtrn2q_s16(v.high, v.high));
+  _int32x4_t mixt0 = _vsliq_n_s32((int32_t)10, high00, high10, _int32x4_t);
+  _int64x2_t high0 = _vreinterpretq_s64_s32(_vtrn1q_s32(mixt0, mixt0));
+  _int64x2_t high1 = _vreinterpretq_s64_s32(_vtrn2q_s32(mixt0, mixt0));
+  _int64x2_t high_mix = _vsliq_n_s64((int32_t)20, high0, high1, _int64x2_t);
   uint8_t result32[32U] = {0U};
   Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
       result32, (size_t)0U, (size_t)16U, uint8_t, Eurydice_slice);
-  libcrux_intrinsics_arm64_extract__vst1q_u8(
-      uu____0, libcrux_intrinsics_arm64_extract__vreinterpretq_u8_s64(low_mix));
+  _vst1q_u8(uu____0, _vreinterpretq_u8_s64(low_mix));
   Eurydice_slice uu____1 = Eurydice_array_to_subslice2(
       result32, (size_t)16U, (size_t)32U, uint8_t, Eurydice_slice);
-  libcrux_intrinsics_arm64_extract__vst1q_u8(
-      uu____1,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u8_s64(high_mix));
+  _vst1q_u8(uu____1, _vreinterpretq_u8_s64(high_mix));
   uint8_t result[20U] = {0U};
   Eurydice_slice uu____2 = Eurydice_array_to_subslice2(
       result, (size_t)0U, (size_t)5U, uint8_t, Eurydice_slice);
@@ -907,12 +800,10 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_10(Eurydice_slice v) {
   int16_t array[16U];
   libcrux_ml_kem_vector_portable_to_i16_array_0d(output, array);
   libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lit;
-  lit.low =
-      libcrux_intrinsics_arm64_extract__vld1q_s16(Eurydice_array_to_subslice2(
-          array, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice));
-  lit.high =
-      libcrux_intrinsics_arm64_extract__vld1q_s16(Eurydice_array_to_subslice2(
-          array, (size_t)8U, (size_t)16U, int16_t, Eurydice_slice));
+  lit.low = _vld1q_s16(Eurydice_array_to_subslice2(
+      array, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice));
+  lit.high = _vld1q_s16(Eurydice_array_to_subslice2(
+      array, (size_t)8U, (size_t)16U, int16_t, Eurydice_slice));
   return lit;
 }
 
@@ -953,12 +844,10 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_11(Eurydice_slice v) {
   int16_t array[16U];
   libcrux_ml_kem_vector_portable_to_i16_array_0d(output, array);
   libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector lit;
-  lit.low =
-      libcrux_intrinsics_arm64_extract__vld1q_s16(Eurydice_array_to_subslice2(
-          array, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice));
-  lit.high =
-      libcrux_intrinsics_arm64_extract__vld1q_s16(Eurydice_array_to_subslice2(
-          array, (size_t)8U, (size_t)16U, int16_t, Eurydice_slice));
+  lit.low = _vld1q_s16(Eurydice_array_to_subslice2(
+      array, (size_t)0U, (size_t)8U, int16_t, Eurydice_slice));
+  lit.high = _vld1q_s16(Eurydice_array_to_subslice2(
+      array, (size_t)8U, (size_t)16U, int16_t, Eurydice_slice));
   return lit;
 }
 
@@ -973,40 +862,25 @@ libcrux_ml_kem_vector_neon_deserialize_11_20(Eurydice_slice a) {
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_neon_serialize_serialize_12(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v, uint8_t ret[24U]) {
-  uint8_t low00 = libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s16(v.low, v.low));
-  uint8_t low10 = libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s16(v.low, v.low));
-  uint8_t mixt = libcrux_intrinsics_arm64_extract__vsliq_n_s32(
-      (int32_t)12, low00, low10, uint8_t);
-  uint8_t low0 = libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s32(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s32(mixt, mixt));
-  uint8_t low1 = libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s32(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s32(mixt, mixt));
-  uint8_t low_mix = libcrux_intrinsics_arm64_extract__vsliq_n_s64(
-      (int32_t)24, low0, low1, uint8_t);
-  uint8_t high00 = libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s16(v.high, v.high));
-  uint8_t high10 = libcrux_intrinsics_arm64_extract__vreinterpretq_s32_s16(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s16(v.high, v.high));
-  uint8_t mixt0 = libcrux_intrinsics_arm64_extract__vsliq_n_s32(
-      (int32_t)12, high00, high10, uint8_t);
-  uint8_t high0 = libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s32(
-      libcrux_intrinsics_arm64_extract__vtrn1q_s32(mixt0, mixt0));
-  uint8_t high1 = libcrux_intrinsics_arm64_extract__vreinterpretq_s64_s32(
-      libcrux_intrinsics_arm64_extract__vtrn2q_s32(mixt0, mixt0));
-  uint8_t high_mix = libcrux_intrinsics_arm64_extract__vsliq_n_s64(
-      (int32_t)24, high0, high1, uint8_t);
+  _int32x4_t low00 = _vreinterpretq_s32_s16(_vtrn1q_s16(v.low, v.low));
+  _int32x4_t low10 = _vreinterpretq_s32_s16(_vtrn2q_s16(v.low, v.low));
+  _int32x4_t mixt = _vsliq_n_s32((int32_t)12, low00, low10, _int32x4_t);
+  _int64x2_t low0 = _vreinterpretq_s64_s32(_vtrn1q_s32(mixt, mixt));
+  _int64x2_t low1 = _vreinterpretq_s64_s32(_vtrn2q_s32(mixt, mixt));
+  _int64x2_t low_mix = _vsliq_n_s64((int32_t)24, low0, low1, _int64x2_t);
+  _int32x4_t high00 = _vreinterpretq_s32_s16(_vtrn1q_s16(v.high, v.high));
+  _int32x4_t high10 = _vreinterpretq_s32_s16(_vtrn2q_s16(v.high, v.high));
+  _int32x4_t mixt0 = _vsliq_n_s32((int32_t)12, high00, high10, _int32x4_t);
+  _int64x2_t high0 = _vreinterpretq_s64_s32(_vtrn1q_s32(mixt0, mixt0));
+  _int64x2_t high1 = _vreinterpretq_s64_s32(_vtrn2q_s32(mixt0, mixt0));
+  _int64x2_t high_mix = _vsliq_n_s64((int32_t)24, high0, high1, _int64x2_t);
   uint8_t result32[32U] = {0U};
   Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
       result32, (size_t)0U, (size_t)16U, uint8_t, Eurydice_slice);
-  libcrux_intrinsics_arm64_extract__vst1q_u8(
-      uu____0, libcrux_intrinsics_arm64_extract__vreinterpretq_u8_s64(low_mix));
+  _vst1q_u8(uu____0, _vreinterpretq_u8_s64(low_mix));
   Eurydice_slice uu____1 = Eurydice_array_to_subslice2(
       result32, (size_t)16U, (size_t)32U, uint8_t, Eurydice_slice);
-  libcrux_intrinsics_arm64_extract__vst1q_u8(
-      uu____1,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u8_s64(high_mix));
+  _vst1q_u8(uu____1, _vreinterpretq_u8_s64(high_mix));
   uint8_t result[24U] = {0U};
   Eurydice_slice uu____2 = Eurydice_array_to_subslice2(
       result, (size_t)0U, (size_t)6U, uint8_t, Eurydice_slice);
@@ -1052,13 +926,13 @@ KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 libcrux_ml_kem_vector_neon_serialize_deserialize_12(Eurydice_slice v) {
   uint8_t indexes[16U] = {0U, 1U, 1U, 2U, 3U, 4U,  4U,  5U,
                           6U, 7U, 7U, 8U, 9U, 10U, 10U, 11U};
-  uint8_t index_vec = libcrux_intrinsics_arm64_extract__vld1q_u8(
+  _uint8x16_t index_vec = _vld1q_u8(
       Eurydice_array_to_slice((size_t)16U, indexes, uint8_t, Eurydice_slice));
   int16_t shifts[8U] = {(int16_t)0, (int16_t)-4, (int16_t)0, (int16_t)-4,
                         (int16_t)0, (int16_t)-4, (int16_t)0, (int16_t)-4};
-  uint8_t shift_vec = libcrux_intrinsics_arm64_extract__vld1q_s16(
+  _int16x8_t shift_vec = _vld1q_s16(
       Eurydice_array_to_slice((size_t)8U, shifts, int16_t, Eurydice_slice));
-  uint8_t mask12 = libcrux_intrinsics_arm64_extract__vdupq_n_u16(4095U);
+  _uint16x8_t mask12 = _vdupq_n_u16(4095U);
   uint8_t input0[16U] = {0U};
   Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
       input0, (size_t)0U, (size_t)12U, uint8_t, Eurydice_slice);
@@ -1067,7 +941,7 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_12(Eurydice_slice v) {
       Eurydice_slice_subslice2(v, (size_t)0U, (size_t)12U, uint8_t,
                                Eurydice_slice),
       uint8_t, void *);
-  uint8_t input_vec0 = libcrux_intrinsics_arm64_extract__vld1q_u8(
+  _uint8x16_t input_vec0 = _vld1q_u8(
       Eurydice_array_to_slice((size_t)16U, input0, uint8_t, Eurydice_slice));
   uint8_t input1[16U] = {0U};
   Eurydice_slice uu____1 = Eurydice_array_to_subslice2(
@@ -1077,20 +951,16 @@ libcrux_ml_kem_vector_neon_serialize_deserialize_12(Eurydice_slice v) {
       Eurydice_slice_subslice2(v, (size_t)12U, (size_t)24U, uint8_t,
                                Eurydice_slice),
       uint8_t, void *);
-  uint8_t input_vec1 = libcrux_intrinsics_arm64_extract__vld1q_u8(
+  _uint8x16_t input_vec1 = _vld1q_u8(
       Eurydice_array_to_slice((size_t)16U, input1, uint8_t, Eurydice_slice));
-  uint8_t moved0 = libcrux_intrinsics_arm64_extract__vreinterpretq_u16_u8(
-      libcrux_intrinsics_arm64_extract__vqtbl1q_u8(input_vec0, index_vec));
-  uint8_t shifted0 =
-      libcrux_intrinsics_arm64_extract__vshlq_u16(moved0, shift_vec);
-  uint8_t low = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u16(
-      libcrux_intrinsics_arm64_extract__vandq_u16(shifted0, mask12));
-  uint8_t moved1 = libcrux_intrinsics_arm64_extract__vreinterpretq_u16_u8(
-      libcrux_intrinsics_arm64_extract__vqtbl1q_u8(input_vec1, index_vec));
-  uint8_t shifted1 =
-      libcrux_intrinsics_arm64_extract__vshlq_u16(moved1, shift_vec);
-  uint8_t high = libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u16(
-      libcrux_intrinsics_arm64_extract__vandq_u16(shifted1, mask12));
+  _uint16x8_t moved0 =
+      _vreinterpretq_u16_u8(_vqtbl1q_u8(input_vec0, index_vec));
+  _uint16x8_t shifted0 = _vshlq_u16(moved0, shift_vec);
+  _int16x8_t low = _vreinterpretq_s16_u16(_vandq_u16(shifted0, mask12));
+  _uint16x8_t moved1 =
+      _vreinterpretq_u16_u8(_vqtbl1q_u8(input_vec1, index_vec));
+  _uint16x8_t shifted1 = _vshlq_u16(moved1, shift_vec);
+  _int16x8_t high = _vreinterpretq_s16_u16(_vandq_u16(shifted1, mask12));
   return (CLITERAL(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector){
       .low = low, .high = high});
 }
@@ -1305,10 +1175,8 @@ with const generics
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 shift_right_8e(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  v.low = libcrux_intrinsics_arm64_extract__vshrq_n_s16((int32_t)15, v.low,
-                                                        uint8_t);
-  v.high = libcrux_intrinsics_arm64_extract__vshrq_n_s16((int32_t)15, v.high,
-                                                         uint8_t);
+  v.low = _vshrq_n_s16((int32_t)15, v.low, _int16x8_t);
+  v.high = _vshrq_n_s16((int32_t)15, v.high, _int16x8_t);
   return v;
 }
 
@@ -1502,7 +1370,7 @@ static void closure_de1(
 }
 
 typedef struct Simd128Hash_s {
-  libcrux_sha3_generic_keccak_KeccakState_2c shake128_state[2U];
+  libcrux_sha3_generic_keccak_KeccakState_cc shake128_state[2U];
 } Simd128Hash;
 
 /**
@@ -1512,9 +1380,9 @@ libcrux_ml_kem.hash_functions.neon.shake128_init_absorb with const generics
 */
 static KRML_MUSTINLINE Simd128Hash
 shake128_init_absorb_6b1(uint8_t input[2U][34U]) {
-  libcrux_sha3_generic_keccak_KeccakState_2c uu____0 =
+  libcrux_sha3_generic_keccak_KeccakState_cc uu____0 =
       libcrux_sha3_neon_x2_incremental_shake128_init();
-  libcrux_sha3_generic_keccak_KeccakState_2c state[2U] = {
+  libcrux_sha3_generic_keccak_KeccakState_cc state[2U] = {
       uu____0, libcrux_sha3_neon_x2_incremental_shake128_init()};
   libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
       state,
@@ -1522,7 +1390,7 @@ shake128_init_absorb_6b1(uint8_t input[2U][34U]) {
       Eurydice_array_to_slice((size_t)34U, input[1U], uint8_t, Eurydice_slice));
   Simd128Hash lit;
   memcpy(lit.shake128_state, state,
-         (size_t)2U * sizeof(libcrux_sha3_generic_keccak_KeccakState_2c));
+         (size_t)2U * sizeof(libcrux_sha3_generic_keccak_KeccakState_cc));
   return lit;
 }
 
@@ -2134,9 +2002,8 @@ static KRML_MUSTINLINE void ntt_at_layer_7_67(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector t =
         libcrux_ml_kem_vector_neon_multiply_by_constant_20(
             re->coefficients[j + step], (int16_t)-1600);
-    libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
+    re->coefficients[j + step] =
         libcrux_ml_kem_vector_neon_sub_20(re->coefficients[j], &t);
-    re->coefficients[j + step] = uu____0;
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____1 =
         libcrux_ml_kem_vector_neon_add_20(re->coefficients[j], &t);
     re->coefficients[j] = uu____1;
@@ -2237,13 +2104,12 @@ static KRML_MUSTINLINE void ntt_at_layer_2_d0(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] + (size_t)1U;
-      libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-          libcrux_ml_kem_vector_neon_ntt_layer_2_step_20(
-              re->coefficients[round],
-              libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
-              libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
-                                                                 (size_t)1U]);
-      re->coefficients[round] = uu____0; zeta_i[0U] = zeta_i[0U] + (size_t)1U;);
+      re->coefficients[round] = libcrux_ml_kem_vector_neon_ntt_layer_2_step_20(
+          re->coefficients[round],
+          libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
+          libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
+                                                             (size_t)1U]);
+      zeta_i[0U] = zeta_i[0U] + (size_t)1U;);
 }
 
 /**
@@ -2257,17 +2123,16 @@ static KRML_MUSTINLINE void ntt_at_layer_1_39(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] + (size_t)1U;
-      libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-          libcrux_ml_kem_vector_neon_ntt_layer_1_step_20(
-              re->coefficients[round],
-              libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
-              libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
-                                                                 (size_t)1U],
-              libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
-                                                                 (size_t)2U],
-              libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
-                                                                 (size_t)3U]);
-      re->coefficients[round] = uu____0; zeta_i[0U] = zeta_i[0U] + (size_t)3U;);
+      re->coefficients[round] = libcrux_ml_kem_vector_neon_ntt_layer_1_step_20(
+          re->coefficients[round],
+          libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
+          libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
+                                                             (size_t)1U],
+          libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
+                                                             (size_t)2U],
+          libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
+                                                             (size_t)3U]);
+      zeta_i[0U] = zeta_i[0U] + (size_t)3U;);
 }
 
 /**
@@ -2338,13 +2203,11 @@ static KRML_MUSTINLINE tuple_741 sample_vector_cbd_then_ntt_1f1(
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[2U][192U];
   PRFxN_48_a91(prf_inputs, prf_outputs);
-  KRML_MAYBE_FOR2(
-      i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
-      libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____1 =
-          sample_from_binomial_distribution_2c0(Eurydice_array_to_slice(
-              (size_t)192U, prf_outputs[i0], uint8_t, Eurydice_slice));
-      re_as_ntt[i0] = uu____1;
-      ntt_binomially_sampled_ring_element_cf(&re_as_ntt[i0]););
+  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
+                  re_as_ntt[i0] = sample_from_binomial_distribution_2c0(
+                      Eurydice_array_to_slice((size_t)192U, prf_outputs[i0],
+                                              uint8_t, Eurydice_slice));
+                  ntt_binomially_sampled_ring_element_cf(&re_as_ntt[i0]););
   libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____2[2U];
   memcpy(
       uu____2, re_as_ntt,
@@ -3074,7 +2937,7 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_1_9b(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] - (size_t)1U;
-      libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
+      re->coefficients[round] =
           libcrux_ml_kem_vector_neon_inv_ntt_layer_1_step_20(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
@@ -3084,7 +2947,7 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_1_9b(
                                                                  (size_t)2U],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] -
                                                                  (size_t)3U]);
-      re->coefficients[round] = uu____0; zeta_i[0U] = zeta_i[0U] - (size_t)3U;);
+      zeta_i[0U] = zeta_i[0U] - (size_t)3U;);
 }
 
 /**
@@ -3098,13 +2961,13 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_2_4b(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] - (size_t)1U;
-      libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
+      re->coefficients[round] =
           libcrux_ml_kem_vector_neon_inv_ntt_layer_2_step_20(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] -
                                                                  (size_t)1U]);
-      re->coefficients[round] = uu____0; zeta_i[0U] = zeta_i[0U] - (size_t)1U;);
+      zeta_i[0U] = zeta_i[0U] - (size_t)1U;);
 }
 
 /**
@@ -3373,18 +3236,13 @@ A monomorphic instance of libcrux_ml_kem.vector.neon.compress.compress_int32x4_t
 with const generics
 - COEFFICIENT_BITS= 10
 */
-static KRML_MUSTINLINE uint8_t compress_int32x4_t_ce(uint8_t v) {
-  uint8_t half = libcrux_intrinsics_arm64_extract__vdupq_n_u32(1664U);
-  uint8_t compressed =
-      libcrux_intrinsics_arm64_extract__vshlq_n_u32((int32_t)10, v, uint8_t);
-  uint8_t compressed0 =
-      libcrux_intrinsics_arm64_extract__vaddq_u32(compressed, half);
-  uint8_t compressed1 = libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s32(
-      libcrux_intrinsics_arm64_extract__vqdmulhq_n_s32(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_u32(compressed0),
-          (int32_t)10321340));
-  return libcrux_intrinsics_arm64_extract__vshrq_n_u32((int32_t)4, compressed1,
-                                                       uint8_t);
+static KRML_MUSTINLINE _uint32x4_t compress_int32x4_t_ce(_uint32x4_t v) {
+  _uint32x4_t half = _vdupq_n_u32(1664U);
+  _uint32x4_t compressed = _vshlq_n_u32((int32_t)10, v, _uint32x4_t);
+  _uint32x4_t compressed0 = _vaddq_u32(compressed, half);
+  _uint32x4_t compressed1 = _vreinterpretq_u32_s32(
+      _vqdmulhq_n_s32(_vreinterpretq_s32_u32(compressed0), (int32_t)10321340));
+  return _vshrq_n_u32((int32_t)4, compressed1, _uint32x4_t);
 }
 
 /**
@@ -3394,32 +3252,26 @@ with const generics
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 compress_fa(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  uint8_t mask = libcrux_intrinsics_arm64_extract__vdupq_n_s16(
+  _int16x8_t mask = _vdupq_n_s16(
       libcrux_ml_kem_vector_neon_compress_mask_n_least_significant_bits(
           (int16_t)(int32_t)10));
-  uint8_t mask16 = libcrux_intrinsics_arm64_extract__vdupq_n_u32(65535U);
-  uint8_t low00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), mask16);
-  uint8_t low10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), uint8_t);
-  uint8_t high00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), mask16);
-  uint8_t high10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), uint8_t);
-  uint8_t low0 = compress_int32x4_t_ce(low00);
-  uint8_t low1 = compress_int32x4_t_ce(low10);
-  uint8_t high0 = compress_int32x4_t_ce(high00);
-  uint8_t high1 = compress_int32x4_t_ce(high10);
-  uint8_t low = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low1));
-  uint8_t high = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high1));
-  v.low = libcrux_intrinsics_arm64_extract__vandq_s16(low, mask);
-  v.high = libcrux_intrinsics_arm64_extract__vandq_s16(high, mask);
+  _uint32x4_t mask16 = _vdupq_n_u32(65535U);
+  _uint32x4_t low00 = _vandq_u32(_vreinterpretq_u32_s16(v.low), mask16);
+  _uint32x4_t low10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.low), _uint32x4_t);
+  _uint32x4_t high00 = _vandq_u32(_vreinterpretq_u32_s16(v.high), mask16);
+  _uint32x4_t high10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.high), _uint32x4_t);
+  _uint32x4_t low0 = compress_int32x4_t_ce(low00);
+  _uint32x4_t low1 = compress_int32x4_t_ce(low10);
+  _uint32x4_t high0 = compress_int32x4_t_ce(high00);
+  _uint32x4_t high1 = compress_int32x4_t_ce(high10);
+  _int16x8_t low =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(low0), _vreinterpretq_s16_u32(low1));
+  _int16x8_t high =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(high0), _vreinterpretq_s16_u32(high1));
+  v.low = _vandq_s16(low, mask);
+  v.high = _vandq_s16(high, mask);
   return v;
 }
 
@@ -3469,18 +3321,13 @@ A monomorphic instance of libcrux_ml_kem.vector.neon.compress.compress_int32x4_t
 with const generics
 - COEFFICIENT_BITS= 11
 */
-static KRML_MUSTINLINE uint8_t compress_int32x4_t_ce0(uint8_t v) {
-  uint8_t half = libcrux_intrinsics_arm64_extract__vdupq_n_u32(1664U);
-  uint8_t compressed =
-      libcrux_intrinsics_arm64_extract__vshlq_n_u32((int32_t)11, v, uint8_t);
-  uint8_t compressed0 =
-      libcrux_intrinsics_arm64_extract__vaddq_u32(compressed, half);
-  uint8_t compressed1 = libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s32(
-      libcrux_intrinsics_arm64_extract__vqdmulhq_n_s32(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_u32(compressed0),
-          (int32_t)10321340));
-  return libcrux_intrinsics_arm64_extract__vshrq_n_u32((int32_t)4, compressed1,
-                                                       uint8_t);
+static KRML_MUSTINLINE _uint32x4_t compress_int32x4_t_ce0(_uint32x4_t v) {
+  _uint32x4_t half = _vdupq_n_u32(1664U);
+  _uint32x4_t compressed = _vshlq_n_u32((int32_t)11, v, _uint32x4_t);
+  _uint32x4_t compressed0 = _vaddq_u32(compressed, half);
+  _uint32x4_t compressed1 = _vreinterpretq_u32_s32(
+      _vqdmulhq_n_s32(_vreinterpretq_s32_u32(compressed0), (int32_t)10321340));
+  return _vshrq_n_u32((int32_t)4, compressed1, _uint32x4_t);
 }
 
 /**
@@ -3490,32 +3337,26 @@ with const generics
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 compress_fa0(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  uint8_t mask = libcrux_intrinsics_arm64_extract__vdupq_n_s16(
+  _int16x8_t mask = _vdupq_n_s16(
       libcrux_ml_kem_vector_neon_compress_mask_n_least_significant_bits(
           (int16_t)(int32_t)11));
-  uint8_t mask16 = libcrux_intrinsics_arm64_extract__vdupq_n_u32(65535U);
-  uint8_t low00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), mask16);
-  uint8_t low10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), uint8_t);
-  uint8_t high00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), mask16);
-  uint8_t high10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), uint8_t);
-  uint8_t low0 = compress_int32x4_t_ce0(low00);
-  uint8_t low1 = compress_int32x4_t_ce0(low10);
-  uint8_t high0 = compress_int32x4_t_ce0(high00);
-  uint8_t high1 = compress_int32x4_t_ce0(high10);
-  uint8_t low = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low1));
-  uint8_t high = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high1));
-  v.low = libcrux_intrinsics_arm64_extract__vandq_s16(low, mask);
-  v.high = libcrux_intrinsics_arm64_extract__vandq_s16(high, mask);
+  _uint32x4_t mask16 = _vdupq_n_u32(65535U);
+  _uint32x4_t low00 = _vandq_u32(_vreinterpretq_u32_s16(v.low), mask16);
+  _uint32x4_t low10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.low), _uint32x4_t);
+  _uint32x4_t high00 = _vandq_u32(_vreinterpretq_u32_s16(v.high), mask16);
+  _uint32x4_t high10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.high), _uint32x4_t);
+  _uint32x4_t low0 = compress_int32x4_t_ce0(low00);
+  _uint32x4_t low1 = compress_int32x4_t_ce0(low10);
+  _uint32x4_t high0 = compress_int32x4_t_ce0(high00);
+  _uint32x4_t high1 = compress_int32x4_t_ce0(high10);
+  _int16x8_t low =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(low0), _vreinterpretq_s16_u32(low1));
+  _int16x8_t high =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(high0), _vreinterpretq_s16_u32(high1));
+  v.low = _vandq_s16(low, mask);
+  v.high = _vandq_s16(high, mask);
   return v;
 }
 
@@ -3590,18 +3431,13 @@ A monomorphic instance of libcrux_ml_kem.vector.neon.compress.compress_int32x4_t
 with const generics
 - COEFFICIENT_BITS= 4
 */
-static KRML_MUSTINLINE uint8_t compress_int32x4_t_ce1(uint8_t v) {
-  uint8_t half = libcrux_intrinsics_arm64_extract__vdupq_n_u32(1664U);
-  uint8_t compressed =
-      libcrux_intrinsics_arm64_extract__vshlq_n_u32((int32_t)4, v, uint8_t);
-  uint8_t compressed0 =
-      libcrux_intrinsics_arm64_extract__vaddq_u32(compressed, half);
-  uint8_t compressed1 = libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s32(
-      libcrux_intrinsics_arm64_extract__vqdmulhq_n_s32(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_u32(compressed0),
-          (int32_t)10321340));
-  return libcrux_intrinsics_arm64_extract__vshrq_n_u32((int32_t)4, compressed1,
-                                                       uint8_t);
+static KRML_MUSTINLINE _uint32x4_t compress_int32x4_t_ce1(_uint32x4_t v) {
+  _uint32x4_t half = _vdupq_n_u32(1664U);
+  _uint32x4_t compressed = _vshlq_n_u32((int32_t)4, v, _uint32x4_t);
+  _uint32x4_t compressed0 = _vaddq_u32(compressed, half);
+  _uint32x4_t compressed1 = _vreinterpretq_u32_s32(
+      _vqdmulhq_n_s32(_vreinterpretq_s32_u32(compressed0), (int32_t)10321340));
+  return _vshrq_n_u32((int32_t)4, compressed1, _uint32x4_t);
 }
 
 /**
@@ -3611,32 +3447,26 @@ with const generics
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 compress_fa1(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  uint8_t mask = libcrux_intrinsics_arm64_extract__vdupq_n_s16(
+  _int16x8_t mask = _vdupq_n_s16(
       libcrux_ml_kem_vector_neon_compress_mask_n_least_significant_bits(
           (int16_t)(int32_t)4));
-  uint8_t mask16 = libcrux_intrinsics_arm64_extract__vdupq_n_u32(65535U);
-  uint8_t low00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), mask16);
-  uint8_t low10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), uint8_t);
-  uint8_t high00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), mask16);
-  uint8_t high10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), uint8_t);
-  uint8_t low0 = compress_int32x4_t_ce1(low00);
-  uint8_t low1 = compress_int32x4_t_ce1(low10);
-  uint8_t high0 = compress_int32x4_t_ce1(high00);
-  uint8_t high1 = compress_int32x4_t_ce1(high10);
-  uint8_t low = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low1));
-  uint8_t high = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high1));
-  v.low = libcrux_intrinsics_arm64_extract__vandq_s16(low, mask);
-  v.high = libcrux_intrinsics_arm64_extract__vandq_s16(high, mask);
+  _uint32x4_t mask16 = _vdupq_n_u32(65535U);
+  _uint32x4_t low00 = _vandq_u32(_vreinterpretq_u32_s16(v.low), mask16);
+  _uint32x4_t low10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.low), _uint32x4_t);
+  _uint32x4_t high00 = _vandq_u32(_vreinterpretq_u32_s16(v.high), mask16);
+  _uint32x4_t high10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.high), _uint32x4_t);
+  _uint32x4_t low0 = compress_int32x4_t_ce1(low00);
+  _uint32x4_t low1 = compress_int32x4_t_ce1(low10);
+  _uint32x4_t high0 = compress_int32x4_t_ce1(high00);
+  _uint32x4_t high1 = compress_int32x4_t_ce1(high10);
+  _int16x8_t low =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(low0), _vreinterpretq_s16_u32(low1));
+  _int16x8_t high =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(high0), _vreinterpretq_s16_u32(high1));
+  v.low = _vandq_s16(low, mask);
+  v.high = _vandq_s16(high, mask);
   return v;
 }
 
@@ -3684,18 +3514,13 @@ A monomorphic instance of libcrux_ml_kem.vector.neon.compress.compress_int32x4_t
 with const generics
 - COEFFICIENT_BITS= 5
 */
-static KRML_MUSTINLINE uint8_t compress_int32x4_t_ce2(uint8_t v) {
-  uint8_t half = libcrux_intrinsics_arm64_extract__vdupq_n_u32(1664U);
-  uint8_t compressed =
-      libcrux_intrinsics_arm64_extract__vshlq_n_u32((int32_t)5, v, uint8_t);
-  uint8_t compressed0 =
-      libcrux_intrinsics_arm64_extract__vaddq_u32(compressed, half);
-  uint8_t compressed1 = libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s32(
-      libcrux_intrinsics_arm64_extract__vqdmulhq_n_s32(
-          libcrux_intrinsics_arm64_extract__vreinterpretq_s32_u32(compressed0),
-          (int32_t)10321340));
-  return libcrux_intrinsics_arm64_extract__vshrq_n_u32((int32_t)4, compressed1,
-                                                       uint8_t);
+static KRML_MUSTINLINE _uint32x4_t compress_int32x4_t_ce2(_uint32x4_t v) {
+  _uint32x4_t half = _vdupq_n_u32(1664U);
+  _uint32x4_t compressed = _vshlq_n_u32((int32_t)5, v, _uint32x4_t);
+  _uint32x4_t compressed0 = _vaddq_u32(compressed, half);
+  _uint32x4_t compressed1 = _vreinterpretq_u32_s32(
+      _vqdmulhq_n_s32(_vreinterpretq_s32_u32(compressed0), (int32_t)10321340));
+  return _vshrq_n_u32((int32_t)4, compressed1, _uint32x4_t);
 }
 
 /**
@@ -3705,32 +3530,26 @@ with const generics
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 compress_fa2(libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  uint8_t mask = libcrux_intrinsics_arm64_extract__vdupq_n_s16(
+  _int16x8_t mask = _vdupq_n_s16(
       libcrux_ml_kem_vector_neon_compress_mask_n_least_significant_bits(
           (int16_t)(int32_t)5));
-  uint8_t mask16 = libcrux_intrinsics_arm64_extract__vdupq_n_u32(65535U);
-  uint8_t low00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), mask16);
-  uint8_t low10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), uint8_t);
-  uint8_t high00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), mask16);
-  uint8_t high10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), uint8_t);
-  uint8_t low0 = compress_int32x4_t_ce2(low00);
-  uint8_t low1 = compress_int32x4_t_ce2(low10);
-  uint8_t high0 = compress_int32x4_t_ce2(high00);
-  uint8_t high1 = compress_int32x4_t_ce2(high10);
-  uint8_t low = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low1));
-  uint8_t high = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high1));
-  v.low = libcrux_intrinsics_arm64_extract__vandq_s16(low, mask);
-  v.high = libcrux_intrinsics_arm64_extract__vandq_s16(high, mask);
+  _uint32x4_t mask16 = _vdupq_n_u32(65535U);
+  _uint32x4_t low00 = _vandq_u32(_vreinterpretq_u32_s16(v.low), mask16);
+  _uint32x4_t low10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.low), _uint32x4_t);
+  _uint32x4_t high00 = _vandq_u32(_vreinterpretq_u32_s16(v.high), mask16);
+  _uint32x4_t high10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.high), _uint32x4_t);
+  _uint32x4_t low0 = compress_int32x4_t_ce2(low00);
+  _uint32x4_t low1 = compress_int32x4_t_ce2(low10);
+  _uint32x4_t high0 = compress_int32x4_t_ce2(high00);
+  _uint32x4_t high1 = compress_int32x4_t_ce2(high10);
+  _int16x8_t low =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(low0), _vreinterpretq_s16_u32(low1));
+  _int16x8_t high =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(high0), _vreinterpretq_s16_u32(high1));
+  v.low = _vandq_s16(low, mask);
+  v.high = _vandq_s16(high, mask);
   return v;
 }
 
@@ -4183,15 +4002,12 @@ A monomorphic instance of
 libcrux_ml_kem.vector.neon.compress.decompress_uint32x4_t with const generics
 - COEFFICIENT_BITS= 10
 */
-static KRML_MUSTINLINE uint8_t decompress_uint32x4_t_8f(uint8_t v) {
-  uint8_t coeff = libcrux_intrinsics_arm64_extract__vdupq_n_u32(
-      1U << (uint32_t)((int32_t)10 - (int32_t)1));
-  uint8_t decompressed = libcrux_intrinsics_arm64_extract__vmulq_n_u32(
-      v, (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  uint8_t decompressed0 =
-      libcrux_intrinsics_arm64_extract__vaddq_u32(decompressed, coeff);
-  return libcrux_intrinsics_arm64_extract__vshrq_n_u32((int32_t)10,
-                                                       decompressed0, uint8_t);
+static KRML_MUSTINLINE _uint32x4_t decompress_uint32x4_t_8f(_uint32x4_t v) {
+  _uint32x4_t coeff = _vdupq_n_u32(1U << (uint32_t)((int32_t)10 - (int32_t)1));
+  _uint32x4_t decompressed =
+      _vmulq_n_u32(v, (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  _uint32x4_t decompressed0 = _vaddq_u32(decompressed, coeff);
+  return _vshrq_n_u32((int32_t)10, decompressed0, _uint32x4_t);
 }
 
 /**
@@ -4203,27 +4019,21 @@ generics
 static KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 decompress_ciphertext_coefficient_9c(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  uint8_t mask16 = libcrux_intrinsics_arm64_extract__vdupq_n_u32(65535U);
-  uint8_t low00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), mask16);
-  uint8_t low10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), uint8_t);
-  uint8_t high00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), mask16);
-  uint8_t high10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), uint8_t);
-  uint8_t low0 = decompress_uint32x4_t_8f(low00);
-  uint8_t low1 = decompress_uint32x4_t_8f(low10);
-  uint8_t high0 = decompress_uint32x4_t_8f(high00);
-  uint8_t high1 = decompress_uint32x4_t_8f(high10);
-  v.low = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low1));
-  v.high = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high1));
+  _uint32x4_t mask16 = _vdupq_n_u32(65535U);
+  _uint32x4_t low00 = _vandq_u32(_vreinterpretq_u32_s16(v.low), mask16);
+  _uint32x4_t low10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.low), _uint32x4_t);
+  _uint32x4_t high00 = _vandq_u32(_vreinterpretq_u32_s16(v.high), mask16);
+  _uint32x4_t high10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.high), _uint32x4_t);
+  _uint32x4_t low0 = decompress_uint32x4_t_8f(low00);
+  _uint32x4_t low1 = decompress_uint32x4_t_8f(low10);
+  _uint32x4_t high0 = decompress_uint32x4_t_8f(high00);
+  _uint32x4_t high1 = decompress_uint32x4_t_8f(high10);
+  v.low =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(low0), _vreinterpretq_s16_u32(low1));
+  v.high =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(high0), _vreinterpretq_s16_u32(high1));
   return v;
 }
 
@@ -4274,15 +4084,12 @@ A monomorphic instance of
 libcrux_ml_kem.vector.neon.compress.decompress_uint32x4_t with const generics
 - COEFFICIENT_BITS= 11
 */
-static KRML_MUSTINLINE uint8_t decompress_uint32x4_t_8f0(uint8_t v) {
-  uint8_t coeff = libcrux_intrinsics_arm64_extract__vdupq_n_u32(
-      1U << (uint32_t)((int32_t)11 - (int32_t)1));
-  uint8_t decompressed = libcrux_intrinsics_arm64_extract__vmulq_n_u32(
-      v, (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  uint8_t decompressed0 =
-      libcrux_intrinsics_arm64_extract__vaddq_u32(decompressed, coeff);
-  return libcrux_intrinsics_arm64_extract__vshrq_n_u32((int32_t)11,
-                                                       decompressed0, uint8_t);
+static KRML_MUSTINLINE _uint32x4_t decompress_uint32x4_t_8f0(_uint32x4_t v) {
+  _uint32x4_t coeff = _vdupq_n_u32(1U << (uint32_t)((int32_t)11 - (int32_t)1));
+  _uint32x4_t decompressed =
+      _vmulq_n_u32(v, (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  _uint32x4_t decompressed0 = _vaddq_u32(decompressed, coeff);
+  return _vshrq_n_u32((int32_t)11, decompressed0, _uint32x4_t);
 }
 
 /**
@@ -4294,27 +4101,21 @@ generics
 static KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 decompress_ciphertext_coefficient_9c0(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  uint8_t mask16 = libcrux_intrinsics_arm64_extract__vdupq_n_u32(65535U);
-  uint8_t low00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), mask16);
-  uint8_t low10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), uint8_t);
-  uint8_t high00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), mask16);
-  uint8_t high10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), uint8_t);
-  uint8_t low0 = decompress_uint32x4_t_8f0(low00);
-  uint8_t low1 = decompress_uint32x4_t_8f0(low10);
-  uint8_t high0 = decompress_uint32x4_t_8f0(high00);
-  uint8_t high1 = decompress_uint32x4_t_8f0(high10);
-  v.low = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low1));
-  v.high = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high1));
+  _uint32x4_t mask16 = _vdupq_n_u32(65535U);
+  _uint32x4_t low00 = _vandq_u32(_vreinterpretq_u32_s16(v.low), mask16);
+  _uint32x4_t low10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.low), _uint32x4_t);
+  _uint32x4_t high00 = _vandq_u32(_vreinterpretq_u32_s16(v.high), mask16);
+  _uint32x4_t high10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.high), _uint32x4_t);
+  _uint32x4_t low0 = decompress_uint32x4_t_8f0(low00);
+  _uint32x4_t low1 = decompress_uint32x4_t_8f0(low10);
+  _uint32x4_t high0 = decompress_uint32x4_t_8f0(high00);
+  _uint32x4_t high1 = decompress_uint32x4_t_8f0(high10);
+  v.low =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(low0), _vreinterpretq_s16_u32(low1));
+  v.high =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(high0), _vreinterpretq_s16_u32(high1));
   return v;
 }
 
@@ -4426,9 +4227,7 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_331(
             LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT *
                 (size_t)10U / (size_t)8U,
         uint8_t, Eurydice_slice);
-    libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____0 =
-        deserialize_then_decompress_ring_element_u_060(u_bytes);
-    u_as_ntt[i0] = uu____0;
+    u_as_ntt[i0] = deserialize_then_decompress_ring_element_u_060(u_bytes);
     ntt_vector_u_3c0(&u_as_ntt[i0]);
   }
   memcpy(
@@ -4441,15 +4240,12 @@ A monomorphic instance of
 libcrux_ml_kem.vector.neon.compress.decompress_uint32x4_t with const generics
 - COEFFICIENT_BITS= 4
 */
-static KRML_MUSTINLINE uint8_t decompress_uint32x4_t_8f1(uint8_t v) {
-  uint8_t coeff = libcrux_intrinsics_arm64_extract__vdupq_n_u32(
-      1U << (uint32_t)((int32_t)4 - (int32_t)1));
-  uint8_t decompressed = libcrux_intrinsics_arm64_extract__vmulq_n_u32(
-      v, (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  uint8_t decompressed0 =
-      libcrux_intrinsics_arm64_extract__vaddq_u32(decompressed, coeff);
-  return libcrux_intrinsics_arm64_extract__vshrq_n_u32((int32_t)4,
-                                                       decompressed0, uint8_t);
+static KRML_MUSTINLINE _uint32x4_t decompress_uint32x4_t_8f1(_uint32x4_t v) {
+  _uint32x4_t coeff = _vdupq_n_u32(1U << (uint32_t)((int32_t)4 - (int32_t)1));
+  _uint32x4_t decompressed =
+      _vmulq_n_u32(v, (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  _uint32x4_t decompressed0 = _vaddq_u32(decompressed, coeff);
+  return _vshrq_n_u32((int32_t)4, decompressed0, _uint32x4_t);
 }
 
 /**
@@ -4461,27 +4257,21 @@ generics
 static KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 decompress_ciphertext_coefficient_9c1(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  uint8_t mask16 = libcrux_intrinsics_arm64_extract__vdupq_n_u32(65535U);
-  uint8_t low00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), mask16);
-  uint8_t low10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), uint8_t);
-  uint8_t high00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), mask16);
-  uint8_t high10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), uint8_t);
-  uint8_t low0 = decompress_uint32x4_t_8f1(low00);
-  uint8_t low1 = decompress_uint32x4_t_8f1(low10);
-  uint8_t high0 = decompress_uint32x4_t_8f1(high00);
-  uint8_t high1 = decompress_uint32x4_t_8f1(high10);
-  v.low = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low1));
-  v.high = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high1));
+  _uint32x4_t mask16 = _vdupq_n_u32(65535U);
+  _uint32x4_t low00 = _vandq_u32(_vreinterpretq_u32_s16(v.low), mask16);
+  _uint32x4_t low10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.low), _uint32x4_t);
+  _uint32x4_t high00 = _vandq_u32(_vreinterpretq_u32_s16(v.high), mask16);
+  _uint32x4_t high10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.high), _uint32x4_t);
+  _uint32x4_t low0 = decompress_uint32x4_t_8f1(low00);
+  _uint32x4_t low1 = decompress_uint32x4_t_8f1(low10);
+  _uint32x4_t high0 = decompress_uint32x4_t_8f1(high00);
+  _uint32x4_t high1 = decompress_uint32x4_t_8f1(high10);
+  v.low =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(low0), _vreinterpretq_s16_u32(low1));
+  v.high =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(high0), _vreinterpretq_s16_u32(high1));
   return v;
 }
 
@@ -4531,15 +4321,12 @@ A monomorphic instance of
 libcrux_ml_kem.vector.neon.compress.decompress_uint32x4_t with const generics
 - COEFFICIENT_BITS= 5
 */
-static KRML_MUSTINLINE uint8_t decompress_uint32x4_t_8f2(uint8_t v) {
-  uint8_t coeff = libcrux_intrinsics_arm64_extract__vdupq_n_u32(
-      1U << (uint32_t)((int32_t)5 - (int32_t)1));
-  uint8_t decompressed = libcrux_intrinsics_arm64_extract__vmulq_n_u32(
-      v, (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  uint8_t decompressed0 =
-      libcrux_intrinsics_arm64_extract__vaddq_u32(decompressed, coeff);
-  return libcrux_intrinsics_arm64_extract__vshrq_n_u32((int32_t)5,
-                                                       decompressed0, uint8_t);
+static KRML_MUSTINLINE _uint32x4_t decompress_uint32x4_t_8f2(_uint32x4_t v) {
+  _uint32x4_t coeff = _vdupq_n_u32(1U << (uint32_t)((int32_t)5 - (int32_t)1));
+  _uint32x4_t decompressed =
+      _vmulq_n_u32(v, (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  _uint32x4_t decompressed0 = _vaddq_u32(decompressed, coeff);
+  return _vshrq_n_u32((int32_t)5, decompressed0, _uint32x4_t);
 }
 
 /**
@@ -4551,27 +4338,21 @@ generics
 static KRML_MUSTINLINE libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector
 decompress_ciphertext_coefficient_9c2(
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector v) {
-  uint8_t mask16 = libcrux_intrinsics_arm64_extract__vdupq_n_u32(65535U);
-  uint8_t low00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), mask16);
-  uint8_t low10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.low), uint8_t);
-  uint8_t high00 = libcrux_intrinsics_arm64_extract__vandq_u32(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), mask16);
-  uint8_t high10 = libcrux_intrinsics_arm64_extract__vshrq_n_u32(
-      (int32_t)16,
-      libcrux_intrinsics_arm64_extract__vreinterpretq_u32_s16(v.high), uint8_t);
-  uint8_t low0 = decompress_uint32x4_t_8f2(low00);
-  uint8_t low1 = decompress_uint32x4_t_8f2(low10);
-  uint8_t high0 = decompress_uint32x4_t_8f2(high00);
-  uint8_t high1 = decompress_uint32x4_t_8f2(high10);
-  v.low = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(low1));
-  v.high = libcrux_intrinsics_arm64_extract__vtrn1q_s16(
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high0),
-      libcrux_intrinsics_arm64_extract__vreinterpretq_s16_u32(high1));
+  _uint32x4_t mask16 = _vdupq_n_u32(65535U);
+  _uint32x4_t low00 = _vandq_u32(_vreinterpretq_u32_s16(v.low), mask16);
+  _uint32x4_t low10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.low), _uint32x4_t);
+  _uint32x4_t high00 = _vandq_u32(_vreinterpretq_u32_s16(v.high), mask16);
+  _uint32x4_t high10 =
+      _vshrq_n_u32((int32_t)16, _vreinterpretq_u32_s16(v.high), _uint32x4_t);
+  _uint32x4_t low0 = decompress_uint32x4_t_8f2(low00);
+  _uint32x4_t low1 = decompress_uint32x4_t_8f2(low10);
+  _uint32x4_t high0 = decompress_uint32x4_t_8f2(high00);
+  _uint32x4_t high1 = decompress_uint32x4_t_8f2(high10);
+  v.low =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(low0), _vreinterpretq_s16_u32(low1));
+  v.high =
+      _vtrn1q_s16(_vreinterpretq_s16_u32(high0), _vreinterpretq_s16_u32(high1));
   return v;
 }
 
@@ -4608,9 +4389,7 @@ deserialize_then_decompress_5_25(Eurydice_slice serialized) {
     Eurydice_slice bytes = Eurydice_slice_subslice2(
         serialized, i0 * (size_t)10U, i0 * (size_t)10U + (size_t)10U, uint8_t,
         Eurydice_slice);
-    libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____0 =
-        libcrux_ml_kem_vector_neon_deserialize_5_20(bytes);
-    re.coefficients[i0] = uu____0;
+    re.coefficients[i0] = libcrux_ml_kem_vector_neon_deserialize_5_20(bytes);
     libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector uu____1 =
         decompress_ciphertext_coefficient_20_e82(re.coefficients[i0]);
     re.coefficients[i0] = uu____1;
@@ -5238,9 +5017,9 @@ libcrux_ml_kem.hash_functions.neon.shake128_init_absorb with const generics
 */
 static KRML_MUSTINLINE Simd128Hash
 shake128_init_absorb_6b0(uint8_t input[3U][34U]) {
-  libcrux_sha3_generic_keccak_KeccakState_2c uu____0 =
+  libcrux_sha3_generic_keccak_KeccakState_cc uu____0 =
       libcrux_sha3_neon_x2_incremental_shake128_init();
-  libcrux_sha3_generic_keccak_KeccakState_2c state[2U] = {
+  libcrux_sha3_generic_keccak_KeccakState_cc state[2U] = {
       uu____0, libcrux_sha3_neon_x2_incremental_shake128_init()};
   libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
       state,
@@ -5252,7 +5031,7 @@ shake128_init_absorb_6b0(uint8_t input[3U][34U]) {
       Eurydice_array_to_slice((size_t)34U, input[2U], uint8_t, Eurydice_slice));
   Simd128Hash lit;
   memcpy(lit.shake128_state, state,
-         (size_t)2U * sizeof(libcrux_sha3_generic_keccak_KeccakState_2c));
+         (size_t)2U * sizeof(libcrux_sha3_generic_keccak_KeccakState_cc));
   return lit;
 }
 
@@ -5717,13 +5496,11 @@ static KRML_MUSTINLINE tuple_b00 sample_vector_cbd_then_ntt_1f0(
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[3U][128U];
   PRFxN_48_a90(prf_inputs, prf_outputs);
-  KRML_MAYBE_FOR3(
-      i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
-      libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____1 =
-          sample_from_binomial_distribution_2c(Eurydice_array_to_slice(
-              (size_t)128U, prf_outputs[i0], uint8_t, Eurydice_slice));
-      re_as_ntt[i0] = uu____1;
-      ntt_binomially_sampled_ring_element_cf(&re_as_ntt[i0]););
+  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
+                  re_as_ntt[i0] = sample_from_binomial_distribution_2c(
+                      Eurydice_array_to_slice((size_t)128U, prf_outputs[i0],
+                                              uint8_t, Eurydice_slice));
+                  ntt_binomially_sampled_ring_element_cf(&re_as_ntt[i0]););
   libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____2[3U];
   memcpy(
       uu____2, re_as_ntt,
@@ -6809,9 +6586,7 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_330(
             LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT *
                 (size_t)10U / (size_t)8U,
         uint8_t, Eurydice_slice);
-    libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____0 =
-        deserialize_then_decompress_ring_element_u_060(u_bytes);
-    u_as_ntt[i0] = uu____0;
+    u_as_ntt[i0] = deserialize_then_decompress_ring_element_u_060(u_bytes);
     ntt_vector_u_3c0(&u_as_ntt[i0]);
   }
   memcpy(
@@ -7332,9 +7107,9 @@ libcrux_ml_kem.hash_functions.neon.shake128_init_absorb with const generics
 */
 static KRML_MUSTINLINE Simd128Hash
 shake128_init_absorb_6b(uint8_t input[4U][34U]) {
-  libcrux_sha3_generic_keccak_KeccakState_2c uu____0 =
+  libcrux_sha3_generic_keccak_KeccakState_cc uu____0 =
       libcrux_sha3_neon_x2_incremental_shake128_init();
-  libcrux_sha3_generic_keccak_KeccakState_2c state[2U] = {
+  libcrux_sha3_generic_keccak_KeccakState_cc state[2U] = {
       uu____0, libcrux_sha3_neon_x2_incremental_shake128_init()};
   libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
       state,
@@ -7346,7 +7121,7 @@ shake128_init_absorb_6b(uint8_t input[4U][34U]) {
       Eurydice_array_to_slice((size_t)34U, input[3U], uint8_t, Eurydice_slice));
   Simd128Hash lit;
   memcpy(lit.shake128_state, state,
-         (size_t)2U * sizeof(libcrux_sha3_generic_keccak_KeccakState_2c));
+         (size_t)2U * sizeof(libcrux_sha3_generic_keccak_KeccakState_cc));
   return lit;
 }
 
@@ -7820,13 +7595,11 @@ static KRML_MUSTINLINE tuple_71 sample_vector_cbd_then_ntt_1f(
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[4U][128U];
   PRFxN_48_a9(prf_inputs, prf_outputs);
-  KRML_MAYBE_FOR4(
-      i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
-      libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____1 =
-          sample_from_binomial_distribution_2c(Eurydice_array_to_slice(
-              (size_t)128U, prf_outputs[i0], uint8_t, Eurydice_slice));
-      re_as_ntt[i0] = uu____1;
-      ntt_binomially_sampled_ring_element_cf(&re_as_ntt[i0]););
+  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
+                  re_as_ntt[i0] = sample_from_binomial_distribution_2c(
+                      Eurydice_array_to_slice((size_t)128U, prf_outputs[i0],
+                                              uint8_t, Eurydice_slice));
+                  ntt_binomially_sampled_ring_element_cf(&re_as_ntt[i0]););
   libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____2[4U];
   memcpy(
       uu____2, re_as_ntt,
@@ -8996,9 +8769,7 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_33(
             LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT *
                 (size_t)11U / (size_t)8U,
         uint8_t, Eurydice_slice);
-    libcrux_ml_kem_polynomial_PolynomialRingElement_1c uu____0 =
-        deserialize_then_decompress_ring_element_u_06(u_bytes);
-    u_as_ntt[i0] = uu____0;
+    u_as_ntt[i0] = deserialize_then_decompress_ring_element_u_06(u_bytes);
     ntt_vector_u_3c(&u_as_ntt[i0]);
   }
   memcpy(

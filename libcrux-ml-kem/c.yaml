@@ -34,7 +34,7 @@ files:
         - [libcrux_sha3, neon, "*"]
         - [libcrux_sha3, simd, arm64, "*"]
       monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, "KeccakState_fc"]
+        - [libcrux_sha3, generic_keccak, "KeccakState_cc"]
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_arm64.h"'
 
@@ -237,3 +237,5 @@ naming:
   skip_prefix:
     - [ core, core_arch, arm_shared, neon ]
     - [ core, core_arch, x86 ]
+    - [libcrux_intrinsics, arm64_extract]
+    - [libcrux_intrinsics, avx2_extract]

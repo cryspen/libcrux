@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: f4283998bcc3c86677cf0e03a6fa71913a524658
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * Eurydice: d6e4d1bb9c27c4eebbebcb29ba8bea1d58741421
+ * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 878f09c21a4312320518388a0d902986b08e030a
+ * Libcrux: a7de672380a622d67efb35e3707a528e375cbf76
  */
 
 #ifndef __libcrux_sha3_internal_H
@@ -1227,75 +1227,52 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_theta_rho_8d(
                         c[((size_t)4U + (size_t)4U) % (size_t)5U],
                         c[((size_t)4U + (size_t)1U) % (size_t)5U])};
   s->st[0U][0U] = libcrux_sha3_portable_keccak_xor_5a(s->st[0U][0U], t[0U]);
-  uint64_t uu____4 =
+  s->st[1U][0U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_65(s->st[1U][0U], t[0U]);
-  s->st[1U][0U] = uu____4;
-  uint64_t uu____5 =
+  s->st[2U][0U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_650(s->st[2U][0U], t[0U]);
-  s->st[2U][0U] = uu____5;
-  uint64_t uu____6 =
+  s->st[3U][0U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_651(s->st[3U][0U], t[0U]);
-  s->st[3U][0U] = uu____6;
-  uint64_t uu____7 =
+  s->st[4U][0U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_652(s->st[4U][0U], t[0U]);
-  s->st[4U][0U] = uu____7;
-  uint64_t uu____8 =
+  s->st[0U][1U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_653(s->st[0U][1U], t[1U]);
-  s->st[0U][1U] = uu____8;
-  uint64_t uu____9 =
+  s->st[1U][1U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_654(s->st[1U][1U], t[1U]);
-  s->st[1U][1U] = uu____9;
-  uint64_t uu____10 =
+  s->st[2U][1U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_655(s->st[2U][1U], t[1U]);
-  s->st[2U][1U] = uu____10;
-  uint64_t uu____11 =
+  s->st[3U][1U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_656(s->st[3U][1U], t[1U]);
-  s->st[3U][1U] = uu____11;
-  uint64_t uu____12 =
+  s->st[4U][1U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_657(s->st[4U][1U], t[1U]);
-  s->st[4U][1U] = uu____12;
-  uint64_t uu____13 =
+  s->st[0U][2U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_658(s->st[0U][2U], t[2U]);
-  s->st[0U][2U] = uu____13;
-  uint64_t uu____14 =
+  s->st[1U][2U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_659(s->st[1U][2U], t[2U]);
-  s->st[1U][2U] = uu____14;
-  uint64_t uu____15 =
+  s->st[2U][2U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6510(s->st[2U][2U], t[2U]);
-  s->st[2U][2U] = uu____15;
-  uint64_t uu____16 =
+  s->st[3U][2U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6511(s->st[3U][2U], t[2U]);
-  s->st[3U][2U] = uu____16;
-  uint64_t uu____17 =
+  s->st[4U][2U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6512(s->st[4U][2U], t[2U]);
-  s->st[4U][2U] = uu____17;
-  uint64_t uu____18 =
+  s->st[0U][3U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6513(s->st[0U][3U], t[3U]);
-  s->st[0U][3U] = uu____18;
-  uint64_t uu____19 =
+  s->st[1U][3U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6514(s->st[1U][3U], t[3U]);
-  s->st[1U][3U] = uu____19;
-  uint64_t uu____20 =
+  s->st[2U][3U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6515(s->st[2U][3U], t[3U]);
-  s->st[2U][3U] = uu____20;
-  uint64_t uu____21 =
+  s->st[3U][3U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6516(s->st[3U][3U], t[3U]);
-  s->st[3U][3U] = uu____21;
-  uint64_t uu____22 =
+  s->st[4U][3U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6517(s->st[4U][3U], t[3U]);
-  s->st[4U][3U] = uu____22;
-  uint64_t uu____23 =
+  s->st[0U][4U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6518(s->st[0U][4U], t[4U]);
-  s->st[0U][4U] = uu____23;
-  uint64_t uu____24 =
+  s->st[1U][4U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6519(s->st[1U][4U], t[4U]);
-  s->st[1U][4U] = uu____24;
-  uint64_t uu____25 =
+  s->st[2U][4U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6520(s->st[2U][4U], t[4U]);
-  s->st[2U][4U] = uu____25;
-  uint64_t uu____26 =
+  s->st[3U][4U] =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6521(s->st[3U][4U], t[4U]);
-  s->st[3U][4U] = uu____26;
   uint64_t uu____27 =
       libcrux_sha3_portable_keccak_xor_and_rotate_5a_6522(s->st[4U][4U], t[4U]);
   s->st[4U][4U] = uu____27;
@@ -3196,16 +3173,6 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_fd(
   memcpy(uu____0, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_cf(uu____0, out);
 }
-
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.KeccakState
-with types uint8_t
-with const generics
-- $2size_t
-*/
-typedef struct libcrux_sha3_generic_keccak_KeccakState_2c_s {
-  uint8_t st[5U][5U];
-} libcrux_sha3_generic_keccak_KeccakState_2c;
 
 #if defined(__cplusplus)
 }

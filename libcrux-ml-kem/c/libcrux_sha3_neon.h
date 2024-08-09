@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: f4283998bcc3c86677cf0e03a6fa71913a524658
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * Eurydice: d6e4d1bb9c27c4eebbebcb29ba8bea1d58741421
+ * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 878f09c21a4312320518388a0d902986b08e030a
+ * Libcrux: a7de672380a622d67efb35e3707a528e375cbf76
  */
 
 #ifndef __libcrux_sha3_neon_H
@@ -22,6 +22,16 @@ extern "C" {
 #include "intrinsics/libcrux_intrinsics_arm64.h"
 #include "libcrux_core.h"
 #include "libcrux_sha3_internal.h"
+
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.KeccakState
+with types libcrux_intrinsics_arm64_extract__uint64x2_t
+with const generics
+- $2size_t
+*/
+typedef struct libcrux_sha3_generic_keccak_KeccakState_cc_s {
+  _uint64x2_t st[5U][5U];
+} libcrux_sha3_generic_keccak_KeccakState_cc;
 
 /**
  A portable SHA3 512 implementation.
@@ -44,14 +54,14 @@ void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0, Eurydice_slice input1,
 /**
  Initialise the `KeccakState2`.
 */
-libcrux_sha3_generic_keccak_KeccakState_2c
+libcrux_sha3_generic_keccak_KeccakState_cc
 libcrux_sha3_neon_x2_incremental_shake128_init(void);
 
 /**
  Shake128 absorb `data0` and `data1` in the [`KeccakState`] `s`.
 */
 void libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
-    libcrux_sha3_generic_keccak_KeccakState_2c *s, Eurydice_slice data0,
+    libcrux_sha3_generic_keccak_KeccakState_cc *s, Eurydice_slice data0,
     Eurydice_slice data1);
 
 /**
@@ -59,7 +69,7 @@ void libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
  [`KeccakState`] and return the output in `out0` and `out1`.
 */
 void libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
-    libcrux_sha3_generic_keccak_KeccakState_2c *s, Eurydice_slice out0,
+    libcrux_sha3_generic_keccak_KeccakState_cc *s, Eurydice_slice out0,
     Eurydice_slice out1);
 
 /**
@@ -67,7 +77,7 @@ void libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
  [`KeccakState`] and return the output in `out0` and `out1`.
 */
 void libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
-    libcrux_sha3_generic_keccak_KeccakState_2c *s, Eurydice_slice out0,
+    libcrux_sha3_generic_keccak_KeccakState_cc *s, Eurydice_slice out0,
     Eurydice_slice out1);
 
 /**

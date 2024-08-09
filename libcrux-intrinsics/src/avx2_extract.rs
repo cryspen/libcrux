@@ -3,15 +3,17 @@
 
 #![allow(unused_variables, non_camel_case_types)]
 
-// #[cfg_attr(eurydice, hax_lib::opaque_type)]
 #[derive(Copy,Clone)]
 #[charon::opaque]
-pub struct Vec256(u8);
+pub struct __m256i(u8);
 
-// #[cfg_attr(eurydice, hax_lib::opaque_type)]
 #[derive(Copy,Clone)]
 #[charon::opaque]
-pub struct Vec128(u8);
+pub struct __m128i(u8);
+
+// Old names used by outside.
+pub type Vec256 = __m256i;
+pub type Vec128 = __m128i;
 
 pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
     debug_assert_eq!(output.len(), 16);

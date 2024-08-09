@@ -17,16 +17,16 @@ extern "C" {
 #include "eurydice_glue.h"
 
 // NEON Vector Types
-typedef int16x4_t core_core_arch_arm_shared_neon_int16x4_t;
-typedef uint16x4_t core_core_arch_arm_shared_neon_uint16x4_t;
-typedef int8x16_t core_core_arch_arm_shared_neon_int8x16_t;
-typedef uint8x16_t core_core_arch_arm_shared_neon_uint8x16_t;
-typedef int16x8_t core_core_arch_arm_shared_neon_int16x8_t;
-typedef uint16x8_t core_core_arch_arm_shared_neon_uint16x8_t;
-typedef int32x4_t core_core_arch_arm_shared_neon_int32x4_t;
-typedef uint32x4_t core_core_arch_arm_shared_neon_uint32x4_t;
-typedef int64x2_t core_core_arch_arm_shared_neon_int64x2_t;
-typedef uint64x2_t core_core_arch_arm_shared_neon_uint64x2_t;
+typedef int16x4_t _int16x4_t, core_core_arch_arm_shared_neon_int16x4_t;
+typedef uint16x4_t _uint16x4_t, core_core_arch_arm_shared_neon_uint16x4_t;
+typedef int8x16_t _int8x16_t, core_core_arch_arm_shared_neon_int8x16_t;
+typedef uint8x16_t _uint8x16_t, core_core_arch_arm_shared_neon_uint8x16_t;
+typedef int16x8_t _int16x8_t, core_core_arch_arm_shared_neon_int16x8_t;
+typedef uint16x8_t _uint16x8_t, core_core_arch_arm_shared_neon_uint16x8_t;
+typedef int32x4_t _int32x4_t, core_core_arch_arm_shared_neon_int32x4_t;
+typedef uint32x4_t _uint32x4_t, core_core_arch_arm_shared_neon_uint32x4_t;
+typedef int64x2_t _int64x2_t, core_core_arch_arm_shared_neon_int64x2_t;
+typedef uint64x2_t _uint64x2_t, core_core_arch_arm_shared_neon_uint64x2_t;
 
 // Casting Between Vector Types
 static inline core_core_arch_arm_shared_neon_int16x8_t
