@@ -44,6 +44,10 @@ pub(crate) mod instantiations;
     ${private_key.len()} == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
     ${public_key.len()} == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
     ${implicit_rejection_value.len()} == Spec.MLKEM.v_SHARED_SECRET_SIZE"))]
+#[hax_lib::ensures(|result| fstar!("result == Seq.append $private_key (
+                                              Seq.append $public_key (
+                                              Seq.append (Spec.Utils.v_H $public_key) 
+                                                  $implicit_rejection_value))"))]
 fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Hasher: Hash<K>>(
     private_key: &[u8],
     public_key: &[u8],
@@ -99,6 +103,8 @@ fn validate_public_key<
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"))]
+#[hax_lib::ensures(|result| fstar!("(${result}.f_sk.f_value, ${result}.f_pk.f_value) == 
+                                        Spec.MLKEM.ind_cca_generate_keypair $K $randomness"))] 
 fn generate_keypair<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,

@@ -44,6 +44,7 @@ let serialize_kem_secret_key
         <:
         t_Slice u8)
   in
+  assert (Seq.slice out 0 (v (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K)) == private_key);
   let pointer:usize = pointer +! (Core.Slice.impl__len #u8 private_key <: usize) in
   let out:t_Array u8 v_SERIALIZED_KEY_LEN =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
@@ -68,8 +69,10 @@ let serialize_kem_secret_key
         <:
         t_Slice u8)
   in
+  assert (Seq.slice out 0 (v (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K)) == private_key);
+  assert (Seq.slice out (v (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K)) (v (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K) + v (Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K)) == public_key);
   let pointer:usize = pointer +! (Core.Slice.impl__len #u8 public_key <: usize) in
-  let out:t_Array u8 v_SERIALIZED_KEY_LEN =
+  let out1:t_Array u8 v_SERIALIZED_KEY_LEN =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
       ({
           Core.Ops.Range.f_start = pointer;
@@ -123,6 +126,8 @@ let serialize_kem_secret_key
         <:
         t_Slice u8)
   in
+  admit();
+  Seq.lemma_eq_intro out (Seq.append (Seq.append (Seq.append private_key public_key) (Spec.Utils.v_H public_key)) implicit_rejection_value);
   out
 
 let validate_public_key
@@ -379,6 +384,7 @@ let encapsulate
   <:
   (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
 
+#push-options "--z3rlimit 500"
 let generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
