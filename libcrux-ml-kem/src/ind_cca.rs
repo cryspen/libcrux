@@ -63,6 +63,25 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
     pointer += H_DIGEST_SIZE;
     out[pointer..pointer + implicit_rejection_value.len()]
         .copy_from_slice(implicit_rejection_value);
+    hax_lib::fstar!("let open Spec.Utils in
+        assert (Seq.slice out 0 (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K)) `Seq.equal` private_key);
+        assert (Seq.slice out (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K))
+                                (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K +! Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K)) `Seq.equal` public_key);
+        assert (Seq.slice out (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K +!
+                                                Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K))
+                                (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K +!
+                                                Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K +!
+                                                Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE))
+                `Seq.equal` Libcrux_ml_kem.Hash_functions.f_H #v_Hasher #v_K public_key);
+        assert (Seq.slice out (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K +!
+                                                Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K +!
+                                                Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE))
+                                (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K +!
+                                                Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K +!
+                                                Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE +!
+                                                Spec.MLKEM.v_SHARED_SECRET_SIZE))
+                == implicit_rejection_value);
+        lemma_slice_append_4 out private_key public_key (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher #v_K public_key) implicit_rejection_value");
     out
 }
 
