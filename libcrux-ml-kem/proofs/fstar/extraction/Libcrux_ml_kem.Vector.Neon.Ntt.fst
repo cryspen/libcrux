@@ -12,9 +12,7 @@ let inv_ntt_layer_1_step
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let zeta:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize zetas <: t_Slice i16)
-  in
+  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (zetas <: t_Slice i16) in
   let a:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_s32 (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s32
           (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s32_s16 v
@@ -84,9 +82,7 @@ let inv_ntt_layer_2_step
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let zeta:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize zetas <: t_Slice i16)
-  in
+  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (zetas <: t_Slice i16) in
   let a:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_s64 (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s64
           (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s64_s16 v
@@ -184,9 +180,7 @@ let ntt_layer_1_step
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let zeta:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize zetas <: t_Slice i16)
-  in
+  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (zetas <: t_Slice i16) in
   let dup_a:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_s32 (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s32
           (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s32_s16 v
@@ -252,9 +246,7 @@ let ntt_layer_2_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let zeta:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize zetas <: t_Slice i16)
-  in
+  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (zetas <: t_Slice i16) in
   let dup_a:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_s64 (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s64
           (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s64_s16 v
@@ -363,9 +355,7 @@ let ntt_multiply
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let zeta:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize zetas <: t_Slice i16)
-  in
+  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (zetas <: t_Slice i16) in
   let a0:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s16 lhs.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
       lhs.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
@@ -476,9 +466,7 @@ let ntt_multiply
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
     Rust_primitives.Hax.array_of_list 16 list
   in
-  let index:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_u8 (Rust_primitives.unsize indexes <: t_Slice u8)
-  in
+  let index:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_u8 (indexes <: t_Slice u8) in
   let low2:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_u8 (Libcrux_intrinsics.Arm64_extract.v__vqtbl1q_u8
           (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u8_s16 low1 <: u8)

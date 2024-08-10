@@ -222,8 +222,8 @@ val ind_cpa_generate_keypair (r:rank) (randomness:t_Array u8 v_CPA_KEY_GENERATIO
                              (t_MLKEMCPAKeyPair r & bool)
 let ind_cpa_generate_keypair r randomness =
     let hashed = v_G randomness in
-      let (seed_for_A, seed_for_secret_and_error) = split hashed (sz 32) in
-    let (matrix_A_as_ntt, sufficient_randomness) = sample_matrix_A_ntt #r seed_for_A in
+    let (seed_for_A, seed_for_secret_and_error) = split hashed (sz 32) in
+    let matrix_A_as_ntt = sample_matrix_A_ntt #r seed_for_A in
     let secret_as_ntt = sample_vector_cbd_then_ntt #r seed_for_secret_and_error (sz 0) in
     let error_as_ntt = sample_vector_cbd_then_ntt #r seed_for_secret_and_error r in
     let t_as_ntt = compute_As_plus_e_ntt #r matrix_A_as_ntt secret_as_ntt error_as_ntt in

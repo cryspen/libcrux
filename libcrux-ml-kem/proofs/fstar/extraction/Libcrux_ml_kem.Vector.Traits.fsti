@@ -19,7 +19,12 @@ class t_Operations (v_Self: Type0) = {
   f_from_i16_array:x0: t_Slice i16
     -> Prims.Pure v_Self (f_from_i16_array_pre x0) (fun result -> f_from_i16_array_post x0 result);
   f_ZERO_pre:Prims.unit -> Type0;
-  f_ZERO_post:result: v_Self -> pred: Type0{pred ==> f_to_i16_array result == Seq.create 16 0uy};
+  f_ZERO_post:x: Prims.unit -> result: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          (let _:Prims.unit = x in
+            f_to_i16_array result == Seq.create 16 0uy) };
   f_ZERO:x0: Prims.unit -> Prims.Pure v_Self (f_ZERO_pre x0) (fun result -> f_ZERO_post x0 result);
   f_add_pre:lhs: v_Self -> rhs: v_Self -> pred: Type0{true ==> pred};
   f_add_post:v_Self -> v_Self -> v_Self -> Type0;

@@ -86,9 +86,7 @@ let sample_ring_element_cbd
             i
             (Libcrux_ml_kem.Sampling.sample_from_binomial_distribution v_ETA2
                 #v_Vector
-                (Rust_primitives.unsize (prf_outputs.[ i ] <: t_Array u8 v_ETA2_RANDOMNESS_SIZE)
-                  <:
-                  t_Slice u8)
+                (prf_outputs.[ i ] <: t_Slice u8)
               <:
               Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           <:
@@ -175,9 +173,7 @@ let sample_vector_cbd_then_ntt
               i
               (Libcrux_ml_kem.Sampling.sample_from_binomial_distribution v_ETA
                   #v_Vector
-                  (Rust_primitives.unsize (prf_outputs.[ i ] <: t_Array u8 v_ETA_RANDOMNESS_SIZE)
-                    <:
-                    t_Slice u8)
+                  (prf_outputs.[ i ] <: t_Slice u8)
                 <:
                 Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           in
@@ -251,13 +247,10 @@ let compress_then_serialize_u
                     Core.Ops.Range.t_Range usize ]
                   <:
                   t_Slice u8)
-                (Rust_primitives.unsize (Libcrux_ml_kem.Serialize.compress_then_serialize_ring_element_u
-                        v_COMPRESSION_FACTOR
-                        v_BLOCK_LEN
-                        #v_Vector
-                        re
-                      <:
-                      t_Array u8 v_BLOCK_LEN)
+                (Libcrux_ml_kem.Serialize.compress_then_serialize_ring_element_u v_COMPRESSION_FACTOR
+                    v_BLOCK_LEN
+                    #v_Vector
+                    re
                   <:
                   t_Slice u8)
               <:
@@ -292,7 +285,7 @@ let deserialize_then_decompress_u
           (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
               #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__chunks_exact #u8
-                  (Rust_primitives.unsize ciphertext <: t_Slice u8)
+                  (ciphertext <: t_Slice u8)
                   ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
                       v_U_COMPRESSION_FACTOR
                       <:
@@ -444,11 +437,7 @@ let serialize_secret_key
                     Core.Ops.Range.t_Range usize ]
                   <:
                   t_Slice u8)
-                (Rust_primitives.unsize (Libcrux_ml_kem.Serialize.serialize_uncompressed_ring_element
-                        #v_Vector
-                        re
-                      <:
-                      t_Array u8 (sz 384))
+                (Libcrux_ml_kem.Serialize.serialize_uncompressed_ring_element #v_Vector re
                   <:
                   t_Slice u8)
               <:
@@ -484,12 +473,7 @@ let serialize_public_key
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice u8)
-          (Rust_primitives.unsize (serialize_secret_key v_K
-                  v_RANKED_BYTES_PER_RING_ELEMENT
-                  #v_Vector
-                  tt_as_ntt
-                <:
-                t_Array u8 v_RANKED_BYTES_PER_RING_ELEMENT)
+          (serialize_secret_key v_K v_RANKED_BYTES_PER_RING_ELEMENT #v_Vector tt_as_ntt
             <:
             t_Slice u8)
         <:
@@ -611,12 +595,12 @@ let encrypt_unpacked
       #v_K
       #FStar.Tactics.Typeclasses.solve
       v_ETA2_RANDOMNESS_SIZE
-      (Rust_primitives.unsize prf_input <: t_Slice u8)
+      (prf_input <: t_Slice u8)
   in
   let error_2_:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Libcrux_ml_kem.Sampling.sample_from_binomial_distribution v_ETA2
       #v_Vector
-      (Rust_primitives.unsize prf_output <: t_Slice u8)
+      (prf_output <: t_Slice u8)
   in
   let u:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Libcrux_ml_kem.Matrix.compute_vector_u v_K
@@ -748,7 +732,7 @@ let generate_keypair_unpacked
       key_generation_seed
   in
   let seed_for_A, seed_for_secret_and_error:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8 (Rust_primitives.unsize hashed <: t_Slice u8) (sz 32)
+    Core.Slice.impl__split_at #u8 (hashed <: t_Slice u8) (sz 32)
   in
   let v_A_transpose:t_Array
     (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
@@ -835,7 +819,7 @@ let generate_keypair
       v_PUBLIC_KEY_SIZE
       #v_Vector
       pk.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
-      (Rust_primitives.unsize pk.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A <: t_Slice u8)
+      (pk.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A <: t_Slice u8)
   in
   let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
     serialize_secret_key v_K
