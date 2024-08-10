@@ -3,25 +3,25 @@ module Libcrux_ml_kem.Types
 open Core
 open FStar.Mul
 
-let impl_6__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
+let impl_5__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
 
-let impl_12__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
+let impl_11__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
 
-let impl_18__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
+let impl_17__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
 
-let impl_6__as_slice (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) = self.f_value
+let impl_5__as_slice (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) = self.f_value
 
-let impl_12__as_slice (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE) = self.f_value
+let impl_11__as_slice (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE) = self.f_value
 
-let impl_18__as_slice (v_SIZE: usize) (self: t_MlKemPublicKey v_SIZE) = self.f_value
+let impl_17__as_slice (v_SIZE: usize) (self: t_MlKemPublicKey v_SIZE) = self.f_value
 
-let impl__from
+let impl_18__from
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (sk: t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
       (pk: t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
      = { f_sk = sk; f_pk = pk } <: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE
 
-let impl__into_parts
+let impl_18__into_parts
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
      =
@@ -29,7 +29,7 @@ let impl__into_parts
   <:
   (t_MlKemPrivateKey v_PRIVATE_KEY_SIZE & t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
 
-let impl__new
+let impl_18__new
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (sk: t_Array u8 v_PRIVATE_KEY_SIZE)
       (pk: t_Array u8 v_PUBLIC_KEY_SIZE)
@@ -51,22 +51,22 @@ let impl__new
   <:
   t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE
 
-let impl__pk
+let impl_18__pk
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-     = impl_18__as_slice v_PUBLIC_KEY_SIZE self.f_pk
+     = impl_17__as_slice v_PUBLIC_KEY_SIZE self.f_pk
 
-let impl__private_key
+let impl_18__private_key
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
      = self.f_sk
 
-let impl__public_key
+let impl_18__public_key
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
      = self.f_pk
 
-let impl__sk
+let impl_18__sk
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-     = impl_12__as_slice v_PRIVATE_KEY_SIZE self.f_sk
+     = impl_11__as_slice v_PRIVATE_KEY_SIZE self.f_sk
