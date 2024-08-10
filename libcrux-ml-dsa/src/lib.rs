@@ -8,6 +8,7 @@ mod ml_dsa_generic;
 mod ntt;
 mod polynomial;
 mod sample;
+mod samplex4;
 mod simd;
 mod types;
 mod utils;

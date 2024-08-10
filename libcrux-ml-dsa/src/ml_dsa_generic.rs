@@ -6,12 +6,13 @@ use crate::{
     encoding,
     hash_functions::{shake128, shake256},
     matrix::{
-        add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, expand_to_A,
-        subtract_vectors, vector_times_ring_element,
+        add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
+        vector_times_ring_element,
     },
     ntt::ntt,
     polynomial::PolynomialRingElement,
-    sample::{sample_challenge_ring_element, sample_error_vector, sample_mask_vector},
+    sample::{sample_challenge_ring_element, sample_mask_vector},
+    samplex4,
     simd::traits::Operations,
     utils::into_padded_array,
     MLDSASignature,
@@ -52,19 +53,12 @@ pub(crate) fn generate_key_pair<
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-    let mut domain_separator: u16 = 0;
-
-    let A_as_ntt = expand_to_A::<SIMDUnit, Shake128, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+    let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
         into_padded_array(seed_for_A),
     );
 
-    let s1 = sample_error_vector::<SIMDUnit, Shake256, Shake256X4, COLUMNS_IN_A, ETA>(
+    let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
         into_padded_array(seed_for_error_vectors),
-        &mut domain_separator,
-    );
-    let s2 = sample_error_vector::<SIMDUnit, Shake256, Shake256X4, ROWS_IN_A, ETA>(
-        into_padded_array(seed_for_error_vectors),
-        &mut domain_separator,
     );
 
     let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, &s1, &s2);
@@ -140,7 +134,7 @@ pub(crate) fn sign<
             SIGNING_KEY_SIZE,
         >(signing_key);
 
-    let A_as_ntt = expand_to_A::<SIMDUnit, Shake128, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+    let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
         into_padded_array(&seed_for_A),
     );
 
@@ -317,7 +311,7 @@ pub(crate) fn verify<
         signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
-        let A_as_ntt = expand_to_A::<SIMDUnit, Shake128, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+        let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
             into_padded_array(&seed_for_A),
         );
 
