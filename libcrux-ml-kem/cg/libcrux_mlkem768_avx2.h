@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
- * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * Charon: 53530427db2941ce784201e64086766504bc5642
+ * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
+ * Karamel: f9cdef256a2b88282398a609847b34dd8c9cf3e3
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 75bf8bca5f9903b4f6e8fba693d61af1415d512f
+ * Libcrux: 9307ab926afbe89fd8e61ffec8dd95a500c18f33
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -45,11 +45,10 @@ static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_H(
   memcpy(ret, digest, (size_t)32U * sizeof(uint8_t));
 }
 
-typedef core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_SIMD256Vector;
+typedef __m256i libcrux_ml_kem_vector_avx2_SIMD256Vector;
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_zero(void) {
+static KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_zero(void) {
   return libcrux_intrinsics_avx2_mm256_setzero_si256();
 }
 
@@ -58,13 +57,12 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_ZERO_ea(
-    void) {
+static inline __m256i libcrux_ml_kem_vector_avx2_ZERO_ea(void) {
   return libcrux_ml_kem_vector_avx2_zero();
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_from_i16_array(Eurydice_slice array) {
   return libcrux_intrinsics_avx2_mm256_loadu_si256_i16(array);
 }
@@ -74,14 +72,14 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_from_i16_array_ea(Eurydice_slice array) {
+static inline __m256i libcrux_ml_kem_vector_avx2_from_i16_array_ea(
+    Eurydice_slice array) {
   return libcrux_ml_kem_vector_avx2_from_i16_array(array);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_to_i16_array(
-    core_core_arch_x86___m256i v, int16_t ret[16U]) {
+    __m256i v, int16_t ret[16U]) {
   int16_t output[16U] = {0U};
   libcrux_intrinsics_avx2_mm256_storeu_si256_i16(
       Eurydice_array_to_slice((size_t)16U, output, int16_t, Eurydice_slice), v);
@@ -94,14 +92,13 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_vector_avx2_to_i16_array_ea(
-    core_core_arch_x86___m256i x, int16_t ret[16U]) {
+    __m256i x, int16_t ret[16U]) {
   libcrux_ml_kem_vector_avx2_to_i16_array(x, ret);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_arithmetic_add(core_core_arch_x86___m256i lhs,
-                                          core_core_arch_x86___m256i rhs) {
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_arithmetic_add(__m256i lhs, __m256i rhs) {
   return libcrux_intrinsics_avx2_mm256_add_epi16(lhs, rhs);
 }
 
@@ -110,15 +107,14 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_add_ea(
-    core_core_arch_x86___m256i lhs, core_core_arch_x86___m256i *rhs) {
+static inline __m256i libcrux_ml_kem_vector_avx2_add_ea(__m256i lhs,
+                                                        __m256i *rhs) {
   return libcrux_ml_kem_vector_avx2_arithmetic_add(lhs, rhs[0U]);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_arithmetic_sub(core_core_arch_x86___m256i lhs,
-                                          core_core_arch_x86___m256i rhs) {
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_arithmetic_sub(__m256i lhs, __m256i rhs) {
   return libcrux_intrinsics_avx2_mm256_sub_epi16(lhs, rhs);
 }
 
@@ -127,15 +123,15 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_sub_ea(
-    core_core_arch_x86___m256i lhs, core_core_arch_x86___m256i *rhs) {
+static inline __m256i libcrux_ml_kem_vector_avx2_sub_ea(__m256i lhs,
+                                                        __m256i *rhs) {
   return libcrux_ml_kem_vector_avx2_arithmetic_sub(lhs, rhs[0U]);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_arithmetic_multiply_by_constant(
-    core_core_arch_x86___m256i vector, int16_t constant) {
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_arithmetic_multiply_by_constant(__m256i vector,
+                                                           int16_t constant) {
   return libcrux_intrinsics_avx2_mm256_mullo_epi16(
       vector, libcrux_intrinsics_avx2_mm256_set1_epi16(constant));
 }
@@ -145,16 +141,15 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_multiply_by_constant_ea(core_core_arch_x86___m256i v,
-                                                   int16_t c) {
+static inline __m256i libcrux_ml_kem_vector_avx2_multiply_by_constant_ea(
+    __m256i v, int16_t c) {
   return libcrux_ml_kem_vector_avx2_arithmetic_multiply_by_constant(v, c);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_arithmetic_bitwise_and_with_constant(
-    core_core_arch_x86___m256i vector, int16_t constant) {
+    __m256i vector, int16_t constant) {
   return libcrux_intrinsics_avx2_mm256_and_si256(
       vector, libcrux_intrinsics_avx2_mm256_set1_epi16(constant));
 }
@@ -164,26 +159,22 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_bitwise_and_with_constant_ea(
-    core_core_arch_x86___m256i vector, int16_t constant) {
+static inline __m256i libcrux_ml_kem_vector_avx2_bitwise_and_with_constant_ea(
+    __m256i vector, int16_t constant) {
   return libcrux_ml_kem_vector_avx2_arithmetic_bitwise_and_with_constant(
       vector, constant);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_arithmetic_cond_subtract_3329(
-    core_core_arch_x86___m256i vector) {
-  core_core_arch_x86___m256i field_modulus =
-      libcrux_intrinsics_avx2_mm256_set1_epi16(
-          LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  core_core_arch_x86___m256i v_minus_field_modulus =
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_arithmetic_cond_subtract_3329(__m256i vector) {
+  __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi16(
+      LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  __m256i v_minus_field_modulus =
       libcrux_intrinsics_avx2_mm256_sub_epi16(vector, field_modulus);
-  core_core_arch_x86___m256i sign_mask =
-      libcrux_intrinsics_avx2_mm256_srai_epi16(
-          (int32_t)15, v_minus_field_modulus, core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i conditional_add_field_modulus =
+  __m256i sign_mask = libcrux_intrinsics_avx2_mm256_srai_epi16(
+      (int32_t)15, v_minus_field_modulus, __m256i);
+  __m256i conditional_add_field_modulus =
       libcrux_intrinsics_avx2_mm256_and_si256(sign_mask, field_modulus);
   return libcrux_intrinsics_avx2_mm256_add_epi16(v_minus_field_modulus,
                                                  conditional_add_field_modulus);
@@ -194,28 +185,29 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_cond_subtract_3329_ea(
-    core_core_arch_x86___m256i vector) {
+static inline __m256i libcrux_ml_kem_vector_avx2_cond_subtract_3329_ea(
+    __m256i vector) {
   return libcrux_ml_kem_vector_avx2_arithmetic_cond_subtract_3329(vector);
 }
 
 #define LIBCRUX_ML_KEM_VECTOR_AVX2_ARITHMETIC_BARRETT_MULTIPLIER \
   ((int16_t)20159)
 
+/**
+ See Section 3.2 of the implementation notes document for an explanation
+ of this code.
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_arithmetic_barrett_reduce(
-    core_core_arch_x86___m256i vector) {
-  core_core_arch_x86___m256i t = libcrux_intrinsics_avx2_mm256_mulhi_epi16(
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_arithmetic_barrett_reduce(__m256i vector) {
+  __m256i t = libcrux_intrinsics_avx2_mm256_mulhi_epi16(
       vector, libcrux_intrinsics_avx2_mm256_set1_epi16(
                   LIBCRUX_ML_KEM_VECTOR_AVX2_ARITHMETIC_BARRETT_MULTIPLIER));
-  core_core_arch_x86___m256i t0 = libcrux_intrinsics_avx2_mm256_add_epi16(
+  __m256i t0 = libcrux_intrinsics_avx2_mm256_add_epi16(
       t, libcrux_intrinsics_avx2_mm256_set1_epi16((int16_t)512));
-  core_core_arch_x86___m256i quotient =
-      libcrux_intrinsics_avx2_mm256_srai_epi16((int32_t)10, t0,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i quotient_times_field_modulus =
+  __m256i quotient =
+      libcrux_intrinsics_avx2_mm256_srai_epi16((int32_t)10, t0, __m256i);
+  __m256i quotient_times_field_modulus =
       libcrux_intrinsics_avx2_mm256_mullo_epi16(
           quotient, libcrux_intrinsics_avx2_mm256_set1_epi16(
                         LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
@@ -228,30 +220,27 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_barrett_reduce_ea(
-    core_core_arch_x86___m256i vector) {
+static inline __m256i libcrux_ml_kem_vector_avx2_barrett_reduce_ea(
+    __m256i vector) {
   return libcrux_ml_kem_vector_avx2_arithmetic_barrett_reduce(vector);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constant(
-    core_core_arch_x86___m256i vector, int16_t constant) {
-  core_core_arch_x86___m256i constant0 =
-      libcrux_intrinsics_avx2_mm256_set1_epi16(constant);
-  core_core_arch_x86___m256i value_low =
+    __m256i vector, int16_t constant) {
+  __m256i constant0 = libcrux_intrinsics_avx2_mm256_set1_epi16(constant);
+  __m256i value_low =
       libcrux_intrinsics_avx2_mm256_mullo_epi16(vector, constant0);
-  core_core_arch_x86___m256i k = libcrux_intrinsics_avx2_mm256_mullo_epi16(
+  __m256i k = libcrux_intrinsics_avx2_mm256_mullo_epi16(
       value_low,
       libcrux_intrinsics_avx2_mm256_set1_epi16(
           (int16_t)
               LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R));
-  core_core_arch_x86___m256i k_times_modulus =
-      libcrux_intrinsics_avx2_mm256_mulhi_epi16(
-          k, libcrux_intrinsics_avx2_mm256_set1_epi16(
-                 LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
-  core_core_arch_x86___m256i value_high =
+  __m256i k_times_modulus = libcrux_intrinsics_avx2_mm256_mulhi_epi16(
+      k, libcrux_intrinsics_avx2_mm256_set1_epi16(
+             LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
+  __m256i value_high =
       libcrux_intrinsics_avx2_mm256_mulhi_epi16(vector, constant0);
   return libcrux_intrinsics_avx2_mm256_sub_epi16(value_high, k_times_modulus);
 }
@@ -261,36 +250,32 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
+static inline __m256i
 libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_ea(
-    core_core_arch_x86___m256i vector, int16_t constant) {
+    __m256i vector, int16_t constant) {
   return libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constant(
       vector, constant);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_compress_compress_message_coefficient(
-    core_core_arch_x86___m256i vector) {
-  core_core_arch_x86___m256i field_modulus_halved =
-      libcrux_intrinsics_avx2_mm256_set1_epi16(
-          (LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int16_t)1) /
-          (int16_t)2);
-  core_core_arch_x86___m256i field_modulus_quartered =
-      libcrux_intrinsics_avx2_mm256_set1_epi16(
-          (LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int16_t)1) /
-          (int16_t)4);
-  core_core_arch_x86___m256i shifted =
+    __m256i vector) {
+  __m256i field_modulus_halved = libcrux_intrinsics_avx2_mm256_set1_epi16(
+      (LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int16_t)1) / (int16_t)2);
+  __m256i field_modulus_quartered = libcrux_intrinsics_avx2_mm256_set1_epi16(
+      (LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int16_t)1) / (int16_t)4);
+  __m256i shifted =
       libcrux_intrinsics_avx2_mm256_sub_epi16(field_modulus_halved, vector);
-  core_core_arch_x86___m256i mask = libcrux_intrinsics_avx2_mm256_srai_epi16(
-      (int32_t)15, shifted, core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i shifted_to_positive =
+  __m256i mask =
+      libcrux_intrinsics_avx2_mm256_srai_epi16((int32_t)15, shifted, __m256i);
+  __m256i shifted_to_positive =
       libcrux_intrinsics_avx2_mm256_xor_si256(mask, shifted);
-  core_core_arch_x86___m256i shifted_to_positive_in_range =
+  __m256i shifted_to_positive_in_range =
       libcrux_intrinsics_avx2_mm256_sub_epi16(shifted_to_positive,
                                               field_modulus_quartered);
   return libcrux_intrinsics_avx2_mm256_srli_epi16(
-      (int32_t)15, shifted_to_positive_in_range, core_core_arch_x86___m256i);
+      (int32_t)15, shifted_to_positive_in_range, __m256i);
 }
 
 /**
@@ -298,63 +283,55 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_compress_1_ea(core_core_arch_x86___m256i vector) {
+static inline __m256i libcrux_ml_kem_vector_avx2_compress_1_ea(__m256i vector) {
   return libcrux_ml_kem_vector_avx2_compress_compress_message_coefficient(
       vector);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(
-    core_core_arch_x86___m256i lhs, core_core_arch_x86___m256i rhs) {
-  core_core_arch_x86___m256i prod02 =
-      libcrux_intrinsics_avx2_mm256_mul_epu32(lhs, rhs);
-  core_core_arch_x86___m256i prod13 = libcrux_intrinsics_avx2_mm256_mul_epu32(
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, lhs,
-                                                  core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, rhs,
-                                                  core_core_arch_x86___m256i));
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(__m256i lhs,
+                                                      __m256i rhs) {
+  __m256i prod02 = libcrux_intrinsics_avx2_mm256_mul_epu32(lhs, rhs);
+  __m256i prod13 = libcrux_intrinsics_avx2_mm256_mul_epu32(
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, lhs, __m256i),
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, rhs, __m256i));
   return libcrux_intrinsics_avx2_mm256_unpackhi_epi64(
       libcrux_intrinsics_avx2_mm256_unpacklo_epi32(prod02, prod13),
       libcrux_intrinsics_avx2_mm256_unpackhi_epi32(prod02, prod13));
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constants(
-    core_core_arch_x86___m256i v, core_core_arch_x86___m256i c) {
-  core_core_arch_x86___m256i value_low =
-      libcrux_intrinsics_avx2_mm256_mullo_epi16(v, c);
-  core_core_arch_x86___m256i k = libcrux_intrinsics_avx2_mm256_mullo_epi16(
+    __m256i v, __m256i c) {
+  __m256i value_low = libcrux_intrinsics_avx2_mm256_mullo_epi16(v, c);
+  __m256i k = libcrux_intrinsics_avx2_mm256_mullo_epi16(
       value_low,
       libcrux_intrinsics_avx2_mm256_set1_epi16(
           (int16_t)
               LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R));
-  core_core_arch_x86___m256i k_times_modulus =
-      libcrux_intrinsics_avx2_mm256_mulhi_epi16(
-          k, libcrux_intrinsics_avx2_mm256_set1_epi16(
-                 LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
-  core_core_arch_x86___m256i value_high =
-      libcrux_intrinsics_avx2_mm256_mulhi_epi16(v, c);
+  __m256i k_times_modulus = libcrux_intrinsics_avx2_mm256_mulhi_epi16(
+      k, libcrux_intrinsics_avx2_mm256_set1_epi16(
+             LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
+  __m256i value_high = libcrux_intrinsics_avx2_mm256_mulhi_epi16(v, c);
   return libcrux_intrinsics_avx2_mm256_sub_epi16(value_high, k_times_modulus);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_ntt_ntt_layer_1_step(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1,
-    int16_t zeta2, int16_t zeta3) {
-  core_core_arch_x86___m256i zetas = libcrux_intrinsics_avx2_mm256_set_epi16(
+static KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_layer_1_step(
+    __m256i vector, int16_t zeta0, int16_t zeta1, int16_t zeta2,
+    int16_t zeta3) {
+  __m256i zetas = libcrux_intrinsics_avx2_mm256_set_epi16(
       -zeta3, -zeta3, zeta3, zeta3, -zeta2, -zeta2, zeta2, zeta2, -zeta1,
       -zeta1, zeta1, zeta1, -zeta0, -zeta0, zeta0, zeta0);
-  core_core_arch_x86___m256i rhs = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-      (int32_t)245, vector, core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i rhs0 =
+  __m256i rhs = libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245,
+                                                            vector, __m256i);
+  __m256i rhs0 =
       libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constants(
           rhs, zetas);
-  core_core_arch_x86___m256i lhs = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-      (int32_t)160, vector, core_core_arch_x86___m256i);
+  __m256i lhs = libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)160,
+                                                            vector, __m256i);
   return libcrux_intrinsics_avx2_mm256_add_epi16(lhs, rhs0);
 }
 
@@ -363,28 +340,26 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_ntt_layer_1_step_ea(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1,
-    int16_t zeta2, int16_t zeta3) {
+static inline __m256i libcrux_ml_kem_vector_avx2_ntt_layer_1_step_ea(
+    __m256i vector, int16_t zeta0, int16_t zeta1, int16_t zeta2,
+    int16_t zeta3) {
   return libcrux_ml_kem_vector_avx2_ntt_ntt_layer_1_step(vector, zeta0, zeta1,
                                                          zeta2, zeta3);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_ntt_ntt_layer_2_step(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1) {
-  core_core_arch_x86___m256i zetas = libcrux_intrinsics_avx2_mm256_set_epi16(
+static KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_layer_2_step(
+    __m256i vector, int16_t zeta0, int16_t zeta1) {
+  __m256i zetas = libcrux_intrinsics_avx2_mm256_set_epi16(
       -zeta1, -zeta1, -zeta1, -zeta1, zeta1, zeta1, zeta1, zeta1, -zeta0,
       -zeta0, -zeta0, -zeta0, zeta0, zeta0, zeta0, zeta0);
-  core_core_arch_x86___m256i rhs = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-      (int32_t)238, vector, core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i rhs0 =
+  __m256i rhs = libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)238,
+                                                            vector, __m256i);
+  __m256i rhs0 =
       libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constants(
           rhs, zetas);
-  core_core_arch_x86___m256i lhs = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-      (int32_t)68, vector, core_core_arch_x86___m256i);
+  __m256i lhs =
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)68, vector, __m256i);
   return libcrux_intrinsics_avx2_mm256_add_epi16(lhs, rhs0);
 }
 
@@ -393,52 +368,43 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_ntt_layer_2_step_ea(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1) {
+static inline __m256i libcrux_ml_kem_vector_avx2_ntt_layer_2_step_ea(
+    __m256i vector, int16_t zeta0, int16_t zeta1) {
   return libcrux_ml_kem_vector_avx2_ntt_ntt_layer_2_step(vector, zeta0, zeta1);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m128i
+static KRML_MUSTINLINE __m128i
 libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_m128i_by_constants(
-    core_core_arch_x86___m128i v, core_core_arch_x86___m128i c) {
-  core_core_arch_x86___m128i value_low =
-      libcrux_intrinsics_avx2_mm_mullo_epi16(v, c);
-  core_core_arch_x86___m128i k = libcrux_intrinsics_avx2_mm_mullo_epi16(
+    __m128i v, __m128i c) {
+  __m128i value_low = libcrux_intrinsics_avx2_mm_mullo_epi16(v, c);
+  __m128i k = libcrux_intrinsics_avx2_mm_mullo_epi16(
       value_low,
       libcrux_intrinsics_avx2_mm_set1_epi16(
           (int16_t)
               LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R));
-  core_core_arch_x86___m128i k_times_modulus =
-      libcrux_intrinsics_avx2_mm_mulhi_epi16(
-          k, libcrux_intrinsics_avx2_mm_set1_epi16(
-                 LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
-  core_core_arch_x86___m128i value_high =
-      libcrux_intrinsics_avx2_mm_mulhi_epi16(v, c);
+  __m128i k_times_modulus = libcrux_intrinsics_avx2_mm_mulhi_epi16(
+      k, libcrux_intrinsics_avx2_mm_set1_epi16(
+             LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
+  __m128i value_high = libcrux_intrinsics_avx2_mm_mulhi_epi16(v, c);
   return libcrux_intrinsics_avx2_mm_sub_epi16(value_high, k_times_modulus);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_ntt_ntt_layer_3_step(
-    core_core_arch_x86___m256i vector, int16_t zeta) {
-  core_core_arch_x86___m128i rhs =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, vector, core_core_arch_x86___m128i);
-  core_core_arch_x86___m128i rhs0 =
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_ntt_ntt_layer_3_step(__m256i vector, int16_t zeta) {
+  __m128i rhs = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, vector, __m128i);
+  __m128i rhs0 =
       libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_m128i_by_constants(
           rhs, libcrux_intrinsics_avx2_mm_set1_epi16(zeta));
-  core_core_arch_x86___m128i lhs =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  core_core_arch_x86___m128i lower_coefficients =
-      libcrux_intrinsics_avx2_mm_add_epi16(lhs, rhs0);
-  core_core_arch_x86___m128i upper_coefficients =
-      libcrux_intrinsics_avx2_mm_sub_epi16(lhs, rhs0);
-  core_core_arch_x86___m256i combined =
+  __m128i lhs = libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
+  __m128i lower_coefficients = libcrux_intrinsics_avx2_mm_add_epi16(lhs, rhs0);
+  __m128i upper_coefficients = libcrux_intrinsics_avx2_mm_sub_epi16(lhs, rhs0);
+  __m256i combined =
       libcrux_intrinsics_avx2_mm256_castsi128_si256(lower_coefficients);
   return libcrux_intrinsics_avx2_mm256_inserti128_si256(
-      (int32_t)1, combined, upper_coefficients, core_core_arch_x86___m256i);
+      (int32_t)1, combined, upper_coefficients, __m256i);
 }
 
 /**
@@ -446,39 +412,38 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_ntt_layer_3_step_ea(
-    core_core_arch_x86___m256i vector, int16_t zeta) {
+static inline __m256i libcrux_ml_kem_vector_avx2_ntt_layer_3_step_ea(
+    __m256i vector, int16_t zeta) {
   return libcrux_ml_kem_vector_avx2_ntt_ntt_layer_3_step(vector, zeta);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_1_step(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1,
-    int16_t zeta2, int16_t zeta3) {
-  core_core_arch_x86___m256i lhs = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-      (int32_t)245, vector, core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i rhs = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-      (int32_t)160, vector, core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i rhs0 = libcrux_intrinsics_avx2_mm256_mullo_epi16(
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_1_step(__m256i vector,
+                                                    int16_t zeta0,
+                                                    int16_t zeta1,
+                                                    int16_t zeta2,
+                                                    int16_t zeta3) {
+  __m256i lhs = libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245,
+                                                            vector, __m256i);
+  __m256i rhs = libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)160,
+                                                            vector, __m256i);
+  __m256i rhs0 = libcrux_intrinsics_avx2_mm256_mullo_epi16(
       rhs, libcrux_intrinsics_avx2_mm256_set_epi16(
                (int16_t)-1, (int16_t)-1, (int16_t)1, (int16_t)1, (int16_t)-1,
                (int16_t)-1, (int16_t)1, (int16_t)1, (int16_t)-1, (int16_t)-1,
                (int16_t)1, (int16_t)1, (int16_t)-1, (int16_t)-1, (int16_t)1,
                (int16_t)1));
-  core_core_arch_x86___m256i sum0 =
-      libcrux_intrinsics_avx2_mm256_add_epi16(lhs, rhs0);
-  core_core_arch_x86___m256i sum_times_zetas =
+  __m256i sum0 = libcrux_intrinsics_avx2_mm256_add_epi16(lhs, rhs0);
+  __m256i sum_times_zetas =
       libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constants(
           sum0, libcrux_intrinsics_avx2_mm256_set_epi16(
                     zeta3, zeta3, (int16_t)0, (int16_t)0, zeta2, zeta2,
                     (int16_t)0, (int16_t)0, zeta1, zeta1, (int16_t)0,
                     (int16_t)0, zeta0, zeta0, (int16_t)0, (int16_t)0));
-  core_core_arch_x86___m256i sum =
-      libcrux_ml_kem_vector_avx2_arithmetic_barrett_reduce(sum0);
-  return libcrux_intrinsics_avx2_mm256_blend_epi16(
-      (int32_t)204, sum, sum_times_zetas, core_core_arch_x86___m256i);
+  __m256i sum = libcrux_ml_kem_vector_avx2_arithmetic_barrett_reduce(sum0);
+  return libcrux_intrinsics_avx2_mm256_blend_epi16((int32_t)204, sum,
+                                                   sum_times_zetas, __m256i);
 }
 
 /**
@@ -486,40 +451,37 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_inv_ntt_layer_1_step_ea(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1,
-    int16_t zeta2, int16_t zeta3) {
+static inline __m256i libcrux_ml_kem_vector_avx2_inv_ntt_layer_1_step_ea(
+    __m256i vector, int16_t zeta0, int16_t zeta1, int16_t zeta2,
+    int16_t zeta3) {
   return libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_1_step(
       vector, zeta0, zeta1, zeta2, zeta3);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_2_step(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1) {
-  core_core_arch_x86___m256i lhs =
-      libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
-          (int32_t)245, vector, core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i rhs =
-      libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
-          (int32_t)160, vector, core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i rhs0 = libcrux_intrinsics_avx2_mm256_mullo_epi16(
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_2_step(__m256i vector,
+                                                    int16_t zeta0,
+                                                    int16_t zeta1) {
+  __m256i lhs = libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
+      (int32_t)245, vector, __m256i);
+  __m256i rhs = libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
+      (int32_t)160, vector, __m256i);
+  __m256i rhs0 = libcrux_intrinsics_avx2_mm256_mullo_epi16(
       rhs, libcrux_intrinsics_avx2_mm256_set_epi16(
                (int16_t)-1, (int16_t)-1, (int16_t)-1, (int16_t)-1, (int16_t)1,
                (int16_t)1, (int16_t)1, (int16_t)1, (int16_t)-1, (int16_t)-1,
                (int16_t)-1, (int16_t)-1, (int16_t)1, (int16_t)1, (int16_t)1,
                (int16_t)1));
-  core_core_arch_x86___m256i sum =
-      libcrux_intrinsics_avx2_mm256_add_epi16(lhs, rhs0);
-  core_core_arch_x86___m256i sum_times_zetas =
+  __m256i sum = libcrux_intrinsics_avx2_mm256_add_epi16(lhs, rhs0);
+  __m256i sum_times_zetas =
       libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constants(
           sum, libcrux_intrinsics_avx2_mm256_set_epi16(
                    zeta1, zeta1, zeta1, zeta1, (int16_t)0, (int16_t)0,
                    (int16_t)0, (int16_t)0, zeta0, zeta0, zeta0, zeta0,
                    (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0));
-  return libcrux_intrinsics_avx2_mm256_blend_epi16(
-      (int32_t)240, sum, sum_times_zetas, core_core_arch_x86___m256i);
+  return libcrux_intrinsics_avx2_mm256_blend_epi16((int32_t)240, sum,
+                                                   sum_times_zetas, __m256i);
 }
 
 /**
@@ -527,33 +489,28 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_inv_ntt_layer_2_step_ea(
-    core_core_arch_x86___m256i vector, int16_t zeta0, int16_t zeta1) {
+static inline __m256i libcrux_ml_kem_vector_avx2_inv_ntt_layer_2_step_ea(
+    __m256i vector, int16_t zeta0, int16_t zeta1) {
   return libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_2_step(vector, zeta0,
                                                              zeta1);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_3_step(
-    core_core_arch_x86___m256i vector, int16_t zeta) {
-  core_core_arch_x86___m128i lhs =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, vector, core_core_arch_x86___m128i);
-  core_core_arch_x86___m128i rhs =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  core_core_arch_x86___m128i lower_coefficients =
-      libcrux_intrinsics_avx2_mm_add_epi16(lhs, rhs);
-  core_core_arch_x86___m128i upper_coefficients =
-      libcrux_intrinsics_avx2_mm_sub_epi16(lhs, rhs);
-  core_core_arch_x86___m128i upper_coefficients0 =
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_3_step(__m256i vector,
+                                                    int16_t zeta) {
+  __m128i lhs = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, vector, __m128i);
+  __m128i rhs = libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
+  __m128i lower_coefficients = libcrux_intrinsics_avx2_mm_add_epi16(lhs, rhs);
+  __m128i upper_coefficients = libcrux_intrinsics_avx2_mm_sub_epi16(lhs, rhs);
+  __m128i upper_coefficients0 =
       libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_m128i_by_constants(
           upper_coefficients, libcrux_intrinsics_avx2_mm_set1_epi16(zeta));
-  core_core_arch_x86___m256i combined =
+  __m256i combined =
       libcrux_intrinsics_avx2_mm256_castsi128_si256(lower_coefficients);
   return libcrux_intrinsics_avx2_mm256_inserti128_si256(
-      (int32_t)1, combined, upper_coefficients0, core_core_arch_x86___m256i);
+      (int32_t)1, combined, upper_coefficients0, __m256i);
 }
 
 /**
@@ -561,115 +518,96 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_inv_ntt_layer_3_step_ea(
-    core_core_arch_x86___m256i vector, int16_t zeta) {
+static inline __m256i libcrux_ml_kem_vector_avx2_inv_ntt_layer_3_step_ea(
+    __m256i vector, int16_t zeta) {
   return libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_3_step(vector, zeta);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(
-    core_core_arch_x86___m256i v) {
-  core_core_arch_x86___m256i k = libcrux_intrinsics_avx2_mm256_mullo_epi16(
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(__m256i v) {
+  __m256i k = libcrux_intrinsics_avx2_mm256_mullo_epi16(
       v,
       libcrux_intrinsics_avx2_mm256_set1_epi32(
           (int32_t)
               LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R));
-  core_core_arch_x86___m256i k_times_modulus =
-      libcrux_intrinsics_avx2_mm256_mulhi_epi16(
-          k, libcrux_intrinsics_avx2_mm256_set1_epi32(
-                 (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
-  core_core_arch_x86___m256i value_high =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)16, v,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i result =
+  __m256i k_times_modulus = libcrux_intrinsics_avx2_mm256_mulhi_epi16(
+      k, libcrux_intrinsics_avx2_mm256_set1_epi32(
+             (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
+  __m256i value_high =
+      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)16, v, __m256i);
+  __m256i result =
       libcrux_intrinsics_avx2_mm256_sub_epi16(value_high, k_times_modulus);
-  core_core_arch_x86___m256i result0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
-      (int32_t)16, result, core_core_arch_x86___m256i);
+  __m256i result0 =
+      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)16, result, __m256i);
   return libcrux_intrinsics_avx2_mm256_srai_epi32((int32_t)16, result0,
-                                                  core_core_arch_x86___m256i);
+                                                  __m256i);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(core_core_arch_x86___m256i lhs,
-                                            core_core_arch_x86___m256i rhs,
-                                            int16_t zeta0, int16_t zeta1,
-                                            int16_t zeta2, int16_t zeta3) {
-  core_core_arch_x86___m256i shuffle_with =
-      libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)15, (int8_t)14, (int8_t)11, (int8_t)10, (int8_t)7, (int8_t)6,
-          (int8_t)3, (int8_t)2, (int8_t)13, (int8_t)12, (int8_t)9, (int8_t)8,
-          (int8_t)5, (int8_t)4, (int8_t)1, (int8_t)0, (int8_t)15, (int8_t)14,
-          (int8_t)11, (int8_t)10, (int8_t)7, (int8_t)6, (int8_t)3, (int8_t)2,
-          (int8_t)13, (int8_t)12, (int8_t)9, (int8_t)8, (int8_t)5, (int8_t)4,
-          (int8_t)1, (int8_t)0);
-  core_core_arch_x86___m256i lhs_shuffled =
+static KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
+    __m256i lhs, __m256i rhs, int16_t zeta0, int16_t zeta1, int16_t zeta2,
+    int16_t zeta3) {
+  __m256i shuffle_with = libcrux_intrinsics_avx2_mm256_set_epi8(
+      (int8_t)15, (int8_t)14, (int8_t)11, (int8_t)10, (int8_t)7, (int8_t)6,
+      (int8_t)3, (int8_t)2, (int8_t)13, (int8_t)12, (int8_t)9, (int8_t)8,
+      (int8_t)5, (int8_t)4, (int8_t)1, (int8_t)0, (int8_t)15, (int8_t)14,
+      (int8_t)11, (int8_t)10, (int8_t)7, (int8_t)6, (int8_t)3, (int8_t)2,
+      (int8_t)13, (int8_t)12, (int8_t)9, (int8_t)8, (int8_t)5, (int8_t)4,
+      (int8_t)1, (int8_t)0);
+  __m256i lhs_shuffled =
       libcrux_intrinsics_avx2_mm256_shuffle_epi8(lhs, shuffle_with);
-  core_core_arch_x86___m256i lhs_shuffled0 =
-      libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
-          (int32_t)216, lhs_shuffled, core_core_arch_x86___m256i);
-  core_core_arch_x86___m128i lhs_evens =
+  __m256i lhs_shuffled0 = libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
+      (int32_t)216, lhs_shuffled, __m256i);
+  __m128i lhs_evens =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(lhs_shuffled0);
-  core_core_arch_x86___m256i lhs_evens0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(lhs_evens);
-  core_core_arch_x86___m128i lhs_odds =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, lhs_shuffled0, core_core_arch_x86___m128i);
-  core_core_arch_x86___m256i lhs_odds0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(lhs_odds);
-  core_core_arch_x86___m256i rhs_shuffled =
+  __m256i lhs_evens0 = libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(lhs_evens);
+  __m128i lhs_odds = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, lhs_shuffled0, __m128i);
+  __m256i lhs_odds0 = libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(lhs_odds);
+  __m256i rhs_shuffled =
       libcrux_intrinsics_avx2_mm256_shuffle_epi8(rhs, shuffle_with);
-  core_core_arch_x86___m256i rhs_shuffled0 =
-      libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
-          (int32_t)216, rhs_shuffled, core_core_arch_x86___m256i);
-  core_core_arch_x86___m128i rhs_evens =
+  __m256i rhs_shuffled0 = libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
+      (int32_t)216, rhs_shuffled, __m256i);
+  __m128i rhs_evens =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(rhs_shuffled0);
-  core_core_arch_x86___m256i rhs_evens0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(rhs_evens);
-  core_core_arch_x86___m128i rhs_odds =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, rhs_shuffled0, core_core_arch_x86___m128i);
-  core_core_arch_x86___m256i rhs_odds0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(rhs_odds);
-  core_core_arch_x86___m256i left =
+  __m256i rhs_evens0 = libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(rhs_evens);
+  __m128i rhs_odds = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, rhs_shuffled0, __m128i);
+  __m256i rhs_odds0 = libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(rhs_odds);
+  __m256i left =
       libcrux_intrinsics_avx2_mm256_mullo_epi32(lhs_evens0, rhs_evens0);
-  core_core_arch_x86___m256i right =
+  __m256i right =
       libcrux_intrinsics_avx2_mm256_mullo_epi32(lhs_odds0, rhs_odds0);
-  core_core_arch_x86___m256i right0 =
+  __m256i right0 =
       libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(right);
-  core_core_arch_x86___m256i right1 = libcrux_intrinsics_avx2_mm256_mullo_epi32(
+  __m256i right1 = libcrux_intrinsics_avx2_mm256_mullo_epi32(
       right0,
       libcrux_intrinsics_avx2_mm256_set_epi32(
           -(int32_t)zeta3, (int32_t)zeta3, -(int32_t)zeta2, (int32_t)zeta2,
           -(int32_t)zeta1, (int32_t)zeta1, -(int32_t)zeta0, (int32_t)zeta0));
-  core_core_arch_x86___m256i products_left =
-      libcrux_intrinsics_avx2_mm256_add_epi32(left, right1);
-  core_core_arch_x86___m256i products_left0 =
+  __m256i products_left = libcrux_intrinsics_avx2_mm256_add_epi32(left, right1);
+  __m256i products_left0 =
       libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(
           products_left);
-  core_core_arch_x86___m256i rhs_adjacent_swapped =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-          rhs, libcrux_intrinsics_avx2_mm256_set_epi8(
-                   (int8_t)13, (int8_t)12, (int8_t)15, (int8_t)14, (int8_t)9,
-                   (int8_t)8, (int8_t)11, (int8_t)10, (int8_t)5, (int8_t)4,
-                   (int8_t)7, (int8_t)6, (int8_t)1, (int8_t)0, (int8_t)3,
-                   (int8_t)2, (int8_t)13, (int8_t)12, (int8_t)15, (int8_t)14,
-                   (int8_t)9, (int8_t)8, (int8_t)11, (int8_t)10, (int8_t)5,
-                   (int8_t)4, (int8_t)7, (int8_t)6, (int8_t)1, (int8_t)0,
-                   (int8_t)3, (int8_t)2));
-  core_core_arch_x86___m256i products_right =
+  __m256i rhs_adjacent_swapped = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
+      rhs,
+      libcrux_intrinsics_avx2_mm256_set_epi8(
+          (int8_t)13, (int8_t)12, (int8_t)15, (int8_t)14, (int8_t)9, (int8_t)8,
+          (int8_t)11, (int8_t)10, (int8_t)5, (int8_t)4, (int8_t)7, (int8_t)6,
+          (int8_t)1, (int8_t)0, (int8_t)3, (int8_t)2, (int8_t)13, (int8_t)12,
+          (int8_t)15, (int8_t)14, (int8_t)9, (int8_t)8, (int8_t)11, (int8_t)10,
+          (int8_t)5, (int8_t)4, (int8_t)7, (int8_t)6, (int8_t)1, (int8_t)0,
+          (int8_t)3, (int8_t)2));
+  __m256i products_right =
       libcrux_intrinsics_avx2_mm256_madd_epi16(lhs, rhs_adjacent_swapped);
-  core_core_arch_x86___m256i products_right0 =
+  __m256i products_right0 =
       libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(
           products_right);
-  core_core_arch_x86___m256i products_right1 =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)16, products_right0,
-                                               core_core_arch_x86___m256i);
+  __m256i products_right1 = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)16, products_right0, __m256i);
   return libcrux_intrinsics_avx2_mm256_blend_epi16((int32_t)170, products_left0,
-                                                   products_right1,
-                                                   core_core_arch_x86___m256i);
+                                                   products_right1, __m256i);
 }
 
 /**
@@ -677,28 +615,22 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_ntt_multiply_ea(core_core_arch_x86___m256i *lhs,
-                                           core_core_arch_x86___m256i *rhs,
-                                           int16_t zeta0, int16_t zeta1,
-                                           int16_t zeta2, int16_t zeta3) {
+static inline __m256i libcrux_ml_kem_vector_avx2_ntt_multiply_ea(
+    __m256i *lhs, __m256i *rhs, int16_t zeta0, int16_t zeta1, int16_t zeta2,
+    int16_t zeta3) {
   return libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(lhs[0U], rhs[0U], zeta0,
                                                      zeta1, zeta2, zeta3);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_1(
-    core_core_arch_x86___m256i vector, uint8_t ret[2U]) {
-  core_core_arch_x86___m256i lsb_to_msb =
-      libcrux_intrinsics_avx2_mm256_slli_epi16((int32_t)15, vector,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m128i low_msbs =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(lsb_to_msb);
-  core_core_arch_x86___m128i high_msbs =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, lsb_to_msb, core_core_arch_x86___m128i);
-  core_core_arch_x86___m128i msbs =
-      libcrux_intrinsics_avx2_mm_packs_epi16(low_msbs, high_msbs);
+    __m256i vector, uint8_t ret[2U]) {
+  __m256i lsb_to_msb =
+      libcrux_intrinsics_avx2_mm256_slli_epi16((int32_t)15, vector, __m256i);
+  __m128i low_msbs = libcrux_intrinsics_avx2_mm256_castsi256_si128(lsb_to_msb);
+  __m128i high_msbs = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, lsb_to_msb, __m128i);
+  __m128i msbs = libcrux_intrinsics_avx2_mm_packs_epi16(low_msbs, high_msbs);
   int32_t bits_packed = libcrux_intrinsics_avx2_mm_movemask_epi8(msbs);
   uint8_t serialized[2U] = {0U};
   serialized[0U] = (uint8_t)bits_packed;
@@ -711,60 +643,56 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_vector_avx2_serialize_1_ea(
-    core_core_arch_x86___m256i vector, uint8_t ret[2U]) {
+static inline void libcrux_ml_kem_vector_avx2_serialize_1_ea(__m256i vector,
+                                                             uint8_t ret[2U]) {
   libcrux_ml_kem_vector_avx2_serialize_serialize_1(vector, ret);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_1(Eurydice_slice bytes) {
-  core_core_arch_x86___m256i coefficients =
-      libcrux_intrinsics_avx2_mm256_set_epi16(
-          (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
-                                        uint8_t));
-  core_core_arch_x86___m256i shift_lsb_to_msb =
-      libcrux_intrinsics_avx2_mm256_set_epi16(
-          (int16_t)1 << 8U, (int16_t)1 << 9U, (int16_t)1 << 10U,
-          (int16_t)1 << 11U, (int16_t)1 << 12U, (int16_t)1 << 13U,
-          (int16_t)1 << 14U, (int16_t)-32768, (int16_t)1 << 8U,
-          (int16_t)1 << 9U, (int16_t)1 << 10U, (int16_t)1 << 11U,
-          (int16_t)1 << 12U, (int16_t)1 << 13U, (int16_t)1 << 14U,
-          (int16_t)-32768);
-  core_core_arch_x86___m256i coefficients_in_msb =
+  __m256i coefficients = libcrux_intrinsics_avx2_mm256_set_epi16(
+      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
+                                    uint8_t));
+  __m256i shift_lsb_to_msb = libcrux_intrinsics_avx2_mm256_set_epi16(
+      (int16_t)1 << 8U, (int16_t)1 << 9U, (int16_t)1 << 10U, (int16_t)1 << 11U,
+      (int16_t)1 << 12U, (int16_t)1 << 13U, (int16_t)1 << 14U, (int16_t)-32768,
+      (int16_t)1 << 8U, (int16_t)1 << 9U, (int16_t)1 << 10U, (int16_t)1 << 11U,
+      (int16_t)1 << 12U, (int16_t)1 << 13U, (int16_t)1 << 14U, (int16_t)-32768);
+  __m256i coefficients_in_msb =
       libcrux_intrinsics_avx2_mm256_mullo_epi16(coefficients, shift_lsb_to_msb);
-  return libcrux_intrinsics_avx2_mm256_srli_epi16(
-      (int32_t)15, coefficients_in_msb, core_core_arch_x86___m256i);
+  return libcrux_intrinsics_avx2_mm256_srli_epi16((int32_t)15,
+                                                  coefficients_in_msb, __m256i);
 }
 
 /**
@@ -772,42 +700,35 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_deserialize_1_ea(Eurydice_slice bytes) {
+static inline __m256i libcrux_ml_kem_vector_avx2_deserialize_1_ea(
+    Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_serialize_deserialize_1(bytes);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_4(
-    core_core_arch_x86___m256i vector, uint8_t ret[8U]) {
+    __m256i vector, uint8_t ret[8U]) {
   uint8_t serialized[16U] = {0U};
-  core_core_arch_x86___m256i adjacent_2_combined =
-      libcrux_intrinsics_avx2_mm256_madd_epi16(
-          vector,
-          libcrux_intrinsics_avx2_mm256_set_epi16(
-              (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1,
-              (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1,
-              (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1,
-              (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1));
-  core_core_arch_x86___m256i adjacent_8_combined =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-          adjacent_2_combined,
-          libcrux_intrinsics_avx2_mm256_set_epi8(
-              (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-              (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-              (int8_t)-1, (int8_t)-1, (int8_t)12, (int8_t)8, (int8_t)4,
-              (int8_t)0, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-              (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-              (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)12, (int8_t)8,
-              (int8_t)4, (int8_t)0));
-  core_core_arch_x86___m256i combined =
-      libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(
-          adjacent_8_combined,
-          libcrux_intrinsics_avx2_mm256_set_epi32(
-              (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0,
-              (int32_t)0, (int32_t)4, (int32_t)0));
-  core_core_arch_x86___m128i combined0 =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(combined);
+  __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_madd_epi16(
+      vector, libcrux_intrinsics_avx2_mm256_set_epi16(
+                  (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1,
+                  (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1,
+                  (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1,
+                  (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1));
+  __m256i adjacent_8_combined = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
+      adjacent_2_combined,
+      libcrux_intrinsics_avx2_mm256_set_epi8(
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+          (int8_t)-1, (int8_t)-1, (int8_t)12, (int8_t)8, (int8_t)4, (int8_t)0,
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+          (int8_t)-1, (int8_t)-1, (int8_t)12, (int8_t)8, (int8_t)4, (int8_t)0));
+  __m256i combined = libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(
+      adjacent_8_combined, libcrux_intrinsics_avx2_mm256_set_epi32(
+                               (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0,
+                               (int32_t)0, (int32_t)0, (int32_t)4, (int32_t)0));
+  __m128i combined0 = libcrux_intrinsics_avx2_mm256_castsi256_si128(combined);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_slice((size_t)16U, serialized, uint8_t, Eurydice_slice),
       combined0);
@@ -827,62 +748,56 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_vector_avx2_serialize_4_ea(
-    core_core_arch_x86___m256i vector, uint8_t ret[8U]) {
+static inline void libcrux_ml_kem_vector_avx2_serialize_4_ea(__m256i vector,
+                                                             uint8_t ret[8U]) {
   libcrux_ml_kem_vector_avx2_serialize_serialize_4(vector, ret);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_4(Eurydice_slice bytes) {
-  core_core_arch_x86___m256i coefficients =
-      libcrux_intrinsics_avx2_mm256_set_epi16(
-          (int16_t)Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
-                                        uint8_t),
-          (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
-                                        uint8_t));
-  core_core_arch_x86___m256i shift_lsbs_to_msbs =
-      libcrux_intrinsics_avx2_mm256_set_epi16(
-          (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
-          (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
-          (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
-          (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
-          (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
-          (int16_t)1 << 4U);
-  core_core_arch_x86___m256i coefficients_in_msb =
-      libcrux_intrinsics_avx2_mm256_mullo_epi16(coefficients,
-                                                shift_lsbs_to_msbs);
-  core_core_arch_x86___m256i coefficients_in_lsb =
-      libcrux_intrinsics_avx2_mm256_srli_epi16((int32_t)4, coefficients_in_msb,
-                                               core_core_arch_x86___m256i);
+  __m256i coefficients = libcrux_intrinsics_avx2_mm256_set_epi16(
+      (int16_t)Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
+                                    uint8_t),
+      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *,
+                                    uint8_t));
+  __m256i shift_lsbs_to_msbs = libcrux_intrinsics_avx2_mm256_set_epi16(
+      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
+      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
+      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
+      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U);
+  __m256i coefficients_in_msb = libcrux_intrinsics_avx2_mm256_mullo_epi16(
+      coefficients, shift_lsbs_to_msbs);
+  __m256i coefficients_in_lsb = libcrux_intrinsics_avx2_mm256_srli_epi16(
+      (int32_t)4, coefficients_in_msb, __m256i);
   return libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients_in_lsb, libcrux_intrinsics_avx2_mm256_set1_epi16(
                                ((int16_t)1 << 4U) - (int16_t)1));
@@ -893,53 +808,45 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_deserialize_4_ea(Eurydice_slice bytes) {
+static inline __m256i libcrux_ml_kem_vector_avx2_deserialize_4_ea(
+    Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_serialize_deserialize_4(bytes);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_5(
-    core_core_arch_x86___m256i vector, uint8_t ret[10U]) {
+    __m256i vector, uint8_t ret[10U]) {
   uint8_t serialized[32U] = {0U};
-  core_core_arch_x86___m256i adjacent_2_combined =
-      libcrux_intrinsics_avx2_mm256_madd_epi16(
-          vector,
-          libcrux_intrinsics_avx2_mm256_set_epi16(
-              (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
-              (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
-              (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
-              (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1));
-  core_core_arch_x86___m256i adjacent_4_combined =
-      libcrux_intrinsics_avx2_mm256_sllv_epi32(
-          adjacent_2_combined,
-          libcrux_intrinsics_avx2_mm256_set_epi32(
-              (int32_t)0, (int32_t)22, (int32_t)0, (int32_t)22, (int32_t)0,
-              (int32_t)22, (int32_t)0, (int32_t)22));
-  core_core_arch_x86___m256i adjacent_4_combined0 =
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)22, adjacent_4_combined,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i adjacent_8_combined =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-          (int32_t)8, adjacent_4_combined0, core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i adjacent_8_combined0 =
-      libcrux_intrinsics_avx2_mm256_sllv_epi32(
-          adjacent_8_combined,
-          libcrux_intrinsics_avx2_mm256_set_epi32(
-              (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)12, (int32_t)0,
-              (int32_t)0, (int32_t)0, (int32_t)12));
-  core_core_arch_x86___m256i adjacent_8_combined1 =
-      libcrux_intrinsics_avx2_mm256_srli_epi64(
-          (int32_t)12, adjacent_8_combined0, core_core_arch_x86___m256i);
-  core_core_arch_x86___m128i lower_8 =
+  __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_madd_epi16(
+      vector, libcrux_intrinsics_avx2_mm256_set_epi16(
+                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
+                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
+                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
+                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1));
+  __m256i adjacent_4_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
+      adjacent_2_combined,
+      libcrux_intrinsics_avx2_mm256_set_epi32(
+          (int32_t)0, (int32_t)22, (int32_t)0, (int32_t)22, (int32_t)0,
+          (int32_t)22, (int32_t)0, (int32_t)22));
+  __m256i adjacent_4_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
+      (int32_t)22, adjacent_4_combined, __m256i);
+  __m256i adjacent_8_combined = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
+      (int32_t)8, adjacent_4_combined0, __m256i);
+  __m256i adjacent_8_combined0 = libcrux_intrinsics_avx2_mm256_sllv_epi32(
+      adjacent_8_combined,
+      libcrux_intrinsics_avx2_mm256_set_epi32(
+          (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)12, (int32_t)0,
+          (int32_t)0, (int32_t)0, (int32_t)12));
+  __m256i adjacent_8_combined1 = libcrux_intrinsics_avx2_mm256_srli_epi64(
+      (int32_t)12, adjacent_8_combined0, __m256i);
+  __m128i lower_8 =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_8_combined1);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t,
                                   Eurydice_slice),
       lower_8);
-  core_core_arch_x86___m128i upper_8 =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, adjacent_8_combined1, core_core_arch_x86___m128i);
+  __m128i upper_8 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, adjacent_8_combined1, __m128i);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)5U, (size_t)21U, uint8_t,
                                   Eurydice_slice),
@@ -960,15 +867,15 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_vector_avx2_serialize_5_ea(
-    core_core_arch_x86___m256i vector, uint8_t ret[10U]) {
+static inline void libcrux_ml_kem_vector_avx2_serialize_5_ea(__m256i vector,
+                                                             uint8_t ret[10U]) {
   libcrux_ml_kem_vector_avx2_serialize_serialize_5(vector, ret);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_5(Eurydice_slice bytes) {
-  core_core_arch_x86___m128i coefficients = libcrux_intrinsics_avx2_mm_set_epi8(
+  __m128i coefficients = libcrux_intrinsics_avx2_mm_set_epi8(
       Eurydice_slice_index(bytes, (size_t)9U, uint8_t, uint8_t *, uint8_t),
       Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *, uint8_t),
       Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *, uint8_t),
@@ -985,34 +892,29 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_5(Eurydice_slice bytes) {
       Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *, uint8_t),
       Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *, uint8_t),
       Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *, uint8_t));
-  core_core_arch_x86___m256i coefficients_loaded =
+  __m256i coefficients_loaded =
       libcrux_intrinsics_avx2_mm256_castsi128_si256(coefficients);
-  core_core_arch_x86___m256i coefficients_loaded0 =
-      libcrux_intrinsics_avx2_mm256_inserti128_si256(
-          (int32_t)1, coefficients_loaded, coefficients,
-          core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i coefficients0 =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-          coefficients_loaded0,
-          libcrux_intrinsics_avx2_mm256_set_epi8(
-              (int8_t)15, (int8_t)14, (int8_t)15, (int8_t)14, (int8_t)13,
-              (int8_t)12, (int8_t)13, (int8_t)12, (int8_t)11, (int8_t)10,
-              (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)9,
-              (int8_t)8, (int8_t)7, (int8_t)6, (int8_t)7, (int8_t)6, (int8_t)5,
-              (int8_t)4, (int8_t)5, (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)3,
-              (int8_t)2, (int8_t)1, (int8_t)0, (int8_t)1, (int8_t)0));
-  core_core_arch_x86___m256i coefficients1 =
-      libcrux_intrinsics_avx2_mm256_mullo_epi16(
-          coefficients0,
-          libcrux_intrinsics_avx2_mm256_set_epi16(
-              (int16_t)1 << 0U, (int16_t)1 << 5U, (int16_t)1 << 2U,
-              (int16_t)1 << 7U, (int16_t)1 << 4U, (int16_t)1 << 9U,
-              (int16_t)1 << 6U, (int16_t)1 << 11U, (int16_t)1 << 0U,
-              (int16_t)1 << 5U, (int16_t)1 << 2U, (int16_t)1 << 7U,
-              (int16_t)1 << 4U, (int16_t)1 << 9U, (int16_t)1 << 6U,
-              (int16_t)1 << 11U));
+  __m256i coefficients_loaded0 = libcrux_intrinsics_avx2_mm256_inserti128_si256(
+      (int32_t)1, coefficients_loaded, coefficients, __m256i);
+  __m256i coefficients0 = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
+      coefficients_loaded0,
+      libcrux_intrinsics_avx2_mm256_set_epi8(
+          (int8_t)15, (int8_t)14, (int8_t)15, (int8_t)14, (int8_t)13,
+          (int8_t)12, (int8_t)13, (int8_t)12, (int8_t)11, (int8_t)10,
+          (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)9, (int8_t)8,
+          (int8_t)7, (int8_t)6, (int8_t)7, (int8_t)6, (int8_t)5, (int8_t)4,
+          (int8_t)5, (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)3, (int8_t)2,
+          (int8_t)1, (int8_t)0, (int8_t)1, (int8_t)0));
+  __m256i coefficients1 = libcrux_intrinsics_avx2_mm256_mullo_epi16(
+      coefficients0, libcrux_intrinsics_avx2_mm256_set_epi16(
+                         (int16_t)1 << 0U, (int16_t)1 << 5U, (int16_t)1 << 2U,
+                         (int16_t)1 << 7U, (int16_t)1 << 4U, (int16_t)1 << 9U,
+                         (int16_t)1 << 6U, (int16_t)1 << 11U, (int16_t)1 << 0U,
+                         (int16_t)1 << 5U, (int16_t)1 << 2U, (int16_t)1 << 7U,
+                         (int16_t)1 << 4U, (int16_t)1 << 9U, (int16_t)1 << 6U,
+                         (int16_t)1 << 11U));
   return libcrux_intrinsics_avx2_mm256_srli_epi16((int32_t)11, coefficients1,
-                                                  core_core_arch_x86___m256i);
+                                                  __m256i);
 }
 
 /**
@@ -1020,52 +922,46 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_deserialize_5_ea(Eurydice_slice bytes) {
+static inline __m256i libcrux_ml_kem_vector_avx2_deserialize_5_ea(
+    Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_serialize_deserialize_5(bytes);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_10(
-    core_core_arch_x86___m256i vector, uint8_t ret[20U]) {
+    __m256i vector, uint8_t ret[20U]) {
   uint8_t serialized[32U] = {0U};
-  core_core_arch_x86___m256i adjacent_2_combined =
-      libcrux_intrinsics_avx2_mm256_madd_epi16(
-          vector,
-          libcrux_intrinsics_avx2_mm256_set_epi16(
-              (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U, (int16_t)1,
-              (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U, (int16_t)1,
-              (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U, (int16_t)1,
-              (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U, (int16_t)1));
-  core_core_arch_x86___m256i adjacent_4_combined =
-      libcrux_intrinsics_avx2_mm256_sllv_epi32(
-          adjacent_2_combined,
-          libcrux_intrinsics_avx2_mm256_set_epi32(
-              (int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12, (int32_t)0,
-              (int32_t)12, (int32_t)0, (int32_t)12));
-  core_core_arch_x86___m256i adjacent_4_combined0 =
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)12, adjacent_4_combined,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i adjacent_8_combined =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-          adjacent_4_combined0,
-          libcrux_intrinsics_avx2_mm256_set_epi8(
-              (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-              (int8_t)-1, (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9,
-              (int8_t)8, (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0,
-              (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-              (int8_t)-1, (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9,
-              (int8_t)8, (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)1,
-              (int8_t)0));
-  core_core_arch_x86___m128i lower_8 =
+  __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_madd_epi16(
+      vector,
+      libcrux_intrinsics_avx2_mm256_set_epi16(
+          (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U, (int16_t)1,
+          (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U, (int16_t)1,
+          (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U, (int16_t)1,
+          (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U, (int16_t)1));
+  __m256i adjacent_4_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
+      adjacent_2_combined,
+      libcrux_intrinsics_avx2_mm256_set_epi32(
+          (int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12, (int32_t)0,
+          (int32_t)12, (int32_t)0, (int32_t)12));
+  __m256i adjacent_4_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
+      (int32_t)12, adjacent_4_combined, __m256i);
+  __m256i adjacent_8_combined = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
+      adjacent_4_combined0,
+      libcrux_intrinsics_avx2_mm256_set_epi8(
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+          (int8_t)-1, (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8,
+          (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0, (int8_t)-1,
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+          (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)4,
+          (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0));
+  __m128i lower_8 =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_8_combined);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t,
                                   Eurydice_slice),
       lower_8);
-  core_core_arch_x86___m128i upper_8 =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, adjacent_8_combined, core_core_arch_x86___m128i);
+  __m128i upper_8 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, adjacent_8_combined, __m128i);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)10U, (size_t)26U, uint8_t,
                                   Eurydice_slice),
@@ -1087,49 +983,40 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_vector_avx2_serialize_10_ea(
-    core_core_arch_x86___m256i vector, uint8_t ret[20U]) {
+    __m256i vector, uint8_t ret[20U]) {
   libcrux_ml_kem_vector_avx2_serialize_serialize_10(vector, ret);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_10(Eurydice_slice bytes) {
-  core_core_arch_x86___m256i shift_lsbs_to_msbs =
-      libcrux_intrinsics_avx2_mm256_set_epi16(
-          (int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U,
-          (int16_t)1 << 6U, (int16_t)1 << 0U, (int16_t)1 << 2U,
-          (int16_t)1 << 4U, (int16_t)1 << 6U, (int16_t)1 << 0U,
-          (int16_t)1 << 2U, (int16_t)1 << 4U, (int16_t)1 << 6U,
-          (int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U,
-          (int16_t)1 << 6U);
-  core_core_arch_x86___m128i lower_coefficients =
+  __m256i shift_lsbs_to_msbs = libcrux_intrinsics_avx2_mm256_set_epi16(
+      (int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U, (int16_t)1 << 6U,
+      (int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U, (int16_t)1 << 6U,
+      (int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U, (int16_t)1 << 6U,
+      (int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U, (int16_t)1 << 6U);
+  __m128i lower_coefficients =
       libcrux_intrinsics_avx2_mm_loadu_si128(Eurydice_slice_subslice2(
           bytes, (size_t)0U, (size_t)16U, uint8_t, Eurydice_slice));
-  core_core_arch_x86___m128i lower_coefficients0 =
-      libcrux_intrinsics_avx2_mm_shuffle_epi8(
-          lower_coefficients,
-          libcrux_intrinsics_avx2_mm_set_epi8(9U, 8U, 8U, 7U, 7U, 6U, 6U, 5U,
-                                              4U, 3U, 3U, 2U, 2U, 1U, 1U, 0U));
-  core_core_arch_x86___m128i upper_coefficients =
+  __m128i lower_coefficients0 = libcrux_intrinsics_avx2_mm_shuffle_epi8(
+      lower_coefficients,
+      libcrux_intrinsics_avx2_mm_set_epi8(9U, 8U, 8U, 7U, 7U, 6U, 6U, 5U, 4U,
+                                          3U, 3U, 2U, 2U, 1U, 1U, 0U));
+  __m128i upper_coefficients =
       libcrux_intrinsics_avx2_mm_loadu_si128(Eurydice_slice_subslice2(
           bytes, (size_t)4U, (size_t)20U, uint8_t, Eurydice_slice));
-  core_core_arch_x86___m128i upper_coefficients0 =
-      libcrux_intrinsics_avx2_mm_shuffle_epi8(
-          upper_coefficients, libcrux_intrinsics_avx2_mm_set_epi8(
-                                  15U, 14U, 14U, 13U, 13U, 12U, 12U, 11U, 10U,
-                                  9U, 9U, 8U, 8U, 7U, 7U, 6U));
-  core_core_arch_x86___m256i coefficients =
+  __m128i upper_coefficients0 = libcrux_intrinsics_avx2_mm_shuffle_epi8(
+      upper_coefficients, libcrux_intrinsics_avx2_mm_set_epi8(
+                              15U, 14U, 14U, 13U, 13U, 12U, 12U, 11U, 10U, 9U,
+                              9U, 8U, 8U, 7U, 7U, 6U));
+  __m256i coefficients =
       libcrux_intrinsics_avx2_mm256_castsi128_si256(lower_coefficients0);
-  core_core_arch_x86___m256i coefficients0 =
-      libcrux_intrinsics_avx2_mm256_inserti128_si256(
-          (int32_t)1, coefficients, upper_coefficients0,
-          core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i coefficients1 =
-      libcrux_intrinsics_avx2_mm256_mullo_epi16(coefficients0,
-                                                shift_lsbs_to_msbs);
-  core_core_arch_x86___m256i coefficients2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi16((int32_t)6, coefficients1,
-                                               core_core_arch_x86___m256i);
+  __m256i coefficients0 = libcrux_intrinsics_avx2_mm256_inserti128_si256(
+      (int32_t)1, coefficients, upper_coefficients0, __m256i);
+  __m256i coefficients1 = libcrux_intrinsics_avx2_mm256_mullo_epi16(
+      coefficients0, shift_lsbs_to_msbs);
+  __m256i coefficients2 = libcrux_intrinsics_avx2_mm256_srli_epi16(
+      (int32_t)6, coefficients1, __m256i);
   return libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients2, libcrux_intrinsics_avx2_mm256_set1_epi16(
                          ((int16_t)1 << 10U) - (int16_t)1));
@@ -1140,14 +1027,14 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_deserialize_10_ea(Eurydice_slice bytes) {
+static inline __m256i libcrux_ml_kem_vector_avx2_deserialize_10_ea(
+    Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_serialize_deserialize_10(bytes);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_11(
-    core_core_arch_x86___m256i vector, uint8_t ret[22U]) {
+    __m256i vector, uint8_t ret[22U]) {
   int16_t array[16U] = {0U};
   libcrux_intrinsics_avx2_mm256_storeu_si256_i16(
       Eurydice_array_to_slice((size_t)16U, array, int16_t, Eurydice_slice),
@@ -1166,12 +1053,12 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_vector_avx2_serialize_11_ea(
-    core_core_arch_x86___m256i vector, uint8_t ret[22U]) {
+    __m256i vector, uint8_t ret[22U]) {
   libcrux_ml_kem_vector_avx2_serialize_serialize_11(vector, ret);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_11(Eurydice_slice bytes) {
   libcrux_ml_kem_vector_portable_vector_type_PortableVector output =
       libcrux_ml_kem_vector_portable_deserialize_11_0d(bytes);
@@ -1186,48 +1073,41 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_deserialize_11_ea(Eurydice_slice bytes) {
+static inline __m256i libcrux_ml_kem_vector_avx2_deserialize_11_ea(
+    Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_serialize_deserialize_11(bytes);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_12(
-    core_core_arch_x86___m256i vector, uint8_t ret[24U]) {
+    __m256i vector, uint8_t ret[24U]) {
   uint8_t serialized[32U] = {0U};
-  core_core_arch_x86___m256i adjacent_2_combined =
-      libcrux_intrinsics_avx2_mm256_madd_epi16(
-          vector,
-          libcrux_intrinsics_avx2_mm256_set_epi16(
-              (int16_t)1 << 12U, (int16_t)1, (int16_t)1 << 12U, (int16_t)1,
-              (int16_t)1 << 12U, (int16_t)1, (int16_t)1 << 12U, (int16_t)1,
-              (int16_t)1 << 12U, (int16_t)1, (int16_t)1 << 12U, (int16_t)1,
-              (int16_t)1 << 12U, (int16_t)1, (int16_t)1 << 12U, (int16_t)1));
-  core_core_arch_x86___m256i adjacent_4_combined =
-      libcrux_intrinsics_avx2_mm256_sllv_epi32(
-          adjacent_2_combined,
-          libcrux_intrinsics_avx2_mm256_set_epi32(
-              (int32_t)0, (int32_t)8, (int32_t)0, (int32_t)8, (int32_t)0,
-              (int32_t)8, (int32_t)0, (int32_t)8));
-  core_core_arch_x86___m256i adjacent_4_combined0 =
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)8, adjacent_4_combined,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i adjacent_8_combined =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-          adjacent_4_combined0,
-          libcrux_intrinsics_avx2_mm256_set_epi8(
-              (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)13,
-              (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8,
-              (int8_t)5, (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0,
-              (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)13,
-              (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8,
-              (int8_t)5, (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)1,
-              (int8_t)0));
-  core_core_arch_x86___m128i lower_8 =
+  __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_madd_epi16(
+      vector,
+      libcrux_intrinsics_avx2_mm256_set_epi16(
+          (int16_t)1 << 12U, (int16_t)1, (int16_t)1 << 12U, (int16_t)1,
+          (int16_t)1 << 12U, (int16_t)1, (int16_t)1 << 12U, (int16_t)1,
+          (int16_t)1 << 12U, (int16_t)1, (int16_t)1 << 12U, (int16_t)1,
+          (int16_t)1 << 12U, (int16_t)1, (int16_t)1 << 12U, (int16_t)1));
+  __m256i adjacent_4_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
+      adjacent_2_combined, libcrux_intrinsics_avx2_mm256_set_epi32(
+                               (int32_t)0, (int32_t)8, (int32_t)0, (int32_t)8,
+                               (int32_t)0, (int32_t)8, (int32_t)0, (int32_t)8));
+  __m256i adjacent_4_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
+      (int32_t)8, adjacent_4_combined, __m256i);
+  __m256i adjacent_8_combined = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
+      adjacent_4_combined0,
+      libcrux_intrinsics_avx2_mm256_set_epi8(
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)13,
+          (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)5,
+          (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0, (int8_t)-1,
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)13, (int8_t)12,
+          (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)5, (int8_t)4,
+          (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0));
+  __m128i lower_8 =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_8_combined);
-  core_core_arch_x86___m128i upper_8 =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, adjacent_8_combined, core_core_arch_x86___m128i);
+  __m128i upper_8 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, adjacent_8_combined, __m128i);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t,
                                   Eurydice_slice),
@@ -1253,49 +1133,40 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_vector_avx2_serialize_12_ea(
-    core_core_arch_x86___m256i vector, uint8_t ret[24U]) {
+    __m256i vector, uint8_t ret[24U]) {
   libcrux_ml_kem_vector_avx2_serialize_serialize_12(vector, ret);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_12(Eurydice_slice bytes) {
-  core_core_arch_x86___m256i shift_lsbs_to_msbs =
-      libcrux_intrinsics_avx2_mm256_set_epi16(
-          (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
-          (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
-          (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
-          (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
-          (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
-          (int16_t)1 << 4U);
-  core_core_arch_x86___m128i lower_coefficients =
+  __m256i shift_lsbs_to_msbs = libcrux_intrinsics_avx2_mm256_set_epi16(
+      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
+      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
+      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
+      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U);
+  __m128i lower_coefficients =
       libcrux_intrinsics_avx2_mm_loadu_si128(Eurydice_slice_subslice2(
           bytes, (size_t)0U, (size_t)16U, uint8_t, Eurydice_slice));
-  core_core_arch_x86___m128i lower_coefficients0 =
-      libcrux_intrinsics_avx2_mm_shuffle_epi8(
-          lower_coefficients,
-          libcrux_intrinsics_avx2_mm_set_epi8(11U, 10U, 10U, 9U, 8U, 7U, 7U, 6U,
-                                              5U, 4U, 4U, 3U, 2U, 1U, 1U, 0U));
-  core_core_arch_x86___m128i upper_coefficients =
+  __m128i lower_coefficients0 = libcrux_intrinsics_avx2_mm_shuffle_epi8(
+      lower_coefficients,
+      libcrux_intrinsics_avx2_mm_set_epi8(11U, 10U, 10U, 9U, 8U, 7U, 7U, 6U, 5U,
+                                          4U, 4U, 3U, 2U, 1U, 1U, 0U));
+  __m128i upper_coefficients =
       libcrux_intrinsics_avx2_mm_loadu_si128(Eurydice_slice_subslice2(
           bytes, (size_t)8U, (size_t)24U, uint8_t, Eurydice_slice));
-  core_core_arch_x86___m128i upper_coefficients0 =
-      libcrux_intrinsics_avx2_mm_shuffle_epi8(
-          upper_coefficients, libcrux_intrinsics_avx2_mm_set_epi8(
-                                  15U, 14U, 14U, 13U, 12U, 11U, 11U, 10U, 9U,
-                                  8U, 8U, 7U, 6U, 5U, 5U, 4U));
-  core_core_arch_x86___m256i coefficients =
+  __m128i upper_coefficients0 = libcrux_intrinsics_avx2_mm_shuffle_epi8(
+      upper_coefficients,
+      libcrux_intrinsics_avx2_mm_set_epi8(15U, 14U, 14U, 13U, 12U, 11U, 11U,
+                                          10U, 9U, 8U, 8U, 7U, 6U, 5U, 5U, 4U));
+  __m256i coefficients =
       libcrux_intrinsics_avx2_mm256_castsi128_si256(lower_coefficients0);
-  core_core_arch_x86___m256i coefficients0 =
-      libcrux_intrinsics_avx2_mm256_inserti128_si256(
-          (int32_t)1, coefficients, upper_coefficients0,
-          core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i coefficients1 =
-      libcrux_intrinsics_avx2_mm256_mullo_epi16(coefficients0,
-                                                shift_lsbs_to_msbs);
-  core_core_arch_x86___m256i coefficients2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi16((int32_t)4, coefficients1,
-                                               core_core_arch_x86___m256i);
+  __m256i coefficients0 = libcrux_intrinsics_avx2_mm256_inserti128_si256(
+      (int32_t)1, coefficients, upper_coefficients0, __m256i);
+  __m256i coefficients1 = libcrux_intrinsics_avx2_mm256_mullo_epi16(
+      coefficients0, shift_lsbs_to_msbs);
+  __m256i coefficients2 = libcrux_intrinsics_avx2_mm256_srli_epi16(
+      (int32_t)4, coefficients1, __m256i);
   return libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients2, libcrux_intrinsics_avx2_mm256_set1_epi16(
                          ((int16_t)1 << 12U) - (int16_t)1));
@@ -1306,8 +1177,8 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_deserialize_12_ea(Eurydice_slice bytes) {
+static inline __m256i libcrux_ml_kem_vector_avx2_deserialize_12_ea(
+    Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_serialize_deserialize_12(bytes);
 }
 
@@ -1315,12 +1186,11 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE size_t
 libcrux_ml_kem_vector_avx2_sampling_rejection_sample(Eurydice_slice input,
                                                      Eurydice_slice output) {
-  core_core_arch_x86___m256i field_modulus =
-      libcrux_intrinsics_avx2_mm256_set1_epi16(
-          LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  core_core_arch_x86___m256i potential_coefficients =
+  __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi16(
+      LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  __m256i potential_coefficients =
       libcrux_ml_kem_vector_avx2_serialize_deserialize_12(input);
-  core_core_arch_x86___m256i compare_with_field_modulus =
+  __m256i compare_with_field_modulus =
       libcrux_intrinsics_avx2_mm256_cmpgt_epi16(field_modulus,
                                                 potential_coefficients);
   uint8_t good[2U];
@@ -1331,14 +1201,13 @@ libcrux_ml_kem_vector_avx2_sampling_rejection_sample(Eurydice_slice input,
          libcrux_ml_kem_vector_rej_sample_table_REJECTION_SAMPLE_SHUFFLE_TABLE[(
              size_t)good[0U]],
          (size_t)16U * sizeof(uint8_t));
-  core_core_arch_x86___m128i lower_shuffles0 =
+  __m128i lower_shuffles0 =
       libcrux_intrinsics_avx2_mm_loadu_si128(Eurydice_array_to_slice(
           (size_t)16U, lower_shuffles, uint8_t, Eurydice_slice));
-  core_core_arch_x86___m128i lower_coefficients =
+  __m128i lower_coefficients =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(potential_coefficients);
-  core_core_arch_x86___m128i lower_coefficients0 =
-      libcrux_intrinsics_avx2_mm_shuffle_epi8(lower_coefficients,
-                                              lower_shuffles0);
+  __m128i lower_coefficients0 = libcrux_intrinsics_avx2_mm_shuffle_epi8(
+      lower_coefficients, lower_shuffles0);
   libcrux_intrinsics_avx2_mm_storeu_si128(output, lower_coefficients0);
   size_t sampled_count = (size_t)core_num__u8_6__count_ones(good[0U]);
   uint8_t upper_shuffles[16U];
@@ -1346,15 +1215,13 @@ libcrux_ml_kem_vector_avx2_sampling_rejection_sample(Eurydice_slice input,
          libcrux_ml_kem_vector_rej_sample_table_REJECTION_SAMPLE_SHUFFLE_TABLE[(
              size_t)good[1U]],
          (size_t)16U * sizeof(uint8_t));
-  core_core_arch_x86___m128i upper_shuffles0 =
+  __m128i upper_shuffles0 =
       libcrux_intrinsics_avx2_mm_loadu_si128(Eurydice_array_to_slice(
           (size_t)16U, upper_shuffles, uint8_t, Eurydice_slice));
-  core_core_arch_x86___m128i upper_coefficients =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, potential_coefficients, core_core_arch_x86___m128i);
-  core_core_arch_x86___m128i upper_coefficients0 =
-      libcrux_intrinsics_avx2_mm_shuffle_epi8(upper_coefficients,
-                                              upper_shuffles0);
+  __m128i upper_coefficients = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, potential_coefficients, __m128i);
+  __m128i upper_coefficients0 = libcrux_intrinsics_avx2_mm_shuffle_epi8(
+      upper_coefficients, upper_shuffles0);
   libcrux_intrinsics_avx2_mm_storeu_si128(
       Eurydice_slice_subslice2(output, sampled_count,
                                sampled_count + (size_t)8U, int16_t,
@@ -1380,7 +1247,7 @@ with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 
 */
 typedef struct libcrux_ml_kem_polynomial_PolynomialRingElement_d2_s {
-  core_core_arch_x86___m256i coefficients[16U];
+  __m256i coefficients[16U];
 } libcrux_ml_kem_polynomial_PolynomialRingElement_d2;
 
 /**
@@ -1454,6 +1321,9 @@ libcrux_ml_kem_serialize_deserialize_to_uncompressed_ring_element_3e(
 }
 
 /**
+ Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_secret_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 with const generics
@@ -1518,59 +1388,45 @@ generics
 - COEFFICIENT_BITS= 10
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_e7(
-    core_core_arch_x86___m256i vector) {
-  core_core_arch_x86___m256i field_modulus =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  core_core_arch_x86___m256i two_pow_coefficient_bits =
-      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1
-                                               << (uint32_t)(int32_t)10);
-  core_core_arch_x86___m128i coefficients_low =
+    __m256i vector) {
+  __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  __m256i two_pow_coefficient_bits = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      (int32_t)1 << (uint32_t)(int32_t)10);
+  __m128i coefficients_low =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  core_core_arch_x86___m256i coefficients_low0 =
+  __m256i coefficients_low0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
-  core_core_arch_x86___m256i decompressed_low =
-      libcrux_intrinsics_avx2_mm256_mullo_epi32(coefficients_low0,
-                                                field_modulus);
-  core_core_arch_x86___m256i decompressed_low0 =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)1, decompressed_low,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_low1 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(decompressed_low0,
-                                              two_pow_coefficient_bits);
-  core_core_arch_x86___m256i decompressed_low2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)10, decompressed_low1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_low3 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)1, decompressed_low2,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m128i coefficients_high =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, vector, core_core_arch_x86___m128i);
-  core_core_arch_x86___m256i coefficients_high0 =
+  __m256i decompressed_low = libcrux_intrinsics_avx2_mm256_mullo_epi32(
+      coefficients_low0, field_modulus);
+  __m256i decompressed_low0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)1, decompressed_low, __m256i);
+  __m256i decompressed_low1 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      decompressed_low0, two_pow_coefficient_bits);
+  __m256i decompressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)10, decompressed_low1, __m256i);
+  __m256i decompressed_low3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)1, decompressed_low2, __m256i);
+  __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, vector, __m128i);
+  __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
-  core_core_arch_x86___m256i decompressed_high =
-      libcrux_intrinsics_avx2_mm256_mullo_epi32(coefficients_high0,
-                                                field_modulus);
-  core_core_arch_x86___m256i decompressed_high0 =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)1, decompressed_high,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_high1 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(decompressed_high0,
-                                              two_pow_coefficient_bits);
-  core_core_arch_x86___m256i decompressed_high2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)10, decompressed_high1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_high3 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)1, decompressed_high2,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed =
-      libcrux_intrinsics_avx2_mm256_packs_epi32(decompressed_low3,
-                                                decompressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
-      (int32_t)216, compressed, core_core_arch_x86___m256i);
+  __m256i decompressed_high = libcrux_intrinsics_avx2_mm256_mullo_epi32(
+      coefficients_high0, field_modulus);
+  __m256i decompressed_high0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)1, decompressed_high, __m256i);
+  __m256i decompressed_high1 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      decompressed_high0, two_pow_coefficient_bits);
+  __m256i decompressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)10, decompressed_high1, __m256i);
+  __m256i decompressed_high3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)1, decompressed_high2, __m256i);
+  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
+      decompressed_low3, decompressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
+                                                         compressed, __m256i);
 }
 
 /**
@@ -1584,9 +1440,9 @@ generics
 - COEFFICIENT_BITS= 10
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
+static inline __m256i
 libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_df(
-    core_core_arch_x86___m256i vector) {
+    __m256i vector) {
   return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_e7(
       vector);
 }
@@ -1611,8 +1467,7 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_10_d7(
     Eurydice_slice bytes = Eurydice_slice_subslice2(
         serialized, i0 * (size_t)20U, i0 * (size_t)20U + (size_t)20U, uint8_t,
         Eurydice_slice);
-    core_core_arch_x86___m256i coefficient =
-        libcrux_ml_kem_vector_avx2_deserialize_10_ea(bytes);
+    __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_10_ea(bytes);
     re.coefficients[i0] =
         libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_df(
             coefficient);
@@ -1627,59 +1482,45 @@ generics
 - COEFFICIENT_BITS= 11
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_e70(
-    core_core_arch_x86___m256i vector) {
-  core_core_arch_x86___m256i field_modulus =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  core_core_arch_x86___m256i two_pow_coefficient_bits =
-      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1
-                                               << (uint32_t)(int32_t)11);
-  core_core_arch_x86___m128i coefficients_low =
+    __m256i vector) {
+  __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  __m256i two_pow_coefficient_bits = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      (int32_t)1 << (uint32_t)(int32_t)11);
+  __m128i coefficients_low =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  core_core_arch_x86___m256i coefficients_low0 =
+  __m256i coefficients_low0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
-  core_core_arch_x86___m256i decompressed_low =
-      libcrux_intrinsics_avx2_mm256_mullo_epi32(coefficients_low0,
-                                                field_modulus);
-  core_core_arch_x86___m256i decompressed_low0 =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)1, decompressed_low,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_low1 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(decompressed_low0,
-                                              two_pow_coefficient_bits);
-  core_core_arch_x86___m256i decompressed_low2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)11, decompressed_low1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_low3 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)1, decompressed_low2,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m128i coefficients_high =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, vector, core_core_arch_x86___m128i);
-  core_core_arch_x86___m256i coefficients_high0 =
+  __m256i decompressed_low = libcrux_intrinsics_avx2_mm256_mullo_epi32(
+      coefficients_low0, field_modulus);
+  __m256i decompressed_low0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)1, decompressed_low, __m256i);
+  __m256i decompressed_low1 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      decompressed_low0, two_pow_coefficient_bits);
+  __m256i decompressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)11, decompressed_low1, __m256i);
+  __m256i decompressed_low3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)1, decompressed_low2, __m256i);
+  __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, vector, __m128i);
+  __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
-  core_core_arch_x86___m256i decompressed_high =
-      libcrux_intrinsics_avx2_mm256_mullo_epi32(coefficients_high0,
-                                                field_modulus);
-  core_core_arch_x86___m256i decompressed_high0 =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)1, decompressed_high,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_high1 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(decompressed_high0,
-                                              two_pow_coefficient_bits);
-  core_core_arch_x86___m256i decompressed_high2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)11, decompressed_high1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_high3 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)1, decompressed_high2,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed =
-      libcrux_intrinsics_avx2_mm256_packs_epi32(decompressed_low3,
-                                                decompressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
-      (int32_t)216, compressed, core_core_arch_x86___m256i);
+  __m256i decompressed_high = libcrux_intrinsics_avx2_mm256_mullo_epi32(
+      coefficients_high0, field_modulus);
+  __m256i decompressed_high0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)1, decompressed_high, __m256i);
+  __m256i decompressed_high1 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      decompressed_high0, two_pow_coefficient_bits);
+  __m256i decompressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)11, decompressed_high1, __m256i);
+  __m256i decompressed_high3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)1, decompressed_high2, __m256i);
+  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
+      decompressed_low3, decompressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
+                                                         compressed, __m256i);
 }
 
 /**
@@ -1693,9 +1534,9 @@ generics
 - COEFFICIENT_BITS= 11
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
+static inline __m256i
 libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_df0(
-    core_core_arch_x86___m256i vector) {
+    __m256i vector) {
   return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_e70(
       vector);
 }
@@ -1720,8 +1561,7 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_11_ae(
     Eurydice_slice bytes = Eurydice_slice_subslice2(
         serialized, i0 * (size_t)22U, i0 * (size_t)22U + (size_t)22U, uint8_t,
         Eurydice_slice);
-    core_core_arch_x86___m256i coefficient =
-        libcrux_ml_kem_vector_avx2_deserialize_11_ea(bytes);
+    __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_11_ea(bytes);
     re.coefficients[i0] =
         libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_df0(
             coefficient);
@@ -1743,8 +1583,8 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_ring_element_u_f9(
 }
 
 typedef struct libcrux_ml_kem_vector_avx2_SIMD256Vector_x2_s {
-  core_core_arch_x86___m256i fst;
-  core_core_arch_x86___m256i snd;
+  __m256i fst;
+  __m256i snd;
 } libcrux_ml_kem_vector_avx2_SIMD256Vector_x2;
 
 /**
@@ -1754,9 +1594,8 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_traits_montgomery_multiply_fe_9d(
-    core_core_arch_x86___m256i v, int16_t fer) {
+static inline __m256i libcrux_ml_kem_vector_traits_montgomery_multiply_fe_9d(
+    __m256i v, int16_t fer) {
   return libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_ea(v, fer);
 }
 
@@ -1768,11 +1607,9 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE libcrux_ml_kem_vector_avx2_SIMD256Vector_x2
-libcrux_ml_kem_ntt_ntt_layer_int_vec_step_f4(core_core_arch_x86___m256i a,
-                                             core_core_arch_x86___m256i b,
+libcrux_ml_kem_ntt_ntt_layer_int_vec_step_f4(__m256i a, __m256i b,
                                              int16_t zeta_r) {
-  core_core_arch_x86___m256i t =
-      libcrux_ml_kem_vector_traits_montgomery_multiply_fe_9d(b, zeta_r);
+  __m256i t = libcrux_ml_kem_vector_traits_montgomery_multiply_fe_9d(b, zeta_r);
   b = libcrux_ml_kem_vector_avx2_sub_ea(a, &t);
   a = libcrux_ml_kem_vector_avx2_add_ea(a, &t);
   return (CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2){.fst = a,
@@ -1802,8 +1639,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_4_plus_65(
           libcrux_ml_kem_ntt_ntt_layer_int_vec_step_f4(
               re->coefficients[j], re->coefficients[j + step_vec],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      core_core_arch_x86___m256i x = uu____0.fst;
-      core_core_arch_x86___m256i y = uu____0.snd;
+      __m256i x = uu____0.fst;
+      __m256i y = uu____0.snd;
       re->coefficients[j] = x;
       re->coefficients[j + step_vec] = y;
     }
@@ -1923,6 +1760,10 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_vector_u_09(
 }
 
 /**
+ Call [`deserialize_then_decompress_ring_element_u`] on each ring element
+ in the `ciphertext`.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_then_decompress_u
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 with const generics
@@ -1957,10 +1798,9 @@ libcrux_ml_kem_ind_cpa_deserialize_then_decompress_u_35(
             LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT *
                 (size_t)10U / (size_t)8U,
         uint8_t, Eurydice_slice);
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____0 =
+    u_as_ntt[i0] =
         libcrux_ml_kem_serialize_deserialize_then_decompress_ring_element_u_f9(
             u_bytes);
-    u_as_ntt[i0] = uu____0;
     libcrux_ml_kem_ntt_ntt_vector_u_09(&u_as_ntt[i0]);
   }
   memcpy(
@@ -1975,59 +1815,45 @@ generics
 - COEFFICIENT_BITS= 4
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_e71(
-    core_core_arch_x86___m256i vector) {
-  core_core_arch_x86___m256i field_modulus =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  core_core_arch_x86___m256i two_pow_coefficient_bits =
-      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1
-                                               << (uint32_t)(int32_t)4);
-  core_core_arch_x86___m128i coefficients_low =
+    __m256i vector) {
+  __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  __m256i two_pow_coefficient_bits = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      (int32_t)1 << (uint32_t)(int32_t)4);
+  __m128i coefficients_low =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  core_core_arch_x86___m256i coefficients_low0 =
+  __m256i coefficients_low0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
-  core_core_arch_x86___m256i decompressed_low =
-      libcrux_intrinsics_avx2_mm256_mullo_epi32(coefficients_low0,
-                                                field_modulus);
-  core_core_arch_x86___m256i decompressed_low0 =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)1, decompressed_low,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_low1 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(decompressed_low0,
-                                              two_pow_coefficient_bits);
-  core_core_arch_x86___m256i decompressed_low2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)4, decompressed_low1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_low3 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)1, decompressed_low2,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m128i coefficients_high =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, vector, core_core_arch_x86___m128i);
-  core_core_arch_x86___m256i coefficients_high0 =
+  __m256i decompressed_low = libcrux_intrinsics_avx2_mm256_mullo_epi32(
+      coefficients_low0, field_modulus);
+  __m256i decompressed_low0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)1, decompressed_low, __m256i);
+  __m256i decompressed_low1 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      decompressed_low0, two_pow_coefficient_bits);
+  __m256i decompressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)4, decompressed_low1, __m256i);
+  __m256i decompressed_low3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)1, decompressed_low2, __m256i);
+  __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, vector, __m128i);
+  __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
-  core_core_arch_x86___m256i decompressed_high =
-      libcrux_intrinsics_avx2_mm256_mullo_epi32(coefficients_high0,
-                                                field_modulus);
-  core_core_arch_x86___m256i decompressed_high0 =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)1, decompressed_high,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_high1 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(decompressed_high0,
-                                              two_pow_coefficient_bits);
-  core_core_arch_x86___m256i decompressed_high2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)4, decompressed_high1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_high3 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)1, decompressed_high2,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed =
-      libcrux_intrinsics_avx2_mm256_packs_epi32(decompressed_low3,
-                                                decompressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
-      (int32_t)216, compressed, core_core_arch_x86___m256i);
+  __m256i decompressed_high = libcrux_intrinsics_avx2_mm256_mullo_epi32(
+      coefficients_high0, field_modulus);
+  __m256i decompressed_high0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)1, decompressed_high, __m256i);
+  __m256i decompressed_high1 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      decompressed_high0, two_pow_coefficient_bits);
+  __m256i decompressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)4, decompressed_high1, __m256i);
+  __m256i decompressed_high3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)1, decompressed_high2, __m256i);
+  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
+      decompressed_low3, decompressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
+                                                         compressed, __m256i);
 }
 
 /**
@@ -2041,9 +1867,9 @@ generics
 - COEFFICIENT_BITS= 4
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
+static inline __m256i
 libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_df1(
-    core_core_arch_x86___m256i vector) {
+    __m256i vector) {
   return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_e71(
       vector);
 }
@@ -2067,8 +1893,7 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_4_00(
     Eurydice_slice bytes = Eurydice_slice_subslice2(
         serialized, i0 * (size_t)8U, i0 * (size_t)8U + (size_t)8U, uint8_t,
         Eurydice_slice);
-    core_core_arch_x86___m256i coefficient =
-        libcrux_ml_kem_vector_avx2_deserialize_4_ea(bytes);
+    __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_4_ea(bytes);
     re.coefficients[i0] =
         libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_df1(
             coefficient);
@@ -2083,59 +1908,45 @@ generics
 - COEFFICIENT_BITS= 5
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_e72(
-    core_core_arch_x86___m256i vector) {
-  core_core_arch_x86___m256i field_modulus =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  core_core_arch_x86___m256i two_pow_coefficient_bits =
-      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1
-                                               << (uint32_t)(int32_t)5);
-  core_core_arch_x86___m128i coefficients_low =
+    __m256i vector) {
+  __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  __m256i two_pow_coefficient_bits = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      (int32_t)1 << (uint32_t)(int32_t)5);
+  __m128i coefficients_low =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  core_core_arch_x86___m256i coefficients_low0 =
+  __m256i coefficients_low0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
-  core_core_arch_x86___m256i decompressed_low =
-      libcrux_intrinsics_avx2_mm256_mullo_epi32(coefficients_low0,
-                                                field_modulus);
-  core_core_arch_x86___m256i decompressed_low0 =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)1, decompressed_low,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_low1 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(decompressed_low0,
-                                              two_pow_coefficient_bits);
-  core_core_arch_x86___m256i decompressed_low2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)5, decompressed_low1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_low3 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)1, decompressed_low2,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m128i coefficients_high =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, vector, core_core_arch_x86___m128i);
-  core_core_arch_x86___m256i coefficients_high0 =
+  __m256i decompressed_low = libcrux_intrinsics_avx2_mm256_mullo_epi32(
+      coefficients_low0, field_modulus);
+  __m256i decompressed_low0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)1, decompressed_low, __m256i);
+  __m256i decompressed_low1 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      decompressed_low0, two_pow_coefficient_bits);
+  __m256i decompressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)5, decompressed_low1, __m256i);
+  __m256i decompressed_low3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)1, decompressed_low2, __m256i);
+  __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, vector, __m128i);
+  __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
-  core_core_arch_x86___m256i decompressed_high =
-      libcrux_intrinsics_avx2_mm256_mullo_epi32(coefficients_high0,
-                                                field_modulus);
-  core_core_arch_x86___m256i decompressed_high0 =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)1, decompressed_high,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_high1 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(decompressed_high0,
-                                              two_pow_coefficient_bits);
-  core_core_arch_x86___m256i decompressed_high2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)5, decompressed_high1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i decompressed_high3 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)1, decompressed_high2,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed =
-      libcrux_intrinsics_avx2_mm256_packs_epi32(decompressed_low3,
-                                                decompressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
-      (int32_t)216, compressed, core_core_arch_x86___m256i);
+  __m256i decompressed_high = libcrux_intrinsics_avx2_mm256_mullo_epi32(
+      coefficients_high0, field_modulus);
+  __m256i decompressed_high0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)1, decompressed_high, __m256i);
+  __m256i decompressed_high1 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      decompressed_high0, two_pow_coefficient_bits);
+  __m256i decompressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)5, decompressed_high1, __m256i);
+  __m256i decompressed_high3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)1, decompressed_high2, __m256i);
+  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
+      decompressed_low3, decompressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
+                                                         compressed, __m256i);
 }
 
 /**
@@ -2149,9 +1960,9 @@ generics
 - COEFFICIENT_BITS= 5
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
+static inline __m256i
 libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_df2(
-    core_core_arch_x86___m256i vector) {
+    __m256i vector) {
   return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_e72(
       vector);
 }
@@ -2198,6 +2009,33 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_ring_element_v_8f(
 }
 
 /**
+ Given two `KyberPolynomialRingElement`s in their NTT representations,
+ compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
+ the `iᵗʰ` coefficient of the product `k̂` is determined by the calculation:
+
+ ```plaintext
+ ĥ[2·i] + ĥ[2·i + 1]X = (f^[2·i] + f^[2·i + 1]X)·(ĝ[2·i] + ĝ[2·i + 1]X) mod (X²
+ - ζ^(2·BitRev₇(i) + 1))
+ ```
+
+ This function almost implements <strong>Algorithm 10</strong> of the
+ NIST FIPS 203 standard, which is reproduced below:
+
+ ```plaintext
+ Input: Two arrays fˆ ∈ ℤ₂₅₆ and ĝ ∈ ℤ₂₅₆.
+ Output: An array ĥ ∈ ℤq.
+
+ for(i ← 0; i < 128; i++)
+     (ĥ[2i], ĥ[2i+1]) ← BaseCaseMultiply(fˆ[2i], fˆ[2i+1], ĝ[2i], ĝ[2i+1],
+ ζ^(2·BitRev₇(i) + 1)) end for return ĥ
+ ```
+ We say "almost" because the coefficients of the ring element output by
+ this function are in the Montgomery domain.
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
+/**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
 */
@@ -2235,6 +2073,10 @@ libcrux_ml_kem_polynomial_ntt_multiply_89_48(
 }
 
 /**
+ Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
+ sum of their constituent coefficients.
+*/
+/**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
 */
@@ -2249,11 +2091,10 @@ static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_to_ring_element_89_97(
     libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *rhs) {
   for (size_t i = (size_t)0U;
-       i <
-       core_slice___Slice_T___len(
-           Eurydice_array_to_slice((size_t)16U, self->coefficients,
-                                   core_core_arch_x86___m256i, Eurydice_slice),
-           core_core_arch_x86___m256i, size_t);
+       i < core_slice___Slice_T___len(
+               Eurydice_array_to_slice((size_t)16U, self->coefficients, __m256i,
+                                       Eurydice_slice),
+               __m256i, size_t);
        i++) {
     size_t i0 = i;
     self->coefficients[i0] = libcrux_ml_kem_vector_avx2_add_ea(
@@ -2339,11 +2180,10 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE libcrux_ml_kem_vector_avx2_SIMD256Vector_x2
-libcrux_ml_kem_invert_ntt_inv_ntt_layer_int_vec_step_reduce_df(
-    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b,
-    int16_t zeta_r) {
-  core_core_arch_x86___m256i a_minus_b =
-      libcrux_ml_kem_vector_avx2_sub_ea(b, &a);
+libcrux_ml_kem_invert_ntt_inv_ntt_layer_int_vec_step_reduce_df(__m256i a,
+                                                               __m256i b,
+                                                               int16_t zeta_r) {
+  __m256i a_minus_b = libcrux_ml_kem_vector_avx2_sub_ea(b, &a);
   a = libcrux_ml_kem_vector_avx2_barrett_reduce_ea(
       libcrux_ml_kem_vector_avx2_add_ea(a, &b));
   b = libcrux_ml_kem_vector_traits_montgomery_multiply_fe_9d(a_minus_b, zeta_r);
@@ -2377,8 +2217,8 @@ libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_a2(
           libcrux_ml_kem_invert_ntt_inv_ntt_layer_int_vec_step_reduce_df(
               re->coefficients[j], re->coefficients[j + step_vec],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      core_core_arch_x86___m256i x = uu____0.fst;
-      core_core_arch_x86___m256i y = uu____0.snd;
+      __m256i x = uu____0.fst;
+      __m256i y = uu____0.snd;
       re->coefficients[j] = x;
       re->coefficients[j + step_vec] = y;
     }
@@ -2428,7 +2268,7 @@ libcrux_ml_kem_polynomial_subtract_reduce_89_56(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i coefficient_normal_form =
+    __m256i coefficient_normal_form =
         libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_ea(
             b.coefficients[i0], (int16_t)1441);
     b.coefficients[i0] = libcrux_ml_kem_vector_avx2_barrett_reduce_ea(
@@ -2438,6 +2278,12 @@ libcrux_ml_kem_polynomial_subtract_reduce_89_56(
   return b;
 }
 
+/**
+ The following functions compute various expressions involving
+ vectors and matrices. The computation of these expressions has been
+ abstracted away into these functions in order to save on loop iterations.
+ Compute v − InverseNTT(sᵀ ◦ NTT(u))
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_message
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -2470,11 +2316,9 @@ with const generics
 - SHIFT_BY= 15
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_arithmetic_shift_right_e8(
-    core_core_arch_x86___m256i vector) {
-  return libcrux_intrinsics_avx2_mm256_srai_epi16((int32_t)15, vector,
-                                                  core_core_arch_x86___m256i);
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_arithmetic_shift_right_e8(__m256i vector) {
+  return libcrux_intrinsics_avx2_mm256_srai_epi16((int32_t)15, vector, __m256i);
 }
 
 /**
@@ -2487,9 +2331,8 @@ with const generics
 - SHIFT_BY= 15
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_shift_right_ea_4e(
-    core_core_arch_x86___m256i vector) {
+static inline __m256i libcrux_ml_kem_vector_avx2_shift_right_ea_4e(
+    __m256i vector) {
   return libcrux_ml_kem_vector_avx2_arithmetic_shift_right_e8(vector);
 }
 
@@ -2500,14 +2343,11 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_traits_to_unsigned_representative_a4(
-    core_core_arch_x86___m256i a) {
-  core_core_arch_x86___m256i t =
-      libcrux_ml_kem_vector_avx2_shift_right_ea_4e(a);
-  core_core_arch_x86___m256i fm =
-      libcrux_ml_kem_vector_avx2_bitwise_and_with_constant_ea(
-          t, LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+static inline __m256i
+libcrux_ml_kem_vector_traits_to_unsigned_representative_a4(__m256i a) {
+  __m256i t = libcrux_ml_kem_vector_avx2_shift_right_ea_4e(a);
+  __m256i fm = libcrux_ml_kem_vector_avx2_bitwise_and_with_constant_ea(
+      t, LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   return libcrux_ml_kem_vector_avx2_add_ea(a, &fm);
 }
 
@@ -2524,10 +2364,10 @@ libcrux_ml_kem_serialize_compress_then_serialize_message_4a(
   uint8_t serialized[32U] = {0U};
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i coefficient =
+    __m256i coefficient =
         libcrux_ml_kem_vector_traits_to_unsigned_representative_a4(
             re.coefficients[i0]);
-    core_core_arch_x86___m256i coefficient_compressed =
+    __m256i coefficient_compressed =
         libcrux_ml_kem_vector_avx2_compress_1_ea(coefficient);
     uint8_t bytes[2U];
     libcrux_ml_kem_vector_avx2_serialize_1_ea(coefficient_compressed, bytes);
@@ -2542,6 +2382,30 @@ libcrux_ml_kem_serialize_compress_then_serialize_message_4a(
   memcpy(ret, serialized, (size_t)32U * sizeof(uint8_t));
 }
 
+/**
+ This function implements <strong>Algorithm 14</strong> of the
+ NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
+
+ Algorithm 14 is reproduced below:
+
+ ```plaintext
+ Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+ Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+ Output: message m ∈ 𝔹^{32}.
+
+ c₁ ← c[0 : 32dᵤk]
+ c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
+ u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
+ v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
+ ŝ ← ByteDecode₁₂(dkₚₖₑ)
+ w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
+ m ← ByteEncode₁(Compress₁(w))
+ return m
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.decrypt_unpacked
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -2663,6 +2527,12 @@ libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_closure_c0(
 }
 
 /**
+ Only use with public values.
+
+ This MUST NOT be used with secret inputs, like its caller
+ `deserialize_ring_elements_reduced`.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_to_reduced_ring_element with types
 libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
@@ -2682,14 +2552,19 @@ libcrux_ml_kem_serialize_deserialize_to_reduced_ring_element_dd(
     Eurydice_slice bytes = Eurydice_slice_subslice2(
         serialized, i0 * (size_t)24U, i0 * (size_t)24U + (size_t)24U, uint8_t,
         Eurydice_slice);
-    core_core_arch_x86___m256i coefficient =
-        libcrux_ml_kem_vector_avx2_deserialize_12_ea(bytes);
+    __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_12_ea(bytes);
     re.coefficients[i0] =
         libcrux_ml_kem_vector_avx2_cond_subtract_3329_ea(coefficient);
   }
   return re;
 }
 
+/**
+ This function deserializes ring elements and reduces the result by the field
+ modulus.
+
+ This function MUST NOT be used on secret inputs.
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
@@ -2844,6 +2719,47 @@ libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_a9_4d(
 }
 
 /**
+ If `bytes` contains a set of uniformly random bytes, this function
+ uniformly samples a ring element `â` that is treated as being the NTT
+ representation of the corresponding polynomial `a`.
+
+ Since rejection sampling is used, it is possible the supplied bytes are
+ not enough to sample the element, in which case an `Err` is returned and the
+ caller must try again with a fresh set of bytes.
+
+ This function <strong>partially</strong> implements <strong>Algorithm
+ 6</strong> of the NIST FIPS 203 standard, We say "partially" because this
+ implementation only accepts a finite set of bytes as input and returns an error
+ if the set is not enough; Algorithm 6 of the FIPS 203 standard on the other
+ hand samples from an infinite stream of bytes until the ring element is filled.
+ Algorithm 6 is reproduced below:
+
+ ```plaintext
+ Input: byte stream B ∈ 𝔹*.
+ Output: array â ∈ ℤ₂₅₆.
+
+ i ← 0
+ j ← 0
+ while j < 256 do
+     d₁ ← B[i] + 256·(B[i+1] mod 16)
+     d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
+     if d₁ < q then
+         â[j] ← d₁
+         j ← j + 1
+     end if
+     if d₂ < q and j < 256 then
+         â[j] ← d₂
+         j ← j + 1
+     end if
+     i ← i + 3
+ end while
+ return â
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
 libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
@@ -2935,6 +2851,47 @@ libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_a9_5a(
   libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_1b(self, ret);
 }
 
+/**
+ If `bytes` contains a set of uniformly random bytes, this function
+ uniformly samples a ring element `â` that is treated as being the NTT
+ representation of the corresponding polynomial `a`.
+
+ Since rejection sampling is used, it is possible the supplied bytes are
+ not enough to sample the element, in which case an `Err` is returned and the
+ caller must try again with a fresh set of bytes.
+
+ This function <strong>partially</strong> implements <strong>Algorithm
+ 6</strong> of the NIST FIPS 203 standard, We say "partially" because this
+ implementation only accepts a finite set of bytes as input and returns an error
+ if the set is not enough; Algorithm 6 of the FIPS 203 standard on the other
+ hand samples from an infinite stream of bytes until the ring element is filled.
+ Algorithm 6 is reproduced below:
+
+ ```plaintext
+ Input: byte stream B ∈ 𝔹*.
+ Output: array â ∈ ℤ₂₅₆.
+
+ i ← 0
+ j ← 0
+ while j < 256 do
+     d₁ ← B[i] + 256·(B[i+1] mod 16)
+     d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
+     if d₁ < q then
+         â[j] ← d₁
+         j ← j + 1
+     end if
+     if d₂ < q and j < 256 then
+         â[j] ← d₂
+         j ← j + 1
+     end if
+     i ← i + 3
+ end while
+ return â
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
@@ -3210,6 +3167,55 @@ static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRFxN_a9_51(
 }
 
 /**
+ Given a series of uniformly random bytes in `randomness`, for some number
+ `eta`, the `sample_from_binomial_distribution_{eta}` functions sample a ring
+ element from a binomial distribution centered at 0 that uses two sets of `eta`
+ coin flips. If, for example, `eta = ETA`, each ring coefficient is a value `v`
+ such such that `v ∈ {-ETA, -ETA + 1, ..., 0, ..., ETA + 1, ETA}` and:
+
+ ```plaintext
+ - If v < 0, Pr[v] = Pr[-v]
+ - If v >= 0, Pr[v] = BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) / 2 ^ (2 * ETA)
+ ```
+
+ The values `v < 0` are mapped to the appropriate `KyberFieldElement`.
+
+ The expected value is:
+
+ ```plaintext
+ E[X] = (-ETA)Pr[-ETA] + (-(ETA - 1))Pr[-(ETA - 1)] + ... + (ETA - 1)Pr[ETA - 1]
+ + (ETA)Pr[ETA] = 0 since Pr[-v] = Pr[v] when v < 0.
+ ```
+
+ And the variance is:
+
+ ```plaintext
+ Var(X) = E[(X - E[X])^2]
+        = E[X^2]
+        = sum_(v=-ETA to ETA)v^2 * (BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) /
+ 2^(2 * ETA)) = ETA / 2
+ ```
+
+ This function implements <strong>Algorithm 7</strong> of the NIST FIPS 203
+ standard, which is reproduced below:
+
+ ```plaintext
+ Input: byte array B ∈ 𝔹^{64η}.
+ Output: array f ∈ ℤ₂₅₆.
+
+ b ← BytesToBits(B)
+ for (i ← 0; i < 256; i++)
+     x ← ∑(j=0 to η - 1) b[2iη + j]
+     y ← ∑(j=0 to η - 1) b[2iη + η + j]
+     f[i] ← x−y mod q
+ end for
+ return f
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_binomial_distribution_2 with types
 libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
@@ -3332,9 +3338,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_7_45(
   size_t step = LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT / (size_t)2U;
   for (size_t i = (size_t)0U; i < step; i++) {
     size_t j = i;
-    core_core_arch_x86___m256i t =
-        libcrux_ml_kem_vector_avx2_multiply_by_constant_ea(
-            re->coefficients[j + step], (int16_t)-1600);
+    __m256i t = libcrux_ml_kem_vector_avx2_multiply_by_constant_ea(
+        re->coefficients[j + step], (int16_t)-1600);
     re->coefficients[j + step] =
         libcrux_ml_kem_vector_avx2_sub_ea(re->coefficients[j], &t);
     re->coefficients[j] =
@@ -3367,6 +3372,10 @@ libcrux_ml_kem_ntt_ntt_binomially_sampled_ring_element_b5(
 }
 
 /**
+ Sample a vector of ring elements from a centered binomial distribution and
+ convert them into their NTT representations.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_vector_cbd_then_ntt
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
 libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
@@ -3397,11 +3406,10 @@ libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_15(uint8_t prf_input[33U],
   libcrux_ml_kem_hash_functions_avx2_PRFxN_a9_51(prf_inputs, prf_outputs);
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
     size_t i0 = i;
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____1 =
+    re_as_ntt[i0] =
         libcrux_ml_kem_sampling_sample_from_binomial_distribution_47(
             Eurydice_array_to_slice((size_t)128U, prf_outputs[i0], uint8_t,
                                     Eurydice_slice));
-    re_as_ntt[i0] = uu____1;
     libcrux_ml_kem_ntt_ntt_binomially_sampled_ring_element_b5(&re_as_ntt[i0]);
   }
   libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____2[3U];
@@ -3430,6 +3438,9 @@ libcrux_ml_kem_ind_cpa_sample_ring_element_cbd_closure_8f(size_t _i) {
   return libcrux_ml_kem_polynomial_ZERO_89_d5();
 }
 
+/**
+ Sample a vector of ring elements from a centered binomial distribution.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_ring_element_cbd
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
@@ -3539,7 +3550,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_error_reduce_89_91(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t j = i;
-    core_core_arch_x86___m256i coefficient_normal_form =
+    __m256i coefficient_normal_form =
         libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_ea(
             self->coefficients[j], (int16_t)1441);
     self->coefficients[j] = libcrux_ml_kem_vector_avx2_barrett_reduce_ea(
@@ -3548,6 +3559,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_error_reduce_89_91(
   }
 }
 
+/**
+ Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_vector_u
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -3604,8 +3618,7 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_traits_decompress_1_91(core_core_arch_x86___m256i v) {
+static inline __m256i libcrux_ml_kem_vector_traits_decompress_1_91(__m256i v) {
   return libcrux_ml_kem_vector_avx2_bitwise_and_with_constant_ea(
       libcrux_ml_kem_vector_avx2_sub_ea(libcrux_ml_kem_vector_avx2_ZERO_ea(),
                                         &v),
@@ -3626,7 +3639,7 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_message_b9(
       libcrux_ml_kem_polynomial_ZERO_89_d5();
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i coefficient_compressed =
+    __m256i coefficient_compressed =
         libcrux_ml_kem_vector_avx2_deserialize_1_ea(Eurydice_array_to_subslice2(
             serialized, (size_t)2U * i0, (size_t)2U * i0 + (size_t)2U, uint8_t,
             Eurydice_slice));
@@ -3655,12 +3668,12 @@ libcrux_ml_kem_polynomial_add_message_error_reduce_89_67(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i coefficient_normal_form =
+    __m256i coefficient_normal_form =
         libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_ea(
             result.coefficients[i0], (int16_t)1441);
-    core_core_arch_x86___m256i tmp = libcrux_ml_kem_vector_avx2_add_ea(
-        self->coefficients[i0], &message->coefficients[i0]);
-    core_core_arch_x86___m256i tmp0 =
+    __m256i tmp = libcrux_ml_kem_vector_avx2_add_ea(self->coefficients[i0],
+                                                    &message->coefficients[i0]);
+    __m256i tmp0 =
         libcrux_ml_kem_vector_avx2_add_ea(coefficient_normal_form, &tmp);
     result.coefficients[i0] =
         libcrux_ml_kem_vector_avx2_barrett_reduce_ea(tmp0);
@@ -3668,6 +3681,9 @@ libcrux_ml_kem_polynomial_add_message_error_reduce_89_67(
   return result;
 }
 
+/**
+ Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_ring_element_v
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -3703,62 +3719,50 @@ generics
 - COEFFICIENT_BITS= 10
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_2f(
-    core_core_arch_x86___m256i vector) {
-  core_core_arch_x86___m256i field_modulus_halved =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
-          (int32_t)2);
-  core_core_arch_x86___m256i compression_factor =
+    __m256i vector) {
+  __m256i field_modulus_halved = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
+      (int32_t)2);
+  __m256i compression_factor =
       libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)10321340);
-  core_core_arch_x86___m256i coefficient_bits_mask =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          ((int32_t)1 << (uint32_t)(int32_t)10) - (int32_t)1);
-  core_core_arch_x86___m128i coefficients_low =
+  __m256i coefficient_bits_mask = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      ((int32_t)1 << (uint32_t)(int32_t)10) - (int32_t)1);
+  __m128i coefficients_low =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  core_core_arch_x86___m256i coefficients_low0 =
+  __m256i coefficients_low0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
-  core_core_arch_x86___m256i compressed_low =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)10, coefficients_low0,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_low0 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(compressed_low,
-                                              field_modulus_halved);
-  core_core_arch_x86___m256i compressed_low1 =
+  __m256i compressed_low = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)10, coefficients_low0, __m256i);
+  __m256i compressed_low0 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      compressed_low, field_modulus_halved);
+  __m256i compressed_low1 =
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
                                                             compression_factor);
-  core_core_arch_x86___m256i compressed_low2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)3, compressed_low1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_low3 =
-      libcrux_intrinsics_avx2_mm256_and_si256(compressed_low2,
-                                              coefficient_bits_mask);
-  core_core_arch_x86___m128i coefficients_high =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, vector, core_core_arch_x86___m128i);
-  core_core_arch_x86___m256i coefficients_high0 =
+  __m256i compressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)3, compressed_low1, __m256i);
+  __m256i compressed_low3 = libcrux_intrinsics_avx2_mm256_and_si256(
+      compressed_low2, coefficient_bits_mask);
+  __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, vector, __m128i);
+  __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
-  core_core_arch_x86___m256i compressed_high =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)10, coefficients_high0,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_high0 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(compressed_high,
-                                              field_modulus_halved);
-  core_core_arch_x86___m256i compressed_high1 =
+  __m256i compressed_high = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)10, coefficients_high0, __m256i);
+  __m256i compressed_high0 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      compressed_high, field_modulus_halved);
+  __m256i compressed_high1 =
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_high0,
                                                             compression_factor);
-  core_core_arch_x86___m256i compressed_high2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)3, compressed_high1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_high3 =
-      libcrux_intrinsics_avx2_mm256_and_si256(compressed_high2,
-                                              coefficient_bits_mask);
-  core_core_arch_x86___m256i compressed =
-      libcrux_intrinsics_avx2_mm256_packs_epi32(compressed_low3,
-                                                compressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
-      (int32_t)216, compressed, core_core_arch_x86___m256i);
+  __m256i compressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)3, compressed_high1, __m256i);
+  __m256i compressed_high3 = libcrux_intrinsics_avx2_mm256_and_si256(
+      compressed_high2, coefficient_bits_mask);
+  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
+      compressed_low3, compressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
+                                                         compressed, __m256i);
 }
 
 /**
@@ -3771,8 +3775,8 @@ with const generics
 - COEFFICIENT_BITS= 10
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_compress_ea_98(core_core_arch_x86___m256i vector) {
+static inline __m256i libcrux_ml_kem_vector_avx2_compress_ea_98(
+    __m256i vector) {
   return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_2f(
       vector);
 }
@@ -3791,10 +3795,9 @@ libcrux_ml_kem_serialize_compress_then_serialize_10_2f(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i coefficient =
-        libcrux_ml_kem_vector_avx2_compress_ea_98(
-            libcrux_ml_kem_vector_traits_to_unsigned_representative_a4(
-                re->coefficients[i0]));
+    __m256i coefficient = libcrux_ml_kem_vector_avx2_compress_ea_98(
+        libcrux_ml_kem_vector_traits_to_unsigned_representative_a4(
+            re->coefficients[i0]));
     uint8_t bytes[20U];
     libcrux_ml_kem_vector_avx2_serialize_10_ea(coefficient, bytes);
     Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
@@ -3815,62 +3818,50 @@ generics
 - COEFFICIENT_BITS= 11
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_2f0(
-    core_core_arch_x86___m256i vector) {
-  core_core_arch_x86___m256i field_modulus_halved =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
-          (int32_t)2);
-  core_core_arch_x86___m256i compression_factor =
+    __m256i vector) {
+  __m256i field_modulus_halved = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
+      (int32_t)2);
+  __m256i compression_factor =
       libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)10321340);
-  core_core_arch_x86___m256i coefficient_bits_mask =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          ((int32_t)1 << (uint32_t)(int32_t)11) - (int32_t)1);
-  core_core_arch_x86___m128i coefficients_low =
+  __m256i coefficient_bits_mask = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      ((int32_t)1 << (uint32_t)(int32_t)11) - (int32_t)1);
+  __m128i coefficients_low =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  core_core_arch_x86___m256i coefficients_low0 =
+  __m256i coefficients_low0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
-  core_core_arch_x86___m256i compressed_low =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)11, coefficients_low0,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_low0 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(compressed_low,
-                                              field_modulus_halved);
-  core_core_arch_x86___m256i compressed_low1 =
+  __m256i compressed_low = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)11, coefficients_low0, __m256i);
+  __m256i compressed_low0 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      compressed_low, field_modulus_halved);
+  __m256i compressed_low1 =
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
                                                             compression_factor);
-  core_core_arch_x86___m256i compressed_low2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)3, compressed_low1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_low3 =
-      libcrux_intrinsics_avx2_mm256_and_si256(compressed_low2,
-                                              coefficient_bits_mask);
-  core_core_arch_x86___m128i coefficients_high =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, vector, core_core_arch_x86___m128i);
-  core_core_arch_x86___m256i coefficients_high0 =
+  __m256i compressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)3, compressed_low1, __m256i);
+  __m256i compressed_low3 = libcrux_intrinsics_avx2_mm256_and_si256(
+      compressed_low2, coefficient_bits_mask);
+  __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, vector, __m128i);
+  __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
-  core_core_arch_x86___m256i compressed_high =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)11, coefficients_high0,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_high0 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(compressed_high,
-                                              field_modulus_halved);
-  core_core_arch_x86___m256i compressed_high1 =
+  __m256i compressed_high = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)11, coefficients_high0, __m256i);
+  __m256i compressed_high0 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      compressed_high, field_modulus_halved);
+  __m256i compressed_high1 =
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_high0,
                                                             compression_factor);
-  core_core_arch_x86___m256i compressed_high2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)3, compressed_high1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_high3 =
-      libcrux_intrinsics_avx2_mm256_and_si256(compressed_high2,
-                                              coefficient_bits_mask);
-  core_core_arch_x86___m256i compressed =
-      libcrux_intrinsics_avx2_mm256_packs_epi32(compressed_low3,
-                                                compressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
-      (int32_t)216, compressed, core_core_arch_x86___m256i);
+  __m256i compressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)3, compressed_high1, __m256i);
+  __m256i compressed_high3 = libcrux_intrinsics_avx2_mm256_and_si256(
+      compressed_high2, coefficient_bits_mask);
+  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
+      compressed_low3, compressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
+                                                         compressed, __m256i);
 }
 
 /**
@@ -3883,8 +3874,8 @@ with const generics
 - COEFFICIENT_BITS= 11
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_compress_ea_980(core_core_arch_x86___m256i vector) {
+static inline __m256i libcrux_ml_kem_vector_avx2_compress_ea_980(
+    __m256i vector) {
   return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_2f0(
       vector);
 }
@@ -3903,10 +3894,9 @@ libcrux_ml_kem_serialize_compress_then_serialize_11_d1(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i coefficient =
-        libcrux_ml_kem_vector_avx2_compress_ea_980(
-            libcrux_ml_kem_vector_traits_to_unsigned_representative_a4(
-                re->coefficients[i0]));
+    __m256i coefficient = libcrux_ml_kem_vector_avx2_compress_ea_980(
+        libcrux_ml_kem_vector_traits_to_unsigned_representative_a4(
+            re->coefficients[i0]));
     uint8_t bytes[22U];
     libcrux_ml_kem_vector_avx2_serialize_11_ea(coefficient, bytes);
     Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
@@ -3936,6 +3926,9 @@ libcrux_ml_kem_serialize_compress_then_serialize_ring_element_u_b2(
   memcpy(ret, uu____0, (size_t)320U * sizeof(uint8_t));
 }
 
+/**
+ Call [`compress_then_serialize_ring_element_u`] on each ring element.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.compress_then_serialize_u
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -3980,62 +3973,50 @@ generics
 - COEFFICIENT_BITS= 4
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_2f1(
-    core_core_arch_x86___m256i vector) {
-  core_core_arch_x86___m256i field_modulus_halved =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
-          (int32_t)2);
-  core_core_arch_x86___m256i compression_factor =
+    __m256i vector) {
+  __m256i field_modulus_halved = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
+      (int32_t)2);
+  __m256i compression_factor =
       libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)10321340);
-  core_core_arch_x86___m256i coefficient_bits_mask =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          ((int32_t)1 << (uint32_t)(int32_t)4) - (int32_t)1);
-  core_core_arch_x86___m128i coefficients_low =
+  __m256i coefficient_bits_mask = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      ((int32_t)1 << (uint32_t)(int32_t)4) - (int32_t)1);
+  __m128i coefficients_low =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  core_core_arch_x86___m256i coefficients_low0 =
+  __m256i coefficients_low0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
-  core_core_arch_x86___m256i compressed_low =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)4, coefficients_low0,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_low0 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(compressed_low,
-                                              field_modulus_halved);
-  core_core_arch_x86___m256i compressed_low1 =
+  __m256i compressed_low = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)4, coefficients_low0, __m256i);
+  __m256i compressed_low0 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      compressed_low, field_modulus_halved);
+  __m256i compressed_low1 =
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
                                                             compression_factor);
-  core_core_arch_x86___m256i compressed_low2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)3, compressed_low1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_low3 =
-      libcrux_intrinsics_avx2_mm256_and_si256(compressed_low2,
-                                              coefficient_bits_mask);
-  core_core_arch_x86___m128i coefficients_high =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, vector, core_core_arch_x86___m128i);
-  core_core_arch_x86___m256i coefficients_high0 =
+  __m256i compressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)3, compressed_low1, __m256i);
+  __m256i compressed_low3 = libcrux_intrinsics_avx2_mm256_and_si256(
+      compressed_low2, coefficient_bits_mask);
+  __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, vector, __m128i);
+  __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
-  core_core_arch_x86___m256i compressed_high =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)4, coefficients_high0,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_high0 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(compressed_high,
-                                              field_modulus_halved);
-  core_core_arch_x86___m256i compressed_high1 =
+  __m256i compressed_high = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)4, coefficients_high0, __m256i);
+  __m256i compressed_high0 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      compressed_high, field_modulus_halved);
+  __m256i compressed_high1 =
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_high0,
                                                             compression_factor);
-  core_core_arch_x86___m256i compressed_high2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)3, compressed_high1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_high3 =
-      libcrux_intrinsics_avx2_mm256_and_si256(compressed_high2,
-                                              coefficient_bits_mask);
-  core_core_arch_x86___m256i compressed =
-      libcrux_intrinsics_avx2_mm256_packs_epi32(compressed_low3,
-                                                compressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
-      (int32_t)216, compressed, core_core_arch_x86___m256i);
+  __m256i compressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)3, compressed_high1, __m256i);
+  __m256i compressed_high3 = libcrux_intrinsics_avx2_mm256_and_si256(
+      compressed_high2, coefficient_bits_mask);
+  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
+      compressed_low3, compressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
+                                                         compressed, __m256i);
 }
 
 /**
@@ -4048,8 +4029,8 @@ with const generics
 - COEFFICIENT_BITS= 4
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_compress_ea_981(core_core_arch_x86___m256i vector) {
+static inline __m256i libcrux_ml_kem_vector_avx2_compress_ea_981(
+    __m256i vector) {
   return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_2f1(
       vector);
 }
@@ -4068,10 +4049,9 @@ libcrux_ml_kem_serialize_compress_then_serialize_4_b7(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i coefficient =
-        libcrux_ml_kem_vector_avx2_compress_ea_981(
-            libcrux_ml_kem_vector_traits_to_unsigned_representative_a4(
-                re.coefficients[i0]));
+    __m256i coefficient = libcrux_ml_kem_vector_avx2_compress_ea_981(
+        libcrux_ml_kem_vector_traits_to_unsigned_representative_a4(
+            re.coefficients[i0]));
     uint8_t bytes[8U];
     libcrux_ml_kem_vector_avx2_serialize_4_ea(coefficient, bytes);
     core_slice___Slice_T___copy_from_slice(
@@ -4090,62 +4070,50 @@ generics
 - COEFFICIENT_BITS= 5
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
+static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_2f2(
-    core_core_arch_x86___m256i vector) {
-  core_core_arch_x86___m256i field_modulus_halved =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
-          (int32_t)2);
-  core_core_arch_x86___m256i compression_factor =
+    __m256i vector) {
+  __m256i field_modulus_halved = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
+      (int32_t)2);
+  __m256i compression_factor =
       libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)10321340);
-  core_core_arch_x86___m256i coefficient_bits_mask =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          ((int32_t)1 << (uint32_t)(int32_t)5) - (int32_t)1);
-  core_core_arch_x86___m128i coefficients_low =
+  __m256i coefficient_bits_mask = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      ((int32_t)1 << (uint32_t)(int32_t)5) - (int32_t)1);
+  __m128i coefficients_low =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  core_core_arch_x86___m256i coefficients_low0 =
+  __m256i coefficients_low0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
-  core_core_arch_x86___m256i compressed_low =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)5, coefficients_low0,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_low0 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(compressed_low,
-                                              field_modulus_halved);
-  core_core_arch_x86___m256i compressed_low1 =
+  __m256i compressed_low = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)5, coefficients_low0, __m256i);
+  __m256i compressed_low0 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      compressed_low, field_modulus_halved);
+  __m256i compressed_low1 =
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
                                                             compression_factor);
-  core_core_arch_x86___m256i compressed_low2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)3, compressed_low1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_low3 =
-      libcrux_intrinsics_avx2_mm256_and_si256(compressed_low2,
-                                              coefficient_bits_mask);
-  core_core_arch_x86___m128i coefficients_high =
-      libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, vector, core_core_arch_x86___m128i);
-  core_core_arch_x86___m256i coefficients_high0 =
+  __m256i compressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)3, compressed_low1, __m256i);
+  __m256i compressed_low3 = libcrux_intrinsics_avx2_mm256_and_si256(
+      compressed_low2, coefficient_bits_mask);
+  __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, vector, __m128i);
+  __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
-  core_core_arch_x86___m256i compressed_high =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)5, coefficients_high0,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_high0 =
-      libcrux_intrinsics_avx2_mm256_add_epi32(compressed_high,
-                                              field_modulus_halved);
-  core_core_arch_x86___m256i compressed_high1 =
+  __m256i compressed_high = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)5, coefficients_high0, __m256i);
+  __m256i compressed_high0 = libcrux_intrinsics_avx2_mm256_add_epi32(
+      compressed_high, field_modulus_halved);
+  __m256i compressed_high1 =
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_high0,
                                                             compression_factor);
-  core_core_arch_x86___m256i compressed_high2 =
-      libcrux_intrinsics_avx2_mm256_srli_epi32((int32_t)3, compressed_high1,
-                                               core_core_arch_x86___m256i);
-  core_core_arch_x86___m256i compressed_high3 =
-      libcrux_intrinsics_avx2_mm256_and_si256(compressed_high2,
-                                              coefficient_bits_mask);
-  core_core_arch_x86___m256i compressed =
-      libcrux_intrinsics_avx2_mm256_packs_epi32(compressed_low3,
-                                                compressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
-      (int32_t)216, compressed, core_core_arch_x86___m256i);
+  __m256i compressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
+      (int32_t)3, compressed_high1, __m256i);
+  __m256i compressed_high3 = libcrux_intrinsics_avx2_mm256_and_si256(
+      compressed_high2, coefficient_bits_mask);
+  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
+      compressed_low3, compressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
+                                                         compressed, __m256i);
 }
 
 /**
@@ -4158,8 +4126,8 @@ with const generics
 - COEFFICIENT_BITS= 5
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_avx2_compress_ea_982(core_core_arch_x86___m256i vector) {
+static inline __m256i libcrux_ml_kem_vector_avx2_compress_ea_982(
+    __m256i vector) {
   return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_2f2(
       vector);
 }
@@ -4178,10 +4146,9 @@ libcrux_ml_kem_serialize_compress_then_serialize_5_35(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i coefficients =
-        libcrux_ml_kem_vector_avx2_compress_ea_982(
-            libcrux_ml_kem_vector_traits_to_unsigned_representative_a4(
-                re.coefficients[i0]));
+    __m256i coefficients = libcrux_ml_kem_vector_avx2_compress_ea_982(
+        libcrux_ml_kem_vector_traits_to_unsigned_representative_a4(
+            re.coefficients[i0]));
     uint8_t bytes[10U];
     libcrux_ml_kem_vector_avx2_serialize_5_ea(coefficients, bytes);
     core_slice___Slice_T___copy_from_slice(
@@ -4207,6 +4174,47 @@ libcrux_ml_kem_serialize_compress_then_serialize_ring_element_v_39(
   libcrux_ml_kem_serialize_compress_then_serialize_4_b7(re, out);
 }
 
+/**
+ This function implements <strong>Algorithm 13</strong> of the
+ NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
+
+ Algorithm 13 is reproduced below:
+
+ ```plaintext
+ Input: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
+ Input: message m ∈ 𝔹^{32}.
+ Input: encryption randomness r ∈ 𝔹^{32}.
+ Output: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+
+ N ← 0
+ t̂ ← ByteDecode₁₂(ekₚₖₑ[0:384k])
+ ρ ← ekₚₖₑ[384k: 384k + 32]
+ for (i ← 0; i < k; i++)
+     for(j ← 0; j < k; j++)
+         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
+     end for
+ end for
+ for(i ← 0; i < k; i++)
+     r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
+     N ← N + 1
+ end for
+ for(i ← 0; i < k; i++)
+     e₁[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
+     N ← N + 1
+ end for
+ e₂ ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
+ r̂ ← NTT(r)
+ u ← NTT-¹(Âᵀ ◦ r̂) + e₁
+ μ ← Decompress₁(ByteDecode₁(m)))
+ v ← NTT-¹(t̂ᵀ ◦ rˆ) + e₂ + μ
+ c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
+ c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
+ return c ← (c₁ ‖ c₂)
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.encrypt_unpacked
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
@@ -4473,6 +4481,9 @@ static inline void libcrux_ml_kem_ind_cca_decapsulate_be(
 }
 
 /**
+ Portable decapsulate
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.decapsulate
 with const generics
 - K= 3
@@ -4499,6 +4510,13 @@ static inline void libcrux_ml_kem_ind_cca_instantiations_avx2_decapsulate_73(
   libcrux_ml_kem_ind_cca_decapsulate_be(private_key, ciphertext, ret);
 }
 
+/**
+ Decapsulate ML-KEM 768
+
+ Generates an [`MlKemSharedSecret`].
+ The input is a reference to an [`MlKem768PrivateKey`] and an
+ [`MlKem768Ciphertext`].
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_mlkem768_avx2_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
@@ -4628,6 +4646,9 @@ static inline void libcrux_ml_kem_ind_cca_decapsulate_unpacked_10(
 }
 
 /**
+ Portable decapsulate
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.decapsulate_unpacked with const
 generics
@@ -4656,6 +4677,13 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_decapsulate_unpacked_82(
   libcrux_ml_kem_ind_cca_decapsulate_unpacked_10(key_pair, ciphertext, ret);
 }
 
+/**
+ Decapsulate ML-KEM 768 (unpacked)
+
+ Generates an [`MlKemSharedSecret`].
+ The input is a reference to an unpacked key pair of type
+ [`MlKem768KeyPairUnpacked`] and an [`MlKem768Ciphertext`].
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_mlkem768_avx2_decapsulate_unpacked(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_a0 *private_key,
@@ -4806,6 +4834,13 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_encapsulate_2d(
   return libcrux_ml_kem_ind_cca_encapsulate_82(uu____0, uu____1);
 }
 
+/**
+ Encapsulate ML-KEM 768
+
+ Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+ The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
+ bytes of `randomness`.
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline tuple_3c libcrux_ml_kem_mlkem768_avx2_encapsulate(
     libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
@@ -4886,6 +4921,9 @@ static inline tuple_3c libcrux_ml_kem_ind_cca_encapsulate_unpacked_1a(
 }
 
 /**
+ Portable encapsualte
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.encapsulate_unpacked with const
 generics
@@ -4915,6 +4953,14 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_encapsulate_unpacked_2e(
   return libcrux_ml_kem_ind_cca_encapsulate_unpacked_1a(uu____0, uu____1);
 }
 
+/**
+ Encapsulate ML-KEM 768 (unpacked)
+
+ Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+ The input is a reference to an unpacked public key of type
+ [`MlKem768PublicKeyUnpacked`], the SHA3-256 hash of this public key, and
+ [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline tuple_3c libcrux_ml_kem_mlkem768_avx2_encapsulate_unpacked(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
@@ -4959,9 +5005,8 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i
-libcrux_ml_kem_vector_traits_to_standard_domain_42(
-    core_core_arch_x86___m256i v) {
+static inline __m256i libcrux_ml_kem_vector_traits_to_standard_domain_42(
+    __m256i v) {
   return libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_ea(
       v, LIBCRUX_ML_KEM_VECTOR_TRAITS_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS);
 }
@@ -4984,7 +5029,7 @@ libcrux_ml_kem_polynomial_add_standard_error_reduce_89_ac(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t j = i;
-    core_core_arch_x86___m256i coefficient_normal_form =
+    __m256i coefficient_normal_form =
         libcrux_ml_kem_vector_traits_to_standard_domain_42(
             self->coefficients[j]);
     self->coefficients[j] = libcrux_ml_kem_vector_avx2_barrett_reduce_ea(
@@ -4993,6 +5038,9 @@ libcrux_ml_kem_polynomial_add_standard_error_reduce_89_ac(
   }
 }
 
+/**
+ Compute Â ◦ ŝ + ê
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_As_plus_e
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -5044,6 +5092,47 @@ static KRML_MUSTINLINE void libcrux_ml_kem_matrix_compute_As_plus_e_f0(
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
 }
 
+/**
+ This function implements most of <strong>Algorithm 12</strong> of the
+ NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation
+ algorithm.
+
+ We say "most of" since Algorithm 12 samples the required randomness within
+ the function itself, whereas this implementation expects it to be provided
+ through the `key_generation_seed` parameter.
+
+ Algorithm 12 is reproduced below:
+
+ ```plaintext
+ Output: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
+ Output: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+
+ d ←$ B
+ (ρ,σ) ← G(d)
+ N ← 0
+ for (i ← 0; i < k; i++)
+     for(j ← 0; j < k; j++)
+         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
+     end for
+ end for
+ for(i ← 0; i < k; i++)
+     s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
+     N ← N + 1
+ end for
+ for(i ← 0; i < k; i++)
+     e[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(σ,N))
+     N ← N + 1
+ end for
+ ŝ ← NTT(s)
+ ê ← NTT(e)
+ t̂ ← Â◦ŝ + ê
+ ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
+ dkₚₖₑ ← ByteEncode₁₂(ŝ)
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.generate_keypair_unpacked
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
@@ -5138,7 +5227,7 @@ libcrux_ml_kem_serialize_serialize_uncompressed_ring_element_92(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i coefficient =
+    __m256i coefficient =
         libcrux_ml_kem_vector_traits_to_unsigned_representative_a4(
             re->coefficients[i0]);
     uint8_t bytes[24U];
@@ -5154,6 +5243,9 @@ libcrux_ml_kem_serialize_serialize_uncompressed_ring_element_92(
   memcpy(ret, serialized, (size_t)384U * sizeof(uint8_t));
 }
 
+/**
+ Call [`serialize_uncompressed_ring_element`] for each ring element.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_secret_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -5190,6 +5282,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_serialize_secret_key_ae(
   memcpy(ret, out, (size_t)1152U * sizeof(uint8_t));
 }
 
+/**
+ Concatenate `t` and `ρ` into the public key.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_public_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -5258,6 +5353,9 @@ libcrux_ml_kem_ind_cpa_generate_keypair_e1(Eurydice_slice key_generation_seed) {
 }
 
 /**
+ Serialize the secret key.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.serialize_kem_secret_key
 with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
 with const generics
@@ -5314,6 +5412,14 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_serialize_kem_secret_key_75(
 }
 
 /**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
 libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
@@ -5361,6 +5467,9 @@ libcrux_ml_kem_ind_cca_generate_keypair_c20(uint8_t randomness[64U]) {
 }
 
 /**
+ Portable generate key pair.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair with const generics
 - K= 3
@@ -5380,6 +5489,9 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_generate_keypair_52(
   return libcrux_ml_kem_ind_cca_generate_keypair_c20(uu____0);
 }
 
+/**
+ Generate ML-KEM 768 Key Pair
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_mlkem768_avx2_generate_key_pair(uint8_t randomness[64U]) {
@@ -5444,11 +5556,10 @@ static inline libcrux_ml_kem_polynomial_PolynomialRingElement_d2
 libcrux_ml_kem_polynomial_clone_d5_25(
     libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *self) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_d2 lit;
-  core_core_arch_x86___m256i ret[16U];
+  __m256i ret[16U];
   core_array___core__clone__Clone_for__Array_T__N___20__clone(
-      (size_t)16U, self->coefficients, ret, core_core_arch_x86___m256i, void *);
-  memcpy(lit.coefficients, ret,
-         (size_t)16U * sizeof(core_core_arch_x86___m256i));
+      (size_t)16U, self->coefficients, ret, __m256i, void *);
+  memcpy(lit.coefficients, ret, (size_t)16U * sizeof(__m256i));
   return lit;
 }
 
@@ -5538,6 +5649,9 @@ libcrux_ml_kem_ind_cca_generate_keypair_unpacked_78(uint8_t randomness[64U]) {
 }
 
 /**
+ Unpacked API
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair_unpacked with const
 generics
@@ -5558,6 +5672,9 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_generate_keypair_unpacked_ed(
   return libcrux_ml_kem_ind_cca_generate_keypair_unpacked_78(uu____0);
 }
 
+/**
+ Generate ML-KEM 768 Key Pair in "unpacked" form
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_a0
 libcrux_ml_kem_mlkem768_avx2_generate_key_pair_unpacked(
@@ -5706,6 +5823,9 @@ static inline void libcrux_ml_kem_ind_cca_decapsulate_be0(
 }
 
 /**
+ Portable decapsulate
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.kyber_decapsulate with const generics
 - K= 3
@@ -5733,6 +5853,13 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_decapsulate_fd(
   libcrux_ml_kem_ind_cca_decapsulate_be0(private_key, ciphertext, ret);
 }
 
+/**
+ Decapsulate Kyber 768
+
+ Generates an [`MlKemSharedSecret`].
+ The input is a reference to an [`MlKem768PrivateKey`] and an
+ [`MlKem768Ciphertext`].
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_mlkem768_avx2_kyber_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
@@ -5837,6 +5964,9 @@ static inline tuple_3c libcrux_ml_kem_ind_cca_encapsulate_820(
 }
 
 /**
+ Portable encapsulate
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.kyber_encapsulate with const generics
 - K= 3
@@ -5864,6 +5994,13 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_encapsulate_0f(
   return libcrux_ml_kem_ind_cca_encapsulate_820(uu____0, uu____1);
 }
 
+/**
+ Encapsulate Kyber 768
+
+ Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+ The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
+ bytes of `randomness`.
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline tuple_3c libcrux_ml_kem_mlkem768_avx2_kyber_encapsulate(
     libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
@@ -5889,6 +6026,12 @@ libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_closure_c00(
   return libcrux_ml_kem_polynomial_ZERO_89_d5();
 }
 
+/**
+ This function deserializes ring elements and reduces the result by the field
+ modulus.
+
+ This function MUST NOT be used on secret inputs.
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
@@ -5953,6 +6096,9 @@ static KRML_MUSTINLINE bool libcrux_ml_kem_ind_cca_validate_public_key_cf(
 }
 
 /**
+ Portable public key validation
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.validate_public_key with const
 generics
@@ -5967,6 +6113,11 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_validate_public_key_04(
   return libcrux_ml_kem_ind_cca_validate_public_key_cf(public_key);
 }
 
+/**
+ Validate a public key.
+
+ Returns `Some(public_key)` if valid, and `None` otherwise.
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline core_option_Option_92
 libcrux_ml_kem_mlkem768_avx2_validate_public_key(
@@ -5987,8 +6138,7 @@ This function found in impl {(core::clone::Clone for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)#1}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_clone_3a(
-    core_core_arch_x86___m256i *self) {
+static inline __m256i libcrux_ml_kem_vector_avx2_clone_3a(__m256i *self) {
   return self[0U];
 }
 
