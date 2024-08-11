@@ -7,8 +7,8 @@
  * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
  * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 75bf8bca5f9903b4f6e8fba693d61af1415d512f
+ * F*: 3ed3c98d39ce028c31c5908a38bc68ad5098f563
+ * Libcrux: aa91a6764bde8c1f15107a03746f506e99a9159b
  */
 
 #include "internal/libcrux_sha3_avx2.h"
@@ -2400,6 +2400,18 @@ static KRML_MUSTINLINE void store_block_ef_f60(
 }
 
 /**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block
+with types core_core_arch_x86___m256i
+with const generics
+- N= 4
+- RATE= 168
+*/
+static KRML_MUSTINLINE void squeeze_first_block_e90(
+    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out[4U]) {
+  store_block_ef_f60(s->st, out);
+}
+
+/**
 A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_next_block
 with types core_core_arch_x86___m256i
 with const generics
@@ -2409,25 +2421,6 @@ with const generics
 static KRML_MUSTINLINE void squeeze_next_block_1c0(
     libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out[4U]) {
   keccakf1600_07(s);
-  store_block_ef_f60(s->st, out);
-}
-
-void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out0,
-    Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
-  Eurydice_slice buf[4U] = {out0, out1, out2, out3};
-  squeeze_next_block_1c0(s, buf);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-- RATE= 168
-*/
-static KRML_MUSTINLINE void squeeze_first_block_e90(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out[4U]) {
   store_block_ef_f60(s->st, out);
 }
 
@@ -2462,6 +2455,13 @@ void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
   Eurydice_slice buf[4U] = {out0, out1, out2, out3};
   libcrux_sha3_generic_keccak_squeeze_first_three_blocks_27(s, buf);
+}
+
+void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
+    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out0,
+    Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
+  Eurydice_slice buf[4U] = {out0, out1, out2, out3};
+  squeeze_next_block_1c0(s, buf);
 }
 
 /**

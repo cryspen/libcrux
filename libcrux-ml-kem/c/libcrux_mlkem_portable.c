@@ -7,8 +7,8 @@
  * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
  * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 75bf8bca5f9903b4f6e8fba693d61af1415d512f
+ * F*: 3ed3c98d39ce028c31c5908a38bc68ad5098f563
+ * Libcrux: aa91a6764bde8c1f15107a03746f506e99a9159b
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -2524,11 +2524,12 @@ typedef struct PortableHash_d1_s {
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_init_absorb with const generics
+libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final with const
+generics
 - K= 4
 */
 static KRML_MUSTINLINE PortableHash_d1
-shake128_init_absorb_751(uint8_t input[4U][34U]) {
+shake128_init_absorb_final_751(uint8_t input[4U][34U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 shake128_state[4U];
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U,
@@ -2553,24 +2554,24 @@ libcrux_ml_kem::hash_functions::portable::PortableHash<K>)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_f1 with const
+libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_f1 with const
 generics
 - K= 4
 */
 static KRML_MUSTINLINE PortableHash_d1
-shake128_init_absorb_f1_111(uint8_t input[4U][34U]) {
+shake128_init_absorb_final_f1_111(uint8_t input[4U][34U]) {
   uint8_t uu____0[4U][34U];
   memcpy(uu____0, input, (size_t)4U * sizeof(uint8_t[34U]));
-  return shake128_init_absorb_751(uu____0);
+  return shake128_init_absorb_final_751(uu____0);
 }
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_three_blocks with const
-generics
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks with
+const generics
 - K= 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_101(
+static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_101(
     PortableHash_d1 *st, uint8_t ret[4U][504U]) {
   uint8_t out[4U][504U] = {{0U}};
   KRML_MAYBE_FOR4(
@@ -2588,13 +2589,13 @@ libcrux_ml_kem::hash_functions::portable::PortableHash<K>)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_three_blocks_f1 with
-const generics
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_f1
+with const generics
 - K= 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_f1_4e1(
+static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_f1_4e1(
     PortableHash_d1 *self, uint8_t ret[4U][504U]) {
-  shake128_squeeze_three_blocks_101(self, ret);
+  shake128_squeeze_first_three_blocks_101(self, ret);
 }
 
 /**
@@ -2639,12 +2640,12 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_053(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_block with const
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block with const
 generics
 - K= 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_ed1(PortableHash_d1 *st,
-                                                       uint8_t ret[4U][168U]) {
+static KRML_MUSTINLINE void shake128_squeeze_next_block_ed1(
+    PortableHash_d1 *st, uint8_t ret[4U][168U]) {
   uint8_t out[4U][168U] = {{0U}};
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
                   libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
@@ -2660,13 +2661,13 @@ libcrux_ml_kem::hash_functions::portable::PortableHash<K>)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_block_f1 with const
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_f1 with const
 generics
 - K= 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_f1_c11(
+static KRML_MUSTINLINE void shake128_squeeze_next_block_f1_c11(
     PortableHash_d1 *self, uint8_t ret[4U][168U]) {
-  shake128_squeeze_block_ed1(self, ret);
+  shake128_squeeze_next_block_ed1(self, ret);
 }
 
 /**
@@ -2762,9 +2763,9 @@ static KRML_MUSTINLINE void sample_from_xof_2b1(
   int16_t out[4U][272U] = {{0U}};
   uint8_t uu____0[4U][34U];
   memcpy(uu____0, seeds, (size_t)4U * sizeof(uint8_t[34U]));
-  PortableHash_d1 xof_state = shake128_init_absorb_f1_111(uu____0);
+  PortableHash_d1 xof_state = shake128_init_absorb_final_f1_111(uu____0);
   uint8_t randomness0[4U][504U];
-  shake128_squeeze_three_blocks_f1_4e1(&xof_state, randomness0);
+  shake128_squeeze_first_three_blocks_f1_4e1(&xof_state, randomness0);
   uint8_t uu____1[4U][504U];
   memcpy(uu____1, randomness0, (size_t)4U * sizeof(uint8_t[504U]));
   bool done = sample_from_uniform_distribution_next_053(
@@ -2774,7 +2775,7 @@ static KRML_MUSTINLINE void sample_from_xof_2b1(
       break;
     } else {
       uint8_t randomness[4U][168U];
-      shake128_squeeze_block_f1_c11(&xof_state, randomness);
+      shake128_squeeze_next_block_f1_c11(&xof_state, randomness);
       uint8_t uu____2[4U][168U];
       memcpy(uu____2, randomness, (size_t)4U * sizeof(uint8_t[168U]));
       done = sample_from_uniform_distribution_next_054(
@@ -5616,11 +5617,12 @@ typedef struct PortableHash_8b_s {
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_init_absorb with const generics
+libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final with const
+generics
 - K= 2
 */
 static KRML_MUSTINLINE PortableHash_8b
-shake128_init_absorb_750(uint8_t input[2U][34U]) {
+shake128_init_absorb_final_750(uint8_t input[2U][34U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 shake128_state[2U];
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U,
@@ -5645,24 +5647,24 @@ libcrux_ml_kem::hash_functions::portable::PortableHash<K>)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_f1 with const
+libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_f1 with const
 generics
 - K= 2
 */
 static KRML_MUSTINLINE PortableHash_8b
-shake128_init_absorb_f1_110(uint8_t input[2U][34U]) {
+shake128_init_absorb_final_f1_110(uint8_t input[2U][34U]) {
   uint8_t uu____0[2U][34U];
   memcpy(uu____0, input, (size_t)2U * sizeof(uint8_t[34U]));
-  return shake128_init_absorb_750(uu____0);
+  return shake128_init_absorb_final_750(uu____0);
 }
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_three_blocks with const
-generics
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks with
+const generics
 - K= 2
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_100(
+static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_100(
     PortableHash_8b *st, uint8_t ret[2U][504U]) {
   uint8_t out[2U][504U] = {{0U}};
   KRML_MAYBE_FOR2(
@@ -5680,13 +5682,13 @@ libcrux_ml_kem::hash_functions::portable::PortableHash<K>)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_three_blocks_f1 with
-const generics
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_f1
+with const generics
 - K= 2
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_f1_4e0(
+static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_f1_4e0(
     PortableHash_8b *self, uint8_t ret[2U][504U]) {
-  shake128_squeeze_three_blocks_100(self, ret);
+  shake128_squeeze_first_three_blocks_100(self, ret);
 }
 
 /**
@@ -5731,12 +5733,12 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_051(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_block with const
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block with const
 generics
 - K= 2
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_ed0(PortableHash_8b *st,
-                                                       uint8_t ret[2U][168U]) {
+static KRML_MUSTINLINE void shake128_squeeze_next_block_ed0(
+    PortableHash_8b *st, uint8_t ret[2U][168U]) {
   uint8_t out[2U][168U] = {{0U}};
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
                   libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
@@ -5752,13 +5754,13 @@ libcrux_ml_kem::hash_functions::portable::PortableHash<K>)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_block_f1 with const
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_f1 with const
 generics
 - K= 2
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_f1_c10(
+static KRML_MUSTINLINE void shake128_squeeze_next_block_f1_c10(
     PortableHash_8b *self, uint8_t ret[2U][168U]) {
-  shake128_squeeze_block_ed0(self, ret);
+  shake128_squeeze_next_block_ed0(self, ret);
 }
 
 /**
@@ -5828,9 +5830,9 @@ static KRML_MUSTINLINE void sample_from_xof_2b0(
   int16_t out[2U][272U] = {{0U}};
   uint8_t uu____0[2U][34U];
   memcpy(uu____0, seeds, (size_t)2U * sizeof(uint8_t[34U]));
-  PortableHash_8b xof_state = shake128_init_absorb_f1_110(uu____0);
+  PortableHash_8b xof_state = shake128_init_absorb_final_f1_110(uu____0);
   uint8_t randomness0[2U][504U];
-  shake128_squeeze_three_blocks_f1_4e0(&xof_state, randomness0);
+  shake128_squeeze_first_three_blocks_f1_4e0(&xof_state, randomness0);
   uint8_t uu____1[2U][504U];
   memcpy(uu____1, randomness0, (size_t)2U * sizeof(uint8_t[504U]));
   bool done = sample_from_uniform_distribution_next_051(
@@ -5840,7 +5842,7 @@ static KRML_MUSTINLINE void sample_from_xof_2b0(
       break;
     } else {
       uint8_t randomness[2U][168U];
-      shake128_squeeze_block_f1_c10(&xof_state, randomness);
+      shake128_squeeze_next_block_f1_c10(&xof_state, randomness);
       uint8_t uu____2[2U][168U];
       memcpy(uu____2, randomness, (size_t)2U * sizeof(uint8_t[168U]));
       done = sample_from_uniform_distribution_next_052(
@@ -7575,11 +7577,12 @@ typedef struct PortableHash_58_s {
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_init_absorb with const generics
+libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final with const
+generics
 - K= 3
 */
 static KRML_MUSTINLINE PortableHash_58
-shake128_init_absorb_75(uint8_t input[3U][34U]) {
+shake128_init_absorb_final_75(uint8_t input[3U][34U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 shake128_state[3U];
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U,
@@ -7604,24 +7607,24 @@ libcrux_ml_kem::hash_functions::portable::PortableHash<K>)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_f1 with const
+libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_f1 with const
 generics
 - K= 3
 */
 static KRML_MUSTINLINE PortableHash_58
-shake128_init_absorb_f1_11(uint8_t input[3U][34U]) {
+shake128_init_absorb_final_f1_11(uint8_t input[3U][34U]) {
   uint8_t uu____0[3U][34U];
   memcpy(uu____0, input, (size_t)3U * sizeof(uint8_t[34U]));
-  return shake128_init_absorb_75(uu____0);
+  return shake128_init_absorb_final_75(uu____0);
 }
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_three_blocks with const
-generics
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks with
+const generics
 - K= 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_10(
+static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_10(
     PortableHash_58 *st, uint8_t ret[3U][504U]) {
   uint8_t out[3U][504U] = {{0U}};
   KRML_MAYBE_FOR3(
@@ -7639,13 +7642,13 @@ libcrux_ml_kem::hash_functions::portable::PortableHash<K>)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_three_blocks_f1 with
-const generics
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_f1
+with const generics
 - K= 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_f1_4e(
+static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_f1_4e(
     PortableHash_58 *self, uint8_t ret[3U][504U]) {
-  shake128_squeeze_three_blocks_10(self, ret);
+  shake128_squeeze_first_three_blocks_10(self, ret);
 }
 
 /**
@@ -7690,12 +7693,12 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_05(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_block with const
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block with const
 generics
 - K= 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_ed(PortableHash_58 *st,
-                                                      uint8_t ret[3U][168U]) {
+static KRML_MUSTINLINE void shake128_squeeze_next_block_ed(
+    PortableHash_58 *st, uint8_t ret[3U][168U]) {
   uint8_t out[3U][168U] = {{0U}};
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
                   libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
@@ -7711,13 +7714,13 @@ libcrux_ml_kem::hash_functions::portable::PortableHash<K>)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_block_f1 with const
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_f1 with const
 generics
 - K= 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_f1_c1(
+static KRML_MUSTINLINE void shake128_squeeze_next_block_f1_c1(
     PortableHash_58 *self, uint8_t ret[3U][168U]) {
-  shake128_squeeze_block_ed(self, ret);
+  shake128_squeeze_next_block_ed(self, ret);
 }
 
 /**
@@ -7787,9 +7790,9 @@ static KRML_MUSTINLINE void sample_from_xof_2b(
   int16_t out[3U][272U] = {{0U}};
   uint8_t uu____0[3U][34U];
   memcpy(uu____0, seeds, (size_t)3U * sizeof(uint8_t[34U]));
-  PortableHash_58 xof_state = shake128_init_absorb_f1_11(uu____0);
+  PortableHash_58 xof_state = shake128_init_absorb_final_f1_11(uu____0);
   uint8_t randomness0[3U][504U];
-  shake128_squeeze_three_blocks_f1_4e(&xof_state, randomness0);
+  shake128_squeeze_first_three_blocks_f1_4e(&xof_state, randomness0);
   uint8_t uu____1[3U][504U];
   memcpy(uu____1, randomness0, (size_t)3U * sizeof(uint8_t[504U]));
   bool done = sample_from_uniform_distribution_next_05(
@@ -7799,7 +7802,7 @@ static KRML_MUSTINLINE void sample_from_xof_2b(
       break;
     } else {
       uint8_t randomness[3U][168U];
-      shake128_squeeze_block_f1_c1(&xof_state, randomness);
+      shake128_squeeze_next_block_f1_c1(&xof_state, randomness);
       uint8_t uu____2[3U][168U];
       memcpy(uu____2, randomness, (size_t)3U * sizeof(uint8_t[168U]));
       done = sample_from_uniform_distribution_next_050(

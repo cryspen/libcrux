@@ -7,8 +7,8 @@
  * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
  * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 75bf8bca5f9903b4f6e8fba693d61af1415d512f
+ * F*: 3ed3c98d39ce028c31c5908a38bc68ad5098f563
+ * Libcrux: aa91a6764bde8c1f15107a03746f506e99a9159b
  */
 
 #ifndef __libcrux_mlkem768_portable_H
@@ -3641,11 +3641,12 @@ typedef struct libcrux_ml_kem_hash_functions_portable_PortableHash_58_s {
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_init_absorb with const generics
+libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final with const
+generics
 - K= 3
 */
 static KRML_MUSTINLINE libcrux_ml_kem_hash_functions_portable_PortableHash_58
-libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_75(
+libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_75(
     uint8_t input[3U][34U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 shake128_state[3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
@@ -3672,27 +3673,27 @@ libcrux_ml_kem::hash_functions::portable::PortableHash<K>)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_f1 with const
+libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_f1 with const
 generics
 - K= 3
 */
 static KRML_MUSTINLINE libcrux_ml_kem_hash_functions_portable_PortableHash_58
-libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_f1_11(
+libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_f1_11(
     uint8_t input[3U][34U]) {
   uint8_t uu____0[3U][34U];
   memcpy(uu____0, input, (size_t)3U * sizeof(uint8_t[34U]));
-  return libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_75(
+  return libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_75(
       uu____0);
 }
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_three_blocks with const
-generics
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks with
+const generics
 - K= 3
 */
 static KRML_MUSTINLINE void
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_three_blocks_10(
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_10(
     libcrux_ml_kem_hash_functions_portable_PortableHash_58 *st,
     uint8_t ret[3U][504U]) {
   uint8_t out[3U][504U] = {{0U}};
@@ -3712,16 +3713,16 @@ libcrux_ml_kem::hash_functions::portable::PortableHash<K>)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_three_blocks_f1 with
-const generics
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_f1
+with const generics
 - K= 3
 */
 static KRML_MUSTINLINE void
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_three_blocks_f1_4e(
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_f1_4e(
     libcrux_ml_kem_hash_functions_portable_PortableHash_58 *self,
     uint8_t ret[3U][504U]) {
-  libcrux_ml_kem_hash_functions_portable_shake128_squeeze_three_blocks_10(self,
-                                                                          ret);
+  libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_10(
+      self, ret);
 }
 
 /**
@@ -3770,12 +3771,12 @@ libcrux_ml_kem_sampling_sample_from_uniform_distribution_next_05(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_block with const
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block with const
 generics
 - K= 3
 */
 static KRML_MUSTINLINE void
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_block_ed(
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_ed(
     libcrux_ml_kem_hash_functions_portable_PortableHash_58 *st,
     uint8_t ret[3U][168U]) {
   uint8_t out[3U][168U] = {{0U}};
@@ -3795,15 +3796,16 @@ libcrux_ml_kem::hash_functions::portable::PortableHash<K>)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.portable.shake128_squeeze_block_f1 with const
+libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_f1 with const
 generics
 - K= 3
 */
 static KRML_MUSTINLINE void
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_block_f1_c1(
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_f1_c1(
     libcrux_ml_kem_hash_functions_portable_PortableHash_58 *self,
     uint8_t ret[3U][168U]) {
-  libcrux_ml_kem_hash_functions_portable_shake128_squeeze_block_ed(self, ret);
+  libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_ed(self,
+                                                                        ret);
 }
 
 /**
@@ -3906,10 +3908,10 @@ static KRML_MUSTINLINE void libcrux_ml_kem_sampling_sample_from_xof_2b(
   uint8_t uu____0[3U][34U];
   memcpy(uu____0, seeds, (size_t)3U * sizeof(uint8_t[34U]));
   libcrux_ml_kem_hash_functions_portable_PortableHash_58 xof_state =
-      libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_f1_11(
+      libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_f1_11(
           uu____0);
   uint8_t randomness0[3U][504U];
-  libcrux_ml_kem_hash_functions_portable_shake128_squeeze_three_blocks_f1_4e(
+  libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_f1_4e(
       &xof_state, randomness0);
   uint8_t uu____1[3U][504U];
   memcpy(uu____1, randomness0, (size_t)3U * sizeof(uint8_t[504U]));
@@ -3920,7 +3922,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_sampling_sample_from_xof_2b(
       break;
     } else {
       uint8_t randomness[3U][168U];
-      libcrux_ml_kem_hash_functions_portable_shake128_squeeze_block_f1_c1(
+      libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_f1_c1(
           &xof_state, randomness);
       uint8_t uu____2[3U][168U];
       memcpy(uu____2, randomness, (size_t)3U * sizeof(uint8_t[168U]));

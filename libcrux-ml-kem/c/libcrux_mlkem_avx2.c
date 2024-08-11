@@ -7,8 +7,8 @@
  * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
  * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 75bf8bca5f9903b4f6e8fba693d61af1415d512f
+ * F*: 3ed3c98d39ce028c31c5908a38bc68ad5098f563
+ * Libcrux: aa91a6764bde8c1f15107a03746f506e99a9159b
  */
 
 #include "internal/libcrux_mlkem_avx2.h"
@@ -1573,11 +1573,12 @@ static void closure_b81(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_final with const
+generics
 - K= 3
 */
 static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
-shake128_init_absorb_4d1(uint8_t input[3U][34U]) {
+shake128_init_absorb_final_4d1(uint8_t input[3U][34U]) {
   libcrux_sha3_generic_keccak_KeccakState_29 state =
       libcrux_sha3_avx2_x4_incremental_init();
   libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
@@ -1595,23 +1596,24 @@ libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_a9 with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_final_a9 with const
+generics
 - K= 3
 */
 static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
-shake128_init_absorb_a9_ca1(uint8_t input[3U][34U]) {
+shake128_init_absorb_final_a9_ca1(uint8_t input[3U][34U]) {
   uint8_t uu____0[3U][34U];
   memcpy(uu____0, input, (size_t)3U * sizeof(uint8_t[34U]));
-  return shake128_init_absorb_4d1(uu____0);
+  return shake128_init_absorb_final_4d1(uu____0);
 }
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_three_blocks with const
-generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_first_three_blocks with
+const generics
 - K= 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_6b1(
+static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_6b1(
     libcrux_sha3_avx2_x4_incremental_KeccakState *st, uint8_t ret[3U][504U]) {
   uint8_t out[3U][504U] = {{0U}};
   uint8_t out0[504U] = {0U};
@@ -1641,13 +1643,13 @@ libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_three_blocks_a9 with const
-generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_first_three_blocks_a9 with
+const generics
 - K= 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_a9_4d1(
+static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_a9_4d1(
     libcrux_sha3_avx2_x4_incremental_KeccakState *self, uint8_t ret[3U][504U]) {
-  shake128_squeeze_three_blocks_6b1(self, ret);
+  shake128_squeeze_first_three_blocks_6b1(self, ret);
 }
 
 /**
@@ -1692,10 +1694,11 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_bb3(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_block with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_next_block with const
+generics
 - K= 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_1b1(
+static KRML_MUSTINLINE void shake128_squeeze_next_block_1b1(
     libcrux_sha3_avx2_x4_incremental_KeccakState *st, uint8_t ret[3U][168U]) {
   uint8_t out[3U][168U] = {{0U}};
   uint8_t out0[168U] = {0U};
@@ -1725,12 +1728,13 @@ libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_block_a9 with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_next_block_a9 with const
+generics
 - K= 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_a9_5a1(
+static KRML_MUSTINLINE void shake128_squeeze_next_block_a9_5a1(
     libcrux_sha3_avx2_x4_incremental_KeccakState *self, uint8_t ret[3U][168U]) {
-  shake128_squeeze_block_1b1(self, ret);
+  shake128_squeeze_next_block_1b1(self, ret);
 }
 
 /**
@@ -1823,9 +1827,9 @@ static KRML_MUSTINLINE void sample_from_xof_b01(
   uint8_t uu____0[3U][34U];
   memcpy(uu____0, seeds, (size_t)3U * sizeof(uint8_t[34U]));
   libcrux_sha3_avx2_x4_incremental_KeccakState xof_state =
-      shake128_init_absorb_a9_ca1(uu____0);
+      shake128_init_absorb_final_a9_ca1(uu____0);
   uint8_t randomness0[3U][504U];
-  shake128_squeeze_three_blocks_a9_4d1(&xof_state, randomness0);
+  shake128_squeeze_first_three_blocks_a9_4d1(&xof_state, randomness0);
   uint8_t uu____1[3U][504U];
   memcpy(uu____1, randomness0, (size_t)3U * sizeof(uint8_t[504U]));
   bool done = sample_from_uniform_distribution_next_bb3(
@@ -1835,7 +1839,7 @@ static KRML_MUSTINLINE void sample_from_xof_b01(
       break;
     } else {
       uint8_t randomness[3U][168U];
-      shake128_squeeze_block_a9_5a1(&xof_state, randomness);
+      shake128_squeeze_next_block_a9_5a1(&xof_state, randomness);
       uint8_t uu____2[3U][168U];
       memcpy(uu____2, randomness, (size_t)3U * sizeof(uint8_t[168U]));
       done = sample_from_uniform_distribution_next_bb4(
@@ -4947,11 +4951,12 @@ static void closure_b80(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_final with const
+generics
 - K= 4
 */
 static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
-shake128_init_absorb_4d0(uint8_t input[4U][34U]) {
+shake128_init_absorb_final_4d0(uint8_t input[4U][34U]) {
   libcrux_sha3_generic_keccak_KeccakState_29 state =
       libcrux_sha3_avx2_x4_incremental_init();
   libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
@@ -4969,23 +4974,24 @@ libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_a9 with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_final_a9 with const
+generics
 - K= 4
 */
 static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
-shake128_init_absorb_a9_ca0(uint8_t input[4U][34U]) {
+shake128_init_absorb_final_a9_ca0(uint8_t input[4U][34U]) {
   uint8_t uu____0[4U][34U];
   memcpy(uu____0, input, (size_t)4U * sizeof(uint8_t[34U]));
-  return shake128_init_absorb_4d0(uu____0);
+  return shake128_init_absorb_final_4d0(uu____0);
 }
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_three_blocks with const
-generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_first_three_blocks with
+const generics
 - K= 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_6b0(
+static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_6b0(
     libcrux_sha3_avx2_x4_incremental_KeccakState *st, uint8_t ret[4U][504U]) {
   uint8_t out[4U][504U] = {{0U}};
   uint8_t out0[504U] = {0U};
@@ -5018,13 +5024,13 @@ libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_three_blocks_a9 with const
-generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_first_three_blocks_a9 with
+const generics
 - K= 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_a9_4d0(
+static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_a9_4d0(
     libcrux_sha3_avx2_x4_incremental_KeccakState *self, uint8_t ret[4U][504U]) {
-  shake128_squeeze_three_blocks_6b0(self, ret);
+  shake128_squeeze_first_three_blocks_6b0(self, ret);
 }
 
 /**
@@ -5069,10 +5075,11 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_bb1(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_block with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_next_block with const
+generics
 - K= 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_1b0(
+static KRML_MUSTINLINE void shake128_squeeze_next_block_1b0(
     libcrux_sha3_avx2_x4_incremental_KeccakState *st, uint8_t ret[4U][168U]) {
   uint8_t out[4U][168U] = {{0U}};
   uint8_t out0[168U] = {0U};
@@ -5105,12 +5112,13 @@ libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_block_a9 with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_next_block_a9 with const
+generics
 - K= 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_a9_5a0(
+static KRML_MUSTINLINE void shake128_squeeze_next_block_a9_5a0(
     libcrux_sha3_avx2_x4_incremental_KeccakState *self, uint8_t ret[4U][168U]) {
-  shake128_squeeze_block_1b0(self, ret);
+  shake128_squeeze_next_block_1b0(self, ret);
 }
 
 /**
@@ -5179,9 +5187,9 @@ static KRML_MUSTINLINE void sample_from_xof_b00(
   uint8_t uu____0[4U][34U];
   memcpy(uu____0, seeds, (size_t)4U * sizeof(uint8_t[34U]));
   libcrux_sha3_avx2_x4_incremental_KeccakState xof_state =
-      shake128_init_absorb_a9_ca0(uu____0);
+      shake128_init_absorb_final_a9_ca0(uu____0);
   uint8_t randomness0[4U][504U];
-  shake128_squeeze_three_blocks_a9_4d0(&xof_state, randomness0);
+  shake128_squeeze_first_three_blocks_a9_4d0(&xof_state, randomness0);
   uint8_t uu____1[4U][504U];
   memcpy(uu____1, randomness0, (size_t)4U * sizeof(uint8_t[504U]));
   bool done = sample_from_uniform_distribution_next_bb1(
@@ -5191,7 +5199,7 @@ static KRML_MUSTINLINE void sample_from_xof_b00(
       break;
     } else {
       uint8_t randomness[4U][168U];
-      shake128_squeeze_block_a9_5a0(&xof_state, randomness);
+      shake128_squeeze_next_block_a9_5a0(&xof_state, randomness);
       uint8_t uu____2[4U][168U];
       memcpy(uu____2, randomness, (size_t)4U * sizeof(uint8_t[168U]));
       done = sample_from_uniform_distribution_next_bb2(
@@ -6877,11 +6885,12 @@ static void closure_b8(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_final with const
+generics
 - K= 2
 */
 static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
-shake128_init_absorb_4d(uint8_t input[2U][34U]) {
+shake128_init_absorb_final_4d(uint8_t input[2U][34U]) {
   libcrux_sha3_generic_keccak_KeccakState_29 state =
       libcrux_sha3_avx2_x4_incremental_init();
   libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
@@ -6899,23 +6908,24 @@ libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_a9 with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_final_a9 with const
+generics
 - K= 2
 */
 static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
-shake128_init_absorb_a9_ca(uint8_t input[2U][34U]) {
+shake128_init_absorb_final_a9_ca(uint8_t input[2U][34U]) {
   uint8_t uu____0[2U][34U];
   memcpy(uu____0, input, (size_t)2U * sizeof(uint8_t[34U]));
-  return shake128_init_absorb_4d(uu____0);
+  return shake128_init_absorb_final_4d(uu____0);
 }
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_three_blocks with const
-generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_first_three_blocks with
+const generics
 - K= 2
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_6b(
+static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_6b(
     libcrux_sha3_avx2_x4_incremental_KeccakState *st, uint8_t ret[2U][504U]) {
   uint8_t out[2U][504U] = {{0U}};
   uint8_t out0[504U] = {0U};
@@ -6942,13 +6952,13 @@ libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_three_blocks_a9 with const
-generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_first_three_blocks_a9 with
+const generics
 - K= 2
 */
-static KRML_MUSTINLINE void shake128_squeeze_three_blocks_a9_4d(
+static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_a9_4d(
     libcrux_sha3_avx2_x4_incremental_KeccakState *self, uint8_t ret[2U][504U]) {
-  shake128_squeeze_three_blocks_6b(self, ret);
+  shake128_squeeze_first_three_blocks_6b(self, ret);
 }
 
 /**
@@ -6993,10 +7003,11 @@ static KRML_MUSTINLINE bool sample_from_uniform_distribution_next_bb(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_block with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_next_block with const
+generics
 - K= 2
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_1b(
+static KRML_MUSTINLINE void shake128_squeeze_next_block_1b(
     libcrux_sha3_avx2_x4_incremental_KeccakState *st, uint8_t ret[2U][168U]) {
   uint8_t out[2U][168U] = {{0U}};
   uint8_t out0[168U] = {0U};
@@ -7023,12 +7034,13 @@ libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_block_a9 with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_next_block_a9 with const
+generics
 - K= 2
 */
-static KRML_MUSTINLINE void shake128_squeeze_block_a9_5a(
+static KRML_MUSTINLINE void shake128_squeeze_next_block_a9_5a(
     libcrux_sha3_avx2_x4_incremental_KeccakState *self, uint8_t ret[2U][168U]) {
-  shake128_squeeze_block_1b(self, ret);
+  shake128_squeeze_next_block_1b(self, ret);
 }
 
 /**
@@ -7097,9 +7109,9 @@ static KRML_MUSTINLINE void sample_from_xof_b0(
   uint8_t uu____0[2U][34U];
   memcpy(uu____0, seeds, (size_t)2U * sizeof(uint8_t[34U]));
   libcrux_sha3_avx2_x4_incremental_KeccakState xof_state =
-      shake128_init_absorb_a9_ca(uu____0);
+      shake128_init_absorb_final_a9_ca(uu____0);
   uint8_t randomness0[2U][504U];
-  shake128_squeeze_three_blocks_a9_4d(&xof_state, randomness0);
+  shake128_squeeze_first_three_blocks_a9_4d(&xof_state, randomness0);
   uint8_t uu____1[2U][504U];
   memcpy(uu____1, randomness0, (size_t)2U * sizeof(uint8_t[504U]));
   bool done = sample_from_uniform_distribution_next_bb(
@@ -7109,7 +7121,7 @@ static KRML_MUSTINLINE void sample_from_xof_b0(
       break;
     } else {
       uint8_t randomness[2U][168U];
-      shake128_squeeze_block_a9_5a(&xof_state, randomness);
+      shake128_squeeze_next_block_a9_5a(&xof_state, randomness);
       uint8_t uu____2[2U][168U];
       memcpy(uu____2, randomness, (size_t)2U * sizeof(uint8_t[168U]));
       done = sample_from_uniform_distribution_next_bb0(

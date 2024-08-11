@@ -7,8 +7,8 @@
  * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
  * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 75bf8bca5f9903b4f6e8fba693d61af1415d512f
+ * F*: 3ed3c98d39ce028c31c5908a38bc68ad5098f563
+ * Libcrux: aa91a6764bde8c1f15107a03746f506e99a9159b
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -2757,12 +2757,13 @@ typedef libcrux_sha3_avx2_x4_incremental_KeccakState
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_final with const
+generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
-libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_4d(
+libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_final_4d(
     uint8_t input[3U][34U]) {
   libcrux_sha3_generic_keccak_KeccakState_29 state =
       libcrux_sha3_avx2_x4_incremental_init();
@@ -2781,27 +2782,29 @@ libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_a9 with const generics
-- K= 3
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
-libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_a9_ca(
-    uint8_t input[3U][34U]) {
-  uint8_t uu____0[3U][34U];
-  memcpy(uu____0, input, (size_t)3U * sizeof(uint8_t[34U]));
-  return libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_4d(uu____0);
-}
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_three_blocks with const
+libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_final_a9 with const
 generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
+libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_final_a9_ca(
+    uint8_t input[3U][34U]) {
+  uint8_t uu____0[3U][34U];
+  memcpy(uu____0, input, (size_t)3U * sizeof(uint8_t[34U]));
+  return libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_final_4d(
+      uu____0);
+}
+
+/**
+A monomorphic instance of
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_first_three_blocks with
+const generics
+- K= 3
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_6b(
+libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_first_three_blocks_6b(
     libcrux_sha3_avx2_x4_incremental_KeccakState *st, uint8_t ret[3U][504U]) {
   uint8_t out[3U][504U] = {{0U}};
   uint8_t out0[504U] = {0U};
@@ -2831,16 +2834,16 @@ libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_three_blocks_a9 with const
-generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_first_three_blocks_a9 with
+const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_a9_4d(
+libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_first_three_blocks_a9_4d(
     libcrux_sha3_avx2_x4_incremental_KeccakState *self, uint8_t ret[3U][504U]) {
-  libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_6b(self,
-                                                                      ret);
+  libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_first_three_blocks_6b(
+      self, ret);
 }
 
 /**
@@ -2890,12 +2893,13 @@ libcrux_ml_kem_sampling_sample_from_uniform_distribution_next_bb(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_block with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_next_block with const
+generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_1b(
+libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_next_block_1b(
     libcrux_sha3_avx2_x4_incremental_KeccakState *st, uint8_t ret[3U][168U]) {
   uint8_t out[3U][168U] = {{0U}};
   uint8_t out0[168U] = {0U};
@@ -2925,14 +2929,15 @@ libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_block_a9 with const generics
+libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_next_block_a9 with const
+generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_a9_5a(
+libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_next_block_a9_5a(
     libcrux_sha3_avx2_x4_incremental_KeccakState *self, uint8_t ret[3U][168U]) {
-  libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_1b(self, ret);
+  libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_next_block_1b(self, ret);
 }
 
 /**
@@ -3035,9 +3040,10 @@ static KRML_MUSTINLINE void libcrux_ml_kem_sampling_sample_from_xof_b0(
   uint8_t uu____0[3U][34U];
   memcpy(uu____0, seeds, (size_t)3U * sizeof(uint8_t[34U]));
   libcrux_sha3_avx2_x4_incremental_KeccakState xof_state =
-      libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_a9_ca(uu____0);
+      libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_final_a9_ca(
+          uu____0);
   uint8_t randomness0[3U][504U];
-  libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_a9_4d(
+  libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_first_three_blocks_a9_4d(
       &xof_state, randomness0);
   uint8_t uu____1[3U][504U];
   memcpy(uu____1, randomness0, (size_t)3U * sizeof(uint8_t[504U]));
@@ -3048,7 +3054,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_sampling_sample_from_xof_b0(
       break;
     } else {
       uint8_t randomness[3U][168U];
-      libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_a9_5a(
+      libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_next_block_a9_5a(
           &xof_state, randomness);
       uint8_t uu____2[3U][168U];
       memcpy(uu____2, randomness, (size_t)3U * sizeof(uint8_t[168U]));
