@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: e995da16630e0a31b68af68773fd0e0bac8cf2dc
+ * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
+ * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 5aa9c4bc7883d37eafd38bb447a847e568473c2b
+ * Libcrux: 23480eeb26f8e66cfa9bd0eb76c65d87fbb91806
  */
 
 #ifndef __internal_libcrux_mlkem_portable_H
@@ -55,14 +55,6 @@ generics
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked_0d1(uint8_t randomness[64U]);
 
-/**
- Packed API
-
- Generate a key pair.
-
- Depending on the `Vector` and `Hasher` used, this requires different hardware
- features
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -204,14 +196,6 @@ libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_ae
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked_0d0(uint8_t randomness[64U]);
 
 /**
- Packed API
-
- Generate a key pair.
-
- Depending on the `Vector` and `Hasher` used, this requires different hardware
- features
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] with const
@@ -351,14 +335,6 @@ generics
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_f8
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked_0d(uint8_t randomness[64U]);
 
-/**
- Packed API
-
- Generate a key pair.
-
- Depending on the `Vector` and `Hasher` used, this requires different hardware
- features
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,

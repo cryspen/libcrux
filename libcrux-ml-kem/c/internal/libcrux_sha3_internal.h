@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: e995da16630e0a31b68af68773fd0e0bac8cf2dc
+ * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
+ * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 5aa9c4bc7883d37eafd38bb447a847e568473c2b
+ * Libcrux: 23480eeb26f8e66cfa9bd0eb76c65d87fbb91806
  */
 
 #ifndef __internal_libcrux_sha3_internal_H
@@ -24,17 +24,11 @@ extern "C" {
 typedef libcrux_sha3_generic_keccak_KeccakState_48
     libcrux_sha3_portable_KeccakState;
 
-/**
- Create a new SHAKE-128 state object.
-*/
 static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_48
 libcrux_sha3_portable_incremental_shake128_init(void) {
   return libcrux_sha3_generic_keccak_new_1e_7a();
 }
 
-/**
- Absorb
-*/
 static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake128_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice data0) {
@@ -69,9 +63,6 @@ libcrux_sha3_generic_keccak_squeeze_first_three_blocks_4d(
   libcrux_sha3_generic_keccak_squeeze_next_block_c8(s, o2);
 }
 
-/**
- Squeeze three blocks
-*/
 static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out0) {
@@ -79,9 +70,6 @@ libcrux_sha3_portable_incremental_shake128_squeeze_first_three_blocks(
   libcrux_sha3_generic_keccak_squeeze_first_three_blocks_4d(s, buf);
 }
 
-/**
- Squeeze another block
-*/
 static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out0) {
@@ -96,9 +84,6 @@ libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
 
 typedef uint8_t libcrux_sha3_Algorithm;
 
-/**
- Returns the output size of a digest.
-*/
 static inline size_t libcrux_sha3_digest_size(libcrux_sha3_Algorithm mode) {
   size_t uu____0;
   switch (mode) {
@@ -182,9 +167,6 @@ libcrux_sha3_generic_keccak_squeeze_first_five_blocks_34(
   libcrux_sha3_generic_keccak_squeeze_next_block_c8(s, o4);
 }
 
-/**
- Squeeze five blocks
-*/
 static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake128_squeeze_first_five_blocks(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out0) {
@@ -192,9 +174,6 @@ libcrux_sha3_portable_incremental_shake128_squeeze_first_five_blocks(
   libcrux_sha3_generic_keccak_squeeze_first_five_blocks_34(s, buf);
 }
 
-/**
- Absorb some data for SHAKE-256 for the last time
-*/
 static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake256_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice data) {
@@ -202,17 +181,11 @@ libcrux_sha3_portable_incremental_shake256_absorb_final(
   libcrux_sha3_generic_keccak_absorb_final_250(s, buf);
 }
 
-/**
- Create a new SHAKE-256 state object.
-*/
 static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_48
 libcrux_sha3_portable_incremental_shake256_init(void) {
   return libcrux_sha3_generic_keccak_new_1e_7a();
 }
 
-/**
- Squeeze the first SHAKE-256 block
-*/
 static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out) {
@@ -220,9 +193,6 @@ libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
   libcrux_sha3_generic_keccak_squeeze_first_block_580(s, buf);
 }
 
-/**
- Squeeze the next SHAKE-256 block
-*/
 static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake256_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out) {

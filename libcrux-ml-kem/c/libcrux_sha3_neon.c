@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: e995da16630e0a31b68af68773fd0e0bac8cf2dc
+ * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
+ * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 5aa9c4bc7883d37eafd38bb447a847e568473c2b
+ * Libcrux: 23480eeb26f8e66cfa9bd0eb76c65d87fbb91806
  */
 
 #include "libcrux_sha3_neon.h"
@@ -178,9 +178,6 @@ split_at_mut_n_fa(Eurydice_slice a[2U], size_t mid) {
   return split_at_mut_2(a, mid);
 }
 
-/**
- Create a new Shake128 x4 state.
-*/
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
 N>[TraitClause@0]#1}
@@ -1398,29 +1395,75 @@ static KRML_MUSTINLINE void theta_rho_eb(
       rotate_left1_and_xor_fa(c[((size_t)4U + (size_t)4U) % (size_t)5U],
                               c[((size_t)4U + (size_t)1U) % (size_t)5U])};
   s->st[0U][0U] = xor_fa(s->st[0U][0U], t[0U]);
-  s->st[1U][0U] = xor_and_rotate_fa_1f(s->st[1U][0U], t[0U]);
-  s->st[2U][0U] = xor_and_rotate_fa_1f0(s->st[2U][0U], t[0U]);
-  s->st[3U][0U] = xor_and_rotate_fa_1f1(s->st[3U][0U], t[0U]);
-  s->st[4U][0U] = xor_and_rotate_fa_1f2(s->st[4U][0U], t[0U]);
-  s->st[0U][1U] = xor_and_rotate_fa_1f3(s->st[0U][1U], t[1U]);
-  s->st[1U][1U] = xor_and_rotate_fa_1f4(s->st[1U][1U], t[1U]);
-  s->st[2U][1U] = xor_and_rotate_fa_1f5(s->st[2U][1U], t[1U]);
-  s->st[3U][1U] = xor_and_rotate_fa_1f6(s->st[3U][1U], t[1U]);
-  s->st[4U][1U] = xor_and_rotate_fa_1f7(s->st[4U][1U], t[1U]);
-  s->st[0U][2U] = xor_and_rotate_fa_1f8(s->st[0U][2U], t[2U]);
-  s->st[1U][2U] = xor_and_rotate_fa_1f9(s->st[1U][2U], t[2U]);
-  s->st[2U][2U] = xor_and_rotate_fa_1f10(s->st[2U][2U], t[2U]);
-  s->st[3U][2U] = xor_and_rotate_fa_1f11(s->st[3U][2U], t[2U]);
-  s->st[4U][2U] = xor_and_rotate_fa_1f12(s->st[4U][2U], t[2U]);
-  s->st[0U][3U] = xor_and_rotate_fa_1f13(s->st[0U][3U], t[3U]);
-  s->st[1U][3U] = xor_and_rotate_fa_1f14(s->st[1U][3U], t[3U]);
-  s->st[2U][3U] = xor_and_rotate_fa_1f15(s->st[2U][3U], t[3U]);
-  s->st[3U][3U] = xor_and_rotate_fa_1f16(s->st[3U][3U], t[3U]);
-  s->st[4U][3U] = xor_and_rotate_fa_1f17(s->st[4U][3U], t[3U]);
-  s->st[0U][4U] = xor_and_rotate_fa_1f18(s->st[0U][4U], t[4U]);
-  s->st[1U][4U] = xor_and_rotate_fa_1f19(s->st[1U][4U], t[4U]);
-  s->st[2U][4U] = xor_and_rotate_fa_1f20(s->st[2U][4U], t[4U]);
-  s->st[3U][4U] = xor_and_rotate_fa_1f21(s->st[3U][4U], t[4U]);
+  core_core_arch_arm_shared_neon_uint64x2_t uu____4 =
+      xor_and_rotate_fa_1f(s->st[1U][0U], t[0U]);
+  s->st[1U][0U] = uu____4;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____5 =
+      xor_and_rotate_fa_1f0(s->st[2U][0U], t[0U]);
+  s->st[2U][0U] = uu____5;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____6 =
+      xor_and_rotate_fa_1f1(s->st[3U][0U], t[0U]);
+  s->st[3U][0U] = uu____6;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____7 =
+      xor_and_rotate_fa_1f2(s->st[4U][0U], t[0U]);
+  s->st[4U][0U] = uu____7;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____8 =
+      xor_and_rotate_fa_1f3(s->st[0U][1U], t[1U]);
+  s->st[0U][1U] = uu____8;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____9 =
+      xor_and_rotate_fa_1f4(s->st[1U][1U], t[1U]);
+  s->st[1U][1U] = uu____9;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____10 =
+      xor_and_rotate_fa_1f5(s->st[2U][1U], t[1U]);
+  s->st[2U][1U] = uu____10;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____11 =
+      xor_and_rotate_fa_1f6(s->st[3U][1U], t[1U]);
+  s->st[3U][1U] = uu____11;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____12 =
+      xor_and_rotate_fa_1f7(s->st[4U][1U], t[1U]);
+  s->st[4U][1U] = uu____12;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____13 =
+      xor_and_rotate_fa_1f8(s->st[0U][2U], t[2U]);
+  s->st[0U][2U] = uu____13;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____14 =
+      xor_and_rotate_fa_1f9(s->st[1U][2U], t[2U]);
+  s->st[1U][2U] = uu____14;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____15 =
+      xor_and_rotate_fa_1f10(s->st[2U][2U], t[2U]);
+  s->st[2U][2U] = uu____15;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____16 =
+      xor_and_rotate_fa_1f11(s->st[3U][2U], t[2U]);
+  s->st[3U][2U] = uu____16;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____17 =
+      xor_and_rotate_fa_1f12(s->st[4U][2U], t[2U]);
+  s->st[4U][2U] = uu____17;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____18 =
+      xor_and_rotate_fa_1f13(s->st[0U][3U], t[3U]);
+  s->st[0U][3U] = uu____18;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____19 =
+      xor_and_rotate_fa_1f14(s->st[1U][3U], t[3U]);
+  s->st[1U][3U] = uu____19;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____20 =
+      xor_and_rotate_fa_1f15(s->st[2U][3U], t[3U]);
+  s->st[2U][3U] = uu____20;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____21 =
+      xor_and_rotate_fa_1f16(s->st[3U][3U], t[3U]);
+  s->st[3U][3U] = uu____21;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____22 =
+      xor_and_rotate_fa_1f17(s->st[4U][3U], t[3U]);
+  s->st[4U][3U] = uu____22;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____23 =
+      xor_and_rotate_fa_1f18(s->st[0U][4U], t[4U]);
+  s->st[0U][4U] = uu____23;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____24 =
+      xor_and_rotate_fa_1f19(s->st[1U][4U], t[4U]);
+  s->st[1U][4U] = uu____24;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____25 =
+      xor_and_rotate_fa_1f20(s->st[2U][4U], t[4U]);
+  s->st[2U][4U] = uu____25;
+  core_core_arch_arm_shared_neon_uint64x2_t uu____26 =
+      xor_and_rotate_fa_1f21(s->st[3U][4U], t[4U]);
+  s->st[3U][4U] = uu____26;
   core_core_arch_arm_shared_neon_uint64x2_t uu____27 =
       xor_and_rotate_fa_1f22(s->st[4U][4U], t[4U]);
   s->st[4U][4U] = uu____27;
@@ -1851,9 +1894,6 @@ static KRML_MUSTINLINE void keccakx2_6e(Eurydice_slice data[2U],
   keccak_59(uu____0, out);
 }
 
-/**
- A portable SHA3 512 implementation.
-*/
 void libcrux_sha3_neon_sha512(Eurydice_slice digest, Eurydice_slice data) {
   uint8_t dummy[64U] = {0U};
   Eurydice_slice uu____0[2U] = {data, data};
@@ -2278,9 +2318,6 @@ static KRML_MUSTINLINE void keccakx2_6e0(Eurydice_slice data[2U],
   keccak_590(uu____0, out);
 }
 
-/**
- A portable SHA3 256 implementation.
-*/
 void libcrux_sha3_neon_sha256(Eurydice_slice digest, Eurydice_slice data) {
   uint8_t dummy[32U] = {0U};
   Eurydice_slice uu____0[2U] = {data, data};
@@ -2404,11 +2441,6 @@ static KRML_MUSTINLINE void keccakx2_6e1(Eurydice_slice data[2U],
   keccak_591(uu____0, out);
 }
 
-/**
- Run SHAKE256 on both inputs in parallel.
-
- Writes the two results into `out0` and `out1`
-*/
 void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0, Eurydice_slice input1,
                                    Eurydice_slice out0, Eurydice_slice out1) {
   Eurydice_slice buf0[2U] = {input0, input1};
@@ -2416,9 +2448,6 @@ void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0, Eurydice_slice input1,
   keccakx2_6e1(buf0, buf);
 }
 
-/**
- Initialise the `KeccakState2`.
-*/
 libcrux_sha3_generic_keccak_KeccakState_fc
 libcrux_sha3_neon_x2_incremental_shake128_init(void) {
   return new_1e_12();
@@ -2543,9 +2572,6 @@ static KRML_MUSTINLINE void absorb_final_fe2(
   keccakf1600_3e(s);
 }
 
-/**
- Shake128 absorb `data0` and `data1` in the [`KeccakState`] `s`.
-*/
 void libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState_fc *s, Eurydice_slice data0,
     Eurydice_slice data1) {
@@ -2675,10 +2701,6 @@ static KRML_MUSTINLINE void squeeze_first_three_blocks_2e(
   squeeze_next_block_5d1(s, o2);
 }
 
-/**
- Squeeze 2 times the first three blocks in parallel in the
- [`KeccakState`] and return the output in `out0` and `out1`.
-*/
 void libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_generic_keccak_KeccakState_fc *s, Eurydice_slice out0,
     Eurydice_slice out1) {
@@ -2686,10 +2708,6 @@ void libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
   squeeze_first_three_blocks_2e(s, buf);
 }
 
-/**
- Squeeze 2 times the next block in parallel in the
- [`KeccakState`] and return the output in `out0` and `out1`.
-*/
 void libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState_fc *s, Eurydice_slice out0,
     Eurydice_slice out1) {
@@ -3112,9 +3130,6 @@ static KRML_MUSTINLINE void keccakx2_6e2(Eurydice_slice data[2U],
   keccak_592(uu____0, out);
 }
 
-/**
- A portable SHA3 224 implementation.
-*/
 KRML_MUSTINLINE void libcrux_sha3_neon_sha224(Eurydice_slice digest,
                                               Eurydice_slice data) {
   uint8_t dummy[28U] = {0U};
@@ -3540,9 +3555,6 @@ static KRML_MUSTINLINE void keccakx2_6e3(Eurydice_slice data[2U],
   keccak_593(uu____0, out);
 }
 
-/**
- A portable SHA3 384 implementation.
-*/
 KRML_MUSTINLINE void libcrux_sha3_neon_sha384(Eurydice_slice digest,
                                               Eurydice_slice data) {
   uint8_t dummy[48U] = {0U};
