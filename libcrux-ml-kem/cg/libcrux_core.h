@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: e995da16630e0a31b68af68773fd0e0bac8cf2dc
+ * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
+ * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 5aa9c4bc7883d37eafd38bb447a847e568473c2b
+ * Libcrux: 23480eeb26f8e66cfa9bd0eb76c65d87fbb91806
  */
 
 #ifndef __libcrux_core_H
@@ -100,9 +100,6 @@ typedef struct libcrux_ml_kem_mlkem768_MlKem768Ciphertext_s {
 } libcrux_ml_kem_mlkem768_MlKem768Ciphertext;
 
 /**
- A reference to the raw byte slice.
-*/
-/**
 This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>#6}
 */
 /**
@@ -147,9 +144,6 @@ typedef struct libcrux_ml_kem_mlkem768_MlKem768KeyPair_s {
   libcrux_ml_kem_types_MlKemPublicKey_15 pk;
 } libcrux_ml_kem_mlkem768_MlKem768KeyPair;
 
-/**
- Create a new [`MlKemKeyPair`] from the secret and public key.
-*/
 /**
 This function found in impl
 {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>}
@@ -215,9 +209,6 @@ libcrux_ml_kem_types_from_01_20(uint8_t value[1088U]) {
 }
 
 /**
- A reference to the raw byte slice.
-*/
-/**
 This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>#18}
 */
 /**
@@ -230,9 +221,6 @@ static inline uint8_t *libcrux_ml_kem_types_as_slice_cb_1f(
   return self->value;
 }
 
-/**
- Pad the `slice` with `0`s at the end.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
@@ -291,9 +279,6 @@ static inline void core_result_unwrap_41_83(core_result_Result_00 self,
 }
 
 /**
- Pad the `slice` with `0`s at the end.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 34
@@ -327,9 +312,6 @@ static inline Eurydice_slice libcrux_ml_kem_types_as_ref_00_28(
 }
 
 /**
- Pad the `slice` with `0`s at the end.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 1120
@@ -347,9 +329,6 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_970(
   memcpy(ret, out, (size_t)1120U * sizeof(uint8_t));
 }
 
-/**
- Pad the `slice` with `0`s at the end.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics

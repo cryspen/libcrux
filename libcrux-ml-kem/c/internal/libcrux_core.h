@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: e995da16630e0a31b68af68773fd0e0bac8cf2dc
+ * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
+ * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 5aa9c4bc7883d37eafd38bb447a847e568473c2b
+ * Libcrux: 23480eeb26f8e66cfa9bd0eb76c65d87fbb91806
  */
 
 #ifndef __internal_libcrux_core_H
@@ -77,9 +77,6 @@ libcrux_ml_kem_types_MlKemPublicKey_be libcrux_ml_kem_types_from_b6_571(
     uint8_t value[800U]);
 
 /**
- Create a new [`MlKemKeyPair`] from the secret and public key.
-*/
-/**
 This function found in impl
 {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>}
 */
@@ -118,9 +115,6 @@ libcrux_ml_kem_types_MlKemCiphertext_e8 libcrux_ml_kem_types_from_01_201(
     uint8_t value[768U]);
 
 /**
- A reference to the raw byte slice.
-*/
-/**
 This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>#18}
 */
 /**
@@ -144,9 +138,6 @@ Eurydice_slice libcrux_ml_kem_types_as_ref_00_f01(
     libcrux_ml_kem_types_MlKemCiphertext_e8 *self);
 
 /**
- Pad the `slice` with `0`s at the end.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 800
@@ -166,9 +157,6 @@ with const generics
 libcrux_ml_kem_types_MlKemPublicKey_1f libcrux_ml_kem_types_from_b6_570(
     uint8_t value[1568U]);
 
-/**
- Create a new [`MlKemKeyPair`] from the secret and public key.
-*/
 /**
 This function found in impl
 {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>}
@@ -208,9 +196,6 @@ libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext libcrux_ml_kem_types_from_01_200(
     uint8_t value[1568U]);
 
 /**
- A reference to the raw byte slice.
-*/
-/**
 This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>#18}
 */
 /**
@@ -234,9 +219,6 @@ Eurydice_slice libcrux_ml_kem_types_as_ref_00_f00(
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *self);
 
 /**
- Pad the `slice` with `0`s at the end.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 1600
@@ -256,9 +238,6 @@ with const generics
 libcrux_ml_kem_types_MlKemPublicKey_15 libcrux_ml_kem_types_from_b6_57(
     uint8_t value[1184U]);
 
-/**
- Create a new [`MlKemKeyPair`] from the secret and public key.
-*/
 /**
 This function found in impl
 {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>}
@@ -298,9 +277,6 @@ libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_from_01_20(
     uint8_t value[1088U]);
 
 /**
- A reference to the raw byte slice.
-*/
-/**
 This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>#18}
 */
 /**
@@ -311,9 +287,6 @@ with const generics
 uint8_t *libcrux_ml_kem_types_as_slice_cb_1f(
     libcrux_ml_kem_types_MlKemPublicKey_15 *self);
 
-/**
- Pad the `slice` with `0`s at the end.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
@@ -346,9 +319,6 @@ with types uint8_t[32size_t], core_array_TryFromSliceError
 void core_result_unwrap_41_83(core_result_Result_00 self, uint8_t ret[32U]);
 
 /**
- Pad the `slice` with `0`s at the end.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 34
@@ -369,9 +339,6 @@ Eurydice_slice libcrux_ml_kem_types_as_ref_00_f0(
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self);
 
 /**
- Pad the `slice` with `0`s at the end.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 1120
@@ -379,9 +346,6 @@ with const generics
 void libcrux_ml_kem_utils_into_padded_array_970(Eurydice_slice slice,
                                                 uint8_t ret[1120U]);
 
-/**
- Pad the `slice` with `0`s at the end.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics

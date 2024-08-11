@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: e995da16630e0a31b68af68773fd0e0bac8cf2dc
+ * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
+ * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 5aa9c4bc7883d37eafd38bb447a847e568473c2b
+ * Libcrux: 23480eeb26f8e66cfa9bd0eb76c65d87fbb91806
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -852,19 +852,6 @@ libcrux_ml_kem_vector_portable_cond_subtract_3329_0d(
   return libcrux_ml_kem_vector_portable_arithmetic_cond_subtract_3329(v);
 }
 
-/**
- Signed Barrett Reduction
-
- Given an input `value`, `barrett_reduce` outputs a representative `result`
- such that:
-
- - result ≡ value (mod FIELD_MODULUS)
- - the absolute value of `result` is bound as follows:
-
- `|result| ≤ FIELD_MODULUS / 2 · (|value|/BARRETT_R + 1)
-
- In particular, if `|value| < BARRETT_R`, then `|result| < FIELD_MODULUS`.
-*/
 int16_t libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce_element(
     int16_t value) {
   int32_t t = (int32_t)value *
@@ -900,20 +887,6 @@ libcrux_ml_kem_vector_portable_barrett_reduce_0d(
   return libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce(v);
 }
 
-/**
- Signed Montgomery Reduction
-
- Given an input `value`, `montgomery_reduce` outputs a representative `o`
- such that:
-
- - o ≡ value · MONTGOMERY_R^(-1) (mod FIELD_MODULUS)
- - the absolute value of `o` is bound as follows:
-
- `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
-
- In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 ·
- FIELD_MODULUS) / 2`.
-*/
 int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
     int32_t value) {
   int32_t k =
@@ -932,17 +905,6 @@ int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
   return value_high - c;
 }
 
-/**
- If `fe` is some field element 'x' of the Kyber field and `fer` is congruent to
- `y · MONTGOMERY_R`, this procedure outputs a value that is congruent to
- `x · y`, as follows:
-
-    `fe · fer ≡ x · y · MONTGOMERY_R (mod FIELD_MODULUS)`
-
- `montgomery_reduce` takes the value `x · y · MONTGOMERY_R` and outputs a
- representative `x · y · MONTGOMERY_R * MONTGOMERY_R^{-1} ≡ x · y (mod
- FIELD_MODULUS)`.
-*/
 KRML_MUSTINLINE int16_t
 libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_fe_by_fer(
     int16_t fe, int16_t fer) {
@@ -974,28 +936,6 @@ libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(
       v, r);
 }
 
-/**
- The `compress_*` functions implement the `Compress` function specified in the
- NIST FIPS 203 standard (Page 18, Expression 4.5), which is defined as:
-
- ```plaintext
- Compress_d: ℤq -> ℤ_{2ᵈ}
- Compress_d(x) = ⌈(2ᵈ/q)·x⌋
- ```
-
- Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
-
- ```plaintext
- Compress_d(x) = ⌊(2ᵈ/q)·x + 1/2⌋
-               = ⌊(2^{d+1}·x + q) / 2q⌋
- ```
-
- For further information about the function implementations, consult the
- `implementation_notes.pdf` document in this directory.
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 uint8_t libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(
     uint16_t fe) {
   int16_t shifted = (int16_t)1664 - (int16_t)fe;
@@ -1268,28 +1208,6 @@ libcrux_ml_kem_vector_portable_inv_ntt_layer_3_step_0d(
   return libcrux_ml_kem_vector_portable_ntt_inv_ntt_layer_3_step(a, zeta);
 }
 
-/**
- Compute the product of two Kyber binomials with respect to the
- modulus `X² - zeta`.
-
- This function almost implements <strong>Algorithm 11</strong> of the
- NIST FIPS 203 standard, which is reproduced below:
-
- ```plaintext
- Input:  a₀, a₁, b₀, b₁ ∈ ℤq.
- Input: γ ∈ ℤq.
- Output: c₀, c₁ ∈ ℤq.
-
- c₀ ← a₀·b₀ + a₁·b₁·γ
- c₁ ← a₀·b₁ + a₁·b₀
- return c₀, c₁
- ```
- We say "almost" because the coefficients output by this function are in
- the Montgomery domain (unlike in the specification).
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *b, int16_t zeta,
@@ -1822,12 +1740,6 @@ static libcrux_ml_kem_polynomial_PolynomialRingElement_f0 ZERO_89_02(void) {
 }
 
 /**
- Only use with public values.
-
- This MUST NOT be used with secret inputs, like its caller
- `deserialize_ring_elements_reduced`.
-*/
-/**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_to_reduced_ring_element with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
@@ -1853,12 +1765,6 @@ deserialize_to_reduced_ring_element_d2(Eurydice_slice serialized) {
   return re;
 }
 
-/**
- This function deserializes ring elements and reduces the result by the field
- modulus.
-
- This function MUST NOT be used on secret inputs.
-*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
@@ -1965,9 +1871,6 @@ static KRML_MUSTINLINE void serialize_uncompressed_ring_element_05(
 }
 
 /**
- Call [`serialize_uncompressed_ring_element`] for each ring element.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_secret_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -2002,9 +1905,6 @@ static KRML_MUSTINLINE void serialize_secret_key_e81(
   memcpy(ret, out, (size_t)1536U * sizeof(uint8_t));
 }
 
-/**
- Concatenate `t` and `ρ` into the public key.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_public_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -2184,47 +2084,6 @@ static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_f1_7f1(
 }
 
 /**
- If `bytes` contains a set of uniformly random bytes, this function
- uniformly samples a ring element `â` that is treated as being the NTT
- representation of the corresponding polynomial `a`.
-
- Since rejection sampling is used, it is possible the supplied bytes are
- not enough to sample the element, in which case an `Err` is returned and the
- caller must try again with a fresh set of bytes.
-
- This function <strong>partially</strong> implements <strong>Algorithm
- 6</strong> of the NIST FIPS 203 standard, We say "partially" because this
- implementation only accepts a finite set of bytes as input and returns an error
- if the set is not enough; Algorithm 6 of the FIPS 203 standard on the other
- hand samples from an infinite stream of bytes until the ring element is filled.
- Algorithm 6 is reproduced below:
-
- ```plaintext
- Input: byte stream B ∈ 𝔹*.
- Output: array â ∈ ℤ₂₅₆.
-
- i ← 0
- j ← 0
- while j < 256 do
-     d₁ ← B[i] + 256·(B[i+1] mod 16)
-     d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
-     if d₁ < q then
-         â[j] ← d₁
-         j ← j + 1
-     end if
-     if d₂ < q and j < 256 then
-         â[j] ← d₂
-         j ← j + 1
-     end if
-     i ← i + 3
- end while
- return â
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
-/**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
@@ -2296,47 +2155,6 @@ static KRML_MUSTINLINE void shake128_squeeze_next_block_f1_681(
   shake128_squeeze_next_block_881(self, ret);
 }
 
-/**
- If `bytes` contains a set of uniformly random bytes, this function
- uniformly samples a ring element `â` that is treated as being the NTT
- representation of the corresponding polynomial `a`.
-
- Since rejection sampling is used, it is possible the supplied bytes are
- not enough to sample the element, in which case an `Err` is returned and the
- caller must try again with a fresh set of bytes.
-
- This function <strong>partially</strong> implements <strong>Algorithm
- 6</strong> of the NIST FIPS 203 standard, We say "partially" because this
- implementation only accepts a finite set of bytes as input and returns an error
- if the set is not enough; Algorithm 6 of the FIPS 203 standard on the other
- hand samples from an infinite stream of bytes until the ring element is filled.
- Algorithm 6 is reproduced below:
-
- ```plaintext
- Input: byte stream B ∈ 𝔹*.
- Output: array â ∈ ℤ₂₅₆.
-
- i ← 0
- j ← 0
- while j < 256 do
-     d₁ ← B[i] + 256·(B[i+1] mod 16)
-     d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
-     if d₁ < q then
-         â[j] ← d₁
-         j ← j + 1
-     end if
-     if d₂ < q and j < 256 then
-         â[j] ← d₂
-         j ← j + 1
-     end if
-     i ← i + 3
- end while
- return â
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
@@ -2551,55 +2369,6 @@ static KRML_MUSTINLINE void PRFxN_f1_772(uint8_t (*input)[33U],
 }
 
 /**
- Given a series of uniformly random bytes in `randomness`, for some number
- `eta`, the `sample_from_binomial_distribution_{eta}` functions sample a ring
- element from a binomial distribution centered at 0 that uses two sets of `eta`
- coin flips. If, for example, `eta = ETA`, each ring coefficient is a value `v`
- such such that `v ∈ {-ETA, -ETA + 1, ..., 0, ..., ETA + 1, ETA}` and:
-
- ```plaintext
- - If v < 0, Pr[v] = Pr[-v]
- - If v >= 0, Pr[v] = BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) / 2 ^ (2 * ETA)
- ```
-
- The values `v < 0` are mapped to the appropriate `KyberFieldElement`.
-
- The expected value is:
-
- ```plaintext
- E[X] = (-ETA)Pr[-ETA] + (-(ETA - 1))Pr[-(ETA - 1)] + ... + (ETA - 1)Pr[ETA - 1]
- + (ETA)Pr[ETA] = 0 since Pr[-v] = Pr[v] when v < 0.
- ```
-
- And the variance is:
-
- ```plaintext
- Var(X) = E[(X - E[X])^2]
-        = E[X^2]
-        = sum_(v=-ETA to ETA)v^2 * (BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) /
- 2^(2 * ETA)) = ETA / 2
- ```
-
- This function implements <strong>Algorithm 7</strong> of the NIST FIPS 203
- standard, which is reproduced below:
-
- ```plaintext
- Input: byte array B ∈ 𝔹^{64η}.
- Output: array f ∈ ℤ₂₅₆.
-
- b ← BytesToBits(B)
- for (i ← 0; i < 256; i++)
-     x ← ∑(j=0 to η - 1) b[2iη + j]
-     y ← ∑(j=0 to η - 1) b[2iη + η + j]
-     f[i] ← x−y mod q
- end for
- return f
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
-/**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_binomial_distribution_2 with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
@@ -2717,8 +2486,9 @@ static KRML_MUSTINLINE void ntt_at_layer_7_1c(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector t =
         libcrux_ml_kem_vector_portable_multiply_by_constant_0d(
             re->coefficients[j + step], (int16_t)-1600);
-    re->coefficients[j + step] =
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
         libcrux_ml_kem_vector_portable_sub_0d(re->coefficients[j], &t);
+    re->coefficients[j + step] = uu____0;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____1 =
         libcrux_ml_kem_vector_portable_add_0d(re->coefficients[j], &t);
     re->coefficients[j] = uu____1;
@@ -2823,13 +2593,13 @@ static KRML_MUSTINLINE void ntt_at_layer_2_46(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] + (size_t)1U;
-      re->coefficients[round] =
+      libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
           libcrux_ml_kem_vector_portable_ntt_layer_2_step_0d(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
                                                                  (size_t)1U]);
-      zeta_i[0U] = zeta_i[0U] + (size_t)1U;);
+      re->coefficients[round] = uu____0; zeta_i[0U] = zeta_i[0U] + (size_t)1U;);
 }
 
 /**
@@ -2843,7 +2613,7 @@ static KRML_MUSTINLINE void ntt_at_layer_1_c9(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] + (size_t)1U;
-      re->coefficients[round] =
+      libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
           libcrux_ml_kem_vector_portable_ntt_layer_1_step_0d(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
@@ -2853,7 +2623,7 @@ static KRML_MUSTINLINE void ntt_at_layer_1_c9(
                                                                  (size_t)2U],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] +
                                                                  (size_t)3U]);
-      zeta_i[0U] = zeta_i[0U] + (size_t)3U;);
+      re->coefficients[round] = uu____0; zeta_i[0U] = zeta_i[0U] + (size_t)3U;);
 }
 
 /**
@@ -2898,10 +2668,6 @@ static KRML_MUSTINLINE void ntt_binomially_sampled_ring_element_d5(
 }
 
 /**
- Sample a vector of ring elements from a centered binomial distribution and
- convert them into their NTT representations.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_vector_cbd_then_ntt
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] with const
@@ -2926,11 +2692,13 @@ static KRML_MUSTINLINE tuple_710 sample_vector_cbd_then_ntt_011(
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[4U][128U];
   PRFxN_f1_772(prf_inputs, prf_outputs);
-  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
-                  re_as_ntt[i0] = sample_from_binomial_distribution_e3(
-                      Eurydice_array_to_slice((size_t)128U, prf_outputs[i0],
-                                              uint8_t, Eurydice_slice));
-                  ntt_binomially_sampled_ring_element_d5(&re_as_ntt[i0]););
+  KRML_MAYBE_FOR4(
+      i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f0 uu____1 =
+          sample_from_binomial_distribution_e3(Eurydice_array_to_slice(
+              (size_t)128U, prf_outputs[i0], uint8_t, Eurydice_slice));
+      re_as_ntt[i0] = uu____1;
+      ntt_binomially_sampled_ring_element_d5(&re_as_ntt[i0]););
   libcrux_ml_kem_polynomial_PolynomialRingElement_f0 uu____2[4U];
   memcpy(
       uu____2, re_as_ntt,
@@ -2943,33 +2711,6 @@ static KRML_MUSTINLINE tuple_710 sample_vector_cbd_then_ntt_011(
   return lit;
 }
 
-/**
- Given two `KyberPolynomialRingElement`s in their NTT representations,
- compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
- the `iᵗʰ` coefficient of the product `k̂` is determined by the calculation:
-
- ```plaintext
- ĥ[2·i] + ĥ[2·i + 1]X = (f^[2·i] + f^[2·i + 1]X)·(ĝ[2·i] + ĝ[2·i + 1]X) mod (X²
- - ζ^(2·BitRev₇(i) + 1))
- ```
-
- This function almost implements <strong>Algorithm 10</strong> of the
- NIST FIPS 203 standard, which is reproduced below:
-
- ```plaintext
- Input: Two arrays fˆ ∈ ℤ₂₅₆ and ĝ ∈ ℤ₂₅₆.
- Output: An array ĥ ∈ ℤq.
-
- for(i ← 0; i < 128; i++)
-     (ĥ[2i], ĥ[2i+1]) ← BaseCaseMultiply(fˆ[2i], fˆ[2i+1], ĝ[2i], ĝ[2i+1],
- ζ^(2·BitRev₇(i) + 1)) end for return ĥ
- ```
- We say "almost" because the coefficients of the ring element output by
- this function are in the Montgomery domain.
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 /**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
@@ -3006,10 +2747,6 @@ ntt_multiply_89_f7(libcrux_ml_kem_polynomial_PolynomialRingElement_f0 *self,
   return out;
 }
 
-/**
- Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
- sum of their constituent coefficients.
-*/
 /**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
@@ -3080,9 +2817,6 @@ static KRML_MUSTINLINE void add_standard_error_reduce_89_0b(
 }
 
 /**
- Compute Â ◦ ŝ + ê
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_As_plus_e
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -3128,47 +2862,6 @@ static KRML_MUSTINLINE void compute_As_plus_e_a51(
       (size_t)4U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f0));
 }
 
-/**
- This function implements most of <strong>Algorithm 12</strong> of the
- NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation
- algorithm.
-
- We say "most of" since Algorithm 12 samples the required randomness within
- the function itself, whereas this implementation expects it to be provided
- through the `key_generation_seed` parameter.
-
- Algorithm 12 is reproduced below:
-
- ```plaintext
- Output: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
- Output: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
-
- d ←$ B
- (ρ,σ) ← G(d)
- N ← 0
- for (i ← 0; i < k; i++)
-     for(j ← 0; j < k; j++)
-         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
-     end for
- end for
- for(i ← 0; i < k; i++)
-     s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
-     N ← N + 1
- end for
- for(i ← 0; i < k; i++)
-     e[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(σ,N))
-     N ← N + 1
- end for
- ŝ ← NTT(s)
- ê ← NTT(e)
- t̂ ← Â◦ŝ + ê
- ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
- dkₚₖₑ ← ByteEncode₁₂(ŝ)
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.generate_keypair_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -3414,9 +3107,6 @@ static libcrux_ml_kem_utils_extraction_helper_Keypair1024 generate_keypair_e81(
 }
 
 /**
- Serialize the secret key.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.serialize_kem_secret_key
 with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]]
 with const generics
@@ -3472,14 +3162,6 @@ static KRML_MUSTINLINE void serialize_kem_secret_key_6b(
 }
 
 /**
- Packed API
-
- Generate a key pair.
-
- Depending on the `Vector` and `Hasher` used, this requires different hardware
- features
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] with const
@@ -3526,9 +3208,6 @@ libcrux_ml_kem_ind_cca_generate_keypair_6f1(uint8_t randomness[64U]) {
       uu____2, libcrux_ml_kem_types_from_b6_570(uu____3));
 }
 
-/**
- Sample a vector of ring elements from a centered binomial distribution.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_ring_element_cbd
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -3611,7 +3290,7 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_1_2a(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] - (size_t)1U;
-      re->coefficients[round] =
+      libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
           libcrux_ml_kem_vector_portable_inv_ntt_layer_1_step_0d(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
@@ -3621,7 +3300,7 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_1_2a(
                                                                  (size_t)2U],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] -
                                                                  (size_t)3U]);
-      zeta_i[0U] = zeta_i[0U] - (size_t)3U;);
+      re->coefficients[round] = uu____0; zeta_i[0U] = zeta_i[0U] - (size_t)3U;);
 }
 
 /**
@@ -3635,13 +3314,13 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_2_84(
   KRML_MAYBE_FOR16(
       i, (size_t)0U, (size_t)16U, (size_t)1U, size_t round = i;
       zeta_i[0U] = zeta_i[0U] - (size_t)1U;
-      re->coefficients[round] =
+      libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
           libcrux_ml_kem_vector_portable_inv_ntt_layer_2_step_0d(
               re->coefficients[round],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U] -
                                                                  (size_t)1U]);
-      zeta_i[0U] = zeta_i[0U] - (size_t)1U;);
+      re->coefficients[round] = uu____0; zeta_i[0U] = zeta_i[0U] - (size_t)1U;);
 }
 
 /**
@@ -3765,9 +3444,6 @@ static KRML_MUSTINLINE void add_error_reduce_89_b9(
 }
 
 /**
- Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_vector_u
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -3884,9 +3560,6 @@ add_message_error_reduce_89_11(
   return result;
 }
 
-/**
- Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_ring_element_v
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -4014,9 +3687,6 @@ static KRML_MUSTINLINE void compress_then_serialize_ring_element_u_d80(
   memcpy(ret, uu____0, (size_t)352U * sizeof(uint8_t));
 }
 
-/**
- Call [`compress_then_serialize_ring_element_u`] on each ring element.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.compress_then_serialize_u
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -4179,47 +3849,6 @@ static KRML_MUSTINLINE void compress_then_serialize_ring_element_v_d60(
 }
 
 /**
- This function implements <strong>Algorithm 13</strong> of the
- NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
-
- Algorithm 13 is reproduced below:
-
- ```plaintext
- Input: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
- Input: message m ∈ 𝔹^{32}.
- Input: encryption randomness r ∈ 𝔹^{32}.
- Output: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
-
- N ← 0
- t̂ ← ByteDecode₁₂(ekₚₖₑ[0:384k])
- ρ ← ekₚₖₑ[384k: 384k + 32]
- for (i ← 0; i < k; i++)
-     for(j ← 0; j < k; j++)
-         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
-     end for
- end for
- for(i ← 0; i < k; i++)
-     r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
-     N ← N + 1
- end for
- for(i ← 0; i < k; i++)
-     e₁[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
-     N ← N + 1
- end for
- e₂ ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
- r̂ ← NTT(r)
- u ← NTT-¹(Âᵀ ◦ r̂) + e₁
- μ ← Decompress₁(ByteDecode₁(m)))
- v ← NTT-¹(t̂ᵀ ◦ rˆ) + e₂ + μ
- c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
- c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
- return c ← (c₁ ‖ c₂)
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.encrypt_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] with const
@@ -4378,12 +4007,6 @@ static KRML_MUSTINLINE void entropy_preprocess_af_a1(Eurydice_slice randomness,
   memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
-/**
- This function deserializes ring elements and reduces the result by the field
- modulus.
-
- This function MUST NOT be used on secret inputs.
-*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
@@ -4732,10 +4355,6 @@ static KRML_MUSTINLINE void ntt_vector_u_d70(
 }
 
 /**
- Call [`deserialize_then_decompress_ring_element_u`] on each ring element
- in the `ciphertext`.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_then_decompress_u
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -4767,7 +4386,9 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_201(
             LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT *
                 (size_t)11U / (size_t)8U,
         uint8_t, Eurydice_slice);
-    u_as_ntt[i0] = deserialize_then_decompress_ring_element_u_450(u_bytes);
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f0 uu____0 =
+        deserialize_then_decompress_ring_element_u_450(u_bytes);
+    u_as_ntt[i0] = uu____0;
     ntt_vector_u_d70(&u_as_ntt[i0]);
   }
   memcpy(
@@ -4891,8 +4512,9 @@ deserialize_then_decompress_5_9f(Eurydice_slice serialized) {
     Eurydice_slice bytes = Eurydice_slice_subslice2(
         serialized, i0 * (size_t)10U, i0 * (size_t)10U + (size_t)10U, uint8_t,
         Eurydice_slice);
-    re.coefficients[i0] =
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
         libcrux_ml_kem_vector_portable_deserialize_5_0d(bytes);
+    re.coefficients[i0] = uu____0;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____1 =
         decompress_ciphertext_coefficient_0d_cc2(re.coefficients[i0]);
     re.coefficients[i0] = uu____1;
@@ -4940,12 +4562,6 @@ subtract_reduce_89_d2(libcrux_ml_kem_polynomial_PolynomialRingElement_f0 *self,
   return b;
 }
 
-/**
- The following functions compute various expressions involving
- vectors and matrices. The computation of these expressions has been
- abstracted away into these functions in order to save on loop iterations.
- Compute v − InverseNTT(sᵀ ◦ NTT(u))
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_message
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -4995,30 +4611,6 @@ static KRML_MUSTINLINE void compress_then_serialize_message_ef(
   memcpy(ret, serialized, (size_t)32U * sizeof(uint8_t));
 }
 
-/**
- This function implements <strong>Algorithm 14</strong> of the
- NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
-
- Algorithm 14 is reproduced below:
-
- ```plaintext
- Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
- Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
- Output: message m ∈ 𝔹^{32}.
-
- c₁ ← c[0 : 32dᵤk]
- c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
- u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
- v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
- ŝ ← ByteDecode₁₂(dkₚₖₑ)
- w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
- m ← ByteEncode₁(Compress₁(w))
- return m
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.decrypt_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -5184,9 +4776,6 @@ deserialize_to_uncompressed_ring_element_00(Eurydice_slice serialized) {
 }
 
 /**
- Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_secret_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -5344,12 +4933,6 @@ void libcrux_ml_kem_ind_cca_decapsulate_711(
 }
 
 /**
- This function deserializes ring elements and reduces the result by the field
- modulus.
-
- This function MUST NOT be used on secret inputs.
-*/
-/**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
@@ -5381,9 +4964,6 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_522(
       (size_t)2U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f0));
 }
 
-/**
- Call [`serialize_uncompressed_ring_element`] for each ring element.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_secret_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -5419,9 +4999,6 @@ static KRML_MUSTINLINE void serialize_secret_key_e80(
   memcpy(ret, out, (size_t)768U * sizeof(uint8_t));
 }
 
-/**
- Concatenate `t` and `ρ` into the public key.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_public_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -5600,47 +5177,6 @@ static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_f1_7f0(
 }
 
 /**
- If `bytes` contains a set of uniformly random bytes, this function
- uniformly samples a ring element `â` that is treated as being the NTT
- representation of the corresponding polynomial `a`.
-
- Since rejection sampling is used, it is possible the supplied bytes are
- not enough to sample the element, in which case an `Err` is returned and the
- caller must try again with a fresh set of bytes.
-
- This function <strong>partially</strong> implements <strong>Algorithm
- 6</strong> of the NIST FIPS 203 standard, We say "partially" because this
- implementation only accepts a finite set of bytes as input and returns an error
- if the set is not enough; Algorithm 6 of the FIPS 203 standard on the other
- hand samples from an infinite stream of bytes until the ring element is filled.
- Algorithm 6 is reproduced below:
-
- ```plaintext
- Input: byte stream B ∈ 𝔹*.
- Output: array â ∈ ℤ₂₅₆.
-
- i ← 0
- j ← 0
- while j < 256 do
-     d₁ ← B[i] + 256·(B[i+1] mod 16)
-     d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
-     if d₁ < q then
-         â[j] ← d₁
-         j ← j + 1
-     end if
-     if d₂ < q and j < 256 then
-         â[j] ← d₂
-         j ← j + 1
-     end if
-     i ← i + 3
- end while
- return â
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
-/**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
@@ -5712,47 +5248,6 @@ static KRML_MUSTINLINE void shake128_squeeze_next_block_f1_680(
   shake128_squeeze_next_block_880(self, ret);
 }
 
-/**
- If `bytes` contains a set of uniformly random bytes, this function
- uniformly samples a ring element `â` that is treated as being the NTT
- representation of the corresponding polynomial `a`.
-
- Since rejection sampling is used, it is possible the supplied bytes are
- not enough to sample the element, in which case an `Err` is returned and the
- caller must try again with a fresh set of bytes.
-
- This function <strong>partially</strong> implements <strong>Algorithm
- 6</strong> of the NIST FIPS 203 standard, We say "partially" because this
- implementation only accepts a finite set of bytes as input and returns an error
- if the set is not enough; Algorithm 6 of the FIPS 203 standard on the other
- hand samples from an infinite stream of bytes until the ring element is filled.
- Algorithm 6 is reproduced below:
-
- ```plaintext
- Input: byte stream B ∈ 𝔹*.
- Output: array â ∈ ℤ₂₅₆.
-
- i ← 0
- j ← 0
- while j < 256 do
-     d₁ ← B[i] + 256·(B[i+1] mod 16)
-     d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
-     if d₁ < q then
-         â[j] ← d₁
-         j ← j + 1
-     end if
-     if d₂ < q and j < 256 then
-         â[j] ← d₂
-         j ← j + 1
-     end if
-     i ← i + 3
- end while
- return â
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
@@ -5952,10 +5447,6 @@ sample_from_binomial_distribution_e30(Eurydice_slice randomness) {
 }
 
 /**
- Sample a vector of ring elements from a centered binomial distribution and
- convert them into their NTT representations.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_vector_cbd_then_ntt
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] with const
@@ -5980,11 +5471,13 @@ static KRML_MUSTINLINE tuple_74 sample_vector_cbd_then_ntt_010(
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[2U][192U];
   PRFxN_f1_770(prf_inputs, prf_outputs);
-  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
-                  re_as_ntt[i0] = sample_from_binomial_distribution_e30(
-                      Eurydice_array_to_slice((size_t)192U, prf_outputs[i0],
-                                              uint8_t, Eurydice_slice));
-                  ntt_binomially_sampled_ring_element_d5(&re_as_ntt[i0]););
+  KRML_MAYBE_FOR2(
+      i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f0 uu____1 =
+          sample_from_binomial_distribution_e30(Eurydice_array_to_slice(
+              (size_t)192U, prf_outputs[i0], uint8_t, Eurydice_slice));
+      re_as_ntt[i0] = uu____1;
+      ntt_binomially_sampled_ring_element_d5(&re_as_ntt[i0]););
   libcrux_ml_kem_polynomial_PolynomialRingElement_f0 uu____2[2U];
   memcpy(
       uu____2, re_as_ntt,
@@ -5997,10 +5490,6 @@ static KRML_MUSTINLINE tuple_74 sample_vector_cbd_then_ntt_010(
   return lit;
 }
 
-/**
- Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
- sum of their constituent coefficients.
-*/
 /**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
@@ -6031,9 +5520,6 @@ static KRML_MUSTINLINE void add_to_ring_element_89_8e0(
   }
 }
 
-/**
- Compute Â ◦ ŝ + ê
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_As_plus_e
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -6080,47 +5566,6 @@ static KRML_MUSTINLINE void compute_As_plus_e_a50(
       (size_t)2U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f0));
 }
 
-/**
- This function implements most of <strong>Algorithm 12</strong> of the
- NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation
- algorithm.
-
- We say "most of" since Algorithm 12 samples the required randomness within
- the function itself, whereas this implementation expects it to be provided
- through the `key_generation_seed` parameter.
-
- Algorithm 12 is reproduced below:
-
- ```plaintext
- Output: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
- Output: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
-
- d ←$ B
- (ρ,σ) ← G(d)
- N ← 0
- for (i ← 0; i < k; i++)
-     for(j ← 0; j < k; j++)
-         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
-     end for
- end for
- for(i ← 0; i < k; i++)
-     s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
-     N ← N + 1
- end for
- for(i ← 0; i < k; i++)
-     e[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(σ,N))
-     N ← N + 1
- end for
- ŝ ← NTT(s)
- ê ← NTT(e)
- t̂ ← Â◦ŝ + ê
- ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
- dkₚₖₑ ← ByteEncode₁₂(ŝ)
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.generate_keypair_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -6343,9 +5788,6 @@ static libcrux_ml_kem_utils_extraction_helper_Keypair512 generate_keypair_e80(
 }
 
 /**
- Serialize the secret key.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.serialize_kem_secret_key
 with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]]
 with const generics
@@ -6400,14 +5842,6 @@ static KRML_MUSTINLINE void serialize_kem_secret_key_b4(
   memcpy(ret, out, (size_t)1632U * sizeof(uint8_t));
 }
 
-/**
- Packed API
-
- Generate a key pair.
-
- Depending on the `Vector` and `Hasher` used, this requires different hardware
- features
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -6489,9 +5923,6 @@ static KRML_MUSTINLINE void PRFxN_f1_771(uint8_t (*input)[33U],
 }
 
 /**
- Sample a vector of ring elements from a centered binomial distribution.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_ring_element_cbd
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] with const
@@ -6570,9 +6001,6 @@ static KRML_MUSTINLINE void invert_ntt_montgomery_d40(
 }
 
 /**
- Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_vector_u
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -6618,9 +6046,6 @@ static KRML_MUSTINLINE void compute_vector_u_570(
       (size_t)2U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f0));
 }
 
-/**
- Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_ring_element_v
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -6685,9 +6110,6 @@ static KRML_MUSTINLINE void compress_then_serialize_ring_element_u_d8(
 }
 
 /**
- Call [`compress_then_serialize_ring_element_u`] on each ring element.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.compress_then_serialize_u
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -6734,47 +6156,6 @@ static KRML_MUSTINLINE void compress_then_serialize_ring_element_v_d6(
   compress_then_serialize_4_09(re, out);
 }
 
-/**
- This function implements <strong>Algorithm 13</strong> of the
- NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
-
- Algorithm 13 is reproduced below:
-
- ```plaintext
- Input: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
- Input: message m ∈ 𝔹^{32}.
- Input: encryption randomness r ∈ 𝔹^{32}.
- Output: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
-
- N ← 0
- t̂ ← ByteDecode₁₂(ekₚₖₑ[0:384k])
- ρ ← ekₚₖₑ[384k: 384k + 32]
- for (i ← 0; i < k; i++)
-     for(j ← 0; j < k; j++)
-         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
-     end for
- end for
- for(i ← 0; i < k; i++)
-     r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
-     N ← N + 1
- end for
- for(i ← 0; i < k; i++)
-     e₁[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
-     N ← N + 1
- end for
- e₂ ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
- r̂ ← NTT(r)
- u ← NTT-¹(Âᵀ ◦ r̂) + e₁
- μ ← Decompress₁(ByteDecode₁(m)))
- v ← NTT-¹(t̂ᵀ ◦ rˆ) + e₂ + μ
- c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
- c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
- return c ← (c₁ ‖ c₂)
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.encrypt_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -6933,12 +6314,6 @@ static KRML_MUSTINLINE void entropy_preprocess_af_57(Eurydice_slice randomness,
   memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
-/**
- This function deserializes ring elements and reduces the result by the field
- modulus.
-
- This function MUST NOT be used on secret inputs.
-*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
@@ -7161,10 +6536,6 @@ static KRML_MUSTINLINE void ntt_vector_u_d7(
 }
 
 /**
- Call [`deserialize_then_decompress_ring_element_u`] on each ring element
- in the `ciphertext`.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_then_decompress_u
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -7196,7 +6567,9 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_200(
             LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT *
                 (size_t)10U / (size_t)8U,
         uint8_t, Eurydice_slice);
-    u_as_ntt[i0] = deserialize_then_decompress_ring_element_u_45(u_bytes);
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f0 uu____0 =
+        deserialize_then_decompress_ring_element_u_45(u_bytes);
+    u_as_ntt[i0] = uu____0;
     ntt_vector_u_d7(&u_as_ntt[i0]);
   }
   memcpy(
@@ -7215,12 +6588,6 @@ deserialize_then_decompress_ring_element_v_67(Eurydice_slice serialized) {
   return deserialize_then_decompress_4_b6(serialized);
 }
 
-/**
- The following functions compute various expressions involving
- vectors and matrices. The computation of these expressions has been
- abstracted away into these functions in order to save on loop iterations.
- Compute v − InverseNTT(sᵀ ◦ NTT(u))
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_message
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -7242,30 +6609,6 @@ compute_message_f60(
   return result;
 }
 
-/**
- This function implements <strong>Algorithm 14</strong> of the
- NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
-
- Algorithm 14 is reproduced below:
-
- ```plaintext
- Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
- Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
- Output: message m ∈ 𝔹^{32}.
-
- c₁ ← c[0 : 32dᵤk]
- c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
- u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
- v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
- ŝ ← ByteDecode₁₂(dkₚₖₑ)
- w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
- m ← ByteEncode₁(Compress₁(w))
- return m
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.decrypt_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -7392,9 +6735,6 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_f60(
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
 
-/**
- Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_secret_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -7552,12 +6892,6 @@ void libcrux_ml_kem_ind_cca_decapsulate_710(
 }
 
 /**
- This function deserializes ring elements and reduces the result by the field
- modulus.
-
- This function MUST NOT be used on secret inputs.
-*/
-/**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
@@ -7589,9 +6923,6 @@ static KRML_MUSTINLINE void deserialize_ring_elements_reduced_520(
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f0));
 }
 
-/**
- Call [`serialize_uncompressed_ring_element`] for each ring element.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_secret_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -7627,9 +6958,6 @@ static KRML_MUSTINLINE void serialize_secret_key_e8(
   memcpy(ret, out, (size_t)1152U * sizeof(uint8_t));
 }
 
-/**
- Concatenate `t` and `ρ` into the public key.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_public_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -7809,47 +7137,6 @@ static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_f1_7f(
 }
 
 /**
- If `bytes` contains a set of uniformly random bytes, this function
- uniformly samples a ring element `â` that is treated as being the NTT
- representation of the corresponding polynomial `a`.
-
- Since rejection sampling is used, it is possible the supplied bytes are
- not enough to sample the element, in which case an `Err` is returned and the
- caller must try again with a fresh set of bytes.
-
- This function <strong>partially</strong> implements <strong>Algorithm
- 6</strong> of the NIST FIPS 203 standard, We say "partially" because this
- implementation only accepts a finite set of bytes as input and returns an error
- if the set is not enough; Algorithm 6 of the FIPS 203 standard on the other
- hand samples from an infinite stream of bytes until the ring element is filled.
- Algorithm 6 is reproduced below:
-
- ```plaintext
- Input: byte stream B ∈ 𝔹*.
- Output: array â ∈ ℤ₂₅₆.
-
- i ← 0
- j ← 0
- while j < 256 do
-     d₁ ← B[i] + 256·(B[i+1] mod 16)
-     d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
-     if d₁ < q then
-         â[j] ← d₁
-         j ← j + 1
-     end if
-     if d₂ < q and j < 256 then
-         â[j] ← d₂
-         j ← j + 1
-     end if
-     i ← i + 3
- end while
- return â
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
-/**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
@@ -7921,47 +7208,6 @@ static KRML_MUSTINLINE void shake128_squeeze_next_block_f1_68(
   shake128_squeeze_next_block_88(self, ret);
 }
 
-/**
- If `bytes` contains a set of uniformly random bytes, this function
- uniformly samples a ring element `â` that is treated as being the NTT
- representation of the corresponding polynomial `a`.
-
- Since rejection sampling is used, it is possible the supplied bytes are
- not enough to sample the element, in which case an `Err` is returned and the
- caller must try again with a fresh set of bytes.
-
- This function <strong>partially</strong> implements <strong>Algorithm
- 6</strong> of the NIST FIPS 203 standard, We say "partially" because this
- implementation only accepts a finite set of bytes as input and returns an error
- if the set is not enough; Algorithm 6 of the FIPS 203 standard on the other
- hand samples from an infinite stream of bytes until the ring element is filled.
- Algorithm 6 is reproduced below:
-
- ```plaintext
- Input: byte stream B ∈ 𝔹*.
- Output: array â ∈ ℤ₂₅₆.
-
- i ← 0
- j ← 0
- while j < 256 do
-     d₁ ← B[i] + 256·(B[i+1] mod 16)
-     d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
-     if d₁ < q then
-         â[j] ← d₁
-         j ← j + 1
-     end if
-     if d₂ < q and j < 256 then
-         â[j] ← d₂
-         j ← j + 1
-     end if
-     i ← i + 3
- end while
- return â
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_uniform_distribution_next with types
@@ -8150,10 +7396,6 @@ static KRML_MUSTINLINE void PRFxN_f1_77(uint8_t (*input)[33U],
 }
 
 /**
- Sample a vector of ring elements from a centered binomial distribution and
- convert them into their NTT representations.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_vector_cbd_then_ntt
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] with const
@@ -8178,11 +7420,13 @@ static KRML_MUSTINLINE tuple_b0 sample_vector_cbd_then_ntt_01(
                   domain_separator = (uint32_t)domain_separator + 1U;);
   uint8_t prf_outputs[3U][128U];
   PRFxN_f1_77(prf_inputs, prf_outputs);
-  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
-                  re_as_ntt[i0] = sample_from_binomial_distribution_e3(
-                      Eurydice_array_to_slice((size_t)128U, prf_outputs[i0],
-                                              uint8_t, Eurydice_slice));
-                  ntt_binomially_sampled_ring_element_d5(&re_as_ntt[i0]););
+  KRML_MAYBE_FOR3(
+      i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f0 uu____1 =
+          sample_from_binomial_distribution_e3(Eurydice_array_to_slice(
+              (size_t)128U, prf_outputs[i0], uint8_t, Eurydice_slice));
+      re_as_ntt[i0] = uu____1;
+      ntt_binomially_sampled_ring_element_d5(&re_as_ntt[i0]););
   libcrux_ml_kem_polynomial_PolynomialRingElement_f0 uu____2[3U];
   memcpy(
       uu____2, re_as_ntt,
@@ -8195,10 +7439,6 @@ static KRML_MUSTINLINE tuple_b0 sample_vector_cbd_then_ntt_01(
   return lit;
 }
 
-/**
- Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
- sum of their constituent coefficients.
-*/
 /**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}
@@ -8229,9 +7469,6 @@ static KRML_MUSTINLINE void add_to_ring_element_89_8e(
   }
 }
 
-/**
- Compute Â ◦ ŝ + ê
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_As_plus_e
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -8278,47 +7515,6 @@ static KRML_MUSTINLINE void compute_As_plus_e_a5(
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f0));
 }
 
-/**
- This function implements most of <strong>Algorithm 12</strong> of the
- NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation
- algorithm.
-
- We say "most of" since Algorithm 12 samples the required randomness within
- the function itself, whereas this implementation expects it to be provided
- through the `key_generation_seed` parameter.
-
- Algorithm 12 is reproduced below:
-
- ```plaintext
- Output: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
- Output: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
-
- d ←$ B
- (ρ,σ) ← G(d)
- N ← 0
- for (i ← 0; i < k; i++)
-     for(j ← 0; j < k; j++)
-         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
-     end for
- end for
- for(i ← 0; i < k; i++)
-     s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
-     N ← N + 1
- end for
- for(i ← 0; i < k; i++)
-     e[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(σ,N))
-     N ← N + 1
- end for
- ŝ ← NTT(s)
- ê ← NTT(e)
- t̂ ← Â◦ŝ + ê
- ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
- dkₚₖₑ ← ByteEncode₁₂(ŝ)
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.generate_keypair_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -8541,9 +7737,6 @@ static libcrux_ml_kem_utils_extraction_helper_Keypair768 generate_keypair_e8(
 }
 
 /**
- Serialize the secret key.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.serialize_kem_secret_key
 with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]]
 with const generics
@@ -8599,14 +7792,6 @@ static KRML_MUSTINLINE void serialize_kem_secret_key_97(
 }
 
 /**
- Packed API
-
- Generate a key pair.
-
- Depending on the `Vector` and `Hasher` used, this requires different hardware
- features
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] with const
@@ -8653,9 +7838,6 @@ libcrux_ml_kem_ind_cca_generate_keypair_6f(uint8_t randomness[64U]) {
       uu____2, libcrux_ml_kem_types_from_b6_57(uu____3));
 }
 
-/**
- Sample a vector of ring elements from a centered binomial distribution.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_ring_element_cbd
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -8735,9 +7917,6 @@ static KRML_MUSTINLINE void invert_ntt_montgomery_d4(
 }
 
 /**
- Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_vector_u
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -8784,9 +7963,6 @@ static KRML_MUSTINLINE void compute_vector_u_57(
 }
 
 /**
- Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_ring_element_v
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -8808,9 +7984,6 @@ compute_ring_element_v_c8(
   return result;
 }
 
-/**
- Call [`compress_then_serialize_ring_element_u`] on each ring element.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.compress_then_serialize_u
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -8846,47 +8019,6 @@ static void compress_then_serialize_u_25(
   }
 }
 
-/**
- This function implements <strong>Algorithm 13</strong> of the
- NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
-
- Algorithm 13 is reproduced below:
-
- ```plaintext
- Input: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
- Input: message m ∈ 𝔹^{32}.
- Input: encryption randomness r ∈ 𝔹^{32}.
- Output: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
-
- N ← 0
- t̂ ← ByteDecode₁₂(ekₚₖₑ[0:384k])
- ρ ← ekₚₖₑ[384k: 384k + 32]
- for (i ← 0; i < k; i++)
-     for(j ← 0; j < k; j++)
-         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
-     end for
- end for
- for(i ← 0; i < k; i++)
-     r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
-     N ← N + 1
- end for
- for(i ← 0; i < k; i++)
-     e₁[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
-     N ← N + 1
- end for
- e₂ ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
- r̂ ← NTT(r)
- u ← NTT-¹(Âᵀ ◦ r̂) + e₁
- μ ← Decompress₁(ByteDecode₁(m)))
- v ← NTT-¹(t̂ᵀ ◦ rˆ) + e₂ + μ
- c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
- c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
- return c ← (c₁ ‖ c₂)
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.encrypt_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -9045,12 +8177,6 @@ static KRML_MUSTINLINE void entropy_preprocess_af_d2(Eurydice_slice randomness,
   memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
-/**
- This function deserializes ring elements and reduces the result by the field
- modulus.
-
- This function MUST NOT be used on secret inputs.
-*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
@@ -9243,10 +8369,6 @@ tuple_3c libcrux_ml_kem_ind_cca_encapsulate_9d(
 }
 
 /**
- Call [`deserialize_then_decompress_ring_element_u`] on each ring element
- in the `ciphertext`.
-*/
-/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_then_decompress_u
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -9278,7 +8400,9 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_20(
             LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT *
                 (size_t)10U / (size_t)8U,
         uint8_t, Eurydice_slice);
-    u_as_ntt[i0] = deserialize_then_decompress_ring_element_u_45(u_bytes);
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f0 uu____0 =
+        deserialize_then_decompress_ring_element_u_45(u_bytes);
+    u_as_ntt[i0] = uu____0;
     ntt_vector_u_d7(&u_as_ntt[i0]);
   }
   memcpy(
@@ -9286,12 +8410,6 @@ static KRML_MUSTINLINE void deserialize_then_decompress_u_20(
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f0));
 }
 
-/**
- The following functions compute various expressions involving
- vectors and matrices. The computation of these expressions has been
- abstracted away into these functions in order to save on loop iterations.
- Compute v − InverseNTT(sᵀ ◦ NTT(u))
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_message
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -9313,30 +8431,6 @@ compute_message_f6(
   return result;
 }
 
-/**
- This function implements <strong>Algorithm 14</strong> of the
- NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
-
- Algorithm 14 is reproduced below:
-
- ```plaintext
- Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
- Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
- Output: message m ∈ 𝔹^{32}.
-
- c₁ ← c[0 : 32dᵤk]
- c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
- u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
- v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
- ŝ ← ByteDecode₁₂(dkₚₖₑ)
- w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
- m ← ByteEncode₁(Compress₁(w))
- return m
- ```
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.decrypt_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -9463,9 +8557,6 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_f6(
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
 
-/**
- Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_secret_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
