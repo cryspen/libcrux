@@ -53,5 +53,12 @@ val v_XOF (v_LEN: usize{v v_LEN < pow2 32}) (input: t_Slice u8) : t_Array u8 v_L
 let v_XOF v_LEN input = map_slice Lib.RawIntTypes.u8_to_UInt8 (
   shake128 (Seq.length input) (map_slice Lib.IntTypes.secret input) (v v_LEN))
 
-    
+assume val xof_state: Type0
+assume val v_XOF_init_absorb_final (input: t_Slice u8) : xof_state
+assume val v_XOF_squeeze_block (st:xof_state) : xof_state & t_Array u8 (sz 168)
 
+let v_XOF_squeeze_three_blocks (st:xof_state) : xof_state & t_Array u8 (sz 504) = 
+  let (st1,b1) = v_XOF_squeeze_block st in
+  let (st2,b2) = v_XOF_squeeze_block st1 in
+  let (st3,b3) = v_XOF_squeeze_block st2 in
+  st3, Seq.append b1 (Seq.append b2 b3)

@@ -48,7 +48,10 @@ pub(crate) trait Hash<const K: usize> {
     fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN];
 
     /// PRFxN aka N SHAKE256
-    #[requires(true)]
+    #[requires(fstar!("v $LEN < pow2 32"))]
+    #[ensures(|result| 
+        // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
+        fstar!("v $LEN < pow2 32 ==> $result == Spec.Utils.map_array (Spec.Utils.v_PRF $LEN) $input"))]
     fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K];
 
     /// Create a SHAKE128 state and absorb the input.
@@ -114,6 +117,8 @@ pub(crate) mod portable {
     }
 
     #[inline(always)]
+    #[hax_lib::requires(fstar!("v $LEN < pow2 32"))]
+    #[hax_lib::ensures(|result| fstar!("$result == Spec.Utils.map_array (Spec.Utils.v_PRF $LEN) $input"))]
     fn PRFxN<const K: usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
 
@@ -191,6 +196,8 @@ pub(crate) mod portable {
         }
 
         #[inline(always)]
+        #[requires(fstar!("v $LEN < pow2 32"))]
+         // #[ensures(|out| fstar!("v $LEN < pow2 32 ==> $out == Spec.Utils.map_array (Spec.Utils.v_PRF $LEN) $input"))]
         fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
             PRFxN::<K, LEN>(input)
         }
@@ -261,6 +268,8 @@ pub(crate) mod avx2 {
     }
 
     #[inline(always)]
+    #[hax_lib::requires(fstar!("v $LEN < pow2 32"))]
+    #[hax_lib::ensures(|result| fstar!("$result == Spec.Utils.map_array (Spec.Utils.v_PRF $LEN) $input"))]
     fn PRFxN<const K: usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
         let mut out = [[0u8; LEN]; K];
@@ -427,7 +436,7 @@ pub(crate) mod avx2 {
 
         #[requires(fstar!("v $LEN < pow2 32"))]
         // Output name has be `out` https://github.com/hacspec/hax/issues/832
-        #[hax_lib::ensures(|out|
+        #[ensures(|out|
             // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
             fstar!("v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"))
         ]
@@ -437,6 +446,12 @@ pub(crate) mod avx2 {
         }
 
         #[inline(always)]
+        #[requires(fstar!("v $LEN < pow2 32"))]
+        // Output name has be `out` https://github.com/hacspec/hax/issues/832
+        // #[ensures(|out|
+        //     // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
+        //     fstar!("v $LEN < pow2 32 ==> $out == Spec.Utils.map_array (Spec.Utils.v_PRF $LEN) $input"))
+        // ]
         fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
             PRFxN::<K, LEN>(input)
         }
@@ -505,6 +520,8 @@ pub(crate) mod neon {
     }
 
     #[inline(always)]
+    #[hax_lib::requires(fstar!("v $LEN < pow2 32"))]
+    #[hax_lib::ensures(|result| fstar!("$result == Spec.Utils.map_array (Spec.Utils.v_PRF $LEN) $input"))]
     fn PRFxN<const K: usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
         let mut out = [[0u8; LEN]; K];
@@ -711,6 +728,12 @@ pub(crate) mod neon {
         }
 
         #[inline(always)]
+        #[requires(fstar!("v $LEN < pow2 32"))]
+        // Output name has be `out` https://github.com/hacspec/hax/issues/832
+        // #[ensures(|out|
+        //     // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
+        //     fstar!("v $LEN < pow2 32 ==> $out == Spec.Utils.map_array (Spec.Utils.v_PRF $LEN) $input"))
+        // ]
         fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
             PRFxN::<K, LEN>(input)
         }

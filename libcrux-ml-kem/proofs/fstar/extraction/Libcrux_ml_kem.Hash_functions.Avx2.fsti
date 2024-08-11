@@ -28,7 +28,12 @@ val v_PRF (v_LEN: usize) (input: t_Slice u8)
           result == Spec.Utils.v_PRF v_LEN input)
 
 val v_PRFxN (v_K v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K)
-    : Prims.Pure (t_Array (t_Array u8 v_LEN) v_K) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array (t_Array u8 v_LEN) v_K)
+      (requires v v_LEN < pow2 32)
+      (ensures
+        fun result ->
+          let result:t_Array (t_Array u8 v_LEN) v_K = result in
+          result == Spec.Utils.map_array (Spec.Utils.v_PRF v_LEN) input)
 
 /// The state.
 /// It\'s only used for SHAKE128.
@@ -63,7 +68,9 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
     (fun (v_LEN: usize) (input: t_Slice u8) (out: t_Array u8 v_LEN) ->
         v v_LEN < pow2 32 ==> out == Spec.Utils.v_PRF v_LEN input);
     f_PRF = (fun (v_LEN: usize) (input: t_Slice u8) -> v_PRF v_LEN input);
-    f_PRFxN_pre = (fun (v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K) -> true);
+    f_PRFxN_pre
+    =
+    (fun (v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K) -> v v_LEN < pow2 32);
     f_PRFxN_post
     =
     (fun
