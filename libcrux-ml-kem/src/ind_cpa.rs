@@ -382,6 +382,12 @@ pub(crate) fn encrypt_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    length $public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+    length $randomness == Spec.MLKEM.v_SHARED_SECRET_SIZE"))]
+#[hax_lib::ensures(|result|
+    fstar!("$result == Spec.MLKEM.ind_cpa_encrypt $K $public_key $message $randomness")
+)] 
 pub(crate) fn encrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,

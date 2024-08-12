@@ -364,6 +364,14 @@ let encapsulate
         <:
         t_Slice u8)
   in
+  let _:Prims.unit =
+    assert (Seq.slice to_hash 0 (v Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE) == randomness);
+    lemma_slice_append to_hash
+      randomness
+      (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher #v_K public_key.f_value);
+    assert (to_hash ==
+        concat randomness (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher #v_K public_key.f_value))
+  in
   let hashed:t_Array u8 (sz 64) =
     Libcrux_ml_kem.Hash_functions.f_G #v_Hasher
       #v_K

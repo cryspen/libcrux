@@ -57,7 +57,12 @@ let impl_3 (v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_MlKemCip
 
 /// A reference to the raw byte slice.
 val impl_5__as_slice (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE)
-    : Prims.Pure (t_Array u8 v_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_SIZE)
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Array u8 v_SIZE = result in
+          result == self.f_value)
 
 ///An ML-KEM Private key
 type t_MlKemPrivateKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
@@ -101,7 +106,12 @@ let impl_9 (v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_MlKemPri
 
 /// A reference to the raw byte slice.
 val impl_11__as_slice (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE)
-    : Prims.Pure (t_Array u8 v_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_SIZE)
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Array u8 v_SIZE = result in
+          result == self.f_value)
 
 ///An ML-KEM Public key
 type t_MlKemPublicKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
@@ -145,7 +155,12 @@ let impl_15 (v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_MlKemPu
 
 /// A reference to the raw byte slice.
 val impl_17__as_slice (v_SIZE: usize) (self: t_MlKemPublicKey v_SIZE)
-    : Prims.Pure (t_Array u8 v_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_SIZE)
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Array u8 v_SIZE = result in
+          result == self.f_value)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_4 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_MlKemCiphertext v_SIZE) (t_Slice u8) =
