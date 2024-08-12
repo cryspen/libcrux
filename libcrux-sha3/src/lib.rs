@@ -936,6 +936,7 @@ pub mod avx2 {
                 absorb_final, squeeze_first_three_blocks, squeeze_next_block,
                 KeccakState as GenericState,
             };
+            #[cfg(not(feature = "simd128"))]
             use crate::generic_keccak::{squeeze_first_block, squeeze_first_five_blocks};
             #[cfg(feature = "simd256")]
             use libcrux_intrinsics::avx2::*;
@@ -1040,6 +1041,7 @@ pub mod avx2 {
 
             /// Squeeze block
             #[inline(always)]
+            #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_squeeze_first_block(
                 s: &mut KeccakState,
                 out0: &mut [u8],
@@ -1055,6 +1057,7 @@ pub mod avx2 {
 
             /// Squeeze next block
             #[inline(always)]
+            #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_squeeze_next_block(
                 s: &mut KeccakState,
                 out0: &mut [u8],
@@ -1143,6 +1146,7 @@ pub mod avx2 {
 
             /// Squeeze five blocks
             #[inline(always)]
+            #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake128_squeeze_first_five_blocks(
                 s: &mut KeccakState,
                 out0: &mut [u8],

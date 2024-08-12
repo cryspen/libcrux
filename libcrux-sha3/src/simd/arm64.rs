@@ -191,6 +191,7 @@ impl KeccakItem<2> for uint64x2_t {
         split_at_mut_2(a, mid)
     }
 
+    // TODO: Do we need this, or not? cf. https://github.com/cryspen/libcrux/issues/482
     fn store<const RATE: usize>(_state: &[[Self; 5]; 5], _out: [&mut [u8]; 2]) {
         todo!()
     }

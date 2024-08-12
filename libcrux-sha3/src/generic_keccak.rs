@@ -517,19 +517,3 @@ pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, c
         }
     }
 }
-
-#[inline(always)]
-pub(crate) fn keccak_xof<
-    const PARALLEL_LANES: usize,
-    STATE: KeccakStateItem<PARALLEL_LANES>,
-    const RATE: usize,
-    const DELIMITER: u8,
->(
-    data: [&[u8]; PARALLEL_LANES],
-    out: [&mut [u8]; PARALLEL_LANES],
-) {
-    let mut state = KeccakXofState::<PARALLEL_LANES, RATE, STATE>::new();
-    state.absorb(data);
-    state.absorb_final::<DELIMITER>([&[]; PARALLEL_LANES]);
-    state.squeeze(out);
-}
