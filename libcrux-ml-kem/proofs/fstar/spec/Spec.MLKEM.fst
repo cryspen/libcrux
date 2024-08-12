@@ -103,20 +103,6 @@ type t_MLKEMCiphertext (r:rank) = t_Array u8 (v_CPA_CIPHERTEXT_SIZE r)
 type t_MLKEMSharedSecret = t_Array u8 (v_SHARED_SECRET_SIZE)
 
 
-let bits_to_bytes (#bytes: usize) (bv: bit_vec (v bytes * 8))
-  : Pure (t_Array u8 bytes)
-         (requires True)
-         (ensures fun r -> (forall i. bit_vec_of_int_t_array r 8 i == bv i))
-  = bit_vec_to_int_t_array 8 bv
-
-let bytes_to_bits (#bytes: usize) (r: t_Array u8 bytes)
-  : Pure (i: bit_vec (v bytes * 8))
-         (requires True)
-         (ensures fun f -> (forall i. bit_vec_of_int_t_array r 8 i == f i))
-  = bit_vec_of_int_t_array r 8
-
-unfold let retype_bit_vector #a #b (#_:unit{a == b}) (x: a): b = x
-
 assume val sample_max: n:usize{v n < pow2 32 /\ v n >= 128 * 3 /\ v n % 3 = 0}
 
 val sample_polynomial_ntt: seed:t_Array u8 (sz 34) -> (polynomial true & bool)
@@ -186,51 +172,6 @@ let sample_vector_cbd2 (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v d
 let sample_vector_cbd_then_ntt (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r true =
     vector_ntt (sample_vector_cbd1 #r seed domain_sep)
 
-
-type dT = d: nat {d = 1 \/ d = 4 \/ d = 5 \/ d = 10 \/ d = 11 \/ d = 12}
-let max_d (d:dT) = if d < 12 then pow2 d else v v_FIELD_MODULUS
-type field_element_d (d:dT) = n:nat{n < max_d d}
-type polynomial_d (d:dT) = t_Array (field_element_d d) (sz 256)
-type vector_d (r:rank) (d:dT) = t_Array (polynomial_d d) r
-
-
-let compress_d (d: dT {d <> 12}) (x: field_element): field_element_d d
-  = let r = (pow2 d * x + 1664) / v v_FIELD_MODULUS in
-    assert (r * v v_FIELD_MODULUS <= pow2 d * x + 1664);
-    assert (r * v v_FIELD_MODULUS <= pow2 d * (v v_FIELD_MODULUS - 1) + 1664);
-    Math.Lemmas.lemma_div_le (r * v v_FIELD_MODULUS) (pow2 d * (v v_FIELD_MODULUS - 1) + 1664) (v v_FIELD_MODULUS);
-    Math.Lemmas.cancel_mul_div  r (v v_FIELD_MODULUS);
-    assert (r <= (pow2 d * (v v_FIELD_MODULUS - 1) + 1664) / v v_FIELD_MODULUS);
-    Math.Lemmas.lemma_div_mod_plus (1664 - pow2 d) (pow2 d) (v v_FIELD_MODULUS);
-    assert (r <= pow2 d + (1664 - pow2 d) / v v_FIELD_MODULUS);
-    assert (r <= pow2 d);
-    if r = pow2 d then 0 else r
-
-let decompress_d (d: dT {d <> 12}) (x: field_element_d d): field_element
-  = let r = (x * v v_FIELD_MODULUS + 1664) / pow2 d in
-    r
-    
-
-let byte_encode (d: dT) (coefficients: polynomial_d d): t_Array u8 (sz (32 * d))
-  =  let coefficients' : t_Array nat (sz 256) = map_array #(field_element_d d) (fun x -> x <: nat) coefficients in
-     bits_to_bytes #(sz (32 * d))
-       (retype_bit_vector (bit_vec_of_nat_array coefficients' d))
-
-let byte_decode (d: dT) (coefficients: t_Array u8 (sz (32 * d))): polynomial_d d
-  = let bv = bytes_to_bits coefficients in
-    let arr: t_Array nat (sz 256) = bit_vec_to_nat_array d (retype_bit_vector bv) in
-    let p: polynomial_d d = 
-      createi (sz 256) (fun i -> 
-        let x_f : field_element = arr.[i] % v v_FIELD_MODULUS in
-        assert (d < 12  ==> arr.[i] < pow2 d);
-        let x_m : field_element_d d = x_f in
-        x_m) 
-    in
-    p
-
-let coerce_polynomial_12 #ntt (p:polynomial ntt): polynomial_d 12 = p
-let coerce_vector_12 #ntt (#r:rank) (v:vector r ntt): vector_d r 12 = v
-
 let vector_encode_12 (#r:rank) (#ntt:bool) (v: vector r ntt): t_Array u8 (v_T_AS_NTT_ENCODED_SIZE r)
   = let s: t_Array (t_Array _ (sz 384)) r = map_array (byte_encode 12) (coerce_vector_12 v) in
     flatten s
@@ -242,14 +183,6 @@ let vector_decode_12 (#r:rank) (#ntt:bool) (arr: t_Array u8 (v_T_AS_NTT_ENCODED_
                                 (v block * v block_size + v block_size) in
       byte_decode 12 slice
     )
-
-let compress_then_byte_encode #ntt (d: dT {d <> 12}) (coefficients: polynomial ntt): t_Array u8 (sz (32 * d))
-  = let coefs: t_Array (field_element_d d) (sz 256) = map_array (compress_d d) coefficients
-    in
-    byte_encode d coefs
-
-let byte_decode_then_decompress #ntt (d: dT {d <> 12}) (b:t_Array u8 (sz (32 * d))): polynomial ntt
-  = map_array (decompress_d d) (byte_decode d b)
 
 let compress_then_encode_message #ntt (p:polynomial ntt) : t_Array u8 v_SHARED_SECRET_SIZE
   = compress_then_byte_encode 1 p
