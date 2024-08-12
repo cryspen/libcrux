@@ -4,17 +4,20 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: be0d5b5e1455673c2afa9592c0951def463f59ec
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * Charon: 53530427db2941ce784201e64086766504bc5642
+ * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
+ * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: cb6da975011a1d6dfeaa6215d63a56d043b522b5
+ * Libcrux: 23fd74952dc8fe8d2e3bdd3eb691bf8502b98b15
  */
 
 #include "libcrux_mlkem512_neon.h"
 
 #include "internal/libcrux_mlkem_neon.h"
 
+/**
+ Portable decapsulate
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.neon.decapsulate
 with const generics
@@ -41,12 +44,22 @@ static void decapsulate_55(libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
   libcrux_ml_kem_ind_cca_decapsulate_821(private_key, ciphertext, ret);
 }
 
+/**
+ Decapsulate ML-KEM 512
+
+ Generates an [`MlKemSharedSecret`].
+ The input is a reference to an [`MlKem512PrivateKey`] and an
+ [`MlKem512Ciphertext`].
+*/
 void libcrux_ml_kem_mlkem512_neon_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]) {
   decapsulate_55(private_key, ciphertext, ret);
 }
 
+/**
+ Portable decapsulate
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.neon.decapsulate_unpacked with const
@@ -74,6 +87,13 @@ static void decapsulate_unpacked_53(
   libcrux_ml_kem_ind_cca_decapsulate_unpacked_ec1(key_pair, ciphertext, ret);
 }
 
+/**
+ Decapsulate ML-KEM 512 (unpacked)
+
+ Generates an [`MlKemSharedSecret`].
+ The input is a reference to an unpacked key pair of type
+ [`MlKem512KeyPairUnpacked`] and an [`MlKem512Ciphertext`].
+*/
 void libcrux_ml_kem_mlkem512_neon_decapsulate_unpacked(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_66 *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]) {
@@ -106,6 +126,13 @@ static tuple_ec encapsulate_f8(
   return libcrux_ml_kem_ind_cca_encapsulate_281(uu____0, uu____1);
 }
 
+/**
+ Encapsulate ML-KEM 512
+
+ Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+ The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
+ bytes of `randomness`.
+*/
 tuple_ec libcrux_ml_kem_mlkem512_neon_encapsulate(
     libcrux_ml_kem_types_MlKemPublicKey_be *public_key,
     uint8_t randomness[32U]) {
@@ -115,6 +142,9 @@ tuple_ec libcrux_ml_kem_mlkem512_neon_encapsulate(
   return encapsulate_f8(uu____0, uu____1);
 }
 
+/**
+ Portable encapsualte
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.neon.encapsulate_unpacked with const
@@ -143,6 +173,14 @@ static tuple_ec encapsulate_unpacked_ce(
   return libcrux_ml_kem_ind_cca_encapsulate_unpacked_471(uu____0, uu____1);
 }
 
+/**
+ Encapsulate ML-KEM 512 (unpacked)
+
+ Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+ The input is a reference to an unpacked public key of type
+ [`MlKem512PublicKeyUnpacked`], the SHA3-256 hash of this public key, and
+ [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+*/
 tuple_ec libcrux_ml_kem_mlkem512_neon_encapsulate_unpacked(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_66 *public_key,
     uint8_t randomness[32U]) {
@@ -153,6 +191,9 @@ tuple_ec libcrux_ml_kem_mlkem512_neon_encapsulate_unpacked(
   return encapsulate_unpacked_ce(uu____0, uu____1);
 }
 
+/**
+ Portable generate key pair.
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.neon.generate_keypair with const generics
@@ -171,6 +212,9 @@ static libcrux_ml_kem_types_MlKemKeyPair_cb generate_keypair_1a(
   return libcrux_ml_kem_ind_cca_generate_keypair_721(uu____0);
 }
 
+/**
+ Generate ML-KEM 512 Key Pair
+*/
 libcrux_ml_kem_types_MlKemKeyPair_cb
 libcrux_ml_kem_mlkem512_neon_generate_key_pair(uint8_t randomness[64U]) {
   uint8_t uu____0[64U];
@@ -178,6 +222,9 @@ libcrux_ml_kem_mlkem512_neon_generate_key_pair(uint8_t randomness[64U]) {
   return generate_keypair_1a(uu____0);
 }
 
+/**
+ Unpacked API
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.neon.generate_keypair_unpacked with const
@@ -197,6 +244,9 @@ generate_keypair_unpacked_38(uint8_t randomness[64U]) {
   return libcrux_ml_kem_ind_cca_generate_keypair_unpacked_b41(uu____0);
 }
 
+/**
+ Generate ML-KEM 512 Key Pair in "unpacked" form
+*/
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_66
 libcrux_ml_kem_mlkem512_neon_generate_key_pair_unpacked(
     uint8_t randomness[64U]) {
@@ -205,6 +255,9 @@ libcrux_ml_kem_mlkem512_neon_generate_key_pair_unpacked(
   return generate_keypair_unpacked_38(uu____0);
 }
 
+/**
+ Portable public key validation
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.neon.validate_public_key with const
@@ -217,6 +270,11 @@ static bool validate_public_key_a31(uint8_t *public_key) {
   return libcrux_ml_kem_ind_cca_validate_public_key_7e1(public_key);
 }
 
+/**
+ Validate a public key.
+
+ Returns `Some(public_key)` if valid, and `None` otherwise.
+*/
 core_option_Option_04 libcrux_ml_kem_mlkem512_neon_validate_public_key(
     libcrux_ml_kem_types_MlKemPublicKey_be public_key) {
   core_option_Option_04 uu____0;
