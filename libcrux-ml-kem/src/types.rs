@@ -42,8 +42,10 @@ macro_rules! impl_generic_struct {
             }
         }
 
+        #[hax_lib::attributes]
         impl<const SIZE: usize> $name<SIZE> {
             /// A reference to the raw byte slice.
+            #[ensures(|result| fstar!("$result == self.f_value"))]
             pub fn as_slice(&self) -> &[u8; SIZE] {
                 &self.value
             }

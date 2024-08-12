@@ -8,6 +8,9 @@
 #[cfg_attr(hax, hax_lib::requires(
     slice.len() <= LEN
 ))]
+#[cfg_attr(hax, hax_lib::ensures(|res|
+    fstar!("Seq.slice $res 0 (Seq.length $slice) == $slice")
+))]
 pub(crate) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
     let mut out = [0u8; LEN];
     out[0..slice.len()].copy_from_slice(slice);

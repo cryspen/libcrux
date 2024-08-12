@@ -76,10 +76,10 @@ class t_Variant (v_Self: Type0) = {
       v_CIPHERTEXT_SIZE: usize ->
       #v_Hasher: Type0 ->
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      t_Slice u8 ->
-      Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE ->
-      t_Array u8 (sz 32)
-    -> Type0;
+      shared_secret: t_Slice u8 ->
+      ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE ->
+      res: t_Array u8 (sz 32)
+    -> pred: Type0{pred ==> res == shared_secret};
   f_kdf:
       v_K: usize ->
       v_CIPHERTEXT_SIZE: usize ->
@@ -142,7 +142,7 @@ let impl: t_Variant t_MlKem =
         (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
         (out1: t_Array u8 (sz 32))
         ->
-        true);
+        out1 == shared_secret);
     f_kdf
     =
     (fun
@@ -243,7 +243,14 @@ val encapsulate
         v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
         v_ETA2 == Spec.MLKEM.v_ETA2 v_K /\
         v_ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE v_K)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+          =
+            result
+          in
+          (result._1.f_value, result._2) ==
+          Spec.MLKEM.ind_cca_encapsulate v_K public_key.f_value randomness)
 
 /// Packed API
 /// Generate a key pair.

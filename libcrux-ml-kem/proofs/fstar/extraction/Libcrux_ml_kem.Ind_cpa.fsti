@@ -173,7 +173,14 @@ val encrypt
       (public_key: t_Slice u8)
       (message: t_Array u8 (sz 32))
       (randomness: t_Slice u8)
-    : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ length public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        length randomness == Spec.MLKEM.v_SHARED_SECRET_SIZE)
+      (ensures
+        fun result ->
+          let result:t_Array u8 v_CIPHERTEXT_SIZE = result in
+          result == Spec.MLKEM.ind_cpa_encrypt v_K public_key message randomness)
 
 /// This function implements most of <strong>Algorithm 12</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation algorithm.
