@@ -405,6 +405,7 @@ let encapsulate
       shared_secret
       ciphertext
   in
+  let _:Prims.unit = admit () in
   ciphertext, shared_secret_array
   <:
   (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
