@@ -218,20 +218,20 @@ impl KeccakItem<4> for Vec256 {
         mm256_xor_si256(a, b)
     }
     #[inline(always)]
-    fn load_block<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; 4]) {
-        load_block::<BLOCKSIZE>(a, b)
+    fn load_block<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; 4]) {
+        load_block::<RATE>(a, b)
     }
     #[inline(always)]
-    fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 4]) {
-        store_block::<BLOCKSIZE>(a, b)
+    fn store_block<const RATE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 4]) {
+        store_block::<RATE>(a, b)
     }
     #[inline(always)]
-    fn load_block_full<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; 4]) {
-        load_block_full::<BLOCKSIZE>(a, b)
+    fn load_block_full<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; 4]) {
+        load_block_full::<RATE>(a, b)
     }
     #[inline(always)]
-    fn store_block_full<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 4] {
-        store_block_full::<BLOCKSIZE>(a)
+    fn store_block_full<const RATE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 4] {
+        store_block_full::<RATE>(a)
     }
     #[inline(always)]
     fn slice_n(a: [&[u8]; 4], start: usize, len: usize) -> [&[u8]; 4] {
@@ -240,5 +240,10 @@ impl KeccakItem<4> for Vec256 {
     #[inline(always)]
     fn split_at_mut_n(a: [&mut [u8]; 4], mid: usize) -> ([&mut [u8]; 4], [&mut [u8]; 4]) {
         split_at_mut_4(a, mid)
+    }
+
+    // TODO: Do we need this, or not? cf. https://github.com/cryspen/libcrux/issues/482
+    fn store<const RATE: usize>(_state: &[[Self; 5]; 5], _out: [&mut [u8]; 4]) {
+        todo!()
     }
 }

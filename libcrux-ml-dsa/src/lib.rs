@@ -1,3 +1,5 @@
+#![no_std]
+
 mod arithmetic;
 mod constants;
 mod encoding;
