@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
- * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
+ * Eurydice: 7834acbb41b06c34f198a1cb6b88241cc10b9aeb
+ * Karamel: bdf06956e6ee025d4819bf2f8cc92651e572ad85
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: c52405ea0a57830cfac5f952072ffe083ccb94f7
+ * Libcrux: d5574e8f6c62bf622ab6b61c291abeb66c1b7221
  */
 
 #include "internal/libcrux_core.h"
@@ -100,7 +100,7 @@ with const generics
 */
 libcrux_ml_kem_types_MlKemPublicKey_be libcrux_ml_kem_types_from_b6_571(
     uint8_t value[800U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[800U];
   memcpy(copy_of_value, value, (size_t)800U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemPublicKey_be lit;
@@ -138,7 +138,7 @@ with const generics
 */
 libcrux_ml_kem_types_MlKemPrivateKey_5e libcrux_ml_kem_types_from_05_e01(
     uint8_t value[1632U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[1632U];
   memcpy(copy_of_value, value, (size_t)1632U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemPrivateKey_5e lit;
@@ -157,7 +157,7 @@ with const generics
 */
 libcrux_ml_kem_types_MlKemCiphertext_e8 libcrux_ml_kem_types_from_01_201(
     uint8_t value[768U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[768U];
   memcpy(copy_of_value, value, (size_t)768U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemCiphertext_e8 lit;
@@ -228,7 +228,7 @@ with const generics
 */
 libcrux_ml_kem_types_MlKemPublicKey_1f libcrux_ml_kem_types_from_b6_570(
     uint8_t value[1568U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[1568U];
   memcpy(copy_of_value, value, (size_t)1568U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemPublicKey_1f lit;
@@ -267,7 +267,7 @@ with const generics
 */
 libcrux_ml_kem_types_MlKemPrivateKey_95 libcrux_ml_kem_types_from_05_e00(
     uint8_t value[3168U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[3168U];
   memcpy(copy_of_value, value, (size_t)3168U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemPrivateKey_95 lit;
@@ -286,7 +286,7 @@ with const generics
 */
 libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext libcrux_ml_kem_types_from_01_200(
     uint8_t value[1568U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[1568U];
   memcpy(copy_of_value, value, (size_t)1568U * sizeof(uint8_t));
   libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext lit;
@@ -357,7 +357,7 @@ with const generics
 */
 libcrux_ml_kem_types_MlKemPublicKey_15 libcrux_ml_kem_types_from_b6_57(
     uint8_t value[1184U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[1184U];
   memcpy(copy_of_value, value, (size_t)1184U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemPublicKey_15 lit;
@@ -396,7 +396,7 @@ with const generics
 */
 libcrux_ml_kem_types_MlKemPrivateKey_55 libcrux_ml_kem_types_from_05_e0(
     uint8_t value[2400U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[2400U];
   memcpy(copy_of_value, value, (size_t)2400U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemPrivateKey_55 lit;
@@ -415,7 +415,7 @@ with const generics
 */
 libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_from_01_20(
     uint8_t value[1088U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[1088U];
   memcpy(copy_of_value, value, (size_t)1088U * sizeof(uint8_t));
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext lit;

@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
- * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
+ * Eurydice: 7834acbb41b06c34f198a1cb6b88241cc10b9aeb
+ * Karamel: bdf06956e6ee025d4819bf2f8cc92651e572ad85
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: c52405ea0a57830cfac5f952072ffe083ccb94f7
+ * Libcrux: d5574e8f6c62bf622ab6b61c291abeb66c1b7221
  */
 
 #include "libcrux_sha3_neon.h"
@@ -19,17 +19,15 @@
 This function found in impl {(libcrux_sha3::traits::internal::KeccakItem<2:
 usize> for core::core_arch::arm_shared::neon::uint64x2_t)}
 */
-static KRML_MUSTINLINE uint64x2_t zero_fa(void) {
-  return libcrux_intrinsics_arm64__vdupq_n_u64(0ULL);
-}
+static KRML_MUSTINLINE uint64x2_t zero_fa(void) { return _vdupq_n_u64(0ULL); }
 
 static KRML_MUSTINLINE uint64x2_t _veor5q_u64(uint64x2_t a, uint64x2_t b,
                                               uint64x2_t c, uint64x2_t d,
                                               uint64x2_t e) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
-  uint64x2_t cd = libcrux_intrinsics_arm64__veorq_u64(c, d);
-  uint64x2_t abcd = libcrux_intrinsics_arm64__veorq_u64(ab, cd);
-  return libcrux_intrinsics_arm64__veorq_u64(abcd, e);
+  uint64x2_t ab = _veorq_u64(a, b);
+  uint64x2_t cd = _veorq_u64(c, d);
+  uint64x2_t abcd = _veorq_u64(ab, cd);
+  return _veorq_u64(abcd, e);
 }
 
 /**
@@ -49,14 +47,13 @@ with const generics
 - RIGHT= 63
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_58(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)1, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)63, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)1, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)63, x, uint64x2_t));
 }
 
 static KRML_MUSTINLINE uint64x2_t _vrax1q_u64(uint64x2_t a, uint64x2_t b) {
   uint64x2_t uu____0 = a;
-  return libcrux_intrinsics_arm64__veorq_u64(uu____0, rotate_left_58(b));
+  return _veorq_u64(uu____0, rotate_left_58(b));
 }
 
 /**
@@ -70,8 +67,7 @@ static KRML_MUSTINLINE uint64x2_t rotate_left1_and_xor_fa(uint64x2_t a,
 
 static KRML_MUSTINLINE uint64x2_t _vbcaxq_u64(uint64x2_t a, uint64x2_t b,
                                               uint64x2_t c) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      a, libcrux_intrinsics_arm64__vbicq_u64(b, c));
+  return _veorq_u64(a, _vbicq_u64(b, c));
 }
 
 /**
@@ -84,8 +80,8 @@ static KRML_MUSTINLINE uint64x2_t and_not_xor_fa(uint64x2_t a, uint64x2_t b,
 }
 
 static KRML_MUSTINLINE uint64x2_t _veorq_n_u64(uint64x2_t a, uint64_t c) {
-  uint64x2_t c0 = libcrux_intrinsics_arm64__vdupq_n_u64(c);
-  return libcrux_intrinsics_arm64__veorq_u64(a, c0);
+  uint64x2_t c0 = _vdupq_n_u64(c);
+  return _veorq_u64(a, c0);
 }
 
 /**
@@ -101,7 +97,7 @@ This function found in impl {(libcrux_sha3::traits::internal::KeccakItem<2:
 usize> for core::core_arch::arm_shared::neon::uint64x2_t)}
 */
 static KRML_MUSTINLINE uint64x2_t xor_fa(uint64x2_t a, uint64x2_t b) {
-  return libcrux_intrinsics_arm64__veorq_u64(a, b);
+  return _veorq_u64(a, b);
 }
 
 static KRML_MUSTINLINE void slice_2(Eurydice_slice a[2U], size_t start,
@@ -118,7 +114,7 @@ usize> for core::core_arch::arm_shared::neon::uint64x2_t)}
 */
 static KRML_MUSTINLINE void slice_n_fa(Eurydice_slice a[2U], size_t start,
                                        size_t len, Eurydice_slice ret[2U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_a[2U];
   memcpy(copy_of_a, a, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice ret0[2U];
@@ -208,24 +204,20 @@ static KRML_MUSTINLINE void load_block_3c(uint64x2_t (*s)[5U],
                                           Eurydice_slice blocks[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)72U / (size_t)16U; i++) {
     size_t i0 = i;
-    uint64x2_t v0 =
-        libcrux_intrinsics_arm64__vld1q_bytes_u64(Eurydice_slice_subslice2(
-            blocks[0U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U),
-            uint8_t, Eurydice_slice));
-    uint64x2_t v1 =
-        libcrux_intrinsics_arm64__vld1q_bytes_u64(Eurydice_slice_subslice2(
-            blocks[1U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U),
-            uint8_t, Eurydice_slice));
-    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] =
-        libcrux_intrinsics_arm64__veorq_u64(
-            s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
-            libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
+    uint64x2_t v0 = _vld1q_bytes_u64(Eurydice_slice_subslice2(
+        blocks[0U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U), uint8_t,
+        Eurydice_slice));
+    uint64x2_t v1 = _vld1q_bytes_u64(Eurydice_slice_subslice2(
+        blocks[1U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U), uint8_t,
+        Eurydice_slice));
+    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] = _veorq_u64(
+        s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
+        _vtrn1q_u64(v0, v1));
     s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
      [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] =
-         libcrux_intrinsics_arm64__veorq_u64(
-             s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-              [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
-             libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
+         _veorq_u64(s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
+                     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
+                    _vtrn2q_u64(v0, v1));
   }
   if ((size_t)72U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)72U / (size_t)8U - (size_t)1U) / (size_t)5U;
@@ -249,9 +241,9 @@ static KRML_MUSTINLINE void load_block_3c(uint64x2_t (*s)[5U],
         Eurydice_slice, uint8_t[8U], void *);
     core_result_unwrap_41_ac(dst, uu____1);
     u[1U] = core_num__u64_9__from_le_bytes(uu____1);
-    uint64x2_t uvec = libcrux_intrinsics_arm64__vld1q_u64(
+    uint64x2_t uvec = _vld1q_u64(
         Eurydice_array_to_slice((size_t)2U, u, uint64_t, Eurydice_slice));
-    s[i][j] = libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
+    s[i][j] = _veorq_u64(s[i][j], uvec);
   }
 }
 
@@ -267,7 +259,7 @@ with const generics
 static KRML_MUSTINLINE void load_block_fa_0f(uint64x2_t (*a)[5U],
                                              Eurydice_slice b[2U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_b[2U];
   memcpy(copy_of_b, b, (size_t)2U * sizeof(Eurydice_slice));
   load_block_3c(uu____0, copy_of_b);
@@ -280,9 +272,8 @@ with const generics
 - RIGHT= 28
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_580(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)36, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)28, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)36, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)28, x, uint64x2_t));
 }
 
 /**
@@ -292,7 +283,7 @@ with const generics
 - RIGHT= 28
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c1(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_580(ab);
 }
 
@@ -318,9 +309,8 @@ with const generics
 - RIGHT= 61
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_581(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)3, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)61, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)3, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)61, x, uint64x2_t));
 }
 
 /**
@@ -330,7 +320,7 @@ with const generics
 - RIGHT= 61
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c10(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_581(ab);
 }
 
@@ -356,9 +346,8 @@ with const generics
 - RIGHT= 23
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_582(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)41, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)23, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)41, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)23, x, uint64x2_t));
 }
 
 /**
@@ -368,7 +357,7 @@ with const generics
 - RIGHT= 23
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c11(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_582(ab);
 }
 
@@ -394,9 +383,8 @@ with const generics
 - RIGHT= 46
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_583(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)18, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)46, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)18, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)46, x, uint64x2_t));
 }
 
 /**
@@ -406,7 +394,7 @@ with const generics
 - RIGHT= 46
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c12(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_583(ab);
 }
 
@@ -432,7 +420,7 @@ with const generics
 - RIGHT= 63
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c13(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_58(ab);
 }
 
@@ -458,9 +446,8 @@ with const generics
 - RIGHT= 20
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_584(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)44, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)20, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)44, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)20, x, uint64x2_t));
 }
 
 /**
@@ -470,7 +457,7 @@ with const generics
 - RIGHT= 20
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c14(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_584(ab);
 }
 
@@ -496,9 +483,8 @@ with const generics
 - RIGHT= 54
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_585(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)10, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)54, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)10, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)54, x, uint64x2_t));
 }
 
 /**
@@ -508,7 +494,7 @@ with const generics
 - RIGHT= 54
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c15(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_585(ab);
 }
 
@@ -534,9 +520,8 @@ with const generics
 - RIGHT= 19
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_586(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)45, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)19, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)45, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)19, x, uint64x2_t));
 }
 
 /**
@@ -546,7 +531,7 @@ with const generics
 - RIGHT= 19
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c16(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_586(ab);
 }
 
@@ -572,9 +557,8 @@ with const generics
 - RIGHT= 62
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_587(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)2, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)62, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)2, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)62, x, uint64x2_t));
 }
 
 /**
@@ -584,7 +568,7 @@ with const generics
 - RIGHT= 62
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c17(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_587(ab);
 }
 
@@ -610,9 +594,8 @@ with const generics
 - RIGHT= 2
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_588(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)62, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)2, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)62, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)2, x, uint64x2_t));
 }
 
 /**
@@ -622,7 +605,7 @@ with const generics
 - RIGHT= 2
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c18(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_588(ab);
 }
 
@@ -648,9 +631,8 @@ with const generics
 - RIGHT= 58
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_589(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)6, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)58, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)6, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)58, x, uint64x2_t));
 }
 
 /**
@@ -660,7 +642,7 @@ with const generics
 - RIGHT= 58
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c19(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_589(ab);
 }
 
@@ -686,9 +668,8 @@ with const generics
 - RIGHT= 21
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5810(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)43, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)21, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)43, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)21, x, uint64x2_t));
 }
 
 /**
@@ -698,7 +679,7 @@ with const generics
 - RIGHT= 21
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c110(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5810(ab);
 }
 
@@ -724,9 +705,8 @@ with const generics
 - RIGHT= 49
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5811(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)15, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)49, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)15, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)49, x, uint64x2_t));
 }
 
 /**
@@ -736,7 +716,7 @@ with const generics
 - RIGHT= 49
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c111(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5811(ab);
 }
 
@@ -762,9 +742,8 @@ with const generics
 - RIGHT= 3
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5812(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)61, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)3, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)61, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)3, x, uint64x2_t));
 }
 
 /**
@@ -774,7 +753,7 @@ with const generics
 - RIGHT= 3
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c112(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5812(ab);
 }
 
@@ -800,9 +779,8 @@ with const generics
 - RIGHT= 36
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5813(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)28, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)36, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)28, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)36, x, uint64x2_t));
 }
 
 /**
@@ -812,7 +790,7 @@ with const generics
 - RIGHT= 36
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c113(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5813(ab);
 }
 
@@ -838,9 +816,8 @@ with const generics
 - RIGHT= 9
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5814(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)55, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)9, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)55, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)9, x, uint64x2_t));
 }
 
 /**
@@ -850,7 +827,7 @@ with const generics
 - RIGHT= 9
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c114(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5814(ab);
 }
 
@@ -876,9 +853,8 @@ with const generics
 - RIGHT= 39
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5815(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)25, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)39, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)25, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)39, x, uint64x2_t));
 }
 
 /**
@@ -888,7 +864,7 @@ with const generics
 - RIGHT= 39
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c115(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5815(ab);
 }
 
@@ -914,9 +890,8 @@ with const generics
 - RIGHT= 43
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5816(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)21, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)43, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)21, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)43, x, uint64x2_t));
 }
 
 /**
@@ -926,7 +901,7 @@ with const generics
 - RIGHT= 43
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c116(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5816(ab);
 }
 
@@ -952,9 +927,8 @@ with const generics
 - RIGHT= 8
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5817(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)56, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)8, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)56, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)8, x, uint64x2_t));
 }
 
 /**
@@ -964,7 +938,7 @@ with const generics
 - RIGHT= 8
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c117(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5817(ab);
 }
 
@@ -990,9 +964,8 @@ with const generics
 - RIGHT= 37
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5818(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)27, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)37, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)27, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)37, x, uint64x2_t));
 }
 
 /**
@@ -1002,7 +975,7 @@ with const generics
 - RIGHT= 37
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c118(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5818(ab);
 }
 
@@ -1028,9 +1001,8 @@ with const generics
 - RIGHT= 44
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5819(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)20, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)44, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)20, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)44, x, uint64x2_t));
 }
 
 /**
@@ -1040,7 +1012,7 @@ with const generics
 - RIGHT= 44
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c119(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5819(ab);
 }
 
@@ -1066,9 +1038,8 @@ with const generics
 - RIGHT= 25
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5820(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)39, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)25, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)39, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)25, x, uint64x2_t));
 }
 
 /**
@@ -1078,7 +1049,7 @@ with const generics
 - RIGHT= 25
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c120(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5820(ab);
 }
 
@@ -1104,9 +1075,8 @@ with const generics
 - RIGHT= 56
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5821(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)8, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)56, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)8, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)56, x, uint64x2_t));
 }
 
 /**
@@ -1116,7 +1086,7 @@ with const generics
 - RIGHT= 56
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c121(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5821(ab);
 }
 
@@ -1142,9 +1112,8 @@ with const generics
 - RIGHT= 50
 */
 static KRML_MUSTINLINE uint64x2_t rotate_left_5822(uint64x2_t x) {
-  return libcrux_intrinsics_arm64__veorq_u64(
-      libcrux_intrinsics_arm64__vshlq_n_u64((int32_t)14, x, uint64x2_t),
-      libcrux_intrinsics_arm64__vshrq_n_u64((int32_t)50, x, uint64x2_t));
+  return _veorq_u64(_vshlq_n_u64((int32_t)14, x, uint64x2_t),
+                    _vshrq_n_u64((int32_t)50, x, uint64x2_t));
 }
 
 /**
@@ -1154,7 +1123,7 @@ with const generics
 - RIGHT= 50
 */
 static KRML_MUSTINLINE uint64x2_t _vxarq_u64_c122(uint64x2_t a, uint64x2_t b) {
-  uint64x2_t ab = libcrux_intrinsics_arm64__veorq_u64(a, b);
+  uint64x2_t ab = _veorq_u64(a, b);
   return rotate_left_5822(ab);
 }
 
@@ -1360,7 +1329,7 @@ with const generics
 static KRML_MUSTINLINE void load_block_full_fa_07(uint64x2_t (*a)[5U],
                                                   uint8_t b[2U][200U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_b[2U][200U];
   memcpy(copy_of_b, b, (size_t)2U * sizeof(uint8_t[200U]));
   load_block_full_3e(uu____0, copy_of_b);
@@ -1404,30 +1373,28 @@ static KRML_MUSTINLINE void store_block_2f(uint64x2_t (*s)[5U],
                                            Eurydice_slice out[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)72U / (size_t)16U; i++) {
     size_t i0 = i;
-    uint64x2_t v0 = libcrux_intrinsics_arm64__vtrn1q_u64(
+    uint64x2_t v0 = _vtrn1q_u64(
         s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
         s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
          [((size_t)2U * i0 + (size_t)1U) % (size_t)5U]);
-    uint64x2_t v1 = libcrux_intrinsics_arm64__vtrn2q_u64(
+    uint64x2_t v1 = _vtrn2q_u64(
         s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
         s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
          [((size_t)2U * i0 + (size_t)1U) % (size_t)5U]);
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
-        Eurydice_slice_subslice2(out[0U], (size_t)16U * i0,
-                                 (size_t)16U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
-        v0);
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
-        Eurydice_slice_subslice2(out[1U], (size_t)16U * i0,
-                                 (size_t)16U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
-        v1);
+    _vst1q_bytes_u64(Eurydice_slice_subslice2(out[0U], (size_t)16U * i0,
+                                              (size_t)16U * (i0 + (size_t)1U),
+                                              uint8_t, Eurydice_slice),
+                     v0);
+    _vst1q_bytes_u64(Eurydice_slice_subslice2(out[1U], (size_t)16U * i0,
+                                              (size_t)16U * (i0 + (size_t)1U),
+                                              uint8_t, Eurydice_slice),
+                     v1);
   }
   if ((size_t)72U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)72U / (size_t)8U - (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)72U / (size_t)8U - (size_t)1U) % (size_t)5U;
     uint8_t u[16U] = {0U};
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
+    _vst1q_bytes_u64(
         Eurydice_array_to_slice((size_t)16U, u, uint8_t, Eurydice_slice),
         s[i][j]);
     Eurydice_slice uu____0 =
@@ -1462,7 +1429,7 @@ static KRML_MUSTINLINE void store_block_full_9a(uint64x2_t (*s)[5U],
       Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
       Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice)};
   store_block_2f(s, buf);
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_out0[200U];
   memcpy(copy_of_out0, out0, (size_t)200U * sizeof(uint8_t));
   uint8_t uu____1[200U];
@@ -1587,7 +1554,7 @@ static KRML_MUSTINLINE void keccak_59(Eurydice_slice data[2U],
        i++) {
     size_t i0 = i;
     libcrux_sha3_generic_keccak_KeccakState_fc *uu____0 = &s;
-    /* This copy dictated by the Rust value passing semantics */
+    /* Passing arrays by value in Rust generates a copy in C */
     Eurydice_slice copy_of_data[2U];
     memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
@@ -1597,7 +1564,7 @@ static KRML_MUSTINLINE void keccak_59(Eurydice_slice data[2U],
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)72U;
   libcrux_sha3_generic_keccak_KeccakState_fc *uu____2 = &s;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[2U];
   memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice ret[2U];
@@ -1653,7 +1620,7 @@ with const generics
 */
 static KRML_MUSTINLINE void keccakx2_6e(Eurydice_slice data[2U],
                                         Eurydice_slice out[2U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[2U];
   memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   keccak_59(copy_of_data, out);
@@ -1680,24 +1647,20 @@ static KRML_MUSTINLINE void load_block_3c0(uint64x2_t (*s)[5U],
                                            Eurydice_slice blocks[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)16U; i++) {
     size_t i0 = i;
-    uint64x2_t v0 =
-        libcrux_intrinsics_arm64__vld1q_bytes_u64(Eurydice_slice_subslice2(
-            blocks[0U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U),
-            uint8_t, Eurydice_slice));
-    uint64x2_t v1 =
-        libcrux_intrinsics_arm64__vld1q_bytes_u64(Eurydice_slice_subslice2(
-            blocks[1U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U),
-            uint8_t, Eurydice_slice));
-    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] =
-        libcrux_intrinsics_arm64__veorq_u64(
-            s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
-            libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
+    uint64x2_t v0 = _vld1q_bytes_u64(Eurydice_slice_subslice2(
+        blocks[0U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U), uint8_t,
+        Eurydice_slice));
+    uint64x2_t v1 = _vld1q_bytes_u64(Eurydice_slice_subslice2(
+        blocks[1U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U), uint8_t,
+        Eurydice_slice));
+    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] = _veorq_u64(
+        s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
+        _vtrn1q_u64(v0, v1));
     s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
      [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] =
-         libcrux_intrinsics_arm64__veorq_u64(
-             s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-              [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
-             libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
+         _veorq_u64(s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
+                     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
+                    _vtrn2q_u64(v0, v1));
   }
   if ((size_t)136U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)136U / (size_t)8U - (size_t)1U) / (size_t)5U;
@@ -1721,9 +1684,9 @@ static KRML_MUSTINLINE void load_block_3c0(uint64x2_t (*s)[5U],
         Eurydice_slice, uint8_t[8U], void *);
     core_result_unwrap_41_ac(dst, uu____1);
     u[1U] = core_num__u64_9__from_le_bytes(uu____1);
-    uint64x2_t uvec = libcrux_intrinsics_arm64__vld1q_u64(
+    uint64x2_t uvec = _vld1q_u64(
         Eurydice_array_to_slice((size_t)2U, u, uint64_t, Eurydice_slice));
-    s[i][j] = libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
+    s[i][j] = _veorq_u64(s[i][j], uvec);
   }
 }
 
@@ -1739,7 +1702,7 @@ with const generics
 static KRML_MUSTINLINE void load_block_fa_0f0(uint64x2_t (*a)[5U],
                                               Eurydice_slice b[2U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_b[2U];
   memcpy(copy_of_b, b, (size_t)2U * sizeof(Eurydice_slice));
   load_block_3c0(uu____0, copy_of_b);
@@ -1787,7 +1750,7 @@ with const generics
 static KRML_MUSTINLINE void load_block_full_fa_070(uint64x2_t (*a)[5U],
                                                    uint8_t b[2U][200U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_b[2U][200U];
   memcpy(copy_of_b, b, (size_t)2U * sizeof(uint8_t[200U]));
   load_block_full_3e0(uu____0, copy_of_b);
@@ -1831,30 +1794,28 @@ static KRML_MUSTINLINE void store_block_2f0(uint64x2_t (*s)[5U],
                                             Eurydice_slice out[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)16U; i++) {
     size_t i0 = i;
-    uint64x2_t v0 = libcrux_intrinsics_arm64__vtrn1q_u64(
+    uint64x2_t v0 = _vtrn1q_u64(
         s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
         s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
          [((size_t)2U * i0 + (size_t)1U) % (size_t)5U]);
-    uint64x2_t v1 = libcrux_intrinsics_arm64__vtrn2q_u64(
+    uint64x2_t v1 = _vtrn2q_u64(
         s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
         s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
          [((size_t)2U * i0 + (size_t)1U) % (size_t)5U]);
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
-        Eurydice_slice_subslice2(out[0U], (size_t)16U * i0,
-                                 (size_t)16U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
-        v0);
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
-        Eurydice_slice_subslice2(out[1U], (size_t)16U * i0,
-                                 (size_t)16U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
-        v1);
+    _vst1q_bytes_u64(Eurydice_slice_subslice2(out[0U], (size_t)16U * i0,
+                                              (size_t)16U * (i0 + (size_t)1U),
+                                              uint8_t, Eurydice_slice),
+                     v0);
+    _vst1q_bytes_u64(Eurydice_slice_subslice2(out[1U], (size_t)16U * i0,
+                                              (size_t)16U * (i0 + (size_t)1U),
+                                              uint8_t, Eurydice_slice),
+                     v1);
   }
   if ((size_t)136U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)136U / (size_t)8U - (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)136U / (size_t)8U - (size_t)1U) % (size_t)5U;
     uint8_t u[16U] = {0U};
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
+    _vst1q_bytes_u64(
         Eurydice_array_to_slice((size_t)16U, u, uint8_t, Eurydice_slice),
         s[i][j]);
     Eurydice_slice uu____0 =
@@ -1889,7 +1850,7 @@ static KRML_MUSTINLINE void store_block_full_9a0(uint64x2_t (*s)[5U],
       Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
       Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice)};
   store_block_2f0(s, buf);
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_out0[200U];
   memcpy(copy_of_out0, out0, (size_t)200U * sizeof(uint8_t));
   uint8_t uu____1[200U];
@@ -2014,7 +1975,7 @@ static KRML_MUSTINLINE void keccak_590(Eurydice_slice data[2U],
        i++) {
     size_t i0 = i;
     libcrux_sha3_generic_keccak_KeccakState_fc *uu____0 = &s;
-    /* This copy dictated by the Rust value passing semantics */
+    /* Passing arrays by value in Rust generates a copy in C */
     Eurydice_slice copy_of_data[2U];
     memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
@@ -2024,7 +1985,7 @@ static KRML_MUSTINLINE void keccak_590(Eurydice_slice data[2U],
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)136U;
   libcrux_sha3_generic_keccak_KeccakState_fc *uu____2 = &s;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[2U];
   memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice ret[2U];
@@ -2080,7 +2041,7 @@ with const generics
 */
 static KRML_MUSTINLINE void keccakx2_6e0(Eurydice_slice data[2U],
                                          Eurydice_slice out[2U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[2U];
   memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   keccak_590(copy_of_data, out);
@@ -2143,7 +2104,7 @@ static KRML_MUSTINLINE void keccak_591(Eurydice_slice data[2U],
        i++) {
     size_t i0 = i;
     libcrux_sha3_generic_keccak_KeccakState_fc *uu____0 = &s;
-    /* This copy dictated by the Rust value passing semantics */
+    /* Passing arrays by value in Rust generates a copy in C */
     Eurydice_slice copy_of_data[2U];
     memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
@@ -2153,7 +2114,7 @@ static KRML_MUSTINLINE void keccak_591(Eurydice_slice data[2U],
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)136U;
   libcrux_sha3_generic_keccak_KeccakState_fc *uu____2 = &s;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[2U];
   memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice ret[2U];
@@ -2209,7 +2170,7 @@ with const generics
 */
 static KRML_MUSTINLINE void keccakx2_6e1(Eurydice_slice data[2U],
                                          Eurydice_slice out[2U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[2U];
   memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   keccak_591(copy_of_data, out);
@@ -2244,24 +2205,20 @@ static KRML_MUSTINLINE void load_block_3c1(uint64x2_t (*s)[5U],
                                            Eurydice_slice blocks[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)16U; i++) {
     size_t i0 = i;
-    uint64x2_t v0 =
-        libcrux_intrinsics_arm64__vld1q_bytes_u64(Eurydice_slice_subslice2(
-            blocks[0U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U),
-            uint8_t, Eurydice_slice));
-    uint64x2_t v1 =
-        libcrux_intrinsics_arm64__vld1q_bytes_u64(Eurydice_slice_subslice2(
-            blocks[1U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U),
-            uint8_t, Eurydice_slice));
-    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] =
-        libcrux_intrinsics_arm64__veorq_u64(
-            s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
-            libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
+    uint64x2_t v0 = _vld1q_bytes_u64(Eurydice_slice_subslice2(
+        blocks[0U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U), uint8_t,
+        Eurydice_slice));
+    uint64x2_t v1 = _vld1q_bytes_u64(Eurydice_slice_subslice2(
+        blocks[1U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U), uint8_t,
+        Eurydice_slice));
+    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] = _veorq_u64(
+        s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
+        _vtrn1q_u64(v0, v1));
     s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
      [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] =
-         libcrux_intrinsics_arm64__veorq_u64(
-             s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-              [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
-             libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
+         _veorq_u64(s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
+                     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
+                    _vtrn2q_u64(v0, v1));
   }
   if ((size_t)168U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)168U / (size_t)8U - (size_t)1U) / (size_t)5U;
@@ -2285,9 +2242,9 @@ static KRML_MUSTINLINE void load_block_3c1(uint64x2_t (*s)[5U],
         Eurydice_slice, uint8_t[8U], void *);
     core_result_unwrap_41_ac(dst, uu____1);
     u[1U] = core_num__u64_9__from_le_bytes(uu____1);
-    uint64x2_t uvec = libcrux_intrinsics_arm64__vld1q_u64(
+    uint64x2_t uvec = _vld1q_u64(
         Eurydice_array_to_slice((size_t)2U, u, uint64_t, Eurydice_slice));
-    s[i][j] = libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
+    s[i][j] = _veorq_u64(s[i][j], uvec);
   }
 }
 
@@ -2317,7 +2274,7 @@ with const generics
 static KRML_MUSTINLINE void load_block_full_fa_071(uint64x2_t (*a)[5U],
                                                    uint8_t b[2U][200U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_b[2U][200U];
   memcpy(copy_of_b, b, (size_t)2U * sizeof(uint8_t[200U]));
   load_block_full_3e1(uu____0, copy_of_b);
@@ -2371,30 +2328,28 @@ static KRML_MUSTINLINE void store_block_2f1(uint64x2_t (*s)[5U],
                                             Eurydice_slice out[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)16U; i++) {
     size_t i0 = i;
-    uint64x2_t v0 = libcrux_intrinsics_arm64__vtrn1q_u64(
+    uint64x2_t v0 = _vtrn1q_u64(
         s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
         s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
          [((size_t)2U * i0 + (size_t)1U) % (size_t)5U]);
-    uint64x2_t v1 = libcrux_intrinsics_arm64__vtrn2q_u64(
+    uint64x2_t v1 = _vtrn2q_u64(
         s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
         s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
          [((size_t)2U * i0 + (size_t)1U) % (size_t)5U]);
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
-        Eurydice_slice_subslice2(out[0U], (size_t)16U * i0,
-                                 (size_t)16U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
-        v0);
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
-        Eurydice_slice_subslice2(out[1U], (size_t)16U * i0,
-                                 (size_t)16U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
-        v1);
+    _vst1q_bytes_u64(Eurydice_slice_subslice2(out[0U], (size_t)16U * i0,
+                                              (size_t)16U * (i0 + (size_t)1U),
+                                              uint8_t, Eurydice_slice),
+                     v0);
+    _vst1q_bytes_u64(Eurydice_slice_subslice2(out[1U], (size_t)16U * i0,
+                                              (size_t)16U * (i0 + (size_t)1U),
+                                              uint8_t, Eurydice_slice),
+                     v1);
   }
   if ((size_t)168U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)168U / (size_t)8U - (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)168U / (size_t)8U - (size_t)1U) % (size_t)5U;
     uint8_t u[16U] = {0U};
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
+    _vst1q_bytes_u64(
         Eurydice_array_to_slice((size_t)16U, u, uint8_t, Eurydice_slice),
         s[i][j]);
     Eurydice_slice uu____0 =
@@ -2512,24 +2467,20 @@ static KRML_MUSTINLINE void load_block_3c2(uint64x2_t (*s)[5U],
                                            Eurydice_slice blocks[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)144U / (size_t)16U; i++) {
     size_t i0 = i;
-    uint64x2_t v0 =
-        libcrux_intrinsics_arm64__vld1q_bytes_u64(Eurydice_slice_subslice2(
-            blocks[0U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U),
-            uint8_t, Eurydice_slice));
-    uint64x2_t v1 =
-        libcrux_intrinsics_arm64__vld1q_bytes_u64(Eurydice_slice_subslice2(
-            blocks[1U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U),
-            uint8_t, Eurydice_slice));
-    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] =
-        libcrux_intrinsics_arm64__veorq_u64(
-            s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
-            libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
+    uint64x2_t v0 = _vld1q_bytes_u64(Eurydice_slice_subslice2(
+        blocks[0U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U), uint8_t,
+        Eurydice_slice));
+    uint64x2_t v1 = _vld1q_bytes_u64(Eurydice_slice_subslice2(
+        blocks[1U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U), uint8_t,
+        Eurydice_slice));
+    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] = _veorq_u64(
+        s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
+        _vtrn1q_u64(v0, v1));
     s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
      [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] =
-         libcrux_intrinsics_arm64__veorq_u64(
-             s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-              [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
-             libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
+         _veorq_u64(s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
+                     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
+                    _vtrn2q_u64(v0, v1));
   }
   if ((size_t)144U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)144U / (size_t)8U - (size_t)1U) / (size_t)5U;
@@ -2553,9 +2504,9 @@ static KRML_MUSTINLINE void load_block_3c2(uint64x2_t (*s)[5U],
         Eurydice_slice, uint8_t[8U], void *);
     core_result_unwrap_41_ac(dst, uu____1);
     u[1U] = core_num__u64_9__from_le_bytes(uu____1);
-    uint64x2_t uvec = libcrux_intrinsics_arm64__vld1q_u64(
+    uint64x2_t uvec = _vld1q_u64(
         Eurydice_array_to_slice((size_t)2U, u, uint64_t, Eurydice_slice));
-    s[i][j] = libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
+    s[i][j] = _veorq_u64(s[i][j], uvec);
   }
 }
 
@@ -2571,7 +2522,7 @@ with const generics
 static KRML_MUSTINLINE void load_block_fa_0f1(uint64x2_t (*a)[5U],
                                               Eurydice_slice b[2U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_b[2U];
   memcpy(copy_of_b, b, (size_t)2U * sizeof(Eurydice_slice));
   load_block_3c2(uu____0, copy_of_b);
@@ -2619,7 +2570,7 @@ with const generics
 static KRML_MUSTINLINE void load_block_full_fa_072(uint64x2_t (*a)[5U],
                                                    uint8_t b[2U][200U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_b[2U][200U];
   memcpy(copy_of_b, b, (size_t)2U * sizeof(uint8_t[200U]));
   load_block_full_3e2(uu____0, copy_of_b);
@@ -2663,30 +2614,28 @@ static KRML_MUSTINLINE void store_block_2f2(uint64x2_t (*s)[5U],
                                             Eurydice_slice out[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)144U / (size_t)16U; i++) {
     size_t i0 = i;
-    uint64x2_t v0 = libcrux_intrinsics_arm64__vtrn1q_u64(
+    uint64x2_t v0 = _vtrn1q_u64(
         s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
         s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
          [((size_t)2U * i0 + (size_t)1U) % (size_t)5U]);
-    uint64x2_t v1 = libcrux_intrinsics_arm64__vtrn2q_u64(
+    uint64x2_t v1 = _vtrn2q_u64(
         s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
         s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
          [((size_t)2U * i0 + (size_t)1U) % (size_t)5U]);
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
-        Eurydice_slice_subslice2(out[0U], (size_t)16U * i0,
-                                 (size_t)16U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
-        v0);
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
-        Eurydice_slice_subslice2(out[1U], (size_t)16U * i0,
-                                 (size_t)16U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
-        v1);
+    _vst1q_bytes_u64(Eurydice_slice_subslice2(out[0U], (size_t)16U * i0,
+                                              (size_t)16U * (i0 + (size_t)1U),
+                                              uint8_t, Eurydice_slice),
+                     v0);
+    _vst1q_bytes_u64(Eurydice_slice_subslice2(out[1U], (size_t)16U * i0,
+                                              (size_t)16U * (i0 + (size_t)1U),
+                                              uint8_t, Eurydice_slice),
+                     v1);
   }
   if ((size_t)144U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)144U / (size_t)8U - (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)144U / (size_t)8U - (size_t)1U) % (size_t)5U;
     uint8_t u[16U] = {0U};
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
+    _vst1q_bytes_u64(
         Eurydice_array_to_slice((size_t)16U, u, uint8_t, Eurydice_slice),
         s[i][j]);
     Eurydice_slice uu____0 =
@@ -2721,7 +2670,7 @@ static KRML_MUSTINLINE void store_block_full_9a1(uint64x2_t (*s)[5U],
       Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
       Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice)};
   store_block_2f2(s, buf);
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_out0[200U];
   memcpy(copy_of_out0, out0, (size_t)200U * sizeof(uint8_t));
   uint8_t uu____1[200U];
@@ -2846,7 +2795,7 @@ static KRML_MUSTINLINE void keccak_592(Eurydice_slice data[2U],
        i++) {
     size_t i0 = i;
     libcrux_sha3_generic_keccak_KeccakState_fc *uu____0 = &s;
-    /* This copy dictated by the Rust value passing semantics */
+    /* Passing arrays by value in Rust generates a copy in C */
     Eurydice_slice copy_of_data[2U];
     memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
@@ -2856,7 +2805,7 @@ static KRML_MUSTINLINE void keccak_592(Eurydice_slice data[2U],
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)144U;
   libcrux_sha3_generic_keccak_KeccakState_fc *uu____2 = &s;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[2U];
   memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice ret[2U];
@@ -2912,7 +2861,7 @@ with const generics
 */
 static KRML_MUSTINLINE void keccakx2_6e2(Eurydice_slice data[2U],
                                          Eurydice_slice out[2U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[2U];
   memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   keccak_592(copy_of_data, out);
@@ -2940,24 +2889,20 @@ static KRML_MUSTINLINE void load_block_3c3(uint64x2_t (*s)[5U],
                                            Eurydice_slice blocks[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)104U / (size_t)16U; i++) {
     size_t i0 = i;
-    uint64x2_t v0 =
-        libcrux_intrinsics_arm64__vld1q_bytes_u64(Eurydice_slice_subslice2(
-            blocks[0U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U),
-            uint8_t, Eurydice_slice));
-    uint64x2_t v1 =
-        libcrux_intrinsics_arm64__vld1q_bytes_u64(Eurydice_slice_subslice2(
-            blocks[1U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U),
-            uint8_t, Eurydice_slice));
-    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] =
-        libcrux_intrinsics_arm64__veorq_u64(
-            s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
-            libcrux_intrinsics_arm64__vtrn1q_u64(v0, v1));
+    uint64x2_t v0 = _vld1q_bytes_u64(Eurydice_slice_subslice2(
+        blocks[0U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U), uint8_t,
+        Eurydice_slice));
+    uint64x2_t v1 = _vld1q_bytes_u64(Eurydice_slice_subslice2(
+        blocks[1U], (size_t)16U * i0, (size_t)16U * (i0 + (size_t)1U), uint8_t,
+        Eurydice_slice));
+    s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U] = _veorq_u64(
+        s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
+        _vtrn1q_u64(v0, v1));
     s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
      [((size_t)2U * i0 + (size_t)1U) % (size_t)5U] =
-         libcrux_intrinsics_arm64__veorq_u64(
-             s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
-              [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
-             libcrux_intrinsics_arm64__vtrn2q_u64(v0, v1));
+         _veorq_u64(s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
+                     [((size_t)2U * i0 + (size_t)1U) % (size_t)5U],
+                    _vtrn2q_u64(v0, v1));
   }
   if ((size_t)104U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)104U / (size_t)8U - (size_t)1U) / (size_t)5U;
@@ -2981,9 +2926,9 @@ static KRML_MUSTINLINE void load_block_3c3(uint64x2_t (*s)[5U],
         Eurydice_slice, uint8_t[8U], void *);
     core_result_unwrap_41_ac(dst, uu____1);
     u[1U] = core_num__u64_9__from_le_bytes(uu____1);
-    uint64x2_t uvec = libcrux_intrinsics_arm64__vld1q_u64(
+    uint64x2_t uvec = _vld1q_u64(
         Eurydice_array_to_slice((size_t)2U, u, uint64_t, Eurydice_slice));
-    s[i][j] = libcrux_intrinsics_arm64__veorq_u64(s[i][j], uvec);
+    s[i][j] = _veorq_u64(s[i][j], uvec);
   }
 }
 
@@ -2999,7 +2944,7 @@ with const generics
 static KRML_MUSTINLINE void load_block_fa_0f2(uint64x2_t (*a)[5U],
                                               Eurydice_slice b[2U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_b[2U];
   memcpy(copy_of_b, b, (size_t)2U * sizeof(Eurydice_slice));
   load_block_3c3(uu____0, copy_of_b);
@@ -3047,7 +2992,7 @@ with const generics
 static KRML_MUSTINLINE void load_block_full_fa_073(uint64x2_t (*a)[5U],
                                                    uint8_t b[2U][200U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_b[2U][200U];
   memcpy(copy_of_b, b, (size_t)2U * sizeof(uint8_t[200U]));
   load_block_full_3e3(uu____0, copy_of_b);
@@ -3091,30 +3036,28 @@ static KRML_MUSTINLINE void store_block_2f3(uint64x2_t (*s)[5U],
                                             Eurydice_slice out[2U]) {
   for (size_t i = (size_t)0U; i < (size_t)104U / (size_t)16U; i++) {
     size_t i0 = i;
-    uint64x2_t v0 = libcrux_intrinsics_arm64__vtrn1q_u64(
+    uint64x2_t v0 = _vtrn1q_u64(
         s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
         s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
          [((size_t)2U * i0 + (size_t)1U) % (size_t)5U]);
-    uint64x2_t v1 = libcrux_intrinsics_arm64__vtrn2q_u64(
+    uint64x2_t v1 = _vtrn2q_u64(
         s[(size_t)2U * i0 / (size_t)5U][(size_t)2U * i0 % (size_t)5U],
         s[((size_t)2U * i0 + (size_t)1U) / (size_t)5U]
          [((size_t)2U * i0 + (size_t)1U) % (size_t)5U]);
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
-        Eurydice_slice_subslice2(out[0U], (size_t)16U * i0,
-                                 (size_t)16U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
-        v0);
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
-        Eurydice_slice_subslice2(out[1U], (size_t)16U * i0,
-                                 (size_t)16U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
-        v1);
+    _vst1q_bytes_u64(Eurydice_slice_subslice2(out[0U], (size_t)16U * i0,
+                                              (size_t)16U * (i0 + (size_t)1U),
+                                              uint8_t, Eurydice_slice),
+                     v0);
+    _vst1q_bytes_u64(Eurydice_slice_subslice2(out[1U], (size_t)16U * i0,
+                                              (size_t)16U * (i0 + (size_t)1U),
+                                              uint8_t, Eurydice_slice),
+                     v1);
   }
   if ((size_t)104U % (size_t)16U != (size_t)0U) {
     size_t i = ((size_t)104U / (size_t)8U - (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)104U / (size_t)8U - (size_t)1U) % (size_t)5U;
     uint8_t u[16U] = {0U};
-    libcrux_intrinsics_arm64__vst1q_bytes_u64(
+    _vst1q_bytes_u64(
         Eurydice_array_to_slice((size_t)16U, u, uint8_t, Eurydice_slice),
         s[i][j]);
     Eurydice_slice uu____0 =
@@ -3149,7 +3092,7 @@ static KRML_MUSTINLINE void store_block_full_9a2(uint64x2_t (*s)[5U],
       Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
       Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice)};
   store_block_2f3(s, buf);
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_out0[200U];
   memcpy(copy_of_out0, out0, (size_t)200U * sizeof(uint8_t));
   uint8_t uu____1[200U];
@@ -3274,7 +3217,7 @@ static KRML_MUSTINLINE void keccak_593(Eurydice_slice data[2U],
        i++) {
     size_t i0 = i;
     libcrux_sha3_generic_keccak_KeccakState_fc *uu____0 = &s;
-    /* This copy dictated by the Rust value passing semantics */
+    /* Passing arrays by value in Rust generates a copy in C */
     Eurydice_slice copy_of_data[2U];
     memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
@@ -3284,7 +3227,7 @@ static KRML_MUSTINLINE void keccak_593(Eurydice_slice data[2U],
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)104U;
   libcrux_sha3_generic_keccak_KeccakState_fc *uu____2 = &s;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[2U];
   memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice ret[2U];
@@ -3340,7 +3283,7 @@ with const generics
 */
 static KRML_MUSTINLINE void keccakx2_6e3(Eurydice_slice data[2U],
                                          Eurydice_slice out[2U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[2U];
   memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   keccak_593(copy_of_data, out);

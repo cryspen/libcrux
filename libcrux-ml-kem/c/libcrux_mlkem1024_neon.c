@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
- * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
+ * Eurydice: 7834acbb41b06c34f198a1cb6b88241cc10b9aeb
+ * Karamel: bdf06956e6ee025d4819bf2f8cc92651e572ad85
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: c52405ea0a57830cfac5f952072ffe083ccb94f7
+ * Libcrux: d5574e8f6c62bf622ab6b61c291abeb66c1b7221
  */
 
 #include "libcrux_mlkem1024_neon.h"
@@ -125,7 +125,7 @@ static tuple_21 encapsulate_6b(
     libcrux_ml_kem_types_MlKemPublicKey_1f *public_key,
     uint8_t randomness[32U]) {
   libcrux_ml_kem_types_MlKemPublicKey_1f *uu____0 = public_key;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
   return libcrux_ml_kem_ind_cca_encapsulate_28(uu____0, copy_of_randomness);
@@ -142,7 +142,7 @@ tuple_21 libcrux_ml_kem_mlkem1024_neon_encapsulate(
     libcrux_ml_kem_types_MlKemPublicKey_1f *public_key,
     uint8_t randomness[32U]) {
   libcrux_ml_kem_types_MlKemPublicKey_1f *uu____0 = public_key;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
   return encapsulate_6b(uu____0, copy_of_randomness);
@@ -174,7 +174,7 @@ static tuple_21 encapsulate_unpacked_1c(
     uint8_t randomness[32U]) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_2c *uu____0 =
       public_key;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
   return libcrux_ml_kem_ind_cca_encapsulate_unpacked_47(uu____0,
@@ -196,7 +196,7 @@ tuple_21 libcrux_ml_kem_mlkem1024_neon_encapsulate_unpacked(
     uint8_t randomness[32U]) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_2c *uu____0 =
       public_key;
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
   return encapsulate_unpacked_1c(uu____0, copy_of_randomness);
@@ -218,7 +218,7 @@ libcrux_ml_kem.ind_cca.instantiations.neon.generate_keypair with const generics
 */
 static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_91(
     uint8_t randomness[64U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
   return libcrux_ml_kem_ind_cca_generate_keypair_72(copy_of_randomness);
@@ -229,7 +229,7 @@ static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_91(
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_mlkem1024_neon_generate_key_pair(uint8_t randomness[64U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
   return generate_keypair_91(copy_of_randomness);
@@ -252,7 +252,7 @@ generics
 */
 static libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_2c
 generate_keypair_unpacked_87(uint8_t randomness[64U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
   return libcrux_ml_kem_ind_cca_generate_keypair_unpacked_b4(
@@ -265,7 +265,7 @@ generate_keypair_unpacked_87(uint8_t randomness[64U]) {
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_2c
 libcrux_ml_kem_mlkem1024_neon_generate_key_pair_unpacked(
     uint8_t randomness[64U]) {
-  /* This copy dictated by the Rust value passing semantics */
+  /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
   return generate_keypair_unpacked_87(copy_of_randomness);
