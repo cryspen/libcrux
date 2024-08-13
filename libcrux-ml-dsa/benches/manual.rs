@@ -74,7 +74,6 @@ macro_rules! bench_group {
             $variant,
             (),
             |()| {
-                // FIXME: expose the constants
                 let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] = random_array();
                 key_generation_seed
             },
@@ -87,7 +86,6 @@ macro_rules! bench_group {
             $variant,
             (),
             |()| {
-                // FIXME: expose the constants
                 let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] = random_array();
                 let signing_randomness: [u8; SIGNING_RANDOMNESS_SIZE] = random_array();
                 let message = random_array::<1023>();
@@ -107,7 +105,6 @@ macro_rules! bench_group {
             $variant,
             (),
             |()| {
-                // FIXME: expose the constants
                 let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] = random_array();
                 let signing_randomness: [u8; SIGNING_RANDOMNESS_SIZE] = random_array();
                 let message = random_array::<1023>();
@@ -125,7 +122,7 @@ macro_rules! bench_group {
 }
 
 fn main() {
-    bench_group!("65", ml_dsa_65, MLDSA65KeyPair, MLDSA65Signature);
     bench_group!("44", ml_dsa_44, MLDSA44KeyPair, MLDSA44Signature);
+    bench_group!("65", ml_dsa_65, MLDSA65KeyPair, MLDSA65Signature);
     bench_group!("87", ml_dsa_87, MLDSA87KeyPair, MLDSA87Signature);
 }
