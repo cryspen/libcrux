@@ -162,6 +162,8 @@ fn generate_keypair<
     MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key))
 }
 
+
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
@@ -227,13 +229,13 @@ fn encapsulate<
 
     let ciphertext = MlKemCiphertext::from(ciphertext);
     let shared_secret_array = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, &ciphertext);
-
     // For some reason F* manages to assert the post-condition but fails to verify it
     // as a part of function signature 
-    hax_lib::fstar!("admit()");
+    hax_lib::fstar!("admit() (* Panic Free *)");
     (ciphertext, shared_secret_array)
 }
 
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
     $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
@@ -250,6 +252,8 @@ fn encapsulate<
     $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
     $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"))]
+#[hax_lib::ensures(|result| fstar!("${result} == 
+    Spec.MLKEM.ind_cca_decapsulate $K ${private_key}.f_value ${ciphertext}.f_value"))] 
 pub(crate) fn decapsulate<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -319,12 +323,14 @@ pub(crate) fn decapsulate<
         Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(&implicit_rejection_shared_secret, ciphertext);
     let shared_secret = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, ciphertext);
 
-    compare_ciphertexts_select_shared_secret_in_constant_time(
-        ciphertext.as_ref(),
-        &expected_ciphertext,
-        &shared_secret,
-        &implicit_rejection_shared_secret,
-    )
+    let shared_secret = compare_ciphertexts_select_shared_secret_in_constant_time(
+                            ciphertext.as_ref(),
+                            &expected_ciphertext,
+                            &shared_secret,
+                            &implicit_rejection_shared_secret,
+                        );
+    hax_lib::fstar!("admit() (* Panic Free *)");
+    shared_secret
 }
 
 // Unpacked API

@@ -54,7 +54,9 @@ VERIFIED =   Libcrux_ml_kem.Types.fst \
              Libcrux_ml_kem.Hash_functions.Avx2.fsti \
              Libcrux_ml_kem.Hash_functions.fsti \
              Libcrux_ml_kem.Hash_functions.Neon.fsti \
-             Libcrux_ml_kem.Hash_functions.Portable.fsti
+             Libcrux_ml_kem.Hash_functions.Portable.fsti \
+             Libcrux_ml_kem.Utils.fst \
+             Libcrux_ml_kem.Utils.fsti
 
 PANIC_FREE = Libcrux_ml_kem.Constant_time_ops.fst \
              Libcrux_ml_kem.Constant_time_ops.fsti \
@@ -143,7 +145,7 @@ FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HACL_HOME)/specs $(HAX_PROOF_LIBS_HOME)/
 	../../../../libcrux-intrinsics/proofs/fstar/extraction/ \
 	../../../../libcrux-sha3/proofs/fstar/extraction/
 
-FSTAR_FLAGS = --cmi \
+FSTAR_FLAGS = --cmi --query_stats \
   --warn_error -331-321-274 \
   --cache_checked_modules --cache_dir $(CACHE_DIR) \
   --already_cached "+Prims+FStar+LowStar+C+Spec.Loops+TestLib" \
