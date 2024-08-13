@@ -44,7 +44,7 @@ pub(crate) mod instantiations;
     ${private_key.len()} == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
     ${public_key.len()} == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
     ${implicit_rejection_value.len()} == Spec.MLKEM.v_SHARED_SECRET_SIZE"))]
-#[hax_lib::ensures(|result| fstar!("result == Seq.append $private_key (
+#[hax_lib::ensures(|result| fstar!("$result == Seq.append $private_key (
                                               Seq.append $public_key (
                                               Seq.append (Spec.Utils.v_H $public_key) 
                                                   $implicit_rejection_value))"))]
@@ -63,6 +63,25 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
     pointer += H_DIGEST_SIZE;
     out[pointer..pointer + implicit_rejection_value.len()]
         .copy_from_slice(implicit_rejection_value);
+    hax_lib::fstar!("let open Spec.Utils in
+        assert (Seq.slice $out 0 (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K)) `Seq.equal` $private_key);
+        assert (Seq.slice $out (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K))
+                                (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +! Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K)) `Seq.equal` $public_key);
+        assert (Seq.slice $out (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
+                                                Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K))
+                                (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
+                                                Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K +!
+                                                Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE))
+                `Seq.equal` Libcrux_ml_kem.Hash_functions.f_H #$:Hasher #$K $public_key);
+        assert (Seq.slice $out (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
+                                                Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K +!
+                                                Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE))
+                                (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
+                                                Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K +!
+                                                Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE +!
+                                                Spec.MLKEM.v_SHARED_SECRET_SIZE))
+                == $implicit_rejection_value);
+        lemma_slice_append_4 $out $private_key $public_key (Libcrux_ml_kem.Hash_functions.f_H #$:Hasher #$K $public_key) $implicit_rejection_value");
     out
 }
 
@@ -143,6 +162,8 @@ fn generate_keypair<
     MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key))
 }
 
+
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
@@ -156,6 +177,8 @@ fn generate_keypair<
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
     $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K"))]
+#[hax_lib::ensures(|result| fstar!("(${result}._1.f_value, ${result}._2) == 
+    Spec.MLKEM.ind_cca_encapsulate $K ${public_key}.f_value $randomness"))] 
 fn encapsulate<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -180,7 +203,6 @@ fn encapsulate<
     let randomness = Scheme::entropy_preprocess::<K, Hasher>(&randomness);
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()));
-
     let hashed = Hasher::G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
@@ -203,10 +225,13 @@ fn encapsulate<
 
     let ciphertext = MlKemCiphertext::from(ciphertext);
     let shared_secret_array = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, &ciphertext);
-
+    // For some reason F* manages to assert the post-condition but fails to verify it
+    // as a part of function signature 
+    hax_lib::fstar!("admit() (* Panic Free *)");
     (ciphertext, shared_secret_array)
 }
 
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
     $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
@@ -223,6 +248,8 @@ fn encapsulate<
     $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
     $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"))]
+#[hax_lib::ensures(|result| fstar!("$result == 
+    Spec.MLKEM.ind_cca_decapsulate $K ${private_key}.f_value ${ciphertext}.f_value"))] 
 pub(crate) fn decapsulate<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -292,12 +319,14 @@ pub(crate) fn decapsulate<
         Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(&implicit_rejection_shared_secret, ciphertext);
     let shared_secret = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, ciphertext);
 
-    compare_ciphertexts_select_shared_secret_in_constant_time(
-        ciphertext.as_ref(),
-        &expected_ciphertext,
-        &shared_secret,
-        &implicit_rejection_shared_secret,
-    )
+    let shared_secret = compare_ciphertexts_select_shared_secret_in_constant_time(
+                            ciphertext.as_ref(),
+                            &expected_ciphertext,
+                            &shared_secret,
+                            &implicit_rejection_shared_secret,
+                        );
+    hax_lib::fstar!("admit() (* Panic Free *)");
+    shared_secret
 }
 
 // Unpacked API
@@ -513,6 +542,7 @@ pub mod unpacked {
 #[hax_lib::attributes]
 pub(crate) trait Variant {
     #[requires(shared_secret.len() == 32)]
+    #[ensures(|res| fstar!("$res == $shared_secret"))]
     fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
         shared_secret: &[u8],
         ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
@@ -561,6 +591,8 @@ pub(crate) struct MlKem {}
 impl Variant for MlKem {
     #[inline(always)]
     #[requires(shared_secret.len() == 32)]
+    // Output name has be `out1` https://github.com/hacspec/hax/issues/832
+    #[ensures(|out1| fstar!("$out1 == $shared_secret"))]
     fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
         shared_secret: &[u8],
         _: &MlKemCiphertext<CIPHERTEXT_SIZE>,

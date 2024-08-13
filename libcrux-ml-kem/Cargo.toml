@@ -23,7 +23,9 @@ rand_core = { version = "0.6" }
 libcrux-platform = { version = "0.0.2-alpha.3", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2-alpha.3", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-alpha.3", path = "../libcrux-intrinsics" }
-hax-lib = { git = "https://github.com/hacspec/hax" }
+
+# This is only required for verification, but we are setting it as default until some hax attributes are fixed
+hax-lib = { git = "https://github.com/hacspec/hax", branch = "main" }
 
 [features]
 # By default all variants and std are enabled.

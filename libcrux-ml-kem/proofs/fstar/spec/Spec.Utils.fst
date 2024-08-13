@@ -53,5 +53,20 @@ val v_XOF (v_LEN: usize{v v_LEN < pow2 32}) (input: t_Slice u8) : t_Array u8 v_L
 let v_XOF v_LEN input = map_slice Lib.RawIntTypes.u8_to_UInt8 (
   shake128 (Seq.length input) (map_slice Lib.IntTypes.secret input) (v v_LEN))
 
-    
-
+let update_at_range_lemma #n
+  (s: t_Slice 't)
+  (i: Core.Ops.Range.t_Range (int_t n) {(Core.Ops.Range.impl_index_range_slice 't n).f_index_pre s i}) 
+  (x: t_Slice 't)
+  : Lemma
+    (requires (Seq.length x == v i.f_end - v i.f_start))
+    (ensures (
+      let s' = Rust_primitives.Hax.Monomorphized_update_at.update_at_range s i x in
+      let len = v i.f_start in
+      forall (i: nat). i < len ==> Seq.index s i == Seq.index s' i
+    ))
+    [SMTPat (Rust_primitives.Hax.Monomorphized_update_at.update_at_range s i x)]
+  = let s' = Rust_primitives.Hax.Monomorphized_update_at.update_at_range s i x in
+    let len = v i.f_start in
+    introduce forall (i:nat {i < len}). Seq.index s i == Seq.index s' i
+    with (assert ( Seq.index (Seq.slice s  0 len) i == Seq.index s  i 
+                 /\ Seq.index (Seq.slice s' 0 len) i == Seq.index s' i ))  

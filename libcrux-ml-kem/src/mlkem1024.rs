@@ -233,7 +233,7 @@ macro_rules! instantiate {
             /// https://github.com/hacspec/hax/issues/770
             #[cfg_attr(
                 hax,
-                hax_lib::fstar::before(
+                hax_lib::fstar::before(interface,
                     "
 let _ =
     (* This module has implicit dependencies, here we make them explicit. *)

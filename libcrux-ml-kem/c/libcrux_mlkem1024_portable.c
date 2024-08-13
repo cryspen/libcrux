@@ -8,7 +8,7 @@
  * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
  * F*: 3ed3c98d39ce028c31c5908a38bc68ad5098f563
- * Libcrux: aa91a6764bde8c1f15107a03746f506e99a9159b
+ * Libcrux: 532179755ebf8a52897604eaa5ce673b354c2c59
  */
 
 #include "libcrux_mlkem1024_portable.h"
@@ -35,7 +35,7 @@ libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-static void decapsulate_52(
+static void decapsulate_0b(
     libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
@@ -46,7 +46,7 @@ void libcrux_ml_kem_mlkem1024_portable_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
-  decapsulate_52(private_key, ciphertext, ret);
+  decapsulate_0b(private_key, ciphertext, ret);
 }
 
 /**
@@ -70,18 +70,19 @@ generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-static void decapsulate_unpacked_b6(
+static void decapsulate_unpacked_ef(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42 *key_pair,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_decapsulate_unpacked_ca1(key_pair, ciphertext, ret);
+  libcrux_ml_kem_ind_cca_unpacked_decapsulate_unpacked_9d1(key_pair, ciphertext,
+                                                           ret);
 }
 
 void libcrux_ml_kem_mlkem1024_portable_decapsulate_unpacked(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42 *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
-  decapsulate_unpacked_b6(private_key, ciphertext, ret);
+  decapsulate_unpacked_ef(private_key, ciphertext, ret);
 }
 
 /**
@@ -95,7 +96,7 @@ libcrux_ml_kem.ind_cca.instantiations.portable.encapsulate with const generics
 - C2_SIZE= 160
 - VECTOR_U_COMPRESSION_FACTOR= 11
 - VECTOR_V_COMPRESSION_FACTOR= 5
-- VECTOR_U_BLOCK_LEN= 352
+- C1_BLOCK_SIZE= 352
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 - ETA2= 2
@@ -137,14 +138,15 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_21 encapsulate_unpacked_9a(
+static tuple_21 encapsulate_unpacked_9d(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_42 *public_key,
     uint8_t randomness[32U]) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_42 *uu____0 =
       public_key;
   uint8_t uu____1[32U];
   memcpy(uu____1, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_encapsulate_unpacked_311(uu____0, uu____1);
+  return libcrux_ml_kem_ind_cca_unpacked_encapsulate_unpacked_d81(uu____0,
+                                                                  uu____1);
 }
 
 tuple_21 libcrux_ml_kem_mlkem1024_portable_encapsulate_unpacked(
@@ -154,7 +156,7 @@ tuple_21 libcrux_ml_kem_mlkem1024_portable_encapsulate_unpacked(
       public_key;
   uint8_t uu____1[32U];
   memcpy(uu____1, randomness, (size_t)32U * sizeof(uint8_t));
-  return encapsulate_unpacked_9a(uu____0, uu____1);
+  return encapsulate_unpacked_9d(uu____0, uu____1);
 }
 
 /**
@@ -165,7 +167,7 @@ generics
 - CPA_PRIVATE_KEY_SIZE= 1536
 - PRIVATE_KEY_SIZE= 3168
 - PUBLIC_KEY_SIZE= 1568
-- BYTES_PER_RING_ELEMENT= 1536
+- RANKED_BYTES_PER_RING_ELEMENT= 1536
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
@@ -196,10 +198,10 @@ const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 static libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42
-generate_keypair_unpacked_4a(uint8_t randomness[64U]) {
+generate_keypair_unpacked_b3(uint8_t randomness[64U]) {
   uint8_t uu____0[64U];
   memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_unpacked_0e1(uu____0);
+  return libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_251(uu____0);
 }
 
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42
@@ -207,7 +209,7 @@ libcrux_ml_kem_mlkem1024_portable_generate_key_pair_unpacked(
     uint8_t randomness[64U]) {
   uint8_t uu____0[64U];
   memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_unpacked_4a(uu____0);
+  return generate_keypair_unpacked_b3(uu____0);
 }
 
 /**

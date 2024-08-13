@@ -116,7 +116,17 @@ val decrypt
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (secret_key: t_Slice u8)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 32))
+      (requires
+        Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
+        v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K /\
+        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
+        v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K)
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 32) = result in
+          result == Spec.MLKEM.ind_cpa_decrypt v_K secret_key ciphertext)
 
 /// This function implements <strong>Algorithm 13</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
@@ -173,7 +183,23 @@ val encrypt
       (public_key: t_Slice u8)
       (message: t_Array u8 (sz 32))
       (randomness: t_Slice u8)
-    : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_ETA1 = Spec.MLKEM.v_ETA1 v_K /\
+        v_ETA1_RANDOMNESS_SIZE = Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
+        v_ETA2 = Spec.MLKEM.v_ETA2 v_K /\ v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\
+        v_ETA2_RANDOMNESS_SIZE = Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE v_K /\
+        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
+        v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
+        length public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        length randomness == Spec.MLKEM.v_SHARED_SECRET_SIZE /\
+        v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
+        v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K /\
+        v_C1_LEN == Spec.MLKEM.v_C1_SIZE v_K /\ v_C2_LEN == Spec.MLKEM.v_C2_SIZE v_K)
+      (ensures
+        fun result ->
+          let result:t_Array u8 v_CIPHERTEXT_SIZE = result in
+          result == Spec.MLKEM.ind_cpa_encrypt v_K public_key message randomness)
 
 /// This function implements most of <strong>Algorithm 12</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation algorithm.

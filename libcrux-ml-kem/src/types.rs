@@ -42,8 +42,10 @@ macro_rules! impl_generic_struct {
             }
         }
 
+        #[hax_lib::attributes]
         impl<const SIZE: usize> $name<SIZE> {
             /// A reference to the raw byte slice.
+            #[ensures(|result| fstar!("$result == self.f_value"))]
             pub fn as_slice(&self) -> &[u8; SIZE] {
                 &self.value
             }
@@ -140,6 +142,7 @@ pub struct MlKemKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: us
     pub(crate) pk: MlKemPublicKey<PUBLIC_KEY_SIZE>,
 }
 
+#[hax_lib::attributes]
 impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
     MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>
 {
@@ -152,6 +155,7 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
     }
 
     /// Create a new [`MlKemKeyPair`] from the secret and public key.
+    #[ensures(|result| fstar!("${result}.f_sk == $sk /\\ ${result}.f_pk == $pk"))]
     pub fn from(
         sk: MlKemPrivateKey<PRIVATE_KEY_SIZE>,
         pk: MlKemPublicKey<PUBLIC_KEY_SIZE>,
