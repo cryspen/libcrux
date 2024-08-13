@@ -8,7 +8,7 @@
  * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
  * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 23fd74952dc8fe8d2e3bdd3eb691bf8502b98b15
+ * Libcrux: c52405ea0a57830cfac5f952072ffe083ccb94f7
  */
 
 #include "libcrux_mlkem1024_portable.h"
@@ -125,9 +125,10 @@ static tuple_21 encapsulate_48(
     libcrux_ml_kem_types_MlKemPublicKey_1f *public_key,
     uint8_t randomness[32U]) {
   libcrux_ml_kem_types_MlKemPublicKey_1f *uu____0 = public_key;
-  uint8_t uu____1[32U];
-  memcpy(uu____1, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_encapsulate_9d1(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_randomness[32U];
+  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+  return libcrux_ml_kem_ind_cca_encapsulate_9d1(uu____0, copy_of_randomness);
 }
 
 /**
@@ -141,9 +142,10 @@ tuple_21 libcrux_ml_kem_mlkem1024_portable_encapsulate(
     libcrux_ml_kem_types_MlKemPublicKey_1f *public_key,
     uint8_t randomness[32U]) {
   libcrux_ml_kem_types_MlKemPublicKey_1f *uu____0 = public_key;
-  uint8_t uu____1[32U];
-  memcpy(uu____1, randomness, (size_t)32U * sizeof(uint8_t));
-  return encapsulate_48(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_randomness[32U];
+  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+  return encapsulate_48(uu____0, copy_of_randomness);
 }
 
 /**
@@ -172,9 +174,11 @@ static tuple_21 encapsulate_unpacked_ac(
     uint8_t randomness[32U]) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_42 *uu____0 =
       public_key;
-  uint8_t uu____1[32U];
-  memcpy(uu____1, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_encapsulate_unpacked_861(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_randomness[32U];
+  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+  return libcrux_ml_kem_ind_cca_encapsulate_unpacked_861(uu____0,
+                                                         copy_of_randomness);
 }
 
 /**
@@ -192,9 +196,10 @@ tuple_21 libcrux_ml_kem_mlkem1024_portable_encapsulate_unpacked(
     uint8_t randomness[32U]) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_42 *uu____0 =
       public_key;
-  uint8_t uu____1[32U];
-  memcpy(uu____1, randomness, (size_t)32U * sizeof(uint8_t));
-  return encapsulate_unpacked_ac(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_randomness[32U];
+  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+  return encapsulate_unpacked_ac(uu____0, copy_of_randomness);
 }
 
 /**
@@ -214,9 +219,10 @@ generics
 */
 static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_6e(
     uint8_t randomness[64U]) {
-  uint8_t uu____0[64U];
-  memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_6f1(uu____0);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_randomness[64U];
+  memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
+  return libcrux_ml_kem_ind_cca_generate_keypair_6f1(copy_of_randomness);
 }
 
 /**
@@ -224,9 +230,10 @@ static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_6e(
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_mlkem1024_portable_generate_key_pair(uint8_t randomness[64U]) {
-  uint8_t uu____0[64U];
-  memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_6e(uu____0);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_randomness[64U];
+  memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
+  return generate_keypair_6e(copy_of_randomness);
 }
 
 /**
@@ -246,9 +253,11 @@ const generics
 */
 static libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42
 generate_keypair_unpacked_f5(uint8_t randomness[64U]) {
-  uint8_t uu____0[64U];
-  memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_unpacked_0d1(uu____0);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_randomness[64U];
+  memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
+  return libcrux_ml_kem_ind_cca_generate_keypair_unpacked_0d1(
+      copy_of_randomness);
 }
 
 /**
@@ -257,9 +266,10 @@ generate_keypair_unpacked_f5(uint8_t randomness[64U]) {
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42
 libcrux_ml_kem_mlkem1024_portable_generate_key_pair_unpacked(
     uint8_t randomness[64U]) {
-  uint8_t uu____0[64U];
-  memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_unpacked_f5(uu____0);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_randomness[64U];
+  memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
+  return generate_keypair_unpacked_f5(copy_of_randomness);
 }
 
 /**

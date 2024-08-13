@@ -8,7 +8,7 @@
  * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
  * Karamel: 2bd16e63cfbfa2b81d3c45d597b811ca2a12d430
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 23fd74952dc8fe8d2e3bdd3eb691bf8502b98b15
+ * Libcrux: c52405ea0a57830cfac5f952072ffe083ccb94f7
  */
 
 #include "libcrux_sha3_neon.h"
@@ -118,10 +118,11 @@ usize> for core::core_arch::arm_shared::neon::uint64x2_t)}
 */
 static KRML_MUSTINLINE void slice_n_fa(Eurydice_slice a[2U], size_t start,
                                        size_t len, Eurydice_slice ret[2U]) {
-  Eurydice_slice uu____0[2U];
-  memcpy(uu____0, a, (size_t)2U * sizeof(Eurydice_slice));
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_a[2U];
+  memcpy(copy_of_a, a, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice ret0[2U];
-  slice_2(uu____0, start, len, ret0);
+  slice_2(copy_of_a, start, len, ret0);
   memcpy(ret, ret0, (size_t)2U * sizeof(Eurydice_slice));
 }
 
@@ -266,9 +267,10 @@ with const generics
 static KRML_MUSTINLINE void load_block_fa_0f(uint64x2_t (*a)[5U],
                                              Eurydice_slice b[2U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  Eurydice_slice uu____1[2U];
-  memcpy(uu____1, b, (size_t)2U * sizeof(Eurydice_slice));
-  load_block_3c(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_b[2U];
+  memcpy(copy_of_b, b, (size_t)2U * sizeof(Eurydice_slice));
+  load_block_3c(uu____0, copy_of_b);
 }
 
 /**
@@ -1358,9 +1360,10 @@ with const generics
 static KRML_MUSTINLINE void load_block_full_fa_07(uint64x2_t (*a)[5U],
                                                   uint8_t b[2U][200U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  uint8_t uu____1[2U][200U];
-  memcpy(uu____1, b, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full_3e(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_b[2U][200U];
+  memcpy(copy_of_b, b, (size_t)2U * sizeof(uint8_t[200U]));
+  load_block_full_3e(uu____0, copy_of_b);
 }
 
 /**
@@ -1459,11 +1462,12 @@ static KRML_MUSTINLINE void store_block_full_9a(uint64x2_t (*s)[5U],
       Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
       Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice)};
   store_block_2f(s, buf);
-  uint8_t uu____0[200U];
-  memcpy(uu____0, out0, (size_t)200U * sizeof(uint8_t));
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_out0[200U];
+  memcpy(copy_of_out0, out0, (size_t)200U * sizeof(uint8_t));
   uint8_t uu____1[200U];
   memcpy(uu____1, out1, (size_t)200U * sizeof(uint8_t));
-  memcpy(ret[0U], uu____0, (size_t)200U * sizeof(uint8_t));
+  memcpy(ret[0U], copy_of_out0, (size_t)200U * sizeof(uint8_t));
   memcpy(ret[1U], uu____1, (size_t)200U * sizeof(uint8_t));
 }
 
@@ -1583,19 +1587,21 @@ static KRML_MUSTINLINE void keccak_59(Eurydice_slice data[2U],
        i++) {
     size_t i0 = i;
     libcrux_sha3_generic_keccak_KeccakState_fc *uu____0 = &s;
-    Eurydice_slice uu____1[2U];
-    memcpy(uu____1, data, (size_t)2U * sizeof(Eurydice_slice));
+    /* This copy dictated by the Rust value passing semantics */
+    Eurydice_slice copy_of_data[2U];
+    memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
-    slice_n_fa(uu____1, i0 * (size_t)72U, (size_t)72U, ret);
+    slice_n_fa(copy_of_data, i0 * (size_t)72U, (size_t)72U, ret);
     absorb_block_45(uu____0, ret);
   }
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)72U;
   libcrux_sha3_generic_keccak_KeccakState_fc *uu____2 = &s;
-  Eurydice_slice uu____3[2U];
-  memcpy(uu____3, data, (size_t)2U * sizeof(Eurydice_slice));
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_data[2U];
+  memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice ret[2U];
-  slice_n_fa(uu____3,
+  slice_n_fa(copy_of_data,
              core_slice___Slice_T___len(data[0U], uint8_t, size_t) - rem, rem,
              ret);
   absorb_final_fe(uu____2, ret);
@@ -1647,9 +1653,10 @@ with const generics
 */
 static KRML_MUSTINLINE void keccakx2_6e(Eurydice_slice data[2U],
                                         Eurydice_slice out[2U]) {
-  Eurydice_slice uu____0[2U];
-  memcpy(uu____0, data, (size_t)2U * sizeof(Eurydice_slice));
-  keccak_59(uu____0, out);
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_data[2U];
+  memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
+  keccak_59(copy_of_data, out);
 }
 
 /**
@@ -1732,9 +1739,10 @@ with const generics
 static KRML_MUSTINLINE void load_block_fa_0f0(uint64x2_t (*a)[5U],
                                               Eurydice_slice b[2U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  Eurydice_slice uu____1[2U];
-  memcpy(uu____1, b, (size_t)2U * sizeof(Eurydice_slice));
-  load_block_3c0(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_b[2U];
+  memcpy(copy_of_b, b, (size_t)2U * sizeof(Eurydice_slice));
+  load_block_3c0(uu____0, copy_of_b);
 }
 
 /**
@@ -1779,9 +1787,10 @@ with const generics
 static KRML_MUSTINLINE void load_block_full_fa_070(uint64x2_t (*a)[5U],
                                                    uint8_t b[2U][200U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  uint8_t uu____1[2U][200U];
-  memcpy(uu____1, b, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full_3e0(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_b[2U][200U];
+  memcpy(copy_of_b, b, (size_t)2U * sizeof(uint8_t[200U]));
+  load_block_full_3e0(uu____0, copy_of_b);
 }
 
 /**
@@ -1880,11 +1889,12 @@ static KRML_MUSTINLINE void store_block_full_9a0(uint64x2_t (*s)[5U],
       Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
       Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice)};
   store_block_2f0(s, buf);
-  uint8_t uu____0[200U];
-  memcpy(uu____0, out0, (size_t)200U * sizeof(uint8_t));
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_out0[200U];
+  memcpy(copy_of_out0, out0, (size_t)200U * sizeof(uint8_t));
   uint8_t uu____1[200U];
   memcpy(uu____1, out1, (size_t)200U * sizeof(uint8_t));
-  memcpy(ret[0U], uu____0, (size_t)200U * sizeof(uint8_t));
+  memcpy(ret[0U], copy_of_out0, (size_t)200U * sizeof(uint8_t));
   memcpy(ret[1U], uu____1, (size_t)200U * sizeof(uint8_t));
 }
 
@@ -2004,19 +2014,21 @@ static KRML_MUSTINLINE void keccak_590(Eurydice_slice data[2U],
        i++) {
     size_t i0 = i;
     libcrux_sha3_generic_keccak_KeccakState_fc *uu____0 = &s;
-    Eurydice_slice uu____1[2U];
-    memcpy(uu____1, data, (size_t)2U * sizeof(Eurydice_slice));
+    /* This copy dictated by the Rust value passing semantics */
+    Eurydice_slice copy_of_data[2U];
+    memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
-    slice_n_fa(uu____1, i0 * (size_t)136U, (size_t)136U, ret);
+    slice_n_fa(copy_of_data, i0 * (size_t)136U, (size_t)136U, ret);
     absorb_block_450(uu____0, ret);
   }
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)136U;
   libcrux_sha3_generic_keccak_KeccakState_fc *uu____2 = &s;
-  Eurydice_slice uu____3[2U];
-  memcpy(uu____3, data, (size_t)2U * sizeof(Eurydice_slice));
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_data[2U];
+  memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice ret[2U];
-  slice_n_fa(uu____3,
+  slice_n_fa(copy_of_data,
              core_slice___Slice_T___len(data[0U], uint8_t, size_t) - rem, rem,
              ret);
   absorb_final_fe0(uu____2, ret);
@@ -2068,9 +2080,10 @@ with const generics
 */
 static KRML_MUSTINLINE void keccakx2_6e0(Eurydice_slice data[2U],
                                          Eurydice_slice out[2U]) {
-  Eurydice_slice uu____0[2U];
-  memcpy(uu____0, data, (size_t)2U * sizeof(Eurydice_slice));
-  keccak_590(uu____0, out);
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_data[2U];
+  memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
+  keccak_590(copy_of_data, out);
 }
 
 /**
@@ -2130,19 +2143,21 @@ static KRML_MUSTINLINE void keccak_591(Eurydice_slice data[2U],
        i++) {
     size_t i0 = i;
     libcrux_sha3_generic_keccak_KeccakState_fc *uu____0 = &s;
-    Eurydice_slice uu____1[2U];
-    memcpy(uu____1, data, (size_t)2U * sizeof(Eurydice_slice));
+    /* This copy dictated by the Rust value passing semantics */
+    Eurydice_slice copy_of_data[2U];
+    memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
-    slice_n_fa(uu____1, i0 * (size_t)136U, (size_t)136U, ret);
+    slice_n_fa(copy_of_data, i0 * (size_t)136U, (size_t)136U, ret);
     absorb_block_450(uu____0, ret);
   }
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)136U;
   libcrux_sha3_generic_keccak_KeccakState_fc *uu____2 = &s;
-  Eurydice_slice uu____3[2U];
-  memcpy(uu____3, data, (size_t)2U * sizeof(Eurydice_slice));
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_data[2U];
+  memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice ret[2U];
-  slice_n_fa(uu____3,
+  slice_n_fa(copy_of_data,
              core_slice___Slice_T___len(data[0U], uint8_t, size_t) - rem, rem,
              ret);
   absorb_final_fe1(uu____2, ret);
@@ -2194,9 +2209,10 @@ with const generics
 */
 static KRML_MUSTINLINE void keccakx2_6e1(Eurydice_slice data[2U],
                                          Eurydice_slice out[2U]) {
-  Eurydice_slice uu____0[2U];
-  memcpy(uu____0, data, (size_t)2U * sizeof(Eurydice_slice));
-  keccak_591(uu____0, out);
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_data[2U];
+  memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
+  keccak_591(copy_of_data, out);
 }
 
 /**
@@ -2301,9 +2317,10 @@ with const generics
 static KRML_MUSTINLINE void load_block_full_fa_071(uint64x2_t (*a)[5U],
                                                    uint8_t b[2U][200U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  uint8_t uu____1[2U][200U];
-  memcpy(uu____1, b, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full_3e1(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_b[2U][200U];
+  memcpy(copy_of_b, b, (size_t)2U * sizeof(uint8_t[200U]));
+  load_block_full_3e1(uu____0, copy_of_b);
 }
 
 /**
@@ -2554,9 +2571,10 @@ with const generics
 static KRML_MUSTINLINE void load_block_fa_0f1(uint64x2_t (*a)[5U],
                                               Eurydice_slice b[2U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  Eurydice_slice uu____1[2U];
-  memcpy(uu____1, b, (size_t)2U * sizeof(Eurydice_slice));
-  load_block_3c2(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_b[2U];
+  memcpy(copy_of_b, b, (size_t)2U * sizeof(Eurydice_slice));
+  load_block_3c2(uu____0, copy_of_b);
 }
 
 /**
@@ -2601,9 +2619,10 @@ with const generics
 static KRML_MUSTINLINE void load_block_full_fa_072(uint64x2_t (*a)[5U],
                                                    uint8_t b[2U][200U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  uint8_t uu____1[2U][200U];
-  memcpy(uu____1, b, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full_3e2(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_b[2U][200U];
+  memcpy(copy_of_b, b, (size_t)2U * sizeof(uint8_t[200U]));
+  load_block_full_3e2(uu____0, copy_of_b);
 }
 
 /**
@@ -2702,11 +2721,12 @@ static KRML_MUSTINLINE void store_block_full_9a1(uint64x2_t (*s)[5U],
       Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
       Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice)};
   store_block_2f2(s, buf);
-  uint8_t uu____0[200U];
-  memcpy(uu____0, out0, (size_t)200U * sizeof(uint8_t));
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_out0[200U];
+  memcpy(copy_of_out0, out0, (size_t)200U * sizeof(uint8_t));
   uint8_t uu____1[200U];
   memcpy(uu____1, out1, (size_t)200U * sizeof(uint8_t));
-  memcpy(ret[0U], uu____0, (size_t)200U * sizeof(uint8_t));
+  memcpy(ret[0U], copy_of_out0, (size_t)200U * sizeof(uint8_t));
   memcpy(ret[1U], uu____1, (size_t)200U * sizeof(uint8_t));
 }
 
@@ -2826,19 +2846,21 @@ static KRML_MUSTINLINE void keccak_592(Eurydice_slice data[2U],
        i++) {
     size_t i0 = i;
     libcrux_sha3_generic_keccak_KeccakState_fc *uu____0 = &s;
-    Eurydice_slice uu____1[2U];
-    memcpy(uu____1, data, (size_t)2U * sizeof(Eurydice_slice));
+    /* This copy dictated by the Rust value passing semantics */
+    Eurydice_slice copy_of_data[2U];
+    memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
-    slice_n_fa(uu____1, i0 * (size_t)144U, (size_t)144U, ret);
+    slice_n_fa(copy_of_data, i0 * (size_t)144U, (size_t)144U, ret);
     absorb_block_451(uu____0, ret);
   }
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)144U;
   libcrux_sha3_generic_keccak_KeccakState_fc *uu____2 = &s;
-  Eurydice_slice uu____3[2U];
-  memcpy(uu____3, data, (size_t)2U * sizeof(Eurydice_slice));
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_data[2U];
+  memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice ret[2U];
-  slice_n_fa(uu____3,
+  slice_n_fa(copy_of_data,
              core_slice___Slice_T___len(data[0U], uint8_t, size_t) - rem, rem,
              ret);
   absorb_final_fe3(uu____2, ret);
@@ -2890,9 +2912,10 @@ with const generics
 */
 static KRML_MUSTINLINE void keccakx2_6e2(Eurydice_slice data[2U],
                                          Eurydice_slice out[2U]) {
-  Eurydice_slice uu____0[2U];
-  memcpy(uu____0, data, (size_t)2U * sizeof(Eurydice_slice));
-  keccak_592(uu____0, out);
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_data[2U];
+  memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
+  keccak_592(copy_of_data, out);
 }
 
 /**
@@ -2976,9 +2999,10 @@ with const generics
 static KRML_MUSTINLINE void load_block_fa_0f2(uint64x2_t (*a)[5U],
                                               Eurydice_slice b[2U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  Eurydice_slice uu____1[2U];
-  memcpy(uu____1, b, (size_t)2U * sizeof(Eurydice_slice));
-  load_block_3c3(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_b[2U];
+  memcpy(copy_of_b, b, (size_t)2U * sizeof(Eurydice_slice));
+  load_block_3c3(uu____0, copy_of_b);
 }
 
 /**
@@ -3023,9 +3047,10 @@ with const generics
 static KRML_MUSTINLINE void load_block_full_fa_073(uint64x2_t (*a)[5U],
                                                    uint8_t b[2U][200U]) {
   uint64x2_t(*uu____0)[5U] = a;
-  uint8_t uu____1[2U][200U];
-  memcpy(uu____1, b, (size_t)2U * sizeof(uint8_t[200U]));
-  load_block_full_3e3(uu____0, uu____1);
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_b[2U][200U];
+  memcpy(copy_of_b, b, (size_t)2U * sizeof(uint8_t[200U]));
+  load_block_full_3e3(uu____0, copy_of_b);
 }
 
 /**
@@ -3124,11 +3149,12 @@ static KRML_MUSTINLINE void store_block_full_9a2(uint64x2_t (*s)[5U],
       Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
       Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice)};
   store_block_2f3(s, buf);
-  uint8_t uu____0[200U];
-  memcpy(uu____0, out0, (size_t)200U * sizeof(uint8_t));
+  /* This copy dictated by the Rust value passing semantics */
+  uint8_t copy_of_out0[200U];
+  memcpy(copy_of_out0, out0, (size_t)200U * sizeof(uint8_t));
   uint8_t uu____1[200U];
   memcpy(uu____1, out1, (size_t)200U * sizeof(uint8_t));
-  memcpy(ret[0U], uu____0, (size_t)200U * sizeof(uint8_t));
+  memcpy(ret[0U], copy_of_out0, (size_t)200U * sizeof(uint8_t));
   memcpy(ret[1U], uu____1, (size_t)200U * sizeof(uint8_t));
 }
 
@@ -3248,19 +3274,21 @@ static KRML_MUSTINLINE void keccak_593(Eurydice_slice data[2U],
        i++) {
     size_t i0 = i;
     libcrux_sha3_generic_keccak_KeccakState_fc *uu____0 = &s;
-    Eurydice_slice uu____1[2U];
-    memcpy(uu____1, data, (size_t)2U * sizeof(Eurydice_slice));
+    /* This copy dictated by the Rust value passing semantics */
+    Eurydice_slice copy_of_data[2U];
+    memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
     Eurydice_slice ret[2U];
-    slice_n_fa(uu____1, i0 * (size_t)104U, (size_t)104U, ret);
+    slice_n_fa(copy_of_data, i0 * (size_t)104U, (size_t)104U, ret);
     absorb_block_452(uu____0, ret);
   }
   size_t rem =
       core_slice___Slice_T___len(data[0U], uint8_t, size_t) % (size_t)104U;
   libcrux_sha3_generic_keccak_KeccakState_fc *uu____2 = &s;
-  Eurydice_slice uu____3[2U];
-  memcpy(uu____3, data, (size_t)2U * sizeof(Eurydice_slice));
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_data[2U];
+  memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
   Eurydice_slice ret[2U];
-  slice_n_fa(uu____3,
+  slice_n_fa(copy_of_data,
              core_slice___Slice_T___len(data[0U], uint8_t, size_t) - rem, rem,
              ret);
   absorb_final_fe4(uu____2, ret);
@@ -3312,9 +3340,10 @@ with const generics
 */
 static KRML_MUSTINLINE void keccakx2_6e3(Eurydice_slice data[2U],
                                          Eurydice_slice out[2U]) {
-  Eurydice_slice uu____0[2U];
-  memcpy(uu____0, data, (size_t)2U * sizeof(Eurydice_slice));
-  keccak_593(uu____0, out);
+  /* This copy dictated by the Rust value passing semantics */
+  Eurydice_slice copy_of_data[2U];
+  memcpy(copy_of_data, data, (size_t)2U * sizeof(Eurydice_slice));
+  keccak_593(copy_of_data, out);
 }
 
 /**
