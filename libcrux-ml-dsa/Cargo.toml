@@ -29,5 +29,10 @@ simd128 = []
 simd256 = []
 
 [[bench]]
+name = "manual"
+harness = false
+
+[[bench]]
 name = "ml-dsa"
 harness = false
+
