@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: 7834acbb41b06c34f198a1cb6b88241cc10b9aeb
- * Karamel: bdf06956e6ee025d4819bf2f8cc92651e572ad85
- * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: d5574e8f6c62bf622ab6b61c291abeb66c1b7221
+ * Eurydice: 7b1f8fd8d41a07543f4812a53624b6cb77e3df21
+ * Karamel: 9fb21c700160be489cafc690c3c0af2681ece49b
+ * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
+ * Libcrux: 0b811dab12d3bb3f004bb2ac853ff4a822780566
  */
 
 #ifndef __libcrux_core_H
@@ -48,64 +48,6 @@ typedef struct core_option_Option_b3_s {
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
-
-/**
-A monomorphic instance of libcrux_ml_kem.types.MlKemPublicKey
-with const generics
-- $800size_t
-*/
-typedef struct libcrux_ml_kem_types_MlKemPublicKey_be_s {
-  uint8_t value[800U];
-} libcrux_ml_kem_types_MlKemPublicKey_be;
-
-/**
-A monomorphic instance of core.option.Option
-with types libcrux_ml_kem_types_MlKemPublicKey[[$800size_t]]
-
-*/
-typedef struct core_option_Option_04_s {
-  core_option_Option_ef_tags tag;
-  libcrux_ml_kem_types_MlKemPublicKey_be f0;
-} core_option_Option_04;
-
-/**
-A monomorphic instance of libcrux_ml_kem.types.MlKemPrivateKey
-with const generics
-- $1632size_t
-*/
-typedef struct libcrux_ml_kem_types_MlKemPrivateKey_5e_s {
-  uint8_t value[1632U];
-} libcrux_ml_kem_types_MlKemPrivateKey_5e;
-
-/**
-A monomorphic instance of libcrux_ml_kem.types.MlKemKeyPair
-with const generics
-- $1632size_t
-- $800size_t
-*/
-typedef struct libcrux_ml_kem_types_MlKemKeyPair_cb_s {
-  libcrux_ml_kem_types_MlKemPrivateKey_5e sk;
-  libcrux_ml_kem_types_MlKemPublicKey_be pk;
-} libcrux_ml_kem_types_MlKemKeyPair_cb;
-
-/**
-A monomorphic instance of libcrux_ml_kem.types.MlKemCiphertext
-with const generics
-- $768size_t
-*/
-typedef struct libcrux_ml_kem_types_MlKemCiphertext_e8_s {
-  uint8_t value[768U];
-} libcrux_ml_kem_types_MlKemCiphertext_e8;
-
-/**
-A monomorphic instance of K.
-with types libcrux_ml_kem_types_MlKemCiphertext[[$768size_t]], uint8_t[32size_t]
-
-*/
-typedef struct tuple_ec_s {
-  libcrux_ml_kem_types_MlKemCiphertext_e8 fst;
-  uint8_t snd[32U];
-} tuple_ec;
 
 /**
 A monomorphic instance of libcrux_ml_kem.types.MlKemPublicKey
@@ -202,6 +144,64 @@ typedef struct tuple_3c_s {
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext fst;
   uint8_t snd[32U];
 } tuple_3c;
+
+/**
+A monomorphic instance of libcrux_ml_kem.types.MlKemPublicKey
+with const generics
+- $800size_t
+*/
+typedef struct libcrux_ml_kem_types_MlKemPublicKey_be_s {
+  uint8_t value[800U];
+} libcrux_ml_kem_types_MlKemPublicKey_be;
+
+/**
+A monomorphic instance of core.option.Option
+with types libcrux_ml_kem_types_MlKemPublicKey[[$800size_t]]
+
+*/
+typedef struct core_option_Option_04_s {
+  core_option_Option_ef_tags tag;
+  libcrux_ml_kem_types_MlKemPublicKey_be f0;
+} core_option_Option_04;
+
+/**
+A monomorphic instance of libcrux_ml_kem.types.MlKemPrivateKey
+with const generics
+- $1632size_t
+*/
+typedef struct libcrux_ml_kem_types_MlKemPrivateKey_5e_s {
+  uint8_t value[1632U];
+} libcrux_ml_kem_types_MlKemPrivateKey_5e;
+
+/**
+A monomorphic instance of libcrux_ml_kem.types.MlKemKeyPair
+with const generics
+- $1632size_t
+- $800size_t
+*/
+typedef struct libcrux_ml_kem_types_MlKemKeyPair_cb_s {
+  libcrux_ml_kem_types_MlKemPrivateKey_5e sk;
+  libcrux_ml_kem_types_MlKemPublicKey_be pk;
+} libcrux_ml_kem_types_MlKemKeyPair_cb;
+
+/**
+A monomorphic instance of libcrux_ml_kem.types.MlKemCiphertext
+with const generics
+- $768size_t
+*/
+typedef struct libcrux_ml_kem_types_MlKemCiphertext_e8_s {
+  uint8_t value[768U];
+} libcrux_ml_kem_types_MlKemCiphertext_e8;
+
+/**
+A monomorphic instance of K.
+with types libcrux_ml_kem_types_MlKemCiphertext[[$768size_t]], uint8_t[32size_t]
+
+*/
+typedef struct tuple_ec_s {
+  libcrux_ml_kem_types_MlKemCiphertext_e8 fst;
+  uint8_t snd[32U];
+} tuple_ec;
 
 #define core_result_Ok 0
 #define core_result_Err 1
