@@ -8,7 +8,7 @@
  * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
  * Karamel: f9cdef256a2b88282398a609847b34dd8c9cf3e3
  * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: 8afc9098ccf0c74c13fe7d661a9a9efad5861427
+ * Libcrux: 06b02e72e21705b53062d5988d3233715af43ad2
  */
 
 #include "internal/libcrux_sha3_avx2.h"
@@ -1634,7 +1634,7 @@ with const generics
 - RATE= 136
 - DELIM= 31
 */
-static KRML_MUSTINLINE void absorb_final_d9(
+KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_d9(
     libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice last[4U]) {
   size_t last_len = core_slice___Slice_T___len(last[0U], uint8_t, size_t);
   uint8_t blocks[4U][200U] = {{0U}};
@@ -1965,7 +1965,7 @@ static KRML_MUSTINLINE void keccak_4f(Eurydice_slice data[4U],
   slice_n_ef(uu____3,
              core_slice___Slice_T___len(data[0U], uint8_t, size_t) - rem, rem,
              ret);
-  absorb_final_d9(uu____2, ret);
+  libcrux_sha3_generic_keccak_absorb_final_d9(uu____2, ret);
   size_t outlen = core_slice___Slice_T___len(out[0U], uint8_t, size_t);
   size_t blocks = outlen / (size_t)136U;
   size_t last = outlen - outlen % (size_t)136U;
@@ -2438,7 +2438,7 @@ with const generics
 - N= 4
 - RATE= 168
 */
-static KRML_MUSTINLINE void squeeze_first_three_blocks_2a(
+KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_three_blocks_2a(
     libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out[4U]) {
   Eurydice_slice_uint8_t_4size_t__x2 uu____0 =
       split_at_mut_n_ef(out, (size_t)168U);
@@ -2461,7 +2461,7 @@ void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
   Eurydice_slice buf[4U] = {out0, out1, out2, out3};
-  squeeze_first_three_blocks_2a(s, buf);
+  libcrux_sha3_generic_keccak_squeeze_first_three_blocks_2a(s, buf);
 }
 
 /**
@@ -2516,7 +2516,7 @@ KRML_MUSTINLINE void libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice data0,
     Eurydice_slice data1, Eurydice_slice data2, Eurydice_slice data3) {
   Eurydice_slice buf[4U] = {data0, data1, data2, data3};
-  absorb_final_d9(s, buf);
+  libcrux_sha3_generic_keccak_absorb_final_d9(s, buf);
 }
 
 KRML_MUSTINLINE void
