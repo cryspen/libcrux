@@ -163,6 +163,7 @@ fn generate_keypair<
 }
 
 
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\

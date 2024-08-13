@@ -54,7 +54,9 @@ VERIFIED =   Libcrux_ml_kem.Types.fst \
              Libcrux_ml_kem.Hash_functions.Avx2.fsti \
              Libcrux_ml_kem.Hash_functions.fsti \
              Libcrux_ml_kem.Hash_functions.Neon.fsti \
-             Libcrux_ml_kem.Hash_functions.Portable.fsti
+             Libcrux_ml_kem.Hash_functions.Portable.fsti \
+             Libcrux_ml_kem.Utils.fst \
+             Libcrux_ml_kem.Utils.fsti
 
 PANIC_FREE = Libcrux_ml_kem.Constant_time_ops.fst \
              Libcrux_ml_kem.Constant_time_ops.fsti \
