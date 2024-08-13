@@ -398,7 +398,7 @@ pub(crate) fn encrypt_unpacked<
     $C2_LEN == Spec.MLKEM.v_C2_SIZE $K"))]
 #[hax_lib::ensures(|result|
     fstar!("$result == Spec.MLKEM.ind_cpa_encrypt $K $public_key $message $randomness")
-)] 
+)]
 pub(crate) fn encrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -544,6 +544,15 @@ pub(crate) fn decrypt_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    length $secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\ 
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
+    $VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE $K /\\
+    $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\\
+    $V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K"))]
+#[hax_lib::ensures(|result|
+    fstar!("$result == Spec.MLKEM.ind_cpa_decrypt $K $secret_key $ciphertext")
+)]
 pub(crate) fn decrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
