@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
- * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 75bf8bca5f9903b4f6e8fba693d61af1415d512f
+ * Charon: 53530427db2941ce784201e64086766504bc5642
+ * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
+ * Karamel: f9cdef256a2b88282398a609847b34dd8c9cf3e3
+ * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
+ * Libcrux: 06b02e72e21705b53062d5988d3233715af43ad2
  */
 
 #ifndef __internal_libcrux_sha3_avx2_H
@@ -31,7 +31,7 @@ with const generics
 - RATE= 136
 - DELIM= 31
 */
-void libcrux_sha3_generic_keccak_absorb_final_5e(
+void libcrux_sha3_generic_keccak_absorb_final_d9(
     libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice last[4U]);
 
 typedef libcrux_sha3_generic_keccak_KeccakState_29
@@ -44,7 +44,7 @@ with const generics
 - N= 4
 - RATE= 168
 */
-void libcrux_sha3_generic_keccak_squeeze_first_three_blocks_27(
+void libcrux_sha3_generic_keccak_squeeze_first_three_blocks_2a(
     libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out[4U]);
 
 #if defined(__cplusplus)

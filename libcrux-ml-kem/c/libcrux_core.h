@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
- * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 75bf8bca5f9903b4f6e8fba693d61af1415d512f
+ * Charon: 53530427db2941ce784201e64086766504bc5642
+ * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
+ * Karamel: f9cdef256a2b88282398a609847b34dd8c9cf3e3
+ * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
+ * Libcrux: 06b02e72e21705b53062d5988d3233715af43ad2
  */
 
 #ifndef __libcrux_core_H
@@ -29,6 +29,11 @@ typedef struct core_ops_range_Range_b3_s {
   size_t start;
   size_t end;
 } core_ops_range_Range_b3;
+
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_86_tags;
 
 #define core_option_None 0
 #define core_option_Some 1
@@ -203,18 +208,13 @@ typedef struct tuple_ec_s {
   uint8_t snd[32U];
 } tuple_ec;
 
-#define core_result_Ok 0
-#define core_result_Err 1
-
-typedef uint8_t core_result_Result_00_tags;
-
 /**
 A monomorphic instance of core.result.Result
 with types uint8_t[8size_t], core_array_TryFromSliceError
 
 */
 typedef struct core_result_Result_56_s {
-  core_result_Result_00_tags tag;
+  core_result_Result_86_tags tag;
   union {
     uint8_t case_Ok[8U];
     core_array_TryFromSliceError case_Err;
