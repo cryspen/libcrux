@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
- * Karamel: ab466d75991f78bb7925bf97c8ee9874f67074f5
+ * Charon: 53530427db2941ce784201e64086766504bc5642
+ * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
+ * Karamel: f9cdef256a2b88282398a609847b34dd8c9cf3e3
  * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: b2314d1e996ac7a4fbda72210b4aabbd915d282a
+ * Libcrux: d50e2a062a09bf85430e82d1d8b7c210d9458d0b
  */
 
 #ifndef __libcrux_mlkem512_H
@@ -68,16 +68,16 @@ extern "C" {
   (LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE +                   \
    LIBCRUX_ML_KEM_MLKEM512_CPA_PKE_CIPHERTEXT_SIZE_512)
 
-typedef libcrux_ml_kem_types_MlKemCiphertext____768size_t
+typedef libcrux_ml_kem_types_MlKemCiphertext_e8
     libcrux_ml_kem_mlkem512_MlKem512Ciphertext;
 
-typedef libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t
+typedef libcrux_ml_kem_types_MlKemKeyPair_cb
     libcrux_ml_kem_mlkem512_MlKem512KeyPair;
 
-typedef libcrux_ml_kem_types_MlKemPrivateKey____1632size_t
+typedef libcrux_ml_kem_types_MlKemPrivateKey_5e
     libcrux_ml_kem_mlkem512_MlKem512PrivateKey;
 
-typedef libcrux_ml_kem_types_MlKemPublicKey____800size_t
+typedef libcrux_ml_kem_types_MlKemPublicKey_be
     libcrux_ml_kem_mlkem512_MlKem512PublicKey;
 
 #define LIBCRUX_ML_KEM_MLKEM512_RANKED_BYTES_PER_RING_ELEMENT_512 \

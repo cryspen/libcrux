@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45b95e0f63cb830202c0b3ca00a341a3451a02ba
- * Eurydice: 0eb8a17354fd62586cb9f7515af23f4488c2267e
- * Karamel: ab466d75991f78bb7925bf97c8ee9874f67074f5
+ * Charon: 53530427db2941ce784201e64086766504bc5642
+ * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
+ * Karamel: f9cdef256a2b88282398a609847b34dd8c9cf3e3
  * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: b2314d1e996ac7a4fbda72210b4aabbd915d282a
+ * Libcrux: d50e2a062a09bf85430e82d1d8b7c210d9458d0b
  */
 
 #ifndef __libcrux_sha3_neon_H
@@ -30,7 +30,7 @@ void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0, Eurydice_slice input1,
                                    Eurydice_slice out0, Eurydice_slice out1);
 
 typedef struct libcrux_sha3_neon_x2_incremental_KeccakState_s {
-  libcrux_sha3_generic_keccak_KeccakState__uint64_t__1size_t state[2U];
+  libcrux_sha3_generic_keccak_KeccakState_48 state[2U];
 } libcrux_sha3_neon_x2_incremental_KeccakState;
 
 libcrux_sha3_neon_x2_incremental_KeccakState
