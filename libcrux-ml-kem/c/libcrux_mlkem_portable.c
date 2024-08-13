@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: 7b1f8fd8d41a07543f4812a53624b6cb77e3df21
+ * Eurydice: ac3b60749a07243c06d207eb938156996495e3b5
  * Karamel: 9fb21c700160be489cafc690c3c0af2681ece49b
  * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: 37727e24f53f0a7f41c129784ad5aa5136c81cbe
+ * Libcrux: 97db7bc6fbcaa3763c7579c1259fea71c78bd468
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -3704,7 +3704,7 @@ static tuple_540 generate_keypair_unpacked_f41(
     Eurydice_slice key_generation_seed) {
   uint8_t hashed[64U];
   G_f1_b61(key_generation_seed, hashed);
-  Eurydice_slice_uint8_t_x2 uu____0 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       (size_t)32U, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice seed_for_A0 = uu____0.fst;
@@ -4877,7 +4877,7 @@ tuple_21 libcrux_ml_kem_ind_cca_encapsulate_unpacked_311(
   G_f1_b61(
       Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
       hashed);
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
@@ -5102,7 +5102,7 @@ tuple_21 libcrux_ml_kem_ind_cca_encapsulate_441(
   G_f1_b61(
       Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
       hashed);
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
@@ -5669,7 +5669,7 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_ca1(
   G_f1_b61(
       Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
       hashed);
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
@@ -5823,17 +5823,17 @@ void libcrux_ml_kem_ind_cca_decapsulate_4f1(
     libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
-  Eurydice_slice_uint8_t_x2 uu____0 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)3168U, private_key->value, uint8_t,
                               Eurydice_slice),
       (size_t)1536U, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_secret_key = uu____0.fst;
   Eurydice_slice secret_key0 = uu____0.snd;
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       secret_key0, (size_t)1568U, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key = uu____1.fst;
   Eurydice_slice secret_key = uu____1.snd;
-  Eurydice_slice_uint8_t_x2 uu____2 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____2 = Eurydice_slice_split_at(
       secret_key, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
@@ -5853,7 +5853,7 @@ void libcrux_ml_kem_ind_cca_decapsulate_4f1(
   G_f1_b61(
       Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
       hashed);
-  Eurydice_slice_uint8_t_x2 uu____3 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____3 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
@@ -6699,7 +6699,7 @@ static tuple_4c0 generate_keypair_unpacked_f40(
     Eurydice_slice key_generation_seed) {
   uint8_t hashed[64U];
   G_f1_b60(key_generation_seed, hashed);
-  Eurydice_slice_uint8_t_x2 uu____0 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       (size_t)32U, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice seed_for_A0 = uu____0.fst;
@@ -7475,7 +7475,7 @@ tuple_ec libcrux_ml_kem_ind_cca_encapsulate_unpacked_310(
   G_f1_b60(
       Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
       hashed);
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
@@ -7700,7 +7700,7 @@ tuple_ec libcrux_ml_kem_ind_cca_encapsulate_440(
   G_f1_b60(
       Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
       hashed);
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
@@ -7952,7 +7952,7 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_ca0(
   G_f1_b60(
       Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
       hashed);
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
@@ -8083,17 +8083,17 @@ libcrux_ml_kem_ind_cca_MlKem with const generics
 void libcrux_ml_kem_ind_cca_decapsulate_4f0(
     libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]) {
-  Eurydice_slice_uint8_t_x2 uu____0 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)1632U, private_key->value, uint8_t,
                               Eurydice_slice),
       (size_t)768U, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_secret_key = uu____0.fst;
   Eurydice_slice secret_key0 = uu____0.snd;
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       secret_key0, (size_t)800U, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key = uu____1.fst;
   Eurydice_slice secret_key = uu____1.snd;
-  Eurydice_slice_uint8_t_x2 uu____2 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____2 = Eurydice_slice_split_at(
       secret_key, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
@@ -8113,7 +8113,7 @@ void libcrux_ml_kem_ind_cca_decapsulate_4f0(
   G_f1_b60(
       Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
       hashed);
-  Eurydice_slice_uint8_t_x2 uu____3 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____3 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
@@ -8949,7 +8949,7 @@ static tuple_9b generate_keypair_unpacked_f4(
     Eurydice_slice key_generation_seed) {
   uint8_t hashed[64U];
   G_f1_b6(key_generation_seed, hashed);
-  Eurydice_slice_uint8_t_x2 uu____0 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       (size_t)32U, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice seed_for_A0 = uu____0.fst;
@@ -9639,7 +9639,7 @@ tuple_3c libcrux_ml_kem_ind_cca_encapsulate_unpacked_31(
   G_f1_b6(
       Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
       hashed);
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
@@ -9864,7 +9864,7 @@ tuple_3c libcrux_ml_kem_ind_cca_encapsulate_44(
   G_f1_b6(
       Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t, Eurydice_slice),
       hashed);
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
@@ -10075,7 +10075,7 @@ void libcrux_ml_kem_ind_cca_decapsulate_unpacked_ca(
   G_f1_b6(
       Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
       hashed);
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
@@ -10206,17 +10206,17 @@ libcrux_ml_kem_ind_cca_MlKem with const generics
 void libcrux_ml_kem_ind_cca_decapsulate_4f(
     libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  Eurydice_slice_uint8_t_x2 uu____0 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)2400U, private_key->value, uint8_t,
                               Eurydice_slice),
       (size_t)1152U, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_secret_key = uu____0.fst;
   Eurydice_slice secret_key0 = uu____0.snd;
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       secret_key0, (size_t)1184U, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key = uu____1.fst;
   Eurydice_slice secret_key = uu____1.snd;
-  Eurydice_slice_uint8_t_x2 uu____2 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____2 = Eurydice_slice_split_at(
       secret_key, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
@@ -10236,7 +10236,7 @@ void libcrux_ml_kem_ind_cca_decapsulate_4f(
   G_f1_b6(
       Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t, Eurydice_slice),
       hashed);
-  Eurydice_slice_uint8_t_x2 uu____3 = core_slice___Slice_T___split_at(
+  Eurydice_slice_uint8_t_x2 uu____3 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t, Eurydice_slice),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);

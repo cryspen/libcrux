@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: 7b1f8fd8d41a07543f4812a53624b6cb77e3df21
+ * Eurydice: ac3b60749a07243c06d207eb938156996495e3b5
  * Karamel: 9fb21c700160be489cafc690c3c0af2681ece49b
  * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: 37727e24f53f0a7f41c129784ad5aa5136c81cbe
+ * Libcrux: 97db7bc6fbcaa3763c7579c1259fea71c78bd468
  */
 
 #include "internal/libcrux_sha3_avx2.h"
@@ -129,19 +129,19 @@ split_at_mut_4(Eurydice_slice out[4U], size_t mid) {
   Eurydice_slice out1 = out[1U];
   Eurydice_slice out2 = out[2U];
   Eurydice_slice out3 = out[3U];
-  Eurydice_slice_uint8_t_x2 uu____0 = core_slice___Slice_T___split_at_mut(
+  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at_mut(
       out0, mid, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice out00 = uu____0.fst;
   Eurydice_slice out01 = uu____0.snd;
-  Eurydice_slice_uint8_t_x2 uu____1 = core_slice___Slice_T___split_at_mut(
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at_mut(
       out1, mid, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice out10 = uu____1.fst;
   Eurydice_slice out11 = uu____1.snd;
-  Eurydice_slice_uint8_t_x2 uu____2 = core_slice___Slice_T___split_at_mut(
+  Eurydice_slice_uint8_t_x2 uu____2 = Eurydice_slice_split_at_mut(
       out2, mid, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice out20 = uu____2.fst;
   Eurydice_slice out21 = uu____2.snd;
-  Eurydice_slice_uint8_t_x2 uu____3 = core_slice___Slice_T___split_at_mut(
+  Eurydice_slice_uint8_t_x2 uu____3 = Eurydice_slice_split_at_mut(
       out3, mid, uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice out30 = uu____3.fst;
   Eurydice_slice out31 = uu____3.snd;
