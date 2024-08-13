@@ -1,21 +1,15 @@
-use std::time::{Duration, Instant};
+use rand::RngCore;
 
-use libcrux_ml_dsa::{
-    ml_dsa_44::{self, MLDSA44KeyPair, MLDSA44Signature},
-    ml_dsa_65::{self, MLDSA65KeyPair, MLDSA65Signature},
-    ml_dsa_87::{self, MLDSA87KeyPair, MLDSA87Signature},
-    KEY_GENERATION_RANDOMNESS_SIZE, SIGNING_RANDOMNESS_SIZE,
-};
-use rand::{rngs::OsRng, RngCore};
-
-fn random_array<const L: usize>() -> [u8; L] {
-    let mut rng = OsRng;
+#[allow(unused)]
+pub(crate) fn random_array<const L: usize>() -> [u8; L] {
+    let mut rng = rand::rngs::OsRng;
     let mut seed = [0; L];
     rng.try_fill_bytes(&mut seed).unwrap();
     seed
 }
 
-fn print_time(label: &str, d: Duration) {
+#[allow(unused)]
+pub(crate) fn print_time(label: &str, d: std::time::Duration) {
     let micros = d.as_micros();
     let time = if micros < (1_000 * ITERATIONS as u128) {
         format!("{} μs", micros / ITERATIONS as u128)
@@ -39,34 +33,38 @@ fn print_time(label: &str, d: Duration) {
     println!("{label}:{space}{time}");
 }
 
-const ITERATIONS: usize = 100_000;
-const WARMUP_ITERATIONS: usize = 1_000;
+#[allow(unused)]
+pub(crate) const ITERATIONS: usize = 100_000;
+#[allow(unused)]
+pub(crate) const WARMUP_ITERATIONS: usize = 1_000;
 
 // A benchmarking macro to avoid copying memory and skewing the results.
+#[macro_export]
 macro_rules! bench {
     ($label:literal, $variant:literal, $input:expr, $setup:expr, $routine:expr) => {{
-        let mut time = Duration::ZERO;
+        let mut time = std::time::Duration::ZERO;
 
         // Warmup
-        for _ in 0..WARMUP_ITERATIONS {
+        for _ in 0..bench_utils::WARMUP_ITERATIONS {
             let input = $setup($input);
             $routine(input);
         }
 
         // Benchmark
-        for _ in 0..ITERATIONS {
+        for _ in 0..bench_utils::ITERATIONS {
             let input = $setup($input);
 
-            let start = Instant::now();
+            let start = std::time::Instant::now();
             core::hint::black_box($routine(input));
-            let end = Instant::now();
+            let end = std::time::Instant::now();
 
             time += end.duration_since(start);
         }
-        print_time(concat!($label, " ", $variant), time);
+        bench_utils::print_time(concat!($label, " ", $variant), time);
     }};
 }
 
+#[macro_export]
 macro_rules! bench_group {
     ($variant:literal, $mod:ident, $keypair_t:ident, $signature_t:ident) => {{
         bench!(
@@ -74,7 +72,7 @@ macro_rules! bench_group {
             $variant,
             (),
             |()| {
-                let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] = random_array();
+                let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] = bench_utils::random_array();
                 key_generation_seed
             },
             |key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE]| {
@@ -86,9 +84,9 @@ macro_rules! bench_group {
             $variant,
             (),
             |()| {
-                let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] = random_array();
-                let signing_randomness: [u8; SIGNING_RANDOMNESS_SIZE] = random_array();
-                let message = random_array::<1023>();
+                let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] = bench_utils::random_array();
+                let signing_randomness: [u8; SIGNING_RANDOMNESS_SIZE] = bench_utils::random_array();
+                let message = bench_utils::random_array::<1023>();
                 let keypair = $mod::generate_key_pair(key_generation_seed);
 
                 (keypair, message, signing_randomness)
@@ -105,9 +103,9 @@ macro_rules! bench_group {
             $variant,
             (),
             |()| {
-                let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] = random_array();
-                let signing_randomness: [u8; SIGNING_RANDOMNESS_SIZE] = random_array();
-                let message = random_array::<1023>();
+                let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] = bench_utils::random_array();
+                let signing_randomness: [u8; SIGNING_RANDOMNESS_SIZE] = bench_utils::random_array();
+                let message = bench_utils::random_array::<1023>();
                 let keypair = $mod::generate_key_pair(key_generation_seed);
                 let signature = $mod::sign(&keypair.signing_key, &message, signing_randomness);
                 (keypair, message, signature)
@@ -121,8 +119,6 @@ macro_rules! bench_group {
     }};
 }
 
-fn main() {
-    bench_group!("44", ml_dsa_44, MLDSA44KeyPair, MLDSA44Signature);
-    bench_group!("65", ml_dsa_65, MLDSA65KeyPair, MLDSA65Signature);
-    bench_group!("87", ml_dsa_87, MLDSA87KeyPair, MLDSA87Signature);
-}
+
+
+
