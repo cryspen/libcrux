@@ -226,7 +226,7 @@ macro_rules! instantiate {
             /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
             #[cfg_attr(
                 hax,
-                hax_lib::fstar::before(
+                hax_lib::fstar::before(interface,
                     "
 let _ =
     (* This module has implicit dependencies, here we make them explicit. *)
