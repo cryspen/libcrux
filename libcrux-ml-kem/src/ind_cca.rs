@@ -252,7 +252,7 @@ fn encapsulate<
     $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
     $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"))]
-#[hax_lib::ensures(|result| fstar!("${result} == 
+#[hax_lib::ensures(|result| fstar!("$result == 
     Spec.MLKEM.ind_cca_decapsulate $K ${private_key}.f_value ${ciphertext}.f_value"))] 
 pub(crate) fn decapsulate<
     const K: usize,
