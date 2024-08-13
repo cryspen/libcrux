@@ -202,10 +202,6 @@ fn encapsulate<
     let randomness = Scheme::entropy_preprocess::<K, Hasher>(&randomness);
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()));
-    hax_lib::fstar!("assert (Seq.slice $to_hash 0 (v Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE) == $randomness);
-        lemma_slice_append $to_hash $randomness (Libcrux_ml_kem.Hash_functions.f_H #$:Hasher #$K ${public_key}.f_value);
-        assert ($to_hash == concat $randomness (Libcrux_ml_kem.Hash_functions.f_H #$:Hasher #$K ${public_key}.f_value))");
-
     let hashed = Hasher::G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
