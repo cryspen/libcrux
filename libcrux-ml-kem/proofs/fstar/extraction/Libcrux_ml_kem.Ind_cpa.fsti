@@ -19,7 +19,9 @@ val sample_ring_element_cbd
       (prf_input: t_Array u8 (sz 33))
       (domain_separator: u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
-      Prims.l_True
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE v_K /\
+        v_ETA2 == Spec.MLKEM.v_ETA2 v_K)
       (fun _ -> Prims.l_True)
 
 /// Sample a vector of ring elements from a centered binomial distribution and
@@ -32,7 +34,9 @@ val sample_vector_cbd_then_ntt
       (prf_input: t_Array u8 (sz 33))
       (domain_separator: u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
-      Prims.l_True
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_ETA_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
+        v_ETA == Spec.MLKEM.v_ETA1 v_K)
       (fun _ -> Prims.l_True)
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
@@ -42,7 +46,12 @@ val compress_then_serialize_u
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (input: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (out: t_Slice u8)
-    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Slice u8)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_OUT_LEN == Spec.MLKEM.v_C1_SIZE v_K /\
+        v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
+        v_BLOCK_LEN = Spec.MLKEM.v_C1_BLOCK_SIZE v_K)
+      (fun _ -> Prims.l_True)
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
 /// in the `ciphertext`.
@@ -52,7 +61,9 @@ val deserialize_then_decompress_u
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      Prims.l_True
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
+        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K)
       (fun _ -> Prims.l_True)
 
 /// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
@@ -62,7 +73,8 @@ val deserialize_secret_key
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (secret_key: t_Slice u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      Prims.l_True
+      (requires Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K
+      )
       (fun _ -> Prims.l_True)
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
@@ -71,7 +83,9 @@ val serialize_secret_key
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (key: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-    : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_OUT_LEN)
+      (requires Spec.MLKEM.is_rank v_K /\ v_OUT_LEN == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K)
+      (fun _ -> Prims.l_True)
 
 /// Concatenate `t` and `ρ` into the public key.
 val serialize_public_key
@@ -80,7 +94,12 @@ val serialize_public_key
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (seed_for_a: t_Slice u8)
-    : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE)
+      (requires
+        Spec.MLKEM.is_rank v_K /\
+        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\ length seed_for_a == sz 32)
+      (fun _ -> Prims.l_True)
 
 /// This function implements <strong>Algorithm 14</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
@@ -259,7 +278,8 @@ val generate_keypair
         v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
         v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
         v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
-        v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K)
+        v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
+        length key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE)
       (ensures
         fun result ->
           let result:(t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE) = result in
