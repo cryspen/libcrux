@@ -122,8 +122,8 @@ fn validate_public_key<
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"))]
-#[hax_lib::ensures(|result| fstar!("(${result}.f_sk.f_value, ${result}.f_pk.f_value) == 
-                                        Spec.MLKEM.ind_cca_generate_keypair $K $randomness"))] 
+#[hax_lib::ensures(|result| fstar!("let (expected, valid) = Spec.MLKEM.ind_cca_generate_keypair $K $randomness in
+                                    valid ==> (${result}.f_sk.f_value, ${result}.f_pk.f_value) == expected"))] 
 fn generate_keypair<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -176,8 +176,8 @@ fn generate_keypair<
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
     $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K"))]
-#[hax_lib::ensures(|result| fstar!("(${result}._1.f_value, ${result}._2) == 
-    Spec.MLKEM.ind_cca_encapsulate $K ${public_key}.f_value $randomness"))] 
+#[hax_lib::ensures(|result| fstar!("let (expected, valid) = Spec.MLKEM.ind_cca_encapsulate $K ${public_key}.f_value $randomness in
+                                    valid ==> (${result}._1.f_value, ${result}._2) == expected"))] 
 fn encapsulate<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -230,7 +230,7 @@ fn encapsulate<
     (ciphertext, shared_secret_array)
 }
 
-#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::fstar::options("--z3rlimit 500")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
     $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
@@ -247,8 +247,8 @@ fn encapsulate<
     $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
     $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"))]
-#[hax_lib::ensures(|result| fstar!("$result == 
-    Spec.MLKEM.ind_cca_decapsulate $K ${private_key}.f_value ${ciphertext}.f_value"))] 
+#[hax_lib::ensures(|result| fstar!("let (expected, valid) = Spec.MLKEM.ind_cca_decapsulate $K ${private_key}.f_value ${ciphertext}.f_value in
+                                    valid ==> $result == expected"))] 
 pub(crate) fn decapsulate<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -596,16 +596,12 @@ impl Variant for MlKem {
         shared_secret: &[u8],
         _: &MlKemCiphertext<CIPHERTEXT_SIZE>,
     ) -> [u8; 32] {
-        let mut out = [0u8; 32];
-        out.copy_from_slice(shared_secret);
-        out
+        shared_secret.try_into().unwrap()
     }
 
     #[inline(always)]
     #[requires(randomness.len() == 32)]
     fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
-        let mut out = [0u8; 32];
-        out.copy_from_slice(randomness);
-        out
+        randomness.try_into().unwrap()
     }
 }

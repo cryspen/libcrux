@@ -215,7 +215,8 @@ pub(crate) fn generate_keypair_unpacked<
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"))]
-#[hax_lib::ensures(|result| fstar!("$result == Spec.MLKEM.ind_cpa_generate_keypair $K $key_generation_seed"))] 
+#[hax_lib::ensures(|result| fstar!("let (expected, valid) = Spec.MLKEM.ind_cpa_generate_keypair $K $key_generation_seed in 
+                                    valid ==> $result == expected"))] 
 pub(crate) fn generate_keypair<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
@@ -397,7 +398,8 @@ pub(crate) fn encrypt_unpacked<
     $C1_LEN == Spec.MLKEM.v_C1_SIZE $K /\\
     $C2_LEN == Spec.MLKEM.v_C2_SIZE $K"))]
 #[hax_lib::ensures(|result|
-    fstar!("$result == Spec.MLKEM.ind_cpa_encrypt $K $public_key $message $randomness")
+    fstar!("let (expected, valid) = Spec.MLKEM.ind_cpa_encrypt $K $public_key $message $randomness in
+            valid ==> $result == expected")
 )]
 pub(crate) fn encrypt<
     const K: usize,

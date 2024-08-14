@@ -223,7 +223,10 @@ val decapsulate
       (ensures
         fun result ->
           let result:t_Array u8 (sz 32) = result in
-          result == Spec.MLKEM.ind_cca_decapsulate v_K private_key.f_value ciphertext.f_value)
+          let expected, valid =
+            Spec.MLKEM.ind_cca_decapsulate v_K private_key.f_value ciphertext.f_value
+          in
+          valid ==> result == expected)
 
 val encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
@@ -252,8 +255,8 @@ val encapsulate
           =
             result
           in
-          (result._1.f_value, result._2) ==
-          Spec.MLKEM.ind_cca_encapsulate v_K public_key.f_value randomness)
+          let expected, valid = Spec.MLKEM.ind_cca_encapsulate v_K public_key.f_value randomness in
+          valid ==> (result._1.f_value, result._2) == expected)
 
 /// Packed API
 /// Generate a key pair.
@@ -279,5 +282,5 @@ val generate_keypair
           let result:Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE =
             result
           in
-          (result.f_sk.f_value, result.f_pk.f_value) ==
-          Spec.MLKEM.ind_cca_generate_keypair v_K randomness)
+          let expected, valid = Spec.MLKEM.ind_cca_generate_keypair v_K randomness in
+          valid ==> (result.f_sk.f_value, result.f_pk.f_value) == expected)
