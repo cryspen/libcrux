@@ -119,7 +119,9 @@ impl Operations for AVX2SIMDUnit {
     }
 
     fn ntt(simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT]) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
-        todo!();
+        let result = ntt::ntt(simd_units.map(|x| x.coefficients));
+
+        result.map(|x| x.into())
     }
 
     fn invert_ntt_at_layer_0(

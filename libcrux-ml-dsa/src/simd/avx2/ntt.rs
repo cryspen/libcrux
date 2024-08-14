@@ -1,9 +1,12 @@
 use super::arithmetic;
+use crate::simd::{
+    traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT, ZETAS_TIMES_MONTGOMERY_R},
+};
 
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-pub fn ntt_at_layer_0(simd_unit: Vec256, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Vec256 {
+pub fn simd_unit_ntt_at_layer_0(simd_unit: Vec256, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Vec256 {
     let zetas = mm256_set_epi32(-zeta3, zeta3, -zeta2, zeta2, -zeta1, zeta1, -zeta0, zeta0);
     let zeta_multipliers = mm256_shuffle_epi32::<0b11_11_01_01>(simd_unit);
 
@@ -14,7 +17,7 @@ pub fn ntt_at_layer_0(simd_unit: Vec256, zeta0: i32, zeta1: i32, zeta2: i32, zet
 }
 
 #[inline(always)]
-pub fn ntt_at_layer_1(simd_unit: Vec256, zeta0: i32, zeta1: i32) -> Vec256 {
+pub fn simd_unit_ntt_at_layer_1(simd_unit: Vec256, zeta0: i32, zeta1: i32) -> Vec256 {
     let zetas = mm256_set_epi32(-zeta1, -zeta1, zeta1, zeta1, -zeta0, -zeta0, zeta0, zeta0);
     let zeta_multipliers = mm256_shuffle_epi32::<0b11_10_11_10>(simd_unit);
 
@@ -25,7 +28,7 @@ pub fn ntt_at_layer_1(simd_unit: Vec256, zeta0: i32, zeta1: i32) -> Vec256 {
 }
 
 #[inline(always)]
-pub fn ntt_at_layer_2(simd_unit: Vec256, zeta: i32) -> Vec256 {
+pub fn simd_unit_ntt_at_layer_2(simd_unit: Vec256, zeta: i32) -> Vec256 {
     let zetas = mm256_set_epi32(-zeta, -zeta, -zeta, -zeta, zeta, zeta, zeta, zeta);
     let zeta_multipliers = mm256_permute4x64_epi64::<0b11_10_11_10>(simd_unit);
 
@@ -84,4 +87,85 @@ pub fn invert_ntt_at_layer_2(simd_unit: Vec256, zeta: i32) -> Vec256 {
     let products = arithmetic::montgomery_multiply(sums, zetas);
 
     mm256_blend_epi32::<0b1_1_1_1_0_0_0_0>(sums, products)
+}
+
+#[inline(always)]
+fn ntt_at_layer_0(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+    *zeta_i += 1;
+
+    for round in 0..re.len() {
+        re[round] = simd_unit_ntt_at_layer_0(
+            re[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 2],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 3],
+        );
+
+        *zeta_i += 4;
+    }
+
+    *zeta_i -= 1;
+}
+#[inline(always)]
+fn ntt_at_layer_1(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+    *zeta_i += 1;
+
+    for round in 0..re.len() {
+        re[round] = simd_unit_ntt_at_layer_1(
+            re[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
+        );
+
+        *zeta_i += 2;
+    }
+
+    *zeta_i -= 1;
+}
+#[inline(always)]
+fn ntt_at_layer_2(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+    for round in 0..re.len() {
+        *zeta_i += 1;
+        re[round] = simd_unit_ntt_at_layer_2(re[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+    }
+}
+#[inline(always)]
+fn ntt_at_layer_3_plus<const LAYER: usize>(
+    zeta_i: &mut usize,
+    re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
+) {
+    let step = 1 << LAYER;
+
+    for round in 0..(128 >> LAYER) {
+        *zeta_i += 1;
+
+        let offset = (round * step * 2) / COEFFICIENTS_IN_SIMD_UNIT;
+        let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
+
+        for j in offset..offset + step_by {
+            let t = arithmetic::montgomery_multiply_by_constant(re[j + step_by], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+
+            re[j + step_by] = arithmetic::subtract(re[j], t);
+            re[j] = arithmetic::add(re[j], t);
+        }
+    }
+}
+
+#[inline(always)]
+pub(crate) fn ntt(
+    mut re: [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
+) -> [Vec256; SIMD_UNITS_IN_RING_ELEMENT] {
+    let mut zeta_i = 0;
+
+    ntt_at_layer_3_plus::<7>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<6>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<5>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<4>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<3>(&mut zeta_i, &mut re);
+    ntt_at_layer_2(&mut zeta_i, &mut re);
+    ntt_at_layer_1(&mut zeta_i, &mut re);
+    ntt_at_layer_0(&mut zeta_i, &mut re);
+
+    re
 }

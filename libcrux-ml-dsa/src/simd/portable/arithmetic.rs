@@ -2,7 +2,7 @@ use crate::{
     constants::BITS_IN_LOWER_PART_OF_T,
     simd::{
         portable::PortableSIMDUnit,
-        traits::{Operations, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R},
+        traits::{Operations, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, FieldElementTimesMontgomeryR},
     },
 };
 
@@ -14,11 +14,6 @@ pub(crate) type FieldElement = i32;
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
 /// We use 'mfe' as a shorthand for this type
 pub type MontgomeryFieldElement = i32;
-
-/// If 'x' denotes a value of type `fe`, values having this type hold a
-/// representative y ≡ x·MONTGOMERY_R (mod FIELD_MODULUS).
-/// We use 'fer' as a shorthand for this type.
-pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 
