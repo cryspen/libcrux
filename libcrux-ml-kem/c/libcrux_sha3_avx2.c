@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: d8a02494066422005c27e3b3f515129c0c38e9f0
- * Eurydice: 99662476dd28a9804b424c103638a01c38192491
- * Karamel: 9fb21c700160be489cafc690c3c0af2681ece49b
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 490a8664911fa33e785d629c78d6ee3dd85448e6
+ * Charon: 8de6020c10a3520a56fbf849176f8218e62435cf
+ * Eurydice: f8fc97aeb6ecbaaacfe4baffcdc4d671989b5586
+ * Karamel: 98e5d604741a886e20a526f6673077a15e23cead
+ * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
+ * Libcrux: 0c66762ad2fdfb3f110ee362fa210bea0fecd265
  */
 
 #include "internal/libcrux_sha3_avx2.h"
@@ -99,14 +99,10 @@ static KRML_MUSTINLINE __m256i xor_ef(__m256i a, __m256i b) {
 
 static KRML_MUSTINLINE void slice_4(Eurydice_slice a[4U], size_t start,
                                     size_t len, Eurydice_slice ret[4U]) {
-  ret[0U] = Eurydice_slice_subslice2(a[0U], start, start + len, uint8_t,
-                                     Eurydice_slice);
-  ret[1U] = Eurydice_slice_subslice2(a[1U], start, start + len, uint8_t,
-                                     Eurydice_slice);
-  ret[2U] = Eurydice_slice_subslice2(a[2U], start, start + len, uint8_t,
-                                     Eurydice_slice);
-  ret[3U] = Eurydice_slice_subslice2(a[3U], start, start + len, uint8_t,
-                                     Eurydice_slice);
+  ret[0U] = Eurydice_slice_subslice2(a[0U], start, start + len, uint8_t);
+  ret[1U] = Eurydice_slice_subslice2(a[1U], start, start + len, uint8_t);
+  ret[2U] = Eurydice_slice_subslice2(a[2U], start, start + len, uint8_t);
+  ret[3U] = Eurydice_slice_subslice2(a[3U], start, start + len, uint8_t);
 }
 
 /**
@@ -219,18 +215,18 @@ static KRML_MUSTINLINE void load_block_c7(__m256i (*s)[5U],
                                           Eurydice_slice blocks[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)32U; i++) {
     size_t i0 = i;
-    __m256i v00 = mm256_loadu_si256_u8(Eurydice_slice_subslice2(
-        blocks[0U], (size_t)32U * i0, (size_t)32U * (i0 + (size_t)1U), uint8_t,
-        Eurydice_slice));
-    __m256i v10 = mm256_loadu_si256_u8(Eurydice_slice_subslice2(
-        blocks[1U], (size_t)32U * i0, (size_t)32U * (i0 + (size_t)1U), uint8_t,
-        Eurydice_slice));
-    __m256i v20 = mm256_loadu_si256_u8(Eurydice_slice_subslice2(
-        blocks[2U], (size_t)32U * i0, (size_t)32U * (i0 + (size_t)1U), uint8_t,
-        Eurydice_slice));
-    __m256i v30 = mm256_loadu_si256_u8(Eurydice_slice_subslice2(
-        blocks[3U], (size_t)32U * i0, (size_t)32U * (i0 + (size_t)1U), uint8_t,
-        Eurydice_slice));
+    __m256i v00 = mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[0U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v10 = mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[1U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v20 = mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[2U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v30 = mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[3U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
     __m256i v0l = mm256_unpacklo_epi64(v00, v10);
     __m256i v1h = mm256_unpackhi_epi64(v00, v10);
     __m256i v2l = mm256_unpacklo_epi64(v20, v30);
@@ -261,34 +257,30 @@ static KRML_MUSTINLINE void load_block_c7(__m256i (*s)[5U],
   size_t rem = (size_t)136U % (size_t)32U;
   size_t start = (size_t)32U * ((size_t)136U / (size_t)32U);
   uint8_t u8s[32U] = {0U};
-  Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
-      u8s, (size_t)0U, (size_t)8U, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____0 =
+      Eurydice_array_to_subslice2(u8s, (size_t)0U, (size_t)8U, uint8_t);
   Eurydice_slice_copy(
       uu____0,
-      Eurydice_slice_subslice2(blocks[0U], start, start + (size_t)8U, uint8_t,
-                               Eurydice_slice),
-      uint8_t, void *);
-  Eurydice_slice uu____1 = Eurydice_array_to_subslice2(
-      u8s, (size_t)8U, (size_t)16U, uint8_t, Eurydice_slice);
+      Eurydice_slice_subslice2(blocks[0U], start, start + (size_t)8U, uint8_t),
+      uint8_t);
+  Eurydice_slice uu____1 =
+      Eurydice_array_to_subslice2(u8s, (size_t)8U, (size_t)16U, uint8_t);
   Eurydice_slice_copy(
       uu____1,
-      Eurydice_slice_subslice2(blocks[1U], start, start + (size_t)8U, uint8_t,
-                               Eurydice_slice),
-      uint8_t, void *);
-  Eurydice_slice uu____2 = Eurydice_array_to_subslice2(
-      u8s, (size_t)16U, (size_t)24U, uint8_t, Eurydice_slice);
+      Eurydice_slice_subslice2(blocks[1U], start, start + (size_t)8U, uint8_t),
+      uint8_t);
+  Eurydice_slice uu____2 =
+      Eurydice_array_to_subslice2(u8s, (size_t)16U, (size_t)24U, uint8_t);
   Eurydice_slice_copy(
       uu____2,
-      Eurydice_slice_subslice2(blocks[2U], start, start + (size_t)8U, uint8_t,
-                               Eurydice_slice),
-      uint8_t, void *);
-  Eurydice_slice uu____3 = Eurydice_array_to_subslice2(
-      u8s, (size_t)24U, (size_t)32U, uint8_t, Eurydice_slice);
+      Eurydice_slice_subslice2(blocks[2U], start, start + (size_t)8U, uint8_t),
+      uint8_t);
+  Eurydice_slice uu____3 =
+      Eurydice_array_to_subslice2(u8s, (size_t)24U, (size_t)32U, uint8_t);
   Eurydice_slice_copy(
       uu____3,
-      Eurydice_slice_subslice2(blocks[3U], start, start + (size_t)8U, uint8_t,
-                               Eurydice_slice),
-      uint8_t, void *);
+      Eurydice_slice_subslice2(blocks[3U], start, start + (size_t)8U, uint8_t),
+      uint8_t);
   __m256i u = mm256_loadu_si256_u8(core_array___Array_T__N__23__as_slice(
       (size_t)32U, u8s, uint8_t, Eurydice_slice));
   size_t i0 = (size_t)4U * ((size_t)136U / (size_t)32U) / (size_t)5U;
@@ -296,34 +288,30 @@ static KRML_MUSTINLINE void load_block_c7(__m256i (*s)[5U],
   s[i0][j0] = mm256_xor_si256(s[i0][j0], u);
   if (rem == (size_t)16U) {
     uint8_t u8s0[32U] = {0U};
-    Eurydice_slice uu____4 = Eurydice_array_to_subslice2(
-        u8s0, (size_t)0U, (size_t)8U, uint8_t, Eurydice_slice);
-    Eurydice_slice_copy(
-        uu____4,
-        Eurydice_slice_subslice2(blocks[0U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice),
-        uint8_t, void *);
-    Eurydice_slice uu____5 = Eurydice_array_to_subslice2(
-        u8s0, (size_t)8U, (size_t)16U, uint8_t, Eurydice_slice);
-    Eurydice_slice_copy(
-        uu____5,
-        Eurydice_slice_subslice2(blocks[1U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice),
-        uint8_t, void *);
-    Eurydice_slice uu____6 = Eurydice_array_to_subslice2(
-        u8s0, (size_t)16U, (size_t)24U, uint8_t, Eurydice_slice);
-    Eurydice_slice_copy(
-        uu____6,
-        Eurydice_slice_subslice2(blocks[2U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice),
-        uint8_t, void *);
-    Eurydice_slice uu____7 = Eurydice_array_to_subslice2(
-        u8s0, (size_t)24U, (size_t)32U, uint8_t, Eurydice_slice);
-    Eurydice_slice_copy(
-        uu____7,
-        Eurydice_slice_subslice2(blocks[3U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice),
-        uint8_t, void *);
+    Eurydice_slice uu____4 =
+        Eurydice_array_to_subslice2(u8s0, (size_t)0U, (size_t)8U, uint8_t);
+    Eurydice_slice_copy(uu____4,
+                        Eurydice_slice_subslice2(blocks[0U], start + (size_t)8U,
+                                                 start + (size_t)16U, uint8_t),
+                        uint8_t);
+    Eurydice_slice uu____5 =
+        Eurydice_array_to_subslice2(u8s0, (size_t)8U, (size_t)16U, uint8_t);
+    Eurydice_slice_copy(uu____5,
+                        Eurydice_slice_subslice2(blocks[1U], start + (size_t)8U,
+                                                 start + (size_t)16U, uint8_t),
+                        uint8_t);
+    Eurydice_slice uu____6 =
+        Eurydice_array_to_subslice2(u8s0, (size_t)16U, (size_t)24U, uint8_t);
+    Eurydice_slice_copy(uu____6,
+                        Eurydice_slice_subslice2(blocks[2U], start + (size_t)8U,
+                                                 start + (size_t)16U, uint8_t),
+                        uint8_t);
+    Eurydice_slice uu____7 =
+        Eurydice_array_to_subslice2(u8s0, (size_t)24U, (size_t)32U, uint8_t);
+    Eurydice_slice_copy(uu____7,
+                        Eurydice_slice_subslice2(blocks[3U], start + (size_t)8U,
+                                                 start + (size_t)16U, uint8_t),
+                        uint8_t);
     __m256i u0 = mm256_loadu_si256_u8(core_array___Array_T__N__23__as_slice(
         (size_t)32U, u8s0, uint8_t, Eurydice_slice));
     size_t i =
@@ -1373,14 +1361,11 @@ with const generics
 */
 static KRML_MUSTINLINE void load_block_full_91(__m256i (*s)[5U],
                                                uint8_t blocks[4U][200U]) {
-  Eurydice_slice buf[4U] = {Eurydice_array_to_slice((size_t)200U, blocks[0U],
-                                                    uint8_t, Eurydice_slice),
-                            Eurydice_array_to_slice((size_t)200U, blocks[1U],
-                                                    uint8_t, Eurydice_slice),
-                            Eurydice_array_to_slice((size_t)200U, blocks[2U],
-                                                    uint8_t, Eurydice_slice),
-                            Eurydice_array_to_slice((size_t)200U, blocks[3U],
-                                                    uint8_t, Eurydice_slice)};
+  Eurydice_slice buf[4U] = {
+      Eurydice_array_to_slice((size_t)200U, blocks[0U], uint8_t),
+      Eurydice_array_to_slice((size_t)200U, blocks[1U], uint8_t),
+      Eurydice_array_to_slice((size_t)200U, blocks[2U], uint8_t),
+      Eurydice_array_to_slice((size_t)200U, blocks[3U], uint8_t)};
   load_block_c7(s, buf);
 }
 
@@ -1412,14 +1397,14 @@ with const generics
 */
 KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_5e(
     libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice last[4U]) {
-  size_t last_len = Eurydice_slice_len(last[0U], uint8_t, size_t);
+  size_t last_len = Eurydice_slice_len(last[0U], uint8_t);
   uint8_t blocks[4U][200U] = {{0U}};
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       if (last_len > (size_t)0U) {
         Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
-            blocks[i0], (size_t)0U, last_len, uint8_t, Eurydice_slice);
-        Eurydice_slice_copy(uu____0, last[i0], uint8_t, void *);
+            blocks[i0], (size_t)0U, last_len, uint8_t);
+        Eurydice_slice_copy(uu____0, last[i0], uint8_t);
       } blocks[i0][last_len] = 31U;
       size_t uu____1 = i0; size_t uu____2 = (size_t)136U - (size_t)1U;
       blocks[uu____1][uu____2] = (uint32_t)blocks[uu____1][uu____2] | 128U;);
@@ -1471,23 +1456,19 @@ static KRML_MUSTINLINE void store_block_e9(__m256i (*s)[5U],
     __m256i v3 = mm256_unpackhi_epi64(v2l, v3h);
     mm256_storeu_si256_u8(
         Eurydice_slice_subslice2(out[0U], (size_t)32U * i0,
-                                 (size_t)32U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t),
         v0);
     mm256_storeu_si256_u8(
         Eurydice_slice_subslice2(out[1U], (size_t)32U * i0,
-                                 (size_t)32U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t),
         v1);
     mm256_storeu_si256_u8(
         Eurydice_slice_subslice2(out[2U], (size_t)32U * i0,
-                                 (size_t)32U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t),
         v2);
     mm256_storeu_si256_u8(
         Eurydice_slice_subslice2(out[3U], (size_t)32U * i0,
-                                 (size_t)32U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t),
         v3);
   }
   size_t rem = (size_t)136U % (size_t)32U;
@@ -1495,74 +1476,64 @@ static KRML_MUSTINLINE void store_block_e9(__m256i (*s)[5U],
   uint8_t u8s[32U] = {0U};
   size_t i0 = (size_t)4U * ((size_t)136U / (size_t)32U) / (size_t)5U;
   size_t j0 = (size_t)4U * ((size_t)136U / (size_t)32U) % (size_t)5U;
-  mm256_storeu_si256_u8(
-      Eurydice_array_to_slice((size_t)32U, u8s, uint8_t, Eurydice_slice),
-      s[i0][j0]);
-  Eurydice_slice uu____0 = Eurydice_slice_subslice2(
-      out[0U], start, start + (size_t)8U, uint8_t, Eurydice_slice);
-  Eurydice_slice_copy(uu____0,
-                      Eurydice_array_to_subslice2(u8s, (size_t)0U, (size_t)8U,
-                                                  uint8_t, Eurydice_slice),
-                      uint8_t, void *);
-  Eurydice_slice uu____1 = Eurydice_slice_subslice2(
-      out[1U], start, start + (size_t)8U, uint8_t, Eurydice_slice);
-  Eurydice_slice_copy(uu____1,
-                      Eurydice_array_to_subslice2(u8s, (size_t)8U, (size_t)16U,
-                                                  uint8_t, Eurydice_slice),
-                      uint8_t, void *);
-  Eurydice_slice uu____2 = Eurydice_slice_subslice2(
-      out[2U], start, start + (size_t)8U, uint8_t, Eurydice_slice);
-  Eurydice_slice_copy(uu____2,
-                      Eurydice_array_to_subslice2(u8s, (size_t)16U, (size_t)24U,
-                                                  uint8_t, Eurydice_slice),
-                      uint8_t, void *);
-  Eurydice_slice uu____3 = Eurydice_slice_subslice2(
-      out[3U], start, start + (size_t)8U, uint8_t, Eurydice_slice);
-  Eurydice_slice_copy(uu____3,
-                      Eurydice_array_to_subslice2(u8s, (size_t)24U, (size_t)32U,
-                                                  uint8_t, Eurydice_slice),
-                      uint8_t, void *);
+  mm256_storeu_si256_u8(Eurydice_array_to_slice((size_t)32U, u8s, uint8_t),
+                        s[i0][j0]);
+  Eurydice_slice uu____0 =
+      Eurydice_slice_subslice2(out[0U], start, start + (size_t)8U, uint8_t);
+  Eurydice_slice_copy(
+      uu____0,
+      Eurydice_array_to_subslice2(u8s, (size_t)0U, (size_t)8U, uint8_t),
+      uint8_t);
+  Eurydice_slice uu____1 =
+      Eurydice_slice_subslice2(out[1U], start, start + (size_t)8U, uint8_t);
+  Eurydice_slice_copy(
+      uu____1,
+      Eurydice_array_to_subslice2(u8s, (size_t)8U, (size_t)16U, uint8_t),
+      uint8_t);
+  Eurydice_slice uu____2 =
+      Eurydice_slice_subslice2(out[2U], start, start + (size_t)8U, uint8_t);
+  Eurydice_slice_copy(
+      uu____2,
+      Eurydice_array_to_subslice2(u8s, (size_t)16U, (size_t)24U, uint8_t),
+      uint8_t);
+  Eurydice_slice uu____3 =
+      Eurydice_slice_subslice2(out[3U], start, start + (size_t)8U, uint8_t);
+  Eurydice_slice_copy(
+      uu____3,
+      Eurydice_array_to_subslice2(u8s, (size_t)24U, (size_t)32U, uint8_t),
+      uint8_t);
   if (rem == (size_t)16U) {
     uint8_t u8s0[32U] = {0U};
     size_t i =
         ((size_t)4U * ((size_t)136U / (size_t)32U) + (size_t)1U) / (size_t)5U;
     size_t j =
         ((size_t)4U * ((size_t)136U / (size_t)32U) + (size_t)1U) % (size_t)5U;
-    mm256_storeu_si256_u8(
-        Eurydice_array_to_slice((size_t)32U, u8s0, uint8_t, Eurydice_slice),
-        s[i][j]);
-    Eurydice_slice uu____4 =
-        Eurydice_slice_subslice2(out[0U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice);
+    mm256_storeu_si256_u8(Eurydice_array_to_slice((size_t)32U, u8s0, uint8_t),
+                          s[i][j]);
+    Eurydice_slice uu____4 = Eurydice_slice_subslice2(
+        out[0U], start + (size_t)8U, start + (size_t)16U, uint8_t);
     Eurydice_slice_copy(
         uu____4,
-        Eurydice_array_to_subslice2(u8s0, (size_t)0U, (size_t)8U, uint8_t,
-                                    Eurydice_slice),
-        uint8_t, void *);
-    Eurydice_slice uu____5 =
-        Eurydice_slice_subslice2(out[1U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice);
+        Eurydice_array_to_subslice2(u8s0, (size_t)0U, (size_t)8U, uint8_t),
+        uint8_t);
+    Eurydice_slice uu____5 = Eurydice_slice_subslice2(
+        out[1U], start + (size_t)8U, start + (size_t)16U, uint8_t);
     Eurydice_slice_copy(
         uu____5,
-        Eurydice_array_to_subslice2(u8s0, (size_t)8U, (size_t)16U, uint8_t,
-                                    Eurydice_slice),
-        uint8_t, void *);
-    Eurydice_slice uu____6 =
-        Eurydice_slice_subslice2(out[2U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice);
+        Eurydice_array_to_subslice2(u8s0, (size_t)8U, (size_t)16U, uint8_t),
+        uint8_t);
+    Eurydice_slice uu____6 = Eurydice_slice_subslice2(
+        out[2U], start + (size_t)8U, start + (size_t)16U, uint8_t);
     Eurydice_slice_copy(
         uu____6,
-        Eurydice_array_to_subslice2(u8s0, (size_t)16U, (size_t)24U, uint8_t,
-                                    Eurydice_slice),
-        uint8_t, void *);
-    Eurydice_slice uu____7 =
-        Eurydice_slice_subslice2(out[3U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice);
+        Eurydice_array_to_subslice2(u8s0, (size_t)16U, (size_t)24U, uint8_t),
+        uint8_t);
+    Eurydice_slice uu____7 = Eurydice_slice_subslice2(
+        out[3U], start + (size_t)8U, start + (size_t)16U, uint8_t);
     Eurydice_slice_copy(
         uu____7,
-        Eurydice_array_to_subslice2(u8s0, (size_t)24U, (size_t)32U, uint8_t,
-                                    Eurydice_slice),
-        uint8_t, void *);
+        Eurydice_array_to_subslice2(u8s0, (size_t)24U, (size_t)32U, uint8_t),
+        uint8_t);
   }
 }
 
@@ -1578,10 +1549,10 @@ static KRML_MUSTINLINE void store_block_full_0b(__m256i (*s)[5U],
   uint8_t out2[200U] = {0U};
   uint8_t out3[200U] = {0U};
   Eurydice_slice buf[4U] = {
-      Eurydice_array_to_slice((size_t)200U, out0, uint8_t, Eurydice_slice),
-      Eurydice_array_to_slice((size_t)200U, out1, uint8_t, Eurydice_slice),
-      Eurydice_array_to_slice((size_t)200U, out2, uint8_t, Eurydice_slice),
-      Eurydice_array_to_slice((size_t)200U, out3, uint8_t, Eurydice_slice)};
+      Eurydice_array_to_slice((size_t)200U, out0, uint8_t),
+      Eurydice_array_to_slice((size_t)200U, out1, uint8_t),
+      Eurydice_array_to_slice((size_t)200U, out2, uint8_t),
+      Eurydice_array_to_slice((size_t)200U, out3, uint8_t)};
   store_block_e9(s, buf);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_out0[200U];
@@ -1629,12 +1600,11 @@ static KRML_MUSTINLINE void squeeze_first_and_last_a4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       Eurydice_slice uu____0 = out[i0]; uint8_t *uu____1 = b[i0];
       core_ops_range_Range_b3 lit; lit.start = (size_t)0U;
-      lit.end = Eurydice_slice_len(out[i0], uint8_t, size_t);
-      Eurydice_slice_copy(
+      lit.end = Eurydice_slice_len(out[i0], uint8_t); Eurydice_slice_copy(
           uu____0,
           Eurydice_array_to_subslice((size_t)200U, uu____1, lit, uint8_t,
-                                     core_ops_range_Range_b3, Eurydice_slice),
-          uint8_t, void *););
+                                     core_ops_range_Range_b3),
+          uint8_t););
 }
 
 /**
@@ -1692,12 +1662,11 @@ static KRML_MUSTINLINE void squeeze_last_77(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       Eurydice_slice uu____0 = out[i0]; uint8_t *uu____1 = b[i0];
       core_ops_range_Range_b3 lit; lit.start = (size_t)0U;
-      lit.end = Eurydice_slice_len(out[i0], uint8_t, size_t);
-      Eurydice_slice_copy(
+      lit.end = Eurydice_slice_len(out[i0], uint8_t); Eurydice_slice_copy(
           uu____0,
           Eurydice_array_to_subslice((size_t)200U, uu____1, lit, uint8_t,
-                                     core_ops_range_Range_b3, Eurydice_slice),
-          uint8_t, void *););
+                                     core_ops_range_Range_b3),
+          uint8_t););
 }
 
 /**
@@ -1712,7 +1681,7 @@ static KRML_MUSTINLINE void keccak_14(Eurydice_slice data[4U],
                                       Eurydice_slice out[4U]) {
   libcrux_sha3_generic_keccak_KeccakState_29 s = new_1e_16();
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(data[0U], uint8_t, size_t) / (size_t)136U; i++) {
+       i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)136U; i++) {
     size_t i0 = i;
     libcrux_sha3_generic_keccak_KeccakState_29 *uu____0 = &s;
     /* Passing arrays by value in Rust generates a copy in C */
@@ -1722,16 +1691,16 @@ static KRML_MUSTINLINE void keccak_14(Eurydice_slice data[4U],
     slice_n_ef(copy_of_data, i0 * (size_t)136U, (size_t)136U, ret);
     absorb_block_37(uu____0, ret);
   }
-  size_t rem = Eurydice_slice_len(data[0U], uint8_t, size_t) % (size_t)136U;
+  size_t rem = Eurydice_slice_len(data[0U], uint8_t) % (size_t)136U;
   libcrux_sha3_generic_keccak_KeccakState_29 *uu____2 = &s;
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[4U];
   memcpy(copy_of_data, data, (size_t)4U * sizeof(Eurydice_slice));
   Eurydice_slice ret[4U];
-  slice_n_ef(copy_of_data, Eurydice_slice_len(data[0U], uint8_t, size_t) - rem,
-             rem, ret);
+  slice_n_ef(copy_of_data, Eurydice_slice_len(data[0U], uint8_t) - rem, rem,
+             ret);
   libcrux_sha3_generic_keccak_absorb_final_5e(uu____2, ret);
-  size_t outlen = Eurydice_slice_len(out[0U], uint8_t, size_t);
+  size_t outlen = Eurydice_slice_len(out[0U], uint8_t);
   size_t blocks = outlen / (size_t)136U;
   size_t last = outlen - outlen % (size_t)136U;
   if (blocks == (size_t)0U) {
@@ -1800,18 +1769,18 @@ static KRML_MUSTINLINE void load_block_c70(__m256i (*s)[5U],
                                            Eurydice_slice blocks[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)32U; i++) {
     size_t i0 = i;
-    __m256i v00 = mm256_loadu_si256_u8(Eurydice_slice_subslice2(
-        blocks[0U], (size_t)32U * i0, (size_t)32U * (i0 + (size_t)1U), uint8_t,
-        Eurydice_slice));
-    __m256i v10 = mm256_loadu_si256_u8(Eurydice_slice_subslice2(
-        blocks[1U], (size_t)32U * i0, (size_t)32U * (i0 + (size_t)1U), uint8_t,
-        Eurydice_slice));
-    __m256i v20 = mm256_loadu_si256_u8(Eurydice_slice_subslice2(
-        blocks[2U], (size_t)32U * i0, (size_t)32U * (i0 + (size_t)1U), uint8_t,
-        Eurydice_slice));
-    __m256i v30 = mm256_loadu_si256_u8(Eurydice_slice_subslice2(
-        blocks[3U], (size_t)32U * i0, (size_t)32U * (i0 + (size_t)1U), uint8_t,
-        Eurydice_slice));
+    __m256i v00 = mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[0U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v10 = mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[1U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v20 = mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[2U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v30 = mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[3U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
     __m256i v0l = mm256_unpacklo_epi64(v00, v10);
     __m256i v1h = mm256_unpackhi_epi64(v00, v10);
     __m256i v2l = mm256_unpacklo_epi64(v20, v30);
@@ -1842,34 +1811,30 @@ static KRML_MUSTINLINE void load_block_c70(__m256i (*s)[5U],
   size_t rem = (size_t)168U % (size_t)32U;
   size_t start = (size_t)32U * ((size_t)168U / (size_t)32U);
   uint8_t u8s[32U] = {0U};
-  Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
-      u8s, (size_t)0U, (size_t)8U, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____0 =
+      Eurydice_array_to_subslice2(u8s, (size_t)0U, (size_t)8U, uint8_t);
   Eurydice_slice_copy(
       uu____0,
-      Eurydice_slice_subslice2(blocks[0U], start, start + (size_t)8U, uint8_t,
-                               Eurydice_slice),
-      uint8_t, void *);
-  Eurydice_slice uu____1 = Eurydice_array_to_subslice2(
-      u8s, (size_t)8U, (size_t)16U, uint8_t, Eurydice_slice);
+      Eurydice_slice_subslice2(blocks[0U], start, start + (size_t)8U, uint8_t),
+      uint8_t);
+  Eurydice_slice uu____1 =
+      Eurydice_array_to_subslice2(u8s, (size_t)8U, (size_t)16U, uint8_t);
   Eurydice_slice_copy(
       uu____1,
-      Eurydice_slice_subslice2(blocks[1U], start, start + (size_t)8U, uint8_t,
-                               Eurydice_slice),
-      uint8_t, void *);
-  Eurydice_slice uu____2 = Eurydice_array_to_subslice2(
-      u8s, (size_t)16U, (size_t)24U, uint8_t, Eurydice_slice);
+      Eurydice_slice_subslice2(blocks[1U], start, start + (size_t)8U, uint8_t),
+      uint8_t);
+  Eurydice_slice uu____2 =
+      Eurydice_array_to_subslice2(u8s, (size_t)16U, (size_t)24U, uint8_t);
   Eurydice_slice_copy(
       uu____2,
-      Eurydice_slice_subslice2(blocks[2U], start, start + (size_t)8U, uint8_t,
-                               Eurydice_slice),
-      uint8_t, void *);
-  Eurydice_slice uu____3 = Eurydice_array_to_subslice2(
-      u8s, (size_t)24U, (size_t)32U, uint8_t, Eurydice_slice);
+      Eurydice_slice_subslice2(blocks[2U], start, start + (size_t)8U, uint8_t),
+      uint8_t);
+  Eurydice_slice uu____3 =
+      Eurydice_array_to_subslice2(u8s, (size_t)24U, (size_t)32U, uint8_t);
   Eurydice_slice_copy(
       uu____3,
-      Eurydice_slice_subslice2(blocks[3U], start, start + (size_t)8U, uint8_t,
-                               Eurydice_slice),
-      uint8_t, void *);
+      Eurydice_slice_subslice2(blocks[3U], start, start + (size_t)8U, uint8_t),
+      uint8_t);
   __m256i u = mm256_loadu_si256_u8(core_array___Array_T__N__23__as_slice(
       (size_t)32U, u8s, uint8_t, Eurydice_slice));
   size_t i0 = (size_t)4U * ((size_t)168U / (size_t)32U) / (size_t)5U;
@@ -1877,34 +1842,30 @@ static KRML_MUSTINLINE void load_block_c70(__m256i (*s)[5U],
   s[i0][j0] = mm256_xor_si256(s[i0][j0], u);
   if (rem == (size_t)16U) {
     uint8_t u8s0[32U] = {0U};
-    Eurydice_slice uu____4 = Eurydice_array_to_subslice2(
-        u8s0, (size_t)0U, (size_t)8U, uint8_t, Eurydice_slice);
-    Eurydice_slice_copy(
-        uu____4,
-        Eurydice_slice_subslice2(blocks[0U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice),
-        uint8_t, void *);
-    Eurydice_slice uu____5 = Eurydice_array_to_subslice2(
-        u8s0, (size_t)8U, (size_t)16U, uint8_t, Eurydice_slice);
-    Eurydice_slice_copy(
-        uu____5,
-        Eurydice_slice_subslice2(blocks[1U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice),
-        uint8_t, void *);
-    Eurydice_slice uu____6 = Eurydice_array_to_subslice2(
-        u8s0, (size_t)16U, (size_t)24U, uint8_t, Eurydice_slice);
-    Eurydice_slice_copy(
-        uu____6,
-        Eurydice_slice_subslice2(blocks[2U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice),
-        uint8_t, void *);
-    Eurydice_slice uu____7 = Eurydice_array_to_subslice2(
-        u8s0, (size_t)24U, (size_t)32U, uint8_t, Eurydice_slice);
-    Eurydice_slice_copy(
-        uu____7,
-        Eurydice_slice_subslice2(blocks[3U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice),
-        uint8_t, void *);
+    Eurydice_slice uu____4 =
+        Eurydice_array_to_subslice2(u8s0, (size_t)0U, (size_t)8U, uint8_t);
+    Eurydice_slice_copy(uu____4,
+                        Eurydice_slice_subslice2(blocks[0U], start + (size_t)8U,
+                                                 start + (size_t)16U, uint8_t),
+                        uint8_t);
+    Eurydice_slice uu____5 =
+        Eurydice_array_to_subslice2(u8s0, (size_t)8U, (size_t)16U, uint8_t);
+    Eurydice_slice_copy(uu____5,
+                        Eurydice_slice_subslice2(blocks[1U], start + (size_t)8U,
+                                                 start + (size_t)16U, uint8_t),
+                        uint8_t);
+    Eurydice_slice uu____6 =
+        Eurydice_array_to_subslice2(u8s0, (size_t)16U, (size_t)24U, uint8_t);
+    Eurydice_slice_copy(uu____6,
+                        Eurydice_slice_subslice2(blocks[2U], start + (size_t)8U,
+                                                 start + (size_t)16U, uint8_t),
+                        uint8_t);
+    Eurydice_slice uu____7 =
+        Eurydice_array_to_subslice2(u8s0, (size_t)24U, (size_t)32U, uint8_t);
+    Eurydice_slice_copy(uu____7,
+                        Eurydice_slice_subslice2(blocks[3U], start + (size_t)8U,
+                                                 start + (size_t)16U, uint8_t),
+                        uint8_t);
     __m256i u0 = mm256_loadu_si256_u8(core_array___Array_T__N__23__as_slice(
         (size_t)32U, u8s0, uint8_t, Eurydice_slice));
     size_t i =
@@ -1922,14 +1883,11 @@ with const generics
 */
 static KRML_MUSTINLINE void load_block_full_910(__m256i (*s)[5U],
                                                 uint8_t blocks[4U][200U]) {
-  Eurydice_slice buf[4U] = {Eurydice_array_to_slice((size_t)200U, blocks[0U],
-                                                    uint8_t, Eurydice_slice),
-                            Eurydice_array_to_slice((size_t)200U, blocks[1U],
-                                                    uint8_t, Eurydice_slice),
-                            Eurydice_array_to_slice((size_t)200U, blocks[2U],
-                                                    uint8_t, Eurydice_slice),
-                            Eurydice_array_to_slice((size_t)200U, blocks[3U],
-                                                    uint8_t, Eurydice_slice)};
+  Eurydice_slice buf[4U] = {
+      Eurydice_array_to_slice((size_t)200U, blocks[0U], uint8_t),
+      Eurydice_array_to_slice((size_t)200U, blocks[1U], uint8_t),
+      Eurydice_array_to_slice((size_t)200U, blocks[2U], uint8_t),
+      Eurydice_array_to_slice((size_t)200U, blocks[3U], uint8_t)};
   load_block_c70(s, buf);
 }
 
@@ -1961,14 +1919,14 @@ with const generics
 */
 static KRML_MUSTINLINE void absorb_final_5e0(
     libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice last[4U]) {
-  size_t last_len = Eurydice_slice_len(last[0U], uint8_t, size_t);
+  size_t last_len = Eurydice_slice_len(last[0U], uint8_t);
   uint8_t blocks[4U][200U] = {{0U}};
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       if (last_len > (size_t)0U) {
         Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
-            blocks[i0], (size_t)0U, last_len, uint8_t, Eurydice_slice);
-        Eurydice_slice_copy(uu____0, last[i0], uint8_t, void *);
+            blocks[i0], (size_t)0U, last_len, uint8_t);
+        Eurydice_slice_copy(uu____0, last[i0], uint8_t);
       } blocks[i0][last_len] = 31U;
       size_t uu____1 = i0; size_t uu____2 = (size_t)168U - (size_t)1U;
       blocks[uu____1][uu____2] = (uint32_t)blocks[uu____1][uu____2] | 128U;);
@@ -2030,23 +1988,19 @@ static KRML_MUSTINLINE void store_block_e90(__m256i (*s)[5U],
     __m256i v3 = mm256_unpackhi_epi64(v2l, v3h);
     mm256_storeu_si256_u8(
         Eurydice_slice_subslice2(out[0U], (size_t)32U * i0,
-                                 (size_t)32U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t),
         v0);
     mm256_storeu_si256_u8(
         Eurydice_slice_subslice2(out[1U], (size_t)32U * i0,
-                                 (size_t)32U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t),
         v1);
     mm256_storeu_si256_u8(
         Eurydice_slice_subslice2(out[2U], (size_t)32U * i0,
-                                 (size_t)32U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t),
         v2);
     mm256_storeu_si256_u8(
         Eurydice_slice_subslice2(out[3U], (size_t)32U * i0,
-                                 (size_t)32U * (i0 + (size_t)1U), uint8_t,
-                                 Eurydice_slice),
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t),
         v3);
   }
   size_t rem = (size_t)168U % (size_t)32U;
@@ -2054,74 +2008,64 @@ static KRML_MUSTINLINE void store_block_e90(__m256i (*s)[5U],
   uint8_t u8s[32U] = {0U};
   size_t i0 = (size_t)4U * ((size_t)168U / (size_t)32U) / (size_t)5U;
   size_t j0 = (size_t)4U * ((size_t)168U / (size_t)32U) % (size_t)5U;
-  mm256_storeu_si256_u8(
-      Eurydice_array_to_slice((size_t)32U, u8s, uint8_t, Eurydice_slice),
-      s[i0][j0]);
-  Eurydice_slice uu____0 = Eurydice_slice_subslice2(
-      out[0U], start, start + (size_t)8U, uint8_t, Eurydice_slice);
-  Eurydice_slice_copy(uu____0,
-                      Eurydice_array_to_subslice2(u8s, (size_t)0U, (size_t)8U,
-                                                  uint8_t, Eurydice_slice),
-                      uint8_t, void *);
-  Eurydice_slice uu____1 = Eurydice_slice_subslice2(
-      out[1U], start, start + (size_t)8U, uint8_t, Eurydice_slice);
-  Eurydice_slice_copy(uu____1,
-                      Eurydice_array_to_subslice2(u8s, (size_t)8U, (size_t)16U,
-                                                  uint8_t, Eurydice_slice),
-                      uint8_t, void *);
-  Eurydice_slice uu____2 = Eurydice_slice_subslice2(
-      out[2U], start, start + (size_t)8U, uint8_t, Eurydice_slice);
-  Eurydice_slice_copy(uu____2,
-                      Eurydice_array_to_subslice2(u8s, (size_t)16U, (size_t)24U,
-                                                  uint8_t, Eurydice_slice),
-                      uint8_t, void *);
-  Eurydice_slice uu____3 = Eurydice_slice_subslice2(
-      out[3U], start, start + (size_t)8U, uint8_t, Eurydice_slice);
-  Eurydice_slice_copy(uu____3,
-                      Eurydice_array_to_subslice2(u8s, (size_t)24U, (size_t)32U,
-                                                  uint8_t, Eurydice_slice),
-                      uint8_t, void *);
+  mm256_storeu_si256_u8(Eurydice_array_to_slice((size_t)32U, u8s, uint8_t),
+                        s[i0][j0]);
+  Eurydice_slice uu____0 =
+      Eurydice_slice_subslice2(out[0U], start, start + (size_t)8U, uint8_t);
+  Eurydice_slice_copy(
+      uu____0,
+      Eurydice_array_to_subslice2(u8s, (size_t)0U, (size_t)8U, uint8_t),
+      uint8_t);
+  Eurydice_slice uu____1 =
+      Eurydice_slice_subslice2(out[1U], start, start + (size_t)8U, uint8_t);
+  Eurydice_slice_copy(
+      uu____1,
+      Eurydice_array_to_subslice2(u8s, (size_t)8U, (size_t)16U, uint8_t),
+      uint8_t);
+  Eurydice_slice uu____2 =
+      Eurydice_slice_subslice2(out[2U], start, start + (size_t)8U, uint8_t);
+  Eurydice_slice_copy(
+      uu____2,
+      Eurydice_array_to_subslice2(u8s, (size_t)16U, (size_t)24U, uint8_t),
+      uint8_t);
+  Eurydice_slice uu____3 =
+      Eurydice_slice_subslice2(out[3U], start, start + (size_t)8U, uint8_t);
+  Eurydice_slice_copy(
+      uu____3,
+      Eurydice_array_to_subslice2(u8s, (size_t)24U, (size_t)32U, uint8_t),
+      uint8_t);
   if (rem == (size_t)16U) {
     uint8_t u8s0[32U] = {0U};
     size_t i =
         ((size_t)4U * ((size_t)168U / (size_t)32U) + (size_t)1U) / (size_t)5U;
     size_t j =
         ((size_t)4U * ((size_t)168U / (size_t)32U) + (size_t)1U) % (size_t)5U;
-    mm256_storeu_si256_u8(
-        Eurydice_array_to_slice((size_t)32U, u8s0, uint8_t, Eurydice_slice),
-        s[i][j]);
-    Eurydice_slice uu____4 =
-        Eurydice_slice_subslice2(out[0U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice);
+    mm256_storeu_si256_u8(Eurydice_array_to_slice((size_t)32U, u8s0, uint8_t),
+                          s[i][j]);
+    Eurydice_slice uu____4 = Eurydice_slice_subslice2(
+        out[0U], start + (size_t)8U, start + (size_t)16U, uint8_t);
     Eurydice_slice_copy(
         uu____4,
-        Eurydice_array_to_subslice2(u8s0, (size_t)0U, (size_t)8U, uint8_t,
-                                    Eurydice_slice),
-        uint8_t, void *);
-    Eurydice_slice uu____5 =
-        Eurydice_slice_subslice2(out[1U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice);
+        Eurydice_array_to_subslice2(u8s0, (size_t)0U, (size_t)8U, uint8_t),
+        uint8_t);
+    Eurydice_slice uu____5 = Eurydice_slice_subslice2(
+        out[1U], start + (size_t)8U, start + (size_t)16U, uint8_t);
     Eurydice_slice_copy(
         uu____5,
-        Eurydice_array_to_subslice2(u8s0, (size_t)8U, (size_t)16U, uint8_t,
-                                    Eurydice_slice),
-        uint8_t, void *);
-    Eurydice_slice uu____6 =
-        Eurydice_slice_subslice2(out[2U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice);
+        Eurydice_array_to_subslice2(u8s0, (size_t)8U, (size_t)16U, uint8_t),
+        uint8_t);
+    Eurydice_slice uu____6 = Eurydice_slice_subslice2(
+        out[2U], start + (size_t)8U, start + (size_t)16U, uint8_t);
     Eurydice_slice_copy(
         uu____6,
-        Eurydice_array_to_subslice2(u8s0, (size_t)16U, (size_t)24U, uint8_t,
-                                    Eurydice_slice),
-        uint8_t, void *);
-    Eurydice_slice uu____7 =
-        Eurydice_slice_subslice2(out[3U], start + (size_t)8U,
-                                 start + (size_t)16U, uint8_t, Eurydice_slice);
+        Eurydice_array_to_subslice2(u8s0, (size_t)16U, (size_t)24U, uint8_t),
+        uint8_t);
+    Eurydice_slice uu____7 = Eurydice_slice_subslice2(
+        out[3U], start + (size_t)8U, start + (size_t)16U, uint8_t);
     Eurydice_slice_copy(
         uu____7,
-        Eurydice_array_to_subslice2(u8s0, (size_t)24U, (size_t)32U, uint8_t,
-                                    Eurydice_slice),
-        uint8_t, void *);
+        Eurydice_array_to_subslice2(u8s0, (size_t)24U, (size_t)32U, uint8_t),
+        uint8_t);
   }
 }
 

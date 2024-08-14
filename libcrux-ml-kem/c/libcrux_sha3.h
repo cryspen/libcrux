@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: d8a02494066422005c27e3b3f515129c0c38e9f0
- * Eurydice: 99662476dd28a9804b424c103638a01c38192491
- * Karamel: 9fb21c700160be489cafc690c3c0af2681ece49b
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 490a8664911fa33e785d629c78d6ee3dd85448e6
+ * Charon: 8de6020c10a3520a56fbf849176f8218e62435cf
+ * Eurydice: f8fc97aeb6ecbaaacfe4baffcdc4d671989b5586
+ * Karamel: 98e5d604741a886e20a526f6673077a15e23cead
+ * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
+ * Libcrux: 0c66762ad2fdfb3f110ee362fa210bea0fecd265
  */
 
 #ifndef __libcrux_sha3_H
@@ -89,8 +89,8 @@ static KRML_MUSTINLINE void libcrux_sha3_sha224_ema(Eurydice_slice digest,
 static KRML_MUSTINLINE void libcrux_sha3_sha224(Eurydice_slice data,
                                                 uint8_t ret[28U]) {
   uint8_t out[28U] = {0U};
-  libcrux_sha3_sha224_ema(
-      Eurydice_array_to_slice((size_t)28U, out, uint8_t, Eurydice_slice), data);
+  libcrux_sha3_sha224_ema(Eurydice_array_to_slice((size_t)28U, out, uint8_t),
+                          data);
   memcpy(ret, out, (size_t)28U * sizeof(uint8_t));
 }
 
@@ -108,8 +108,8 @@ static KRML_MUSTINLINE void libcrux_sha3_sha256_ema(Eurydice_slice digest,
 static KRML_MUSTINLINE void libcrux_sha3_sha256(Eurydice_slice data,
                                                 uint8_t ret[32U]) {
   uint8_t out[32U] = {0U};
-  libcrux_sha3_sha256_ema(
-      Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice), data);
+  libcrux_sha3_sha256_ema(Eurydice_array_to_slice((size_t)32U, out, uint8_t),
+                          data);
   memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
@@ -127,8 +127,8 @@ static KRML_MUSTINLINE void libcrux_sha3_sha384_ema(Eurydice_slice digest,
 static KRML_MUSTINLINE void libcrux_sha3_sha384(Eurydice_slice data,
                                                 uint8_t ret[48U]) {
   uint8_t out[48U] = {0U};
-  libcrux_sha3_sha384_ema(
-      Eurydice_array_to_slice((size_t)48U, out, uint8_t, Eurydice_slice), data);
+  libcrux_sha3_sha384_ema(Eurydice_array_to_slice((size_t)48U, out, uint8_t),
+                          data);
   memcpy(ret, out, (size_t)48U * sizeof(uint8_t));
 }
 
@@ -146,8 +146,8 @@ static KRML_MUSTINLINE void libcrux_sha3_sha512_ema(Eurydice_slice digest,
 static KRML_MUSTINLINE void libcrux_sha3_sha512(Eurydice_slice data,
                                                 uint8_t ret[64U]) {
   uint8_t out[64U] = {0U};
-  libcrux_sha3_sha512_ema(
-      Eurydice_array_to_slice((size_t)64U, out, uint8_t, Eurydice_slice), data);
+  libcrux_sha3_sha512_ema(Eurydice_array_to_slice((size_t)64U, out, uint8_t),
+                          data);
   memcpy(ret, out, (size_t)64U * sizeof(uint8_t));
 }
 
