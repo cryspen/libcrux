@@ -5,8 +5,6 @@ use libcrux_ml_dsa::{
 
 use pqcrypto_dilithium;
 
-#[path = "./bench_utils.rs"]
-#[macro_use]
 mod bench_utils;
 
 fn main() {
