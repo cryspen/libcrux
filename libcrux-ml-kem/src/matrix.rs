@@ -5,6 +5,7 @@ use crate::{
 
 #[inline(always)]
 #[allow(non_snake_case)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K"))]
 pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K>>(
     seed: [u8; 34],
     transpose: bool,
@@ -41,6 +42,7 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
 
 /// Compute v − InverseNTT(sᵀ ◦ NTT(u))
 #[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K"))]
 pub(crate) fn compute_message<const K: usize, Vector: Operations>(
     v: &PolynomialRingElement<Vector>,
     secret_as_ntt: &[PolynomialRingElement<Vector>; K],
@@ -61,6 +63,7 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
 
 /// Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
 #[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K"))]
 pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
     t_as_ntt: &[PolynomialRingElement<Vector>; K],
     r_as_ntt: &[PolynomialRingElement<Vector>; K],
@@ -82,6 +85,7 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
 
 /// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
 #[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K"))]
 pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
     a_as_ntt: &[[PolynomialRingElement<Vector>; K]; K],
     r_as_ntt: &[PolynomialRingElement<Vector>; K],
@@ -109,6 +113,7 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
 /// Compute Â ◦ ŝ + ê
 #[inline(always)]
 #[allow(non_snake_case)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K"))]
 pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
     matrix_A: &[[PolynomialRingElement<Vector>; K]; K],
     s_as_ntt: &[PolynomialRingElement<Vector>; K],

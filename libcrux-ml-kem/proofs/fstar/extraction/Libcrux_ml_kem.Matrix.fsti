@@ -20,10 +20,10 @@ val compute_As_plus_e
       (s_as_ntt error_as_ntt:
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      Prims.l_True
+      (requires Spec.MLKEM.is_rank v_K)
       (fun _ -> Prims.l_True)
 
-/// Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
+/// Compute InverseNTT(tᵀ ◦ r\u{302}) + e₂ + message
 val compute_ring_element_v
       (v_K: usize)
       (#v_Vector: Type0)
@@ -31,10 +31,10 @@ val compute_ring_element_v
       (tt_as_ntt r_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (error_2_ message: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires Spec.MLKEM.is_rank v_K)
       (fun _ -> Prims.l_True)
 
-/// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
+/// Compute u := InvertNTT(Aᵀ ◦ r\u{302}) + e₁
 val compute_vector_u
       (v_K: usize)
       (#v_Vector: Type0)
@@ -43,7 +43,7 @@ val compute_vector_u
           t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
       (r_as_ntt error_1_: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      Prims.l_True
+      (requires Spec.MLKEM.is_rank v_K)
       (fun _ -> Prims.l_True)
 
 /// The following functions compute various expressions involving
@@ -58,7 +58,7 @@ val compute_message
       (secret_as_ntt u_as_ntt:
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires Spec.MLKEM.is_rank v_K)
       (fun _ -> Prims.l_True)
 
 val sample_matrix_A
@@ -70,5 +70,5 @@ val sample_matrix_A
       (transpose: bool)
     : Prims.Pure
       (t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
-      Prims.l_True
+      (requires Spec.MLKEM.is_rank v_K)
       (fun _ -> Prims.l_True)
