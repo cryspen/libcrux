@@ -1,6 +1,9 @@
 // Each field element occupies 32 bits and the size of a simd_unit is 256 bits.
 pub(crate) const COEFFICIENTS_IN_SIMD_UNIT: usize = 8;
 
+pub(crate) const SIMD_UNITS_IN_RING_ELEMENT: usize =
+    crate::constants::COEFFICIENTS_IN_RING_ELEMENT / COEFFICIENTS_IN_SIMD_UNIT;
+
 pub const FIELD_MODULUS: i32 = 8_380_417;
 
 // FIELD_MODULUS^{-1} mod MONTGOMERY_R
@@ -65,9 +68,7 @@ pub(crate) trait Operations: Copy + Clone {
     fn t1_deserialize(serialized: &[u8]) -> Self;
 
     // NTT
-    fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self;
-    fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self;
-    fn ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self;
+    fn ntt(simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT]) -> [Self; SIMD_UNITS_IN_RING_ELEMENT];
 
     // Inverse NTT
     fn invert_ntt_at_layer_0(

@@ -1,7 +1,4 @@
-use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT};
-
-pub(crate) const SIMD_UNITS_IN_RING_ELEMENT: usize =
-    crate::constants::COEFFICIENTS_IN_RING_ELEMENT / COEFFICIENTS_IN_SIMD_UNIT;
+use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
 #[derive(Clone, Copy)]
 pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
