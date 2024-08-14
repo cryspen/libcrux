@@ -2,8 +2,9 @@ module Spec.MLKEM
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 30"
 open FStar.Mul
 open Core
-open Spec.Utils
-open Spec.MLKEM.Math
+
+include Spec.Utils
+include Spec.MLKEM.Math
 
 (** ML-KEM Constants *)
 let v_BITS_PER_COEFFICIENT: usize = sz 12

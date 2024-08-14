@@ -199,7 +199,8 @@ val encrypt
       (ensures
         fun result ->
           let result:t_Array u8 v_CIPHERTEXT_SIZE = result in
-          result == Spec.MLKEM.ind_cpa_encrypt v_K public_key message randomness)
+          let expected, valid = Spec.MLKEM.ind_cpa_encrypt v_K public_key message randomness in
+          valid ==> result == expected)
 
 /// This function implements most of <strong>Algorithm 12</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation algorithm.
@@ -263,4 +264,5 @@ val generate_keypair
       (ensures
         fun result ->
           let result:(t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE) = result in
-          result == Spec.MLKEM.ind_cpa_generate_keypair v_K key_generation_seed)
+          let expected, valid = Spec.MLKEM.ind_cpa_generate_keypair v_K key_generation_seed in
+          valid ==> result == expected)
