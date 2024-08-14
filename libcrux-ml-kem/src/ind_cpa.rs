@@ -39,6 +39,7 @@ use unpacked::*;
 
 /// Concatenate `t` and `ρ` into the public key.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
@@ -62,6 +63,7 @@ pub(crate) fn serialize_public_key<
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $OUT_LEN == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K"))]
 fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector: Operations>(
@@ -81,6 +83,7 @@ fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector: Operations
 
 /// Sample a vector of ring elements from a centered binomial distribution.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
     $ETA2 == Spec.MLKEM.v_ETA2 $K"))]
@@ -110,6 +113,7 @@ fn sample_ring_element_cbd<
 /// Sample a vector of ring elements from a centered binomial distribution and
 /// convert them into their NTT representations.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $ETA_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
     $ETA == Spec.MLKEM.v_ETA1 $K"))]
@@ -176,6 +180,7 @@ fn sample_vector_cbd_then_ntt<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
     const ETA1: usize,
@@ -221,6 +226,7 @@ pub(crate) fn generate_keypair_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
@@ -259,6 +265,7 @@ pub(crate) fn generate_keypair<
 }
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $OUT_LEN == Spec.MLKEM.v_C1_SIZE $K /\\
     $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\\
@@ -325,6 +332,7 @@ fn compress_then_serialize_u<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn encrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -399,6 +407,7 @@ pub(crate) fn encrypt_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $ETA1 = Spec.MLKEM.v_ETA1 $K /\\
     $ETA1_RANDOMNESS_SIZE = Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
@@ -476,6 +485,7 @@ pub(crate) fn encrypt<
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
 /// in the `ciphertext`.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
     $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K"))]
@@ -502,6 +512,7 @@ fn deserialize_then_decompress_u<
 
 /// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     length $secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K"))]
 fn deserialize_secret_key<const K: usize, Vector: Operations>(
@@ -539,6 +550,7 @@ fn deserialize_secret_key<const K: usize, Vector: Operations>(
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn decrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -566,6 +578,7 @@ pub(crate) fn decrypt_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     length $secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\ 
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\

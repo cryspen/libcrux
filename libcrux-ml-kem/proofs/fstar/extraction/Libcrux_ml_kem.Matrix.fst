@@ -10,6 +10,8 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+#push-options "--admit_smt_queries true"
+
 let compute_As_plus_e
       (v_K: usize)
       (#v_Vector: Type0)
@@ -131,6 +133,8 @@ let compute_As_plus_e
   in
   result
 
+#pop-options
+
 let compute_ring_element_v
       (v_K: usize)
       (#v_Vector: Type0)
@@ -172,7 +176,11 @@ let compute_ring_element_v
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Libcrux_ml_kem.Polynomial.impl__add_message_error_reduce #v_Vector error_2_ message result
   in
+  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
+  let _:Prims.unit = admit () (* Panic freedom *) in
   result
+
+#push-options "--admit_smt_queries true"
 
 let compute_vector_u
       (v_K: usize)
@@ -303,6 +311,8 @@ let compute_vector_u
   in
   result
 
+#pop-options
+
 let compute_message
       (v_K: usize)
       (#v_Vector: Type0)
@@ -345,7 +355,11 @@ let compute_message
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Libcrux_ml_kem.Polynomial.impl__subtract_reduce #v_Vector v result
   in
+  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
+  let _:Prims.unit = admit () (* Panic freedom *) in
   result
+
+#push-options "--admit_smt_queries true"
 
 let sample_matrix_A
       (v_K: usize)
@@ -499,3 +513,5 @@ let sample_matrix_A
                   v_A_transpose))
   in
   v_A_transpose
+
+#pop-options

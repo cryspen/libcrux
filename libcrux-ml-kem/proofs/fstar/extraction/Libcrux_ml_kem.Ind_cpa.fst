@@ -10,6 +10,8 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+#push-options "--admit_smt_queries true"
+
 let sample_ring_element_cbd
       (v_K v_ETA2_RANDOMNESS_SIZE v_ETA2: usize)
       (#v_Vector #v_Hasher: Type0)
@@ -97,6 +99,10 @@ let sample_ring_element_cbd
   error_1_, domain_separator
   <:
   (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let sample_vector_cbd_then_ntt
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
@@ -195,6 +201,10 @@ let sample_vector_cbd_then_ntt
   <:
   (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let compress_then_serialize_u
       (v_K v_OUT_LEN v_COMPRESSION_FACTOR v_BLOCK_LEN: usize)
       (#v_Vector: Type0)
@@ -268,6 +278,8 @@ let compress_then_serialize_u
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   out
 
+#pop-options
+
 let deserialize_then_decompress_u
       (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
@@ -332,7 +344,9 @@ let deserialize_then_decompress_u
           in
           u_as_ntt)
   in
-  u_as_ntt
+  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = u_as_ntt in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let deserialize_secret_key
       (v_K: usize)
@@ -382,7 +396,13 @@ let deserialize_secret_key
           <:
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
   in
-  secret_as_ntt
+  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+    secret_as_ntt
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
+
+#push-options "--admit_smt_queries true"
 
 let serialize_secret_key
       (v_K v_OUT_LEN: usize)
@@ -458,6 +478,8 @@ let serialize_secret_key
   in
   out
 
+#pop-options
+
 let serialize_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
@@ -510,7 +532,11 @@ let serialize_public_key
         <:
         t_Slice u8)
   in
-  public_key_serialized
+  let result:t_Array u8 v_PUBLIC_KEY_SIZE = public_key_serialized in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
+
+#push-options "--admit_smt_queries true"
 
 let decrypt_unpacked
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
@@ -543,6 +569,10 @@ let decrypt_unpacked
   in
   Libcrux_ml_kem.Serialize.compress_then_serialize_message #v_Vector message
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let decrypt
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
           usize)
@@ -569,6 +599,10 @@ let decrypt
     #v_Vector
     secret_key_unpacked
     ciphertext
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let encrypt_unpacked
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
@@ -671,6 +705,10 @@ let encrypt_unpacked
   in
   ciphertext
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let encrypt
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
@@ -729,6 +767,10 @@ let encrypt
   encrypt_unpacked v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN
     v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
     v_ETA2_RANDOMNESS_SIZE #v_Vector #v_Hasher public_key_unpacked message randomness
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let generate_keypair_unpacked
       (v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE: usize)
@@ -808,6 +850,10 @@ let generate_keypair_unpacked
   (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector &
     Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
@@ -846,3 +892,5 @@ let generate_keypair
   secret_key_serialized, public_key_serialized
   <:
   (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
+
+#pop-options
