@@ -1,7 +1,8 @@
 use crate::{
     constant_time_ops::{
-        compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
+        compare_ciphertexts_in_constant_time,
         compare_ciphertexts_select_shared_secret_in_constant_time,
+        select_shared_secret_in_constant_time,
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::Hash,
@@ -140,9 +141,9 @@ fn generate_keypair<
         implicit_rejection_value,
     );
     let private_key: MlKemPrivateKey<PRIVATE_KEY_SIZE> =
-        MlKemPrivateKey::from(secret_key_serialized);
+        MlKemPrivateKey::from(&secret_key_serialized);
 
-    MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key))
+    MlKemKeyPair::from(private_key, MlKemPublicKey::from(&public_key))
 }
 
 fn encapsulate<

@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
- * Karamel: f9cdef256a2b88282398a609847b34dd8c9cf3e3
+ * Charon: d8a02494066422005c27e3b3f515129c0c38e9f0
+ * Eurydice: 99662476dd28a9804b424c103638a01c38192491
+ * Karamel: 9fb21c700160be489cafc690c3c0af2681ece49b
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 9307ab926afbe89fd8e61ffec8dd95a500c18f33
+ * Libcrux: 490a8664911fa33e785d629c78d6ee3dd85448e6
  */
 
 #ifndef __libcrux_ct_ops_H
@@ -46,8 +46,8 @@ libcrux_ml_kem_constant_time_ops_is_non_zero(uint8_t value) {
 static inline uint8_t libcrux_ml_kem_constant_time_ops_compare(
     Eurydice_slice lhs, Eurydice_slice rhs) {
   uint8_t r = 0U;
-  for (size_t i = (size_t)0U;
-       i < core_slice___Slice_T___len(lhs, uint8_t, size_t); i++) {
+  for (size_t i = (size_t)0U; i < Eurydice_slice_len(lhs, uint8_t, size_t);
+       i++) {
     size_t i0 = i;
     r = (uint32_t)r |
         ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *, uint8_t) ^

@@ -121,3 +121,6 @@ naming:
   skip_prefix:
     - [ core, core_arch, arm_shared, neon ]
     - [ core, core_arch, x86 ]
+    - [ core, option ]
+    - [ core, result ]
+    - [ core, array ]
