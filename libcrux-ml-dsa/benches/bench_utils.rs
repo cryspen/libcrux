@@ -65,26 +65,29 @@ macro_rules! bench {
 }
 
 #[macro_export]
-macro_rules! bench_group {
+macro_rules! bench_group_libcrux {
     ($variant:literal, $mod:ident, $keypair_t:ident, $signature_t:ident) => {{
         bench!(
-            "KeyGen",
+            "(libcrux) KeyGen",
             $variant,
             (),
             |()| {
-                let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] = bench_utils::random_array();
+                let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] =
+                    bench_utils::random_array();
                 key_generation_seed
             },
             |key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE]| {
                 $mod::generate_key_pair(key_generation_seed)
             }
         );
+
         bench!(
-            "Sign",
+            "(libcrux) Sign",
             $variant,
             (),
             |()| {
-                let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] = bench_utils::random_array();
+                let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] =
+                    bench_utils::random_array();
                 let signing_randomness: [u8; SIGNING_RANDOMNESS_SIZE] = bench_utils::random_array();
                 let message = bench_utils::random_array::<1023>();
                 let keypair = $mod::generate_key_pair(key_generation_seed);
@@ -99,11 +102,12 @@ macro_rules! bench_group {
         );
 
         bench!(
-            "Verify",
+            "(libcrux) Verify",
             $variant,
             (),
             |()| {
-                let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] = bench_utils::random_array();
+                let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] =
+                    bench_utils::random_array();
                 let signing_randomness: [u8; SIGNING_RANDOMNESS_SIZE] = bench_utils::random_array();
                 let message = bench_utils::random_array::<1023>();
                 let keypair = $mod::generate_key_pair(key_generation_seed);
@@ -119,6 +123,44 @@ macro_rules! bench_group {
     }};
 }
 
-
-
-
+#[macro_export]
+macro_rules! bench_group_pqclean {
+    ($variant:literal, $mod:ident) => {{
+        bench!("(pqclean) KeyGen", $variant, (), |()| {}, |()| {
+            pqcrypto_dilithium::$mod::keypair()
+        });
+        bench!(
+            "(pqclean) Sign",
+            $variant,
+            (),
+            |()| {
+                let (_, sk) = pqcrypto_dilithium::$mod::keypair();
+                let message = bench_utils::random_array::<1023>();
+                (sk, message)
+            },
+            |(sk, message): (pqcrypto_dilithium::$mod::SecretKey, [u8; 1023])| {
+                let _ = pqcrypto_dilithium::$mod::detached_sign(&message, &sk);
+            }
+        );
+        bench!(
+            "(pqclean) Verify",
+            $variant,
+            (),
+            |()| {
+                let (vk, sk) = pqcrypto_dilithium::$mod::keypair();
+                let message = bench_utils::random_array::<1023>();
+                let signature = pqcrypto_dilithium::$mod::detached_sign(&message, &sk);
+                (vk, message, signature)
+            },
+            |(vk, message, signature): (
+                pqcrypto_dilithium::$mod::PublicKey,
+                [u8; 1023],
+                pqcrypto_dilithium::$mod::DetachedSignature
+            )| {
+                let _ =
+                    pqcrypto_dilithium::$mod::verify_detached_signature(&signature, &message, &vk)
+                        .unwrap();
+            }
+        );
+    }};
+}
