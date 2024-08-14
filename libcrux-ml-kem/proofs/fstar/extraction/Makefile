@@ -47,37 +47,98 @@ all:
 	rm -f .depend && $(MAKE) .depend
 	$(MAKE) verify
 
-
-VERIFIED = \
-	Libcrux_ml_kem.Constants.fsti \
-	Libcrux_ml_kem.Kyber768.fst \
-	Libcrux_ml_kem.Kyber1024.fst \
-	Libcrux_ml_kem.Kyber512.fst
-
-
-UNVERIFIED = \
-	Libcrux_ml_kem.Types.fst \
-	Libcrux_ml_kem.fst \
-	Libcrux_ml_kem.Ind_cpa.fst \
-	Libcrux_ml_kem.Constant_time_ops.fst \
-	Libcrux_ml_kem.Hash_functions.fst \
-	Libcrux_ml_kem.Matrix.fst \
-	Libcrux_ml_kem.Ntt.fst \
-	Libcrux_ml_kem.Sampling.fst \
-	Libcrux_ml_kem.Serialize.fst
-# Libcrux.Digest.fsti
-# Libcrux.Digest.Incremental_x4.fsti
+VERIFIED = 
+PANIC_FREE = Libcrux_ml_kem.Constant_time_ops.fst \
+             Libcrux_ml_kem.Constant_time_ops.fsti \
+             Libcrux_ml_kem.Constants.fsti \
+             Libcrux_ml_kem.Hash_functions.Avx2.fsti \
+             Libcrux_ml_kem.Hash_functions.fsti \
+             Libcrux_ml_kem.Hash_functions.Neon.fsti \
+             Libcrux_ml_kem.Hash_functions.Portable.fsti \
+             Libcrux_ml_kem.Ind_cca.fsti \
+             Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.fst \
+             Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.fsti \
+             Libcrux_ml_kem.Ind_cca.Instantiations.Neon.fst \
+             Libcrux_ml_kem.Ind_cca.Instantiations.Neon.fsti \
+             Libcrux_ml_kem.Ind_cca.Instantiations.Portable.fst \
+             Libcrux_ml_kem.Ind_cca.Instantiations.Portable.fsti \
+             Libcrux_ml_kem.Ind_cca.Multiplexing.fst \
+             Libcrux_ml_kem.Ind_cca.Multiplexing.fsti \
+             Libcrux_ml_kem.Ind_cca.Unpacked.fsti \
+             Libcrux_ml_kem.Ind_cpa.fsti \
+             Libcrux_ml_kem.Ind_cpa.Unpacked.fsti \
+             Libcrux_ml_kem.Invert_ntt.fsti \
+             Libcrux_ml_kem.Matrix.fsti \
+             Libcrux_ml_kem.Mlkem512.Avx2.fst \
+             Libcrux_ml_kem.Mlkem512.Avx2.fsti \
+             Libcrux_ml_kem.Mlkem512.fst \
+             Libcrux_ml_kem.Mlkem512.fsti \
+             Libcrux_ml_kem.Mlkem512.Neon.fst \
+             Libcrux_ml_kem.Mlkem512.Neon.fsti \
+             Libcrux_ml_kem.Mlkem512.Portable.fst \
+             Libcrux_ml_kem.Mlkem512.Portable.fsti \
+             Libcrux_ml_kem.Mlkem768.Avx2.fst \
+             Libcrux_ml_kem.Mlkem768.Avx2.fsti \
+             Libcrux_ml_kem.Mlkem768.fst \
+             Libcrux_ml_kem.Mlkem768.fsti \
+             Libcrux_ml_kem.Mlkem768.Neon.fst \
+             Libcrux_ml_kem.Mlkem768.Neon.fsti \
+             Libcrux_ml_kem.Mlkem768.Portable.fst \
+             Libcrux_ml_kem.Mlkem768.Portable.fsti \
+             Libcrux_ml_kem.Mlkem1024.Avx2.fst \
+             Libcrux_ml_kem.Mlkem1024.Avx2.fsti \
+             Libcrux_ml_kem.Mlkem1024.fst \
+             Libcrux_ml_kem.Mlkem1024.fsti \
+             Libcrux_ml_kem.Mlkem1024.Neon.fst \
+             Libcrux_ml_kem.Mlkem1024.Neon.fsti \
+             Libcrux_ml_kem.Mlkem1024.Portable.fst \
+             Libcrux_ml_kem.Mlkem1024.Portable.fsti \
+             Libcrux_ml_kem.Ntt.fsti \
+             Libcrux_ml_kem.Polynomial.fsti \
+             Libcrux_ml_kem.Sampling.fsti \
+             Libcrux_ml_kem.Serialize.fsti \
+             Libcrux_ml_kem.Types.fst \
+             Libcrux_ml_kem.Types.fsti \
+             Libcrux_ml_kem.Types.Unpacked.fsti \
+             Libcrux_ml_kem.Utils.fst \
+             Libcrux_ml_kem.Utils.fsti \
+             Libcrux_ml_kem.Vector.Avx2.Arithmetic.fsti \
+             Libcrux_ml_kem.Vector.Avx2.Compress.fsti \
+             Libcrux_ml_kem.Vector.Avx2.fsti \
+             Libcrux_ml_kem.Vector.Avx2.Ntt.fsti \
+             Libcrux_ml_kem.Vector.Avx2.Portable.fsti \
+             Libcrux_ml_kem.Vector.Avx2.Sampling.fsti \
+             Libcrux_ml_kem.Vector.Avx2.Serialize.fsti \
+             Libcrux_ml_kem.Vector.Neon.Arithmetic.fsti \
+             Libcrux_ml_kem.Vector.Neon.Compress.fsti \
+             Libcrux_ml_kem.Vector.Neon.fsti \
+             Libcrux_ml_kem.Vector.Neon.Ntt.fsti \
+             Libcrux_ml_kem.Vector.Neon.Serialize.fsti \
+             Libcrux_ml_kem.Vector.Neon.Vector_type.fsti \
+             Libcrux_ml_kem.Vector.Portable.Arithmetic.fsti \
+             Libcrux_ml_kem.Vector.Portable.Compress.fsti \
+             Libcrux_ml_kem.Vector.Portable.fsti \
+             Libcrux_ml_kem.Vector.Portable.Ntt.fsti \
+             Libcrux_ml_kem.Vector.Portable.Sampling.fsti \
+             Libcrux_ml_kem.Vector.Portable.Serialize.fsti \
+             Libcrux_ml_kem.Vector.Portable.Vector_type.fsti \
+             Libcrux_ml_kem.Vector.Rej_sample_table.fsti \
+             Libcrux_ml_kem.Vector.Traits.fsti
+             
+UNVERIFIED = $(filter-out $(PANIC_FREE),$(wildcard *.fst))
 
 VERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(VERIFIED)))
+PANIC_FREE_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(PANIC_FREE)))
 UNVERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(UNVERIFIED)))
 
 # By default, we process all the files in the current directory. Here, we
 # *extend* the set of relevant files with the tests.
-ROOTS = $(UNVERIFIED) $(VERIFIED)
+ROOTS = $(UNVERIFIED) $(PANIC_FREE) $(VERIFIED)
 
 FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives \
 	$(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME) \
 	../../../../sys/platform/proofs/fstar/extraction/ \
+	../../../../libcrux-intrinsics/proofs/fstar/extraction/ \
 	../../../../libcrux-sha3/proofs/fstar/extraction/
 
 FSTAR_FLAGS = --cmi \
@@ -105,7 +166,7 @@ $(UNVERIFIED_CHECKED): OTHERFLAGS=--admit_smt_queries true
 $(CACHE_DIR)/%.checked: | .depend $(HINT_DIR) $(CACHE_DIR)
 	$(FSTAR) $(OTHERFLAGS) $< $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(notdir $*).hints
 
-verify: $(UNVERIFIED_CHECKED) $(VERIFIED_CHECKED)
+verify: $(UNVERIFIED_CHECKED) $(PANIC_FREE_CHECKED) $(VERIFIED_CHECKED)
 
 # Targets for interactive mode
 

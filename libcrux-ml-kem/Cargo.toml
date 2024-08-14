@@ -6,7 +6,7 @@ license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme = "Readme.md"
+readme = "README.md"
 description = "Libcrux ML-KEM & Kyber implementations"
 exclude = [
     "/tests",
@@ -20,9 +20,9 @@ exclude = [
 
 [dependencies]
 rand_core = { version = "0.6" }
-libcrux-platform = { version = "0.0.2-alpha.1", path = "../sys/platform" }
-libcrux-sha3 = { version = "0.0.2-alpha.1", path = "../libcrux-sha3" }
-libcrux-intrinsics = { version = "0.0.2-alpha.1", path = "../libcrux-intrinsics" }
+libcrux-platform = { version = "0.0.2-alpha.3", path = "../sys/platform" }
+libcrux-sha3 = { version = "0.0.2-alpha.3", path = "../libcrux-sha3" }
+libcrux-intrinsics = { version = "0.0.2-alpha.3", path = "../libcrux-intrinsics" }
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
@@ -36,8 +36,8 @@ default = ["std", "mlkem512", "mlkem768", "mlkem1024"]
 # Hardware features can be force enabled.
 # It is not recommended to use these. This crate performs CPU feature detection
 # and enables the features when they are available.
-simd128 = ["libcrux-sha3/simd128"]
-simd256 = ["libcrux-sha3/simd256"]
+simd128 = ["libcrux-sha3/simd128","libcrux-intrinsics/simd128"]
+simd256 = ["libcrux-sha3/simd256","libcrux-intrinsics/simd256"]
 
 # Features for the different key sizes of ML-KEM
 mlkem512 = []

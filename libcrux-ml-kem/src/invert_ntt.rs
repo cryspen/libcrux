@@ -10,6 +10,8 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
     _layer: usize,
 ) {
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
         *zeta_i -= 1;
         re.coefficients[round] = Vector::inv_ntt_layer_1_step(
@@ -21,6 +23,7 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
         );
         *zeta_i -= 3;
     }
+    ()
 }
 
 #[inline(always)]
@@ -29,6 +32,8 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
     _layer: usize,
 ) {
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
         *zeta_i -= 1;
         re.coefficients[round] = Vector::inv_ntt_layer_2_step(
@@ -38,6 +43,7 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
         );
         *zeta_i -= 1;
     }
+    ()
 }
 
 #[inline(always)]
@@ -46,11 +52,14 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
     _layer: usize,
 ) {
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
         *zeta_i -= 1;
         re.coefficients[round] =
             Vector::inv_ntt_layer_3_step(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
     }
+    ()
 }
 
 #[inline(always)]
@@ -72,6 +81,8 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 ) {
     let step = 1 << layer;
 
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..(128 >> layer) {
         *zeta_i -= 1;
 
@@ -89,6 +100,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
             re.coefficients[j + step_vec] = y;
         }
     }
+    ()
 }
 
 #[inline(always)]

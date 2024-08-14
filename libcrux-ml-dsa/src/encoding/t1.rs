@@ -1,78 +1,67 @@
 use crate::{
-    arithmetic::PolynomialRingElement,
-    constants::{BITS_IN_UPPER_PART_OF_T, RING_ELEMENT_OF_T1S_SIZE},
+    constants::RING_ELEMENT_OF_T1S_SIZE, polynomial::PolynomialRingElement,
+    simd::traits::Operations,
 };
 
 // Each coefficient takes up 10 bits.
 
 #[inline(always)]
-pub(crate) fn serialize(re: PolynomialRingElement) -> [u8; RING_ELEMENT_OF_T1S_SIZE] {
+pub(crate) fn serialize<SIMDUnit: Operations>(
+    re: PolynomialRingElement<SIMDUnit>,
+) -> [u8; RING_ELEMENT_OF_T1S_SIZE] {
     let mut serialized = [0u8; RING_ELEMENT_OF_T1S_SIZE];
 
-    for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
-        serialized[5 * i] = (coefficients[0] & 0xFF) as u8;
-        serialized[5 * i + 1] =
-            ((coefficients[1] & 0x3F) as u8) << 2 | ((coefficients[0] >> 8) & 0x03) as u8;
-        serialized[5 * i + 2] =
-            ((coefficients[2] & 0x0F) as u8) << 4 | ((coefficients[1] >> 6) & 0x0F) as u8;
-        serialized[5 * i + 3] =
-            ((coefficients[3] & 0x03) as u8) << 6 | ((coefficients[2] >> 4) & 0x3F) as u8;
-        serialized[5 * i + 4] = ((coefficients[3] >> 2) & 0xFF) as u8;
+    const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 10;
+
+    for (i, simd_unit) in re.simd_units.iter().enumerate() {
+        serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+            .copy_from_slice(&SIMDUnit::t1_serialize(*simd_unit));
     }
 
     serialized
 }
 
-pub(crate) fn deserialize(serialized: &[u8]) -> PolynomialRingElement {
-    debug_assert_eq!(serialized.len(), RING_ELEMENT_OF_T1S_SIZE);
+pub(crate) fn deserialize<SIMDUnit: Operations>(
+    serialized: &[u8],
+) -> PolynomialRingElement<SIMDUnit> {
+    let mut serialized_chunks = serialized.chunks(10);
 
-    let mut out = PolynomialRingElement::ZERO;
-    let mask = (1 << BITS_IN_UPPER_PART_OF_T) - 1;
+    let mut result = PolynomialRingElement::ZERO();
 
-    for (i, bytes) in serialized.chunks_exact(5).enumerate() {
-        let byte0 = bytes[0] as i32;
-        let byte1 = bytes[1] as i32;
-        let byte2 = bytes[2] as i32;
-        let byte3 = bytes[3] as i32;
-        let byte4 = bytes[4] as i32;
-
-        out.coefficients[4 * i] = (byte0 | (byte1 << 8)) & mask;
-        out.coefficients[4 * i + 1] = ((byte1 >> 2) | (byte2 << 6)) & mask;
-        out.coefficients[4 * i + 2] = ((byte2 >> 4) | (byte3 << 4)) & mask;
-        out.coefficients[4 * i + 3] = ((byte3 >> 6) | (byte4 << 2)) & mask;
+    for i in 0..result.simd_units.len() {
+        result.simd_units[i] = SIMDUnit::t1_deserialize(&serialized_chunks.next().unwrap());
     }
 
-    out
+    result
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_serialize() {
-        let re = PolynomialRingElement {
-            coefficients: [
-                127, 627, 86, 834, 463, 169, 792, 8, 595, 212, 1015, 213, 321, 501, 471, 633, 686,
-                333, 973, 464, 737, 30, 761, 358, 659, 607, 177, 826, 147, 995, 89, 365, 302, 585,
-                406, 76, 535, 406, 952, 664, 102, 270, 879, 877, 127, 437, 1010, 418, 695, 596,
-                847, 131, 1004, 228, 882, 433, 39, 569, 284, 225, 676, 740, 712, 165, 912, 71, 491,
-                887, 668, 607, 919, 607, 891, 647, 904, 957, 846, 256, 353, 57, 712, 98, 200, 722,
-                734, 596, 187, 470, 501, 524, 1000, 435, 195, 594, 834, 848, 438, 548, 819, 533,
-                898, 777, 676, 284, 215, 95, 811, 134, 338, 915, 12, 951, 124, 246, 365, 532, 359,
-                561, 280, 923, 236, 299, 916, 394, 266, 946, 645, 872, 898, 228, 737, 229, 452,
-                562, 355, 403, 321, 161, 202, 983, 306, 898, 172, 304, 921, 796, 232, 1011, 293,
-                183, 130, 376, 874, 1018, 501, 154, 747, 62, 262, 185, 397, 208, 75, 933, 459, 687,
-                574, 803, 570, 635, 57, 548, 253, 970, 583, 425, 626, 562, 96, 52, 715, 240, 58,
-                451, 888, 932, 179, 632, 605, 394, 941, 646, 286, 217, 477, 443, 80, 639, 64, 139,
-                394, 227, 2, 927, 455, 719, 377, 533, 438, 120, 788, 811, 650, 402, 240, 516, 354,
-                950, 372, 105, 247, 762, 445, 108, 1009, 862, 885, 870, 53, 346, 392, 710, 434, 72,
-                899, 610, 543, 937, 501, 41, 615, 97, 557, 168, 105, 665, 179, 708, 137, 849, 508,
-                742, 512, 879, 534, 490,
-            ],
-        };
+    use crate::simd::{self, traits::Operations};
 
-        let expected_re_serialized = [
+    fn test_serialize_generic<SIMDUnit: Operations>() {
+        let coefficients = [
+            127, 627, 86, 834, 463, 169, 792, 8, 595, 212, 1015, 213, 321, 501, 471, 633, 686, 333,
+            973, 464, 737, 30, 761, 358, 659, 607, 177, 826, 147, 995, 89, 365, 302, 585, 406, 76,
+            535, 406, 952, 664, 102, 270, 879, 877, 127, 437, 1010, 418, 695, 596, 847, 131, 1004,
+            228, 882, 433, 39, 569, 284, 225, 676, 740, 712, 165, 912, 71, 491, 887, 668, 607, 919,
+            607, 891, 647, 904, 957, 846, 256, 353, 57, 712, 98, 200, 722, 734, 596, 187, 470, 501,
+            524, 1000, 435, 195, 594, 834, 848, 438, 548, 819, 533, 898, 777, 676, 284, 215, 95,
+            811, 134, 338, 915, 12, 951, 124, 246, 365, 532, 359, 561, 280, 923, 236, 299, 916,
+            394, 266, 946, 645, 872, 898, 228, 737, 229, 452, 562, 355, 403, 321, 161, 202, 983,
+            306, 898, 172, 304, 921, 796, 232, 1011, 293, 183, 130, 376, 874, 1018, 501, 154, 747,
+            62, 262, 185, 397, 208, 75, 933, 459, 687, 574, 803, 570, 635, 57, 548, 253, 970, 583,
+            425, 626, 562, 96, 52, 715, 240, 58, 451, 888, 932, 179, 632, 605, 394, 941, 646, 286,
+            217, 477, 443, 80, 639, 64, 139, 394, 227, 2, 927, 455, 719, 377, 533, 438, 120, 788,
+            811, 650, 402, 240, 516, 354, 950, 372, 105, 247, 762, 445, 108, 1009, 862, 885, 870,
+            53, 346, 392, 710, 434, 72, 899, 610, 543, 937, 501, 41, 615, 97, 557, 168, 105, 665,
+            179, 708, 137, 849, 508, 742, 512, 879, 534, 490,
+        ];
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+
+        let expected_bytes = [
             127, 204, 105, 133, 208, 207, 165, 130, 49, 2, 83, 82, 115, 127, 53, 65, 213, 119, 93,
             158, 174, 54, 213, 60, 116, 225, 122, 144, 175, 89, 147, 126, 25, 139, 206, 147, 140,
             159, 69, 91, 46, 37, 105, 25, 19, 23, 90, 134, 59, 166, 102, 56, 244, 118, 219, 127,
@@ -93,11 +82,10 @@ mod tests {
             122,
         ];
 
-        assert_eq!(serialize(re), expected_re_serialized);
+        assert_eq!(serialize::<SIMDUnit>(re), expected_bytes);
     }
 
-    #[test]
-    fn test_deserialize() {
+    fn test_deserialize_generic<SIMDUnit: Operations>() {
         let serialized = [
             119, 58, 128, 223, 132, 103, 124, 239, 83, 8, 180, 159, 151, 194, 206, 175, 85, 51, 94,
             182, 82, 48, 222, 183, 22, 181, 204, 94, 31, 8, 252, 22, 248, 249, 50, 217, 158, 209,
@@ -136,6 +124,31 @@ mod tests {
             226, 479, 381, 932, 464, 451, 915, 206, 410, 402, 900,
         ];
 
-        assert_eq!(deserialize(&serialized).coefficients, expected_coefficients);
+        assert_eq!(
+            deserialize::<SIMDUnit>(&serialized).to_i32_array(),
+            expected_coefficients
+        );
+    }
+
+    #[cfg(not(feature = "simd256"))]
+    #[test]
+    fn test_serialize_portable() {
+        test_serialize_generic::<simd::portable::PortableSIMDUnit>();
+    }
+    #[cfg(not(feature = "simd256"))]
+    #[test]
+    fn test_deserialize_portable() {
+        test_deserialize_generic::<simd::portable::PortableSIMDUnit>();
+    }
+
+    #[cfg(feature = "simd256")]
+    #[test]
+    fn test_serialize_simd256() {
+        test_serialize_generic::<simd::avx2::AVX2SIMDUnit>();
+    }
+    #[cfg(feature = "simd256")]
+    #[test]
+    fn test_deserialize_simd256() {
+        test_deserialize_generic::<simd::avx2::AVX2SIMDUnit>();
     }
 }

@@ -12,6 +12,8 @@ apt-get install -y \
     jq \
     libgmp-dev \
     locales \
+    pkg-config \
+    clang-format\
     curl
 curl -fsSL https://deb.nodesource.com/setup_21.x | bash -
 apt-get update

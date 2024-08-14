@@ -14,7 +14,7 @@ path = "src/ecdh.rs"
 
 [dependencies]
 rand = { version = "0.8" }
-libcrux-hacl = { version = "=0.0.2-alpha.1", path = "../sys/hacl" }
+libcrux-hacl = { version = "=0.0.2-alpha.3", path = "../sys/hacl" }
 
 [dev-dependencies]
 rand_core = { version = "0.6" }

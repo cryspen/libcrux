@@ -13,7 +13,95 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  extract:
+    if: ${{ github.event_name != 'merge_group' }}
+    runs-on: ubuntu-latest
+    container: franziskus/libcrux-c:latest
+    defaults:
+      run:
+        working-directory: libcrux-ml-kem
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract C
+        run: |
+          ./c.sh
+
+      - name: Upload C extraction
+        uses: actions/upload-artifact@v4
+        with:
+          name: c-extraction
+          path: libcrux-ml-kem/c
+          if-no-files-found: error
+
+  extract-header-only:
+    if: ${{ github.event_name != 'merge_group' }}
+    runs-on: ubuntu-latest
+    container: franziskus/libcrux-c:latest
+    defaults:
+      run:
+        working-directory: libcrux-ml-kem
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract C (header only)
+        run: |
+          ./boring.sh --no-clean
+
+      - name: Upload header only C extraction
+        uses: actions/upload-artifact@v4
+        with:
+          name: header-only-c-extraction
+          path: libcrux-ml-kem/cg/
+          if-no-files-found: error
+
+  diff:
+    needs: [extract]
+    if: ${{ github.event_name != 'merge_group' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: c-extraction
+          path: ~/c-extraction
+
+      - uses: actions/checkout@v4
+
+      - name: Diff Extraction
+        run: |
+          libcrux-ml-kem/headers_kill_revs.sh libcrux-ml-kem/c
+          libcrux-ml-kem/headers_kill_revs.sh ~/c-extraction
+          diff -r libcrux-ml-kem/c ~/c-extraction
+
+  diff-header-only:
+    needs: [extract-header-only]
+    if: ${{ github.event_name != 'merge_group' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: header-only-c-extraction
+          path: ~/c-extraction
+
+      - uses: actions/checkout@v4
+
+      - name: Diff Extraction
+        run: |
+          libcrux-ml-kem/headers_kill_revs.sh libcrux-ml-kem/cg
+          libcrux-ml-kem/headers_kill_revs.sh ~/c-extraction
+          diff -r libcrux-ml-kem/cg ~/c-extraction
+
   build:
+    needs: [extract]
+    if: ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -26,11 +114,11 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-ml-kem/c
-
     steps:
-      - uses: actions/checkout@v4
-
+      - uses: actions/download-artifact@v4
+        with:
+          name: c-extraction
+          
       - name: 🔨 Build
         run: |
           cmake -B build
@@ -49,13 +137,87 @@ jobs:
           rm -rf build
           cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
+        if: ${{ matrix.os != 'windows-latest' }}
+
+  build-header-only:
+    needs: [extract-header-only]
+    if: ${{ github.event_name != 'merge_group' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: header-only-c-extraction
+
+      - name: 🔨 Build
+        run: |
+          cmake -B build
+          cmake --build build
+      # FIXME: Benchmark build for cg on Windows CI is not working right now.
+        if: ${{ matrix.os != 'windows-latest' }}
+
+      # FIXME: Benchmark build for cg on Windows CI are not working right now.
+      # - name: 🏃🏻‍♀️ Test (cg)
+      #   working-directory: libcrux-ml-kem/cg
+      #   run: ./build/Debug/ml_kem_test
+      #   if: ${{ matrix.os == 'windows-latest' }}
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/ml_kem_test
+        if: ${{ matrix.os != 'windows-latest' }}
+
+  benchmark:
+    if: ${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: libcrux-ml-kem/c
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔨 Build Release
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
 
       # FIXME: Benchmarks on Windows CI are not working right now.
       # - name: 🏃🏻‍♀️ Benchmark
       #   run: ./build/Release/ml_kem_bench
       #   if: ${{ matrix.os == 'windows-latest' }}
 
-      - name: 🏃🏻‍♀️ Benchmark
+      - name: 🏃🏻‍♀️ Benchmark (c)
         run: ./build/ml_kem_bench
-        if: ${{ matrix.os != 'windows-latest' }}
+        if: ${{ matrix.os != 'windows-latest' && (github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch') }}
 
+      - name: 🏃🏻‍♀️ Benchmark (cg)
+        working-directory: libcrux-ml-kem/cg
+        run: ./build/ml_kem_bench
+        if: ${{ matrix.os != 'windows-latest' && (github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch') }}
+
+  mq_status:
+    if: |
+      always() &&
+      (github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group')
+    needs: [benchmark]
+    uses: cryspen/actions/.github/workflows/merge-queue-status.yml@jonas/merge-queue-status
+    with:
+      needs_json: "${{toJSON(needs)}}"

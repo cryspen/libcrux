@@ -3,16 +3,16 @@
   Licensed under the Apache 2.0 License.
 */
 
-
 #ifndef __FStar_UInt_8_16_32_64_H
 #define __FStar_UInt_8_16_32_64_H
 
 #include <inttypes.h>
 #include <stdbool.h>
+
 #include "krml/internal/compat.h"
-#include "krml/lowstar_endianness.h"
-#include "krml/internal/types.h"
 #include "krml/internal/target.h"
+#include "krml/internal/types.h"
+#include "krml/lowstar_endianness.h"
 
 extern krml_checked_int_t FStar_UInt64_n;
 
@@ -32,8 +32,7 @@ extern uint64_t FStar_UInt64_minus(uint64_t a);
 
 extern uint32_t FStar_UInt64_n_minus_one;
 
-static KRML_NOINLINE uint64_t FStar_UInt64_eq_mask(uint64_t a, uint64_t b)
-{
+static KRML_NOINLINE uint64_t FStar_UInt64_eq_mask(uint64_t a, uint64_t b) {
   uint64_t x = a ^ b;
   uint64_t minus_x = ~x + 1ULL;
   uint64_t x_or_minus_x = x | minus_x;
@@ -41,8 +40,7 @@ static KRML_NOINLINE uint64_t FStar_UInt64_eq_mask(uint64_t a, uint64_t b)
   return xnx - 1ULL;
 }
 
-static KRML_NOINLINE uint64_t FStar_UInt64_gte_mask(uint64_t a, uint64_t b)
-{
+static KRML_NOINLINE uint64_t FStar_UInt64_gte_mask(uint64_t a, uint64_t b) {
   uint64_t x = a;
   uint64_t y = b;
   uint64_t x_xor_y = x ^ y;
@@ -80,8 +78,7 @@ extern uint32_t FStar_UInt32_minus(uint32_t a);
 
 extern uint32_t FStar_UInt32_n_minus_one;
 
-static KRML_NOINLINE uint32_t FStar_UInt32_eq_mask(uint32_t a, uint32_t b)
-{
+static KRML_NOINLINE uint32_t FStar_UInt32_eq_mask(uint32_t a, uint32_t b) {
   uint32_t x = a ^ b;
   uint32_t minus_x = ~x + 1U;
   uint32_t x_or_minus_x = x | minus_x;
@@ -89,8 +86,7 @@ static KRML_NOINLINE uint32_t FStar_UInt32_eq_mask(uint32_t a, uint32_t b)
   return xnx - 1U;
 }
 
-static KRML_NOINLINE uint32_t FStar_UInt32_gte_mask(uint32_t a, uint32_t b)
-{
+static KRML_NOINLINE uint32_t FStar_UInt32_gte_mask(uint32_t a, uint32_t b) {
   uint32_t x = a;
   uint32_t y = b;
   uint32_t x_xor_y = x ^ y;
@@ -128,8 +124,7 @@ extern uint16_t FStar_UInt16_minus(uint16_t a);
 
 extern uint32_t FStar_UInt16_n_minus_one;
 
-static KRML_NOINLINE uint16_t FStar_UInt16_eq_mask(uint16_t a, uint16_t b)
-{
+static KRML_NOINLINE uint16_t FStar_UInt16_eq_mask(uint16_t a, uint16_t b) {
   uint16_t x = (uint32_t)a ^ (uint32_t)b;
   uint16_t minus_x = (uint32_t)~x + 1U;
   uint16_t x_or_minus_x = (uint32_t)x | (uint32_t)minus_x;
@@ -137,8 +132,7 @@ static KRML_NOINLINE uint16_t FStar_UInt16_eq_mask(uint16_t a, uint16_t b)
   return (uint32_t)xnx - 1U;
 }
 
-static KRML_NOINLINE uint16_t FStar_UInt16_gte_mask(uint16_t a, uint16_t b)
-{
+static KRML_NOINLINE uint16_t FStar_UInt16_gte_mask(uint16_t a, uint16_t b) {
   uint16_t x = a;
   uint16_t y = b;
   uint16_t x_xor_y = (uint32_t)x ^ (uint32_t)y;
@@ -176,8 +170,7 @@ extern uint8_t FStar_UInt8_minus(uint8_t a);
 
 extern uint32_t FStar_UInt8_n_minus_one;
 
-static KRML_NOINLINE uint8_t FStar_UInt8_eq_mask(uint8_t a, uint8_t b)
-{
+static KRML_NOINLINE uint8_t FStar_UInt8_eq_mask(uint8_t a, uint8_t b) {
   uint8_t x = (uint32_t)a ^ (uint32_t)b;
   uint8_t minus_x = (uint32_t)~x + 1U;
   uint8_t x_or_minus_x = (uint32_t)x | (uint32_t)minus_x;
@@ -185,8 +178,7 @@ static KRML_NOINLINE uint8_t FStar_UInt8_eq_mask(uint8_t a, uint8_t b)
   return (uint32_t)xnx - 1U;
 }
 
-static KRML_NOINLINE uint8_t FStar_UInt8_gte_mask(uint8_t a, uint8_t b)
-{
+static KRML_NOINLINE uint8_t FStar_UInt8_gte_mask(uint8_t a, uint8_t b) {
   uint8_t x = a;
   uint8_t y = b;
   uint8_t x_xor_y = (uint32_t)x ^ (uint32_t)y;
@@ -207,7 +199,6 @@ extern Prims_string FStar_UInt8_to_string_hex_pad(uint8_t uu___);
 extern uint8_t FStar_UInt8_of_string(Prims_string uu___);
 
 typedef uint8_t FStar_UInt8_byte;
-
 
 #define __FStar_UInt_8_16_32_64_H_DEFINED
 #endif

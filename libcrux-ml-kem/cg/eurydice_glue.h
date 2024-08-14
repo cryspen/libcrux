@@ -14,6 +14,9 @@ extern "C" {
 
 // SLICES, ARRAYS, ETC.
 
+// The MSVC C++ compiler does not support compound literals.
+// This CLITERAL is used to turn `(type){...}` into `type{...}` when using a C++
+// compiler.
 #if defined(__cplusplus)
 #define CLITERAL(type) type
 #else
@@ -30,6 +33,10 @@ extern "C" {
 // - if you need to use `len` for a C style function (e.g. memcpy, memcmp), you
 // need to multiply it
 //   by sizeof t, where t is the type of the elements.
+//
+// Empty slices have `len == 0` and `ptr` always needs to be valid pointer that
+// is not NULL (otherwise the construction in EURYDICE_SLICE computes `NULL +
+// start`).
 typedef struct {
   void *ptr;
   size_t len;
@@ -50,6 +57,10 @@ typedef struct {
 #define Eurydice_slice_index(s, i, t, t_ptr_t, _ret_t) (((t_ptr_t)s.ptr)[i])
 #define Eurydice_slice_subslice(s, r, t, _, _ret_t) \
   EURYDICE_SLICE((t *)s.ptr, r.start, r.end)
+// Variant for when the start and end indices are statically known (i.e., the
+// range argument `r` is a literal).
+#define Eurydice_slice_subslice2(s, start, end, t, _) \
+  EURYDICE_SLICE((t *)s.ptr, start, end)
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _, _ret_t) \
   EURYDICE_SLICE((t *)s.ptr, 0, subslice_end_pos)
 #define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _, _ret_t) \
@@ -59,6 +70,9 @@ typedef struct {
                  end) /* x is already at an array type, no need for cast */
 #define Eurydice_array_to_subslice(_arraylen, x, r, t, _, _ret_t) \
   EURYDICE_SLICE((t *)x, r.start, r.end)
+// Same as above, variant for when start and end are statically known
+#define Eurydice_array_to_subslice2(x, start, end, t, _ret_t) \
+  EURYDICE_SLICE((t *)x, start, end)
 #define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t, _ret_t) \
   EURYDICE_SLICE((t *)x, 0, r)
 #define Eurydice_array_to_subslice_from(size, x, r, t, _range_t, _ret_t) \
@@ -109,6 +123,12 @@ static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
 }
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
   uint64_t v;
+  memcpy(&v, buf, sizeof(v));
+  return v;
+}
+
+static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
+  uint32_t v;
   memcpy(&v, buf, sizeof(v));
   return v;
 }

@@ -5,7 +5,6 @@ pub(crate) use libcrux_intrinsics::avx2::*;
 mod arithmetic;
 mod compress;
 mod ntt;
-mod portable;
 mod sampling;
 mod serialize;
 
@@ -28,6 +27,7 @@ fn to_i16_array(v: SIMD256Vector) -> [i16; 16] {
 
     output
 }
+
 #[inline(always)]
 fn from_i16_array(array: &[i16]) -> SIMD256Vector {
     SIMD256Vector {
@@ -42,6 +42,10 @@ impl Operations for SIMD256Vector {
 
     fn from_i16_array(array: &[i16]) -> Self {
         from_i16_array(array)
+    }
+
+    fn to_i16_array(x: Self) -> [i16; 16] {
+        to_i16_array(x)
     }
 
     fn add(lhs: Self, rhs: &Self) -> Self {

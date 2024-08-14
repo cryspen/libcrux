@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   build:
+    if:  ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -141,6 +142,7 @@ jobs:
         run: CC=emcc AR=emar wasm-pack test --node --features wasm
 
   benchmarks:
+    if: ${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' }}
     strategy:
       fail-fast: true
       matrix:
@@ -220,13 +222,9 @@ jobs:
   mq_status:
     if: |
       always() &&
-      github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group'
-    needs: [benchmarks, build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        run: exit 0
-      - name: Failing
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1
+      (github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group')
+    needs: [benchmarks]
+    uses: cryspen/actions/.github/workflows/merge-queue-status.yml@jonas/merge-queue-status
+    with:
+      needs_json: "${{toJSON(needs)}}"
+

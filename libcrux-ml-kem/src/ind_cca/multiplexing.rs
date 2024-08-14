@@ -9,16 +9,19 @@ use instantiations::avx2::{
     decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
     generate_keypair as generate_keypair_avx2, validate_public_key as validate_public_key_avx2,
 };
+
 #[cfg(feature = "simd128")]
 use instantiations::neon::{
     decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
     generate_keypair as generate_keypair_neon, validate_public_key as validate_public_key_neon,
 };
+
 #[cfg(not(feature = "simd256"))]
 use instantiations::portable::{
     decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
     generate_keypair as generate_keypair_avx2, validate_public_key as validate_public_key_avx2,
 };
+
 #[cfg(not(feature = "simd128"))]
 use instantiations::portable::{
     decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,

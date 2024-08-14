@@ -3,11 +3,12 @@ pub const FIELD_MODULUS: i16 = 3329;
 pub const FIELD_ELEMENTS_IN_VECTOR: usize = 16;
 pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
-pub(crate) trait Operations: Copy + Clone + std::fmt::Debug {
+pub trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
 
     fn from_i16_array(array: &[i16]) -> Self;
+    fn to_i16_array(x: Self) -> [i16; 16];
 
     // Basic arithmetic
     fn add(lhs: Self, rhs: &Self) -> Self;
@@ -63,7 +64,7 @@ pub(crate) trait Operations: Copy + Clone + std::fmt::Debug {
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }
 
-// hax does not support trait with default implementations, so we use the following patter
+// hax does not support trait with default implementations, so we use the following pattern
 pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
     T::montgomery_multiply_by_constant(v, fer)
 }
@@ -80,3 +81,10 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
 pub fn decompress_1<T: Operations>(v: T) -> T {
     T::bitwise_and_with_constant(T::sub(T::ZERO(), &v), 1665)
 }
+
+/// Internal vectors.
+///
+/// Used in the unpacked API.
+pub trait VectorType: Operations {}
+
+impl<T: Operations> VectorType for T {}

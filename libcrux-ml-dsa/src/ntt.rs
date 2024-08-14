@@ -1,9 +1,8 @@
-use super::{
-    arithmetic::{
-        montgomery_multiply_fe_by_fer, montgomery_reduce, FieldElementTimesMontgomeryR,
-        PolynomialRingElement,
-    },
+use crate::{
+    arithmetic::FieldElementTimesMontgomeryR,
     constants::COEFFICIENTS_IN_RING_ELEMENT,
+    polynomial::PolynomialRingElement,
+    simd::traits::{montgomery_multiply_by_fer, Operations, COEFFICIENTS_IN_SIMD_UNIT},
 };
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 256] = [
@@ -36,106 +35,209 @@ const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 256] = [
 ];
 
 #[inline(always)]
-fn ntt_at_layer(
+fn ntt_at_layer_0<SIMDUnit: Operations>(
     zeta_i: &mut usize,
-    mut re: PolynomialRingElement,
-    layer: usize,
-) -> PolynomialRingElement {
-    let step = 1 << layer;
+    re: &mut PolynomialRingElement<SIMDUnit>,
+) {
+    *zeta_i += 1;
 
-    for round in 0..(128 >> layer) {
+    for round in 0..re.simd_units.len() {
+        re.simd_units[round] = SIMDUnit::ntt_at_layer_0(
+            re.simd_units[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 2],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 3],
+        );
+
+        *zeta_i += 4;
+    }
+
+    *zeta_i -= 1;
+}
+#[inline(always)]
+fn ntt_at_layer_1<SIMDUnit: Operations>(
+    zeta_i: &mut usize,
+    re: &mut PolynomialRingElement<SIMDUnit>,
+) {
+    *zeta_i += 1;
+
+    for round in 0..re.simd_units.len() {
+        re.simd_units[round] = SIMDUnit::ntt_at_layer_1(
+            re.simd_units[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
+        );
+
+        *zeta_i += 2;
+    }
+
+    *zeta_i -= 1;
+}
+#[inline(always)]
+fn ntt_at_layer_2<SIMDUnit: Operations>(
+    zeta_i: &mut usize,
+    re: &mut PolynomialRingElement<SIMDUnit>,
+) {
+    for round in 0..re.simd_units.len() {
+        *zeta_i += 1;
+        re.simd_units[round] =
+            SIMDUnit::ntt_at_layer_2(re.simd_units[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+    }
+}
+#[inline(always)]
+fn ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
+    zeta_i: &mut usize,
+    re: &mut PolynomialRingElement<SIMDUnit>,
+) {
+    let step = 1 << LAYER;
+
+    for round in 0..(128 >> LAYER) {
         *zeta_i += 1;
 
-        let offset = round * step * 2;
+        let offset = (round * step * 2) / COEFFICIENTS_IN_SIMD_UNIT;
+        let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
 
-        for j in offset..offset + step {
-            let t = montgomery_multiply_fe_by_fer(
-                re.coefficients[j + step],
+        for j in offset..offset + step_by {
+            let t = montgomery_multiply_by_fer::<SIMDUnit>(
+                re.simd_units[j + step_by],
                 ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             );
-            re.coefficients[j + step] = re.coefficients[j] - t;
-            re.coefficients[j] += t;
+
+            re.simd_units[j + step_by] = SIMDUnit::subtract(&re.simd_units[j], &t);
+            re.simd_units[j] = SIMDUnit::add(&re.simd_units[j], &t);
         }
     }
-
-    re
 }
 
 #[inline(always)]
-pub(crate) fn ntt(mut re: PolynomialRingElement) -> PolynomialRingElement {
+pub(crate) fn ntt<SIMDUnit: Operations>(
+    mut re: PolynomialRingElement<SIMDUnit>,
+) -> PolynomialRingElement<SIMDUnit> {
     let mut zeta_i = 0;
 
-    re = ntt_at_layer(&mut zeta_i, re, 7);
-    re = ntt_at_layer(&mut zeta_i, re, 6);
-    re = ntt_at_layer(&mut zeta_i, re, 5);
-    re = ntt_at_layer(&mut zeta_i, re, 4);
-    re = ntt_at_layer(&mut zeta_i, re, 3);
-    re = ntt_at_layer(&mut zeta_i, re, 2);
-    re = ntt_at_layer(&mut zeta_i, re, 1);
-    re = ntt_at_layer(&mut zeta_i, re, 0);
+    ntt_at_layer_3_plus::<SIMDUnit, 7>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<SIMDUnit, 6>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<SIMDUnit, 5>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<SIMDUnit, 4>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<SIMDUnit, 3>(&mut zeta_i, &mut re);
+    ntt_at_layer_2::<SIMDUnit>(&mut zeta_i, &mut re);
+    ntt_at_layer_1::<SIMDUnit>(&mut zeta_i, &mut re);
+    ntt_at_layer_0::<SIMDUnit>(&mut zeta_i, &mut re);
 
     re
 }
 
 #[inline(always)]
-fn invert_ntt_at_layer(
+fn invert_ntt_at_layer_0<SIMDUnit: Operations>(
     zeta_i: &mut usize,
-    mut re: PolynomialRingElement,
-    layer: usize,
-) -> PolynomialRingElement {
-    let step = 1 << layer;
+    re: &mut PolynomialRingElement<SIMDUnit>,
+) {
+    *zeta_i -= 1;
 
-    for round in 0..(128 >> layer) {
-        *zeta_i -= 1;
+    for round in 0..re.simd_units.len() {
+        re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_0(
+            re.simd_units[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 2],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 3],
+        );
 
-        let offset = round * step * 2;
-
-        for j in offset..offset + step {
-            let a_minus_b = re.coefficients[j + step] - re.coefficients[j];
-
-            re.coefficients[j] += re.coefficients[j + step];
-            re.coefficients[j + step] =
-                montgomery_multiply_fe_by_fer(a_minus_b, ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
-        }
+        *zeta_i -= 4;
     }
 
-    re
+    *zeta_i += 1;
+}
+#[inline(always)]
+fn invert_ntt_at_layer_1<SIMDUnit: Operations>(
+    zeta_i: &mut usize,
+    re: &mut PolynomialRingElement<SIMDUnit>,
+) {
+    *zeta_i -= 1;
+
+    for round in 0..(256 / COEFFICIENTS_IN_SIMD_UNIT) {
+        re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_1(
+            re.simd_units[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
+        );
+        *zeta_i -= 2;
+    }
+
+    *zeta_i += 1;
+}
+#[inline(always)]
+fn invert_ntt_at_layer_2<SIMDUnit: Operations>(
+    zeta_i: &mut usize,
+    re: &mut PolynomialRingElement<SIMDUnit>,
+) {
+    for round in 0..(256 / COEFFICIENTS_IN_SIMD_UNIT) {
+        *zeta_i -= 1;
+        re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_2(
+            re.simd_units[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+        );
+    }
+}
+#[inline(always)]
+fn invert_ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
+    zeta_i: &mut usize,
+    re: &mut PolynomialRingElement<SIMDUnit>,
+) {
+    let step = 1 << LAYER;
+
+    for round in 0..(128 >> LAYER) {
+        *zeta_i -= 1;
+
+        let offset = (round * step * 2) / COEFFICIENTS_IN_SIMD_UNIT;
+        let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
+
+        for j in offset..offset + step_by {
+            let a_minus_b = SIMDUnit::subtract(&re.simd_units[j + step_by], &re.simd_units[j]);
+            re.simd_units[j] = SIMDUnit::add(&re.simd_units[j], &re.simd_units[j + step_by]);
+            re.simd_units[j + step_by] =
+                montgomery_multiply_by_fer(a_minus_b, ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+        }
+    }
 }
 
 #[inline(always)]
-pub(crate) fn invert_ntt_montgomery(mut re: PolynomialRingElement) -> PolynomialRingElement {
+pub(crate) fn invert_ntt_montgomery<SIMDUnit: Operations>(
+    mut re: PolynomialRingElement<SIMDUnit>,
+) -> PolynomialRingElement<SIMDUnit> {
     let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT;
 
-    re = invert_ntt_at_layer(&mut zeta_i, re, 0);
-    re = invert_ntt_at_layer(&mut zeta_i, re, 1);
-    re = invert_ntt_at_layer(&mut zeta_i, re, 2);
-    re = invert_ntt_at_layer(&mut zeta_i, re, 3);
-    re = invert_ntt_at_layer(&mut zeta_i, re, 4);
-    re = invert_ntt_at_layer(&mut zeta_i, re, 5);
-    re = invert_ntt_at_layer(&mut zeta_i, re, 6);
-    re = invert_ntt_at_layer(&mut zeta_i, re, 7);
+    invert_ntt_at_layer_0(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_1(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_2(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_3_plus::<SIMDUnit, 3>(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_3_plus::<SIMDUnit, 4>(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_3_plus::<SIMDUnit, 5>(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_3_plus::<SIMDUnit, 6>(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_3_plus::<SIMDUnit, 7>(&mut zeta_i, &mut re);
 
-    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
+    for i in 0..re.simd_units.len() {
         // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}
         // we multiply by (MONTGOMERY_R^2) * (1/2^8) mod Q = 41,978 to both:
         //
         // - Divide the elements by 256 and
         // - Convert the elements form montgomery domain to the standard domain.
-        re.coefficients[i] = montgomery_reduce(41_978 * (re.coefficients[i] as i64));
+        re.simd_units[i] = SIMDUnit::montgomery_multiply_by_constant(re.simd_units[i], 41_978);
     }
+
     re
 }
 
 #[inline(always)]
-pub(crate) fn ntt_multiply_montgomery(
-    lhs: &PolynomialRingElement,
-    rhs: &PolynomialRingElement,
-) -> PolynomialRingElement {
-    let mut out = PolynomialRingElement::ZERO;
+pub(crate) fn ntt_multiply_montgomery<SIMDUnit: Operations>(
+    lhs: &PolynomialRingElement<SIMDUnit>,
+    rhs: &PolynomialRingElement<SIMDUnit>,
+) -> PolynomialRingElement<SIMDUnit> {
+    let mut out = PolynomialRingElement::ZERO();
 
-    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
-        out.coefficients[i] =
-            montgomery_reduce((lhs.coefficients[i] as i64) * (rhs.coefficients[i] as i64));
+    for i in 0..out.simd_units.len() {
+        out.simd_units[i] = SIMDUnit::montgomery_multiply(lhs.simd_units[i], rhs.simd_units[i]);
     }
 
     out
@@ -145,39 +247,38 @@ pub(crate) fn ntt_multiply_montgomery(
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_ntt() {
-        let re = PolynomialRingElement {
-            coefficients: [
-                245230, -429681, -35753, 256940, 138755, -82158, -453212, -296769, 106884, -496329,
-                -275542, 350156, 295061, 462432, 162727, 219494, 43263, -84315, -100731, 5560,
-                -38846, 343612, 76881, 427547, 165700, -361163, -18964, 270770, -289948, -326181,
-                -17540, -376674, -101359, 324588, 265493, -376942, -270029, -201717, -350446,
-                222164, -314686, -60609, 172509, -199265, 391809, 375196, 333441, -433240, -28862,
-                274251, -218805, 400627, -408915, 131269, -305167, 78967, -487687, 98675, -430105,
-                293491, 317484, -180888, -333359, -263010, 258853, -84618, -350795, 334736,
-                -438451, 479262, -265874, -115692, -521929, -220715, -456043, -24131, 94695,
-                473893, -503297, 75679, -129421, 83315, -248504, -64226, -24884, 316438, 264565,
-                -248440, 222228, -386736, 89534, 196079, -196063, 434306, -388976, -29596, 424028,
-                290804, -348654, 208245, 394447, -105640, -522040, 250479, -443666, -503110,
-                299944, 497539, -28052, 30579, -332034, 492009, -327080, -173581, -94157, -126088,
-                388734, 468785, -120589, -146970, -291234, 337402, 311007, -289990, 506654,
-                -431388, 410292, -376624, 422627, 246536, -273872, 443039, -265954, -250947,
-                451185, -386654, -19185, -171927, -128698, -277965, 142565, -229030, -470985,
-                511916, -68612, 272580, -293969, 151888, -53429, -115171, 234680, -482360, -399860,
-                -268942, 146734, -414798, 502035, -157203, -328592, 266628, 95760, 107840, 354606,
-                -367167, 396086, -287062, 57888, 140152, 442747, -217984, -69604, -136006, -56581,
-                202803, -440282, -290558, -192319, -49121, -76454, 426678, 433484, -93094, 244295,
-                -195275, -262446, -169118, 187824, -60480, -206921, -204671, -407794, -139194,
-                -182819, 133480, 520760, -17757, -444106, -214471, 457449, 29697, -149734, -497293,
-                -177518, -266611, -133962, -40139, 9030, 37706, 300290, -370302, 257446, -290991,
-                353260, 393727, -269498, 249049, -166327, -354566, -309239, 481747, 82459, -425894,
-                107583, 10935, -498533, 437188, -121594, -90890, -261475, -44165, 394580, -392499,
-                206781, -222053, -334528, -194081, -373973, -356982, -27220, -444980, 449174,
-                -391807, 392057, -132521, -441664, -349459, -373059, -296519, 274235, 42417, 47385,
-                -104540, 142532, 246380, -515363, -422665,
-            ],
-        };
+    use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
+
+    fn test_ntt_generic<SIMDUnit: Operations>() {
+        let coefficients = [
+            245230, -429681, -35753, 256940, 138755, -82158, -453212, -296769, 106884, -496329,
+            -275542, 350156, 295061, 462432, 162727, 219494, 43263, -84315, -100731, 5560, -38846,
+            343612, 76881, 427547, 165700, -361163, -18964, 270770, -289948, -326181, -17540,
+            -376674, -101359, 324588, 265493, -376942, -270029, -201717, -350446, 222164, -314686,
+            -60609, 172509, -199265, 391809, 375196, 333441, -433240, -28862, 274251, -218805,
+            400627, -408915, 131269, -305167, 78967, -487687, 98675, -430105, 293491, 317484,
+            -180888, -333359, -263010, 258853, -84618, -350795, 334736, -438451, 479262, -265874,
+            -115692, -521929, -220715, -456043, -24131, 94695, 473893, -503297, 75679, -129421,
+            83315, -248504, -64226, -24884, 316438, 264565, -248440, 222228, -386736, 89534,
+            196079, -196063, 434306, -388976, -29596, 424028, 290804, -348654, 208245, 394447,
+            -105640, -522040, 250479, -443666, -503110, 299944, 497539, -28052, 30579, -332034,
+            492009, -327080, -173581, -94157, -126088, 388734, 468785, -120589, -146970, -291234,
+            337402, 311007, -289990, 506654, -431388, 410292, -376624, 422627, 246536, -273872,
+            443039, -265954, -250947, 451185, -386654, -19185, -171927, -128698, -277965, 142565,
+            -229030, -470985, 511916, -68612, 272580, -293969, 151888, -53429, -115171, 234680,
+            -482360, -399860, -268942, 146734, -414798, 502035, -157203, -328592, 266628, 95760,
+            107840, 354606, -367167, 396086, -287062, 57888, 140152, 442747, -217984, -69604,
+            -136006, -56581, 202803, -440282, -290558, -192319, -49121, -76454, 426678, 433484,
+            -93094, 244295, -195275, -262446, -169118, 187824, -60480, -206921, -204671, -407794,
+            -139194, -182819, 133480, 520760, -17757, -444106, -214471, 457449, 29697, -149734,
+            -497293, -177518, -266611, -133962, -40139, 9030, 37706, 300290, -370302, 257446,
+            -290991, 353260, 393727, -269498, 249049, -166327, -354566, -309239, 481747, 82459,
+            -425894, 107583, 10935, -498533, 437188, -121594, -90890, -261475, -44165, 394580,
+            -392499, 206781, -222053, -334528, -194081, -373973, -356982, -27220, -444980, 449174,
+            -391807, 392057, -132521, -441664, -349459, -373059, -296519, 274235, 42417, 47385,
+            -104540, 142532, 246380, -515363, -422665,
+        ];
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
 
         let expected_coefficients = [
             -17129289, -17188287, -11027856, -7293060, -14589541, -12369669, -1420304, -9409026,
@@ -211,44 +312,42 @@ mod tests {
             15979738, 1459696, 8351548, 3335586, 1150210, -2462074, -4642922, 4538634, 1858098,
         ];
 
-        assert_eq!(ntt(re).coefficients, expected_coefficients);
+        assert_eq!(ntt(re).to_i32_array(), expected_coefficients);
     }
 
-    #[test]
-    fn test_invert_ntt_montgomery() {
-        let re = PolynomialRingElement {
-            coefficients: [
-                -1799977, -2102152, -2642101, -635466, -1853482, 642462, 1199623, -2231752,
-                -3968977, 1443304, 1461464, 2556315, 4140492, -1725885, 4153465, -556916, -2133612,
-                1372025, 3676714, 3519610, 706947, 788194, 3622849, -2734117, 3727454, -2190265,
-                208958, 2555531, -1748893, -256927, 1863384, -135807, -2321243, 2766307, -707368,
-                1548297, 1449797, 3892466, 3417597, -2439676, 1503122, -1273655, 4077536, 6648,
-                -1763675, 2151278, -2147862, -4095105, 1452564, -194892, 150869, -168533, 3172154,
-                -4157552, 950081, 1263047, 1073782, -2392089, 3913931, 2548808, -3641576, -133231,
-                -345656, -3993400, -772374, 650580, 11714, 2745379, 4102554, -1493814, -1216073,
-                -3687790, -520554, 674428, -2363771, -2062557, 1353060, 421679, -1736183, 3309070,
-                3705199, -1614110, -1885448, 1502936, -3904361, 2506554, 101679, -2500045, 2538220,
-                3019542, 1264486, 1681771, 889126, 951808, -3807112, -1917333, 2530518, 2276961,
-                3921082, 1553244, -2044159, -2836376, 498383, 2971233, 3286160, 1149491, -3659209,
-                -1963092, -2566288, 2114154, 34024, -2989138, 424058, 3042007, -135014, -2866292,
-                -1138173, -3010844, -2893275, -2118818, 3839605, 2956371, 2356470, 2895933, 390703,
-                -1316703, -2882388, 3833928, 2118987, -2371764, 7210, 2032760, 770491, -2466615,
-                -3672908, -2397815, -3106703, 3523515, 1794988, 2551854, -134246, -4189103,
-                3840541, -3703204, -2229747, 1599893, 1611447, -1126296, -1497526, 1422269,
-                -1183163, 861126, -155866, 1642344, 3459388, 2621579, 1200190, -1791368, -2396064,
-                3313131, -1704442, -1632644, 3659167, 3290628, 1933900, 475446, 1952630, -847369,
-                2639611, 2205667, -767651, 2248190, -1679262, 2250674, 3194928, 3674776, 2014792,
-                -1384769, -2579573, 1424682, 1150591, 1027245, -2676627, 3620918, -2364392, 971022,
-                170291, -16161, 3517252, -4070880, -2207879, -577017, 2484069, 927714, 2453609,
-                -2953744, 3140280, 3160147, 1667259, -3082713, -4047424, 124404, 3473451, 1419723,
-                161430, 483773, 2459342, 1207398, 3486346, -2400797, 3217001, 2022150, -694480,
-                -919315, -3442035, -1734814, -3231832, 2955471, 2104900, 1922217, 1829070, 1605538,
-                3862195, 1423572, 3831618, 2188925, -967302, 677729, 3187197, 1048944, 1276467,
-                -3329616, 3735664, 3795986, 4038386, -3516780, -1902194, -880027, -1787327,
-                -869158, 3693240, 494399, -3852589, -3881813, 2536840, -2924666, 2425664, 2635292,
-                2752536, -136653, 4057087, -633680, 3039079, -2733512, 1734173, -2109687,
-            ],
-        };
+    fn test_invert_ntt_montgomery_generic<SIMDUnit: Operations>() {
+        let coefficients = [
+            -1799977, -2102152, -2642101, -635466, -1853482, 642462, 1199623, -2231752, -3968977,
+            1443304, 1461464, 2556315, 4140492, -1725885, 4153465, -556916, -2133612, 1372025,
+            3676714, 3519610, 706947, 788194, 3622849, -2734117, 3727454, -2190265, 208958,
+            2555531, -1748893, -256927, 1863384, -135807, -2321243, 2766307, -707368, 1548297,
+            1449797, 3892466, 3417597, -2439676, 1503122, -1273655, 4077536, 6648, -1763675,
+            2151278, -2147862, -4095105, 1452564, -194892, 150869, -168533, 3172154, -4157552,
+            950081, 1263047, 1073782, -2392089, 3913931, 2548808, -3641576, -133231, -345656,
+            -3993400, -772374, 650580, 11714, 2745379, 4102554, -1493814, -1216073, -3687790,
+            -520554, 674428, -2363771, -2062557, 1353060, 421679, -1736183, 3309070, 3705199,
+            -1614110, -1885448, 1502936, -3904361, 2506554, 101679, -2500045, 2538220, 3019542,
+            1264486, 1681771, 889126, 951808, -3807112, -1917333, 2530518, 2276961, 3921082,
+            1553244, -2044159, -2836376, 498383, 2971233, 3286160, 1149491, -3659209, -1963092,
+            -2566288, 2114154, 34024, -2989138, 424058, 3042007, -135014, -2866292, -1138173,
+            -3010844, -2893275, -2118818, 3839605, 2956371, 2356470, 2895933, 390703, -1316703,
+            -2882388, 3833928, 2118987, -2371764, 7210, 2032760, 770491, -2466615, -3672908,
+            -2397815, -3106703, 3523515, 1794988, 2551854, -134246, -4189103, 3840541, -3703204,
+            -2229747, 1599893, 1611447, -1126296, -1497526, 1422269, -1183163, 861126, -155866,
+            1642344, 3459388, 2621579, 1200190, -1791368, -2396064, 3313131, -1704442, -1632644,
+            3659167, 3290628, 1933900, 475446, 1952630, -847369, 2639611, 2205667, -767651,
+            2248190, -1679262, 2250674, 3194928, 3674776, 2014792, -1384769, -2579573, 1424682,
+            1150591, 1027245, -2676627, 3620918, -2364392, 971022, 170291, -16161, 3517252,
+            -4070880, -2207879, -577017, 2484069, 927714, 2453609, -2953744, 3140280, 3160147,
+            1667259, -3082713, -4047424, 124404, 3473451, 1419723, 161430, 483773, 2459342,
+            1207398, 3486346, -2400797, 3217001, 2022150, -694480, -919315, -3442035, -1734814,
+            -3231832, 2955471, 2104900, 1922217, 1829070, 1605538, 3862195, 1423572, 3831618,
+            2188925, -967302, 677729, 3187197, 1048944, 1276467, -3329616, 3735664, 3795986,
+            4038386, -3516780, -1902194, -880027, -1787327, -869158, 3693240, 494399, -3852589,
+            -3881813, 2536840, -2924666, 2425664, 2635292, 2752536, -136653, 4057087, -633680,
+            3039079, -2733512, 1734173, -2109687,
+        ];
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
 
         let expected_coefficients = [
             3966085, -2067161, 579114, -3597478, 2232818, -17588, 1194752, -1205114, -4058138,
@@ -283,8 +382,36 @@ mod tests {
         ];
 
         assert_eq!(
-            invert_ntt_montgomery(re).coefficients,
+            invert_ntt_montgomery(re).to_i32_array(),
             expected_coefficients
         );
+    }
+
+    #[cfg(not(feature = "simd256"))]
+    mod portable {
+        use super::{test_invert_ntt_montgomery_generic, test_ntt_generic};
+
+        #[test]
+        fn test_ntt() {
+            test_ntt_generic::<crate::simd::portable::PortableSIMDUnit>();
+        }
+        #[test]
+        fn test_invert_ntt_montgomery() {
+            test_invert_ntt_montgomery_generic::<crate::simd::portable::PortableSIMDUnit>();
+        }
+    }
+
+    #[cfg(feature = "simd256")]
+    mod avx2 {
+        use super::{test_invert_ntt_montgomery_generic, test_ntt_generic};
+
+        #[test]
+        fn test_ntt() {
+            test_ntt_generic::<crate::simd::avx2::AVX2SIMDUnit>();
+        }
+        #[test]
+        fn test_invert_ntt_montgomery() {
+            test_invert_ntt_montgomery_generic::<crate::simd::avx2::AVX2SIMDUnit>();
+        }
     }
 }

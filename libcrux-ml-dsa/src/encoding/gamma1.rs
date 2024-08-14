@@ -1,154 +1,143 @@
-use crate::arithmetic::PolynomialRingElement;
+use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement,
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
-    const GAMMA1: i32 = 1 << 17;
+pub(crate) fn serialize<
+    SIMDUnit: Operations,
+    const GAMMA1_EXPONENT: usize,
+    const OUTPUT_BYTES: usize,
+>(
+    re: PolynomialRingElement<SIMDUnit>,
+) -> [u8; OUTPUT_BYTES] {
+    let mut serialized = [0u8; OUTPUT_BYTES];
 
-    for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
-        let coefficient0 = GAMMA1 - coefficients[0];
-        let coefficient1 = GAMMA1 - coefficients[1];
-        let coefficient2 = GAMMA1 - coefficients[2];
-        let coefficient3 = GAMMA1 - coefficients[3];
-
-        serialized[9 * i] = coefficient0 as u8;
-        serialized[9 * i + 1] = (coefficient0 >> 8) as u8;
-
-        serialized[9 * i + 2] = (coefficient0 >> 16) as u8;
-        serialized[9 * i + 2] |= (coefficient1 << 2) as u8;
-
-        serialized[9 * i + 3] = (coefficient1 >> 6) as u8;
-
-        serialized[9 * i + 4] = (coefficient1 >> 14) as u8;
-        serialized[9 * i + 4] |= (coefficient2 << 4) as u8;
-
-        serialized[9 * i + 5] = (coefficient2 >> 4) as u8;
-
-        serialized[9 * i + 6] = (coefficient2 >> 12) as u8;
-        serialized[9 * i + 6] |= (coefficient3 << 6) as u8;
-
-        serialized[9 * i + 7] = (coefficient3 >> 2) as u8;
-        serialized[9 * i + 8] = (coefficient3 >> 10) as u8;
-    }
-
-    serialized
-}
-
-#[inline(always)]
-fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement,
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
-    const GAMMA1: i32 = 1 << 19;
-
-    for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
-        let coefficient0 = GAMMA1 - coefficients[0];
-        let coefficient1 = GAMMA1 - coefficients[1];
-
-        serialized[5 * i] = coefficient0 as u8;
-        serialized[5 * i + 1] = (coefficient0 >> 8) as u8;
-
-        serialized[5 * i + 2] = (coefficient0 >> 16) as u8;
-        serialized[5 * i + 2] |= (coefficient1 << 4) as u8;
-
-        serialized[5 * i + 3] = (coefficient1 >> 4) as u8;
-        serialized[5 * i + 4] = (coefficient1 >> 12) as u8;
-    }
-
-    serialized
-}
-
-#[inline(always)]
-pub(crate) fn serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement,
-) -> [u8; OUTPUT_SIZE] {
     match GAMMA1_EXPONENT {
-        17 => serialize_when_gamma1_is_2_pow_17(re),
-        19 => serialize_when_gamma1_is_2_pow_19(re),
+        17 => {
+            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 18;
+
+            for (i, simd_unit) in re.simd_units.iter().enumerate() {
+                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+                    .copy_from_slice(&SIMDUnit::gamma1_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(
+                        *simd_unit,
+                    ));
+            }
+
+            serialized
+        }
+        19 => {
+            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 20;
+
+            for (i, simd_unit) in re.simd_units.iter().enumerate() {
+                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+                    .copy_from_slice(&SIMDUnit::gamma1_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(
+                        *simd_unit,
+                    ));
+            }
+
+            serialized
+        }
         _ => unreachable!(),
     }
 }
 
 #[inline(always)]
-fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8]) -> PolynomialRingElement {
-    const GAMMA1: i32 = 1 << 17;
-    const GAMMA1_TIMES_2_BITMASK: i32 = (GAMMA1 << 1) - 1;
-
-    let mut re = PolynomialRingElement::ZERO;
-
-    for (i, bytes) in serialized.chunks_exact(9).enumerate() {
-        re.coefficients[4 * i] = bytes[0] as i32;
-        re.coefficients[4 * i] |= (bytes[1] as i32) << 8;
-        re.coefficients[4 * i] |= (bytes[2] as i32) << 16;
-        re.coefficients[4 * i] &= GAMMA1_TIMES_2_BITMASK;
-
-        re.coefficients[4 * i + 1] = (bytes[2] as i32) >> 2;
-        re.coefficients[4 * i + 1] |= (bytes[3] as i32) << 6;
-        re.coefficients[4 * i + 1] |= (bytes[4] as i32) << 14;
-        re.coefficients[4 * i + 1] &= GAMMA1_TIMES_2_BITMASK;
-
-        re.coefficients[4 * i + 2] = (bytes[4] as i32) >> 4;
-        re.coefficients[4 * i + 2] |= (bytes[5] as i32) << 4;
-        re.coefficients[4 * i + 2] |= (bytes[6] as i32) << 12;
-        re.coefficients[4 * i + 2] &= GAMMA1_TIMES_2_BITMASK;
-
-        re.coefficients[4 * i + 3] = (bytes[6] as i32) >> 6;
-        re.coefficients[4 * i + 3] |= (bytes[7] as i32) << 2;
-        re.coefficients[4 * i + 3] |= (bytes[8] as i32) << 10;
-        re.coefficients[4 * i + 3] &= GAMMA1_TIMES_2_BITMASK;
-
-        re.coefficients[4 * i] = GAMMA1 - re.coefficients[4 * i];
-        re.coefficients[4 * i + 1] = GAMMA1 - re.coefficients[4 * i + 1];
-        re.coefficients[4 * i + 2] = GAMMA1 - re.coefficients[4 * i + 2];
-        re.coefficients[4 * i + 3] = GAMMA1 - re.coefficients[4 * i + 3];
-    }
-
-    re
-}
-
-#[inline(always)]
-fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8]) -> PolynomialRingElement {
-    const GAMMA1: i32 = 1 << 19;
-    const GAMMA1_TIMES_2_BITMASK: i32 = (GAMMA1 << 1) - 1;
-
-    let mut re = PolynomialRingElement::ZERO;
-
-    for (i, bytes) in serialized.chunks_exact(5).enumerate() {
-        re.coefficients[2 * i] = bytes[0] as i32;
-        re.coefficients[2 * i] |= (bytes[1] as i32) << 8;
-        re.coefficients[2 * i] |= (bytes[2] as i32) << 16;
-        re.coefficients[2 * i] &= GAMMA1_TIMES_2_BITMASK;
-
-        re.coefficients[2 * i + 1] = (bytes[2] as i32) >> 4;
-        re.coefficients[2 * i + 1] |= (bytes[3] as i32) << 4;
-        re.coefficients[2 * i + 1] |= (bytes[4] as i32) << 12;
-
-        re.coefficients[2 * i] = GAMMA1 - re.coefficients[2 * i];
-        re.coefficients[2 * i + 1] = GAMMA1 - re.coefficients[2 * i + 1];
-    }
-
-    re
-}
-
-#[inline(always)]
-pub(crate) fn deserialize<const GAMMA1_EXPONENT: usize>(
+pub(crate) fn deserialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
     serialized: &[u8],
-) -> PolynomialRingElement {
-    match GAMMA1_EXPONENT {
-        17 => deserialize_when_gamma1_is_2_pow_17(serialized),
-        19 => deserialize_when_gamma1_is_2_pow_19(serialized),
+) -> PolynomialRingElement<SIMDUnit> {
+    let mut serialized_chunks = match GAMMA1_EXPONENT {
+        17 => serialized.chunks(18),
+        19 => serialized.chunks(20),
         _ => unreachable!(),
+    };
+
+    let mut result = PolynomialRingElement::<SIMDUnit>::ZERO();
+
+    for i in 0..result.simd_units.len() {
+        result.simd_units[i] =
+            SIMDUnit::gamma1_deserialize::<GAMMA1_EXPONENT>(&serialized_chunks.next().unwrap());
     }
+
+    result
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_deserialize_when_gamma1_is_2_pow_17() {
+    use crate::simd::{self, traits::Operations};
+
+    fn test_serialize_generic<SIMDUnit: Operations>() {
+        // Test the case where GAMMA1 = 2^{19}
+        let coefficients = [
+            256833, 201634, 185797, 443808, -123176, 498815, -97168, 283140, -23467, 60369, -50582,
+            -72560, -364593, 330154, 283687, -248011, 181715, 69627, 117351, 323709, -325492,
+            -38441, -145000, 318266, 272673, -491989, 131300, -244349, -33853, 147630, 189827,
+            -318201, -470658, 333480, 172816, -285349, 215526, 319744, 117332, -372370, -114525,
+            290978, -19664, 180230, -470766, 212360, 502875, -51572, 315377, 263779, 411678,
+            297952, -155575, -240119, 91309, 486730, 451258, -255847, 414239, 48639, 386095, -3644,
+            455679, 110363, -16915, 168382, 217040, 130649, 499841, -316566, 412527, -398797,
+            519737, -231154, 215037, -191274, 4303, 186626, -141609, 245821, 146011, 482173, 85448,
+            267905, 260871, -287670, -292918, 127808, 247158, 246373, 514787, 272879, -474390,
+            348209, -472277, 216849, -125256, -352037, 115640, 11423, 41509, 280962, -242687,
+            65171, -255192, -355297, -361708, 478307, 265568, 398667, -160847, 127758, 44822,
+            240048, 346379, -139497, 56104, -364199, 77124, -223721, -417354, -391999, -198541,
+            -380105, -262539, 497385, 131257, 202667, -184441, 350690, 272220, 70307, -233989,
+            310294, 91821, -49450, -410308, 354593, 485145, 48234, -474292, -118360, 130426,
+            -61549, -379631, -343255, 360372, 68209, -279341, 119635, -68868, -32074, 350892,
+            110030, -87021, 279336, -461280, 250268, 177901, -423172, -515555, 382677, -192697,
+            439676, -428899, -66609, 77516, -213001, 296579, 103405, -179820, -209087, 486834,
+            501642, -3827, -430113, -228221, 309952, 185146, -92675, -467184, -89622, -223651,
+            329885, 470632, -232353, 326516, -692, -442940, 295187, -484772, -489619, -68806,
+            128363, -149583, 504851, 437522, 465065, 509875, -369041, -149907, -263366, 71790,
+            95662, 249941, 459460, -284939, -347157, 169088, -73212, -387440, 94580, 507218,
+            -259300, 456863, -501622, -431405, -388108, 159972, -81131, 348985, 334716, 44864,
+            461767, -327397, -331570, 174944, -82922, 161352, -321829, 393362, -151202, -317381,
+            -463852, 98388, 229111, 40537, 396185, -11579, -176645, -339229, -353103, 218707,
+            302917, 307866, -446103, 225168, -438314, 393602, 409392, 155141, 43252, -178437,
+            -248017, 250774, 33014,
+        ];
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+
+        let expected_bytes = [
+            191, 20, 228, 197, 78, 59, 42, 5, 166, 19, 40, 225, 25, 56, 6, 144, 123, 201, 223, 58,
+            171, 91, 248, 66, 113, 150, 197, 8, 183, 145, 49, 144, 109, 101, 47, 217, 171, 179,
+            140, 188, 45, 58, 85, 0, 111, 153, 53, 54, 248, 48, 116, 247, 156, 98, 137, 104, 54,
+            106, 76, 50, 223, 214, 83, 29, 248, 28, 255, 213, 167, 187, 61, 132, 40, 245, 91, 125,
+            26, 149, 175, 205, 130, 46, 143, 149, 46, 240, 92, 85, 170, 197, 26, 182, 4, 240, 49,
+            172, 53, 38, 233, 218, 93, 191, 233, 245, 56, 208, 76, 168, 255, 83, 238, 46, 143, 39,
+            76, 165, 83, 64, 151, 140, 15, 48, 211, 153, 63, 226, 183, 1, 66, 55, 183, 95, 122,
+            159, 186, 83, 155, 102, 43, 9, 70, 29, 113, 118, 190, 225, 173, 17, 32, 116, 209, 27,
+            194, 227, 128, 1, 12, 81, 14, 101, 19, 66, 40, 228, 86, 48, 176, 116, 26, 96, 127, 95,
+            96, 73, 205, 145, 180, 209, 92, 225, 199, 17, 32, 111, 184, 3, 184, 164, 178, 174, 49,
+            239, 231, 111, 82, 41, 41, 58, 252, 67, 165, 197, 53, 72, 10, 56, 178, 246, 151, 62,
+            249, 4, 100, 59, 198, 54, 120, 12, 204, 96, 138, 58, 180, 217, 67, 29, 37, 16, 97, 61,
+            22, 61, 255, 252, 42, 213, 52, 255, 14, 75, 72, 233, 89, 242, 213, 72, 60, 22, 54, 125,
+            219, 93, 231, 103, 59, 255, 179, 219, 22, 112, 216, 228, 27, 190, 214, 236, 132, 221,
+            57, 11, 160, 242, 83, 171, 30, 79, 116, 42, 207, 96, 234, 80, 7, 101, 69, 245, 182,
+            146, 14, 162, 216, 36, 119, 234, 216, 188, 210, 150, 158, 182, 74, 94, 254, 179, 223,
+            141, 7, 155, 204, 220, 139, 1, 124, 145, 6, 71, 255, 85, 133, 78, 121, 208, 234, 97,
+            42, 164, 216, 211, 213, 110, 5, 146, 171, 62, 52, 83, 153, 166, 18, 140, 196, 66, 254,
+            109, 41, 231, 152, 96, 57, 116, 180, 60, 143, 229, 156, 134, 2, 214, 6, 143, 239, 202,
+            125, 205, 211, 76, 128, 242, 88, 111, 45, 67, 220, 202, 98, 4, 13, 169, 212, 135, 84,
+            165, 34, 35, 101, 237, 83, 137, 205, 59, 224, 9, 79, 230, 66, 19, 73, 69, 80, 231, 227,
+            221, 191, 146, 34, 185, 240, 74, 168, 20, 99, 139, 30, 67, 144, 52, 209, 150, 0, 180,
+            125, 121, 51, 193, 102, 108, 190, 250, 11, 179, 78, 146, 96, 135, 5, 243, 14, 24, 2,
+            233, 125, 123, 11, 84, 52, 198, 44, 53, 160, 150, 240, 32, 111, 225, 149, 163, 105, 59,
+            118, 47, 152, 209, 16, 186, 184, 140, 4, 67, 43, 128, 60, 194, 222, 238, 55, 164, 101,
+            63, 137, 247, 198, 12, 89, 169, 96, 79, 72, 218, 190, 4, 238, 82, 113, 117, 14, 77, 56,
+            16, 25, 218, 147, 73, 106, 76, 192, 146, 231, 38, 165, 104, 171, 47, 196, 211, 15, 11,
+            89, 92, 193, 212, 128, 107, 197, 223, 145, 112, 233, 205, 232, 104, 174, 66, 64, 78,
+            191, 97, 7, 97, 119, 250, 45, 149, 206, 192, 222, 28, 143, 181, 206, 147, 199, 172, 66,
+            72, 46, 192, 80, 151, 67, 15, 229, 254, 44, 243, 208, 160, 84, 165, 62, 148, 184, 137,
+            85, 146, 206, 110, 255, 33, 234, 164, 197, 215, 204, 62, 241, 172, 127, 150, 16, 72,
+            167, 97, 119, 70, 31, 59, 45, 88, 32, 171, 29, 45, 253, 52, 214, 173, 169, 180, 11, 54,
+            102, 77, 115, 233, 236, 112, 144, 164, 2, 235, 126, 254, 1, 13, 28, 251, 161, 197, 112,
+            117, 5, 185, 26, 141, 188, 106, 44, 164, 240, 119,
+        ];
+
+        assert_eq!(serialize::<SIMDUnit, 19, 640>(re), expected_bytes);
+    }
+
+    fn test_deserialize_generic<SIMDUnit: Operations>() {
         let bytes = [
             198, 32, 33, 79, 53, 132, 46, 198, 17, 233, 84, 94, 175, 136, 13, 127, 137, 254, 113,
             82, 68, 239, 94, 176, 179, 22, 102, 177, 253, 142, 176, 250, 96, 201, 11, 213, 230, 41,
@@ -211,13 +200,10 @@ mod tests {
         ];
 
         assert_eq!(
-            deserialize::<17>(&bytes).coefficients,
+            deserialize::<SIMDUnit, 17>(&bytes).to_i32_array(),
             expected_coefficients
         );
-    }
 
-    #[test]
-    fn test_deserialize_when_gamma1_is_2_pow_19() {
         let bytes: [u8; 640] = [
             253, 11, 216, 60, 251, 71, 79, 187, 242, 250, 209, 44, 72, 206, 98, 3, 22, 91, 184, 22,
             197, 50, 249, 184, 253, 104, 8, 3, 9, 116, 147, 157, 110, 167, 67, 218, 30, 79, 58, 12,
@@ -285,8 +271,36 @@ mod tests {
         ];
 
         assert_eq!(
-            deserialize::<19>(&bytes).coefficients,
+            deserialize::<SIMDUnit, 19>(&bytes).to_i32_array(),
             expected_coefficients
         );
+    }
+
+    #[cfg(not(feature = "simd256"))]
+    mod portable {
+        use super::*;
+
+        #[test]
+        fn test_serialize_portable() {
+            test_serialize_generic::<simd::portable::PortableSIMDUnit>();
+        }
+        #[test]
+        fn test_deserialize_portable() {
+            test_deserialize_generic::<simd::portable::PortableSIMDUnit>();
+        }
+    }
+
+    #[cfg(feature = "simd256")]
+    mod simd256 {
+        use super::*;
+
+        #[test]
+        fn test_serialize_simd256() {
+            test_serialize_generic::<simd::avx2::AVX2SIMDUnit>();
+        }
+        #[test]
+        fn test_deserialize_simd256() {
+            test_deserialize_generic::<simd::avx2::AVX2SIMDUnit>();
+        }
     }
 }

@@ -1,16 +1,22 @@
 files:
   # INTRINSICS
-
   - name: libcrux_intrinsics_avx2
     library: true
     inline_static: true
     api:
       - [libcrux_intrinsics, avx2]
 
+  # Constant time ops
+  - name: libcrux_ct_ops
+    inline_static: true
+    api:
+      - [libcrux_ml_kem, constant_time_ops]
+
   # SHA3 (no mention of libcrux_mlkem in this section, please)
 
   - name: libcrux_sha3_avx2
     inline_static: true
+    target: "avx2"
     # This is needed solely for the benchmarking test -- otherwise these would
     # all be private. Note that the order matters! So we put these first so that
     # they match immediately (and get promoted to internal), then the rest of
@@ -19,13 +25,10 @@ files:
       patterns:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
-      exact:
-        - [libcrux_sha3, avx2, x4, incremental, KeccakState4]
       monomorphizations_exact:
-        - [libcrux_sha3, avx2, x4, incremental, KeccakState4]
-        - [libcrux_sha3, generic_keccak, absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t ]
-        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t ]
-        - [libcrux_sha3, generic_keccak, "KeccakState__core_core_arch_x86___m256i_$4size_t"]
+        - [libcrux_sha3, generic_keccak, KeccakState_29]
+        - [libcrux_sha3, generic_keccak, absorb_final_d9 ]
+        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks_2a ]
       monomorphizations_of:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
@@ -73,6 +76,7 @@ files:
 
   - name: libcrux_mlkem768_avx2
     inline_static: true
+    target: "avx2"
     api:
       patterns:  
         - [libcrux_ml_kem, vector, avx2, "*"]
@@ -90,6 +94,10 @@ files:
 
   - name: libcrux_mlkem768_portable
     inline_static: true
+    private:
+      exact:
+        - [ libcrux_ml_kem, ind_cca, MlKem ]
+        - [ libcrux_ml_kem, ind_cca, Kyber ]
     api:
       patterns:
         - [libcrux_ml_kem, "*"]

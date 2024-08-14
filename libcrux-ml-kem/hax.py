@@ -30,36 +30,6 @@ def shell(command, expect=0, cwd=None, env={}):
 class extractAction(argparse.Action):
 
     def __call__(self, parser, args, values, option_string=None) -> None:
-        # Extract sha3 interfaces
-        includes = [
-            "+:**",
-            "-libcrux_sha3::generic_keccak::**",
-            "+libcrux_sha3::generic_keccak::KeccakState",
-            "-libcrux_sha3::simd::**",
-            "-libcrux_sha3::portable_keccak::**",
-            "-libcrux_sha3::neon::keccakx2",
-            "-libcrux_sha3::portable::keccakx1",
-            "-libcrux_sha3::traits::internal::**",
-        ]
-        include_str = " ".join(includes)
-        interface_include = "+**"
-        cargo_hax_into = [
-            "cargo",
-            "hax",
-            "into",
-            "-i",
-            include_str,
-            "fstar",
-            "--interfaces",
-            interface_include,
-        ]
-        hax_env = {}
-        shell(
-            cargo_hax_into,
-            cwd="../libcrux-sha3",
-            env=hax_env,
-        )
-
         # Extract platform interfaces
         include_str = "+:**"
         interface_include = "+**"
@@ -86,6 +56,10 @@ class extractAction(argparse.Action):
         cargo_hax_into = [
             "cargo",
             "hax",
+            "-C",
+            "--features",
+            "simd128,simd256",
+            ";",
             "into",
             "-i",
             include_str,
@@ -101,16 +75,23 @@ class extractAction(argparse.Action):
         )
 
         # Extract ml-kem
-        include_str = (
-            "+** -libcrux_ml_kem::types::index_impls::** -libcrux_ml_kem::kem::**"
-        )
+        includes = [
+            "+**",
+            "-libcrux_ml_kem::types::index_impls::**",
+            "-libcrux_ml_kem::kem::**",
+            "-libcrux_ml_kem::hash_functions::portable::*",
+            "-libcrux_ml_kem::hash_functions::avx2::*",
+            "-libcrux_ml_kem::hash_functions::neon::*",
+            "+:libcrux_ml_kem::hash_functions::*::*",
+        ]
+        include_str = " ".join(includes)
         interface_include = "+**"
         cargo_hax_into = [
             "cargo",
             "hax",
             "-C",
             "--features",
-            "pre-verification",
+            "simd128,simd256,pre-verification",
             ";",
             "into",
             "-i",

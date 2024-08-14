@@ -32,7 +32,7 @@ files:
         - [libcrux_sha3, neon, "*"]
         - [libcrux_sha3, simd, arm64, "*"]
       monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, "KeccakState__core_core_arch_arm_shared_neon_uint64x2_t_$2size_t"]
+        - [libcrux_sha3, generic_keccak, "KeccakState_fc"]
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_arm64.h"'
 
@@ -42,12 +42,9 @@ files:
     # they match immediately (and get promoted to internal), then the rest of
     # the behavior applies.
     internal:
-      exact:
-        - [libcrux_sha3, avx2, x4, incremental, KeccakState4]
       monomorphizations_exact:
-        - [libcrux_sha3, avx2, x4, incremental, KeccakState4]
-        - [libcrux_sha3, generic_keccak, absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t ]
-        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t ]
+        - [libcrux_sha3, generic_keccak, absorb_final_d9 ]
+        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks_2a ]
     api:
       - [libcrux_sha3, avx2, "*"]
     private:
@@ -62,7 +59,7 @@ files:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
       monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, "KeccakState__core_core_arch_x86___m256i_$4size_t"]
+        - [libcrux_sha3, generic_keccak, KeccakState_29]
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
 
@@ -79,6 +76,8 @@ files:
         - [libcrux_sha3, keccakx1]
         - [libcrux_sha3, shake128]
         - [libcrux_sha3, shake256]
+        - [libcrux_sha3, shake128_ema]
+        - [libcrux_sha3, shake256_ema]
         - [libcrux_sha3, sha224_ema]
         - [libcrux_sha3, sha256_ema]
         - [libcrux_sha3, sha384_ema]
@@ -171,31 +170,17 @@ files:
 
   - name: libcrux_mlkem512_avx2
     api:
-      patterns:
-        - [libcrux_ml_kem, mlkem512, avx2]
-        - [libcrux_ml_kem, ind_cca, instantiations, avx2]
-      monomorphizations_of:
-        - [libcrux_ml_kem, mlkem512, avx2]
-        - [libcrux_ml_kem, ind_cca, instantiations, avx2]
+      - [libcrux_ml_kem, mlkem512, avx2]
 
   - name: libcrux_mlkem512_neon
     api:
-      patterns:
-        - [libcrux_ml_kem, mlkem512, neon]
-        - [libcrux_ml_kem, ind_cca, instantiations, neon]
-      monomorphizations_of:
-        - [libcrux_ml_kem, mlkem512, neon]
-        - [libcrux_ml_kem, ind_cca, instantiations, neon]
+      - [libcrux_ml_kem, mlkem512, neon]
 
   - name: libcrux_mlkem512_portable
     api:
-      patterns:
-        - [libcrux_ml_kem, mlkem512, portable]
-        - [libcrux_ml_kem, ind_cca, instantiations, portable]
-      monomorphizations_of:
-        - [libcrux_ml_kem, mlkem512, portable]
-        - [libcrux_ml_kem, ind_cca, instantiations, portable]
+      - [libcrux_ml_kem, mlkem512, portable]
 
+  # This one contains common definitions like types, etc.
   - name: libcrux_mlkem512
     api:
       - [libcrux_ml_kem, mlkem512]
@@ -204,31 +189,17 @@ files:
 
   - name: libcrux_mlkem768_avx2
     api:
-      patterns:  
-        - [libcrux_ml_kem, mlkem768, avx2]
-        - [libcrux_ml_kem, ind_cca, instantiations, avx2]
-      monomorphizations_of:
-        - [libcrux_ml_kem, mlkem768, avx2]
-        - [libcrux_ml_kem, ind_cca, instantiations, avx2]
+      - [libcrux_ml_kem, mlkem768, avx2]
 
   - name: libcrux_mlkem768_neon
     api:
-      patterns:  
-        - [libcrux_ml_kem, mlkem768, neon]
-        - [libcrux_ml_kem, ind_cca, instantiations, neon]
-      monomorphizations_of:
-        - [libcrux_ml_kem, mlkem768, neon]
-        - [libcrux_ml_kem, ind_cca, instantiations, neon]
+      - [libcrux_ml_kem, mlkem768, neon]
 
   - name: libcrux_mlkem768_portable
     api:
-      patterns:
-        - [libcrux_ml_kem, mlkem768, portable]
-        - [libcrux_ml_kem, ind_cca, instantiations, portable]
-      monomorphizations_of:
-        - [libcrux_ml_kem, mlkem768, portable]
-        - [libcrux_ml_kem, ind_cca, instantiations, portable]
+      - [libcrux_ml_kem, mlkem768, portable]
 
+  # This one contains common definitions like types, etc.
   - name: libcrux_mlkem768
     api:
       - [libcrux_ml_kem, mlkem768]
@@ -237,45 +208,24 @@ files:
 
   - name: libcrux_mlkem1024_avx2
     api:
-      patterns:
-        - [libcrux_ml_kem, mlkem1024, avx2]
-        - [libcrux_ml_kem, ind_cca, instantiations, avx2]
-      monomorphizations_of:
-        - [libcrux_ml_kem, mlkem1024, avx2]
-        - [libcrux_ml_kem, ind_cca, instantiations, avx2]
+      - [libcrux_ml_kem, mlkem1024, avx2]
 
   - name: libcrux_mlkem1024_neon
     api:
-      patterns:
-        - [libcrux_ml_kem, mlkem1024, neon]
-        - [libcrux_ml_kem, ind_cca, instantiations, neon]
-      monomorphizations_of:
-        - [libcrux_ml_kem, mlkem1024, neon]
-        - [libcrux_ml_kem, ind_cca, instantiations, neon]
+      - [libcrux_ml_kem, mlkem1024, neon]
 
   - name: libcrux_mlkem1024_portable
     api:
-      patterns:
-        - [libcrux_ml_kem, mlkem1024, portable]
-        - [libcrux_ml_kem, ind_cca, instantiations, portable]
-      monomorphizations_of:
-        - [libcrux_ml_kem, mlkem1024, portable]
-        - [libcrux_ml_kem, ind_cca, instantiations, portable]
+      - [libcrux_ml_kem, mlkem1024, portable]
 
+  # This one contains common definitions like types, etc.
   - name: libcrux_mlkem1024
     api:
       - [libcrux_ml_kem, mlkem1024]
 
-  # Multiplexing API.
-
-  - name: libcrux_mlkem_multiplexing
-    api:
-      patterns:
-        - [libcrux_ml_kem, ind_cca, multiplexing]
-    inline_static: true
-
-  # Just a few constants not caught by anything above. Most likely can go into
-  # core or polynomial (TODO: try it).
+  # We let monomorphization insert things at the right place in each one of the
+  # 9 variants above. Helpers that have not been assigned into any of the
+  # individual libcrux_mlkemXXX files end up in a catch-all.
   - name: libcrux_mlkem_common
     private:
       - [libcrux_ml_kem, "*"]

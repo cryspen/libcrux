@@ -1,38 +1,42 @@
-use crate::arithmetic::PolynomialRingElement;
+use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-fn serialize<const OUTPUT_SIZE: usize>(re: PolynomialRingElement) -> [u8; OUTPUT_SIZE] {
-    let mut out = [0u8; OUTPUT_SIZE];
+fn serialize<SIMDUnit: Operations, const OUTPUT_SIZE: usize>(
+    re: PolynomialRingElement<SIMDUnit>,
+) -> [u8; OUTPUT_SIZE] {
+    let mut serialized = [0u8; OUTPUT_SIZE];
 
     match OUTPUT_SIZE {
         128 => {
             // The commitment has coefficients in [0,15] => each coefficient occupies
-            // 4 bits.
-            for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
-                let coefficient0 = coefficients[0] as u8;
-                let coefficient1 = coefficients[1] as u8;
+            // 4 bits. Each SIMD unit contains 8 elements, which means each
+            // SIMD unit will serialize to (8 * 4) / 8 = 4 bytes.
+            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 4;
 
-                out[i] = (coefficient1 << 4) | coefficient0;
+            for (i, simd_unit) in re.simd_units.iter().enumerate() {
+                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+                    .copy_from_slice(
+                        &SIMDUnit::commitment_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(*simd_unit),
+                    );
             }
 
-            out
+            serialized
         }
 
         192 => {
-            // The commitment has coefficients in [0,43] => each coefficient occupies
-            // 6 bits.
-            for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
-                let coefficient0 = coefficients[0] as u8;
-                let coefficient1 = coefficients[1] as u8;
-                let coefficient2 = coefficients[2] as u8;
-                let coefficient3 = coefficients[3] as u8;
+            // The commitment has coefficients in [0,15] => each coefficient occupies
+            // 6 bits. Each SIMD unit contains 8 elements, which means each
+            // SIMD unit will serialize to (8 * 6) / 8 = 6 bytes.
+            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 6;
 
-                out[3 * i] = (coefficient1 << 6) | coefficient0;
-                out[3 * i + 1] = (coefficient2 << 4) | coefficient1 >> 2;
-                out[3 * i + 2] = (coefficient3 << 2) | coefficient2 >> 4;
+            for (i, simd_unit) in re.simd_units.iter().enumerate() {
+                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+                    .copy_from_slice(
+                        &SIMDUnit::commitment_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(*simd_unit),
+                    );
             }
 
-            out
+            serialized
         }
 
         _ => unreachable!(),
@@ -41,18 +45,19 @@ fn serialize<const OUTPUT_SIZE: usize>(re: PolynomialRingElement) -> [u8; OUTPUT
 
 #[inline(always)]
 pub(crate) fn serialize_vector<
+    SIMDUnit: Operations,
     const DIMENSION: usize,
     const RING_ELEMENT_SIZE: usize,
     const OUTPUT_SIZE: usize,
 >(
-    vector: [PolynomialRingElement; DIMENSION],
+    vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
     let mut offset: usize = 0;
 
     for ring_element in vector.iter() {
         serialized[offset..offset + RING_ELEMENT_SIZE]
-            .copy_from_slice(&serialize::<RING_ELEMENT_SIZE>(*ring_element));
+            .copy_from_slice(&serialize::<SIMDUnit, RING_ELEMENT_SIZE>(*ring_element));
         offset += RING_ELEMENT_SIZE;
     }
 
@@ -63,27 +68,28 @@ pub(crate) fn serialize_vector<
 mod tests {
     use super::*;
 
-    use crate::arithmetic::PolynomialRingElement;
+    use crate::{
+        polynomial::PolynomialRingElement,
+        simd::{self, traits::Operations},
+    };
 
-    #[test]
-    fn test_serialize_commitment() {
+    fn test_serialize_generic<SIMDUnit: Operations>() {
         // Test serialization when LOW_ORDER_ROUNDING_RANGE = 95_232
-        let re = PolynomialRingElement {
-            coefficients: [
-                42, 38, 3, 37, 37, 40, 2, 36, 11, 43, 37, 40, 1, 39, 20, 41, 38, 24, 41, 32, 7, 10,
-                21, 21, 25, 11, 21, 22, 33, 43, 8, 11, 20, 23, 24, 30, 22, 42, 11, 37, 31, 39, 9,
-                22, 27, 14, 39, 11, 3, 17, 25, 17, 17, 20, 32, 43, 17, 20, 23, 2, 38, 19, 16, 14,
-                38, 34, 35, 8, 39, 12, 9, 4, 4, 1, 21, 37, 22, 10, 20, 3, 36, 1, 42, 39, 18, 17, 3,
-                1, 38, 1, 5, 20, 0, 21, 39, 20, 10, 42, 10, 26, 6, 22, 12, 1, 20, 1, 43, 37, 33,
-                37, 6, 24, 32, 8, 42, 2, 32, 16, 13, 3, 33, 2, 0, 29, 4, 3, 23, 36, 6, 42, 1, 37,
-                7, 3, 12, 36, 19, 41, 42, 20, 36, 12, 11, 39, 23, 35, 29, 9, 31, 11, 19, 11, 14, 1,
-                32, 5, 6, 31, 4, 30, 8, 24, 22, 39, 8, 10, 26, 11, 25, 10, 36, 17, 43, 25, 20, 2,
-                37, 11, 21, 4, 24, 25, 5, 26, 29, 39, 3, 10, 8, 15, 40, 28, 26, 4, 30, 42, 14, 17,
-                41, 27, 8, 19, 19, 0, 3, 5, 41, 34, 39, 14, 1, 39, 9, 10, 41, 12, 24, 16, 2, 5, 33,
-                27, 27, 32, 4, 3, 9, 5, 37, 40, 38, 43, 32, 27, 34, 27, 15, 24, 4, 2, 42, 15, 9, 3,
-                17, 35, 0, 22, 43, 13, 15, 6, 38, 10, 20, 37,
-            ],
-        };
+        let coefficients = [
+            42, 38, 3, 37, 37, 40, 2, 36, 11, 43, 37, 40, 1, 39, 20, 41, 38, 24, 41, 32, 7, 10, 21,
+            21, 25, 11, 21, 22, 33, 43, 8, 11, 20, 23, 24, 30, 22, 42, 11, 37, 31, 39, 9, 22, 27,
+            14, 39, 11, 3, 17, 25, 17, 17, 20, 32, 43, 17, 20, 23, 2, 38, 19, 16, 14, 38, 34, 35,
+            8, 39, 12, 9, 4, 4, 1, 21, 37, 22, 10, 20, 3, 36, 1, 42, 39, 18, 17, 3, 1, 38, 1, 5,
+            20, 0, 21, 39, 20, 10, 42, 10, 26, 6, 22, 12, 1, 20, 1, 43, 37, 33, 37, 6, 24, 32, 8,
+            42, 2, 32, 16, 13, 3, 33, 2, 0, 29, 4, 3, 23, 36, 6, 42, 1, 37, 7, 3, 12, 36, 19, 41,
+            42, 20, 36, 12, 11, 39, 23, 35, 29, 9, 31, 11, 19, 11, 14, 1, 32, 5, 6, 31, 4, 30, 8,
+            24, 22, 39, 8, 10, 26, 11, 25, 10, 36, 17, 43, 25, 20, 2, 37, 11, 21, 4, 24, 25, 5, 26,
+            29, 39, 3, 10, 8, 15, 40, 28, 26, 4, 30, 42, 14, 17, 41, 27, 8, 19, 19, 0, 3, 5, 41,
+            34, 39, 14, 1, 39, 9, 10, 41, 12, 24, 16, 2, 5, 33, 27, 27, 32, 4, 3, 9, 5, 37, 40, 38,
+            43, 32, 27, 34, 27, 15, 24, 4, 2, 42, 15, 9, 3, 17, 35, 0, 22, 43, 13, 15, 6, 38, 10,
+            20, 37,
+        ];
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
 
         let serialized = [
             170, 57, 148, 37, 42, 144, 203, 90, 162, 193, 73, 165, 38, 150, 130, 135, 82, 85, 217,
@@ -99,24 +105,22 @@ mod tests {
             149,
         ];
 
-        assert_eq!(serialize::<192>(re), serialized);
+        assert_eq!(serialize::<SIMDUnit, 192>(re), serialized);
 
         // Test serialization when LOW_ORDER_ROUNDING_RANGE = 261,888
-        let re = PolynomialRingElement {
-            coefficients: [
-                2, 4, 8, 3, 14, 3, 10, 7, 4, 15, 13, 3, 1, 2, 9, 12, 8, 11, 12, 4, 7, 14, 9, 4, 4,
-                2, 5, 15, 14, 11, 6, 11, 10, 13, 3, 13, 9, 15, 10, 8, 14, 4, 8, 11, 11, 10, 13, 8,
-                4, 9, 3, 8, 8, 3, 4, 5, 14, 9, 13, 12, 0, 4, 4, 2, 9, 11, 7, 11, 9, 14, 1, 7, 13,
-                12, 0, 15, 14, 8, 6, 15, 15, 7, 11, 1, 11, 2, 4, 11, 10, 3, 15, 6, 7, 3, 1, 12, 0,
-                15, 7, 13, 13, 1, 9, 14, 3, 5, 0, 8, 5, 7, 5, 8, 10, 13, 13, 11, 11, 13, 1, 4, 10,
-                14, 15, 14, 12, 6, 13, 1, 7, 7, 15, 4, 2, 5, 6, 2, 7, 14, 2, 2, 4, 11, 7, 1, 5, 8,
-                9, 5, 4, 13, 8, 8, 13, 13, 15, 5, 6, 11, 11, 4, 13, 7, 11, 15, 15, 3, 12, 4, 12,
-                14, 2, 6, 9, 10, 6, 13, 15, 12, 11, 12, 2, 7, 6, 9, 9, 5, 6, 3, 4, 2, 8, 3, 10, 2,
-                8, 1, 13, 10, 12, 8, 14, 0, 5, 12, 5, 3, 7, 15, 12, 13, 3, 4, 10, 1, 13, 3, 9, 6,
-                10, 13, 4, 4, 2, 9, 0, 4, 5, 7, 14, 11, 2, 6, 3, 11, 6, 2, 0, 5, 8, 5, 9, 5, 9, 0,
-                2, 2, 3, 15, 0, 8, 11, 13, 2, 6, 11, 0,
-            ],
-        };
+        let coefficients = [
+            2, 4, 8, 3, 14, 3, 10, 7, 4, 15, 13, 3, 1, 2, 9, 12, 8, 11, 12, 4, 7, 14, 9, 4, 4, 2,
+            5, 15, 14, 11, 6, 11, 10, 13, 3, 13, 9, 15, 10, 8, 14, 4, 8, 11, 11, 10, 13, 8, 4, 9,
+            3, 8, 8, 3, 4, 5, 14, 9, 13, 12, 0, 4, 4, 2, 9, 11, 7, 11, 9, 14, 1, 7, 13, 12, 0, 15,
+            14, 8, 6, 15, 15, 7, 11, 1, 11, 2, 4, 11, 10, 3, 15, 6, 7, 3, 1, 12, 0, 15, 7, 13, 13,
+            1, 9, 14, 3, 5, 0, 8, 5, 7, 5, 8, 10, 13, 13, 11, 11, 13, 1, 4, 10, 14, 15, 14, 12, 6,
+            13, 1, 7, 7, 15, 4, 2, 5, 6, 2, 7, 14, 2, 2, 4, 11, 7, 1, 5, 8, 9, 5, 4, 13, 8, 8, 13,
+            13, 15, 5, 6, 11, 11, 4, 13, 7, 11, 15, 15, 3, 12, 4, 12, 14, 2, 6, 9, 10, 6, 13, 15,
+            12, 11, 12, 2, 7, 6, 9, 9, 5, 6, 3, 4, 2, 8, 3, 10, 2, 8, 1, 13, 10, 12, 8, 14, 0, 5,
+            12, 5, 3, 7, 15, 12, 13, 3, 4, 10, 1, 13, 3, 9, 6, 10, 13, 4, 4, 2, 9, 0, 4, 5, 7, 14,
+            11, 2, 6, 3, 11, 6, 2, 0, 5, 8, 5, 9, 5, 9, 0, 2, 2, 3, 15, 0, 8, 11, 13, 2, 6, 11, 0,
+        ];
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
 
         let serialized = [
             66, 56, 62, 122, 244, 61, 33, 201, 184, 76, 231, 73, 36, 245, 190, 182, 218, 211, 249,
@@ -128,6 +132,18 @@ mod tests {
             64, 117, 190, 98, 179, 38, 80, 88, 89, 9, 34, 243, 128, 219, 98, 11,
         ];
 
-        assert_eq!(serialize::<128>(re), serialized);
+        assert_eq!(serialize::<SIMDUnit, 128>(re), serialized);
+    }
+
+    #[cfg(not(feature = "simd256"))]
+    #[test]
+    fn test_serialize_portable() {
+        test_serialize_generic::<simd::portable::PortableSIMDUnit>();
+    }
+
+    #[cfg(feature = "simd256")]
+    #[test]
+    fn test_serialize_simd256() {
+        test_serialize_generic::<simd::avx2::AVX2SIMDUnit>();
     }
 }

@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: ["main", "dev", "*"]
   workflow_dispatch:
-  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
@@ -75,3 +74,4 @@ jobs:
       - name: 🏃🏻‍♀️ Test Release Windows x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
         run: cargo test --verbose --release --target i686-pc-windows-msvc -- --nocapture
+

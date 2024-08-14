@@ -44,6 +44,41 @@ pub fn key_generation(c: &mut Criterion) {
     init!(mlkem512, "Key Generation", c);
     init!(mlkem768, "Key Generation", c);
     init!(mlkem1024, "Key Generation", c);
+
+    #[cfg(all(
+        feature = "mlkem768",
+        feature = "pre-verification",
+        feature = "simd256"
+    ))]
+    c.bench_function("libcrux avx2 unpacked (external random)", |b| {
+        let mut seed = [0; 64];
+        rng.fill_bytes(&mut seed);
+        b.iter(|| {
+            let _kp = mlkem768::avx2::generate_key_pair_unpacked(seed);
+        })
+    });
+
+    #[cfg(all(
+        feature = "mlkem768",
+        feature = "pre-verification",
+        feature = "simd128"
+    ))]
+    c.bench_function("libcrux neon unpacked (external random)", |b| {
+        let mut seed = [0; 64];
+        rng.fill_bytes(&mut seed);
+        b.iter(|| {
+            let _kp = mlkem768::neon::generate_key_pair_unpacked(seed);
+        })
+    });
+
+    #[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+    c.bench_function("libcrux portable unpacked (external random)", |b| {
+        let mut seed = [0; 64];
+        rng.fill_bytes(&mut seed);
+        b.iter(|| {
+            let _kp = mlkem768::portable::generate_key_pair_unpacked(seed);
+        })
+    });
 }
 
 pub fn pk_validation(c: &mut Criterion) {
@@ -80,7 +115,6 @@ pub fn encapsulation(c: &mut Criterion) {
         ($name:expr, $p:path, $group:expr) => {
             $group.bench_function(format!("libcrux {} (external random)", $name), |b| {
                 use $p as p;
-
                 let mut seed1 = [0; 64];
                 OsRng.fill_bytes(&mut seed1);
                 let mut seed2 = [0; 32];
@@ -100,6 +134,62 @@ pub fn encapsulation(c: &mut Criterion) {
     init!(mlkem512, "Encapsulation", c);
     init!(mlkem768, "Encapsulation", c);
     init!(mlkem1024, "Encapsulation", c);
+
+    #[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+    c.bench_function("libcrux unpacked portable (external random)", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || mlkem768::portable::generate_key_pair_unpacked(seed1),
+            |keypair| {
+                let (_shared_secret, _ciphertext) =
+                    mlkem768::portable::encapsulate_unpacked(&keypair.public_key, seed2);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    #[cfg(all(
+        feature = "mlkem768",
+        feature = "pre-verification",
+        feature = "simd128"
+    ))]
+    c.bench_function("libcrux unpacked neon (external random)", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || mlkem768::neon::generate_key_pair_unpacked(seed1),
+            |keypair| {
+                let (_shared_secret, _ciphertext) =
+                    mlkem768::neon::encapsulate_unpacked(&keypair.public_key, seed2);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    #[cfg(all(
+        feature = "mlkem768",
+        feature = "pre-verification",
+        feature = "simd256"
+    ))]
+    c.bench_function("libcrux unpacked avx2 (external random)", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || mlkem768::avx2::generate_key_pair_unpacked(seed1),
+            |keypair| {
+                let (_shared_secret, _ciphertext) =
+                    mlkem768::avx2::encapsulate_unpacked(&keypair.public_key, seed2);
+            },
+            BatchSize::SmallInput,
+        )
+    });
 }
 
 pub fn decapsulation(c: &mut Criterion) {
@@ -107,7 +197,6 @@ pub fn decapsulation(c: &mut Criterion) {
         ($name:expr, $p:path, $group:expr) => {
             $group.bench_function(format!("libcrux {}", $name), |b| {
                 use $p as p;
-
                 let mut seed1 = [0; 64];
                 OsRng.fill_bytes(&mut seed1);
                 let mut seed2 = [0; 32];
@@ -132,6 +221,75 @@ pub fn decapsulation(c: &mut Criterion) {
     init!(mlkem512, "Decapsulation", c);
     init!(mlkem768, "Decapsulation", c);
     init!(mlkem1024, "Decapsulation", c);
+
+    #[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+    c.bench_function("libcrux unpacked portable", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || {
+                let keypair = mlkem768::portable::generate_key_pair_unpacked(seed1);
+                let (ciphertext, _shared_secret) =
+                    mlkem768::portable::encapsulate_unpacked(&keypair.public_key, seed2);
+                (keypair, ciphertext)
+            },
+            |(keypair, ciphertext)| {
+                let _shared_secret =
+                    mlkem768::portable::decapsulate_unpacked(&keypair, &ciphertext);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    #[cfg(all(
+        feature = "mlkem768",
+        feature = "pre-verification",
+        feature = "simd128"
+    ))]
+    c.bench_function("libcrux unpacked neon", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || {
+                let keypair = mlkem768::neon::generate_key_pair_unpacked(seed1);
+                let (ciphertext, _shared_secret) =
+                    mlkem768::neon::encapsulate_unpacked(&keypair.public_key, seed2);
+                (keypair, ciphertext)
+            },
+            |(keypair, ciphertext)| {
+                let _shared_secret = mlkem768::neon::decapsulate_unpacked(&keypair, &ciphertext);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    #[cfg(all(
+        feature = "mlkem768",
+        feature = "pre-verification",
+        feature = "simd256"
+    ))]
+    c.bench_function("libcrux unpacked avx2", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || {
+                let keypair = mlkem768::avx2::generate_key_pair_unpacked(seed1);
+                let (ciphertext, _shared_secret) =
+                    mlkem768::avx2::encapsulate_unpacked(&keypair.public_key, seed2);
+                (keypair, ciphertext)
+            },
+            |(keypair, ciphertext)| {
+                let _shared_secret = mlkem768::avx2::decapsulate_unpacked(&keypair, &ciphertext);
+            },
+            BatchSize::SmallInput,
+        )
+    });
 }
 
 pub fn comparisons(c: &mut Criterion) {

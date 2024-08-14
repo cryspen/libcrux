@@ -11,6 +11,10 @@ if [[ -z "$EURYDICE_HOME" ]]; then
     echo "Please set EURYDICE_HOME to the Eurydice directory" 1>&2
     exit 1
 fi
+if [[ -z "$KRML_HOME" ]]; then
+    echo "Please set KRML_HOME to the KaRaMeL directory" 1>&2
+    exit 1
+fi
 
 portable_only=0
 no_hacl=0
@@ -21,6 +25,7 @@ out=c
 glue=$EURYDICE_HOME/include/eurydice_glue.h
 features="--cargo-arg=--features=pre-verification"
 eurydice_glue=1
+karamel_include=1
 unrolling=16
 
 # Parse command line arguments.
@@ -35,7 +40,9 @@ while [ $# -gt 0 ]; do
     --out) out="$2"; shift ;;
     --glue) glue="$2"; shift ;;
     --mlkem768) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
+    --kyber768) features="${features} --cargo-arg=--features=kyber" ;;
     --no-glue) eurydice_glue=0 ;;
+    --no-karamel_include) karamel_include=0 ;;
     --no-unrolling) unrolling=0 ;;
     esac
     shift
@@ -73,27 +80,18 @@ if [[ "$clean" = 1 ]]; then
     rm -rf internal/*.h
 fi
 
-echo "Running eurydice ..."
-$EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
-if [[ "$eurydice_glue" = 1 ]]; then
-    cp $EURYDICE_HOME/include/eurydice_glue.h .
-fi
-
-clang-format --style=Google -i *.c *.h
-clang-format --style=Google -i internal/*.h
-clang-format --style=Google -i intrinsics/*.h
-
 # Write out infos about the used tools
 [[ -z "$CHARON_REV" && -d $CHARON_HOME/.git ]] && export CHARON_REV=$(git -C $CHARON_HOME rev-parse HEAD)
 [[ -z "$EURYDICE_REV" && -d $EURYDICE_HOME/.git ]] && export EURYDICE_REV=$(git -C $EURYDICE_HOME rev-parse HEAD)
 [[ -z "$KRML_REV" && -d $KRML_HOME/.git ]] && export KRML_REV=$(git -C $KRML_HOME rev-parse HEAD)
+[[ -z "$LIBCRUX_REV" ]] && export LIBCRUX_REV=$(git rev-parse HEAD)
 if [[ -z "$FSTAR_REV" && -d $FSTAR_HOME/.git ]]; then
     export FSTAR_REV=$(git -C $FSTAR_HOME rev-parse HEAD)
 else
     export FSTAR_REV=$(fstar.exe --version | grep commit | sed 's/commit=\(.*\)/\1/')
 fi
 rm -f code_gen.txt
-echo "This code was generated with the following tools:" >> code_gen.txt
+echo "This code was generated with the following revisions:" >> code_gen.txt
 echo -n "Charon: " >> code_gen.txt
 echo "$CHARON_REV" >> code_gen.txt
 echo -n "Eurydice: " >> code_gen.txt
@@ -102,3 +100,35 @@ echo -n "Karamel: " >> code_gen.txt
 echo "$KRML_REV" >> code_gen.txt
 echo -n "F*: " >> code_gen.txt
 echo "$FSTAR_REV" >> code_gen.txt
+echo -n "Libcrux: " >> code_gen.txt
+echo "$LIBCRUX_REV" >> code_gen.txt
+
+# Generate header
+cat spdx-header.txt > header.txt
+sed -e 's/^/ * /' code_gen.txt >> header.txt
+echo " */" >> header.txt
+
+# Run eurydice to extract the C code
+echo "Running eurydice ..."
+echo $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
+    --header header.txt \
+    ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+$EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
+    --header header.txt \
+    ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+if [[ "$eurydice_glue" = 1 ]]; then
+    cp $EURYDICE_HOME/include/eurydice_glue.h .
+fi
+
+if [[ "$karamel_include" = 1 ]]; then
+    echo "Copying karamel/include ..."
+    mkdir -p karamel
+    cp -R $KRML_HOME/include karamel/
+fi
+
+find . -type f -name '*.c' -and -not -path '*_deps*' -exec clang-format --style=Google -i "{}" \;
+find . -type f -name '*.h' -and -not -path '*_deps*' -exec clang-format --style=Google -i "{}" \;
+if [ -d "internal" ]; then
+    clang-format --style=Google -i internal/*.h
+fi
+clang-format --style=Google -i intrinsics/*.h
