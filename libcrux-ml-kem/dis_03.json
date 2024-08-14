@@ -1,5 +1,5 @@
 {
-  "lintName": "ek_seed_sm",
+  "lintName": "e_ml_kem_ek_seed_sl_entries",
   "algorithm": "MlKem768",
   "valid": false,
   "type": "PublicKey",
