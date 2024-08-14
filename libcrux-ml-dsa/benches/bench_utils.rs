@@ -11,17 +11,17 @@ pub(crate) fn random_array<const L: usize>() -> [u8; L] {
 #[allow(unused)]
 pub(crate) fn print_time(label: &str, d: std::time::Duration) {
     let micros = d.as_micros();
-    let time = if micros < (1_000 * ITERATIONS as u128) {
+    let time = if micros < MILLI_PER_ITERATION_THRESHOLD {
         format!("{} μs", micros / ITERATIONS as u128)
-    } else if micros < (1_000_000 * ITERATIONS as u128) {
+    } else if micros < SECOND_PER_ITERATION_THRESHOLD {
         format!(
             "{:.2} ms",
-            (micros as f64 / (1_000_f64 * ITERATIONS as f64))
+            (micros as f64 / (MICROS_PER_MILLI * ITERATIONS as f64))
         )
     } else {
         format!(
             "{:.2}s",
-            (micros as f64 / (1_000_000_f64 * ITERATIONS as f64))
+            (micros as f64 / (MICROS_PER_SECOND * ITERATIONS as f64))
         )
     };
     let space = if label.len() < 6 {
@@ -33,10 +33,14 @@ pub(crate) fn print_time(label: &str, d: std::time::Duration) {
     println!("{label}:{space}{time}");
 }
 
-#[allow(unused)]
 pub(crate) const ITERATIONS: usize = 100_000;
 #[allow(unused)]
 pub(crate) const WARMUP_ITERATIONS: usize = 1_000;
+
+pub(crate) const MICROS_PER_MILLI: f64 = 1_000.0;
+pub(crate) const MICROS_PER_SECOND: f64 = 1_000_000.0;
+pub(crate) const MILLI_PER_ITERATION_THRESHOLD: u128 = 1_000 * ITERATIONS as u128;
+pub(crate) const SECOND_PER_ITERATION_THRESHOLD: u128 = 1_000_000 * ITERATIONS as u128;
 
 // A benchmarking macro to avoid copying memory and skewing the results.
 #[macro_export]
