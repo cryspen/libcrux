@@ -11,13 +11,56 @@ use crate::constants::SHARED_SECRET_SIZE;
 // XXX: We have to disable this for C extraction for now. See eurydice/issues#37
 
 /// Return 1 if `value` is not zero and 0 otherwise.
+#[hax_lib::ensures(|result| fstar!("Hax_lib.implies ($value =. 0uy <: bool)
+    (fun temp_0_ ->
+        let _:Prims.unit = temp_0_ in
+        $result =. 0uy <: bool) &&
+    Hax_lib.implies ($value <>. 0uy <: bool)
+    (fun temp_0_ ->
+        let _:Prims.unit = temp_0_ in
+        $result =. 1uy <: bool)"))]
 fn inz(value: u8) -> u8 {
+    let orig_value = value;
     let value = value as u16;
-    let result = ((value | (!value).wrapping_add(1)) >> 8) & 1;
-    result as u8
+    let result = ((!value).wrapping_add(1) >> 8) as u8;
+    let res = result & 1;
+    hax_lib::fstar!("if v $orig_value = 0 then  (
+        assert($value == zero);
+        lognot_lemma $value;
+        assert((~.$value +. 1us) == zero);
+        assert((Core.Num.impl__u16__wrapping_add (~.$value <: u16) 1us <: u16) == zero);
+        logor_lemma $value zero;
+        assert(($value |. (Core.Num.impl__u16__wrapping_add (~.$value <: u16) 1us <: u16) <: u16) == $value);
+        assert (v $result == v (($value >>! 8l)));
+        assert ((v $value / pow2 8) == 0);
+        assert ($result == 0uy);
+        logand_lemma 1uy $result;
+        assert ($res == 0uy))
+    else (
+        assert (v $value <> 0);
+        lognot_lemma $value;
+        assert (v (~.$value) = pow2 16 - 1 - v $value);
+        assert (v (~.$value) + 1 = pow2 16 - v $value);
+        assert (v ($value) <= pow2 8 - 1);
+        assert ((v (~.$value) + 1) = (pow2 16 - pow2 8) + (pow2 8 - v $value));
+        assert ((v (~.$value) + 1) = (pow2 8 - 1) * pow2 8 + (pow2 8 - v $value));
+        assert ((v (~.$value) + 1)/pow2 8 = (pow2 8 - 1));
+        assert (v ((Core.Num.impl__u16__wrapping_add (~.$value <: u16) 1us <: u16) >>! 8l) = pow2 8 - 1);
+        assert ($result = ones);
+        logand_lemma 1uy $result;
+        assert ($res = 1uy))");
+    res
 }
 
 #[inline(never)] // Don't inline this to avoid that the compiler optimizes this out.
+#[hax_lib::ensures(|result| fstar!("Hax_lib.implies ($value =. 0uy <: bool)
+    (fun temp_0_ ->
+        let _:Prims.unit = temp_0_ in
+        $result =. 0uy <: bool) &&
+    Hax_lib.implies ($value <>. 0uy <: bool)
+    (fun temp_0_ ->
+        let _:Prims.unit = temp_0_ in
+        $result =. 1uy <: bool)"))]
 fn is_non_zero(value: u8) -> u8 {
     #[cfg(eurydice)]
     return inz(value);
@@ -31,6 +74,14 @@ fn is_non_zero(value: u8) -> u8 {
 #[cfg_attr(hax, hax_lib::requires(
     lhs.len() == rhs.len()
 ))]
+#[hax_lib::ensures(|result| fstar!("Hax_lib.implies ($lhs =. $rhs <: bool)
+    (fun temp_0_ ->
+        let _:Prims.unit = temp_0_ in
+        $result =. 0uy <: bool) &&
+    Hax_lib.implies ($lhs <>. $rhs <: bool)
+    (fun temp_0_ ->
+        let _:Prims.unit = temp_0_ in
+        $result =. 1uy <: bool)"))]
 fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
     let mut r: u8 = 0;
     for i in 0..lhs.len() {
