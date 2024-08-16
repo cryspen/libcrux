@@ -162,8 +162,10 @@ fn generate_keypair<
     MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key))
 }
 
-
+// For some reason F* manages to assert the post-condition but fails to verify it
+// as a part of function signature 
 #[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
@@ -225,13 +227,11 @@ fn encapsulate<
 
     let ciphertext = MlKemCiphertext::from(ciphertext);
     let shared_secret_array = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, &ciphertext);
-    // For some reason F* manages to assert the post-condition but fails to verify it
-    // as a part of function signature 
-    hax_lib::fstar!("admit() (* Panic Free *)");
     (ciphertext, shared_secret_array)
 }
 
 #[hax_lib::fstar::options("--z3rlimit 500")]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
     $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
@@ -274,7 +274,6 @@ pub(crate) fn decapsulate<
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
-    hax_lib::fstar!("admit() (* takes too long on CI *)");
     let (ind_cpa_secret_key, secret_key) = private_key.value.split_at(CPA_SECRET_KEY_SIZE);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(PUBLIC_KEY_SIZE);
     let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
