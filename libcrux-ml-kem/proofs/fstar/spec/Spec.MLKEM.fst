@@ -112,6 +112,26 @@ type polynomial (ntt:bool) = t_Array field_element (sz 256)
 type vector (r:rank) (ntt:bool) = t_Array (polynomial ntt) r
 type matrix (r:rank) (ntt:bool) = t_Array (vector r ntt) r
 
+type t_PolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
+
+let int_to_spec_fe (m:int) : field_element = 
+    let m_v = m % v v_FIELD_MODULUS in
+    assert (m_v > -  v v_FIELD_MODULUS);
+    if m_v < 0 then
+      m_v + v v_FIELD_MODULUS
+    else m_v
+
+let to_spec_fe (m:i32) : field_element = 
+    int_to_spec_fe (v m)
+
+let to_spec_poly (m:t_PolynomialRingElement) : (polynomial false) =
+    createi #field_element (sz 256) (fun i -> to_spec_fe (m.f_coefficients.[i]))
+
+let to_spec_vector (#r:rank)
+                   (m:t_Array (t_PolynomialRingElement) r)
+                   : (vector r false) =
+    createi r (fun i -> to_spec_poly (m.[i]))
+
 val field_add: field_element -> field_element -> field_element
 let field_add a b = (a + b) % v v_FIELD_MODULUS
 
