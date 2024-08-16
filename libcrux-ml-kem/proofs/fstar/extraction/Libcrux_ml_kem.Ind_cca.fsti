@@ -140,9 +140,9 @@ let impl: t_Variant t_MlKem =
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (shared_secret: t_Slice u8)
         (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-        (out1: t_Array u8 (sz 32))
+        (out: t_Array u8 (sz 32))
         ->
-        out1 == shared_secret);
+        out == shared_secret);
     f_kdf
     =
     (fun
@@ -155,9 +155,14 @@ let impl: t_Variant t_MlKem =
         (shared_secret: t_Slice u8)
         (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
         ->
-        let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
-        let out:t_Array u8 (sz 32) = Core.Slice.impl__copy_from_slice #u8 out shared_secret in
-        out);
+        Core.Result.impl__unwrap #(t_Array u8 (sz 32))
+          #Core.Array.t_TryFromSliceError
+          (Core.Convert.f_try_into #(t_Slice u8)
+              #(t_Array u8 (sz 32))
+              #FStar.Tactics.Typeclasses.solve
+              shared_secret
+            <:
+            Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError));
     f_entropy_preprocess_pre
     =
     (fun
@@ -178,7 +183,7 @@ let impl: t_Variant t_MlKem =
           i3:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (randomness: t_Slice u8)
-        (out1: t_Array u8 (sz 32))
+        (out: t_Array u8 (sz 32))
         ->
         true);
     f_entropy_preprocess
@@ -191,9 +196,14 @@ let impl: t_Variant t_MlKem =
         Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
       (randomness: t_Slice u8)
       ->
-      let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
-      let out:t_Array u8 (sz 32) = Core.Slice.impl__copy_from_slice #u8 out randomness in
-      out
+      Core.Result.impl__unwrap #(t_Array u8 (sz 32))
+        #Core.Array.t_TryFromSliceError
+        (Core.Convert.f_try_into #(t_Slice u8)
+            #(t_Array u8 (sz 32))
+            #FStar.Tactics.Typeclasses.solve
+            randomness
+          <:
+          Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError)
   }
 
 val decapsulate

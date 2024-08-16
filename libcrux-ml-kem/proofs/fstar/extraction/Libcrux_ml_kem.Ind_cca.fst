@@ -207,6 +207,7 @@ let decapsulate
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
      =
+  let _:Prims.unit = admit () in
   let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
       (Rust_primitives.unsize private_key.Libcrux_ml_kem.Types.f_value <: t_Slice u8)
@@ -313,20 +314,16 @@ let decapsulate
       shared_secret
       ciphertext
   in
-  let shared_secret:t_Array u8 (sz 32) =
-    Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_select_shared_secret_in_constant_time (Core.Convert.f_as_ref
-          #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-          #(t_Slice u8)
-          #FStar.Tactics.Typeclasses.solve
-          ciphertext
-        <:
-        t_Slice u8)
-      (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
-      (Rust_primitives.unsize shared_secret <: t_Slice u8)
-      (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
-  in
-  let _:Prims.unit = admit () in
-  shared_secret
+  Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_select_shared_secret_in_constant_time (Core.Convert.f_as_ref
+        #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+        #(t_Slice u8)
+        #FStar.Tactics.Typeclasses.solve
+        ciphertext
+      <:
+      t_Slice u8)
+    (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
+    (Rust_primitives.unsize shared_secret <: t_Slice u8)
+    (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
 
 #pop-options
 
