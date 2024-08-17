@@ -1,5 +1,5 @@
 module Spec.MLKEM
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 30"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open FStar.Mul
 open Core
 
