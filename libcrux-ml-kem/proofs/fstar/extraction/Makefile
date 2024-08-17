@@ -1,5 +1,5 @@
-ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.fst \
-	      Libcrux_ml_kem.Ind_cca.Unpacked.fst \
+ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
+	      Libcrux_ml_kem.Ind_cca.fst \
               Libcrux_ml_kem.Ind_cpa.fst \
               Libcrux_ml_kem.Ind_cpa.fsti \
               Libcrux_ml_kem.Invert_ntt.fst \
@@ -30,5 +30,5 @@ ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.fst \
               Libcrux_ml_kem.Vector.Portable.Vector_type.fst \
               Libcrux_ml_kem.Vector.Traits.fst
 
-FSTAR_INCLUDE_DIRS_EXTRA = $(shell git rev-parse --show-toplevel)/libcrux-ml-kem/proofs/fstar/spec $(shell git rev-parse --show-toplevel)/../hacl-star/specs
+FSTAR_INCLUDE_DIRS_EXTRA = $(shell git rev-parse --show-toplevel)/libcrux-ml-kem/proofs/fstar/spec
 include $(shell git rev-parse --show-toplevel)/fstar-helpers/Makefile.template
