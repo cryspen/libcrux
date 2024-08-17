@@ -38,17 +38,17 @@ type t_PolynomialRingElement
 
 let to_spec_poly_t (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial false =
+    (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
     admit()
 
 let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (m:t_Array (t_PolynomialRingElement v_Vector) r) : Spec.MLKEM.vector r false =
+    (m:t_Array (t_PolynomialRingElement v_Vector) r) : Spec.MLKEM.vector r =
     createi r (fun i -> to_spec_poly_t #v_Vector (m.[i]))
 
 let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r false =
+    (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r =
     createi r (fun i -> to_spec_vector_t #r #v_Vector (m.[i]))
 
 val impl__ZERO:

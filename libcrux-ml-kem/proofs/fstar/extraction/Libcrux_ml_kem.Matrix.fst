@@ -177,7 +177,7 @@ let compute_ring_element_v
     Libcrux_ml_kem.Polynomial.impl__add_message_error_reduce #v_Vector error_2_ message result
   in
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
-  let _:Prims.unit = admit () (* Panic freedom *) in
+  let _:Prims.unit = admit () in
   result
 
 #push-options "--admit_smt_queries true"
@@ -356,7 +356,7 @@ let compute_message
     Libcrux_ml_kem.Polynomial.impl__subtract_reduce #v_Vector v result
   in
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
-  let _:Prims.unit = admit () (* Panic freedom *) in
+  let _:Prims.unit = admit () in
   result
 
 #push-options "--admit_smt_queries true"

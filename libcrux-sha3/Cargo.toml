@@ -17,7 +17,7 @@ libcrux-intrinsics = { version = "0.0.2-alpha.3", path = "../libcrux-intrinsics"
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
 [target.'cfg(hax)'.dependencies]
-hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
+hax-lib.workspace = true
 
 [features]
 simd128 = []

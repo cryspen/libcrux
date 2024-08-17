@@ -140,9 +140,9 @@ let impl: t_Variant t_MlKem =
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (shared_secret: t_Slice u8)
         (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-        (out1: t_Array u8 (sz 32))
+        (out: t_Array u8 (sz 32))
         ->
-        out1 == shared_secret);
+        out == shared_secret);
     f_kdf
     =
     (fun
@@ -155,9 +155,14 @@ let impl: t_Variant t_MlKem =
         (shared_secret: t_Slice u8)
         (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
         ->
-        let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
-        let out:t_Array u8 (sz 32) = Core.Slice.impl__copy_from_slice #u8 out shared_secret in
-        out);
+        Core.Result.impl__unwrap #(t_Array u8 (sz 32))
+          #Core.Array.t_TryFromSliceError
+          (Core.Convert.f_try_into #(t_Slice u8)
+              #(t_Array u8 (sz 32))
+              #FStar.Tactics.Typeclasses.solve
+              shared_secret
+            <:
+            Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError));
     f_entropy_preprocess_pre
     =
     (fun
@@ -178,7 +183,7 @@ let impl: t_Variant t_MlKem =
           i3:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (randomness: t_Slice u8)
-        (out1: t_Array u8 (sz 32))
+        (out: t_Array u8 (sz 32))
         ->
         true);
     f_entropy_preprocess
@@ -191,9 +196,14 @@ let impl: t_Variant t_MlKem =
         Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
       (randomness: t_Slice u8)
       ->
-      let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
-      let out:t_Array u8 (sz 32) = Core.Slice.impl__copy_from_slice #u8 out randomness in
-      out
+      Core.Result.impl__unwrap #(t_Array u8 (sz 32))
+        #Core.Array.t_TryFromSliceError
+        (Core.Convert.f_try_into #(t_Slice u8)
+            #(t_Array u8 (sz 32))
+            #FStar.Tactics.Typeclasses.solve
+            randomness
+          <:
+          Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError)
   }
 
 val decapsulate
@@ -223,7 +233,10 @@ val decapsulate
       (ensures
         fun result ->
           let result:t_Array u8 (sz 32) = result in
-          result == Spec.MLKEM.ind_cca_decapsulate v_K private_key.f_value ciphertext.f_value)
+          let expected, valid =
+            Spec.MLKEM.ind_cca_decapsulate v_K private_key.f_value ciphertext.f_value
+          in
+          valid ==> result == expected)
 
 val encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
@@ -252,8 +265,8 @@ val encapsulate
           =
             result
           in
-          (result._1.f_value, result._2) ==
-          Spec.MLKEM.ind_cca_encapsulate v_K public_key.f_value randomness)
+          let expected, valid = Spec.MLKEM.ind_cca_encapsulate v_K public_key.f_value randomness in
+          valid ==> (result._1.f_value, result._2) == expected)
 
 /// Packed API
 /// Generate a key pair.
@@ -279,5 +292,5 @@ val generate_keypair
           let result:Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE =
             result
           in
-          (result.f_sk.f_value, result.f_pk.f_value) ==
-          Spec.MLKEM.ind_cca_generate_keypair v_K randomness)
+          let expected, valid = Spec.MLKEM.ind_cca_generate_keypair v_K randomness in
+          valid ==> (result.f_sk.f_value, result.f_pk.f_value) == expected)

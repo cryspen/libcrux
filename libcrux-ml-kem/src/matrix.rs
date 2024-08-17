@@ -56,7 +56,7 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
         let u_spec = to_spec_vector_t $u_as_ntt in
         let v_spec = to_spec_poly_t $v in
         to_spec_poly_t $res ==
-        Spec.MLKEM.(poly_sub v_spec (poly_inv_ntt #$K (vector_dot_product_ntt #$K secret_spec u_spec)))")
+        Spec.MLKEM.(poly_sub v_spec (poly_inv_ntt (vector_dot_product_ntt #$K secret_spec u_spec)))")
 )]
 pub(crate) fn compute_message<const K: usize, Vector: Operations>(
     v: &PolynomialRingElement<Vector>,

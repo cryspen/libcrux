@@ -5,6 +5,7 @@ benches/boringssl/build
 proofs/fstar/extraction/.depend
 proofs/fstar/extraction/#*#
 proofs/fstar/extraction/.#*
+hax.fst.config.json
 fuzz/corpus
 fuzz/artifacts
 proofs/fstar/extraction/.cache

@@ -191,7 +191,7 @@ let validate_public_key
   in
   public_key =. public_key_serialized
 
-#push-options "--z3rlimit 150"
+#push-options "--z3rlimit 500"
 
 let decapsulate
       (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
@@ -325,8 +325,9 @@ let decapsulate
       (Rust_primitives.unsize shared_secret <: t_Slice u8)
       (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
   in
+  let result:t_Array u8 (sz 32) = shared_secret in
   let _:Prims.unit = admit () in
-  shared_secret
+  result
 
 #pop-options
 
@@ -419,10 +420,13 @@ let encapsulate
       shared_secret
       ciphertext
   in
+  let result:(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32)) =
+    ciphertext, shared_secret_array
+    <:
+    (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+  in
   let _:Prims.unit = admit () in
-  ciphertext, shared_secret_array
-  <:
-  (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+  result
 
 #pop-options
 

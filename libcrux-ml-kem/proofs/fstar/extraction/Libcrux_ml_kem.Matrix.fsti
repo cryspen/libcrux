@@ -95,7 +95,7 @@ val compute_message
           let v_spec = to_spec_poly_t v in
           to_spec_poly_t res ==
           Spec.MLKEM.(poly_sub v_spec
-              (poly_inv_ntt #v_K (vector_dot_product_ntt #v_K secret_spec u_spec))))
+              (poly_inv_ntt (vector_dot_product_ntt #v_K secret_spec u_spec))))
 
 val sample_matrix_A
       (v_K: usize)

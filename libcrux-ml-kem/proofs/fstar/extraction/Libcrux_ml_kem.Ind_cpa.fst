@@ -345,7 +345,7 @@ let deserialize_then_decompress_u
           u_as_ntt)
   in
   let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = u_as_ntt in
-  let _:Prims.unit = admit () (* Panic freedom *) in
+  let _:Prims.unit = admit () in
   result
 
 let deserialize_secret_key
@@ -399,7 +399,7 @@ let deserialize_secret_key
   let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     secret_as_ntt
   in
-  let _:Prims.unit = admit () (* Panic freedom *) in
+  let _:Prims.unit = admit () in
   result
 
 #push-options "--admit_smt_queries true"
@@ -533,7 +533,7 @@ let serialize_public_key
         t_Slice u8)
   in
   let result:t_Array u8 v_PUBLIC_KEY_SIZE = public_key_serialized in
-  let _:Prims.unit = admit () (* Panic freedom *) in
+  let _:Prims.unit = admit () in
   result
 
 #push-options "--admit_smt_queries true"
@@ -599,7 +599,7 @@ let decrypt
       secret_key_unpacked
       ciphertext
   in
-  let _:Prims.unit = admit () (* Panic freedom *) in
+  let _:Prims.unit = admit () in
   result
 
 #push-options "--admit_smt_queries true"
@@ -767,7 +767,7 @@ let encrypt
       v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
       v_ETA2_RANDOMNESS_SIZE #v_Vector #v_Hasher public_key_unpacked message randomness
   in
-  let _:Prims.unit = admit () (* Panic freedom *) in
+  let _:Prims.unit = admit () in
   result
 
 #push-options "--admit_smt_queries true"
@@ -892,5 +892,5 @@ let generate_keypair
     <:
     (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
   in
-  let _:Prims.unit = admit () (* Panic freedom *) in
+  let _:Prims.unit = admit () in
   result
