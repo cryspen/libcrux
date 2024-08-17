@@ -571,8 +571,6 @@ let decrypt_unpacked
 
 #pop-options
 
-#push-options "--admit_smt_queries true"
-
 let decrypt
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
           usize)
@@ -591,16 +589,18 @@ let decrypt
     <:
     Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector
   in
-  decrypt_unpacked v_K
-    v_CIPHERTEXT_SIZE
-    v_VECTOR_U_ENCODED_SIZE
-    v_U_COMPRESSION_FACTOR
-    v_V_COMPRESSION_FACTOR
-    #v_Vector
-    secret_key_unpacked
-    ciphertext
-
-#pop-options
+  let result:t_Array u8 (sz 32) =
+    decrypt_unpacked v_K
+      v_CIPHERTEXT_SIZE
+      v_VECTOR_U_ENCODED_SIZE
+      v_U_COMPRESSION_FACTOR
+      v_V_COMPRESSION_FACTOR
+      #v_Vector
+      secret_key_unpacked
+      ciphertext
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #push-options "--admit_smt_queries true"
 
@@ -707,8 +707,6 @@ let encrypt_unpacked
 
 #pop-options
 
-#push-options "--admit_smt_queries true"
-
 let encrypt
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
@@ -764,11 +762,13 @@ let encrypt
     <:
     Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector
   in
-  encrypt_unpacked v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN
-    v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
-    v_ETA2_RANDOMNESS_SIZE #v_Vector #v_Hasher public_key_unpacked message randomness
-
-#pop-options
+  let result:t_Array u8 v_CIPHERTEXT_SIZE =
+    encrypt_unpacked v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN
+      v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
+      v_ETA2_RANDOMNESS_SIZE #v_Vector #v_Hasher public_key_unpacked message randomness
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #push-options "--admit_smt_queries true"
 
@@ -852,8 +852,6 @@ let generate_keypair_unpacked
 
 #pop-options
 
-#push-options "--admit_smt_queries true"
-
 let generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
@@ -889,8 +887,10 @@ let generate_keypair
       #v_Vector
       sk.Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
   in
-  secret_key_serialized, public_key_serialized
-  <:
-  (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
-
-#pop-options
+  let result:(t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE) =
+    secret_key_serialized, public_key_serialized
+    <:
+    (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result

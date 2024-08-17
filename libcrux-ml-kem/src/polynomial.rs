@@ -16,6 +16,15 @@ pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
 
 #[cfg_attr(eurydice, derive(Clone, Copy))]
 #[cfg_attr(not(eurydice), derive(Clone))]
+#[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_array_poly_t (#v_Vector: Type0)
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (#r:Spec.MLKEM.rank)
+    (m:t_Array (t_PolynomialRingElement v_Vector) r) =
+    createi r (fun i -> to_spec_poly_t #v_Vector (m.[i]))"))]
+#[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_poly_t (#v_Vector: Type0)
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial false =
+    admit()"))]
 pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
