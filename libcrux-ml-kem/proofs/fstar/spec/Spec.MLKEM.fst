@@ -106,7 +106,7 @@ type t_MLKEMSharedSecret = t_Array u8 (v_SHARED_SECRET_SIZE)
 
 assume val sample_max: n:usize{v n < pow2 32 /\ v n >= 128 * 3 /\ v n % 3 = 0}
 
-val sample_polynomial_ntt: seed:t_Array u8 (sz 34) -> (polynomial true & bool)
+val sample_polynomial_ntt: seed:t_Array u8 (sz 34) -> (polynomial & bool)
 let sample_polynomial_ntt seed =
   let randomness = v_XOF sample_max seed in
   let bv = bytes_to_bits randomness in
@@ -114,10 +114,11 @@ let sample_polynomial_ntt seed =
   let bv: bit_vec ((v (sz ((v sample_max / 3) * 2))) * 12) = retype_bit_vector bv in
   let i16s = bit_vec_to_nat_array #(sz ((v sample_max / 3) * 2)) 12 bv in
   assert ((v sample_max / 3) * 2 >= 256);
-  let poly0: polynomial true = Seq.create 256 0 in
+  let poly0: polynomial = Seq.create 256 0 in
+  let index_t = n:nat{n <= 256} in
   let (sampled, poly1) =
-    repeati #((n:nat{n <= 256}) & polynomial true) (sz ((v sample_max / 3) * 2))
-      (fun i (sampled,acc) -> 
+    repeati #(index_t & polynomial) (sz ((v sample_max / 3) * 2))
+      (fun i (sampled,acc) ->
         if sampled < 256 then
           let sample = Seq.index i16s (v i) in 
           if sample < 3329 then
@@ -127,13 +128,13 @@ let sample_polynomial_ntt seed =
       (0,poly0) in
   if sampled < 256 then poly0, false else poly1, true
 
-let sample_polynomial_ntt_at_index (seed:t_Array u8 (sz 32)) (i j: (x:usize{v x <= 4})) : polynomial true & bool =
+let sample_polynomial_ntt_at_index (seed:t_Array u8 (sz 32)) (i j: (x:usize{v x <= 4})) : polynomial & bool =
     let seed34 = Seq.append seed (Seq.create 2 0uy) in
     let seed34 = Rust_primitives.Hax.update_at seed34 (sz 32) (mk_int #u8_inttype (v i)) in
     let seed34 = Rust_primitives.Hax.update_at seed34 (sz 33) (mk_int #u8_inttype (v j)) in
     sample_polynomial_ntt seed34
 
-val sample_matrix_A_ntt: #r:rank -> seed:t_Array u8 (sz 32) -> (matrix r true & bool)
+val sample_matrix_A_ntt: #r:rank -> seed:t_Array u8 (sz 32) -> (matrix r & bool)
 let sample_matrix_A_ntt #r seed = 
   let m = 
     createi r (fun i -> 
@@ -148,36 +149,36 @@ let sample_matrix_A_ntt #r seed =
         b && v) b) true in
   (m, sufficient_randomness)
 
-assume val sample_poly_cbd: v_ETA:usize{v v_ETA == 2 \/ v v_ETA == 3} -> t_Array u8 (v_ETA *! sz 64) -> polynomial false
+assume val sample_poly_cbd: v_ETA:usize{v v_ETA == 2 \/ v v_ETA == 3} -> t_Array u8 (v_ETA *! sz 64) -> polynomial
 
 open Rust_primitives.Integers
 
-val sample_poly_cbd2: #r:rank -> seed:t_Array u8 (sz 32) -> domain_sep:usize{v domain_sep < 256} -> polynomial false
+val sample_poly_cbd2: #r:rank -> seed:t_Array u8 (sz 32) -> domain_sep:usize{v domain_sep < 256} -> polynomial
 let sample_poly_cbd2 #r seed domain_sep =
   let prf_input = Seq.append seed (Seq.create 1 (mk_int #u8_inttype (v domain_sep))) in
   let prf_output = v_PRF (v_ETA2_RANDOMNESS_SIZE r) prf_input in
   sample_poly_cbd (v_ETA2 r) prf_output
 
-val sample_poly_cbd1: #r:rank -> seed:t_Array u8 (sz 32) -> domain_sep:usize{v domain_sep < 256} -> polynomial false
+val sample_poly_cbd1: #r:rank -> seed:t_Array u8 (sz 32) -> domain_sep:usize{v domain_sep < 256} -> polynomial
 let sample_poly_cbd1 #r seed domain_sep =
   let prf_input = Seq.append seed (Seq.create 1 (mk_int #u8_inttype (v domain_sep))) in
   let prf_output = v_PRF (v_ETA1_RANDOMNESS_SIZE r) prf_input in
   sample_poly_cbd (v_ETA1 r) prf_output
 
-let sample_vector_cbd1 (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r true =
+let sample_vector_cbd1 (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r =
     createi r (fun i ->  sample_poly_cbd1 #r seed (domain_sep +! i))
 
-let sample_vector_cbd2 (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r true =
+let sample_vector_cbd2 (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r =
     createi r (fun i ->  sample_poly_cbd2 #r seed (domain_sep +! i))
 
-let sample_vector_cbd_then_ntt (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r true =
+let sample_vector_cbd_then_ntt (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r =
     vector_ntt (sample_vector_cbd1 #r seed domain_sep)
 
-let vector_encode_12 (#r:rank) (#ntt:bool) (v: vector r ntt): t_Array u8 (v_T_AS_NTT_ENCODED_SIZE r)
+let vector_encode_12 (#r:rank) (v: vector r) : t_Array u8 (v_T_AS_NTT_ENCODED_SIZE r)
   = let s: t_Array (t_Array _ (sz 384)) r = map_array (byte_encode 12) (coerce_vector_12 v) in
     flatten s
 
-let vector_decode_12 (#r:rank) (#ntt:bool) (arr: t_Array u8 (v_T_AS_NTT_ENCODED_SIZE r)): vector r ntt
+let vector_decode_12 (#r:rank) (arr: t_Array u8 (v_T_AS_NTT_ENCODED_SIZE r)): vector r
   = createi r (fun block -> 
       let block_size = (sz (32 * 12)) in
       let slice = Seq.slice arr (v block * v block_size) 
@@ -185,17 +186,17 @@ let vector_decode_12 (#r:rank) (#ntt:bool) (arr: t_Array u8 (v_T_AS_NTT_ENCODED_
       byte_decode 12 slice
     )
 
-let compress_then_encode_message #ntt (p:polynomial ntt) : t_Array u8 v_SHARED_SECRET_SIZE
+let compress_then_encode_message (p:polynomial) : t_Array u8 v_SHARED_SECRET_SIZE
   = compress_then_byte_encode 1 p
 
-let decode_then_decompress_message #ntt (b:t_Array u8 v_SHARED_SECRET_SIZE): polynomial ntt
+let decode_then_decompress_message (b:t_Array u8 v_SHARED_SECRET_SIZE): polynomial
   = byte_decode_then_decompress 1 b
 
-let compress_then_encode_u (#r:rank) (#ntt:bool) (vec: vector r ntt): t_Array u8 (v_C1_SIZE r)
+let compress_then_encode_u (#r:rank) (vec: vector r): t_Array u8 (v_C1_SIZE r)
   = let d = v (v_VECTOR_U_COMPRESSION_FACTOR r) in
     flatten (map_array (compress_then_byte_encode d) vec)
 
-let decode_then_decompress_u (#r:rank) (#ntt:bool) (arr: t_Array u8 (v_C1_SIZE r)): vector r ntt
+let decode_then_decompress_u (#r:rank) (arr: t_Array u8 (v_C1_SIZE r)): vector r
   = let d = v_VECTOR_U_COMPRESSION_FACTOR r in
     createi r (fun block -> 
       let block_size = v_C1_BLOCK_SIZE r in
@@ -204,10 +205,10 @@ let decode_then_decompress_u (#r:rank) (#ntt:bool) (arr: t_Array u8 (v_C1_SIZE r
       byte_decode_then_decompress (v d) slice
     )
 
-let compress_then_encode_v (#r:rank) (#ntt:bool): polynomial ntt -> t_Array u8 (v_C2_SIZE r)
+let compress_then_encode_v (#r:rank): polynomial -> t_Array u8 (v_C2_SIZE r)
   = compress_then_byte_encode (v (v_VECTOR_V_COMPRESSION_FACTOR r))
 
-let decode_then_decompress_v (#r:rank) (#ntt:bool): t_Array u8 (v_C2_SIZE r) -> polynomial ntt
+let decode_then_decompress_v (#r:rank): t_Array u8 (v_C2_SIZE r) -> polynomial
   = byte_decode_then_decompress (v (v_VECTOR_V_COMPRESSION_FACTOR r)) 
 
 (** IND-CPA Functions *)
