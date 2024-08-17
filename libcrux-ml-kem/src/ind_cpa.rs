@@ -46,7 +46,7 @@ use unpacked::*;
     length $seed_for_a == sz 32"))]
 #[hax_lib::ensures(|res|
     fstar!("$res == Seq.append (Spec.MLKEM.vector_encode_12 #$K #false
-                            (Libcrux_ml_kem.Polynomial.to_spec_array_poly_t #$:Vector $t_as_ntt))
+                            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $t_as_ntt))
                         $seed_for_a)")
 )]
 pub(crate) fn serialize_public_key<
@@ -73,7 +73,7 @@ pub(crate) fn serialize_public_key<
     $OUT_LEN == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K"))]
 #[hax_lib::ensures(|res|
     fstar!("$res == Spec.MLKEM.vector_encode_12 #$K #false
-                    (Libcrux_ml_kem.Polynomial.to_spec_array_poly_t #$:Vector $key)")
+                    (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $key)")
 )]
 fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector: Operations>(
     key: &[PolynomialRingElement<Vector>; K],
@@ -128,7 +128,7 @@ fn sample_ring_element_cbd<
     $ETA == Spec.MLKEM.v_ETA1 $K"))]
 #[hax_lib::ensures(|(x,ds)|
     fstar!("v $ds == v $domain_separator + v $K /\\
-                Libcrux_ml_kem.Polynomial.to_spec_array_poly_t #$:Vector $x ==
+                Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $x ==
                 Spec.MLKEM.sample_vector_cbd_then_ntt #$K (Seq.slice $prf_input 0 32) (sz (v $domain_separator))")
 )]
 fn sample_vector_cbd_then_ntt<
@@ -286,7 +286,7 @@ pub(crate) fn generate_keypair<
     $BLOCK_LEN = Spec.MLKEM.v_C1_BLOCK_SIZE $K"))]
 #[hax_lib::ensures(|()| {
     fstar!("$out_future == Spec.MLKEM.compress_then_encode_u #$K #false
-               (Libcrux_ml_kem.Polynomial.to_spec_array_poly_t #$:Vector $input)")
+               (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $input)")
 })]
 fn compress_then_serialize_u<
     const K: usize,
@@ -508,7 +508,7 @@ pub(crate) fn encrypt<
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
     $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K"))]
 #[hax_lib::ensures(|res|
-    fstar!("Libcrux_ml_kem.Polynomial.to_spec_array_poly_t #$:Vector $res ==
+    fstar!("Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $res ==
         Spec.MLKEM.(vector_ntt (decode_then_decompress_u #$K #false (Seq.slice $ciphertext 0 (v (Spec.MLKEM.v_C1_SIZE $K)))))")
 )]
 fn deserialize_then_decompress_u<
@@ -538,7 +538,7 @@ fn deserialize_then_decompress_u<
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     length $secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K"))]
 #[hax_lib::ensures(|res|
-    fstar!("Libcrux_ml_kem.Polynomial.to_spec_array_poly_t #$:Vector $res ==
+    fstar!("Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $res ==
          Spec.MLKEM.vector_decode_12 #$K #false $secret_key")
 )]
 fn deserialize_secret_key<const K: usize, Vector: Operations>(

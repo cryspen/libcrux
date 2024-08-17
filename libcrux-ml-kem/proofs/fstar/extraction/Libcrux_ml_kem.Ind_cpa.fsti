@@ -44,7 +44,7 @@ val sample_vector_cbd_then_ntt
             temp_0_
           in
           v ds == v domain_separator + v v_K /\
-          Libcrux_ml_kem.Polynomial.to_spec_array_poly_t #v_Vector x ==
+          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector x ==
           Spec.MLKEM.sample_vector_cbd_then_ntt #v_K
             (Seq.slice prf_input 0 32)
             (sz (v domain_separator)))
@@ -67,7 +67,7 @@ val compress_then_serialize_u
           out_future ==
           Spec.MLKEM.compress_then_encode_u #v_K
             #false
-            (Libcrux_ml_kem.Polynomial.to_spec_array_poly_t #v_Vector input))
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector input))
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
 /// in the `ciphertext`.
@@ -83,7 +83,7 @@ val deserialize_then_decompress_u
       (ensures
         fun res ->
           let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
-          Libcrux_ml_kem.Polynomial.to_spec_array_poly_t #v_Vector res ==
+          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
           Spec.MLKEM.(vector_ntt (decode_then_decompress_u #v_K
                   #false
                   (Seq.slice ciphertext 0 (v (Spec.MLKEM.v_C1_SIZE v_K))))))
@@ -100,7 +100,7 @@ val deserialize_secret_key
       (ensures
         fun res ->
           let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
-          Libcrux_ml_kem.Polynomial.to_spec_array_poly_t #v_Vector res ==
+          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
           Spec.MLKEM.vector_decode_12 #v_K #false secret_key)
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
@@ -117,7 +117,7 @@ val serialize_secret_key
           res ==
           Spec.MLKEM.vector_encode_12 #v_K
             #false
-            (Libcrux_ml_kem.Polynomial.to_spec_array_poly_t #v_Vector key))
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key))
 
 /// Concatenate `t` and `ρ` into the public key.
 val serialize_public_key
@@ -137,7 +137,7 @@ val serialize_public_key
           res ==
           Seq.append (Spec.MLKEM.vector_encode_12 #v_K
                 #false
-                (Libcrux_ml_kem.Polynomial.to_spec_array_poly_t #v_Vector tt_as_ntt))
+                (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector tt_as_ntt))
             seed_for_a)
 
 /// This function implements <strong>Algorithm 14</strong> of the

@@ -21,7 +21,14 @@ val compute_As_plus_e
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (requires Spec.MLKEM.is_rank v_K)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun res ->
+          let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
+          let open Libcrux_ml_kem.Polynomial in
+          to_spec_vector_t res =
+          Spec.MLKEM.compute_As_plus_e_ntt (to_spec_matrix_t matrix_A)
+            (to_spec_vector_t s_as_ntt)
+            (to_spec_vector_t error_as_ntt))
 
 /// Compute InverseNTT(tᵀ ◦ r\u{302}) + e₂ + message
 val compute_ring_element_v
@@ -32,7 +39,18 @@ val compute_ring_element_v
       (error_2_ message: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires Spec.MLKEM.is_rank v_K)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun res ->
+          let res:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = res in
+          let open Libcrux_ml_kem.Polynomial in
+          let tt_spec = to_spec_vector_t tt_as_ntt in
+          let r_spec = to_spec_vector_t r_as_ntt in
+          let e2_spec = to_spec_poly_t error_2_ in
+          let m_spec = to_spec_poly_t message in
+          let res_spec = to_spec_poly_t res in
+          res_spec ==
+          Spec.MLKEM.(poly_add (poly_add (vector_dot_product_ntt #v_K tt_spec r_spec) e2_spec)
+              m_spec))
 
 /// Compute u := InvertNTT(Aᵀ ◦ r\u{302}) + e₁
 val compute_vector_u
@@ -44,7 +62,16 @@ val compute_vector_u
       (r_as_ntt error_1_: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (requires Spec.MLKEM.is_rank v_K)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun res ->
+          let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
+          let open Libcrux_ml_kem.Polynomial in
+          let a_spec = to_spec_matrix_t a_as_ntt in
+          let r_spec = to_spec_vector_t r_as_ntt in
+          let e_spec = to_spec_vector_t error_1_ in
+          let res_spec = to_spec_vector_t res in
+          res_spec ==
+          Spec.MLKEM.(vector_add (vector_inv_ntt (matrix_vector_mul_ntt a_spec r_spec)) e_spec))
 
 /// The following functions compute various expressions involving
 /// vectors and matrices. The computation of these expressions has been
@@ -59,7 +86,16 @@ val compute_message
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires Spec.MLKEM.is_rank v_K)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun res ->
+          let res:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = res in
+          let open Libcrux_ml_kem.Polynomial in
+          let secret_spec = to_spec_vector_t secret_as_ntt in
+          let u_spec = to_spec_vector_t u_as_ntt in
+          let v_spec = to_spec_poly_t v in
+          to_spec_poly_t res ==
+          Spec.MLKEM.(poly_sub v_spec
+              (poly_inv_ntt #v_K (vector_dot_product_ntt #v_K secret_spec u_spec))))
 
 val sample_matrix_A
       (v_K: usize)
@@ -71,4 +107,14 @@ val sample_matrix_A
     : Prims.Pure
       (t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
       (requires Spec.MLKEM.is_rank v_K)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun res ->
+          let res:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+            v_K =
+            res
+          in
+          let matrix_A = Spec.MLKEM.sample_matrix_A_ntt (Seq.slice seed 0 32) in
+          if transpose
+          then Libcrux_ml_kem.Polynomial.to_spec_matrix_t res == matrix_A
+          else
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t res == Spec.MLKEM.matrix_transpose matrix_A)

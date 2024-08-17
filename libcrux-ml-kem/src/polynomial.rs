@@ -16,10 +16,13 @@ pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
 
 #[cfg_attr(eurydice, derive(Clone, Copy))]
 #[cfg_attr(not(eurydice), derive(Clone))]
-#[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_array_poly_t (#v_Vector: Type0)
+#[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (#r:Spec.MLKEM.rank)
-    (m:t_Array (t_PolynomialRingElement v_Vector) r) =
+    (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r false =
+    createi r (fun i -> to_spec_vector_t #r #v_Vector (m.[i]))"))]
+#[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (m:t_Array (t_PolynomialRingElement v_Vector) r) : Spec.MLKEM.vector r false =
     createi r (fun i -> to_spec_poly_t #v_Vector (m.[i]))"))]
 #[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_poly_t (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
