@@ -14,9 +14,9 @@ type rank = r:usize{is_rank r}
 (** MLKEM Math and Sampling *)
 
 type field_element = n:nat{n < v v_FIELD_MODULUS}
-type polynomial (ntt:bool) = t_Array field_element (sz 256)
-type vector (r:rank) (ntt:bool) = t_Array (polynomial ntt) r
-type matrix (r:rank) (ntt:bool) = t_Array (vector r ntt) r
+type polynomial = t_Array field_element (sz 256)
+type vector (r:rank) = t_Array polynomial r
+type matrix (r:rank) = t_Array (vector r) r
 
 val field_add: field_element -> field_element -> field_element
 let field_add a b = (a + b) % v v_FIELD_MODULUS
@@ -30,10 +30,10 @@ let field_neg a = (0 - a) % v v_FIELD_MODULUS
 val field_mul: field_element -> field_element -> field_element
 let field_mul a b = (a * b) % v v_FIELD_MODULUS
 
-val poly_add: #ntt:bool -> polynomial ntt -> polynomial ntt -> polynomial ntt
+val poly_add: polynomial -> polynomial -> polynomial
 let poly_add a b = map2 field_add a b
 
-val poly_sub: #ntt:bool -> polynomial ntt -> polynomial ntt -> polynomial ntt
+val poly_sub: polynomial -> polynomial -> polynomial
 let poly_sub a b = map2 field_sub a b
 
 
@@ -68,7 +68,7 @@ let poly_ntt_step (a:field_element) (b:field_element) (i:nat{i < 128}) =
   let a = field_add a t in
   (a,b)
 
-let poly_ntt_layer #b (p:polynomial b) (l:nat{l > 0 /\ l < 8}) : polynomial b =
+let poly_ntt_layer (p:polynomial) (l:nat{l > 0 /\ l < 8}) : polynomial =
   let len = pow2 l in
   let k = (128 / len) - 1 in
   Rust_primitives.Arrays.createi (sz 256) (fun i ->
@@ -78,7 +78,7 @@ let poly_ntt_layer #b (p:polynomial b) (l:nat{l > 0 /\ l < 8}) : polynomial b =
     let (a_ntt, b_ntt) = poly_ntt_step p.[sz idx0] p.[sz idx1] (round + k) in
     if idx < len then a_ntt else b_ntt)
 
-val poly_ntt: polynomial false -> polynomial true
+val poly_ntt: polynomial -> polynomial
 let poly_ntt p =
   let p = poly_ntt_layer p 7 in
   let p = poly_ntt_layer p 6 in
@@ -95,7 +95,7 @@ let poly_inv_ntt_step (a:field_element) (b:field_element) (i:nat{i < 128}) =
   let b = field_mul b_minus_a zetas.[sz i] in
   (a,b)
 
-let poly_inv_ntt_layer #b (p:polynomial b) (l:nat{l > 0 /\ l < 8}) : polynomial b =
+let poly_inv_ntt_layer (p:polynomial) (l:nat{l > 0 /\ l < 8}) : polynomial =
   let len = pow2 l in
   let k = (256 / len) - 1 in
   Rust_primitives.Arrays.createi (sz 256) (fun i ->
@@ -105,7 +105,7 @@ let poly_inv_ntt_layer #b (p:polynomial b) (l:nat{l > 0 /\ l < 8}) : polynomial 
     let (a_ntt, b_ntt) = poly_inv_ntt_step p.[sz idx0] p.[sz idx1] (k - round) in
     if idx < len then a_ntt else b_ntt)
 
-val poly_inv_ntt: polynomial true -> polynomial false
+val poly_inv_ntt: polynomial -> polynomial
 let poly_inv_ntt p =
   let p = poly_inv_ntt_layer p 1 in
   let p = poly_inv_ntt_layer p 2 in
@@ -121,7 +121,7 @@ let poly_base_case_multiply (a0 a1 b0 b1 zeta:field_element) =
   let c1 = field_add (field_mul a0 b1) (field_mul a1 b0) in
   (c0,c1)
 
-val poly_mul_ntt: polynomial true -> polynomial true -> polynomial true
+val poly_mul_ntt: polynomial -> polynomial -> polynomial
 let poly_mul_ntt a b =
   Rust_primitives.Arrays.createi (sz 256) (fun i ->
     let a0 = a.[sz (2 * (v i / 2))] in
@@ -134,36 +134,36 @@ let poly_mul_ntt a b =
     if v i % 2 = 0 then c0 else c1)
   
 
-val vector_add: #r:rank -> #ntt:bool -> vector r ntt -> vector r ntt -> vector r ntt
+val vector_add: #r:rank -> vector r -> vector r -> vector r
 let vector_add #p a b = map2 poly_add a b
 
-val vector_ntt: #r:rank -> vector r false -> vector r true
+val vector_ntt: #r:rank -> vector r -> vector r
 let vector_ntt #p v = map_array poly_ntt v
 
-val vector_inv_ntt: #r:rank -> vector r true -> vector r false
+val vector_inv_ntt: #r:rank -> vector r -> vector r
 let vector_inv_ntt #p v = map_array poly_inv_ntt v
 
-val vector_mul_ntt: #r:rank -> vector r true  -> vector r true -> vector r true
+val vector_mul_ntt: #r:rank -> vector r -> vector r -> vector r 
 let vector_mul_ntt #p a b = map2 poly_mul_ntt a b
 
-val vector_sum: #r:rank -> #ntt:bool -> vector r ntt -> polynomial ntt
+val vector_sum: #r:rank -> vector r -> polynomial
 let vector_sum #r a = repeati (r -! sz 1)
      (fun i x -> assert (v i < v r - 1); poly_add x (a.[i +! sz 1])) a.[sz 0]
 
-val vector_dot_product_ntt: #r:rank -> vector r true -> vector r true -> polynomial true
+val vector_dot_product_ntt: #r:rank -> vector r -> vector r -> polynomial
 let vector_dot_product_ntt a b = vector_sum (vector_mul_ntt a b)
 
-val matrix_transpose: #r:rank -> #ntt:bool -> matrix r ntt -> matrix r ntt
+val matrix_transpose: #r:rank -> matrix r -> matrix r
 let matrix_transpose #r m =
   createi r (fun i -> 
     createi r (fun j ->
       m.[j].[i]))
 
-val matrix_vector_mul_ntt: #r:rank -> matrix r true -> vector r true -> vector r true
+val matrix_vector_mul_ntt: #r:rank -> matrix r -> vector r -> vector r
 let matrix_vector_mul_ntt #r m v =
   createi r (fun i -> vector_dot_product_ntt m.[i] v)
 
-val compute_As_plus_e_ntt: #r:rank -> a:matrix r true -> s:vector r true -> e:vector r true -> vector r true
+val compute_As_plus_e_ntt: #r:rank -> a:matrix r -> s:vector r -> e:vector r -> vector r
 let compute_As_plus_e_ntt #p a s e = vector_add (matrix_vector_mul_ntt a s) e
 
 
@@ -223,15 +223,15 @@ let byte_decode (d: dT) (coefficients: t_Array u8 (sz (32 * d))): polynomial_d d
     in
     p
 
-let coerce_polynomial_12 #ntt (p:polynomial ntt): polynomial_d 12 = p
-let coerce_vector_12 #ntt (#r:rank) (v:vector r ntt): vector_d r 12 = v
+let coerce_polynomial_12 (p:polynomial): polynomial_d 12 = p
+let coerce_vector_12 (#r:rank) (v:vector r): vector_d r 12 = v
 
-let compress_then_byte_encode #ntt (d: dT {d <> 12}) (coefficients: polynomial ntt): t_Array u8 (sz (32 * d))
+let compress_then_byte_encode (d: dT {d <> 12}) (coefficients: polynomial): t_Array u8 (sz (32 * d))
   = let coefs: t_Array (field_element_d d) (sz 256) = map_array (compress_d d) coefficients
     in
     byte_encode d coefs
 
-let byte_decode_then_decompress #ntt (d: dT {d <> 12}) (b:t_Array u8 (sz (32 * d))): polynomial ntt
+let byte_decode_then_decompress (d: dT {d <> 12}) (b:t_Array u8 (sz (32 * d))): polynomial
   = map_array (decompress_d d) (byte_decode d b)
 
  
