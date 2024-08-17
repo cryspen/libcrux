@@ -55,6 +55,11 @@ let to_spec_vector (#r:rank)
                    : (vector r) =
     createi r (fun i -> to_spec_poly (m.[i]))
 
+let to_spec_matrix (#r:rank)
+                   (m:t_Array (t_Array (t_Array i16 (sz 256)) r) r)
+                   : (matrix r) =
+    createi r (fun i -> to_spec_vector (m.[i]))
+
 (* Specifying NTT:
 bitrev7 = [int('{:07b}'.format(x)[::-1], 2) for x in range(0,128)]
 zetas = [pow(17,x) % 3329 for x in bitrev7]

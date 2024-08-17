@@ -8,9 +8,9 @@ use crate::{
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K"))]
 #[hax_lib::ensures(|res|
-    fstar!("let matrix_A = Spec.MLKEM.sample_matrix_A_ntt (Seq.slice $seed 0 32) in
-        if $transpose then Libcrux_ml_kem.Polynomial.to_spec_matrix_t $res == matrix_A
-        else Libcrux_ml_kem.Polynomial.to_spec_matrix_t $res == Spec.MLKEM.matrix_transpose matrix_A")
+    fstar!("let (matrix_A, valid) = Spec.MLKEM.sample_matrix_A_ntt (Seq.slice $seed 0 32) in
+        valid ==> (if $transpose then Libcrux_ml_kem.Polynomial.to_spec_matrix_t $res == matrix_A
+        else Libcrux_ml_kem.Polynomial.to_spec_matrix_t $res == Spec.MLKEM.matrix_transpose matrix_A)")
 )]
 pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K>>(
     seed: [u8; 34],
