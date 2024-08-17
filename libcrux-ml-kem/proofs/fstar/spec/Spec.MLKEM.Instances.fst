@@ -32,10 +32,11 @@ let mlkem1024_generate_keypair (randomness:t_Array u8 (sz 64)):
                                (t_Array u8 (sz 3168) & t_Array u8 (sz 1568)) & bool =
     ind_cca_generate_keypair mlkem1024_rank randomness
 
+#set-options "--z3rlimit 100"
 let mlkem1024_encapsulate (public_key: t_Array u8 (sz 1568)) (randomness: t_Array u8 (sz 32)):
                           (t_Array u8 (sz 1568) & t_Array u8 (sz 32)) & bool  =
+    assert (v_CPA_CIPHERTEXT_SIZE mlkem1024_rank == sz 1568);            
     ind_cca_encapsulate mlkem1024_rank public_key randomness
-
 
 let mlkem1024_decapsulate (secret_key: t_Array u8 (sz 3168)) (ciphertext: t_Array u8 (sz 1568)):
                            t_Array u8 (sz 32) & bool =
@@ -51,6 +52,7 @@ let mlkem512_generate_keypair (randomness:t_Array u8 (sz 64)):
 
 let mlkem512_encapsulate (public_key: t_Array u8 (sz 800)) (randomness: t_Array u8 (sz 32)):
                          (t_Array u8 (sz 768) & t_Array u8 (sz 32)) & bool =
+    assert (v_CPA_CIPHERTEXT_SIZE mlkem512_rank == sz 768);            
     ind_cca_encapsulate mlkem512_rank public_key randomness
 
 
