@@ -113,8 +113,10 @@ val sample_matrix_A
             v_K =
             res
           in
-          let matrix_A = Spec.MLKEM.sample_matrix_A_ntt (Seq.slice seed 0 32) in
-          if transpose
-          then Libcrux_ml_kem.Polynomial.to_spec_matrix_t res == matrix_A
-          else
-            Libcrux_ml_kem.Polynomial.to_spec_matrix_t res == Spec.MLKEM.matrix_transpose matrix_A)
+          let matrix_A, valid = Spec.MLKEM.sample_matrix_A_ntt (Seq.slice seed 0 32) in
+          valid ==>
+          (if transpose
+            then Libcrux_ml_kem.Polynomial.to_spec_matrix_t res == matrix_A
+            else
+              Libcrux_ml_kem.Polynomial.to_spec_matrix_t res == Spec.MLKEM.matrix_transpose matrix_A
+          ))

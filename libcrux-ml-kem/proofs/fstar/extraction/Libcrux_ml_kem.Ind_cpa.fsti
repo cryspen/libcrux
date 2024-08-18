@@ -63,10 +63,9 @@ val compress_then_serialize_u
         v_BLOCK_LEN = Spec.MLKEM.v_C1_BLOCK_SIZE v_K)
       (ensures
         fun temp_0_ ->
-          let out_future, ():(t_Slice u8 & Prims.unit) = temp_0_ in
+          let out_future:t_Slice u8 = temp_0_ in (* hax bug *)
           out_future ==
           Spec.MLKEM.compress_then_encode_u #v_K
-            #false
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector input))
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
@@ -85,7 +84,6 @@ val deserialize_then_decompress_u
           let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
           Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
           Spec.MLKEM.(vector_ntt (decode_then_decompress_u #v_K
-                  #false
                   (Seq.slice ciphertext 0 (v (Spec.MLKEM.v_C1_SIZE v_K))))))
 
 /// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
@@ -101,7 +99,7 @@ val deserialize_secret_key
         fun res ->
           let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
           Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
-          Spec.MLKEM.vector_decode_12 #v_K #false secret_key)
+          Spec.MLKEM.vector_decode_12 #v_K secret_key)
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 val serialize_secret_key
@@ -116,7 +114,7 @@ val serialize_secret_key
           let res:t_Array u8 v_OUT_LEN = res in
           res ==
           Spec.MLKEM.vector_encode_12 #v_K
-            #false
+            
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key))
 
 /// Concatenate `t` and `ρ` into the public key.
@@ -136,7 +134,6 @@ val serialize_public_key
           let res:t_Array u8 v_PUBLIC_KEY_SIZE = res in
           res ==
           Seq.append (Spec.MLKEM.vector_encode_12 #v_K
-                #false
                 (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector tt_as_ntt))
             seed_for_a)
 
