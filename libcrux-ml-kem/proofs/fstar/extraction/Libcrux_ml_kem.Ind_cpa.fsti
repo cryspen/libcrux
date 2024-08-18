@@ -63,7 +63,7 @@ val compress_then_serialize_u
         v_BLOCK_LEN = Spec.MLKEM.v_C1_BLOCK_SIZE v_K)
       (ensures
         fun temp_0_ ->
-          let out_future:t_Slice u8 = temp_0_ in (* hax bug *)
+          let out_future, _:(t_Slice u8 & Prims.unit) = temp_0_,() (* hax bug *) in
           out_future ==
           Spec.MLKEM.compress_then_encode_u #v_K
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector input))
@@ -114,7 +114,6 @@ val serialize_secret_key
           let res:t_Array u8 v_OUT_LEN = res in
           res ==
           Spec.MLKEM.vector_encode_12 #v_K
-            
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key))
 
 /// Concatenate `t` and `ρ` into the public key.

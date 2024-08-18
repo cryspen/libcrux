@@ -1,3 +1,5 @@
+# This is the list of modules that are fully admitted.
+# All other modules have individual annotations on their functions indicating verification status
 ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
 	      Libcrux_ml_kem.Ind_cca.fst \
               Libcrux_ml_kem.Ind_cpa.fst \
@@ -30,5 +32,6 @@ ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
               Libcrux_ml_kem.Vector.Portable.Vector_type.fst \
               Libcrux_ml_kem.Vector.Traits.fst
 
+OTHERFLAGS="--query_stats"
 FSTAR_INCLUDE_DIRS_EXTRA = $(shell git rev-parse --show-toplevel)/libcrux-ml-kem/proofs/fstar/spec
 include $(shell git rev-parse --show-toplevel)/fstar-helpers/Makefile.template
