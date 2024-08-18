@@ -116,3 +116,11 @@ files:
         - [libcrux_ml_kem, vector, "*"]
         - [libcrux_ml_kem, hash_functions, portable, "*"]
         - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
+
+naming:
+  skip_prefix:
+    - [ core, core_arch, arm_shared, neon ]
+    - [ core, core_arch, x86 ]
+    - [ core, option ]
+    - [ core, result ]
+    - [ core, array ]

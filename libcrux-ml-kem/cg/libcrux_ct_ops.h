@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
- * Karamel: f9cdef256a2b88282398a609847b34dd8c9cf3e3
- * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: 06b02e72e21705b53062d5988d3233715af43ad2
+ * Charon: 962f26311ccdf09a6a3cfeacbccafba22bf3d405
+ * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
+ * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
+ * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
+ * Libcrux: 0ca73e59afe19a3f88b8ff45d0c57b0ebe851319
  */
 
 #ifndef __libcrux_ct_ops_H
@@ -21,6 +21,9 @@ extern "C" {
 #include "eurydice_glue.h"
 #include "libcrux_core.h"
 
+/**
+ Return 1 if `value` is not zero and 0 otherwise.
+*/
 static inline uint8_t libcrux_ml_kem_constant_time_ops_inz(uint8_t value) {
   uint16_t value0 = (uint16_t)value;
   uint16_t result = (((uint32_t)value0 |
@@ -36,15 +39,18 @@ libcrux_ml_kem_constant_time_ops_is_non_zero(uint8_t value) {
   return libcrux_ml_kem_constant_time_ops_inz(value);
 }
 
+/**
+ Return 1 if the bytes of `lhs` and `rhs` do not exactly
+ match and 0 otherwise.
+*/
 static inline uint8_t libcrux_ml_kem_constant_time_ops_compare(
     Eurydice_slice lhs, Eurydice_slice rhs) {
   uint8_t r = 0U;
-  for (size_t i = (size_t)0U;
-       i < core_slice___Slice_T___len(lhs, uint8_t, size_t); i++) {
+  for (size_t i = (size_t)0U; i < Eurydice_slice_len(lhs, uint8_t); i++) {
     size_t i0 = i;
     r = (uint32_t)r |
-        ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *, uint8_t) ^
-         (uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *, uint8_t));
+        ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *) ^
+         (uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *));
   }
   return libcrux_ml_kem_constant_time_ops_is_non_zero(r);
 }
@@ -55,6 +61,10 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
   return libcrux_ml_kem_constant_time_ops_compare(lhs, rhs);
 }
 
+/**
+ If `selector` is not zero, return the bytes in `rhs`; return the bytes in
+ `lhs` otherwise.
+*/
 static inline void libcrux_ml_kem_constant_time_ops_select_ct(
     Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
     uint8_t ret[32U]) {
@@ -64,11 +74,10 @@ static inline void libcrux_ml_kem_constant_time_ops_select_ct(
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE;
        i++) {
     size_t i0 = i;
-    out[i0] =
-        ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *, uint8_t) &
-         (uint32_t)mask) |
-        ((uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *, uint8_t) &
-         (uint32_t)~mask);
+    out[i0] = ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *) &
+               (uint32_t)mask) |
+              ((uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *) &
+               (uint32_t)~mask);
   }
   memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
