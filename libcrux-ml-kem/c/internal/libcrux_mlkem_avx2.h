@@ -8,7 +8,7 @@
  * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
  * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: a62ef07ccb67d179e447b66adec9d950131cb20b
+ * Libcrux: 322297aa4545eea6f5ba5d5fdd1565a790e5f726
  */
 
 #ifndef __internal_libcrux_mlkem_avx2_H
@@ -47,7 +47,7 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_a0
-libcrux_ml_kem_ind_cca_generate_keypair_unpacked_881(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_generate_keypair_unpacked_271(uint8_t randomness[64U]);
 
 /**
  Packed API
@@ -90,7 +90,7 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_3c libcrux_ml_kem_ind_cca_encapsulate_unpacked_721(
+tuple_3c libcrux_ml_kem_ind_cca_encapsulate_unpacked_9e1(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
     uint8_t randomness[32U]);
 
@@ -113,7 +113,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_3c libcrux_ml_kem_ind_cca_encapsulate_e61(
+tuple_3c libcrux_ml_kem_ind_cca_encapsulate_411(
     libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
     uint8_t randomness[32U]);
 
@@ -138,7 +138,7 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-void libcrux_ml_kem_ind_cca_decapsulate_unpacked_261(
+void libcrux_ml_kem_ind_cca_decapsulate_unpacked_0f1(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_a0 *key_pair,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
 
@@ -164,7 +164,7 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-void libcrux_ml_kem_ind_cca_decapsulate_b61(
+void libcrux_ml_kem_ind_cca_decapsulate_6e1(
     libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
 
@@ -191,7 +191,7 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_01
-libcrux_ml_kem_ind_cca_generate_keypair_unpacked_880(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_generate_keypair_unpacked_270(uint8_t randomness[64U]);
 
 /**
  Packed API
@@ -234,7 +234,7 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_21 libcrux_ml_kem_ind_cca_encapsulate_unpacked_720(
+tuple_21 libcrux_ml_kem_ind_cca_encapsulate_unpacked_9e0(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_01 *public_key,
     uint8_t randomness[32U]);
 
@@ -257,7 +257,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_21 libcrux_ml_kem_ind_cca_encapsulate_e60(
+tuple_21 libcrux_ml_kem_ind_cca_encapsulate_410(
     libcrux_ml_kem_types_MlKemPublicKey_1f *public_key,
     uint8_t randomness[32U]);
 
@@ -282,7 +282,7 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-void libcrux_ml_kem_ind_cca_decapsulate_unpacked_260(
+void libcrux_ml_kem_ind_cca_decapsulate_unpacked_0f0(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_01 *key_pair,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext, uint8_t ret[32U]);
 
@@ -308,7 +308,7 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-void libcrux_ml_kem_ind_cca_decapsulate_b60(
+void libcrux_ml_kem_ind_cca_decapsulate_6e0(
     libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext, uint8_t ret[32U]);
 
@@ -335,7 +335,7 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA1_RANDOMNESS_SIZE= 192
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_d6
-libcrux_ml_kem_ind_cca_generate_keypair_unpacked_88(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_generate_keypair_unpacked_27(uint8_t randomness[64U]);
 
 /**
  Packed API
@@ -378,7 +378,7 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_ec libcrux_ml_kem_ind_cca_encapsulate_unpacked_72(
+tuple_ec libcrux_ml_kem_ind_cca_encapsulate_unpacked_9e(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d6 *public_key,
     uint8_t randomness[32U]);
 
@@ -401,7 +401,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_ec libcrux_ml_kem_ind_cca_encapsulate_e6(
+tuple_ec libcrux_ml_kem_ind_cca_encapsulate_41(
     libcrux_ml_kem_types_MlKemPublicKey_be *public_key,
     uint8_t randomness[32U]);
 
@@ -426,7 +426,7 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
-void libcrux_ml_kem_ind_cca_decapsulate_unpacked_26(
+void libcrux_ml_kem_ind_cca_decapsulate_unpacked_0f(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_d6 *key_pair,
     libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]);
 
@@ -452,7 +452,7 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
-void libcrux_ml_kem_ind_cca_decapsulate_b6(
+void libcrux_ml_kem_ind_cca_decapsulate_6e(
     libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]);
 

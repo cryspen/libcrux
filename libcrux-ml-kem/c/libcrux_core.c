@@ -8,7 +8,7 @@
  * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
  * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: a62ef07ccb67d179e447b66adec9d950131cb20b
+ * Libcrux: 322297aa4545eea6f5ba5d5fdd1565a790e5f726
  */
 
 #include "internal/libcrux_core.h"
@@ -154,7 +154,7 @@ A monomorphic instance of libcrux_ml_kem.types.from_01
 with const generics
 - SIZE= 1568
 */
-libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext libcrux_ml_kem_types_from_01_141(
+libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext libcrux_ml_kem_types_from_01_ec1(
     uint8_t value[1568U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[1568U];
@@ -189,7 +189,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_00
 with const generics
 - SIZE= 1568
 */
-Eurydice_slice libcrux_ml_kem_types_as_ref_00_dd1(
+Eurydice_slice libcrux_ml_kem_types_as_ref_00_b41(
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *self) {
   return Eurydice_array_to_slice((size_t)1568U, self->value, uint8_t);
 }
@@ -280,7 +280,7 @@ A monomorphic instance of libcrux_ml_kem.types.from_01
 with const generics
 - SIZE= 1088
 */
-libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_from_01_140(
+libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_from_01_ec0(
     uint8_t value[1088U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[1088U];
@@ -315,7 +315,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_00
 with const generics
 - SIZE= 1088
 */
-Eurydice_slice libcrux_ml_kem_types_as_ref_00_dd0(
+Eurydice_slice libcrux_ml_kem_types_as_ref_00_b40(
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self) {
   return Eurydice_array_to_slice((size_t)1088U, self->value, uint8_t);
 }
@@ -397,6 +397,26 @@ libcrux_ml_kem_types_MlKemPrivateKey_5e libcrux_ml_kem_types_from_05_db(
 }
 
 /**
+This function found in impl {core::result::Result<T, E>}
+*/
+/**
+A monomorphic instance of core.result.unwrap_41
+with types uint8_t[32size_t], core_array_TryFromSliceError
+
+*/
+void core_result_unwrap_41_83(core_result_Result_00 self, uint8_t ret[32U]) {
+  if (self.tag == core_result_Ok) {
+    uint8_t f0[32U];
+    memcpy(f0, self.val.case_Ok, (size_t)32U * sizeof(uint8_t));
+    memcpy(ret, f0, (size_t)32U * sizeof(uint8_t));
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+/**
 This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
 libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#2}
 */
@@ -405,7 +425,7 @@ A monomorphic instance of libcrux_ml_kem.types.from_01
 with const generics
 - SIZE= 768
 */
-libcrux_ml_kem_types_MlKemCiphertext_e8 libcrux_ml_kem_types_from_01_14(
+libcrux_ml_kem_types_MlKemCiphertext_e8 libcrux_ml_kem_types_from_01_ec(
     uint8_t value[768U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[768U];
@@ -451,26 +471,6 @@ void libcrux_ml_kem_utils_into_padded_array_ea2(Eurydice_slice slice,
 }
 
 /**
-This function found in impl {core::result::Result<T, E>}
-*/
-/**
-A monomorphic instance of core.result.unwrap_41
-with types uint8_t[32size_t], core_array_TryFromSliceError
-
-*/
-void core_result_unwrap_41_83(core_result_Result_00 self, uint8_t ret[32U]) {
-  if (self.tag == core_result_Ok) {
-    uint8_t f0[32U];
-    memcpy(f0, self.val.case_Ok, (size_t)32U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)32U * sizeof(uint8_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
-
-/**
  Pad the `slice` with `0`s at the end.
 */
 /**
@@ -498,7 +498,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_00
 with const generics
 - SIZE= 768
 */
-Eurydice_slice libcrux_ml_kem_types_as_ref_00_dd(
+Eurydice_slice libcrux_ml_kem_types_as_ref_00_b4(
     libcrux_ml_kem_types_MlKemCiphertext_e8 *self) {
   return Eurydice_array_to_slice((size_t)768U, self->value, uint8_t);
 }
