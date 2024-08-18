@@ -1,7 +1,7 @@
 /// The following macros are defined so that the extraction from Rust to C code
 /// can go through.
 
-#[cfg(eurydice)]
+#[cfg(any(eurydice,hax))]
 macro_rules! cloop {
     (for ($i:ident, $chunk:ident) in $val:ident.$values:ident.chunks_exact($($chunk_size:expr),*).enumerate() $body:block) => {
         for $i in 0..$val.$values.len() / ($($chunk_size)*) {
@@ -35,7 +35,7 @@ macro_rules! cloop {
     };
 }
 
-#[cfg(not(eurydice))]
+#[cfg(all(not(eurydice),not(hax)))]
 macro_rules! cloop {
     (for ($i:ident, $chunk:ident) in $val:ident.$values:ident.chunks_exact($($chunk_size:expr),*).enumerate() $body:block) => {
         for ($i, $chunk) in $val.$values.chunks_exact($($chunk_size),*).enumerate() $body

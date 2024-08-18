@@ -207,6 +207,7 @@ let decapsulate
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
      =
+  let _:Prims.unit = admit () in
   let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
       (Rust_primitives.unsize private_key.Libcrux_ml_kem.Types.f_value <: t_Slice u8)
@@ -326,7 +327,6 @@ let decapsulate
       (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
   in
   let result:t_Array u8 (sz 32) = shared_secret in
-  let _:Prims.unit = admit () in
   result
 
 #pop-options

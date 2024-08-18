@@ -154,22 +154,29 @@ let sample_from_binomial_distribution_2_
      =
   let sampled_i16s:t_Array i16 (sz 256) = Rust_primitives.Hax.repeat 0s (sz 256) in
   let sampled_i16s:t_Array i16 (sz 256) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_ChunksExact u8))
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
           #FStar.Tactics.Typeclasses.solve
-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
-              #FStar.Tactics.Typeclasses.solve
-              (Core.Slice.impl__chunks_exact #u8 randomness (sz 4)
-                <:
-                Core.Slice.Iter.t_ChunksExact u8)
+          ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = (Core.Slice.impl__len #u8 randomness <: usize) /! sz 4 <: usize
+            }
             <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+            Core.Ops.Range.t_Range usize)
         <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+        Core.Ops.Range.t_Range usize)
       sampled_i16s
-      (fun sampled_i16s temp_1_ ->
+      (fun sampled_i16s chunk_number ->
           let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
-          let chunk_number, byte_chunk:(usize & t_Slice u8) = temp_1_ in
+          let chunk_number:usize = chunk_number in
+          let byte_chunk:t_Slice u8 =
+            randomness.[ {
+                Core.Ops.Range.f_start = chunk_number *! sz 4 <: usize;
+                Core.Ops.Range.f_end = (chunk_number *! sz 4 <: usize) +! sz 4 <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+          in
           let (random_bits_as_u32: u32):u32 =
             (((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
                 ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
@@ -183,26 +190,22 @@ let sample_from_binomial_distribution_2_
           let even_bits:u32 = random_bits_as_u32 &. 1431655765ul in
           let odd_bits:u32 = (random_bits_as_u32 >>! 1l <: u32) &. 1431655765ul in
           let coin_toss_outcomes:u32 = even_bits +! odd_bits in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Step_by.t_StepBy
-                  (Core.Ops.Range.t_Range u32))
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+                  u32)
                 #FStar.Tactics.Typeclasses.solve
-                (Core.Iter.Traits.Iterator.f_step_by #(Core.Ops.Range.t_Range u32)
-                    #FStar.Tactics.Typeclasses.solve
-                    ({
-                        Core.Ops.Range.f_start = 0ul;
-                        Core.Ops.Range.f_end = Core.Num.impl__u32__BITS
-                      }
-                      <:
-                      Core.Ops.Range.t_Range u32)
-                    (sz 4)
+                ({
+                    Core.Ops.Range.f_start = 0ul;
+                    Core.Ops.Range.f_end = Core.Num.impl__u32__BITS /! 4ul <: u32
+                  }
                   <:
-                  Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range u32))
+                  Core.Ops.Range.t_Range u32)
               <:
-              Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range u32))
+              Core.Ops.Range.t_Range u32)
             sampled_i16s
             (fun sampled_i16s outcome_set ->
                 let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
                 let outcome_set:u32 = outcome_set in
+                let outcome_set:u32 = outcome_set *! 4ul in
                 let outcome_1_:i16 =
                   cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 3ul <: u32) <: i16
                 in
@@ -231,22 +234,29 @@ let sample_from_binomial_distribution_3_
      =
   let sampled_i16s:t_Array i16 (sz 256) = Rust_primitives.Hax.repeat 0s (sz 256) in
   let sampled_i16s:t_Array i16 (sz 256) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_ChunksExact u8))
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
           #FStar.Tactics.Typeclasses.solve
-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
-              #FStar.Tactics.Typeclasses.solve
-              (Core.Slice.impl__chunks_exact #u8 randomness (sz 3)
-                <:
-                Core.Slice.Iter.t_ChunksExact u8)
+          ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = (Core.Slice.impl__len #u8 randomness <: usize) /! sz 3 <: usize
+            }
             <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+            Core.Ops.Range.t_Range usize)
         <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+        Core.Ops.Range.t_Range usize)
       sampled_i16s
-      (fun sampled_i16s temp_1_ ->
+      (fun sampled_i16s chunk_number ->
           let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
-          let chunk_number, byte_chunk:(usize & t_Slice u8) = temp_1_ in
+          let chunk_number:usize = chunk_number in
+          let byte_chunk:t_Slice u8 =
+            randomness.[ {
+                Core.Ops.Range.f_start = chunk_number *! sz 3 <: usize;
+                Core.Ops.Range.f_end = (chunk_number *! sz 3 <: usize) +! sz 3 <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+          in
           let (random_bits_as_u24: u32):u32 =
             ((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
               ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
@@ -258,23 +268,19 @@ let sample_from_binomial_distribution_3_
           let second_bits:u32 = (random_bits_as_u24 >>! 1l <: u32) &. 2396745ul in
           let third_bits:u32 = (random_bits_as_u24 >>! 2l <: u32) &. 2396745ul in
           let coin_toss_outcomes:u32 = (first_bits +! second_bits <: u32) +! third_bits in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Step_by.t_StepBy
-                  (Core.Ops.Range.t_Range i32))
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+                  i32)
                 #FStar.Tactics.Typeclasses.solve
-                (Core.Iter.Traits.Iterator.f_step_by #(Core.Ops.Range.t_Range i32)
-                    #FStar.Tactics.Typeclasses.solve
-                    ({ Core.Ops.Range.f_start = 0l; Core.Ops.Range.f_end = 24l }
-                      <:
-                      Core.Ops.Range.t_Range i32)
-                    (sz 6)
+                ({ Core.Ops.Range.f_start = 0l; Core.Ops.Range.f_end = 24l /! 6l <: i32 }
                   <:
-                  Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range i32))
+                  Core.Ops.Range.t_Range i32)
               <:
-              Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range i32))
+              Core.Ops.Range.t_Range i32)
             sampled_i16s
             (fun sampled_i16s outcome_set ->
                 let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
                 let outcome_set:i32 = outcome_set in
+                let outcome_set:i32 = outcome_set *! 6l in
                 let outcome_1_:i16 =
                   cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 7ul <: u32) <: i16
                 in
