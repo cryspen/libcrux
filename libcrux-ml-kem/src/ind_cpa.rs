@@ -123,11 +123,12 @@ fn sample_ring_element_cbd<
 /// Sample a vector of ring elements from a centered binomial distribution and
 /// convert them into their NTT representations.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $ETA_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
     $ETA == Spec.MLKEM.v_ETA1 $K /\\
-    v $domain_separator < 2 * v $K"))]
+    v $domain_separator < 2 * v $K /\\
+    range (v $domain_separator + v $K) u8_inttype"))]
 #[hax_lib::ensures(|(x,ds)|
     fstar!("v $ds == v $domain_separator + v $K /\\
                 Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $x ==
@@ -146,9 +147,9 @@ fn sample_vector_cbd_then_ntt<
     let mut re_as_ntt = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut prf_inputs = [prf_input; K];
     for i in 0..K {
-        prf_inputs[i][32] = domain_separator;
-        domain_separator += 1;
+        prf_inputs[i][32] = domain_separator + (i as u8);
     }
+    domain_separator += K as u8;
     let prf_outputs: [[u8; ETA_RANDOMNESS_SIZE]; K] = Hasher::PRFxN(&prf_inputs);
     for i in 0..K {
         re_as_ntt[i] = sample_from_binomial_distribution::<ETA, Vector>(&prf_outputs[i]);

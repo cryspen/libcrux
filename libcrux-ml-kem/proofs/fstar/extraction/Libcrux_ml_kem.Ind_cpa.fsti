@@ -36,7 +36,8 @@ val sample_vector_cbd_then_ntt
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
       (requires
         Spec.MLKEM.is_rank v_K /\ v_ETA_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
-        v_ETA == Spec.MLKEM.v_ETA1 v_K /\ v domain_separator < 2 * v v_K)
+        v_ETA == Spec.MLKEM.v_ETA1 v_K /\ v domain_separator < 2 * v v_K /\
+        range (v domain_separator + v v_K) u8_inttype)
       (ensures
         fun temp_0_ ->
           let x, ds:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
@@ -62,8 +63,8 @@ val compress_then_serialize_u
         v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
         v_BLOCK_LEN = Spec.MLKEM.v_C1_BLOCK_SIZE v_K)
       (ensures
-        fun temp_0_ ->
-          let out_future:t_Slice u8 = temp_0_ in
+        fun out_future ->
+          let out_future:t_Slice u8 = out_future in
           out_future ==
           Spec.MLKEM.compress_then_encode_u #v_K
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector input))
