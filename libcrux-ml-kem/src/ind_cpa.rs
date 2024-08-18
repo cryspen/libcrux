@@ -286,7 +286,7 @@ pub(crate) fn generate_keypair<
     $OUT_LEN == Spec.MLKEM.v_C1_SIZE $K /\\
     $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\\
     $BLOCK_LEN = Spec.MLKEM.v_C1_BLOCK_SIZE $K"))]
-#[hax_lib::ensures(|_| {
+#[hax_lib::ensures(|_|
     fstar!("$out_future == Spec.MLKEM.compress_then_encode_u #$K
                (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $input)")
 )]
