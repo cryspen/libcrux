@@ -25,24 +25,24 @@ unzip hacl-star.zip
 rm -rf hacl-star.zip
 mv hacl-star-2a8b61343a1a7232611cb763b0dc3e4dff84d656/ hacl-star
 
-curl -L https://github.com/AeneasVerif/charon/archive/53530427db2941ce784201e64086766504bc5642.zip \
+curl -L https://github.com/AeneasVerif/charon/archive/962f26311ccdf09a6a3cfeacbccafba22bf3d405.zip \
     --output charon.zip
 unzip charon.zip
 rm -rf charon.zip
-mv charon-53530427db2941ce784201e64086766504bc5642/ charon
+mv charon-962f26311ccdf09a6a3cfeacbccafba22bf3d405/ charon
 
 
-curl -L https://github.com/FStarLang/karamel/archive/2bd16e63cfbfa2b81d3c45d597b811ca2a12d430.zip \
+curl -L https://github.com/FStarLang/karamel/archive/7862fdc3899b718d39ec98568f78ec40592a622a.zip \
     --output karamel.zip
 unzip karamel.zip
 rm -rf karamel.zip
-mv karamel-2bd16e63cfbfa2b81d3c45d597b811ca2a12d430/ karamel
+mv karamel-7862fdc3899b718d39ec98568f78ec40592a622a/ karamel
 
-curl -L https://github.com/AeneasVerif/eurydice/archive/05ade3c33b87927d9873736212cc5078c1fc3d69.zip \
+curl -L https://github.com/AeneasVerif/eurydice/archive/e66abbc2119485abfafa17c1911bdbdada5b04f3.zip \
     --output eurydice.zip
 unzip eurydice.zip
 rm -rf eurydice.zip
-mv eurydice-05ade3c33b87927d9873736212cc5078c1fc3d69/ eurydice
+mv eurydice-e66abbc2119485abfafa17c1911bdbdada5b04f3/ eurydice
 
 echo "export FSTAR_HOME=$HOME/fstar" >>$HOME/.profile
 echo "export HACL_HOME=$HOME/hacl-star" >>$HOME/.profile

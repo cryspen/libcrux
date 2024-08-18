@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
- * Karamel: f9cdef256a2b88282398a609847b34dd8c9cf3e3
- * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: 06b02e72e21705b53062d5988d3233715af43ad2
+ * Charon: 962f26311ccdf09a6a3cfeacbccafba22bf3d405
+ * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
+ * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
+ * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
+ * Libcrux: a62ef07ccb67d179e447b66adec9d950131cb20b
  */
 
 #ifndef __libcrux_sha3_neon_H
@@ -22,10 +22,21 @@ extern "C" {
 #include "intrinsics/libcrux_intrinsics_arm64.h"
 #include "libcrux_sha3_internal.h"
 
+/**
+ A portable SHA3 512 implementation.
+*/
 void libcrux_sha3_neon_sha512(Eurydice_slice digest, Eurydice_slice data);
 
+/**
+ A portable SHA3 256 implementation.
+*/
 void libcrux_sha3_neon_sha256(Eurydice_slice digest, Eurydice_slice data);
 
+/**
+ Run SHAKE256 on both inputs in parallel.
+
+ Writes the two results into `out0` and `out1`
+*/
 void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0, Eurydice_slice input1,
                                    Eurydice_slice out0, Eurydice_slice out1);
 
@@ -33,23 +44,43 @@ typedef struct libcrux_sha3_neon_x2_incremental_KeccakState_s {
   libcrux_sha3_generic_keccak_KeccakState_48 state[2U];
 } libcrux_sha3_neon_x2_incremental_KeccakState;
 
+/**
+ Initialise the `KeccakState2`.
+*/
 libcrux_sha3_neon_x2_incremental_KeccakState
 libcrux_sha3_neon_x2_incremental_shake128_init(void);
 
+/**
+ Shake128 absorb `data0` and `data1` in the [`KeccakState`] `s`.
+*/
 void libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice data0,
     Eurydice_slice data1);
 
+/**
+ Squeeze 2 times the next block in parallel in the
+ [`KeccakState`] and return the output in `out0` and `out1`.
+*/
 void libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
     Eurydice_slice out1);
 
+/**
+ Squeeze 2 times the first three blocks in parallel in the
+ [`KeccakState`] and return the output in `out0` and `out1`.
+*/
 void libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
     Eurydice_slice out1);
 
+/**
+ A portable SHA3 224 implementation.
+*/
 void libcrux_sha3_neon_sha224(Eurydice_slice digest, Eurydice_slice data);
 
+/**
+ A portable SHA3 384 implementation.
+*/
 void libcrux_sha3_neon_sha384(Eurydice_slice digest, Eurydice_slice data);
 
 #if defined(__cplusplus)
