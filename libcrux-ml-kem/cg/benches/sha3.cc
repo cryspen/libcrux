@@ -126,11 +126,12 @@ shake256_33_128(benchmark::State &state)
     }
 }
 
-BENCHMARK(sha3_256_1184);
-BENCHMARK(sha3_512_64);
 BENCHMARK(shake128_34_504);
 BENCHMARK(shake256_1120_32);
 BENCHMARK(shake256_33_128);
 #endif
+
+BENCHMARK(sha3_256_1184);
+BENCHMARK(sha3_512_64);
 
 BENCHMARK_MAIN();
