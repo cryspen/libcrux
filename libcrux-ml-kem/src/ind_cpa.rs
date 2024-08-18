@@ -221,19 +221,37 @@ pub(crate) fn generate_keypair<
 >(
     key_generation_seed: &[u8],
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
-    let (sk, pk) = generate_keypair_unpacked::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
-        key_generation_seed,
-    );
+    // We don't use the unpacked function here in order to reduce stack size.
+
+    // (ρ,σ) := G(d)
+    let hashed = Hasher::G(key_generation_seed);
+    let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
+
+    let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed_for_A), true);
+
+    let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
+    let (secret_as_ntt, domain_separator) =
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(prf_input, 0);
+    let (error_as_ntt, _) =
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+            prf_input,
+            domain_separator,
+        );
+
+    // tˆ := Aˆ ◦ sˆ + eˆ
+    let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
+
+    let seed_for_A: [u8; 32] = seed_for_A.try_into().unwrap();
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized =
         serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
-            &pk.t_as_ntt,
-            &pk.seed_for_A,
+            &t_as_ntt,
+            &seed_for_A,
         );
 
     // sk := Encode_12(sˆ mod^{+}q)
-    let secret_key_serialized = serialize_secret_key(&sk.secret_as_ntt);
+    let secret_key_serialized = serialize_secret_key(&secret_as_ntt);
 
     (secret_key_serialized, public_key_serialized)
 }

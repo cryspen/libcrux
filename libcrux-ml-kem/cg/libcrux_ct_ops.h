@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: d8a02494066422005c27e3b3f515129c0c38e9f0
- * Eurydice: 99662476dd28a9804b424c103638a01c38192491
- * Karamel: 9fb21c700160be489cafc690c3c0af2681ece49b
+ * Charon: 962f26311ccdf09a6a3cfeacbccafba22bf3d405
+ * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
+ * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 490a8664911fa33e785d629c78d6ee3dd85448e6
+ * Libcrux: b1d4135b68cb8c89ceb03c1a5829a6eb04a5309a
  */
 
 #ifndef __libcrux_ct_ops_H
@@ -46,12 +46,11 @@ libcrux_ml_kem_constant_time_ops_is_non_zero(uint8_t value) {
 static inline uint8_t libcrux_ml_kem_constant_time_ops_compare(
     Eurydice_slice lhs, Eurydice_slice rhs) {
   uint8_t r = 0U;
-  for (size_t i = (size_t)0U; i < Eurydice_slice_len(lhs, uint8_t, size_t);
-       i++) {
+  for (size_t i = (size_t)0U; i < Eurydice_slice_len(lhs, uint8_t); i++) {
     size_t i0 = i;
     r = (uint32_t)r |
-        ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *, uint8_t) ^
-         (uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *, uint8_t));
+        ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *) ^
+         (uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *));
   }
   return libcrux_ml_kem_constant_time_ops_is_non_zero(r);
 }
@@ -75,11 +74,10 @@ static inline void libcrux_ml_kem_constant_time_ops_select_ct(
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE;
        i++) {
     size_t i0 = i;
-    out[i0] =
-        ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *, uint8_t) &
-         (uint32_t)mask) |
-        ((uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *, uint8_t) &
-         (uint32_t)~mask);
+    out[i0] = ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *) &
+               (uint32_t)mask) |
+              ((uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *) &
+               (uint32_t)~mask);
   }
   memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }

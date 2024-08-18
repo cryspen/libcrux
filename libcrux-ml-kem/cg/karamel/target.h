@@ -26,20 +26,9 @@
 #define KRML_HOST_EXIT exit
 #endif
 
-// This does not actually force inline for now because this would require the
-// caller to compile with the same target features as the function.
-#ifndef KRML_MUSTINLINE
-#if defined(_MSC_VER)
-#define KRML_MUSTINLINE inline __forceinline
-#elif defined(__GNUC__)
-#define KRML_MUSTINLINE inline __attribute__((always_inline))
-#else
-#define KRML_MUSTINLINE
-#warning "The KRML_MUSTINLINE macro is not defined for this toolchain!"
-#warning \
-    "Please locate target.h and try to fill it out with a suitable definition for this compiler."
-#endif
-#endif
+// This does not actually force inline.
+// Forcing inline increases stack usage beyond acceptable limits
+#define KRML_MUSTINLINE inline
 
 #ifndef KRML_NOINLINE
 #if defined(_MSC_VER)
