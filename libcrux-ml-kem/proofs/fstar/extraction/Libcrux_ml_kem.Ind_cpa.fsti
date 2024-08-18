@@ -21,7 +21,7 @@ val sample_ring_element_cbd
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
       (requires
         Spec.MLKEM.is_rank v_K /\ v_ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE v_K /\
-        v_ETA2 == Spec.MLKEM.v_ETA2 v_K)
+        v_ETA2 == Spec.MLKEM.v_ETA2 v_K /\ range (v domain_separator + v v_K) u8_inttype)
       (fun _ -> Prims.l_True)
 
 /// Sample a vector of ring elements from a centered binomial distribution and
@@ -63,7 +63,7 @@ val compress_then_serialize_u
         v_BLOCK_LEN = Spec.MLKEM.v_C1_BLOCK_SIZE v_K)
       (ensures
         fun temp_0_ ->
-          let out_future:t_Slice u8 = temp_0_ in (* hax bug *)
+          let out_future:t_Slice u8 = temp_0_ in
           out_future ==
           Spec.MLKEM.compress_then_encode_u #v_K
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector input))
@@ -114,7 +114,6 @@ val serialize_secret_key
           let res:t_Array u8 v_OUT_LEN = res in
           res ==
           Spec.MLKEM.vector_encode_12 #v_K
-            
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key))
 
 /// Concatenate `t` and `ρ` into the public key.

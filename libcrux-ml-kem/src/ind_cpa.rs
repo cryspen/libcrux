@@ -92,10 +92,11 @@ fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector: Operations
 
 /// Sample a vector of ring elements from a centered binomial distribution.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
-    $ETA2 == Spec.MLKEM.v_ETA2 $K"))]
+    $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
+    range (v $domain_separator + v $K) u8_inttype"))]
 fn sample_ring_element_cbd<
     const K: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
@@ -109,9 +110,9 @@ fn sample_ring_element_cbd<
     let mut error_1 = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut prf_inputs = [prf_input; K];
     for i in 0..K {
-        prf_inputs[i][32] = domain_separator;
-        domain_separator += 1;
+        prf_inputs[i][32] = domain_separator + (i as u8);
     }
+    domain_separator += K as u8;
     let prf_outputs: [[u8; ETA2_RANDOMNESS_SIZE]; K] = Hasher::PRFxN(&prf_inputs);
     for i in 0..K {
         error_1[i] = sample_from_binomial_distribution::<ETA2, Vector>(&prf_outputs[i]);

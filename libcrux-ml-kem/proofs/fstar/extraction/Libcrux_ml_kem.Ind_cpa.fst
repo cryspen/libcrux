@@ -10,8 +10,6 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-#push-options "--admit_smt_queries true"
-
 let sample_ring_element_cbd
       (v_K v_ETA2_RANDOMNESS_SIZE v_ETA2: usize)
       (#v_Vector #v_Hasher: Type0)
@@ -34,7 +32,7 @@ let sample_ring_element_cbd
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in
   let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K = Rust_primitives.Hax.repeat prf_input v_K in
-  let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) =
+  let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           #FStar.Tactics.Typeclasses.solve
@@ -43,24 +41,23 @@ let sample_ring_element_cbd
             Core.Ops.Range.t_Range usize)
         <:
         Core.Ops.Range.t_Range usize)
-      (domain_separator, prf_inputs <: (u8 & t_Array (t_Array u8 (sz 33)) v_K))
-      (fun temp_0_ i ->
-          let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) = temp_0_ in
+      prf_inputs
+      (fun prf_inputs i ->
+          let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K = prf_inputs in
           let i:usize = i in
-          let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize prf_inputs
-              i
-              (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (prf_inputs.[ i ]
-                    <:
-                    t_Array u8 (sz 33))
-                  (sz 32)
-                  domain_separator
-                <:
-                t_Array u8 (sz 33))
-          in
-          let domain_separator:u8 = domain_separator +! 1uy in
-          domain_separator, prf_inputs <: (u8 & t_Array (t_Array u8 (sz 33)) v_K))
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize prf_inputs
+            i
+            (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (prf_inputs.[ i ]
+                  <:
+                  t_Array u8 (sz 33))
+                (sz 32)
+                (domain_separator +! (cast (i <: usize) <: u8) <: u8)
+              <:
+              t_Array u8 (sz 33))
+          <:
+          t_Array (t_Array u8 (sz 33)) v_K)
   in
+  let domain_separator:u8 = domain_separator +! (cast (v_K <: usize) <: u8) in
   let (prf_outputs: t_Array (t_Array u8 v_ETA2_RANDOMNESS_SIZE) v_K):t_Array
     (t_Array u8 v_ETA2_RANDOMNESS_SIZE) v_K =
     Libcrux_ml_kem.Hash_functions.f_PRFxN #v_Hasher
@@ -96,11 +93,13 @@ let sample_ring_element_cbd
           <:
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
   in
-  error_1_, domain_separator
-  <:
-  (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
-
-#pop-options
+  let result:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8) =
+    error_1_, domain_separator
+    <:
+    (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
+  in
+  let _:Prims.unit = admit () in
+  result
 
 #push-options "--admit_smt_queries true"
 
