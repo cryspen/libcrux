@@ -27,8 +27,8 @@ files:
         - [libcrux_sha3, simd, avx2, "*"]
       monomorphizations_exact:
         - [libcrux_sha3, generic_keccak, KeccakState_29]
-        - [libcrux_sha3, generic_keccak, absorb_final_5e ]
-        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks_27 ]
+        - [libcrux_sha3, generic_keccak, absorb_final_d9 ]
+        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks_2a ]
       monomorphizations_of:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
