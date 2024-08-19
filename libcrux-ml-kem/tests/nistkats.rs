@@ -61,7 +61,7 @@ macro_rules! impl_nist_known_answer_tests {
         }
     };
 }
-#[cfg(feature = "mlkem512")]
+#[cfg(all(not(feature = "pre-verification"), feature = "mlkem512"))]
 impl_nist_known_answer_tests!(
     mlkem512_nist_known_answer_tests,
     "mlkem_ipd",
@@ -70,7 +70,8 @@ impl_nist_known_answer_tests!(
     libcrux_ml_kem::mlkem512::encapsulate,
     libcrux_ml_kem::mlkem512::decapsulate
 );
-#[cfg(feature = "mlkem768")]
+
+#[cfg(all(not(feature = "pre-verification"), feature = "mlkem768"))]
 impl_nist_known_answer_tests!(
     mlkem768_nist_known_answer_tests,
     "mlkem_ipd",
@@ -80,7 +81,7 @@ impl_nist_known_answer_tests!(
     libcrux_ml_kem::mlkem768::decapsulate
 );
 
-#[cfg(feature = "mlkem1024")]
+#[cfg(all(not(feature = "pre-verification"), feature = "mlkem1024"))]
 impl_nist_known_answer_tests!(
     mlkem1024_nist_known_answer_tests,
     "mlkem_ipd",
