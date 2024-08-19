@@ -32,6 +32,7 @@ pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
 
+#[hax_lib::attributes]
 impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
@@ -42,6 +43,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
+    #[requires(VECTORS_IN_RING_ELEMENT * 16 <= a.len())]
     pub(crate) fn from_i16_array(a: &[i16]) -> Self {
         let mut result = PolynomialRingElement::ZERO();
         for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -193,6 +195,14 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         let mut out = PolynomialRingElement::ZERO();
 
         for i in 0..VECTORS_IN_RING_ELEMENT {
+            // hax_lib::assert!(64 + 4 * i < 128);
+            // hax_lib::assert!(64 + 4 * i + 1 < 128);
+            // hax_lib::assert!(64 + 4 * i + 2 < 128);
+            // hax_lib::assert!(64 + 4 * i + 3 < 128);
+            hax_lib::fstar!("assert(64 + 4 * v $i < 128);
+                assert(64 + 4 * v $i + 1 < 128);
+                assert(64 + 4 * v $i + 2 < 128);
+                assert(64 + 4 * v $i + 3 < 128)");
             out.coefficients[i] = Vector::ntt_multiply(
                 &self.coefficients[i],
                 &rhs.coefficients[i],

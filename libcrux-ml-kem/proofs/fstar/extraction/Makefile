@@ -4,7 +4,6 @@ ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
               Libcrux_ml_kem.Ind_cca.fst \
               Libcrux_ml_kem.Invert_ntt.fst \
               Libcrux_ml_kem.Ntt.fst \
-              Libcrux_ml_kem.Polynomial.fst \
               Libcrux_ml_kem.Sampling.fst \
               Libcrux_ml_kem.Serialize.fst \
               Libcrux_ml_kem.Vector.Avx2.Arithmetic.fst \
