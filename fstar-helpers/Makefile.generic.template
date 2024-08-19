@@ -179,7 +179,7 @@ function target() {
 target "all" "Verify every F* files (stops whenever an F* fails first)"
 target "all-keep-going" "Verify every F* files (tries as many F* module as possible)"
 target "" ""
-target "run:${ANSI_COLOR_TONE}<MyModule.fst>  " 'Runs F* on `MyModule.fst` only'
+target "run/${ANSI_COLOR_TONE}<MyModule.fst>  " 'Runs F* on `MyModule.fst` only'
 target "" ""
 target "vscode" 'Generates a `hax.fst.config.json` file'
 target "${ANSI_COLOR_TONE}<MyModule.fst>${ANSI_COLOR_BLUE}-in   " 'Useful for Emacs, outputs the F* prefix command to be used'
@@ -207,9 +207,9 @@ h: ;@bash -c "$$HELPMESSAGE"
 
 HEADER = $(Q)printf '${ANSI_COLOR_BBLUE}[CHECK] %s ${ANSI_COLOR_RESET}\n' "$(basename $(notdir $@))"
 
-run:%: | .depend $(HINT_DIR) $(CACHE_DIR) $(HACL_HOME)
+run/%: | .depend $(HINT_DIR) $(CACHE_DIR) $(HACL_HOME)
 	${HEADER}
-	$(Q)$(FSTAR) $(OTHERFLAGS) $(@:run:%=%)
+	$(Q)$(FSTAR) $(OTHERFLAGS) $(@:run/%=%)
 
 
 ADMIT_MODULE_FLAGS = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/, ${ADMIT_MODULES}))
