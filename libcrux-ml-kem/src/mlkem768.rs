@@ -97,6 +97,22 @@ macro_rules! instantiate {
                 >(randomness)
             }
 
+            /// Generate Kyber 768 Key Pair
+            #[cfg(feature = "kyber")]
+            pub fn kyber_generate_key_pair(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKem768KeyPair {
+                p::kyber_generate_keypair::<
+                    RANK_768,
+                    CPA_PKE_SECRET_KEY_SIZE_768,
+                    SECRET_KEY_SIZE_768,
+                    CPA_PKE_PUBLIC_KEY_SIZE_768,
+                    RANKED_BYTES_PER_RING_ELEMENT_768,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                >(randomness)
+            }
+
             /// Encapsulate ML-KEM 768
             ///
             /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
@@ -396,6 +412,24 @@ pub fn decapsulate(
 #[cfg(all(not(eurydice), feature = "kyber"))]
 pub(crate) mod kyber {
     use super::*;
+
+    /// Generate Kyber 768 Key Pair
+    ///
+    /// Generate a Kyber key pair. The input is a byte array of size
+    /// [`KEY_GENERATION_SEED_SIZE`].
+    ///
+    /// This function returns an [`MlKem768KeyPair`].
+    pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPair {
+        multiplexing::kyber_generate_keypair::<
+            RANK_768,
+            CPA_PKE_SECRET_KEY_SIZE_768,
+            SECRET_KEY_SIZE_768,
+            CPA_PKE_PUBLIC_KEY_SIZE_768,
+            RANKED_BYTES_PER_RING_ELEMENT_768,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
+    }
 
     /// Encapsulate Kyber 768
     ///

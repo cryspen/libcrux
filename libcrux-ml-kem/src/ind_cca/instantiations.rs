@@ -33,6 +33,33 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     $vector,
                     $hash,
+                    crate::variant::MlKem,
+                >(randomness)
+            }
+
+            #[cfg(feature = "kyber")]
+            pub(crate) fn kyber_generate_keypair<
+                const K: usize,
+                const CPA_PRIVATE_KEY_SIZE: usize,
+                const PRIVATE_KEY_SIZE: usize,
+                const PUBLIC_KEY_SIZE: usize,
+                const BYTES_PER_RING_ELEMENT: usize,
+                const ETA1: usize,
+                const ETA1_RANDOMNESS_SIZE: usize,
+            >(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
+                crate::ind_cca::generate_keypair::<
+                    K,
+                    CPA_PRIVATE_KEY_SIZE,
+                    PRIVATE_KEY_SIZE,
+                    PUBLIC_KEY_SIZE,
+                    BYTES_PER_RING_ELEMENT,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    $vector,
+                    $hash,
+                    crate::variant::Kyber,
                 >(randomness)
             }
 
@@ -88,7 +115,7 @@ macro_rules! instantiate {
                     ETA2_RANDOMNESS_SIZE,
                     $vector,
                     $hash,
-                    crate::ind_cca::Kyber,
+                    crate::variant::Kyber,
                 >(public_key, randomness)
             }
 
@@ -126,7 +153,7 @@ macro_rules! instantiate {
                     ETA2_RANDOMNESS_SIZE,
                     $vector,
                     $hash,
-                    crate::ind_cca::MlKem,
+                    crate::variant::MlKem,
                 >(public_key, randomness)
             }
 
@@ -172,7 +199,7 @@ macro_rules! instantiate {
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     $vector,
                     $hash,
-                    crate::ind_cca::Kyber,
+                    crate::variant::Kyber,
                 >(private_key, ciphertext)
             }
 
@@ -217,7 +244,7 @@ macro_rules! instantiate {
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     $vector,
                     $hash,
-                    crate::ind_cca::MlKem,
+                    crate::variant::MlKem,
                 >(private_key, ciphertext)
             }
 
