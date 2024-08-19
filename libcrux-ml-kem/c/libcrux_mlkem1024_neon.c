@@ -7,8 +7,8 @@
  * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
  * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
- * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 23480eeb26f8e66cfa9bd0eb76c65d87fbb91806
+ * F*: c3d49544236797e54bfa10f65e4c2b17b543fd30
+ * Libcrux: 60b28afb7bf09eeff64f7bd63b12a821496645f2
  */
 
 #include "libcrux_mlkem1024_neon.h"
@@ -35,18 +35,18 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-static void decapsulate_f8(
+static void decapsulate_b0(
     libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_decapsulate_82(private_key, ciphertext, ret);
+  libcrux_ml_kem_ind_cca_decapsulate_5b(private_key, ciphertext, ret);
 }
 
 void libcrux_ml_kem_mlkem1024_neon_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
-  decapsulate_f8(private_key, ciphertext, ret);
+  decapsulate_b0(private_key, ciphertext, ret);
 }
 
 /**
@@ -70,18 +70,19 @@ generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-static void decapsulate_unpacked_c2(
+static void decapsulate_unpacked_54(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_2c *key_pair,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_decapsulate_unpacked_ec(key_pair, ciphertext, ret);
+  libcrux_ml_kem_ind_cca_unpacked_decapsulate_unpacked_a3(key_pair, ciphertext,
+                                                          ret);
 }
 
 void libcrux_ml_kem_mlkem1024_neon_decapsulate_unpacked(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_2c *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
-  decapsulate_unpacked_c2(private_key, ciphertext, ret);
+  decapsulate_unpacked_54(private_key, ciphertext, ret);
 }
 
 /**
@@ -95,13 +96,13 @@ with const generics
 - C2_SIZE= 160
 - VECTOR_U_COMPRESSION_FACTOR= 11
 - VECTOR_V_COMPRESSION_FACTOR= 5
-- VECTOR_U_BLOCK_LEN= 352
+- C1_BLOCK_SIZE= 352
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_21 encapsulate_6b(
+static tuple_21 encapsulate_24(
     libcrux_ml_kem_types_MlKemPublicKey_1f *public_key,
     uint8_t randomness[32U]) {
   libcrux_ml_kem_types_MlKemPublicKey_1f *uu____0 = public_key;
@@ -116,7 +117,7 @@ tuple_21 libcrux_ml_kem_mlkem1024_neon_encapsulate(
   libcrux_ml_kem_types_MlKemPublicKey_1f *uu____0 = public_key;
   uint8_t uu____1[32U];
   memcpy(uu____1, randomness, (size_t)32U * sizeof(uint8_t));
-  return encapsulate_6b(uu____0, uu____1);
+  return encapsulate_24(uu____0, uu____1);
 }
 
 /**
@@ -137,14 +138,15 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_21 encapsulate_unpacked_1c(
+static tuple_21 encapsulate_unpacked_ed(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_2c *public_key,
     uint8_t randomness[32U]) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_2c *uu____0 =
       public_key;
   uint8_t uu____1[32U];
   memcpy(uu____1, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_encapsulate_unpacked_47(uu____0, uu____1);
+  return libcrux_ml_kem_ind_cca_unpacked_encapsulate_unpacked_ad(uu____0,
+                                                                 uu____1);
 }
 
 tuple_21 libcrux_ml_kem_mlkem1024_neon_encapsulate_unpacked(
@@ -154,7 +156,7 @@ tuple_21 libcrux_ml_kem_mlkem1024_neon_encapsulate_unpacked(
       public_key;
   uint8_t uu____1[32U];
   memcpy(uu____1, randomness, (size_t)32U * sizeof(uint8_t));
-  return encapsulate_unpacked_1c(uu____0, uu____1);
+  return encapsulate_unpacked_ed(uu____0, uu____1);
 }
 
 /**
@@ -164,11 +166,11 @@ libcrux_ml_kem.ind_cca.instantiations.neon.generate_keypair with const generics
 - CPA_PRIVATE_KEY_SIZE= 1536
 - PRIVATE_KEY_SIZE= 3168
 - PUBLIC_KEY_SIZE= 1568
-- BYTES_PER_RING_ELEMENT= 1536
+- RANKED_BYTES_PER_RING_ELEMENT= 1536
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_91(
+static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_62(
     uint8_t randomness[64U]) {
   uint8_t uu____0[64U];
   memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
@@ -179,7 +181,7 @@ libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_mlkem1024_neon_generate_key_pair(uint8_t randomness[64U]) {
   uint8_t uu____0[64U];
   memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_91(uu____0);
+  return generate_keypair_62(uu____0);
 }
 
 /**
@@ -195,10 +197,10 @@ generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 static libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_2c
-generate_keypair_unpacked_87(uint8_t randomness[64U]) {
+generate_keypair_unpacked_bc(uint8_t randomness[64U]) {
   uint8_t uu____0[64U];
   memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_unpacked_b4(uu____0);
+  return libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_20(uu____0);
 }
 
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_2c
@@ -206,7 +208,7 @@ libcrux_ml_kem_mlkem1024_neon_generate_key_pair_unpacked(
     uint8_t randomness[64U]) {
   uint8_t uu____0[64U];
   memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_unpacked_87(uu____0);
+  return generate_keypair_unpacked_bc(uu____0);
 }
 
 /**
@@ -217,14 +219,14 @@ generics
 - RANKED_BYTES_PER_RING_ELEMENT= 1536
 - PUBLIC_KEY_SIZE= 1568
 */
-static bool validate_public_key_a3(uint8_t *public_key) {
+static bool validate_public_key_ef(uint8_t *public_key) {
   return libcrux_ml_kem_ind_cca_validate_public_key_7e(public_key);
 }
 
 core_option_Option_99 libcrux_ml_kem_mlkem1024_neon_validate_public_key(
     libcrux_ml_kem_types_MlKemPublicKey_1f public_key) {
   core_option_Option_99 uu____0;
-  if (validate_public_key_a3(public_key.value)) {
+  if (validate_public_key_ef(public_key.value)) {
     uu____0 = (CLITERAL(core_option_Option_99){.tag = core_option_Some,
                                                .f0 = public_key});
   } else {
