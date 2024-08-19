@@ -71,7 +71,7 @@ libcrux-kem = { version = "=0.0.2-alpha.3", path = "libcrux-kem" }
 rand = { version = "0.8" }
 log = { version = "0.4", optional = true }
 # WASM API
-wasm-bindgen = { version = "0.2.87", optional = true }
+wasm-bindgen = { version = "0.2.93", optional = true }
 
 # When using the hax toolchain, we have more dependencies.
 # This is only required when doing proofs.
