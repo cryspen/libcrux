@@ -292,7 +292,7 @@ def constantTimeSelectOnEquality(a, b, ifEq, ifNeq):
 
 def InnerKeyGen(seed, params):
     assert len(seed) == 32
-    rho, sigma = G(seed)
+    rho, sigma = G(seed + bytes([params.k]))
     A = sampleMatrix(rho, params.k)
     s = sampleNoise(sigma, params.eta1, 0, params.k)
     e = sampleNoise(sigma, params.eta1, params.k, params.k)
