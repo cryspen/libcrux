@@ -10,7 +10,7 @@ readme.workspace = true
 description = "Platform detection crate for libcrux."
 
 [dependencies]
-libc = "0.2.153"
+libc = "0.2.157"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(eurydice)'] }
