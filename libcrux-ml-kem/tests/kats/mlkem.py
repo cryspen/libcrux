@@ -290,9 +290,12 @@ def constantTimeSelectOnEquality(a, b, ifEq, ifNeq):
     return ifEq if a == b else ifNeq
 
 
-def InnerKeyGen(seed, params):
+def InnerKeyGen(seed, params, ipd):
     assert len(seed) == 32
-    rho, sigma = G(seed + bytes([params.k]))
+    if ipd:
+            rho, sigma = G(seed)
+    else:
+            rho, sigma = G(seed + bytes([params.k]))
     A = sampleMatrix(rho, params.k)
     s = sampleNoise(sigma, params.eta1, 0, params.k)
     e = sampleNoise(sigma, params.eta1, params.k, params.k)
@@ -330,10 +333,10 @@ def InnerDec(sk, ct, params):
     return (v - sHat.DotNTT(u.NTT()).InvNTT()).Compress(1).Encode(1)
 
 
-def KeyGen(seed, params):
+def KeyGen(seed, params, ipd = False):
     assert len(seed) == 64
     z = seed[32:]
-    pk, sk2 = InnerKeyGen(seed[:32], params)
+    pk, sk2 = InnerKeyGen(seed[:32], params, ipd)
     h = H(pk)
     return (pk, sk2 + pk + h + z)
 

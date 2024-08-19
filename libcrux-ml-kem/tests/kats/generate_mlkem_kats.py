@@ -90,3 +90,50 @@ for params in [params512, params768, params1024]:
 
         with open("nistkats_mlkem_{}.json".format(output_suffix), "w") as f:
             json.dump(kats_formatted, f, ensure_ascii=False, indent=4)
+
+
+for params in [params512, params768, params1024]:
+    kats_formatted = []
+    seed = bytes(range(48))
+    g = NistDRBG(seed)
+
+    print("Generating IPD KATs for {} parameter set.".format(params))
+
+    for i in range(100):
+        seed = g.read(48)
+        g2 = NistDRBG(seed)
+
+        kseed = g2.read(32) + g2.read(32)
+        eseed = g2.read(32)
+
+        pk, sk = KeyGen(kseed, params, ipd = True)
+        ct, ss = Enc(pk, eseed, params)
+
+        Dec(sk, ct, params)
+
+        kats_formatted.append(
+            {
+                "key_generation_seed": bytes(kseed).hex(),
+                "sha3_256_hash_of_public_key": bytes(
+                    hashlib.sha3_256(pk).digest()
+                ).hex(),
+                "sha3_256_hash_of_secret_key": bytes(
+                    hashlib.sha3_256(sk).digest()
+                ).hex(),
+                "encapsulation_seed": bytes(eseed).hex(),
+                "sha3_256_hash_of_ciphertext": bytes(
+                    hashlib.sha3_256(ct).digest()
+                ).hex(),
+                "shared_secret": bytes(ss).hex(),
+            }
+        )
+
+        if params == params512:
+            output_suffix = "512"
+        elif params == params768:
+            output_suffix = "768"
+        else:
+            output_suffix = "1024"
+
+        with open("nistkats_mlkem_ipd_{}.json".format(output_suffix), "w") as f:
+            json.dump(kats_formatted, f, ensure_ascii=False, indent=4)

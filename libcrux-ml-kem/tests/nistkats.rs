@@ -64,7 +64,7 @@ macro_rules! impl_nist_known_answer_tests {
 #[cfg(feature = "mlkem512")]
 impl_nist_known_answer_tests!(
     mlkem512_nist_known_answer_tests,
-    "mlkem",
+    "mlkem_ipd",
     512,
     libcrux_ml_kem::mlkem512::generate_key_pair,
     libcrux_ml_kem::mlkem512::encapsulate,
@@ -73,7 +73,7 @@ impl_nist_known_answer_tests!(
 #[cfg(feature = "mlkem768")]
 impl_nist_known_answer_tests!(
     mlkem768_nist_known_answer_tests,
-    "mlkem",
+    "mlkem_ipd",
     768,
     libcrux_ml_kem::mlkem768::generate_key_pair,
     libcrux_ml_kem::mlkem768::encapsulate,
@@ -83,7 +83,7 @@ impl_nist_known_answer_tests!(
 #[cfg(feature = "mlkem1024")]
 impl_nist_known_answer_tests!(
     mlkem1024_nist_known_answer_tests,
-    "mlkem",
+    "mlkem_ipd",
     1024,
     libcrux_ml_kem::mlkem1024::generate_key_pair,
     libcrux_ml_kem::mlkem1024::encapsulate,
