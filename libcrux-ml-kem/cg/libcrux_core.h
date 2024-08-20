@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
- * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * Charon: 0576bfc67e99aae86c51930421072688138b672b
+ * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
+ * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
  * F*: 3ed3c98d39ce028c31c5908a38bc68ad5098f563
- * Libcrux: d6111233152fe392e83036ad6c29da60f591aef9
+ * Libcrux: ffaeafbdbb5598f4060b0f4e1cc8ad937feac00a
  */
 
 #ifndef __libcrux_core_H
@@ -237,10 +237,11 @@ with const generics
 */
 static inline libcrux_ml_kem_types_MlKemPublicKey_15
 libcrux_ml_kem_types_from_07_4c(uint8_t value[1184U]) {
-  uint8_t uu____0[1184U];
-  memcpy(uu____0, value, (size_t)1184U * sizeof(uint8_t));
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_value[1184U];
+  memcpy(copy_of_value, value, (size_t)1184U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemPublicKey_15 lit;
-  memcpy(lit.value, uu____0, (size_t)1184U * sizeof(uint8_t));
+  memcpy(lit.value, copy_of_value, (size_t)1184U * sizeof(uint8_t));
   return lit;
 }
 
@@ -286,10 +287,11 @@ with const generics
 */
 static inline libcrux_ml_kem_types_MlKemPrivateKey_55
 libcrux_ml_kem_types_from_e7_a7(uint8_t value[2400U]) {
-  uint8_t uu____0[2400U];
-  memcpy(uu____0, value, (size_t)2400U * sizeof(uint8_t));
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_value[2400U];
+  memcpy(copy_of_value, value, (size_t)2400U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemPrivateKey_55 lit;
-  memcpy(lit.value, uu____0, (size_t)2400U * sizeof(uint8_t));
+  memcpy(lit.value, copy_of_value, (size_t)2400U * sizeof(uint8_t));
   return lit;
 }
 
@@ -315,10 +317,11 @@ with const generics
 */
 static inline libcrux_ml_kem_mlkem768_MlKem768Ciphertext
 libcrux_ml_kem_types_from_15_f5(uint8_t value[1088U]) {
-  uint8_t uu____0[1088U];
-  memcpy(uu____0, value, (size_t)1088U * sizeof(uint8_t));
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_value[1088U];
+  memcpy(copy_of_value, value, (size_t)1088U * sizeof(uint8_t));
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext lit;
-  memcpy(lit.value, uu____0, (size_t)1088U * sizeof(uint8_t));
+  memcpy(lit.value, copy_of_value, (size_t)1088U * sizeof(uint8_t));
   return lit;
 }
 
@@ -336,6 +339,9 @@ static inline uint8_t *libcrux_ml_kem_types_as_slice_f6_f2(
 }
 
 /**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 33
@@ -344,12 +350,10 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_2d2(
     Eurydice_slice slice, uint8_t ret[33U]) {
   uint8_t out[33U] = {0U};
   uint8_t *uu____0 = out;
-  core_slice___Slice_T___copy_from_slice(
-      Eurydice_array_to_subslice2(
-          uu____0, (size_t)0U,
-          core_slice___Slice_T___len(slice, uint8_t, size_t), uint8_t,
-          Eurydice_slice),
-      slice, uint8_t, void *);
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
+                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
+      slice, uint8_t);
   memcpy(ret, out, (size_t)33U * sizeof(uint8_t));
 }
 
@@ -388,6 +392,9 @@ static inline void core_result_unwrap_41_83(core_result_Result_00 self,
 }
 
 /**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 34
@@ -396,12 +403,10 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_2d1(
     Eurydice_slice slice, uint8_t ret[34U]) {
   uint8_t out[34U] = {0U};
   uint8_t *uu____0 = out;
-  core_slice___Slice_T___copy_from_slice(
-      Eurydice_array_to_subslice2(
-          uu____0, (size_t)0U,
-          core_slice___Slice_T___len(slice, uint8_t, size_t), uint8_t,
-          Eurydice_slice),
-      slice, uint8_t, void *);
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
+                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
+      slice, uint8_t);
   memcpy(ret, out, (size_t)34U * sizeof(uint8_t));
 }
 
@@ -416,10 +421,12 @@ with const generics
 */
 static inline Eurydice_slice libcrux_ml_kem_types_as_ref_ba_9f(
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self) {
-  return Eurydice_array_to_slice((size_t)1088U, self->value, uint8_t,
-                                 Eurydice_slice);
+  return Eurydice_array_to_slice((size_t)1088U, self->value, uint8_t);
 }
 
+/**
+ Pad the `slice` with `0`s at the end.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
@@ -429,15 +436,16 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_2d0(
     Eurydice_slice slice, uint8_t ret[1120U]) {
   uint8_t out[1120U] = {0U};
   uint8_t *uu____0 = out;
-  core_slice___Slice_T___copy_from_slice(
-      Eurydice_array_to_subslice2(
-          uu____0, (size_t)0U,
-          core_slice___Slice_T___len(slice, uint8_t, size_t), uint8_t,
-          Eurydice_slice),
-      slice, uint8_t, void *);
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
+                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
+      slice, uint8_t);
   memcpy(ret, out, (size_t)1120U * sizeof(uint8_t));
 }
 
+/**
+ Pad the `slice` with `0`s at the end.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
@@ -447,12 +455,10 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_2d(
     Eurydice_slice slice, uint8_t ret[64U]) {
   uint8_t out[64U] = {0U};
   uint8_t *uu____0 = out;
-  core_slice___Slice_T___copy_from_slice(
-      Eurydice_array_to_subslice2(
-          uu____0, (size_t)0U,
-          core_slice___Slice_T___len(slice, uint8_t, size_t), uint8_t,
-          Eurydice_slice),
-      slice, uint8_t, void *);
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
+                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
+      slice, uint8_t);
   memcpy(ret, out, (size_t)64U * sizeof(uint8_t));
 }
 
