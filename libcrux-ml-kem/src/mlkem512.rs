@@ -94,6 +94,21 @@ macro_rules! instantiate {
                 >(randomness)
             }
 
+            /// Generate Kyber 512 Key Pair
+            #[cfg(feature = "kyber")]
+            pub fn kyber_generate_key_pair(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKem512KeyPair {
+                p::kyber_generate_keypair::<
+                    RANK_512,
+                    CPA_PKE_SECRET_KEY_SIZE_512,
+                    SECRET_KEY_SIZE_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    RANKED_BYTES_PER_RING_ELEMENT_512,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                >(randomness)
+            }
             /// Encapsulate ML-KEM 512
             ///
             /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
@@ -393,12 +408,30 @@ pub fn decapsulate(
 #[cfg(all(not(eurydice), feature = "kyber"))]
 pub(crate) mod kyber {
     use super::*;
+
+    /// Generate Kyber 512 Key Pair
+    ///
+    /// The input is a byte array of size
+    /// [`KEY_GENERATION_SEED_SIZE`].
+    ///
+    /// This function returns an [`MlKem512KeyPair`].
+    pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512KeyPair {
+        multiplexing::kyber_generate_keypair::<
+            RANK_512,
+            CPA_PKE_SECRET_KEY_SIZE_512,
+            SECRET_KEY_SIZE_512,
+            CPA_PKE_PUBLIC_KEY_SIZE_512,
+            RANKED_BYTES_PER_RING_ELEMENT_512,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
+    }
+
     /// Encapsulate Kyber 512
     ///
     /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
     /// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
     /// bytes of `randomness`.
-
     pub fn encapsulate(
         public_key: &MlKem512PublicKey,
         randomness: [u8; SHARED_SECRET_SIZE],

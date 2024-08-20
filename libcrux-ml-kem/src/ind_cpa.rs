@@ -14,6 +14,7 @@ use crate::{
         serialize_uncompressed_ring_element,
     },
     utils::into_padded_array,
+    variant::{MlKem, Variant},
     vector::Operations,
 };
 
@@ -176,8 +177,8 @@ pub(crate) fn generate_keypair_unpacked<
     IndCpaPrivateKeyUnpacked<K, Vector>,
     IndCpaPublicKeyUnpacked<K, Vector>,
 ) {
-    // (ρ,σ) := G(d)
-    let hashed = Hasher::G(key_generation_seed);
+    // (ρ,σ) := G(d) for Kyber, (ρ,σ) := G(d || K) for ML-KEM
+    let hashed = MlKem::cpa_keygen_seed::<K, Hasher>(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed_for_A), true);
@@ -218,13 +219,14 @@ pub(crate) fn generate_keypair<
     const ETA1_RANDOMNESS_SIZE: usize,
     Vector: Operations,
     Hasher: Hash<K>,
+    Scheme: Variant,
 >(
     key_generation_seed: &[u8],
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
     // We don't use the unpacked function here in order to reduce stack size.
 
-    // (ρ,σ) := G(d)
-    let hashed = Hasher::G(key_generation_seed);
+    // (ρ,σ) := G(d) for Kyber, (ρ,σ) := G(d || K) for ML-KEM
+    let hashed = Scheme::cpa_keygen_seed::<K, Hasher>(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed_for_A), true);

@@ -31,21 +31,25 @@ use instantiations::portable::{
 #[cfg(all(feature = "simd256", feature = "kyber"))]
 use instantiations::avx2::{
     kyber_decapsulate as kyber_decapsulate_avx2, kyber_encapsulate as kyber_encapsulate_avx2,
+    kyber_generate_keypair as kyber_generate_keypair_avx2,
 };
 
 #[cfg(all(feature = "simd128", feature = "kyber"))]
 use instantiations::neon::{
     kyber_decapsulate as kyber_decapsulate_neon, kyber_encapsulate as kyber_encapsulate_neon,
+    kyber_generate_keypair as kyber_generate_keypair_neon,
 };
 
 #[cfg(all(not(feature = "simd256"), feature = "kyber"))]
 use instantiations::portable::{
     kyber_decapsulate as kyber_decapsulate_avx2, kyber_encapsulate as kyber_encapsulate_avx2,
+    kyber_generate_keypair as kyber_generate_keypair_avx2,
 };
 
 #[cfg(all(not(feature = "simd128"), feature = "kyber"))]
 use instantiations::portable::{
     kyber_decapsulate as kyber_decapsulate_neon, kyber_encapsulate as kyber_encapsulate_neon,
+    kyber_generate_keypair as kyber_generate_keypair_neon,
 };
 
 pub(crate) fn validate_public_key<
@@ -65,6 +69,52 @@ pub(crate) fn validate_public_key<
             RANKED_BYTES_PER_RING_ELEMENT,
             PUBLIC_KEY_SIZE,
         >(public_key)
+    }
+}
+
+#[cfg(feature = "kyber")]
+pub(crate) fn kyber_generate_keypair<
+    const K: usize,
+    const CPA_PRIVATE_KEY_SIZE: usize,
+    const PRIVATE_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const BYTES_PER_RING_ELEMENT: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+>(
+    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
+    // Runtime feature detection.
+    if libcrux_platform::simd256_support() {
+        kyber_generate_keypair_avx2::<
+            K,
+            CPA_PRIVATE_KEY_SIZE,
+            PRIVATE_KEY_SIZE,
+            PUBLIC_KEY_SIZE,
+            BYTES_PER_RING_ELEMENT,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
+    } else if libcrux_platform::simd128_support() {
+        kyber_generate_keypair_neon::<
+            K,
+            CPA_PRIVATE_KEY_SIZE,
+            PRIVATE_KEY_SIZE,
+            PUBLIC_KEY_SIZE,
+            BYTES_PER_RING_ELEMENT,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
+    } else {
+        instantiations::portable::kyber_generate_keypair::<
+            K,
+            CPA_PRIVATE_KEY_SIZE,
+            PRIVATE_KEY_SIZE,
+            PUBLIC_KEY_SIZE,
+            BYTES_PER_RING_ELEMENT,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
     }
 }
 
