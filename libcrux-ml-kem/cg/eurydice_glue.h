@@ -93,7 +93,7 @@ typedef struct {
 #define core_array___core__clone__Clone_for__Array_T__N___20__clone( \
     len, src, dst, elem_type, _ret_t)                                \
   (memcpy(dst, src, len * sizeof(elem_type)))
-#define TryFromSliceError uint8_t
+#define core_array_TryFromSliceError uint8_t
 
 #define Eurydice_array_eq(sz, a1, a2, t, _a, _b) \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
@@ -160,8 +160,8 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
 
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
   (((iter_ptr)->start == (iter_ptr)->end)            \
-       ? (CLITERAL(ret_t){.tag = None})              \
-       : (CLITERAL(ret_t){.tag = Some, .f0 = (iter_ptr)->start++}))
+       ? (CLITERAL(ret_t){.tag = core_option_None})              \
+       : (CLITERAL(ret_t){.tag = core_option_Some, .f0 = (iter_ptr)->start++}))
 
 #define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next \
   Eurydice_range_iter_next
