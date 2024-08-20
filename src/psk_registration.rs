@@ -42,8 +42,10 @@ pub struct ResponderMsg {
 
 /// A finished PSK with an attached storage handle.
 pub struct RegisteredPsk {
-    psk: Psk,
-    psk_handle: Vec<u8>,
+    /// The PSK
+    pub psk: Psk,
+    /// The PSK's handle for storing
+    pub psk_handle: Vec<u8>,
 }
 
 /// The protocol initiator.
@@ -57,7 +59,8 @@ pub struct Initiator {
 pub struct Responder {}
 
 impl Initiator {
-    fn send_initial_message<C: Credential>(
+    /// Send the initial message encapsulating a PQ-PrePSK.
+    pub fn send_initial_message<C: Credential>(
         sctx: &[u8],
         psk_ttl: Duration,
         pqpk_responder: &psq::PublicKey,
@@ -100,7 +103,12 @@ impl Initiator {
         ))
     }
 
-    fn complete_handshake(&self, responder_message: &ResponderMsg) -> Result<RegisteredPsk, Error> {
+    /// Receive the responder's respone and derive a PSK under the
+    /// given handle.
+    pub fn complete_handshake(
+        &self,
+        responder_message: &ResponderMsg,
+    ) -> Result<RegisteredPsk, Error> {
         let (_initiator_iv, _initiator_key, responder_iv, responder_key) =
             derive_cipherstate(&self.k_pq)?;
 
@@ -146,7 +154,8 @@ fn deserialize_ts(bytes: &[u8]) -> Result<(u64, u32), Error> {
 }
 
 impl Responder {
-    fn send<C: Credential>(
+    /// On successful decapsulation of the PQ-PrePSK, send the response.
+    pub fn send<C: Credential>(
         psk_handle: &[u8],
         psk_ttl: Duration,
         sctxt: &[u8],
@@ -169,12 +178,12 @@ impl Responder {
         let verification_key = C::deserialize_verification_key(&msg_bytes[28..28 + C::VK_LEN])?;
         let signature = C::deserialize_signature(&msg_bytes[28 + C::VK_LEN..])?;
 
-        if !C::verify(
+        if C::verify(
             &verification_key,
             &signature,
             &initiator_message.encapsulation.serialize(),
         )
-        .is_ok()
+        .is_err()
         {
             return Err(Error::RegistrationError);
         }
