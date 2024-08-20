@@ -156,7 +156,7 @@ jobs:
       - name: 🏃🏻‍♀️ Test Kyber
         run: |
           cargo clean
-          cargo test --features kyber --verbose $RUST_TARGET_FLAG
+          cargo test --features pre-verification,kyber --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Cargo Check Features
         if: ${{ matrix.bits == 64 }}

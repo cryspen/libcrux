@@ -84,6 +84,22 @@ macro_rules! instantiate {
                 }
             }
 
+            /// Generate Kyber 1024 Key Pair
+            #[cfg(feature = "kyber")]
+            pub fn kyber_generate_key_pair(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKem1024KeyPair {
+                p::kyber_generate_keypair::<
+                    RANK_1024,
+                    CPA_PKE_SECRET_KEY_SIZE_1024,
+                    SECRET_KEY_SIZE_1024,
+                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                    RANKED_BYTES_PER_RING_ELEMENT_1024,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                >(randomness)
+            }
+
             /// Generate ML-KEM 1024 Key Pair
             pub fn generate_key_pair(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
@@ -402,6 +418,26 @@ pub fn decapsulate(
 #[cfg(all(not(eurydice), feature = "kyber"))]
 pub(crate) mod kyber {
     use super::*;
+
+    /// Generate Kyber 1024 Key Pair
+    ///
+    /// Generate an ML-KEM key pair. The input is a byte array of size
+    /// [`KEY_GENERATION_SEED_SIZE`].
+    ///
+    /// This function returns an [`MlKem1024KeyPair`].
+    pub fn generate_key_pair(
+        randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    ) -> MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024> {
+        multiplexing::kyber_generate_keypair::<
+            RANK_1024,
+            CPA_PKE_SECRET_KEY_SIZE_1024,
+            SECRET_KEY_SIZE_1024,
+            CPA_PKE_PUBLIC_KEY_SIZE_1024,
+            RANKED_BYTES_PER_RING_ELEMENT_1024,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
+    }
 
     /// Encapsulate Kyber 1024
     ///
