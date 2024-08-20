@@ -296,7 +296,7 @@ fn compute_k0(
 fn compute_mac(k0: &[u8]) -> Result<Mac, Error> {
     let km = libcrux_hkdf::expand(
         libcrux_hkdf::Algorithm::Sha256,
-        &k0,
+        k0,
         CONFIRMATION_CONTEXT,
         KM_LENGTH,
     )
@@ -305,7 +305,7 @@ fn compute_mac(k0: &[u8]) -> Result<Mac, Error> {
     let mac: Mac = libcrux_hmac::hmac(
         libcrux_hmac::Algorithm::Sha256,
         &km,
-        &MAC_INPUT,
+        MAC_INPUT,
         Some(MAC_LENGTH),
     )
     .try_into()

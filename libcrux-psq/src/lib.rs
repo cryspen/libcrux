@@ -37,4 +37,4 @@ type Psk = [u8; PSK_LENGTH];
 
 pub mod cred;
 pub mod psk_registration;
-mod psq;
+pub mod psq;
