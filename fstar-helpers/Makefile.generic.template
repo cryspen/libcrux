@@ -243,7 +243,7 @@ verify: $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(ROOTS))) $(HACL_HOME)
 
 # Targets for VSCode
 hax.fst.config.json:
-	$(Q)echo "$(FSTAR_INCLUDE_DIRS)" | jq --arg fstar "$(FSTAR_BIN)" -R 'split(" ") | {fstar_exe: $$fstar, includes: .}' > $@
+	$(Q)echo "$(FSTAR_INCLUDE_DIRS)" | jq --arg fstar "$(FSTAR_BIN)" -R 'split(" ") | {fstar_exe: $$fstar | gsub("^\\s+|\\s+$$";""), include_dirs: .}' > $@
 vscode: hax.fst.config.json
 
 SHELL=bash
