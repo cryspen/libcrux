@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
- * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * Charon: 0576bfc67e99aae86c51930421072688138b672b
+ * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
+ * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
  * F*: 3ed3c98d39ce028c31c5908a38bc68ad5098f563
- * Libcrux: 532179755ebf8a52897604eaa5ce673b354c2c59
+ * Libcrux: ffaeafbdbb5598f4060b0f4e1cc8ad937feac00a
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -205,6 +205,19 @@ libcrux_ml_kem_vector_portable_cond_subtract_3329_0d(
   ((int32_t)1 << (uint32_t)                                 \
        LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_BARRETT_SHIFT)
 
+/**
+ Signed Barrett Reduction
+
+ Given an input `value`, `barrett_reduce` outputs a representative `result`
+ such that:
+
+ - result ≡ value (mod FIELD_MODULUS)
+ - the absolute value of `result` is bound as follows:
+
+ `|result| ≤ FIELD_MODULUS / 2 · (|value|/BARRETT_R + 1)
+
+ In particular, if `|value| < BARRETT_R`, then `|result| < FIELD_MODULUS`.
+*/
 int16_t libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce_element(
     int16_t value);
 
@@ -226,9 +239,34 @@ libcrux_ml_kem_vector_portable_barrett_reduce_0d(
   ((int32_t)1 << (uint32_t)                                    \
        LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT)
 
+/**
+ Signed Montgomery Reduction
+
+ Given an input `value`, `montgomery_reduce` outputs a representative `o`
+ such that:
+
+ - o ≡ value · MONTGOMERY_R^(-1) (mod FIELD_MODULUS)
+ - the absolute value of `o` is bound as follows:
+
+ `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
+
+ In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 ·
+ FIELD_MODULUS) / 2`.
+*/
 int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
     int32_t value);
 
+/**
+ If `fe` is some field element 'x' of the Kyber field and `fer` is congruent to
+ `y · MONTGOMERY_R`, this procedure outputs a value that is congruent to
+ `x · y`, as follows:
+
+    `fe · fer ≡ x · y · MONTGOMERY_R (mod FIELD_MODULUS)`
+
+ `montgomery_reduce` takes the value `x · y · MONTGOMERY_R` and outputs a
+ representative `x · y · MONTGOMERY_R * MONTGOMERY_R^{-1} ≡ x · y (mod
+ FIELD_MODULUS)`.
+*/
 int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_fe_by_fer(
     int16_t fe, int16_t fer);
 
@@ -244,6 +282,28 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t r);
 
+/**
+ The `compress_*` functions implement the `Compress` function specified in the
+ NIST FIPS 203 standard (Page 18, Expression 4.5), which is defined as:
+
+ ```plaintext
+ Compress_d: ℤq -> ℤ_{2ᵈ}
+ Compress_d(x) = ⌈(2ᵈ/q)·x⌋
+ ```
+
+ Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
+
+ ```plaintext
+ Compress_d(x) = ⌊(2ᵈ/q)·x + 1/2⌋
+               = ⌊(2^{d+1}·x + q) / 2q⌋
+ ```
+
+ For further information about the function implementations, consult the
+ `implementation_notes.pdf` document in this directory.
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 uint8_t libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(
     uint16_t fe);
 
@@ -353,6 +413,28 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_inv_ntt_layer_3_step_0d(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a, int16_t zeta);
 
+/**
+ Compute the product of two Kyber binomials with respect to the
+ modulus `X² - zeta`.
+
+ This function almost implements <strong>Algorithm 11</strong> of the
+ NIST FIPS 203 standard, which is reproduced below:
+
+ ```plaintext
+ Input:  a₀, a₁, b₀, b₁ ∈ ℤq.
+ Input: γ ∈ ℤq.
+ Output: c₀, c₁ ∈ ℤq.
+
+ c₀ ← a₀·b₀ + a₁·b₁·γ
+ c₁ ← a₀·b₁ + a₁·b₀
+ return c₀, c₁
+ ```
+ We say "almost" because the coefficients output by this function are in
+ the Montgomery domain (unlike in the specification).
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 void libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *b, int16_t zeta,

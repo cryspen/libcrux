@@ -20,7 +20,7 @@ let map2 #a #b #c (#len:usize{v len < pow2 32})
   (x: t_Array a len) (y: t_Array b len): t_Array c len
   = Lib.Sequence.map2 #a #b #c #(v len) f x y
 
-let repeati = Lib.LoopCombinators.repeati
+let repeati #acc (l:usize) (f:(i:usize{v i < v l}) -> acc -> acc) acc0 : acc = Lib.LoopCombinators.repeati (v l) (fun i acc -> f (sz i) acc) acc0
   
 #push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
 let flatten #t #n

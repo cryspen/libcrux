@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
- * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * Charon: 0576bfc67e99aae86c51930421072688138b672b
+ * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
+ * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
  * F*: 3ed3c98d39ce028c31c5908a38bc68ad5098f563
- * Libcrux: 532179755ebf8a52897604eaa5ce673b354c2c59
+ * Libcrux: ffaeafbdbb5598f4060b0f4e1cc8ad937feac00a
  */
 
 #ifndef __internal_libcrux_core_H
@@ -136,9 +136,12 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_ba
 with const generics
 - SIZE= 1568
 */
-Eurydice_slice libcrux_ml_kem_types_as_ref_ba_ed1(
+Eurydice_slice libcrux_ml_kem_types_as_ref_ba_711(
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *self);
 
+/**
+ Pad the `slice` with `0`s at the end.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
@@ -217,9 +220,12 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_ba
 with const generics
 - SIZE= 1088
 */
-Eurydice_slice libcrux_ml_kem_types_as_ref_ba_ed0(
+Eurydice_slice libcrux_ml_kem_types_as_ref_ba_710(
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self);
 
+/**
+ Pad the `slice` with `0`s at the end.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
@@ -290,6 +296,9 @@ uint8_t *libcrux_ml_kem_types_as_slice_f6_f2(
     libcrux_ml_kem_types_MlKemPublicKey_be *self);
 
 /**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 33
@@ -321,6 +330,9 @@ with types uint8_t[32size_t], core_array_TryFromSliceError
 void core_result_unwrap_41_83(core_result_Result_00 self, uint8_t ret[32U]);
 
 /**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 34
@@ -337,9 +349,12 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_ba
 with const generics
 - SIZE= 768
 */
-Eurydice_slice libcrux_ml_kem_types_as_ref_ba_ed(
+Eurydice_slice libcrux_ml_kem_types_as_ref_ba_71(
     libcrux_ml_kem_types_MlKemCiphertext_e8 *self);
 
+/**
+ Pad the `slice` with `0`s at the end.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
@@ -348,6 +363,9 @@ with const generics
 void libcrux_ml_kem_utils_into_padded_array_2d0(Eurydice_slice slice,
                                                 uint8_t ret[800U]);
 
+/**
+ Pad the `slice` with `0`s at the end.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
