@@ -102,6 +102,7 @@ pub(super) fn deserialize_ring_elements_reduced<
             .chunks_exact(BYTES_PER_RING_ELEMENT)
             .enumerate()
         {
+            hax_lib::loop_invariant!(|i: usize| { fstar!("$i < $K") });
             deserialized_pk[i] = deserialize_to_reduced_ring_element(ring_element);
         }
     }
