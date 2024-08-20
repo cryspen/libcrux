@@ -17,8 +17,8 @@ use crate::{
 const PSK_REGISTRATION_CONTEXT: &[u8] = b"PSK-Registration";
 const PSK_LENGTH: usize = 32;
 
-const AEAD_RESPONDER: &[u8] = b"AEAD-Responder";
-const AEAD_INITIATOR: &[u8] = b"AEAD-Initiator";
+const AEAD_RESPONDER: &[u8] = b"AEAD-Responder-Initiator";
+const AEAD_INITIATOR: &[u8] = b"AEAD-Initiator-Responder";
 const AEAD_KEY_NONCE: usize = Algorithm::key_size(Algorithm::Chacha20Poly1305)
     + Algorithm::nonce_size(Algorithm::Chacha20Poly1305);
 
