@@ -109,10 +109,12 @@ fn sample_ring_element_cbd<
 ) -> ([PolynomialRingElement<Vector>; K], u8) {
     let mut error_1 = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut prf_inputs = [prf_input; K];
+    let domain_separator_init = domain_separator;
     for i in 0..K {
-        prf_inputs[i][32] = domain_separator + (i as u8);
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v $domain_separator == v $domain_separator_init + v $i") });
+        prf_inputs[i][32] = domain_separator;
+        domain_separator += 1;
     }
-    domain_separator += K as u8;
     let prf_outputs: [[u8; ETA2_RANDOMNESS_SIZE]; K] = Hasher::PRFxN(&prf_inputs);
     for i in 0..K {
         error_1[i] = sample_from_binomial_distribution::<ETA2, Vector>(&prf_outputs[i]);
@@ -146,10 +148,12 @@ fn sample_vector_cbd_then_ntt<
 ) -> ([PolynomialRingElement<Vector>; K], u8) {
     let mut re_as_ntt = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut prf_inputs = [prf_input; K];
+    let domain_separator_init = domain_separator;
     for i in 0..K {
-        prf_inputs[i][32] = domain_separator + (i as u8);
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v $domain_separator == v $domain_separator_init + v $i") });
+        prf_inputs[i][32] = domain_separator;
+        domain_separator += 1;
     }
-    domain_separator += K as u8;
     let prf_outputs: [[u8; ETA_RANDOMNESS_SIZE]; K] = Hasher::PRFxN(&prf_inputs);
     for i in 0..K {
         re_as_ntt[i] = sample_from_binomial_distribution::<ETA, Vector>(&prf_outputs[i]);
