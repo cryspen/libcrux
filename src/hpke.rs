@@ -9,3 +9,6 @@ pub mod kem;
 
 mod hpke;
 pub use hpke::*;
+
+#[cfg(feature = "hpke")]
+pub mod provider;

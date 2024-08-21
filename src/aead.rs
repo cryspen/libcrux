@@ -170,12 +170,15 @@ impl Algorithm {
 }
 
 #[derive(Default)]
+#[derive(Debug)]
 pub struct Aes128Key(pub [u8; Algorithm::key_size(Algorithm::Aes128Gcm)]);
 
 #[derive(Default)]
+#[derive(Debug)]
 pub struct Aes256Key(pub [u8; Algorithm::key_size(Algorithm::Aes256Gcm)]);
 
 #[derive(Default)]
+#[derive(Debug)]
 pub struct Chacha20Key(pub [u8; Algorithm::key_size(Algorithm::Chacha20Poly1305)]);
 
 mod keygen {
@@ -226,6 +229,7 @@ mod keygen {
 }
 
 /// An AEAD key.
+#[derive(Debug)]
 pub enum Key {
     Aes128(Aes128Key),
     Aes256(Aes256Key),
