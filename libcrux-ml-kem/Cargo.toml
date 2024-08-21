@@ -79,7 +79,7 @@ name = "keygen"
 required-features = ["mlkem768"]
 
 [package.metadata."docs.rs"]
-features = ["pre-verification", "kyber"]
+features = ["pre-verification", "kyber", "unpacked"]
 rustdoc-args = ["--cfg", "doc_cfg"]
 
 [lints.rust]
