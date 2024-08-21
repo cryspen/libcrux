@@ -23,7 +23,7 @@ let impl_1 (v_SIZE: usize) : Core.Convert.t_AsRef (t_MlKemCiphertext v_SIZE) (t_
   {
     f_as_ref_pre = (fun (self: t_MlKemCiphertext v_SIZE) -> true);
     f_as_ref_post = (fun (self: t_MlKemCiphertext v_SIZE) (out: t_Slice u8) -> true);
-    f_as_ref = fun (self: t_MlKemCiphertext v_SIZE) -> Rust_primitives.unsize self.f_value
+    f_as_ref = fun (self: t_MlKemCiphertext v_SIZE) -> self.f_value <: t_Slice u8
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -67,7 +67,7 @@ let impl_7 (v_SIZE: usize) : Core.Convert.t_AsRef (t_MlKemPrivateKey v_SIZE) (t_
   {
     f_as_ref_pre = (fun (self: t_MlKemPrivateKey v_SIZE) -> true);
     f_as_ref_post = (fun (self: t_MlKemPrivateKey v_SIZE) (out: t_Slice u8) -> true);
-    f_as_ref = fun (self: t_MlKemPrivateKey v_SIZE) -> Rust_primitives.unsize self.f_value
+    f_as_ref = fun (self: t_MlKemPrivateKey v_SIZE) -> self.f_value <: t_Slice u8
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -111,7 +111,7 @@ let impl_13 (v_SIZE: usize) : Core.Convert.t_AsRef (t_MlKemPublicKey v_SIZE) (t_
   {
     f_as_ref_pre = (fun (self: t_MlKemPublicKey v_SIZE) -> true);
     f_as_ref_post = (fun (self: t_MlKemPublicKey v_SIZE) (out: t_Slice u8) -> true);
-    f_as_ref = fun (self: t_MlKemPublicKey v_SIZE) -> Rust_primitives.unsize self.f_value
+    f_as_ref = fun (self: t_MlKemPublicKey v_SIZE) -> self.f_value <: t_Slice u8
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]

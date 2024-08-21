@@ -22,9 +22,7 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
       usize ]
   in
   let lower_shuffles:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (Rust_primitives.unsize lower_shuffles
-        <:
-        t_Slice u8)
+    Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (lower_shuffles <: t_Slice u8)
   in
   let lower_coefficients:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 potential_coefficients
@@ -46,9 +44,7 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
       usize ]
   in
   let upper_shuffles:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (Rust_primitives.unsize upper_shuffles
-        <:
-        t_Slice u8)
+    Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (upper_shuffles <: t_Slice u8)
   in
   let upper_coefficients:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l potential_coefficients
