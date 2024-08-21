@@ -88,6 +88,11 @@ jobs:
           rustc --print=cfg
           cargo build --verbose $RUST_TARGET_FLAG --features pre-verification
 
+      - name: 🔨 Build unpacked
+        run: |
+          rustc --print=cfg
+          cargo build --verbose $RUST_TARGET_FLAG --features pre-verification,unpacked
+
       - name: 🔨 Build Release
         run: cargo build --verbose --release $RUST_TARGET_FLAG --features pre-verification
 
