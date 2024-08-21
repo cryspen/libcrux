@@ -200,25 +200,17 @@ impl hpke_rs_crypto::HpkeCrypto for Provider {
         aad: &[u8],
         msg: &[u8],
     ) -> Result<Vec<u8>, hpke_rs_crypto::error::Error> {
-        debug_assert_eq!(key.len(), 32);
-        debug_assert_eq!(nonce.len(), 12);
-
-        println!("aead seal key: {:x?}", key);
         let key = aead_key(alg, key)?;
-        println!("aead seal key2: {:x?}", key);
         let iv = crate::aead::Iv(
             nonce
                 .try_into()
                 .map_err(|_| hpke_rs_crypto::error::Error::AeadInvalidNonce)?,
         );
-        println!("aead seal iv: {:x?}", iv.0);
-        println!("aead seal aad: {aad:x?}");
 
         let msg_len = msg.len();
-
-        let mut out = vec![0u8; msg_len + alg.tag_length()];
+        let mut out: Vec<u8> = msg.iter().cloned().chain(vec![0u8; alg.tag_length()].into_iter()).collect();
         let mut msg_ctxt = &mut out[..msg_len];
-        msg_ctxt.write_all(msg).unwrap();
+
 
         let tag = crate::aead::encrypt(&key, msg_ctxt, iv, aad).map_err(|_| {
             hpke_rs_crypto::error::Error::CryptoLibraryError("aead encrypt error".to_string())
@@ -226,8 +218,6 @@ impl hpke_rs_crypto::HpkeCrypto for Provider {
 
         let mut tag_writer = &mut out[msg_len..];
         tag_writer.write_all(tag.as_ref()).unwrap();
-
-        println!("aead seal out: {out:x?}");
 
         Ok(out)
     }
@@ -239,8 +229,12 @@ impl hpke_rs_crypto::HpkeCrypto for Provider {
         aad: &[u8],
         msg: &[u8],
     ) -> Result<Vec<u8>, hpke_rs_crypto::error::Error> {
-        debug_assert_eq!(key.len(), 32);
-        debug_assert_eq!(nonce.len(), 12);
+        let key = aead_key(alg, key)?;
+        let iv = crate::aead::Iv(
+            nonce
+                .try_into()
+                .map_err(|_| hpke_rs_crypto::error::Error::AeadInvalidNonce)?,
+        );
 
         if msg.len() < alg.tag_length() {
             return Err(hpke_rs_crypto::error::Error::AeadInvalidCiphertext)
@@ -250,24 +244,8 @@ impl hpke_rs_crypto::HpkeCrypto for Provider {
         let tag = crate::aead::Tag::from_slice(&msg[msg_len..]).unwrap();
         let msg = &msg[..msg_len];
 
-        println!("aead open key: {:x?}", key);
-        let key = aead_key(alg, key)?;
-        println!("aead open key2: {:x?}", key);
-
-        let iv = crate::aead::Iv(
-            nonce
-                .try_into()
-                .map_err(|_| hpke_rs_crypto::error::Error::AeadInvalidNonce)?,
-        );
-        println!("aead open iv: {:x?}", iv.0);
-        println!("aead open aad: {aad:x?}");
-
-
-        println!("aead open msg: {msg:x?}");
-        println!("aead open tag: {tag:x?}");
 
         let mut msg_ctxt = msg.to_vec();
-
         crate::aead::decrypt(&key, &mut msg_ctxt, iv, aad, &tag)
             .map_err(|x| {panic!("wat {x}");})
             .map_err(|_| hpke_rs_crypto::error::Error::AeadOpenError)
