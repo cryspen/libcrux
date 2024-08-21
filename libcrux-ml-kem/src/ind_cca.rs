@@ -1,21 +1,24 @@
 use crate::{
-    constant_time_ops::{
-        compare_ciphertexts_in_constant_time,
-        compare_ciphertexts_select_shared_secret_in_constant_time,
-        select_shared_secret_in_constant_time,
-    },
+    constant_time_ops::compare_ciphertexts_select_shared_secret_in_constant_time,
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::Hash,
     ind_cpa::serialize_public_key,
-    polynomial::PolynomialRingElement,
     serialize::deserialize_ring_elements_reduced,
     types::*,
     utils::into_padded_array,
     variant::*,
     vector::Operations,
 };
+#[cfg(feature = "unpacked")]
+use crate::{
+    constant_time_ops::{
+        compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
+    },
+    polynomial::PolynomialRingElement,
+};
 
 /// Types for the unpacked API.
+#[cfg(feature = "unpacked")]
 pub mod unpacked {
     use crate::{ind_cpa::unpacked::*, vector::traits::Operations};
 
@@ -37,6 +40,7 @@ pub mod unpacked {
         pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
     }
 }
+#[cfg(feature = "unpacked")]
 use unpacked::*;
 
 /// Seed size for key generation
@@ -279,6 +283,7 @@ pub(crate) fn decapsulate<
 
 // Unpacked API
 // Generate Unpacked Keys
+#[cfg(feature = "unpacked")]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -338,6 +343,7 @@ pub(crate) fn generate_keypair_unpacked<
 }
 
 // Encapsulate with Unpacked Public Key
+#[cfg(feature = "unpacked")]
 pub(crate) fn encapsulate_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -386,6 +392,7 @@ pub(crate) fn encapsulate_unpacked<
 }
 
 // Decapsulate with Unpacked Private Key
+#[cfg(feature = "unpacked")]
 pub(crate) fn decapsulate_unpacked<
     const K: usize,
     const SECRET_KEY_SIZE: usize,

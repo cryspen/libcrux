@@ -42,6 +42,7 @@ macro_rules! impl_nist_known_answer_tests {
                 let key_pair = $key_gen_derand(kat.key_generation_seed);
 
                 let public_key_hash = sha256(key_pair.pk());
+                eprintln!("pk hash: {}", hex::encode(public_key_hash));
                 let secret_key_hash = sha256(key_pair.sk());
 
                 assert_eq!(public_key_hash, kat.sha3_256_hash_of_public_key, "lhs: computed public key hash, rhs: hash from kat");

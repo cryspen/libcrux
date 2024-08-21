@@ -6,8 +6,10 @@ macro_rules! instantiate {
                 KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE,
             };
 
+            #[cfg(feature = "unpacked")]
             pub(crate) type MlKemKeyPairUnpacked<const K: usize> =
                 crate::ind_cca::unpacked::MlKemKeyPairUnpacked<K, $vector>;
+            #[cfg(feature = "unpacked")]
             pub(crate) type MlKemPublicKeyUnpacked<const K: usize> =
                 crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
 
@@ -249,6 +251,7 @@ macro_rules! instantiate {
             }
 
             /// Unpacked API
+            #[cfg(feature = "unpacked")]
             pub(crate) fn generate_keypair_unpacked<
                 const K: usize,
                 const CPA_PRIVATE_KEY_SIZE: usize,
@@ -274,6 +277,7 @@ macro_rules! instantiate {
             }
 
             /// Portable encapsualte
+            #[cfg(feature = "unpacked")]
             pub(crate) fn encapsulate_unpacked<
                 const K: usize,
                 const CIPHERTEXT_SIZE: usize,
@@ -312,7 +316,8 @@ macro_rules! instantiate {
             }
 
             /// Portable decapsulate
-            pub fn decapsulate_unpacked<
+            #[cfg(feature = "unpacked")]
+            pub(crate) fn decapsulate_unpacked<
                 const K: usize,
                 const SECRET_KEY_SIZE: usize,
                 const CPA_SECRET_KEY_SIZE: usize,

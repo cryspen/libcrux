@@ -1,12 +1,7 @@
 //! ML-KEM 1024
-
-use super::{
-    constants::*,
-    ind_cca::{unpacked::*, *},
-    types::*,
-    vector::traits::VectorType,
-    *,
-};
+use super::{constants::*, ind_cca::*, types::*, *};
+#[cfg(feature = "unpacked")]
+use super::{ind_cca::unpacked::*, vector::traits::VectorType};
 
 // Kyber 1024 parameters
 const RANK_1024: usize = 4;
@@ -53,9 +48,11 @@ pub type MlKem1024KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KE
 
 /// An Unpacked ML-KEM 1024 Public key
 #[allow(type_alias_bounds)]
+#[cfg(feature = "unpacked")]
 pub type MlKem1024PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_1024, Vector>;
 /// Am Unpacked ML-KEM 1024 Key pair
 #[allow(type_alias_bounds)]
+#[cfg(feature = "unpacked")]
 pub type MlKem1024KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_1024, Vector>;
 
 // Instantiate the different functions.
@@ -86,6 +83,7 @@ macro_rules! instantiate {
 
             /// Generate Kyber 1024 Key Pair
             #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
             pub fn kyber_generate_key_pair(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem1024KeyPair {
@@ -147,6 +145,7 @@ macro_rules! instantiate {
             /// The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
             /// bytes of `randomness`.
             #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
             pub fn kyber_encapsulate(
                 public_key: &MlKem1024PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
@@ -201,6 +200,7 @@ macro_rules! instantiate {
             /// Generates an [`MlKemSharedSecret`].
             /// The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
             #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
             pub fn kyber_decapsulate(
                 private_key: &MlKem1024PrivateKey,
                 ciphertext: &MlKem1024Ciphertext,
@@ -226,6 +226,8 @@ macro_rules! instantiate {
             }
 
             /// Generate ML-KEM 1024 Key Pair in "unpacked" form
+            #[cfg(feature = "unpacked")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
             pub fn generate_key_pair_unpacked(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem1024KeyPairUnpacked<$vec> {
@@ -260,6 +262,8 @@ let _ =
     ()"
                 )
             )]
+            #[cfg(feature = "unpacked")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
             pub fn encapsulate_unpacked(
                 public_key: &MlKem1024PublicKeyUnpacked<$vec>,
                 randomness: [u8; SHARED_SECRET_SIZE],
@@ -286,6 +290,8 @@ let _ =
             /// Generates an [`MlKemSharedSecret`].
             /// The input is a reference to an unpacked key pair of type [`MlKem1024KeyPairUnpacked`]
             /// and an [`MlKem1024Ciphertext`].
+            #[cfg(feature = "unpacked")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
             pub fn decapsulate_unpacked(
                 private_key: &MlKem1024KeyPairUnpacked<$vec>,
                 ciphertext: &MlKem1024Ciphertext,
