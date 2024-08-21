@@ -7,8 +7,8 @@
  * Charon: 962f26311ccdf09a6a3cfeacbccafba22bf3d405
  * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
  * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
- * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: 6b71b5fae48b400c6dac49234638dd52385d111d
+ * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
+ * Libcrux: 9a130a852767d2f8881c458e022bf35fec1f6afe
  */
 
 #ifndef __libcrux_sha3_neon_H
@@ -23,14 +23,24 @@ extern "C" {
 #include "libcrux_sha3_internal.h"
 
 /**
- A portable SHA3 512 implementation.
+ A portable SHA3 224 implementation.
 */
-void libcrux_sha3_neon_sha512(Eurydice_slice digest, Eurydice_slice data);
+void libcrux_sha3_neon_sha224(Eurydice_slice digest, Eurydice_slice data);
 
 /**
  A portable SHA3 256 implementation.
 */
 void libcrux_sha3_neon_sha256(Eurydice_slice digest, Eurydice_slice data);
+
+/**
+ A portable SHA3 384 implementation.
+*/
+void libcrux_sha3_neon_sha384(Eurydice_slice digest, Eurydice_slice data);
+
+/**
+ A portable SHA3 512 implementation.
+*/
+void libcrux_sha3_neon_sha512(Eurydice_slice digest, Eurydice_slice data);
 
 /**
  Run SHAKE256 on both inputs in parallel.
@@ -58,14 +68,6 @@ void libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
     Eurydice_slice data1);
 
 /**
- Squeeze 2 times the next block in parallel in the
- [`KeccakState`] and return the output in `out0` and `out1`.
-*/
-void libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
-    libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
-    Eurydice_slice out1);
-
-/**
  Squeeze 2 times the first three blocks in parallel in the
  [`KeccakState`] and return the output in `out0` and `out1`.
 */
@@ -74,14 +76,12 @@ void libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
     Eurydice_slice out1);
 
 /**
- A portable SHA3 224 implementation.
+ Squeeze 2 times the next block in parallel in the
+ [`KeccakState`] and return the output in `out0` and `out1`.
 */
-void libcrux_sha3_neon_sha224(Eurydice_slice digest, Eurydice_slice data);
-
-/**
- A portable SHA3 384 implementation.
-*/
-void libcrux_sha3_neon_sha384(Eurydice_slice digest, Eurydice_slice data);
+void libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
+    libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
+    Eurydice_slice out1);
 
 #if defined(__cplusplus)
 }
