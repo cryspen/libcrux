@@ -19,7 +19,7 @@ use crate::{
 
 /// Types for the unpacked API.
 #[cfg(feature = "unpacked")]
-pub mod unpacked {
+pub(crate) mod unpacked {
     use crate::{ind_cpa::unpacked::*, vector::traits::Operations};
 
     /// An unpacked ML-KEM IND-CCA Private Key

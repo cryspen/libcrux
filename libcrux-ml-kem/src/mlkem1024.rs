@@ -49,10 +49,12 @@ pub type MlKem1024KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KE
 /// An Unpacked ML-KEM 1024 Public key
 #[allow(type_alias_bounds)]
 #[cfg(feature = "unpacked")]
+#[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
 pub type MlKem1024PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_1024, Vector>;
 /// Am Unpacked ML-KEM 1024 Key pair
 #[allow(type_alias_bounds)]
 #[cfg(feature = "unpacked")]
+#[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
 pub type MlKem1024KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_1024, Vector>;
 
 // Instantiate the different functions.
@@ -248,7 +250,7 @@ macro_rules! instantiate {
             /// The input is a reference to an unpacked public key of type [`MlKem1024PublicKeyUnpacked`],
             /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
             /// TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
-            /// https://github.com/hacspec/hax/issues/770
+            /// <https://github.com/hacspec/hax/issues/770>
             #[cfg_attr(
                 hax,
                 hax_lib::fstar::before(

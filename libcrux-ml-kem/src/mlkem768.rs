@@ -49,10 +49,12 @@ pub type MlKem768KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_
 /// An Unpacked ML-KEM 768 Public key
 #[allow(type_alias_bounds)]
 #[cfg(feature = "unpacked")]
+#[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
 pub type MlKem768PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_768, Vector>;
 /// Am Unpacked ML-KEM 768 Key pair
 #[allow(type_alias_bounds)]
 #[cfg(feature = "unpacked")]
+#[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
 pub type MlKem768KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_768, Vector>;
 
 // Instantiate the different functions.
