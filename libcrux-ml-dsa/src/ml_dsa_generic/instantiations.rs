@@ -126,9 +126,9 @@ instantiate! {portable,
 #[cfg(feature = "simd256")]
 instantiate! {avx2,
     crate::simd::portable::PortableSIMDUnit,
-    crate::hash_functions::simd256::Shake128X4,
+    crate::hash_functions::simd256::Shake128x4,
     crate::hash_functions::simd256::Shake256,
-    crate::hash_functions::simd256::Shake256X4
+    crate::hash_functions::simd256::Shake256x4
 }
 
 // NEON generic implementation.

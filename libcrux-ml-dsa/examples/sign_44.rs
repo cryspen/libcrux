@@ -13,9 +13,9 @@ fn main() {
     let signing_randomness = random_array();
     let message = random_array::<1023>();
 
-    let keypair = neon::generate_key_pair(key_generation_seed);
+    let keypair = generate_key_pair(key_generation_seed);
 
     for _i in 0..100_000 {
-        let _ = neon::sign(&keypair.signing_key, &message, signing_randomness);
+        let _ = core::hint::black_box(sign(&keypair.signing_key, &message, signing_randomness));
     }
 }

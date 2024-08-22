@@ -575,10 +575,9 @@ pub mod neon {
         pub mod incremental {
             #[cfg(feature = "simd128")]
             use crate::generic_keccak::{
-                absorb_final, squeeze_first_three_blocks, squeeze_next_block,
-                KeccakState as GenericState,
+                absorb_final, squeeze_first_block, squeeze_first_five_blocks,
+                squeeze_first_three_blocks, squeeze_next_block, KeccakState as GenericState,
             };
-            use crate::generic_keccak::{squeeze_first_block, squeeze_first_five_blocks};
 
             /// The Keccak state for the incremental API.
             #[cfg(feature = "simd128")]

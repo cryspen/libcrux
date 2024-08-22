@@ -265,7 +265,6 @@ pub(crate) mod portable {
     }
 }
 
-// #[cfg(feature = "simd256")]
 /// A SIMD256 implementation of [`shake128::XofX4`] and [`shake256::Xof`] for AVX2.
 pub(crate) mod simd256 {
 
@@ -280,11 +279,11 @@ pub(crate) mod simd256 {
     ///
     /// This only implements the XofX4 API. For the single Xof, the portable
     /// version is used.
-    pub(crate) struct Shake128 {
+    pub(crate) struct Shake128x4 {
         state: KeccakState,
     }
 
-    impl shake128::XofX4 for Shake128 {
+    impl shake128::XofX4 for Shake128x4 {
         /// Init the state and absorb 4 blocks in parallel.
         fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
             let mut state = x4::incremental::init();
@@ -365,11 +364,11 @@ pub(crate) mod simd256 {
     }
 
     /// AVX2 SHAKE 256 x4 state.
-    pub(crate) struct Shake256X4 {
+    pub(crate) struct Shake256x4 {
         state: KeccakState,
     }
 
-    impl shake256::XofX4 for Shake256X4 {
+    impl shake256::XofX4 for Shake256x4 {
         fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
             let mut state = x4::incremental::init();
             x4::incremental::shake256_absorb_final(&mut state, &input0, &input1, &input2, &input3);

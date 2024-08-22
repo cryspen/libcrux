@@ -69,12 +69,12 @@ type SIMDUnit = crate::simd::avx2::AVX2SIMDUnit;
 type SIMDUnit = crate::simd::portable::PortableSIMDUnit;
 
 #[cfg(feature = "simd256")]
-type Shake128X4 = crate::hash_functions::simd256::Shake128;
+type Shake128X4 = crate::hash_functions::simd256::Shake128x4;
 #[cfg(not(feature = "simd256"))]
 type Shake128X4 = crate::hash_functions::portable::Shake128X4;
 
 #[cfg(feature = "simd256")]
-type Shake256X4 = crate::hash_functions::simd256::Shake256X4;
+type Shake256X4 = crate::hash_functions::simd256::Shake256x4;
 #[cfg(not(feature = "simd256"))]
 type Shake256X4 = crate::hash_functions::portable::Shake256X4;
 
