@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 repository.workspace = true
-readme.workspace = true
+readme = "Readme.md"
 description = "hacl sys crate of libcrux."
 
 [lib]
@@ -15,12 +15,14 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 
 [build-dependencies]
-cc = { version = "1.0", features = ["parallel"] }
-libcrux-platform = { version = "=0.0.2-pre.2", path = "../platform" }
+cc = { version = "1.1", features = ["parallel"] }
+libcrux-platform = { version = "=0.0.2-alpha.3", path = "../platform" }
 bindgen = { version = "0.69", optional = true }
 
 [features]
 bindings = ["bindgen"] # generate fresh bindings
+sha3 = []
+default = []
 
 [dev-dependencies]
 hex = "0.4.3"

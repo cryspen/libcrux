@@ -2,16 +2,15 @@
 #![doc = include_str!("KEM_Security.md")]
 #![allow(non_camel_case_types, non_snake_case)]
 
-use crate::{
-    ecdh::x25519,
-    kem::{
-        kyber::{kyber768, MlKemKeyPair},
-        *,
-    },
-};
+use libcrux_ecdh::{X25519PrivateKey, X25519PublicKey};
 
 use super::errors::*;
 use super::kdf::*;
+use libcrux_kem::{
+    Algorithm, X25519MlKem768Draft00PrivateKey, X25519MlKem768Draft00PublicKey,
+    XWingKemDraft02PrivateKey, XWingKemDraft02PublicKey,
+};
+use libcrux_ml_kem::mlkem768;
 
 /// ## Key Encapsulation Mechanisms (KEMs)
 ///
@@ -512,20 +511,19 @@ pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeEr
             // Use SHAKE128 to expand the ikm
             let seed: [u8; 96] = crate::hacl::sha3::shake128(ikm);
             // Use the first 64 bytes to generate the ML-KEM key pair
-            let MlKemKeyPair { sk, pk } = kyber768::generate_key_pair(
+            let (sk, pk) = mlkem768::generate_key_pair(
                 seed[..64]
                     .try_into()
                     .map_err(|_| HpkeError::DeriveKeyPairError)?,
-            );
+            )
+            .into_parts();
             // Use the next 32 bytes to generate the X25519 key pair
             let (xsk, xpk) = DeriveKeyPair(KEM::DHKEM_X25519_HKDF_SHA256, &seed[..96])?;
 
             let private = XWingKemDraft02PrivateKey {
                 sk_m: sk,
-                sk_x: x25519::PrivateKey(
-                    xsk.try_into().map_err(|_| HpkeError::DeriveKeyPairError)?,
-                ),
-                pk_x: x25519::PublicKey(
+                sk_x: X25519PrivateKey(xsk.try_into().map_err(|_| HpkeError::DeriveKeyPairError)?),
+                pk_x: X25519PublicKey(
                     xpk.clone()
                         .try_into()
                         .map_err(|_| HpkeError::DeriveKeyPairError)?,
@@ -533,7 +531,7 @@ pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeEr
             };
             let public = XWingKemDraft02PublicKey {
                 pk_m: pk,
-                pk_x: x25519::PublicKey(xpk.try_into().map_err(|_| HpkeError::DeriveKeyPairError)?),
+                pk_x: X25519PublicKey(xpk.try_into().map_err(|_| HpkeError::DeriveKeyPairError)?),
             };
             Ok((private.encode(), public.encode()))
         }
@@ -574,16 +572,16 @@ pub fn GenerateKeyPair(alg: KEM, randomness: Randomness) -> Result<KeyPair, Hpke
                     32 + 64,
                 )?;
                 let (xsk, xpk) = DeriveKeyPair(KEM::DHKEM_X25519_HKDF_SHA256, &seed[..32])?;
-                let MlKemKeyPair { sk, pk } =
-                    kyber768::generate_key_pair(seed[32..].try_into().unwrap());
+                let (sk, pk) =
+                    mlkem768::generate_key_pair(seed[32..].try_into().unwrap()).into_parts();
 
                 let private = X25519MlKem768Draft00PrivateKey {
                     mlkem: sk,
-                    x25519: crate::ecdh::x25519::PrivateKey(xsk.try_into().unwrap()),
+                    x25519: libcrux_ecdh::X25519PrivateKey(xsk.try_into().unwrap()),
                 };
                 let public = X25519MlKem768Draft00PublicKey {
                     mlkem: pk,
-                    x25519: x25519::PublicKey(xpk.try_into().unwrap()),
+                    x25519: X25519PublicKey(xpk.try_into().unwrap()),
                 };
                 Ok((private.encode(), public.encode()))
             }
@@ -620,7 +618,7 @@ pub fn Encap(alg: KEM, pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult
 ///
 /// FIXME: vec conversions and unwraps
 pub fn Kyber768Draft00_Encap(pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult {
-    let (ct, ss) = kyber768::encapsulate(&pkR.try_into().unwrap(), randomness.try_into().unwrap());
+    let (ct, ss) = mlkem768::encapsulate(&pkR.try_into().unwrap(), randomness.try_into().unwrap());
 
     EncapResult::Ok((ss.as_ref().to_vec(), ct.as_ref().to_vec()))
 }
@@ -629,7 +627,7 @@ pub fn Kyber768Draft00_Encap(pkR: &PublicKeyIn, randomness: Randomness) -> Encap
 ///
 /// FIXME: vec conversions and unwraps
 pub fn Kyber768Draft00_Decap(skR: &PrivateKeyIn, enc: &[u8]) -> Result<SharedSecret, HpkeError> {
-    Ok(kyber768::decapsulate(&skR.try_into().unwrap(), &enc.try_into().unwrap()).to_vec())
+    Ok(mlkem768::decapsulate(&skR.try_into().unwrap(), &enc.try_into().unwrap()).to_vec())
 }
 
 /// ```text

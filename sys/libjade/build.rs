@@ -43,12 +43,14 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         .allowlist_var("JADE_STREAM_CHACHA_CHACHA20_.*")
         .allowlist_function("jade_kem_kyber_kyber768_.*")
         .allowlist_var("JADE_KEM_KYBER_KYBER768_.*")
+        .allowlist_function("randombytes")
+        .allowlist_function("__jasmin_syscall_randombytes__")
         // Block everything we don't need or define ourselves.
         .blocklist_type("__.*")
         // Disable tests to avoid warnings and keep it portable
         .layout_tests(false)
         // Generate bindings
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .use_core()
         .generate()
         .expect("Unable to generate bindings");
@@ -91,6 +93,7 @@ fn build(platform: Platform, home_path: &Path) {
         "chacha20_ref.s",
         "poly1305_ref.s",
         "kyber_kyber768_ref.s",
+        "randombytes.c",
     ];
     compile_files("jade", &files, home_path, &args);
 
@@ -102,6 +105,7 @@ fn build(platform: Platform, home_path: &Path) {
             "sha3_512_avx2.s",
             "chacha20_avx2.s",
             "poly1305_avx2.s",
+            "kyber_kyber768_avx2.s",
         ];
 
         let mut simd256_flags = args.clone();

@@ -1,0 +1,27 @@
+module Libcrux_sha3.Portable
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+open Core
+open FStar.Mul
+
+/// A portable SHA3 224 implementation.
+val sha224 (digest data: t_Slice u8) : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+/// A portable SHA3 256 implementation.
+val sha256 (digest data: t_Slice u8) : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+/// A portable SHA3 384 implementation.
+val sha384 (digest data: t_Slice u8) : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+/// A portable SHA3 512 implementation.
+val sha512 (digest data: t_Slice u8) : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+/// A portable SHAKE128 implementation.
+val shake128 (digest data: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+/// A portable SHAKE256 implementation.
+val shake256 (digest data: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+/// The Keccak state for the incremental API.
+type t_KeccakState = { f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64 }

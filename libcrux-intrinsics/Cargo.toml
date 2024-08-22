@@ -1,0 +1,22 @@
+[package]
+name = "libcrux-intrinsics"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+description = "Libcrux intrinsics crate"
+exclude = ["/proofs"]
+
+[dependencies]
+
+[features]
+simd128 = []
+simd256 = []
+
+[dev-dependencies]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(eurydice)'] }

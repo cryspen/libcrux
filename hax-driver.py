@@ -120,8 +120,14 @@ elif options.kyber_reference:
     # Extract both `libcrux` and `libcrux-platform`
     shell(
         [
-            "cargo", "hax",
-            "-C", "-p", "libcrux", "-p", "libcrux-platform", ";",
+            "cargo",
+            "hax",
+            "-C",
+            "-p",
+            "libcrux",
+            "-p",
+            "libcrux-platform",
+            ";",
             "into",
             "-i",
             f"-** +libcrux::kem::kyber::** +!libcrux_platform::platform::* {exclude_sha3_implementations} -libcrux::**::types::index_impls::**",

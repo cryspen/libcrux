@@ -257,6 +257,7 @@ pub fn sha2_512(payload: &[u8]) -> Sha2_512Digest {
 // Streaming API - This is the recommended one.
 macro_rules! impl_streaming {
     ($name:ident, $state:ty, $result:ty) => {
+        #[derive(Clone)]
         pub struct $name {
             state: $state,
         }
@@ -380,7 +381,7 @@ pub fn shake256<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
 pub mod incremental_x4 {
 
     /// Incremental state
-    #[cfg_attr(hax, hax_lib_macros::opaque_type)]
+    #[cfg_attr(hax, hax_lib::opaque_type)]
     pub struct Shake128StateX4 {
         state: crate::hacl::sha3::incremental_x4::Shake128StateX4,
     }
@@ -419,9 +420,9 @@ pub mod incremental_x4 {
             // Pad the input to the length of 4
             let data = [
                 input[0],
-                if N > 1 { input[1] } else { &[] },
-                if N > 2 { input[2] } else { &[] },
-                if N > 3 { input[3] } else { &[] },
+                if N > 1 { input[1] } else { &input[0] },
+                if N > 2 { input[2] } else { &input[0] },
+                if N > 3 { input[3] } else { &input[0] },
             ];
             self.state.absorb_final(data);
         }

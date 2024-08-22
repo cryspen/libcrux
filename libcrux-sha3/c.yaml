@@ -1,0 +1,54 @@
+files:
+  # Different crate
+  - name: libcrux_intrinsics_neon
+    library: true
+    inline_static: true
+    api:
+      - [libcrux_intrinsics, arm64]
+
+  # Different crate
+  - name: libcrux_intrinsics_avx2
+    library: true
+    inline_static: true
+    api:
+      - [libcrux_intrinsics, avx2]
+
+  - name: libcrux_platform
+    api:
+      - [libcrux_platform, "*"]
+
+  - name: libcrux_sha3_neon
+    api:
+      - [libcrux_sha3, neon, "*"]
+    private:
+      - [libcrux_sha3, simd, arm64, "*"]
+    monomorphizations_of:
+      - [libcrux_sha3, simd, arm64, "*"]
+    monomorphizations_using:
+      - [libcrux_sha3, simd, arm64, "*"]
+    include_in_c:
+      - '"intrinsics/libcrux_intrinsics_arm64.h"'
+
+  - name: libcrux_sha3_avx2
+    api:
+      - [libcrux_sha3, avx2, "*"]
+    private:
+      - [libcrux_sha3, simd, avx2, "*"]
+    monomorphizations_of:
+      - [libcrux_sha3, simd, avx2, "*"]
+    monomorphizations_using:
+      - [libcrux_sha3, simd, avx2, "*"]
+    include_in_c:
+      - '"intrinsics/libcrux_intrinsics_avx2.h"'
+
+  - name: libcrux_sha3
+    api:
+      - [libcrux_sha3]
+
+  - name: core
+    private:
+      - [core, "*"]
+    monomorphizations_of:
+      - [core, result, "*"]
+    api:
+      - [Eurydice, "*"]

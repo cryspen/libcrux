@@ -1,0 +1,33 @@
+name: flake-update
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "branch"
+        type: "string"
+        default: "dev"
+
+jobs:
+  flake-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+      - uses: DeterminateSystems/nix-installer-action@v13
+      - name: update `flake.lock`
+        run: nix flake update
+      - name: commit
+        run: |
+          [[ $(git diff) != "" ]] || exit 0
+          COMMITTER=$(curl "https://api.github.com/search/commits?q=author:${{ github.actor }}&sort=author-date&order=desc&page=1" | jq '.items[0].commit.committer')
+          NAME=$(echo "$COMMITTER" | jq '.name')
+          EMAIL=$(echo "$COMMITTER" | jq '.email')
+          git config --local user.name "$NAME"
+          git config --local user.email "$EMAIL"
+          git add flake.lock
+          git commit -m "update \`flake.lock\`"
+      - uses: ad-m/github-push-action@master
+        with:
+          branch: ${{ inputs.branch }}

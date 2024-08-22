@@ -7,16 +7,29 @@ members = [
     "sys/lib25519",
     "benchmarks",
     "fuzz",
+    "libcrux-ml-kem",
+    "libcrux-sha3",
+    "libcrux-ml-dsa",
+    "libcrux-intrinsics",
+    "libcrux-kem",
+    "libcrux-hmac",
+    "libcrux-hkdf",
+    "libcrux-ecdh",
+    "libcrux-psq",
+    "cavp",
 ]
 
 [workspace.package]
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.3"
 authors = ["Cryspen"]
 license = "Apache-2.0"
 homepage = "https://github.com/cryspen/libcrux"
 edition = "2021"
 repository = "https://github.com/cryspen/libcrux"
 readme = "Readme.md"
+
+[workspace.metadata.release]
+allow-branch = ["main"]
 
 [package]
 name = "libcrux"
@@ -29,17 +42,32 @@ repository.workspace = true
 readme.workspace = true
 documentation = "https://docs.rs/libcrux/"
 description = "The Formally Verified Cryptography Library"
-exclude = ["/tests", "/specs"]
+exclude = [
+    "/tests",
+    "/specs",
+    "/proofs",
+    "/*.py",
+    "/wasm-demo",
+    "/fuzz",
+    "/git-hooks",
+    "/architecture",
+    "/libcrux.fst.config.json",
+]
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]
 
 [build-dependencies]
-libcrux-platform = { version = "=0.0.2-pre.2", path = "sys/platform" }
+libcrux-platform = { version = "=0.0.2-alpha.3", path = "sys/platform" }
 
 [dependencies]
-libcrux-hacl = { version = "=0.0.2-pre.2", path = "sys/hacl" }
-libcrux-platform = { version = "=0.0.2-pre.2", path = "sys/platform" }
+libcrux-hacl = { version = "=0.0.2-alpha.3", path = "sys/hacl" }
+libcrux-platform = { version = "=0.0.2-alpha.3", path = "sys/platform" }
+libcrux-hkdf = { version = "=0.0.2-alpha.3", path = "libcrux-hkdf" }
+libcrux-hmac = { version = "=0.0.2-alpha.3", path = "libcrux-hmac" }
+libcrux-ecdh = { version = "=0.0.2-alpha.3", path = "libcrux-ecdh" }
+libcrux-ml-kem = { version = "=0.0.2-alpha.3", path = "libcrux-ml-kem" }
+libcrux-kem = { version = "=0.0.2-alpha.3", path = "libcrux-kem" }
 rand = { version = "0.8" }
 log = { version = "0.4", optional = true }
 # WASM API
@@ -51,11 +79,8 @@ rand_core = { version = "0.2.0", optional = true}
 # When using the hax toolchain, we have more dependencies.
 # This is only required when doing proofs.
 [target.'cfg(hax)'.dependencies]
-hax-lib-macros = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax", branch = "main" }
-hax-lib = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax/", branch = "main" }
-
-[target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64", libjade))'.dependencies]
-libjade-sys = { version = "=0.0.2-pre.2", path = "sys/libjade" }
+hax-lib-macros = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax", branch = "main" }
+hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/", branch = "main" }
 
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand", "tests"] }
@@ -82,3 +107,9 @@ log = ["dep:log"]
 tests = []              # Expose functions for testing.
 experimental = []       # Expose experimental APIs.
 hpke = ["dep:hpke-rs", "dep:hpke-rs-crypto", "dep:rand_core"]
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+

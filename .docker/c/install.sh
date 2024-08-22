@@ -19,29 +19,30 @@ unzip z3.zip
 rm -rf z3.zip
 mv z3-4.8.5-x64-ubuntu-16.04/ z3
 
-curl -L https://github.com/hacl-star/hacl-star/archive/443aed2deccfbee84f928fadc1f594f729c3aad4.zip \
+curl -L https://github.com/hacl-star/hacl-star/archive/2a8b61343a1a7232611cb763b0dc3e4dff84d656.zip \
     --output hacl-star.zip
 unzip hacl-star.zip
 rm -rf hacl-star.zip
-mv hacl-star-443aed2deccfbee84f928fadc1f594f729c3aad4/ hacl-star
+mv hacl-star-2a8b61343a1a7232611cb763b0dc3e4dff84d656/ hacl-star
 
-curl -L https://github.com/AeneasVerif/charon/archive/89cecf5d1074fae7e8007be7f6cdf2f38e9782b1.zip \
+curl -L https://github.com/AeneasVerif/charon/archive/962f26311ccdf09a6a3cfeacbccafba22bf3d405.zip \
     --output charon.zip
 unzip charon.zip
 rm -rf charon.zip
-mv charon-89cecf5d1074fae7e8007be7f6cdf2f38e9782b1/ charon
+mv charon-962f26311ccdf09a6a3cfeacbccafba22bf3d405/ charon
 
-curl -L https://github.com/FStarLang/karamel/archive/08bfa78ae1df5639446e6c5897b07c9823fbf3b0.zip \
+
+curl -L https://github.com/FStarLang/karamel/archive/7862fdc3899b718d39ec98568f78ec40592a622a.zip \
     --output karamel.zip
 unzip karamel.zip
 rm -rf karamel.zip
-mv karamel-08bfa78ae1df5639446e6c5897b07c9823fbf3b0/ karamel
+mv karamel-7862fdc3899b718d39ec98568f78ec40592a622a/ karamel
 
-curl -L https://github.com/AeneasVerif/eurydice/archive/7780d2b4c44c7811d02d7e05789b5611fd497480.zip \
+curl -L https://github.com/AeneasVerif/eurydice/archive/e66abbc2119485abfafa17c1911bdbdada5b04f3.zip \
     --output eurydice.zip
 unzip eurydice.zip
 rm -rf eurydice.zip
-mv eurydice-7780d2b4c44c7811d02d7e05789b5611fd497480/ eurydice
+mv eurydice-e66abbc2119485abfafa17c1911bdbdada5b04f3/ eurydice
 
 echo "export FSTAR_HOME=$HOME/fstar" >>$HOME/.profile
 echo "export HACL_HOME=$HOME/hacl-star" >>$HOME/.profile
@@ -53,7 +54,7 @@ echo "export PATH=\"${PATH}:$HOME/fstar/bin:$HOME/z3/bin\"" >>$HOME/.profile
 echo "[[ ! -r /home/$USER/.opam/opam-init/init.sh ]] || source /home/$USER/.opam/opam-init/init.sh  > /dev/null 2> /dev/null" >>$HOME/.profile
 
 source $HOME/.profile
-opam install --yes ocamlfind visitors menhir ppx_deriving_yojson sedlex wasm fix process pprint zarith yaml easy_logging terminal
+opam install --yes ocamlfind visitors menhir ppx_deriving_yojson core_unix sedlex wasm fix process pprint zarith yaml easy_logging terminal
 eval $(opam env)
 
 # Build everything

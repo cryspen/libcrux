@@ -197,8 +197,10 @@ fn compile_files(
 }
 
 fn build(platform: &Platform, home_path: &Path) {
-    let files = svec![
-        "hacl.c",
+    // Select files to build. Right now this is very limited to what we need.
+    let mut files = svec!["hacl.c"];
+    #[cfg(not(feature = "sha3"))]
+    files.append(&mut svec![
         "Hacl_NaCl.c",
         "Hacl_Salsa20.c",
         "Hacl_MAC_Poly1305.c",
@@ -236,7 +238,10 @@ fn build(platform: &Platform, home_path: &Path) {
         "Hacl_Hash_MD5.c",
         "Hacl_HKDF.c",
         "Hacl_RSAPSS.c",
-    ];
+    ]);
+    #[cfg(feature = "sha3")]
+    files.append(&mut svec!["Hacl_Hash_SHA3_Scalar.c", "Hacl_Hash_SHA3.c"]);
+
     let mut defines = vec![];
     defines.push(("RELOCATABLE", "1"));
 
@@ -253,6 +258,7 @@ fn build(platform: &Platform, home_path: &Path) {
 
     // Platform detection
     if platform.simd128 {
+        #[cfg(not(feature = "sha3"))]
         let files128 = svec![
             "Hacl_Hash_Blake2s_Simd128.c",
             "Hacl_Bignum4096.c",
@@ -265,21 +271,27 @@ fn build(platform: &Platform, home_path: &Path) {
             "Hacl_HKDF_Blake2s_128.c",
             "Hacl_HMAC_Blake2s_128.c",
         ];
+        #[cfg(feature = "sha3")]
+        let files128 = svec![];
+
         defines.append(&mut vec![("HACL_CAN_COMPILE_VEC128", "1")]);
 
         let mut simd128_flags = vec![];
         append_simd128_flags(platform, &mut simd128_flags, false);
-        compile_files(
-            platform,
-            LIB_128_NAME,
-            &files128,
-            &[],
-            home_path,
-            &simd128_flags,
-            &defines,
-        );
+        if !files128.is_empty() {
+            compile_files(
+                platform,
+                LIB_128_NAME,
+                &files128,
+                &[],
+                home_path,
+                &simd128_flags,
+                &defines,
+            );
+        }
     }
     if platform.simd256 {
+        #[cfg(not(feature = "sha3"))]
         let files256 = svec![
             "Hacl_Hash_Blake2b_Simd256.c",
             "Hacl_AEAD_Chacha20Poly1305_Simd256.c",
@@ -290,6 +302,9 @@ fn build(platform: &Platform, home_path: &Path) {
             "Hacl_HKDF_Blake2b_256.c",
             "Hacl_HMAC_Blake2b_256.c",
         ];
+        #[cfg(feature = "sha3")]
+        let files256 = svec!["Hacl_Hash_SHA3_Simd256.c"];
+
         defines.append(&mut vec![("HACL_CAN_COMPILE_VEC256", "1")]);
 
         let mut simd256_flags = vec![];
@@ -305,6 +320,7 @@ fn build(platform: &Platform, home_path: &Path) {
         );
     }
 
+    #[cfg(not(feature = "sha3"))]
     if (platform.target_arch == "x86" || platform.target_arch == "x86_64")
         && (platform.target_env == "gnu"
             || platform.target_os == "linx"
@@ -339,6 +355,7 @@ fn build(platform: &Platform, home_path: &Path) {
         }
     }
 
+    #[cfg(not(feature = "sha3"))]
     if (platform.target_arch == "x86" || platform.target_arch == "x86_64")
         && (platform.target_os == "linux"
             || platform.target_os == "macos"
