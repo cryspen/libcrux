@@ -66,13 +66,36 @@ macro_rules! wycheproof_sign_test {
     };
 }
 
+// 44
+
 wycheproof_sign_test!(
-    wycheproof_sign_44,
+    wycheproof_sign_44_portable,
     44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
-    ml_dsa_44::verify
+    ml_dsa_44::portable::verify
 );
+
+#[cfg(feature = "simd128")]
+wycheproof_sign_test!(
+    wycheproof_sign_44_simd128,
+    44,
+    ml_dsa_44::MLDSA44VerificationKey,
+    ml_dsa_44::MLDSA44Signature,
+    ml_dsa_44::neon::verify
+);
+
+#[cfg(feature = "simd256")]
+wycheproof_sign_test!(
+    wycheproof_sign_44_simd256,
+    44,
+    ml_dsa_44::MLDSA44VerificationKey,
+    ml_dsa_44::MLDSA44Signature,
+    ml_dsa_44::avx2::verify
+);
+
+// 65
+
 wycheproof_sign_test!(
     wycheproof_sign_65,
     65,
@@ -80,6 +103,9 @@ wycheproof_sign_test!(
     ml_dsa_65::MLDSA65Signature,
     ml_dsa_65::verify
 );
+
+// 87
+
 wycheproof_sign_test!(
     wycheproof_sign_87,
     87,

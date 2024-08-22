@@ -410,7 +410,7 @@ pub(crate) fn sample_mask_vector<
         seed[65] = (*domain_separator >> 8) as u8;
         *domain_separator += 1;
 
-        // TODO: We may want to do another 4.
+        // TODO: For 87 we may want to do another 4 and discard 1.
         mask[i] = sample_mask_ring_element::<SIMDUnit, Shake256, GAMMA1_EXPONENT>(seed);
     }
 

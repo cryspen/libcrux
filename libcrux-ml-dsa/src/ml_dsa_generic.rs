@@ -20,6 +20,8 @@ use crate::{
     MLDSASignature,
 };
 
+pub(crate) mod instantiations;
+
 pub(crate) struct Signature<
     SIMDUnit: Operations,
     const COMMITMENT_HASH_SIZE: usize,
@@ -31,10 +33,8 @@ pub(crate) struct Signature<
     pub hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
 }
 
-#[allow(non_snake_case)]
 pub(crate) fn generate_key_pair<
     SIMDUnit: Operations,
-    Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
     Shake256X4: shake256::XofX4,
@@ -51,19 +51,19 @@ pub(crate) fn generate_key_pair<
     let mut seed_expanded = [0; 128];
     Shake256::shake256::<128>(&randomness, &mut seed_expanded);
 
-    let (seed_for_A, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
+    let (seed_for_a, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-    let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
-        into_padded_array(seed_for_A),
+    let a_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+        into_padded_array(seed_for_a),
     );
 
     let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
         into_padded_array(seed_for_error_vectors),
     );
 
-    let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, &s1, &s2);
+    let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1, &s2);
 
     let (t0, t1) = power2round_vector::<SIMDUnit, ROWS_IN_A>(t);
 
@@ -71,7 +71,7 @@ pub(crate) fn generate_key_pair<
         SIMDUnit,
         ROWS_IN_A,
         VERIFICATION_KEY_SIZE,
-    >(seed_for_A, t1);
+    >(seed_for_a, t1);
 
     let signing_key_serialized = encoding::signing_key::generate_serialized::<
         SIMDUnit,
@@ -82,7 +82,7 @@ pub(crate) fn generate_key_pair<
         ERROR_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
     >(
-        seed_for_A,
+        seed_for_a,
         seed_for_signing,
         &verification_key_serialized,
         s1,
@@ -103,7 +103,6 @@ pub enum VerificationError {
 #[allow(non_snake_case)]
 pub(crate) fn sign<
     SIMDUnit: Operations,
-    Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
     Shake256X4: shake256::XofX4,
@@ -276,7 +275,6 @@ pub(crate) fn sign<
 #[allow(non_snake_case)]
 pub(crate) fn verify<
     SIMDUnit: Operations,
-    Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
     const ROWS_IN_A: usize,

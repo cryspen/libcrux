@@ -66,6 +66,35 @@ macro_rules! wycheproof_sign_test {
     };
 }
 
-wycheproof_sign_test!(wycheproof_sign_44, 44, MLDSA44SigningKey, ml_dsa_44::sign);
+// 44
+
+wycheproof_sign_test!(
+    wycheproof_sign_44_portable,
+    44,
+    MLDSA44SigningKey,
+    ml_dsa_44::portable::sign
+);
+
+#[cfg(feature = "simd128")]
+wycheproof_sign_test!(
+    wycheproof_sign_44_simd128,
+    44,
+    MLDSA44SigningKey,
+    ml_dsa_44::neon::sign
+);
+
+#[cfg(feature = "simd256")]
+wycheproof_sign_test!(
+    wycheproof_sign_44_simd256,
+    44,
+    MLDSA44SigningKey,
+    ml_dsa_44::avx2::sign
+);
+
+// 65
+
 wycheproof_sign_test!(wycheproof_sign_65, 65, MLDSA65SigningKey, ml_dsa_65::sign);
+
+// 87
+
 wycheproof_sign_test!(wycheproof_sign_87, 87, MLDSA87SigningKey, ml_dsa_87::sign);
