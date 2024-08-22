@@ -89,6 +89,8 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
 ///
 /// This function MUST NOT be used on secret inputs.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("v (${public_key.len()}) / v $BYTES_PER_RING_ELEMENT <= v $K"))]
 pub(super) fn deserialize_ring_elements_reduced<
     const PUBLIC_KEY_SIZE: usize,
     const K: usize,
@@ -102,7 +104,6 @@ pub(super) fn deserialize_ring_elements_reduced<
             .chunks_exact(BYTES_PER_RING_ELEMENT)
             .enumerate()
         {
-            hax_lib::loop_invariant!(|i: usize| { fstar!("$i < $K") });
             deserialized_pk[i] = deserialize_to_reduced_ring_element(ring_element);
         }
     }
@@ -191,6 +192,9 @@ fn compress_then_serialize_5<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::ensures(|_|
+    fstar!("${out_future.len()} == ${out.len()}")
+)]
 pub(super) fn compress_then_serialize_ring_element_v<
     const COMPRESSION_FACTOR: usize,
     const OUT_LEN: usize,

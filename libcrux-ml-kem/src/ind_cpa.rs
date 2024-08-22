@@ -68,7 +68,7 @@ pub(crate) fn serialize_public_key<
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $OUT_LEN == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K"))]
 #[hax_lib::ensures(|res|
@@ -109,9 +109,9 @@ fn sample_ring_element_cbd<
 ) -> ([PolynomialRingElement<Vector>; K], u8) {
     let mut error_1 = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut prf_inputs = [prf_input; K];
-    let domain_separator_init = domain_separator;
+    let _domain_separator_init = domain_separator;
     for i in 0..K {
-        hax_lib::loop_invariant!(|i: usize| { fstar!("v $domain_separator == v $domain_separator_init + v $i") });
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v $domain_separator == v $_domain_separator_init + v $i") });
         prf_inputs[i][32] = domain_separator;
         domain_separator += 1;
     }
@@ -148,9 +148,9 @@ fn sample_vector_cbd_then_ntt<
 ) -> ([PolynomialRingElement<Vector>; K], u8) {
     let mut re_as_ntt = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut prf_inputs = [prf_input; K];
-    let domain_separator_init = domain_separator;
+    let _domain_separator_init = domain_separator;
     for i in 0..K {
-        hax_lib::loop_invariant!(|i: usize| { fstar!("v $domain_separator == v $domain_separator_init + v $i") });
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v $domain_separator == v $_domain_separator_init + v $i") });
         prf_inputs[i][32] = domain_separator;
         domain_separator += 1;
     }
@@ -201,7 +201,10 @@ fn sample_vector_cbd_then_ntt<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K"))]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
     const ETA1: usize,
@@ -287,11 +290,12 @@ pub(crate) fn generate_keypair<
 }
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $OUT_LEN == Spec.MLKEM.v_C1_SIZE $K /\\
     $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\\
-    $BLOCK_LEN = Spec.MLKEM.v_C1_BLOCK_SIZE $K"))]
+    $BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
+    ${out.len()} == $OUT_LEN"))]
 #[hax_lib::ensures(|_|
     fstar!("$out_future == Spec.MLKEM.compress_then_encode_u #$K
                (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $input)")
@@ -310,6 +314,7 @@ fn compress_then_serialize_u<
     // for the following bug https://github.com/hacspec/hax/issues/720
     cloop! {
         for (i, re) in input.into_iter().enumerate() {
+            hax_lib::loop_invariant!(|i: usize| out.len() == OUT_LEN);
             out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(
                 &compress_then_serialize_ring_element_u::<COMPRESSION_FACTOR, BLOCK_LEN, Vector>(&re),
             );
@@ -359,6 +364,16 @@ fn compress_then_serialize_u<
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
 #[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank v_K /\\
+      v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\\
+      v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\\
+      v_ETA2 == Spec.MLKEM.v_ETA2 v_K /\\
+      v_ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE v_K /\\
+      v_C1_LEN == Spec.MLKEM.v_C1_SIZE v_K /\\
+      v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\\
+      v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\\
+      v v_C1_LEN <= v v_CIPHERTEXT_SIZE /\\
+      v (${randomness.len()}) <= 33"))]
 pub(crate) fn encrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -545,7 +560,8 @@ fn deserialize_then_decompress_u<
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
-    length $secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K"))]
+    length $secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
+    v (${secret_key.len()}) / v $BYTES_PER_RING_ELEMENT <= v $K"))]
 #[hax_lib::ensures(|res|
     fstar!("Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $res ==
          Spec.MLKEM.vector_decode_12 #$K $secret_key")
@@ -586,6 +602,10 @@ fn deserialize_secret_key<const K: usize, Vector: Operations>(
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
 #[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
+    $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\\
+    v $VECTOR_U_ENCODED_SIZE <= v $CIPHERTEXT_SIZE"))]
 pub(crate) fn decrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
