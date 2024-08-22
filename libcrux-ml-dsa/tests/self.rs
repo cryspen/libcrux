@@ -90,6 +90,21 @@ macro_rules! impl_modified_signing_key_test {
 // 44
 
 impl_consistency_test!(
+    consistency_44,
+    ml_dsa_44::generate_key_pair,
+    ml_dsa_44::sign,
+    ml_dsa_44::verify
+);
+
+impl_modified_signing_key_test!(
+    modified_signing_key_44,
+    ml_dsa_44::generate_key_pair,
+    ml_dsa_44::MLDSA44SigningKey::len(),
+    ml_dsa_44::sign,
+    ml_dsa_44::verify
+);
+
+impl_consistency_test!(
     consistency_44_portable,
     ml_dsa_44::portable::generate_key_pair,
     ml_dsa_44::portable::sign,

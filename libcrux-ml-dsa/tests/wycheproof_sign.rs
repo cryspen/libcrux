@@ -68,6 +68,8 @@ macro_rules! wycheproof_sign_test {
 
 // 44
 
+wycheproof_sign_test!(wycheproof_sign_44, 44, MLDSA44SigningKey, ml_dsa_44::sign);
+
 wycheproof_sign_test!(
     wycheproof_sign_44_portable,
     44,

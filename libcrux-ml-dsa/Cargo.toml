@@ -15,6 +15,7 @@ publish = false
 [dependencies]
 libcrux-sha3 = { version = "0.0.2-alpha.3", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-alpha.3", path = "../libcrux-intrinsics" }
+libcrux-platform = { version = "0.0.2-alpha.3", path = "../sys/platform" }
 
 [dev-dependencies]
 rand = { version = "0.8" }

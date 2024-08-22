@@ -1,4 +1,9 @@
-use crate::{constants::*, ml_dsa_generic, types::*, VerificationError};
+use crate::{
+    constants::*,
+    ml_dsa_generic::{self, multiplexing},
+    types::*,
+    VerificationError,
+};
 
 // ML-DSA-44-specific parameters
 
@@ -94,7 +99,9 @@ macro_rules! instantiate {
             use $p as p;
 
             /// Generate an ML-DSA-44 Key Pair
-            pub fn generate_key_pair(randomness: [u8; 32]) -> MLDSA44KeyPair {
+            pub fn generate_key_pair(
+                randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+            ) -> MLDSA44KeyPair {
                 let (signing_key, verification_key) = p::generate_key_pair::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
@@ -167,3 +174,82 @@ instantiate! {portable, ml_dsa_generic::instantiations::portable, "Portable ML-D
 instantiate! {avx2, ml_dsa_generic::instantiations::avx2, "AVX2 Optimised ML-DSA 44"}
 #[cfg(feature = "simd128")]
 instantiate! {neon, ml_dsa_generic::instantiations::neon, "Neon Optimised ML-DSA 44"}
+
+/// Generate an ML-DSA 44 Key Pair
+///
+/// Generate an ML-DSA key pair. The input is a byte array of size
+/// [`KEY_GENERATION_RANDOMNESS_SIZE`].
+///
+/// This function returns an [`MLDSA44KeyPair`].
+#[cfg(not(eurydice))]
+pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> MLDSA44KeyPair {
+    let (signing_key, verification_key) = multiplexing::generate_key_pair::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        ETA,
+        ERROR_RING_ELEMENT_SIZE,
+        SIGNING_KEY_SIZE,
+        VERIFICATION_KEY_SIZE,
+    >(randomness);
+
+    MLDSA44KeyPair {
+        signing_key: MLDSASigningKey(signing_key),
+        verification_key: MLDSAVerificationKey(verification_key),
+    }
+}
+
+/// Sign with ML-DSA 44
+///
+/// Sign a `message` with the ML-DSA `signing_key`.
+///
+/// This function returns an [`MLDSA44Signature`].
+#[cfg(not(eurydice))]
+pub fn sign(
+    signing_key: &MLDSA44SigningKey,
+    message: &[u8],
+    randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+) -> MLDSA44Signature {
+    multiplexing::sign::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        ETA,
+        ERROR_RING_ELEMENT_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA2,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        SIGNING_KEY_SIZE,
+        SIGNATURE_SIZE,
+    >(&signing_key.0, message, randomness)
+}
+
+/// Verify an ML-DSA-44 Signature
+///
+/// Returns `Ok` when the `signature` is valid for the `message` and
+/// `verification_key`, and a [`VerificationError`] otherwise.
+#[cfg(not(eurydice))]
+pub fn verify(
+    verification_key: &MLDSA44VerificationKey,
+    message: &[u8],
+    signature: &MLDSA44Signature,
+) -> Result<(), VerificationError> {
+    multiplexing::verify::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        SIGNATURE_SIZE,
+        VERIFICATION_KEY_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        GAMMA2,
+        BETA,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+    >(&verification_key.0, message, &signature.0)
+}

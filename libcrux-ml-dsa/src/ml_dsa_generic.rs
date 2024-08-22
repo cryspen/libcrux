@@ -21,6 +21,7 @@ use crate::{
 };
 
 pub(crate) mod instantiations;
+pub(crate) mod multiplexing;
 
 pub(crate) struct Signature<
     SIMDUnit: Operations,
@@ -33,6 +34,7 @@ pub(crate) struct Signature<
     pub hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
 }
 
+/// Generate a key pair.
 pub(crate) fn generate_key_pair<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,

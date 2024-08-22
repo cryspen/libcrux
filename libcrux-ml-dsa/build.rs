@@ -24,6 +24,8 @@ fn main() {
         // We don't enable this on x86 because it seems to generate invalid code.
         println!("cargo:rustc-cfg=feature=\"simd256\"");
     }
+
+    println!("cargo::rustc-check-cfg=cfg(eurydice)");
 }
 
 fn read_env(key: &str) -> bool {

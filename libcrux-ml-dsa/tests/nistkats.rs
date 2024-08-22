@@ -75,6 +75,14 @@ macro_rules! impl_nist_known_answer_tests {
 // 44
 
 impl_nist_known_answer_tests!(
+    nist_known_answer_tests_44,
+    44,
+    libcrux_ml_dsa::ml_dsa_44::generate_key_pair,
+    libcrux_ml_dsa::ml_dsa_44::sign,
+    libcrux_ml_dsa::ml_dsa_44::verify
+);
+
+impl_nist_known_answer_tests!(
     nist_known_answer_tests_44_portable,
     44,
     libcrux_ml_dsa::ml_dsa_44::portable::generate_key_pair,

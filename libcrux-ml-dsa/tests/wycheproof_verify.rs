@@ -69,6 +69,14 @@ macro_rules! wycheproof_sign_test {
 // 44
 
 wycheproof_sign_test!(
+    wycheproof_sign_44,
+    44,
+    ml_dsa_44::MLDSA44VerificationKey,
+    ml_dsa_44::MLDSA44Signature,
+    ml_dsa_44::verify
+);
+
+wycheproof_sign_test!(
     wycheproof_sign_44_portable,
     44,
     ml_dsa_44::MLDSA44VerificationKey,
