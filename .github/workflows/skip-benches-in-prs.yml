@@ -1,0 +1,14 @@
+name: Skip Benchmarks in PRs
+
+on: [ pull_request ]
+jobs: 
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+     - run: true
+  benchmarks:
+    runs-on: ubuntu-latest
+    steps:
+     - run: true
+
+

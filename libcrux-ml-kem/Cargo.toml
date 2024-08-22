@@ -18,6 +18,9 @@ exclude = [
     "/hax.py",
 ]
 
+[lib]
+bench = false # so libtest doesn't eat the arguments to criterion
+
 [dependencies]
 rand_core = { version = "0.6" }
 libcrux-platform = { version = "0.0.2-alpha.3", path = "../sys/platform" }
