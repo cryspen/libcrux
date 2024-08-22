@@ -33,8 +33,7 @@ pub mod drbg;
 pub mod ecdh;
 pub mod hkdf;
 pub mod hmac;
-// hacspec code: don't let clippy touch it.
-#[allow(clippy::all)]
+#[cfg(feature = "hpke")]
 pub mod hpke;
 pub mod kem;
 pub mod signature;

@@ -3,16 +3,7 @@ mod test_util;
 use core::panic;
 use std::{fs::File, io::BufReader};
 
-use libcrux::{
-    hpke::{
-        self,
-        aead::AEAD,
-        kdf::KDF,
-        kem::{GenerateKeyPair, KEM},
-        HPKECiphertext, HPKEConfig, HpkeOpen, HpkeSeal,
-    },
-    kem::{self, Algorithm, PublicKey},
-};
+use libcrux:: kem::{self, Algorithm, PublicKey};
 
 #[cfg(not(target_arch = "wasm32"))]
 use libcrux::drbg;
@@ -40,52 +31,6 @@ fn xwing_selftest() {
     assert_eq!(rss.encode(), ss.encode());
 }
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
-#[test]
-fn xwing_hpke_selftest() {
-    let _ = pretty_env_logger::try_init();
-
-    #[cfg(not(target_arch = "wasm32"))]
-    let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
-    #[cfg(target_arch = "wasm32")]
-    let mut rng = OsRng;
-
-    let config = HPKEConfig(
-        hpke::Mode::mode_base,
-        KEM::XWingDraft02,
-        KDF::HKDF_SHA256,
-        AEAD::ChaCha20Poly1305,
-    );
-
-    let mut randomness = vec![0u8; 32];
-    rng.fill_bytes(&mut randomness);
-    let (sk_r, pk_r) = GenerateKeyPair(KEM::XWingDraft02, randomness).unwrap();
-
-    let info = b"xwing hpke selftest info";
-    let aad = b"xwing hpke selftest aad";
-    let ptxt = b"xwing hpke selftest plaintext";
-
-    let mut randomness = vec![0u8; 32];
-    rng.fill_bytes(&mut randomness);
-
-    let HPKECiphertext(enc, ct) =
-        HpkeSeal(config, &pk_r, info, aad, ptxt, None, None, None, randomness)
-            .expect("Error in hpke seal");
-
-    let decrypted_ptxt = HpkeOpen(
-        config,
-        &HPKECiphertext(enc, ct),
-        &sk_r,
-        info,
-        aad,
-        None,
-        None,
-        None,
-    )
-    .expect("Error opening hpke ciphertext");
-
-    assert_eq!(ptxt, decrypted_ptxt.as_slice());
-}
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]

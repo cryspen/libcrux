@@ -1,5 +1,8 @@
 use std::io::Write as _;
 
+/// A provider for the [hpke-rs] crate, backed by libcrux.
+///
+/// [hpke-rs]
 #[derive(Debug)]
 pub struct Provider;
 
@@ -208,9 +211,12 @@ impl hpke_rs_crypto::HpkeCrypto for Provider {
         );
 
         let msg_len = msg.len();
-        let mut out: Vec<u8> = msg.iter().cloned().chain(vec![0u8; alg.tag_length()].into_iter()).collect();
-        let mut msg_ctxt = &mut out[..msg_len];
-
+        let mut out: Vec<u8> = msg
+            .iter()
+            .cloned()
+            .chain(vec![0u8; alg.tag_length()].into_iter())
+            .collect();
+        let msg_ctxt = &mut out[..msg_len];
 
         let tag = crate::aead::encrypt(&key, msg_ctxt, iv, aad).map_err(|_| {
             hpke_rs_crypto::error::Error::CryptoLibraryError("aead encrypt error".to_string())
@@ -237,17 +243,15 @@ impl hpke_rs_crypto::HpkeCrypto for Provider {
         );
 
         if msg.len() < alg.tag_length() {
-            return Err(hpke_rs_crypto::error::Error::AeadInvalidCiphertext)
+            return Err(hpke_rs_crypto::error::Error::AeadInvalidCiphertext);
         }
 
         let msg_len = msg.len() - alg.tag_length();
         let tag = crate::aead::Tag::from_slice(&msg[msg_len..]).unwrap();
         let msg = &msg[..msg_len];
 
-
         let mut msg_ctxt = msg.to_vec();
         crate::aead::decrypt(&key, &mut msg_ctxt, iv, aad, &tag)
-            .map_err(|x| {panic!("wat {x}");})
             .map_err(|_| hpke_rs_crypto::error::Error::AeadOpenError)
             .map(|_| msg_ctxt)
     }
