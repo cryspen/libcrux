@@ -1,20 +1,25 @@
 use crate::{
-    constant_time_ops::{
-        compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
-        compare_ciphertexts_select_shared_secret_in_constant_time,
-    },
+    constant_time_ops::compare_ciphertexts_select_shared_secret_in_constant_time,
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::Hash,
     ind_cpa::serialize_public_key,
-    polynomial::PolynomialRingElement,
     serialize::deserialize_ring_elements_reduced,
     types::*,
     utils::into_padded_array,
+    variant::*,
     vector::Operations,
+};
+#[cfg(feature = "unpacked")]
+use crate::{
+    constant_time_ops::{
+        compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
+    },
+    polynomial::PolynomialRingElement,
 };
 
 /// Types for the unpacked API.
-pub mod unpacked {
+#[cfg(feature = "unpacked")]
+pub(crate) mod unpacked {
     use crate::{ind_cpa::unpacked::*, vector::traits::Operations};
 
     /// An unpacked ML-KEM IND-CCA Private Key
@@ -35,6 +40,7 @@ pub mod unpacked {
         pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
     }
 }
+#[cfg(feature = "unpacked")]
 use unpacked::*;
 
 /// Seed size for key generation
@@ -117,6 +123,7 @@ fn generate_keypair<
     const ETA1_RANDOMNESS_SIZE: usize,
     Vector: Operations,
     Hasher: Hash<K>,
+    Scheme: Variant,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
@@ -132,6 +139,7 @@ fn generate_keypair<
         ETA1_RANDOMNESS_SIZE,
         Vector,
         Hasher,
+        Scheme,
     >(ind_cpa_keypair_randomness);
 
     let secret_key_serialized = serialize_kem_secret_key::<K, PRIVATE_KEY_SIZE, Hasher>(
@@ -275,6 +283,7 @@ pub(crate) fn decapsulate<
 
 // Unpacked API
 // Generate Unpacked Keys
+#[cfg(feature = "unpacked")]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -334,6 +343,7 @@ pub(crate) fn generate_keypair_unpacked<
 }
 
 // Encapsulate with Unpacked Public Key
+#[cfg(feature = "unpacked")]
 pub(crate) fn encapsulate_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -382,6 +392,7 @@ pub(crate) fn encapsulate_unpacked<
 }
 
 // Decapsulate with Unpacked Private Key
+#[cfg(feature = "unpacked")]
 pub(crate) fn decapsulate_unpacked<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -453,69 +464,4 @@ pub(crate) fn decapsulate_unpacked<
         &implicit_rejection_shared_secret,
         selector,
     )
-}
-
-/// This trait collects differences in specification between ML-KEM
-/// (Draft FIPS 203) and the Round 3 CRYSTALS-Kyber submission in the
-/// NIST PQ competition.
-///
-/// cf. FIPS 203 (Draft), section 1.3
-pub(crate) trait Variant {
-    fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
-        shared_secret: &[u8],
-        ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
-    ) -> [u8; 32];
-    fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32];
-}
-
-/// Implements [`Variant`], to perform the Kyber-specific actions
-/// during encapsulation and decapsulation.
-/// Specifically,
-/// * during encapsulation, the initial randomness is hashed before being used,
-/// * the derivation of the shared secret includes a hash of the Kyber ciphertext.
-#[cfg(feature = "kyber")]
-pub(crate) struct Kyber {}
-
-#[cfg(feature = "kyber")]
-impl Variant for Kyber {
-    #[inline(always)]
-    fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
-        shared_secret: &[u8],
-        ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
-    ) -> [u8; 32] {
-        let mut kdf_input: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&shared_secret);
-        kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext.as_slice()));
-        Hasher::PRF::<32>(&kdf_input)
-    }
-
-    #[inline(always)]
-    fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
-        Hasher::H(&randomness)
-    }
-}
-
-/// Implements [`Variant`], to perform the ML-KEM-specific actions
-/// during encapsulation and decapsulation.
-/// Specifically,
-/// * during encapsulation, the initial randomness is used without prior hashing,
-/// * the derivation of the shared secret does not include a hash of the ML-KEM ciphertext.
-pub(crate) struct MlKem {}
-
-impl Variant for MlKem {
-    #[inline(always)]
-    fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
-        shared_secret: &[u8],
-        _: &MlKemCiphertext<CIPHERTEXT_SIZE>,
-    ) -> [u8; 32] {
-        let mut out = [0u8; 32];
-        out.copy_from_slice(shared_secret);
-        out
-    }
-
-    #[inline(always)]
-    fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
-        let mut out = [0u8; 32];
-        out.copy_from_slice(randomness);
-        out
-    }
 }

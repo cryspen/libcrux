@@ -163,18 +163,15 @@ let cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Portabl
             if true
             then
               let _:Prims.unit =
-                if
-                  ~.(((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) >=. 0s
+                Hax_lib.v_assert (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
+                        <:
+                        i16) >=.
+                      0s
                       <:
                       bool) &&
                     ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) <. 4096s
                       <:
                       bool))
-                then
-                  Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: v.elements[i] >= 0 && v.elements[i] < 4096"
-
-                      <:
-                      Rust_primitives.Hax.t_Never)
               in
               ()
           in

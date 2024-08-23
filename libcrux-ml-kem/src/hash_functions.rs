@@ -394,6 +394,7 @@ pub(crate) mod avx2 {
 }
 
 /// A SIMD128 implementation of [`Hash`] for NEON
+#[cfg(feature = "simd128")]
 pub(crate) mod neon {
     use super::*;
     use libcrux_sha3::neon::x2::{self, incremental::KeccakState};

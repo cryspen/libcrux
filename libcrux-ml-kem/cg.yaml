@@ -96,8 +96,8 @@ files:
     inline_static: true
     private:
       exact:
-        - [ libcrux_ml_kem, ind_cca, MlKem ]
-        - [ libcrux_ml_kem, ind_cca, Kyber ]
+        - [ libcrux_ml_kem, variant, MlKem ]
+        - [ libcrux_ml_kem, variant, Kyber ]
     api:
       patterns:
         - [libcrux_ml_kem, "*"]

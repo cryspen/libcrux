@@ -6,8 +6,10 @@ macro_rules! instantiate {
                 KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE,
             };
 
+            #[cfg(feature = "unpacked")]
             pub(crate) type MlKemKeyPairUnpacked<const K: usize> =
                 crate::ind_cca::unpacked::MlKemKeyPairUnpacked<K, $vector>;
+            #[cfg(feature = "unpacked")]
             pub(crate) type MlKemPublicKeyUnpacked<const K: usize> =
                 crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
 
@@ -33,6 +35,33 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     $vector,
                     $hash,
+                    crate::variant::MlKem,
+                >(randomness)
+            }
+
+            #[cfg(feature = "kyber")]
+            pub(crate) fn kyber_generate_keypair<
+                const K: usize,
+                const CPA_PRIVATE_KEY_SIZE: usize,
+                const PRIVATE_KEY_SIZE: usize,
+                const PUBLIC_KEY_SIZE: usize,
+                const BYTES_PER_RING_ELEMENT: usize,
+                const ETA1: usize,
+                const ETA1_RANDOMNESS_SIZE: usize,
+            >(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
+                crate::ind_cca::generate_keypair::<
+                    K,
+                    CPA_PRIVATE_KEY_SIZE,
+                    PRIVATE_KEY_SIZE,
+                    PUBLIC_KEY_SIZE,
+                    BYTES_PER_RING_ELEMENT,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    $vector,
+                    $hash,
+                    crate::variant::Kyber,
                 >(randomness)
             }
 
@@ -88,7 +117,7 @@ macro_rules! instantiate {
                     ETA2_RANDOMNESS_SIZE,
                     $vector,
                     $hash,
-                    crate::ind_cca::Kyber,
+                    crate::variant::Kyber,
                 >(public_key, randomness)
             }
 
@@ -126,7 +155,7 @@ macro_rules! instantiate {
                     ETA2_RANDOMNESS_SIZE,
                     $vector,
                     $hash,
-                    crate::ind_cca::MlKem,
+                    crate::variant::MlKem,
                 >(public_key, randomness)
             }
 
@@ -172,7 +201,7 @@ macro_rules! instantiate {
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     $vector,
                     $hash,
-                    crate::ind_cca::Kyber,
+                    crate::variant::Kyber,
                 >(private_key, ciphertext)
             }
 
@@ -217,11 +246,12 @@ macro_rules! instantiate {
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     $vector,
                     $hash,
-                    crate::ind_cca::MlKem,
+                    crate::variant::MlKem,
                 >(private_key, ciphertext)
             }
 
             /// Unpacked API
+            #[cfg(feature = "unpacked")]
             pub(crate) fn generate_keypair_unpacked<
                 const K: usize,
                 const CPA_PRIVATE_KEY_SIZE: usize,
@@ -247,6 +277,7 @@ macro_rules! instantiate {
             }
 
             /// Portable encapsualte
+            #[cfg(feature = "unpacked")]
             pub(crate) fn encapsulate_unpacked<
                 const K: usize,
                 const CIPHERTEXT_SIZE: usize,
@@ -285,7 +316,8 @@ macro_rules! instantiate {
             }
 
             /// Portable decapsulate
-            pub fn decapsulate_unpacked<
+            #[cfg(feature = "unpacked")]
+            pub(crate) fn decapsulate_unpacked<
                 const K: usize,
                 const SECRET_KEY_SIZE: usize,
                 const CPA_SECRET_KEY_SIZE: usize,

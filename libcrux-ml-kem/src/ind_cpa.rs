@@ -1,3 +1,5 @@
+#[cfg(feature = "unpacked")]
+use crate::variant::MlKem;
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     hash_functions::Hash,
@@ -14,11 +16,12 @@ use crate::{
         serialize_uncompressed_ring_element,
     },
     utils::into_padded_array,
+    variant::Variant,
     vector::Operations,
 };
 
-#[allow(non_snake_case)]
 /// Types for the unpacked API.
+#[allow(non_snake_case)]
 pub mod unpacked {
     use crate::{polynomial::PolynomialRingElement, vector::traits::Operations};
 
@@ -28,13 +31,13 @@ pub mod unpacked {
     }
 
     /// An unpacked ML-KEM IND-CPA Private Key
+    #[cfg(feature = "unpacked")]
     pub(crate) struct IndCpaPublicKeyUnpacked<const K: usize, Vector: Operations> {
         pub(crate) t_as_ntt: [PolynomialRingElement<Vector>; K],
         pub(crate) seed_for_A: [u8; 32],
         pub(crate) A: [[PolynomialRingElement<Vector>; K]; K],
     }
 }
-
 use unpacked::*;
 
 /// Concatenate `t` and `ρ` into the public key.
@@ -164,6 +167,7 @@ fn sample_vector_cbd_then_ntt<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[cfg(feature = "unpacked")]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
     const ETA1: usize,
@@ -176,8 +180,8 @@ pub(crate) fn generate_keypair_unpacked<
     IndCpaPrivateKeyUnpacked<K, Vector>,
     IndCpaPublicKeyUnpacked<K, Vector>,
 ) {
-    // (ρ,σ) := G(d)
-    let hashed = Hasher::G(key_generation_seed);
+    // (ρ,σ) := G(d) for Kyber, (ρ,σ) := G(d || K) for ML-KEM
+    let hashed = MlKem::cpa_keygen_seed::<K, Hasher>(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed_for_A), true);
@@ -218,13 +222,14 @@ pub(crate) fn generate_keypair<
     const ETA1_RANDOMNESS_SIZE: usize,
     Vector: Operations,
     Hasher: Hash<K>,
+    Scheme: Variant,
 >(
     key_generation_seed: &[u8],
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
     // We don't use the unpacked function here in order to reduce stack size.
 
-    // (ρ,σ) := G(d)
-    let hashed = Hasher::G(key_generation_seed);
+    // (ρ,σ) := G(d) for Kyber, (ρ,σ) := G(d || K) for ML-KEM
+    let hashed = Scheme::cpa_keygen_seed::<K, Hasher>(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed_for_A), true);
@@ -319,6 +324,7 @@ fn compress_then_serialize_u<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[cfg(feature = "unpacked")]
 pub(crate) fn encrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,

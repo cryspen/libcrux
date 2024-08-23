@@ -8,7 +8,7 @@
  * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
  * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 0ca73e59afe19a3f88b8ff45d0c57b0ebe851319
+ * Libcrux: 7d3aa4de53d928af9db06c189a774877d4472c45
  */
 
 #ifndef __libcrux_sha3_portable_H
@@ -2155,94 +2155,8 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_shake256(
   libcrux_sha3_portable_keccakx1_ce1(buf0, buf);
 }
 
-/**
- A portable SHA3 512 implementation.
-*/
-static KRML_MUSTINLINE void libcrux_sha3_neon_sha512(Eurydice_slice digest,
-                                                     Eurydice_slice data) {
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                    "panic!");
-  KRML_HOST_EXIT(255U);
-}
-
-/**
- A portable SHA3 256 implementation.
-*/
-static KRML_MUSTINLINE void libcrux_sha3_neon_sha256(Eurydice_slice digest,
-                                                     Eurydice_slice data) {
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                    "panic!");
-  KRML_HOST_EXIT(255U);
-}
-
-/**
- Run SHAKE256 on both inputs in parallel.
-
- Writes the two results into `out0` and `out1`
-*/
-static KRML_MUSTINLINE void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0,
-                                                          Eurydice_slice input1,
-                                                          Eurydice_slice out0,
-                                                          Eurydice_slice out1) {
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                    "panic!");
-  KRML_HOST_EXIT(255U);
-}
-
 typedef libcrux_sha3_generic_keccak_KeccakState_48
     libcrux_sha3_portable_KeccakState;
-
-typedef struct libcrux_sha3_neon_x2_incremental_KeccakState_s {
-  libcrux_sha3_generic_keccak_KeccakState_48 state[2U];
-} libcrux_sha3_neon_x2_incremental_KeccakState;
-
-/**
- Initialise the `KeccakState2`.
-*/
-static KRML_MUSTINLINE libcrux_sha3_neon_x2_incremental_KeccakState
-libcrux_sha3_neon_x2_incremental_shake128_init(void) {
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                    "panic!");
-  KRML_HOST_EXIT(255U);
-}
-
-/**
- Shake128 absorb `data0` and `data1` in the [`KeccakState`] `s`.
-*/
-static KRML_MUSTINLINE void
-libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
-    libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice data0,
-    Eurydice_slice data1) {
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                    "panic!");
-  KRML_HOST_EXIT(255U);
-}
-
-/**
- Squeeze 2 times the next block in parallel in the
- [`KeccakState`] and return the output in `out0` and `out1`.
-*/
-static KRML_MUSTINLINE void
-libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
-    libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
-    Eurydice_slice out1) {
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                    "panic!");
-  KRML_HOST_EXIT(255U);
-}
-
-/**
- Squeeze 2 times the first three blocks in parallel in the
- [`KeccakState`] and return the output in `out0` and `out1`.
-*/
-static KRML_MUSTINLINE void
-libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
-    libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
-    Eurydice_slice out1) {
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                    "panic!");
-  KRML_HOST_EXIT(255U);
-}
 
 /**
  Create a new SHAKE-128 state object.
@@ -3548,10 +3462,96 @@ static KRML_MUSTINLINE void libcrux_sha3_neon_sha224(Eurydice_slice digest,
 }
 
 /**
+ A portable SHA3 256 implementation.
+*/
+static KRML_MUSTINLINE void libcrux_sha3_neon_sha256(Eurydice_slice digest,
+                                                     Eurydice_slice data) {
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
+}
+
+/**
  A portable SHA3 384 implementation.
 */
 static KRML_MUSTINLINE void libcrux_sha3_neon_sha384(Eurydice_slice digest,
                                                      Eurydice_slice data) {
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
+}
+
+/**
+ A portable SHA3 512 implementation.
+*/
+static KRML_MUSTINLINE void libcrux_sha3_neon_sha512(Eurydice_slice digest,
+                                                     Eurydice_slice data) {
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
+}
+
+/**
+ Run SHAKE256 on both inputs in parallel.
+
+ Writes the two results into `out0` and `out1`
+*/
+static KRML_MUSTINLINE void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0,
+                                                          Eurydice_slice input1,
+                                                          Eurydice_slice out0,
+                                                          Eurydice_slice out1) {
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
+}
+
+typedef struct libcrux_sha3_neon_x2_incremental_KeccakState_s {
+  libcrux_sha3_generic_keccak_KeccakState_48 state[2U];
+} libcrux_sha3_neon_x2_incremental_KeccakState;
+
+/**
+ Initialise the `KeccakState2`.
+*/
+static KRML_MUSTINLINE libcrux_sha3_neon_x2_incremental_KeccakState
+libcrux_sha3_neon_x2_incremental_shake128_init(void) {
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
+}
+
+/**
+ Shake128 absorb `data0` and `data1` in the [`KeccakState`] `s`.
+*/
+static KRML_MUSTINLINE void
+libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
+    libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice data0,
+    Eurydice_slice data1) {
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
+}
+
+/**
+ Squeeze 2 times the first three blocks in parallel in the
+ [`KeccakState`] and return the output in `out0` and `out1`.
+*/
+static KRML_MUSTINLINE void
+libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
+    libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
+    Eurydice_slice out1) {
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
+}
+
+/**
+ Squeeze 2 times the next block in parallel in the
+ [`KeccakState`] and return the output in `out0` and `out1`.
+*/
+static KRML_MUSTINLINE void
+libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
+    libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
+    Eurydice_slice out1) {
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);

@@ -42,6 +42,7 @@ macro_rules! impl_nist_known_answer_tests {
                 let key_pair = $key_gen_derand(kat.key_generation_seed);
 
                 let public_key_hash = sha256(key_pair.pk());
+                eprintln!("pk hash: {}", hex::encode(public_key_hash));
                 let secret_key_hash = sha256(key_pair.sk());
 
                 assert_eq!(public_key_hash, kat.sha3_256_hash_of_public_key, "lhs: computed public key hash, rhs: hash from kat");
@@ -61,29 +62,30 @@ macro_rules! impl_nist_known_answer_tests {
         }
     };
 }
-#[cfg(feature = "mlkem512")]
+#[cfg(all(not(feature = "pre-verification"), feature = "mlkem512"))]
 impl_nist_known_answer_tests!(
     mlkem512_nist_known_answer_tests,
-    "mlkem",
+    "mlkem_ipd",
     512,
     libcrux_ml_kem::mlkem512::generate_key_pair,
     libcrux_ml_kem::mlkem512::encapsulate,
     libcrux_ml_kem::mlkem512::decapsulate
 );
-#[cfg(feature = "mlkem768")]
+
+#[cfg(all(not(feature = "pre-verification"), feature = "mlkem768"))]
 impl_nist_known_answer_tests!(
     mlkem768_nist_known_answer_tests,
-    "mlkem",
+    "mlkem_ipd",
     768,
     libcrux_ml_kem::mlkem768::generate_key_pair,
     libcrux_ml_kem::mlkem768::encapsulate,
     libcrux_ml_kem::mlkem768::decapsulate
 );
 
-#[cfg(feature = "mlkem1024")]
+#[cfg(all(not(feature = "pre-verification"), feature = "mlkem1024"))]
 impl_nist_known_answer_tests!(
     mlkem1024_nist_known_answer_tests,
-    "mlkem",
+    "mlkem_ipd",
     1024,
     libcrux_ml_kem::mlkem1024::generate_key_pair,
     libcrux_ml_kem::mlkem1024::encapsulate,
