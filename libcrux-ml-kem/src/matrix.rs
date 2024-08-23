@@ -5,7 +5,7 @@ use crate::{
 
 #[inline(always)]
 #[allow(non_snake_case)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K"))]
 #[hax_lib::ensures(|res|
     fstar!("let (matrix_A, valid) = Spec.MLKEM.sample_matrix_A_ntt (Seq.slice $seed 0 32) in
@@ -111,7 +111,7 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
 
 /// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K"))]
 #[hax_lib::ensures(|res|
     fstar!("let open Libcrux_ml_kem.Polynomial in
@@ -148,7 +148,7 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
 /// Compute Â ◦ ŝ + ê
 #[inline(always)]
 #[allow(non_snake_case)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K"))]
 #[hax_lib::ensures(|res|
     fstar!("let open Libcrux_ml_kem.Polynomial in

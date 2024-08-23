@@ -1,6 +1,5 @@
 use crate::{
-    constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
-    hax_utils::hax_debug_assert,
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
     helper::cloop,
     polynomial::{PolynomialRingElement, VECTORS_IN_RING_ELEMENT},
     vector::{decompress_1, to_unsigned_representative, Operations},
@@ -48,11 +47,13 @@ pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    serialized.len() == BYTES_PER_RING_ELEMENT
+)]
 pub(super) fn deserialize_to_uncompressed_ring_element<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
-
+    hax_lib::fstar!("assert (v $BYTES_PER_RING_ELEMENT / 24 == 16)");
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
@@ -68,11 +69,13 @@ pub(super) fn deserialize_to_uncompressed_ring_element<Vector: Operations>(
 ///
 /// This MUST NOT be used with secret inputs, like its caller `deserialize_ring_elements_reduced`.
 #[inline(always)]
+#[hax_lib::requires(
+    serialized.len() == BYTES_PER_RING_ELEMENT
+)]
 fn deserialize_to_reduced_ring_element<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
-
+    hax_lib::fstar!("assert (v $BYTES_PER_RING_ELEMENT / 24 == 16)");
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
@@ -89,6 +92,10 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
 ///
 /// This function MUST NOT be used on secret inputs.
 #[inline(always)]
+#[hax_lib::requires(
+    public_key.len() == PUBLIC_KEY_SIZE &&
+    PUBLIC_KEY_SIZE / BYTES_PER_RING_ELEMENT <= K
+)]
 pub(super) fn deserialize_ring_elements_reduced<
     const PUBLIC_KEY_SIZE: usize,
     const K: usize,
@@ -109,6 +116,9 @@ pub(super) fn deserialize_ring_elements_reduced<
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    20 * (VECTORS_IN_RING_ELEMENT - 1) + 20 <= OUT_LEN
+)]
 fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
@@ -124,6 +134,9 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    22 * (VECTORS_IN_RING_ELEMENT - 1) + 22 <= OUT_LEN
+)]
 fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
@@ -139,6 +152,10 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    (COMPRESSION_FACTOR == 10 || COMPRESSION_FACTOR == 11) &&
+    (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN
+)]
 pub(super) fn compress_then_serialize_ring_element_u<
     const COMPRESSION_FACTOR: usize,
     const OUT_LEN: usize,
@@ -146,8 +163,9 @@ pub(super) fn compress_then_serialize_ring_element_u<
 >(
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
-    hax_debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
-
+    hax_lib::fstar!("assert (
+        (v (cast $COMPRESSION_FACTOR <: u32) == 10) \\/
+        (v (cast $COMPRESSION_FACTOR <: u32) == 11))");
     match COMPRESSION_FACTOR as u32 {
         10 => compress_then_serialize_10(re),
         11 => compress_then_serialize_11(re),
@@ -156,13 +174,18 @@ pub(super) fn compress_then_serialize_ring_element_u<
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    8 * (VECTORS_IN_RING_ELEMENT - 1) + 8 <= serialized.len()
+)]
 fn compress_then_serialize_4<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
     serialized: &mut [u8],
 ) {
+    let _serialized_len = serialized.len();
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..VECTORS_IN_RING_ELEMENT {
+        hax_lib::loop_invariant!(|i: usize| serialized.len() == _serialized_len);
         let coefficient =
             Vector::compress::<4>(to_unsigned_representative::<Vector>(re.coefficients[i]));
 
@@ -173,13 +196,18 @@ fn compress_then_serialize_4<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    10 * (VECTORS_IN_RING_ELEMENT - 1) + 10 <= serialized.len()
+)]
 fn compress_then_serialize_5<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
     serialized: &mut [u8],
 ) {
+    let _serialized_len = serialized.len();
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..VECTORS_IN_RING_ELEMENT {
+        hax_lib::loop_invariant!(|i: usize| serialized.len() == _serialized_len);
         let coefficients =
             Vector::compress::<5>(to_unsigned_representative::<Vector>(re.coefficients[i]));
 
@@ -190,6 +218,14 @@ fn compress_then_serialize_5<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    (COMPRESSION_FACTOR == 4 || COMPRESSION_FACTOR == 5) &&
+    (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN &&
+    out.len() == OUT_LEN
+)]
+#[hax_lib::ensures(|_|
+    fstar!("${out_future.len()} == ${out.len()}")
+)]
 pub(super) fn compress_then_serialize_ring_element_v<
     const COMPRESSION_FACTOR: usize,
     const OUT_LEN: usize,
@@ -198,8 +234,9 @@ pub(super) fn compress_then_serialize_ring_element_v<
     re: PolynomialRingElement<Vector>,
     out: &mut [u8],
 ) {
-    hax_debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
-
+    hax_lib::fstar!("assert (
+        (v (cast $COMPRESSION_FACTOR <: u32) == 4) \\/
+        (v (cast $COMPRESSION_FACTOR <: u32) == 5))");
     match COMPRESSION_FACTOR as u32 {
         4 => compress_then_serialize_4(re, out),
         5 => compress_then_serialize_5(re, out),
@@ -208,13 +245,16 @@ pub(super) fn compress_then_serialize_ring_element_v<
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8
+)]
 fn deserialize_then_decompress_10<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
-
+    hax_lib::fstar!("assert (v (($COEFFICIENTS_IN_RING_ELEMENT *! sz 10) /! sz 8) == 320)");
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
+    let _coefficients_length = re.coefficients.len();
     cloop! {
         for (i, bytes) in serialized.chunks_exact(20).enumerate() {
             let coefficient = Vector::deserialize_10(bytes);
@@ -225,11 +265,13 @@ fn deserialize_then_decompress_10<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8
+)]
 fn deserialize_then_decompress_11<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);
-
+    hax_lib::fstar!("assert (v (($COEFFICIENTS_IN_RING_ELEMENT *! sz 11) /! sz 8) == 352)");
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
@@ -243,14 +285,19 @@ fn deserialize_then_decompress_11<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    (COMPRESSION_FACTOR == 10 || COMPRESSION_FACTOR == 11) &&
+    serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
+)]
 pub(super) fn deserialize_then_decompress_ring_element_u<
     const COMPRESSION_FACTOR: usize,
     Vector: Operations,
 >(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8);
-
+    hax_lib::fstar!("assert (
+        (v (cast $COMPRESSION_FACTOR <: u32) == 10) \\/
+        (v (cast $COMPRESSION_FACTOR <: u32) == 11))");
     match COMPRESSION_FACTOR as u32 {
         10 => deserialize_then_decompress_10(serialized),
         11 => deserialize_then_decompress_11(serialized),
@@ -259,11 +306,15 @@ pub(super) fn deserialize_then_decompress_ring_element_u<
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8
+)]
 fn deserialize_then_decompress_4<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
+    hax_lib::fstar!("assert (v (($COEFFICIENTS_IN_RING_ELEMENT *! sz 4) /! sz 8) == 128)");
     let mut re = PolynomialRingElement::<Vector>::ZERO();
+
     cloop! {
         for (i, bytes) in serialized.chunks_exact(8).enumerate() {
             let coefficient = Vector::deserialize_4(bytes);
@@ -274,11 +325,13 @@ fn deserialize_then_decompress_4<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8
+)]
 fn deserialize_then_decompress_5<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
-
+    hax_lib::fstar!("assert (v (($COEFFICIENTS_IN_RING_ELEMENT *! sz 5) /! sz 8) == 160)");
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
@@ -291,14 +344,19 @@ fn deserialize_then_decompress_5<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    (COMPRESSION_FACTOR == 4 || COMPRESSION_FACTOR == 5) &&
+    serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
+)]
 pub(super) fn deserialize_then_decompress_ring_element_v<
     const COMPRESSION_FACTOR: usize,
     Vector: Operations,
 >(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8);
-
+    hax_lib::fstar!("assert (
+        (v (cast $COMPRESSION_FACTOR <: u32) == 4) \\/
+        (v (cast $COMPRESSION_FACTOR <: u32) == 5))");
     match COMPRESSION_FACTOR as u32 {
         4 => deserialize_then_decompress_4(serialized),
         5 => deserialize_then_decompress_5(serialized),
