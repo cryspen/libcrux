@@ -257,7 +257,6 @@ fn deserialize_then_decompress_10<Vector: Operations>(
     let _coefficients_length = re.coefficients.len();
     cloop! {
         for (i, bytes) in serialized.chunks_exact(20).enumerate() {
-            hax_lib::loop_invariant!(|i: usize| i <= 16);
             let coefficient = Vector::deserialize_10(bytes);
             re.coefficients[i] = Vector::decompress_ciphertext_coefficient::<10>(coefficient);
         }
@@ -277,7 +276,6 @@ fn deserialize_then_decompress_11<Vector: Operations>(
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(22).enumerate() {
-            hax_lib::loop_invariant!(|i: usize| i <= 16);
             let coefficient = Vector::deserialize_11(bytes);
             re.coefficients[i] = Vector::decompress_ciphertext_coefficient::<11>(coefficient);
         }
@@ -319,7 +317,6 @@ fn deserialize_then_decompress_4<Vector: Operations>(
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(8).enumerate() {
-            hax_lib::loop_invariant!(|i: usize| i <= 16);
             let coefficient = Vector::deserialize_4(bytes);
             re.coefficients[i] = Vector::decompress_ciphertext_coefficient::<4>(coefficient);
         }
@@ -339,7 +336,6 @@ fn deserialize_then_decompress_5<Vector: Operations>(
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(10).enumerate() {
-            hax_lib::loop_invariant!(|i: usize| i <= 16);
             re.coefficients[i] = Vector::deserialize_5(bytes);
             re.coefficients[i] = Vector::decompress_ciphertext_coefficient::<5>(re.coefficients[i]);
         }
