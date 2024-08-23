@@ -15,6 +15,7 @@
 use super::vector_type::*;
 use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn serialize_1(v: PortableVector) -> [u8; 2] {
     let mut result = [0u8; 2];
@@ -27,6 +28,7 @@ pub(crate) fn serialize_1(v: PortableVector) -> [u8; 2] {
     result
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn deserialize_1(v: &[u8]) -> PortableVector {
     let mut result = zero();
@@ -39,6 +41,7 @@ pub(crate) fn deserialize_1(v: &[u8]) -> PortableVector {
     result
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn serialize_4_int(v: &[i16]) -> (u8, u8, u8, u8) {
     let result0 = ((v[1] as u8) << 4) | (v[0] as u8);
@@ -48,6 +51,7 @@ pub(crate) fn serialize_4_int(v: &[i16]) -> (u8, u8, u8, u8) {
     (result0, result1, result2, result3)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn serialize_4(v: PortableVector) -> [u8; 8] {
     let result0_3 = serialize_4_int(&v.elements[0..8]);
@@ -64,6 +68,7 @@ pub(crate) fn serialize_4(v: PortableVector) -> [u8; 8] {
     result
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn deserialize_4_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16, i16, i16) {
     let v0 = (bytes[0] & 0x0F) as i16;
@@ -77,6 +82,7 @@ pub(crate) fn deserialize_4_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16, 
     (v0, v1, v2, v3, v4, v5, v6, v7)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn deserialize_4(bytes: &[u8]) -> PortableVector {
     let v0_7 = deserialize_4_int(&bytes[0..4]);
@@ -101,6 +107,7 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> PortableVector {
     v
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn serialize_5_int(v: &[i16]) -> (u8, u8, u8, u8, u8) {
     let r0 = (v[0] | v[1] << 5) as u8;
@@ -111,6 +118,7 @@ pub(crate) fn serialize_5_int(v: &[i16]) -> (u8, u8, u8, u8, u8) {
     (r0, r1, r2, r3, r4)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn serialize_5(v: PortableVector) -> [u8; 10] {
     let r0_4 = serialize_5_int(&v.elements[0..8]);
@@ -129,6 +137,7 @@ pub(crate) fn serialize_5(v: PortableVector) -> [u8; 10] {
     result
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn deserialize_5_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16, i16, i16) {
     let v0 = (bytes[0] & 0x1F) as i16;
@@ -142,6 +151,7 @@ pub(crate) fn deserialize_5_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16, 
     (v0, v1, v2, v3, v4, v5, v6, v7)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn deserialize_5(bytes: &[u8]) -> PortableVector {
     let v0_7 = deserialize_5_int(&bytes[0..5]);
@@ -167,15 +177,23 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> PortableVector {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 480 --split_queries always")]
+#[hax_lib::requires(v.len() == 4)]
+#[hax_lib::ensures(|tuple| fstar!(r#"
+  BitVecEq.int_t_array_bitwise_eq' ($v <: t_Array i16 (sz 4)) 10
+                                   (MkSeq.create5 $tuple) 8
+"#))]
 pub(crate) fn serialize_10_int(v: &[i16]) -> (u8, u8, u8, u8, u8) {
     let r0 = (v[0] & 0xFF) as u8;
     let r1 = ((v[1] & 0x3F) as u8) << 2 | ((v[0] >> 8) & 0x03) as u8;
     let r2 = ((v[2] & 0x0F) as u8) << 4 | ((v[1] >> 6) & 0x0F) as u8;
     let r3 = ((v[3] & 0x03) as u8) << 6 | ((v[2] >> 4) & 0x3F) as u8;
     let r4 = ((v[3] >> 2) & 0xFF) as u8;
+    hax_lib::fstar!("BitVecEq.bit_vec_equal_intro_principle ()");
     (r0, r1, r2, r3, r4)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn serialize_10(v: PortableVector) -> [u8; 20] {
     let r0_4 = serialize_10_int(&v.elements[0..4]);
@@ -212,6 +230,7 @@ pub(crate) fn serialize_10(v: PortableVector) -> [u8; 20] {
     result
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn deserialize_10_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16, i16, i16) {
     let r0 = ((bytes[1] as i16 & 0x03) << 8 | (bytes[0] as i16 & 0xFF)) as i16;
@@ -225,6 +244,7 @@ pub(crate) fn deserialize_10_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16,
     (r0, r1, r2, r3, r4, r5, r6, r7)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn deserialize_10(bytes: &[u8]) -> PortableVector {
     let v0_7 = deserialize_10_int(&bytes[0..10]);
@@ -250,6 +270,7 @@ pub(crate) fn deserialize_10(bytes: &[u8]) -> PortableVector {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn serialize_11_int(v: &[i16]) -> (u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8) {
     let r0 = v[0] as u8;
     let r1 = ((v[1] & 0x1F) as u8) << 3 | ((v[0] >> 8) as u8);
@@ -265,6 +286,7 @@ pub(crate) fn serialize_11_int(v: &[i16]) -> (u8, u8, u8, u8, u8, u8, u8, u8, u8
     (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn serialize_11(v: PortableVector) -> [u8; 22] {
     let r0_10 = serialize_11_int(&v.elements[0..8]);
@@ -295,6 +317,7 @@ pub(crate) fn serialize_11(v: PortableVector) -> [u8; 22] {
     result
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn deserialize_11_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16, i16, i16) {
     let r0 = ((bytes[1] as i16 & 0x7) << 8 | bytes[0] as i16) as i16;
@@ -310,6 +333,7 @@ pub(crate) fn deserialize_11_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16,
     (r0, r1, r2, r3, r4, r5, r6, r7)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn deserialize_11(bytes: &[u8]) -> PortableVector {
     let v0_7 = deserialize_11_int(&bytes[0..11]);
@@ -334,6 +358,7 @@ pub(crate) fn deserialize_11(bytes: &[u8]) -> PortableVector {
     v
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn serialize_12_int(v: &[i16]) -> (u8, u8, u8) {
     let r0 = (v[0] & 0xFF) as u8;
@@ -342,6 +367,7 @@ pub(crate) fn serialize_12_int(v: &[i16]) -> (u8, u8, u8) {
     (r0, r1, r2)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn serialize_12(v: PortableVector) -> [u8; 24] {
     let r0_2 = serialize_12_int(&v.elements[0..2]);
@@ -380,6 +406,7 @@ pub(crate) fn serialize_12(v: PortableVector) -> [u8; 24] {
     result
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn deserialize_12_int(bytes: &[u8]) -> (i16, i16) {
     let byte0 = bytes[0] as i16;
@@ -390,6 +417,7 @@ pub(crate) fn deserialize_12_int(bytes: &[u8]) -> (i16, i16) {
     (r0, r1)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn deserialize_12(bytes: &[u8]) -> PortableVector {
     let v0_1 = deserialize_12_int(&bytes[0..3]);
