@@ -86,12 +86,10 @@ let serialize_kem_secret_key
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice u8)
-          (Rust_primitives.unsize (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
-                  #v_K
-                  #FStar.Tactics.Typeclasses.solve
-                  public_key
-                <:
-                t_Array u8 (sz 32))
+          (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
+              #v_K
+              #FStar.Tactics.Typeclasses.solve
+              public_key
             <:
             t_Slice u8)
         <:
@@ -209,7 +207,7 @@ let decapsulate
      =
   let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
-      (Rust_primitives.unsize private_key.Libcrux_ml_kem.Types.f_value <: t_Slice u8)
+      (private_key.Libcrux_ml_kem.Types.f_value <: t_Slice u8)
       v_CPA_SECRET_KEY_SIZE
   in
   let ind_cpa_public_key, secret_key:(t_Slice u8 & t_Slice u8) =
@@ -229,7 +227,7 @@ let decapsulate
       ciphertext.Libcrux_ml_kem.Types.f_value
   in
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
-    Libcrux_ml_kem.Utils.into_padded_array (sz 64) (Rust_primitives.unsize decrypted <: t_Slice u8)
+    Libcrux_ml_kem.Utils.into_padded_array (sz 64) (decrypted <: t_Slice u8)
   in
   let to_hash:t_Array u8 (sz 64) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
@@ -250,11 +248,11 @@ let decapsulate
     Libcrux_ml_kem.Hash_functions.f_G #v_Hasher
       #v_K
       #FStar.Tactics.Typeclasses.solve
-      (Rust_primitives.unsize to_hash <: t_Slice u8)
+      (to_hash <: t_Slice u8)
   in
   let shared_secret, pseudorandomness:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
-      (Rust_primitives.unsize hashed <: t_Slice u8)
+      (hashed <: t_Slice u8)
       Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
   in
   let (to_hash: t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE):t_Array u8
@@ -287,7 +285,7 @@ let decapsulate
       #v_K
       #FStar.Tactics.Typeclasses.solve
       (sz 32)
-      (Rust_primitives.unsize to_hash <: t_Slice u8)
+      (to_hash <: t_Slice u8)
   in
   let expected_ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
     Libcrux_ml_kem.Ind_cpa.encrypt v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE
@@ -301,7 +299,7 @@ let decapsulate
       v_K
       v_CIPHERTEXT_SIZE
       #v_Hasher
-      (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
+      (implicit_rejection_shared_secret <: t_Slice u8)
       ciphertext
   in
   let shared_secret:t_Array u8 (sz 32) =
@@ -321,9 +319,9 @@ let decapsulate
           ciphertext
         <:
         t_Slice u8)
-      (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
-      (Rust_primitives.unsize shared_secret <: t_Slice u8)
-      (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
+      (expected_ciphertext <: t_Slice u8)
+      (shared_secret <: t_Slice u8)
+      (implicit_rejection_shared_secret <: t_Slice u8)
   in
   let result:t_Array u8 (sz 32) = shared_secret in
   let _:Prims.unit = admit () (* Panic freedom *) in
@@ -352,10 +350,10 @@ let encapsulate
       #FStar.Tactics.Typeclasses.solve
       v_K
       #v_Hasher
-      (Rust_primitives.unsize randomness <: t_Slice u8)
+      (randomness <: t_Slice u8)
   in
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
-    Libcrux_ml_kem.Utils.into_padded_array (sz 64) (Rust_primitives.unsize randomness <: t_Slice u8)
+    Libcrux_ml_kem.Utils.into_padded_array (sz 64) (randomness <: t_Slice u8)
   in
   let to_hash:t_Array u8 (sz 64) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
@@ -368,17 +366,10 @@ let encapsulate
               Core.Ops.Range.t_RangeFrom usize ]
             <:
             t_Slice u8)
-          (Rust_primitives.unsize (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
-                  #v_K
-                  #FStar.Tactics.Typeclasses.solve
-                  (Rust_primitives.unsize (Libcrux_ml_kem.Types.impl_17__as_slice v_PUBLIC_KEY_SIZE
-                          public_key
-                        <:
-                        t_Array u8 v_PUBLIC_KEY_SIZE)
-                    <:
-                    t_Slice u8)
-                <:
-                t_Array u8 (sz 32))
+          (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
+              #v_K
+              #FStar.Tactics.Typeclasses.solve
+              (Libcrux_ml_kem.Types.impl_17__as_slice v_PUBLIC_KEY_SIZE public_key <: t_Slice u8)
             <:
             t_Slice u8)
         <:
@@ -388,22 +379,19 @@ let encapsulate
     Libcrux_ml_kem.Hash_functions.f_G #v_Hasher
       #v_K
       #FStar.Tactics.Typeclasses.solve
-      (Rust_primitives.unsize to_hash <: t_Slice u8)
+      (to_hash <: t_Slice u8)
   in
   let shared_secret, pseudorandomness:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
-      (Rust_primitives.unsize hashed <: t_Slice u8)
+      (hashed <: t_Slice u8)
       Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
   in
   let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
     Libcrux_ml_kem.Ind_cpa.encrypt v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE
       v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1
       v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE #v_Vector #v_Hasher
-      (Rust_primitives.unsize (Libcrux_ml_kem.Types.impl_17__as_slice v_PUBLIC_KEY_SIZE public_key
-            <:
-            t_Array u8 v_PUBLIC_KEY_SIZE)
-        <:
-        t_Slice u8) randomness pseudorandomness
+      (Libcrux_ml_kem.Types.impl_17__as_slice v_PUBLIC_KEY_SIZE public_key <: t_Slice u8) randomness
+      pseudorandomness
   in
   let ciphertext:Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE =
     Core.Convert.f_from #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
@@ -473,8 +461,8 @@ let generate_keypair
     serialize_kem_secret_key v_K
       v_PRIVATE_KEY_SIZE
       #v_Hasher
-      (Rust_primitives.unsize ind_cpa_private_key <: t_Slice u8)
-      (Rust_primitives.unsize public_key <: t_Slice u8)
+      (ind_cpa_private_key <: t_Slice u8)
+      (public_key <: t_Slice u8)
       implicit_rejection_value
   in
   let (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE):Libcrux_ml_kem.Types.t_MlKemPrivateKey

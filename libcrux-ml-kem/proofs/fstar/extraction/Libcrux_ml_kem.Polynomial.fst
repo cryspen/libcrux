@@ -37,14 +37,12 @@ let impl__add_error_reduce
       (self error: t_PolynomialRingElement v_Vector)
      =
   let self:t_PolynomialRingElement v_Vector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_VECTORS_IN_RING_ELEMENT
+      (fun self temp_1_ ->
+          let self:t_PolynomialRingElement v_Vector = self in
+          let _:usize = temp_1_ in
+          true)
       self
       (fun self j ->
           let self:t_PolynomialRingElement v_Vector = self in
@@ -89,14 +87,12 @@ let impl__add_message_error_reduce
       (self message result: t_PolynomialRingElement v_Vector)
      =
   let result:t_PolynomialRingElement v_Vector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_VECTORS_IN_RING_ELEMENT
+      (fun result temp_1_ ->
+          let result:t_PolynomialRingElement v_Vector = result in
+          let _:usize = temp_1_ in
+          true)
       result
       (fun result i ->
           let result:t_PolynomialRingElement v_Vector = result in
@@ -147,14 +143,12 @@ let impl__add_standard_error_reduce
       (self error: t_PolynomialRingElement v_Vector)
      =
   let self:t_PolynomialRingElement v_Vector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_VECTORS_IN_RING_ELEMENT
+      (fun self temp_1_ ->
+          let self:t_PolynomialRingElement v_Vector = self in
+          let _:usize = temp_1_ in
+          true)
       self
       (fun self j ->
           let self:t_PolynomialRingElement v_Vector = self in
@@ -198,22 +192,12 @@ let impl__add_to_ring_element
       (self rhs: t_PolynomialRingElement v_Vector)
      =
   let self:t_PolynomialRingElement v_Vector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end
-              =
-              Core.Slice.impl__len #v_Vector
-                (Rust_primitives.unsize self.f_coefficients <: t_Slice v_Vector)
-              <:
-              usize
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (Core.Slice.impl__len #v_Vector (self.f_coefficients <: t_Slice v_Vector) <: usize)
+      (fun self temp_1_ ->
+          let self:t_PolynomialRingElement v_Vector = self in
+          let _:usize = temp_1_ in
+          true)
       self
       (fun self i ->
           let self:t_PolynomialRingElement v_Vector = self in
@@ -248,14 +232,12 @@ let impl__from_i16_array
      =
   let result:t_PolynomialRingElement v_Vector = impl__ZERO #v_Vector () in
   let result:t_PolynomialRingElement v_Vector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_VECTORS_IN_RING_ELEMENT
+      (fun result temp_1_ ->
+          let result:t_PolynomialRingElement v_Vector = result in
+          let _:usize = temp_1_ in
+          true)
       result
       (fun result i ->
           let result:t_PolynomialRingElement v_Vector = result in
@@ -295,14 +277,12 @@ let impl__ntt_multiply
      =
   let out:t_PolynomialRingElement v_Vector = impl__ZERO #v_Vector () in
   let out:t_PolynomialRingElement v_Vector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_VECTORS_IN_RING_ELEMENT
+      (fun out temp_1_ ->
+          let out:t_PolynomialRingElement v_Vector = out in
+          let _:usize = temp_1_ in
+          true)
       out
       (fun out i ->
           let out:t_PolynomialRingElement v_Vector = out in
@@ -351,14 +331,12 @@ let impl__poly_barrett_reduce
       (self: t_PolynomialRingElement v_Vector)
      =
   let self:t_PolynomialRingElement v_Vector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_VECTORS_IN_RING_ELEMENT
+      (fun self temp_1_ ->
+          let self:t_PolynomialRingElement v_Vector = self in
+          let _:usize = temp_1_ in
+          true)
       self
       (fun self i ->
           let self:t_PolynomialRingElement v_Vector = self in
@@ -391,14 +369,12 @@ let impl__subtract_reduce
       (self b: t_PolynomialRingElement v_Vector)
      =
   let b:t_PolynomialRingElement v_Vector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_VECTORS_IN_RING_ELEMENT
+      (fun b temp_1_ ->
+          let b:t_PolynomialRingElement v_Vector = b in
+          let _:usize = temp_1_ in
+          true)
       b
       (fun b i ->
           let b:t_PolynomialRingElement v_Vector = b in

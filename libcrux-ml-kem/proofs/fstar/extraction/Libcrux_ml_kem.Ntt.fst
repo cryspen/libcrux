@@ -36,14 +36,14 @@ let ntt_at_layer_1_
       (v__layer v__initial_coefficient_bound: usize)
      =
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (sz 16)
+      (fun temp_0_ temp_1_ ->
+          let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
+            temp_0_
+          in
+          let _:usize = temp_1_ in
+          true)
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
@@ -97,14 +97,14 @@ let ntt_at_layer_2_
       (v__layer v__initial_coefficient_bound: usize)
      =
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (sz 16)
+      (fun temp_0_ temp_1_ ->
+          let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
+            temp_0_
+          in
+          let _:usize = temp_1_ in
+          true)
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
@@ -150,14 +150,14 @@ let ntt_at_layer_3_
       (v__layer v__initial_coefficient_bound: usize)
      =
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (sz 16)
+      (fun temp_0_ temp_1_ ->
+          let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
+            temp_0_
+          in
+          let _:usize = temp_1_ in
+          true)
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
@@ -205,14 +205,14 @@ let ntt_at_layer_4_plus
   in
   let step:usize = sz 1 <<! layer in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 128 >>! layer <: usize }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (sz 128 >>! layer <: usize)
+      (fun temp_0_ temp_1_ ->
+          let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
+            temp_0_
+          in
+          let _:usize = temp_1_ in
+          true)
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
@@ -224,17 +224,12 @@ let ntt_at_layer_4_plus
           let offset_vec:usize = offset /! sz 16 in
           let step_vec:usize = step /! sz 16 in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-                    usize)
-                  #FStar.Tactics.Typeclasses.solve
-                  ({
-                      Core.Ops.Range.f_start = offset_vec;
-                      Core.Ops.Range.f_end = offset_vec +! step_vec <: usize
-                    }
-                    <:
-                    Core.Ops.Range.t_Range usize)
-                <:
-                Core.Ops.Range.t_Range usize)
+            Rust_primitives.Hax.Folds.fold_range offset_vec
+              (offset_vec +! step_vec <: usize)
+              (fun re temp_1_ ->
+                  let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
+                  let _:usize = temp_1_ in
+                  true)
               re
               (fun re j ->
                   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
@@ -289,14 +284,12 @@ let ntt_at_layer_7_
      =
   let step:usize = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT /! sz 2 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = step }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      step
+      (fun re temp_1_ ->
+          let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
+          let _:usize = temp_1_ in
+          true)
       re
       (fun re j ->
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in

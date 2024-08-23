@@ -27,7 +27,12 @@ val deserialize_5_int (bytes: t_Slice u8)
       (fun _ -> Prims.l_True)
 
 val serialize_10_int (v: t_Slice i16)
-    : Prims.Pure (u8 & u8 & u8 & u8 & u8) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (u8 & u8 & u8 & u8 & u8)
+      (requires (Core.Slice.impl__len #i16 v <: usize) =. sz 4)
+      (ensures
+        fun tuple ->
+          let tuple:(u8 & u8 & u8 & u8 & u8) = tuple in
+          BitVecEq.int_t_array_bitwise_eq' (v <: t_Array i16 (sz 4)) 10 (MkSeq.create5 tuple) 8)
 
 val serialize_11_int (v: t_Slice i16)
     : Prims.Pure (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8)
