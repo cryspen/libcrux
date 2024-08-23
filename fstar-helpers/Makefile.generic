@@ -31,6 +31,9 @@
 # (setq fstar-subp-prover-args #'my-fstar-compute-prover-args-using-make)
 #
 
+PATH_TO_CHILD_MAKEFILE := "$(abspath $(firstword $(MAKEFILE_LIST)))"
+PATH_TO_TEMPLATE_MAKEFILE := "$(abspath $(lastword $(MAKEFILE_LIST)))"
+
 HACL_HOME      ?= $(HOME)/.hax/hacl_home
 # Expand variable FSTAR_BIN_DETECT now, so that we don't run this over and over
 
@@ -61,7 +64,6 @@ export ANSI_COLOR_BLUE=
 export ANSI_COLOR_RED=
 export ANSI_COLOR_BBLUE=
 export ANSI_COLOR_GRAY=
-export ANSI_COLOR_BOLD_BLUE=
 export ANSI_COLOR_TONE=
 export ANSI_COLOR_RESET=
 endif
@@ -100,8 +102,9 @@ define FINDLIBS
 endef
 export FINDLIBS
 
+FSTAR_INCLUDE_DIRS_EXTRA ?=
 FINDLIBS_OUTPUT := $(shell bash -c '${FINDLIBS}')
-FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HACL_HOME)/specs $(FSTAR_INCLUDE_DIRS_EXTRA) $(FINDLIBS_OUTPUT)
+FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(FSTAR_INCLUDE_DIRS_EXTRA) $(FINDLIBS_OUTPUT)
 
 # Make sure FSTAR_INCLUDE_DIRS has the `proof-libs`, print hints and
 # an error message otherwise
@@ -122,11 +125,11 @@ endif
 
 all:
 	$(Q)rm -f .depend
-	$(Q)$(MAKE) .depend vscode verify
+	$(Q)$(MAKE) .depend hax.fst.config.json verify
 
 all-keep-going:
 	$(Q)rm -f .depend
-	$(Q)$(MAKE) --keep-going .depend vscode verify
+	$(Q)$(MAKE) --keep-going .depend hax.fst.config.json verify
 
 # If $HACL_HOME doesn't exist, clone it
 ${HACL_HOME}:
@@ -143,6 +146,8 @@ endif
 # By default, we process all the files in the current directory
 ROOTS ?= $(wildcard *.fst *fsti)
 ADMIT_MODULES ?=
+
+ADMIT_MODULE_FLAGS ?= --admit_smt_queries true
 
 # Can be useful for debugging purposes
 FINDLIBS.sh:
@@ -177,7 +182,7 @@ function target() {
 target "all" "Verify every F* files (stops whenever an F* fails first)"
 target "all-keep-going" "Verify every F* files (tries as many F* module as possible)"
 target "" ""
-target "run:${ANSI_COLOR_TONE}<MyModule.fst>  " 'Runs F* on `MyModule.fst` only'
+target "run/${ANSI_COLOR_TONE}<MyModule.fst>  " 'Runs F* on `MyModule.fst` only'
 target "" ""
 target "vscode" 'Generates a `hax.fst.config.json` file'
 target "${ANSI_COLOR_TONE}<MyModule.fst>${ANSI_COLOR_BLUE}-in   " 'Useful for Emacs, outputs the F* prefix command to be used'
@@ -185,37 +190,47 @@ target "" ""
 target "clean" 'Cleanup the target'
 target "include-dirs" 'List the F* include directories'
 target "" ""
-target "roots" 'List the F* root modules.'
+target "describe" 'List the F* root modules, and describe the environment.'
 echo ""
-echo "Environment variables:"
+echo "Variables:"
 target "NO_COLOR" "Set to anything to disable colors"
+target "ADMIT_MODULES" "List of modules where F* will assume every SMT query"
+target "FSTAR_INCLUDE_DIRS_EXTRA" "List of extra include F* dirs"
 endef
 export HELPMESSAGE
 
-roots:
+describe:
+	@printf '${ANSI_COLOR_BBLUE}F* roots:${ANSI_COLOR_RESET}\n'
 	@for root in ${ROOTS}; do \
 	  filename=$$(basename -- "$$root") ;\
 	  ext="$${filename##*.}" ;\
 	  noext="$${filename%.*}" ;\
-	  printf "${ANSI_COLOR_GRAY}$$(dirname -- "$$root")/${ANSI_COLOR_RESET}%s${ANSI_COLOR_GRAY}.${ANSI_COLOR_TONE}%s${ANSI_COLOR_RESET}\n" "$$noext" "$$ext"; \
+	  printf "${ANSI_COLOR_GRAY}$$(dirname -- "$$root")/${ANSI_COLOR_RESET}%s${ANSI_COLOR_GRAY}.${ANSI_COLOR_TONE}%s${ANSI_COLOR_RESET}%b\n" "$$noext" "$$ext" $$([[ "${ADMIT_MODULES}" =~ (^| )$$root($$| ) ]] && echo '${ANSI_COLOR_RED}\t[ADMITTED]${ANSI_COLOR_RESET}'); \
 	done
+	@printf '\n${ANSI_COLOR_BBLUE}Environment:${ANSI_COLOR_RESET}\n'
+	@printf ' - ${ANSI_COLOR_BLUE}HACL_HOME${ANSI_COLOR_RESET} = %s\n' '${HACL_HOME}'
+	@printf ' - ${ANSI_COLOR_BLUE}FSTAR_BIN${ANSI_COLOR_RESET} = %s\n' '${FSTAR_BIN}'
+	@printf ' - ${ANSI_COLOR_BLUE}GIT_ROOT_DIR${ANSI_COLOR_RESET} = %s\n' '${GIT_ROOT_DIR}'
+	@printf ' - ${ANSI_COLOR_BLUE}CACHE_DIR${ANSI_COLOR_RESET} = %s\n' '${CACHE_DIR}'
+	@printf ' - ${ANSI_COLOR_BLUE}HINT_DIR${ANSI_COLOR_RESET} = %s\n' '${HINT_DIR}'
+	@printf ' - ${ANSI_COLOR_BLUE}ADMIT_MODULE_FLAGS${ANSI_COLOR_RESET} = %s\n' '${ADMIT_MODULE_FLAGS}'
+	@printf ' - ${ANSI_COLOR_BLUE}FSTAR_INCLUDE_DIRS_EXTRA${ANSI_COLOR_RESET} = %s\n' '${FSTAR_INCLUDE_DIRS_EXTRA}'
 
 help: ;@bash -c "$$HELPMESSAGE"
 h: ;@bash -c "$$HELPMESSAGE"
 
 HEADER = $(Q)printf '${ANSI_COLOR_BBLUE}[CHECK] %s ${ANSI_COLOR_RESET}\n' "$(basename $(notdir $@))"
 
-run:%: | .depend $(HINT_DIR) $(CACHE_DIR) $(HACL_HOME)
+run/%: | .depend $(HINT_DIR) $(CACHE_DIR) $(HACL_HOME)
 	${HEADER}
-	$(Q)$(FSTAR) $(OTHERFLAGS) $(@:run:%=%)
-
+	$(Q)$(FSTAR) $(OTHERFLAGS) $(@:run/%=%)
 
 VERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(ROOTS)))
-ADMIT_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,${ADMIT_MODULES}))
+ADMIT_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(ADMIT_MODULES)))
 
 $(ADMIT_CHECKED):
 	$(Q)printf '${ANSI_COLOR_BBLUE}[${ANSI_COLOR_TONE}ADMIT${ANSI_COLOR_BBLUE}] %s ${ANSI_COLOR_RESET}\n' "$(basename $(notdir $@))"
-	$(Q)$(FSTAR) $(OTHERFLAGS) --admit_smt_queries true $< $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(notdir $*).hints || { \
+	$(Q)$(FSTAR) $(OTHERFLAGS) $(ADMIT_MODULE_FLAGS) $< $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(notdir $*).hints || { \
 	  echo "" ; \
 	  exit 1 ; \
 	}
@@ -232,8 +247,7 @@ $(CACHE_DIR)/%.checked: | .depend $(HINT_DIR) $(CACHE_DIR) $(HACL_HOME)
 
 verify: $(VERIFIED_CHECKED) $(ADMIT_CHECKED)
 
-# Targets for interactive mode
-
+# Targets for Emacs
 %.fst-in:
 	$(info $(FSTAR_FLAGS) \
 	  $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(basename $@).fst.hints)
@@ -242,9 +256,11 @@ verify: $(VERIFIED_CHECKED) $(ADMIT_CHECKED)
 	  $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(basename $@).fsti.hints)
 
 # Targets for VSCode
-hax.fst.config.json:
-	$(Q)echo "$(FSTAR_INCLUDE_DIRS)" | jq --arg fstar "$(FSTAR_BIN)" -R 'split(" ") | {fstar_exe: $$fstar, includes: .}' > $@
-vscode: hax.fst.config.json
+hax.fst.config.json: .depend
+	$(Q)echo "$(FSTAR_INCLUDE_DIRS)" | jq --arg fstar "$(FSTAR_BIN)" -R 'split(" ") | {fstar_exe: $$fstar | gsub("^\\s+|\\s+$$";""), include_dirs: .}' > $@
+vscode:
+	$(Q)rm -f .depend
+	$(Q)$(MAKE) hax.fst.config.json
 
 SHELL=bash
 
