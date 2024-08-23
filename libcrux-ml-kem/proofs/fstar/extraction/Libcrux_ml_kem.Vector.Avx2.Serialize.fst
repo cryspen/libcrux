@@ -289,6 +289,87 @@ let serialize_10_ (vector: u8) =
       <:
       Core.Result.t_Result (t_Array u8 (sz 20)) Core.Array.t_TryFromSliceError)
 
+let serialize_11_ (vector: u8) =
+  let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
+  let adjacent_2_combined:u8 =
+    Libcrux_intrinsics.Avx2_extract.mm256_madd_epi16 vector
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (1s <<! 11l <: i16) 1s (1s <<! 11l <: i16) 1s
+          (1s <<! 11l <: i16) 1s (1s <<! 11l <: i16) 1s (1s <<! 11l <: i16) 1s (1s <<! 11l <: i16)
+          1s (1s <<! 11l <: i16) 1s (1s <<! 11l <: i16) 1s
+        <:
+        u8)
+  in
+  let adjacent_4_combined:u8 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 adjacent_2_combined
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 10l 0l 10l 0l 10l 0l 10l <: u8)
+  in
+  let adjacent_4_combined:u8 =
+    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 10l adjacent_4_combined
+  in
+  let second_4_combined:u8 =
+    Libcrux_intrinsics.Avx2_extract.mm256_bsrli_epi128 8l adjacent_4_combined
+  in
+  let least_20_bits_shifted_up:u8 =
+    Libcrux_intrinsics.Avx2_extract.mm256_slli_epi64 44l second_4_combined
+  in
+  let bits_sequential:u8 =
+    Libcrux_intrinsics.Avx2_extract.mm256_add_epi64 adjacent_4_combined least_20_bits_shifted_up
+  in
+  let bits_sequential:u8 =
+    Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi64 bits_sequential
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi64x 20L 0L 20L 0L <: u8)
+  in
+  let first_11_bytes:u8 = Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 bits_sequential in
+  let serialized:t_Array u8 (sz 32) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Libcrux_intrinsics.Avx2_extract.mm_storeu_bytes_si128 (serialized.[ {
+                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_end = sz 16
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          first_11_bytes
+        <:
+        t_Slice u8)
+  in
+  let next_11_bytes:u8 =
+    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l bits_sequential
+  in
+  let serialized:t_Array u8 (sz 32) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+      ({ Core.Ops.Range.f_start = sz 11; Core.Ops.Range.f_end = sz 27 }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Libcrux_intrinsics.Avx2_extract.mm_storeu_bytes_si128 (serialized.[ {
+                Core.Ops.Range.f_start = sz 11;
+                Core.Ops.Range.f_end = sz 27
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          next_11_bytes
+        <:
+        t_Slice u8)
+  in
+  Core.Result.impl__unwrap #(t_Array u8 (sz 22))
+    #Core.Array.t_TryFromSliceError
+    (Core.Convert.f_try_into #(t_Slice u8)
+        #(t_Array u8 (sz 22))
+        #FStar.Tactics.Typeclasses.solve
+        (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 22 }
+            <:
+            Core.Ops.Range.t_Range usize ]
+          <:
+          t_Slice u8)
+      <:
+      Core.Result.t_Result (t_Array u8 (sz 22)) Core.Array.t_TryFromSliceError)
+
 let serialize_12_ (vector: u8) =
   let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let adjacent_2_combined:u8 =
@@ -493,17 +574,3 @@ let deserialize_11_ (bytes: t_Slice u8) =
       output
   in
   Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_i16 (array <: t_Slice i16)
-
-let serialize_11_ (vector: u8) =
-  let array:t_Array i16 (sz 16) = Rust_primitives.Hax.repeat 0s (sz 16) in
-  let array:t_Array i16 (sz 16) =
-    Libcrux_intrinsics.Avx2_extract.mm256_storeu_si256_i16 array vector
-  in
-  let input:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Libcrux_ml_kem.Vector.Traits.f_from_i16_array #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      #FStar.Tactics.Typeclasses.solve
-      (array <: t_Slice i16)
-  in
-  Libcrux_ml_kem.Vector.Traits.f_serialize_11_ #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-    #FStar.Tactics.Typeclasses.solve
-    input

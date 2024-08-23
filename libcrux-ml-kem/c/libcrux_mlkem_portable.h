@@ -8,7 +8,7 @@
  * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
  * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 9a130a852767d2f8881c458e022bf35fec1f6afe
+ * Libcrux: a1a608ad503a9e3f8f017e9c2082ccf929194c41
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -39,49 +39,6 @@ void libcrux_ml_kem_hash_functions_portable_H(Eurydice_slice input,
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R \
   (62209U)
 
-typedef struct libcrux_ml_kem_vector_portable_vector_type_PortableVector_s {
-  int16_t elements[16U];
-} libcrux_ml_kem_vector_portable_vector_type_PortableVector;
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_vector_type_from_i16_array(Eurydice_slice array);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
-*/
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_from_i16_array_0d(Eurydice_slice array);
-
-typedef struct uint8_t_x11_s {
-  uint8_t fst;
-  uint8_t snd;
-  uint8_t thd;
-  uint8_t f3;
-  uint8_t f4;
-  uint8_t f5;
-  uint8_t f6;
-  uint8_t f7;
-  uint8_t f8;
-  uint8_t f9;
-  uint8_t f10;
-} uint8_t_x11;
-
-uint8_t_x11 libcrux_ml_kem_vector_portable_serialize_serialize_11_int(
-    Eurydice_slice v);
-
-void libcrux_ml_kem_vector_portable_serialize_serialize_11(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
-    uint8_t ret[22U]);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
-*/
-void libcrux_ml_kem_vector_portable_serialize_11_0d(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[22U]);
-
 typedef struct int16_t_x8_s {
   int16_t fst;
   int16_t snd;
@@ -95,6 +52,10 @@ typedef struct int16_t_x8_s {
 
 int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_11_int(
     Eurydice_slice bytes);
+
+typedef struct libcrux_ml_kem_vector_portable_vector_type_PortableVector_s {
+  int16_t elements[16U];
+} libcrux_ml_kem_vector_portable_vector_type_PortableVector;
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_vector_type_zero(void);
@@ -131,6 +92,16 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
 */
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_ZERO_0d(void);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_vector_type_from_i16_array(Eurydice_slice array);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
+*/
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_from_i16_array_0d(Eurydice_slice array);
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_arithmetic_add(
@@ -577,6 +548,35 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
 */
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_deserialize_10_0d(Eurydice_slice a);
+
+typedef struct uint8_t_x11_s {
+  uint8_t fst;
+  uint8_t snd;
+  uint8_t thd;
+  uint8_t f3;
+  uint8_t f4;
+  uint8_t f5;
+  uint8_t f6;
+  uint8_t f7;
+  uint8_t f8;
+  uint8_t f9;
+  uint8_t f10;
+} uint8_t_x11;
+
+uint8_t_x11 libcrux_ml_kem_vector_portable_serialize_serialize_11_int(
+    Eurydice_slice v);
+
+void libcrux_ml_kem_vector_portable_serialize_serialize_11(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
+    uint8_t ret[22U]);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
+*/
+void libcrux_ml_kem_vector_portable_serialize_11_0d(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
+    uint8_t ret[22U]);
 
 typedef struct uint8_t_x3_s {
   uint8_t fst;

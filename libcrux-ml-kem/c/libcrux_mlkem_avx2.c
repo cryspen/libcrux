@@ -8,7 +8,7 @@
  * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
  * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 9a130a852767d2f8881c458e022bf35fec1f6afe
+ * Libcrux: a1a608ad503a9e3f8f017e9c2082ccf929194c41
  */
 
 #include "internal/libcrux_mlkem_avx2.h"
@@ -842,14 +842,45 @@ __m256i libcrux_ml_kem_vector_avx2_deserialize_10_ea(Eurydice_slice bytes) {
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_11(
     __m256i vector, uint8_t ret[22U]) {
-  int16_t array[16U] = {0U};
-  mm256_storeu_si256_i16(Eurydice_array_to_slice((size_t)16U, array, int16_t),
-                         vector);
-  libcrux_ml_kem_vector_portable_vector_type_PortableVector input =
-      libcrux_ml_kem_vector_portable_from_i16_array_0d(
-          Eurydice_array_to_slice((size_t)16U, array, int16_t));
+  uint8_t serialized[32U] = {0U};
+  __m256i adjacent_2_combined = mm256_madd_epi16(
+      vector, mm256_set_epi16((int16_t)1 << 11U, (int16_t)1, (int16_t)1 << 11U,
+                              (int16_t)1, (int16_t)1 << 11U, (int16_t)1,
+                              (int16_t)1 << 11U, (int16_t)1, (int16_t)1 << 11U,
+                              (int16_t)1, (int16_t)1 << 11U, (int16_t)1,
+                              (int16_t)1 << 11U, (int16_t)1, (int16_t)1 << 11U,
+                              (int16_t)1));
+  __m256i adjacent_4_combined = mm256_sllv_epi32(
+      adjacent_2_combined,
+      mm256_set_epi32((int32_t)0, (int32_t)10, (int32_t)0, (int32_t)10,
+                      (int32_t)0, (int32_t)10, (int32_t)0, (int32_t)10));
+  __m256i adjacent_4_combined0 =
+      mm256_srli_epi64((int32_t)10, adjacent_4_combined, __m256i);
+  __m256i second_4_combined =
+      mm256_bsrli_epi128((int32_t)8, adjacent_4_combined0, __m256i);
+  __m256i least_20_bits_shifted_up =
+      mm256_slli_epi64((int32_t)44, second_4_combined, __m256i);
+  __m256i bits_sequential =
+      mm256_add_epi64(adjacent_4_combined0, least_20_bits_shifted_up);
+  __m256i bits_sequential0 = mm256_srlv_epi64(
+      bits_sequential,
+      mm256_set_epi64x((int64_t)20, (int64_t)0, (int64_t)20, (int64_t)0));
+  __m128i first_11_bytes = mm256_castsi256_si128(bits_sequential0);
+  mm_storeu_bytes_si128(
+      Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t),
+      first_11_bytes);
+  __m128i next_11_bytes =
+      mm256_extracti128_si256((int32_t)1, bits_sequential0, __m128i);
+  mm_storeu_bytes_si128(Eurydice_array_to_subslice2(serialized, (size_t)11U,
+                                                    (size_t)27U, uint8_t),
+                        next_11_bytes);
   uint8_t ret0[22U];
-  libcrux_ml_kem_vector_portable_serialize_11_0d(input, ret0);
+  core_result_Result_27 dst;
+  Eurydice_slice_to_array2(
+      &dst,
+      Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)22U, uint8_t),
+      Eurydice_slice, uint8_t[22U]);
+  core_result_unwrap_41_08(dst, ret0);
   memcpy(ret, ret0, (size_t)22U * sizeof(uint8_t));
 }
 

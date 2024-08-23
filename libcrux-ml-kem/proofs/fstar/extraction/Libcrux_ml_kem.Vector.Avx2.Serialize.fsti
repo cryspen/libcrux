@@ -24,6 +24,9 @@ val serialize_1_ (vector: u8) : Prims.Pure (t_Array u8 (sz 2)) Prims.l_True (fun
 val serialize_10_ (vector: u8)
     : Prims.Pure (t_Array u8 (sz 20)) Prims.l_True (fun _ -> Prims.l_True)
 
+val serialize_11_ (vector: u8)
+    : Prims.Pure (t_Array u8 (sz 22)) Prims.l_True (fun _ -> Prims.l_True)
+
 val serialize_12_ (vector: u8)
     : Prims.Pure (t_Array u8 (sz 24)) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -32,6 +35,3 @@ val serialize_5_ (vector: u8) : Prims.Pure (t_Array u8 (sz 10)) Prims.l_True (fu
 val serialize_4_ (vector: u8) : Prims.Pure (t_Array u8 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
 
 val deserialize_11_ (bytes: t_Slice u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
-
-val serialize_11_ (vector: u8)
-    : Prims.Pure (t_Array u8 (sz 22)) Prims.l_True (fun _ -> Prims.l_True)

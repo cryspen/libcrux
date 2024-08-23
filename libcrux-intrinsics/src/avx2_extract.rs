@@ -159,6 +159,10 @@ pub fn mm256_add_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+pub fn mm256_add_epi64(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
 pub fn mm256_sub_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
@@ -313,6 +317,10 @@ pub fn mm256_slli_epi64<const LEFT: i32>(x: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+pub fn mm256_bsrli_epi128<const SHIFT_BY: i32>(x: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
 #[inline(always)]
 pub fn mm256_andnot_si256(a: Vec256, b: Vec256) -> Vec256 {
     unimplemented!()
@@ -330,5 +338,13 @@ pub fn mm256_unpacklo_epi64(a: Vec256, b: Vec256) -> Vec256 {
 
 #[inline(always)]
 pub fn mm256_permute2x128_si256<const IMM8: i32>(a: Vec256, b: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
+pub fn mm256_srlv_epi64(vector: Vec256, counts: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
+pub fn mm256_set_epi64x(input3: i64, input2: i64, input1: i64, input0: i64) -> Vec256 {
     unimplemented!()
 }

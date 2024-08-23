@@ -515,10 +515,49 @@ pub(crate) fn deserialize_10(bytes: &[u8]) -> Vec256 {
 
 #[inline(always)]
 pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
-    let mut array = [0i16; 16];
-    mm256_storeu_si256_i16(&mut array, vector);
-    let input = PortableVector::from_i16_array(&array);
-    PortableVector::serialize_11(input)
+    let mut serialized = [0u8; 32];
+
+    let adjacent_2_combined = mm256_madd_epi16(
+        vector,
+        mm256_set_epi16(
+            1 << 11,
+            1,
+            1 << 11,
+            1,
+            1 << 11,
+            1,
+            1 << 11,
+            1,
+            1 << 11,
+            1,
+            1 << 11,
+            1,
+            1 << 11,
+            1,
+            1 << 11,
+            1,
+        ),
+    );
+
+    let adjacent_4_combined = mm256_sllv_epi32(
+        adjacent_2_combined,
+        mm256_set_epi32(0, 10, 0, 10, 0, 10, 0, 10),
+    );
+    let adjacent_4_combined = mm256_srli_epi64::<10>(adjacent_4_combined);
+
+    let second_4_combined = mm256_bsrli_epi128::<8>(adjacent_4_combined);
+    let least_20_bits_shifted_up = mm256_slli_epi64::<44>(second_4_combined);
+
+    let bits_sequential = mm256_add_epi64(adjacent_4_combined, least_20_bits_shifted_up);
+    let bits_sequential = mm256_srlv_epi64(bits_sequential, mm256_set_epi64x(20, 0, 20, 0));
+
+    let first_11_bytes = mm256_castsi256_si128(bits_sequential);
+    mm_storeu_bytes_si128(&mut serialized[0..16], first_11_bytes);
+
+    let next_11_bytes = mm256_extracti128_si256::<1>(bits_sequential);
+    mm_storeu_bytes_si128(&mut serialized[11..27], next_11_bytes);
+
+    serialized[0..22].try_into().unwrap()
 }
 
 #[inline(always)]

@@ -8,7 +8,7 @@
  * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
  * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 7d3aa4de53d928af9db06c189a774877d4472c45
+ * Libcrux: a1a608ad503a9e3f8f017e9c2082ccf929194c41
  */
 
 #ifndef __libcrux_core_H
@@ -109,6 +109,39 @@ static inline void unwrap_41_1c(Result_6f self, uint8_t ret[24U]) {
     uint8_t f0[24U];
     memcpy(f0, self.val.case_Ok, (size_t)24U * sizeof(uint8_t));
     memcpy(ret, f0, (size_t)24U * sizeof(uint8_t));
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+/**
+A monomorphic instance of core.result.Result
+with types uint8_t[22size_t], core_array_TryFromSliceError
+
+*/
+typedef struct Result_27_s {
+  Result_86_tags tag;
+  union {
+    uint8_t case_Ok[22U];
+    TryFromSliceError case_Err;
+  } val;
+} Result_27;
+
+/**
+This function found in impl {core::result::Result<T, E>}
+*/
+/**
+A monomorphic instance of core.result.unwrap_41
+with types uint8_t[22size_t], core_array_TryFromSliceError
+
+*/
+static inline void unwrap_41_08(Result_27 self, uint8_t ret[22U]) {
+  if (self.tag == Ok) {
+    uint8_t f0[22U];
+    memcpy(f0, self.val.case_Ok, (size_t)22U * sizeof(uint8_t));
+    memcpy(ret, f0, (size_t)22U * sizeof(uint8_t));
   } else {
     KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                       "unwrap not Ok");
