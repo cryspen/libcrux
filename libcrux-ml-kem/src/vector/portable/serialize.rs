@@ -170,7 +170,7 @@ pub(crate) fn serialize_5(v: PortableVector) -> [u8; 10] {
 "#))]
 #[hax_lib::ensures(|tuple| fstar!(r#"
   BitVecEq.int_t_array_bitwise_eq' ($bytes <: t_Array _ (sz 5)) 8
-                                   (MkSeq.create4 $tuple)   5
+                                   (MkSeq.create8 $tuple)   5
   /\ (forall i. Rust_primitives.bounded (Seq.index (MkSeq.create8 $tuple) i) 4)
 "#))]
 pub(crate) fn deserialize_5_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16, i16, i16) {
@@ -357,16 +357,14 @@ pub(crate) fn serialize_11(v: PortableVector) -> [u8; 22] {
   /\ (forall i. Rust_primitives.bounded (Seq.index (MkSeq.create8 $tuple) i) 11)
 "#))]
 pub(crate) fn deserialize_11_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16, i16, i16) {
-    let r0 = ((bytes[1] as i16 & 0x7) << 8 | bytes[0] as i16) as i16;
-    let r1 = ((bytes[2] as i16 & 0x3F) << 5 | (bytes[1] as i16 >> 3)) as i16;
-    let r2 = ((bytes[4] as i16 & 0x1) << 10 | ((bytes[3] as i16) << 2) | ((bytes[2] as i16) >> 6))
-        as i16;
-    let r3 = ((bytes[5] as i16 & 0xF) << 7 | (bytes[4] as i16 >> 1)) as i16;
-    let r4 = ((bytes[6] as i16 & 0x7F) << 4 | (bytes[5] as i16 >> 4)) as i16;
-    let r5 =
-        ((bytes[8] as i16 & 0x3) << 9 | ((bytes[7] as i16) << 1) | ((bytes[6] as i16) >> 7)) as i16;
-    let r6 = ((bytes[9] as i16 & 0x1F) << 6 | (bytes[8] as i16 >> 2)) as i16;
-    let r7 = (((bytes[10] as i16) << 3) | (bytes[9] as i16 >> 5)) as i16;
+    let r0 = (bytes[1] as i16 & 0x7) << 8 | bytes[0] as i16;
+    let r1 = (bytes[2] as i16 & 0x3F) << 5 | (bytes[1] as i16 >> 3);
+    let r2 = (bytes[4] as i16 & 0x1) << 10 | ((bytes[3] as i16) << 2) | ((bytes[2] as i16) >> 6);
+    let r3 = (bytes[5] as i16 & 0xF) << 7 | (bytes[4] as i16 >> 1);
+    let r4 = (bytes[6] as i16 & 0x7F) << 4 | (bytes[5] as i16 >> 4);
+    let r5 = (bytes[8] as i16 & 0x3) << 9 | ((bytes[7] as i16) << 1) | ((bytes[6] as i16) >> 7);
+    let r6 = (bytes[9] as i16 & 0x1F) << 6 | (bytes[8] as i16 >> 2);
+    let r7 = ((bytes[10] as i16) << 3) | (bytes[9] as i16 >> 5);
     hax_lib::fstar!("BitVecEq.bit_vec_equal_intro_principle ()");
     (r0, r1, r2, r3, r4, r5, r6, r7)
 }
