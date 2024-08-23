@@ -539,8 +539,10 @@ pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
         ),
     );
 
-    let adjacent_4_combined =
-        mm256_sllv_epi32(adjacent_2_combined, mm256_set_epi32(0, 10, 0, 10, 0, 10, 0, 10));
+    let adjacent_4_combined = mm256_sllv_epi32(
+        adjacent_2_combined,
+        mm256_set_epi32(0, 10, 0, 10, 0, 10, 0, 10),
+    );
     let adjacent_4_combined = mm256_srli_epi64::<10>(adjacent_4_combined);
 
     let second_4_combined = mm256_bsrli_epi128::<8>(adjacent_4_combined);

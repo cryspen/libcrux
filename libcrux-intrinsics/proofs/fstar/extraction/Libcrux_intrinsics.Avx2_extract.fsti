@@ -7,11 +7,16 @@ val mm256_add_epi16 (lhs rhs: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l
 
 val mm256_add_epi32 (lhs rhs: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
+val mm256_add_epi64 (lhs rhs: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
 val mm256_and_si256 (lhs rhs: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_andnot_si256 (a b: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_blend_epi16 (v_CONTROL: i32) (lhs rhs: u8)
+    : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
+val mm256_bsrli_epi128 (v_SHIFT_BY: i32) (x: u8)
     : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_castsi128_si256 (vector: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
@@ -67,6 +72,9 @@ val mm256_set_epi16
 val mm256_set_epi32 (input7 input6 input5 input4 input3 input2 input1 input0: i32)
     : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
+val mm256_set_epi64x (input3 input2 input1 input0: i64)
+    : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
 val mm256_set_epi8
       (byte31 byte30 byte29 byte28 byte27 byte26 byte25 byte24 byte23 byte22 byte21 byte20 byte19 byte18 byte17 byte16 byte15 byte14 byte13 byte12 byte11 byte10 byte9 byte8 byte7 byte6 byte5 byte4 byte3 byte2 byte1 byte0:
           i8)
@@ -103,6 +111,8 @@ val mm256_srli_epi32 (v_SHIFT_BY: i32) (vector: u8)
 
 val mm256_srli_epi64 (v_SHIFT_BY: i32) (vector: u8)
     : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
+val mm256_srlv_epi64 (vector counts: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_storeu_si256_i16 (output: t_Slice i16) (vector: u8)
     : Prims.Pure (t_Slice i16) Prims.l_True (fun _ -> Prims.l_True)

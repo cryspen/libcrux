@@ -8,7 +8,7 @@
  * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
  * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 9a130a852767d2f8881c458e022bf35fec1f6afe
+ * Libcrux: a1a608ad503a9e3f8f017e9c2082ccf929194c41
  */
 
 #ifndef __internal_libcrux_core_H
@@ -408,6 +408,29 @@ with types uint8_t[24size_t], core_array_TryFromSliceError
 
 */
 void core_result_unwrap_41_1c(core_result_Result_6f self, uint8_t ret[24U]);
+
+/**
+A monomorphic instance of core.result.Result
+with types uint8_t[22size_t], core_array_TryFromSliceError
+
+*/
+typedef struct core_result_Result_27_s {
+  core_result_Result_86_tags tag;
+  union {
+    uint8_t case_Ok[22U];
+    core_array_TryFromSliceError case_Err;
+  } val;
+} core_result_Result_27;
+
+/**
+This function found in impl {core::result::Result<T, E>}
+*/
+/**
+A monomorphic instance of core.result.unwrap_41
+with types uint8_t[22size_t], core_array_TryFromSliceError
+
+*/
+void core_result_unwrap_41_08(core_result_Result_27 self, uint8_t ret[22U]);
 
 /**
 A monomorphic instance of core.result.Result
