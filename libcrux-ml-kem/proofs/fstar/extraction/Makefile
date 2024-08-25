@@ -10,7 +10,6 @@ ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
               Libcrux_ml_kem.Vector.Avx2.Compress.fst \
               Libcrux_ml_kem.Vector.Avx2.fst \
               Libcrux_ml_kem.Vector.Avx2.Ntt.fst \
-              Libcrux_ml_kem.Vector.Avx2.Portable.fst \
               Libcrux_ml_kem.Vector.Avx2.Sampling.fst \
               Libcrux_ml_kem.Vector.Avx2.Serialize.fst \
               Libcrux_ml_kem.Vector.Neon.Arithmetic.fst \
