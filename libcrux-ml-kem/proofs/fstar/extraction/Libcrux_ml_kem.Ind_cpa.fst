@@ -33,14 +33,12 @@ let sample_ring_element_cbd
   in
   let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K = Rust_primitives.Hax.repeat prf_input v_K in
   let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_K
+      (fun temp_0_ temp_1_ ->
+          let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) = temp_0_ in
+          let _:usize = temp_1_ in
+          true)
       (domain_separator, prf_inputs <: (u8 & t_Array (t_Array u8 (sz 33)) v_K))
       (fun temp_0_ i ->
           let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) = temp_0_ in
@@ -68,14 +66,14 @@ let sample_ring_element_cbd
       prf_inputs
   in
   let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_K
+      (fun error_1_ temp_1_ ->
+          let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            error_1_
+          in
+          let _:usize = temp_1_ in
+          true)
       error_1_
       (fun error_1_ i ->
           let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
@@ -86,9 +84,7 @@ let sample_ring_element_cbd
             i
             (Libcrux_ml_kem.Sampling.sample_from_binomial_distribution v_ETA2
                 #v_Vector
-                (Rust_primitives.unsize (prf_outputs.[ i ] <: t_Array u8 v_ETA2_RANDOMNESS_SIZE)
-                  <:
-                  t_Slice u8)
+                (prf_outputs.[ i ] <: t_Slice u8)
               <:
               Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           <:
@@ -121,14 +117,12 @@ let sample_vector_cbd_then_ntt
   in
   let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K = Rust_primitives.Hax.repeat prf_input v_K in
   let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_K
+      (fun temp_0_ temp_1_ ->
+          let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) = temp_0_ in
+          let _:usize = temp_1_ in
+          true)
       (domain_separator, prf_inputs <: (u8 & t_Array (t_Array u8 (sz 33)) v_K))
       (fun temp_0_ i ->
           let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) = temp_0_ in
@@ -156,14 +150,14 @@ let sample_vector_cbd_then_ntt
       prf_inputs
   in
   let re_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_K
+      (fun re_as_ntt temp_1_ ->
+          let re_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            re_as_ntt
+          in
+          let _:usize = temp_1_ in
+          true)
       re_as_ntt
       (fun re_as_ntt i ->
           let re_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
@@ -175,9 +169,7 @@ let sample_vector_cbd_then_ntt
               i
               (Libcrux_ml_kem.Sampling.sample_from_binomial_distribution v_ETA
                   #v_Vector
-                  (Rust_primitives.unsize (prf_outputs.[ i ] <: t_Array u8 v_ETA_RANDOMNESS_SIZE)
-                    <:
-                    t_Slice u8)
+                  (prf_outputs.[ i ] <: t_Slice u8)
                 <:
                 Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           in
@@ -205,28 +197,11 @@ let compress_then_serialize_u
       (out: t_Slice u8)
      =
   let out:t_Slice u8 =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Array.Iter.t_IntoIter (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                v_K))
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Array.Iter.t_IntoIter
-                  (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-              #FStar.Tactics.Typeclasses.solve
-              (Core.Iter.Traits.Collect.f_into_iter #(t_Array
-                      (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-                  #FStar.Tactics.Typeclasses.solve
-                  input
-                <:
-                Core.Array.Iter.t_IntoIter
-                  (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-            <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Array.Iter.t_IntoIter (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                v_K))
-        <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate
-        (Core.Array.Iter.t_IntoIter (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K
-        ))
+    Rust_primitives.Hax.Folds.fold_enumerated_slice input
+      (fun out temp_1_ ->
+          let out:t_Slice u8 = out in
+          let _:usize = temp_1_ in
+          true)
       out
       (fun out temp_1_ ->
           let out:t_Slice u8 = out in
@@ -251,13 +226,10 @@ let compress_then_serialize_u
                     Core.Ops.Range.t_Range usize ]
                   <:
                   t_Slice u8)
-                (Rust_primitives.unsize (Libcrux_ml_kem.Serialize.compress_then_serialize_ring_element_u
-                        v_COMPRESSION_FACTOR
-                        v_BLOCK_LEN
-                        #v_Vector
-                        re
-                      <:
-                      t_Array u8 v_BLOCK_LEN)
+                (Libcrux_ml_kem.Serialize.compress_then_serialize_ring_element_u v_COMPRESSION_FACTOR
+                    v_BLOCK_LEN
+                    #v_Vector
+                    re
                   <:
                   t_Slice u8)
               <:
@@ -286,26 +258,20 @@ let deserialize_then_decompress_u
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in
   let u_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_ChunksExact u8))
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
-              #FStar.Tactics.Typeclasses.solve
-              (Core.Slice.impl__chunks_exact #u8
-                  (Rust_primitives.unsize ciphertext <: t_Slice u8)
-                  ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
-                      v_U_COMPRESSION_FACTOR
-                      <:
-                      usize) /!
-                    sz 8
-                    <:
-                    usize)
-                <:
-                Core.Slice.Iter.t_ChunksExact u8)
-            <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+    Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
+          v_U_COMPRESSION_FACTOR
+          <:
+          usize) /!
+        sz 8
         <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+        usize)
+      (ciphertext <: t_Slice u8)
+      (fun u_as_ntt temp_1_ ->
+          let u_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            u_as_ntt
+          in
+          let _:usize = temp_1_ in
+          true)
       u_as_ntt
       (fun u_as_ntt temp_1_ ->
           let u_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
@@ -352,20 +318,15 @@ let deserialize_secret_key
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in
   let secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_ChunksExact u8))
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
-              #FStar.Tactics.Typeclasses.solve
-              (Core.Slice.impl__chunks_exact #u8
-                  secret_key
-                  Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT
-                <:
-                Core.Slice.Iter.t_ChunksExact u8)
-            <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
-        <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+    Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT
+      secret_key
+      (fun secret_as_ntt temp_1_ ->
+          let secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K
+          =
+            secret_as_ntt
+          in
+          let _:usize = temp_1_ in
+          true)
       secret_as_ntt
       (fun secret_as_ntt temp_1_ ->
           let secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K
@@ -394,24 +355,11 @@ let serialize_secret_key
      =
   let out:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let out:t_Array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_Iter (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)))
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
-                (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
-              #FStar.Tactics.Typeclasses.solve
-              (Core.Iter.Traits.Collect.f_into_iter #(t_Array
-                      (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-                  #FStar.Tactics.Typeclasses.solve
-                  key
-                <:
-                Core.Slice.Iter.t_Iter (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
-            <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_Iter (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)))
-        <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate
-        (Core.Slice.Iter.t_Iter (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)))
+    Rust_primitives.Hax.Folds.fold_enumerated_slice key
+      (fun out temp_1_ ->
+          let out:t_Array u8 v_OUT_LEN = out in
+          let _:usize = temp_1_ in
+          true)
       out
       (fun out temp_1_ ->
           let out:t_Array u8 v_OUT_LEN = out in
@@ -444,11 +392,7 @@ let serialize_secret_key
                     Core.Ops.Range.t_Range usize ]
                   <:
                   t_Slice u8)
-                (Rust_primitives.unsize (Libcrux_ml_kem.Serialize.serialize_uncompressed_ring_element
-                        #v_Vector
-                        re
-                      <:
-                      t_Array u8 (sz 384))
+                (Libcrux_ml_kem.Serialize.serialize_uncompressed_ring_element #v_Vector re
                   <:
                   t_Slice u8)
               <:
@@ -484,12 +428,7 @@ let serialize_public_key
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice u8)
-          (Rust_primitives.unsize (serialize_secret_key v_K
-                  v_RANKED_BYTES_PER_RING_ELEMENT
-                  #v_Vector
-                  tt_as_ntt
-                <:
-                t_Array u8 v_RANKED_BYTES_PER_RING_ELEMENT)
+          (serialize_secret_key v_K v_RANKED_BYTES_PER_RING_ELEMENT #v_Vector tt_as_ntt
             <:
             t_Slice u8)
         <:
@@ -611,12 +550,12 @@ let encrypt_unpacked
       #v_K
       #FStar.Tactics.Typeclasses.solve
       v_ETA2_RANDOMNESS_SIZE
-      (Rust_primitives.unsize prf_input <: t_Slice u8)
+      (prf_input <: t_Slice u8)
   in
   let error_2_:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Libcrux_ml_kem.Sampling.sample_from_binomial_distribution v_ETA2
       #v_Vector
-      (Rust_primitives.unsize prf_output <: t_Slice u8)
+      (prf_output <: t_Slice u8)
   in
   let u:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Libcrux_ml_kem.Matrix.compute_vector_u v_K
@@ -748,7 +687,7 @@ let generate_keypair_unpacked
       key_generation_seed
   in
   let seed_for_A, seed_for_secret_and_error:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8 (Rust_primitives.unsize hashed <: t_Slice u8) (sz 32)
+    Core.Slice.impl__split_at #u8 (hashed <: t_Slice u8) (sz 32)
   in
   let v_A_transpose:t_Array
     (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
@@ -835,7 +774,7 @@ let generate_keypair
       v_PUBLIC_KEY_SIZE
       #v_Vector
       pk.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
-      (Rust_primitives.unsize pk.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A <: t_Slice u8)
+      (pk.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A <: t_Slice u8)
   in
   let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
     serialize_secret_key v_K
