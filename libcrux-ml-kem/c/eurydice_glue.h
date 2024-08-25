@@ -88,7 +88,8 @@ typedef struct {
 #define core_array___core__clone__Clone_for__Array_T__N___20__clone( \
     len, src, dst, elem_type, _ret_t)                                \
   (memcpy(dst, src, len * sizeof(elem_type)))
-#define core_array_TryFromSliceError uint8_t
+#define core_array_TryFromSliceError \
+  uint8_t #define core_array_TryFromSliceError uint8_t
 
 #define Eurydice_array_eq(sz, a1, a2, t, _) \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
