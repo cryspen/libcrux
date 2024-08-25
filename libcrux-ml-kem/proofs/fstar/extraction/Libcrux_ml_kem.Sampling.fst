@@ -153,24 +153,16 @@ let sample_from_binomial_distribution_2_
      =
   let sampled_i16s:t_Array i16 (sz 256) = Rust_primitives.Hax.repeat 0s (sz 256) in
   let sampled_i16s:t_Array i16 (sz 256) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
-      ((Core.Slice.impl__len #u8 randomness <: usize) /! sz 4 <: usize)
+    Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 4)
+      randomness
       (fun sampled_i16s temp_1_ ->
           let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
           let _:usize = temp_1_ in
           true)
       sampled_i16s
-      (fun sampled_i16s chunk_number ->
+      (fun sampled_i16s temp_1_ ->
           let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
-          let chunk_number:usize = chunk_number in
-          let byte_chunk:t_Slice u8 =
-            randomness.[ {
-                Core.Ops.Range.f_start = chunk_number *! sz 4 <: usize;
-                Core.Ops.Range.f_end = (chunk_number *! sz 4 <: usize) +! sz 4 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-          in
+          let chunk_number, byte_chunk:(usize & t_Slice u8) = temp_1_ in
           let (random_bits_as_u32: u32):u32 =
             (((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
                 ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
@@ -184,8 +176,9 @@ let sample_from_binomial_distribution_2_
           let even_bits:u32 = random_bits_as_u32 &. 1431655765ul in
           let odd_bits:u32 = (random_bits_as_u32 >>! 1l <: u32) &. 1431655765ul in
           let coin_toss_outcomes:u32 = even_bits +! odd_bits in
-          Rust_primitives.Hax.Folds.fold_range 0ul
-            (Core.Num.impl__u32__BITS /! 4ul <: u32)
+          Rust_primitives.Hax.Folds.fold_range_step_by 0ul
+            Core.Num.impl__u32__BITS
+            (sz 4)
             (fun sampled_i16s temp_1_ ->
                 let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
                 let _:u32 = temp_1_ in
@@ -194,7 +187,6 @@ let sample_from_binomial_distribution_2_
             (fun sampled_i16s outcome_set ->
                 let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
                 let outcome_set:u32 = outcome_set in
-                let outcome_set:u32 = outcome_set *! 4ul in
                 let outcome_1_:i16 =
                   cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 3ul <: u32) <: i16
                 in
@@ -211,7 +203,7 @@ let sample_from_binomial_distribution_2_
                 in
                 sampled_i16s))
   in
-  Libcrux_ml_kem.Polynomial.impl_2__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
+  Libcrux_ml_kem.Polynomial.impl_1__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
 
 let sample_from_binomial_distribution_3_
       (#v_Vector: Type0)
@@ -222,24 +214,16 @@ let sample_from_binomial_distribution_3_
      =
   let sampled_i16s:t_Array i16 (sz 256) = Rust_primitives.Hax.repeat 0s (sz 256) in
   let sampled_i16s:t_Array i16 (sz 256) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
-      ((Core.Slice.impl__len #u8 randomness <: usize) /! sz 3 <: usize)
+    Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 3)
+      randomness
       (fun sampled_i16s temp_1_ ->
           let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
           let _:usize = temp_1_ in
           true)
       sampled_i16s
-      (fun sampled_i16s chunk_number ->
+      (fun sampled_i16s temp_1_ ->
           let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
-          let chunk_number:usize = chunk_number in
-          let byte_chunk:t_Slice u8 =
-            randomness.[ {
-                Core.Ops.Range.f_start = chunk_number *! sz 3 <: usize;
-                Core.Ops.Range.f_end = (chunk_number *! sz 3 <: usize) +! sz 3 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-          in
+          let chunk_number, byte_chunk:(usize & t_Slice u8) = temp_1_ in
           let (random_bits_as_u24: u32):u32 =
             ((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
               ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
@@ -251,8 +235,9 @@ let sample_from_binomial_distribution_3_
           let second_bits:u32 = (random_bits_as_u24 >>! 1l <: u32) &. 2396745ul in
           let third_bits:u32 = (random_bits_as_u24 >>! 2l <: u32) &. 2396745ul in
           let coin_toss_outcomes:u32 = (first_bits +! second_bits <: u32) +! third_bits in
-          Rust_primitives.Hax.Folds.fold_range 0l
-            (24l /! 6l <: i32)
+          Rust_primitives.Hax.Folds.fold_range_step_by 0l
+            24l
+            (sz 6)
             (fun sampled_i16s temp_1_ ->
                 let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
                 let _:i32 = temp_1_ in
@@ -261,7 +246,6 @@ let sample_from_binomial_distribution_3_
             (fun sampled_i16s outcome_set ->
                 let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
                 let outcome_set:i32 = outcome_set in
-                let outcome_set:i32 = outcome_set *! 6l in
                 let outcome_1_:i16 =
                   cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 7ul <: u32) <: i16
                 in
@@ -278,7 +262,7 @@ let sample_from_binomial_distribution_3_
                 in
                 sampled_i16s))
   in
-  Libcrux_ml_kem.Polynomial.impl_2__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
+  Libcrux_ml_kem.Polynomial.impl_1__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
 
 let sample_from_binomial_distribution
       (v_ETA: usize)
@@ -382,7 +366,7 @@ let sample_from_xof
     out
     (fun s ->
         let s:t_Array i16 (sz 272) = s in
-        Libcrux_ml_kem.Polynomial.impl_2__from_i16_array #v_Vector
+        Libcrux_ml_kem.Polynomial.impl_1__from_i16_array #v_Vector
           (s.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 256 }
               <:
               Core.Ops.Range.t_Range usize ]

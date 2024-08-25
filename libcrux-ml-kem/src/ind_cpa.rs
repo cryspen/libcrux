@@ -310,6 +310,8 @@ fn compress_then_serialize_u<
     input: [PolynomialRingElement<Vector>; K],
     out: &mut [u8],
 ) {
+    hax_lib::fstar!("assert ((v $COEFFICIENTS_IN_RING_ELEMENT * v $COMPRESSION_FACTOR) / 8 == 320 \\/
+        (v $COEFFICIENTS_IN_RING_ELEMENT * v $COMPRESSION_FACTOR) / 8 == 352)");
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     cloop! {

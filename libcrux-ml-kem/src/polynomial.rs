@@ -14,8 +14,8 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = [
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
-#[cfg_attr(any(eurydice,hax), derive(Clone, Copy))]
-#[cfg_attr(all(not(eurydice),not(hax)), derive(Clone))]
+#[cfg_attr(eurydice, derive(Clone, Copy))]
+#[cfg_attr(not(eurydice), derive(Clone))]
 #[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r =
