@@ -21,28 +21,29 @@ let sample_from_uniform_distribution_next
       (out: t_Array (t_Array i16 (sz 272)) v_K)
      =
   let out, sampled_coefficients:(t_Array (t_Array i16 (sz 272)) v_K & t_Array usize v_K) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_K
+      (fun temp_0_ temp_1_ ->
+          let out, sampled_coefficients:(t_Array (t_Array i16 (sz 272)) v_K & t_Array usize v_K) =
+            temp_0_
+          in
+          let _:usize = temp_1_ in
+          true)
       (out, sampled_coefficients <: (t_Array (t_Array i16 (sz 272)) v_K & t_Array usize v_K))
       (fun temp_0_ i ->
           let out, sampled_coefficients:(t_Array (t_Array i16 (sz 272)) v_K & t_Array usize v_K) =
             temp_0_
           in
           let i:usize = i in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-                  usize)
-                #FStar.Tactics.Typeclasses.solve
-                ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_N /! sz 24 <: usize }
-                  <:
-                  Core.Ops.Range.t_Range usize)
-              <:
-              Core.Ops.Range.t_Range usize)
+          Rust_primitives.Hax.Folds.fold_range (sz 0)
+            (v_N /! sz 24 <: usize)
+            (fun temp_0_ temp_1_ ->
+                let out, sampled_coefficients:(t_Array (t_Array i16 (sz 272)) v_K &
+                  t_Array usize v_K) =
+                  temp_0_
+                in
+                let _:usize = temp_1_ in
+                true)
             (out, sampled_coefficients <: (t_Array (t_Array i16 (sz 272)) v_K & t_Array usize v_K))
             (fun temp_0_ r ->
                 let out, sampled_coefficients:(t_Array (t_Array i16 (sz 272)) v_K &
@@ -114,14 +115,12 @@ let sample_from_uniform_distribution_next
   in
   let done:bool = true in
   let done, sampled_coefficients:(bool & t_Array usize v_K) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_K
+      (fun temp_0_ temp_1_ ->
+          let done, sampled_coefficients:(bool & t_Array usize v_K) = temp_0_ in
+          let _:usize = temp_1_ in
+          true)
       (done, sampled_coefficients <: (bool & t_Array usize v_K))
       (fun temp_0_ i ->
           let done, sampled_coefficients:(bool & t_Array usize v_K) = temp_0_ in
@@ -154,17 +153,12 @@ let sample_from_binomial_distribution_2_
      =
   let sampled_i16s:t_Array i16 (sz 256) = Rust_primitives.Hax.repeat 0s (sz 256) in
   let sampled_i16s:t_Array i16 (sz 256) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = (Core.Slice.impl__len #u8 randomness <: usize) /! sz 4 <: usize
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      ((Core.Slice.impl__len #u8 randomness <: usize) /! sz 4 <: usize)
+      (fun sampled_i16s temp_1_ ->
+          let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
+          let _:usize = temp_1_ in
+          true)
       sampled_i16s
       (fun sampled_i16s chunk_number ->
           let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
@@ -190,17 +184,12 @@ let sample_from_binomial_distribution_2_
           let even_bits:u32 = random_bits_as_u32 &. 1431655765ul in
           let odd_bits:u32 = (random_bits_as_u32 >>! 1l <: u32) &. 1431655765ul in
           let coin_toss_outcomes:u32 = even_bits +! odd_bits in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-                  u32)
-                #FStar.Tactics.Typeclasses.solve
-                ({
-                    Core.Ops.Range.f_start = 0ul;
-                    Core.Ops.Range.f_end = Core.Num.impl__u32__BITS /! 4ul <: u32
-                  }
-                  <:
-                  Core.Ops.Range.t_Range u32)
-              <:
-              Core.Ops.Range.t_Range u32)
+          Rust_primitives.Hax.Folds.fold_range 0ul
+            (Core.Num.impl__u32__BITS /! 4ul <: u32)
+            (fun sampled_i16s temp_1_ ->
+                let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
+                let _:u32 = temp_1_ in
+                true)
             sampled_i16s
             (fun sampled_i16s outcome_set ->
                 let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
@@ -222,8 +211,7 @@ let sample_from_binomial_distribution_2_
                 in
                 sampled_i16s))
   in
-  Libcrux_ml_kem.Polynomial.impl__from_i16_array #v_Vector
-    (Rust_primitives.unsize sampled_i16s <: t_Slice i16)
+  Libcrux_ml_kem.Polynomial.impl_2__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
 
 let sample_from_binomial_distribution_3_
       (#v_Vector: Type0)
@@ -234,17 +222,12 @@ let sample_from_binomial_distribution_3_
      =
   let sampled_i16s:t_Array i16 (sz 256) = Rust_primitives.Hax.repeat 0s (sz 256) in
   let sampled_i16s:t_Array i16 (sz 256) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = (Core.Slice.impl__len #u8 randomness <: usize) /! sz 3 <: usize
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      ((Core.Slice.impl__len #u8 randomness <: usize) /! sz 3 <: usize)
+      (fun sampled_i16s temp_1_ ->
+          let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
+          let _:usize = temp_1_ in
+          true)
       sampled_i16s
       (fun sampled_i16s chunk_number ->
           let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
@@ -268,14 +251,12 @@ let sample_from_binomial_distribution_3_
           let second_bits:u32 = (random_bits_as_u24 >>! 1l <: u32) &. 2396745ul in
           let third_bits:u32 = (random_bits_as_u24 >>! 2l <: u32) &. 2396745ul in
           let coin_toss_outcomes:u32 = (first_bits +! second_bits <: u32) +! third_bits in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-                  i32)
-                #FStar.Tactics.Typeclasses.solve
-                ({ Core.Ops.Range.f_start = 0l; Core.Ops.Range.f_end = 24l /! 6l <: i32 }
-                  <:
-                  Core.Ops.Range.t_Range i32)
-              <:
-              Core.Ops.Range.t_Range i32)
+          Rust_primitives.Hax.Folds.fold_range 0l
+            (24l /! 6l <: i32)
+            (fun sampled_i16s temp_1_ ->
+                let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
+                let _:i32 = temp_1_ in
+                true)
             sampled_i16s
             (fun sampled_i16s outcome_set ->
                 let sampled_i16s:t_Array i16 (sz 256) = sampled_i16s in
@@ -297,8 +278,7 @@ let sample_from_binomial_distribution_3_
                 in
                 sampled_i16s))
   in
-  Libcrux_ml_kem.Polynomial.impl__from_i16_array #v_Vector
-    (Rust_primitives.unsize sampled_i16s <: t_Slice i16)
+  Libcrux_ml_kem.Polynomial.impl_2__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
 
 let sample_from_binomial_distribution
       (v_ETA: usize)
@@ -402,7 +382,7 @@ let sample_from_xof
     out
     (fun s ->
         let s:t_Array i16 (sz 272) = s in
-        Libcrux_ml_kem.Polynomial.impl__from_i16_array #v_Vector
+        Libcrux_ml_kem.Polynomial.impl_2__from_i16_array #v_Vector
           (s.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 256 }
               <:
               Core.Ops.Range.t_Range usize ]

@@ -61,7 +61,7 @@ val compress_then_serialize_u
       (requires
         Spec.MLKEM.is_rank v_K /\ v_OUT_LEN == Spec.MLKEM.v_C1_SIZE v_K /\
         v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
-        v_BLOCK_LEN = Spec.MLKEM.v_C1_BLOCK_SIZE v_K)
+        v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\ Core.Slice.impl__len #u8 out == v_OUT_LEN)
       (ensures
         fun out_future ->
           let out_future:t_Slice u8 = out_future in
@@ -94,8 +94,11 @@ val deserialize_secret_key
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (secret_key: t_Slice u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      (requires Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K
-      )
+      (requires
+        Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v (Core.Slice.impl__len #u8 secret_key) /
+        v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <=
+        v v_K)
       (ensures
         fun res ->
           let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
@@ -162,7 +165,12 @@ val decrypt_unpacked
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (secret_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 32))
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
+        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
+        v v_VECTOR_U_ENCODED_SIZE <= v v_CIPHERTEXT_SIZE)
+      (fun _ -> Prims.l_True)
 
 val decrypt
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
@@ -192,7 +200,7 @@ val decrypt
 /// Input: encryption randomness r ∈ 𝔹^{32}.
 /// Output: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
 /// N ← 0
-/// t̂ ← ByteDecode₁₂(ekₚₖₑ[0:384k])
+/// t\u{302} ← ByteDecode₁₂(ekₚₖₑ[0:384k])
 /// ρ ← ekₚₖₑ[384k: 384k + 32]
 /// for (i ← 0; i < k; i++)
 ///     for(j ← 0; j < k; j++)
@@ -208,10 +216,10 @@ val decrypt
 ///     N ← N + 1
 /// end for
 /// e₂ ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
-/// r̂ ← NTT(r)
-/// u ← NTT-¹(Âᵀ ◦ r̂) + e₁
+/// r\u{302} ← NTT(r)
+/// u ← NTT-¹(Âᵀ ◦ r\u{302}) + e₁
 /// μ ← Decompress₁(ByteDecode₁(m)))
-/// v ← NTT-¹(t̂ᵀ ◦ rˆ) + e₂ + μ
+/// v ← NTT-¹(t\u{302}ᵀ ◦ rˆ) + e₂ + μ
 /// c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
 /// c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
 /// return c ← (c₁ ‖ c₂)
@@ -227,7 +235,17 @@ val encrypt_unpacked
       (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
       (message: t_Array u8 (sz 32))
       (randomness: t_Slice u8)
-    : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
+        v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
+        v_ETA2 == Spec.MLKEM.v_ETA2 v_K /\
+        v_ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE v_K /\
+        v_C1_LEN == Spec.MLKEM.v_C1_SIZE v_K /\
+        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
+        v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\ v v_C1_LEN <= v v_CIPHERTEXT_SIZE /\
+        v (Core.Slice.impl__len #u8 randomness) <= 33)
+      (fun _ -> Prims.l_True)
 
 val encrypt
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
@@ -259,7 +277,7 @@ val encrypt
 
 /// This function implements most of <strong>Algorithm 12</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation algorithm.
-/// We say "most of" since Algorithm 12 samples the required randomness within
+/// We say \"most of\" since Algorithm 12 samples the required randomness within
 /// the function itself, whereas this implementation expects it to be provided
 /// through the `key_generation_seed` parameter.
 /// Algorithm 12 is reproduced below:
@@ -284,8 +302,8 @@ val encrypt
 /// end for
 /// ŝ ← NTT(s)
 /// ê ← NTT(e)
-/// t̂ ← Â◦ŝ + ê
-/// ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
+/// t\u{302} ← Â◦ŝ + ê
+/// ekₚₖₑ ← ByteEncode₁₂(t\u{302}) ‖ ρ
 /// dkₚₖₑ ← ByteEncode₁₂(ŝ)
 /// ```
 /// The NIST FIPS 203 standard can be found at
@@ -299,7 +317,10 @@ val generate_keypair_unpacked
     : Prims.Pure
       (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector &
         Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
-      Prims.l_True
+      (requires
+        Spec.MLKEM.is_rank v_K /\
+        v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K / v_ETA1 ==
+        Spec.MLKEM.v_ETA1 v_K)
       (fun _ -> Prims.l_True)
 
 val generate_keypair
