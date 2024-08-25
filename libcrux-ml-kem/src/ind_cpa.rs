@@ -203,7 +203,7 @@ fn sample_vector_cbd_then_ntt<
 #[allow(non_snake_case)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
-    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
     $ETA1 == Spec.MLKEM.v_ETA1 $K"))]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,

@@ -318,9 +318,8 @@ val generate_keypair_unpacked
       (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector &
         Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
       (requires
-        Spec.MLKEM.is_rank v_K /\
-        v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K / v_ETA1 ==
-        Spec.MLKEM.v_ETA1 v_K)
+        Spec.MLKEM.is_rank v_K /\ v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
+        v_ETA1 == Spec.MLKEM.v_ETA1 v_K)
       (fun _ -> Prims.l_True)
 
 val generate_keypair
