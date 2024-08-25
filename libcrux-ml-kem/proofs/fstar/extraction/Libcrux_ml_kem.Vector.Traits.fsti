@@ -3,11 +3,22 @@ module Libcrux_ml_kem.Vector.Traits
 open Core
 open FStar.Mul
 
+class t_Repr (v_Self: Type0) = {
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
+  f_repr_pre:x: v_Self -> pred: Type0{true ==> pred};
+  f_repr_post:v_Self -> t_Array i16 (sz 16) -> Type0;
+  f_repr:x0: v_Self
+    -> Prims.Pure (t_Array i16 (sz 16)) (f_repr_pre x0) (fun result -> f_repr_post x0 result)
+}
+
 class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_8706949974463268012:t_Repr v_Self;
   f_to_i16_array_pre:x: v_Self -> pred: Type0{true ==> pred};
-  f_to_i16_array_post:v_Self -> t_Array i16 (sz 16) -> Type0;
+  f_to_i16_array_post:x: v_Self -> result: t_Array i16 (sz 16)
+    -> pred: Type0{pred ==> f_repr x == result};
   f_to_i16_array:x0: v_Self
     -> Prims.Pure (t_Array i16 (sz 16))
         (f_to_i16_array_pre x0)
@@ -15,7 +26,7 @@ class t_Operations (v_Self: Type0) = {
   f_from_i16_array_pre:array: t_Slice i16
     -> pred: Type0{(Core.Slice.impl__len #i16 array <: usize) =. sz 16 ==> pred};
   f_from_i16_array_post:array: t_Slice i16 -> result: v_Self
-    -> pred: Type0{pred ==> f_to_i16_array result == array};
+    -> pred: Type0{pred ==> f_repr result == array};
   f_from_i16_array:x0: t_Slice i16
     -> Prims.Pure v_Self (f_from_i16_array_pre x0) (fun result -> f_from_i16_array_post x0 result);
   f_ZERO_pre:Prims.unit -> Type0;
@@ -24,7 +35,7 @@ class t_Operations (v_Self: Type0) = {
       Type0
         { pred ==>
           (let _:Prims.unit = x in
-            f_to_i16_array result == Seq.create 16 0uy) };
+            f_repr result == Seq.create 16 0s) };
   f_ZERO:x0: Prims.unit -> Prims.Pure v_Self (f_ZERO_pre x0) (fun result -> f_ZERO_post x0 result);
   f_add_pre:lhs: v_Self -> rhs: v_Self -> pred: Type0{true ==> pred};
   f_add_post:v_Self -> v_Self -> v_Self -> Type0;

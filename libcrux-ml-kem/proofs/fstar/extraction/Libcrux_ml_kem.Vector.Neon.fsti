@@ -7,26 +7,48 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Vector.Neon.Vector_type in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 val rej_sample (a: t_Slice u8) (result: t_Slice i16)
     : Prims.Pure (t_Slice i16 & usize) Prims.l_True (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Libcrux_ml_kem.Vector.Traits.t_Operations
+let impl: Libcrux_ml_kem.Vector.Traits.t_Repr Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+  {
+    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
+    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    f_repr_pre = (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_repr_post
+    =
+    (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Array i16 (sz 16)) ->
+        true);
+    f_repr
+    =
+    fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+      Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array x
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_1: Libcrux_ml_kem.Vector.Traits.t_Operations
 Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
   {
     _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
     _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    _super_8706949974463268012 = FStar.Tactics.Typeclasses.solve;
     f_ZERO_pre = (fun (_: Prims.unit) -> true);
     f_ZERO_post
     =
-    (fun (_: Prims.unit) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    (fun (_: Prims.unit) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+        impl.f_repr out == Seq.create 16 0s);
     f_ZERO = (fun (_: Prims.unit) -> Libcrux_ml_kem.Vector.Neon.Vector_type.v_ZERO ());
-    f_from_i16_array_pre = (fun (array: t_Slice i16) -> true);
+    f_from_i16_array_pre
+    =
+    (fun (array: t_Slice i16) -> (Core.Slice.impl__len #i16 array <: usize) =. sz 16);
     f_from_i16_array_post
     =
-    (fun (array: t_Slice i16) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    (fun (array: t_Slice i16) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+        impl.f_repr out == array);
     f_from_i16_array
     =
     (fun (array: t_Slice i16) -> Libcrux_ml_kem.Vector.Neon.Vector_type.from_i16_array array);
@@ -34,7 +56,7 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     f_to_i16_array_post
     =
     (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Array i16 (sz 16)) ->
-        true);
+        out == impl.f_repr x);
     f_to_i16_array
     =
     (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->

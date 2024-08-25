@@ -3,29 +3,72 @@ module Libcrux_ml_kem.Vector.Avx2
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_kem.Vector.Traits in
+  ()
+
 type t_SIMD256Vector = { f_elements:u8 }
 
+val repr (x:t_SIMD256Vector) : t_Array i16 (sz 16)
+
 val from_i16_array (array: t_Slice i16)
-    : Prims.Pure t_SIMD256Vector Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure t_SIMD256Vector
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_SIMD256Vector = result in
+          repr result == array)
 
 val to_i16_array (v: t_SIMD256Vector)
-    : Prims.Pure (t_Array i16 (sz 16)) Prims.l_True (fun _ -> Prims.l_True)
-
-val zero: Prims.unit -> Prims.Pure t_SIMD256Vector Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array i16 (sz 16))
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Array i16 (sz 16) = result in
+          result == repr v)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
+let impl: Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector =
   {
     _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
     _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    f_repr_pre = (fun (x: t_SIMD256Vector) -> true);
+    f_repr_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> true);
+    f_repr = fun (x: t_SIMD256Vector) -> to_i16_array x
+  }
+
+val zero: Prims.unit
+  -> Prims.Pure t_SIMD256Vector
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_SIMD256Vector = result in
+          to_i16_array result == Seq.create 16 0s)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
+  {
+    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
+    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    _super_8706949974463268012 = FStar.Tactics.Typeclasses.solve;
     f_ZERO_pre = (fun (_: Prims.unit) -> true);
-    f_ZERO_post = (fun (_: Prims.unit) (out: t_SIMD256Vector) -> true);
+    f_ZERO_post
+    =
+    (fun (_: Prims.unit) (out: t_SIMD256Vector) -> impl.f_repr out == Seq.create 16 0s);
     f_ZERO = (fun (_: Prims.unit) -> zero ());
-    f_from_i16_array_pre = (fun (array: t_Slice i16) -> true);
-    f_from_i16_array_post = (fun (array: t_Slice i16) (out: t_SIMD256Vector) -> true);
+    f_from_i16_array_pre
+    =
+    (fun (array: t_Slice i16) -> (Core.Slice.impl__len #i16 array <: usize) =. sz 16);
+    f_from_i16_array_post
+    =
+    (fun (array: t_Slice i16) (out: t_SIMD256Vector) -> impl.f_repr out == array);
     f_from_i16_array = (fun (array: t_Slice i16) -> from_i16_array array);
     f_to_i16_array_pre = (fun (x: t_SIMD256Vector) -> true);
-    f_to_i16_array_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> true);
+    f_to_i16_array_post
+    =
+    (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> out == impl.f_repr x);
     f_to_i16_array = (fun (x: t_SIMD256Vector) -> to_i16_array x);
     f_add_pre = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) -> true);
     f_add_post = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);

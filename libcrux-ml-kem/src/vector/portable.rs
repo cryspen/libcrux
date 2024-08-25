@@ -1,5 +1,5 @@
 use super::Operations;
-
+use crate::vector::traits::Repr;
 mod arithmetic;
 mod compress;
 mod ntt;
@@ -16,18 +16,30 @@ use vector_type::*;
 
 pub(crate) use vector_type::PortableVector;
 
+impl Repr for PortableVector {
+    fn repr(x: Self) -> [i16; 16] {
+        to_i16_array(x)
+    }
+}
+
+#[hax_lib::attributes]
 impl Operations for PortableVector {
+    #[ensures(|result| fstar!("out == impl.f_repr $x"))]
+    fn to_i16_array(x: Self) -> [i16; 16] {
+        to_i16_array(x)
+    }
+
+    #[ensures(|result| fstar!("impl.f_repr out == Seq.create 16 0s"))]
     fn ZERO() -> Self {
         zero()
     }
 
+    #[requires(array.len() == 16)]
+    #[ensures(|result| fstar!("impl.f_repr out == $array"))]
     fn from_i16_array(array: &[i16]) -> Self {
         from_i16_array(array)
     }
 
-    fn to_i16_array(x: Self) -> [i16; 16] {
-        to_i16_array(x)
-    }
 
     fn add(lhs: Self, rhs: &Self) -> Self {
         add(lhs, rhs)

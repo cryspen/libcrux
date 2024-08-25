@@ -1,6 +1,7 @@
 //! Vectors for libcrux using aarch64 (neon) intrinsics
 
 use super::{Operations, FIELD_MODULUS};
+use crate::vector::traits::Repr;
 
 // mod sampling;
 mod arithmetic;
@@ -16,16 +17,27 @@ use serialize::*;
 pub(crate) use vector_type::SIMD128Vector;
 use vector_type::*;
 
+impl Repr for SIMD128Vector {
+    fn repr(x: Self) -> [i16; 16] {
+        to_i16_array(x)
+    }
+}
+
+#[hax_lib::attributes]
 impl Operations for SIMD128Vector {
     #[inline(always)]
+    #[ensures(|result| fstar!("impl.f_repr out == Seq.create 16 0s"))]
     fn ZERO() -> Self {
         ZERO()
     }
 
+    #[requires(array.len() == 16)]
+    #[ensures(|result| fstar!("impl.f_repr out == $array"))]
     fn from_i16_array(array: &[i16]) -> Self {
         from_i16_array(array)
     }
 
+    #[ensures(|result| fstar!("out == impl.f_repr $x"))]
     fn to_i16_array(x: Self) -> [i16; 16] {
         to_i16_array(x)
     }

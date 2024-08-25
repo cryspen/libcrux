@@ -101,7 +101,7 @@ endef
 export FINDLIBS
 
 FINDLIBS_OUTPUT := $(shell bash -c '${FINDLIBS}')
-FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(FSTAR_INCLUDE_DIRS_EXTRA) $(FINDLIBS_OUTPUT)
+FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HACL_HOME)/specs $(FSTAR_INCLUDE_DIRS_EXTRA) $(FINDLIBS_OUTPUT)
 
 # Make sure FSTAR_INCLUDE_DIRS has the `proof-libs`, print hints and
 # an error message otherwise
@@ -143,8 +143,6 @@ endif
 # By default, we process all the files in the current directory
 ROOTS ?= $(wildcard *.fst *fsti)
 ADMIT_MODULES ?=
-
-ADMIT_MODULE_FLAGS ?= "--admit_smt_queries true"
 
 # Can be useful for debugging purposes
 FINDLIBS.sh:
@@ -212,10 +210,12 @@ run:%: | .depend $(HINT_DIR) $(CACHE_DIR) $(HACL_HOME)
 	$(Q)$(FSTAR) $(OTHERFLAGS) $(@:run:%=%)
 
 
-ADMIT_MODULE_FLAGS = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/, ${ADMIT_MODULES}))
-$(ADMIT_MODULE_FLAGS):
+VERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(ROOTS)))
+ADMIT_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,${ADMIT_MODULES}))
+
+$(ADMIT_CHECKED):
 	$(Q)printf '${ANSI_COLOR_BBLUE}[${ANSI_COLOR_TONE}ADMIT${ANSI_COLOR_BBLUE}] %s ${ANSI_COLOR_RESET}\n' "$(basename $(notdir $@))"
-	$(Q)$(FSTAR) $(OTHERFLAGS) $(LAX_MODULE_FLAGS) $< $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(notdir $*).hints || { \
+	$(Q)$(FSTAR) $(OTHERFLAGS) --admit_smt_queries true $< $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(notdir $*).hints || { \
 	  echo "" ; \
 	  exit 1 ; \
 	}
@@ -230,7 +230,7 @@ $(CACHE_DIR)/%.checked: | .depend $(HINT_DIR) $(CACHE_DIR) $(HACL_HOME)
 	touch $@
 	$(Q)printf "\n\n"
 
-verify: $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(ROOTS))) $(HACL_HOME)
+verify: $(VERIFIED_CHECKED) $(ADMIT_CHECKED)
 
 # Targets for interactive mode
 

@@ -4,16 +4,23 @@ pub const FIELD_ELEMENTS_IN_VECTOR: usize = 16;
 pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
 #[hax_lib::attributes]
-pub trait Operations: Copy + Clone {
+pub trait Repr: Copy + Clone {
     #[requires(true)]
+    fn repr(x: Self) -> [i16; 16];
+}
+
+#[hax_lib::attributes]
+pub trait Operations: Copy + Clone + Repr {
+    #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $x == $result"))]
     fn to_i16_array(x: Self) -> [i16; 16];
 
     #[requires(array.len() == 16)]
-    #[ensures(|result| fstar!("f_to_i16_array $result == $array"))]
+    #[ensures(|result| fstar!("f_repr $result == $array"))]
     fn from_i16_array(array: &[i16]) -> Self;
    
     #[allow(non_snake_case)]
-    #[ensures(|result| fstar!("f_to_i16_array $result == Seq.create 16 0uy"))]
+    #[ensures(|result| fstar!("f_repr $result == Seq.create 16 0s"))]
     fn ZERO() -> Self;
 
     // Basic arithmetic

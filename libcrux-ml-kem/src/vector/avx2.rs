@@ -1,5 +1,5 @@
 use super::traits::Operations;
-
+use crate::vector::traits::Repr;
 pub(crate) use libcrux_intrinsics::avx2::*;
 
 mod arithmetic;
@@ -9,18 +9,25 @@ mod sampling;
 mod serialize;
 
 #[derive(Clone, Copy)]
+#[hax_lib::fstar::after(interface,"val repr (x:t_SIMD256Vector) : t_Array i16 (sz 16)")]
+#[hax_lib::fstar::after("let repr (x:t_SIMD256Vector) = admit()")]
 pub struct SIMD256Vector {
     elements: Vec256,
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result| fstar!("to_i16_array ${result} == Seq.create 16 0s"))]
 fn zero() -> SIMD256Vector {
     SIMD256Vector {
         elements: mm256_setzero_si256(),
     }
 }
 
+
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result| fstar!("${result} == repr ${v}"))]
 fn to_i16_array(v: SIMD256Vector) -> [i16; 16] {
     let mut output = [0i16; 16];
     mm256_storeu_si256_i16(&mut output, v.elements);
@@ -29,21 +36,34 @@ fn to_i16_array(v: SIMD256Vector) -> [i16; 16] {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result| fstar!("repr ${result} == ${array}"))]
 fn from_i16_array(array: &[i16]) -> SIMD256Vector {
     SIMD256Vector {
         elements: mm256_loadu_si256_i16(array),
     }
 }
 
+impl Repr for SIMD256Vector {
+    fn repr(x: Self) -> [i16; 16] {
+        to_i16_array(x)
+    }
+}
+
+#[hax_lib::attributes]
 impl Operations for SIMD256Vector {
+    #[ensures(|result| fstar!("impl.f_repr out == Seq.create 16 0s"))]
     fn ZERO() -> Self {
         zero()
     }
 
+    #[requires(array.len() == 16)]
+    #[ensures(|result| fstar!("impl.f_repr out == $array"))]
     fn from_i16_array(array: &[i16]) -> Self {
         from_i16_array(array)
     }
 
+    #[ensures(|result| fstar!("out == impl.f_repr $x"))]
     fn to_i16_array(x: Self) -> [i16; 16] {
         to_i16_array(x)
     }

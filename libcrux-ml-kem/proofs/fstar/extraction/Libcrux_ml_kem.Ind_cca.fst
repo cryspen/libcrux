@@ -319,9 +319,9 @@ let decapsulate
           ciphertext
         <:
         t_Slice u8)
-      (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
-      (Rust_primitives.unsize shared_secret <: t_Slice u8)
-      (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
+      (expected_ciphertext <: t_Slice u8)
+      (shared_secret <: t_Slice u8)
+      (implicit_rejection_shared_secret <: t_Slice u8)
   in
   let result:t_Array u8 (sz 32) = shared_secret in
   let _:Prims.unit = admit () (* Panic freedom *) in
