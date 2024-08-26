@@ -16,7 +16,7 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
-          - windows-latest
+          # - windows-latest # currently runs forever, needs to be investigated before adding again!
 
     runs-on: ${{ matrix.os }}
     defaults:
