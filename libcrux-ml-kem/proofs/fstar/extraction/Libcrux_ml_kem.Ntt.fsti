@@ -23,7 +23,7 @@ val ntt_at_layer_1_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer v__initial_coefficient_bound: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires v zeta_i < 64)
       (fun _ -> Prims.l_True)
 
 val ntt_at_layer_2_
@@ -33,7 +33,7 @@ val ntt_at_layer_2_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer v__initial_coefficient_bound: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires v zeta_i < 96)
       (fun _ -> Prims.l_True)
 
 val ntt_at_layer_3_
@@ -43,7 +43,7 @@ val ntt_at_layer_3_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer v__initial_coefficient_bound: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires v zeta_i < 112)
       (fun _ -> Prims.l_True)
 
 val ntt_at_layer_4_plus

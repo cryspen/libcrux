@@ -5,15 +5,19 @@ use crate::{
 };
 
 #[inline(always)]
+#[hax_lib::requires(fstar!("v $zeta_i < 64"))]
 pub(crate) fn ntt_at_layer_1<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     _layer: usize,
     _initial_coefficient_bound: usize,
 ) {
+    let _zeta_i = *zeta_i;
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
+        // Use fstar variable here of zeta_i because of https://github.com/hacspec/hax/issues/861
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v zeta_i == v $_zeta_i + (v $i * 4)") });
         *zeta_i += 1;
         re.coefficients[round] = Vector::ntt_layer_1_step(
             re.coefficients[round],
@@ -28,15 +32,19 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!("v $zeta_i < 96"))]
 pub(crate) fn ntt_at_layer_2<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     _layer: usize,
     _initial_coefficient_bound: usize,
 ) {
+    let _zeta_i = *zeta_i;
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
+        // Use fstar variable here of zeta_i because of https://github.com/hacspec/hax/issues/861
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v zeta_i == v $_zeta_i + (v $i * 2)") });
         *zeta_i += 1;
         re.coefficients[round] = Vector::ntt_layer_2_step(
             re.coefficients[round],
@@ -49,15 +57,19 @@ pub(crate) fn ntt_at_layer_2<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!("v $zeta_i < 112"))]
 pub(crate) fn ntt_at_layer_3<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     _layer: usize,
     _initial_coefficient_bound: usize,
 ) {
+    let _zeta_i = *zeta_i;
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
+        // Use fstar variable here of zeta_i because of https://github.com/hacspec/hax/issues/861
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v zeta_i == v $_zeta_i + v $i") });
         *zeta_i += 1;
         re.coefficients[round] =
             Vector::ntt_layer_3_step(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
@@ -76,6 +88,7 @@ fn ntt_layer_int_vec_step<Vector: Operations>(
     a = Vector::add(a, &t);
     (a, b)
 }
+
 #[inline(always)]
 pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
     zeta_i: &mut usize,

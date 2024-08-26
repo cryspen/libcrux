@@ -35,15 +35,16 @@ let ntt_at_layer_1_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer v__initial_coefficient_bound: usize)
      =
+  let v__zeta_i:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 16)
-      (fun temp_0_ temp_1_ ->
+      (fun temp_0_ i ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
           in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          v zeta_i == v v__zeta_i + (v i * 4))
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
@@ -96,15 +97,16 @@ let ntt_at_layer_2_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer v__initial_coefficient_bound: usize)
      =
+  let v__zeta_i:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 16)
-      (fun temp_0_ temp_1_ ->
+      (fun temp_0_ i ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
           in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          v zeta_i == v v__zeta_i + (v i * 2))
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
@@ -149,15 +151,16 @@ let ntt_at_layer_3_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer v__initial_coefficient_bound: usize)
      =
+  let v__zeta_i:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 16)
-      (fun temp_0_ temp_1_ ->
+      (fun temp_0_ i ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
           in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          v zeta_i == v v__zeta_i + v i)
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
