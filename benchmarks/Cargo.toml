@@ -9,6 +9,9 @@ repository.workspace = true
 readme.workspace = true
 publish = false
 
+[lib]
+bench = false # so libtest doesn't eat the arguments for criterion
+
 [dependencies]
 
 [dev-dependencies]
