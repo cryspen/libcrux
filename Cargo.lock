@@ -970,6 +970,9 @@ dependencies = [
 [[package]]
 name = "libcrux-intrinsics"
 version = "0.0.2-alpha.3"
+dependencies = [
+ "hax-lib",
+]
 
 [[package]]
 name = "libcrux-kem"

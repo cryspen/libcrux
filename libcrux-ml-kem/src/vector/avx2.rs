@@ -10,7 +10,7 @@ mod serialize;
 
 #[derive(Clone, Copy)]
 #[hax_lib::fstar::after(interface,"val repr (x:t_SIMD256Vector) : t_Array i16 (sz 16)")]
-#[hax_lib::fstar::after("let repr (x:t_SIMD256Vector) = admit()")]
+#[hax_lib::fstar::after("let repr (x:t_SIMD256Vector) = Libcrux_intrinsics.Avx2_extract.vec256_to_i16x16 x.elements")]
 pub struct SIMD256Vector {
     elements: Vec256,
 }
@@ -89,7 +89,7 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> x &. c) (impl.f_repr $v)"))]
+    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> x &. $constant) (impl.f_repr $vector)"))]
     fn bitwise_and_with_constant(vector: Self, constant: i16) -> Self {
         Self {
             elements: arithmetic::bitwise_and_with_constant(vector.elements, constant),
@@ -97,7 +97,7 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    #[ensures(|result| fstar!("(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $v)"))]
+    #[ensures(|result| fstar!("(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $vector)"))]
     fn shift_right<const SHIFT_BY: i32>(vector: Self) -> Self {
         Self {
             elements: arithmetic::shift_right::<{ SHIFT_BY }>(vector.elements),
@@ -105,7 +105,7 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(true)]
-    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr $v)"))]
+    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr $vector)"))]
     fn cond_subtract_3329(vector: Self) -> Self {
         Self {
             elements: arithmetic::cond_subtract_3329(vector.elements),

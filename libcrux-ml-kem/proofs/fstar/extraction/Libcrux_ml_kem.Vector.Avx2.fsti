@@ -71,7 +71,10 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> out == impl.f_repr x);
     f_to_i16_array = (fun (x: t_SIMD256Vector) -> to_i16_array x);
     f_add_pre = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) -> true);
-    f_add_post = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    f_add_post
+    =
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) ->
+        impl.f_repr out == Spec.Utils.map2 ( +. ) (impl.f_repr lhs) (impl.f_repr rhs));
     f_add
     =
     (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
@@ -79,7 +82,10 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         <:
         t_SIMD256Vector);
     f_sub_pre = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) -> true);
-    f_sub_post = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    f_sub_post
+    =
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) ->
+        impl.f_repr out == Spec.Utils.map2 ( -. ) (impl.f_repr lhs) (impl.f_repr rhs));
     f_sub
     =
     (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
@@ -87,7 +93,10 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         <:
         t_SIMD256Vector);
     f_multiply_by_constant_pre = (fun (v: t_SIMD256Vector) (c: i16) -> true);
-    f_multiply_by_constant_post = (fun (v: t_SIMD256Vector) (c: i16) (out: t_SIMD256Vector) -> true);
+    f_multiply_by_constant_post
+    =
+    (fun (v: t_SIMD256Vector) (c: i16) (out: t_SIMD256Vector) ->
+        impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr v));
     f_multiply_by_constant
     =
     (fun (v: t_SIMD256Vector) (c: i16) ->
@@ -97,7 +106,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_bitwise_and_with_constant_pre = (fun (vector: t_SIMD256Vector) (constant: i16) -> true);
     f_bitwise_and_with_constant_post
     =
-    (fun (vector: t_SIMD256Vector) (constant: i16) (out: t_SIMD256Vector) -> true);
+    (fun (vector: t_SIMD256Vector) (constant: i16) (out: t_SIMD256Vector) ->
+        impl.f_repr out == Spec.Utils.map_array (fun x -> x &. constant) (impl.f_repr vector));
     f_bitwise_and_with_constant
     =
     (fun (vector: t_SIMD256Vector) (constant: i16) ->
@@ -108,10 +118,14 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         }
         <:
         t_SIMD256Vector);
-    f_shift_right_pre = (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) -> true);
+    f_shift_right_pre
+    =
+    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) -> v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l);
     f_shift_right_post
     =
-    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->
+        (v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==>
+        impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (impl.f_repr vector));
     f_shift_right
     =
     (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) ->
@@ -123,7 +137,11 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         <:
         t_SIMD256Vector);
     f_cond_subtract_3329_pre = (fun (vector: t_SIMD256Vector) -> true);
-    f_cond_subtract_3329_post = (fun (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    f_cond_subtract_3329_post
+    =
+    (fun (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->
+        impl.f_repr out ==
+        Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr vector));
     f_cond_subtract_3329_
     =
     (fun (vector: t_SIMD256Vector) ->

@@ -5,7 +5,16 @@ open FStar.Mul
 
 let v_BARRETT_MULTIPLIER: i16 = 20159s
 
-val add (lhs rhs: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+val add (lhs rhs: u8)
+    : Prims.Pure u8
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:u8 = result in
+          Libcrux_intrinsics.Avx2_extract.vec256_to_i16x16 result ==
+          Spec.Utils.map2 ( +. )
+            (Libcrux_intrinsics.Avx2_extract.vec256_to_i16x16 lhs)
+            (Libcrux_intrinsics.Avx2_extract.vec256_to_i16x16 rhs))
 
 val bitwise_and_with_constant (vector: u8) (constant: i16)
     : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
