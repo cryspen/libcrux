@@ -27,17 +27,12 @@ let compress
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun v temp_1_ ->
+          let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+          let _:usize = temp_1_ in
+          true)
       v
       (fun v i ->
           let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
@@ -65,17 +60,12 @@ let compress
 
 let compress_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun v temp_1_ ->
+          let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+          let _:usize = temp_1_ in
+          true)
       v
       (fun v i ->
           let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
@@ -110,17 +100,12 @@ let decompress_ciphertext_coefficient
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun v temp_1_ ->
+          let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+          let _:usize = temp_1_ in
+          true)
       v
       (fun v i ->
           let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in

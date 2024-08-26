@@ -247,14 +247,12 @@ let serialize_5_int (v: t_Slice i16) =
 let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let result:t_Array u8 (sz 2) = Rust_primitives.Hax.repeat 0uy (sz 2) in
   let result:t_Array u8 (sz 2) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (sz 8)
+      (fun result temp_1_ ->
+          let result:t_Array u8 (sz 2) = result in
+          let _:usize = temp_1_ in
+          true)
       result
       (fun result i ->
           let result:t_Array u8 (sz 2) = result in
@@ -272,14 +270,12 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
           t_Array u8 (sz 2))
   in
   let result:t_Array u8 (sz 2) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 8; Core.Ops.Range.f_end = sz 16 }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 8)
+      (sz 16)
+      (fun result temp_1_ ->
+          let result:t_Array u8 (sz 2) = result in
+          let _:usize = temp_1_ in
+          true)
       result
       (fun result i ->
           let result:t_Array u8 (sz 2) = result in
@@ -755,14 +751,12 @@ let deserialize_1_ (v: t_Slice u8) =
     Libcrux_ml_kem.Vector.Portable.Vector_type.zero ()
   in
   let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (sz 8)
+      (fun result temp_1_ ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          let _:usize = temp_1_ in
+          true)
       result
       (fun result i ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
@@ -782,17 +776,12 @@ let deserialize_1_ (v: t_Slice u8) =
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
   let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 8;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 8)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun result temp_1_ ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          let _:usize = temp_1_ in
+          true)
       result
       (fun result i ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in

@@ -39,6 +39,16 @@ use unpacked::*;
 
 /// Concatenate `t` and `ρ` into the public key.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+    length $seed_for_a == sz 32"))]
+#[hax_lib::ensures(|res|
+    fstar!("$res == Seq.append (Spec.MLKEM.vector_encode_12 #$K
+                            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $t_as_ntt))
+                        $seed_for_a)")
+)]
 pub(crate) fn serialize_public_key<
     const K: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -58,6 +68,13 @@ pub(crate) fn serialize_public_key<
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $OUT_LEN == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K"))]
+#[hax_lib::ensures(|res|
+    fstar!("$res == Spec.MLKEM.vector_encode_12 #$K
+                    (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $key)")
+)]
 fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector: Operations>(
     key: &[PolynomialRingElement<Vector>; K],
 ) -> [u8; OUT_LEN] {
@@ -75,6 +92,11 @@ fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector: Operations
 
 /// Sample a vector of ring elements from a centered binomial distribution.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
+    $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
+    range (v $domain_separator + v $K) u8_inttype"))]
 fn sample_ring_element_cbd<
     const K: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
@@ -87,7 +109,9 @@ fn sample_ring_element_cbd<
 ) -> ([PolynomialRingElement<Vector>; K], u8) {
     let mut error_1 = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut prf_inputs = [prf_input; K];
+    let _domain_separator_init = domain_separator;
     for i in 0..K {
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v $domain_separator == v $_domain_separator_init + v $i") });
         prf_inputs[i][32] = domain_separator;
         domain_separator += 1;
     }
@@ -101,6 +125,17 @@ fn sample_ring_element_cbd<
 /// Sample a vector of ring elements from a centered binomial distribution and
 /// convert them into their NTT representations.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $ETA_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
+    $ETA == Spec.MLKEM.v_ETA1 $K /\\
+    v $domain_separator < 2 * v $K /\\
+    range (v $domain_separator + v $K) u8_inttype"))]
+#[hax_lib::ensures(|(x,ds)|
+    fstar!("v $ds == v $domain_separator + v $K /\\
+                Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $x ==
+                Spec.MLKEM.sample_vector_cbd_then_ntt #$K (Seq.slice $prf_input 0 32) (sz (v $domain_separator))")
+)]
 fn sample_vector_cbd_then_ntt<
     const K: usize,
     const ETA: usize,
@@ -113,7 +148,9 @@ fn sample_vector_cbd_then_ntt<
 ) -> ([PolynomialRingElement<Vector>; K], u8) {
     let mut re_as_ntt = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut prf_inputs = [prf_input; K];
+    let _domain_separator_init = domain_separator;
     for i in 0..K {
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v $domain_separator == v $_domain_separator_init + v $i") });
         prf_inputs[i][32] = domain_separator;
         domain_separator += 1;
     }
@@ -164,6 +201,10 @@ fn sample_vector_cbd_then_ntt<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K"))]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
     const ETA1: usize,
@@ -209,12 +250,14 @@ pub(crate) fn generate_keypair_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
-    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"))]
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
+    length $key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE"))]
 #[hax_lib::ensures(|result| fstar!("let (expected, valid) = Spec.MLKEM.ind_cpa_generate_keypair $K $key_generation_seed in 
                                     valid ==> $result == expected"))] 
 pub(crate) fn generate_keypair<
@@ -247,6 +290,16 @@ pub(crate) fn generate_keypair<
 }
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $OUT_LEN == Spec.MLKEM.v_C1_SIZE $K /\\
+    $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\\
+    $BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
+    ${out.len()} == $OUT_LEN"))]
+#[hax_lib::ensures(|_|
+    fstar!("$out_future == Spec.MLKEM.compress_then_encode_u #$K
+               (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $input)")
+)]
 fn compress_then_serialize_u<
     const K: usize,
     const OUT_LEN: usize,
@@ -257,10 +310,13 @@ fn compress_then_serialize_u<
     input: [PolynomialRingElement<Vector>; K],
     out: &mut [u8],
 ) {
+    hax_lib::fstar!("assert ((v $COEFFICIENTS_IN_RING_ELEMENT * v $COMPRESSION_FACTOR) / 8 == 320 \\/
+        (v $COEFFICIENTS_IN_RING_ELEMENT * v $COMPRESSION_FACTOR) / 8 == 352)");
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     cloop! {
         for (i, re) in input.into_iter().enumerate() {
+            hax_lib::loop_invariant!(|i: usize| out.len() == OUT_LEN);
             out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(
                 &compress_then_serialize_ring_element_u::<COMPRESSION_FACTOR, BLOCK_LEN, Vector>(&re),
             );
@@ -309,6 +365,17 @@ fn compress_then_serialize_u<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank v_K /\\
+      v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\\
+      v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\\
+      v_ETA2 == Spec.MLKEM.v_ETA2 v_K /\\
+      v_ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE v_K /\\
+      v_C1_LEN == Spec.MLKEM.v_C1_SIZE v_K /\\
+      v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\\
+      v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\\
+      v v_C1_LEN <= v v_CIPHERTEXT_SIZE /\\
+      v (${randomness.len()}) <= 33"))]
 pub(crate) fn encrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -383,6 +450,7 @@ pub(crate) fn encrypt_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $ETA1 = Spec.MLKEM.v_ETA1 $K /\\
     $ETA1_RANDOMNESS_SIZE = Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
@@ -461,6 +529,14 @@ pub(crate) fn encrypt<
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
 /// in the `ciphertext`.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
+    $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K"))]
+#[hax_lib::ensures(|res|
+    fstar!("Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $res ==
+        Spec.MLKEM.(vector_ntt (decode_then_decompress_u #$K (Seq.slice $ciphertext 0 (v (Spec.MLKEM.v_C1_SIZE $K)))))")
+)]
 fn deserialize_then_decompress_u<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -484,6 +560,14 @@ fn deserialize_then_decompress_u<
 
 /// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    length $secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
+    v (${secret_key.len()}) / v $BYTES_PER_RING_ELEMENT <= v $K"))]
+#[hax_lib::ensures(|res|
+    fstar!("Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $res ==
+         Spec.MLKEM.vector_decode_12 #$K $secret_key")
+)]
 fn deserialize_secret_key<const K: usize, Vector: Operations>(
     secret_key: &[u8],
 ) -> [PolynomialRingElement<Vector>; K] {
@@ -519,6 +603,11 @@ fn deserialize_secret_key<const K: usize, Vector: Operations>(
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
+    $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\\
+    v $VECTOR_U_ENCODED_SIZE <= v $CIPHERTEXT_SIZE"))]
 pub(crate) fn decrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -546,6 +635,7 @@ pub(crate) fn decrypt_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     length $secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\ 
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\

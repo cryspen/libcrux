@@ -26,35 +26,20 @@ let compute_As_plus_e
       v_K
       (fun v__i ->
           let v__i:usize = v__i in
-          Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+          Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
           <:
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in
   let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_Iter
-              (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)))
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
-                (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
-              #FStar.Tactics.Typeclasses.solve
-              (Core.Slice.impl__iter #(t_Array
-                      (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-                  (Rust_primitives.unsize matrix_A
-                    <:
-                    t_Slice
-                    (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
-                <:
-                Core.Slice.Iter.t_Iter
-                (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
-            <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_Iter
-              (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)))
+    Rust_primitives.Hax.Folds.fold_enumerated_slice (matrix_A
         <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate
-        (Core.Slice.Iter.t_Iter
-          (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)))
+        t_Slice (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
+      (fun result temp_1_ ->
+          let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            result
+          in
+          let _:usize = temp_1_ in
+          true)
       result
       (fun result temp_1_ ->
           let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
@@ -65,29 +50,16 @@ let compute_As_plus_e
             temp_1_
           in
           let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
-                    (Core.Slice.Iter.t_Iter
-                      (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)))
-                  #FStar.Tactics.Typeclasses.solve
-                  (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
-                        (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
-                      #FStar.Tactics.Typeclasses.solve
-                      (Core.Slice.impl__iter #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
-                            v_Vector)
-                          (Rust_primitives.unsize row
-                            <:
-                            t_Slice (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
-                        <:
-                        Core.Slice.Iter.t_Iter
-                        (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
-                    <:
-                    Core.Iter.Adapters.Enumerate.t_Enumerate
-                    (Core.Slice.Iter.t_Iter
-                      (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)))
+            Rust_primitives.Hax.Folds.fold_enumerated_slice (row
                 <:
-                Core.Iter.Adapters.Enumerate.t_Enumerate
-                (Core.Slice.Iter.t_Iter (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                ))
+                t_Slice (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
+              (fun result temp_1_ ->
+                  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                    v_K =
+                    result
+                  in
+                  let _:usize = temp_1_ in
+                  true)
               result
               (fun result temp_1_ ->
                   let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -99,7 +71,7 @@ let compute_As_plus_e
                     temp_1_
                   in
                   let product:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-                    Libcrux_ml_kem.Polynomial.impl__ntt_multiply #v_Vector
+                    Libcrux_ml_kem.Polynomial.impl_1__ntt_multiply #v_Vector
                       matrix_element
                       (s_as_ntt.[ j ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                   in
@@ -107,7 +79,7 @@ let compute_As_plus_e
                     v_K =
                     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
                       i
-                      (Libcrux_ml_kem.Polynomial.impl__add_to_ring_element #v_Vector
+                      (Libcrux_ml_kem.Polynomial.impl_1__add_to_ring_element #v_Vector
                           v_K
                           (result.[ i ]
                             <:
@@ -121,7 +93,7 @@ let compute_As_plus_e
           let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
               i
-              (Libcrux_ml_kem.Polynomial.impl__add_standard_error_reduce #v_Vector
+              (Libcrux_ml_kem.Polynomial.impl_1__add_standard_error_reduce #v_Vector
                   (result.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                   (error_as_ntt.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                 <:
@@ -129,6 +101,8 @@ let compute_As_plus_e
           in
           result)
   in
+  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = result in
+  let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
 let compute_ring_element_v
@@ -141,28 +115,26 @@ let compute_ring_element_v
       (error_2_ message: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
   in
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_K
+      (fun result temp_1_ ->
+          let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
+          let _:usize = temp_1_ in
+          true)
       result
       (fun result i ->
           let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
           let i:usize = i in
           let product:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-            Libcrux_ml_kem.Polynomial.impl__ntt_multiply #v_Vector
+            Libcrux_ml_kem.Polynomial.impl_1__ntt_multiply #v_Vector
               (tt_as_ntt.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
               (r_as_ntt.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           in
           let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-            Libcrux_ml_kem.Polynomial.impl__add_to_ring_element #v_Vector v_K result product
+            Libcrux_ml_kem.Polynomial.impl_1__add_to_ring_element #v_Vector v_K result product
           in
           result)
   in
@@ -170,8 +142,10 @@ let compute_ring_element_v
     Libcrux_ml_kem.Invert_ntt.invert_ntt_montgomery v_K #v_Vector result
   in
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl__add_message_error_reduce #v_Vector error_2_ message result
+    Libcrux_ml_kem.Polynomial.impl_1__add_message_error_reduce #v_Vector error_2_ message result
   in
+  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
+  let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
 let compute_vector_u
@@ -189,35 +163,20 @@ let compute_vector_u
       v_K
       (fun v__i ->
           let v__i:usize = v__i in
-          Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+          Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
           <:
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in
   let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_Iter
-              (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)))
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
-                (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
-              #FStar.Tactics.Typeclasses.solve
-              (Core.Slice.impl__iter #(t_Array
-                      (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-                  (Rust_primitives.unsize a_as_ntt
-                    <:
-                    t_Slice
-                    (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
-                <:
-                Core.Slice.Iter.t_Iter
-                (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
-            <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_Iter
-              (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)))
+    Rust_primitives.Hax.Folds.fold_enumerated_slice (a_as_ntt
         <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate
-        (Core.Slice.Iter.t_Iter
-          (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)))
+        t_Slice (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
+      (fun result temp_1_ ->
+          let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            result
+          in
+          let _:usize = temp_1_ in
+          true)
       result
       (fun result temp_1_ ->
           let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
@@ -228,29 +187,16 @@ let compute_vector_u
             temp_1_
           in
           let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
-                    (Core.Slice.Iter.t_Iter
-                      (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)))
-                  #FStar.Tactics.Typeclasses.solve
-                  (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
-                        (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
-                      #FStar.Tactics.Typeclasses.solve
-                      (Core.Slice.impl__iter #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
-                            v_Vector)
-                          (Rust_primitives.unsize row
-                            <:
-                            t_Slice (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
-                        <:
-                        Core.Slice.Iter.t_Iter
-                        (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
-                    <:
-                    Core.Iter.Adapters.Enumerate.t_Enumerate
-                    (Core.Slice.Iter.t_Iter
-                      (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)))
+            Rust_primitives.Hax.Folds.fold_enumerated_slice (row
                 <:
-                Core.Iter.Adapters.Enumerate.t_Enumerate
-                (Core.Slice.Iter.t_Iter (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                ))
+                t_Slice (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
+              (fun result temp_1_ ->
+                  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                    v_K =
+                    result
+                  in
+                  let _:usize = temp_1_ in
+                  true)
               result
               (fun result temp_1_ ->
                   let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -262,7 +208,7 @@ let compute_vector_u
                     temp_1_
                   in
                   let product:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-                    Libcrux_ml_kem.Polynomial.impl__ntt_multiply #v_Vector
+                    Libcrux_ml_kem.Polynomial.impl_1__ntt_multiply #v_Vector
                       a_element
                       (r_as_ntt.[ j ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                   in
@@ -270,7 +216,7 @@ let compute_vector_u
                     v_K =
                     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
                       i
-                      (Libcrux_ml_kem.Polynomial.impl__add_to_ring_element #v_Vector
+                      (Libcrux_ml_kem.Polynomial.impl_1__add_to_ring_element #v_Vector
                           v_K
                           (result.[ i ]
                             <:
@@ -293,7 +239,7 @@ let compute_vector_u
           let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
               i
-              (Libcrux_ml_kem.Polynomial.impl__add_error_reduce #v_Vector
+              (Libcrux_ml_kem.Polynomial.impl_1__add_error_reduce #v_Vector
                   (result.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                   (error_1_.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                 <:
@@ -301,6 +247,8 @@ let compute_vector_u
           in
           result)
   in
+  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = result in
+  let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
 let compute_message
@@ -314,28 +262,26 @@ let compute_message
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
      =
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
   in
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_K
+      (fun result temp_1_ ->
+          let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
+          let _:usize = temp_1_ in
+          true)
       result
       (fun result i ->
           let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
           let i:usize = i in
           let product:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-            Libcrux_ml_kem.Polynomial.impl__ntt_multiply #v_Vector
+            Libcrux_ml_kem.Polynomial.impl_1__ntt_multiply #v_Vector
               (secret_as_ntt.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
               (u_as_ntt.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           in
           let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-            Libcrux_ml_kem.Polynomial.impl__add_to_ring_element #v_Vector v_K result product
+            Libcrux_ml_kem.Polynomial.impl_1__add_to_ring_element #v_Vector v_K result product
           in
           result)
   in
@@ -343,8 +289,10 @@ let compute_message
     Libcrux_ml_kem.Invert_ntt.invert_ntt_montgomery v_K #v_Vector result
   in
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl__subtract_reduce #v_Vector v result
+    Libcrux_ml_kem.Polynomial.impl_1__subtract_reduce #v_Vector v result
   in
+  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
+  let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
 let sample_matrix_A
@@ -369,7 +317,7 @@ let sample_matrix_A
             v_K
             (fun v__j ->
                 let v__j:usize = v__j in
-                Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+                Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
                 <:
                 Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           <:
@@ -377,14 +325,15 @@ let sample_matrix_A
   in
   let v_A_transpose:t_Array
     (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_K
+      (fun v_A_transpose temp_1_ ->
+          let v_A_transpose:t_Array
+            (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
+            v_A_transpose
+          in
+          let _:usize = temp_1_ in
+          true)
       v_A_transpose
       (fun v_A_transpose i ->
           let v_A_transpose:t_Array
@@ -394,14 +343,12 @@ let sample_matrix_A
           let i:usize = i in
           let seeds:t_Array (t_Array u8 (sz 34)) v_K = Rust_primitives.Hax.repeat seed v_K in
           let seeds:t_Array (t_Array u8 (sz 34)) v_K =
-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-                    usize)
-                  #FStar.Tactics.Typeclasses.solve
-                  ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
-                    <:
-                    Core.Ops.Range.t_Range usize)
-                <:
-                Core.Ops.Range.t_Range usize)
+            Rust_primitives.Hax.Folds.fold_range (sz 0)
+              v_K
+              (fun seeds temp_1_ ->
+                  let seeds:t_Array (t_Array u8 (sz 34)) v_K = seeds in
+                  let _:usize = temp_1_ in
+                  true)
               seeds
               (fun seeds j ->
                   let seeds:t_Array (t_Array u8 (sz 34)) v_K = seeds in
@@ -433,28 +380,14 @@ let sample_matrix_A
           let sampled:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
             Libcrux_ml_kem.Sampling.sample_from_xof v_K #v_Vector #v_Hasher seeds
           in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
-                  (Core.Array.Iter.t_IntoIter
-                      (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
-                #FStar.Tactics.Typeclasses.solve
-                (Core.Iter.Traits.Iterator.f_enumerate #(Core.Array.Iter.t_IntoIter
-                        (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-                    #FStar.Tactics.Typeclasses.solve
-                    (Core.Iter.Traits.Collect.f_into_iter #(t_Array
-                            (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-                        #FStar.Tactics.Typeclasses.solve
-                        sampled
-                      <:
-                      Core.Array.Iter.t_IntoIter
-                        (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-                  <:
-                  Core.Iter.Adapters.Enumerate.t_Enumerate
-                  (Core.Array.Iter.t_IntoIter
-                      (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
-              <:
-              Core.Iter.Adapters.Enumerate.t_Enumerate
-              (Core.Array.Iter.t_IntoIter
-                  (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
+          Rust_primitives.Hax.Folds.fold_enumerated_slice sampled
+            (fun v_A_transpose temp_1_ ->
+                let v_A_transpose:t_Array
+                  (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
+                  v_A_transpose
+                in
+                let _:usize = temp_1_ in
+                true)
             v_A_transpose
             (fun v_A_transpose temp_1_ ->
                 let v_A_transpose:t_Array
@@ -498,4 +431,9 @@ let sample_matrix_A
                   in
                   v_A_transpose))
   in
-  v_A_transpose
+  let result:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K
+  =
+    v_A_transpose
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
