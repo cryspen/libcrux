@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1724685632876,
+  "lastUpdate": 1724685699318,
   "repoUrl": "https://github.com/cryspen/libcrux",
   "entries": {
     "ML-KEM Benchmark": [
@@ -1825,6 +1825,712 @@ window.BENCHMARK_DATA = {
             "name": "x25519/nym sphinx process/Dalek Ristretto",
             "value": 52537,
             "range": "± 304",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jan Winkelmann",
+            "username": "keks",
+            "email": "146678+keks@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "ab901d247e24a7f42b4ba6c791d33856fe1f2ab6",
+          "message": "Merge pull request #525 from cryspen/keks/towards-merge-queue-and-bench-graphs\n\nRework Actions to work well with Merge Queues and Enable Benchmarks in there",
+          "timestamp": "2024-08-26T14:46:40Z",
+          "url": "https://github.com/cryspen/libcrux/commit/ab901d247e24a7f42b4ba6c791d33856fe1f2ab6"
+        },
+        "date": 1724685698487,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ChaCha20Poly1305 Encrypt/libcrux/10 MB",
+            "value": 53002794,
+            "range": "± 378073",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ChaCha20Poly1305 Encrypt/Ring/10 MB",
+            "value": 25921985,
+            "range": "± 151598",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ChaCha20Poly1305 Encrypt/RustCrypto/10 MB",
+            "value": 10686172,
+            "range": "± 28461",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ChaCha20Poly1305 Decrypt/libcrux/10 MB",
+            "value": 52941008,
+            "range": "± 174571",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ChaCha20Poly1305 Decrypt/Ring/10 MB",
+            "value": 26248911,
+            "range": "± 62894",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ChaCha20Poly1305 Decrypt/RustCrypto/10 MB",
+            "value": 10815611,
+            "range": "± 30993",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Drbg/libcrux Sha256",
+            "value": 6158,
+            "range": "± 32",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Drbg/libcrux Sha256 #2",
+            "value": 3667,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Drbg/Ring",
+            "value": 521,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Drbg/RustCrypto",
+            "value": 570,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Kyber768 PK Validation/libcrux portable",
+            "value": 906,
+            "range": "± 176",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Kyber768 Key Generation/libcrux portable (external random)",
+            "value": 46523,
+            "range": "± 625",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Kyber768 Key Generation/libcrux portable (HACL-DRBG)",
+            "value": 55959,
+            "range": "± 421",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Kyber768 Key Generation/libcrux portable (OsRng)",
+            "value": 52009,
+            "range": "± 78",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Kyber768 Key Generation/pqclean reference implementation",
+            "value": 132541,
+            "range": "± 890",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Kyber768 Encapsulation/libcrux portable (external random)",
+            "value": 50436,
+            "range": "± 788",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Kyber768 Encapsulation/libcrux portable",
+            "value": 58869,
+            "range": "± 911",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Kyber768 Encapsulation/libcrux portable OsRng",
+            "value": 55511,
+            "range": "± 476",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Kyber768 Encapsulation/pqclean reference implementation",
+            "value": 148827,
+            "range": "± 529",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Kyber768 Decapsulation/libcrux portable",
+            "value": 58925,
+            "range": "± 771",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Kyber768 Decapsulation/pqclean reference implementation",
+            "value": 169995,
+            "range": "± 1100",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "P256 derive/libcrux",
+            "value": 1954345,
+            "range": "± 9484",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "P256 derive/Ring",
+            "value": 840320,
+            "range": "± 12754",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "P256 derive/RustCrypto",
+            "value": 492188,
+            "range": "± 1075",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "P256 secret to public/libcrux",
+            "value": 836576,
+            "range": "± 12609",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "P256 secret to public/Ring",
+            "value": 301966,
+            "range": "± 3948",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "P256 secret to public/RustCrypto",
+            "value": 491054,
+            "range": "± 774",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 224/libcrux/100",
+            "value": 626,
+            "range": "± 24",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 224/RustCrypto/100",
+            "value": 74,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 224/libcrux/1 KB",
+            "value": 4750,
+            "range": "± 50",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 224/RustCrypto/1 KB",
+            "value": 732,
+            "range": "± 31",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 224/libcrux/2 KB",
+            "value": 9147,
+            "range": "± 100",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 224/RustCrypto/2 KB",
+            "value": 1428,
+            "range": "± 56",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 224/libcrux/4 KB",
+            "value": 17919,
+            "range": "± 174",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 224/RustCrypto/4 KB",
+            "value": 2821,
+            "range": "± 109",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 224/libcrux/8 KB",
+            "value": 35541,
+            "range": "± 393",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 224/RustCrypto/8 KB",
+            "value": 5610,
+            "range": "± 227",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/libcrux/100",
+            "value": 623,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/Ring/100",
+            "value": 625,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/RustCrypto/100",
+            "value": 74,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/libcrux/1 KB",
+            "value": 4744,
+            "range": "± 42",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/Ring/1 KB",
+            "value": 4902,
+            "range": "± 67",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/RustCrypto/1 KB",
+            "value": 729,
+            "range": "± 28",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/libcrux/2 KB",
+            "value": 9142,
+            "range": "± 115",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/Ring/2 KB",
+            "value": 9475,
+            "range": "± 91",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/RustCrypto/2 KB",
+            "value": 1431,
+            "range": "± 57",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/libcrux/4 KB",
+            "value": 17904,
+            "range": "± 211",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/Ring/4 KB",
+            "value": 18587,
+            "range": "± 147",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/RustCrypto/4 KB",
+            "value": 2830,
+            "range": "± 118",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/libcrux/8 KB",
+            "value": 35519,
+            "range": "± 389",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/Ring/8 KB",
+            "value": 36862,
+            "range": "± 308",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 256/RustCrypto/8 KB",
+            "value": 5636,
+            "range": "± 236",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/libcrux/100",
+            "value": 1618,
+            "range": "± 14",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/Ring/100",
+            "value": 762,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/RustCrypto/100",
+            "value": 779,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/libcrux/1 KB",
+            "value": 13859,
+            "range": "± 346",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/Ring/1 KB",
+            "value": 6110,
+            "range": "± 54",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/RustCrypto/1 KB",
+            "value": 6697,
+            "range": "± 47",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/libcrux/2 KB",
+            "value": 26119,
+            "range": "± 105",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/Ring/2 KB",
+            "value": 11461,
+            "range": "± 102",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/RustCrypto/2 KB",
+            "value": 12563,
+            "range": "± 482",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/libcrux/4 KB",
+            "value": 50583,
+            "range": "± 323",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/Ring/4 KB",
+            "value": 22089,
+            "range": "± 346",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/RustCrypto/4 KB",
+            "value": 24314,
+            "range": "± 441",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/libcrux/8 KB",
+            "value": 99575,
+            "range": "± 661",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/Ring/8 KB",
+            "value": 43453,
+            "range": "± 568",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 384/RustCrypto/8 KB",
+            "value": 47803,
+            "range": "± 379",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/libcrux/100",
+            "value": 1604,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/Ring/100",
+            "value": 762,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/RustCrypto/100",
+            "value": 778,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/libcrux/1 KB",
+            "value": 13843,
+            "range": "± 44",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/Ring/1 KB",
+            "value": 6109,
+            "range": "± 47",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/RustCrypto/1 KB",
+            "value": 6683,
+            "range": "± 51",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/libcrux/2 KB",
+            "value": 26100,
+            "range": "± 134",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/Ring/2 KB",
+            "value": 11442,
+            "range": "± 115",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/RustCrypto/2 KB",
+            "value": 12581,
+            "range": "± 135",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/libcrux/4 KB",
+            "value": 50596,
+            "range": "± 102",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/Ring/4 KB",
+            "value": 22095,
+            "range": "± 219",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/RustCrypto/4 KB",
+            "value": 24312,
+            "range": "± 152",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/libcrux/8 KB",
+            "value": 99640,
+            "range": "± 1075",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/Ring/8 KB",
+            "value": 43455,
+            "range": "± 418",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha2 512/RustCrypto/8 KB",
+            "value": 47795,
+            "range": "± 364",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha3 224/libcrux/10 MB",
+            "value": 219801887,
+            "range": "± 363274",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha3 224/RustCrypto/10 MB",
+            "value": 60099503,
+            "range": "± 93499",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha3 256/libcrux/10 MB",
+            "value": 233223064,
+            "range": "± 537011",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha3 256/RustCrypto/10 MB",
+            "value": 64070284,
+            "range": "± 390549",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha3 384/libcrux/10 MB",
+            "value": 304884654,
+            "range": "± 577083",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha3 384/RustCrypto/10 MB",
+            "value": 84533112,
+            "range": "± 246088",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha3 512/libcrux/10 MB",
+            "value": 439958396,
+            "range": "± 3776829",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Sha3 512/RustCrypto/10 MB",
+            "value": 120079764,
+            "range": "± 2553706",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/derive/libcrux",
+            "value": 315888,
+            "range": "± 1838",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/derive/Ring",
+            "value": 153887,
+            "range": "± 1911",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/derive/Dalek",
+            "value": 179491,
+            "range": "± 581",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/derive/Dalek Ristretto",
+            "value": 156534,
+            "range": "± 699",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/secret to public/libcrux",
+            "value": 315775,
+            "range": "± 6368",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/secret to public/Ring",
+            "value": 96929,
+            "range": "± 497",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/secret to public/Dalek",
+            "value": 53870,
+            "range": "± 160",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/secret to public/Dalek Ristretto",
+            "value": 42884,
+            "range": "± 153",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym outfox create/libcrux",
+            "value": 2527034,
+            "range": "± 3978",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym outfox create/Ring",
+            "value": 1003375,
+            "range": "± 11710",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym outfox create/Dalek",
+            "value": 933961,
+            "range": "± 14798",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym outfox create/Dalek Ristretto",
+            "value": 798657,
+            "range": "± 1323",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym outfox process/libcrux",
+            "value": 315965,
+            "range": "± 2211",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym outfox process/Ring",
+            "value": 153919,
+            "range": "± 1177",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym outfox process/Dalek",
+            "value": 179470,
+            "range": "± 1646",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym outfox process/Dalek Ristretto",
+            "value": 156604,
+            "range": "± 1016",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym sphinx create/libcrux",
+            "value": 2527254,
+            "range": "± 12850",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym sphinx create/Ring",
+            "value": 1003009,
+            "range": "± 12476",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym sphinx create/Dalek",
+            "value": 935940,
+            "range": "± 16383",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym sphinx create/Dalek Ristretto",
+            "value": 850108,
+            "range": "± 1456",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym sphinx process/libcrux",
+            "value": 631843,
+            "range": "± 1047",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym sphinx process/Ring",
+            "value": 307309,
+            "range": "± 2483",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym sphinx process/Dalek",
+            "value": 358951,
+            "range": "± 1489",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "x25519/nym sphinx process/Dalek Ristretto",
+            "value": 313165,
+            "range": "± 1661",
             "unit": "ns/iter"
           }
         ]
