@@ -22,26 +22,34 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-ml-kem/c
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: 🔨 Build Release
+      - name: 🔨 Build libcrux-ml-kem/c
+        working-directory: libcrux-ml-kem/c
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
 
       # FIXME: Benchmarks on Windows CI are not working right now.
       # - name: 🏃🏻‍♀️ Benchmark
+      #   working-directory: libcrux-ml-kem/c
       #   run: ./build/Release/ml_kem_bench
       #   if: ${{ matrix.os == 'windows-latest' }}
 
-      - name: 🏃🏻‍♀️ Benchmark (c)
+      - name: 🏃🏻‍♀️ Benchmark (libcrux-ml-kem/c)
+        working-directory: libcrux-ml-kem/c
         run: ./build/ml_kem_bench
         if: ${{ matrix.os != 'windows-latest' && (github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch') }}
 
-      - name: 🏃🏻‍♀️ Benchmark (cg)
+      - name: 🔨 Build libcrux-ml-kem/cg
+        working-directory: libcrux-ml-kem/cg
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+
+      - name: 🏃🏻‍♀️ Benchmark libcrux-ml-kem/cg
         working-directory: libcrux-ml-kem/cg
         run: ./build/ml_kem_bench
         if: ${{ matrix.os != 'windows-latest' && (github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch') }}
