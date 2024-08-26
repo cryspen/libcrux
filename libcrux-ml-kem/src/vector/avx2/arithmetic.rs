@@ -3,6 +3,7 @@ use crate::vector::{traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, FIELD_MODULUS};
 use super::*;
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
                            Spec.Utils.map2 (+.) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs)"))]
 pub(crate) fn add(lhs: Vec256, rhs: Vec256) -> Vec256 {

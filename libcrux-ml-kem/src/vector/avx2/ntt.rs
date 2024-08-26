@@ -1,6 +1,10 @@
 use super::*;
 
 #[inline(always)]
+#[hax_lib::requires(fstar!("range (v #i16_inttype zero - v $zeta3) i16_inttype /\\
+    range (v #i16_inttype zero - v $zeta2) i16_inttype /\\
+    range (v #i16_inttype zero - v $zeta1) i16_inttype /\\
+    range (v #i16_inttype zero - v $zeta0) i16_inttype"))]
 pub(crate) fn ntt_layer_1_step(
     vector: Vec256,
     zeta0: i16,
@@ -22,6 +26,8 @@ pub(crate) fn ntt_layer_1_step(
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!("range (v #i16_inttype zero - v $zeta1) i16_inttype /\\
+    range (v #i16_inttype zero - v $zeta0) i16_inttype"))]
 pub(crate) fn ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Vec256 {
     let zetas = mm256_set_epi16(
         -zeta1, -zeta1, -zeta1, -zeta1, zeta1, zeta1, zeta1, zeta1, -zeta0, -zeta0, -zeta0, -zeta0,
