@@ -40,27 +40,34 @@ impl Operations for PortableVector {
         from_i16_array(array)
     }
 
-
+    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map2 (+.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]
     fn add(lhs: Self, rhs: &Self) -> Self {
         add(lhs, rhs)
     }
 
+    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map2 (-.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]
     fn sub(lhs: Self, rhs: &Self) -> Self {
         sub(lhs, rhs)
     }
 
+    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr $v)"))]
     fn multiply_by_constant(v: Self, c: i16) -> Self {
         multiply_by_constant(v, c)
     }
 
+    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> x &. c) (impl.f_repr $v)"))]
     fn bitwise_and_with_constant(v: Self, c: i16) -> Self {
         bitwise_and_with_constant(v, c)
     }
 
+    #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
+    #[ensures(|result| fstar!("(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $v)"))]
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
         shift_right::<{ SHIFT_BY }>(v)
     }
 
+    #[requires(true)]
+    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr $v)"))]
     fn cond_subtract_3329(v: Self) -> Self {
         cond_subtract_3329(v)
     }

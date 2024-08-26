@@ -25,24 +25,35 @@ pub trait Operations: Copy + Clone + Repr {
 
     // Basic arithmetic
     #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map2 (+.) (f_repr $lhs) (f_repr $rhs)"))]
     fn add(lhs: Self, rhs: &Self) -> Self;
+
     #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map2 (-.) (f_repr $lhs) (f_repr $rhs)"))]
     fn sub(lhs: Self, rhs: &Self) -> Self;
+
     #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map_array (fun x -> x *. c) (f_repr $v)"))]
     fn multiply_by_constant(v: Self, c: i16) -> Self;
 
     // Bitwise operations
     #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map_array (fun x -> x &. c) (f_repr $v)"))]
     fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
-    #[requires(true)]
+
+    #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
+    #[ensures(|result| fstar!("(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> f_repr $result == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (f_repr $v)"))]
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
     // fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
 
     // Modular operations
     #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (f_repr $v)"))]
     fn cond_subtract_3329(v: Self) -> Self;
+
     #[requires(true)]
     fn barrett_reduce(v: Self) -> Self;
+
     #[requires(true)]
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
 

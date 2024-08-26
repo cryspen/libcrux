@@ -81,7 +81,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        impl.f_repr out == Spec.Utils.map2 ( +. ) (impl.f_repr lhs) (impl.f_repr rhs));
     f_add
     =
     (fun
@@ -103,7 +103,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        impl.f_repr out == Spec.Utils.map2 ( -. ) (impl.f_repr lhs) (impl.f_repr rhs));
     f_sub
     =
     (fun
@@ -121,7 +121,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (c: i16)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr v));
     f_multiply_by_constant
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
@@ -136,14 +136,15 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (c: i16)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        impl.f_repr out == Spec.Utils.map_array (fun x -> x &. c) (impl.f_repr v));
     f_bitwise_and_with_constant
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
         Libcrux_ml_kem.Vector.Portable.Arithmetic.bitwise_and_with_constant v c);
     f_shift_right_pre
     =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l);
     f_shift_right_post
     =
     (fun
@@ -151,7 +152,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        (v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==>
+        impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (impl.f_repr v));
     f_shift_right
     =
     (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
@@ -165,7 +167,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        impl.f_repr out ==
+        Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr v));
     f_cond_subtract_3329_
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->

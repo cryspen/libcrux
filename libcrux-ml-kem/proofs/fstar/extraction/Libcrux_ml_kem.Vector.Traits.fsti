@@ -38,33 +38,48 @@ class t_Operations (v_Self: Type0) = {
             f_repr result == Seq.create 16 0s) };
   f_ZERO:x0: Prims.unit -> Prims.Pure v_Self (f_ZERO_pre x0) (fun result -> f_ZERO_post x0 result);
   f_add_pre:lhs: v_Self -> rhs: v_Self -> pred: Type0{true ==> pred};
-  f_add_post:v_Self -> v_Self -> v_Self -> Type0;
+  f_add_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
+    -> pred: Type0{pred ==> f_repr result == Spec.Utils.map2 ( +. ) (f_repr lhs) (f_repr rhs)};
   f_add:x0: v_Self -> x1: v_Self
     -> Prims.Pure v_Self (f_add_pre x0 x1) (fun result -> f_add_post x0 x1 result);
   f_sub_pre:lhs: v_Self -> rhs: v_Self -> pred: Type0{true ==> pred};
-  f_sub_post:v_Self -> v_Self -> v_Self -> Type0;
+  f_sub_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
+    -> pred: Type0{pred ==> f_repr result == Spec.Utils.map2 ( -. ) (f_repr lhs) (f_repr rhs)};
   f_sub:x0: v_Self -> x1: v_Self
     -> Prims.Pure v_Self (f_sub_pre x0 x1) (fun result -> f_sub_post x0 x1 result);
   f_multiply_by_constant_pre:v: v_Self -> c: i16 -> pred: Type0{true ==> pred};
-  f_multiply_by_constant_post:v_Self -> i16 -> v_Self -> Type0;
+  f_multiply_by_constant_post:v: v_Self -> c: i16 -> result: v_Self
+    -> pred: Type0{pred ==> f_repr result == Spec.Utils.map_array (fun x -> x *. c) (f_repr v)};
   f_multiply_by_constant:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
         (f_multiply_by_constant_pre x0 x1)
         (fun result -> f_multiply_by_constant_post x0 x1 result);
   f_bitwise_and_with_constant_pre:v: v_Self -> c: i16 -> pred: Type0{true ==> pred};
-  f_bitwise_and_with_constant_post:v_Self -> i16 -> v_Self -> Type0;
+  f_bitwise_and_with_constant_post:v: v_Self -> c: i16 -> result: v_Self
+    -> pred: Type0{pred ==> f_repr result == Spec.Utils.map_array (fun x -> x &. c) (f_repr v)};
   f_bitwise_and_with_constant:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
         (f_bitwise_and_with_constant_pre x0 x1)
         (fun result -> f_bitwise_and_with_constant_post x0 x1 result);
-  f_shift_right_pre:v_SHIFT_BY: i32 -> v: v_Self -> pred: Type0{true ==> pred};
-  f_shift_right_post:v_SHIFT_BY: i32 -> v_Self -> v_Self -> Type0;
+  f_shift_right_pre:v_SHIFT_BY: i32 -> v: v_Self
+    -> pred: Type0{v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l ==> pred};
+  f_shift_right_post:v_SHIFT_BY: i32 -> v: v_Self -> result: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          (v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==>
+          f_repr result == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (f_repr v) };
   f_shift_right:v_SHIFT_BY: i32 -> x0: v_Self
     -> Prims.Pure v_Self
         (f_shift_right_pre v_SHIFT_BY x0)
         (fun result -> f_shift_right_post v_SHIFT_BY x0 result);
   f_cond_subtract_3329_pre:v: v_Self -> pred: Type0{true ==> pred};
-  f_cond_subtract_3329_post:v_Self -> v_Self -> Type0;
+  f_cond_subtract_3329_post:v: v_Self -> result: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          f_repr result ==
+          Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (f_repr v) };
   f_cond_subtract_3329_:x0: v_Self
     -> Prims.Pure v_Self
         (f_cond_subtract_3329_pre x0)
