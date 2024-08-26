@@ -6,189 +6,13 @@ open FStar.Tactics.V2
 open FStar.Tactics.V2.SyntaxHelpers
 open FStar.Class.Printable
 open FStar.Mul
+open FStar.Option
 
-let rw_seq_index_list #t (l: list t) i
-    : Lemma (Seq.Base.index (Seq.Base.seq_of_list l) i == FStar.List.Tot.index l i) 
-    = ()
-
-// START TEMPLATE
-let rw_u8_mk_int x: Lemma (mk_int #u8_inttype x == UInt8.uint_to_t x) = mk_int_equiv_lemma #u8_inttype x
-let rw_u8_v_int_to x: Lemma (UInt8.v (UInt8.uint_to_t x) == x) = ()
-let rw_u8_int_to_v x: Lemma (UInt8.uint_to_t (UInt8.v x) == x) = ()
-let rw_u8_v x: Lemma (v #u8_inttype x == UInt8.v x) = ()
-// END TEMPLATE
-
-// START GENERATED
-let rw_i8_mk_int x: Lemma (mk_int #i8_inttype x == Int8.int_to_t x) = mk_int_equiv_lemma #i8_inttype x
-let rw_i8_v_int_to x: Lemma (Int8.v (Int8.int_to_t x) == x) = ()
-let rw_i8_int_to_v x: Lemma (Int8.int_to_t (Int8.v x) == x) = ()
-let rw_i8_v x: Lemma (v #i8_inttype x == Int8.v x) = ()
-let rw_u16_mk_int x: Lemma (mk_int #u16_inttype x == UInt16.uint_to_t x) = mk_int_equiv_lemma #u16_inttype x
-let rw_u16_v_int_to x: Lemma (UInt16.v (UInt16.uint_to_t x) == x) = ()
-let rw_u16_int_to_v x: Lemma (UInt16.uint_to_t (UInt16.v x) == x) = ()
-let rw_u16_v x: Lemma (v #u16_inttype x == UInt16.v x) = ()
-let rw_i16_mk_int x: Lemma (mk_int #i16_inttype x == Int16.int_to_t x) = mk_int_equiv_lemma #i16_inttype x
-let rw_i16_v_int_to x: Lemma (Int16.v (Int16.int_to_t x) == x) = ()
-let rw_i16_int_to_v x: Lemma (Int16.int_to_t (Int16.v x) == x) = ()
-let rw_i16_v x: Lemma (v #i16_inttype x == Int16.v x) = ()
-let rw_u32_mk_int x: Lemma (mk_int #u32_inttype x == UInt32.uint_to_t x) = mk_int_equiv_lemma #u32_inttype x
-let rw_u32_v_int_to x: Lemma (UInt32.v (UInt32.uint_to_t x) == x) = ()
-let rw_u32_int_to_v x: Lemma (UInt32.uint_to_t (UInt32.v x) == x) = ()
-let rw_u32_v x: Lemma (v #u32_inttype x == UInt32.v x) = ()
-let rw_i32_mk_int x: Lemma (mk_int #i32_inttype x == Int32.int_to_t x) = mk_int_equiv_lemma #i32_inttype x
-let rw_i32_v_int_to x: Lemma (Int32.v (Int32.int_to_t x) == x) = ()
-let rw_i32_int_to_v x: Lemma (Int32.int_to_t (Int32.v x) == x) = ()
-let rw_i32_v x: Lemma (v #i32_inttype x == Int32.v x) = ()
-let rw_u64_mk_int x: Lemma (mk_int #u64_inttype x == UInt64.uint_to_t x) = mk_int_equiv_lemma #u64_inttype x
-let rw_u64_v_int_to x: Lemma (UInt64.v (UInt64.uint_to_t x) == x) = ()
-let rw_u64_int_to_v x: Lemma (UInt64.uint_to_t (UInt64.v x) == x) = ()
-let rw_u64_v x: Lemma (v #u64_inttype x == UInt64.v x) = ()
-let rw_i64_mk_int x: Lemma (mk_int #i64_inttype x == Int64.int_to_t x) = mk_int_equiv_lemma #i64_inttype x
-let rw_i64_v_int_to x: Lemma (Int64.v (Int64.int_to_t x) == x) = ()
-let rw_i64_int_to_v x: Lemma (Int64.int_to_t (Int64.v x) == x) = ()
-let rw_i64_v x: Lemma (v #i64_inttype x == Int64.v x) = ()
-let rw_integers_list0 = [
-     `rw_u8_mk_int;`rw_u8_v_int_to;`rw_u8_int_to_v;`rw_u8_v
-    // ;`rw_i8_mk_int;`rw_i8_v_int_to;`rw_i8_int_to_v;`rw_i8_v;`rw_u16_mk_int;`rw_u16_v_int_to;`rw_u16_int_to_v;`rw_u16_v
-    ;`rw_i16_mk_int;`rw_i16_v_int_to;`rw_i16_int_to_v;`rw_i16_v
-    // ;`rw_u32_mk_int;`rw_u32_v_int_to;`rw_u32_int_to_v;`rw_u32_v;`rw_i32_mk_int;`rw_i32_v_int_to;`rw_i32_int_to_v;`rw_i32_v;`rw_u64_mk_int;`rw_u64_v_int_to;`rw_u64_int_to_v;`rw_u64_v;`rw_i64_mk_int;`rw_i64_v_int_to;`rw_i64_int_to_v;`rw_i64_v
-    ]
-// END GENERATED
-
-let rw_generic_v_mk_int t (x: int {Rust_primitives.Integers.range x t})
-  : Lemma (v (mk_int #t x) == x)
-  = ()
-let rw_usize_v_mk_int x: Lemma (v #usize_inttype (mk_int #usize_inttype x) == x) = ()
-let rw_v_mk_int_usize x: Lemma (mk_int #usize_inttype (v #usize_inttype x) == x) = ()
-
-let rw_integers_list = L.append rw_integers_list0 [
-  `rw_generic_v_mk_int;
-  `rw_usize_v_mk_int;
-  `rw_v_mk_int_usize;
-]
-
-let (let?#) (x: option 'a) (f: 'a -> Tac (option 'b)): Tac (option 'b)
-  = match x with
-  | Some x -> f x
-  | None   -> None
-
-let expect_int_literal (t: term): Tac (option int) =
-    match inspect_unascribe t with
-    | Tv_Const (C_Int n) -> Some n
-    | _ -> None
-let expect_fvar (t: term): Tac (option string) =
-    match t with
-    | Tv_UInst fv _
-    | Tv_FVar fv -> Some (implode_qn (inspect_fv fv))
-    | _ -> None
-let expect_free_var (t: term) (fv: string): Tac (option unit) =
-    let?# fv' = expect_fvar t in
-    if fv = fv' then Some () else None
-let expect_cur_formula_comp () = 
-    match FStar.Tactics.V2.Logic.cur_formula () with
-    | Comp _ lhs _ -> Some lhs
-    | _ -> None
-let expect_app_n t n: Tac (option (term & (l: list _ {L.length l == n}))) =
-    let (head, args) = collect_app t in
-    if L.length args = n
-    then Some (head, args)
-    else None
-
-exception DoRefl
-let fast_l_to_r_integers (): Tac unit =
-  pointwise (fun () -> 
-      try
-      match let?# t = expect_cur_formula_comp () in
-            let (f, args) = collect_app t in
-            let?# _ = if Cons? args then Some () else None in
-            let?# fv = expect_fvar f in
-            let fv = explode_qn fv in
-            if Cons? fv then
-              (match L.last fv with
-              | "v" | "mk_int" | "int_to_t" | "uint_to_t"
-                -> fold_left (fun k l () -> (fun () -> apply_lemma_rw l) `or_else` k)
-                              trefl rw_integers_list ()
-              | _ -> raise DoRefl
-              ) else raise DoRefl;
-            Some () 
-      with None -> raise DoRefl | _ -> ()
-      with | DoRefl -> trefl ()
-           | e -> raise e
-    )
-
-#push-options "--compat_pre_core 0"
-
-let expect_pow2_literal t: Tac (option int)
-    = let?# (f, [x, _]) = expect_app_n t 1 in
-      let?# () = expect_free_var f (`%pow2) in
-      expect_int_literal x
-
-/// Fully normalize a term of the shape `pow2 n`, where `n` is a literal
-let norm_pow2 (): Tac unit =
-  pointwise (fun () -> 
-    let _ = let?# t = expect_cur_formula_comp () in
-            let?# n = expect_pow2_literal t in
-            debug ("Normalized `pow2 " ^ string_of_int n ^ "`");
-            Some (norm [iota; zeta_full; reify_; delta; primops; unmeta]) in
-    trefl ())
-
-let rec log2 (n: nat): Tot (option (m: nat {pow2 m == n})) (decreases n)
-    = if n = 0 then None
-      else if n = 1 then Some 0
-      else if n % 2 <> 0 then None
-           else match log2 (n / 2) with
-                | Some n -> Some (1 + n)
-                | None   -> None
-
-let lemma_of_refinement #t #p (n: t {p n}): Lemma (p n) = ()
-
-let rewrite_pow2_minus_one () =
-   pointwise (fun () -> 
-    match let?# t = expect_cur_formula_comp () in
-          let?# n = expect_int_literal t in
-          if n >= 0 then
-            match log2 (n + 1) with
-            | Some e -> 
-              let rw_lemma (): Lemma (n == pow2 e - 1) = () in
-              apply_lemma_rw (quote rw_lemma);
-              Some ()
-            | _ -> None
-         else None
-    with None -> trefl () | _ -> ()
-   )
-
-let _ = fun (i: nat) -> assert (pow2 (i + 3) + pow2 10 == pow2 (i + 3) + 1024)
-                       by (norm_pow2 (); trefl ())
-
-private 
-let unfold_index_lemma (#a: Type) (l: list a) (i:nat{i < List.Tot.length l})
-  : Lemma (  FStar.List.Tot.index #a l i 
-          == Pervasives.norm [iota; primops] (let hd::tl = l in
-    if i = 0 then hd else List.Tot.index tl (i - 1)))
-  = ()
+open Tactics.Utils
+open Tactics.Pow2
 
 
-let rec repeatWhile (f: unit -> Tac bool): Tac unit
-  = if f () then repeatWhile f
-
-exception StopNormIndex
-let norm_index (): Tac unit =
-  let _ = repeat (fun _ ->
-    lset "found" false;
-    pointwise (fun _ ->
-      (fun () ->
-         match let?# t = expect_cur_formula_comp () in
-               let?# (f, [typ, _; l, _; index, _]) = expect_app_n t 3 in
-               let?# () = expect_free_var f (`%FStar.List.Tot.index) in
-               let?# n = expect_int_literal index in
-               apply_lemma_rw (`unfold_index_lemma);
-               lset "found" true;
-               Some ()
-         with | Some () -> () | _ -> raise DoRefl
-      ) `or_else` trefl);
-    if lget "found" then () else raise StopNormIndex) in ()
-
-let _ = assert (L.index [1;2;3;4;5;6] 3 == 4) by (norm_index(); trefl ())
+let norm_machine_int () = Tactics.MachineInts.(transform norm_machine_int_term)
 
 #push-options "--z3rlimit 40"
 let deserialize_10_int (bytes: t_Array u8 (sz 10)) =
@@ -260,18 +84,13 @@ let compute'' (): Tac unit
           dump "A";
           norm [ iota; zeta; reify_
                ; delta_namespace ["FStar"; "RwLemmas"; "MkSeq"]
-               // ; delta_only [
-               //              `%( +! ); `%( -! ); `%( *! ); `%( /! );
-               //              `%add; `%mul; `%div; `%sub
-               //   ]
                ; primops; unmeta];
           dump "B";
           norm_pow2 ();
           dump "C";
-          l_to_r [`rw_seq_index_list];
-          fast_l_to_r_integers ();
-          dump "D";
-          norm_index ();
+          Tactics.Seq.norm_list_index ();
+          norm_machine_int ();
+          Tactics.Seq.simplify_index_seq_of_list ();
           dump "E";
           
           let goal0 = lget "goal" in
@@ -280,46 +99,326 @@ let compute'' (): Tac unit
           lset "goal" goal1
       ) in ()
 
-// (((cast (bytes.[ sz 2 ] <: u8) <: i16) &. 15s <: i16) <<! 6l <: i16) |.
-//     ((cast (bytes.[ sz 1 ] <: u8) <: i16) >>! 2l <: i16)
 
-// let _ = assert ((4s +! 5s) <<! 3s == 3s) by (
-//       compute'' ();
-//       fail "x"
-    // )
+let rw_get_bit_and (x y: int_t 't) i
+  : Lemma (get_bit (x &. y) i == (if get_bit x i = 0 then 0 else get_bit y i))
+    [SMTPat (get_bit (x &. y) i)]
+  = get_bit_and x y i
+  
+let rw_get_bit_and_left (x y: int_t 't) i
+  : Lemma (requires get_bit x i == 0) 
+          (ensures get_bit (x &. y) i == 0)
+  = get_bit_and x y i
+let rw_get_bit_and_right (x y: int_t 't) i
+  : Lemma (requires get_bit x i == 0) 
+          (ensures get_bit (y &. x) i == 0)
+  = get_bit_and x y i
+let rw_get_bit_or_left (x y: int_t 't) i
+  : Lemma (requires get_bit x i == 0)
+          (ensures get_bit (x |. y) i == get_bit y i)
+          [SMTPat (get_bit (x |. y) i)]
+  = get_bit_or x y i
+let rw_get_bit_or_right (x y: int_t 't) i
+  : Lemma (requires get_bit y i == 0)
+          (ensures get_bit (x |. y) i == get_bit x i)
+          [SMTPat (get_bit (x |. y) i)]
+  = get_bit_or x y i
 
-// let ( << ) (#t:inttype) (a:int_t t) (b:nat {b >= 0 /\ b < bits t}) =
-//     let x:range_t t = (v a * pow2 b) @%. t in
-//     mk_int #t x
+let expect_get_bit t: Tac (option (term & term)) =
+  let?# (f, [_typ; bit_value, _; i, _]) = expect_app_n t 3 in
+  let?# () = expect_free_var f (`%get_bit) in
+  Some (bit_value, i)
 
-// let rw_shift_left_to_nat
-//     #t #u (x: int_t t) (y: int_t u {v y >= 0 /\ v y < bits t})
-//     : Lemma ((x <<! y) == (x <<! (mk_int #t (v y)) <: int_t t)) = ()
+let expect_logand t: Tac (option (term & term)) =
+  let?# (f, [_typ; x, _; y, _]) = expect_app_n t 3 in
+  let?# () = expect_free_var f (`%logand) in
+  Some (x, y)
 
-// let rw_get_bit_add_or #t #u #shift (x: int_t t) (shift: int_t shift)
-//     : Lemma (get_bit (cast (x &. mask) <<! shift))
-    
+let _simplify_via_mask () =
+  let?# (t, _) = expect_lhs_eq_uvar () in
+  let?# (bit_expr, i) = expect_get_bit t in
+  let?# (x, y) = expect_logand bit_expr in
+  let?# y = Tactics.MachineInts.term_to_machine_int_term y in
+  let?# y = 
+    let open Tactics.MachineInts in
+    match y with
+    | Op {op = MkInt; contents = Term contents} -> Some contents
+    | _ -> None
+  in
+  let?# y = expect_pow2_minus_one_literal y in
+  Some ()
 
-// let f #t (x: int_t t)
-//     // (x y: int_t t)
-//     // ()
-
-
-// let _ = get_bit (
-//     (  cast bytes.[ sz 3 ] &. 63s) <<! 4l 
-//     |. cast bytes.[ sz 2 ] >>! 4l
-//     ) (sz 3) == 0
-
-// let _ =
-//     get_bit (  ((cast bytes.[ sz 1 ] &. 3s  ) <<! 8l)
-//              |. cast bytes.[ sz 0 ] &. 255s
-//             ) (sz 3) == 0
+let simplify_via_mask ()
+  = rewrite_pow2_minus_one ();
+    pointwise (fun _ ->
+      match _simplify_via_mask () with
+      | Some () -> ()
+      | _ -> trefl ()
+    )
 
 
 let pow2_in_range t (n: nat {n < bits t - (if unsigned t then 0 else 1)})
     : Lemma (Rust_primitives.Integers.range (pow2 n - 1) t)
       [SMTPat (Rust_primitives.Integers.range (pow2 n - 1) t)]
     = Math.Lemmas.pow2_le_compat (bits t - (if unsigned t then 0 else 1)) n
+
+exception Restore
+let dump' (msg: string): Tac unit
+    = try let _ = repeat clear_top in set_smt_goals []; dump msg with | _ -> ()
+
+// let _ = op_Bar_Dot
+
+noeq type bit_expr =
+  | Term: term -> bit_expr
+  | Int: int -> bit_expr
+  | And: x:bit_expr -> y:bit_expr -> bit_expr
+  | Or: x:bit_expr -> y:bit_expr -> bit_expr
+  | Shl: x:bit_expr -> shift:int -> bit_expr
+  | Shr: x:bit_expr -> shift:int -> bit_expr
+  | Cast: x:bit_expr -> bit_expr
+
+let rec bit_expr_eq a b =
+  match (a, b) with
+  | Term a, Term b -> term_eq a b
+  | Int a, Int b -> a = b
+  | And xa ya, And xb yb
+  | Or  xa ya, Or  xb yb -> bit_expr_eq xa xb && bit_expr_eq ya yb
+  | Shl  a sa, Shl  b sb
+  | Shr  a sa, Shr  b sb -> bit_expr_eq  a  b && sa = sb
+  | Cast    a, Cast    b -> bit_expr_eq  a  b
+  | _ -> false
+
+let rec bit_expr_contains needle haystack =
+  let recurse = bit_expr_contains needle in
+  bit_expr_eq needle haystack
+  || ( match haystack with
+    | And l r | Or l r -> recurse l || recurse r
+    | Cast x | Shl x _ | Shr x _ -> recurse x
+    | _ -> false)
+
+let expect_machine_int_lit t: Tac _ =
+  let open Tactics.MachineInts in
+  let?# expr = term_to_machine_int_term t in
+  match expr with
+  | Op {op = MkInt; contents = Lit n} -> Some n
+  | _ -> None
+
+let rec term_to_bit_expr' t: Tac _
+  = match expect_machine_int_lit t with
+  | Some n -> Int n
+  | _ -> match let?# (f, args) = collect_app_hd t in
+              let?# (x, y) = match args with
+                             | [_; x,_; y,_] | [_; _; x,_; y,_]
+                             | [_; _; _; x,_; y,_] -> Some (x, y) | _ -> None in
+              match f with
+              | `%logand      | `%( &.  ) 
+                  -> Some (And (term_to_bit_expr' x) (term_to_bit_expr' y))
+              | `%logor       | `%( |.  ) 
+                  -> Some (Or  (term_to_bit_expr' x) (term_to_bit_expr' y))
+              | `%shift_left  | `%( <<! ) 
+                  -> let?# y = expect_machine_int_lit y in
+                    Some (Shl (term_to_bit_expr' x) y)
+              | `%shift_right | `%( >>! ) 
+                  -> let?# y = expect_machine_int_lit y in
+                    Some (Shr (term_to_bit_expr' x) y)
+              | `%cast -> Some (Cast (term_to_bit_expr' y))
+              | _ -> None
+        with
+        | Some t -> t
+        | None   -> Term t
+
+let term_to_bit_expr t: Tac (option (x: bit_expr {~(Term? x)}))
+  = match term_to_bit_expr' t with
+  | Term _ -> None
+  | t -> Some t
+
+let expect_get_bit_expr t: Tac _
+  = let?# (expr, index) = expect_get_bit t in
+    let?# index = expect_machine_int_lit index in
+    let expr = term_to_bit_expr' expr in
+    Some (expr, index)
+
+let fail' msg = dump msg; fail msg
+
+let expect (msg: string) (x: option 'a): Tac 'a
+  = match x with
+  | None -> 
+    dump' ("Expected " ^ msg);
+    fail ("Expected " ^ msg)
+  | Some x -> x
+
+let op_Bar_GreaterThan (x: 'a) (f: 'a -> Tac 'b): Tac 'b = f x
+
+let get_bit_shl_zero #t #u (x: int_t t) (y: int_t u) (i: usize {v i < bits t})
+  : Lemma (requires v y >= 0 /\ v y < bits t /\ v i < v y)
+          (ensures get_bit (x <<! y) i == 0)
+    = get_bit_shl x y i
+
+let get_bit_shr_zero #t #u (x: int_t t) (y: int_t u) (i: usize {v i < bits t})
+  : Lemma (requires v y >= 0 /\ v y < bits t /\ v i >= bits t - v y /\ (if signed t then (get_bit x (mk_int (bits t - 1)) == 0) else true))
+          (ensures get_bit (x >>! y) i == 0)
+    = get_bit_shr x y i
+
+let get_bit_shl_one #t #u (x: int_t t) (y: int_t u) (i: usize {v i < bits t})
+  : Lemma (requires v y >= 0 /\ v y < bits t /\ v i >= v y)
+          (ensures get_bit (x <<! y) i == get_bit x (mk_int (v i - v y)))
+    [SMTPat (get_bit (x <<! y) i)] = get_bit_shl x y i
+
+let rewrite_lhs (): Tac _ =
+  let (lhs, _, _) = expect_lhs_eq_rhs () |> expect "a goal `<lhs> == <rhs>` (rewrite_lhs)" in
+  let uvar = fresh_uvar (Some (tc (cur_env ()) lhs)) in
+  tcut (`squash (`#lhs == `#uvar))
+
+/// Proves that `get_bit .. ..` is zero
+let rec solve_get_bit_zero (): Tac _ =
+  let (lhs, rhs, _) = expect_lhs_eq_rhs () |> expect "a goal `<lhs> == <rhs>` (solve_get_bit_zero)" in
+  print ("solve_get_bit_zero: " ^ term_to_string lhs);
+  let (lhs, i) = expect_get_bit_expr lhs |> expect "LHS to be `get_bit .. ..`" in
+  let rhs' = expect_int_literal rhs |> expect ("RHS to be a int literal, got " ^ term_to_string rhs) in
+  let _ = match rhs' with | 0 -> () | _ -> fail "RHS should be zero" in
+  match lhs with
+  | Term _ -> fail ("LHS is an arbitrary term, I cannot prove it is " ^ string_of_int rhs')
+  | Int _ -> (compute (); trefl ())
+  | Shl _ _ -> 
+    apply_lemma (`get_bit_shl_zero);
+    (fun _ -> 
+    norm_machine_int (); compute (); norm [simplify];
+    trivial () )`or_else` (fun _ -> fail' "Shl: tried to prove it was zero")
+  | Shr _ _ -> 
+    apply_lemma (`get_bit_shr_zero);
+    focus (fun _ -> 
+      let _ = repeat split in
+      iterAll (fun _ -> 
+          match expect_lhs_eq_rhs () with
+          | Some _ -> print "solve_get_bit_zero: recurse";
+                     solve_get_bit_zero ()
+          | _ -> (fun _ -> norm_machine_int (); 
+                compute (); 
+                norm [simplify];
+                trivial ()) `or_else` (fun _ -> fail' "Shr: tried to prove it was zero")
+      )
+    )
+  | Cast _ -> 
+     (try
+        if rhs' = 0 then apply_lemma (`get_bit_cast_extend) else ();
+        compute (); norm [simplify];
+        trivial `or_else` (fun _ -> fail' "Cast: tried to prove it was zero")
+      with | _ -> (
+        apply_lemma (`get_bit_cast);
+        compute (); norm [simplify];
+        trivial `or_else` (fun _ -> fail' "Cast: tried to prove it was zero [second path]")
+     ))
+  | And x y -> fail "And: unsupported"
+  | _ -> fail "unsupported"
+
+
+let rw_get_bit_and_one_right (x y: int_t 't) i
+  : Lemma (requires get_bit x i == 1) 
+          (ensures get_bit (y &. x) i == get_bit y i)
+  = get_bit_and x y i
+
+let _solve_get_bit_equality lhs i rhs j: Tac _ =
+  match lhs with
+  | Term x -> trefl `or_else` (fun _ -> fail' "solve_get_bit_equality: expected terms to be equal at this point")
+  | And x y -> 
+         let _ = rewrite_lhs () in
+         flip ();
+         apply_lemma_rw (`rw_get_bit_and_one_right);
+         fail "xxx";
+         ()
+  | Or x y -> 
+         print ("We are looking at `x |. y`");
+         print ("x=" ^ term_to_string (quote x));
+         print ("y=" ^ term_to_string (quote y));
+         print ("RHS=" ^ term_to_string (quote rhs));
+        (match bit_expr_contains rhs x, bit_expr_contains rhs y with
+        | false, false -> 
+          fail' "RHS was expected to be on the LHS or RHS of the logor!"
+        | true, true -> fail' "RHS was expected to be on the LHS or RHS of the logor, not both!"
+        | true, false -> 
+          let rw = rewrite_lhs () in
+          flip ();
+          apply_lemma_rw (norm_term [] (`rw_get_bit_or_right));
+          print "solve_get_bit_equality: LEFT";
+          solve_get_bit_zero ()
+        | false, true -> 
+          let rw = rewrite_lhs () in
+          flip ();
+          print "solve_get_bit_equality: RIGHT";
+          apply_lemma_rw (norm_term [] (`rw_get_bit_or_left));
+          solve_get_bit_zero ()
+        )
+  | _ -> fail' "xxxpppppp"
+
+let solve_get_bit_equality (): Tac _ =
+  let (lhs, rhs, _) = expect_lhs_eq_rhs () |> expect "a goal `<lhs> == <rhs>`" in
+  print ("solve_get_bit_equality: (" ^ term_to_string lhs ^ ") == (" ^ term_to_string rhs ^ ")");
+  let (lhs, i) = expect_get_bit_expr lhs |> expect "LHS to be `get_bit .. ..`" in
+  let (rhs, j) = expect_get_bit_expr rhs |> expect "RHS to be `get_bit .. ..`" in
+  if bit_expr_contains rhs lhs |> not 
+  then fail "was expected the bit expression on RHS to be included in the one of LHS";
+  _solve_get_bit_equality lhs i rhs j;
+  ()
+
+
+#push-options "--compat_pre_core 0"
+let asdsd (bytes: t_Array u8 (sz 10))
+    = let cast: u8 -> i16 = cast in
+      assert (
+         get_bit (
+              ((cast bytes.[ sz 3 ] <: i16) &. 63s <: i16) <<! 4l 
+           |. (cast bytes.[ sz 2 ] <: i16) >>! 4l
+         ) (sz 5)
+         == get_bit (cast bytes.[ sz 3 ] <: i16) (sz 0)
+      ) by (
+        Tactics.MachineInts.(transform norm_generic_machine_int_term);
+        solve_get_bit_equality ();
+        // dump "XXXX";
+        // simplify_via_mask ();
+        // fail "-------";
+        // pointwise' (fun _ -> 
+        //    let _ = let?# (t, _) = expect_lhs_eq_uvar () in
+                   
+        //            let?# (f, _) = expect_app_n t 3 in
+        //            let?# () = expect_free_var f (`%get_bit) in
+        //            // norm [ iota; zeta; reify_
+        //            //      ; primops; unmeta];
+        //            dump' "xxxxx";
+        //            // apply_lemma_rw (`(rw_rhs_bit_or_no_mask #Lib.IntTypes.U8 #Lib.IntTypes.S16 #Lib.IntTypes.S32 ((`@cast) (`@bytes).[ sz 3 ] &. 63s <: i16)));
+        //            // invert ();
+        //            Some ()
+        //    in
+        //    trefl ()
+        //    // let _ = repeat clear_top in
+        //    // dump "X";
+        //    // (fun _ -> apply_lemma_rw (`rw_rhs_bit_or_no_mask)) `or_else` trefl;
+        //    // let _ = repeat clear_top in
+        //    // dump "Y"
+        // );
+        fail "done"
+      )
+
+
+
+let fff bytes x: unit = 
+    assert (
+          get_bit (Seq.index (deserialize_10_int' bytes) 0) (sz 3) 
+       == get_bit (Seq.index bytes 0) (sz 3)
+    ) by (
+      compute'' ();
+      smt_sync ();
+      // l_to_r [`rewrite_to_zero];
+      // compute'' ();
+      // apply_lemma_rw 
+      // l_to_r [`rw_rhs_bit_or_no_mask];
+      fail "DONE";
+      focus (tadmit)
+    );
+    ()
+
+
+
+
 
 
 #push-options "--z3rlimit 80"
@@ -383,103 +482,4 @@ let add_shift_zero_specific #t #u #shift_t
          == ((cast (rhs &. mk_int (pow2 relevant_bits - 1)) <: int_t u) <<! mk_int #shift_t 0)
        )
     = add_shift_zero #u #shift_t (cast (rhs &. mk_int (pow2 relevant_bits - 1)) <: int_t u)
-
-// let goal (bytes: t_Array u8 (sz 10)) 
-//     = ((cast bytes.[ sz 1 ] &. 3s) <<! 8l |. cast bytes.[ sz 0 ] &. 255s) == 1234s
-//                          //    2                                     8
-// let deserialize__10_int (bytes: t_Array u8 (sz 10)) = 
-// let deserialize_10_int (bytes: t_Array u8 (sz 10))
-
-let invert #t #a #b ($f: (x:t -> Lemma (a x == b x))) (x: t): Lemma (b x == a x)
-    = f x
-
-let r_to_l (lems:list term) : Tac unit =
-    let first_or_trefl () : Tac unit =
-        fold_left (fun k l () ->
-                    (fun () -> apply_lemma_rw (`(invert (`#l))))
-                    `or_else` k)
-                  trefl lems () in
-    pointwise first_or_trefl
-
-let make_integers_generic () =
-    pointwise (fun _ ->
-       dump "X";
-       match let?# t = expect_cur_formula_comp () in
-             let?# n = expect_int_literal t in
-             // let is_int = 
-             //   try let x = tc (top_env ()) (`(3 + (`#t))) in
-             //       print ("tc -> -> " ^ term_to_string x);
-             //       true 
-             //   with | _ -> false
-             // in
-             let ty = tc (cur_env ()) t in
-             let ty = norm_term [iota; zeta; reify_; delta; primops; unmeta] ty in
-             let ty = inspect_unascribe ty in
-             let is_int = term_eq ty (`int) || term_eq ty (`nat) in
-             fail ("unify=" ^ string_of_bool is_int);
-             None
-             // fail ("ty=" ^ term_to_string ty);
-             // if unify ty `int
-             // then 
-             // unify
-             // match?# expect_fvar ty with
-             // | "Prims.int" -> None
-             // | _ -> Some n
-       with
-        | Some n -> 
-          let n = n + 1 in
-          trefl ()
-          // fail (string_of_int n)
-        | _ -> trefl ()
-    )
-
-
-// let _ = FStar.Int16.__int_to_t
-let _ = fun x -> assert (2s == x)
-    by (
-      norm [iota; primops]; make_integers_generic (); fail "x")
-
-#push-options "--compat_pre_core 0"
-let asdsd (bytes: t_Array u8 (sz 10))
-    = let cast: u8 -> i16 = cast in
-      assert (
-             get_bit ((cast bytes.[ sz 3 ] &. 63s <: i16) <<! 4l |. cast bytes.[ sz 2 ] >>! 4l) (sz 3) == 0
-      ) by (
-        r_to_l rw_integers_list;
-        fail "x";
-        // l_to_r [`resugar_integer];
-        // apply_lemma_rw (`rw_rhs_bit_or_no_mask);
-        // compute ();
-        // apply_lemma_rw (`rw_rhs_bit_or_no_mask);
-        pointwise' (fun _ -> 
-           // let _ = let?# t = expect_cur_formula_comp () in
-           //         let?# (f, _) = expect_app_n t 3 in
-           //         let?# () = expect_free_var f (`%get_bit) in
-           //         apply_lemma_rw (`rw_rhs_bit_or_no_mask);
-           //         invert ();
-           //         Some (dump "heey")
-           // in
-           trefl ()
-           // let _ = repeat clear_top in
-           // dump "X";
-           // (fun _ -> apply_lemma_rw (`rw_rhs_bit_or_no_mask)) `or_else` trefl;
-           // let _ = repeat clear_top in
-           // dump "Y"
-        );
-        fail "x"
-      )
-
-let fff bytes x: unit = 
-    assert (
-       get_bit (Seq.index (deserialize_10_int' bytes) 2) (sz 3) == 0
-    ) by (
-      compute'' ();
-      // l_to_r [`rewrite_to_zero];
-      // compute'' ();
-      // apply_lemma_rw 
-      // l_to_r [`rw_rhs_bit_or_no_mask];
-      fail "DONE";
-      focus (tadmit)
-    );
-    ()
 
