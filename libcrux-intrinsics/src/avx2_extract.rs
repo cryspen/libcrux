@@ -3,9 +3,9 @@
 
 #![allow(unused_variables, non_camel_case_types)]
 
-#[derive(Copy,Clone)]
-#[hax_lib::fstar::after(interface,"val vec256_as_i16x16 (x:t_Vec256) : t_Array i16 (sz 16)")]
+#[derive(Clone,Copy)]
 #[hax_lib::opaque_type]
+#[hax_lib::fstar::after(interface,"val vec256_as_i16x16 (x:t_Vec256) : t_Array i16 (sz 16)")]
 pub struct Vec256(u8);
 
 #[derive(Copy,Clone)]
