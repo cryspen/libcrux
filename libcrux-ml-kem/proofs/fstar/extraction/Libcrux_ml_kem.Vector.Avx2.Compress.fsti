@@ -9,7 +9,11 @@ val mulhi_mm256_epi32 (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
 val compress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
+      (requires
+        v v_COEFFICIENT_BITS >= 0 /\ v v_COEFFICIENT_BITS < bits i32_inttype /\
+        range (v (1l <<! v_COEFFICIENT_BITS) - 1) i32_inttype)
+      (fun _ -> Prims.l_True)
 
 val compress_message_coefficient (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
@@ -17,4 +21,6 @@ val compress_message_coefficient (vector: Libcrux_intrinsics.Avx2_extract.t_Vec2
 val decompress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
+      (requires v v_COEFFICIENT_BITS >= 0 /\ v v_COEFFICIENT_BITS < bits i32_inttype)
+      (fun _ -> Prims.l_True)

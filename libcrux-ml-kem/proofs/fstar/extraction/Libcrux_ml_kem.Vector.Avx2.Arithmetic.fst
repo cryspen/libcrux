@@ -4,7 +4,11 @@ open Core
 open FStar.Mul
 
 let add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let bitwise_and_with_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i16) =
   Libcrux_intrinsics.Avx2_extract.mm256_and_si256 vector
