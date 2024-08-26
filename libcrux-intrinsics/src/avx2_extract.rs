@@ -3,11 +3,14 @@
 
 #![allow(unused_variables, non_camel_case_types)]
 
-#[hax_lib::opaque_type]
+#[derive(Copy,Clone)]
 #[hax_lib::fstar::after(interface,"val vec256_as_i16x16 (x:t_Vec256) : t_Array i16 (sz 16)")]
-pub struct Vec256(u8);
 #[hax_lib::opaque_type]
+pub struct Vec256(u8);
+
+#[derive(Copy,Clone)]
 #[hax_lib::fstar::after(interface,"val vec128_as_i16x8 (x:t_Vec128) : t_Array i16 (sz 8)")]
+#[hax_lib::opaque_type]
 pub struct Vec128(u8);
 
 pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {

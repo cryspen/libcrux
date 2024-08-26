@@ -9,29 +9,38 @@ let _ =
   let open Libcrux_ml_kem.Vector.Portable in
   ()
 
-val deserialize_1_ (bytes: t_Slice u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+val deserialize_1_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val deserialize_10_ (bytes: t_Slice u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+val deserialize_10_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val deserialize_12_ (bytes: t_Slice u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+val deserialize_12_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val deserialize_4_ (bytes: t_Slice u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+val deserialize_4_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val deserialize_5_ (bytes: t_Slice u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+val deserialize_5_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize_1_ (vector: u8) : Prims.Pure (t_Array u8 (sz 2)) Prims.l_True (fun _ -> Prims.l_True)
+val serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+    : Prims.Pure (t_Array u8 (sz 2)) Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize_10_ (vector: u8)
+val serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure (t_Array u8 (sz 20)) Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize_12_ (vector: u8)
+val serialize_12_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure (t_Array u8 (sz 24)) Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize_5_ (vector: u8) : Prims.Pure (t_Array u8 (sz 10)) Prims.l_True (fun _ -> Prims.l_True)
+val serialize_5_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+    : Prims.Pure (t_Array u8 (sz 10)) Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize_4_ (vector: u8) : Prims.Pure (t_Array u8 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+val serialize_4_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+    : Prims.Pure (t_Array u8 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
 
-val deserialize_11_ (bytes: t_Slice u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+val deserialize_11_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize_11_ (vector: u8)
+val serialize_11_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure (t_Array u8 (sz 22)) Prims.l_True (fun _ -> Prims.l_True)
