@@ -9,8 +9,9 @@ mod sampling;
 mod serialize;
 
 #[derive(Clone, Copy)]
+#[hax_lib::fstar::before(interface,"noeq")]
 #[hax_lib::fstar::after(interface,"val repr (x:t_SIMD256Vector) : t_Array i16 (sz 16)")]
-#[hax_lib::fstar::after("let repr (x:t_SIMD256Vector) = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 x.elements")]
+#[hax_lib::fstar::after("let repr (x:t_SIMD256Vector) = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 x.f_elements")]
 pub struct SIMD256Vector {
     elements: Vec256,
 }

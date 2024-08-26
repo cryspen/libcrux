@@ -11,10 +11,10 @@ val add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
       (ensures
         fun result ->
           let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
-          Libcrux_intrinsics.Avx2_extract.vec256_to_i16x16 result ==
+          Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result ==
           Spec.Utils.map2 ( +. )
-            (Libcrux_intrinsics.Avx2_extract.vec256_to_i16x16 lhs)
-            (Libcrux_intrinsics.Avx2_extract.vec256_to_i16x16 rhs))
+            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 lhs)
+            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 rhs))
 
 val bitwise_and_with_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i16)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)

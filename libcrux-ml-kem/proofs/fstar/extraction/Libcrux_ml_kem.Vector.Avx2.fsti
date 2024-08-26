@@ -9,6 +9,8 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+noeq
+
 type t_SIMD256Vector = { f_elements:Libcrux_intrinsics.Avx2_extract.t_Vec256 }
 
 val repr (x:t_SIMD256Vector) : t_Array i16 (sz 16)
