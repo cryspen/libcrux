@@ -1,7 +1,5 @@
 use super::vector_type::*;
-use crate::vector::{
-    traits::FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
-};
+use crate::vector::traits::{FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS, BARRETT_SHIFT, BARRETT_R, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
@@ -16,8 +14,6 @@ pub type FieldElementTimesMontgomeryR = i16;
 pub(crate) const MONTGOMERY_SHIFT: u8 = 16;
 pub(crate) const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
 
-pub(crate) const BARRETT_SHIFT: i32 = 26;
-pub(crate) const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
 pub(crate) const BARRETT_MULTIPLIER: i32 = 20159;
 

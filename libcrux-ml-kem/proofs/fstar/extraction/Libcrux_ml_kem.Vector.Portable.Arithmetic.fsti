@@ -6,10 +6,6 @@ open FStar.Mul
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
 let v_BARRETT_MULTIPLIER: i32 = 20159l
 
-let v_BARRETT_SHIFT: i32 = 26l
-
-let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
-
 let v_MONTGOMERY_SHIFT: u8 = 16uy
 
 let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
@@ -37,9 +33,9 @@ val barrett_reduce_element (value: i16)
     : Prims.Pure i16
       (requires
         (Core.Convert.f_from #i32 #i16 #FStar.Tactics.Typeclasses.solve value <: i32) >.
-        (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i32) &&
-        (Core.Convert.f_from #i32 #i16 #FStar.Tactics.Typeclasses.solve value <: i32) <. v_BARRETT_R
-      )
+        (Core.Ops.Arith.Neg.neg Libcrux_ml_kem.Vector.Traits.v_BARRETT_R <: i32) &&
+        (Core.Convert.f_from #i32 #i16 #FStar.Tactics.Typeclasses.solve value <: i32) <.
+        Libcrux_ml_kem.Vector.Traits.v_BARRETT_R)
       (ensures
         fun result ->
           let result:i16 = result in

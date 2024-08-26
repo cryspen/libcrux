@@ -11,9 +11,9 @@ let barrett_reduce_element (value: i16) =
       v_BARRETT_MULTIPLIER
       <:
       i32) +!
-    (v_BARRETT_R >>! 1l <: i32)
+    (Libcrux_ml_kem.Vector.Traits.v_BARRETT_R >>! 1l <: i32)
   in
-  let quotient:i16 = cast (t >>! v_BARRETT_SHIFT <: i32) <: i16 in
+  let quotient:i16 = cast (t >>! Libcrux_ml_kem.Vector.Traits.v_BARRETT_SHIFT <: i32) <: i16 in
   value -! (quotient *! Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16)
 
 let montgomery_reduce_element (value: i32) =
@@ -37,17 +37,12 @@ let montgomery_multiply_fe_by_fer (fe fer: i16) =
 
 let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun lhs temp_1_ ->
+          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
+          let _:usize = temp_1_ in
+          true)
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
@@ -75,17 +70,12 @@ let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
 
 let barrett_reduce (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun v temp_1_ ->
+          let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+          let _:usize = temp_1_ in
+          true)
       v
       (fun v i ->
           let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
@@ -117,17 +107,12 @@ let bitwise_and_with_constant
       (c: i16)
      =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun v temp_1_ ->
+          let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+          let _:usize = temp_1_ in
+          true)
       v
       (fun v i ->
           let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
@@ -154,17 +139,12 @@ let bitwise_and_with_constant
 
 let cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun v temp_1_ ->
+          let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+          let _:usize = temp_1_ in
+          true)
       v
       (fun v i ->
           let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
@@ -211,17 +191,12 @@ let montgomery_multiply_by_constant
       (c: i16)
      =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun v temp_1_ ->
+          let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+          let _:usize = temp_1_ in
+          true)
       v
       (fun v i ->
           let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
@@ -252,17 +227,12 @@ let montgomery_multiply_by_constant
 
 let multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun v temp_1_ ->
+          let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+          let _:usize = temp_1_ in
+          true)
       v
       (fun v i ->
           let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
@@ -289,17 +259,12 @@ let multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Portab
 
 let shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun v temp_1_ ->
+          let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+          let _:usize = temp_1_ in
+          true)
       v
       (fun v i ->
           let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
@@ -328,17 +293,12 @@ let shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type
 
 let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun lhs temp_1_ ->
+          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
+          let _:usize = temp_1_ in
+          true)
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in

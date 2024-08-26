@@ -229,14 +229,15 @@ let generate_keypair_unpacked
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
   in
   let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_K
+      (fun v_A temp_1_ ->
+          let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+            v_K =
+            v_A
+          in
+          let _:usize = temp_1_ in
+          true)
       v_A
       (fun v_A i ->
           let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
@@ -244,14 +245,15 @@ let generate_keypair_unpacked
             v_A
           in
           let i:usize = i in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-                  usize)
-                #FStar.Tactics.Typeclasses.solve
-                ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
-                  <:
-                  Core.Ops.Range.t_Range usize)
-              <:
-              Core.Ops.Range.t_Range usize)
+          Rust_primitives.Hax.Folds.fold_range (sz 0)
+            v_K
+            (fun v_A temp_1_ ->
+                let v_A:t_Array
+                  (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
+                  v_A
+                in
+                let _:usize = temp_1_ in
+                true)
             v_A
             (fun v_A j ->
                 let v_A:t_Array

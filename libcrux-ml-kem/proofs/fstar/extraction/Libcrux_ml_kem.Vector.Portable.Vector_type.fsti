@@ -7,7 +7,7 @@ type t_PortableVector = { f_elements:t_Array i16 (sz 16) }
 
 val from_i16_array (array: t_Slice i16)
     : Prims.Pure t_PortableVector
-      Prims.l_True
+      (requires (Core.Slice.impl__len #i16 array <: usize) =. sz 16)
       (ensures
         fun result ->
           let result:t_PortableVector = result in

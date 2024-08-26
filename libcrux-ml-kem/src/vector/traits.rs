@@ -2,12 +2,15 @@ pub const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353;
 pub const FIELD_MODULUS: i16 = 3329;
 pub const FIELD_ELEMENTS_IN_VECTOR: usize = 16;
 pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
+pub const BARRETT_SHIFT: i32 = 26;
+pub const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 
 #[hax_lib::attributes]
 pub trait Repr: Copy + Clone {
     #[requires(true)]
     fn repr(x: Self) -> [i16; 16];
 }
+
 
 #[hax_lib::attributes]
 pub trait Operations: Copy + Clone + Repr {
@@ -20,6 +23,7 @@ pub trait Operations: Copy + Clone + Repr {
     fn from_i16_array(array: &[i16]) -> Self;
    
     #[allow(non_snake_case)]
+    #[requires(true)]
     #[ensures(|result| fstar!("f_repr $result == Seq.create 16 0s"))]
     fn ZERO() -> Self;
 
@@ -52,7 +56,7 @@ pub trait Operations: Copy + Clone + Repr {
     fn cond_subtract_3329(v: Self) -> Self;
 
     #[requires(true)]
-    fn barrett_reduce(v: Self) -> Self;
+    fn barrett_reduce(vector: Self) -> Self;
 
     #[requires(true)]
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
@@ -134,6 +138,7 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
 }
 
 pub fn decompress_1<T: Operations>(v: T) -> T {
+    hax_lib::fstar!("assert (i1.f_bitwise_and_with_constant_pre (i1.f_ZERO ()) 0s)"); // No idea why, but this helps F* typeclass inference
     T::bitwise_and_with_constant(T::sub(T::ZERO(), &v), 1665)
 }
 

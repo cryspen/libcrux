@@ -29,7 +29,12 @@ class t_Operations (v_Self: Type0) = {
     -> pred: Type0{pred ==> f_repr result == array};
   f_from_i16_array:x0: t_Slice i16
     -> Prims.Pure v_Self (f_from_i16_array_pre x0) (fun result -> f_from_i16_array_post x0 result);
-  f_ZERO_pre:Prims.unit -> Type0;
+  f_ZERO_pre:x: Prims.unit
+    -> pred:
+      Type0
+        { (let _:Prims.unit = x in
+            true) ==>
+          pred };
   f_ZERO_post:x: Prims.unit -> result: v_Self
     -> pred:
       Type0
@@ -84,7 +89,7 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_cond_subtract_3329_pre x0)
         (fun result -> f_cond_subtract_3329_post x0 result);
-  f_barrett_reduce_pre:v: v_Self -> pred: Type0{true ==> pred};
+  f_barrett_reduce_pre:vector: v_Self -> pred: Type0{true ==> pred};
   f_barrett_reduce_post:v_Self -> v_Self -> Type0;
   f_barrett_reduce:x0: v_Self
     -> Prims.Pure v_Self (f_barrett_reduce_pre x0) (fun result -> f_barrett_reduce_post x0 result);
@@ -239,6 +244,10 @@ class t_VectorType (v_Self: Type0) = {
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl (#v_T: Type0) (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: t_Operations v_T)
     : t_VectorType v_T = { _super_14104493667227926613 = FStar.Tactics.Typeclasses.solve }
+
+let v_BARRETT_SHIFT: i32 = 26l
+
+let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
 
 let v_FIELD_ELEMENTS_IN_VECTOR: usize = sz 16
 
