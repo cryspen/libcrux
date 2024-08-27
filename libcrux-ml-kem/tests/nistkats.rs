@@ -43,6 +43,7 @@ macro_rules! impl_nist_known_answer_tests {
             for kat in nist_kats {
                 let key_pair = generate_key_pair(kat.key_generation_seed);
 
+                #[cfg(feature = "pre-verification")]
                 assert!(validate_public_key(key_pair.public_key()));
 
                 let public_key_hash = sha256(key_pair.pk());
@@ -59,6 +60,7 @@ macro_rules! impl_nist_known_answer_tests {
                 assert_eq!(ciphertext_hash, kat.sha3_256_hash_of_ciphertext, "lhs: computed ciphertext hash, rhs: hash from akt");
                 assert_eq!(shared_secret.as_ref(), kat.shared_secret, "lhs: computed shared secret from encapsulate, rhs: shared secret from kat");
 
+                #[cfg(feature = "pre-verification")]
                 assert!(validate_private_key(key_pair.private_key(), &ciphertext));
 
                 let shared_secret_from_decapsulate =
