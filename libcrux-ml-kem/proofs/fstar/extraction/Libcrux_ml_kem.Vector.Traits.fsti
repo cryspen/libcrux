@@ -103,14 +103,23 @@ class t_Operations (v_Self: Type0) = {
   f_compress_1_post:v_Self -> v_Self -> Type0;
   f_compress_1_:x0: v_Self
     -> Prims.Pure v_Self (f_compress_1_pre x0) (fun result -> f_compress_1_post x0 result);
-  f_compress_pre:v_COEFFICIENT_BITS: i32 -> v: v_Self -> pred: Type0{true ==> pred};
+  f_compress_pre:v_COEFFICIENT_BITS: i32 -> v: v_Self
+    -> pred:
+      Type0
+        { v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
+          v_COEFFICIENT_BITS =. 11l ==>
+          pred };
   f_compress_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> Type0;
   f_compress:v_COEFFICIENT_BITS: i32 -> x0: v_Self
     -> Prims.Pure v_Self
         (f_compress_pre v_COEFFICIENT_BITS x0)
         (fun result -> f_compress_post v_COEFFICIENT_BITS x0 result);
   f_decompress_ciphertext_coefficient_pre:v_COEFFICIENT_BITS: i32 -> v: v_Self
-    -> pred: Type0{true ==> pred};
+    -> pred:
+      Type0
+        { v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
+          v_COEFFICIENT_BITS =. 11l ==>
+          pred };
   f_decompress_ciphertext_coefficient_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> Type0;
   f_decompress_ciphertext_coefficient:v_COEFFICIENT_BITS: i32 -> x0: v_Self
     -> Prims.Pure v_Self

@@ -11,21 +11,35 @@ pub(crate) fn add(lhs: Vec256, rhs: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
+                           Spec.Utils.map2 (-.) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs)"))]
 pub(crate) fn sub(lhs: Vec256, rhs: Vec256) -> Vec256 {
     mm256_sub_epi16(lhs, rhs)
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
+                           Spec.Utils.map_array (fun x -> x *. $constant) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]
 pub(crate) fn multiply_by_constant(vector: Vec256, constant: i16) -> Vec256 {
     mm256_mullo_epi16(vector, mm256_set1_epi16(constant))
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
+                           Spec.Utils.map_array (fun x -> x &. $constant) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]
 pub(crate) fn bitwise_and_with_constant(vector: Vec256, constant: i16) -> Vec256 {
     mm256_and_si256(vector, mm256_set1_epi16(constant))
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
+#[hax_lib::ensures(|result| fstar!("(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> 
+                            Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
+                            Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]   
 pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     mm256_srai_epi16::<{ SHIFT_BY }>(vector)
 }
@@ -36,6 +50,9 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 // }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
+                            Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]   
 pub(crate) fn cond_subtract_3329(vector: Vec256) -> Vec256 {
     let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
 

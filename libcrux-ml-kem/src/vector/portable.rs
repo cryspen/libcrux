@@ -84,10 +84,14 @@ impl Operations for PortableVector {
         compress_1(v)
     }
 
+    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
+               COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
     fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         compress::<COEFFICIENT_BITS>(v)
     }
 
+    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
+               COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(v)
     }

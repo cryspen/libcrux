@@ -11,22 +11,38 @@ let add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   result
 
 let bitwise_and_with_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i16) =
-  Libcrux_intrinsics.Avx2_extract.mm256_and_si256 vector
-    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 constant
-      <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_and_si256 vector
+      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 constant
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let multiply_by_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i16) =
-  Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 vector
-    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 constant
-      <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 vector
+      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 constant
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let shift_right (v_SHIFT_BY: i32) (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 v_SHIFT_BY vector
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 v_SHIFT_BY vector
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let sub (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 lhs rhs
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 lhs rhs
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let barrett_reduce (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let t:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -65,8 +81,12 @@ let cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let conditional_add_field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_and_si256 sign_mask field_modulus
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 vv_minus_field_modulus
-    conditional_add_field_modulus
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 vv_minus_field_modulus
+      conditional_add_field_modulus
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let montgomery_multiply_by_constant
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)

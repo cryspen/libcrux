@@ -13,7 +13,7 @@ noeq
 
 type t_SIMD256Vector = { f_elements:Libcrux_intrinsics.Avx2_extract.t_Vec256 }
 
-val repr (x:t_SIMD256Vector) : t_Array i16 (sz 16)
+let repr (x:t_SIMD256Vector) : t_Array i16 (sz 16) = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 x.f_elements
 
 val from_i16_array (array: t_Slice i16)
     : Prims.Pure t_SIMD256Vector
@@ -47,7 +47,7 @@ val zero: Prims.unit
       (ensures
         fun result ->
           let result:t_SIMD256Vector = result in
-          to_i16_array result == Seq.create 16 0s)
+          repr result == Seq.create 16 0s)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
@@ -185,7 +185,11 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         }
         <:
         t_SIMD256Vector);
-    f_compress_pre = (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) -> true);
+    f_compress_pre
+    =
+    (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) ->
+        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
+        v_COEFFICIENT_BITS =. 11l);
     f_compress_post
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
@@ -202,7 +206,9 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         t_SIMD256Vector);
     f_decompress_ciphertext_coefficient_pre
     =
-    (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) -> true);
+    (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) ->
+        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
+        v_COEFFICIENT_BITS =. 11l);
     f_decompress_ciphertext_coefficient_post
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);

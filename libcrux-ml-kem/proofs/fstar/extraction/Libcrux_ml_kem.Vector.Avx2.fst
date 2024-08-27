@@ -9,8 +9,6 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-let repr (x:t_SIMD256Vector) = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 x.f_elements
-
 let from_i16_array (array: t_Slice i16) =
   let result:t_SIMD256Vector =
     { f_elements = Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_i16 array } <: t_SIMD256Vector

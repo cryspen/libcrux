@@ -10,15 +10,14 @@ mod serialize;
 
 #[derive(Clone, Copy)]
 #[hax_lib::fstar::before(interface,"noeq")]
-#[hax_lib::fstar::after(interface,"val repr (x:t_SIMD256Vector) : t_Array i16 (sz 16)")]
-#[hax_lib::fstar::after("let repr (x:t_SIMD256Vector) = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 x.f_elements")]
+#[hax_lib::fstar::after(interface,"let repr (x:t_SIMD256Vector) : t_Array i16 (sz 16) = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 x.f_elements")]
 pub struct SIMD256Vector {
     elements: Vec256,
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|result| fstar!("to_i16_array ${result} == Seq.create 16 0s"))]
+#[hax_lib::ensures(|result| fstar!("repr ${result} == Seq.create 16 0s"))]
 fn zero() -> SIMD256Vector {
     SIMD256Vector {
         elements: mm256_setzero_si256(),
@@ -131,6 +130,8 @@ impl Operations for SIMD256Vector {
         }
     }
 
+    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
+        COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
     fn compress<const COEFFICIENT_BITS: i32>(vector: Self) -> Self {
         Self {
             elements: compress::compress_ciphertext_coefficient::<COEFFICIENT_BITS>(
@@ -139,6 +140,8 @@ impl Operations for SIMD256Vector {
         }
     }
 
+    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
+        COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(vector: Self) -> Self {
         Self {
             elements: compress::decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(

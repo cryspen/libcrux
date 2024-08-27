@@ -222,7 +222,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (v_COEFFICIENT_BITS: i32)
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
+        v_COEFFICIENT_BITS =. 11l);
     f_compress_post
     =
     (fun
@@ -244,7 +245,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (v_COEFFICIENT_BITS: i32)
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
+        v_COEFFICIENT_BITS =. 11l);
     f_decompress_ciphertext_coefficient_post
     =
     (fun
