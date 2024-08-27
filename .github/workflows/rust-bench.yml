@@ -88,8 +88,10 @@ jobs:
 
       - name: 🏃🏻‍♀️ Benchmarks
         run: cargo bench --verbose $RUST_TARGET_FLAG -p benchmarks -- --output-format bencher | tee bench.txt
-      - name: Clear Cargo.lock so it doesn't interfere with git
-        run: git checkout Cargo.lock
+      - name: Print Git Status
+        run: git status
+      - name: Print Git Diff
+        run: git diff
       - name: Store Benchmarks
         uses: benchmark-action/github-action-benchmark@v1
         with:
