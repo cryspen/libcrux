@@ -37,20 +37,6 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
     _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
     _super_8706949974463268012 = FStar.Tactics.Typeclasses.solve;
-    f_to_i16_array_pre
-    =
-    (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_to_i16_array_post
-    =
-    (fun
-        (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: t_Array i16 (sz 16))
-        ->
-        out == impl.f_repr x);
-    f_to_i16_array
-    =
-    (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x);
     f_ZERO_pre = (fun (_: Prims.unit) -> true);
     f_ZERO_post
     =
@@ -67,6 +53,20 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_from_i16_array
     =
     (fun (array: t_Slice i16) -> Libcrux_ml_kem.Vector.Portable.Vector_type.from_i16_array array);
+    f_to_i16_array_pre
+    =
+    (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    f_to_i16_array_post
+    =
+    (fun
+        (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (out: t_Array i16 (sz 16))
+        ->
+        out == impl.f_repr x);
+    f_to_i16_array
+    =
+    (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x);
     f_add_pre
     =
     (fun

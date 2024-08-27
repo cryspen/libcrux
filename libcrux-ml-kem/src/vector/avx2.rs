@@ -151,7 +151,6 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[ensures(|result| fstar!("f_repr $result == Spec.MLKEM.Math.ntt_layer_step $a $zeta0..."))]
     fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         Self {
             elements: ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),

@@ -96,7 +96,6 @@ impl Operations for PortableVector {
         decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(v)
     }
 
-    #[ensures(|result| fstar!("f_repr $result == Spec.MLKEM.Math.ntt_layer_step $a $zeta0..."))]
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
