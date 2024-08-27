@@ -9,9 +9,8 @@ pub struct PortableVector {
     pub(crate) elements: [FieldElement; FIELD_ELEMENTS_IN_VECTOR],
 }
 
-#[allow(non_snake_case)]
 #[inline(always)]
-#[hax_lib::ensures(|result| fstar!("to_i16_array $result == Seq.create 16 0s"))]
+#[hax_lib::ensures(|result| fstar!("${result}.f_elements == Seq.create 16 0s"))]
 pub fn zero() -> PortableVector {
     PortableVector {
         elements: [0i16; FIELD_ELEMENTS_IN_VECTOR],

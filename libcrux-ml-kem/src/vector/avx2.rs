@@ -52,6 +52,7 @@ impl Repr for SIMD256Vector {
 
 #[hax_lib::attributes]
 impl Operations for SIMD256Vector {
+    #[inline(always)]
     #[ensures(|result| fstar!("impl.f_repr out == Seq.create 16 0s"))]
     fn ZERO() -> Self {
         vec_zero()
