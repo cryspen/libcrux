@@ -88,10 +88,12 @@ jobs:
 
       - name: 🏃🏻‍♀️ Benchmarks
         run: cargo bench --verbose $RUST_TARGET_FLAG -p benchmarks -- --output-format bencher | tee bench.txt
+      - name: Clear Cargo.lock so it doesn't interfere with git
+        run: git checkout Cargo.lock
       - name: Store Benchmarks
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: ML-KEM Benchmark
+          name: Rust Benchmark
           tool: 'cargo'
           output-file-path: bench.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
