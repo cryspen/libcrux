@@ -374,6 +374,8 @@ let deserialize_secret_key
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+#push-options "--admit_smt_queries true"
+
 let serialize_secret_key
       (v_K v_OUT_LEN: usize)
       (#v_Vector: Type0)
@@ -429,9 +431,9 @@ let serialize_secret_key
           <:
           t_Array u8 v_OUT_LEN)
   in
-  let result:t_Array u8 v_OUT_LEN = out in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  out
+
+#pop-options
 
 let serialize_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)

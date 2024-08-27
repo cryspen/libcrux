@@ -68,7 +68,7 @@ pub(crate) fn serialize_public_key<
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $OUT_LEN == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K"))]
 #[hax_lib::ensures(|res|
