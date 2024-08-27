@@ -222,7 +222,7 @@ let generate_keypair_unpacked
             v_K
             (fun v__j ->
                 let v__j:usize = v__j in
-                Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+                Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
                 <:
                 Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           <:

@@ -14,28 +14,56 @@ val compress_then_serialize_10_
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_OUT_LEN)
+      (requires
+        ((sz 20 *! (Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT -! sz 1 <: usize) <: usize) +!
+          sz 20
+          <:
+          usize) <=.
+        v_OUT_LEN)
+      (fun _ -> Prims.l_True)
 
 val compress_then_serialize_11_
       (v_OUT_LEN: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_OUT_LEN)
+      (requires
+        ((sz 22 *! (Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT -! sz 1 <: usize) <: usize) +!
+          sz 22
+          <:
+          usize) <=.
+        v_OUT_LEN)
+      (fun _ -> Prims.l_True)
 
 val compress_then_serialize_4_
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (serialized: t_Slice u8)
-    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Slice u8)
+      (requires
+        ((sz 8 *! (Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT -! sz 1 <: usize) <: usize) +!
+          sz 8
+          <:
+          usize) <=.
+        (Core.Slice.impl__len #u8 serialized <: usize))
+      (fun _ -> Prims.l_True)
 
 val compress_then_serialize_5_
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (serialized: t_Slice u8)
-    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Slice u8)
+      (requires
+        ((sz 10 *! (Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT -! sz 1 <: usize) <: usize) +!
+          sz 10
+          <:
+          usize) <=.
+        (Core.Slice.impl__len #u8 serialized <: usize))
+      (fun _ -> Prims.l_True)
 
 val compress_then_serialize_message
       (#v_Vector: Type0)
@@ -48,7 +76,15 @@ val compress_then_serialize_ring_element_u
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_OUT_LEN)
+      (requires
+        (v_COMPRESSION_FACTOR =. sz 10 || v_COMPRESSION_FACTOR =. sz 11) &&
+        ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_COMPRESSION_FACTOR <: usize) /!
+          sz 8
+          <:
+          usize) =.
+        v_OUT_LEN)
+      (fun _ -> Prims.l_True)
 
 val compress_then_serialize_ring_element_v
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
@@ -56,14 +92,30 @@ val compress_then_serialize_ring_element_v
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (out: t_Slice u8)
-    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Slice u8)
+      (requires
+        (v_COMPRESSION_FACTOR =. sz 4 || v_COMPRESSION_FACTOR =. sz 5) &&
+        ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_COMPRESSION_FACTOR <: usize) /!
+          sz 8
+          <:
+          usize) =.
+        v_OUT_LEN &&
+        (Core.Slice.impl__len #u8 out <: usize) =. v_OUT_LEN)
+      (ensures
+        fun out_future ->
+          let out_future:t_Slice u8 = out_future in
+          Core.Slice.impl__len #u8 out_future == Core.Slice.impl__len #u8 out)
 
 val deserialize_then_decompress_10_
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (serialized: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires
+        (Core.Slice.impl__len #u8 serialized <: usize) =.
+        ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 10 <: usize) /! sz 8
+          <:
+          usize))
       (fun _ -> Prims.l_True)
 
 val deserialize_then_decompress_11_
@@ -71,7 +123,11 @@ val deserialize_then_decompress_11_
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (serialized: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires
+        (Core.Slice.impl__len #u8 serialized <: usize) =.
+        ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 11 <: usize) /! sz 8
+          <:
+          usize))
       (fun _ -> Prims.l_True)
 
 val deserialize_then_decompress_4_
@@ -79,7 +135,10 @@ val deserialize_then_decompress_4_
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (serialized: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires
+        (Core.Slice.impl__len #u8 serialized <: usize) =.
+        ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 4 <: usize) /! sz 8 <: usize
+        ))
       (fun _ -> Prims.l_True)
 
 val deserialize_then_decompress_5_
@@ -87,7 +146,10 @@ val deserialize_then_decompress_5_
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (serialized: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires
+        (Core.Slice.impl__len #u8 serialized <: usize) =.
+        ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 5 <: usize) /! sz 8 <: usize
+        ))
       (fun _ -> Prims.l_True)
 
 val deserialize_then_decompress_message
@@ -104,7 +166,13 @@ val deserialize_then_decompress_ring_element_u
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (serialized: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires
+        (v_COMPRESSION_FACTOR =. sz 10 || v_COMPRESSION_FACTOR =. sz 11) &&
+        (Core.Slice.impl__len #u8 serialized <: usize) =.
+        ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_COMPRESSION_FACTOR <: usize) /!
+          sz 8
+          <:
+          usize))
       (fun _ -> Prims.l_True)
 
 val deserialize_then_decompress_ring_element_v
@@ -113,7 +181,13 @@ val deserialize_then_decompress_ring_element_v
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (serialized: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires
+        (v_COMPRESSION_FACTOR =. sz 4 || v_COMPRESSION_FACTOR =. sz 5) &&
+        (Core.Slice.impl__len #u8 serialized <: usize) =.
+        ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_COMPRESSION_FACTOR <: usize) /!
+          sz 8
+          <:
+          usize))
       (fun _ -> Prims.l_True)
 
 /// Only use with public values.
@@ -123,7 +197,9 @@ val deserialize_to_reduced_ring_element
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (serialized: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires
+        (Core.Slice.impl__len #u8 serialized <: usize) =.
+        Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT)
       (fun _ -> Prims.l_True)
 
 /// This function deserializes ring elements and reduces the result by the field
@@ -135,7 +211,9 @@ val deserialize_ring_elements_reduced
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (public_key: t_Slice u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      Prims.l_True
+      (requires
+        (Core.Slice.impl__len #u8 public_key <: usize) =. v_PUBLIC_KEY_SIZE &&
+        (v_PUBLIC_KEY_SIZE /! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize) <=. v_K)
       (fun _ -> Prims.l_True)
 
 val deserialize_to_uncompressed_ring_element
@@ -143,7 +221,9 @@ val deserialize_to_uncompressed_ring_element
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (serialized: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires
+        (Core.Slice.impl__len #u8 serialized <: usize) =.
+        Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT)
       (fun _ -> Prims.l_True)
 
 val serialize_uncompressed_ring_element

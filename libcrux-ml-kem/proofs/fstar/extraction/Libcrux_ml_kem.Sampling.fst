@@ -203,7 +203,7 @@ let sample_from_binomial_distribution_2_
                 in
                 sampled_i16s))
   in
-  Libcrux_ml_kem.Polynomial.impl__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
+  Libcrux_ml_kem.Polynomial.impl_1__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
 
 let sample_from_binomial_distribution_3_
       (#v_Vector: Type0)
@@ -262,7 +262,7 @@ let sample_from_binomial_distribution_3_
                 in
                 sampled_i16s))
   in
-  Libcrux_ml_kem.Polynomial.impl__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
+  Libcrux_ml_kem.Polynomial.impl_1__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
 
 let sample_from_binomial_distribution
       (v_ETA: usize)
@@ -366,7 +366,7 @@ let sample_from_xof
     out
     (fun s ->
         let s:t_Array i16 (sz 272) = s in
-        Libcrux_ml_kem.Polynomial.impl__from_i16_array #v_Vector
+        Libcrux_ml_kem.Polynomial.impl_1__from_i16_array #v_Vector
           (s.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 256 }
               <:
               Core.Ops.Range.t_Range usize ]

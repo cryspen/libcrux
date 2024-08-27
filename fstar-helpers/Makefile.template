@@ -252,3 +252,4 @@ SHELL=bash
 clean:
 	rm -rf $(CACHE_DIR)/*
 	rm *.fst
+
