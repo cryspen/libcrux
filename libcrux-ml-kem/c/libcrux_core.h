@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 962f26311ccdf09a6a3cfeacbccafba22bf3d405
- * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
- * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
+ * Charon: 3f39fa18bb6efe2199d17b8f79b10d4127d24289
+ * Eurydice: cd5c9e55b3c032977eccf22edd8a91b4b02e338e
+ * Karamel: 2dfc25438318f1d832ad6d2d2b595cb870466fc3
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 9a130a852767d2f8881c458e022bf35fec1f6afe
+ * Libcrux: 919a6a57fe3548db83f6416d540116c2c8a9f2c1
  */
 
 #ifndef __libcrux_core_H
@@ -64,16 +64,6 @@ typedef struct libcrux_ml_kem_types_MlKemPublicKey_1f_s {
 } libcrux_ml_kem_types_MlKemPublicKey_1f;
 
 /**
-A monomorphic instance of core.option.Option
-with types libcrux_ml_kem_types_MlKemPublicKey[[$1568size_t]]
-
-*/
-typedef struct core_option_Option_99_s {
-  core_option_Option_ef_tags tag;
-  libcrux_ml_kem_types_MlKemPublicKey_1f f0;
-} core_option_Option_99;
-
-/**
 A monomorphic instance of libcrux_ml_kem.types.MlKemPrivateKey
 with const generics
 - $3168size_t
@@ -112,16 +102,6 @@ typedef struct libcrux_ml_kem_types_MlKemPublicKey_15_s {
 } libcrux_ml_kem_types_MlKemPublicKey_15;
 
 /**
-A monomorphic instance of core.option.Option
-with types libcrux_ml_kem_types_MlKemPublicKey[[$1184size_t]]
-
-*/
-typedef struct core_option_Option_92_s {
-  core_option_Option_ef_tags tag;
-  libcrux_ml_kem_types_MlKemPublicKey_15 f0;
-} core_option_Option_92;
-
-/**
 A monomorphic instance of libcrux_ml_kem.types.MlKemPrivateKey
 with const generics
 - $2400size_t
@@ -158,16 +138,6 @@ with const generics
 typedef struct libcrux_ml_kem_types_MlKemPublicKey_be_s {
   uint8_t value[800U];
 } libcrux_ml_kem_types_MlKemPublicKey_be;
-
-/**
-A monomorphic instance of core.option.Option
-with types libcrux_ml_kem_types_MlKemPublicKey[[$800size_t]]
-
-*/
-typedef struct core_option_Option_04_s {
-  core_option_Option_ef_tags tag;
-  libcrux_ml_kem_types_MlKemPublicKey_be f0;
-} core_option_Option_04;
 
 /**
 A monomorphic instance of libcrux_ml_kem.types.MlKemPrivateKey

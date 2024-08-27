@@ -95,10 +95,14 @@ typedef struct {
   (memcpy(dst, src, len * sizeof(elem_type)))
 #define TryFromSliceError uint8_t
 
-#define Eurydice_array_eq(sz, a1, a2, t, _a, _b) \
+#define Eurydice_array_eq(sz, a1, a2, t, _)                                    \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
-#define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq \
-  Eurydice_array_eq
+#define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq( \
+    sz, a1, a2, t, _, _ret_t)                                                           \
+  Eurydice_array_eq(sz, a1, a2, t, _)
+#define core_array_equality___core__cmp__PartialEq__0___Slice_U____for__Array_T__N___3__eq( \
+    sz, a1, a2, t, _, _ret_t)                                                               \
+  Eurydice_array_eq(sz, a1, a2, t, _)
 
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t) \
   (CLITERAL(ret_t){                                              \
