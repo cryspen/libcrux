@@ -283,7 +283,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (zeta3: i16)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        impl.f_repr out == Spec.MLKEM.poly_ntt_layer_1_step (impl.f_repr a) zeta0 zeta1 zeta2 zeta3);
     f_ntt_layer_1_step
     =
     (fun

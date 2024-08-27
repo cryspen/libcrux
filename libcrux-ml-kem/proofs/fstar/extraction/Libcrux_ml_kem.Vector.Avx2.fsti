@@ -236,7 +236,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         (zeta3: i16)
         (out: t_SIMD256Vector)
         ->
-        true);
+        impl.f_repr out ==
+        Spec.MLKEM.poly_ntt_layer_1_step (impl.f_repr vector) zeta0 zeta1 zeta2 zeta3);
     f_ntt_layer_1_step
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (zeta2: i16) (zeta3: i16) ->

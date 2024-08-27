@@ -151,6 +151,11 @@ impl Operations for SIMD256Vector {
         }
     }
 
+    // Output name has be `out` https://github.com/hacspec/hax/issues/832
+    #[hax_lib::ensures(|out|
+        fstar!("impl.f_repr $out == Spec.MLKEM.poly_ntt_layer_1_step
+            (impl.f_repr $vector) $zeta0 $zeta1 $zeta2 $zeta3")
+    )]
     fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         Self {
             elements: ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
