@@ -167,6 +167,12 @@ val mm_storeu_bytes_si128 (output: t_Slice u8) (vector: t_Vec128)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
 val mm_storeu_si128 (output: t_Slice i16) (vector: t_Vec128)
-    : Prims.Pure (t_Slice i16) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Slice i16)
+      Prims.l_True
+      (ensures
+        fun output_future ->
+          let output_future:t_Slice i16 = output_future in
+          (Core.Slice.impl__len #i16 output_future <: usize) =.
+          (Core.Slice.impl__len #i16 output <: usize))
 
 val mm_sub_epi16 (lhs rhs: t_Vec128) : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
