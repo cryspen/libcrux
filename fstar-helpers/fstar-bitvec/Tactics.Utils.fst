@@ -38,6 +38,13 @@ let expect_lhs_eq_rhs_term t =
       let typ = match typ with | None -> `_ | Some typ -> typ in
       Some (lhs, rhs, typ)
     | _ -> None
+    
+// let expect_forall t =
+//     match term_as_formula t with
+//     | Comp (Eq typ) lhs rhs -> 
+//       let typ = match typ with | None -> `_ | Some typ -> typ in
+//       Some (lhs, rhs, typ)
+//     | _ -> None
 
 let expect_lhs_eq_rhs () = 
     expect_lhs_eq_rhs_term (cur_goal ())

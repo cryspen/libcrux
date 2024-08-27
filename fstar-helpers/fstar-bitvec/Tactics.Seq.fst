@@ -41,9 +41,21 @@ let norm_list_index (): Tac unit =
 
 let _ = assert (L.index [1;2;3;4;5;6] 3 == 4) by (norm_list_index(); trefl ())
 
-let simplify_index_seq_of_list () = l_to_r [`rw_seq_index_list]
+let expect_seq_of_list t 
+  = let?# (f, [_; _]) = expect_app_n t 2 in
+    expect_free_var f (`%Seq.Base.seq_of_list)
+
+let simplify_index_seq_of_list () = 
+  pointwise (fun _ -> 
+    match let?# (t, _) = expect_lhs_eq_uvar () in
+          let?# (f, [typ, _; l, _; index, _]) = expect_app_n t 3 in
+          let?# () = expect_free_var f (`%Seq.Base.index) in
+          let?# _ = expect_seq_of_list l in
+          (fun _ -> apply_lemma_rw (`rw_seq_index_list)) `or_else` trefl;
+          Some ()
+    with | None -> trefl () | _ -> ()
+  )
 
 let norm_index (): Tac unit
-  = norm_list_index ();
-    simplify_index_seq_of_list ()
-
+  = simplify_index_seq_of_list ();
+    norm_list_index ()
