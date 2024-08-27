@@ -1,5 +1,4 @@
 use super::traits::Operations;
-use crate::vector::traits::Repr;
 pub(crate) use libcrux_intrinsics::avx2::*;
 
 mod arithmetic;
@@ -44,7 +43,8 @@ fn vec_from_i16_array(array: &[i16]) -> SIMD256Vector {
     }
 }
 
-impl Repr for SIMD256Vector {
+#[cfg(hax)]
+impl crate::vector::traits::Repr for SIMD256Vector {
     fn repr(x: Self) -> [i16; 16] {
         vec_to_i16_array(x)
     }
@@ -151,6 +151,7 @@ impl Operations for SIMD256Vector {
         }
     }
 
+    #[ensures(|result| fstar!("f_repr $result == Spec.MLKEM.Math.ntt_layer_step $a $zeta0..."))]
     fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         Self {
             elements: ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
