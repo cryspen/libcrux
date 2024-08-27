@@ -1,7 +1,5 @@
 use super::vector_type::*;
-use crate::vector::{
-    traits::FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
-};
+use crate::vector::traits::{FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS, BARRETT_SHIFT, BARRETT_R, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
@@ -16,8 +14,6 @@ pub type FieldElementTimesMontgomeryR = i16;
 pub(crate) const MONTGOMERY_SHIFT: u8 = 16;
 pub(crate) const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
 
-pub(crate) const BARRETT_SHIFT: i32 = 26;
-pub(crate) const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
 pub(crate) const BARRETT_MULTIPLIER: i32 = 20159;
 
@@ -31,6 +27,8 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map2 (+.) (${lhs}.f_elements) (${rhs}.f_elements)"))]
 pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         lhs.elements[i] += rhs.elements[i];
@@ -40,6 +38,8 @@ pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map2 (-.) (${lhs}.f_elements) (${rhs}.f_elements)"))]
 pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         lhs.elements[i] -= rhs.elements[i];
@@ -49,6 +49,8 @@ pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map_array (fun x -> x *. c) (${v}.f_elements)"))]
 pub fn multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         v.elements[i] *= c;
@@ -58,6 +60,8 @@ pub fn multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVector {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map_array (fun x -> x &. c) (${v}.f_elements)"))]
 pub fn bitwise_and_with_constant(mut v: PortableVector, c: i16) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         v.elements[i] &= c;
@@ -67,6 +71,9 @@ pub fn bitwise_and_with_constant(mut v: PortableVector, c: i16) -> PortableVecto
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
+#[hax_lib::ensures(|result| fstar!("(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> ${result}.f_elements == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (${v}.f_elements)"))]   
 pub fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         v.elements[i] = v.elements[i] >> SHIFT_BY;
@@ -85,7 +92,9 @@ pub fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector
 // }
 
 #[inline(always)]
-pub fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (${v}.f_elements)"))]
+    pub fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         debug_assert!(v.elements[i] >= 0 && v.elements[i] < 4096);
         if v.elements[i] >= 3329 {

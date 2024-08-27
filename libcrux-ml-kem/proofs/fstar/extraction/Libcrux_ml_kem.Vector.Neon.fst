@@ -7,6 +7,7 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Vector.Neon.Vector_type in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 let rej_sample (a: t_Slice u8) (result: t_Slice i16) =

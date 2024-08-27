@@ -11,9 +11,9 @@ let barrett_reduce_element (value: i16) =
       v_BARRETT_MULTIPLIER
       <:
       i32) +!
-    (v_BARRETT_R >>! 1l <: i32)
+    (Libcrux_ml_kem.Vector.Traits.v_BARRETT_R >>! 1l <: i32)
   in
-  let quotient:i16 = cast (t >>! v_BARRETT_SHIFT <: i32) <: i16 in
+  let quotient:i16 = cast (t >>! Libcrux_ml_kem.Vector.Traits.v_BARRETT_SHIFT <: i32) <: i16 in
   value -! (quotient *! Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16)
 
 let montgomery_reduce_element (value: i32) =
@@ -32,6 +32,8 @@ let montgomery_reduce_element (value: i32) =
 
 let montgomery_multiply_fe_by_fer (fe fer: i16) =
   montgomery_reduce_element ((cast (fe <: i16) <: i32) *! (cast (fer <: i16) <: i32) <: i32)
+
+#push-options "--admit_smt_queries true"
 
 let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -63,6 +65,8 @@ let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
   lhs
+
+#pop-options
 
 let barrett_reduce (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -96,6 +100,8 @@ let barrett_reduce (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVect
   in
   v
 
+#push-options "--admit_smt_queries true"
+
 let bitwise_and_with_constant
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (c: i16)
@@ -126,6 +132,10 @@ let bitwise_and_with_constant
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
   v
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -174,6 +184,8 @@ let cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Portabl
   in
   v
 
+#pop-options
+
 let montgomery_multiply_by_constant
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (c: i16)
@@ -211,6 +223,8 @@ let montgomery_multiply_by_constant
   in
   v
 
+#push-options "--admit_smt_queries true"
+
 let multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
@@ -238,6 +252,10 @@ let multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Portab
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
   v
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -269,6 +287,10 @@ let shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type
   in
   v
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
@@ -299,3 +321,5 @@ let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
   lhs
+
+#pop-options

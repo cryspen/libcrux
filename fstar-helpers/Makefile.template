@@ -150,7 +150,7 @@ FINDLIBS.sh:
 include-dirs:
 	$(Q)bash -c '${FINDLIBS}'
 
-FSTAR_FLAGS = \
+FSTAR_FLAGS = --query_stats \
   --warn_error -321-331-241-274-239-271 \
   --cache_checked_modules --cache_dir $(CACHE_DIR) \
   --already_cached "+Prims+FStar+LowStar+C+Spec.Loops+TestLib" \
@@ -252,3 +252,4 @@ SHELL=bash
 clean:
 	rm -rf $(CACHE_DIR)/*
 	rm *.fst
+

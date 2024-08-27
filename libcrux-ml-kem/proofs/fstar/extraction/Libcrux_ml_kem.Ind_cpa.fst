@@ -261,6 +261,8 @@ let compress_then_serialize_u
   let hax_temp_output:Prims.unit = result in
   out
 
+#push-options "--admit_smt_queries true"
+
 let deserialize_then_decompress_u
       (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
@@ -319,9 +321,9 @@ let deserialize_then_decompress_u
           in
           u_as_ntt)
   in
-  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = u_as_ntt in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  u_as_ntt
+
+#pop-options
 
 let deserialize_secret_key
       (v_K: usize)
@@ -371,6 +373,8 @@ let deserialize_secret_key
   in
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
+
+#push-options "--admit_smt_queries true"
 
 let serialize_secret_key
       (v_K v_OUT_LEN: usize)
@@ -427,9 +431,9 @@ let serialize_secret_key
           <:
           t_Array u8 v_OUT_LEN)
   in
-  let result:t_Array u8 v_OUT_LEN = out in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  out
+
+#pop-options
 
 let serialize_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)

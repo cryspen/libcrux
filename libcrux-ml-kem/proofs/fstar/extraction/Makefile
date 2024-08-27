@@ -14,6 +14,7 @@ ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
               Libcrux_ml_kem.Vector.Avx2.Serialize.fst \
               Libcrux_ml_kem.Vector.Neon.Arithmetic.fst \
               Libcrux_ml_kem.Vector.Neon.Compress.fst \
+              Libcrux_ml_kem.Vector.Neon.fsti \
               Libcrux_ml_kem.Vector.Neon.fst \
               Libcrux_ml_kem.Vector.Neon.Ntt.fst \
               Libcrux_ml_kem.Vector.Neon.Serialize.fst \

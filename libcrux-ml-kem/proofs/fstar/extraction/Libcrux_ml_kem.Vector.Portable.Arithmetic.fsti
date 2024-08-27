@@ -6,10 +6,6 @@ open FStar.Mul
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
 let v_BARRETT_MULTIPLIER: i32 = 20159l
 
-let v_BARRETT_SHIFT: i32 = 26l
-
-let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
-
 let v_MONTGOMERY_SHIFT: u8 = 16uy
 
 let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
@@ -37,9 +33,9 @@ val barrett_reduce_element (value: i16)
     : Prims.Pure i16
       (requires
         (Core.Convert.f_from #i32 #i16 #FStar.Tactics.Typeclasses.solve value <: i32) >.
-        (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i32) &&
-        (Core.Convert.f_from #i32 #i16 #FStar.Tactics.Typeclasses.solve value <: i32) <. v_BARRETT_R
-      )
+        (Core.Ops.Arith.Neg.neg Libcrux_ml_kem.Vector.Traits.v_BARRETT_R <: i32) &&
+        (Core.Convert.f_from #i32 #i16 #FStar.Tactics.Typeclasses.solve value <: i32) <.
+        Libcrux_ml_kem.Vector.Traits.v_BARRETT_R)
       (ensures
         fun result ->
           let result:i16 = result in
@@ -91,7 +87,10 @@ val montgomery_multiply_fe_by_fer (fe fer: i16)
 val add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          result.f_elements == Spec.Utils.map2 ( +. ) (lhs.f_elements) (rhs.f_elements))
 
 val barrett_reduce (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -103,12 +102,19 @@ val bitwise_and_with_constant
       (c: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          result.f_elements == Spec.Utils.map_array (fun x -> x &. c) (v.f_elements))
 
 val cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          result.f_elements ==
+          Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (v.f_elements))
 
 val montgomery_multiply_by_constant
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -120,14 +126,24 @@ val montgomery_multiply_by_constant
 val multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          result.f_elements == Spec.Utils.map_array (fun x -> x *. c) (v.f_elements))
 
 val shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          (v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==>
+          result.f_elements == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (v.f_elements))
 
 val sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          result.f_elements == Spec.Utils.map2 ( -. ) (lhs.f_elements) (rhs.f_elements))

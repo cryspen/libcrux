@@ -2,47 +2,73 @@ pub const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353;
 pub const FIELD_MODULUS: i16 = 3329;
 pub const FIELD_ELEMENTS_IN_VECTOR: usize = 16;
 pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
+pub const BARRETT_SHIFT: i32 = 26;
+pub const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 
 #[hax_lib::attributes]
-pub trait Operations: Copy + Clone {
+pub trait Repr: Copy + Clone {
+    #[requires(true)]
+    fn repr(x: Self) -> [i16; 16];
+}
+
+
+#[hax_lib::attributes]
+pub trait Operations: Copy + Clone + Repr {
+    #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $x == $result"))]
+    fn to_i16_array(x: Self) -> [i16; 16];
+
+    #[requires(array.len() == 16)]
+    #[ensures(|result| fstar!("f_repr $result == $array"))]
+    fn from_i16_array(array: &[i16]) -> Self;
+   
     #[allow(non_snake_case)]
     #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $result == Seq.create 16 0s"))]
     fn ZERO() -> Self;
-
-    #[requires(true)]
-    fn from_i16_array(array: &[i16]) -> Self;
-    #[requires(true)]
-    fn to_i16_array(x: Self) -> [i16; 16];
 
     // Basic arithmetic
     #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map2 (+.) (f_repr $lhs) (f_repr $rhs)"))]
     fn add(lhs: Self, rhs: &Self) -> Self;
+
     #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map2 (-.) (f_repr $lhs) (f_repr $rhs)"))]
     fn sub(lhs: Self, rhs: &Self) -> Self;
+
     #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map_array (fun x -> x *. c) (f_repr $v)"))]
     fn multiply_by_constant(v: Self, c: i16) -> Self;
 
     // Bitwise operations
     #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map_array (fun x -> x &. c) (f_repr $v)"))]
     fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
-    #[requires(true)]
+
+    #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
+    #[ensures(|result| fstar!("(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> f_repr $result == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (f_repr $v)"))]
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
     // fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
 
     // Modular operations
     #[requires(true)]
+    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (f_repr $v)"))]
     fn cond_subtract_3329(v: Self) -> Self;
+
     #[requires(true)]
-    fn barrett_reduce(v: Self) -> Self;
+    fn barrett_reduce(vector: Self) -> Self;
+
     #[requires(true)]
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
 
     // Compression
     #[requires(true)]
     fn compress_1(v: Self) -> Self;
-    #[requires(true)]
+    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
+               COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
     fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
-    #[requires(true)]
+    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
+        COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
 
     // NTT
@@ -114,6 +140,7 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
 }
 
 pub fn decompress_1<T: Operations>(v: T) -> T {
+    hax_lib::fstar!("assert (i1.f_bitwise_and_with_constant_pre (i1.f_ZERO ()) 0s)"); // No idea why, but this helps F* typeclass inference
     T::bitwise_and_with_constant(T::sub(T::ZERO(), &v), 1665)
 }
 

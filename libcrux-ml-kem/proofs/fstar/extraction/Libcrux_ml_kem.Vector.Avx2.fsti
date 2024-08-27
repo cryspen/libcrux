@@ -3,32 +3,80 @@ module Libcrux_ml_kem.Vector.Avx2
 open Core
 open FStar.Mul
 
-type t_SIMD256Vector = { f_elements:u8 }
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_kem.Vector.Traits in
+  ()
 
-val from_i16_array (array: t_Slice i16)
-    : Prims.Pure t_SIMD256Vector Prims.l_True (fun _ -> Prims.l_True)
+noeq
 
-val to_i16_array (v: t_SIMD256Vector)
-    : Prims.Pure (t_Array i16 (sz 16)) Prims.l_True (fun _ -> Prims.l_True)
+type t_SIMD256Vector = { f_elements:Libcrux_intrinsics.Avx2_extract.t_Vec256 }
 
-val zero: Prims.unit -> Prims.Pure t_SIMD256Vector Prims.l_True (fun _ -> Prims.l_True)
+let repr (x:t_SIMD256Vector) : t_Array i16 (sz 16) = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 x.f_elements
+
+val vec_from_i16_array (array: t_Slice i16)
+    : Prims.Pure t_SIMD256Vector
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_SIMD256Vector = result in
+          repr result == array)
+
+val vec_to_i16_array (v: t_SIMD256Vector)
+    : Prims.Pure (t_Array i16 (sz 16))
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Array i16 (sz 16) = result in
+          result == repr v)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
+let impl: Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector =
   {
     _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
     _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    f_repr_pre = (fun (x: t_SIMD256Vector) -> true);
+    f_repr_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> true);
+    f_repr = fun (x: t_SIMD256Vector) -> vec_to_i16_array x
+  }
+
+val vec_zero: Prims.unit
+  -> Prims.Pure t_SIMD256Vector
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_SIMD256Vector = result in
+          repr result == Seq.create 16 0s)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
+  {
+    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
+    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    _super_8706949974463268012 = FStar.Tactics.Typeclasses.solve;
     f_ZERO_pre = (fun (_: Prims.unit) -> true);
-    f_ZERO_post = (fun (_: Prims.unit) (out: t_SIMD256Vector) -> true);
-    f_ZERO = (fun (_: Prims.unit) -> zero ());
-    f_from_i16_array_pre = (fun (array: t_Slice i16) -> true);
-    f_from_i16_array_post = (fun (array: t_Slice i16) (out: t_SIMD256Vector) -> true);
-    f_from_i16_array = (fun (array: t_Slice i16) -> from_i16_array array);
+    f_ZERO_post
+    =
+    (fun (_: Prims.unit) (out: t_SIMD256Vector) -> impl.f_repr out == Seq.create 16 0s);
+    f_ZERO = (fun (_: Prims.unit) -> vec_zero ());
+    f_from_i16_array_pre
+    =
+    (fun (array: t_Slice i16) -> (Core.Slice.impl__len #i16 array <: usize) =. sz 16);
+    f_from_i16_array_post
+    =
+    (fun (array: t_Slice i16) (out: t_SIMD256Vector) -> impl.f_repr out == array);
+    f_from_i16_array = (fun (array: t_Slice i16) -> vec_from_i16_array array);
     f_to_i16_array_pre = (fun (x: t_SIMD256Vector) -> true);
-    f_to_i16_array_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> true);
-    f_to_i16_array = (fun (x: t_SIMD256Vector) -> to_i16_array x);
+    f_to_i16_array_post
+    =
+    (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> out == impl.f_repr x);
+    f_to_i16_array = (fun (x: t_SIMD256Vector) -> vec_to_i16_array x);
     f_add_pre = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) -> true);
-    f_add_post = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    f_add_post
+    =
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) ->
+        impl.f_repr out == Spec.Utils.map2 ( +. ) (impl.f_repr lhs) (impl.f_repr rhs));
     f_add
     =
     (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
@@ -36,7 +84,10 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         <:
         t_SIMD256Vector);
     f_sub_pre = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) -> true);
-    f_sub_post = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    f_sub_post
+    =
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) ->
+        impl.f_repr out == Spec.Utils.map2 ( -. ) (impl.f_repr lhs) (impl.f_repr rhs));
     f_sub
     =
     (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
@@ -44,7 +95,10 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         <:
         t_SIMD256Vector);
     f_multiply_by_constant_pre = (fun (v: t_SIMD256Vector) (c: i16) -> true);
-    f_multiply_by_constant_post = (fun (v: t_SIMD256Vector) (c: i16) (out: t_SIMD256Vector) -> true);
+    f_multiply_by_constant_post
+    =
+    (fun (v: t_SIMD256Vector) (c: i16) (out: t_SIMD256Vector) ->
+        impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr v));
     f_multiply_by_constant
     =
     (fun (v: t_SIMD256Vector) (c: i16) ->
@@ -54,7 +108,8 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_bitwise_and_with_constant_pre = (fun (vector: t_SIMD256Vector) (constant: i16) -> true);
     f_bitwise_and_with_constant_post
     =
-    (fun (vector: t_SIMD256Vector) (constant: i16) (out: t_SIMD256Vector) -> true);
+    (fun (vector: t_SIMD256Vector) (constant: i16) (out: t_SIMD256Vector) ->
+        impl.f_repr out == Spec.Utils.map_array (fun x -> x &. constant) (impl.f_repr vector));
     f_bitwise_and_with_constant
     =
     (fun (vector: t_SIMD256Vector) (constant: i16) ->
@@ -65,10 +120,14 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         }
         <:
         t_SIMD256Vector);
-    f_shift_right_pre = (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) -> true);
+    f_shift_right_pre
+    =
+    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) -> v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l);
     f_shift_right_post
     =
-    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->
+        (v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==>
+        impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (impl.f_repr vector));
     f_shift_right
     =
     (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) ->
@@ -80,7 +139,11 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         <:
         t_SIMD256Vector);
     f_cond_subtract_3329_pre = (fun (vector: t_SIMD256Vector) -> true);
-    f_cond_subtract_3329_post = (fun (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    f_cond_subtract_3329_post
+    =
+    (fun (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->
+        impl.f_repr out ==
+        Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr vector));
     f_cond_subtract_3329_
     =
     (fun (vector: t_SIMD256Vector) ->
@@ -122,7 +185,11 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         }
         <:
         t_SIMD256Vector);
-    f_compress_pre = (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) -> true);
+    f_compress_pre
+    =
+    (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) ->
+        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
+        v_COEFFICIENT_BITS =. 11l);
     f_compress_post
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
@@ -139,7 +206,9 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         t_SIMD256Vector);
     f_decompress_ciphertext_coefficient_pre
     =
-    (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) -> true);
+    (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) ->
+        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
+        v_COEFFICIENT_BITS =. 11l);
     f_decompress_ciphertext_coefficient_post
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);

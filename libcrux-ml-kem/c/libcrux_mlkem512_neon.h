@@ -7,8 +7,8 @@
  * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
  * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
- * F*: c3d49544236797e54bfa10f65e4c2b17b543fd30
- * Libcrux: 60b28afb7bf09eeff64f7bd63b12a821496645f2
+ * F*: 04413e808445c4f78fe89cd15b85ff549ed3be62
+ * Libcrux: a6e4d55c8fe834886fcbfcdc09dbc3db0122f563
  */
 
 #ifndef __libcrux_mlkem512_neon_H
