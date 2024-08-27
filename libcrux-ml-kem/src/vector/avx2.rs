@@ -1,5 +1,4 @@
 use super::traits::Operations;
-use crate::vector::traits::Repr;
 pub(crate) use libcrux_intrinsics::avx2::*;
 
 mod arithmetic;
@@ -44,7 +43,8 @@ fn vec_from_i16_array(array: &[i16]) -> SIMD256Vector {
     }
 }
 
-impl Repr for SIMD256Vector {
+#[cfg(hax)]
+impl crate::vector::traits::Repr for SIMD256Vector {
     fn repr(x: Self) -> [i16; 16] {
         vec_to_i16_array(x)
     }

@@ -1,5 +1,4 @@
 use super::Operations;
-use crate::vector::traits::Repr;
 mod arithmetic;
 mod compress;
 mod ntt;
@@ -16,7 +15,8 @@ use vector_type::*;
 
 pub(crate) use vector_type::PortableVector;
 
-impl Repr for PortableVector {
+#[cfg(hax)]
+impl crate::vector::traits::Repr for PortableVector {
     fn repr(x: Self) -> [i16; 16] {
         to_i16_array(x)
     }
@@ -24,11 +24,6 @@ impl Repr for PortableVector {
 
 #[hax_lib::attributes]
 impl Operations for PortableVector {
-    #[ensures(|result| fstar!("out == impl.f_repr $x"))]
-    fn to_i16_array(x: Self) -> [i16; 16] {
-        to_i16_array(x)
-    }
-
     #[ensures(|result| fstar!("impl.f_repr out == Seq.create 16 0s"))]
     fn ZERO() -> Self {
         zero()
@@ -38,6 +33,11 @@ impl Operations for PortableVector {
     #[ensures(|result| fstar!("impl.f_repr out == $array"))]
     fn from_i16_array(array: &[i16]) -> Self {
         from_i16_array(array)
+    }
+
+    #[ensures(|result| fstar!("out == impl.f_repr $x"))]
+    fn to_i16_array(x: Self) -> [i16; 16] {
+        to_i16_array(x)
     }
 
     #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map2 (+.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]

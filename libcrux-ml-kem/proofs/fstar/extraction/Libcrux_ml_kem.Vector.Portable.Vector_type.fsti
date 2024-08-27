@@ -27,4 +27,4 @@ val zero: Prims.unit
       (ensures
         fun result ->
           let result:t_PortableVector = result in
-          to_i16_array result == Seq.create 16 0s)
+          result.f_elements == Seq.create 16 0s)

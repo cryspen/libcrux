@@ -490,7 +490,7 @@ pub(crate) fn encrypt<
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
     // tˆ := Decode_12(pk)
-    let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
+    let t_as_ntt = deserialize_ring_elements_reduced::<K, Vector>(
         &public_key[..T_AS_NTT_ENCODED_SIZE],
     );
 

@@ -672,8 +672,7 @@ let encrypt
       (randomness: t_Slice u8)
      =
   let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_T_AS_NTT_ENCODED_SIZE
-      v_K
+    Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_K
       #v_Vector
       (public_key.[ { Core.Ops.Range.f_end = v_T_AS_NTT_ENCODED_SIZE }
           <:

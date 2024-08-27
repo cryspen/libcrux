@@ -166,8 +166,7 @@ let validate_public_key
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
      =
   let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_PUBLIC_KEY_SIZE
-      v_K
+    Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_K
       #v_Vector
       (public_key.[ { Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
           <:
@@ -280,6 +279,8 @@ let decapsulate
         <:
         t_Slice u8)
   in
+  let _:Prims.unit = assert (v (sz 32) < pow2 32) in
+  let _:Prims.unit = assert (i4.f_PRF_pre (sz 32) to_hash) in
   let (implicit_rejection_shared_secret: t_Array u8 (sz 32)):t_Array u8 (sz 32) =
     Libcrux_ml_kem.Hash_functions.f_PRF #v_Hasher
       #v_K

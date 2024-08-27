@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
- * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
- * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
+ * Charon: 0576bfc67e99aae86c51930421072688138b672b
+ * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
+ * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
  * F*: 04413e808445c4f78fe89cd15b85ff549ed3be62
- * Libcrux: a6e4d55c8fe834886fcbfcdc09dbc3db0122f563
+ * Libcrux: 293f3b52093c13f3043781d878990c5be6fc4e23
  */
 
 #ifndef __libcrux_core_H
@@ -48,64 +48,6 @@ typedef struct core_option_Option_b3_s {
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
-
-/**
-A monomorphic instance of libcrux_ml_kem.types.MlKemPublicKey
-with const generics
-- $800size_t
-*/
-typedef struct libcrux_ml_kem_types_MlKemPublicKey_be_s {
-  uint8_t value[800U];
-} libcrux_ml_kem_types_MlKemPublicKey_be;
-
-/**
-A monomorphic instance of core.option.Option
-with types libcrux_ml_kem_types_MlKemPublicKey[[$800size_t]]
-
-*/
-typedef struct core_option_Option_04_s {
-  core_option_Option_ef_tags tag;
-  libcrux_ml_kem_types_MlKemPublicKey_be f0;
-} core_option_Option_04;
-
-/**
-A monomorphic instance of libcrux_ml_kem.types.MlKemPrivateKey
-with const generics
-- $1632size_t
-*/
-typedef struct libcrux_ml_kem_types_MlKemPrivateKey_5e_s {
-  uint8_t value[1632U];
-} libcrux_ml_kem_types_MlKemPrivateKey_5e;
-
-/**
-A monomorphic instance of libcrux_ml_kem.types.MlKemKeyPair
-with const generics
-- $1632size_t
-- $800size_t
-*/
-typedef struct libcrux_ml_kem_types_MlKemKeyPair_cb_s {
-  libcrux_ml_kem_types_MlKemPrivateKey_5e sk;
-  libcrux_ml_kem_types_MlKemPublicKey_be pk;
-} libcrux_ml_kem_types_MlKemKeyPair_cb;
-
-/**
-A monomorphic instance of libcrux_ml_kem.types.MlKemCiphertext
-with const generics
-- $768size_t
-*/
-typedef struct libcrux_ml_kem_types_MlKemCiphertext_e8_s {
-  uint8_t value[768U];
-} libcrux_ml_kem_types_MlKemCiphertext_e8;
-
-/**
-A monomorphic instance of K.
-with types libcrux_ml_kem_types_MlKemCiphertext[[$768size_t]], uint8_t[32size_t]
-
-*/
-typedef struct tuple_ec_s {
-  libcrux_ml_kem_types_MlKemCiphertext_e8 fst;
-  uint8_t snd[32U];
-} tuple_ec;
 
 /**
 A monomorphic instance of libcrux_ml_kem.types.MlKemPublicKey
@@ -202,6 +144,64 @@ typedef struct tuple_3c_s {
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext fst;
   uint8_t snd[32U];
 } tuple_3c;
+
+/**
+A monomorphic instance of libcrux_ml_kem.types.MlKemPublicKey
+with const generics
+- $800size_t
+*/
+typedef struct libcrux_ml_kem_types_MlKemPublicKey_be_s {
+  uint8_t value[800U];
+} libcrux_ml_kem_types_MlKemPublicKey_be;
+
+/**
+A monomorphic instance of core.option.Option
+with types libcrux_ml_kem_types_MlKemPublicKey[[$800size_t]]
+
+*/
+typedef struct core_option_Option_04_s {
+  core_option_Option_ef_tags tag;
+  libcrux_ml_kem_types_MlKemPublicKey_be f0;
+} core_option_Option_04;
+
+/**
+A monomorphic instance of libcrux_ml_kem.types.MlKemPrivateKey
+with const generics
+- $1632size_t
+*/
+typedef struct libcrux_ml_kem_types_MlKemPrivateKey_5e_s {
+  uint8_t value[1632U];
+} libcrux_ml_kem_types_MlKemPrivateKey_5e;
+
+/**
+A monomorphic instance of libcrux_ml_kem.types.MlKemKeyPair
+with const generics
+- $1632size_t
+- $800size_t
+*/
+typedef struct libcrux_ml_kem_types_MlKemKeyPair_cb_s {
+  libcrux_ml_kem_types_MlKemPrivateKey_5e sk;
+  libcrux_ml_kem_types_MlKemPublicKey_be pk;
+} libcrux_ml_kem_types_MlKemKeyPair_cb;
+
+/**
+A monomorphic instance of libcrux_ml_kem.types.MlKemCiphertext
+with const generics
+- $768size_t
+*/
+typedef struct libcrux_ml_kem_types_MlKemCiphertext_e8_s {
+  uint8_t value[768U];
+} libcrux_ml_kem_types_MlKemCiphertext_e8;
+
+/**
+A monomorphic instance of K.
+with types libcrux_ml_kem_types_MlKemCiphertext[[$768size_t]], uint8_t[32size_t]
+
+*/
+typedef struct tuple_ec_s {
+  libcrux_ml_kem_types_MlKemCiphertext_e8 fst;
+  uint8_t snd[32U];
+} tuple_ec;
 
 #define core_result_Ok 0
 #define core_result_Err 1
