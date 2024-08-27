@@ -21,7 +21,6 @@ pub(crate) fn to_i16_array(v: SIMD128Vector) -> [i16; 16] {
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("repr ${result} == $array"))]
 pub(crate) fn from_i16_array(array: &[i16]) -> SIMD128Vector {
-    let _dummy = to_i16_array(ZERO()); // This is because hax unnecessarily reorders this
     SIMD128Vector {
         low: _vld1q_s16(&array[0..8]),
         high: _vld1q_s16(&array[8..16]),
