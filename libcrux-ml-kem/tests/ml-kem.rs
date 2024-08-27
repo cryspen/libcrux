@@ -16,18 +16,17 @@ fn test_invalid_modulus(p: &str) {
         let pk = pk.as_slice();
         match p {
             #[cfg(feature = "mlkem512")]
-            "512" => assert!(
-                libcrux_ml_kem::mlkem512::validate_public_key(pk.try_into().unwrap()).is_none()
-            ),
+            "512" => assert!(!libcrux_ml_kem::mlkem512::validate_public_key(
+                &pk.try_into().unwrap()
+            )),
             #[cfg(feature = "mlkem768")]
-            "768" => assert!(
-                libcrux_ml_kem::mlkem768::validate_public_key(pk.try_into().unwrap()).is_none()
-            ),
+            "768" => assert!(!libcrux_ml_kem::mlkem768::validate_public_key(
+                &pk.try_into().unwrap()
+            )),
             #[cfg(feature = "mlkem1024")]
-            "1024" => assert!(libcrux_ml_kem::mlkem1024::validate_public_key(
-                pk.try_into().unwrap()
-            )
-            .is_none()),
+            "1024" => assert!(!libcrux_ml_kem::mlkem1024::validate_public_key(
+                &pk.try_into().unwrap()
+            )),
             _ => unreachable!(),
         };
     }

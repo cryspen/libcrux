@@ -66,6 +66,7 @@ macro_rules! instantiate {
             }
 
             /// Portable public key validation
+            #[inline(always)]
             pub(crate) fn validate_public_key<
                 const K: usize,
                 const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -79,6 +80,22 @@ macro_rules! instantiate {
                     PUBLIC_KEY_SIZE,
                     $vector,
                 >(public_key)
+            }
+
+            /// Portable private key validation
+            #[inline(always)]
+            pub(crate) fn validate_private_key<
+                const K: usize,
+                const SECRET_KEY_SIZE: usize,
+                const CIPHERTEXT_SIZE: usize,
+            >(
+                private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+                ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+            ) -> bool {
+                crate::ind_cca::validate_private_key::<K, SECRET_KEY_SIZE, CIPHERTEXT_SIZE, $hash>(
+                    private_key,
+                    ciphertext,
+                )
             }
 
             /// Portable encapsulate
