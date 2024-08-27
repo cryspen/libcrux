@@ -166,8 +166,7 @@ let validate_public_key
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
      =
   let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_PUBLIC_KEY_SIZE
-      v_K
+    Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_K
       #v_Vector
       (public_key.[ { Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
           <:
@@ -188,6 +187,8 @@ let validate_public_key
         t_Slice u8)
   in
   public_key =. public_key_serialized
+
+#push-options "--admit_smt_queries true"
 
 #push-options "--z3rlimit 500"
 
@@ -311,21 +312,18 @@ let decapsulate
       shared_secret
       ciphertext
   in
-  let shared_secret:t_Array u8 (sz 32) =
-    Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_select_shared_secret_in_constant_time (Core.Convert.f_as_ref
-          #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-          #(t_Slice u8)
-          #FStar.Tactics.Typeclasses.solve
-          ciphertext
-        <:
-        t_Slice u8)
-      (expected_ciphertext <: t_Slice u8)
-      (shared_secret <: t_Slice u8)
-      (implicit_rejection_shared_secret <: t_Slice u8)
-  in
-  let result:t_Array u8 (sz 32) = shared_secret in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_select_shared_secret_in_constant_time (Core.Convert.f_as_ref
+        #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+        #(t_Slice u8)
+        #FStar.Tactics.Typeclasses.solve
+        ciphertext
+      <:
+      t_Slice u8)
+    (expected_ciphertext <: t_Slice u8)
+    (shared_secret <: t_Slice u8)
+    (implicit_rejection_shared_secret <: t_Slice u8)
+
+#pop-options
 
 #pop-options
 

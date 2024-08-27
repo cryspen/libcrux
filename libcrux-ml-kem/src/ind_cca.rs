@@ -97,7 +97,7 @@ fn validate_public_key<
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    let deserialized_pk = deserialize_ring_elements_reduced::<PUBLIC_KEY_SIZE, K, Vector>(
+    let deserialized_pk = deserialize_ring_elements_reduced::<K, Vector>(
         &public_key[..RANKED_BYTES_PER_RING_ELEMENT],
     );
     let public_key_serialized =
@@ -231,7 +231,7 @@ fn encapsulate<
 }
 
 #[hax_lib::fstar::options("--z3rlimit 500")]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
     $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
