@@ -105,7 +105,11 @@ let ntt_layer_1_step
   let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 160l vector
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let ntt_layer_2_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta0 zeta1: i16) =
   let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =

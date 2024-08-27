@@ -9,6 +9,10 @@ pub(crate) fn ntt_step(v: &mut PortableVector, zeta: i16, i: usize, j: usize) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result|
+    fstar!("${result}.f_elements == Spec.MLKEM.poly_ntt_layer_1_step ${v}.f_elements $zeta0 $zeta1 $zeta2 $zeta3")
+)]
 pub(crate) fn ntt_layer_1_step(
     mut v: PortableVector,
     zeta0: i16,

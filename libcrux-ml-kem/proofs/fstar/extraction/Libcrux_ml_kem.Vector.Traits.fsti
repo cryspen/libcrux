@@ -127,7 +127,17 @@ class t_Operations (v_Self: Type0) = {
         (fun result -> f_decompress_ciphertext_coefficient_post v_COEFFICIENT_BITS x0 result);
   f_ntt_layer_1_step_pre:a: v_Self -> zeta0: i16 -> zeta1: i16 -> zeta2: i16 -> zeta3: i16
     -> pred: Type0{true ==> pred};
-  f_ntt_layer_1_step_post:v_Self -> i16 -> i16 -> i16 -> i16 -> v_Self -> Type0;
+  f_ntt_layer_1_step_post:
+      a: v_Self ->
+      zeta0: i16 ->
+      zeta1: i16 ->
+      zeta2: i16 ->
+      zeta3: i16 ->
+      result: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          f_repr result == Spec.MLKEM.poly_ntt_layer_1_step (f_repr a) zeta0 zeta1 zeta2 zeta3 };
   f_ntt_layer_1_step:x0: v_Self -> x1: i16 -> x2: i16 -> x3: i16 -> x4: i16
     -> Prims.Pure v_Self
         (f_ntt_layer_1_step_pre x0 x1 x2 x3 x4)

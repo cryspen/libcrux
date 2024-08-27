@@ -19,7 +19,17 @@ val inv_ntt_layer_3_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zet
 val ntt_layer_1_step
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
       (zeta0 zeta1 zeta2 zeta3: i16)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
+          Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result ==
+          Spec.MLKEM.poly_ntt_layer_1_step (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector)
+            zeta0
+            zeta1
+            zeta2
+            zeta3)
 
 val ntt_layer_2_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta0 zeta1: i16)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)

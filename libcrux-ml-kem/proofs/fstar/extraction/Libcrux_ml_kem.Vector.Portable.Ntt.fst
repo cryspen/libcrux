@@ -290,7 +290,9 @@ let ntt_layer_1_step
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     ntt_step v zeta3 (sz 13) (sz 15)
   in
-  v
+  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let ntt_layer_2_step
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)

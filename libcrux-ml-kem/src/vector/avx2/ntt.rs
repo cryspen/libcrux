@@ -1,6 +1,11 @@
 use super::*;
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result|
+    fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == Spec.MLKEM.poly_ntt_layer_1_step
+        (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector) $zeta0 $zeta1 $zeta2 $zeta3")
+)]
 pub(crate) fn ntt_layer_1_step(
     vector: Vec256,
     zeta0: i16,

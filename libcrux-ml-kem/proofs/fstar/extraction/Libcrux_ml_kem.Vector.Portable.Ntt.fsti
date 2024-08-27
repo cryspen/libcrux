@@ -70,7 +70,11 @@ val ntt_layer_1_step
       (zeta0 zeta1 zeta2 zeta3: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          result.f_elements == Spec.MLKEM.poly_ntt_layer_1_step v.f_elements zeta0 zeta1 zeta2 zeta3
+      )
 
 val ntt_layer_2_step
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)

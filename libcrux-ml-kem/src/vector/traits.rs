@@ -73,6 +73,10 @@ pub trait Operations: Copy + Clone + Repr {
 
     // NTT
     #[requires(true)]
+    #[hax_lib::ensures(|result|
+        fstar!("f_repr $result == Spec.MLKEM.poly_ntt_layer_1_step
+            (f_repr $a) $zeta0 $zeta1 $zeta2 $zeta3")
+    )]
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
     #[requires(true)]
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
