@@ -251,7 +251,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_ntt_layer_2_step_pre = (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) -> true);
     f_ntt_layer_2_step_post
     =
-    (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (out: t_SIMD256Vector) -> true);
+    (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (out: t_SIMD256Vector) ->
+        impl.f_repr out == Spec.MLKEM.poly_ntt_layer_2_step (impl.f_repr vector) zeta0 zeta1);
     f_ntt_layer_2_step
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) ->
@@ -263,7 +264,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_ntt_layer_3_step_pre = (fun (vector: t_SIMD256Vector) (zeta: i16) -> true);
     f_ntt_layer_3_step_post
     =
-    (fun (vector: t_SIMD256Vector) (zeta: i16) (out: t_SIMD256Vector) -> true);
+    (fun (vector: t_SIMD256Vector) (zeta: i16) (out: t_SIMD256Vector) ->
+        impl.f_repr out == Spec.MLKEM.poly_ntt_layer_3_step (impl.f_repr vector) zeta);
     f_ntt_layer_3_step
     =
     (fun (vector: t_SIMD256Vector) (zeta: i16) ->

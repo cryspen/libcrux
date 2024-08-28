@@ -322,7 +322,9 @@ let ntt_layer_2_step
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     ntt_step v zeta1 (sz 11) (sz 15)
   in
-  v
+  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -349,7 +351,9 @@ let ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVe
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     ntt_step v zeta (sz 7) (sz 15)
   in
-  v
+  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let ntt_multiply
       (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)

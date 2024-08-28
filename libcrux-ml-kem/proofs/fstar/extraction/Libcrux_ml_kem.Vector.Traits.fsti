@@ -143,13 +143,16 @@ class t_Operations (v_Self: Type0) = {
         (f_ntt_layer_1_step_pre x0 x1 x2 x3 x4)
         (fun result -> f_ntt_layer_1_step_post x0 x1 x2 x3 x4 result);
   f_ntt_layer_2_step_pre:a: v_Self -> zeta0: i16 -> zeta1: i16 -> pred: Type0{true ==> pred};
-  f_ntt_layer_2_step_post:v_Self -> i16 -> i16 -> v_Self -> Type0;
+  f_ntt_layer_2_step_post:a: v_Self -> zeta0: i16 -> zeta1: i16 -> result: v_Self
+    -> pred:
+      Type0{pred ==> f_repr result == Spec.MLKEM.poly_ntt_layer_2_step (f_repr a) zeta0 zeta1};
   f_ntt_layer_2_step:x0: v_Self -> x1: i16 -> x2: i16
     -> Prims.Pure v_Self
         (f_ntt_layer_2_step_pre x0 x1 x2)
         (fun result -> f_ntt_layer_2_step_post x0 x1 x2 result);
   f_ntt_layer_3_step_pre:a: v_Self -> zeta: i16 -> pred: Type0{true ==> pred};
-  f_ntt_layer_3_step_post:v_Self -> i16 -> v_Self -> Type0;
+  f_ntt_layer_3_step_post:a: v_Self -> zeta: i16 -> result: v_Self
+    -> pred: Type0{pred ==> f_repr result == Spec.MLKEM.poly_ntt_layer_3_step (f_repr a) zeta};
   f_ntt_layer_3_step:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
         (f_ntt_layer_3_step_pre x0 x1)

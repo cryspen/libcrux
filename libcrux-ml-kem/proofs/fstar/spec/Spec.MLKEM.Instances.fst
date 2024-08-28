@@ -11,7 +11,7 @@ open Spec.MLKEM
 
 let mlkem768_rank : rank = sz 3
 
-#push-options "--z3rlimit 300"
+#push-options "--z3rlimit 500"
 let mlkem768_generate_keypair (randomness:t_Array u8 (sz 64)):
                               (t_Array u8 (sz 2400) & t_Array u8 (sz 1184)) & bool =
     ind_cca_generate_keypair mlkem768_rank randomness

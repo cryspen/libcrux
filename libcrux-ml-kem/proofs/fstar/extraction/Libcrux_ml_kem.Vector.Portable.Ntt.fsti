@@ -81,12 +81,18 @@ val ntt_layer_2_step
       (zeta0 zeta1: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          result.f_elements == Spec.MLKEM.poly_ntt_layer_2_step v.f_elements zeta0 zeta1)
 
 val ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          result.f_elements == Spec.MLKEM.poly_ntt_layer_3_step v.f_elements zeta)
 
 val ntt_multiply
       (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)

@@ -27,6 +27,11 @@ pub(crate) fn ntt_layer_1_step(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result|
+    fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == Spec.MLKEM.poly_ntt_layer_2_step
+        (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector) $zeta0 $zeta1")
+)]
 pub(crate) fn ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Vec256 {
     let zetas = mm256_set_epi16(
         -zeta1, -zeta1, -zeta1, -zeta1, zeta1, zeta1, zeta1, zeta1, -zeta0, -zeta0, -zeta0, -zeta0,
@@ -42,6 +47,11 @@ pub(crate) fn ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Vec256
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result|
+    fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == Spec.MLKEM.poly_ntt_layer_3_step
+        (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector) $zeta")
+)]
 pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     let rhs = mm256_extracti128_si256::<1>(vector);
     let rhs = arithmetic::montgomery_multiply_m128i_by_constants(rhs, mm_set1_epi16(zeta));

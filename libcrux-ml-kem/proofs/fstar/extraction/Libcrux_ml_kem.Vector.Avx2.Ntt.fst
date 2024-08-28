@@ -129,7 +129,11 @@ let ntt_layer_2_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta0 z
   let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 68l vector
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let ntt_layer_3_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta: i16) =
   let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
@@ -153,7 +157,12 @@ let ntt_layer_3_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta: i
   let combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi128_si256 lower_coefficients
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_inserti128_si256 1l combined upper_coefficients
+  let combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_inserti128_si256 1l combined upper_coefficients
+  in
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = combined in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let ntt_multiply (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta0 zeta1 zeta2 zeta3: i16) =
   let shuffle_with:Libcrux_intrinsics.Avx2_extract.t_Vec256 =

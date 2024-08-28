@@ -32,6 +32,10 @@ pub(crate) fn ntt_layer_1_step(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result|
+    fstar!("${result}.f_elements == Spec.MLKEM.poly_ntt_layer_2_step ${v}.f_elements $zeta0 $zeta1")
+)]
 pub(crate) fn ntt_layer_2_step(mut v: PortableVector, zeta0: i16, zeta1: i16) -> PortableVector {
     ntt_step(&mut v, zeta0, 0, 4);
     ntt_step(&mut v, zeta0, 1, 5);
@@ -45,6 +49,10 @@ pub(crate) fn ntt_layer_2_step(mut v: PortableVector, zeta0: i16, zeta1: i16) ->
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result|
+    fstar!("${result}.f_elements == Spec.MLKEM.poly_ntt_layer_3_step ${v}.f_elements $zeta")
+)]
 pub(crate) fn ntt_layer_3_step(mut v: PortableVector, zeta: i16) -> PortableVector {
     ntt_step(&mut v, zeta, 0, 8);
     ntt_step(&mut v, zeta, 1, 9);

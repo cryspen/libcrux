@@ -105,10 +105,20 @@ impl Operations for PortableVector {
         ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
+    // Output name has be `out` https://github.com/hacspec/hax/issues/832
+    #[hax_lib::ensures(|out|
+        fstar!("impl.f_repr $out == Spec.MLKEM.poly_ntt_layer_2_step
+            (impl.f_repr $a) $zeta0 $zeta1")
+    )]
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
         ntt_layer_2_step(a, zeta0, zeta1)
     }
 
+    // Output name has be `out` https://github.com/hacspec/hax/issues/832
+    #[hax_lib::ensures(|out|
+        fstar!("impl.f_repr $out == Spec.MLKEM.poly_ntt_layer_3_step
+            (impl.f_repr $a) $zeta")
+    )]
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self {
         ntt_layer_3_step(a, zeta)
     }

@@ -91,7 +91,17 @@ let poly_ntt_step (a:field_element) (b:field_element) (i:nat{i < 128}) =
   let a = field_add a t in
   (a,b)
 
+let poly_ntt_step_ (a:field_element) (b:field_element) (zeta:field_element) =
+  let t = field_mul b zeta in
+  let b = field_sub a t in
+  let a = field_add a t in
+  (a,b)
+
 assume val poly_ntt_layer_1_step (vector: t_Array i16 (sz 16)) (zeta0 zeta1 zeta2 zeta3: i16) : t_Array i16 (sz 16)
+
+assume val poly_ntt_layer_2_step (vector: t_Array i16 (sz 16)) (zeta0 zeta1: i16) : t_Array i16 (sz 16)
+
+assume val poly_ntt_layer_3_step (vector: t_Array i16 (sz 16)) (zeta: i16) : t_Array i16 (sz 16)
 
 let poly_ntt_layer (p:polynomial) (l:nat{l > 0 /\ l < 8}) : polynomial =
   let len = pow2 l in
