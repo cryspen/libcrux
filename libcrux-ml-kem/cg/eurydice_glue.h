@@ -172,6 +172,8 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
 #define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter \
   Eurydice_into_iter
 
+#define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
+
 #if defined(__cplusplus)
 }
 #endif

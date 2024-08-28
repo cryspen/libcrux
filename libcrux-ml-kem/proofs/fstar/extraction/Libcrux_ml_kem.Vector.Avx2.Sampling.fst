@@ -4,11 +4,13 @@ open Core
 open FStar.Mul
 
 let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
-  let field_modulus:u8 =
+  let field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
   in
-  let potential_coefficients:u8 = Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_12_ input in
-  let compare_with_field_modulus:u8 =
+  let potential_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_12_ input
+  in
+  let compare_with_field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_cmpgt_epi16 field_modulus potential_coefficients
   in
   let good:t_Array u8 (sz 2) =
@@ -21,13 +23,13 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
       <:
       usize ]
   in
-  let lower_shuffles:u8 =
+  let lower_shuffles:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (lower_shuffles <: t_Slice u8)
   in
-  let lower_coefficients:u8 =
+  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 potential_coefficients
   in
-  let lower_coefficients:u8 =
+  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 lower_coefficients lower_shuffles
   in
   let output:t_Slice i16 =
@@ -43,13 +45,13 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
       <:
       usize ]
   in
-  let upper_shuffles:u8 =
+  let upper_shuffles:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (upper_shuffles <: t_Slice u8)
   in
-  let upper_coefficients:u8 =
+  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l potential_coefficients
   in
-  let upper_coefficients:u8 =
+  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 upper_coefficients upper_shuffles
   in
   let output:t_Slice i16 =

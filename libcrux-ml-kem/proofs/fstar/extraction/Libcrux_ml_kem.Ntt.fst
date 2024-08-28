@@ -390,7 +390,7 @@ let ntt_binomially_sampled_ring_element
   let _:Prims.unit = () in
   let hax_temp_output, re:(Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   =
-    (), Libcrux_ml_kem.Polynomial.impl__poly_barrett_reduce #v_Vector re
+    (), Libcrux_ml_kem.Polynomial.impl_1__poly_barrett_reduce #v_Vector re
     <:
     (Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in
@@ -449,7 +449,7 @@ let ntt_vector_u
   let _:Prims.unit = () in
   let hax_temp_output, re:(Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   =
-    (), Libcrux_ml_kem.Polynomial.impl__poly_barrett_reduce #v_Vector re
+    (), Libcrux_ml_kem.Polynomial.impl_1__poly_barrett_reduce #v_Vector re
     <:
     (Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in

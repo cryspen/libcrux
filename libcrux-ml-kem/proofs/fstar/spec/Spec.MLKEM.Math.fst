@@ -10,7 +10,6 @@ let is_rank (r:usize) = v r == 2 \/ v r == 3 \/ v r == 4
 
 type rank = r:usize{is_rank r}
 
-
 (** MLKEM Math and Sampling *)
 
 type field_element = n:nat{n < v v_FIELD_MODULUS}
@@ -36,8 +35,32 @@ let poly_add a b = map2 field_add a b
 val poly_sub: polynomial -> polynomial -> polynomial
 let poly_sub a b = map2 field_sub a b
 
+let int_to_spec_fe (m:int) : field_element = 
+    let m_v = m % v v_FIELD_MODULUS in
+    assert (m_v > -  v v_FIELD_MODULUS);
+    if m_v < 0 then
+      m_v + v v_FIELD_MODULUS
+    else m_v
 
-(*
+(* Convert concrete code types to spec types *)
+
+let to_spec_fe (m:i16) : field_element = 
+    int_to_spec_fe (v m)
+
+let to_spec_poly (m:t_Array i16 (sz 256)) : polynomial =
+    createi #field_element (sz 256) (fun i -> to_spec_fe (m.[i]))
+
+let to_spec_vector (#r:rank)
+                   (m:t_Array (t_Array i16 (sz 256)) r)
+                   : (vector r) =
+    createi r (fun i -> to_spec_poly (m.[i]))
+
+let to_spec_matrix (#r:rank)
+                   (m:t_Array (t_Array (t_Array i16 (sz 256)) r) r)
+                   : (matrix r) =
+    createi r (fun i -> to_spec_vector (m.[i]))
+
+(* Specifying NTT:
 bitrev7 = [int('{:07b}'.format(x)[::-1], 2) for x in range(0,128)]
 zetas = [pow(17,x) % 3329 for x in bitrev7]
 zetas_mont = [pow(2,16) * x % 3329 for x in zetas]

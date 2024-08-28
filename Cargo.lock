@@ -701,6 +701,7 @@ dependencies = [
 [[package]]
 name = "hax-lib"
 version = "0.1.0-pre.1"
+source = "git+https://github.com/hacspec/hax?branch=lib-proofs-bitvectors-additions#68da8ea2270c38120cf300305ccaf5afac979c6e"
 dependencies = [
  "hax-lib-macros",
  "num-bigint",
@@ -710,6 +711,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros"
 version = "0.1.0-pre.1"
+source = "git+https://github.com/hacspec/hax?branch=lib-proofs-bitvectors-additions#68da8ea2270c38120cf300305ccaf5afac979c6e"
 dependencies = [
  "hax-lib-macros-types",
  "paste",
@@ -722,6 +724,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros-types"
 version = "0.1.0-pre.1"
+source = "git+https://github.com/hacspec/hax?branch=lib-proofs-bitvectors-additions#68da8ea2270c38120cf300305ccaf5afac979c6e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -967,6 +970,9 @@ dependencies = [
 [[package]]
 name = "libcrux-intrinsics"
 version = "0.0.2-alpha.3"
+dependencies = [
+ "hax-lib",
+]
 
 [[package]]
 name = "libcrux-kem"

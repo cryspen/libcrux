@@ -7,24 +7,49 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Vector.Portable.Vector_type in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Libcrux_ml_kem.Vector.Traits.t_Operations
+let impl: Libcrux_ml_kem.Vector.Traits.t_Repr
 Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
   {
     _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
     _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    f_repr_pre = (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    f_repr_post
+    =
+    (fun
+        (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (out: t_Array i16 (sz 16))
+        ->
+        true);
+    f_repr
+    =
+    fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+      Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_1: Libcrux_ml_kem.Vector.Traits.t_Operations
+Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+  {
+    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
+    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    _super_8706949974463268012 = FStar.Tactics.Typeclasses.solve;
     f_ZERO_pre = (fun (_: Prims.unit) -> true);
     f_ZERO_post
     =
-    (fun (_: Prims.unit) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (_: Prims.unit) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        impl.f_repr out == Seq.create 16 0s);
     f_ZERO = (fun (_: Prims.unit) -> Libcrux_ml_kem.Vector.Portable.Vector_type.zero ());
-    f_from_i16_array_pre = (fun (array: t_Slice i16) -> true);
+    f_from_i16_array_pre
+    =
+    (fun (array: t_Slice i16) -> (Core.Slice.impl__len #i16 array <: usize) =. sz 16);
     f_from_i16_array_post
     =
     (fun (array: t_Slice i16) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        true);
+        impl.f_repr out == array);
     f_from_i16_array
     =
     (fun (array: t_Slice i16) -> Libcrux_ml_kem.Vector.Portable.Vector_type.from_i16_array array);
@@ -37,7 +62,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: t_Array i16 (sz 16))
         ->
-        true);
+        out == impl.f_repr x);
     f_to_i16_array
     =
     (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
@@ -56,7 +81,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        impl.f_repr out == Spec.Utils.map2 ( +. ) (impl.f_repr lhs) (impl.f_repr rhs));
     f_add
     =
     (fun
@@ -78,7 +103,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        impl.f_repr out == Spec.Utils.map2 ( -. ) (impl.f_repr lhs) (impl.f_repr rhs));
     f_sub
     =
     (fun
@@ -96,7 +121,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (c: i16)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr v));
     f_multiply_by_constant
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
@@ -111,14 +136,15 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (c: i16)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        impl.f_repr out == Spec.Utils.map_array (fun x -> x &. c) (impl.f_repr v));
     f_bitwise_and_with_constant
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
         Libcrux_ml_kem.Vector.Portable.Arithmetic.bitwise_and_with_constant v c);
     f_shift_right_pre
     =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l);
     f_shift_right_post
     =
     (fun
@@ -126,7 +152,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        (v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==>
+        impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (impl.f_repr v));
     f_shift_right
     =
     (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
@@ -140,7 +167,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        impl.f_repr out ==
+        Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr v));
     f_cond_subtract_3329_
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
@@ -194,7 +222,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (v_COEFFICIENT_BITS: i32)
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
+        v_COEFFICIENT_BITS =. 11l);
     f_compress_post
     =
     (fun
@@ -216,7 +245,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (v_COEFFICIENT_BITS: i32)
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
+        v_COEFFICIENT_BITS =. 11l);
     f_decompress_ciphertext_coefficient_post
     =
     (fun

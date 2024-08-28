@@ -16,10 +16,23 @@ pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
 
 #[cfg_attr(eurydice, derive(Clone, Copy))]
 #[cfg_attr(not(eurydice), derive(Clone))]
+#[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r =
+    createi r (fun i -> to_spec_vector_t #r #v_Vector (m.[i]))"))]
+#[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (m:t_Array (t_PolynomialRingElement v_Vector) r) : Spec.MLKEM.vector r =
+    createi r (fun i -> to_spec_poly_t #v_Vector (m.[i]))"))]
+#[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_poly_t (#v_Vector: Type0)
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
+    admit()"))]
 pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
 
+#[hax_lib::attributes]
 impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
@@ -30,6 +43,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
+    #[requires(VECTORS_IN_RING_ELEMENT * 16 <= a.len())]
     pub(crate) fn from_i16_array(a: &[i16]) -> Self {
         let mut result = PolynomialRingElement::ZERO();
         for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -181,6 +195,14 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         let mut out = PolynomialRingElement::ZERO();
 
         for i in 0..VECTORS_IN_RING_ELEMENT {
+            // hax_lib::assert!(64 + 4 * i < 128);
+            // hax_lib::assert!(64 + 4 * i + 1 < 128);
+            // hax_lib::assert!(64 + 4 * i + 2 < 128);
+            // hax_lib::assert!(64 + 4 * i + 3 < 128);
+            hax_lib::fstar!("assert(64 + 4 * v $i < 128);
+                assert(64 + 4 * v $i + 1 < 128);
+                assert(64 + 4 * v $i + 2 < 128);
+                assert(64 + 4 * v $i + 3 < 128)");
             out.coefficients[i] = Vector::ntt_multiply(
                 &self.coefficients[i],
                 &rhs.coefficients[i],

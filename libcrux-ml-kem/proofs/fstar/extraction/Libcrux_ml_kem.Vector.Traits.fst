@@ -8,6 +8,7 @@ let decompress_1_
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: t_Operations v_T)
       (v: v_T)
      =
+  let _:Prims.unit = assert (i1.f_bitwise_and_with_constant_pre (i1.f_ZERO ()) 0s) in
   f_bitwise_and_with_constant #v_T
     #FStar.Tactics.Typeclasses.solve
     (f_sub #v_T
