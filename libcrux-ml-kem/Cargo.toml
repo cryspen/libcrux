@@ -9,13 +9,13 @@ repository.workspace = true
 readme = "README.md"
 description = "Libcrux ML-KEM & Kyber implementations"
 exclude = [
-    "/tests",
-    "/implementation_notes.pdf",
-    "/c",
-    "/proofs",
-    "/c.sh",
-    "/c.yaml",
-    "/hax.py",
+  "/tests",
+  "/implementation_notes.pdf",
+  "/c",
+  "/proofs",
+  "/c.sh",
+  "/c.yaml",
+  "/hax.py",
 ]
 
 [dependencies]
@@ -78,13 +78,25 @@ required-features = ["mlkem768"]
 name = "keygen"
 required-features = ["mlkem768"]
 
+[[example]]
+name = "run_512"
+required-features = ["mlkem512"]
+
+[[example]]
+name = "run_768"
+required-features = ["mlkem768"]
+
+[[example]]
+name = "run_1024"
+required-features = ["mlkem1024"]
+
 [package.metadata."docs.rs"]
 features = ["pre-verification", "kyber", "unpacked"]
 rustdoc-args = ["--cfg", "doc_cfg"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
-    'cfg(hax)',
-    'cfg(eurydice)',
-    'cfg(doc_cfg)',
+  'cfg(hax)',
+  'cfg(eurydice)',
+  'cfg(doc_cfg)',
 ] }
