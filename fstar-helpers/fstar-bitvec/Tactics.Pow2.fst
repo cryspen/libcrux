@@ -1,14 +1,17 @@
+/// Provides tools to normalize `pow2`
 module Tactics.Pow2
 
 open Core
 open Tactics.Utils
 open FStar.Tactics.V2
 
+/// Expects `t` to be of the shape `pow2 n`, with `n` a literal, returns n
 let expect_pow2_literal t: Tac (option int)
     = let?# (f, [x, _]) = expect_app_n t 1 in
       let?# () = expect_free_var f (`%pow2) in
       expect_int_literal x
 
+/// Expects `t` to be of the shape `pow2 n - 1`, with `n` a literal, returns n
 let expect_pow2_minus_one_literal t: Tac (option int)
     = let?# (f, [x, _; y, _]) = expect_app_n t 2 in
       let?# () = expect_free_var f (`%op_Subtraction) in
@@ -25,6 +28,7 @@ let norm_pow2 (): Tac unit =
             Some (norm [iota; zeta_full; reify_; delta; primops; unmeta]) in
     trefl ())
 
+/// Inverse of `pow2`
 let rec log2 (n: nat): Tot (option (m: nat {pow2 m == n})) (decreases n)
     = if n = 0 then None
       else if n = 1 then Some 0
@@ -33,8 +37,7 @@ let rec log2 (n: nat): Tot (option (m: nat {pow2 m == n})) (decreases n)
                 | Some n -> Some (1 + n)
                 | None   -> None
 
-let lemma_of_refinement #t #p (n: t {p n}): Lemma (p n) = ()
-
+/// Rewrite integers in the goal into `pow2 _ - 1` whenever possible
 let rewrite_pow2_minus_one () =
    pointwise (fun () -> 
     match let?# (t, _) = expect_lhs_eq_uvar () in
@@ -50,5 +53,6 @@ let rewrite_pow2_minus_one () =
     with None -> trefl () | _ -> ()
    )
 
+// Test
 let _ = fun (i: nat) -> assert (pow2 (i + 3) + pow2 10 == pow2 (i + 3) + 1024)
                        by (norm_pow2 (); trefl ())

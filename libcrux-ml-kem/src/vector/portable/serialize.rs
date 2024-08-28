@@ -15,6 +15,21 @@
 use super::vector_type::*;
 use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
 
+fn bitwise_equal<T, U>(length: usize, d1: usize, d2: usize, inputs: &[T], outputs: &[U]) -> bool {
+    false
+}
+
+#[hax::lemma]
+pub fn serialize_4_int(
+    v: &[i16],
+) -> Proof<
+    {
+        let (x1, x2, x3, x4) = serialize_4_int(v);
+        bitwise_equal(length, 4, 8, v, &[x1, x2, x3, x4])
+    },
+> {
+}
+
 #[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn serialize_1(v: PortableVector) -> [u8; 2] {

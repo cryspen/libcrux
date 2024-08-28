@@ -77,8 +77,8 @@ wasm-bindgen = { version = "0.2.87", optional = true }
 # This is only required when doing proofs.
 # [target.'cfg(hax)'.workspace.dependencies]
 [workspace.dependencies]
-# hax-lib = { path = "/home/lucas/repos/hax/lib-proofs-bitvectors-additions/hax-lib" }
-hax-lib = { git = "https://github.com/hacspec/hax", branch = "main" }
+hax-lib = { path = "/home/lucas/repos/hax/lib-proofs-bitvectors-additions/hax-lib" }
+# hax-lib = { git = "https://github.com/hacspec/hax", branch = "main" }
 
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand", "tests"] }

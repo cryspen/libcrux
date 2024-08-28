@@ -1,3 +1,7 @@
+/// This module interprets machine integers terms that comes from
+/// `FStar.[U]Int*` modules or from `Rust_primtiives.Integers` module.
+/// It can then convert from and back those two representation,
+/// normalize them, etc.
 module Tactics.MachineInts
 
 open FStar.Tactics.V2
@@ -8,20 +12,30 @@ open FStar.Option
 open Tactics.Utils
 module RI = Rust_primitives.Integers
 
-/// The size of a machine int.
+/// The size of a machine int
 type size = 
   | PtrSize
   | Size of n:nat {match n with | 8 | 16 | 32 | 64 | 128 -> true | _ -> false}
+/// The signedness of a machine int
 type signedness = | Signed | Unsigned
 
+/// The operations we recognize on machine ints
 type machine_int_op = | MkInt | V
 
+/// The AST of a machine int expression
 noeq type machine_int_term =
-  | Op { op: machine_int_op; native: bool; size: size; signedness: signedness; contents: machine_int_term }
+  /// Operations `mk_int` (aka `FStar.[U]Int*.[u]int_to_t`) and `v`
+  | Op { /// Which operation is it?
+         op: machine_int_op
+         /// Is that a generic (Rust_primitives.Integers) operation or a native one (FStar.[U]Int*)?
+       ; native: bool
+       ; size: size
+       ; signedness: signedness
+       ; contents: machine_int_term }
+  /// A (math) integer literal
   | Lit of int
+  /// An arbitrary term
   | Term of term
-
-let x = `%FStar.UInt8.uint_to_t
 
 /// Expect `n` to be a definition in a machine int namespace
 let expect_native_machine_int_ns (n: string): (option (signedness & size & string))
@@ -42,11 +56,13 @@ let expect_native_machine_int_ns (n: string): (option (signedness & size & strin
     in Some (sign, size, def_name)
   | _ -> None
 
+/// Given a sign and a size, produces the correct namespace `FStar.[U]Int*`
 let mk_native_machine_int_ns (sign: signedness) (size: size): option (list string)
   = let sign = match sign with | Signed -> "" | Unsigned -> "U" in
     let? size = match size with | PtrSize -> None | Size n -> Some (string_of_int n) in
     Some ["FStar"; sign ^ "Int" ^ size]
 
+/// Interpret HACL*'s `inttype`s
 let expect_inttype t: Tac (option (signedness & size))
   = let t = norm_term [iota; reify_; delta_namespace ["Rust_primitives.Integers"; "Lib.IntTypes"]; primops; unmeta] t in
     let?# t = expect_fvar t in
@@ -65,15 +81,23 @@ let expect_inttype t: Tac (option (signedness & size))
     | `%RI.usize_inttype -> Some (Unsigned, PtrSize)
     | _ -> None
 
+/// Given a signedness and a size, creates a name `[ui]*_inttype`
 let mk_inttype_name (sign: signedness) (size: size): name =
   let sign = match sign with | Signed -> "i" | Unsigned -> "u" in
   let size = match size with | PtrSize -> "size" | Size n -> string_of_int n in
   ["Rust_primitives"; "Integers"; sign ^ size ^ "_inttype"]
 
+/// Given a signedness and a size, creates a term `[ui]*_inttype`
 let mk_inttype (sign: signedness) (size: size): Tac term =
   pack (Tv_FVar (pack_fv (mk_inttype_name sign size)))
 
-let rec term_to_machine_int_term'' (t: term): Tac (option machine_int_term) =
+/// Interprets a term as a machine int. This function always returns
+/// something: when `t` is not a machine int expression we recognize,
+/// it returns `Term t`. Below, `term_to_machine_int_term` returns an
+/// option.
+let rec term_to_machine_int_term' (t: term): Tac machine_int_term =
+  match term_to_machine_int_term'' t with | Some t -> t | None -> Term t
+and term_to_machine_int_term'' (t: term): Tac (option machine_int_term) =
   let t = norm_term [delta_only [(`%RI.sz); (`%RI.isz)]] t in
   match t with
   | Tv_Const (C_Int n) -> Some (Lit n)
@@ -98,13 +122,13 @@ let rec term_to_machine_int_term'' (t: term): Tac (option machine_int_term) =
       end
     | _ -> None
 
-and term_to_machine_int_term' (t: term): Tac machine_int_term =
-  match term_to_machine_int_term'' t with | Some t -> t | None -> Term t
-
+/// Tries to interpret a term as a machine int
 let term_to_machine_int_term (t: term): Tac (option (t: machine_int_term {~(Term? t)}))
   = match term_to_machine_int_term' t with
   | Term _ -> None | t -> Some t
 
+/// Transform a machine int AST into a term. Note that this doesn't
+/// support native usize/isize (aka `FStar.SizeT`), whence the option.
 let rec machine_int_term_to_term (t: machine_int_term): Tac (option term) =
   match t with
   | Term t -> Some t
@@ -126,6 +150,7 @@ let rec machine_int_term_to_term (t: machine_int_term): Tac (option term) =
     Some (mk_e_app f [contents])
   | Lit n -> Some (pack (Tv_Const (C_Int n)))
 
+/// An operation on a machine_int_term
 type operation = machine_int_term -> option machine_int_term
 
 /// Removes `mk_int (v ...)` or `v (mk_int ...)` when it's the same type
@@ -141,6 +166,7 @@ let rec flatten_machine_int_term: operation = function
            end
   | _ -> None
 
+/// Makes a machine int native or not
 let rec change_native_machine_int_term (native: bool): operation = function
   | Op x -> let contents = change_native_machine_int_term native x.contents in
            if x.native = native
@@ -151,6 +177,7 @@ let rec change_native_machine_int_term (native: bool): operation = function
                                            | None          -> x.contents})
   | _ -> None
 
+/// Combines two operation together
 let combine: operation -> operation -> operation =
   fun f g t -> match f t with 
           | Some t -> (match g t with | Some t -> Some t | None -> Some t)
@@ -169,11 +196,6 @@ let norm_machine_int_term = combine flatten_machine_int_term (change_native_mach
 /// (mk_int ...)`.
 let norm_generic_machine_int_term = combine flatten_machine_int_term (change_native_machine_int_term false)
 
-let rw_v_mk_int_usize x
-  : Lemma (eq2 (RI.v #RI.usize_inttype (RI.mk_int #RI.usize_inttype x)) x) = ()
-let rw_mk_int_v_usize x
-  : Lemma (eq2 (RI.mk_int #RI.usize_inttype (RI.v #RI.usize_inttype x)) x) = ()
-
 /// Unfolds `mk_int` using `mk_int_equiv_lemma`
 let norm_mk_int () =
   let?# (lhs, _) = expect_lhs_eq_uvar () in
@@ -185,10 +207,15 @@ let norm_mk_int () =
      let lemma = norm_term [primops; iota; delta; zeta] lemma in
      focus (fun _ -> 
        apply_lemma_rw lemma
-       // iterAllSMT (fun () -> smt_sync `or_else` (fun _ -> dump "norm_mk_int: Could not solve SMT here"))
      );
      Some ()
   | _ -> None
+
+/// Lemmas to deal with the special case of usize
+let rw_v_mk_int_usize x
+  : Lemma (eq2 (RI.v #RI.usize_inttype (RI.mk_int #RI.usize_inttype x)) x) = ()
+let rw_mk_int_v_usize x
+  : Lemma (eq2 (RI.mk_int #RI.usize_inttype (RI.v #RI.usize_inttype x)) x) = ()
 
 /// Rewrites `goal_lhs` into `machine_int`. This function expects the
 /// goal to be of the shape `<goal_lhs> == (?...)`, where `<goal_lhs>`
@@ -213,6 +240,8 @@ let _rewrite_to (goal_lhs: term) (eq_type: typ) (machine_int: machine_int_term):
       apply_lemma_rw rw
     ))
 
+/// Rewrites a goal deeply, replacing every machine integer expression
+/// `x` by `f x` (when it is `Some _`).
 let transform (f: machine_int_term -> option machine_int_term): Tac unit
   = pointwise' (fun _ ->
       match revert_if_none (fun _ -> 
