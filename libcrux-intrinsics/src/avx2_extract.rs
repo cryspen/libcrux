@@ -6,12 +6,12 @@
 #[cfg(hax)]
 #[derive(Clone, Copy)]
 #[hax_lib::opaque_type]
-#[hax_lib::fstar::after(interface, "val vec256_as_i16x16 (x:t_Vec256) : t_Array i16 (sz 16)")]
+#[hax_lib::fstar::after(interface, "val vec256_as_i16x16 (x:$:{Vec256}) : t_Array i16 (sz 16)")]
 pub struct Vec256(u8);
 
 #[cfg(hax)]
 #[derive(Copy, Clone)]
-#[hax_lib::fstar::after(interface, "val vec128_as_i16x8 (x:t_Vec128) : t_Array i16 (sz 8)")]
+#[hax_lib::fstar::after(interface, "val vec128_as_i16x8 (x:$:{Vec128}) : t_Array i16 (sz 8)")]
 #[hax_lib::opaque_type]
 pub struct Vec128(u8);
 
@@ -19,6 +19,18 @@ pub struct Vec128(u8);
 pub type Vec256 = u8;
 #[cfg(not(hax))]
 pub type Vec128 = u8;
+
+#[hax_lib::fstar::replace(interface, "unfold type $:{BitVector256} = bit_vec 256")]
+pub struct BitVector256;
+#[hax_lib::fstar::replace(interface, "unfold type $:{BitVector128} = bit_vec 128")]
+pub struct BitVector128;
+
+pub fn bv256(vec: Vec256) -> BitVector256 {
+    unimplemented!()
+}
+pub fn bv128(vec: Vec128) -> BitVector128 {
+    unimplemented!()
+}
 
 pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
     debug_assert_eq!(output.len(), 16);

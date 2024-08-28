@@ -16,7 +16,7 @@ members = [
     "libcrux-hkdf",
     "libcrux-ecdh",
     "libcrux-psq",
-    "cavp",
+    "cavp", "bit-playground",
 ]
 
 [workspace.package]

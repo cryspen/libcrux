@@ -3,6 +3,10 @@ module Libcrux_intrinsics.Avx2_extract
 open Core
 open FStar.Mul
 
+unfold type t_BitVector128 = bit_vec 128
+
+unfold type t_BitVector256 = bit_vec 256
+
 val t_Vec128:Type0
 
 val vec128_as_i16x8 (x:t_Vec128) : t_Array i16 (sz 8)
@@ -10,6 +14,26 @@ val vec128_as_i16x8 (x:t_Vec128) : t_Array i16 (sz 8)
 val t_Vec256:Type0
 
 val vec256_as_i16x16 (x:t_Vec256) : t_Array i16 (sz 16)
+
+val bv128 (vec: t_Vec128) : Prims.Pure t_BitVector128 Prims.l_True (fun _ -> Prims.l_True)
+
+val bv256 (vec: t_Vec256) : Prims.Pure t_BitVector256 Prims.l_True (fun _ -> Prims.l_True)
+
+open FStar.FunctionalExtensionality
+
+let mk_bv #len (f: (i:nat{i < len}) -> bit) = on (i:nat {i < len}) f
+
+let bv256_slli_epi16 (shift: nat {shift <= 16}) (vec: bit_vec 256): bit_vec 256
+  = mk_bv (fun i -> let nth_bit = i % 16 in
+                 if i >= shift then vec (i - shift) else 0)
+
+let bv256_castsi256_si128 (vec: bit_vec 256): bit_vec 128
+  = mk_bv (fun i -> vec i)
+let bv256_extracti128_si256 (control: nat {control == 1}) (vec: bit_vec 256): bit_vec 128
+  = mk_bv (fun i -> vec (i + 128))
+
+let vec128_packs_epi16 (lhs rhs: bit_vec 128): bit_vec 128
+  = mk_bv (fun i -> 0)
 
 val mm256_add_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 

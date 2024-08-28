@@ -148,6 +148,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "bit-playground"
+version = "0.0.2-alpha.3"
+dependencies = [
+ "libcrux-intrinsics",
+]
+
+[[package]]
 name = "bitflags"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
