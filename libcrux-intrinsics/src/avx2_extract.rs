@@ -20,6 +20,7 @@ pub type Vec256 = u8;
 #[cfg(not(hax))]
 pub type Vec128 = u8;
 
+#[hax_lib::ensures(|()| future(output).len() == output.len())]
 pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
     debug_assert_eq!(output.len(), 16);
     unimplemented!()
@@ -34,6 +35,7 @@ pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
     unimplemented!()
 }
 
+#[hax_lib::ensures(|()| future(output).len() == output.len())]
 pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
     debug_assert_eq!(output.len(), 16);
     unimplemented!()

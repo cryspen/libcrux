@@ -10,19 +10,29 @@ let _ =
   ()
 
 val deserialize_1_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 2)
+      (fun _ -> Prims.l_True)
 
 val deserialize_10_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 20)
+      (fun _ -> Prims.l_True)
 
 val deserialize_12_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 24)
+      (fun _ -> Prims.l_True)
 
 val deserialize_4_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 8)
+      (fun _ -> Prims.l_True)
 
 val deserialize_5_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 10)
+      (fun _ -> Prims.l_True)
 
 val serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure (t_Array u8 (sz 2)) Prims.l_True (fun _ -> Prims.l_True)

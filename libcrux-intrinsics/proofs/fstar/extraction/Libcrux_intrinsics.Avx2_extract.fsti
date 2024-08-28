@@ -121,7 +121,13 @@ val mm256_srli_epi64 (v_SHIFT_BY: i32) (vector: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_storeu_si256_i16 (output: t_Slice i16) (vector: t_Vec256)
-    : Prims.Pure (t_Slice i16) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Slice i16)
+      Prims.l_True
+      (ensures
+        fun output_future ->
+          let output_future:t_Slice i16 = output_future in
+          (Core.Slice.impl__len #i16 output_future <: usize) =.
+          (Core.Slice.impl__len #i16 output <: usize))
 
 val mm256_storeu_si256_u8 (output: t_Slice u8) (vector: t_Vec256)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
@@ -164,7 +170,13 @@ val mm_shuffle_epi8 (vector control: t_Vec128)
     : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm_storeu_bytes_si128 (output: t_Slice u8) (vector: t_Vec128)
-    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Slice u8)
+      Prims.l_True
+      (ensures
+        fun output_future ->
+          let output_future:t_Slice u8 = output_future in
+          (Core.Slice.impl__len #u8 output_future <: usize) =.
+          (Core.Slice.impl__len #u8 output <: usize))
 
 val mm_storeu_si128 (output: t_Slice i16) (vector: t_Vec128)
     : Prims.Pure (t_Slice i16) Prims.l_True (fun _ -> Prims.l_True)
