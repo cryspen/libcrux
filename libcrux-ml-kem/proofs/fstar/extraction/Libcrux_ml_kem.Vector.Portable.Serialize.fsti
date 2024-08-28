@@ -81,10 +81,7 @@ val serialize_4_int (v: t_Slice i16)
       (requires
         Core.Slice.impl__len #i16 v =. sz 8 /\ (forall i. Rust_primitives.bounded (Seq.index v i) 4)
       )
-      (ensures
-        fun tuple ->
-          let tuple:(u8 & u8 & u8 & u8) = tuple in
-          BitVecEq.int_t_array_bitwise_eq' (v <: t_Array _ (sz 8)) 4 (MkSeq.create4 tuple) 8)
+      (fun _ -> Prims.l_True)
 
 val serialize_5_int (v: t_Slice i16)
     : Prims.Pure (u8 & u8 & u8 & u8 & u8)

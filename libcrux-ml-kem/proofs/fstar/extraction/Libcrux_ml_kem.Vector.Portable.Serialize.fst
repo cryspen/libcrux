@@ -258,6 +258,16 @@ let serialize_4_int (v: t_Slice i16) =
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+let serialize_4_int_lemma (inputs: t_Array i16 (sz 8))
+   (_: squash (forall i. Rust_primitives.bounded (Seq.index inputs i) 4))
+   : squash (
+     let outputs = serialize_4_int inputs in
+     let outputs = MkSeq.create4 outputs in
+     let inputs = bit_vec_of_int_t_array inputs 4 in
+     let outputs = bit_vec_of_int_t_array outputs 8 in
+     (forall (i: nat {i < 32}). inputs i == outputs i)
+   ) = _ by (Tactics.GetBit.prove_bit_vector_equality ())
+
 let serialize_5_int (v: t_Slice i16) =
   let r0:u8 = cast ((v.[ sz 0 ] <: i16) |. ((v.[ sz 1 ] <: i16) <<! 5l <: i16) <: i16) <: u8 in
   let r1:u8 =

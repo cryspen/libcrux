@@ -49,10 +49,8 @@ let prove_bit_vector_equality' (): Tac unit =
   prove_forall_nat_pointwise (print_time "SMT solved the goal in " (fun _ -> 
     Tactics.Seq.norm_index_minimal ();
     print ("Ask SMT: " ^ term_to_string (cur_goal ()));
-    set_rlimit 80;
-    let _ = repeat clear_top in
     focus smt_sync
   ))
 let prove_bit_vector_equality (): Tac unit = 
-  with_compat_pre_core 2 prove_bit_vector_equality'
-
+  set_rlimit 100;
+  with_compat_pre_core 0 prove_bit_vector_equality'

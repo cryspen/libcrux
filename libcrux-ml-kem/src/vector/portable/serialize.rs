@@ -15,21 +15,6 @@
 use super::vector_type::*;
 use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
 
-fn bitwise_equal<T, U>(length: usize, d1: usize, d2: usize, inputs: &[T], outputs: &[U]) -> bool {
-    false
-}
-
-#[hax::lemma]
-pub fn serialize_4_int(
-    v: &[i16],
-) -> Proof<
-    {
-        let (x1, x2, x3, x4) = serialize_4_int(v);
-        bitwise_equal(length, 4, 8, v, &[x1, x2, x3, x4])
-    },
-> {
-}
-
 #[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn serialize_1(v: PortableVector) -> [u8; 2] {
@@ -56,16 +41,31 @@ pub(crate) fn deserialize_1(v: &[u8]) -> PortableVector {
     result
 }
 
+#[hax_lib::fstar::replace(
+    "
+let serialize_4_int_lemma (inputs: t_Array i16 (sz 8))
+   (_: squash (forall i. Rust_primitives.bounded (Seq.index inputs i) 4))
+   : squash (
+     let outputs = ${serialize_4_int} inputs in
+     let outputs = MkSeq.create4 outputs in
+     let inputs = bit_vec_of_int_t_array inputs 4 in
+     let outputs = bit_vec_of_int_t_array outputs 8 in
+     (forall (i: nat {i < 32}). inputs i == outputs i)
+   ) = _ by (Tactics.GetBit.prove_bit_vector_equality ())
+"
+)]
+fn serialize_4_int_lemma(_inputs: &[i16]) {}
+
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!(r#"
      ${v.len() == 8}
   /\ (forall i. Rust_primitives.bounded (Seq.index v i) 4)
 "#))]
-#[hax_lib::ensures(|tuple| fstar!(r#"
-  BitVecEq.int_t_array_bitwise_eq' ($v <: t_Array _ (sz 8)) 4
-                                   (MkSeq.create4 $tuple)   8
-"#))]
+// #[hax_lib::ensures(|tuple| fstar!(r#"
+//   BitVecEq.int_t_array_bitwise_eq' ($v <: t_Array _ (sz 8)) 4
+//                                    (MkSeq.create4 $tuple)   8
+// "#))]
 pub(crate) fn serialize_4_int(v: &[i16]) -> (u8, u8, u8, u8) {
     let result0 = ((v[1] as u8) << 4) | (v[0] as u8);
     let result1 = ((v[3] as u8) << 4) | (v[2] as u8);
