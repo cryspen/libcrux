@@ -246,6 +246,7 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let l = [x; y] in
   assert_norm (List.length l == 2);
   assume (forall (i: nat {i < 256}). vector i == (if i % 16 = 0 then vector i else 0));
+  // HERE: the bound should be 16, not 8
   assert (forall (i: nat {i < 8}). get_bit x (sz i) == vector (i * 16)) by (
     Tactics.Utils.prove_forall_nat_pointwise (fun _ ->
       norm [iota; primops; delta_only [`%cast; `%cast_tc_integers]];
