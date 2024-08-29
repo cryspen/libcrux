@@ -1,5 +1,5 @@
-use libcrux_ml_kem::{mlkem512, KEY_GENERATION_SEED_SIZE};
-use rand::{rngs::OsRng, RngCore};
+use libcrux_ml_kem::mlkem512;
+use rand::{rngs::OsRng, RngCore as _};
 
 fn random_array<const L: usize>() -> [u8; L] {
     let mut rng = OsRng;
@@ -9,6 +9,7 @@ fn random_array<const L: usize>() -> [u8; L] {
 }
 
 #[inline(never)]
+// fn keygen(randomness: [u8; 64]) -> libcrux_ml_kem::MlKemKeyPair<1632, 800> { // <- this works
 fn keygen(randomness: [u8; 64]) -> mlkem512::MlKem512KeyPair {
     mlkem512::generate_key_pair(randomness)
 }
@@ -31,6 +32,7 @@ fn decaps(
 ) -> libcrux_ml_kem::MlKemSharedSecret {
     mlkem512::decapsulate(private_key, ciphertext)
 }
+
 fn main() {
     let key_generation_randomness = random_array();
     let encaps_randomness = random_array();
