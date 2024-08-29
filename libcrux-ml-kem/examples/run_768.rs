@@ -9,7 +9,6 @@ fn random_array<const L: usize>() -> [u8; L] {
 }
 
 #[inline(never)]
-//fn keygen(randomness: [u8; 64]) -> libcrux_ml_kem::MlKemKeyPair<2400, 1184> { // <- this works
 fn keygen(randomness: [u8; 64]) -> mlkem768::MlKem768KeyPair {
     mlkem768::generate_key_pair(randomness)
 }
