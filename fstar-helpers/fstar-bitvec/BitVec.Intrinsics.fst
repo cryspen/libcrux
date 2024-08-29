@@ -39,6 +39,25 @@ private let saturate8 (v: bit_vec 16): bit_vec 8
            else v i
     )
 
+open FStar.Stubs.Tactics.V2.Builtins
+
+let rec bv_to_string #len (bv: bit_vec len): string
+  = if len = 0 then ""
+               else string_of_int (bv (len - 1)) 
+                  ^ bv_to_string #(len - 1) (mk_bv (fun i -> bv i))
+
+
+
+// let _ = assert True by (
+//     let s = launch_process "bit-playground" [
+//       "mm256_slli_epi16";
+//       "15";
+//       "0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+//     ] "" in
+//     print s
+//   )
+
+
 let mm_packs_epi16 (a b: bit_vec 128): bit_vec 128
   = mk_bv (fun i ->
       let nth_block = i / 8 in
@@ -57,5 +76,5 @@ let mm_movemask_epi8_bv (a: bit_vec 128): bit_vec 128
           )
 
 let mm_movemask_epi8 (a: bit_vec 128): i32
-  = bit_vec_to_int_t 32 (mk_bv (fun i -> a i))
+  = bit_vec_to_int_t 32 (mk_bv (fun i -> mm_movemask_epi8_bv a i))
 

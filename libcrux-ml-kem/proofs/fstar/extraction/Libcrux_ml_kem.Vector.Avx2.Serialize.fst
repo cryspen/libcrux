@@ -245,7 +245,7 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let y = cast (bits_packed >>! 8l <: i32) <: u8 in
   let l = [x; y] in
   assert_norm (List.length l == 2);
-  assert (get_bit x (sz 1) == vector 0) by (
+  assert (get_bit x (sz 0) == vector 0) by (
     norm [iota; primops; delta_only [`%cast; `%cast_tc_integers]];
     l_to_r [`rw_get_bit_cast];
     norm [iota; primops; zeta_full; delta_namespace [ implode_qn (cur_module ());"FStar"]];
@@ -257,6 +257,7 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
     l_to_r[`rw_get_bit_cast; `bit_vec_to_int_t_lemma];
     norm [primops; iota; delta; zeta_full];
     norm [unascribe];
+    smt_sync ();
     fail "x"
   );
   Seq.seq_of_list l

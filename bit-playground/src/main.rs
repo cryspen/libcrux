@@ -9,6 +9,9 @@ pub struct BV(pub Vec<u8>);
 trait ToBitVec {
     fn to_bit_vec(&self) -> BV;
 }
+trait FromBitVec: Sized {
+    fn from_bit_vec(bv: &BV) -> Self;
+}
 impl ToBitVec for &[i16] {
     fn to_bit_vec(&self) -> BV {
         let mut bits = vec![];
@@ -26,6 +29,31 @@ impl ToBitVec for &[i16] {
     }
 }
 
+impl FromBitVec for Vec256 {
+    fn from_bit_vec(bv: &BV) -> Self {
+        assert!(bv.0.len() == 256);
+        let x: Vec<_> =
+            bv.0.chunks(16)
+                .map(|inner| i16::from_bit_vec(&BV(inner.to_vec())))
+                .collect();
+        mm256_set_epi16(
+            x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], x[11], x[12], x[13],
+            x[14], x[15],
+        )
+    }
+}
+
+impl FromBitVec for Vec128 {
+    fn from_bit_vec(bv: &BV) -> Self {
+        assert!(bv.0.len() == 128);
+        let x: Vec<_> =
+            bv.0.chunks(16)
+                .map(|inner| i16::from_bit_vec(&BV(inner.to_vec())))
+                .collect();
+        mk_vec128(x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7])
+    }
+}
+
 impl ToBitVec for Vec128 {
     fn to_bit_vec(&self) -> BV {
         let mut out = [0i16; 8];
@@ -36,6 +64,16 @@ impl ToBitVec for Vec128 {
 impl ToBitVec for i16 {
     fn to_bit_vec(&self) -> BV {
         (&[*self][..]).to_bit_vec()
+        // let bv: [u8; 16] = std::array::from_fn(|i| (((*self as u16) >> i) % 2) as u8);
+    }
+}
+impl FromBitVec for i16 {
+    fn from_bit_vec(bv: &BV) -> i16 {
+        let mut out = 0;
+        for bit in bv.0.iter().cloned().rev() {
+            out = out << 1 + bit;
+        }
+        out
     }
 }
 
@@ -44,6 +82,17 @@ impl ToBitVec for Vec256 {
         let mut out = [0i16; 16];
         mm256_storeu_si256_i16(&mut out, *self);
         (&out[..]).to_bit_vec()
+    }
+}
+
+impl BV {
+    fn print(&self) -> String {
+        self.0
+            .iter()
+            .cloned()
+            .map(|i| format!("{i}"))
+            .collect::<Vec<_>>()
+            .join("")
     }
 }
 
@@ -206,35 +255,87 @@ fn saturate8(bv: BV) -> BV {
     out
 }
 
-fn main() {
-    // for i in i16::MIN..i16::MAX {
-    for i in i16::MIN..i16::MAX {
-        let x = mk_vec128(i, 0, 0, 0, 0, 0, 0, 0);
-        let y = mk_vec128(0, 0, 0, 0, 0, 0, 0, 0);
-        let r = mm_packs_epi16(x, y);
-        let xbv = x.to_bit_vec();
-        let ybv = y.to_bit_vec();
-        let rbv = bv_packs_epi16(xbv.clone(), ybv.clone());
-        if (r.to_bit_vec() == rbv) {
-        } else {
-            println!("");
-            println!("i={i}");
-            println!(
-                "saturated8({})={}",
-                i.to_bit_vec(),
-                saturate8(i.to_bit_vec())
+impl BV {
+    fn from<const N: usize>(s: &str) -> Self {
+        let result = BV(s
+            .chars()
+            .map(|ch| match ch {
+                '0' => 0,
+                '1' => 1,
+                _ => panic!("Expected only 1 or 0, got `{ch}`"),
+            })
+            .collect());
+        if result.0.len() != N {
+            panic!(
+                "Expected a bit vector of size {N}, got a bit vector of size {}",
+                result.0.len()
             );
-            if (r.to_bit_vec() == rbv) {
-                println!("================");
-            } else {
-                println!("!!!!!!!!!!!!!!!!");
-            }
-            println!("xbv {}", xbv.clone());
-            println!("r   {}", r.to_bit_vec());
-            println!("rbv {}", rbv.clone());
         }
-        // assert!(r.to_bit_vec() == rbv);
+        result
     }
+}
+
+fn main() {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let result = match &args.iter().map(|s| s.as_str()).collect::<Vec<_>>()[..] {
+        ["mm256_slli_epi16", "15", vec] => {
+            let bv = BV::from::<256>(vec);
+            let result = mm256_slli_epi16::<15>(Vec256::from_bit_vec(&bv));
+            result.to_bit_vec().print()
+        }
+        ["mm256_castsi256_si128", vec] => {
+            let bv = BV::from::<256>(vec);
+            let result = mm256_castsi256_si128(Vec256::from_bit_vec(&bv));
+            result.to_bit_vec().print()
+        }
+        ["mm256_extracti128_si256", "1", vec] => {
+            let bv = BV::from::<256>(vec);
+            let result = mm256_extracti128_si256::<1>(Vec256::from_bit_vec(&bv));
+            result.to_bit_vec().print()
+        }
+        ["mm_packs_epi16", a, b] => {
+            let a = BV::from::<128>(a);
+            let b = BV::from::<128>(b);
+            let result = mm_packs_epi16(Vec128::from_bit_vec(&a), Vec128::from_bit_vec(&b));
+            result.to_bit_vec().print()
+        }
+        // ["mm_movemask_epi8", a] => {
+        //     let a = BV::from::<128>(a);
+        //     let result = mm_movemask_epi8(Vec128::from_bit_vec(&a));
+        //     result.to_bit_vec().print()
+        // }
+        _ => panic!("Cannot handle {args:#?}"),
+    };
+    print!("{result}");
+
+    // // for i in i16::MIN..i16::MAX {
+    // for i in i16::MIN..i16::MAX {
+    //     let x = mk_vec128(i, 0, 0, 0, 0, 0, 0, 0);
+    //     let y = mk_vec128(0, 0, 0, 0, 0, 0, 0, 0);
+    //     let r = mm_packs_epi16(x, y);
+    //     let xbv = x.to_bit_vec();
+    //     let ybv = y.to_bit_vec();
+    //     let rbv = bv_packs_epi16(xbv.clone(), ybv.clone());
+    //     if (r.to_bit_vec() == rbv) {
+    //     } else {
+    //         println!("");
+    //         println!("i={i}");
+    //         println!(
+    //             "saturated8({})={}",
+    //             i.to_bit_vec(),
+    //             saturate8(i.to_bit_vec())
+    //         );
+    //         if (r.to_bit_vec() == rbv) {
+    //             println!("================");
+    //         } else {
+    //             println!("!!!!!!!!!!!!!!!!");
+    //         }
+    //         println!("xbv {}", xbv.clone());
+    //         println!("r   {}", r.to_bit_vec());
+    //         println!("rbv {}", rbv.clone());
+    //     }
+    //     // assert!(r.to_bit_vec() == rbv);
+    // }
 
     // let bv = format!("{}", r.to_bit_vec());
     // let bv_ = "0000000000000000 0000000000000000 0000000000000000 0111111100000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000";
