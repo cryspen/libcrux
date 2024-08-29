@@ -225,8 +225,8 @@ val bit_vec_to_int_t_lemma
     i
   : Lemma (eq2 #bit (get_bit (bit_vec_to_int_t d bv) (sz i)) (bv i))
 
-
-#push-options "--z3rlimit 80"
+#push-options "--compat_pre_core 0"
+#push-options "--z3rlimit 40"
 let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let lsb_to_msb:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_slli_epi16 15 vector
@@ -245,20 +245,25 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let y = cast (bits_packed >>! 8l <: i32) <: u8 in
   let l = [x; y] in
   assert_norm (List.length l == 2);
-  assert (get_bit x (sz 0) == vector 0) by (
-    norm [iota; primops; delta_only [`%cast; `%cast_tc_integers]];
-    l_to_r [`rw_get_bit_cast];
-    norm [iota; primops; zeta_full; delta_namespace [ implode_qn (cur_module ());"FStar"]];
-    Tactics.MachineInts.(transform norm_machine_int_term);
-    norm [ iota; primops; zeta_full
-         ; delta_only [`%bit_vec_of_int_t_array;`%bits;`%Lib.IntTypes.bits]
-         ; delta_namespace ["FStar"]
-    ];
-    l_to_r[`rw_get_bit_cast; `bit_vec_to_int_t_lemma];
-    norm [primops; iota; delta; zeta_full];
-    norm [unascribe];
-    smt_sync ();
-    fail "x"
+  assume (forall (i: nat {i < 256}). vector i == (if i % 16 = 0 then vector i else 0));
+  assert (forall (i: nat {i < 8}). get_bit x (sz i) == vector (i * 16)) by (
+    Tactics.Utils.prove_forall_nat_pointwise (fun _ ->
+      norm [iota; primops; delta_only [`%cast; `%cast_tc_integers]];
+      l_to_r [`rw_get_bit_cast];
+      norm [iota; primops; zeta_full; delta_namespace [ implode_qn (cur_module ());"FStar"]];
+      Tactics.MachineInts.(transform norm_machine_int_term);
+      norm [ iota; primops; zeta_full
+           ; delta_only [`%bit_vec_of_int_t_array;`%bits;`%Lib.IntTypes.bits]
+           ; delta_namespace ["FStar"]
+      ];
+      l_to_r[`rw_get_bit_cast; `bit_vec_to_int_t_lemma];
+      norm [primops; iota; delta; zeta_full];
+      norm [unascribe];
+      dump' "Goal:";
+      smt_sync ();
+      dump' "Success";
+      smt ()
+    )
   );
   Seq.seq_of_list l
   // let serialized:t_Array u8 (sz 2) = Rust_primitives.Hax.repeat 0uy (sz 2) in
@@ -274,7 +279,7 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   // in
   // serialized
 
-#push-options "--compat_pre_core 0"
+
 let serialize_1_int_lemma (inputs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
    (_: squash (forall i. inputs i == (if i % 16 = 0 then inputs i else i)))
    : squash (
