@@ -16,6 +16,8 @@ open BitVecEq {}
 open Tactics.Seq {norm_index, tactic_list_index}
 
 
+let _ = Rust_primitives.Hax.array_of_list
+
 let norm_machine_int () = Tactics.MachineInts.(transform norm_machine_int_term)
 
 /// Does one round of computation
@@ -48,11 +50,20 @@ private let print_time prefix (t: 'a -> Tac 'b) (x: 'a): Tac 'b
 
 /// Proves a goal of the shape `forall (i:nat{i < N}). get_bit ... i == get_bit ... i` (`N` is expected to be a literal)
 let prove_bit_vector_equality' (): Tac unit = 
-  norm [iota; primops; delta_only [`%bit_vec_of_int_t_array; `%FunctionalExtensionality.on]];
-  norm [iota; primops; delta_namespace [implode_qn (cur_module ())]];
+  norm [
+    iota;
+    primops;
+    delta_only [`%bit_vec_of_int_t_array; `%FunctionalExtensionality.on];
+    delta_namespace [
+      implode_qn (cur_module ());
+      "Libcrux_intrinsics.Avx2_extract";
+      "BitVec.Intrinsics";
+    ];
+  ];
   compute_one_round ();
   prove_forall_nat_pointwise (print_time "SMT solved the goal in " (fun _ -> 
     Tactics.Seq.norm_index_minimal ();
+    l_to_r [`bit_vec_to_int_t_lemma];
     print ("Ask SMT: " ^ term_to_string (cur_goal ()));
     focus smt_sync
   ))

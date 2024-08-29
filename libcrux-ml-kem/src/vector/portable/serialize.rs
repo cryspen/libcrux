@@ -80,16 +80,17 @@ pub(crate) fn serialize_4_int(v: &[i16]) -> (u8, u8, u8, u8) {
 pub(crate) fn serialize_4(v: PortableVector) -> [u8; 8] {
     let result0_3 = serialize_4_int(&v.elements[0..8]);
     let result4_7 = serialize_4_int(&v.elements[8..16]);
-    let mut result = [0u8; 8];
-    result[0] = result0_3.0;
-    result[1] = result0_3.1;
-    result[2] = result0_3.2;
-    result[3] = result0_3.3;
-    result[4] = result4_7.0;
-    result[5] = result4_7.1;
-    result[6] = result4_7.2;
-    result[7] = result4_7.3;
-    result
+
+    [
+        result0_3.0,
+        result0_3.1,
+        result0_3.2,
+        result0_3.3,
+        result4_7.0,
+        result4_7.1,
+        result4_7.2,
+        result4_7.3,
+    ]
 }
 
 #[inline(always)]
