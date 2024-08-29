@@ -2,8 +2,7 @@ use std::hint::black_box;
 use std::time::Duration;
 
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use rand_core::OsRng;
-use rand_core::RngCore;
+use rand::{rngs::OsRng, RngCore};
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 

@@ -44,17 +44,12 @@ pub type MlKem1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 /// Validate a public key.
 ///
 /// Returns `Some(public_key)` if valid, and `None` otherwise.
-pub fn validate_public_key(public_key: MlKem1024PublicKey) -> Option<MlKem1024PublicKey> {
-    if super::validate_public_key::<
+pub fn validate_public_key(public_key: &MlKem1024PublicKey) -> bool {
+    super::validate_public_key::<
         RANK_1024,
         RANKED_BYTES_PER_RING_ELEMENT_1024,
         CPA_PKE_PUBLIC_KEY_SIZE_1024,
     >(&public_key.value)
-    {
-        Some(public_key)
-    } else {
-        None
-    }
 }
 
 /// Generate ML-KEM 1024 Key Pair

@@ -435,6 +435,51 @@ pub fn decapsulate(
     >(private_key, ciphertext)
 }
 
+/// Randomized APIs
+///
+/// The functions in this module are equivalent to the one in the main module,
+/// but sample their own randomness, provided a random number generator that
+/// implements `RngCore` and `CryptoRng`.
+///
+/// Decapsulation is not provided in this module as it does not require randomness.
+#[cfg(not(eurydice))]
+pub mod rand {
+    use super::{
+        MlKem768Ciphertext, MlKem768KeyPair, MlKem768PublicKey, MlKemSharedSecret,
+        KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE,
+    };
+    use ::rand::{CryptoRng, RngCore};
+
+    /// Generate ML-KEM 768 Key Pair
+    ///
+    /// The random number generator `rng` needs to implement `RngCore` and
+    /// `CryptoRng` to sample the required randomness internally.
+    ///
+    /// This function returns an [`MlKem768KeyPair`].
+    pub fn generate_key_pair(rng: &mut (impl RngCore + CryptoRng)) -> MlKem768KeyPair {
+        let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
+        rng.fill_bytes(&mut randomness);
+
+        super::generate_key_pair(randomness)
+    }
+
+    /// Encapsulate ML-KEM 768
+    ///
+    /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+    /// The input is a reference to an [`MlKem768PublicKey`].
+    /// The random number generator `rng` needs to implement `RngCore` and
+    /// `CryptoRng` to sample the required randomness internally.
+    pub fn encapsulate(
+        public_key: &MlKem768PublicKey,
+        rng: &mut (impl RngCore + CryptoRng),
+    ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+        let mut randomness = [0u8; SHARED_SECRET_SIZE];
+        rng.fill_bytes(&mut randomness);
+
+        super::encapsulate(public_key, randomness)
+    }
+}
+
 #[cfg(all(not(eurydice), feature = "kyber"))]
 pub(crate) mod kyber {
     use super::*;

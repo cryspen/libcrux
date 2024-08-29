@@ -14,7 +14,7 @@ fn test_invalid_modulus(p: &str) {
     for line in reader.lines() {
         let line = line.unwrap();
         let pk = hex::decode(line).unwrap();
-        #[allow(dead_code)]
+        #[allow(unused_variables)]
         let pk = pk.as_slice();
         match p {
             #[cfg(all(feature = "mlkem512", feature = "pre-verification"))]
@@ -79,8 +79,10 @@ fn test_invalid_dk(p: &str) {
     let mut lines = reader.lines();
     while let (Some(dk_string), Some(ct_string)) = (lines.next(), lines.next()) {
         let dk = hex::decode(dk_string.unwrap()).unwrap();
+        #[allow(unused_variables)]
         let dk = dk.as_slice();
         let ct = hex::decode(ct_string.unwrap()).unwrap();
+        #[allow(unused_variables)]
         let ct = ct.as_slice();
         match p {
             #[cfg(all(feature = "mlkem512", feature = "pre-verification"))]

@@ -22,7 +22,7 @@ exclude = [
 bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
-rand_core = { version = "0.6" }
+rand = { version = "0.8", optional = true }
 libcrux-platform = { version = "0.0.2-alpha.3", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2-alpha.3", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-alpha.3", path = "../libcrux-intrinsics" }
@@ -34,7 +34,7 @@ hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
 
 [features]
 # By default all variants and std are enabled.
-default = ["std", "mlkem512", "mlkem768", "mlkem1024"]
+default = ["std", "mlkem512", "mlkem768", "mlkem1024", "rand"]
 
 # Hardware features can be force enabled.
 # It is not recommended to use these. This crate performs CPU feature detection
@@ -56,6 +56,10 @@ kyber = []
 # Code that is not yet verified
 pre-verification = []
 
+# APIs that sample their own randomness
+rand = ["dep:rand"]
+
+# std support
 std = []
 
 [dev-dependencies]
