@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 962f26311ccdf09a6a3cfeacbccafba22bf3d405
- * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
- * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
+ * Charon: 6b5e110342a771a3e1c739b10294b1778e4be8b4
+ * Eurydice: 31be7d65ca5d6acdacfb33652e478d24dd85c1cb
+ * Karamel: 3205d3365ea2790b02368f79fcee38e38d0b5908
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 9a130a852767d2f8881c458e022bf35fec1f6afe
+ * Libcrux: 4ad532b206174114dd4140b718e7794a28fc59ee
  */
 
 #ifndef __libcrux_mlkem512_avx2_H
@@ -50,12 +50,21 @@ libcrux_ml_kem_types_MlKemKeyPair_cb
 libcrux_ml_kem_mlkem512_avx2_generate_key_pair(uint8_t randomness[64U]);
 
 /**
+ Validate a private key.
+
+ Returns `true` if valid, and `false` otherwise.
+*/
+bool libcrux_ml_kem_mlkem512_avx2_validate_private_key(
+    libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext);
+
+/**
  Validate a public key.
 
- Returns `Some(public_key)` if valid, and `None` otherwise.
+ Returns `true` if valid, and `false` otherwise.
 */
-core_option_Option_04 libcrux_ml_kem_mlkem512_avx2_validate_public_key(
-    libcrux_ml_kem_types_MlKemPublicKey_be public_key);
+bool libcrux_ml_kem_mlkem512_avx2_validate_public_key(
+    libcrux_ml_kem_types_MlKemPublicKey_be *public_key);
 
 #if defined(__cplusplus)
 }

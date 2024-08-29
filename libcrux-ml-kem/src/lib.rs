@@ -146,6 +146,7 @@ cfg_pre_verification! {
                 pub use crate::mlkem512::kyber::decapsulate;
                 pub use crate::mlkem512::kyber::encapsulate;
                 pub use crate::mlkem512::validate_public_key;
+                pub use crate::mlkem512::validate_private_key;
             }
         }
 
@@ -158,6 +159,7 @@ cfg_pre_verification! {
                 pub use crate::mlkem768::kyber::decapsulate;
                 pub use crate::mlkem768::kyber::encapsulate;
                 pub use crate::mlkem768::validate_public_key;
+                pub use crate::mlkem768::validate_private_key;
             }
         }
 
@@ -170,6 +172,7 @@ cfg_pre_verification! {
                 pub use crate::mlkem1024::kyber::decapsulate;
                 pub use crate::mlkem1024::kyber::encapsulate;
                 pub use crate::mlkem1024::validate_public_key;
+                pub use crate::mlkem1024::validate_private_key;
             }
         }
     }

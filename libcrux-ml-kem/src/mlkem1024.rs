@@ -67,20 +67,27 @@ macro_rules! instantiate {
 
             /// Validate a public key.
             ///
-            /// Returns `Some(public_key)` if valid, and `None` otherwise.
-            pub fn validate_public_key(
-                public_key: MlKem1024PublicKey,
-            ) -> Option<MlKem1024PublicKey> {
-                if p::validate_public_key::<
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_public_key(public_key: &MlKem1024PublicKey) -> bool {
+                p::validate_public_key::<
                     RANK_1024,
                     RANKED_BYTES_PER_RING_ELEMENT_1024,
                     CPA_PKE_PUBLIC_KEY_SIZE_1024,
                 >(&public_key.value)
-                {
-                    Some(public_key)
-                } else {
-                    None
-                }
+            }
+
+            /// Validate a private key.
+            ///
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_private_key(
+                private_key: &MlKem1024PrivateKey,
+                ciphertext: &MlKem1024Ciphertext,
+            ) -> bool {
+                p::validate_private_key::<
+                    RANK_1024,
+                    SECRET_KEY_SIZE_1024,
+                    CPA_PKE_CIPHERTEXT_SIZE_1024,
+                >(private_key, ciphertext)
             }
 
             /// Generate Kyber 1024 Key Pair
@@ -331,19 +338,29 @@ instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon 
 
 /// Validate a public key.
 ///
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
+/// Returns `true` if valid, and `false` otherwise.
 #[cfg(not(eurydice))]
-pub fn validate_public_key(public_key: MlKem1024PublicKey) -> Option<MlKem1024PublicKey> {
-    if multiplexing::validate_public_key::<
+pub fn validate_public_key(public_key: &MlKem1024PublicKey) -> bool {
+    multiplexing::validate_public_key::<
         RANK_1024,
         RANKED_BYTES_PER_RING_ELEMENT_1024,
         CPA_PKE_PUBLIC_KEY_SIZE_1024,
     >(&public_key.value)
-    {
-        Some(public_key)
-    } else {
-        None
-    }
+}
+
+/// Validate a private key.
+///
+/// Returns `true` if valid, and `false` otherwise.
+#[cfg(not(eurydice))]
+pub fn validate_private_key(
+    private_key: &MlKem1024PrivateKey,
+    ciphertext: &MlKem1024Ciphertext,
+) -> bool {
+    multiplexing::validate_private_key::<
+        RANK_1024,
+        SECRET_KEY_SIZE_1024,
+        CPA_PKE_CIPHERTEXT_SIZE_1024,
+    >(private_key, ciphertext)
 }
 
 /// Generate ML-KEM 1024 Key Pair
