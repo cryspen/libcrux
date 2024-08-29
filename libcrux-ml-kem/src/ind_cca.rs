@@ -86,6 +86,11 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
     out
 }
 
+/// Validate an ML-KEM public key.
+///
+/// This implements the Modulus check in 7.2 2.
+/// Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
+/// `public_key` type.
 #[inline(always)]
 fn validate_public_key<
     const K: usize,
@@ -105,6 +110,29 @@ fn validate_public_key<
         );
 
     *public_key == public_key_serialized
+}
+
+/// Validate an ML-KEM private key.
+///
+/// This implements the Hash check in 7.3 3.
+/// Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
+/// and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
+#[inline(always)]
+fn validate_private_key<
+    const K: usize,
+    const SECRET_KEY_SIZE: usize,
+    const CIPHERTEXT_SIZE: usize,
+    Hasher: Hash<K>,
+>(
+    private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+    _ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+) -> bool {
+    // Eurydice can't access values directly on the types. We need to go to the
+    // `value` directly.
+
+    let t = Hasher::H(&private_key.value[384 * K..768 * K + 32]);
+    let expected = &private_key.value[768 * K + 32..768 * K + 64];
+    t == expected
 }
 
 /// Packed API
