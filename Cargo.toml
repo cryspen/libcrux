@@ -56,6 +56,7 @@ exclude = [
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]
+bench = false # so libtest doesn't eat the arguments for criterion
 
 [build-dependencies]
 libcrux-platform = { version = "=0.0.2-alpha.3", path = "sys/platform" }
@@ -72,6 +73,7 @@ rand = { version = "0.8" }
 log = { version = "0.4", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
+getrandom = { version = "0.2", features = ["js"], optional = true }
 
 # When using the hax toolchain, we have more dependencies.
 # This is only required when doing proofs.
@@ -98,7 +100,7 @@ getrandom = { version = "0.2", features = ["js"] }
 [features]
 hacspec = []            # TODO: #7 Use specs instead of efficient implementations
 rand = []
-wasm = ["wasm-bindgen"]
+wasm = ["wasm-bindgen", "getrandom"]
 log = ["dep:log"]
 tests = []              # Expose functions for testing.
 experimental = []       # Expose experimental APIs.
