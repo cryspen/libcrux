@@ -52,7 +52,7 @@ val montgomery_reduce_element (value: i32)
           let result:i16 = result in
           Spec.Utils.is_i16b (3328 + 1665) result /\
           (Spec.Utils.is_i32b (3328 * 3328) value ==> Spec.Utils.is_i16b 3328 result) /\
-          v result % 3329 == (v value * 62209) % 3329)
+          v result % 3329 == (v value * 169) % 3329)
 
 /// If `fe` is some field element \'x\' of the Kyber field and `fer` is congruent to
 /// `y · MONTGOMERY_R`, this procedure outputs a value that is congruent to
@@ -66,8 +66,7 @@ val montgomery_multiply_fe_by_fer (fe fer: i16)
       (ensures
         fun result ->
           let result:i16 = result in
-          Spec.Utils.is_i16b (3328 + 1665) result /\
-          v result % 3329 == (v fe * v fer * 62209) % 3329)
+          Spec.Utils.is_i16b (3328 + 1665) result /\ v result % 3329 == (v fe * v fer * 169) % 3329)
 
 val add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -77,10 +76,15 @@ val add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
           result.f_elements == Spec.Utils.map2 ( +. ) (lhs.f_elements) (rhs.f_elements))
 
-val barrett_reduce (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+val barrett_reduce (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires Spec.Utils.is_i16b_array 28296 vec.f_elements)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          Spec.Utils.is_i16b_array 3328 result.f_elements /\
+          Spec.MLKEM.Math.to_spec_array result.f_elements ==
+          Spec.MLKEM.Math.to_spec_array vec.f_elements)
 
 val bitwise_and_with_constant
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)

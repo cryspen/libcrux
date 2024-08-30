@@ -40,40 +40,40 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map2 (+.) (${lhs}.f_elements) (${rhs}.f_elements)"))]
 pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        lhs.elements[i] += rhs.elements[i];
+        lhs.elements[i] = lhs.elements[i].wrapping_add(rhs.elements[i]);
     }
 
     lhs
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map2 (-.) (${lhs}.f_elements) (${rhs}.f_elements)"))]
 pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        lhs.elements[i] -= rhs.elements[i];
+        lhs.elements[i] = lhs.elements[i].wrapping_sub(rhs.elements[i]);
     }
 
     lhs
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map_array (fun x -> x *. c) (${v}.f_elements)"))]
 pub fn multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] *= c;
+        v.elements[i] = v.elements[i].wrapping_mul(c);
     }
 
     v
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map_array (fun x -> x &. c) (${v}.f_elements)"))]
 pub fn bitwise_and_with_constant(mut v: PortableVector, c: i16) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
@@ -84,7 +84,7 @@ pub fn bitwise_and_with_constant(mut v: PortableVector, c: i16) -> PortableVecto
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
 #[hax_lib::ensures(|result| fstar!("(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> ${result}.f_elements == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (${v}.f_elements)"))]   
 pub fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
@@ -105,11 +105,12 @@ pub fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector
 // }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (${v}.f_elements)"))]
     pub fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
+    let _vec0 = v;
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        debug_assert!(v.elements[i] >= 0 && v.elements[i] < 4096);
+         hax_lib::loop_invariant!(|i: usize| { fstar!("Seq.length ${v}.f_elements == Seq.length ${_vec0}.f_elements")});
         if v.elements[i] >= 3329 {
             v.elements[i] -= 3329
         }
@@ -158,12 +159,18 @@ pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
 }
 
 #[inline(always)]
-pub(crate) fn barrett_reduce(mut v: PortableVector) -> PortableVector {
+#[hax_lib::fstar::verification_status(panic_free)]
+#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 28296 vec.f_elements")))]
+#[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array 3328 result.f_elements /\\
+                Spec.MLKEM.Math.to_spec_array result.f_elements == Spec.MLKEM.Math.to_spec_array vec.f_elements")))]
+pub(crate) fn barrett_reduce(mut vec: PortableVector) -> PortableVector {
+    let _vec0 = vec;
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] = barrett_reduce_element(v.elements[i]);
+        hax_lib::loop_invariant!(|i: usize| { fstar!("Seq.length ${vec}.f_elements == Seq.length ${_vec0}.f_elements /\\
+                         (forall j. j >= v i ==> Spec.Utils.is_i16b 28296 (Seq.index ${vec}.f_elements j))") });
+        vec.elements[i] = barrett_reduce_element(vec.elements[i]);
     }
-
-    v
+    vec
 }
 
 /// Signed Montgomery Reduction
@@ -180,24 +187,20 @@ pub(crate) fn barrett_reduce(mut v: PortableVector) -> PortableVector {
 /// And, if `|value| ≤ pow2 16 * FIELD_MODULUS-1`, then `|o| <= FIELD_MODULUS + 1664
 /// 
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i32b (3328 * pow2 16) value ")))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b (3328 + 1665) result /\\
                 (Spec.Utils.is_i32b (3328 * 3328) value ==> Spec.Utils.is_i16b 3328 result) /\\
-                v result % 3329 == (v value * 62209) % 3329")))]
+                v result % 3329 == (v value * 169) % 3329")))]
 pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
     // for this function. The removal of this line is being tracked in:
     // https://github.com/cryspen/libcrux/issues/134
     let _ = MONTGOMERY_R;
 
-    //hax_debug_assert!(
-    //    value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R,
-    //    "value is {value}"
-    //);
-
     let k = (value as i16) as i32 * (INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
-    hax_lib::fstar!("assert(v (cast (cast (k <: i32) <: i16) <: i32) == v k @% pow2 16);
+    hax_lib::fstar!("assert(v (cast (cast (value <: i32) <: i16) <: i32) == v value @% pow2 16);
+                     assert(v k == (v value @% pow2 16) * 62209);
+                     assert(v (cast (cast (k <: i32) <: i16) <: i32) == v k @% pow2 16);
                      assert(v (cast (cast (k <: i32) <: i16) <: i32) < pow2 15);
                      assert(v (cast (cast (k <: i32) <: i16) <: i32) >= -pow2 15);
                      assert(v (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: i32) == 3329)");
@@ -214,15 +217,18 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     hax_lib::fstar!("assert (v value < pow2 31);
                      assert (v value / pow2 16 < pow2 15);
                      assert (v value_high == (v value / pow2 16) @% pow2 16);
+                     assert ((v value / pow2 16) < pow2 15 ==> (v value / pow2 16) @% pow2 16 == (v value / pow2 16));
                      assert (v value_high == (v value / pow2 16)); 
+                     assert(Spec.Utils.is_i32b (3328 * 3328) value ==> Spec.Utils.is_i16b 169 value_high);
                      assert(Spec.Utils.is_i16b 3328 value_high)");
     let res = value_high - c;
     hax_lib::fstar!("assert(Spec.Utils.is_i16b (3328 + 1665) res)");
+    hax_lib::fstar!("assert(Spec.Utils.is_i32b (3328 * 3328) value ==> Spec.Utils.is_i16b 3328 res)");
     hax_lib::fstar!("calc ( == ) {
         v k_times_modulus % pow2 16;
-          ( == ) { }
+          ( == ) { assert (v k_times_modulus == (v k @% pow2 16) * 3329) }
         ((v k @% pow2 16) * 3329) % pow2 16;
-          ( == ) { }
+          ( == ) { assert (v k = (v value @% pow2 16) * 62209) }
         ((((v value @% pow2 16) * 62209) @% pow2 16) * 3329) % pow2 16;
           ( == ) {  Math.Lemmas.lemma_mod_sub ((((v value @% pow2 16) * 62209) % pow2 16) * 3329) (pow2 16) 3329 }
         ((((v value @% pow2 16) * 62209) % pow2 16) * 3329) % pow2 16;
@@ -230,27 +236,27 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
         ((((v value @% pow2 16) * 62209) * 3329) % pow2 16);
           ( == ) {  Math.Lemmas.lemma_mod_mul_distr_r (v value @% pow2 16) (62209 * 3329) (pow2 16) }
         ((v value @% pow2 16) % pow2 16);
-          ( == ) {}
+          ( == ) { Math.Lemmas.lemma_mod_sub (v value) (pow2 16) 1 }
         (v value) % pow2 16;
         };
       Math.Lemmas.modulo_add (pow2 16) (- (v k_times_modulus)) (v value) (v k_times_modulus);
       assert ((v value - v k_times_modulus) % pow2 16 == 0)");
     hax_lib::fstar!("calc ( == ) {
         v res % 3329;
-            ( == ) { }
+            ( == ) { assert (v res == v value_high - v c) }
         (v value / pow2 16 - v k_times_modulus / pow2 16) % 3329 ;
-            ( == ) {Math.Lemmas.lemma_div_exact (v value - v k_times_modulus) (pow2 16) }
+            ( == ) { Math.Lemmas.lemma_div_exact (v value - v k_times_modulus) (pow2 16) }
         ((v value - v k_times_modulus) / pow2 16) % 3329;
-            ( == ) {}
-        (((v value - v k_times_modulus) / pow2 16) * ((pow2 16 * 62209) % 3329)) % 3329;
-            ( == ) {Math.Lemmas.lemma_mod_mul_distr_r ((v value - v k_times_modulus) / pow2 16) (pow2 16 * 62209) 3329}
-        (((v value - v k_times_modulus) / pow2 16) * pow2 16 * 62209) % 3329;
-            ( == ) {Math.Lemmas.lemma_div_exact (v value - v k_times_modulus) (pow2 16)}
-        ((v value - v k_times_modulus) * 62209) % 3329;
-            ( == ) {}
-        ((v value * 62209) - ((v k @% pow2 16) * 3329 * 62209)) % 3329; 
-            ( == ) {Math.Lemmas.lemma_mod_sub (v value * 62209) 3329 ((v k @% pow2 16) * 62209)}
-        (v value * 62209) % 3329;  
+            ( == ) { assert ((pow2 16 * 169) % 3329 == 1) }
+        (((v value - v k_times_modulus) / pow2 16) * ((pow2 16 * 169) % 3329)) % 3329;
+            ( == ) { Math.Lemmas.lemma_mod_mul_distr_r ((v value - v k_times_modulus) / pow2 16) (pow2 16 * 169) 3329}
+        (((v value - v k_times_modulus) / pow2 16) * pow2 16 * 169) % 3329;
+            ( == ) { Math.Lemmas.lemma_div_exact (v value - v k_times_modulus) (pow2 16)}
+        ((v value - v k_times_modulus) * 169) % 3329;
+            ( == ) { assert (v k_times_modulus == (v k @% pow2 16) * 3329) }
+        ((v value * 169) - ((v k @% pow2 16) * 3329 * 169)) % 3329; 
+            ( == ) { Math.Lemmas.lemma_mod_sub (v value * 169) 3329 ((v k @% pow2 16) * 169)}
+        (v value * 169) % 3329;  
         }");
     res
 }
@@ -266,7 +272,7 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
 #[inline(always)]
 #[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 fer")))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b (3328 + 1665) result /\\
-                v result % 3329 == (v fe * v fer * 62209) % 3329")))]
+                v result % 3329 == (v fe * v fer * 169) % 3329")))]
 pub(crate) fn montgomery_multiply_fe_by_fer(
     fe: FieldElement,
     fer: FieldElementTimesMontgomeryR,

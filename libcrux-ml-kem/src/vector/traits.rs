@@ -56,10 +56,10 @@ pub trait Operations: Copy + Clone + Repr {
     #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (f_repr $v)"))]
     fn cond_subtract_3329(v: Self) -> Self;
 
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b_array 28296 (f_repr $vector)"))]
     fn barrett_reduce(vector: Self) -> Self;
 
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 3328 c"))]
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
 
     // Compression
@@ -167,9 +167,11 @@ pub trait Operations: Copy + Clone {
 }
 
 // hax does not support trait with default implementations, so we use the following pattern
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 $fer"))]
 pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
     T::montgomery_multiply_by_constant(v, fer)
 }
+
 pub fn to_standard_domain<T: Operations>(v: T) -> T {
     T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
