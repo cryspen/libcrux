@@ -2,9 +2,7 @@
 //! differences between the NIST standard FIPS 203 (ML-KEM) and the
 //! Round 3 CRYSTALS-Kyber submissions in the NIST PQ competition.
 
-use crate::{
-    constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE}, hash_functions::Hash, utils::into_padded_array, MlKemCiphertext,
-};
+use crate::{constants::CPA_PKE_KEY_GENERATION_SEED_SIZE, hash_functions::Hash, MlKemCiphertext};
 
 /// This trait collects differences in specification between ML-KEM
 /// (FIPS 203) and the Round 3 CRYSTALS-Kyber submission in the
@@ -36,6 +34,8 @@ impl Variant for Kyber {
         shared_secret: &[u8],
         ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
     ) -> [u8; 32] {
+        use crate::{constants::H_DIGEST_SIZE, utils::into_padded_array};
+
         let mut kdf_input: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&shared_secret);
         kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext.as_slice()));
         Hasher::PRF::<32>(&kdf_input)

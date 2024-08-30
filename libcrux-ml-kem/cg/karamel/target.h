@@ -1,10 +1,10 @@
 /* Copyright (c) INRIA and Microsoft Corporation. All rights reserved.
- * Licensed under the Apache 2.0 License.
+ * Licensed under the Apache 2.0 and MIT Licenses.
  *
  * SPDX-FileCopyrightText: 2024 INRIA and Microsoft Corporation
  * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
  *
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT or Apache-2.0
  */
 
 #ifndef __KRML_TARGET_H

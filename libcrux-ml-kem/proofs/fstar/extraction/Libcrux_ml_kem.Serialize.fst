@@ -65,7 +65,7 @@ let compress_then_serialize_10_
                       Core.Ops.Range.t_Range usize ]
                     <:
                     t_Slice u8)
-                  (Rust_primitives.unsize bytes <: t_Slice u8)
+                  (bytes <: t_Slice u8)
                 <:
                 t_Slice u8)
           in
@@ -129,7 +129,7 @@ let compress_then_serialize_11_
                       Core.Ops.Range.t_Range usize ]
                     <:
                     t_Slice u8)
-                  (Rust_primitives.unsize bytes <: t_Slice u8)
+                  (bytes <: t_Slice u8)
                 <:
                 t_Slice u8)
           in
@@ -192,7 +192,7 @@ let compress_then_serialize_4_
                       Core.Ops.Range.t_Range usize ]
                     <:
                     t_Slice u8)
-                  (Rust_primitives.unsize bytes <: t_Slice u8)
+                  (bytes <: t_Slice u8)
                 <:
                 t_Slice u8)
           in
@@ -256,7 +256,7 @@ let compress_then_serialize_5_
                       Core.Ops.Range.t_Range usize ]
                     <:
                     t_Slice u8)
-                  (Rust_primitives.unsize bytes <: t_Slice u8)
+                  (bytes <: t_Slice u8)
                 <:
                 t_Slice u8)
           in
@@ -317,7 +317,7 @@ let compress_then_serialize_message
                       Core.Ops.Range.t_Range usize ]
                     <:
                     t_Slice u8)
-                  (Rust_primitives.unsize bytes <: t_Slice u8)
+                  (bytes <: t_Slice u8)
                 <:
                 t_Slice u8)
           in
@@ -881,7 +881,7 @@ let serialize_uncompressed_ring_element
                       Core.Ops.Range.t_Range usize ]
                     <:
                     t_Slice u8)
-                  (Rust_primitives.unsize bytes <: t_Slice u8)
+                  (bytes <: t_Slice u8)
                 <:
                 t_Slice u8)
           in

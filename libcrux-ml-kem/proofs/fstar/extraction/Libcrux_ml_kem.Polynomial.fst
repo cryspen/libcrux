@@ -205,10 +205,7 @@ let impl__add_to_ring_element
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end
               =
-              Core.Slice.impl__len #v_Vector
-                (Rust_primitives.unsize self.f_coefficients <: t_Slice v_Vector)
-              <:
-              usize
+              Core.Slice.impl__len #v_Vector (self.f_coefficients <: t_Slice v_Vector) <: usize
             }
             <:
             Core.Ops.Range.t_Range usize)

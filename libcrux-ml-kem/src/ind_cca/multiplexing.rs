@@ -7,7 +7,7 @@ use super::*;
 #[cfg(feature = "simd256")]
 use instantiations::avx2::{
     decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
-    generate_keypair as generate_keypair_avx2, validate_public_key as validate_public_key_avx2,
+    generate_keypair as generate_keypair_avx2,
 };
 
 #[cfg(feature = "simd128")]
@@ -19,13 +19,13 @@ use instantiations::neon::{
 #[cfg(not(feature = "simd256"))]
 use instantiations::portable::{
     decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
-    generate_keypair as generate_keypair_avx2, validate_public_key as validate_public_key_avx2,
+    generate_keypair as generate_keypair_avx2,
 };
 
 #[cfg(not(feature = "simd128"))]
 use instantiations::portable::{
     decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
-    generate_keypair as generate_keypair_neon, validate_public_key as validate_public_key_neon,
+    generate_keypair as generate_keypair_neon,
 };
 
 #[cfg(all(feature = "simd256", feature = "kyber"))]
@@ -52,6 +52,7 @@ use instantiations::portable::{
     kyber_generate_keypair as kyber_generate_keypair_neon,
 };
 
+#[inline(always)]
 pub(crate) fn validate_public_key<
     const K: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -59,17 +60,24 @@ pub(crate) fn validate_public_key<
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    if libcrux_platform::simd256_support() {
-        validate_public_key_avx2::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(public_key)
-    } else if libcrux_platform::simd128_support() {
-        validate_public_key_neon::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(public_key)
-    } else {
-        instantiations::portable::validate_public_key::<
-            K,
-            RANKED_BYTES_PER_RING_ELEMENT,
-            PUBLIC_KEY_SIZE,
-        >(public_key)
-    }
+    instantiations::portable::validate_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
+        public_key,
+    )
+}
+
+#[inline(always)]
+pub(crate) fn validate_private_key<
+    const K: usize,
+    const SECRET_KEY_SIZE: usize,
+    const CIPHERTEXT_SIZE: usize,
+>(
+    private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+    ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+) -> bool {
+    instantiations::portable::validate_private_key::<K, SECRET_KEY_SIZE, CIPHERTEXT_SIZE>(
+        private_key,
+        ciphertext,
+    )
 }
 
 #[cfg(feature = "kyber")]

@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 962f26311ccdf09a6a3cfeacbccafba22bf3d405
- * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
- * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
- * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: 6b71b5fae48b400c6dac49234638dd52385d111d
+ * Charon: 6b5e110342a771a3e1c739b10294b1778e4be8b4
+ * Eurydice: 31be7d65ca5d6acdacfb33652e478d24dd85c1cb
+ * Karamel: 3205d3365ea2790b02368f79fcee38e38d0b5908
+ * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
+ * Libcrux: 4ad532b206174114dd4140b718e7794a28fc59ee
  */
 
 #ifndef __libcrux_mlkem1024_portable_H
@@ -20,7 +20,6 @@ extern "C" {
 
 #include "eurydice_glue.h"
 #include "libcrux_core.h"
-#include "libcrux_mlkem_portable.h"
 
 /**
  Decapsulate ML-KEM 1024
@@ -31,17 +30,6 @@ extern "C" {
 */
 void libcrux_ml_kem_mlkem1024_portable_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
-    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext, uint8_t ret[32U]);
-
-/**
- Decapsulate ML-KEM 1024 (unpacked)
-
- Generates an [`MlKemSharedSecret`].
- The input is a reference to an unpacked key pair of type
- [`MlKem1024KeyPairUnpacked`] and an [`MlKem1024Ciphertext`].
-*/
-void libcrux_ml_kem_mlkem1024_portable_decapsulate_unpacked(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42 *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext, uint8_t ret[32U]);
 
 /**
@@ -56,39 +44,27 @@ tuple_21 libcrux_ml_kem_mlkem1024_portable_encapsulate(
     uint8_t randomness[32U]);
 
 /**
- Encapsulate ML-KEM 1024 (unpacked)
-
- Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
- The input is a reference to an unpacked public key of type
- [`MlKem1024PublicKeyUnpacked`], the SHA3-256 hash of this public key, and
- [`SHARED_SECRET_SIZE`] bytes of `randomness`.
- TODO: The F* prefix opens required modules, it should go away when the
- following issue is resolved: https://github.com/hacspec/hax/issues/770
-*/
-tuple_21 libcrux_ml_kem_mlkem1024_portable_encapsulate_unpacked(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_42 *public_key,
-    uint8_t randomness[32U]);
-
-/**
  Generate ML-KEM 1024 Key Pair
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_mlkem1024_portable_generate_key_pair(uint8_t randomness[64U]);
 
 /**
- Generate ML-KEM 1024 Key Pair in "unpacked" form
+ Validate a private key.
+
+ Returns `true` if valid, and `false` otherwise.
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42
-libcrux_ml_kem_mlkem1024_portable_generate_key_pair_unpacked(
-    uint8_t randomness[64U]);
+bool libcrux_ml_kem_mlkem1024_portable_validate_private_key(
+    libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
+    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext);
 
 /**
  Validate a public key.
 
- Returns `Some(public_key)` if valid, and `None` otherwise.
+ Returns `true` if valid, and `false` otherwise.
 */
-core_option_Option_99 libcrux_ml_kem_mlkem1024_portable_validate_public_key(
-    libcrux_ml_kem_types_MlKemPublicKey_1f public_key);
+bool libcrux_ml_kem_mlkem1024_portable_validate_public_key(
+    libcrux_ml_kem_types_MlKemPublicKey_1f *public_key);
 
 #if defined(__cplusplus)
 }
