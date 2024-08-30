@@ -19,3 +19,17 @@ path = "fuzz_targets/keygen.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "encaps"
+path = "fuzz_targets/encaps.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "decaps"
+path = "fuzz_targets/decaps.rs"
+test = false
+doc = false
+bench = false
