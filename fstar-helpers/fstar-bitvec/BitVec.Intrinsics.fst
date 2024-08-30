@@ -74,6 +74,21 @@ let mm256_set_epi16 (x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15: i16)
       | 15 -> get_bit x15 (sz offset)
     )
 
+let mm_packs_epi16 (a b: bit_vec 128): bit_vec 128
+  = mk_bv (fun i ->
+      let nth_block = i / 8 in
+      let offset8 = nth_block * 8 in
+      let offset16' = nth_block * 16 in
+      let offset16 = offset16' % 128 in
+      let vec: bit_vec 128 = if offset16' < 128 then a else b in
+      saturate8 (mk_bv (fun j -> vec (offset16 + j))) (i - offset8)
+    )
+
+let mm256_sllv_epi16 (a count: bit_vec 256): bit_vec 256
+  = mv_bv (fun i -> 
+      
+    )
+
 open FStar.Stubs.Tactics.V2.Builtins
 open FStar.Stubs.Tactics.V2
 open FStar.Tactics.V2.Derived
@@ -106,16 +121,6 @@ let call_native_intrinsic #ilen olen name raw_args (bitvecs: list (bit_vec ilen)
 
 let random_bv len: Tac (bit_vec len) 
   = call_native_intrinsic #1 _ "rand" [string_of_int len] []
-
-let mm_packs_epi16 (a b: bit_vec 128): bit_vec 128
-  = mk_bv (fun i ->
-      let nth_block = i / 8 in
-      let offset8 = nth_block * 8 in
-      let offset16' = nth_block * 16 in
-      let offset16 = offset16' % 128 in
-      let vec: bit_vec 128 = if offset16' < 128 then a else b in
-      saturate8 (mk_bv (fun j -> vec (offset16 + j))) (i - offset8)
-    )
 
 let tassert (x: bool): Tac unit
   = if x then () else fail "tassert"

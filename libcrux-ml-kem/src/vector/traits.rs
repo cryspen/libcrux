@@ -19,11 +19,11 @@ pub trait Operations: Copy + Clone + Repr {
     #[requires(true)]
     #[ensures(|result| fstar!("f_repr $result == Seq.create 16 0s"))]
     fn ZERO() -> Self;
-  
+
     #[requires(array.len() == 16)]
     #[ensures(|result| fstar!("f_repr $result == $array"))]
     fn from_i16_array(array: &[i16]) -> Self;
-     
+
     #[requires(true)]
     #[ensures(|result| fstar!("f_repr $x == $result"))]
     fn to_i16_array(x: Self) -> [i16; 16];

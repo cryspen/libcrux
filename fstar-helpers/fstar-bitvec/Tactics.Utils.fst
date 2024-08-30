@@ -218,28 +218,19 @@ let _split_forall_nat
 let focus_first_forall_goal (t : unit -> Tac unit) : Tac unit =
   let goals = goals () in
   let found_goal = alloc false in
-  print "search goal...";
   iterAll (fun _ -> 
-    print "[ITER]";
     (match expect_forall (cur_goal ()) with
     | Some _ ->
-      print "[SOME]";
       if read found_goal
       then ()
       else begin
-        print "[PRE-START]";
         write found_goal true;
-        print "[START]";
         t ();
-        print "[END]";
         ()
       end
     | _ -> 
-      print "NONE";
-      ());
-    print "[ITER:DONE]"
+      ())
   );
-  print "found goal...";
   if not (read found_goal) then t ()
 
 /// Proves `forall (i:nat{i < bound})` for `bound` being a concrete int
@@ -265,3 +256,12 @@ let rec prove_forall_nat_pointwise (tactic: unit -> Tac unit): Tac unit
       )
     )
 
+#push-options "--compat_pre_core 2"
+private let _example (phi: int -> Type0) (proof: (i:int -> Lemma (phi i))) = 
+  assert (forall (i: nat {i < 40}). phi i)
+      by (
+        prove_forall_nat_pointwise (fun _ -> 
+          apply_lemma (quote proof)
+        )
+      )
+#pop-options
