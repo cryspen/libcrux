@@ -268,8 +268,8 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   assume (forall (i: nat {i < 256}). vector i == (if i % 16 = 0 then vector i else 0));
   // HERE: the bound should be 16, not 8
   let _ = (forall (i: nat {i < 16}). ll i == vector (i * 16)) in
-  assert (forall (i: nat {i < 16}). get_bit y (sz 7) == vector (i * 16)) by (
-  // assert (forall (i: nat {i < 16}). ll i == vector (i * 16)) by (
+  // assert (forall (i: nat {i < 16}). get_bit y (sz 7) == vector (i * 16)) by (
+  assert (forall (i: nat {i < 16}). ll i == vector (i * 16)) by (
     Tactics.Utils.prove_forall_nat_pointwise (fun _ ->
       norm [iota; primops; delta_only [`%cast; `%cast_tc_integers]];
       l_to_r [`rw_get_bit_cast];
