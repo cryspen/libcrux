@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 962f26311ccdf09a6a3cfeacbccafba22bf3d405
- * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
- * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 9a130a852767d2f8881c458e022bf35fec1f6afe
+ * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
+ * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
+ * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
+ * Libcrux: 6a879b951d169019291839d9badb170d28e5246b
  */
 
 #include "libcrux_mlkem768_portable.h"
@@ -38,10 +38,10 @@ libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-static void decapsulate_69(
+static void decapsulate_44(
     libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_decapsulate_fd(private_key, ciphertext, ret);
+  libcrux_ml_kem_ind_cca_decapsulate_e5(private_key, ciphertext, ret);
 }
 
 /**
@@ -54,7 +54,7 @@ static void decapsulate_69(
 void libcrux_ml_kem_mlkem768_portable_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  decapsulate_69(private_key, ciphertext, ret);
+  decapsulate_44(private_key, ciphertext, ret);
 }
 
 /**
@@ -74,14 +74,14 @@ libcrux_ml_kem.ind_cca.instantiations.portable.encapsulate with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_3c encapsulate_43(
+static tuple_3c encapsulate_22(
     libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
     uint8_t randomness[32U]) {
   libcrux_ml_kem_types_MlKemPublicKey_15 *uu____0 = public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_encapsulate_f4(uu____0, copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_encapsulate_37(uu____0, copy_of_randomness);
 }
 
 /**
@@ -98,7 +98,7 @@ tuple_3c libcrux_ml_kem_mlkem768_portable_encapsulate(
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return encapsulate_43(uu____0, copy_of_randomness);
+  return encapsulate_22(uu____0, copy_of_randomness);
 }
 
 /**
@@ -116,12 +116,12 @@ generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_d5(
+static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_87(
     uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_8c(copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_generate_keypair_f6(copy_of_randomness);
 }
 
 /**
@@ -132,7 +132,7 @@ libcrux_ml_kem_mlkem768_portable_generate_key_pair(uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_d5(copy_of_randomness);
+  return generate_keypair_87(copy_of_randomness);
 }
 
 /**
@@ -146,8 +146,8 @@ generics
 - RANKED_BYTES_PER_RING_ELEMENT= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
-static bool validate_public_key_f7(uint8_t *public_key) {
-  return libcrux_ml_kem_ind_cca_validate_public_key_3f(public_key);
+static bool validate_public_key_7d(uint8_t *public_key) {
+  return libcrux_ml_kem_ind_cca_validate_public_key_b7(public_key);
 }
 
 /**
@@ -158,7 +158,7 @@ static bool validate_public_key_f7(uint8_t *public_key) {
 core_option_Option_92 libcrux_ml_kem_mlkem768_portable_validate_public_key(
     libcrux_ml_kem_types_MlKemPublicKey_15 public_key) {
   core_option_Option_92 uu____0;
-  if (validate_public_key_f7(public_key.value)) {
+  if (validate_public_key_7d(public_key.value)) {
     uu____0 = (CLITERAL(core_option_Option_92){.tag = core_option_Some,
                                                .f0 = public_key});
   } else {
