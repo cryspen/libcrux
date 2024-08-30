@@ -1,5 +1,5 @@
 //! ML-KEM 768
-//!
+
 use super::{constants::*, ind_cca::*, types::*, *};
 #[cfg(feature = "unpacked")]
 use super::{ind_cca::unpacked::*, vector::traits::VectorType};
@@ -67,18 +67,27 @@ macro_rules! instantiate {
 
             /// Validate a public key.
             ///
-            /// Returns `Some(public_key)` if valid, and `None` otherwise.
-            pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768PublicKey> {
-                if p::validate_public_key::<
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_public_key(public_key: &MlKem768PublicKey) -> bool {
+                p::validate_public_key::<
                     RANK_768,
                     RANKED_BYTES_PER_RING_ELEMENT_768,
                     CPA_PKE_PUBLIC_KEY_SIZE_768,
                 >(&public_key.value)
-                {
-                    Some(public_key)
-                } else {
-                    None
-                }
+            }
+
+            /// Validate a private key.
+            ///
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_private_key(
+                private_key: &MlKem768PrivateKey,
+                ciphertext: &MlKem768Ciphertext,
+            ) -> bool {
+                p::validate_private_key::<
+                    RANK_768,
+                    SECRET_KEY_SIZE_768,
+                    CPA_PKE_CIPHERTEXT_SIZE_768,
+                >(private_key, ciphertext)
             }
 
             /// Generate ML-KEM 768 Key Pair
@@ -327,19 +336,28 @@ instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon 
 
 /// Validate a public key.
 ///
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
+/// Returns `true` if valid, and `false` otherwise.
 #[cfg(not(eurydice))]
-pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768PublicKey> {
-    if multiplexing::validate_public_key::<
+pub fn validate_public_key(public_key: &MlKem768PublicKey) -> bool {
+    multiplexing::validate_public_key::<
         RANK_768,
         RANKED_BYTES_PER_RING_ELEMENT_768,
         CPA_PKE_PUBLIC_KEY_SIZE_768,
     >(&public_key.value)
-    {
-        Some(public_key)
-    } else {
-        None
-    }
+}
+
+/// Validate a private key.
+///
+/// Returns `true` if valid, and `false` otherwise.
+#[cfg(not(eurydice))]
+pub fn validate_private_key(
+    private_key: &MlKem768PrivateKey,
+    ciphertext: &MlKem768Ciphertext,
+) -> bool {
+    multiplexing::validate_private_key::<RANK_768, SECRET_KEY_SIZE_768, CPA_PKE_CIPHERTEXT_SIZE_768>(
+        private_key,
+        ciphertext,
+    )
 }
 
 /// Generate ML-KEM 768 Key Pair
@@ -508,6 +526,6 @@ mod tests {
         OsRng.fill_bytes(&mut randomness);
 
         let key_pair = generate_key_pair(randomness);
-        assert!(validate_public_key(key_pair.pk).is_some());
+        assert!(validate_public_key(&key_pair.pk));
     }
 }

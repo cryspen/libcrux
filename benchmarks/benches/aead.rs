@@ -2,10 +2,9 @@ use chacha20poly1305::{AeadCore, AeadInPlace, KeyInit};
 use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion, Throughput};
 use libcrux::{aead::*, digest, drbg};
 
-mod util;
+use benchmarks::util::*;
 use rand_core::OsRng;
 use ring::aead::UnboundKey;
-use util::*;
 
 // Comparing libcrux performance for different payload sizes and other implementations.
 fn comparisons_encrypt(c: &mut Criterion) {
