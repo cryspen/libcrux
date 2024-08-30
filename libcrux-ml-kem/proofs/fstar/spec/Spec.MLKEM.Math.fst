@@ -47,8 +47,11 @@ let int_to_spec_fe (m:int) : field_element =
 let to_spec_fe (m:i16) : field_element = 
     int_to_spec_fe (v m)
 
+let to_spec_array #len (m:t_Array i16 len) : t_Array field_element len =
+    createi #field_element len (fun i -> to_spec_fe (m.[i]))
+
 let to_spec_poly (m:t_Array i16 (sz 256)) : polynomial =
-    createi #field_element (sz 256) (fun i -> to_spec_fe (m.[i]))
+    to_spec_array m
 
 let to_spec_vector (#r:rank)
                    (m:t_Array (t_Array i16 (sz 256)) r)
@@ -257,4 +260,3 @@ let compress_then_byte_encode (d: dT {d <> 12}) (coefficients: polynomial): t_Ar
 let byte_decode_then_decompress (d: dT {d <> 12}) (b:t_Array u8 (sz (32 * d))): polynomial
   = map_array (decompress_d d) (byte_decode d b)
 
- 

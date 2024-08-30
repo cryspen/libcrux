@@ -78,6 +78,7 @@ wasm-bindgen = { version = "0.2.87", optional = true }
 # [target.'cfg(hax)'.workspace.dependencies]
 [workspace.dependencies]
 hax-lib = { git = "https://github.com/hacspec/hax", branch = "main" }
+#hax-lib = { path = "../hax/hax-lib" }
 
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand", "tests"] }
