@@ -213,6 +213,8 @@ let deserialize_5_ (bytes: t_Slice u8) =
 open FStar.Tactics.V2
 open Tactics.Utils
 
+// let _ = get_bit_cast
+
 let rw_get_bit_cast #t #u
   (x: int_t t) (nth: usize)
   : Lemma (requires v nth < bits u /\ v nth < bits u)
@@ -220,13 +222,29 @@ let rw_get_bit_cast #t #u
           [SMTPat (get_bit (cast_mod #t #u x) nth)]
   = ()
 
-val bit_vec_to_int_t_lemma
-    #t (d: num_bits t) (bv: bit_vec d)
-    i
-  : Lemma (eq2 #bit (get_bit (bit_vec_to_int_t d bv) (sz i)) (bv i))
+let rw_get_bit_shr #t #u (x: int_t t) (y: int_t u) (i: usize {v i < bits t})
+  : Lemma (requires v y >= 0 /\ v y < bits t)
+          (ensures eq2 #bit (get_bit (x >>! y) i )
+                (if v i < bits t - v y
+                    then get_bit x (mk_int (v i + v y))
+                    else if signed t
+                         then get_bit x (mk_int (bits t - 1))
+                         else 0))
+  = ()
+
+// val bit_vec_to_int_t_lemma
+//     #t (d: num_bits t) (bv: bit_vec d)
+//     i
+//   : Lemma (eq2 #bit (get_bit (bit_vec_to_int_t d bv) (sz i)) (bv i))
+
+// val bit_vec_to_int_t_lemma2
+//     #t (d: num_bits t) (bv: bit_vec d)
+//     i
+//   : Lemma (eq2 (get_bit (bit_vec_to_int_t d bv) (sz i)) (bv i))
+
 
 #push-options "--compat_pre_core 0"
-#push-options "--z3rlimit 40"
+#push-options "--z3rlimit 90"
 let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let lsb_to_msb:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_slli_epi16 15 vector
@@ -245,21 +263,38 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let y = cast (bits_packed >>! 8l <: i32) <: u8 in
   let l = [x; y] in
   assert_norm (List.length l == 2);
+  let arr: t_Array u8 (sz 2) = Seq.seq_of_list l in 
+  let ll = bit_vec_of_int_t_array arr 8 in
   assume (forall (i: nat {i < 256}). vector i == (if i % 16 = 0 then vector i else 0));
   // HERE: the bound should be 16, not 8
-  assert (forall (i: nat {i < 8}). get_bit x (sz i) == vector (i * 16)) by (
+  let _ = (forall (i: nat {i < 16}). ll i == vector (i * 16)) in
+  assert (forall (i: nat {i < 16}). get_bit y (sz 7) == vector (i * 16)) by (
+  // assert (forall (i: nat {i < 16}). ll i == vector (i * 16)) by (
     Tactics.Utils.prove_forall_nat_pointwise (fun _ ->
       norm [iota; primops; delta_only [`%cast; `%cast_tc_integers]];
       l_to_r [`rw_get_bit_cast];
-      norm [iota; primops; zeta_full; delta_namespace [ implode_qn (cur_module ());"FStar"]];
-      Tactics.MachineInts.(transform norm_machine_int_term);
-      norm [ iota; primops; zeta_full
+      let light_norm () = norm [ iota; primops; zeta_full
            ; delta_only [`%bit_vec_of_int_t_array;`%bits;`%Lib.IntTypes.bits]
            ; delta_namespace ["FStar"]
-      ];
-      l_to_r[`rw_get_bit_cast; `bit_vec_to_int_t_lemma];
-      norm [primops; iota; delta; zeta_full];
-      norm [unascribe];
+      ] in
+      light_norm ();
+      Tactics.Seq.norm_index ();
+      l_to_r[`rw_get_bit_cast; `bit_vec_to_int_t_lemma; `get_bit_shr];
+      Tactics.MachineInts.(transform norm_machine_int_term);
+      light_norm ();
+      norm [primops; iota; zeta_full; delta_only [
+        `%Libcrux_intrinsics.Avx2_extract.mm_movemask_epi8;
+        `%BitVec.Intrinsics.mm_movemask_epi8;
+      ]];
+      l_to_r [`rw_get_bit_cast; `bit_vec_to_int_t_lemma; `get_bit_shr];
+      let _ = rewrite_lhs () in
+      flip ();
+      trefl ();
+      l_to_r [`rw_get_bit_shr];
+      Tactics.MachineInts.(transform norm_machine_int_term);
+      l_to_r [`rw_get_bit_cast; `bit_vec_to_int_t_lemma; `get_bit_shr];
+      light_norm ();
+      norm [primops; iota; zeta_full; delta_namespace ["Libcrux_intrinsics.Avx2_extract";"BitVec.Intrinsics"; "FStar"]];
       dump' "Goal:";
       smt_sync ();
       dump' "Success";
@@ -267,29 +302,6 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
     )
   );
   Seq.seq_of_list l
-  // let serialized:t_Array u8 (sz 2) = Rust_primitives.Hax.repeat 0uy (sz 2) in
-  // let serialized:t_Array u8 (sz 2) =
-  //   Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-  //     (sz 0)
-  //     (cast (bits_packed <: i32) <: u8)
-  // in
-  // let serialized:t_Array u8 (sz 2) =
-  //   Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-  //     (sz 1)
-  //     (cast (bits_packed >>! 8l <: i32) <: u8)
-  // in
-  // serialized
-
-
-let serialize_1_int_lemma (inputs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-   (_: squash (forall i. inputs i == (if i % 16 = 0 then inputs i else i)))
-   : squash (
-     let outputs = serialize_1_ inputs in
-     let outputs = bit_vec_of_int_t_array outputs 1 in
-     (forall (i: nat {i < 2}). inputs i == outputs i)
-   ) = _ by (
-       Tactics.GetBit.prove_bit_vector_equality ()
-     )
 
 let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in

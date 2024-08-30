@@ -119,6 +119,11 @@ pub fn mm256_set_epi8(
 pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
     unimplemented!()
 }
+
+#[hax_lib::fstar::replace(
+    interface,
+    "unfold let ${mm256_set_epi16} = BitVec.Intrinsics.mm256_set_epi16"
+)]
 pub fn mm256_set_epi16(
     input15: i16,
     input14: i16,

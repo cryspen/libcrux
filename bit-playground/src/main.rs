@@ -1,4 +1,5 @@
 use libcrux_intrinsics::avx2::*;
+use rand::prelude::*;
 
 struct D<T>(T);
 
@@ -29,12 +30,57 @@ impl ToBitVec for &[i16] {
     }
 }
 
+#[test]
+fn conv256() {
+    for i in 0..10 {
+        let abv = BV::rand::<256>();
+        let a: Vec256 = abv.clone().to();
+        if (a.to_bit_vec() != abv) {
+            println!("abv = {}", abv);
+            println!("a   = {}", a.to_bit_vec());
+            panic!();
+        }
+    }
+}
+
+#[test]
+fn conv128() {
+    for i in 0..10 {
+        let abv = BV::rand::<128>();
+        let a: Vec128 = abv.clone().to();
+        if (a.to_bit_vec() != abv) {
+            println!("abv = {}", abv);
+            println!("a   = {}", a.to_bit_vec());
+            panic!();
+        }
+    }
+}
+
+impl BV {
+    fn to<T: FromBitVec>(&self) -> T {
+        T::from_bit_vec(self)
+    }
+}
+
+impl<T: ToBitVec> From<T> for BV {
+    fn from(x: T) -> Self {
+        x.to_bit_vec()
+    }
+}
+
+impl BV {
+    fn rand<const N: usize>() -> Self {
+        bv_of_fn::<N>(|_| if rand::random() { 1 } else { 0 })
+    }
+}
+
 impl FromBitVec for Vec256 {
     fn from_bit_vec(bv: &BV) -> Self {
         assert!(bv.0.len() == 256);
         let x: Vec<_> =
             bv.0.chunks(16)
                 .map(|inner| i16::from_bit_vec(&BV(inner.to_vec())))
+                .rev()
                 .collect();
         mm256_set_epi16(
             x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], x[11], x[12], x[13],
@@ -69,11 +115,20 @@ impl ToBitVec for i16 {
 }
 impl FromBitVec for i16 {
     fn from_bit_vec(bv: &BV) -> i16 {
-        let mut out = 0;
+        let mut out: u16 = 0;
         for bit in bv.0.iter().cloned().rev() {
-            out = out << 1 + bit;
+            out = (out << 1) + bit as u16;
         }
-        out
+        out as i16
+    }
+}
+impl FromBitVec for i32 {
+    fn from_bit_vec(bv: &BV) -> i32 {
+        let mut out: i32 = 0;
+        for bit in bv.0.iter().cloned().rev() {
+            out = (out << 1) + bit as i32;
+        }
+        out as i32
     }
 }
 
@@ -135,11 +190,123 @@ impl Display for D<Vec128> {
     }
 }
 
+fn mk_vec128(x7: i16, x6: i16, x5: i16, x4: i16, x3: i16, x2: i16, x1: i16, x0: i16) -> Vec128 {
+    let x = mm256_set_epi16(0, 0, 0, 0, 0, 0, 0, 0, x0, x1, x2, x3, x4, x5, x6, x7);
+    mm256_castsi256_si128(x)
+}
+
+fn bv_of_fn<const N: usize>(f: impl FnMut(usize) -> u8) -> BV {
+    let out: [u8; N] = core::array::from_fn(f);
+    BV(out.to_vec())
+}
+
+fn bv256_slli_epi16(shift: usize, y: BV) -> BV {
+    assert!(y.0.len() == 256);
+    bv_of_fn::<256>(|i| {
+        let nth_bit = i % 16;
+        if nth_bit >= shift {
+            y.0[i - shift]
+        } else {
+            0
+        }
+    })
+}
+
+#[test]
+fn bv256_slli_epi16_test() {
+    for i in 0..100000 {
+        let abv = BV::rand::<256>();
+        let a = abv.clone().to();
+        let rbv = bv256_slli_epi16(15, abv.clone());
+        let r = mm256_slli_epi16::<15>(a);
+        let r = r.to_bit_vec();
+        if r != rbv {
+            println!("abv = {}", abv);
+            println!("a   = {}", a.to_bit_vec());
+            println!("rbv = {}", rbv);
+            println!("r   = {}", r);
+            panic!();
+        }
+    }
+}
+
+fn bv256_castsi256_si128(bv: BV) -> BV {
+    assert!(bv.0.len() == 256);
+    bv_of_fn::<128>(|i| bv.0[i])
+}
+
+#[test]
+fn bv256_castsi256_si128_test() {
+    for i in 0..100000 {
+        let abv = BV::rand::<256>();
+        let a = abv.clone().to();
+        let rbv = bv256_castsi256_si128(abv.clone());
+        let r = mm256_castsi256_si128(a);
+        let r = r.to_bit_vec();
+        if r != rbv {
+            println!("abv = {}", abv);
+            println!("a   = {}", a.to_bit_vec());
+            println!("rbv = {}", rbv);
+            println!("r   = {}", r);
+            panic!();
+        }
+    }
+}
+
+fn bv256_extracti128_si256(bv: BV) -> BV {
+    assert!(bv.0.len() == 256);
+    let mut out = [0u8; 128];
+    bv_of_fn::<128>(|i| bv.0[i + 128])
+}
+
+#[test]
+fn bv256_extracti128_si256_test() {
+    for i in 0..100000 {
+        let abv = BV::rand::<256>();
+        let a = abv.clone().to();
+        let rbv = bv256_extracti128_si256(abv.clone());
+        let r = mm256_extracti128_si256::<1>(a);
+        let r = r.to_bit_vec();
+        if r != rbv {
+            println!("abv = {}", abv);
+            println!("a   = {}", a.to_bit_vec());
+            println!("rbv = {}", rbv);
+            println!("r   = {}", r);
+            panic!();
+        }
+    }
+}
+
+fn bv_movemask_epi8_bv(a: BV) -> BV {
+    assert!(a.0.len() == 128);
+    bv_of_fn::<128>(|j| if j < 16 { a.0[(j * 8) + 7] } else { 0 })
+}
+
+fn bv_movemask_epi8(a: BV) -> i32 {
+    i32::from_bit_vec(&bv_movemask_epi8_bv(a))
+}
+
+#[test]
+fn bv_movemask_epi8_test() {
+    for i in 0..100000 {
+        let abv = BV::rand::<128>();
+        let a = abv.clone().to();
+        let rbv = bv_movemask_epi8(abv.clone());
+        let r = mm_movemask_epi8(a);
+        if r != rbv {
+            println!("abv = {}", abv);
+            println!("a   = {}", a.to_bit_vec());
+            println!("rbv = {}", rbv);
+            println!("r   = {}", r);
+            panic!();
+        }
+    }
+}
+
 fn bv_packs_epi16(x: BV, y: BV) -> BV {
     assert!(x.0.len() == 128);
     assert!(y.0.len() == 128);
-    let mut out = [0; 128];
-    for i in 0..128 {
+    bv_of_fn::<128>(|i| {
         let nth_block = i / 8;
         let offset8 = nth_block * 8;
         let offset16_ = nth_block * 16;
@@ -151,63 +318,34 @@ fn bv_packs_epi16(x: BV, y: BV) -> BV {
         };
         let block = BV(v.0[offset16..offset16 + 16].to_vec());
         let saturated = saturate8(block.clone());
-        out[i] = saturated.0[i - offset8];
-        // out[offset8..offset8 + 8]
-        //     .copy_from_slice(&saturate8(BV(v.0[offset16..offset16 + 16].to_vec())).0[..]);
-    }
-    BV(out.to_vec())
+        saturated.0[i - offset8]
+    })
 }
 
-fn mk_vec128(x7: i16, x6: i16, x5: i16, x4: i16, x3: i16, x2: i16, x1: i16, x0: i16) -> Vec128 {
-    let x = mm256_set_epi16(0, 0, 0, 0, 0, 0, 0, 0, x0, x1, x2, x3, x4, x5, x6, x7);
-    mm256_castsi256_si128(x)
-}
-
-fn saturate8_verbose(bv: BV) -> BV {
-    assert!(bv.0.len() == 16);
-    let mut out = BV([0u8; 8].to_vec());
-    let upper_bits_any = bv.0[7]
-        | bv.0[8]
-        | bv.0[9]
-        | bv.0[10]
-        | bv.0[11]
-        | bv.0[12]
-        | bv.0[13]
-        | bv.0[14]
-        | bv.0[15];
-    let upper_bits_all = bv.0[7]
-        & bv.0[8]
-        & bv.0[9]
-        & bv.0[10]
-        & bv.0[11]
-        & bv.0[12]
-        & bv.0[13]
-        & bv.0[14]
-        & bv.0[15];
-    if bv.0[15] == 1 {
-        if upper_bits_all > 0 {
-            for i in 0..8 {
-                out.0[i] = bv.0[i];
-            }
-        }
-        out.0[7] = 1;
-    } else {
-        if upper_bits_any > 0 {
-            for i in 0..7 {
-                out.0[i] = 1;
-            }
-        } else {
-            for i in 0..8 {
-                out.0[i] = bv.0[i];
-            }
+#[test]
+fn bv_packs_epi16_test() {
+    for i in 0..100000 {
+        let abv = BV::rand::<128>();
+        let a = abv.clone().to();
+        let bbv = BV::rand::<128>();
+        let b = bbv.clone().to();
+        let rbv = bv_packs_epi16(abv.clone(), bbv.clone());
+        let r = mm_packs_epi16(a, b);
+        let r = r.to_bit_vec();
+        if r != rbv {
+            println!("abv = {}", abv);
+            println!("a   = {}", a.to_bit_vec());
+            println!("bbv = {}", abv);
+            println!("b   = {}", a.to_bit_vec());
+            println!("rbv = {}", rbv);
+            println!("r   = {}", r);
+            panic!();
         }
     }
-    out
 }
 
 fn saturate8(bv: BV) -> BV {
     assert!(bv.0.len() == 16);
-    let mut out = BV([0u8; 8].to_vec());
     let any1 = bv.0[7] == 1
         || bv.0[8] == 1
         || bv.0[9] == 1
@@ -228,9 +366,9 @@ fn saturate8(bv: BV) -> BV {
         && bv.0[15] == 1;
 
     let negative = bv.0[15] == 1;
-    for i in 0..8 {
+    bv_of_fn::<16>(|i| {
         let last_bit = i == 7;
-        out.0[i] = if negative {
+        if negative {
             if last_bit {
                 1
             } else {
@@ -251,8 +389,7 @@ fn saturate8(bv: BV) -> BV {
                 bv.0[i]
             }
         }
-    }
-    out
+    })
 }
 
 impl BV {
@@ -299,14 +436,24 @@ fn main() {
             let result = mm_packs_epi16(Vec128::from_bit_vec(&a), Vec128::from_bit_vec(&b));
             result.to_bit_vec().print()
         }
+        ["rand", n] => {
+            let n = n.parse::<usize>().unwrap();
+            (0..n)
+                .map(|_| match rand::random::<bool>() {
+                    true => "1",
+                    false => "0",
+                })
+                .collect::<Vec<_>>()
+                .join("")
+        }
         // ["mm_movemask_epi8", a] => {
         //     let a = BV::from::<128>(a);
         //     let result = mm_movemask_epi8(Vec128::from_bit_vec(&a));
         //     result.to_bit_vec().print()
         // }
-        _ => panic!("Cannot handle {args:#?}"),
+        _ => panic!("Cannot handle {args:#?} x"),
     };
-    print!("{result}");
+    println!("{result}");
 
     // // for i in i16::MIN..i16::MAX {
     // for i in i16::MIN..i16::MAX {

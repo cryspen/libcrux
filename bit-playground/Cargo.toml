@@ -10,3 +10,5 @@ readme.workspace = true
 
 [dependencies]
 libcrux-intrinsics = {path = "../libcrux-intrinsics"}
+libcrux-ml-kem = {path = "../libcrux-ml-kem"}
+rand = "0.8.5"

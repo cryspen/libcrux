@@ -152,6 +152,8 @@ name = "bit-playground"
 version = "0.0.2-alpha.3"
 dependencies = [
  "libcrux-intrinsics",
+ "libcrux-ml-kem",
+ "rand",
 ]
 
 [[package]]

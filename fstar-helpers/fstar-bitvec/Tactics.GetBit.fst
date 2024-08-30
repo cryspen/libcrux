@@ -25,6 +25,7 @@ let compute_one_round (): Tac _ =
    norm [ iota; zeta; reify_
           ; delta_namespace [
               "FStar"
+            ; "BitVecEq"
             ; implode_qn (cur_module ())
             ; "MkSeq"
             ; `%Rust_primitives.Hax.array_of_list
@@ -48,6 +49,8 @@ private let print_time prefix (t: 'a -> Tac 'b) (x: 'a): Tac 'b
     print (prefix ^ string_of_int (time / 1000) ^ "." ^ string_of_int ((time/100)%10) ^ "s");
     result
 
+
+
 /// Proves a goal of the shape `forall (i:nat{i < N}). get_bit ... i == get_bit ... i` (`N` is expected to be a literal)
 let prove_bit_vector_equality' (): Tac unit = 
   norm [
@@ -58,6 +61,7 @@ let prove_bit_vector_equality' (): Tac unit =
       implode_qn (cur_module ());
       "Libcrux_intrinsics.Avx2_extract";
       "BitVec.Intrinsics";
+      "BitVecEq";
     ];
   ];
   compute_one_round ();
