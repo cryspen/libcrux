@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 0576bfc67e99aae86c51930421072688138b672b
- * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
- * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
- * F*: 04413e808445c4f78fe89cd15b85ff549ed3be62
- * Libcrux: 37cab5179bba258e13e25e12d3d720f8bb922382
+ * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
+ * Eurydice: fcdd1852994390db2b6aa780ed8d837fa811167d
+ * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
+ * Libcrux: 7cd7a08d172e1715493176358bffadf8f87ae3a4
  */
 
 #ifndef __libcrux_core_H
@@ -229,7 +229,7 @@ A monomorphic instance of core.result.unwrap_41
 with types uint8_t[8size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_ac(core_result_Result_56 self, uint8_t ret[8U]);
+void core_result_unwrap_41_0e(core_result_Result_56 self, uint8_t ret[8U]);
 
 typedef struct Eurydice_slice_uint8_t_x2_s {
   Eurydice_slice fst;

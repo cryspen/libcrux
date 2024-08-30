@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 0576bfc67e99aae86c51930421072688138b672b
- * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
- * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
- * F*: 04413e808445c4f78fe89cd15b85ff549ed3be62
- * Libcrux: 37cab5179bba258e13e25e12d3d720f8bb922382
+ * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
+ * Eurydice: fcdd1852994390db2b6aa780ed8d837fa811167d
+ * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
+ * Libcrux: 7cd7a08d172e1715493176358bffadf8f87ae3a4
  */
 
 #include "libcrux_mlkem768_portable.h"
@@ -35,10 +35,10 @@ libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-static void decapsulate_64(
+static void decapsulate_f7(
     libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_decapsulate_53(private_key, ciphertext, ret);
+  libcrux_ml_kem_ind_cca_decapsulate_c5(private_key, ciphertext, ret);
 }
 
 /**
@@ -51,7 +51,7 @@ static void decapsulate_64(
 void libcrux_ml_kem_mlkem768_portable_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  decapsulate_64(private_key, ciphertext, ret);
+  decapsulate_f7(private_key, ciphertext, ret);
 }
 
 /**
@@ -78,10 +78,10 @@ generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-static void decapsulate_unpacked_87(
+static void decapsulate_unpacked_66(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_f8 *key_pair,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_unpacked_decapsulate_unpacked_62(key_pair, ciphertext,
+  libcrux_ml_kem_ind_cca_unpacked_decapsulate_unpacked_ec(key_pair, ciphertext,
                                                           ret);
 }
 
@@ -95,7 +95,7 @@ static void decapsulate_unpacked_87(
 void libcrux_ml_kem_mlkem768_portable_decapsulate_unpacked(
     libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_f8 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  decapsulate_unpacked_87(private_key, ciphertext, ret);
+  decapsulate_unpacked_66(private_key, ciphertext, ret);
 }
 
 /**
@@ -115,14 +115,14 @@ libcrux_ml_kem.ind_cca.instantiations.portable.encapsulate with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_3c encapsulate_eb(
+static tuple_3c encapsulate_ae(
     libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
     uint8_t randomness[32U]) {
   libcrux_ml_kem_types_MlKemPublicKey_15 *uu____0 = public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_encapsulate_23(uu____0, copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_encapsulate_6b(uu____0, copy_of_randomness);
 }
 
 /**
@@ -139,7 +139,7 @@ tuple_3c libcrux_ml_kem_mlkem768_portable_encapsulate(
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return encapsulate_eb(uu____0, copy_of_randomness);
+  return encapsulate_ae(uu____0, copy_of_randomness);
 }
 
 /**
@@ -163,7 +163,7 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_3c encapsulate_unpacked_d0(
+static tuple_3c encapsulate_unpacked_86(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 *public_key,
     uint8_t randomness[32U]) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 *uu____0 =
@@ -171,7 +171,7 @@ static tuple_3c encapsulate_unpacked_d0(
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_unpacked_encapsulate_unpacked_f0(
+  return libcrux_ml_kem_ind_cca_unpacked_encapsulate_unpacked_47(
       uu____0, copy_of_randomness);
 }
 
@@ -191,7 +191,7 @@ tuple_3c libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return encapsulate_unpacked_d0(uu____0, copy_of_randomness);
+  return encapsulate_unpacked_86(uu____0, copy_of_randomness);
 }
 
 /**
@@ -206,12 +206,12 @@ generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_0a(
+static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_14(
     uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_65(copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_generate_keypair_01(copy_of_randomness);
 }
 
 /**
@@ -222,7 +222,7 @@ libcrux_ml_kem_mlkem768_portable_generate_key_pair(uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_0a(copy_of_randomness);
+  return generate_keypair_14(copy_of_randomness);
 }
 
 /**
@@ -241,11 +241,11 @@ const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 static libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_f8
-generate_keypair_unpacked_0f(uint8_t randomness[64U]) {
+generate_keypair_unpacked_f5(uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_e2(
+  return libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_81(
       copy_of_randomness);
 }
 
@@ -258,7 +258,7 @@ libcrux_ml_kem_mlkem768_portable_generate_key_pair_unpacked(
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_unpacked_0f(copy_of_randomness);
+  return generate_keypair_unpacked_f5(copy_of_randomness);
 }
 
 /**
@@ -269,8 +269,8 @@ generics
 - RANKED_BYTES_PER_RING_ELEMENT= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
-static bool validate_public_key_93(uint8_t *public_key) {
-  return libcrux_ml_kem_ind_cca_validate_public_key_36(public_key);
+static bool validate_public_key_52(uint8_t *public_key) {
+  return libcrux_ml_kem_ind_cca_validate_public_key_14(public_key);
 }
 
 /**
@@ -281,7 +281,7 @@ static bool validate_public_key_93(uint8_t *public_key) {
 core_option_Option_92 libcrux_ml_kem_mlkem768_portable_validate_public_key(
     libcrux_ml_kem_types_MlKemPublicKey_15 public_key) {
   core_option_Option_92 uu____0;
-  if (validate_public_key_93(public_key.value)) {
+  if (validate_public_key_52(public_key.value)) {
     uu____0 = (CLITERAL(core_option_Option_92){.tag = core_option_Some,
                                                .f0 = public_key});
   } else {
