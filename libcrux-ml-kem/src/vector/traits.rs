@@ -73,21 +73,21 @@ pub trait Operations: Copy + Clone + Repr {
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
 
     // NTT
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self;
 
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
     fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self;
 
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
         -> Self;
 

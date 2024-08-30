@@ -151,42 +151,49 @@ impl Operations for SIMD256Vector {
         }
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
     fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         Self {
             elements: ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
         }
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
     fn ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
         Self {
             elements: ntt::ntt_layer_2_step(vector.elements, zeta0, zeta1),
         }
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
     fn ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
         Self {
             elements: ntt::ntt_layer_3_step(vector.elements, zeta),
         }
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
     fn inv_ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         Self {
             elements: ntt::inv_ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
         }
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
     fn inv_ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
         Self {
             elements: ntt::inv_ntt_layer_2_step(vector.elements, zeta0, zeta1),
         }
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
     fn inv_ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
         Self {
             elements: ntt::inv_ntt_layer_3_step(vector.elements, zeta),
         }
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
     fn ntt_multiply(
         lhs: &Self,
         rhs: &Self,

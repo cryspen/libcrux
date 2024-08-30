@@ -257,4 +257,3 @@ let compress_then_byte_encode (d: dT {d <> 12}) (coefficients: polynomial): t_Ar
 let byte_decode_then_decompress (d: dT {d <> 12}) (b:t_Array u8 (sz (32 * d))): polynomial
   = map_array (decompress_d d) (byte_decode d b)
 
- 
