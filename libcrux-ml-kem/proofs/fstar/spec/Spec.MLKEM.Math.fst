@@ -189,8 +189,6 @@ let matrix_vector_mul_ntt #r m v =
 val compute_As_plus_e_ntt: #r:rank -> a:matrix r -> s:vector r -> e:vector r -> vector r
 let compute_As_plus_e_ntt #p a s e = vector_add (matrix_vector_mul_ntt a s) e
 
-
-
 type dT = d: nat {d = 1 \/ d = 4 \/ d = 5 \/ d = 10 \/ d = 11 \/ d = 12}
 let max_d (d:dT) = if d < 12 then pow2 d else v v_FIELD_MODULUS
 type field_element_d (d:dT) = n:nat{n < max_d d}
@@ -234,20 +232,19 @@ let byte_encode (d: dT) (coefficients: polynomial_d d): t_Array u8 (sz (32 * d))
      bits_to_bytes #(sz (32 * d))
        (retype_bit_vector (bit_vec_of_nat_array coefficients' d))
 
-let serialize_post
-  (d: dT)
-  (coefficients: polynomial {
-    forall i. i < d * 
-  })
-  (output: t_Array u8 (sz (2 * d)))
-  = coefficients
+let serialize_pre
+  (d1: dT)
+  (coefficients: t_Array i16 (sz 16))
+  = forall i. i < 16 ==> bounded (Seq.index coefficients i) d1
 
-// let byte_encode' 
-//   (d: dT)
-//   #t
-//   (coefficients:  {forall i. bounded (Seq.index coefficients i) d})
-//   : t_Array u8 (sz (32 * d))
-//   = admit ()
+#push-options "--z3rlimit 80 --split_queries always"
+let serialize_post
+  (d1: dT)
+  (coefficients: t_Array i16 (sz 16) { serialize_pre d1 coefficients })
+  (output: t_Array u8 (sz (d1 * 2)))
+  = BitVecEq.int_t_array_bitwise_eq coefficients d1
+                                    output       8
+#pop-options
 
 let byte_decode (d: dT) (coefficients: t_Array u8 (sz (32 * d))): polynomial_d d
   = let bv = bytes_to_bits coefficients in

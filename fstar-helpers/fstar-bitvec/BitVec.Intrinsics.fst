@@ -14,6 +14,12 @@ let mm256_slli_epi16 (shift: nat {shift <= 16}) (vec: bit_vec 256): bit_vec 256
                  then vec (i - shift)
                  else 0)
 
+let mm256_srli_epi16 (shift: nat {shift <= 16}) (vec: bit_vec 256): bit_vec 256
+  = mk_bv (fun i -> // are `i` and `i + shift` position of the same 16-bits integer?
+                 if i / 16 = (i + shift) / 16
+                 then vec (i + shift)
+                 else 0)
+
 let mm256_castsi256_si128 (vec: bit_vec 256): bit_vec 128
   = mk_bv (fun i -> vec i)
 let mm256_extracti128_si256 (control: nat {control == 1}) (vec: bit_vec 256): bit_vec 128
@@ -56,22 +62,22 @@ let mm256_set_epi16 (x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15: i16)
   = mk_bv (fun i ->
       let offset = i % 16 in
       match i / 16 with
-      |  0 -> get_bit  x0 (sz offset)
-      |  1 -> get_bit  x1 (sz offset)
-      |  2 -> get_bit  x2 (sz offset)
-      |  3 -> get_bit  x3 (sz offset)
-      |  4 -> get_bit  x4 (sz offset)
-      |  5 -> get_bit  x5 (sz offset)
-      |  6 -> get_bit  x6 (sz offset)
-      |  7 -> get_bit  x7 (sz offset)
-      |  8 -> get_bit  x8 (sz offset)
-      |  9 -> get_bit  x9 (sz offset)
-      | 10 -> get_bit x10 (sz offset)
-      | 11 -> get_bit x11 (sz offset)
-      | 12 -> get_bit x12 (sz offset)
-      | 13 -> get_bit x13 (sz offset)
-      | 14 -> get_bit x14 (sz offset)
-      | 15 -> get_bit x15 (sz offset)
+      |  0 -> get_bit x15 (sz offset)
+      |  1 -> get_bit x14 (sz offset)
+      |  2 -> get_bit x13 (sz offset)
+      |  3 -> get_bit x12 (sz offset)
+      |  4 -> get_bit x11 (sz offset)
+      |  5 -> get_bit x10 (sz offset)
+      |  6 -> get_bit x9 (sz offset)
+      |  7 -> get_bit x8 (sz offset)
+      |  8 -> get_bit x7 (sz offset)
+      |  9 -> get_bit x6 (sz offset)
+      | 10 -> get_bit x5 (sz offset)
+      | 11 -> get_bit x4 (sz offset)
+      | 12 -> get_bit x3 (sz offset)
+      | 13 -> get_bit x2 (sz offset)
+      | 14 -> get_bit x1 (sz offset)
+      | 15 -> get_bit x0 (sz offset)
     )
 
 let mm_packs_epi16 (a b: bit_vec 128): bit_vec 128
@@ -84,10 +90,10 @@ let mm_packs_epi16 (a b: bit_vec 128): bit_vec 128
       saturate8 (mk_bv (fun j -> vec (offset16 + j))) (i - offset8)
     )
 
-let mm256_sllv_epi16 (a count: bit_vec 256): bit_vec 256
-  = mv_bv (fun i -> 
+// let mm256_sllv_epi16 (a count: bit_vec 256): bit_vec 256
+//   = mv_bv (fun i -> 
       
-    )
+//     )
 
 open FStar.Stubs.Tactics.V2.Builtins
 open FStar.Stubs.Tactics.V2
@@ -124,3 +130,12 @@ let random_bv len: Tac (bit_vec len)
 
 let tassert (x: bool): Tac unit
   = if x then () else fail "tassert"
+
+
+let example: bit_vec 256 = mk_bv (fun i -> if i % 16 = 15 then 1 else 0)
+// let example: bit_vec 256 = mk_bv (fun i -> if i = 2 then 1 else 0)
+
+let x = bv_to_string example
+let y = bv_to_string (mm256_srli_epi16 15 example)
+
+

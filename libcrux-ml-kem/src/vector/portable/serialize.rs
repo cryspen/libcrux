@@ -15,8 +15,12 @@
 use super::vector_type::*;
 use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
 
+// Libcrux_ml_kem.Vector.Traits
+
 #[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.serialize_pre 1 ${v.repr()}"))]
+#[hax_lib::ensures(|result| fstar!("Spec.MLKEM.serialize_pre 1 ${v.repr()} ==> Spec.MLKEM.serialize_post 1 ${$v.repr()} $result"))]
 pub(crate) fn serialize_1(v: PortableVector) -> [u8; 2] {
     let mut result = [0u8; 2];
     for i in 0..8 {
@@ -77,6 +81,8 @@ pub(crate) fn serialize_4_int(v: &[i16]) -> (u8, u8, u8, u8) {
 
 #[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.serialize_pre 4 ${v.repr()}"))]
+#[hax_lib::ensures(|result| fstar!("Spec.MLKEM.serialize_pre 4 ${v.repr()} ==> Spec.MLKEM.serialize_post 4 ${$v.repr()} $result"))]
 pub(crate) fn serialize_4(v: PortableVector) -> [u8; 8] {
     let result0_3 = serialize_4_int(&v.elements[0..8]);
     let result4_7 = serialize_4_int(&v.elements[8..16]);
@@ -162,6 +168,8 @@ pub(crate) fn serialize_5_int(v: &[i16]) -> (u8, u8, u8, u8, u8) {
 
 #[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.serialize_pre 5 ${v.repr()}"))]
+#[hax_lib::ensures(|result| fstar!("Spec.MLKEM.serialize_pre 5 ${v.repr()} ==> Spec.MLKEM.serialize_post 4 ${$v.repr()} $result"))]
 pub(crate) fn serialize_5(v: PortableVector) -> [u8; 10] {
     let r0_4 = serialize_5_int(&v.elements[0..8]);
     let r5_9 = serialize_5_int(&v.elements[8..16]);
@@ -246,6 +254,8 @@ pub(crate) fn serialize_10_int(v: &[i16]) -> (u8, u8, u8, u8, u8) {
 
 #[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.serialize_pre 10 ${v.repr()}"))]
+#[hax_lib::ensures(|result| fstar!("Spec.MLKEM.serialize_pre 10 ${v.repr()} ==> Spec.MLKEM.serialize_post 10 ${$v.repr()} $result"))]
 pub(crate) fn serialize_10(v: PortableVector) -> [u8; 20] {
     let r0_4 = serialize_10_int(&v.elements[0..4]);
     let r5_9 = serialize_10_int(&v.elements[4..8]);
@@ -333,6 +343,8 @@ pub(crate) fn serialize_11_int(v: &[i16]) -> (u8, u8, u8, u8, u8, u8, u8, u8, u8
 
 #[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.serialize_pre 11 ${v.repr()}"))]
+#[hax_lib::ensures(|result| fstar!("Spec.MLKEM.serialize_pre 11 ${v.repr()} ==> Spec.MLKEM.serialize_post 10 ${$v.repr()} $result"))]
 pub(crate) fn serialize_11(v: PortableVector) -> [u8; 22] {
     let r0_10 = serialize_11_int(&v.elements[0..8]);
     let r11_21 = serialize_11_int(&v.elements[8..16]);
@@ -430,6 +442,8 @@ pub(crate) fn serialize_12_int(v: &[i16]) -> (u8, u8, u8) {
 
 #[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.serialize_pre 12 ${v.repr()}"))]
+#[hax_lib::ensures(|result| fstar!("Spec.MLKEM.serialize_pre 12 ${v.repr()} ==> Spec.MLKEM.serialize_post 12 ${$v.repr()} $result"))]
 pub(crate) fn serialize_12(v: PortableVector) -> [u8; 24] {
     let r0_2 = serialize_12_int(&v.elements[0..2]);
     let r3_5 = serialize_12_int(&v.elements[2..4]);
