@@ -129,6 +129,11 @@ let expect_app_n t n: Tac (option (term & (l: list _ {L.length l == n}))) =
     then Some (head, args)
     else None
 
+let expect_forall t: Tac _ =
+    match term_as_formula t with
+    | Forall bv typ phi -> Some (bv, typ, phi)
+    | _ -> None
+
 (*** Rewrite utils *)
 private exception ForceRevert
 let revert_if_none (f: unit -> Tac (option 'a)): Tac (option 'a)
@@ -209,6 +214,34 @@ let _split_forall_nat
           (ensures forall (i:nat{i < upper_bound}). p i)
   = ()
 
+
+let focus_first_forall_goal (t : unit -> Tac unit) : Tac unit =
+  let goals = goals () in
+  let found_goal = alloc false in
+  print "search goal...";
+  iterAll (fun _ -> 
+    print "[ITER]";
+    (match expect_forall (cur_goal ()) with
+    | Some _ ->
+      print "[SOME]";
+      if read found_goal
+      then ()
+      else begin
+        print "[PRE-START]";
+        write found_goal true;
+        print "[START]";
+        t ();
+        print "[END]";
+        ()
+      end
+    | _ -> 
+      print "NONE";
+      ());
+    print "[ITER:DONE]"
+  );
+  print "found goal...";
+  if not (read found_goal) then t ()
+
 /// Proves `forall (i:nat{i < bound})` for `bound` being a concrete int
 let rec prove_forall_nat_pointwise (tactic: unit -> Tac unit): Tac unit
   = let _ =
@@ -218,14 +251,17 @@ let rec prove_forall_nat_pointwise (tactic: unit -> Tac unit): Tac unit
                  | s::_ -> s | _ -> "" in
       print ("prove_forall_pointwise: " ^ goal ^ "...")
     in
-    apply_lemma (`_split_forall_nat);
-    trivial `or_else` (fun _ -> 
-      if try norm [primops];
-             split ();
-             true
-         with | e -> false
-      then (
-        tactic ();
-        prove_forall_nat_pointwise tactic
+    focus_first_forall_goal (fun _ -> 
+      apply_lemma (`_split_forall_nat);
+      trivial `or_else` (fun _ -> 
+        if try norm [primops];
+               split ();
+               true
+           with | e -> false
+        then (
+          tactic ();
+          prove_forall_nat_pointwise tactic
+        )
       )
     )
+

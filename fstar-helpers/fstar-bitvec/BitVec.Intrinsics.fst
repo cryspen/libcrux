@@ -113,7 +113,7 @@ let mm_packs_epi16 (a b: bit_vec 128): bit_vec 128
       let offset8 = nth_block * 8 in
       let offset16' = nth_block * 16 in
       let offset16 = offset16' % 128 in
-      let vec: bit_vec 128 = if offset16 < 128 then a else b in
+      let vec: bit_vec 128 = if offset16' < 128 then a else b in
       saturate8 (mk_bv (fun j -> vec (offset16 + j))) (i - offset8)
     )
 
