@@ -93,23 +93,56 @@ val serialize_5_int (v: t_Slice i16)
           let tuple:(u8 & u8 & u8 & u8 & u8) = tuple in
           BitVecEq.int_t_array_bitwise_eq' (v <: t_Array _ (sz 8)) 5 (MkSeq.create5 tuple) 8)
 
+val repr (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure (t_Array i16 (sz 16)) Prims.l_True (fun _ -> Prims.l_True)
+
 val serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure (t_Array u8 (sz 2)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 2))
+      (requires Spec.MLKEM.serialize_pre 1 (repr v))
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 2) = result in
+          Spec.MLKEM.serialize_pre 1 (repr v) ==> Spec.MLKEM.serialize_post 1 (repr v) result)
 
 val serialize_10_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure (t_Array u8 (sz 20)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 20))
+      (requires Spec.MLKEM.serialize_pre 10 (repr v))
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 20) = result in
+          Spec.MLKEM.serialize_pre 10 (repr v) ==> Spec.MLKEM.serialize_post 10 (repr v) result)
 
 val serialize_11_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure (t_Array u8 (sz 22)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 22))
+      (requires Spec.MLKEM.serialize_pre 11 (repr v))
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 22) = result in
+          Spec.MLKEM.serialize_pre 11 (repr v) ==> Spec.MLKEM.serialize_post 11 (repr v) result)
 
 val serialize_12_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure (t_Array u8 (sz 24)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 24))
+      (requires Spec.MLKEM.serialize_pre 12 (repr v))
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 24) = result in
+          Spec.MLKEM.serialize_pre 12 (repr v) ==> Spec.MLKEM.serialize_post 12 (repr v) result)
 
 val serialize_4_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure (t_Array u8 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 8))
+      (requires Spec.MLKEM.serialize_pre 4 (repr v))
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 8) = result in
+          Spec.MLKEM.serialize_pre 4 (repr v) ==> Spec.MLKEM.serialize_post 4 (repr v) result)
 
 val serialize_5_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure (t_Array u8 (sz 10)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 10))
+      (requires Spec.MLKEM.serialize_pre 5 (repr v))
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 10) = result in
+          Spec.MLKEM.serialize_pre 5 (repr v) ==> Spec.MLKEM.serialize_post 5 (repr v) result)
 
 val deserialize_1_ (v: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector

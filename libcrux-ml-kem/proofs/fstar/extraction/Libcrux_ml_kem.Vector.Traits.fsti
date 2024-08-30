@@ -176,8 +176,12 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_ntt_multiply_pre x0 x1 x2 x3 x4 x5)
         (fun result -> f_ntt_multiply_post x0 x1 x2 x3 x4 x5 result);
-  f_serialize_1_pre:a: v_Self -> pred: Type0{true ==> pred};
-  f_serialize_1_post:v_Self -> t_Array u8 (sz 2) -> Type0;
+  f_serialize_1_pre:a: v_Self -> pred: Type0{Spec.MLKEM.serialize_pre 1 (f_repr a) ==> pred};
+  f_serialize_1_post:a: v_Self -> result: t_Array u8 (sz 2)
+    -> pred:
+      Type0
+        { pred ==>
+          Spec.MLKEM.serialize_pre 1 (f_repr a) ==> Spec.MLKEM.serialize_post 1 (f_repr a) result };
   f_serialize_1_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 2))
         (f_serialize_1_pre x0)
@@ -186,8 +190,12 @@ class t_Operations (v_Self: Type0) = {
   f_deserialize_1_post:t_Slice u8 -> v_Self -> Type0;
   f_deserialize_1_:x0: t_Slice u8
     -> Prims.Pure v_Self (f_deserialize_1_pre x0) (fun result -> f_deserialize_1_post x0 result);
-  f_serialize_4_pre:a: v_Self -> pred: Type0{true ==> pred};
-  f_serialize_4_post:v_Self -> t_Array u8 (sz 8) -> Type0;
+  f_serialize_4_pre:a: v_Self -> pred: Type0{Spec.MLKEM.serialize_pre 4 (f_repr a) ==> pred};
+  f_serialize_4_post:a: v_Self -> result: t_Array u8 (sz 8)
+    -> pred:
+      Type0
+        { pred ==>
+          Spec.MLKEM.serialize_pre 4 (f_repr a) ==> Spec.MLKEM.serialize_post 4 (f_repr a) result };
   f_serialize_4_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 8))
         (f_serialize_4_pre x0)
@@ -196,8 +204,12 @@ class t_Operations (v_Self: Type0) = {
   f_deserialize_4_post:t_Slice u8 -> v_Self -> Type0;
   f_deserialize_4_:x0: t_Slice u8
     -> Prims.Pure v_Self (f_deserialize_4_pre x0) (fun result -> f_deserialize_4_post x0 result);
-  f_serialize_5_pre:a: v_Self -> pred: Type0{true ==> pred};
-  f_serialize_5_post:v_Self -> t_Array u8 (sz 10) -> Type0;
+  f_serialize_5_pre:a: v_Self -> pred: Type0{Spec.MLKEM.serialize_pre 5 (f_repr a) ==> pred};
+  f_serialize_5_post:a: v_Self -> result: t_Array u8 (sz 10)
+    -> pred:
+      Type0
+        { pred ==>
+          Spec.MLKEM.serialize_pre 5 (f_repr a) ==> Spec.MLKEM.serialize_post 5 (f_repr a) result };
   f_serialize_5_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 10))
         (f_serialize_5_pre x0)
@@ -206,8 +218,13 @@ class t_Operations (v_Self: Type0) = {
   f_deserialize_5_post:t_Slice u8 -> v_Self -> Type0;
   f_deserialize_5_:x0: t_Slice u8
     -> Prims.Pure v_Self (f_deserialize_5_pre x0) (fun result -> f_deserialize_5_post x0 result);
-  f_serialize_10_pre:a: v_Self -> pred: Type0{true ==> pred};
-  f_serialize_10_post:v_Self -> t_Array u8 (sz 20) -> Type0;
+  f_serialize_10_pre:a: v_Self -> pred: Type0{Spec.MLKEM.serialize_pre 10 (f_repr a) ==> pred};
+  f_serialize_10_post:a: v_Self -> result: t_Array u8 (sz 20)
+    -> pred:
+      Type0
+        { pred ==>
+          Spec.MLKEM.serialize_pre 10 (f_repr a) ==> Spec.MLKEM.serialize_post 10 (f_repr a) result
+        };
   f_serialize_10_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 20))
         (f_serialize_10_pre x0)
@@ -216,8 +233,13 @@ class t_Operations (v_Self: Type0) = {
   f_deserialize_10_post:t_Slice u8 -> v_Self -> Type0;
   f_deserialize_10_:x0: t_Slice u8
     -> Prims.Pure v_Self (f_deserialize_10_pre x0) (fun result -> f_deserialize_10_post x0 result);
-  f_serialize_11_pre:a: v_Self -> pred: Type0{true ==> pred};
-  f_serialize_11_post:v_Self -> t_Array u8 (sz 22) -> Type0;
+  f_serialize_11_pre:a: v_Self -> pred: Type0{Spec.MLKEM.serialize_pre 11 (f_repr a) ==> pred};
+  f_serialize_11_post:a: v_Self -> result: t_Array u8 (sz 22)
+    -> pred:
+      Type0
+        { pred ==>
+          Spec.MLKEM.serialize_pre 11 (f_repr a) ==> Spec.MLKEM.serialize_post 11 (f_repr a) result
+        };
   f_serialize_11_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 22))
         (f_serialize_11_pre x0)
@@ -226,8 +248,13 @@ class t_Operations (v_Self: Type0) = {
   f_deserialize_11_post:t_Slice u8 -> v_Self -> Type0;
   f_deserialize_11_:x0: t_Slice u8
     -> Prims.Pure v_Self (f_deserialize_11_pre x0) (fun result -> f_deserialize_11_post x0 result);
-  f_serialize_12_pre:a: v_Self -> pred: Type0{true ==> pred};
-  f_serialize_12_post:v_Self -> t_Array u8 (sz 24) -> Type0;
+  f_serialize_12_pre:a: v_Self -> pred: Type0{Spec.MLKEM.serialize_pre 12 (f_repr a) ==> pred};
+  f_serialize_12_post:a: v_Self -> result: t_Array u8 (sz 24)
+    -> pred:
+      Type0
+        { pred ==>
+          Spec.MLKEM.serialize_pre 12 (f_repr a) ==> Spec.MLKEM.serialize_post 12 (f_repr a) result
+        };
   f_serialize_12_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 24))
         (f_serialize_12_pre x0)

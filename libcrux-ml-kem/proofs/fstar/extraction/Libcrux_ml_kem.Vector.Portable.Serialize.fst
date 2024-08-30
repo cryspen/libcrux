@@ -296,6 +296,9 @@ let serialize_5_int (v: t_Slice i16) =
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+let repr (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+
 #push-options "--admit_smt_queries true"
 
 let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
