@@ -3,15 +3,57 @@ module Libcrux_ml_kem.Vector.Avx2.Serialize
 open Core
 open FStar.Mul
 
+module _ = Tactics.Utils
+module _ = Tactics.Seq
+module _ = BitVecEq
+
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Vector.Portable in
   ()
 
+open BitVec.Intrinsics {mk_bv, specialized_mm256_mullo_epi16, mm256_srli_epi16, mm256_set_epi16, mm256_mullo_epi16}
+
+open FStar.Tactics.V2
+open Tactics.Utils
+
+let rw_get_bit_cast #t #u
+  (x: int_t t) (nth: usize)
+  : Lemma (requires v nth < bits u /\ v nth < bits u)
+          (ensures eq2 #bit (get_bit (cast_mod #t #u x) nth) (if v nth < bits t then get_bit x nth else 0))
+          [SMTPat (get_bit (cast_mod #t #u x) nth)]
+  = ()
+
+let rw_get_bit_shr #t #u (x: int_t t) (y: int_t u) (i: usize {v i < bits t})
+  : Lemma (requires v y >= 0 /\ v y < bits t)
+          (ensures eq2 #bit (get_bit (x >>! y) i )
+                (if v i < bits t - v y
+                    then get_bit x (mk_int (v i + v y))
+                    else if signed t
+                         then get_bit x (mk_int (bits t - 1))
+                         else 0))
+  = ()
+
+open Tactics.Utils
+
+/// This lemma takes care of specializing `mm256_mullo_epi16`
+let mm256_mullo_epi16_rewrite () =
+  norm [primops; iota; zeta; delta_only [`%mm256_mullo_epi16]];
+  pointwise_or_refl (fun _ -> 
+    let?# (lhs, _, _) = expect_lhs_eq_rhs () in
+    let?# (f, _) = expect_app_n lhs 3 in
+    let?# _ = expect_free_var f (`%BitVec.Equality.bv_equality) in
+    apply_lemma_rw_eqtype (`BitVec.Equality.rewrite);
+    Some ()
+  )
+
+#push-options "--compat_pre_core 2"
 let deserialize_1_ (bytes: t_Slice u8) =
+  assume (Seq.length bytes == 2);
   let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (cast (bytes.[ sz 1 ] <: u8) <: i16)
+    // WARNING: using `BitVec.Intrinsics.mm256_set_epi16` here for now, we need to bind it in extract_avx2.rs
+    mm256_set_epi16 (cast (bytes.[ sz 1 ] <: u8) <: i16)
       (cast (bytes.[ sz 1 ] <: u8) <: i16) (cast (bytes.[ sz 1 ] <: u8) <: i16)
       (cast (bytes.[ sz 1 ] <: u8) <: i16) (cast (bytes.[ sz 1 ] <: u8) <: i16)
       (cast (bytes.[ sz 1 ] <: u8) <: i16) (cast (bytes.[ sz 1 ] <: u8) <: i16)
@@ -22,15 +64,34 @@ let deserialize_1_ (bytes: t_Slice u8) =
       (cast (bytes.[ sz 0 ] <: u8) <: i16)
   in
   let shift_lsb_to_msb:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (1s <<! 8l <: i16) (1s <<! 9l <: i16)
+    mm256_set_epi16 (1s <<! 8l <: i16) (1s <<! 9l <: i16)
       (1s <<! 10l <: i16) (1s <<! 11l <: i16) (1s <<! 12l <: i16) (1s <<! 13l <: i16)
       (1s <<! 14l <: i16) (-32768s) (1s <<! 8l <: i16) (1s <<! 9l <: i16) (1s <<! 10l <: i16)
       (1s <<! 11l <: i16) (1s <<! 12l <: i16) (1s <<! 13l <: i16) (1s <<! 14l <: i16) (-32768s)
   in
   let coefficients_in_msb:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 coefficients shift_lsb_to_msb
+    // Libcrux_intrinsics.Avx2_extract.
+    mm256_mullo_epi16 coefficients shift_lsb_to_msb
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 15l coefficients_in_msb
+  // Libcrux_intrinsics.Avx2_extract.
+  let result = mm256_srli_epi16 15 coefficients_in_msb in
+  assert (forall (i: nat {i < 16}). result (i * 16) == bit_vec_of_int_t_array #_ #2 bytes 8 i) by (
+    Tactics.Utils.prove_forall_nat_pointwise (print_time "SMT solved the goal in " (fun _ ->
+      mm256_mullo_epi16_rewrite ();
+      let light_norm () = norm [ iota; primops; zeta_full
+           ; delta_only [`%bit_vec_of_int_t_array;`%bits;`%Lib.IntTypes.bits]
+           ; delta_namespace ["FStar"]
+      ] in
+      light_norm ();
+      Tactics.Seq.norm_index ();
+      Tactics.MachineInts.(transform norm_machine_int_term);
+      light_norm ();
+      norm [primops; iota; zeta_full; delta_namespace ["Libcrux_intrinsics.Avx2_extract";"BitVec.Intrinsics"; implode_qn (cur_module ()); "FStar"]];
+      print ("Ask SMT: " ^ term_to_string (cur_goal ()));
+      smt_sync ()
+    ))
+  );
+  result
 
 let deserialize_10_ (bytes: t_Slice u8) =
   let shift_lsbs_to_msbs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -210,32 +271,65 @@ let deserialize_5_ (bytes: t_Slice u8) =
   in
   Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 11l coefficients
 
+#push-options "--compat_pre_core 0"
+#push-options "--z3rlimit 90"
 let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let lsb_to_msb:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_slli_epi16 15l vector
+    Libcrux_intrinsics.Avx2_extract.mm256_slli_epi16 15 vector
   in
   let low_msbs:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 lsb_to_msb
   in
   let high_msbs:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l lsb_to_msb
+    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1 lsb_to_msb
   in
   let msbs:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_packs_epi16 low_msbs high_msbs
   in
   let bits_packed:i32 = Libcrux_intrinsics.Avx2_extract.mm_movemask_epi8 msbs in
-  let serialized:t_Array u8 (sz 2) = Rust_primitives.Hax.repeat 0uy (sz 2) in
-  let serialized:t_Array u8 (sz 2) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (sz 0)
-      (cast (bits_packed <: i32) <: u8)
-  in
-  let serialized:t_Array u8 (sz 2) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (sz 1)
-      (cast (bits_packed >>! 8l <: i32) <: u8)
-  in
-  serialized
+  let x = cast (bits_packed <: i32) <: u8 in
+  let y = cast (bits_packed >>! 8l <: i32) <: u8 in
+  let l = [x; y] in
+  assert_norm (List.length l == 2);
+  let arr: t_Array u8 (sz 2) = Seq.seq_of_list l in 
+  let ll = bit_vec_of_int_t_array arr 8 in
+  assume (forall (i: nat {i < 256}). vector i == (if i % 16 = 0 then vector i else 0));
+  // HERE: the bound should be 16, not 8
+  let _ = (forall (i: nat {i < 16}). ll i == vector (i * 16)) in
+  // assert (forall (i: nat {i < 16}). get_bit y (sz 7) == vector (i * 16)) by (
+  assert (forall (i: nat {i < 16}). ll i == vector (i * 16)) by (
+    Tactics.Utils.prove_forall_nat_pointwise (fun _ ->
+      norm [iota; primops; delta_only [`%cast; `%cast_tc_integers]];
+      l_to_r [`rw_get_bit_cast];
+      let light_norm () = norm [ iota; primops; zeta_full
+           ; delta_only [`%bit_vec_of_int_t_array;`%bits;`%Lib.IntTypes.bits]
+           ; delta_namespace ["FStar"]
+      ] in
+      light_norm ();
+      Tactics.Seq.norm_index ();
+      l_to_r[`rw_get_bit_cast; `bit_vec_to_int_t_lemma; `get_bit_shr];
+      Tactics.MachineInts.(transform norm_machine_int_term);
+      light_norm ();
+      norm [primops; iota; zeta_full; delta_only [
+        `%Libcrux_intrinsics.Avx2_extract.mm_movemask_epi8;
+        `%BitVec.Intrinsics.mm_movemask_epi8;
+      ]];
+      l_to_r [`rw_get_bit_cast; `bit_vec_to_int_t_lemma; `get_bit_shr];
+      let _ = rewrite_lhs () in
+      flip ();
+      trefl ();
+      l_to_r [`rw_get_bit_shr];
+      Tactics.MachineInts.(transform norm_machine_int_term);
+      l_to_r [`rw_get_bit_cast; `bit_vec_to_int_t_lemma; `get_bit_shr];
+      light_norm ();
+      norm [primops; iota; zeta_full; delta_namespace ["Libcrux_intrinsics.Avx2_extract";"BitVec.Intrinsics"; "FStar"]];
+      dump' "Goal:";
+      smt_sync ();
+      dump' "Success";
+      smt ()
+    )
+  );
+  Seq.seq_of_list l
 
 let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
