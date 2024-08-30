@@ -27,6 +27,4 @@ ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
               Libcrux_ml_kem.Vector.Rej_sample_table.fsti \
               Libcrux_ml_kem.Vector.Traits.fst
 
-OTHERFLAGS="--query_stats"
-FSTAR_INCLUDE_DIRS_EXTRA = $(shell git rev-parse --show-toplevel)/libcrux-ml-kem/proofs/fstar/spec
-include $(shell git rev-parse --show-toplevel)/fstar-helpers/Makefile.template
+include $(shell git rev-parse --show-toplevel)/fstar-helpers/Makefile.base
