@@ -65,31 +65,6 @@ pub type MLDSA44VerificationKey = MLDSAVerificationKey<VERIFICATION_KEY_SIZE>;
 pub type MLDSA44KeyPair = MLDSAKeyPair<VERIFICATION_KEY_SIZE, SIGNING_KEY_SIZE>;
 pub type MLDSA44Signature = MLDSASignature<SIGNATURE_SIZE>;
 
-// // TODO: Multiplex more intelligently.
-// #[cfg(feature = "simd256")]
-// type SIMDUnit = crate::simd::avx2::AVX2SIMDUnit;
-// #[cfg(not(feature = "simd256"))]
-// type SIMDUnit = crate::simd::portable::PortableSIMDUnit;
-
-// // For regular shake128 we only use portable.
-// type Shake128 = crate::hash_functions::portable::Shake128;
-
-// #[cfg(feature = "simd256")]
-// type Shake128X4 = crate::hash_functions::simd256::Shake128;
-// #[cfg(not(feature = "simd256"))]
-// type Shake128X4 = crate::hash_functions::portable::Shake128X4;
-
-// #[cfg(feature = "simd256")]
-// type Shake256X4 = crate::hash_functions::simd256::Shake256X4;
-// #[cfg(not(feature = "simd256"))]
-// type Shake256X4 = crate::hash_functions::portable::Shake256X4;
-
-// // TODO: This is all portable for now.
-// #[cfg(feature = "simd256")]
-// type Shake256 = crate::hash_functions::portable::Shake256;
-// #[cfg(not(feature = "simd256"))]
-// type Shake256 = crate::hash_functions::portable::Shake256;
-
 // Instantiate the different functions.
 macro_rules! instantiate {
     ($modp:ident, $p:path, $doc:expr) => {
