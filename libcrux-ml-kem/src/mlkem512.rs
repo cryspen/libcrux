@@ -439,7 +439,7 @@ pub fn decapsulate(
 /// implements `RngCore` and `CryptoRng`.
 ///
 /// Decapsulation is not provided in this module as it does not require randomness.
-#[cfg(not(eurydice))]
+#[cfg(all(not(eurydice), feature = "rand"))]
 pub mod rand {
     use super::{
         MlKem512Ciphertext, MlKem512KeyPair, MlKem512PublicKey, MlKemSharedSecret,
