@@ -26,6 +26,7 @@ let compute_one_round (): Tac _ =
             ; implode_qn (cur_module ())
             ; "MkSeq"
             ; `%Rust_primitives.Hax.array_of_list
+            ; `%Libcrux_ml_kem.Vector.Portable.Vector_type.__proj__Mkt_PortableVector__item__f_elements
           ]
         ; primops; unmeta];
    trace "compute_one_round: norm_pow2"        norm_pow2;
