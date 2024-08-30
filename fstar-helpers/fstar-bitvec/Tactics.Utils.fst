@@ -204,6 +204,17 @@ let rewrite_rhs (): Tac _ =
   let uvar = fresh_uvar (Some (tc (cur_env ()) rhs)) in
   tcut (`squash (`#rhs == `#uvar))
 
+(*** Logging and time *)
+let time_tactic_ms (t: 'a -> Tac 'b) (x: 'a): Tac ('b & int)
+  = let time0 = curms () in
+    let result = t x in
+    let time1 = curms () in
+    (result, time1 - time0)
+
+let print_time prefix (t: 'a -> Tac 'b) (x: 'a): Tac 'b
+  = let (result, time) = time_tactic_ms t x in
+    print (prefix ^ string_of_int (time / 1000) ^ "." ^ string_of_int ((time/100)%10) ^ "s");
+    result
 
 (*** Unroll forall goals *)
 let _split_forall_nat

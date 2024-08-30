@@ -185,6 +185,10 @@ pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(
+    interface,
+    "unfold let ${mm256_mullo_epi16} = BitVec.Intrinsics.mm256_mullo_epi16"
+)]
 pub fn mm256_mullo_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
@@ -230,6 +234,10 @@ pub fn mm256_srai_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(
+    interface,
+    "unfold let ${mm256_srli_epi16} = BitVec.Intrinsics.mm256_srli_epi16"
+)]
 pub fn mm256_srli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     unimplemented!()

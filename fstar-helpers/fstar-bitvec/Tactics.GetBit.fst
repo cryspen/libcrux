@@ -38,19 +38,6 @@ let compute_one_round (): Tac _ =
 /// Normalizes up to `get_bit`
 let compute': unit -> Tac unit = goal_fixpoint compute_one_round
 
-private let time_tactic_ms (t: 'a -> Tac 'b) (x: 'a): Tac ('b & int)
-  = let time0 = curms () in
-    let result = t x in
-    let time1 = curms () in
-    (result, time1 - time0)
-
-private let print_time prefix (t: 'a -> Tac 'b) (x: 'a): Tac 'b
-  = let (result, time) = time_tactic_ms t x in
-    print (prefix ^ string_of_int (time / 1000) ^ "." ^ string_of_int ((time/100)%10) ^ "s");
-    result
-
-
-
 /// Proves a goal of the shape `forall (i:nat{i < N}). get_bit ... i == get_bit ... i` (`N` is expected to be a literal)
 let prove_bit_vector_equality' (): Tac unit = 
   norm [
