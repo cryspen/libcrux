@@ -3,7 +3,6 @@ use crate::vector::{traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, FIELD_MODULUS};
 use super::*;
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
                            Spec.Utils.map2 (+.) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs)"))]
 pub(crate) fn add(lhs: Vec256, rhs: Vec256) -> Vec256 {
@@ -11,7 +10,6 @@ pub(crate) fn add(lhs: Vec256, rhs: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
                            Spec.Utils.map2 (-.) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs)"))]
 pub(crate) fn sub(lhs: Vec256, rhs: Vec256) -> Vec256 {
@@ -19,19 +17,38 @@ pub(crate) fn sub(lhs: Vec256, rhs: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
                            Spec.Utils.map_array (fun x -> x *. $constant) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]
 pub(crate) fn multiply_by_constant(vector: Vec256, constant: i16) -> Vec256 {
-    mm256_mullo_epi16(vector, mm256_set1_epi16(constant))
+    let cv = mm256_set1_epi16(constant);
+    let result = mm256_mullo_epi16(vector, cv);
+    hax_lib::fstar!("Spec.Utils.lemma_map2_index #_ #_ #_ #(sz 16) mul_mod 
+                        (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})
+                        (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${cv});
+                     Spec.Utils.lemma_map_index #_ #_ #(sz 16) (fun x -> x *. constant) 
+                        (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector});
+                     Spec.Utils.lemma_create_index #_ (sz 16) constant;
+                     Seq.lemma_eq_intro (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result})
+                        (Spec.Utils.map_array (fun x -> x *. $constant) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector))");
+    
+    result
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
                            Spec.Utils.map_array (fun x -> x &. $constant) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]
 pub(crate) fn bitwise_and_with_constant(vector: Vec256, constant: i16) -> Vec256 {
-    mm256_and_si256(vector, mm256_set1_epi16(constant))
+    let cv = mm256_set1_epi16(constant);
+    let result = mm256_and_si256(vector, cv);
+    hax_lib::fstar!("Spec.Utils.lemma_map2_index #_ #_ #_ #(sz 16) (&.) 
+                        (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})
+                        (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${cv});
+                     Spec.Utils.lemma_map_index #_ #_ #(sz 16) (fun x -> x &. constant) 
+                        (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector});
+                     Spec.Utils.lemma_create_index #_ (sz 16) constant;
+                     Seq.lemma_eq_intro (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result})
+                        (Spec.Utils.map_array (fun x -> x &. $constant) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector))");
+    result
 }
 
 #[inline(always)]

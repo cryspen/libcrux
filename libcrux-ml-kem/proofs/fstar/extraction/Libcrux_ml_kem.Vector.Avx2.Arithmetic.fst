@@ -4,30 +4,60 @@ open Core
 open FStar.Mul
 
 let add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
 
 let bitwise_and_with_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i16) =
-  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_and_si256 vector
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 constant
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  let cv:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 constant
   in
-  let _:Prims.unit = admit () (* Panic freedom *) in
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_and_si256 vector cv
+  in
+  let _:Prims.unit =
+    Spec.Utils.lemma_map2_index #_
+      #_
+      #_
+      #(sz 16)
+      ( &. )
+      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector)
+      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 cv);
+    Spec.Utils.lemma_map_index #_
+      #_
+      #(sz 16)
+      (fun x -> x &. constant)
+      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector);
+    Spec.Utils.lemma_create_index #_ (sz 16) constant;
+    Seq.lemma_eq_intro (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result)
+      (Spec.Utils.map_array (fun x -> x &. constant)
+          (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector))
+  in
   result
 
 let multiply_by_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i16) =
-  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 vector
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 constant
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  let cv:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 constant
   in
-  let _:Prims.unit = admit () (* Panic freedom *) in
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 vector cv
+  in
+  let _:Prims.unit =
+    Spec.Utils.lemma_map2_index #_
+      #_
+      #_
+      #(sz 16)
+      mul_mod
+      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector)
+      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 cv);
+    Spec.Utils.lemma_map_index #_
+      #_
+      #(sz 16)
+      (fun x -> x *. constant)
+      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector);
+    Spec.Utils.lemma_create_index #_ (sz 16) constant;
+    Seq.lemma_eq_intro (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result)
+      (Spec.Utils.map_array (fun x -> x *. constant)
+          (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector))
+  in
   result
 
 let shift_right (v_SHIFT_BY: i32) (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
@@ -38,11 +68,7 @@ let shift_right (v_SHIFT_BY: i32) (vector: Libcrux_intrinsics.Avx2_extract.t_Vec
   result
 
 let sub (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 lhs rhs
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 lhs rhs
 
 let barrett_reduce (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let t:Libcrux_intrinsics.Avx2_extract.t_Vec256 =

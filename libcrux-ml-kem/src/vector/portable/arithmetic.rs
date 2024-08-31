@@ -194,16 +194,17 @@ pub(crate) fn barrett_reduce(mut vec: PortableVector) -> PortableVector {
     let _vec0 = vec;
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| { fstar!("
-                (forall j. j < v i ==> ((Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements j) /\\
-                                        v (Seq.index ${vec}.f_elements j) % 3329 == (v (Seq.index ${_vec0}.f_elements j) % 3329)))) /\\
+                (forall j. j < v i ==> (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements j) /\\
+                                        v (Seq.index ${vec}.f_elements j) % 3329 == (v (Seq.index ${_vec0}.f_elements j) % 3329))) /\\
                 (forall j. j >= v i ==> (Seq.index ${vec}.f_elements j == Seq.index ${_vec0}.f_elements j /\\
-                                         Spec.Utils.is_i16b 28296 (Seq.index ${vec}.f_elements j))") });
+                                         Spec.Utils.is_i16b 28296 (Seq.index ${vec}.f_elements j)))") });
         let vi = barrett_reduce_element(vec.elements[i]);
-        hax_lib::fstar!("assert(Spec.Utils.is_i16b 3328 vi);
-                         assert (v (mk_int #usize_inttype (v i + 1)) == v i + 1);
-                         assert (forall j. j < v i ==> Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements j));
-                         assert (forall j. j < v i + 1 ==> Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements j))");
         vec.elements[i] = vi;
+        hax_lib::fstar!("assert (v (mk_int #usize_inttype (v i + 1)) == v i + 1);
+                         assert (forall j. j < v i ==> Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements j));
+                         assert(Spec.Utils.is_i16b 3328 vi);
+                         assert(Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements (v i)));
+                         assert (forall j. j < v i + 1 ==> Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements j))");
     }
     vec
 }

@@ -20,10 +20,15 @@ let map2 #a #b #c #len
   (x: t_Array a len) (y: t_Array b len): t_Array c len
   = createi (length x) (fun i -> f (Seq.index x (v i)) (Seq.index y (v i)))
 
+let create len c = createi len (fun i -> c)
+
 let repeati #acc (l:usize) (f:(i:usize{v i < v l}) -> acc -> acc) acc0 : acc = Lib.LoopCombinators.repeati (v l) (fun i acc -> f (sz i) acc) acc0
 
-let lemma_create_index #a len f:
+let lemma_createi_index #a len f:
   Lemma (forall i. Seq.index (createi #a len f) i == f (sz i)) = admit ()
+
+let lemma_create_index #a len c:
+  Lemma (forall i. Seq.index (create #a len c) i == c) = admit ()
 
 let lemma_map_index #a #b #len f x:
   Lemma (forall i. Seq.index (map_array #a #b #len f x) i == f (Seq.index x i)) = admit ()

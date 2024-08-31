@@ -11,11 +11,25 @@ val t_Vec256:Type0
 
 val vec256_as_i16x16 (x:t_Vec256) : t_Array i16 (sz 16)
 
-val mm256_add_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+val mm256_add_epi16 (lhs rhs: t_Vec256)
+    : Prims.Pure t_Vec256
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec256 = result in
+          vec256_as_i16x16 result ==
+          Spec.Utils.map2 ( +. ) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs))
 
 val mm256_add_epi32 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val mm256_and_si256 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+val mm256_and_si256 (lhs rhs: t_Vec256)
+    : Prims.Pure t_Vec256
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec256 = result in
+          vec256_as_i16x16 result ==
+          Spec.Utils.map2 ( &. ) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs))
 
 val mm256_andnot_si256 (a b: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
@@ -51,7 +65,14 @@ val mm256_mul_epu32 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun 
 
 val mm256_mulhi_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val mm256_mullo_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+val mm256_mullo_epi16 (lhs rhs: t_Vec256)
+    : Prims.Pure t_Vec256
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec256 = result in
+          vec256_as_i16x16 result ==
+          Spec.Utils.map2 mul_mod (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs))
 
 val mm256_mullo_epi32 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
@@ -66,7 +87,13 @@ val mm256_permute4x64_epi64 (v_CONTROL: i32) (vector: t_Vec256)
 val mm256_permutevar8x32_epi32 (vector control: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val mm256_set1_epi16 (constant: i16) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+val mm256_set1_epi16 (constant: i16)
+    : Prims.Pure t_Vec256
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec256 = result in
+          vec256_as_i16x16 result == Spec.Utils.create (sz 16) constant)
 
 val mm256_set1_epi32 (constant: i32) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
@@ -126,7 +153,14 @@ val mm256_storeu_si256_i16 (output: t_Slice i16) (vector: t_Vec256)
 val mm256_storeu_si256_u8 (output: t_Slice u8) (vector: t_Vec256)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
-val mm256_sub_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+val mm256_sub_epi16 (lhs rhs: t_Vec256)
+    : Prims.Pure t_Vec256
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec256 = result in
+          vec256_as_i16x16 result ==
+          Spec.Utils.map2 ( -. ) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs))
 
 val mm256_unpackhi_epi32 (lhs rhs: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
@@ -141,7 +175,14 @@ val mm256_unpacklo_epi64 (a b: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun
 
 val mm256_xor_si256 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val mm_add_epi16 (lhs rhs: t_Vec128) : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
+val mm_add_epi16 (lhs rhs: t_Vec128)
+    : Prims.Pure t_Vec128
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec128 = result in
+          vec128_as_i16x8 result ==
+          Spec.Utils.map2 ( +. ) (vec128_as_i16x8 lhs) (vec128_as_i16x8 rhs))
 
 val mm_loadu_si128 (input: t_Slice u8) : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
 
