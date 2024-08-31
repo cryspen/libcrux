@@ -83,8 +83,9 @@ val barrett_reduce (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVe
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
           Spec.Utils.is_i16b_array 3328 result.f_elements /\
-          Spec.MLKEM.Math.to_spec_array result.f_elements ==
-          Spec.MLKEM.Math.to_spec_array vec.f_elements)
+          (forall i.
+              (v (Seq.index result.f_elements i) % 3329) == (v (Seq.index vec.f_elements i) % 3329))
+      )
 
 val bitwise_and_with_constant
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
