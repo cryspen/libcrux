@@ -133,7 +133,13 @@ val mm256_sllv_epi32 (vector counts: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_srai_epi16 (v_SHIFT_BY: i32) (vector: t_Vec256)
-    : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure t_Vec256
+      (requires v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l)
+      (ensures
+        fun result ->
+          let result:t_Vec256 = result in
+          vec256_as_i16x16 result ==
+          Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (vec256_as_i16x16 vector))
 
 val mm256_srai_epi32 (v_SHIFT_BY: i32) (vector: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)

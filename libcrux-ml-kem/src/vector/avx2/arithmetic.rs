@@ -52,13 +52,18 @@ pub(crate) fn bitwise_and_with_constant(vector: Vec256, constant: i16) -> Vec256
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
 #[hax_lib::ensures(|result| fstar!("(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> 
                             Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
                             Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]   
 pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
-    mm256_srai_epi16::<{ SHIFT_BY }>(vector)
+    let result = mm256_srai_epi16::<{ SHIFT_BY }>(vector);
+    hax_lib::fstar!("Spec.Utils.lemma_map_index #_ #_ #(sz 16) (fun x -> x >>! ${SHIFT_BY}) 
+                        (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector});
+                     Seq.lemma_eq_intro (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result})
+                        (Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) 
+                           (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector))");
+    result
 }
 
 // #[inline(always)]
@@ -67,20 +72,36 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 // }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16_array (pow2 12 - 1) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]
 #[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
-                            Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]   
+        Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]   
 pub(crate) fn cond_subtract_3329(vector: Vec256) -> Vec256 {
     let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
+    hax_lib::fstar!("Spec.Utils.lemma_create_index #_ (sz 16) ${FIELD_MODULUS}");
 
     // Compute v_i - Q and crate a mask from the sign bit of each of these
     // quantities.
     let v_minus_field_modulus = mm256_sub_epi16(vector, field_modulus);
+    hax_lib::fstar!("Spec.Utils.lemma_map2_index #_ #_ #_ #(sz 16) (-.) 
+            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)
+            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $field_modulus)");
+
     let sign_mask = mm256_srai_epi16::<15>(v_minus_field_modulus);
+    hax_lib::fstar!("Spec.Utils.lemma_map_index #_ #_ #(sz 16) (fun x -> x >>! 15l) 
+            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $v_minus_field_modulus)");
 
     // If v_i - Q < 0 then add back Q to (v_i - Q).
     let conditional_add_field_modulus = mm256_and_si256(sign_mask, field_modulus);
-    mm256_add_epi16(v_minus_field_modulus, conditional_add_field_modulus)
+    hax_lib::fstar!("Spec.Utils.lemma_map2_index #_ #_ #_ #(sz 16) (&.) 
+            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $sign_mask)
+            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $field_modulus)");
+
+    let result = mm256_add_epi16(v_minus_field_modulus, conditional_add_field_modulus);
+    hax_lib::fstar!("Spec.Utils.lemma_map2_index #_ #_ #_ #(sz 16) (+.) 
+            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $v_minus_field_modulus)
+            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $conditional_add_field_modulus)");
+
+    result
 }
 
 const BARRETT_MULTIPLIER: i16 = 20159;

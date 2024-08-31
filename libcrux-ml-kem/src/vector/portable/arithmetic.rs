@@ -122,6 +122,8 @@ pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVect
     vec
 }
 
+/// Note: This function is not secret independent
+/// Only use with public values.
 #[inline(always)]
 #[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map_array 
                 (fun x -> if x >=. 3329s then x -! 3329s else x) (${vec}.f_elements)"))]

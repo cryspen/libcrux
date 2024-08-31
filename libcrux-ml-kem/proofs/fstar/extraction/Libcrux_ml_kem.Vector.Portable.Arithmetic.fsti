@@ -97,6 +97,8 @@ val bitwise_and_with_constant
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
           result.f_elements == Spec.Utils.map_array (fun x -> x &. c) (vec.f_elements))
 
+/// Note: This function is not secret independent
+/// Only use with public values.
 val cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True

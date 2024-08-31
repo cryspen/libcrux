@@ -233,6 +233,9 @@ pub fn mm256_xor_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
+#[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == 
+            Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (vec256_as_i16x16 $vector)"))]
 pub fn mm256_srai_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     unimplemented!()
