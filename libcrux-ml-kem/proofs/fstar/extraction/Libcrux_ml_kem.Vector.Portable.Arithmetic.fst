@@ -65,7 +65,7 @@ let barrett_reduce_element (value: i16) =
 
 #pop-options
 
-#push-options "--z3rlimit 300 --split_queries always"
+#push-options "--z3rlimit 500 --split_queries always"
 
 let montgomery_reduce_element (value: i32) =
   let _:i32 = v_MONTGOMERY_R in
@@ -161,10 +161,14 @@ let montgomery_reduce_element (value: i32) =
 
 #pop-options
 
+#push-options "--z3rlimit 300"
+
 let montgomery_multiply_fe_by_fer (fe fer: i16) =
   let _:Prims.unit = Spec.Utils.lemma_mul_i16b (pow2 16) (3328) fe fer in
   let product:i32 = (cast (fe <: i16) <: i32) *! (cast (fer <: i16) <: i32) in
   montgomery_reduce_element product
+
+#pop-options
 
 let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -310,6 +314,8 @@ let cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Portabl
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+#push-options "--z3rlimit 150"
+
 let montgomery_multiply_by_constant
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (c: i16)
@@ -346,6 +352,8 @@ let montgomery_multiply_by_constant
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
   v
+
+#pop-options
 
 let multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
