@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 0576bfc67e99aae86c51930421072688138b672b
- * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
- * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
- * F*: 04413e808445c4f78fe89cd15b85ff549ed3be62
- * Libcrux: 293f3b52093c13f3043781d878990c5be6fc4e23
+ * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
+ * Eurydice: fcdd1852994390db2b6aa780ed8d837fa811167d
+ * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
+ * Libcrux: 7cd7a08d172e1715493176358bffadf8f87ae3a4
  */
 
 #ifndef __libcrux_sha3_H
@@ -29,7 +29,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_sha512(Eurydice_slice digest,
                                                          Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
-  libcrux_sha3_portable_keccakx1_2a(buf0, buf);
+  libcrux_sha3_portable_keccakx1_97(buf0, buf);
 }
 
 /**
@@ -39,7 +39,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_sha256(Eurydice_slice digest,
                                                          Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
-  libcrux_sha3_portable_keccakx1_2a0(buf0, buf);
+  libcrux_sha3_portable_keccakx1_970(buf0, buf);
 }
 
 /**
@@ -49,7 +49,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_shake256(
     Eurydice_slice digest, Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
-  libcrux_sha3_portable_keccakx1_2a1(buf0, buf);
+  libcrux_sha3_portable_keccakx1_971(buf0, buf);
 }
 
 /**
@@ -59,7 +59,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_sha224(Eurydice_slice digest,
                                                          Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
-  libcrux_sha3_portable_keccakx1_2a2(buf0, buf);
+  libcrux_sha3_portable_keccakx1_972(buf0, buf);
 }
 
 /**
@@ -69,7 +69,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_sha384(Eurydice_slice digest,
                                                          Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
-  libcrux_sha3_portable_keccakx1_2a3(buf0, buf);
+  libcrux_sha3_portable_keccakx1_973(buf0, buf);
 }
 
 /**
@@ -158,7 +158,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_shake128(
     Eurydice_slice digest, Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
-  libcrux_sha3_portable_keccakx1_2a4(buf0, buf);
+  libcrux_sha3_portable_keccakx1_974(buf0, buf);
 }
 
 /**
