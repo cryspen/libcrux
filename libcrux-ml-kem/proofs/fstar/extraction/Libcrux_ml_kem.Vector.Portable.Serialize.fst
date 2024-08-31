@@ -36,12 +36,7 @@ let deserialize_10_int (bytes: t_Slice u8) =
     ((cast (bytes.[ sz 9 ] <: u8) <: i16) <<! 2l <: i16) |.
     ((cast (bytes.[ sz 8 ] <: u8) <: i16) >>! 6l <: i16)
   in
-  let _:Prims.unit = BitVecEq.bit_vec_equal_intro_principle () in
-  let result:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    r0, r1, r2, r3, r4, r5, r6, r7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  r0, r1, r2, r3, r4, r5, r6, r7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
 
 let deserialize_11_int (bytes: t_Slice u8) =
   let r0:i16 =
@@ -82,12 +77,7 @@ let deserialize_11_int (bytes: t_Slice u8) =
     ((cast (bytes.[ sz 10 ] <: u8) <: i16) <<! 3l <: i16) |.
     ((cast (bytes.[ sz 9 ] <: u8) <: i16) >>! 5l <: i16)
   in
-  let _:Prims.unit = BitVecEq.bit_vec_equal_intro_principle () in
-  let result:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    r0, r1, r2, r3, r4, r5, r6, r7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  r0, r1, r2, r3, r4, r5, r6, r7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
 
 let deserialize_12_int (bytes: t_Slice u8) =
   let byte0:i16 = cast (bytes.[ sz 0 ] <: u8) <: i16 in
@@ -95,10 +85,7 @@ let deserialize_12_int (bytes: t_Slice u8) =
   let byte2:i16 = cast (bytes.[ sz 2 ] <: u8) <: i16 in
   let r0:i16 = ((byte1 &. 15s <: i16) <<! 8l <: i16) |. (byte0 &. 255s <: i16) in
   let r1:i16 = (byte2 <<! 4l <: i16) |. ((byte1 >>! 4l <: i16) &. 15s <: i16) in
-  let _:Prims.unit = BitVecEq.bit_vec_equal_intro_principle () in
-  let result:(i16 & i16) = r0, r1 <: (i16 & i16) in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  r0, r1 <: (i16 & i16)
 
 let deserialize_4_int (bytes: t_Slice u8) =
   let v0:i16 = cast ((bytes.[ sz 0 ] <: u8) &. 15uy <: u8) <: i16 in
@@ -109,12 +96,7 @@ let deserialize_4_int (bytes: t_Slice u8) =
   let v5:i16 = cast (((bytes.[ sz 2 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16 in
   let v6:i16 = cast ((bytes.[ sz 3 ] <: u8) &. 15uy <: u8) <: i16 in
   let v7:i16 = cast (((bytes.[ sz 3 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16 in
-  let _:Prims.unit = BitVecEq.bit_vec_equal_intro_principle () in
-  let result:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    v0, v1, v2, v3, v4, v5, v6, v7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  v0, v1, v2, v3, v4, v5, v6, v7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
 
 let deserialize_5_int (bytes: t_Slice u8) =
   let v0:i16 = cast ((bytes.[ sz 0 ] <: u8) &. 31uy <: u8) <: i16 in
@@ -153,13 +135,7 @@ let deserialize_5_int (bytes: t_Slice u8) =
     i16
   in
   let v7:i16 = cast ((bytes.[ sz 4 ] <: u8) >>! 3l <: u8) <: i16 in
-  let result:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    v0, v1, v2, v3, v4, v5, v6, v7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
-
-#push-options "--z3rlimit 480 --split_queries always"
+  v0, v1, v2, v3, v4, v5, v6, v7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
 
 let serialize_10_int (v: t_Slice i16) =
   let r0:u8 = cast ((v.[ sz 0 ] <: i16) &. 255s <: i16) <: u8 in
@@ -176,12 +152,7 @@ let serialize_10_int (v: t_Slice i16) =
     (cast (((v.[ sz 2 ] <: i16) >>! 4l <: i16) &. 63s <: i16) <: u8)
   in
   let r4:u8 = cast (((v.[ sz 3 ] <: i16) >>! 2l <: i16) &. 255s <: i16) <: u8 in
-  let _:Prims.unit = BitVecEq.bit_vec_equal_intro_principle () in
-  let result:(u8 & u8 & u8 & u8 & u8) = r0, r1, r2, r3, r4 <: (u8 & u8 & u8 & u8 & u8) in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
-
-#pop-options
+  r0, r1, r2, r3, r4 <: (u8 & u8 & u8 & u8 & u8)
 
 let serialize_11_int (v: t_Slice i16) =
   let r0:u8 = cast (v.[ sz 0 ] <: i16) <: u8 in
@@ -216,14 +187,9 @@ let serialize_11_int (v: t_Slice i16) =
     (cast ((v.[ sz 6 ] <: i16) >>! 6l <: i16) <: u8)
   in
   let r10:u8 = cast ((v.[ sz 7 ] <: i16) >>! 3l <: i16) <: u8 in
-  let _:Prims.unit = BitVecEq.bit_vec_equal_intro_principle () in
-  let result:(u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8) =
-    r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10
-    <:
-    (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8)
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10
+  <:
+  (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8)
 
 let serialize_12_int (v: t_Slice i16) =
   let r0:u8 = cast ((v.[ sz 0 ] <: i16) &. 255s <: i16) <: u8 in
@@ -235,10 +201,7 @@ let serialize_12_int (v: t_Slice i16) =
     u8
   in
   let r2:u8 = cast (((v.[ sz 1 ] <: i16) >>! 4l <: i16) &. 255s <: i16) <: u8 in
-  let _:Prims.unit = BitVecEq.bit_vec_equal_intro_principle () in
-  let result:(u8 & u8 & u8) = r0, r1, r2 <: (u8 & u8 & u8) in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  r0, r1, r2 <: (u8 & u8 & u8)
 
 let serialize_4_int (v: t_Slice i16) =
   let result0:u8 =
@@ -253,20 +216,7 @@ let serialize_4_int (v: t_Slice i16) =
   let result3:u8 =
     ((cast (v.[ sz 7 ] <: i16) <: u8) <<! 4l <: u8) |. (cast (v.[ sz 6 ] <: i16) <: u8)
   in
-  let _:Prims.unit = BitVecEq.bit_vec_equal_intro_principle () in
-  let result:(u8 & u8 & u8 & u8) = result0, result1, result2, result3 <: (u8 & u8 & u8 & u8) in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
-
-let serialize_4_int_lemma (inputs: t_Array i16 (sz 8))
-   (_: squash (forall i. Rust_primitives.bounded (Seq.index inputs i) 4))
-   : squash (
-     let outputs = serialize_4_int inputs in
-     let outputs = MkSeq.create4 outputs in
-     let inputs = bit_vec_of_int_t_array inputs 4 in
-     let outputs = bit_vec_of_int_t_array outputs 8 in
-     (forall (i: nat {i < 32}). inputs i == outputs i)
-   ) = _ by (Tactics.GetBit.prove_bit_vector_equality ())
+  result0, result1, result2, result3 <: (u8 & u8 & u8 & u8)
 
 let serialize_5_int (v: t_Slice i16) =
   let r0:u8 = cast ((v.[ sz 0 ] <: i16) |. ((v.[ sz 1 ] <: i16) <<! 5l <: i16) <: i16) <: u8 in
@@ -292,11 +242,7 @@ let serialize_5_int (v: t_Slice i16) =
   let r4:u8 =
     cast (((v.[ sz 6 ] <: i16) >>! 2l <: i16) |. ((v.[ sz 7 ] <: i16) <<! 3l <: i16) <: i16) <: u8
   in
-  let result:(u8 & u8 & u8 & u8 & u8) = r0, r1, r2, r3, r4 <: (u8 & u8 & u8 & u8 & u8) in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
-
-#push-options "--admit_smt_queries true"
+  r0, r1, r2, r3, r4 <: (u8 & u8 & u8 & u8 & u8)
 
 let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let result:t_Array u8 (sz 2) = Rust_primitives.Hax.repeat 0uy (sz 2) in
@@ -348,10 +294,6 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
   in
   result
 
-#pop-options
-
-#push-options "--admit_smt_queries true"
-
 let serialize_10_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let r0_4_:(u8 & u8 & u8 & u8 & u8) =
     serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
@@ -393,19 +335,68 @@ let serialize_10_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
         <:
         t_Slice i16)
   in
-  let list =
-    [
-      r0_4_._1; r0_4_._2; r0_4_._3; r0_4_._4; r0_4_._5; r5_9_._1; r5_9_._2; r5_9_._3; r5_9_._4;
-      r5_9_._5; r10_14_._1; r10_14_._2; r10_14_._3; r10_14_._4; r10_14_._5; r15_19_._1; r15_19_._2;
-      r15_19_._3; r15_19_._4; r15_19_._5
-    ]
+  let result:t_Array u8 (sz 20) = Rust_primitives.Hax.repeat 0uy (sz 20) in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 0) r0_4_._1
   in
-  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 20);
-  Rust_primitives.Hax.array_of_list 20 list
-
-#pop-options
-
-#push-options "--admit_smt_queries true"
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 1) r0_4_._2
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 2) r0_4_._3
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 3) r0_4_._4
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 4) r0_4_._5
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 5) r5_9_._1
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 6) r5_9_._2
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 7) r5_9_._3
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 8) r5_9_._4
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 9) r5_9_._5
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 10) r10_14_._1
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 11) r10_14_._2
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 12) r10_14_._3
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 13) r10_14_._4
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 14) r10_14_._5
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 15) r15_19_._1
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 16) r15_19_._2
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 17) r15_19_._3
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 18) r15_19_._4
+  in
+  let result:t_Array u8 (sz 20) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 19) r15_19_._5
+  in
+  result
 
 let serialize_11_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let r0_10_:(u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8) =
@@ -496,10 +487,6 @@ let serialize_11_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 21) r11_21_._11
   in
   result
-
-#pop-options
-
-#push-options "--admit_smt_queries true"
 
 let serialize_12_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let r0_2_:(u8 & u8 & u8) =
@@ -657,10 +644,6 @@ let serialize_12_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
   in
   result
 
-#pop-options
-
-#push-options "--admit_smt_queries true"
-
 let serialize_4_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let result0_3_:(u8 & u8 & u8 & u8) =
     serialize_4_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
@@ -682,24 +665,32 @@ let serialize_4_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
         <:
         t_Slice i16)
   in
-  let list =
-    [
-      result0_3_._1;
-      result0_3_._2;
-      result0_3_._3;
-      result0_3_._4;
-      result4_7_._1;
-      result4_7_._2;
-      result4_7_._3;
-      result4_7_._4
-    ]
+  let result:t_Array u8 (sz 8) = Rust_primitives.Hax.repeat 0uy (sz 8) in
+  let result:t_Array u8 (sz 8) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 0) result0_3_._1
   in
-  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
-  Rust_primitives.Hax.array_of_list 8 list
-
-#pop-options
-
-#push-options "--admit_smt_queries true"
+  let result:t_Array u8 (sz 8) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 1) result0_3_._2
+  in
+  let result:t_Array u8 (sz 8) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 2) result0_3_._3
+  in
+  let result:t_Array u8 (sz 8) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 3) result0_3_._4
+  in
+  let result:t_Array u8 (sz 8) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 4) result4_7_._1
+  in
+  let result:t_Array u8 (sz 8) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 5) result4_7_._2
+  in
+  let result:t_Array u8 (sz 8) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 6) result4_7_._3
+  in
+  let result:t_Array u8 (sz 8) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 7) result4_7_._4
+  in
+  result
 
 let serialize_5_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let r0_4_:(u8 & u8 & u8 & u8 & u8) =
@@ -754,10 +745,6 @@ let serialize_5_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 9) r5_9_._5
   in
   result
-
-#pop-options
-
-#push-options "--admit_smt_queries true"
 
 let deserialize_1_ (v: t_Slice u8) =
   let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -814,10 +801,6 @@ let deserialize_1_ (v: t_Slice u8) =
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
   result
-
-#pop-options
-
-#push-options "--admit_smt_queries true"
 
 let deserialize_10_ (bytes: t_Slice u8) =
   let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
@@ -1047,10 +1030,6 @@ let deserialize_10_ (bytes: t_Slice u8) =
   in
   v
 
-#pop-options
-
-#push-options "--admit_smt_queries true"
-
 let deserialize_11_ (bytes: t_Slice u8) =
   let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
     deserialize_11_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 11 }
@@ -1278,10 +1257,6 @@ let deserialize_11_ (bytes: t_Slice u8) =
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
   in
   v
-
-#pop-options
-
-#push-options "--admit_smt_queries true"
 
 let deserialize_12_ (bytes: t_Slice u8) =
   let v0_1_:(i16 & i16) =
@@ -1553,10 +1528,6 @@ let deserialize_12_ (bytes: t_Slice u8) =
   in
   re
 
-#pop-options
-
-#push-options "--admit_smt_queries true"
-
 let deserialize_4_ (bytes: t_Slice u8) =
   let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
     deserialize_4_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 4 }
@@ -1785,10 +1756,6 @@ let deserialize_4_ (bytes: t_Slice u8) =
   in
   v
 
-#pop-options
-
-#push-options "--admit_smt_queries true"
-
 let deserialize_5_ (bytes: t_Slice u8) =
   let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
     deserialize_5_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 5 }
@@ -2016,5 +1983,3 @@ let deserialize_5_ (bytes: t_Slice u8) =
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
   in
   v
-
-#pop-options
