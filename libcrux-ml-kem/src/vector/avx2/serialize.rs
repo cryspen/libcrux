@@ -47,7 +47,7 @@ pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
     // significant bit from each element and collate them into two bytes.
     let bits_packed = mm_movemask_epi8(msbs);
 
-    [bits_packed as u8; (bits_packed >> 8) as u8]
+    [bits_packed as u8, (bits_packed >> 8) as u8]
 }
 
 #[inline(always)]
