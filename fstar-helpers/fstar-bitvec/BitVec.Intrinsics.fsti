@@ -6,7 +6,7 @@ open FStar.Mul
 
 (*** BitVec related utils *)
 open FStar.FunctionalExtensionality
-open BitVec.Equality {bv_equality}
+open BitVec.Equality
 open Rust_primitives.BitVectors
 
 let mk_bv #len (f: (i:nat{i < len}) -> bit) = on (i:nat {i < len}) f
