@@ -87,23 +87,23 @@ val barrett_reduce (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVe
           Spec.MLKEM.Math.to_spec_array vec.f_elements)
 
 val bitwise_and_with_constant
-      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (c: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
-          result.f_elements == Spec.Utils.map_array (fun x -> x &. c) (v.f_elements))
+          result.f_elements == Spec.Utils.map_array (fun x -> x &. c) (vec.f_elements))
 
-val cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+val cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
           result.f_elements ==
-          Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (v.f_elements))
+          Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (vec.f_elements))
 
 val montgomery_multiply_by_constant
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -112,22 +112,22 @@ val montgomery_multiply_by_constant
       (requires Spec.Utils.is_i16b 3328 c)
       (fun _ -> Prims.l_True)
 
-val multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16)
+val multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
-          result.f_elements == Spec.Utils.map_array (fun x -> x *. c) (v.f_elements))
+          result.f_elements == Spec.Utils.map_array (fun x -> x *. c) (vec.f_elements))
 
-val shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+val shift_right (v_SHIFT_BY: i32) (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       (requires v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l)
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
           (v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==>
-          result.f_elements == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (v.f_elements))
+          result.f_elements == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (vec.f_elements))
 
 val sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector

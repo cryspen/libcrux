@@ -15,13 +15,22 @@ let map_array #a #b #len
   (s: t_Array a len): t_Array b len
   = createi (length s) (fun i -> f (Seq.index s (v i)))
 
-let map2 #a #b #c (#len:usize{v len < pow2 32})
+let map2 #a #b #c #len
   (f:a -> b -> c)
   (x: t_Array a len) (y: t_Array b len): t_Array c len
-  = Lib.Sequence.map2 #a #b #c #(v len) f x y
+  = createi (length x) (fun i -> f (Seq.index x (v i)) (Seq.index y (v i)))
 
 let repeati #acc (l:usize) (f:(i:usize{v i < v l}) -> acc -> acc) acc0 : acc = Lib.LoopCombinators.repeati (v l) (fun i acc -> f (sz i) acc) acc0
-  
+
+let lemma_create_index #a len f:
+  Lemma (forall i. Seq.index (createi #a len f) i == f (sz i)) = admit ()
+
+let lemma_map_index #a #b #len f x:
+  Lemma (forall i. Seq.index (map_array #a #b #len f x) i == f (Seq.index x i)) = admit ()
+
+let lemma_map2_index #a #b #c #len f x y :
+  Lemma (forall i. Seq.index (map2 #a #b #c #len f x y) i == f (Seq.index x i) (Seq.index y i)) = admit ()
+
 #push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
 let flatten #t #n
   (#m: usize {range (v n * v m) usize_inttype})
