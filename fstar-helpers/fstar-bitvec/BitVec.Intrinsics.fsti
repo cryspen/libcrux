@@ -7,24 +7,25 @@ open FStar.Mul
 (*** BitVec related utils *)
 open FStar.FunctionalExtensionality
 open BitVec.Equality {bv_equality}
+open Rust_primitives.BitVectors
 
 let mk_bv #len (f: (i:nat{i < len}) -> bit) = on (i:nat {i < len}) f
 
 (*** The intrinsics *)
 
-let mm256_slli_epi16 (shift: nat {shift <= 16}) (vec: bit_vec 256): bit_vec 256
+let mm256_slli_epi16 (shift: i32 {v shift >= 0 /\ v shift <= 16}) (vec: bit_vec 256): bit_vec 256
   = mk_bv (fun i -> let nth_bit = i % 16 in
-                 if nth_bit >= shift 
-                 then vec (i - shift)
+                 if nth_bit >= v shift 
+                 then vec (i - v shift)
                  else 0)
 
-let mm256_srli_epi16 (shift: nat {shift <= 16}) (vec: bit_vec 256): bit_vec 256
+let mm256_srli_epi16 (shift: i32 {v shift >= 0 /\ v shift <= 16}) (vec: bit_vec 256): bit_vec 256
   = mk_bv (fun i -> let nth_bit = i % 16 in
-                 if nth_bit < 16 - shift then vec (i + shift) else 0)
+                 if nth_bit < 16 - v shift then vec (i + v shift) else 0)
 
 let mm256_castsi256_si128 (vec: bit_vec 256): bit_vec 128
   = mk_bv (fun i -> vec i)
-let mm256_extracti128_si256 (control: nat {control == 1}) (vec: bit_vec 256): bit_vec 128
+let mm256_extracti128_si256 (control: i32{control == 1l}) (vec: bit_vec 256): bit_vec 128
   = mk_bv (fun i -> vec (i + 128))
 
 private let saturate8 (v: bit_vec 16): bit_vec 8
@@ -154,5 +155,5 @@ let tassert (x: bool): Tac unit
 private let example: bit_vec 256 = mk_bv (fun i -> if i % 16 = 15 then 1 else 0)
 
 private let x = bv_to_string example
-private let y = bv_to_string (mm256_srli_epi16 15 example)
+private let y = bv_to_string (mm256_srli_epi16 15l example)
 

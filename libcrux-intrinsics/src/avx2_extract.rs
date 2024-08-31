@@ -5,14 +5,14 @@
 
 #[cfg(hax)]
 #[derive(Clone, Copy)]
-#[hax_lib::opaque_type]
-#[hax_lib::fstar::replace(interface, "unfold type $:{Vec256} = bit_vec 256")]
+#[hax_lib::fstar::replace(interface, "unfold type $:{Vec256} = bit_vec 256
+				      val vec256_as_i16x16 (x:t_Vec256) : t_Array i16 (sz 16)")]
 pub struct Vec256(u8);
 
 #[cfg(hax)]
 #[derive(Copy, Clone)]
-#[hax_lib::fstar::replace(interface, "unfold type $:{Vec128} = bit_vec 128")]
-#[hax_lib::opaque_type]
+#[hax_lib::fstar::replace(interface, "unfold type $:{Vec128} = bit_vec 128
+				      val vec128_as_i16x8 (x:t_Vec128) : t_Array i16 (sz 8)")]
 pub struct Vec128(u8);
 
 #[cfg(not(hax))]

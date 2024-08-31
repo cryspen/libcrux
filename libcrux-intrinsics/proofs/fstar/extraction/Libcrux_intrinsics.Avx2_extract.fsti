@@ -4,8 +4,10 @@ open Core
 open FStar.Mul
 
 unfold type t_Vec128 = bit_vec 128
+				      val vec128_as_i16x8 (x:t_Vec128) : t_Array i16 (sz 8)
 
 unfold type t_Vec256 = bit_vec 256
+				      val vec256_as_i16x16 (x:t_Vec256) : t_Array i16 (sz 16)
 
 val mm256_add_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
