@@ -236,7 +236,7 @@ pub fn mm256_srai_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 
 #[hax_lib::fstar::replace(
     interface,
-    "unfold let ${mm256_srli_epi16} = BitVec.Intrinsics.mm256_srli_epi16"
+    "unfold let ${mm256_srli_epi16::<0>} = BitVec.Intrinsics.mm256_srli_epi16"
 )]
 pub fn mm256_srli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
