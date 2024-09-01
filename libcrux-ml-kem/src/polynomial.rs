@@ -1,5 +1,27 @@
 use crate::vector::{to_standard_domain, Operations, FIELD_ELEMENTS_IN_VECTOR};
 
+#[hax_lib::fstar::replace(interface,
+    "let v_ZETAS_TIMES_MONTGOMERY_R: t_Array (x:i16{Spec.Utils.is_i16b 1664 x}) (sz 128) =
+    admit();
+  let list : list (x:i16{Spec.Utils.is_i16b 1664 x}) =
+    [
+      (-1044s); (-758s); (-359s); (-1517s); 1493s; 1422s; 287s; 202s; (-171s); 622s; 1577s; 182s;
+      962s; (-1202s); (-1474s); 1468s; 573s; (-1325s); 264s; 383s; (-829s); 1458s; (-1602s); (-130s);
+      (-681s); 1017s; 732s; 608s; (-1542s); 411s; (-205s); (-1571s); 1223s; 652s; (-552s); 1015s;
+      (-1293s); 1491s; (-282s); (-1544s); 516s; (-8s); (-320s); (-666s); (-1618s); (-1162s); 126s;
+      1469s; (-853s); (-90s); (-271s); 830s; 107s; (-1421s); (-247s); (-951s); (-398s); 961s;
+      (-1508s); (-725s); 448s; (-1065s); 677s; (-1275s); (-1103s); 430s; 555s; 843s; (-1251s); 871s;
+      1550s; 105s; 422s; 587s; 177s; (-235s); (-291s); (-460s); 1574s; 1653s; (-246s); 778s; 1159s;
+      (-147s); (-777s); 1483s; (-602s); 1119s; (-1590s); 644s; (-872s); 349s; 418s; 329s; (-156s);
+      (-75s); 817s; 1097s; 603s; 610s; 1322s; (-1285s); (-1465s); 384s; (-1215s); (-136s); 1218s;
+      (-1335s); (-874s); 220s; (-1187s); (-1659s); (-1185s); (-1530s); (-1278s); 794s; (-1510s);
+      (-854s); (-870s); 478s; (-108s); (-308s); 996s; 991s; 958s; (-1460s); 1522s; 1628s
+    ]
+  in
+  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
+  assert (128 < pow2 16);
+  Rust_primitives.Hax.array_of_list 128 list
+")]
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = [
     -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474, 1468,
     573, -1325, 264, 383, -829, 1458, -1602, -130, -681, 1017, 732, 608, -1542, 411, -205, -1571,
@@ -32,6 +54,7 @@ pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::attributes]
 impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
