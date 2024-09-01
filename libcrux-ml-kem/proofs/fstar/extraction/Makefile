@@ -1,10 +1,6 @@
 # This is the list of modules that are fully admitted.
 # All other modules have individual annotations on their functions indicating verification status
-ADMIT_MODULES = Libcrux_ml_kem.Invert_ntt.fst \
-              Libcrux_ml_kem.Ntt.fst \
-              Libcrux_ml_kem.Sampling.fst \
-              Libcrux_ml_kem.Polynomial.fst \
-              Libcrux_ml_kem.Vector.Avx2.fst \
+ADMIT_MODULES = Libcrux_ml_kem.Vector.Avx2.fst \
               Libcrux_ml_kem.Vector.Avx2.Sampling.fst \
               Libcrux_ml_kem.Vector.Avx2.Serialize.fst \
               Libcrux_ml_kem.Vector.Portable.Compress.fst \
