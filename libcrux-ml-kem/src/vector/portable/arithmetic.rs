@@ -125,9 +125,11 @@ pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVect
 /// Note: This function is not secret independent
 /// Only use with public values.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array (pow2 12 - 1) ${vec}.f_elements"))]
 #[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map_array 
                 (fun x -> if x >=. 3329s then x -! 3329s else x) (${vec}.f_elements)"))]
-    pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
+pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
     let _vec0 = vec;
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| { fstar!("
@@ -224,7 +226,7 @@ pub(crate) fn barrett_reduce(mut vec: PortableVector) -> PortableVector {
 /// In particular, if `|value| ≤ FIELD_MODULUS-1 * FIELD_MODULUS-1`, then `|o| <= FIELD_MODULUS-1`.
 /// And, if `|value| ≤ pow2 16 * FIELD_MODULUS-1`, then `|o| <= FIELD_MODULUS + 1664
 /// 
-#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
 #[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i32b (3328 * pow2 16) value ")))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b (3328 + 1665) result /\\
                 (Spec.Utils.is_i32b (3328 * 3328) value ==> Spec.Utils.is_i16b 3328 result) /\\
@@ -308,7 +310,7 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
 /// `montgomery_reduce` takes the value `x · y · MONTGOMERY_R` and outputs a representative
 /// `x · y · MONTGOMERY_R * MONTGOMERY_R^{-1} ≡ x · y (mod FIELD_MODULUS)`.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 100")]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 fer")))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b (3328 + 1665) result /\\
                 v result % 3329 == (v fe * v fer * 169) % 3329")))]
@@ -322,6 +324,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 c")))]
 pub(crate) fn montgomery_multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {

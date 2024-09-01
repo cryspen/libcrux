@@ -101,7 +101,7 @@ val bitwise_and_with_constant
 /// Only use with public values.
 val cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
+      (requires Spec.Utils.is_i16b_array (pow2 12 - 1) vec.f_elements)
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in

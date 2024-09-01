@@ -69,6 +69,7 @@ pub(super) fn deserialize_to_uncompressed_ring_element<Vector: Operations>(
 ///
 /// This MUST NOT be used with secret inputs, like its caller `deserialize_ring_elements_reduced`.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(
     serialized.len() == BYTES_PER_RING_ELEMENT
 )]

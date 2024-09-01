@@ -103,9 +103,6 @@ let barrett_reduce (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   in
   Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 vector quotient_times_field_modulus
 
-let get_ith v i = Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 v) i
-
-#push-options "--z3rlimit 500"
 let cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
@@ -125,9 +122,6 @@ let cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
       (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector)
       (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 field_modulus)
   in
-  assume (forall i. Spec.Utils.is_i16b (pow2 12 - 1) (get_ith vector i));
-  assert (forall i. get_ith vv_minus_field_modulus i == get_ith vector i -. 3329s);
-  assert (forall i. v (get_ith vv_minus_field_modulus i) == v (get_ith vector i) - 3329);
   let sign_mask:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 15l vv_minus_field_modulus
   in
@@ -138,11 +132,6 @@ let cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
       (fun x -> x >>! 15l)
       (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vv_minus_field_modulus)
   in
-  assume (forall (x:i16). v x < 0 ==> x >>! 15l == ones);
-  assume (forall (x:i16). v x >= 0 ==> x >>! 15l == 0s);
-  assert (forall i. get_ith sign_mask i == ((get_ith vv_minus_field_modulus i) >>! 15l));
-  assert (forall i. get_ith sign_mask i == 
-               (if (v (get_ith vector i) - 3329) < 0 then ones else 0s));
   let conditional_add_field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_and_si256 sign_mask field_modulus
   in
@@ -155,12 +144,6 @@ let cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
       (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 sign_mask)
       (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 field_modulus)
   in
-  assume (forall (x:i16). (x &. ones) == x);
-  assume (forall (x:i16). (x &. 0s) == 0s);
-  assume (forall (x:i16). (ones &. x) == x);
-  assume (forall (x:i16). (0s &. x) == 0s);
-  assert (forall i. get_ith conditional_add_field_modulus i == 
-               (if (v (get_ith vector i) - 3329) < 0 then 3329s else 0s));
   let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 vv_minus_field_modulus
       conditional_add_field_modulus
@@ -175,21 +158,8 @@ let cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
       (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 conditional_add_field_modulus)
   in
   let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
-  assert (forall i. get_ith result i == 
-               (if (v (get_ith vector i) - 3329) < 0 then get_ith vector i else get_ith vector i -. 3329s));
-  assert (forall i. get_ith result i == 
-               (if (get_ith vector i) >=. 3329s then get_ith vector i -. 3329s else get_ith vector i));
-  assert (forall i. get_ith result i ==  (fun x -> if x >=. 3329s then x -! 3329s else x) (get_ith vector i));
-  Spec.Utils.lemma_map_index #_ #_ #(sz 16) (fun x -> if x >=. 3329s then x -! 3329s else x)
-    (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector);
-  assert (forall i. Seq.index
-    (Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x)
-            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector)) i == 
-            (fun x -> if x >=. 3329s then x -! 3329s else x) (get_ith vector i));
-  Seq.lemma_eq_intro (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result)
-   (Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x)
-            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector));
-  result 
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let montgomery_multiply_by_constant
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)

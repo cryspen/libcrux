@@ -260,3 +260,30 @@ let compress_then_byte_encode (d: dT {d <> 12}) (coefficients: polynomial): t_Ar
 let byte_decode_then_decompress (d: dT {d <> 12}) (b:t_Array u8 (sz (32 * d))): polynomial
   = map_array (decompress_d d) (byte_decode d b)
 
+
+(**** Definitions to move or to rework *)
+let serialize_pre
+  (d1: dT)
+  (coefficients: t_Array i16 (sz 16))
+  = forall i. i < 16 ==> bounded (Seq.index coefficients i) d1
+
+// TODO: this is an alternative version of byte_encode
+//   rename to encoded bytes
+#push-options "--z3rlimit 80 --split_queries always"
+let serialize_post
+  (d1: dT)
+  (coefficients: t_Array i16 (sz 16) { serialize_pre d1 coefficients })
+  (output: t_Array u8 (sz (d1 * 2)))
+  = BitVecEq.int_t_array_bitwise_eq coefficients d1
+                                    output       8
+
+// TODO: this is an alternative version of byte_decode
+//   rename to decoded bytes
+let deserialize_post
+  (d1: dT)
+  (bytes: t_Array u8 (sz (d1 * 2)))
+  (output: t_Array i16 (sz 16))
+  = BitVecEq.int_t_array_bitwise_eq bytes  8
+                                    output d1
+  /\ (forall i. i < 16 ==> bounded (Seq.index output i) d1)
+#pop-options

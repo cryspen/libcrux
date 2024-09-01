@@ -37,7 +37,7 @@ let lemma_map2_index #a #b #c #len f x y :
   Lemma (forall i. Seq.index (map2 #a #b #c #len f x y) i == f (Seq.index x i) (Seq.index y i)) = admit ()
 
 let lemma_bitand_properties #t (x:int_t t) :
-  Lemma (x &. ones == x /\ x &. mk_int #t 0 == mk_int #t 0 /\ ones #t &. x == x /\ mk_int #t 0 &. x == mk_int #t 0) = admit()
+  Lemma ((x &. ones) == x /\ (x &. mk_int #t 0) == mk_int #t 0 /\ (ones #t &. x) == x /\ (mk_int #t 0 &. x) == mk_int #t 0) = admit()
 
 #push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
 let flatten #t #n

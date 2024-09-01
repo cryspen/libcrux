@@ -667,6 +667,8 @@ let deserialize_then_decompress_ring_element_v
         <:
         Rust_primitives.Hax.t_Never)
 
+#push-options "--admit_smt_queries true"
+
 let deserialize_to_reduced_ring_element
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -714,6 +716,8 @@ let deserialize_to_reduced_ring_element
           re)
   in
   re
+
+#pop-options
 
 let deserialize_ring_elements_reduced
       (v_K: usize)

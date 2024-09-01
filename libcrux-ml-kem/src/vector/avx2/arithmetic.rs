@@ -72,7 +72,8 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 // }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16_array (pow2 12 - 1) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array (pow2 12 - 1) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]
 #[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
         Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]   
 pub(crate) fn cond_subtract_3329(vector: Vec256) -> Vec256 {

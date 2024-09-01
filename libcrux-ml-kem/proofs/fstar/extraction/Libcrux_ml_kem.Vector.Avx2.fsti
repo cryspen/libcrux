@@ -138,7 +138,9 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         }
         <:
         t_SIMD256Vector);
-    f_cond_subtract_3329_pre = (fun (vector: t_SIMD256Vector) -> true);
+    f_cond_subtract_3329_pre
+    =
+    (fun (vector: t_SIMD256Vector) -> Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr vector));
     f_cond_subtract_3329_post
     =
     (fun (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->

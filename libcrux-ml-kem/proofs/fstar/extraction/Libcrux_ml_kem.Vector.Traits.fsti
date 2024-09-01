@@ -78,7 +78,8 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_shift_right_pre v_SHIFT_BY x0)
         (fun result -> f_shift_right_post v_SHIFT_BY x0 result);
-  f_cond_subtract_3329_pre:v: v_Self -> pred: Type0{true ==> pred};
+  f_cond_subtract_3329_pre:v: v_Self
+    -> pred: Type0{Spec.Utils.is_i16b_array (pow2 12 - 1) (f_repr v) ==> pred};
   f_cond_subtract_3329_post:v: v_Self -> result: v_Self
     -> pred:
       Type0

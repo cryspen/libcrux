@@ -65,7 +65,9 @@ val barrett_reduce (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
 val cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
-      Prims.l_True
+      (requires
+        Spec.Utils.is_i16b_array (pow2 12 - 1)
+          (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector))
       (ensures
         fun result ->
           let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in

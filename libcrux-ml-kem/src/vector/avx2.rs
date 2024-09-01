@@ -105,7 +105,7 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr $vector)"))]
     #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr $vector)"))]
     fn cond_subtract_3329(vector: Self) -> Self {
         Self {

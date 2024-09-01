@@ -160,7 +160,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         Libcrux_ml_kem.Vector.Portable.Arithmetic.shift_right v_SHIFT_BY v);
     f_cond_subtract_3329_pre
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr v));
     f_cond_subtract_3329_post
     =
     (fun
