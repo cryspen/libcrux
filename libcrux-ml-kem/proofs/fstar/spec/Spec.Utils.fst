@@ -70,3 +70,37 @@ let update_at_range_lemma #n
     introduce forall (i:nat {i < len}). Seq.index s i == Seq.index s' i
     with (assert ( Seq.index (Seq.slice s  0 len) i == Seq.index s  i 
                  /\ Seq.index (Seq.slice s' 0 len) i == Seq.index s' i ))  
+
+ 
+/// Bounded integers
+
+let is_i16b (l:nat) (x:i16) = (v x <= l) && (v x >= -l)
+let is_i16b_array (l:nat) (x:t_Slice i16) = forall i. i < Seq.length x ==> is_i16b l (Seq.index x i)
+let is_i16b_vector (l:nat) (r:usize) (x:t_Array (t_Array i16 (sz 256)) r) = forall i. i < v r ==> is_i16b_array l (Seq.index x i)
+let is_i16b_matrix (l:nat) (r:usize) (x:t_Array (t_Array (t_Array i16 (sz 256)) r) r) = forall i. i < v r ==> is_i16b_vector l r (Seq.index x i)
+
+let is_i32b (l:nat) (x:i32) = (v x <= l) && (v x >= -l)
+let is_i32b_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i32b l (Seq.index x i)
+
+let nat_div_ceil (x:nat) (y:pos) : nat = if (x % y = 0) then x/y else (x/y)+1
+
+let lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) 
+    : Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 * b2 < pow2 31))
+      (ensures (range (v n1 * v n2) i32_inttype /\ is_i32b (b1 * b2) ((cast n1 <: i32) *! (cast n2 <: i32)))) =
+  if v n1 = 0 || v n2 = 0
+  then ()
+  else 
+    let open FStar.Math.Lemmas in
+    lemma_abs_bound (v n1) b1;
+    lemma_abs_bound (v n2) b2;
+    lemma_abs_mul (v n1) (v n2);
+    lemma_mult_le_left (abs (v n1)) (abs (v n2)) b2;
+    lemma_mult_le_right b2 (abs (v n1)) b1;
+    lemma_abs_bound (v n1 * v n2) (b1 * b2)
+
+let lemma_add_i16b (b1 b2:nat) (n1 n2:i16) :
+  Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 + b2 < pow2 15))
+        (ensures (range (v n1 + v n2) i16_inttype /\
+                  is_i16b (b1 + b2) (n1 +! n2)))
+  = ()
+

@@ -72,10 +72,12 @@ impl Operations for PortableVector {
         cond_subtract_3329(v)
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b_array 28296 (impl.f_repr ${v})"))]
     fn barrett_reduce(v: Self) -> Self {
         barrett_reduce(v)
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 3328 $r"))]
     fn montgomery_multiply_by_constant(v: Self, r: i16) -> Self {
         montgomery_multiply_by_constant(v, r)
     }
