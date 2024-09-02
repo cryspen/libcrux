@@ -261,8 +261,7 @@ class t_Operations (v_Self: Type0) = {
       Type0
         { pred ==>
           (let out_future, result:(t_Slice i16 & usize) = x in
-            (Core.Slice.impl__len #i16 out_future <: usize) =.
-            (Core.Slice.impl__len #i16 out <: usize)) };
+            Seq.length (future (out)) == Seq.length out) };
   f_rej_sample:x0: t_Slice u8 -> x1: t_Slice i16
     -> Prims.Pure (t_Slice i16 & usize)
         (f_rej_sample_pre x0 x1)

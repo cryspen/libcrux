@@ -182,7 +182,7 @@ impl Operations for PortableVector {
     }
 
     #[requires(a.len() == 24)]
-    #[ensures(|result| fstar!("Seq.length(future($output)) == Seq.length $output"))]
+    #[ensures(|result| fstar!("Seq.length output_future == Seq.length output"))]
     fn rej_sample(a: &[u8], output: &mut [i16]) -> usize {
         rej_sample(a, output)
     }

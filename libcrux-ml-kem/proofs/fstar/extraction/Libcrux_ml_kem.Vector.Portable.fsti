@@ -7,7 +7,6 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Vector.Portable.Vector_type in
-  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -30,554 +29,233 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
       Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x
   }
 
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl_1: Libcrux_ml_kem.Vector.Traits.t_Operations
-Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-  {
-    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
-    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
-    _super_8706949974463268012 = FStar.Tactics.Typeclasses.solve;
-    f_ZERO_pre = (fun (_: Prims.unit) -> true);
-    f_ZERO_post
-    =
-    (fun (_: Prims.unit) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        impl.f_repr out == Seq.create 16 0s);
-    f_ZERO = (fun (_: Prims.unit) -> Libcrux_ml_kem.Vector.Portable.Vector_type.zero ());
-    f_from_i16_array_pre
-    =
-    (fun (array: t_Slice i16) -> (Core.Slice.impl__len #i16 array <: usize) =. sz 16);
-    f_from_i16_array_post
-    =
-    (fun (array: t_Slice i16) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        impl.f_repr out == array);
-    f_from_i16_array
-    =
-    (fun (array: t_Slice i16) -> Libcrux_ml_kem.Vector.Portable.Vector_type.from_i16_array array);
-    f_to_i16_array_pre
-    =
-    (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_to_i16_array_post
-    =
-    (fun
-        (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: t_Array i16 (sz 16))
-        ->
-        out == impl.f_repr x);
-    f_to_i16_array
-    =
-    (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x);
-    f_add_pre
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_add_post
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        impl.f_repr out == Spec.Utils.map2 ( +. ) (impl.f_repr lhs) (impl.f_repr rhs));
-    f_add
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.add lhs rhs);
-    f_sub_pre
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_sub_post
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        impl.f_repr out == Spec.Utils.map2 ( -. ) (impl.f_repr lhs) (impl.f_repr rhs));
-    f_sub
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.sub lhs rhs);
-    f_multiply_by_constant_pre
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) -> true);
-    f_multiply_by_constant_post
-    =
-    (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (c: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr v));
-    f_multiply_by_constant
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.multiply_by_constant v c);
-    f_bitwise_and_with_constant_pre
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) -> true);
-    f_bitwise_and_with_constant_post
-    =
-    (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (c: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x &. c) (impl.f_repr v));
-    f_bitwise_and_with_constant
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.bitwise_and_with_constant v c);
-    f_shift_right_pre
-    =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l);
-    f_shift_right_post
-    =
-    (fun
-        (v_SHIFT_BY: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        (v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==>
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (impl.f_repr v));
-    f_shift_right
-    =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.shift_right v_SHIFT_BY v);
-    f_cond_subtract_3329_pre
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_cond_subtract_3329_post
-    =
-    (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        impl.f_repr out ==
-        Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr v));
-    f_cond_subtract_3329_
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.cond_subtract_3329_ v);
-    f_barrett_reduce_pre
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Spec.Utils.is_i16b_array 28296 (impl.f_repr v));
-    f_barrett_reduce_post
-    =
-    (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_barrett_reduce
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.barrett_reduce v);
-    f_montgomery_multiply_by_constant_pre
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (r: i16) ->
-        Spec.Utils.is_i16b 3328 r);
-    f_montgomery_multiply_by_constant_post
-    =
-    (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (r: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_montgomery_multiply_by_constant
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (r: i16) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_by_constant v r);
-    f_compress_1_pre
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_compress_1_post
-    =
-    (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_compress_1_
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Compress.compress_1_ v);
-    f_compress_pre
-    =
-    (fun
-        (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
-        v_COEFFICIENT_BITS =. 11l);
-    f_compress_post
-    =
-    (fun
-        (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_compress
-    =
-    (fun
-        (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        Libcrux_ml_kem.Vector.Portable.Compress.compress v_COEFFICIENT_BITS v);
-    f_decompress_ciphertext_coefficient_pre
-    =
-    (fun
-        (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
-        v_COEFFICIENT_BITS =. 11l);
-    f_decompress_ciphertext_coefficient_post
-    =
-    (fun
-        (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_decompress_ciphertext_coefficient
-    =
-    (fun
-        (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        Libcrux_ml_kem.Vector.Portable.Compress.decompress_ciphertext_coefficient v_COEFFICIENT_BITS
-          v);
-    f_ntt_layer_1_step_pre
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        (zeta2: i16)
-        (zeta3: i16)
-        ->
-        true);
-    f_ntt_layer_1_step_post
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        (zeta2: i16)
-        (zeta3: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_ntt_layer_1_step
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        (zeta2: i16)
-        (zeta3: i16)
-        ->
-        Libcrux_ml_kem.Vector.Portable.Ntt.ntt_layer_1_step a zeta0 zeta1 zeta2 zeta3);
-    f_ntt_layer_2_step_pre
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        ->
-        true);
-    f_ntt_layer_2_step_post
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_ntt_layer_2_step
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        ->
-        Libcrux_ml_kem.Vector.Portable.Ntt.ntt_layer_2_step a zeta0 zeta1);
-    f_ntt_layer_3_step_pre
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16) -> true);
-    f_ntt_layer_3_step_post
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_ntt_layer_3_step
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16) ->
-        Libcrux_ml_kem.Vector.Portable.Ntt.ntt_layer_3_step a zeta);
-    f_inv_ntt_layer_1_step_pre
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        (zeta2: i16)
-        (zeta3: i16)
-        ->
-        true);
-    f_inv_ntt_layer_1_step_post
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        (zeta2: i16)
-        (zeta3: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_inv_ntt_layer_1_step
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        (zeta2: i16)
-        (zeta3: i16)
-        ->
-        Libcrux_ml_kem.Vector.Portable.Ntt.inv_ntt_layer_1_step a zeta0 zeta1 zeta2 zeta3);
-    f_inv_ntt_layer_2_step_pre
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        ->
-        true);
-    f_inv_ntt_layer_2_step_post
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_inv_ntt_layer_2_step
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        ->
-        Libcrux_ml_kem.Vector.Portable.Ntt.inv_ntt_layer_2_step a zeta0 zeta1);
-    f_inv_ntt_layer_3_step_pre
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16) -> true);
-    f_inv_ntt_layer_3_step_post
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_inv_ntt_layer_3_step
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16) ->
-        Libcrux_ml_kem.Vector.Portable.Ntt.inv_ntt_layer_3_step a zeta);
-    f_ntt_multiply_pre
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        (zeta2: i16)
-        (zeta3: i16)
-        ->
-        true);
-    f_ntt_multiply_post
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        (zeta2: i16)
-        (zeta3: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        true);
-    f_ntt_multiply
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (zeta0: i16)
-        (zeta1: i16)
-        (zeta2: i16)
-        (zeta3: i16)
-        ->
-        Libcrux_ml_kem.Vector.Portable.Ntt.ntt_multiply lhs rhs zeta0 zeta1 zeta2 zeta3);
-    f_serialize_1_pre
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_serialize_1_post
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: t_Array u8 (sz 2))
-        ->
-        true);
-    f_serialize_1_
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_ a);
-    f_deserialize_1_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_1_post
-    =
-    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_deserialize_1_
-    =
-    (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_ a);
-    f_serialize_4_pre
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_serialize_4_post
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: t_Array u8 (sz 8))
-        ->
-        true);
-    f_serialize_4_
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_ a);
-    f_deserialize_4_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_4_post
-    =
-    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_deserialize_4_
-    =
-    (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_ a);
-    f_serialize_5_pre
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_serialize_5_post
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: t_Array u8 (sz 10))
-        ->
-        true);
-    f_serialize_5_
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Serialize.serialize_5_ a);
-    f_deserialize_5_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_5_post
-    =
-    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_deserialize_5_
-    =
-    (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_5_ a);
-    f_serialize_10_pre
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_serialize_10_post
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: t_Array u8 (sz 20))
-        ->
-        true);
-    f_serialize_10_
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_ a);
-    f_deserialize_10_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_10_post
-    =
-    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_deserialize_10_
-    =
-    (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_ a);
-    f_serialize_11_pre
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_serialize_11_post
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: t_Array u8 (sz 22))
-        ->
-        true);
-    f_serialize_11_
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Serialize.serialize_11_ a);
-    f_deserialize_11_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_11_post
-    =
-    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_deserialize_11_
-    =
-    (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_11_ a);
-    f_serialize_12_pre
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_serialize_12_post
-    =
-    (fun
-        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: t_Array u8 (sz 24))
-        ->
-        true);
-    f_serialize_12_
-    =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_ a);
-    f_deserialize_12_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_12_post
-    =
-    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_deserialize_12_
-    =
-    (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_ a);
-    f_rej_sample_pre = (fun (a: t_Slice u8) (out: t_Slice i16) -> true);
-    f_rej_sample_post
-    =
-    (fun (a: t_Slice u8) (out: t_Slice i16) (out2: (t_Slice i16 & usize)) -> true);
-    f_rej_sample
-    =
-    fun (a: t_Slice u8) (out: t_Slice i16) ->
-      let tmp0, out1:(t_Slice i16 & usize) =
-        Libcrux_ml_kem.Vector.Portable.Sampling.rej_sample a out
-      in
-      let out:t_Slice i16 = tmp0 in
-      let hax_temp_output:usize = out1 in
-      out, hax_temp_output <: (t_Slice i16 & usize)
-  }
+(* item error backend: (TraitsSpecs) something is not implemented yet.
+associated_expr_rebinding: zip two lists of different lengths (original_vars and target_vars)
+
+ - original_vars: [{ Local_ident.T.name = "a"; id = (Local_ident.T.Expr, 2) };
+  { Local_ident.T.name = "output"; id = (Local_ident.T.Expr, 4) };
+  { Local_ident.T.name = "output_future"; id = (Local_ident.T.Expr, 6) };
+  { Local_ident.T.name = "result"; id = (Local_ident.T.Expr, 7) }]
+ - target_vars: [{ Local_ident.T.name = "a"; id = (Local_ident.T.Expr, 2) };
+  { Local_ident.T.name = "output"; id = (Local_ident.T.Expr, 4) };
+  { Local_ident.T.name = "out1"; id = (Local_ident.T.Expr, -1) }]
+
+ - original_params: [{ Ast.Make.p =
+   Ast.Make.PBinding {mut = Ast.Immutable; mode = Ast.Make.ByValue;
+     var = { Local_ident.T.name = "a"; id = (Local_ident.T.Expr, 2) };
+     typ =
+     Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+       ty = (Ast.Make.TInt { Ast.size = Ast.S8; signedness = Ast.Unsigned })};
+     subpat = None};
+   span =
+   { Span.id = 180853;
+     data =
+     [{ Span.Imported.filename =
+        (Span.Imported.Real
+           (Span.Imported.LocalPath "libcrux-ml-kem/src/vector/portable.rs"));
+        hi = { Span.Imported.col = 19; line = 186 };
+        lo = { Span.Imported.col = 18; line = 186 } }
+       ]
+     };
+   typ =
+   Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+     ty = (Ast.Make.TInt { Ast.size = Ast.S8; signedness = Ast.Unsigned })}
+   };
+  { Ast.Make.p =
+    Ast.Make.PBinding {mut = Ast.Immutable; mode = Ast.Make.ByValue;
+      var = { Local_ident.T.name = "output"; id = (Local_ident.T.Expr, 4) };
+      typ =
+      Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+        ty = (Ast.Make.TInt { Ast.size = Ast.S16; signedness = Ast.Signed })};
+      subpat = None};
+    span =
+    { Span.id = 180855;
+      data =
+      [{ Span.Imported.filename =
+         (Span.Imported.Real
+            (Span.Imported.LocalPath "libcrux-ml-kem/src/vector/portable.rs"));
+         hi = { Span.Imported.col = 34; line = 186 };
+         lo = { Span.Imported.col = 28; line = 186 } }
+        ]
+      };
+    typ =
+    Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+      ty = (Ast.Make.TInt { Ast.size = Ast.S16; signedness = Ast.Signed })}
+    };
+  { Ast.Make.p =
+    Ast.Make.PConstruct {name = `TupleCons (2);
+      args =
+      [{ Ast.Make.field = `TupleField ((0, 2));
+         pat =
+         { Ast.Make.p =
+           Ast.Make.PBinding {mut = Ast.Immutable; mode = Ast.Make.ByValue;
+             var =
+             { Local_ident.T.name = "output_future";
+               id = (Local_ident.T.Expr, 6) };
+             typ =
+             Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+               ty =
+               (Ast.Make.TInt { Ast.size = Ast.S16; signedness = Ast.Signed })};
+             subpat = None};
+           span =
+           { Span.id = 180857;
+             data =
+             [{ Span.Imported.filename =
+                (Span.Imported.Real
+                   (Span.Imported.LocalPath
+                      "libcrux-ml-kem/src/vector/portable.rs"));
+                hi = { Span.Imported.col = 80; line = 185 };
+                lo = { Span.Imported.col = 4; line = 185 } }
+               ]
+             };
+           typ =
+           Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+             ty =
+             (Ast.Make.TInt { Ast.size = Ast.S16; signedness = Ast.Signed })}
+           }
+         };
+        { Ast.Make.field = `TupleField ((1, 2));
+          pat =
+          { Ast.Make.p =
+            Ast.Make.PBinding {mut = Ast.Immutable; mode = Ast.Make.ByValue;
+              var =
+              { Local_ident.T.name = "result"; id = (Local_ident.T.Expr, 7) };
+              typ =
+              (Ast.Make.TInt
+                 { Ast.size = Ast.SSize; signedness = Ast.Unsigned });
+              subpat = None};
+            span =
+            { Span.id = 180858;
+              data =
+              [{ Span.Imported.filename =
+                 (Span.Imported.Real
+                    (Span.Imported.LocalPath
+                       "libcrux-ml-kem/src/vector/portable.rs"));
+                 hi = { Span.Imported.col = 21; line = 185 };
+                 lo = { Span.Imported.col = 15; line = 185 } }
+                ]
+              };
+            typ =
+            (Ast.Make.TInt
+               { Ast.size = Ast.SSize; signedness = Ast.Unsigned })
+            }
+          }
+        ];
+      is_record = false; is_struct = true};
+    span =
+    { Span.id = 180856;
+      data =
+      [{ Span.Imported.filename =
+         (Span.Imported.Real
+            (Span.Imported.LocalPath "libcrux-ml-kem/src/vector/portable.rs"));
+         hi = { Span.Imported.col = 80; line = 185 };
+         lo = { Span.Imported.col = 4; line = 185 } }
+        ]
+      };
+    typ =
+    Ast.Make.TApp {ident = `TupleType (2);
+      args =
+      [(Ast.Make.GType
+          Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+            ty =
+            (Ast.Make.TInt { Ast.size = Ast.S16; signedness = Ast.Signed })});
+        (Ast.Make.GType
+           (Ast.Make.TInt { Ast.size = Ast.SSize; signedness = Ast.Unsigned }))
+        ]}
+    }
+  ]
+ - params: [{ Ast.Make.p =
+   Ast.Make.PBinding {mut = Ast.Immutable; mode = Ast.Make.ByValue;
+     var = { Local_ident.T.name = "a"; id = (Local_ident.T.Expr, 2) };
+     typ =
+     Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+       ty = (Ast.Make.TInt { Ast.size = Ast.S8; signedness = Ast.Unsigned })};
+     subpat = None};
+   span =
+   { Span.id = 173961;
+     data =
+     [{ Span.Imported.filename =
+        (Span.Imported.Real
+           (Span.Imported.LocalPath "libcrux-ml-kem/src/vector/portable.rs"));
+        hi = { Span.Imported.col = 19; line = 186 };
+        lo = { Span.Imported.col = 18; line = 186 } }
+       ]
+     };
+   typ =
+   Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+     ty = (Ast.Make.TInt { Ast.size = Ast.S8; signedness = Ast.Unsigned })}
+   };
+  { Ast.Make.p =
+    Ast.Make.PBinding {mut = Ast.Immutable; mode = Ast.Make.ByValue;
+      var = { Local_ident.T.name = "output"; id = (Local_ident.T.Expr, 4) };
+      typ =
+      Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+        ty = (Ast.Make.TInt { Ast.size = Ast.S16; signedness = Ast.Signed })};
+      subpat = None};
+    span =
+    { Span.id = 173963;
+      data =
+      [{ Span.Imported.filename =
+         (Span.Imported.Real
+            (Span.Imported.LocalPath "libcrux-ml-kem/src/vector/portable.rs"));
+         hi = { Span.Imported.col = 34; line = 186 };
+         lo = { Span.Imported.col = 28; line = 186 } }
+        ]
+      };
+    typ =
+    Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+      ty = (Ast.Make.TInt { Ast.size = Ast.S16; signedness = Ast.Signed })}
+    };
+  { Ast.Make.p =
+    Ast.Make.PBinding {mut = Ast.Immutable; mode = Ast.Make.ByValue;
+      var = { Local_ident.T.name = "out1"; id = (Local_ident.T.Expr, -1) };
+      typ =
+      Ast.Make.TApp {ident = `TupleType (2);
+        args =
+        [(Ast.Make.GType
+            Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+              ty =
+              (Ast.Make.TInt { Ast.size = Ast.S16; signedness = Ast.Signed })});
+          (Ast.Make.GType
+             (Ast.Make.TInt
+                { Ast.size = Ast.SSize; signedness = Ast.Unsigned }))
+          ]};
+      subpat = None};
+    span =
+    { Span.id = 173964;
+      data =
+      [{ Span.Imported.filename =
+         (Span.Imported.Real
+            (Span.Imported.LocalPath "libcrux-ml-kem/src/vector/portable.rs"));
+         hi = { Span.Imported.col = 5; line = 188 };
+         lo = { Span.Imported.col = 57; line = 186 } }
+        ]
+      };
+    typ =
+    Ast.Make.TApp {ident = `TupleType (2);
+      args =
+      [(Ast.Make.GType
+          Ast.Make.TSlice {witness = Features.On.Slice.Slice;
+            ty =
+            (Ast.Make.TInt { Ast.size = Ast.S16; signedness = Ast.Signed })});
+        (Ast.Make.GType
+           (Ast.Make.TInt { Ast.size = Ast.SSize; signedness = Ast.Unsigned }))
+        ]}
+    }
+  ]
+
+Last AST:
+/** print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
+  { Concrete_ident.Imported.krate = "libcrux_ml_kem";
+    path =
+    [{ Concrete_ident.Imported.data =
+       (Concrete_ident.Imported.TypeNs "vector"); disambiguator = 0 };
+      { Concrete_ident.Imported.data =
+        (Concrete_ident.Imported.TypeNs "portable"); disambiguator = 0 };
+      { Concrete_ident.Imported.data = Concrete_ident.Imported.Impl;
+        disambiguator = 1 }
+      ]
+    };
+  kind = Concrete_ident.Kind.Value }) */
+const _: () = ();
+ *)
