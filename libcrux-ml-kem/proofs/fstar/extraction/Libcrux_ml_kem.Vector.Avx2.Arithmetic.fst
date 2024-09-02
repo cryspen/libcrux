@@ -14,19 +14,6 @@ let bitwise_and_with_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     Libcrux_intrinsics.Avx2_extract.mm256_and_si256 vector cv
   in
   let _:Prims.unit =
-    Spec.Utils.lemma_map2_index #_
-      #_
-      #_
-      #(sz 16)
-      ( &. )
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector)
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 cv);
-    Spec.Utils.lemma_map_index #_
-      #_
-      #(sz 16)
-      (fun x -> x &. constant)
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector);
-    Spec.Utils.lemma_create_index #_ (sz 16) constant;
     Seq.lemma_eq_intro (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result)
       (Spec.Utils.map_array (fun x -> x &. constant)
           (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector))
@@ -41,19 +28,6 @@ let multiply_by_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (con
     Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 vector cv
   in
   let _:Prims.unit =
-    Spec.Utils.lemma_map2_index #_
-      #_
-      #_
-      #(sz 16)
-      mul_mod
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector)
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 cv);
-    Spec.Utils.lemma_map_index #_
-      #_
-      #(sz 16)
-      (fun x -> x *. constant)
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector);
-    Spec.Utils.lemma_create_index #_ (sz 16) constant;
     Seq.lemma_eq_intro (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result)
       (Spec.Utils.map_array (fun x -> x *. constant)
           (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector))
@@ -65,11 +39,6 @@ let shift_right (v_SHIFT_BY: i32) (vector: Libcrux_intrinsics.Avx2_extract.t_Vec
     Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 v_SHIFT_BY vector
   in
   let _:Prims.unit =
-    Spec.Utils.lemma_map_index #_
-      #_
-      #(sz 16)
-      (fun x -> x >>! v_SHIFT_BY)
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector);
     Seq.lemma_eq_intro (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result)
       (Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY)
           (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector))
@@ -107,55 +76,18 @@ let cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
   in
-  let _:Prims.unit =
-    Spec.Utils.lemma_create_index #_ (sz 16) Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
-  in
   let vv_minus_field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 vector field_modulus
-  in
-  let _:Prims.unit =
-    Spec.Utils.lemma_map2_index #_
-      #_
-      #_
-      #(sz 16)
-      ( -. )
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector)
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 field_modulus)
   in
   let sign_mask:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 15l vv_minus_field_modulus
   in
-  let _:Prims.unit =
-    Spec.Utils.lemma_map_index #_
-      #_
-      #(sz 16)
-      (fun x -> x >>! 15l)
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vv_minus_field_modulus)
-  in
   let conditional_add_field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_and_si256 sign_mask field_modulus
-  in
-  let _:Prims.unit =
-    Spec.Utils.lemma_map2_index #_
-      #_
-      #_
-      #(sz 16)
-      ( &. )
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 sign_mask)
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 field_modulus)
   in
   let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 vv_minus_field_modulus
       conditional_add_field_modulus
-  in
-  let _:Prims.unit =
-    Spec.Utils.lemma_map2_index #_
-      #_
-      #_
-      #(sz 16)
-      ( +. )
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vv_minus_field_modulus)
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 conditional_add_field_modulus)
   in
   let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
   let _:Prims.unit = admit () (* Panic freedom *) in

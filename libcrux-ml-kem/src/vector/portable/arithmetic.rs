@@ -51,8 +51,7 @@ pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
               (forall j. j >= v i ==> (Seq.index ${lhs}.f_elements j) == (Seq.index ${_lhs0}.f_elements j))") });
         lhs.elements[i] = lhs.elements[i].wrapping_add(rhs.elements[i]);
     }
-    hax_lib::fstar!("Spec.Utils.lemma_map2_index #_ #_ #_ #(sz 16) (+.) ${_lhs0}.f_elements ${rhs}.f_elements;
-                     Seq.lemma_eq_intro ${lhs}.f_elements (Spec.Utils.map2 (+.) ${_lhs0}.f_elements ${rhs}.f_elements)");
+    hax_lib::fstar!("Seq.lemma_eq_intro ${lhs}.f_elements (Spec.Utils.map2 (+.) ${_lhs0}.f_elements ${rhs}.f_elements)");
     lhs
 }
 
@@ -67,8 +66,7 @@ pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
               (forall j. j >= v i ==> (Seq.index ${lhs}.f_elements j) == (Seq.index ${_lhs0}.f_elements j))") });
         lhs.elements[i] = lhs.elements[i].wrapping_sub(rhs.elements[i]);
     }
-    hax_lib::fstar!("Spec.Utils.lemma_map2_index #_ #_ #_ #(sz 16) (-.) ${_lhs0}.f_elements ${rhs}.f_elements;
-                     Seq.lemma_eq_intro ${lhs}.f_elements (Spec.Utils.map2 (-.) ${_lhs0}.f_elements ${rhs}.f_elements)");
+    hax_lib::fstar!("Seq.lemma_eq_intro ${lhs}.f_elements (Spec.Utils.map2 (-.) ${_lhs0}.f_elements ${rhs}.f_elements)");
     lhs
 }
 
@@ -83,8 +81,7 @@ pub fn multiply_by_constant(mut vec: PortableVector, c: i16) -> PortableVector {
               (forall j. j >= v i ==> (Seq.index ${vec}.f_elements j) == (Seq.index ${_vec0}.f_elements j))") });
         vec.elements[i] = vec.elements[i].wrapping_mul(c);
     }
-    hax_lib::fstar!("Spec.Utils.lemma_map_index #_ #_ #(sz 16) (fun x -> x *. c) ${_vec0}.f_elements;
-                     Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array (fun x -> x *. c) ${_vec0}.f_elements)");
+    hax_lib::fstar!("Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array (fun x -> x *. c) ${_vec0}.f_elements)");
     vec
 }
 
@@ -99,8 +96,7 @@ pub fn bitwise_and_with_constant(mut vec: PortableVector, c: i16) -> PortableVec
               (forall j. j >= v i ==> Seq.index ${vec}.f_elements j == Seq.index ${_vec0}.f_elements j)") });
         vec.elements[i] &= c;
     }
-    hax_lib::fstar!("Spec.Utils.lemma_map_index #_ #_ #(sz 16) (fun x -> x &. c) ${_vec0}.f_elements;
-                     Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array (fun x -> x &. c) ${_vec0}.f_elements)");
+    hax_lib::fstar!("Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array (fun x -> x &. c) ${_vec0}.f_elements)");
     vec
 }
 
@@ -117,8 +113,7 @@ pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVect
               (forall j. j >= v i ==> Seq.index ${vec}.f_elements j == Seq.index ${_vec0}.f_elements j)") });
         vec.elements[i] = vec.elements[i] >> SHIFT_BY;
     }
-    hax_lib::fstar!("Spec.Utils.lemma_map_index #_ #_ #(sz 16) (fun x -> x >>! ${SHIFT_BY}) ${_vec0}.f_elements;
-                     Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) ${_vec0}.f_elements)");
+    hax_lib::fstar!("Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) ${_vec0}.f_elements)");
     vec
 }
 
@@ -141,9 +136,7 @@ pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
             vec.elements[i] -= 3329
         }
     }
-    hax_lib::fstar!("Spec.Utils.lemma_map_index #_ #_ #(sz 16) 
-                            (fun x -> if x >=. 3329s then x -! 3329s else x) ${_vec0}.f_elements;
-                     Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array 
+    hax_lib::fstar!("Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array 
                             (fun x -> if x >=. 3329s then x -! 3329s else x) ${_vec0}.f_elements)");
     vec
 }
@@ -257,7 +250,7 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     hax_lib::fstar!("assert (v value < pow2 31);
                      assert (v value / pow2 16 < pow2 15);
                      assert (v value_high == (v value / pow2 16) @% pow2 16);
-                     assert ((v value / pow2 16) < pow2 15 ==> (v value / pow2 16) @% pow2 16 == (v value / pow2 16));
+                     Spec.Utils.lemma_div_at_percent (v value) (pow2 16);
                      assert (v value_high == (v value / pow2 16)); 
                      assert(Spec.Utils.is_i32b (3328 * 3328) value ==> Spec.Utils.is_i16b 169 value_high);
                      assert(Spec.Utils.is_i16b 3328 value_high)");

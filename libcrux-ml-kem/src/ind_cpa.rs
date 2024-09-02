@@ -291,6 +291,7 @@ pub(crate) fn generate_keypair<
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
 #[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $OUT_LEN == Spec.MLKEM.v_C1_SIZE $K /\\
     $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\\

@@ -105,7 +105,7 @@ let montgomery_reduce_element (value: i32) =
     assert (v value < pow2 31);
     assert (v value / pow2 16 < pow2 15);
     assert (v value_high == (v value / pow2 16) @% pow2 16);
-    assert ((v value / pow2 16) < pow2 15 ==> (v value / pow2 16) @% pow2 16 == (v value / pow2 16));
+    Spec.Utils.lemma_div_at_percent (v value) (pow2 16);
     assert (v value_high == (v value / pow2 16));
     assert (Spec.Utils.is_i32b (3328 * 3328) value ==> Spec.Utils.is_i16b 169 value_high);
     assert (Spec.Utils.is_i16b 3328 value_high)
@@ -211,7 +211,6 @@ let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           lhs)
   in
   let _:Prims.unit =
-    Spec.Utils.lemma_map2_index #_ #_ #_ #(sz 16) ( +. ) v__lhs0.f_elements rhs.f_elements;
     Seq.lemma_eq_intro lhs.f_elements (Spec.Utils.map2 ( +. ) v__lhs0.f_elements rhs.f_elements)
   in
   lhs
@@ -308,7 +307,6 @@ let bitwise_and_with_constant
           vec)
   in
   let _:Prims.unit =
-    Spec.Utils.lemma_map_index #_ #_ #(sz 16) (fun x -> x &. c) v__vec0.f_elements;
     Seq.lemma_eq_intro vec.f_elements (Spec.Utils.map_array (fun x -> x &. c) v__vec0.f_elements)
   in
   vec
@@ -354,11 +352,6 @@ let cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Porta
           else vec)
   in
   let _:Prims.unit =
-    Spec.Utils.lemma_map_index #_
-      #_
-      #(sz 16)
-      (fun x -> if x >=. 3329s then x -! 3329s else x)
-      v__vec0.f_elements;
     Seq.lemma_eq_intro vec.f_elements
       (Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) v__vec0.f_elements)
   in
@@ -444,7 +437,6 @@ let multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Port
           vec)
   in
   let _:Prims.unit =
-    Spec.Utils.lemma_map_index #_ #_ #(sz 16) (fun x -> x *. c) v__vec0.f_elements;
     Seq.lemma_eq_intro vec.f_elements (Spec.Utils.map_array (fun x -> x *. c) v__vec0.f_elements)
   in
   vec
@@ -484,7 +476,6 @@ let shift_right (v_SHIFT_BY: i32) (vec: Libcrux_ml_kem.Vector.Portable.Vector_ty
           vec)
   in
   let _:Prims.unit =
-    Spec.Utils.lemma_map_index #_ #_ #(sz 16) (fun x -> x >>! v_SHIFT_BY) v__vec0.f_elements;
     Seq.lemma_eq_intro vec.f_elements
       (Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) v__vec0.f_elements)
   in
@@ -529,7 +520,6 @@ let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           lhs)
   in
   let _:Prims.unit =
-    Spec.Utils.lemma_map2_index #_ #_ #_ #(sz 16) ( -. ) v__lhs0.f_elements rhs.f_elements;
     Seq.lemma_eq_intro lhs.f_elements (Spec.Utils.map2 ( -. ) v__lhs0.f_elements rhs.f_elements)
   in
   lhs

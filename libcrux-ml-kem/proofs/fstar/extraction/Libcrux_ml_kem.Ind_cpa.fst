@@ -197,6 +197,8 @@ let sample_vector_cbd_then_ntt
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+#push-options "--z3rlimit 200"
+
 let compress_then_serialize_u
       (v_K v_OUT_LEN v_COMPRESSION_FACTOR v_BLOCK_LEN: usize)
       (#v_Vector: Type0)
@@ -260,6 +262,8 @@ let compress_then_serialize_u
   let _:Prims.unit = admit () (* Panic freedom *) in
   let hax_temp_output:Prims.unit = result in
   out
+
+#pop-options
 
 #push-options "--admit_smt_queries true"
 
