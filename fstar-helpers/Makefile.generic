@@ -196,6 +196,7 @@ echo "Variables:"
 target "NO_COLOR" "Set to anything to disable colors"
 target "ADMIT_MODULES" "List of modules where F* will assume every SMT query"
 target "FSTAR_INCLUDE_DIRS_EXTRA" "List of extra include F* dirs"
+${EXTRA_HELPMESSAGE}
 endef
 export HELPMESSAGE
 

@@ -1,4 +1,6 @@
-ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
+SLOW_MODULES += Libcrux_ml_kem.Vector.Portable.Serialize.fst
+
+ADMIT_MODULES += Libcrux_ml_kem.Ind_cca.Unpacked.fst \
 	      Libcrux_ml_kem.Ind_cca.fst \
               Libcrux_ml_kem.Ind_cpa.fst \
               Libcrux_ml_kem.Ind_cpa.fsti \
