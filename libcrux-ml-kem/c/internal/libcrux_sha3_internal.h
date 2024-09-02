@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
- * Eurydice: fcdd1852994390db2b6aa780ed8d837fa811167d
- * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * Charon: 6b5e110342a771a3e1c739b10294b1778e4be8b4
+ * Eurydice: 31be7d65ca5d6acdacfb33652e478d24dd85c1cb
+ * Karamel: 3205d3365ea2790b02368f79fcee38e38d0b5908
  * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
- * Libcrux: 7cd7a08d172e1715493176358bffadf8f87ae3a4
+ * Libcrux: 33d08ed8cc74e9d1b2c29d754e70a5b2998bd6e5
  */
 
 #ifndef __internal_libcrux_sha3_internal_H
@@ -29,7 +29,7 @@ typedef libcrux_sha3_generic_keccak_KeccakState_48
 */
 static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_48
 libcrux_sha3_portable_incremental_shake128_init(void) {
-  return libcrux_sha3_generic_keccak_new_1e_ba();
+  return libcrux_sha3_generic_keccak_new_1e_f2();
 }
 
 /**
@@ -39,7 +39,7 @@ static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake128_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice data0) {
   Eurydice_slice buf[1U] = {data0};
-  libcrux_sha3_generic_keccak_absorb_final_f3(s, buf);
+  libcrux_sha3_generic_keccak_absorb_final_72(s, buf);
 }
 
 /**
@@ -50,7 +50,7 @@ with const generics
 - RATE= 168
 */
 static KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_squeeze_first_three_blocks_db(
+libcrux_sha3_generic_keccak_squeeze_first_three_blocks_7d(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
   Eurydice_slice_uint8_t_1size_t__x2 uu____0 =
       libcrux_sha3_portable_keccak_split_at_mut_n_5a(out, (size_t)168U);
@@ -58,15 +58,15 @@ libcrux_sha3_generic_keccak_squeeze_first_three_blocks_db(
   memcpy(o0, uu____0.fst, (size_t)1U * sizeof(Eurydice_slice));
   Eurydice_slice o10[1U];
   memcpy(o10, uu____0.snd, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_generic_keccak_squeeze_first_block_80(s, o0);
+  libcrux_sha3_generic_keccak_squeeze_first_block_09(s, o0);
   Eurydice_slice_uint8_t_1size_t__x2 uu____1 =
       libcrux_sha3_portable_keccak_split_at_mut_n_5a(o10, (size_t)168U);
   Eurydice_slice o1[1U];
   memcpy(o1, uu____1.fst, (size_t)1U * sizeof(Eurydice_slice));
   Eurydice_slice o2[1U];
   memcpy(o2, uu____1.snd, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_generic_keccak_squeeze_next_block_87(s, o1);
-  libcrux_sha3_generic_keccak_squeeze_next_block_87(s, o2);
+  libcrux_sha3_generic_keccak_squeeze_next_block_1f(s, o1);
+  libcrux_sha3_generic_keccak_squeeze_next_block_1f(s, o2);
 }
 
 /**
@@ -76,7 +76,7 @@ static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out0) {
   Eurydice_slice buf[1U] = {out0};
-  libcrux_sha3_generic_keccak_squeeze_first_three_blocks_db(s, buf);
+  libcrux_sha3_generic_keccak_squeeze_first_three_blocks_7d(s, buf);
 }
 
 /**
@@ -86,7 +86,7 @@ static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out0) {
   Eurydice_slice buf[1U] = {out0};
-  libcrux_sha3_generic_keccak_squeeze_next_block_87(s, buf);
+  libcrux_sha3_generic_keccak_squeeze_next_block_1f(s, buf);
 }
 
 #define libcrux_sha3_Sha224 0
@@ -149,7 +149,7 @@ with const generics
 - RATE= 168
 */
 static KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_squeeze_first_five_blocks_de(
+libcrux_sha3_generic_keccak_squeeze_first_five_blocks_92(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
   Eurydice_slice_uint8_t_1size_t__x2 uu____0 =
       libcrux_sha3_portable_keccak_split_at_mut_n_5a(out, (size_t)168U);
@@ -157,29 +157,29 @@ libcrux_sha3_generic_keccak_squeeze_first_five_blocks_de(
   memcpy(o0, uu____0.fst, (size_t)1U * sizeof(Eurydice_slice));
   Eurydice_slice o10[1U];
   memcpy(o10, uu____0.snd, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_generic_keccak_squeeze_first_block_80(s, o0);
+  libcrux_sha3_generic_keccak_squeeze_first_block_09(s, o0);
   Eurydice_slice_uint8_t_1size_t__x2 uu____1 =
       libcrux_sha3_portable_keccak_split_at_mut_n_5a(o10, (size_t)168U);
   Eurydice_slice o1[1U];
   memcpy(o1, uu____1.fst, (size_t)1U * sizeof(Eurydice_slice));
   Eurydice_slice o20[1U];
   memcpy(o20, uu____1.snd, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_generic_keccak_squeeze_next_block_87(s, o1);
+  libcrux_sha3_generic_keccak_squeeze_next_block_1f(s, o1);
   Eurydice_slice_uint8_t_1size_t__x2 uu____2 =
       libcrux_sha3_portable_keccak_split_at_mut_n_5a(o20, (size_t)168U);
   Eurydice_slice o2[1U];
   memcpy(o2, uu____2.fst, (size_t)1U * sizeof(Eurydice_slice));
   Eurydice_slice o30[1U];
   memcpy(o30, uu____2.snd, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_generic_keccak_squeeze_next_block_87(s, o2);
+  libcrux_sha3_generic_keccak_squeeze_next_block_1f(s, o2);
   Eurydice_slice_uint8_t_1size_t__x2 uu____3 =
       libcrux_sha3_portable_keccak_split_at_mut_n_5a(o30, (size_t)168U);
   Eurydice_slice o3[1U];
   memcpy(o3, uu____3.fst, (size_t)1U * sizeof(Eurydice_slice));
   Eurydice_slice o4[1U];
   memcpy(o4, uu____3.snd, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_generic_keccak_squeeze_next_block_87(s, o3);
-  libcrux_sha3_generic_keccak_squeeze_next_block_87(s, o4);
+  libcrux_sha3_generic_keccak_squeeze_next_block_1f(s, o3);
+  libcrux_sha3_generic_keccak_squeeze_next_block_1f(s, o4);
 }
 
 /**
@@ -189,7 +189,7 @@ static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake128_squeeze_first_five_blocks(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out0) {
   Eurydice_slice buf[1U] = {out0};
-  libcrux_sha3_generic_keccak_squeeze_first_five_blocks_de(s, buf);
+  libcrux_sha3_generic_keccak_squeeze_first_five_blocks_92(s, buf);
 }
 
 /**
@@ -199,7 +199,7 @@ static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake256_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice data) {
   Eurydice_slice buf[1U] = {data};
-  libcrux_sha3_generic_keccak_absorb_final_f30(s, buf);
+  libcrux_sha3_generic_keccak_absorb_final_720(s, buf);
 }
 
 /**
@@ -207,7 +207,7 @@ libcrux_sha3_portable_incremental_shake256_absorb_final(
 */
 static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_48
 libcrux_sha3_portable_incremental_shake256_init(void) {
-  return libcrux_sha3_generic_keccak_new_1e_ba();
+  return libcrux_sha3_generic_keccak_new_1e_f2();
 }
 
 /**
@@ -217,7 +217,7 @@ static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out) {
   Eurydice_slice buf[1U] = {out};
-  libcrux_sha3_generic_keccak_squeeze_first_block_800(s, buf);
+  libcrux_sha3_generic_keccak_squeeze_first_block_090(s, buf);
 }
 
 /**
@@ -227,7 +227,7 @@ static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake256_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out) {
   Eurydice_slice buf[1U] = {out};
-  libcrux_sha3_generic_keccak_squeeze_next_block_870(s, buf);
+  libcrux_sha3_generic_keccak_squeeze_next_block_1f0(s, buf);
 }
 
 /**
