@@ -51,6 +51,7 @@ pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
 }
 
 #[inline(always)]
+#[hax_lib::requires(bytes.len() == 2)]
 pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
     // We need to take each bit from the 2 bytes of input and put them
     // into their own 16-bit lane. Ideally, we'd load the two bytes into the vector,
@@ -176,6 +177,7 @@ pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
 }
 
 #[inline(always)]
+#[hax_lib::requires(bytes.len() == 8)]
 pub(crate) fn deserialize_4(bytes: &[u8]) -> Vec256 {
     // Every 4 bits from each byte of input should be put into its own 16-bit lane.
     // Since |_mm256_srlv_epi16| does not exist, we have to resort to a workaround.
@@ -337,6 +339,7 @@ pub(crate) fn serialize_5(vector: Vec256) -> [u8; 10] {
 }
 
 #[inline(always)]
+#[hax_lib::requires(bytes.len() == 10)]
 pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
     let coefficients = mm_set_epi8(
         bytes[9], bytes[8], bytes[8], bytes[7], bytes[7], bytes[6], bytes[6], bytes[5], bytes[4],
@@ -468,6 +471,7 @@ pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
 }
 
 #[inline(always)]
+#[hax_lib::requires(bytes.len() == 20)]
 pub(crate) fn deserialize_10(bytes: &[u8]) -> Vec256 {
     let shift_lsbs_to_msbs = mm256_set_epi16(
         1 << 0,
@@ -572,6 +576,7 @@ pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
 }
 
 #[inline(always)]
+#[hax_lib::requires(bytes.len() == 24)]
 pub(crate) fn deserialize_12(bytes: &[u8]) -> Vec256 {
     let shift_lsbs_to_msbs = mm256_set_epi16(
         1 << 0,

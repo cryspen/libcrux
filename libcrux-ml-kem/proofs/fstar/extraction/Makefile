@@ -2,7 +2,6 @@
 # All other modules have individual annotations on their functions indicating verification status
 ADMIT_MODULES = Libcrux_ml_kem.Vector.Avx2.fst \
               Libcrux_ml_kem.Vector.Avx2.Sampling.fst \
-              Libcrux_ml_kem.Vector.Avx2.Serialize.fst \
               Libcrux_ml_kem.Vector.Portable.Compress.fst \
               Libcrux_ml_kem.Vector.Portable.Ntt.fst \
               Libcrux_ml_kem.Vector.Portable.Sampling.fst \
