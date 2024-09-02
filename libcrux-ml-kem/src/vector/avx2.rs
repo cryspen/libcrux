@@ -269,6 +269,8 @@ impl Operations for SIMD256Vector {
         }
     }
 
+    #[requires(input.len() == 24)]
+    #[ensures(|result| fstar!("Seq.length(future($output)) == Seq.length $output"))]
     fn rej_sample(input: &[u8], output: &mut [i16]) -> usize {
         sampling::rejection_sample(input, output)
     }

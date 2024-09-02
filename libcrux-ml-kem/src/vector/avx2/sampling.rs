@@ -5,6 +5,8 @@ use super::{
 };
 
 #[inline(always)]
+#[hax_lib::requires(input.len() == 24)]
+#[hax_lib::ensures(|result| fstar!("Seq.length(future($output)) == Seq.length $output"))]
 pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
 

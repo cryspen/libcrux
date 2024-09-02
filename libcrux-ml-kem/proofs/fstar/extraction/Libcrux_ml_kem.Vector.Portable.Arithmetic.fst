@@ -105,7 +105,7 @@ let montgomery_reduce_element (value: i32) =
     assert (v value < pow2 31);
     assert (v value / pow2 16 < pow2 15);
     assert (v value_high == (v value / pow2 16) @% pow2 16);
-//    assert ((v value / pow2 16) < pow2 15 ==> (v value / pow2 16) @% pow2 16 == (v value / pow2 16));
+    assert ((v value / pow2 16) < pow2 15 ==> (v value / pow2 16) @% pow2 16 == (v value / pow2 16));
     assert (v value_high == (v value / pow2 16));
     assert (Spec.Utils.is_i32b (3328 * 3328) value ==> Spec.Utils.is_i16b 169 value_high);
     assert (Spec.Utils.is_i16b 3328 value_high)

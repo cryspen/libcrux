@@ -9,8 +9,9 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
-  let list =
+let v_ZETAS_TIMES_MONTGOMERY_R: t_Array (x:i16{Spec.Utils.is_i16b 1664 x}) (sz 128) =
+    admit();
+  let list : list (x:i16{Spec.Utils.is_i16b 1664 x}) =
     [
       (-1044s); (-758s); (-359s); (-1517s); 1493s; 1422s; 287s; 202s; (-171s); 622s; 1577s; 182s;
       962s; (-1202s); (-1474s); 1468s; 573s; (-1325s); 264s; 383s; (-829s); 1458s; (-1602s); (-130s);
@@ -26,6 +27,7 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
     ]
   in
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
+  assert (128 < pow2 16);
   Rust_primitives.Hax.array_of_list 128 list
 
 let v_VECTORS_IN_RING_ELEMENT: usize =

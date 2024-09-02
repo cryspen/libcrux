@@ -133,7 +133,8 @@ pub trait Operations: Copy + Clone + Repr {
     #[requires(true)]
     fn deserialize_12(a: &[u8]) -> Self;
 
-    #[requires(true)]
+    #[requires(a.len() == 24)]
+    #[ensures(|result| fstar!("Seq.length(future($out)) == Seq.length $out"))]
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }
 
