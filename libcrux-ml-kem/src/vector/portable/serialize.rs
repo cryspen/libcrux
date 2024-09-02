@@ -30,7 +30,7 @@ let serialize_1_lemma inputs =
 #pop-options
 "))]
 #[cfg_attr(hax, hax_lib::fstar::after("
-#push-options \"--compat_pre_core 2 --z3rlimit 300\"
+#push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
 let serialize_1_bit_vec_lemma (v: t_Array i16 (sz 16))
   (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 1))
@@ -74,7 +74,7 @@ let deserialize_1_lemma inputs =
 #pop-options
 "))]
 #[cfg_attr(hax, hax_lib::fstar::after("
-#push-options \"--compat_pre_core 2 --z3rlimit 300\"
+#push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
 let deserialize_1_bit_vec_lemma (v: t_Array u8 (sz 2))
    : squash (
@@ -155,7 +155,7 @@ let serialize_4_lemma inputs =
 #pop-options
 "))]
 #[cfg_attr(hax, hax_lib::fstar::after("
-#push-options \"--compat_pre_core 2 --z3rlimit 300\"
+#push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
 let serialize_4_bit_vec_lemma (v: t_Array i16 (sz 16))
   (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 4))
@@ -215,7 +215,7 @@ let deserialize_4_lemma inputs =
 #pop-options
 "))]
 #[cfg_attr(hax, hax_lib::fstar::after("
-#push-options \"--compat_pre_core 2 --z3rlimit 300\"
+#push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
 let deserialize_4_bit_vec_lemma (v: t_Array u8 (sz 8))
    : squash (
@@ -283,7 +283,7 @@ pub(crate) fn serialize_5_int(v: &[i16]) -> (u8, u8, u8, u8, u8) {
 // #pop-options
 // "))]
 // #[cfg_attr(hax, hax_lib::fstar::after("
-// #push-options \"--compat_pre_core 2 --z3rlimit 300\"
+// #push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
 // let serialize_5_bit_vec_lemma (v: t_Array i16 (sz 16))
 //   (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 5))
@@ -345,7 +345,7 @@ pub(crate) fn deserialize_5_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16, 
 // #pop-options
 // "))]
 // #[cfg_attr(hax, hax_lib::fstar::after("
-// #push-options \"--compat_pre_core 2 --z3rlimit 300\"
+// #push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
 // let deserialize_5_bit_vec_lemma (v: t_Array u8 (sz 10))
 //    : squash (
@@ -413,7 +413,7 @@ let serialize_10_lemma inputs =
 #pop-options
 "))]
 #[cfg_attr(hax, hax_lib::fstar::after("
-#push-options \"--compat_pre_core 2 --z3rlimit 300\"
+#push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
 let serialize_10_bit_vec_lemma (v: t_Array i16 (sz 16))
   (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 10))
@@ -469,7 +469,7 @@ let deserialize_10_lemma inputs =
 #pop-options
 "))]
 #[cfg_attr(hax, hax_lib::fstar::after("
-#push-options \"--compat_pre_core 2 --z3rlimit 300\"
+#push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
 let deserialize_10_bit_vec_lemma (v: t_Array u8 (sz 20))
    : squash (
@@ -543,7 +543,7 @@ pub(crate) fn serialize_11_int(v: &[i16]) -> (u8, u8, u8, u8, u8, u8, u8, u8, u8
 // #pop-options
 // "))]
 // #[cfg_attr(hax, hax_lib::fstar::after("
-// #push-options \"--compat_pre_core 2 --z3rlimit 300\"
+// #push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
 // let serialize_11_bit_vec_lemma (v: t_Array i16 (sz 16))
 //   (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 11))
@@ -597,7 +597,7 @@ pub(crate) fn deserialize_11_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16,
 // #pop-options
 // "))]
 // #[cfg_attr(hax, hax_lib::fstar::after("
-// #push-options \"--compat_pre_core 2 --z3rlimit 300\"
+// #push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
 // let deserialize_11_bit_vec_lemma (v: t_Array u8 (sz 22))
 //    : squash (
@@ -663,7 +663,7 @@ let serialize_12_lemma inputs =
 #pop-options
 "))]
 #[cfg_attr(hax, hax_lib::fstar::after("
-#push-options \"--compat_pre_core 2 --z3rlimit 300\"
+#push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
 let serialize_12_bit_vec_lemma (v: t_Array i16 (sz 16))
   (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 12))
@@ -726,7 +726,7 @@ let deserialize_12_lemma inputs =
 #pop-options
 "))]
 #[cfg_attr(hax, hax_lib::fstar::after("
-#push-options \"--compat_pre_core 2 --z3rlimit 300\"
+#push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
 let deserialize_12_bit_vec_lemma (v: t_Array u8 (sz 24))
    : squash (

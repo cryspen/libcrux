@@ -276,7 +276,7 @@ let deserialize_1_ (v: t_Slice u8) =
   <:
   Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
-#push-options "--compat_pre_core 2 --z3rlimit 300"
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
 
 let deserialize_1_bit_vec_lemma (v: t_Array u8 (sz 2))
    : squash (
@@ -327,7 +327,7 @@ let deserialize_10_ (bytes: t_Slice u8) =
   <:
   Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
-#push-options "--compat_pre_core 2 --z3rlimit 300"
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
 
 let deserialize_10_bit_vec_lemma (v: t_Array u8 (sz 20))
    : squash (
@@ -450,7 +450,7 @@ let deserialize_12_ (bytes: t_Slice u8) =
   <:
   Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
-#push-options "--compat_pre_core 2 --z3rlimit 300"
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
 
 let deserialize_12_bit_vec_lemma (v: t_Array u8 (sz 24))
    : squash (
@@ -501,7 +501,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
   <:
   Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
-#push-options "--compat_pre_core 2 --z3rlimit 300"
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
 
 let deserialize_4_bit_vec_lemma (v: t_Array u8 (sz 8))
    : squash (
@@ -647,7 +647,7 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
   Rust_primitives.Hax.array_of_list 2 list
 
-#push-options "--compat_pre_core 2 --z3rlimit 300"
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
 
 let serialize_1_bit_vec_lemma (v: t_Array i16 (sz 16))
   (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 1))
@@ -720,7 +720,7 @@ let serialize_10_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 20);
   Rust_primitives.Hax.array_of_list 20 list
 
-#push-options "--compat_pre_core 2 --z3rlimit 300"
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
 
 let serialize_10_bit_vec_lemma (v: t_Array i16 (sz 16))
   (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 10))
@@ -864,7 +864,7 @@ let serialize_12_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 24);
   Rust_primitives.Hax.array_of_list 24 list
 
-#push-options "--compat_pre_core 2 --z3rlimit 300"
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
 
 let serialize_12_bit_vec_lemma (v: t_Array i16 (sz 16))
   (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 12))
@@ -922,7 +922,7 @@ let serialize_4_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
   Rust_primitives.Hax.array_of_list 8 list
 
-#push-options "--compat_pre_core 2 --z3rlimit 300"
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
 
 let serialize_4_bit_vec_lemma (v: t_Array i16 (sz 16))
   (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 4))
