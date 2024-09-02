@@ -167,20 +167,20 @@ impl KeccakItem<2> for uint64x2_t {
         _veorq_u64(a, b)
     }
     #[inline(always)]
-    fn load_block<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; 2]) {
-        load_block::<BLOCKSIZE>(a, b)
+    fn load_block<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; 2]) {
+        load_block::<RATE>(a, b)
     }
     #[inline(always)]
-    fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 2]) {
-        store_block::<BLOCKSIZE>(a, b)
+    fn store_block<const RATE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 2]) {
+        store_block::<RATE>(a, b)
     }
     #[inline(always)]
-    fn load_block_full<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; 2]) {
-        load_block_full::<BLOCKSIZE>(a, b)
+    fn load_block_full<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; 2]) {
+        load_block_full::<RATE>(a, b)
     }
     #[inline(always)]
-    fn store_block_full<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 2] {
-        store_block_full::<BLOCKSIZE>(a)
+    fn store_block_full<const RATE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 2] {
+        store_block_full::<RATE>(a)
     }
     #[inline(always)]
     fn slice_n(a: [&[u8]; 2], start: usize, len: usize) -> [&[u8]; 2] {
@@ -189,5 +189,10 @@ impl KeccakItem<2> for uint64x2_t {
     #[inline(always)]
     fn split_at_mut_n(a: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8]; 2]) {
         split_at_mut_2(a, mid)
+    }
+
+    // TODO: Do we need this, or not? cf. https://github.com/cryspen/libcrux/issues/482
+    fn store<const RATE: usize>(_state: &[[Self; 5]; 5], _out: [&mut [u8]; 2]) {
+        todo!()
     }
 }

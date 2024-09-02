@@ -1,13 +1,8 @@
 //! ML-KEM 768
-//!
 
-use super::{
-    constants::*,
-    ind_cca::{unpacked::*, *},
-    types::*,
-    vector::traits::VectorType,
-    *,
-};
+use super::{constants::*, ind_cca::*, types::*, *};
+#[cfg(feature = "unpacked")]
+use super::{ind_cca::unpacked::*, vector::traits::VectorType};
 
 // Kyber 768 parameters
 const RANK_768: usize = 3;
@@ -53,9 +48,13 @@ pub type MlKem768KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_
 
 /// An Unpacked ML-KEM 768 Public key
 #[allow(type_alias_bounds)]
+#[cfg(feature = "unpacked")]
+#[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
 pub type MlKem768PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_768, Vector>;
 /// Am Unpacked ML-KEM 768 Key pair
 #[allow(type_alias_bounds)]
+#[cfg(feature = "unpacked")]
+#[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
 pub type MlKem768KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_768, Vector>;
 
 // Instantiate the different functions.
@@ -68,18 +67,27 @@ macro_rules! instantiate {
 
             /// Validate a public key.
             ///
-            /// Returns `Some(public_key)` if valid, and `None` otherwise.
-            pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768PublicKey> {
-                if p::validate_public_key::<
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_public_key(public_key: &MlKem768PublicKey) -> bool {
+                p::validate_public_key::<
                     RANK_768,
                     RANKED_BYTES_PER_RING_ELEMENT_768,
                     CPA_PKE_PUBLIC_KEY_SIZE_768,
                 >(&public_key.value)
-                {
-                    Some(public_key)
-                } else {
-                    None
-                }
+            }
+
+            /// Validate a private key.
+            ///
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_private_key(
+                private_key: &MlKem768PrivateKey,
+                ciphertext: &MlKem768Ciphertext,
+            ) -> bool {
+                p::validate_private_key::<
+                    RANK_768,
+                    SECRET_KEY_SIZE_768,
+                    CPA_PKE_CIPHERTEXT_SIZE_768,
+                >(private_key, ciphertext)
             }
 
             /// Generate ML-KEM 768 Key Pair
@@ -87,6 +95,23 @@ macro_rules! instantiate {
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem768KeyPair {
                 p::generate_keypair::<
+                    RANK_768,
+                    CPA_PKE_SECRET_KEY_SIZE_768,
+                    SECRET_KEY_SIZE_768,
+                    CPA_PKE_PUBLIC_KEY_SIZE_768,
+                    RANKED_BYTES_PER_RING_ELEMENT_768,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                >(randomness)
+            }
+
+            /// Generate Kyber 768 Key Pair
+            #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
+            pub fn kyber_generate_key_pair(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKem768KeyPair {
+                p::kyber_generate_keypair::<
                     RANK_768,
                     CPA_PKE_SECRET_KEY_SIZE_768,
                     SECRET_KEY_SIZE_768,
@@ -129,6 +154,7 @@ macro_rules! instantiate {
             /// The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
             /// bytes of `randomness`.
             #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
             pub fn kyber_encapsulate(
                 public_key: &MlKem768PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
@@ -183,6 +209,7 @@ macro_rules! instantiate {
             /// Generates an [`MlKemSharedSecret`].
             /// The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
             #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
             pub fn kyber_decapsulate(
                 private_key: &MlKem768PrivateKey,
                 ciphertext: &MlKem768Ciphertext,
@@ -208,6 +235,8 @@ macro_rules! instantiate {
             }
 
             /// Generate ML-KEM 768 Key Pair in "unpacked" form
+            #[cfg(feature = "unpacked")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
             pub fn generate_key_pair_unpacked(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem768KeyPairUnpacked<$vec> {
@@ -230,6 +259,7 @@ macro_rules! instantiate {
             #[cfg_attr(
                 hax,
                 hax_lib::fstar::before(
+                    interface,
                     "
 let _ =
     (* This module has implicit dependencies, here we make them explicit. *)
@@ -239,6 +269,8 @@ let _ =
     ()"
                 )
             )]
+            #[cfg(feature = "unpacked")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
             pub fn encapsulate_unpacked(
                 public_key: &MlKem768PublicKeyUnpacked<$vec>,
                 randomness: [u8; SHARED_SECRET_SIZE],
@@ -265,6 +297,8 @@ let _ =
             /// Generates an [`MlKemSharedSecret`].
             /// The input is a reference to an unpacked key pair of type [`MlKem768KeyPairUnpacked`]
             /// and an [`MlKem768Ciphertext`].
+            #[cfg(feature = "unpacked")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
             pub fn decapsulate_unpacked(
                 private_key: &MlKem768KeyPairUnpacked<$vec>,
                 ciphertext: &MlKem768Ciphertext,
@@ -302,19 +336,28 @@ instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon 
 
 /// Validate a public key.
 ///
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
+/// Returns `true` if valid, and `false` otherwise.
 #[cfg(not(eurydice))]
-pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768PublicKey> {
-    if multiplexing::validate_public_key::<
+pub fn validate_public_key(public_key: &MlKem768PublicKey) -> bool {
+    multiplexing::validate_public_key::<
         RANK_768,
         RANKED_BYTES_PER_RING_ELEMENT_768,
         CPA_PKE_PUBLIC_KEY_SIZE_768,
     >(&public_key.value)
-    {
-        Some(public_key)
-    } else {
-        None
-    }
+}
+
+/// Validate a private key.
+///
+/// Returns `true` if valid, and `false` otherwise.
+#[cfg(not(eurydice))]
+pub fn validate_private_key(
+    private_key: &MlKem768PrivateKey,
+    ciphertext: &MlKem768Ciphertext,
+) -> bool {
+    multiplexing::validate_private_key::<RANK_768, SECRET_KEY_SIZE_768, CPA_PKE_CIPHERTEXT_SIZE_768>(
+        private_key,
+        ciphertext,
+    )
 }
 
 /// Generate ML-KEM 768 Key Pair
@@ -396,6 +439,24 @@ pub fn decapsulate(
 pub(crate) mod kyber {
     use super::*;
 
+    /// Generate Kyber 768 Key Pair
+    ///
+    /// Generate a Kyber key pair. The input is a byte array of size
+    /// [`KEY_GENERATION_SEED_SIZE`].
+    ///
+    /// This function returns an [`MlKem768KeyPair`].
+    pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPair {
+        multiplexing::kyber_generate_keypair::<
+            RANK_768,
+            CPA_PKE_SECRET_KEY_SIZE_768,
+            SECRET_KEY_SIZE_768,
+            CPA_PKE_PUBLIC_KEY_SIZE_768,
+            RANKED_BYTES_PER_RING_ELEMENT_768,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
+    }
+
     /// Encapsulate Kyber 768
     ///
     /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
@@ -465,6 +526,6 @@ mod tests {
         OsRng.fill_bytes(&mut randomness);
 
         let key_pair = generate_key_pair(randomness);
-        assert!(validate_public_key(key_pair.pk).is_some());
+        assert!(validate_public_key(&key_pair.pk));
     }
 }

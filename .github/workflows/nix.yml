@@ -5,6 +5,7 @@ on:
     branches: [main, dev]
   pull_request:
   workflow_dispatch:
+  merge_group:
 
 jobs:
   nix:

@@ -18,6 +18,9 @@ exclude = [
     "/hax.py",
 ]
 
+[lib]
+bench = false # so libtest doesn't eat the arguments to criterion
+
 [dependencies]
 rand_core = { version = "0.6" }
 libcrux-platform = { version = "0.0.2-alpha.3", path = "../sys/platform" }
@@ -36,13 +39,16 @@ default = ["std", "mlkem512", "mlkem768", "mlkem1024"]
 # Hardware features can be force enabled.
 # It is not recommended to use these. This crate performs CPU feature detection
 # and enables the features when they are available.
-simd128 = ["libcrux-sha3/simd128","libcrux-intrinsics/simd128"]
-simd256 = ["libcrux-sha3/simd256","libcrux-intrinsics/simd256"]
+simd128 = ["libcrux-sha3/simd128", "libcrux-intrinsics/simd128"]
+simd256 = ["libcrux-sha3/simd256", "libcrux-intrinsics/simd256"]
 
 # Features for the different key sizes of ML-KEM
 mlkem512 = []
 mlkem768 = []
 mlkem1024 = []
+
+# Enable the unpacked API
+unpacked = []
 
 # Enable Round 3 Kyber in addition to ML-KEM
 kyber = []
@@ -76,7 +82,7 @@ name = "keygen"
 required-features = ["mlkem768"]
 
 [package.metadata."docs.rs"]
-features = ["pre-verification", "kyber"]
+features = ["pre-verification", "kyber", "unpacked"]
 rustdoc-args = ["--cfg", "doc_cfg"]
 
 [lints.rust]

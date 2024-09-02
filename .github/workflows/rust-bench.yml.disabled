@@ -1,0 +1,98 @@
+name: Benchmark
+
+on:
+  workflow_dispatch:
+  merge_group:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    strategy:
+      fail-fast: true
+      matrix:
+        bits: [32, 64]
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        exclude:
+          # There's no such thing as 32-bit macOS
+          - bits: 32
+            os: "macos-latest"
+          # FIXME: Linking isn't working here yet for hacl #42
+          - bits: 32
+            os: "windows-latest"
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
+        if: ${{ matrix.bits == 64 }}
+
+      - name: ⚙️ Setup Ubuntu x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: |
+          rustup target add i686-unknown-linux-gnu
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib
+
+      - name: ⚙️ Setup Ubuntu x64
+        if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
+        run: |
+          rustup target add aarch64-unknown-linux-gnu
+
+      - name: ⚙️ Setup macOS
+        if: ${{  matrix.os == 'macos-latest' }}
+        run: |
+          rustup target add aarch64-apple-darwin
+
+      # Set up 32 bit systems
+
+      - name: 🛠️ Config Windows x86
+        run: echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
+
+      - name: 🛠️ Config Linux x86
+        run: |
+          echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
+
+      # Set up windows
+
+      - name: ⚙️ Setup Windows x86
+        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
+        shell: pwsh
+        run: |
+          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
+          vcpkg install openssl:x86-windows-static-md
+
+      - name: ⚙️ Setup Windows x64
+        if: ${{ matrix.bits == 64 && matrix.os == 'windows-latest' }}
+        shell: pwsh
+        run: |
+          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
+          vcpkg install openssl:x64-windows-static-md
+
+      # Benchmarks ...
+
+      - name: 🏃🏻‍♀️ Benchmarks
+        run: cargo bench --verbose $RUST_TARGET_FLAG -p benchmarks -- --output-format bencher | tee bench.txt
+      - name: Store Benchmarks
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Rust Benchmark
+          tool: 'cargo'
+          output-file-path: bench.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true

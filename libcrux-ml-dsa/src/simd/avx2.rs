@@ -1,8 +1,6 @@
 use crate::simd::traits::Operations;
 use libcrux_intrinsics;
 
-use crate::simd::portable::PortableSIMDUnit;
-
 mod arithmetic;
 mod encoding;
 mod ntt;
@@ -70,15 +68,9 @@ impl Operations for AVX2SIMDUnit {
     }
 
     fn compute_hint<const GAMMA2: i32>(low: Self, high: Self) -> (usize, Self) {
-        let low = PortableSIMDUnit::from_coefficient_array(&low.to_coefficient_array());
-        let high = PortableSIMDUnit::from_coefficient_array(&high.to_coefficient_array());
+        let (count, hint) = arithmetic::compute_hint::<GAMMA2>(low.coefficients, high.coefficients);
 
-        let (count, hint) = PortableSIMDUnit::compute_hint::<GAMMA2>(low, high);
-
-        (
-            count,
-            Self::from_coefficient_array(&hint.to_coefficient_array()),
-        )
+        (count, hint.into())
     }
     fn use_hint<const GAMMA2: i32>(simd_unit: Self, hint: Self) -> Self {
         arithmetic::use_hint::<GAMMA2>(simd_unit.coefficients, hint.coefficients).into()

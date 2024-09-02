@@ -85,6 +85,8 @@ pub fn decompress_1<T: Operations>(v: T) -> T {
 /// Internal vectors.
 ///
 /// Used in the unpacked API.
+#[cfg(feature = "unpacked")]
 pub trait VectorType: Operations {}
 
+#[cfg(feature = "unpacked")]
 impl<T: Operations> VectorType for T {}

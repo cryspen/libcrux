@@ -1,11 +1,7 @@
 //! ML-KEM 512
-use super::{
-    constants::*,
-    ind_cca::{unpacked::*, *},
-    types::*,
-    vector::traits::VectorType,
-    *,
-};
+use super::{constants::*, ind_cca::*, types::*, *};
+#[cfg(feature = "unpacked")]
+use super::{ind_cca::unpacked::*, vector::traits::VectorType};
 
 // Kyber 512 parameters
 const RANK_512: usize = 2;
@@ -50,9 +46,13 @@ pub type MlKem512KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_
 
 /// An Unpacked ML-KEM 512 Public key
 #[allow(type_alias_bounds)]
+#[cfg(feature = "unpacked")]
+#[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
 pub type MlKem512PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_512, Vector>;
 /// Am Unpacked ML-KEM 512 Key pair
 #[allow(type_alias_bounds)]
+#[cfg(feature = "unpacked")]
+#[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
 pub type MlKem512KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_512, Vector>;
 
 // Instantiate the different functions.
@@ -65,18 +65,27 @@ macro_rules! instantiate {
 
             /// Validate a public key.
             ///
-            /// Returns `Some(public_key)` if valid, and `None` otherwise.
-            pub fn validate_public_key(public_key: MlKem512PublicKey) -> Option<MlKem512PublicKey> {
-                if p::validate_public_key::<
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_public_key(public_key: &MlKem512PublicKey) -> bool {
+                p::validate_public_key::<
                     RANK_512,
                     RANKED_BYTES_PER_RING_ELEMENT_512,
                     CPA_PKE_PUBLIC_KEY_SIZE_512,
                 >(&public_key.value)
-                {
-                    Some(public_key)
-                } else {
-                    None
-                }
+            }
+
+            /// Validate a private key.
+            ///
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_private_key(
+                private_key: &MlKem512PrivateKey,
+                ciphertext: &MlKem512Ciphertext,
+            ) -> bool {
+                p::validate_private_key::<
+                    RANK_512,
+                    SECRET_KEY_SIZE_512,
+                    CPA_PKE_CIPHERTEXT_SIZE_512,
+                >(private_key, ciphertext)
             }
 
             /// Generate ML-KEM 512 Key Pair
@@ -94,6 +103,22 @@ macro_rules! instantiate {
                 >(randomness)
             }
 
+            /// Generate Kyber 512 Key Pair
+            #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
+            pub fn kyber_generate_key_pair(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKem512KeyPair {
+                p::kyber_generate_keypair::<
+                    RANK_512,
+                    CPA_PKE_SECRET_KEY_SIZE_512,
+                    SECRET_KEY_SIZE_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    RANKED_BYTES_PER_RING_ELEMENT_512,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                >(randomness)
+            }
             /// Encapsulate ML-KEM 512
             ///
             /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
@@ -126,6 +151,7 @@ macro_rules! instantiate {
             /// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
             /// bytes of `randomness`.
             #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
             pub fn kyber_encapsulate(
                 public_key: &MlKem512PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
@@ -180,6 +206,7 @@ macro_rules! instantiate {
             /// Generates an [`MlKemSharedSecret`].
             /// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
             #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
             pub fn kyber_decapsulate(
                 private_key: &MlKem512PrivateKey,
                 ciphertext: &MlKem512Ciphertext,
@@ -205,6 +232,8 @@ macro_rules! instantiate {
             }
 
             /// Generate ML-KEM 512 Key Pair in "unpacked" form
+            #[cfg(feature = "unpacked")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
             pub fn generate_key_pair_unpacked(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem512KeyPairUnpacked<$vec> {
@@ -227,6 +256,7 @@ macro_rules! instantiate {
             #[cfg_attr(
                 hax,
                 hax_lib::fstar::before(
+                    interface,
                     "
 let _ =
     (* This module has implicit dependencies, here we make them explicit. *)
@@ -236,6 +266,8 @@ let _ =
     ()"
                 )
             )]
+            #[cfg(feature = "unpacked")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
             pub fn encapsulate_unpacked(
                 public_key: &MlKem512PublicKeyUnpacked<$vec>,
                 randomness: [u8; SHARED_SECRET_SIZE],
@@ -262,6 +294,8 @@ let _ =
             /// Generates an [`MlKemSharedSecret`].
             /// The input is a reference to an unpacked key pair of type [`MlKem512KeyPairUnpacked`]
             /// and an [`MlKem512Ciphertext`].
+            #[cfg(feature = "unpacked")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
             pub fn decapsulate_unpacked(
                 private_key: &MlKem512KeyPairUnpacked<$vec>,
                 ciphertext: &MlKem512Ciphertext,
@@ -299,19 +333,28 @@ instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon 
 
 /// Validate a public key.
 ///
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
+/// Returns `true` if valid, and `false` otherwise.
 #[cfg(not(eurydice))]
-pub fn validate_public_key(public_key: MlKem512PublicKey) -> Option<MlKem512PublicKey> {
-    if multiplexing::validate_public_key::<
+pub fn validate_public_key(public_key: &MlKem512PublicKey) -> bool {
+    multiplexing::validate_public_key::<
         RANK_512,
         RANKED_BYTES_PER_RING_ELEMENT_512,
         CPA_PKE_PUBLIC_KEY_SIZE_512,
     >(&public_key.value)
-    {
-        Some(public_key)
-    } else {
-        None
-    }
+}
+
+/// Validate a private key.
+///
+/// Returns `true` if valid, and `false` otherwise.
+#[cfg(not(eurydice))]
+pub fn validate_private_key(
+    private_key: &MlKem512PrivateKey,
+    ciphertext: &MlKem512Ciphertext,
+) -> bool {
+    multiplexing::validate_private_key::<RANK_512, SECRET_KEY_SIZE_512, CPA_PKE_CIPHERTEXT_SIZE_512>(
+        private_key,
+        ciphertext,
+    )
 }
 
 /// Generate ML-KEM 512 Key Pair
@@ -392,12 +435,30 @@ pub fn decapsulate(
 #[cfg(all(not(eurydice), feature = "kyber"))]
 pub(crate) mod kyber {
     use super::*;
+
+    /// Generate Kyber 512 Key Pair
+    ///
+    /// The input is a byte array of size
+    /// [`KEY_GENERATION_SEED_SIZE`].
+    ///
+    /// This function returns an [`MlKem512KeyPair`].
+    pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512KeyPair {
+        multiplexing::kyber_generate_keypair::<
+            RANK_512,
+            CPA_PKE_SECRET_KEY_SIZE_512,
+            SECRET_KEY_SIZE_512,
+            CPA_PKE_PUBLIC_KEY_SIZE_512,
+            RANKED_BYTES_PER_RING_ELEMENT_512,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
+    }
+
     /// Encapsulate Kyber 512
     ///
     /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
     /// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
     /// bytes of `randomness`.
-
     pub fn encapsulate(
         public_key: &MlKem512PublicKey,
         randomness: [u8; SHARED_SECRET_SIZE],
