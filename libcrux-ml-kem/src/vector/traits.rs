@@ -56,10 +56,10 @@ pub trait Operations: Copy + Clone + Repr {
     #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (f_repr $v)"))]
     fn cond_subtract_3329(v: Self) -> Self;
 
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b_array 28296 (f_repr $vector)"))]
     fn barrett_reduce(vector: Self) -> Self;
 
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 3328 c"))]
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
 
     // Compression
@@ -73,50 +73,61 @@ pub trait Operations: Copy + Clone + Repr {
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
 
     // NTT
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self;
 
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
     fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self;
 
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
         -> Self;
 
-    // Serialization and deserialization
+    // #[requires(fstar!("Spec.MLKEM.serialize_pre 1 (f_repr $a)"))]
+    // #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 1 (f_repr $a) ==> Spec.MLKEM.serialize_post 1 (f_repr $a) $result"))]
     #[requires(true)]
     fn serialize_1(a: Self) -> [u8; 2];
     #[requires(true)]
     fn deserialize_1(a: &[u8]) -> Self;
 
+    // #[requires(fstar!("Spec.MLKEM.serialize_pre 4 (f_repr $a)"))]
+    // #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 4 (f_repr $a) ==> Spec.MLKEM.serialize_post 4 (f_repr $a) $result"))]
     #[requires(true)]
     fn serialize_4(a: Self) -> [u8; 8];
     #[requires(true)]
     fn deserialize_4(a: &[u8]) -> Self;
 
+    // #[requires(fstar!("Spec.MLKEM.serialize_pre 5 (f_repr $a)"))]
+    // #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 5 (f_repr $a) ==> Spec.MLKEM.serialize_post 5 (f_repr $a) $result"))]
     #[requires(true)]
     fn serialize_5(a: Self) -> [u8; 10];
     #[requires(true)]
     fn deserialize_5(a: &[u8]) -> Self;
 
+    // #[requires(fstar!("Spec.MLKEM.serialize_pre 10 (f_repr $a)"))]
+    // #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 10 (f_repr $a) ==> Spec.MLKEM.serialize_post 10 (f_repr $a) $result"))]
     #[requires(true)]
     fn serialize_10(a: Self) -> [u8; 20];
     #[requires(true)]
     fn deserialize_10(a: &[u8]) -> Self;
 
+    // #[requires(fstar!("Spec.MLKEM.serialize_pre 11 (f_repr $a)"))]
+    // #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 11 (f_repr $a) ==> Spec.MLKEM.serialize_post 11 (f_repr $a) $result"))]
     #[requires(true)]
     fn serialize_11(a: Self) -> [u8; 22];
     #[requires(true)]
     fn deserialize_11(a: &[u8]) -> Self;
 
+    // #[requires(fstar!("Spec.MLKEM.serialize_pre 12 (f_repr $a)"))]
+    // #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 12 (f_repr $a) ==> Spec.MLKEM.serialize_post 12 (f_repr $a) $result"))]
     #[requires(true)]
     fn serialize_12(a: Self) -> [u8; 24];
     #[requires(true)]
@@ -167,9 +178,11 @@ pub trait Operations: Copy + Clone {
 }
 
 // hax does not support trait with default implementations, so we use the following pattern
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 $fer"))]
 pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
     T::montgomery_multiply_by_constant(v, fer)
 }
+
 pub fn to_standard_domain<T: Operations>(v: T) -> T {
     T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }

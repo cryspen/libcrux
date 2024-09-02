@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 0576bfc67e99aae86c51930421072688138b672b
- * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
- * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
- * F*: 04413e808445c4f78fe89cd15b85ff549ed3be62
- * Libcrux: 293f3b52093c13f3043781d878990c5be6fc4e23
+ * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
+ * Eurydice: fcdd1852994390db2b6aa780ed8d837fa811167d
+ * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
+ * Libcrux: 7cd7a08d172e1715493176358bffadf8f87ae3a4
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -215,14 +215,16 @@ libcrux_ml_kem_vector_portable_cond_subtract_3329_0d(
 
  `|result| ≤ FIELD_MODULUS / 2 · (|value|/BARRETT_R + 1)
 
- In particular, if `|value| < BARRETT_R`, then `|result| < FIELD_MODULUS`.
+ Note: The input bound is 28296 to prevent overflow in the multiplication of
+ quotient by FIELD_MODULUS
+
 */
 int16_t libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce_element(
     int16_t value);
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -247,10 +249,12 @@ libcrux_ml_kem_vector_portable_barrett_reduce_0d(
  - o ≡ value · MONTGOMERY_R^(-1) (mod FIELD_MODULUS)
  - the absolute value of `o` is bound as follows:
 
- `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
+ `|result| ≤ ceil(|value| / MONTGOMERY_R) + 1665
 
- In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 ·
- FIELD_MODULUS) / 2`.
+ In particular, if `|value| ≤ FIELD_MODULUS-1 * FIELD_MODULUS-1`, then `|o| <=
+ FIELD_MODULUS-1`. And, if `|value| ≤ pow2 16 * FIELD_MODULUS-1`, then `|o| <=
+ FIELD_MODULUS + 1664
+
 */
 int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
     int32_t value);

@@ -2,16 +2,18 @@
 .vscode
 .DS_Store
 benches/boringssl/build
-proofs/fstar/extraction/.depend
-proofs/fstar/extraction/#*#
-proofs/fstar/extraction/.#*
-hax.fst.config.json
 fuzz/corpus
 fuzz/artifacts
-proofs/fstar/extraction/.cache
 __pycache__
 kyber-crate/
 *.llbc
 
 # When using sed
 *.bak
+
+# F*
+.fstar-cache
+.depend
+**/proofs/fstar/*/#*#
+**/proofs/fstar/*/.#*
+hax.fst.config.json
