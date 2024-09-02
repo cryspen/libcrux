@@ -35,6 +35,8 @@ pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
     debug_assert_eq!(output.len(), 32);
     unimplemented!()
 }
+
+#[hax_lib::ensures(|()| future(output).len() == output.len())]
 pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
     // debug_assert_eq!(output.len(), 8);
     unimplemented!()

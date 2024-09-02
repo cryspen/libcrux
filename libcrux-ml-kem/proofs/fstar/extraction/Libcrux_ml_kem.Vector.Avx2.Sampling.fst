@@ -16,6 +16,19 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
   let good:t_Array u8 (sz 2) =
     Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_1_ compare_with_field_modulus
   in
+  let _:Prims.unit =
+    assert (v (cast (good.[ sz 0 ] <: u8) <: usize) < 256);
+    assert (v (cast (good.[ sz 1 ] <: u8) <: usize) < 256);
+    assume (v (cast (Core.Num.impl__u8__count_ones good.[ sz 0 ]) <: usize) <= 8);
+    assume (v (cast (Core.Num.impl__u8__count_ones good.[ sz 1 ]) <: usize) <= 8);
+    assume (Core.Ops.Index.f_index_pre output
+          ({
+              Core.Ops.Range.f_start = cast (Core.Num.impl__u8__count_ones good.[ sz 0 ]) <: usize;
+              Core.Ops.Range.f_end
+              =
+              (cast (Core.Num.impl__u8__count_ones good.[ sz 0 ]) <: usize) +! sz 8
+            }))
+  in
   let lower_shuffles:t_Array u8 (sz 16) =
     Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE.[ cast (good.[ sz 0 ]
           <:
