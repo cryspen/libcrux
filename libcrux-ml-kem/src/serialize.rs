@@ -93,11 +93,10 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
 /// This function MUST NOT be used on secret inputs.
 #[inline(always)]
 #[hax_lib::requires(
-    public_key.len() == PUBLIC_KEY_SIZE &&
-    PUBLIC_KEY_SIZE / BYTES_PER_RING_ELEMENT <= K
+    fstar!("Spec.MLKEM.is_rank v_K /\\ 
+            Seq.length public_key == v (Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K)")
 )]
 pub(super) fn deserialize_ring_elements_reduced<
-    const PUBLIC_KEY_SIZE: usize,
     const K: usize,
     Vector: Operations,
 >(
@@ -117,7 +116,7 @@ pub(super) fn deserialize_ring_elements_reduced<
 
 #[inline(always)]
 #[hax_lib::requires(
-    20 * (VECTORS_IN_RING_ELEMENT - 1) + 20 <= OUT_LEN
+    OUT_LEN == 320
 )]
 fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
     re: &PolynomialRingElement<Vector>,
@@ -135,7 +134,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::requires(
-    22 * (VECTORS_IN_RING_ELEMENT - 1) + 22 <= OUT_LEN
+    OUT_LEN == 352
 )]
 fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
     re: &PolynomialRingElement<Vector>,
@@ -154,7 +153,7 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
 #[inline(always)]
 #[hax_lib::requires(
     (COMPRESSION_FACTOR == 10 || COMPRESSION_FACTOR == 11) &&
-    (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN
+    OUT_LEN == 32 * COMPRESSION_FACTOR
 )]
 pub(super) fn compress_then_serialize_ring_element_u<
     const COMPRESSION_FACTOR: usize,
@@ -175,7 +174,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
 
 #[inline(always)]
 #[hax_lib::requires(
-    8 * (VECTORS_IN_RING_ELEMENT - 1) + 8 <= serialized.len()
+    serialized.len() == 128
 )]
 fn compress_then_serialize_4<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
@@ -197,7 +196,7 @@ fn compress_then_serialize_4<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::requires(
-    10 * (VECTORS_IN_RING_ELEMENT - 1) + 10 <= serialized.len()
+    serialized.len() == 160
 )]
 fn compress_then_serialize_5<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
@@ -220,7 +219,7 @@ fn compress_then_serialize_5<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::requires(
     (COMPRESSION_FACTOR == 4 || COMPRESSION_FACTOR == 5) &&
-    (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN &&
+    OUT_LEN == 32 * COMPRESSION_FACTOR &&
     out.len() == OUT_LEN
 )]
 #[hax_lib::ensures(|_|
@@ -246,7 +245,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
 
 #[inline(always)]
 #[hax_lib::requires(
-    serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8
+    serialized.len() == 320
 )]
 fn deserialize_then_decompress_10<Vector: Operations>(
     serialized: &[u8],
@@ -266,7 +265,7 @@ fn deserialize_then_decompress_10<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::requires(
-    serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8
+    serialized.len() == 352
 )]
 fn deserialize_then_decompress_11<Vector: Operations>(
     serialized: &[u8],
@@ -287,7 +286,7 @@ fn deserialize_then_decompress_11<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::requires(
     (COMPRESSION_FACTOR == 10 || COMPRESSION_FACTOR == 11) &&
-    serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
+    serialized.len() == 32 * COMPRESSION_FACTOR
 )]
 pub(super) fn deserialize_then_decompress_ring_element_u<
     const COMPRESSION_FACTOR: usize,
@@ -307,7 +306,7 @@ pub(super) fn deserialize_then_decompress_ring_element_u<
 
 #[inline(always)]
 #[hax_lib::requires(
-    serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8
+    serialized.len() == 128
 )]
 fn deserialize_then_decompress_4<Vector: Operations>(
     serialized: &[u8],
@@ -326,7 +325,7 @@ fn deserialize_then_decompress_4<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::requires(
-    serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8
+    serialized.len() == 160
 )]
 fn deserialize_then_decompress_5<Vector: Operations>(
     serialized: &[u8],
@@ -346,7 +345,7 @@ fn deserialize_then_decompress_5<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::requires(
     (COMPRESSION_FACTOR == 4 || COMPRESSION_FACTOR == 5) &&
-    serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
+    serialized.len() == 32 * COMPRESSION_FACTOR
 )]
 pub(super) fn deserialize_then_decompress_ring_element_v<
     const COMPRESSION_FACTOR: usize,

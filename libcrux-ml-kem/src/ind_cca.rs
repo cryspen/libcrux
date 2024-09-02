@@ -97,7 +97,7 @@ fn validate_public_key<
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    let deserialized_pk = deserialize_ring_elements_reduced::<PUBLIC_KEY_SIZE, K, Vector>(
+    let deserialized_pk = deserialize_ring_elements_reduced::<K, Vector>(
         &public_key[..RANKED_BYTES_PER_RING_ELEMENT],
     );
     let public_key_serialized =
@@ -296,6 +296,8 @@ pub(crate) fn decapsulate<
     let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
         into_padded_array(implicit_rejection_value);
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
+    hax_lib::fstar!("assert (v (sz 32) < pow2 32)");
+    hax_lib::fstar!("assert (i4.f_PRF_pre (sz 32) to_hash)");
     let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
 
     let expected_ciphertext = crate::ind_cpa::encrypt::<

@@ -16,19 +16,6 @@ class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_8706949974463268012:t_Repr v_Self;
-  f_to_i16_array_pre:x: v_Self -> pred: Type0{true ==> pred};
-  f_to_i16_array_post:x: v_Self -> result: t_Array i16 (sz 16)
-    -> pred: Type0{pred ==> f_repr x == result};
-  f_to_i16_array:x0: v_Self
-    -> Prims.Pure (t_Array i16 (sz 16))
-        (f_to_i16_array_pre x0)
-        (fun result -> f_to_i16_array_post x0 result);
-  f_from_i16_array_pre:array: t_Slice i16
-    -> pred: Type0{(Core.Slice.impl__len #i16 array <: usize) =. sz 16 ==> pred};
-  f_from_i16_array_post:array: t_Slice i16 -> result: v_Self
-    -> pred: Type0{pred ==> f_repr result == array};
-  f_from_i16_array:x0: t_Slice i16
-    -> Prims.Pure v_Self (f_from_i16_array_pre x0) (fun result -> f_from_i16_array_post x0 result);
   f_ZERO_pre:x: Prims.unit
     -> pred:
       Type0
@@ -42,6 +29,19 @@ class t_Operations (v_Self: Type0) = {
           (let _:Prims.unit = x in
             f_repr result == Seq.create 16 0s) };
   f_ZERO:x0: Prims.unit -> Prims.Pure v_Self (f_ZERO_pre x0) (fun result -> f_ZERO_post x0 result);
+  f_from_i16_array_pre:array: t_Slice i16
+    -> pred: Type0{(Core.Slice.impl__len #i16 array <: usize) =. sz 16 ==> pred};
+  f_from_i16_array_post:array: t_Slice i16 -> result: v_Self
+    -> pred: Type0{pred ==> f_repr result == array};
+  f_from_i16_array:x0: t_Slice i16
+    -> Prims.Pure v_Self (f_from_i16_array_pre x0) (fun result -> f_from_i16_array_post x0 result);
+  f_to_i16_array_pre:x: v_Self -> pred: Type0{true ==> pred};
+  f_to_i16_array_post:x: v_Self -> result: t_Array i16 (sz 16)
+    -> pred: Type0{pred ==> f_repr x == result};
+  f_to_i16_array:x0: v_Self
+    -> Prims.Pure (t_Array i16 (sz 16))
+        (f_to_i16_array_pre x0)
+        (fun result -> f_to_i16_array_post x0 result);
   f_add_pre:lhs: v_Self -> rhs: v_Self -> pred: Type0{true ==> pred};
   f_add_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
     -> pred: Type0{pred ==> f_repr result == Spec.Utils.map2 ( +. ) (f_repr lhs) (f_repr rhs)};
@@ -89,11 +89,13 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_cond_subtract_3329_pre x0)
         (fun result -> f_cond_subtract_3329_post x0 result);
-  f_barrett_reduce_pre:vector: v_Self -> pred: Type0{true ==> pred};
+  f_barrett_reduce_pre:vector: v_Self
+    -> pred: Type0{Spec.Utils.is_i16b_array 28296 (f_repr vector) ==> pred};
   f_barrett_reduce_post:v_Self -> v_Self -> Type0;
   f_barrett_reduce:x0: v_Self
     -> Prims.Pure v_Self (f_barrett_reduce_pre x0) (fun result -> f_barrett_reduce_post x0 result);
-  f_montgomery_multiply_by_constant_pre:v: v_Self -> c: i16 -> pred: Type0{true ==> pred};
+  f_montgomery_multiply_by_constant_pre:v: v_Self -> c: i16
+    -> pred: Type0{Spec.Utils.is_i16b 3328 c ==> pred};
   f_montgomery_multiply_by_constant_post:v_Self -> i16 -> v_Self -> Type0;
   f_montgomery_multiply_by_constant:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
@@ -126,38 +128,50 @@ class t_Operations (v_Self: Type0) = {
         (f_decompress_ciphertext_coefficient_pre v_COEFFICIENT_BITS x0)
         (fun result -> f_decompress_ciphertext_coefficient_post v_COEFFICIENT_BITS x0 result);
   f_ntt_layer_1_step_pre:a: v_Self -> zeta0: i16 -> zeta1: i16 -> zeta2: i16 -> zeta3: i16
-    -> pred: Type0{true ==> pred};
+    -> pred:
+      Type0
+        { Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
+          Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 ==>
+          pred };
   f_ntt_layer_1_step_post:v_Self -> i16 -> i16 -> i16 -> i16 -> v_Self -> Type0;
   f_ntt_layer_1_step:x0: v_Self -> x1: i16 -> x2: i16 -> x3: i16 -> x4: i16
     -> Prims.Pure v_Self
         (f_ntt_layer_1_step_pre x0 x1 x2 x3 x4)
         (fun result -> f_ntt_layer_1_step_post x0 x1 x2 x3 x4 result);
-  f_ntt_layer_2_step_pre:a: v_Self -> zeta0: i16 -> zeta1: i16 -> pred: Type0{true ==> pred};
+  f_ntt_layer_2_step_pre:a: v_Self -> zeta0: i16 -> zeta1: i16
+    -> pred: Type0{Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 ==> pred};
   f_ntt_layer_2_step_post:v_Self -> i16 -> i16 -> v_Self -> Type0;
   f_ntt_layer_2_step:x0: v_Self -> x1: i16 -> x2: i16
     -> Prims.Pure v_Self
         (f_ntt_layer_2_step_pre x0 x1 x2)
         (fun result -> f_ntt_layer_2_step_post x0 x1 x2 result);
-  f_ntt_layer_3_step_pre:a: v_Self -> zeta: i16 -> pred: Type0{true ==> pred};
+  f_ntt_layer_3_step_pre:a: v_Self -> zeta: i16
+    -> pred: Type0{Spec.Utils.is_i16b 1664 zeta ==> pred};
   f_ntt_layer_3_step_post:v_Self -> i16 -> v_Self -> Type0;
   f_ntt_layer_3_step:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
         (f_ntt_layer_3_step_pre x0 x1)
         (fun result -> f_ntt_layer_3_step_post x0 x1 result);
   f_inv_ntt_layer_1_step_pre:a: v_Self -> zeta0: i16 -> zeta1: i16 -> zeta2: i16 -> zeta3: i16
-    -> pred: Type0{true ==> pred};
+    -> pred:
+      Type0
+        { Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
+          Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 ==>
+          pred };
   f_inv_ntt_layer_1_step_post:v_Self -> i16 -> i16 -> i16 -> i16 -> v_Self -> Type0;
   f_inv_ntt_layer_1_step:x0: v_Self -> x1: i16 -> x2: i16 -> x3: i16 -> x4: i16
     -> Prims.Pure v_Self
         (f_inv_ntt_layer_1_step_pre x0 x1 x2 x3 x4)
         (fun result -> f_inv_ntt_layer_1_step_post x0 x1 x2 x3 x4 result);
-  f_inv_ntt_layer_2_step_pre:a: v_Self -> zeta0: i16 -> zeta1: i16 -> pred: Type0{true ==> pred};
+  f_inv_ntt_layer_2_step_pre:a: v_Self -> zeta0: i16 -> zeta1: i16
+    -> pred: Type0{Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 ==> pred};
   f_inv_ntt_layer_2_step_post:v_Self -> i16 -> i16 -> v_Self -> Type0;
   f_inv_ntt_layer_2_step:x0: v_Self -> x1: i16 -> x2: i16
     -> Prims.Pure v_Self
         (f_inv_ntt_layer_2_step_pre x0 x1 x2)
         (fun result -> f_inv_ntt_layer_2_step_post x0 x1 x2 result);
-  f_inv_ntt_layer_3_step_pre:a: v_Self -> zeta: i16 -> pred: Type0{true ==> pred};
+  f_inv_ntt_layer_3_step_pre:a: v_Self -> zeta: i16
+    -> pred: Type0{Spec.Utils.is_i16b 1664 zeta ==> pred};
   f_inv_ntt_layer_3_step_post:v_Self -> i16 -> v_Self -> Type0;
   f_inv_ntt_layer_3_step:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
@@ -170,7 +184,11 @@ class t_Operations (v_Self: Type0) = {
       zeta1: i16 ->
       zeta2: i16 ->
       zeta3: i16
-    -> pred: Type0{true ==> pred};
+    -> pred:
+      Type0
+        { Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
+          Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 ==>
+          pred };
   f_ntt_multiply_post:v_Self -> v_Self -> i16 -> i16 -> i16 -> i16 -> v_Self -> Type0;
   f_ntt_multiply:x0: v_Self -> x1: v_Self -> x2: i16 -> x3: i16 -> x4: i16 -> x5: i16
     -> Prims.Pure v_Self
@@ -270,7 +288,7 @@ val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
 
 val montgomery_multiply_fe (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T) (fer: i16)
-    : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure v_T (requires Spec.Utils.is_i16b 3328 fer) (fun _ -> Prims.l_True)
 
 val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)

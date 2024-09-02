@@ -716,7 +716,7 @@ let deserialize_to_reduced_ring_element
   re
 
 let deserialize_ring_elements_reduced
-      (v_PUBLIC_KEY_SIZE v_K: usize)
+      (v_K: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
