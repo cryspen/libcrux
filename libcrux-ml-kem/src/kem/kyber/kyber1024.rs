@@ -43,7 +43,7 @@ pub type MlKem1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 
 /// Validate a public key.
 ///
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
+/// Returns `true` if valid, and `false` otherwise.
 pub fn validate_public_key(public_key: &MlKem1024PublicKey) -> bool {
     super::validate_public_key::<
         RANK_1024,
