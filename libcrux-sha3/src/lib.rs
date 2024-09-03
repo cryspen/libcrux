@@ -936,6 +936,7 @@ pub mod avx2 {
                 absorb_final, squeeze_first_three_blocks, squeeze_next_block,
                 KeccakState as GenericState,
             };
+            #[cfg(feature = "simd256")]
             use crate::generic_keccak::{squeeze_first_block, squeeze_first_five_blocks};
             #[cfg(feature = "simd256")]
             use libcrux_intrinsics::avx2::*;

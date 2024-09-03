@@ -91,7 +91,7 @@ macro_rules! impl_known_answer_test {
                     assert_eq!(my_shared_secret.as_ref(), expected_shared_secret);
                 } else {
                     if comment == "Public key not reduced" {
-                        assert!($validate_pk(<$pk>::from(pk)).is_none());
+                        assert!(!$validate_pk(&<$pk>::from(pk)));
                     }
                 }
             }

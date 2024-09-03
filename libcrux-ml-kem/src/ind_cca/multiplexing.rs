@@ -13,7 +13,7 @@ use instantiations::avx2::{
 #[cfg(feature = "simd128")]
 use instantiations::neon::{
     decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
-    generate_keypair as generate_keypair_neon, validate_public_key as validate_public_key_neon,
+    generate_keypair as generate_keypair_neon,
 };
 
 #[cfg(not(feature = "simd256"))]
