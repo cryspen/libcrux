@@ -53,44 +53,44 @@ impl crate::vector::traits::Repr for SIMD256Vector {
 #[hax_lib::attributes]
 impl Operations for SIMD256Vector {
     #[inline(always)]
-    #[ensures(|result| fstar!("impl.f_repr out == Seq.create 16 0s"))]
+    #[ensures(|out| fstar!("impl.f_repr out == Seq.create 16 0s"))]
     fn ZERO() -> Self {
         vec_zero()
     }
 
     #[requires(array.len() == 16)]
-    #[ensures(|result| fstar!("impl.f_repr out == $array"))]
+    #[ensures(|out| fstar!("impl.f_repr out == $array"))]
     fn from_i16_array(array: &[i16]) -> Self {
         vec_from_i16_array(array)
     }
 
-    #[ensures(|result| fstar!("out == impl.f_repr $x"))]
+    #[ensures(|out| fstar!("out == impl.f_repr $x"))]
     fn to_i16_array(x: Self) -> [i16; 16] {
         vec_to_i16_array(x)
     }
 
-    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map2 (+.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]
+    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map2 (+.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]
     fn add(lhs: Self, rhs: &Self) -> Self {
         Self {
             elements: arithmetic::add(lhs.elements, rhs.elements),
         }
     }
 
-    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map2 (-.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]
+    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map2 (-.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]
     fn sub(lhs: Self, rhs: &Self) -> Self {
         Self {
             elements: arithmetic::sub(lhs.elements, rhs.elements),
         }
     }
 
-    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr $v)"))]
+    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr $v)"))]
     fn multiply_by_constant(v: Self, c: i16) -> Self {
         Self {
             elements: arithmetic::multiply_by_constant(v.elements, c),
         }
     }
 
-    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> x &. $constant) (impl.f_repr $vector)"))]
+    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> x &. $constant) (impl.f_repr $vector)"))]
     fn bitwise_and_with_constant(vector: Self, constant: i16) -> Self {
         Self {
             elements: arithmetic::bitwise_and_with_constant(vector.elements, constant),
@@ -98,7 +98,7 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    #[ensures(|result| fstar!("(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $vector)"))]
+    #[ensures(|out| fstar!("(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $vector)"))]
     fn shift_right<const SHIFT_BY: i32>(vector: Self) -> Self {
         Self {
             elements: arithmetic::shift_right::<{ SHIFT_BY }>(vector.elements),
@@ -106,7 +106,7 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(true)]
-    #[ensures(|result| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr $vector)"))]
+    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr $vector)"))]
     fn cond_subtract_3329(vector: Self) -> Self {
         Self {
             elements: arithmetic::cond_subtract_3329(vector.elements),
@@ -270,7 +270,7 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(input.len() == 24)]
-   // #[ensures(|result| fstar!("Seq.length output_future == Seq.length output"))]
+   #[ensures(|result| fstar!("Seq.length output_future == Seq.length output"))]
     fn rej_sample(input: &[u8], output: &mut [i16]) -> usize {
         sampling::rejection_sample(input, output)
     }

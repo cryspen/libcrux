@@ -9,4 +9,4 @@ val rejection_sample (input: t_Slice u8) (output: t_Slice i16)
       (ensures
         fun temp_0_ ->
           let output_future, result:(t_Slice i16 & usize) = temp_0_ in
-          Seq.length (future (output)) == Seq.length output)
+          Seq.length output_future == Seq.length output)

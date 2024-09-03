@@ -9,4 +9,4 @@ val rej_sample (a: t_Slice u8) (result: t_Slice i16)
       (ensures
         fun temp_0_ ->
           let result_future, res:(t_Slice i16 & usize) = temp_0_ in
-          Seq.length (future (result)) == Seq.length result)
+          Seq.length result_future == Seq.length result)

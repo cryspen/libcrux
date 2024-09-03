@@ -475,7 +475,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         (Core.Slice.impl__len #u8 input <: usize) =. sz 24);
     f_rej_sample_post
     =
-    (fun (input: t_Slice u8) (output: t_Slice i16) (out1: (t_Slice i16 & usize)) -> true);
+    (fun (input: t_Slice u8) (output: t_Slice i16) (output_future, result: (t_Slice i16 & usize)) ->
+        Seq.length output_future == Seq.length output);
     f_rej_sample
     =
     fun (input: t_Slice u8) (output: t_Slice i16) ->
