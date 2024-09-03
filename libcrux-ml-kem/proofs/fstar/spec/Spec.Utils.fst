@@ -111,9 +111,15 @@ let is_i32b_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i3
 
 let nat_div_ceil (x:nat) (y:pos) : nat = if (x % y = 0) then x/y else (x/y)+1
 
+val lemma_mul_intb (b1 b2: nat) (n1 n2: int) 
+    : Lemma (requires (n1 <= b1 /\ n1 >= -b1 /\ n2 <= b2 /\ n2 >= -b2))
+      (ensures ((n1 * n2) <= (b1 * b2) /\ (n1 * n2) >= - (b1 * b2)))
+let lemma_mul_intb (b1 b2: nat) (n1 n2: int) = ()
+
 val lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) 
     : Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 * b2 < pow2 31))
       (ensures (range (v n1 * v n2) i32_inttype /\ is_i32b (b1 * b2) ((cast n1 <: i32) *! (cast n2 <: i32))))
+      
 let lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) =
   if v n1 = 0 || v n2 = 0
   then ()
@@ -131,6 +137,12 @@ val lemma_add_i16b (b1 b2:nat) (n1 n2:i16) :
         (ensures (range (v n1 + v n2) i16_inttype /\
                   is_i16b (b1 + b2) (n1 +! n2)))
 let lemma_add_i16b (b1 b2:nat) (n1 n2:i16) = ()
+
+val lemma_sub_i16b (b1 b2:nat) (n1 n2:i16) :
+  Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 + b2 < pow2 15))
+        (ensures (range (v n1 - v n2) i16_inttype /\
+                  is_i16b (b1 + b2) (n1 -. n2)))
+let lemma_sub_i16b (b1 b2:nat) (n1 n2:i16) = ()
 
 let mont_mul_red_i16 (x:i16) (y:i16) : i16=
   let vlow = x *. y in
@@ -226,16 +238,14 @@ let lemma_mont_red_i32 (x:i32) =
     }
 #pop-options 
 
-#push-options "--z3rlimit 1200 --split_queries always"
+#push-options "--z3rlimit 800 --split_queries always"
 val lemma_mont_mul_red_i16 (x y:i16): Lemma
   (requires (is_i16b 3328 y))
   (ensures (
           let result:i16 = mont_mul_red_i16 x y in
-          is_i16b (3328 + 1665) result /\
+          is_i16b 3329 result /\
           v result % 3329 == (v x * v y * 169) % 3329))
-let lemma_mont_mul_red_i16 (x y:i16) = admit()
-
-(*
+let lemma_mont_mul_red_i16 (x y:i16) = 
   let vlow = x *. y in
   let prod = v x * v y in
   assert (v vlow == prod @% pow2 16);
@@ -245,52 +255,60 @@ let lemma_mont_mul_red_i16 (x y:i16) = admit()
   assert (v k_times_modulus == (v k * 3329));
   let c = cast (k_times_modulus >>! 16l) <: i16 in
   assert (v c == (((v k * 3329) / pow2 16) @% pow2 16));
+  lemma_div_at_percent (v k * 3329) (pow2 16);
   assert (v c == (((v k * 3329) / pow2 16)));
   assert (is_i16b 1665 c);
   let vhigh = cast (((cast x <: i32) *. (cast y <: i32)) >>! 16l) <: i16 in
-  lemma_mul_i16b (pow2 15) (pow2 15) x y;
-  assert (is_i32b (pow2 30) ((cast x <: i32) *. (cast y <: i32)));
-  assert (prod <= pow2 30 /\ prod >= - pow2 30);
-  assert (prod < pow2 31 /\ prod > - pow2 31);
   assert (v vhigh == (((prod) @% pow2 32) / pow2 16) @% pow2 16);
-  assert (v vhigh == (prod) / pow2 16);
-  assert (is_i16b 3328 vhigh);
+  lemma_mul_intb (pow2 15) 3328 (v x) (v y);
+  assert_norm (pow2 15 * 3328 < pow2 31);
+  assert (prod < pow2 31 /\ prod > - pow2 31);
+  assert (prod @% pow2 32 == prod);
+  assert (v vhigh == (prod / pow2 16) @% pow2 16);
+  lemma_div_at_percent prod (pow2 16);
+  assert (v vhigh == prod / pow2 16);
+  assert (is_i16b 1664 vhigh);
   let result = vhigh -. c in
-  assert (is_i16b (3328 + 1665) result);
-  assert (is_i32b (3328 * 3328) x ==> is_i16b 3328 result);
+  lemma_sub_i16b 1664 1665 vhigh c;
+  assert (is_i16b 3329 result);
+  assert (v result = (v vhigh - v c) @% pow2 16);
+  assert (v result = v vhigh - v c);
   calc ( == ) {
       v k_times_modulus % pow2 16;
       ( == ) { assert (v k_times_modulus == v k * 3329) }
       (v k * 3329) % pow2 16;
-      ( == ) { assert (v k = (((prod) @% pow2 16) * (-3327)) @% pow2 16) }
-      (((((prod)  @% pow2 16) * (-3327)) @% pow2 16) * 3329) % pow2 16;
-      ( == ) { Math.Lemmas.lemma_mod_mul_distr_l (((prod) @% pow2 16) * (-3327)) 3329 (pow2 16) }
-      (((((prod) @% pow2 16) * (-3327)) * 3329) % pow2 16);
-      ( == ) { Math.Lemmas.lemma_mod_mul_distr_r ((prod) @% pow2 16) (-3327 * 3329) (pow2 16) }
-      (((prod) @% pow2 16) % pow2 16);
-      ( == ) { Math.Lemmas.lemma_mod_sub ((prod)) (pow2 16) 1 }
-      ((prod)) % pow2 16;
+      ( == ) { assert (v k = ((prod @% pow2 16) * (-3327)) @% pow2 16) }
+      ((((prod @% pow2 16) * (-3327)) @% pow2 16) * 3329) % pow2 16;
+      ( == ) { Math.Lemmas.lemma_mod_mul_distr_l (((prod @% pow2 16) * (-3327)) @% pow2 16) 3329 (pow2 16) }
+      (((((prod @% pow2 16) * (-3327)) @% pow2 16) % pow2 16) * 3329) % pow2 16;
+      ( == ) { lemma_at_percent_mod ((prod @% pow2 16) * (-3327)) (pow2 16)}
+      ((((prod @% pow2 16) * (-3327)) % pow2 16)  * 3329) % pow2 16;
+      ( == ) { Math.Lemmas.lemma_mod_mul_distr_l ((prod @% pow2 16) * (-3327)) 3329 (pow2 16) }
+      (((prod @% pow2 16) * (-3327)) * 3329) % pow2 16;
+      ( == ) { }
+      ((prod @% pow2 16) * (-3327 * 3329)) % pow2 16;
+      ( == ) { Math.Lemmas.lemma_mod_mul_distr_r (prod @% pow2 16) (-3327 * 3329) (pow2 16) }
+      ((prod @% pow2 16) % pow2 16);
+      ( == ) { lemma_at_percent_mod (prod) (pow2 16) }
+      (prod) % pow2 16;
     };
     Math.Lemmas.modulo_add (pow2 16) (- (v k_times_modulus)) ((prod)) (v k_times_modulus);
     assert (((prod) - v k_times_modulus) % pow2 16 == 0);
     calc ( == ) {
       v result % 3329;
-      ( == ) { assert (v result == v vhigh - v c) }
-      ((prod) / pow2 16 - v k_times_modulus / pow2 16) % 3329;
-      ( == ) { Math.Lemmas.lemma_div_exact ((prod) - v k_times_modulus) (pow2 16) }
-      (((prod) - v k_times_modulus) / pow2 16) % 3329;
+      ( == ) { }
+      (((prod) / pow2 16) - ((v k * 3329) / pow2 16)) % 3329;
+      ( == ) { Math.Lemmas.lemma_div_exact ((prod) - (v k * 3329)) (pow2 16) }
+      ((prod - (v k * 3329)) / pow2 16) % 3329;
       ( == ) { assert ((pow2 16 * 169) % 3329 == 1) }
-      ((((prod) - v k_times_modulus) / pow2 16) * ((pow2 16 * 169) % 3329)) % 3329;
-      ( == ) { Math.Lemmas.lemma_mod_mul_distr_r (((prod) - v k_times_modulus) / pow2 16)
+      (((prod - (v k * 3329)) / pow2 16) * ((pow2 16 * 169) % 3329)) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_mul_distr_r (((prod) - (v k * 3329)) / pow2 16)
         (pow2 16 * 169)
         3329 }
-      ((((prod) - v k_times_modulus) / pow2 16) * pow2 16 * 169) % 3329;
-      ( == ) { Math.Lemmas.lemma_div_exact ((prod) - v k_times_modulus) (pow2 16) }
-      (((prod) - v k_times_modulus) * 169) % 3329;
-      ( == ) { assert (v k_times_modulus == (v k @% pow2 16) * 3329) }
-      (((prod) * 169) - ((v k @% pow2 16) * 3329 * 169)) % 3329;
-      ( == ) { Math.Lemmas.lemma_mod_sub ((prod) * 169) 3329 ((v k @% pow2 16) * 169) }
+      ((((prod) - (v k * 3329)) / pow2 16) * pow2 16 * 169) % 3329;
+      ( == ) { Math.Lemmas.lemma_div_exact ((prod) - (v k * 3329)) (pow2 16) }
+      (((prod) - (v k * 3329)) * 169) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_sub ((prod) * 169) 3329 (v k * 169)}
       ((prod) * 169) % 3329; 
     }
-*)
-#pop-options
+#pop-options 
