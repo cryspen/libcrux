@@ -1,4 +1,4 @@
-use crate::{constants::*, ml_dsa_generic, types::*, VerificationError};
+use crate::{constants::*, ml_dsa_generic, types::*, SigningError, VerificationError};
 
 // ML-DSA-44-specific parameters
 
@@ -112,7 +112,7 @@ pub fn sign(
     signing_key: &MLDSA44SigningKey,
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-) -> MLDSA44Signature {
+) -> Result<MLDSA44Signature, SigningError> {
     ml_dsa_generic::sign::<
         SIMDUnit, // TODO: Multiplex this based on platform detection.
         Shake128,

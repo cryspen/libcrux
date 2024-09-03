@@ -1,4 +1,4 @@
-use crate::{constants::*, types::*, VerificationError};
+use crate::{constants::*, types::*, SigningError, VerificationError};
 
 // ML-DSA-87 parameters
 
@@ -117,7 +117,7 @@ pub fn sign(
     signing_key: &MLDSA87SigningKey,
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-) -> MLDSA87Signature {
+) -> Result<MLDSA87Signature, SigningError> {
     crate::ml_dsa_generic::sign::<
         SIMDUnit,
         Shake128,

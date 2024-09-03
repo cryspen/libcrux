@@ -57,7 +57,8 @@ macro_rules! impl_nist_known_answer_tests {
 
                 let message = hex::decode(kat.message).expect("Hex-decoding the message failed.");
 
-                let signature = $sign(&key_pair.signing_key, &message, kat.signing_randomness);
+                let signature = $sign(&key_pair.signing_key, &message, kat.signing_randomness)
+                    .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
                 let signature_hash = libcrux_sha3::sha256(&signature.0);
                 assert_eq!(

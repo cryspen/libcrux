@@ -14,7 +14,8 @@ fn main() {
     let message = random_array::<1023>();
 
     let keypair = ml_dsa_65::generate_key_pair(key_generation_seed);
-    let signature = ml_dsa_65::sign(&keypair.signing_key, &message, signing_randomness);
+    let signature = ml_dsa_65::sign(&keypair.signing_key, &message, signing_randomness)
+        .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
     for _i in 0..100_000 {
         ml_dsa_65::verify(&keypair.verification_key, &message, &signature).unwrap();
