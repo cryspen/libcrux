@@ -441,46 +441,58 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         Libcrux_ml_kem.Vector.Portable.Ntt.ntt_multiply lhs rhs zeta0 zeta1 zeta2 zeta3);
     f_serialize_1_pre
     =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Spec.MLKEM.serialize_pre 1 (impl.f_repr a));
     f_serialize_1_post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: t_Array u8 (sz 2))
         ->
-        true);
+        Spec.MLKEM.serialize_pre 1 (impl.f_repr a) ==>
+        Spec.MLKEM.serialize_post 1 (impl.f_repr a) out);
     f_serialize_1_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_lemma a in
         Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_ a);
-    f_deserialize_1_pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_1_pre = (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. sz 2);
     f_deserialize_1_post
     =
-    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        sz (Seq.length a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 a (impl.f_repr out));
     f_deserialize_1_
     =
-    (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_ a);
+    (fun (a: t_Slice u8) ->
+        let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma a in
+        Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_ a);
     f_serialize_4_pre
     =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Spec.MLKEM.serialize_pre 4 (impl.f_repr a));
     f_serialize_4_post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: t_Array u8 (sz 8))
         ->
-        true);
+        Spec.MLKEM.serialize_pre 4 (impl.f_repr a) ==>
+        Spec.MLKEM.serialize_post 4 (impl.f_repr a) out);
     f_serialize_4_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_lemma a in
         Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_ a);
-    f_deserialize_4_pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_4_pre = (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. sz 8);
     f_deserialize_4_post
     =
-    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        sz (Seq.length a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 a (impl.f_repr out));
     f_deserialize_4_
     =
-    (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_ a);
+    (fun (a: t_Slice u8) ->
+        let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma a in
+        Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_ a);
     f_serialize_5_pre
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
@@ -495,7 +507,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         Libcrux_ml_kem.Vector.Portable.Serialize.serialize_5_ a);
-    f_deserialize_5_pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_5_pre = (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. sz 10);
     f_deserialize_5_post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
@@ -504,25 +516,31 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_5_ a);
     f_serialize_10_pre
     =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Spec.MLKEM.serialize_pre 10 (impl.f_repr a));
     f_serialize_10_post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: t_Array u8 (sz 20))
         ->
-        true);
+        Spec.MLKEM.serialize_pre 10 (impl.f_repr a) ==>
+        Spec.MLKEM.serialize_post 10 (impl.f_repr a) out);
     f_serialize_10_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_lemma a in
         Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_ a);
-    f_deserialize_10_pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_10_pre = (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. sz 20);
     f_deserialize_10_post
     =
-    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        sz (Seq.length a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 a (impl.f_repr out));
     f_deserialize_10_
     =
-    (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_ a);
+    (fun (a: t_Slice u8) ->
+        let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma a in
+        Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_ a);
     f_serialize_11_pre
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
@@ -537,7 +555,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         Libcrux_ml_kem.Vector.Portable.Serialize.serialize_11_ a);
-    f_deserialize_11_pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_11_pre = (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. sz 22);
     f_deserialize_11_post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
@@ -546,25 +564,31 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_11_ a);
     f_serialize_12_pre
     =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Spec.MLKEM.serialize_pre 12 (impl.f_repr a));
     f_serialize_12_post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: t_Array u8 (sz 24))
         ->
-        true);
+        Spec.MLKEM.serialize_pre 12 (impl.f_repr a) ==>
+        Spec.MLKEM.serialize_post 12 (impl.f_repr a) out);
     f_serialize_12_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_lemma a in
         Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_ a);
-    f_deserialize_12_pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_12_pre = (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. sz 24);
     f_deserialize_12_post
     =
-    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        sz (Seq.length a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 a (impl.f_repr out));
     f_deserialize_12_
     =
-    (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_ a);
+    (fun (a: t_Slice u8) ->
+        let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma a in
+        Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_ a);
     f_rej_sample_pre = (fun (a: t_Slice u8) (out: t_Slice i16) -> true);
     f_rej_sample_post
     =
