@@ -13,7 +13,8 @@ val mm256_add_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun 
 
 val mm256_add_epi32 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val mm256_and_si256 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+include BitVec.Intrinsics {mm256_and_si256 as mm256_and_si256}
+// val mm256_and_si256 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_andnot_si256 (a b: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
@@ -23,14 +24,14 @@ val mm256_blend_epi16 (v_CONTROL: i32) (lhs rhs: t_Vec256)
 val mm256_castsi128_si256 (vector: t_Vec128)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-unfold let mm256_castsi256_si128 = BitVec.Intrinsics.mm256_castsi256_si128
+include BitVec.Intrinsics {mm256_castsi256_si128 as mm256_castsi256_si128}
 
 val mm256_cmpgt_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_cvtepi16_epi32 (vector: t_Vec128)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-unfold let mm256_extracti128_si256 = BitVec.Intrinsics.mm256_extracti128_si256
+include BitVec.Intrinsics {mm256_extracti128_si256 as mm256_extracti128_si256}
 
 val mm256_inserti128_si256 (v_CONTROL: i32) (vector: t_Vec256) (vector_i128: t_Vec128)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
@@ -47,7 +48,7 @@ val mm256_mul_epu32 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun 
 
 val mm256_mulhi_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-unfold let mm256_mullo_epi16 = BitVec.Intrinsics.mm256_mullo_epi16
+include BitVec.Intrinsics {mm256_mullo_epi16 as mm256_mullo_epi16}
 
 val mm256_mullo_epi32 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
@@ -62,13 +63,14 @@ val mm256_permute4x64_epi64 (v_CONTROL: i32) (vector: t_Vec256)
 val mm256_permutevar8x32_epi32 (vector control: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val mm256_set1_epi16 (constant: i16) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+include BitVec.Intrinsics {mm256_set1_epi16 as mm256_set1_epi16}
+// val mm256_set1_epi16 (constant: i16) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_set1_epi32 (constant: i32) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_set1_epi64x (a: i64) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-unfold let mm256_set_epi16 = BitVec.Intrinsics.mm256_set_epi16
+include BitVec.Intrinsics {mm256_set_epi16 as mm256_set_epi16}
 
 val mm256_set_epi32 (input7 input6 input5 input4 input3 input2 input1 input0: i32)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
@@ -86,7 +88,7 @@ val mm256_shuffle_epi32 (v_CONTROL: i32) (vector: t_Vec256)
 val mm256_shuffle_epi8 (vector control: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-unfold let mm256_slli_epi16 = BitVec.Intrinsics.mm256_slli_epi16
+include BitVec.Intrinsics {mm256_slli_epi16 as mm256_slli_epi16}
 
 val mm256_slli_epi32 (v_SHIFT_BY: i32) (vector: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
@@ -103,7 +105,7 @@ val mm256_srai_epi16 (v_SHIFT_BY: i32) (vector: t_Vec256)
 val mm256_srai_epi32 (v_SHIFT_BY: i32) (vector: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-unfold let mm256_srli_epi16 = BitVec.Intrinsics.mm256_srli_epi16
+include BitVec.Intrinsics {mm256_srli_epi16 as mm256_srli_epi16}
 
 val mm256_srli_epi32 (v_SHIFT_BY: i32) (vector: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
@@ -136,13 +138,13 @@ val mm_add_epi16 (lhs rhs: t_Vec128) : Prims.Pure t_Vec128 Prims.l_True (fun _ -
 
 val mm_loadu_si128 (input: t_Slice u8) : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
 
-unfold let mm_movemask_epi8 = BitVec.Intrinsics.mm_movemask_epi8
+include BitVec.Intrinsics {mm_movemask_epi8 as mm_movemask_epi8}
 
 val mm_mulhi_epi16 (lhs rhs: t_Vec128) : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm_mullo_epi16 (lhs rhs: t_Vec128) : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
 
-unfold let mm_packs_epi16 = BitVec.Intrinsics.mm_packs_epi16
+include BitVec.Intrinsics {mm_packs_epi16 as mm_packs_epi16}
 
 val mm_set1_epi16 (constant: i16) : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
 

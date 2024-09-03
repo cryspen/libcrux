@@ -1,12 +1,12 @@
 module Tactics.Utils
 
 open Core
+open FStar.Option
 module L = FStar.List.Tot
 open FStar.Tactics.V2
 open FStar.Tactics.V2.SyntaxHelpers
 open FStar.Class.Printable
 open FStar.Mul
-open FStar.Option
 
 (*** Let operators *)
 let (let?#) (x: option 'a) (f: 'a -> Tac (option 'b)): Tac (option 'b)
@@ -204,6 +204,56 @@ let rewrite_rhs (): Tac _ =
   let uvar = fresh_uvar (Some (tc (cur_env ()) rhs)) in
   tcut (`squash (`#rhs == `#uvar))
 
+open FStar.Tactics
+(*** Unification *)
+(** Unifies `t` with `fn x1 ... xN`, where `x1` and `xN` are
+unification variables. This returns a list of terms to substitute `x1`
+... `xN` with. You probably want `norm_steps` to be `[delta_only
+[`%the_name_of_function_fn]]` *)
+exception UnifyAppReturn of (option (list term))
+let unify_app (t fn: term) norm_steps: Tac (option (list term))
+  = let (* Tactic types are confusing, seems like we need V1 here *)
+        open FStar.Tactics.V1 in
+    let bds = fst (collect_arr_bs (tc (cur_env ()) fn)) in
+    try
+      let _fake_goal = 
+        (* create a goal `b1 -> ... -> bn -> squash True` *)
+        let trivial = `squash True in
+        let trivial_comp = pack_comp (C_Total trivial) in
+        unshelve (fresh_uvar (Some (match bds with | [] -> trivial | _ -> mk_arr bds trivial_comp)))
+      in
+      (* get back the binders `b1`, ..., `bn` *)
+      let bds = intros () in
+      let args = FStar.Tactics.Util.map (fun (b: binder) -> b <: term) bds in
+      let norm_term = norm_term (hnf::norm_steps) in
+      let fn, t = norm_term (mk_e_app fn args), norm_term t in
+      let fn = `(((`#fn), ())) in
+      let dummy_var = fresh_namedv_named "dummy_var" in
+      let t = `(((`#t), (`#dummy_var))) in
+      let vars = map (fun b -> 
+        let b = inspect_binder b in
+        let {bv_index = uniq; bv_ppname = ppname} = inspect_bv b.binder_bv in
+        let sort = b.binder_sort in
+        let nv: namedv_view = {uniq; ppname; sort = seal sort} in
+        (FStar.Reflection.V2.pack_namedv nv, sort)
+      ) bds in
+      let vars = 
+        List.Tot.append
+          vars 
+          [(FStar.Reflection.V2.pack_namedv dummy_var, `())] 
+      in
+      let?# substs = fst (try_unify (cur_env ()) vars fn t) in
+      raise (UnifyAppReturn (
+        if List.Tot.length substs <> List.Tot.length bds + 1
+        then (print "unify_app: WARNING: inconsistent lengths"; None)
+        else (
+          match substs with
+          | [] -> None
+          | _::substs -> Some (List.Tot.rev (map (fun (_, t) -> t) substs))
+        )))
+    with | UnifyAppReturn result -> result
+         | e -> raise e
+
 (*** Logging and time *)
 let time_tactic_ms (t: 'a -> Tac 'b) (x: 'a): Tac ('b & int)
   = let time0 = curms () in
@@ -246,14 +296,14 @@ let focus_first_forall_goal (t : unit -> Tac unit) : Tac unit =
 
 /// Proves `forall (i:nat{i < bound})` for `bound` being a concrete int
 let rec prove_forall_nat_pointwise (tactic: unit -> Tac unit): Tac unit
-  = let _ =
-      (* hacky way of printing the progress *)
-      let goal = term_to_string (cur_goal ()) in
-      let goal = match String.split ['\n'] goal with
-                 | s::_ -> s | _ -> "" in
-      print ("prove_forall_pointwise: " ^ goal ^ "...")
-    in
-    focus_first_forall_goal (fun _ -> 
+  = focus_first_forall_goal (fun _ -> 
+      let _ =
+        (* hacky way of printing the progress *)
+        let goal = term_to_string (cur_goal ()) in
+        let goal = match String.split ['\n'] goal with
+                   | s::_ -> s | _ -> "" in
+        print ("prove_forall_pointwise: " ^ goal ^ "...")
+      in
       apply_lemma (`_split_forall_nat);
       trivial `or_else` (fun _ -> 
         if try norm [primops];

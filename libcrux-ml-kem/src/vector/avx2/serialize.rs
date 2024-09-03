@@ -87,25 +87,27 @@ pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
     // And this vector, when multiplied with the previous one, ensures that the
     // bit we'd like to keep in each lane becomes the most significant bit upon
     // multiplication.
-    let shift_lsb_to_msb = mm256_set_epi16(
-        1 << 8,
-        1 << 9,
-        1 << 10,
-        1 << 11,
-        1 << 12,
-        1 << 13,
-        1 << 14,
-        -32768,
-        1 << 8,
-        1 << 9,
-        1 << 10,
-        1 << 11,
-        1 << 12,
-        1 << 13,
-        1 << 14,
-        -32768,
+    let coefficients_in_msb = mm256_mullo_epi16(
+        coefficients,
+        mm256_set_epi16(
+            1 << 8,
+            1 << 9,
+            1 << 10,
+            1 << 11,
+            1 << 12,
+            1 << 13,
+            1 << 14,
+            -32768,
+            1 << 8,
+            1 << 9,
+            1 << 10,
+            1 << 11,
+            1 << 12,
+            1 << 13,
+            1 << 14,
+            -32768,
+        ),
     );
-    let coefficients_in_msb = mm256_mullo_epi16(coefficients, shift_lsb_to_msb);
 
     // Now that they're all in the most significant bit position, shift them
     // down to the least significant bit.
@@ -208,28 +210,29 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> Vec256 {
         bytes[0] as i16,
     );
 
-    let shift_lsbs_to_msbs = mm256_set_epi16(
-        // These constants are chosen to shift the bits of the values
-        // that we loaded into |coefficients|.
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
+    let coefficients_in_msb = mm256_mullo_epi16(
+        coefficients,
+        mm256_set_epi16(
+            // These constants are chosen to shift the bits of the values
+            // that we loaded into |coefficients|.
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+        ),
     );
-
-    let coefficients_in_msb = mm256_mullo_epi16(coefficients, shift_lsbs_to_msbs);
 
     // Once the 4-bit coefficients are in the most significant positions (of
     // an 8-bit value), shift them all down by 4.

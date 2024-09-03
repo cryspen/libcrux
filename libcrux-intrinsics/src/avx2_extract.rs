@@ -122,13 +122,17 @@ pub fn mm256_set_epi8(
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(
+    interface,
+    "include BitVec.Intrinsics {mm256_set1_epi16 as ${mm256_set1_epi16}}"
+)]
 pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
     unimplemented!()
 }
 
 #[hax_lib::fstar::replace(
     interface,
-    "unfold let ${mm256_set_epi16} = BitVec.Intrinsics.mm256_set_epi16"
+    "include BitVec.Intrinsics {mm256_set_epi16 as ${mm256_set_epi16}}"
 )]
 pub fn mm256_set_epi16(
     input15: i16,
@@ -193,7 +197,7 @@ pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
 
 #[hax_lib::fstar::replace(
     interface,
-    "unfold let ${mm256_mullo_epi16} = BitVec.Intrinsics.mm256_mullo_epi16"
+    "include BitVec.Intrinsics {mm256_mullo_epi16 as ${mm256_mullo_epi16}}"
 )]
 pub fn mm256_mullo_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
@@ -242,7 +246,7 @@ pub fn mm256_srai_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 
 #[hax_lib::fstar::replace(
     interface,
-    "unfold let ${mm256_srli_epi16::<0>} = BitVec.Intrinsics.mm256_srli_epi16"
+    "include BitVec.Intrinsics {mm256_srli_epi16 as ${mm256_srli_epi16::<0>}}"
 )]
 pub fn mm256_srli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
@@ -260,7 +264,7 @@ pub fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 
 #[hax_lib::fstar::replace(
     interface,
-    "unfold let ${mm256_slli_epi16::<0>} = BitVec.Intrinsics.mm256_slli_epi16"
+    "include BitVec.Intrinsics {mm256_slli_epi16 as ${mm256_slli_epi16::<0>}}"
 )]
 pub fn mm256_slli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
@@ -302,7 +306,7 @@ pub fn mm256_unpackhi_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
 
 #[hax_lib::fstar::replace(
     interface,
-    "unfold let ${mm256_castsi256_si128} = BitVec.Intrinsics.mm256_castsi256_si128"
+    "include BitVec.Intrinsics {mm256_castsi256_si128 as ${mm256_castsi256_si128}}"
 )]
 pub fn mm256_castsi256_si128(vector: Vec256) -> Vec128 {
     unimplemented!()
@@ -317,7 +321,7 @@ pub fn mm256_cvtepi16_epi32(vector: Vec128) -> Vec256 {
 
 #[hax_lib::fstar::replace(
     interface,
-    "unfold let ${mm_packs_epi16} = BitVec.Intrinsics.mm_packs_epi16"
+    "include BitVec.Intrinsics {mm_packs_epi16 as ${mm_packs_epi16}}"
 )]
 pub fn mm_packs_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unimplemented!()
@@ -328,7 +332,7 @@ pub fn mm256_packs_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
 
 #[hax_lib::fstar::replace(
     interface,
-    "unfold let ${mm256_extracti128_si256::<0>} = BitVec.Intrinsics.mm256_extracti128_si256"
+    "include BitVec.Intrinsics {mm256_extracti128_si256 as ${mm256_extracti128_si256::<0>}}"
 )]
 pub fn mm256_extracti128_si256<const CONTROL: i32>(vector: Vec256) -> Vec128 {
     debug_assert!(CONTROL == 0 || CONTROL == 1);
@@ -347,7 +351,7 @@ pub fn mm256_blend_epi16<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256
 
 #[hax_lib::fstar::replace(
     interface,
-    "unfold let ${mm_movemask_epi8} = BitVec.Intrinsics.mm_movemask_epi8"
+    "include BitVec.Intrinsics {mm_movemask_epi8 as ${mm_movemask_epi8}}"
 )]
 pub fn mm_movemask_epi8(vector: Vec128) -> i32 {
     unimplemented!()
