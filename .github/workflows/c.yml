@@ -32,6 +32,7 @@ jobs:
         with:
           name: c-extraction
           path: libcrux-ml-kem/c
+          include-hidden-files: true
           if-no-files-found: error
 
   extract-header-only:
@@ -53,6 +54,7 @@ jobs:
         with:
           name: header-only-c-extraction
           path: libcrux-ml-kem/cg/
+          include-hidden-files: true
           if-no-files-found: error
 
   diff:
