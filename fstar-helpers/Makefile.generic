@@ -250,10 +250,10 @@ verify: $(VERIFIED_CHECKED) $(ADMIT_CHECKED)
 
 # Targets for Emacs
 %.fst-in:
-	$(info $(FSTAR_FLAGS) \
+	$(info $(FSTAR_FLAGS) $(OTHERFLAGS) \
 	  $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(basename $@).fst.hints)
 %.fsti-in:
-	$(info $(FSTAR_FLAGS) \
+	$(info $(FSTAR_FLAGS) $(OTHERFLAGS) \
 	  $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(basename $@).fsti.hints)
 
 # Targets for VSCode

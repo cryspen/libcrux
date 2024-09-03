@@ -61,8 +61,7 @@ let int_t_array_bitwise_eq
        #t1 #t2 #n1 #n2
        (arr1: t_Array (int_t t1) n1) (d1: num_bits t1)
        (arr2: t_Array (int_t t2) n2) (d2: num_bits t2 {v n1 * d1 == v n2 * d2})
-     =  bit_vec_of_int_t_array arr1 d1
-     == bit_vec_of_int_t_array arr2 d2
+     = bit_vec_of_int_t_array arr1 d1 == bit_vec_of_int_t_array arr2 d2
 
 // let get_bit_intro ()
 //   : Lemma (forall (#n: inttype) (x: int_t n) (nth: usize {v nth < bits n}). 

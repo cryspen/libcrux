@@ -224,18 +224,9 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
     Libcrux_intrinsics.Avx2_extract.mm_packs_epi16 low_msbs high_msbs
   in
   let bits_packed:i32 = Libcrux_intrinsics.Avx2_extract.mm_movemask_epi8 msbs in
-  let serialized:t_Array u8 (sz 2) = Rust_primitives.Hax.repeat 0uy (sz 2) in
-  let serialized:t_Array u8 (sz 2) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (sz 0)
-      (cast (bits_packed <: i32) <: u8)
-  in
-  let serialized:t_Array u8 (sz 2) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (sz 1)
-      (cast (bits_packed >>! 8l <: i32) <: u8)
-  in
-  serialized
+  let list = [cast (bits_packed <: i32) <: u8; cast (bits_packed >>! 8l <: i32) <: u8] in
+  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
+  Rust_primitives.Hax.array_of_list 2 list
 
 let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in

@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 0576bfc67e99aae86c51930421072688138b672b
- * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
- * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
- * F*: 04413e808445c4f78fe89cd15b85ff549ed3be62
- * Libcrux: 293f3b52093c13f3043781d878990c5be6fc4e23
+ * Charon: 6b5e110342a771a3e1c739b10294b1778e4be8b4
+ * Eurydice: 31be7d65ca5d6acdacfb33652e478d24dd85c1cb
+ * Karamel: 3205d3365ea2790b02368f79fcee38e38d0b5908
+ * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
+ * Libcrux: 33d08ed8cc74e9d1b2c29d754e70a5b2998bd6e5
  */
 
 #ifndef __libcrux_sha3_portable_H
@@ -241,13 +241,13 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b3(
   for (size_t i = (size_t)0U; i < (size_t)72U / (size_t)8U; i++) {
     size_t i0 = i;
     uint8_t uu____0[8U];
-    core_result_Result_56 dst;
+    Result_56 dst;
     Eurydice_slice_to_array2(
         &dst,
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_ac(dst, uu____0);
+    unwrap_41_ac(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -1624,8 +1624,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_75(
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
-              &iter, size_t, core_option_Option_b3)
-              .tag == core_option_None) {
+              &iter, size_t, Option_b3)
+              .tag == None) {
         break;
       } else {
         Eurydice_slice_uint8_t_1size_t__x2 uu____5 =
@@ -1678,13 +1678,13 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b30(
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)8U; i++) {
     size_t i0 = i;
     uint8_t uu____0[8U];
-    core_result_Result_56 dst;
+    Result_56 dst;
     Eurydice_slice_to_array2(
         &dst,
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_ac(dst, uu____0);
+    unwrap_41_ac(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -1983,8 +1983,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_750(
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
-              &iter, size_t, core_option_Option_b3)
-              .tag == core_option_None) {
+              &iter, size_t, Option_b3)
+              .tag == None) {
         break;
       } else {
         Eurydice_slice_uint8_t_1size_t__x2 uu____5 =
@@ -2111,8 +2111,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_751(
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
-              &iter, size_t, core_option_Option_b3)
-              .tag == core_option_None) {
+              &iter, size_t, Option_b3)
+              .tag == None) {
         break;
       } else {
         Eurydice_slice_uint8_t_1size_t__x2 uu____5 =
@@ -2262,13 +2262,13 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b31(
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)8U; i++) {
     size_t i0 = i;
     uint8_t uu____0[8U];
-    core_result_Result_56 dst;
+    Result_56 dst;
     Eurydice_slice_to_array2(
         &dst,
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_ac(dst, uu____0);
+    unwrap_41_ac(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -2499,13 +2499,13 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b32(
   for (size_t i = (size_t)0U; i < (size_t)144U / (size_t)8U; i++) {
     size_t i0 = i;
     uint8_t uu____0[8U];
-    core_result_Result_56 dst;
+    Result_56 dst;
     Eurydice_slice_to_array2(
         &dst,
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_ac(dst, uu____0);
+    unwrap_41_ac(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -2804,8 +2804,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_752(
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
-              &iter, size_t, core_option_Option_b3)
-              .tag == core_option_None) {
+              &iter, size_t, Option_b3)
+              .tag == None) {
         break;
       } else {
         Eurydice_slice_uint8_t_1size_t__x2 uu____5 =
@@ -2858,13 +2858,13 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b33(
   for (size_t i = (size_t)0U; i < (size_t)104U / (size_t)8U; i++) {
     size_t i0 = i;
     uint8_t uu____0[8U];
-    core_result_Result_56 dst;
+    Result_56 dst;
     Eurydice_slice_to_array2(
         &dst,
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_ac(dst, uu____0);
+    unwrap_41_ac(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -3163,8 +3163,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_753(
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
-              &iter, size_t, core_option_Option_b3)
-              .tag == core_option_None) {
+              &iter, size_t, Option_b3)
+              .tag == None) {
         break;
       } else {
         Eurydice_slice_uint8_t_1size_t__x2 uu____5 =
@@ -3459,8 +3459,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_754(
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
-              &iter, size_t, core_option_Option_b3)
-              .tag == core_option_None) {
+              &iter, size_t, Option_b3)
+              .tag == None) {
         break;
       } else {
         Eurydice_slice_uint8_t_1size_t__x2 uu____5 =

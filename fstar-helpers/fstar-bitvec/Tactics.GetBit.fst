@@ -23,6 +23,7 @@ let compute_one_round (): Tac _ =
    norm [ iota; zeta; reify_
           ; delta_namespace [
               "FStar"
+            ; "BitVecEq"
             ; implode_qn (cur_module ())
             ; "MkSeq"
             ; `%Rust_primitives.Hax.array_of_list
@@ -36,24 +37,23 @@ let compute_one_round (): Tac _ =
 /// Normalizes up to `get_bit`
 let compute': unit -> Tac unit = goal_fixpoint compute_one_round
 
-private let time_tactic_ms (t: 'a -> Tac 'b) (x: 'a): Tac ('b & int)
-  = let time0 = curms () in
-    let result = t x in
-    let time1 = curms () in
-    (result, time1 - time0)
-
-private let print_time prefix (t: 'a -> Tac 'b) (x: 'a): Tac 'b
-  = let (result, time) = time_tactic_ms t x in
-    print (prefix ^ string_of_int (time / 1000) ^ "." ^ string_of_int ((time/100)%10) ^ "s");
-    result
-
 /// Proves a goal of the shape `forall (i:nat{i < N}). get_bit ... i == get_bit ... i` (`N` is expected to be a literal)
 let prove_bit_vector_equality' (): Tac unit = 
-  norm [iota; primops; delta_only [`%bit_vec_of_int_t_array; `%FunctionalExtensionality.on]];
-  norm [iota; primops; delta_namespace [implode_qn (cur_module ())]];
+  norm [
+    iota;
+    primops;
+    delta_only [`%bit_vec_of_int_t_array; `%FunctionalExtensionality.on];
+    delta_namespace [
+      implode_qn (cur_module ());
+      "Libcrux_intrinsics.Avx2_extract";
+      "BitVec.Intrinsics";
+      "BitVecEq";
+    ];
+  ];
   compute_one_round ();
   prove_forall_nat_pointwise (print_time "SMT solved the goal in " (fun _ -> 
     Tactics.Seq.norm_index_minimal ();
+    l_to_r [`bit_vec_to_int_t_lemma];
     print ("Ask SMT: " ^ term_to_string (cur_goal ()));
     focus smt_sync
   ))

@@ -175,7 +175,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         Libcrux_ml_kem.Vector.Portable.Arithmetic.cond_subtract_3329_ v);
     f_barrett_reduce_pre
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Spec.Utils.is_i16b_array 28296 (impl.f_repr v));
     f_barrett_reduce_post
     =
     (fun
@@ -189,7 +190,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         Libcrux_ml_kem.Vector.Portable.Arithmetic.barrett_reduce v);
     f_montgomery_multiply_by_constant_pre
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (r: i16) -> true);
+    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (r: i16) ->
+        Spec.Utils.is_i16b 3328 r);
     f_montgomery_multiply_by_constant_post
     =
     (fun

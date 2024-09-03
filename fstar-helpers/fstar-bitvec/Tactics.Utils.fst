@@ -129,6 +129,11 @@ let expect_app_n t n: Tac (option (term & (l: list _ {L.length l == n}))) =
     then Some (head, args)
     else None
 
+let expect_forall t: Tac _ =
+    match term_as_formula t with
+    | Forall bv typ phi -> Some (bv, typ, phi)
+    | _ -> None
+
 (*** Rewrite utils *)
 private exception ForceRevert
 let revert_if_none (f: unit -> Tac (option 'a)): Tac (option 'a)
@@ -199,6 +204,17 @@ let rewrite_rhs (): Tac _ =
   let uvar = fresh_uvar (Some (tc (cur_env ()) rhs)) in
   tcut (`squash (`#rhs == `#uvar))
 
+(*** Logging and time *)
+let time_tactic_ms (t: 'a -> Tac 'b) (x: 'a): Tac ('b & int)
+  = let time0 = curms () in
+    let result = t x in
+    let time1 = curms () in
+    (result, time1 - time0)
+
+let print_time prefix (t: 'a -> Tac 'b) (x: 'a): Tac 'b
+  = let (result, time) = time_tactic_ms t x in
+    print (prefix ^ string_of_int (time / 1000) ^ "." ^ string_of_int ((time/100)%10) ^ "s");
+    result
 
 (*** Unroll forall goals *)
 let _split_forall_nat
@@ -209,6 +225,25 @@ let _split_forall_nat
           (ensures forall (i:nat{i < upper_bound}). p i)
   = ()
 
+
+let focus_first_forall_goal (t : unit -> Tac unit) : Tac unit =
+  let goals = goals () in
+  let found_goal = alloc false in
+  iterAll (fun _ -> 
+    (match expect_forall (cur_goal ()) with
+    | Some _ ->
+      if read found_goal
+      then ()
+      else begin
+        write found_goal true;
+        t ();
+        ()
+      end
+    | _ -> 
+      ())
+  );
+  if not (read found_goal) then t ()
+
 /// Proves `forall (i:nat{i < bound})` for `bound` being a concrete int
 let rec prove_forall_nat_pointwise (tactic: unit -> Tac unit): Tac unit
   = let _ =
@@ -218,14 +253,26 @@ let rec prove_forall_nat_pointwise (tactic: unit -> Tac unit): Tac unit
                  | s::_ -> s | _ -> "" in
       print ("prove_forall_pointwise: " ^ goal ^ "...")
     in
-    apply_lemma (`_split_forall_nat);
-    trivial `or_else` (fun _ -> 
-      if try norm [primops];
-             split ();
-             true
-         with | e -> false
-      then (
-        tactic ();
-        prove_forall_nat_pointwise tactic
+    focus_first_forall_goal (fun _ -> 
+      apply_lemma (`_split_forall_nat);
+      trivial `or_else` (fun _ -> 
+        if try norm [primops];
+               split ();
+               true
+           with | e -> false
+        then (
+          tactic ();
+          prove_forall_nat_pointwise tactic
+        )
       )
     )
+
+#push-options "--compat_pre_core 2"
+private let _example (phi: int -> Type0) (proof: (i:int -> Lemma (phi i))) = 
+  assert (forall (i: nat {i < 40}). phi i)
+      by (
+        prove_forall_nat_pointwise (fun _ -> 
+          apply_lemma (quote proof)
+        )
+      )
+#pop-options

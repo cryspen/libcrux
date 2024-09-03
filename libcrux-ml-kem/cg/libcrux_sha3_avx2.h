@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 0576bfc67e99aae86c51930421072688138b672b
- * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
- * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
- * F*: 04413e808445c4f78fe89cd15b85ff549ed3be62
- * Libcrux: 293f3b52093c13f3043781d878990c5be6fc4e23
+ * Charon: 6b5e110342a771a3e1c739b10294b1778e4be8b4
+ * Eurydice: 31be7d65ca5d6acdacfb33652e478d24dd85c1cb
+ * Karamel: 3205d3365ea2790b02368f79fcee38e38d0b5908
+ * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
+ * Libcrux: 33d08ed8cc74e9d1b2c29d754e70a5b2998bd6e5
  */
 
 #ifndef __libcrux_sha3_avx2_H
@@ -28,22 +28,16 @@ This function found in impl {(libcrux_sha3::traits::internal::KeccakItem<4:
 usize> for core::core_arch::x86::__m256i)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_zero_ef(void) {
+static KRML_MUSTINLINE __m256i libcrux_sha3_simd_avx2_zero_ef(void) {
   return libcrux_intrinsics_avx2_mm256_set1_epi64x((int64_t)0);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__veor5q_u64(core_core_arch_x86___m256i a,
-                                   core_core_arch_x86___m256i b,
-                                   core_core_arch_x86___m256i c,
-                                   core_core_arch_x86___m256i d,
-                                   core_core_arch_x86___m256i e) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
-  core_core_arch_x86___m256i cd = libcrux_intrinsics_avx2_mm256_xor_si256(c, d);
-  core_core_arch_x86___m256i abcd =
-      libcrux_intrinsics_avx2_mm256_xor_si256(ab, cd);
+static KRML_MUSTINLINE __m256i libcrux_sha3_simd_avx2__veor5q_u64(
+    __m256i a, __m256i b, __m256i c, __m256i d, __m256i e) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+  __m256i cd = libcrux_intrinsics_avx2_mm256_xor_si256(c, d);
+  __m256i abcd = libcrux_intrinsics_avx2_mm256_xor_si256(ab, cd);
   return libcrux_intrinsics_avx2_mm256_xor_si256(abcd, e);
 }
 
@@ -52,12 +46,8 @@ This function found in impl {(libcrux_sha3::traits::internal::KeccakItem<4:
 usize> for core::core_arch::x86::__m256i)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor5_ef(core_core_arch_x86___m256i a,
-                               core_core_arch_x86___m256i b,
-                               core_core_arch_x86___m256i c,
-                               core_core_arch_x86___m256i d,
-                               core_core_arch_x86___m256i e) {
+static KRML_MUSTINLINE __m256i libcrux_sha3_simd_avx2_xor5_ef(
+    __m256i a, __m256i b, __m256i c, __m256i d, __m256i e) {
   return libcrux_sha3_simd_avx2__veor5q_u64(a, b, c, d, e);
 }
 
@@ -68,20 +58,17 @@ with const generics
 - RIGHT= 63
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_58(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_58(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)1, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)63, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)1, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)63, x, __m256i));
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vrax1q_u64(core_core_arch_x86___m256i a,
-                                   core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i uu____0 = a;
+static KRML_MUSTINLINE __m256i libcrux_sha3_simd_avx2__vrax1q_u64(__m256i a,
+                                                                  __m256i b) {
+  __m256i uu____0 = a;
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       uu____0, libcrux_sha3_simd_avx2_rotate_left_58(b));
 }
@@ -91,17 +78,15 @@ This function found in impl {(libcrux_sha3::traits::internal::KeccakItem<4:
 usize> for core::core_arch::x86::__m256i)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left1_and_xor_ef(core_core_arch_x86___m256i a,
-                                               core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left1_and_xor_ef(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vrax1q_u64(a, b);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vbcaxq_u64(core_core_arch_x86___m256i a,
-                                   core_core_arch_x86___m256i b,
-                                   core_core_arch_x86___m256i c) {
+static KRML_MUSTINLINE __m256i libcrux_sha3_simd_avx2__vbcaxq_u64(__m256i a,
+                                                                  __m256i b,
+                                                                  __m256i c) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       a, libcrux_intrinsics_avx2_mm256_andnot_si256(c, b));
 }
@@ -111,18 +96,15 @@ This function found in impl {(libcrux_sha3::traits::internal::KeccakItem<4:
 usize> for core::core_arch::x86::__m256i)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_and_not_xor_ef(core_core_arch_x86___m256i a,
-                                      core_core_arch_x86___m256i b,
-                                      core_core_arch_x86___m256i c) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_and_not_xor_ef(__m256i a, __m256i b, __m256i c) {
   return libcrux_sha3_simd_avx2__vbcaxq_u64(a, b, c);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__veorq_n_u64(core_core_arch_x86___m256i a, uint64_t c) {
-  core_core_arch_x86___m256i c0 =
-      libcrux_intrinsics_avx2_mm256_set1_epi64x((int64_t)c);
+static KRML_MUSTINLINE __m256i libcrux_sha3_simd_avx2__veorq_n_u64(__m256i a,
+                                                                   uint64_t c) {
+  __m256i c0 = libcrux_intrinsics_avx2_mm256_set1_epi64x((int64_t)c);
   return libcrux_intrinsics_avx2_mm256_xor_si256(a, c0);
 }
 
@@ -131,9 +113,8 @@ This function found in impl {(libcrux_sha3::traits::internal::KeccakItem<4:
 usize> for core::core_arch::x86::__m256i)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_constant_ef(core_core_arch_x86___m256i a,
-                                       uint64_t c) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_constant_ef(__m256i a, uint64_t c) {
   return libcrux_sha3_simd_avx2__veorq_n_u64(a, c);
 }
 
@@ -142,8 +123,8 @@ This function found in impl {(libcrux_sha3::traits::internal::KeccakItem<4:
 usize> for core::core_arch::x86::__m256i)}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i libcrux_sha3_simd_avx2_xor_ef(
-    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i libcrux_sha3_simd_avx2_xor_ef(__m256i a,
+                                                             __m256i b) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
 }
 
@@ -223,7 +204,7 @@ with const generics
 - $4size_t
 */
 typedef struct libcrux_sha3_generic_keccak_KeccakState_29_s {
-  core_core_arch_x86___m256i st[5U][5U];
+  __m256i st[5U][5U];
 } libcrux_sha3_generic_keccak_KeccakState_29;
 
 /**
@@ -278,45 +259,33 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_c7(
-    core_core_arch_x86___m256i (*s)[5U], Eurydice_slice blocks[4U]) {
+    __m256i (*s)[5U], Eurydice_slice blocks[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)32U; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i v00 =
-        libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
-            Eurydice_slice_subslice2(blocks[0U], (size_t)32U * i0,
-                                     (size_t)32U * (i0 + (size_t)1U), uint8_t));
-    core_core_arch_x86___m256i v10 =
-        libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
-            Eurydice_slice_subslice2(blocks[1U], (size_t)32U * i0,
-                                     (size_t)32U * (i0 + (size_t)1U), uint8_t));
-    core_core_arch_x86___m256i v20 =
-        libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
-            Eurydice_slice_subslice2(blocks[2U], (size_t)32U * i0,
-                                     (size_t)32U * (i0 + (size_t)1U), uint8_t));
-    core_core_arch_x86___m256i v30 =
-        libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
-            Eurydice_slice_subslice2(blocks[3U], (size_t)32U * i0,
-                                     (size_t)32U * (i0 + (size_t)1U), uint8_t));
-    core_core_arch_x86___m256i v0l =
-        libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v00, v10);
-    core_core_arch_x86___m256i v1h =
-        libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v00, v10);
-    core_core_arch_x86___m256i v2l =
-        libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v20, v30);
-    core_core_arch_x86___m256i v3h =
-        libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v20, v30);
-    core_core_arch_x86___m256i v0 =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)32, v0l, v2l, core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v1 =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)32, v1h, v3h, core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v2 =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)49, v0l, v2l, core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v3 =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)49, v1h, v3h, core_core_arch_x86___m256i);
+    __m256i v00 = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[0U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v10 = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[1U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v20 = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[2U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v30 = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[3U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v0l = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v00, v10);
+    __m256i v1h = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v00, v10);
+    __m256i v2l = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v20, v30);
+    __m256i v3h = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v20, v30);
+    __m256i v0 = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)32, v0l, v2l, __m256i);
+    __m256i v1 = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)32, v1h, v3h, __m256i);
+    __m256i v2 = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)49, v0l, v2l, __m256i);
+    __m256i v3 = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)49, v1h, v3h, __m256i);
     s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U] =
         libcrux_intrinsics_avx2_mm256_xor_si256(
             s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U], v0);
@@ -366,7 +335,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_c7(
       uu____3,
       Eurydice_slice_subslice2(blocks[3U], start, start + (size_t)8U, uint8_t),
       uint8_t);
-  core_core_arch_x86___m256i u = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
+  __m256i u = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
       core_array___Array_T__N__23__as_slice((size_t)32U, u8s, uint8_t,
                                             Eurydice_slice));
   size_t i0 = (size_t)4U * ((size_t)136U / (size_t)32U) / (size_t)5U;
@@ -398,10 +367,9 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_c7(
                         Eurydice_slice_subslice2(blocks[3U], start + (size_t)8U,
                                                  start + (size_t)16U, uint8_t),
                         uint8_t);
-    core_core_arch_x86___m256i u0 =
-        libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
-            core_array___Array_T__N__23__as_slice((size_t)32U, u8s0, uint8_t,
-                                                  Eurydice_slice));
+    __m256i u0 = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
+        core_array___Array_T__N__23__as_slice((size_t)32U, u8s0, uint8_t,
+                                              Eurydice_slice));
     size_t i =
         ((size_t)4U * ((size_t)136U / (size_t)32U) + (size_t)1U) / (size_t)5U;
     size_t j =
@@ -421,8 +389,8 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_ef_6a(
-    core_core_arch_x86___m256i (*a)[5U], Eurydice_slice b[4U]) {
-  core_core_arch_x86___m256i(*uu____0)[5U] = a;
+    __m256i (*a)[5U], Eurydice_slice b[4U]) {
+  __m256i(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_b[4U];
   memcpy(copy_of_b, b, (size_t)4U * sizeof(Eurydice_slice));
@@ -436,13 +404,11 @@ with const generics
 - RIGHT= 28
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_580(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_580(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)36, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)28, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)36, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)28, x, __m256i));
 }
 
 /**
@@ -452,10 +418,9 @@ with const generics
 - RIGHT= 28
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c1(core_core_arch_x86___m256i a,
-                                     core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i libcrux_sha3_simd_avx2__vxarq_u64_c1(__m256i a,
+                                                                    __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_580(ab);
 }
 
@@ -470,9 +435,8 @@ with const generics
 - RIGHT= 28
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_17(core_core_arch_x86___m256i a,
-                                            core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_17(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c1(a, b);
 }
 
@@ -483,13 +447,11 @@ with const generics
 - RIGHT= 61
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_581(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_581(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)3, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)61, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)3, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)61, x, __m256i));
 }
 
 /**
@@ -499,10 +461,9 @@ with const generics
 - RIGHT= 61
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c10(core_core_arch_x86___m256i a,
-                                      core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c10(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_581(ab);
 }
 
@@ -517,9 +478,8 @@ with const generics
 - RIGHT= 61
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_170(core_core_arch_x86___m256i a,
-                                             core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_170(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c10(a, b);
 }
 
@@ -530,13 +490,11 @@ with const generics
 - RIGHT= 23
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_582(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_582(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)41, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)23, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)41, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)23, x, __m256i));
 }
 
 /**
@@ -546,10 +504,9 @@ with const generics
 - RIGHT= 23
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c11(core_core_arch_x86___m256i a,
-                                      core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c11(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_582(ab);
 }
 
@@ -564,9 +521,8 @@ with const generics
 - RIGHT= 23
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_171(core_core_arch_x86___m256i a,
-                                             core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_171(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c11(a, b);
 }
 
@@ -577,13 +533,11 @@ with const generics
 - RIGHT= 46
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_583(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_583(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)18, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)46, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)18, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)46, x, __m256i));
 }
 
 /**
@@ -593,10 +547,9 @@ with const generics
 - RIGHT= 46
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c12(core_core_arch_x86___m256i a,
-                                      core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c12(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_583(ab);
 }
 
@@ -611,9 +564,8 @@ with const generics
 - RIGHT= 46
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_172(core_core_arch_x86___m256i a,
-                                             core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_172(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c12(a, b);
 }
 
@@ -624,10 +576,9 @@ with const generics
 - RIGHT= 63
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c13(core_core_arch_x86___m256i a,
-                                      core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c13(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_58(ab);
 }
 
@@ -642,9 +593,8 @@ with const generics
 - RIGHT= 63
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_173(core_core_arch_x86___m256i a,
-                                             core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_173(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c13(a, b);
 }
 
@@ -655,13 +605,11 @@ with const generics
 - RIGHT= 20
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_584(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_584(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)44, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)20, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)44, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)20, x, __m256i));
 }
 
 /**
@@ -671,10 +619,9 @@ with const generics
 - RIGHT= 20
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c14(core_core_arch_x86___m256i a,
-                                      core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c14(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_584(ab);
 }
 
@@ -689,9 +636,8 @@ with const generics
 - RIGHT= 20
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_174(core_core_arch_x86___m256i a,
-                                             core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_174(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c14(a, b);
 }
 
@@ -702,13 +648,11 @@ with const generics
 - RIGHT= 54
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_585(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_585(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)10, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)54, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)10, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)54, x, __m256i));
 }
 
 /**
@@ -718,10 +662,9 @@ with const generics
 - RIGHT= 54
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c15(core_core_arch_x86___m256i a,
-                                      core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c15(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_585(ab);
 }
 
@@ -736,9 +679,8 @@ with const generics
 - RIGHT= 54
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_175(core_core_arch_x86___m256i a,
-                                             core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_175(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c15(a, b);
 }
 
@@ -749,13 +691,11 @@ with const generics
 - RIGHT= 19
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_586(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_586(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)45, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)19, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)45, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)19, x, __m256i));
 }
 
 /**
@@ -765,10 +705,9 @@ with const generics
 - RIGHT= 19
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c16(core_core_arch_x86___m256i a,
-                                      core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c16(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_586(ab);
 }
 
@@ -783,9 +722,8 @@ with const generics
 - RIGHT= 19
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_176(core_core_arch_x86___m256i a,
-                                             core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_176(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c16(a, b);
 }
 
@@ -796,13 +734,11 @@ with const generics
 - RIGHT= 62
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_587(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_587(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)2, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)62, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)2, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)62, x, __m256i));
 }
 
 /**
@@ -812,10 +748,9 @@ with const generics
 - RIGHT= 62
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c17(core_core_arch_x86___m256i a,
-                                      core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c17(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_587(ab);
 }
 
@@ -830,9 +765,8 @@ with const generics
 - RIGHT= 62
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_177(core_core_arch_x86___m256i a,
-                                             core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_177(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c17(a, b);
 }
 
@@ -843,13 +777,11 @@ with const generics
 - RIGHT= 2
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_588(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_588(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)62, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)2, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)62, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)2, x, __m256i));
 }
 
 /**
@@ -859,10 +791,9 @@ with const generics
 - RIGHT= 2
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c18(core_core_arch_x86___m256i a,
-                                      core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c18(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_588(ab);
 }
 
@@ -877,9 +808,8 @@ with const generics
 - RIGHT= 2
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_178(core_core_arch_x86___m256i a,
-                                             core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_178(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c18(a, b);
 }
 
@@ -890,13 +820,11 @@ with const generics
 - RIGHT= 58
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_589(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_589(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)6, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)58, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)6, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)58, x, __m256i));
 }
 
 /**
@@ -906,10 +834,9 @@ with const generics
 - RIGHT= 58
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c19(core_core_arch_x86___m256i a,
-                                      core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c19(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_589(ab);
 }
 
@@ -924,9 +851,8 @@ with const generics
 - RIGHT= 58
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_179(core_core_arch_x86___m256i a,
-                                             core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_179(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c19(a, b);
 }
 
@@ -937,13 +863,11 @@ with const generics
 - RIGHT= 21
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5810(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5810(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)43, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)21, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)43, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)21, x, __m256i));
 }
 
 /**
@@ -953,10 +877,9 @@ with const generics
 - RIGHT= 21
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c110(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c110(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5810(ab);
 }
 
@@ -971,9 +894,8 @@ with const generics
 - RIGHT= 21
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1710(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1710(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c110(a, b);
 }
 
@@ -984,13 +906,11 @@ with const generics
 - RIGHT= 49
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5811(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5811(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)15, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)49, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)15, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)49, x, __m256i));
 }
 
 /**
@@ -1000,10 +920,9 @@ with const generics
 - RIGHT= 49
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c111(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c111(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5811(ab);
 }
 
@@ -1018,9 +937,8 @@ with const generics
 - RIGHT= 49
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1711(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1711(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c111(a, b);
 }
 
@@ -1031,13 +949,11 @@ with const generics
 - RIGHT= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5812(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5812(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)61, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)3, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)61, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)3, x, __m256i));
 }
 
 /**
@@ -1047,10 +963,9 @@ with const generics
 - RIGHT= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c112(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c112(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5812(ab);
 }
 
@@ -1065,9 +980,8 @@ with const generics
 - RIGHT= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1712(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1712(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c112(a, b);
 }
 
@@ -1078,13 +992,11 @@ with const generics
 - RIGHT= 36
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5813(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5813(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)28, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)36, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)28, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)36, x, __m256i));
 }
 
 /**
@@ -1094,10 +1006,9 @@ with const generics
 - RIGHT= 36
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c113(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c113(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5813(ab);
 }
 
@@ -1112,9 +1023,8 @@ with const generics
 - RIGHT= 36
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1713(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1713(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c113(a, b);
 }
 
@@ -1125,13 +1035,11 @@ with const generics
 - RIGHT= 9
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5814(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5814(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)55, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)9, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)55, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)9, x, __m256i));
 }
 
 /**
@@ -1141,10 +1049,9 @@ with const generics
 - RIGHT= 9
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c114(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c114(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5814(ab);
 }
 
@@ -1159,9 +1066,8 @@ with const generics
 - RIGHT= 9
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1714(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1714(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c114(a, b);
 }
 
@@ -1172,13 +1078,11 @@ with const generics
 - RIGHT= 39
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5815(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5815(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)25, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)39, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)25, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)39, x, __m256i));
 }
 
 /**
@@ -1188,10 +1092,9 @@ with const generics
 - RIGHT= 39
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c115(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c115(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5815(ab);
 }
 
@@ -1206,9 +1109,8 @@ with const generics
 - RIGHT= 39
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1715(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1715(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c115(a, b);
 }
 
@@ -1219,13 +1121,11 @@ with const generics
 - RIGHT= 43
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5816(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5816(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)21, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)43, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)21, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)43, x, __m256i));
 }
 
 /**
@@ -1235,10 +1135,9 @@ with const generics
 - RIGHT= 43
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c116(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c116(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5816(ab);
 }
 
@@ -1253,9 +1152,8 @@ with const generics
 - RIGHT= 43
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1716(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1716(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c116(a, b);
 }
 
@@ -1266,13 +1164,11 @@ with const generics
 - RIGHT= 8
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5817(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5817(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)56, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)8, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)56, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)8, x, __m256i));
 }
 
 /**
@@ -1282,10 +1178,9 @@ with const generics
 - RIGHT= 8
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c117(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c117(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5817(ab);
 }
 
@@ -1300,9 +1195,8 @@ with const generics
 - RIGHT= 8
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1717(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1717(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c117(a, b);
 }
 
@@ -1313,13 +1207,11 @@ with const generics
 - RIGHT= 37
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5818(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5818(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)27, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)37, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)27, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)37, x, __m256i));
 }
 
 /**
@@ -1329,10 +1221,9 @@ with const generics
 - RIGHT= 37
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c118(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c118(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5818(ab);
 }
 
@@ -1347,9 +1238,8 @@ with const generics
 - RIGHT= 37
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1718(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1718(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c118(a, b);
 }
 
@@ -1360,13 +1250,11 @@ with const generics
 - RIGHT= 44
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5819(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5819(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)20, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)44, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)20, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)44, x, __m256i));
 }
 
 /**
@@ -1376,10 +1264,9 @@ with const generics
 - RIGHT= 44
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c119(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c119(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5819(ab);
 }
 
@@ -1394,9 +1281,8 @@ with const generics
 - RIGHT= 44
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1719(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1719(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c119(a, b);
 }
 
@@ -1407,13 +1293,11 @@ with const generics
 - RIGHT= 25
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5820(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5820(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)39, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)25, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)39, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)25, x, __m256i));
 }
 
 /**
@@ -1423,10 +1307,9 @@ with const generics
 - RIGHT= 25
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c120(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c120(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5820(ab);
 }
 
@@ -1441,9 +1324,8 @@ with const generics
 - RIGHT= 25
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1720(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1720(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c120(a, b);
 }
 
@@ -1454,13 +1336,11 @@ with const generics
 - RIGHT= 56
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5821(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5821(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)8, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)56, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)8, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)56, x, __m256i));
 }
 
 /**
@@ -1470,10 +1350,9 @@ with const generics
 - RIGHT= 56
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c121(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c121(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5821(ab);
 }
 
@@ -1488,9 +1367,8 @@ with const generics
 - RIGHT= 56
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1721(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1721(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c121(a, b);
 }
 
@@ -1501,13 +1379,11 @@ with const generics
 - RIGHT= 50
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_rotate_left_5822(core_core_arch_x86___m256i x) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_rotate_left_5822(__m256i x) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)14, x,
-                                               core_core_arch_x86___m256i),
-      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)50, x,
-                                               core_core_arch_x86___m256i));
+      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)14, x, __m256i),
+      libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)50, x, __m256i));
 }
 
 /**
@@ -1517,10 +1393,9 @@ with const generics
 - RIGHT= 50
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2__vxarq_u64_c122(core_core_arch_x86___m256i a,
-                                       core_core_arch_x86___m256i b) {
-  core_core_arch_x86___m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2__vxarq_u64_c122(__m256i a, __m256i b) {
+  __m256i ab = libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
   return libcrux_sha3_simd_avx2_rotate_left_5822(ab);
 }
 
@@ -1535,9 +1410,8 @@ with const generics
 - RIGHT= 50
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i
-libcrux_sha3_simd_avx2_xor_and_rotate_ef_1722(core_core_arch_x86___m256i a,
-                                              core_core_arch_x86___m256i b) {
+static KRML_MUSTINLINE __m256i
+libcrux_sha3_simd_avx2_xor_and_rotate_ef_1722(__m256i a, __m256i b) {
   return libcrux_sha3_simd_avx2__vxarq_u64_c122(a, b);
 }
 
@@ -1550,43 +1424,37 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_theta_rho_71(
     libcrux_sha3_generic_keccak_KeccakState_29 *s) {
-  core_core_arch_x86___m256i c[5U] = {
-      libcrux_sha3_simd_avx2_xor5_ef(s->st[0U][0U], s->st[1U][0U],
-                                     s->st[2U][0U], s->st[3U][0U],
-                                     s->st[4U][0U]),
-      libcrux_sha3_simd_avx2_xor5_ef(s->st[0U][1U], s->st[1U][1U],
-                                     s->st[2U][1U], s->st[3U][1U],
-                                     s->st[4U][1U]),
-      libcrux_sha3_simd_avx2_xor5_ef(s->st[0U][2U], s->st[1U][2U],
-                                     s->st[2U][2U], s->st[3U][2U],
-                                     s->st[4U][2U]),
-      libcrux_sha3_simd_avx2_xor5_ef(s->st[0U][3U], s->st[1U][3U],
-                                     s->st[2U][3U], s->st[3U][3U],
-                                     s->st[4U][3U]),
-      libcrux_sha3_simd_avx2_xor5_ef(s->st[0U][4U], s->st[1U][4U],
-                                     s->st[2U][4U], s->st[3U][4U],
-                                     s->st[4U][4U])};
-  core_core_arch_x86___m256i uu____0 =
-      libcrux_sha3_simd_avx2_rotate_left1_and_xor_ef(
-          c[((size_t)0U + (size_t)4U) % (size_t)5U],
-          c[((size_t)0U + (size_t)1U) % (size_t)5U]);
-  core_core_arch_x86___m256i uu____1 =
-      libcrux_sha3_simd_avx2_rotate_left1_and_xor_ef(
-          c[((size_t)1U + (size_t)4U) % (size_t)5U],
-          c[((size_t)1U + (size_t)1U) % (size_t)5U]);
-  core_core_arch_x86___m256i uu____2 =
-      libcrux_sha3_simd_avx2_rotate_left1_and_xor_ef(
-          c[((size_t)2U + (size_t)4U) % (size_t)5U],
-          c[((size_t)2U + (size_t)1U) % (size_t)5U]);
-  core_core_arch_x86___m256i uu____3 =
-      libcrux_sha3_simd_avx2_rotate_left1_and_xor_ef(
-          c[((size_t)3U + (size_t)4U) % (size_t)5U],
-          c[((size_t)3U + (size_t)1U) % (size_t)5U]);
-  core_core_arch_x86___m256i t[5U] = {
-      uu____0, uu____1, uu____2, uu____3,
-      libcrux_sha3_simd_avx2_rotate_left1_and_xor_ef(
-          c[((size_t)4U + (size_t)4U) % (size_t)5U],
-          c[((size_t)4U + (size_t)1U) % (size_t)5U])};
+  __m256i c[5U] = {libcrux_sha3_simd_avx2_xor5_ef(s->st[0U][0U], s->st[1U][0U],
+                                                  s->st[2U][0U], s->st[3U][0U],
+                                                  s->st[4U][0U]),
+                   libcrux_sha3_simd_avx2_xor5_ef(s->st[0U][1U], s->st[1U][1U],
+                                                  s->st[2U][1U], s->st[3U][1U],
+                                                  s->st[4U][1U]),
+                   libcrux_sha3_simd_avx2_xor5_ef(s->st[0U][2U], s->st[1U][2U],
+                                                  s->st[2U][2U], s->st[3U][2U],
+                                                  s->st[4U][2U]),
+                   libcrux_sha3_simd_avx2_xor5_ef(s->st[0U][3U], s->st[1U][3U],
+                                                  s->st[2U][3U], s->st[3U][3U],
+                                                  s->st[4U][3U]),
+                   libcrux_sha3_simd_avx2_xor5_ef(s->st[0U][4U], s->st[1U][4U],
+                                                  s->st[2U][4U], s->st[3U][4U],
+                                                  s->st[4U][4U])};
+  __m256i uu____0 = libcrux_sha3_simd_avx2_rotate_left1_and_xor_ef(
+      c[((size_t)0U + (size_t)4U) % (size_t)5U],
+      c[((size_t)0U + (size_t)1U) % (size_t)5U]);
+  __m256i uu____1 = libcrux_sha3_simd_avx2_rotate_left1_and_xor_ef(
+      c[((size_t)1U + (size_t)4U) % (size_t)5U],
+      c[((size_t)1U + (size_t)1U) % (size_t)5U]);
+  __m256i uu____2 = libcrux_sha3_simd_avx2_rotate_left1_and_xor_ef(
+      c[((size_t)2U + (size_t)4U) % (size_t)5U],
+      c[((size_t)2U + (size_t)1U) % (size_t)5U]);
+  __m256i uu____3 = libcrux_sha3_simd_avx2_rotate_left1_and_xor_ef(
+      c[((size_t)3U + (size_t)4U) % (size_t)5U],
+      c[((size_t)3U + (size_t)1U) % (size_t)5U]);
+  __m256i t[5U] = {uu____0, uu____1, uu____2, uu____3,
+                   libcrux_sha3_simd_avx2_rotate_left1_and_xor_ef(
+                       c[((size_t)4U + (size_t)4U) % (size_t)5U],
+                       c[((size_t)4U + (size_t)1U) % (size_t)5U])};
   s->st[0U][0U] = libcrux_sha3_simd_avx2_xor_ef(s->st[0U][0U], t[0U]);
   s->st[1U][0U] =
       libcrux_sha3_simd_avx2_xor_and_rotate_ef_17(s->st[1U][0U], t[0U]);
@@ -1634,7 +1502,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_theta_rho_71(
       libcrux_sha3_simd_avx2_xor_and_rotate_ef_1720(s->st[2U][4U], t[4U]);
   s->st[3U][4U] =
       libcrux_sha3_simd_avx2_xor_and_rotate_ef_1721(s->st[3U][4U], t[4U]);
-  core_core_arch_x86___m256i uu____27 =
+  __m256i uu____27 =
       libcrux_sha3_simd_avx2_xor_and_rotate_ef_1722(s->st[4U][4U], t[4U]);
   s->st[4U][4U] = uu____27;
 }
@@ -1648,8 +1516,8 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_pi_01(
     libcrux_sha3_generic_keccak_KeccakState_29 *s) {
-  core_core_arch_x86___m256i old[5U][5U];
-  memcpy(old, s->st, (size_t)5U * sizeof(core_core_arch_x86___m256i[5U]));
+  __m256i old[5U][5U];
+  memcpy(old, s->st, (size_t)5U * sizeof(__m256i[5U]));
   s->st[0U][1U] = old[1U][1U];
   s->st[0U][2U] = old[2U][2U];
   s->st[0U][3U] = old[3U][3U];
@@ -1685,8 +1553,8 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_chi_9b(
     libcrux_sha3_generic_keccak_KeccakState_29 *s) {
-  core_core_arch_x86___m256i old[5U][5U];
-  memcpy(old, s->st, (size_t)5U * sizeof(core_core_arch_x86___m256i[5U]));
+  __m256i old[5U][5U];
+  memcpy(old, s->st, (size_t)5U * sizeof(__m256i[5U]));
   for (size_t i0 = (size_t)0U; i0 < (size_t)5U; i0++) {
     size_t i1 = i0;
     for (size_t i = (size_t)0U; i < (size_t)5U; i++) {
@@ -1739,7 +1607,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_37(
     libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice blocks[4U]) {
-  core_core_arch_x86___m256i(*uu____0)[5U] = s->st;
+  __m256i(*uu____0)[5U] = s->st;
   Eurydice_slice uu____1[4U];
   memcpy(uu____1, blocks, (size_t)4U * sizeof(Eurydice_slice));
   libcrux_sha3_simd_avx2_load_block_ef_6a(uu____0, uu____1);
@@ -1753,7 +1621,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_full_91(
-    core_core_arch_x86___m256i (*s)[5U], uint8_t blocks[4U][200U]) {
+    __m256i (*s)[5U], uint8_t blocks[4U][200U]) {
   Eurydice_slice buf[4U] = {
       Eurydice_array_to_slice((size_t)200U, blocks[0U], uint8_t),
       Eurydice_array_to_slice((size_t)200U, blocks[1U], uint8_t),
@@ -1773,8 +1641,8 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_full_ef_05(
-    core_core_arch_x86___m256i (*a)[5U], uint8_t b[4U][200U]) {
-  core_core_arch_x86___m256i(*uu____0)[5U] = a;
+    __m256i (*a)[5U], uint8_t b[4U][200U]) {
+  __m256i(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_b[4U][200U];
   memcpy(copy_of_b, b, (size_t)4U * sizeof(uint8_t[200U]));
@@ -1806,7 +1674,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_5e(
     size_t uu____2 = (size_t)136U - (size_t)1U;
     blocks[uu____1][uu____2] = (uint32_t)blocks[uu____1][uu____2] | 128U;
   }
-  core_core_arch_x86___m256i(*uu____3)[5U] = s->st;
+  __m256i(*uu____3)[5U] = s->st;
   uint8_t uu____4[4U][200U];
   memcpy(uu____4, blocks, (size_t)4U * sizeof(uint8_t[200U]));
   libcrux_sha3_simd_avx2_load_block_full_ef_05(uu____3, uu____4);
@@ -1820,47 +1688,39 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_e9(
-    core_core_arch_x86___m256i (*s)[5U], Eurydice_slice out[4U]) {
+    __m256i (*s)[5U], Eurydice_slice out[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)32U; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i v0l =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)32,
-            s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U],
-            s[((size_t)4U * i0 + (size_t)2U) / (size_t)5U]
-             [((size_t)4U * i0 + (size_t)2U) % (size_t)5U],
-            core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v1h =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)32,
-            s[((size_t)4U * i0 + (size_t)1U) / (size_t)5U]
-             [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
-            s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
-             [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
-            core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v2l =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)49,
-            s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U],
-            s[((size_t)4U * i0 + (size_t)2U) / (size_t)5U]
-             [((size_t)4U * i0 + (size_t)2U) % (size_t)5U],
-            core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v3h =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)49,
-            s[((size_t)4U * i0 + (size_t)1U) / (size_t)5U]
-             [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
-            s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
-             [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
-            core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v0 =
-        libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v0l, v1h);
-    core_core_arch_x86___m256i v1 =
-        libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v0l, v1h);
-    core_core_arch_x86___m256i v2 =
-        libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v2l, v3h);
-    core_core_arch_x86___m256i v3 =
-        libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v2l, v3h);
+    __m256i v0l = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)32,
+        s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U],
+        s[((size_t)4U * i0 + (size_t)2U) / (size_t)5U]
+         [((size_t)4U * i0 + (size_t)2U) % (size_t)5U],
+        __m256i);
+    __m256i v1h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)32,
+        s[((size_t)4U * i0 + (size_t)1U) / (size_t)5U]
+         [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
+        s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
+         [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
+        __m256i);
+    __m256i v2l = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)49,
+        s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U],
+        s[((size_t)4U * i0 + (size_t)2U) / (size_t)5U]
+         [((size_t)4U * i0 + (size_t)2U) % (size_t)5U],
+        __m256i);
+    __m256i v3h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)49,
+        s[((size_t)4U * i0 + (size_t)1U) / (size_t)5U]
+         [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
+        s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
+         [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
+        __m256i);
+    __m256i v0 = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v0l, v1h);
+    __m256i v1 = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v0l, v1h);
+    __m256i v2 = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v2l, v3h);
+    __m256i v3 = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v2l, v3h);
     libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
         Eurydice_slice_subslice2(out[0U], (size_t)32U * i0,
                                  (size_t)32U * (i0 + (size_t)1U), uint8_t),
@@ -1951,7 +1811,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_full_0b(
-    core_core_arch_x86___m256i (*s)[5U], uint8_t ret[4U][200U]) {
+    __m256i (*s)[5U], uint8_t ret[4U][200U]) {
   uint8_t out0[200U] = {0U};
   uint8_t out1[200U] = {0U};
   uint8_t out2[200U] = {0U};
@@ -1990,7 +1850,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_full_ef_99(
-    core_core_arch_x86___m256i (*a)[5U], uint8_t ret[4U][200U]) {
+    __m256i (*a)[5U], uint8_t ret[4U][200U]) {
   libcrux_sha3_simd_avx2_store_block_full_0b(a, ret);
 }
 
@@ -2033,7 +1893,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_ef_f6(
-    core_core_arch_x86___m256i (*a)[5U], Eurydice_slice b[4U]) {
+    __m256i (*a)[5U], Eurydice_slice b[4U]) {
   libcrux_sha3_simd_avx2_store_block_e9(a, b);
 }
 
@@ -2146,8 +2006,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_14(
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
-              &iter, size_t, core_option_Option_b3)
-              .tag == core_option_None) {
+              &iter, size_t, Option_b3)
+              .tag == None) {
         break;
       } else {
         Eurydice_slice_uint8_t_4size_t__x2 uu____5 =
@@ -2198,45 +2058,33 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_c70(
-    core_core_arch_x86___m256i (*s)[5U], Eurydice_slice blocks[4U]) {
+    __m256i (*s)[5U], Eurydice_slice blocks[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)32U; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i v00 =
-        libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
-            Eurydice_slice_subslice2(blocks[0U], (size_t)32U * i0,
-                                     (size_t)32U * (i0 + (size_t)1U), uint8_t));
-    core_core_arch_x86___m256i v10 =
-        libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
-            Eurydice_slice_subslice2(blocks[1U], (size_t)32U * i0,
-                                     (size_t)32U * (i0 + (size_t)1U), uint8_t));
-    core_core_arch_x86___m256i v20 =
-        libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
-            Eurydice_slice_subslice2(blocks[2U], (size_t)32U * i0,
-                                     (size_t)32U * (i0 + (size_t)1U), uint8_t));
-    core_core_arch_x86___m256i v30 =
-        libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
-            Eurydice_slice_subslice2(blocks[3U], (size_t)32U * i0,
-                                     (size_t)32U * (i0 + (size_t)1U), uint8_t));
-    core_core_arch_x86___m256i v0l =
-        libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v00, v10);
-    core_core_arch_x86___m256i v1h =
-        libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v00, v10);
-    core_core_arch_x86___m256i v2l =
-        libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v20, v30);
-    core_core_arch_x86___m256i v3h =
-        libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v20, v30);
-    core_core_arch_x86___m256i v0 =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)32, v0l, v2l, core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v1 =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)32, v1h, v3h, core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v2 =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)49, v0l, v2l, core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v3 =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)49, v1h, v3h, core_core_arch_x86___m256i);
+    __m256i v00 = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[0U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v10 = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[1U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v20 = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[2U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v30 = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
+        Eurydice_slice_subslice2(blocks[3U], (size_t)32U * i0,
+                                 (size_t)32U * (i0 + (size_t)1U), uint8_t));
+    __m256i v0l = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v00, v10);
+    __m256i v1h = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v00, v10);
+    __m256i v2l = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v20, v30);
+    __m256i v3h = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v20, v30);
+    __m256i v0 = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)32, v0l, v2l, __m256i);
+    __m256i v1 = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)32, v1h, v3h, __m256i);
+    __m256i v2 = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)49, v0l, v2l, __m256i);
+    __m256i v3 = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)49, v1h, v3h, __m256i);
     s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U] =
         libcrux_intrinsics_avx2_mm256_xor_si256(
             s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U], v0);
@@ -2286,7 +2134,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_c70(
       uu____3,
       Eurydice_slice_subslice2(blocks[3U], start, start + (size_t)8U, uint8_t),
       uint8_t);
-  core_core_arch_x86___m256i u = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
+  __m256i u = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
       core_array___Array_T__N__23__as_slice((size_t)32U, u8s, uint8_t,
                                             Eurydice_slice));
   size_t i0 = (size_t)4U * ((size_t)168U / (size_t)32U) / (size_t)5U;
@@ -2318,10 +2166,9 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_c70(
                         Eurydice_slice_subslice2(blocks[3U], start + (size_t)8U,
                                                  start + (size_t)16U, uint8_t),
                         uint8_t);
-    core_core_arch_x86___m256i u0 =
-        libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
-            core_array___Array_T__N__23__as_slice((size_t)32U, u8s0, uint8_t,
-                                                  Eurydice_slice));
+    __m256i u0 = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
+        core_array___Array_T__N__23__as_slice((size_t)32U, u8s0, uint8_t,
+                                              Eurydice_slice));
     size_t i =
         ((size_t)4U * ((size_t)168U / (size_t)32U) + (size_t)1U) / (size_t)5U;
     size_t j =
@@ -2337,7 +2184,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_full_910(
-    core_core_arch_x86___m256i (*s)[5U], uint8_t blocks[4U][200U]) {
+    __m256i (*s)[5U], uint8_t blocks[4U][200U]) {
   Eurydice_slice buf[4U] = {
       Eurydice_array_to_slice((size_t)200U, blocks[0U], uint8_t),
       Eurydice_array_to_slice((size_t)200U, blocks[1U], uint8_t),
@@ -2357,8 +2204,8 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_full_ef_050(
-    core_core_arch_x86___m256i (*a)[5U], uint8_t b[4U][200U]) {
-  core_core_arch_x86___m256i(*uu____0)[5U] = a;
+    __m256i (*a)[5U], uint8_t b[4U][200U]) {
+  __m256i(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_b[4U][200U];
   memcpy(copy_of_b, b, (size_t)4U * sizeof(uint8_t[200U]));
@@ -2390,7 +2237,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_5e0(
     size_t uu____2 = (size_t)168U - (size_t)1U;
     blocks[uu____1][uu____2] = (uint32_t)blocks[uu____1][uu____2] | 128U;
   }
-  core_core_arch_x86___m256i(*uu____3)[5U] = s->st;
+  __m256i(*uu____3)[5U] = s->st;
   uint8_t uu____4[4U][200U];
   memcpy(uu____4, blocks, (size_t)4U * sizeof(uint8_t[200U]));
   libcrux_sha3_simd_avx2_load_block_full_ef_050(uu____3, uu____4);
@@ -2416,47 +2263,39 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_e90(
-    core_core_arch_x86___m256i (*s)[5U], Eurydice_slice out[4U]) {
+    __m256i (*s)[5U], Eurydice_slice out[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)32U; i++) {
     size_t i0 = i;
-    core_core_arch_x86___m256i v0l =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)32,
-            s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U],
-            s[((size_t)4U * i0 + (size_t)2U) / (size_t)5U]
-             [((size_t)4U * i0 + (size_t)2U) % (size_t)5U],
-            core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v1h =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)32,
-            s[((size_t)4U * i0 + (size_t)1U) / (size_t)5U]
-             [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
-            s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
-             [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
-            core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v2l =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)49,
-            s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U],
-            s[((size_t)4U * i0 + (size_t)2U) / (size_t)5U]
-             [((size_t)4U * i0 + (size_t)2U) % (size_t)5U],
-            core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v3h =
-        libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-            (int32_t)49,
-            s[((size_t)4U * i0 + (size_t)1U) / (size_t)5U]
-             [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
-            s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
-             [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
-            core_core_arch_x86___m256i);
-    core_core_arch_x86___m256i v0 =
-        libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v0l, v1h);
-    core_core_arch_x86___m256i v1 =
-        libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v0l, v1h);
-    core_core_arch_x86___m256i v2 =
-        libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v2l, v3h);
-    core_core_arch_x86___m256i v3 =
-        libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v2l, v3h);
+    __m256i v0l = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)32,
+        s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U],
+        s[((size_t)4U * i0 + (size_t)2U) / (size_t)5U]
+         [((size_t)4U * i0 + (size_t)2U) % (size_t)5U],
+        __m256i);
+    __m256i v1h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)32,
+        s[((size_t)4U * i0 + (size_t)1U) / (size_t)5U]
+         [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
+        s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
+         [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
+        __m256i);
+    __m256i v2l = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)49,
+        s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U],
+        s[((size_t)4U * i0 + (size_t)2U) / (size_t)5U]
+         [((size_t)4U * i0 + (size_t)2U) % (size_t)5U],
+        __m256i);
+    __m256i v3h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+        (int32_t)49,
+        s[((size_t)4U * i0 + (size_t)1U) / (size_t)5U]
+         [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
+        s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
+         [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
+        __m256i);
+    __m256i v0 = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v0l, v1h);
+    __m256i v1 = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v0l, v1h);
+    __m256i v2 = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v2l, v3h);
+    __m256i v3 = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v2l, v3h);
     libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
         Eurydice_slice_subslice2(out[0U], (size_t)32U * i0,
                                  (size_t)32U * (i0 + (size_t)1U), uint8_t),
@@ -2551,7 +2390,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_ef_f60(
-    core_core_arch_x86___m256i (*a)[5U], Eurydice_slice b[4U]) {
+    __m256i (*a)[5U], Eurydice_slice b[4U]) {
   libcrux_sha3_simd_avx2_store_block_e90(a, b);
 }
 
