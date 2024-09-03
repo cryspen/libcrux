@@ -4,12 +4,43 @@ open Core
 open FStar.Mul
 
 let inz (value: u8) =
+  let orig_value:u8 = value in
   let value:u16 = cast (value <: u8) <: u16 in
-  let result:u16 =
-    ((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) <: u16) >>! 8l <: u16) &.
-    1us
+  let result:u8 =
+    cast ((Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) >>! 8l <: u16) <: u8
   in
-  cast (result <: u16) <: u8
+  let res:u8 = result &. 1uy in
+  let _:Prims.unit =
+    if v orig_value = 0
+    then
+      (assert (value == zero);
+        lognot_lemma value;
+        assert ((~.value +. 1us) == zero);
+        assert ((Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) == zero);
+        logor_lemma value zero;
+        assert ((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) <: u16) ==
+            value);
+        assert (v result == v ((value >>! 8l)));
+        assert ((v value / pow2 8) == 0);
+        assert (result == 0uy);
+        logand_lemma 1uy result;
+        assert (res == 0uy))
+    else
+      (assert (v value <> 0);
+        lognot_lemma value;
+        assert (v (~.value) = pow2 16 - 1 - v value);
+        assert (v (~.value) + 1 = pow2 16 - v value);
+        assert (v (value) <= pow2 8 - 1);
+        assert ((v (~.value) + 1) = (pow2 16 - pow2 8) + (pow2 8 - v value));
+        assert ((v (~.value) + 1) = (pow2 8 - 1) * pow2 8 + (pow2 8 - v value));
+        assert ((v (~.value) + 1) / pow2 8 = (pow2 8 - 1));
+        assert (v ((Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) >>! 8l) =
+            pow2 8 - 1);
+        assert (result = ones);
+        logand_lemma 1uy result;
+        assert (res = 1uy))
+  in
+  res
 
 let is_non_zero (value: u8) = Core.Hint.black_box #u8 (inz value <: u8)
 
