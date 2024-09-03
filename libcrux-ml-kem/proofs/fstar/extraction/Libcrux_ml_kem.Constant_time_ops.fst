@@ -100,27 +100,91 @@ let compare (lhs rhs: t_Slice u8) =
 let compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8) =
   Core.Hint.black_box #u8 (compare lhs rhs <: u8)
 
+#push-options "--ifuel 0 --z3rlimit 50"
+
 let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
   let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in
+  let _:Prims.unit =
+    assert (if selector = 0uy then mask = ones else mask = zero);
+    lognot_lemma mask;
+    assert (if selector = 0uy then ~.mask = zero else ~.mask = ones)
+  in
   let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let out:t_Array u8 (sz 32) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
-      (fun out temp_1_ ->
+      (fun out i ->
           let out:t_Array u8 (sz 32) = out in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          v i <= v Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE /\
+          (forall j.
+              j < v i ==>
+              (if (selector =. 0uy)
+                then Seq.index out j == Seq.index lhs j
+                else Seq.index out j == Seq.index rhs j)) /\
+          (forall j. j >= v i ==> Seq.index out j == 0uy))
       out
       (fun out i ->
           let out:t_Array u8 (sz 32) = out in
           let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
-            i
-            (((lhs.[ i ] <: u8) &. mask <: u8) |. ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8) <: u8)
-          <:
-          t_Array u8 (sz 32))
+          let _:Prims.unit = assert ((out.[ i ] <: u8) = 0uy) in
+          let outi:u8 =
+            ((lhs.[ i ] <: u8) &. mask <: u8) |. ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8)
+          in
+          let _:Prims.unit =
+            if (selector = 0uy)
+            then
+              (logand_lemma (lhs.[ i ] <: u8) mask;
+                assert (((lhs.[ i ] <: u8) &. mask <: u8) == (lhs.[ i ] <: u8));
+                logand_lemma (rhs.[ i ] <: u8) (~.mask);
+                assert (((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8) == zero);
+                logor_lemma ((lhs.[ i ] <: u8) &. mask <: u8)
+                  ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8);
+                assert ((((lhs.[ i ] <: u8) &. mask <: u8) |.
+                      ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8)
+                      <:
+                      u8) ==
+                    (lhs.[ i ] <: u8));
+                logor_lemma (out.[ i ] <: u8) (lhs.[ i ] <: u8);
+                assert (((out.[ i ] <: u8) |.
+                      (((lhs.[ i ] <: u8) &. mask <: u8) |.
+                        ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8)
+                        <:
+                        u8)
+                      <:
+                      u8) ==
+                    (lhs.[ i ] <: u8));
+                assert (outi = (lhs.[ i ] <: u8)))
+            else
+              (logand_lemma (lhs.[ i ] <: u8) mask;
+                assert (((lhs.[ i ] <: u8) &. mask <: u8) == zero);
+                logand_lemma (rhs.[ i ] <: u8) (~.mask);
+                assert (((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8) == (rhs.[ i ] <: u8));
+                logor_lemma (rhs.[ i ] <: u8) zero;
+                assert ((logor zero (rhs.[ i ] <: u8)) == (rhs.[ i ] <: u8));
+                assert ((((lhs.[ i ] <: u8) &. mask <: u8) |.
+                      ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8)) ==
+                    (rhs.[ i ] <: u8));
+                logor_lemma (out.[ i ] <: u8) (rhs.[ i ] <: u8);
+                assert (((out.[ i ] <: u8) |.
+                      (((lhs.[ i ] <: u8) &. mask <: u8) |.
+                        ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8)
+                        <:
+                        u8)
+                      <:
+                      u8) ==
+                    (rhs.[ i ] <: u8));
+                assert (outi = (rhs.[ i ] <: u8)))
+          in
+          let out:t_Array u8 (sz 32) =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out i outi
+          in
+          out)
   in
+  let _:Prims.unit = if (selector =. 0uy) then (eq_intro out lhs) else (eq_intro out rhs) in
   out
+
+#pop-options
 
 let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
   Core.Hint.black_box #(t_Array u8 (sz 32)) (select_ct lhs rhs selector <: t_Array u8 (sz 32))

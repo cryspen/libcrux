@@ -54,7 +54,17 @@ val compare (lhs rhs: t_Slice u8)
 val compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8)
     : Prims.Pure u8
       (requires (Core.Slice.impl__len #u8 lhs <: usize) =. (Core.Slice.impl__len #u8 rhs <: usize))
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:u8 = result in
+          Hax_lib.implies (lhs =. rhs <: bool)
+            (fun temp_0_ ->
+                let _:Prims.unit = temp_0_ in
+                result =. 0uy <: bool) &&
+          Hax_lib.implies (lhs <>. rhs <: bool)
+            (fun temp_0_ ->
+                let _:Prims.unit = temp_0_ in
+                result =. 1uy <: bool))
 
 /// If `selector` is not zero, return the bytes in `rhs`; return the bytes in
 /// `lhs` otherwise.
@@ -63,14 +73,22 @@ val select_ct (lhs rhs: t_Slice u8) (selector: u8)
       (requires
         (Core.Slice.impl__len #u8 lhs <: usize) =. (Core.Slice.impl__len #u8 rhs <: usize) &&
         (Core.Slice.impl__len #u8 lhs <: usize) =. Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 32) = result in
+          Hax_lib.implies (selector =. 0uy <: bool) (fun _ -> result =. lhs <: bool) &&
+          Hax_lib.implies (selector <>. 0uy <: bool) (fun _ -> result =. rhs <: bool))
 
 val select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
     : Prims.Pure (t_Array u8 (sz 32))
       (requires
         (Core.Slice.impl__len #u8 lhs <: usize) =. (Core.Slice.impl__len #u8 rhs <: usize) &&
         (Core.Slice.impl__len #u8 lhs <: usize) =. Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 32) = result in
+          Hax_lib.implies (selector =. 0uy <: bool) (fun _ -> result =. lhs <: bool) &&
+          Hax_lib.implies (selector <>. 0uy <: bool) (fun _ -> result =. rhs <: bool))
 
 val compare_ciphertexts_select_shared_secret_in_constant_time (lhs_c rhs_c lhs_s rhs_s: t_Slice u8)
     : Prims.Pure (t_Array u8 (sz 32))
@@ -78,4 +96,9 @@ val compare_ciphertexts_select_shared_secret_in_constant_time (lhs_c rhs_c lhs_s
         (Core.Slice.impl__len #u8 lhs_c <: usize) =. (Core.Slice.impl__len #u8 rhs_c <: usize) &&
         (Core.Slice.impl__len #u8 lhs_s <: usize) =. (Core.Slice.impl__len #u8 rhs_s <: usize) &&
         (Core.Slice.impl__len #u8 lhs_s <: usize) =. Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 32) = result in
+          let selector = if lhs_c =. rhs_c then 0uy else 1uy in
+          Hax_lib.implies (selector =. 0uy <: bool) (fun _ -> result =. lhs_s <: bool) &&
+          Hax_lib.implies (selector <>. 0uy <: bool) (fun _ -> result =. rhs_s <: bool))
