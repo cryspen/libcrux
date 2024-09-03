@@ -1,5 +1,5 @@
-# This is the list of modules that are fully admitted.
-# All other modules have individual annotations on their functions indicating verification status
+SLOW_MODULES += Libcrux_ml_kem.Vector.Portable.Serialize.fst
+
 ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
               Libcrux_ml_kem.Invert_ntt.fst \
               Libcrux_ml_kem.Ntt.fst \

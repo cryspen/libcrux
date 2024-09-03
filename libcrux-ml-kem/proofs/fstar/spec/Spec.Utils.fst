@@ -22,7 +22,7 @@ let map2 #a #b #c (#len:usize{v len < pow2 32})
 
 let repeati #acc (l:usize) (f:(i:usize{v i < v l}) -> acc -> acc) acc0 : acc = Lib.LoopCombinators.repeati (v l) (fun i acc -> f (sz i) acc) acc0
   
-#push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
+#push-options "--z3rlimit 500"
 let flatten #t #n
   (#m: usize {range (v n * v m) usize_inttype})
   (x: t_Array (t_Array t m) n)
