@@ -140,43 +140,45 @@ let inv_ntt_layer_3_step
   in
   v
 
+#push-options "--z3rlimit 50 --query_stats --split_queries always"
 let ntt_multiply_binomials
       (a b: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta: i16)
       (i j: usize)
       (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
-  let o0:i16 =
-    Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_reduce_element (((cast (a
+  let ai = (cast (a
                   .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
                 <:
                 i16)
             <:
-            i32) *!
-          (cast (b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) <: i32)
-          <:
-          i32) +!
-        ((cast (Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_reduce_element ((cast (a
-                            .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ]
-                          <:
-                          i16)
-                      <:
-                      i32) *!
-                    (cast (b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] <: i16)
-                      <:
-                      i32)
-                    <:
-                    i32)
+            i32) in
+  assert (Spec.Utils.is_i32b 3328 ai);
+  let bi = (cast (b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) <: i32) in 
+  assert (Spec.Utils.is_i32b 3328 bi);
+  let aj = (cast (a
+                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ]
                 <:
                 i16)
             <:
-            i32) *!
-          (cast (zeta <: i16) <: i32)
-          <:
-          i32)
-        <:
-        i32)
-  in
+            i32) in
+  assert (Spec.Utils.is_i32b 3328 aj);
+  let bj = (cast (b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] <: i16) <: i32) in 
+  assert (Spec.Utils.is_i32b 3328 bj);
+  Spec.Utils.lemma_mul_intb 3328 3328 (v ai) (v bi);
+  Spec.Utils.lemma_mul_intb 3328 3328 (v ai) (v bj);
+  Spec.Utils.lemma_mul_intb 3328 3328 (v aj) (v bi);
+  Spec.Utils.lemma_mul_intb 3328 3328 (v aj) (v bj);
+  let ai_bi = ai *! bi in
+  let aj_bj = aj *! bj in
+  let sum = ai_bi +! aj_bj in
+  assert (Spec.Utils.is_i32b (2 * 3328 * 3328) sum);
+  let red = Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_reduce_element sum in
+  assert (Spec.Utils.is_i16b (3328 + 1665) red);
+  assert (Spec.Utils.is_i16b 1664 zeta);
+  Spec.Utils.lemma_mul_intb (3328 + 1665) 1664 (v red) (v zeta);
+  let o0 = (cast red <: i32) *!  (cast (zeta <: i16) <: i32) in
+  admit()
   let o1:i16 =
     Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_reduce_element (((cast (a
                   .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]

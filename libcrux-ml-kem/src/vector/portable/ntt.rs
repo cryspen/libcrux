@@ -130,6 +130,11 @@ pub(crate) fn inv_ntt_layer_3_step(mut v: PortableVector, zeta: i16) -> Portable
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
+#[hax_lib::ensures(|()| fstar!("(Seq.index out_future (v i), Seq.index out_future (v j)) ==
+                        Spec.MLKEM.Math.poly_base_case_multiply 
+                            (Seq.index a (v i)) (Seq.index a (v j))
+                            (Seq.index b (v i)) (Seq.index b (v j))
+                            (v zeta) "))]
 pub(crate) fn ntt_multiply_binomials(
     a: &PortableVector,
     b: &PortableVector,

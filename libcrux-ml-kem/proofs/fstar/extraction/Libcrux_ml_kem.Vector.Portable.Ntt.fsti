@@ -44,7 +44,7 @@ val inv_ntt_layer_3_step
 /// c₁ ← a₀·b₁ + a₁·b₀
 /// return c₀, c₁
 /// ```
-/// We say "almost" because the coefficients output by this function are in
+/// We say \"almost\" because the coefficients output by this function are in
 /// the Montgomery domain (unlike in the specification).
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
@@ -54,8 +54,22 @@ val ntt_multiply_binomials
       (i j: usize)
       (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires (v i < 16 /\ v j < 16 /\
+                 Spec.Utils.is_i16b_array 3328 a.f_elements /\
+                 Spec.Utils.is_i16b_array 3328 b.f_elements /\
+                 Spec.Utils.is_i16b 1664 zeta))
+      (ensures
+        fun out_future ->
+          let out_future:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = out_future in
+          let (x,y) =
+          Spec.MLKEM.Math.poly_base_case_multiply 
+            (v (Seq.index a.f_elements (v i)) % 3329)
+            (v (Seq.index a.f_elements (v j)) % 3329)
+            (v (Seq.index b.f_elements (v i)) % 3329)
+            (v (Seq.index b.f_elements (v j)) % 3329)
+            ((v zeta * 169) % 3329) in
+          (x == v (Seq.index out_future.f_elements (v i)) % 3329 /\
+           y == v (Seq.index out_future.f_elements (v j)) % 3329))
 
 val ntt_step
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
