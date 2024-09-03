@@ -4,14 +4,14 @@ open Core
 open FStar.Mul
 
 let inz (value: u8) =
-  let orig_value:u8 = value in
+  let v__orig_value:u8 = value in
   let value:u16 = cast (value <: u8) <: u16 in
   let result:u8 =
     cast ((Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) >>! 8l <: u16) <: u8
   in
   let res:u8 = result &. 1uy in
   let _:Prims.unit =
-    if v orig_value = 0
+    if v v__orig_value = 0
     then
       (assert (value == zero);
         lognot_lemma value;
@@ -49,15 +49,51 @@ let compare (lhs rhs: t_Slice u8) =
   let r:u8 =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (Core.Slice.impl__len #u8 lhs <: usize)
-      (fun r temp_1_ ->
+      (fun r i ->
           let r:u8 = r in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          v i <= Seq.length lhs /\
+          (if (Seq.slice lhs 0 (v i) = Seq.slice rhs 0 (v i)) then r == 0uy else ~(r == 0uy)))
       r
       (fun r i ->
           let r:u8 = r in
           let i:usize = i in
-          r |. ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) <: u8)
+          let nr:u8 = r |. ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) in
+          let _:Prims.unit =
+            if r =. 0uy
+            then
+              (if (Seq.index lhs (v i) = Seq.index rhs (v i))
+                then
+                  (logxor_lemma (Seq.index lhs (v i)) (Seq.index rhs (v i));
+                    assert (((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) = zero);
+                    logor_lemma r ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8);
+                    assert (nr = r);
+                    assert (forall j. Seq.index (Seq.slice lhs 0 (v i)) j == Seq.index lhs j);
+                    assert (forall j. Seq.index (Seq.slice rhs 0 (v i)) j == Seq.index rhs j);
+                    eq_intro (Seq.slice lhs 0 ((v i) + 1)) (Seq.slice rhs 0 ((v i) + 1)))
+                else
+                  (logxor_lemma (Seq.index lhs (v i)) (Seq.index rhs (v i));
+                    assert (((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) <> zero);
+                    logor_lemma r ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8);
+                    assert (v nr > 0);
+                    assert (Seq.index (Seq.slice lhs 0 ((v i) + 1)) (v i) <>
+                        Seq.index (Seq.slice rhs 0 ((v i) + 1)) (v i));
+                    assert (Seq.slice lhs 0 ((v i) + 1) <> Seq.slice rhs 0 ((v i) + 1))))
+            else
+              (logor_lemma r ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8);
+                assert (v nr >= v r);
+                assert (Seq.slice lhs 0 (v i) <> Seq.slice rhs 0 (v i));
+                if (Seq.slice lhs 0 ((v i) + 1) = Seq.slice rhs 0 ((v i) + 1))
+                then
+                  (assert (forall j.
+                          j < (v i) + 1 ==>
+                          Seq.index (Seq.slice lhs 0 ((v i) + 1)) j ==
+                          Seq.index (Seq.slice rhs 0 ((v i) + 1)) j);
+                    eq_intro (Seq.slice lhs 0 (v i)) (Seq.slice rhs 0 (v i));
+                    assert (False)))
+          in
+          let r:u8 = nr in
+          r)
   in
   is_non_zero r
 

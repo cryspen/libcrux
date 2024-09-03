@@ -20,11 +20,11 @@ use crate::constants::SHARED_SECRET_SIZE;
         let _:Prims.unit = temp_0_ in
         $result =. 1uy <: bool)"))]
 fn inz(value: u8) -> u8 {
-    let orig_value = value;
+    let _orig_value = value;
     let value = value as u16;
     let result = ((!value).wrapping_add(1) >> 8) as u8;
     let res = result & 1;
-    hax_lib::fstar!("if v $orig_value = 0 then  (
+    hax_lib::fstar!("if v $_orig_value = 0 then  (
         assert($value == zero);
         lognot_lemma $value;
         assert((~.$value +. 1us) == zero);
@@ -85,7 +85,40 @@ fn is_non_zero(value: u8) -> u8 {
 fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
     let mut r: u8 = 0;
     for i in 0..lhs.len() {
-        r |= lhs[i] ^ rhs[i];
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v $i <= Seq.length $lhs /\\
+            (if (Seq.slice $lhs 0 (v $i) = Seq.slice $rhs 0 (v $i)) then
+                $r == 0uy
+                else ~ ($r == 0uy))") });
+        let nr = r | (lhs[i] ^ rhs[i]);
+        hax_lib::fstar!("if $r =. 0uy then (
+            if (Seq.index $lhs (v $i) = Seq.index $rhs (v $i)) then (
+               logxor_lemma (Seq.index $lhs (v $i)) (Seq.index $rhs (v $i));
+               assert (((${lhs}.[ $i ] <: u8) ^. (${rhs}.[ $i ] <: u8) <: u8) = zero);
+               logor_lemma $r ((${lhs}.[ $i ] <: u8) ^. (${rhs}.[ $i ] <: u8) <: u8);
+               assert ($nr = $r);
+               assert (forall j. Seq.index (Seq.slice $lhs 0 (v $i)) j == Seq.index $lhs j);
+               assert (forall j. Seq.index (Seq.slice $rhs 0 (v $i)) j == Seq.index $rhs j);
+               eq_intro (Seq.slice $lhs 0 ((v $i) + 1)) (Seq.slice $rhs 0 ((v $i) + 1))
+            )
+            else (
+               logxor_lemma (Seq.index $lhs (v $i)) (Seq.index $rhs (v $i));
+               assert (((${lhs}.[ $i ] <: u8) ^. (${rhs}.[ $i ] <: u8) <: u8) <>  zero);
+               logor_lemma r ((${lhs}.[ $i ] <: u8) ^. (${rhs}.[ $i ] <: u8) <: u8);
+               assert (v $nr > 0);
+               assert (Seq.index (Seq.slice $lhs 0 ((v $i)+1)) (v $i) <> 
+                       Seq.index (Seq.slice $rhs 0 ((v $i)+1)) (v $i));
+               assert (Seq.slice $lhs 0 ((v $i)+1) <> Seq.slice $rhs 0 ((v $i) + 1))
+            )
+          ) else (
+            logor_lemma $r ((${lhs}.[ $i ] <: u8) ^. (${rhs}.[ $i ] <: u8) <: u8);
+            assert (v $nr >= v $r);
+            assert (Seq.slice $lhs 0 (v $i) <> Seq.slice $rhs 0 (v $i));
+            if (Seq.slice $lhs 0 ((v $i)+1) = Seq.slice $rhs 0 ((v $i) + 1)) then
+              (assert (forall j. j < (v $i) + 1 ==> Seq.index (Seq.slice $lhs 0 ((v $i)+1)) j == Seq.index (Seq.slice $rhs 0 ((v $i)+1)) j);
+               eq_intro (Seq.slice $lhs 0 (v $i)) (Seq.slice $rhs 0 (v $i));
+               assert(False))
+          )");
+        r = nr;
     }
 
     is_non_zero(r)

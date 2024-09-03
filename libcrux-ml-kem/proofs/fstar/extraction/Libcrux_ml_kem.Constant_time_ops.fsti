@@ -39,7 +39,17 @@ val is_non_zero (value: u8)
 val compare (lhs rhs: t_Slice u8)
     : Prims.Pure u8
       (requires (Core.Slice.impl__len #u8 lhs <: usize) =. (Core.Slice.impl__len #u8 rhs <: usize))
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:u8 = result in
+          Hax_lib.implies (lhs =. rhs <: bool)
+            (fun temp_0_ ->
+                let _:Prims.unit = temp_0_ in
+                result =. 0uy <: bool) &&
+          Hax_lib.implies (lhs <>. rhs <: bool)
+            (fun temp_0_ ->
+                let _:Prims.unit = temp_0_ in
+                result =. 1uy <: bool))
 
 val compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8)
     : Prims.Pure u8
