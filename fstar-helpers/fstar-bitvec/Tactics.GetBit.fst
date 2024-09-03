@@ -39,7 +39,7 @@ let compute_one_round (): Tac _ =
 let compute': unit -> Tac unit = goal_fixpoint compute_one_round
 
 /// Proves a goal of the shape `forall (i:nat{i < N}). get_bit ... i == get_bit ... i` (`N` is expected to be a literal)
-let prove_bit_vector_equality' (): Tac unit = 
+let prove_bit_vector_equality'' (): Tac unit =
   norm [
     iota;
     primops;
@@ -58,6 +58,10 @@ let prove_bit_vector_equality' (): Tac unit =
     print ("Ask SMT: " ^ term_to_string (cur_goal ()));
     focus smt_sync
   ))
+let prove_bit_vector_equality' (): Tac unit =
+  if lax_on ()
+  then iterAll tadmit
+  else prove_bit_vector_equality'' ()
 let prove_bit_vector_equality (): Tac unit = 
   set_rlimit 100;
   with_compat_pre_core 0 prove_bit_vector_equality'
