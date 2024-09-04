@@ -20,6 +20,7 @@ pub(crate) fn encaps<Crypto: HpkeCrypto>(
 ) -> Result<(Vec<u8>, Vec<u8>), Error> {
     match alg {
         KemAlgorithm::DhKemP256
+        | KemAlgorithm::DhKemK256
         | KemAlgorithm::DhKemP384
         | KemAlgorithm::DhKemP521
         | KemAlgorithm::DhKem25519
@@ -36,6 +37,7 @@ pub(crate) fn decaps<Crypto: HpkeCrypto>(
 ) -> Result<Vec<u8>, Error> {
     match alg {
         KemAlgorithm::DhKemP256
+        | KemAlgorithm::DhKemK256
         | KemAlgorithm::DhKemP384
         | KemAlgorithm::DhKemP521
         | KemAlgorithm::DhKem25519
@@ -51,6 +53,7 @@ pub(crate) fn auth_encaps<Crypto: HpkeCrypto>(
 ) -> Result<(Vec<u8>, Vec<u8>), Error> {
     match alg {
         KemAlgorithm::DhKemP256
+        | KemAlgorithm::DhKemK256
         | KemAlgorithm::DhKemP384
         | KemAlgorithm::DhKemP521
         | KemAlgorithm::DhKem25519
@@ -68,6 +71,7 @@ pub(crate) fn auth_decaps<Crypto: HpkeCrypto>(
 ) -> Result<Vec<u8>, Error> {
     match alg {
         KemAlgorithm::DhKemP256
+        | KemAlgorithm::DhKemK256
         | KemAlgorithm::DhKemP384
         | KemAlgorithm::DhKemP521
         | KemAlgorithm::DhKem25519
@@ -83,6 +87,7 @@ pub(crate) fn key_gen<Crypto: HpkeCrypto>(
 ) -> Result<(Vec<u8>, Vec<u8>), Error> {
     match alg {
         KemAlgorithm::DhKemP256
+        | KemAlgorithm::DhKemK256
         | KemAlgorithm::DhKemP384
         | KemAlgorithm::DhKemP521
         | KemAlgorithm::DhKem25519

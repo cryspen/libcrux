@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - Unreleased
+
+- [#66](https://github.com/franziskuskiefer/hpke-rs/pull/66): add support for secp256k1 curve. This adds `DhKemK256 = 0x0016` to the `KemAlgorithms`
+
 ## [0.2.0] - 2023-12-01
 
 - [#59](https://github.com/franziskuskiefer/hpke-rs/pull/59): hpke-rs-rust-crypto: make deterministic-prng enable the std feature

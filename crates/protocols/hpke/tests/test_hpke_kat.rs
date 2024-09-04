@@ -61,7 +61,12 @@ struct ExportsKAT {
 }
 
 fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
+    // Replace into_par_iter() with into_iter() to run tests sequentially.
     tests.into_par_iter().for_each(|test| {
+        println!(
+            "Testing mode {:?} with ciphersuite {:?}_{:?}_{:?}",
+            test.mode, test.kem_id, test.kdf_id, test.aead_id
+        );
         let mode: HpkeMode = test.mode.try_into().unwrap();
         let kem_id: KemAlgorithm = test.kem_id.try_into().unwrap();
         let kdf_id: KdfAlgorithm = test.kdf_id.try_into().unwrap();
@@ -213,10 +218,16 @@ fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
             .unwrap();
 
         // Encrypt
-        for (_i, encryption) in test.encryptions.iter().enumerate() {
+        log::trace!(
+            "Testing encryptions for mode {:?} with ciphersuite {:?}_{:?}_{:?}",
+            mode,
+            kem_id,
+            kdf_id,
+            aead_id
+        );
+        for encryption in test.encryptions.iter() {
             // Cloning the Hpke object renews the test PRNG.
             hpke = hpke.clone();
-            println!("Test encryption {} ...", _i);
             let aad = hex_to_bytes(&encryption.aad);
             let ptxt = hex_to_bytes(&encryption.pt);
             let ctxt_kat = hex_to_bytes(&encryption.ct);
@@ -245,8 +256,14 @@ fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
         }
 
         // Test KAT on direct_ctx for exporters
-        for (_i, export) in test.exports.iter().enumerate() {
-            println!("Test exporter {} ...", _i);
+        log::trace!(
+            "Testing exporter for mode {:?} with ciphersuite {:?}_{:?}_{:?}",
+            mode,
+            kem_id,
+            kdf_id,
+            aead_id
+        );
+        for export in test.exports.iter() {
             let export_context = hex_to_bytes(&export.exporter_context);
             let export_value = hex_to_bytes(&export.exported_value);
             let length = export.L;
@@ -260,26 +277,28 @@ fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
 #[test]
 fn test_kat() {
     let _ = pretty_env_logger::try_init();
-    let file = "tests/test_vectors.json";
-    let file = match File::open(file) {
-        Ok(f) => f,
-        Err(_) => panic!("Couldn't open file {}.", file),
-    };
-    let reader = BufReader::new(file);
-    let tests: Vec<HpkeTestVector> = match serde_json::from_reader(reader) {
-        Ok(r) => r,
-        Err(e) => panic!("Error reading file.\n{:?}", e),
-    };
+    let files = vec!["tests/test_vectors.json", "tests/test_vectors_k256.json"];
+    for file in files {
+        let file = match File::open(file) {
+            Ok(f) => f,
+            Err(_) => panic!("Couldn't open file {}.", file),
+        };
+        let reader = BufReader::new(file);
+        let tests: Vec<HpkeTestVector> = match serde_json::from_reader(reader) {
+            Ok(r) => r,
+            Err(e) => panic!("Error reading file.\n{:?}", e),
+        };
 
-    let now = Instant::now();
-    kat::<HpkeRustCrypto>(tests.clone());
-    let time = now.elapsed();
-    log::info!("Test vectors with Rust Crypto took: {}s", time.as_secs());
+        let now = Instant::now();
+        kat::<HpkeRustCrypto>(tests.clone());
+        let time = now.elapsed();
+        log::info!("Test vectors with Rust Crypto took: {}s", time.as_secs());
 
-    // let now = Instant::now();
-    // kat::<HpkeEvercrypt>(tests);
-    // let time = now.elapsed();
-    // log::info!("Test vectors with Evercrypt took: {}s", time.as_secs());
+        // let now = Instant::now();
+        // kat::<HpkeEvercrypt>(tests);
+        // let time = now.elapsed();
+        // log::info!("Test vectors with Evercrypt took: {}s", time.as_secs());
+    }
 }
 
 #[cfg(feature = "serialization")]

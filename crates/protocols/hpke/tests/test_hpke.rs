@@ -122,6 +122,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    base_dhkemk256_hkdfsha256_Aes128Gcm,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     base_dhkem25519_hkdfsha256_Aes128Gcm,
     HpkeMode::Base,
     KemAlgorithm::DhKem25519,
@@ -133,6 +141,14 @@ generate_test_case!(
     base_dhkemp256_hkdfsha384_Aes128Gcm,
     HpkeMode::Base,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    base_dhkemk256_hkdfsha384_Aes128Gcm,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha384,
     AeadAlgorithm::Aes128Gcm,
     HpkeRustCrypto
@@ -154,6 +170,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    base_dhkemk256_hkdfsha512_Aes128Gcm,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     base_dhkem25519_hkdfsha512_Aes128Gcm,
     HpkeMode::Base,
     KemAlgorithm::DhKem25519,
@@ -165,6 +189,14 @@ generate_test_case!(
     base_dhkemp256_hkdfsha256_Aes256Gcm,
     HpkeMode::Base,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    base_dhkemk256_hkdfsha256_Aes256Gcm,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha256,
     AeadAlgorithm::Aes256Gcm,
     HpkeRustCrypto
@@ -186,6 +218,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    base_dhkempk256_hkdfsha384_Aes256Gcm,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     base_dhkem25519_hkdfsha384_Aes256Gcm,
     HpkeMode::Base,
     KemAlgorithm::DhKem25519,
@@ -202,6 +242,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    base_dhkemk256_hkdfsha512_Aes256Gcm,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     base_dhkem25519_hkdfsha512_Aes256Gcm,
     HpkeMode::Base,
     KemAlgorithm::DhKem25519,
@@ -213,6 +261,14 @@ generate_test_case!(
     base_dhkemp256_hkdfsha256_chacha20poly1305,
     HpkeMode::Base,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    base_dhkemk256_hkdfsha256_chacha20poly1305,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha256,
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeRustCrypto
@@ -250,6 +306,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    base_dhkemk256_hkdfsha384_chacha20poly1305,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
     base_dhkem25519_hkdfsha384_chacha20poly1305,
     HpkeMode::Base,
     KemAlgorithm::DhKem25519,
@@ -261,6 +325,14 @@ generate_test_case!(
     base_dhkemp256_hkdfsha512_chacha20poly1305,
     HpkeMode::Base,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    base_dhkemk256_hkdfsha512_chacha20poly1305,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha512,
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeRustCrypto
@@ -282,6 +354,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    psk_dhkemk256_hkdfsha256_Aes128Gcm,
+    HpkeMode::Psk,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     psk_dhkem25519_hkdfsha256_Aes128Gcm,
     HpkeMode::Psk,
     KemAlgorithm::DhKem25519,
@@ -293,6 +373,14 @@ generate_test_case!(
     psk_dhkemp256_hkdfsha384_Aes128Gcm,
     HpkeMode::Psk,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    psk_dhkemk256_hkdfsha384_Aes128Gcm,
+    HpkeMode::Psk,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha384,
     AeadAlgorithm::Aes128Gcm,
     HpkeRustCrypto
@@ -314,6 +402,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    psk_dhkempk256_hkdfsha512_Aes128Gcm,
+    HpkeMode::Psk,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     psk_dhkem25519_hkdfsha512_Aes128Gcm,
     HpkeMode::Psk,
     KemAlgorithm::DhKem25519,
@@ -325,6 +421,14 @@ generate_test_case!(
     psk_dhkemp256_hkdfsha256_Aes256Gcm,
     HpkeMode::Psk,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    psk_dhkemk256_hkdfsha256_Aes256Gcm,
+    HpkeMode::Psk,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha256,
     AeadAlgorithm::Aes256Gcm,
     HpkeRustCrypto
@@ -346,6 +450,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    psk_dhkemk256_hkdfsha384_Aes256Gcm,
+    HpkeMode::Psk,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     psk_dhkem25519_hkdfsha384_Aes256Gcm,
     HpkeMode::Psk,
     KemAlgorithm::DhKem25519,
@@ -357,6 +469,14 @@ generate_test_case!(
     psk_dhkemp256_hkdfsha512_Aes256Gcm,
     HpkeMode::Psk,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    psk_dhkemk256_hkdfsha512_Aes256Gcm,
+    HpkeMode::Psk,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha512,
     AeadAlgorithm::Aes256Gcm,
     HpkeRustCrypto
@@ -378,6 +498,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    psk_dhkemk256_hkdfsha256_chacha20poly1305,
+    HpkeMode::Psk,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
     psk_dhkem25519_hkdfsha256_chacha20poly1305,
     HpkeMode::Psk,
     KemAlgorithm::DhKem25519,
@@ -389,6 +517,14 @@ generate_test_case!(
     psk_dhkemp256_hkdfsha384_chacha20poly1305,
     HpkeMode::Psk,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    psk_dhkemk256_hkdfsha384_chacha20poly1305,
+    HpkeMode::Psk,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha384,
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeRustCrypto
@@ -410,6 +546,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    psk_dhkemk256_hkdfsha512_chacha20poly1305,
+    HpkeMode::Psk,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
     psk_dhkem25519_hkdfsha512_chacha20poly1305,
     HpkeMode::Psk,
     KemAlgorithm::DhKem25519,
@@ -421,6 +565,14 @@ generate_test_case!(
     auth_dhkemp256_hkdfsha256_Aes128Gcm,
     HpkeMode::Auth,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    auth_dhkemk256_hkdfsha256_Aes128Gcm,
+    HpkeMode::Auth,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha256,
     AeadAlgorithm::Aes128Gcm,
     HpkeRustCrypto
@@ -442,6 +594,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    auth_dhkemk256_hkdfsha384_Aes128Gcm,
+    HpkeMode::Auth,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     auth_dhkem25519_hkdfsha384_Aes128Gcm,
     HpkeMode::Auth,
     KemAlgorithm::DhKem25519,
@@ -453,6 +613,14 @@ generate_test_case!(
     auth_dhkemp256_hkdfsha512_Aes128Gcm,
     HpkeMode::Auth,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    auth_dhkemk256_hkdfsha512_Aes128Gcm,
+    HpkeMode::Auth,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha512,
     AeadAlgorithm::Aes128Gcm,
     HpkeRustCrypto
@@ -474,6 +642,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    auth_dhkemk256_hkdfsha256_Aes256Gcm,
+    HpkeMode::Auth,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     auth_dhkem25519_hkdfsha256_Aes256Gcm,
     HpkeMode::Auth,
     KemAlgorithm::DhKem25519,
@@ -485,6 +661,14 @@ generate_test_case!(
     auth_dhkemp256_hkdfsha384_Aes256Gcm,
     HpkeMode::Auth,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    auth_dhkemk256_hkdfsha384_Aes256Gcm,
+    HpkeMode::Auth,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha384,
     AeadAlgorithm::Aes256Gcm,
     HpkeRustCrypto
@@ -506,6 +690,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    auth_dhkemk256_hkdfsha512_Aes256Gcm,
+    HpkeMode::Auth,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     auth_dhkem25519_hkdfsha512_Aes256Gcm,
     HpkeMode::Auth,
     KemAlgorithm::DhKem25519,
@@ -517,6 +709,14 @@ generate_test_case!(
     auth_dhkemp256_hkdfsha256_chacha20poly1305,
     HpkeMode::Auth,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    auth_dhkemk256_hkdfsha256_chacha20poly1305,
+    HpkeMode::Auth,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha256,
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeRustCrypto
@@ -538,6 +738,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    auth_dhkemk256_hkdfsha384_chacha20poly1305,
+    HpkeMode::Auth,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
     auth_dhkem25519_hkdfsha384_chacha20poly1305,
     HpkeMode::Auth,
     KemAlgorithm::DhKem25519,
@@ -549,6 +757,14 @@ generate_test_case!(
     auth_dhkemp256_hkdfsha512_chacha20poly1305,
     HpkeMode::Auth,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    auth_dhkemk256_hkdfsha512_chacha20poly1305,
+    HpkeMode::Auth,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha512,
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeRustCrypto
@@ -570,6 +786,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    authpsk_dhkemk256_hkdfsha256_Aes128Gcm,
+    HpkeMode::AuthPsk,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     authpsk_dhkem25519_hkdfsha256_Aes128Gcm,
     HpkeMode::AuthPsk,
     KemAlgorithm::DhKem25519,
@@ -581,6 +805,14 @@ generate_test_case!(
     authpsk_dhkemp256_hkdfsha384_Aes128Gcm,
     HpkeMode::AuthPsk,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    authpsk_dhkemk256_hkdfsha384_Aes128Gcm,
+    HpkeMode::AuthPsk,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha384,
     AeadAlgorithm::Aes128Gcm,
     HpkeRustCrypto
@@ -602,6 +834,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    authpsk_dhkemk256_hkdfsha512_Aes128Gcm,
+    HpkeMode::AuthPsk,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     authpsk_dhkem25519_hkdfsha512_Aes128Gcm,
     HpkeMode::AuthPsk,
     KemAlgorithm::DhKem25519,
@@ -613,6 +853,14 @@ generate_test_case!(
     authpsk_dhkemp256_hkdfsha256_Aes256Gcm,
     HpkeMode::AuthPsk,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    authpsk_dhkemk256_hkdfsha256_Aes256Gcm,
+    HpkeMode::AuthPsk,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha256,
     AeadAlgorithm::Aes256Gcm,
     HpkeRustCrypto
@@ -634,6 +882,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    authpsk_dhkemk256_hkdfsha384_Aes256Gcm,
+    HpkeMode::AuthPsk,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
     authpsk_dhkem25519_hkdfsha384_Aes256Gcm,
     HpkeMode::AuthPsk,
     KemAlgorithm::DhKem25519,
@@ -645,6 +901,14 @@ generate_test_case!(
     authpsk_dhkemp256_hkdfsha512_Aes256Gcm,
     HpkeMode::AuthPsk,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    authpsk_dhkemk256_hkdfsha512_Aes256Gcm,
+    HpkeMode::AuthPsk,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha512,
     AeadAlgorithm::Aes256Gcm,
     HpkeRustCrypto
@@ -666,6 +930,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    authpsk_dhkemk256_hkdfsha256_chacha20poly1305,
+    HpkeMode::AuthPsk,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
     authpsk_dhkem25519_hkdfsha256_chacha20poly1305,
     HpkeMode::AuthPsk,
     KemAlgorithm::DhKem25519,
@@ -682,6 +954,14 @@ generate_test_case!(
     HpkeRustCrypto
 );
 generate_test_case!(
+    authpsk_dhkemk256_hkdfsha384_chacha20poly1305,
+    HpkeMode::AuthPsk,
+    KemAlgorithm::DhKemK256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
     authpsk_dhkem25519_hkdfsha384_chacha20poly1305,
     HpkeMode::AuthPsk,
     KemAlgorithm::DhKem25519,
@@ -693,6 +973,14 @@ generate_test_case!(
     authpsk_dhkemp256_hkdfsha512_chacha20poly1305,
     HpkeMode::AuthPsk,
     KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    authpsk_dhkemk256_hkdfsha512_chacha20poly1305,
+    HpkeMode::AuthPsk,
+    KemAlgorithm::DhKemK256,
     KdfAlgorithm::HkdfSha512,
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeRustCrypto

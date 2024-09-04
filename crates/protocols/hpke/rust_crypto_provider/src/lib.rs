@@ -12,9 +12,15 @@ use hpke_rs_crypto::{
     CryptoRng, HpkeCrypto, HpkeTestRng, RngCore,
 };
 use p256::{
-    elliptic_curve::{ecdh::diffie_hellman, sec1::ToEncodedPoint},
-    PublicKey, SecretKey,
+    elliptic_curve::ecdh::diffie_hellman as p256diffie_hellman, PublicKey as p256PublicKey,
+    SecretKey as p256SecretKey,
 };
+
+use k256::{
+    elliptic_curve::{ecdh::diffie_hellman as k256diffie_hellman, sec1::ToEncodedPoint},
+    PublicKey as k256PublicKey, SecretKey as k256SecretKey,
+};
+
 use rand_core::SeedableRng;
 use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret as X25519StaticSecret};
 
@@ -80,9 +86,19 @@ impl HpkeCrypto for HpkeRustCrypto {
                     .to_vec())
             }
             KemAlgorithm::DhKemP256 => {
-                let sk = SecretKey::from_slice(sk).map_err(|_| Error::KemInvalidSecretKey)?;
-                let pk = PublicKey::from_sec1_bytes(pk).map_err(|_| Error::KemInvalidPublicKey)?;
-                Ok(diffie_hellman(sk.to_nonzero_scalar(), pk.as_affine())
+                let sk = p256SecretKey::from_slice(sk).map_err(|_| Error::KemInvalidSecretKey)?;
+                let pk =
+                    p256PublicKey::from_sec1_bytes(pk).map_err(|_| Error::KemInvalidPublicKey)?;
+                Ok(p256diffie_hellman(sk.to_nonzero_scalar(), pk.as_affine())
+                    .raw_secret_bytes()
+                    .as_slice()
+                    .into())
+            }
+            KemAlgorithm::DhKemK256 => {
+                let sk = k256SecretKey::from_slice(sk).map_err(|_| Error::KemInvalidSecretKey)?;
+                let pk =
+                    k256PublicKey::from_sec1_bytes(pk).map_err(|_| Error::KemInvalidPublicKey)?;
+                Ok(k256diffie_hellman(sk.to_nonzero_scalar(), pk.as_affine())
                     .raw_secret_bytes()
                     .as_slice()
                     .into())
@@ -103,7 +119,11 @@ impl HpkeCrypto for HpkeRustCrypto {
                 Ok(X25519PublicKey::from(&sk).as_bytes().to_vec())
             }
             KemAlgorithm::DhKemP256 => {
-                let sk = SecretKey::from_slice(sk).map_err(|_| Error::KemInvalidSecretKey)?;
+                let sk = p256SecretKey::from_slice(sk).map_err(|_| Error::KemInvalidSecretKey)?;
+                Ok(sk.public_key().to_encoded_point(false).as_bytes().into())
+            }
+            KemAlgorithm::DhKemK256 => {
+                let sk = k256SecretKey::from_slice(sk).map_err(|_| Error::KemInvalidSecretKey)?;
                 Ok(sk.public_key().to_encoded_point(false).as_bytes().into())
             }
             _ => Err(Error::UnknownKemAlgorithm),
@@ -116,16 +136,24 @@ impl HpkeCrypto for HpkeRustCrypto {
             KemAlgorithm::DhKem25519 => Ok(X25519StaticSecret::random_from_rng(&mut *rng)
                 .to_bytes()
                 .to_vec()),
-            KemAlgorithm::DhKemP256 => {
-                Ok(SecretKey::random(&mut *rng).to_bytes().as_slice().into())
-            }
+            KemAlgorithm::DhKemP256 => Ok(p256SecretKey::random(&mut *rng)
+                .to_bytes()
+                .as_slice()
+                .into()),
+            KemAlgorithm::DhKemK256 => Ok(k256SecretKey::random(&mut *rng)
+                .to_bytes()
+                .as_slice()
+                .into()),
             _ => Err(Error::UnknownKemAlgorithm),
         }
     }
 
     fn kem_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         match alg {
-            KemAlgorithm::DhKemP256 => SecretKey::from_slice(sk)
+            KemAlgorithm::DhKemP256 => p256SecretKey::from_slice(sk)
+                .map_err(|_| Error::KemInvalidSecretKey)
+                .map(|_| sk.into()),
+            KemAlgorithm::DhKemK256 => k256SecretKey::from_slice(sk)
                 .map_err(|_| Error::KemInvalidSecretKey)
                 .map(|_| sk.into()),
             _ => Err(Error::UnknownKemAlgorithm),
@@ -188,7 +216,7 @@ impl HpkeCrypto for HpkeRustCrypto {
     /// Returns an error if the KEM algorithm is not supported by this crypto provider.
     fn supports_kem(alg: KemAlgorithm) -> Result<(), Error> {
         match alg {
-            KemAlgorithm::DhKem25519 | KemAlgorithm::DhKemP256 => Ok(()),
+            KemAlgorithm::DhKem25519 | KemAlgorithm::DhKemP256 | KemAlgorithm::DhKemK256 => Ok(()),
             _ => Err(Error::UnknownKemAlgorithm),
         }
     }

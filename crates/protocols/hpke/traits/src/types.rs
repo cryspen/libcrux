@@ -21,6 +21,9 @@ pub enum KemAlgorithm {
     /// DH KEM on P521
     DhKemP521 = 0x0012,
 
+    /// DH KEM on secp256k1
+    DhKemK256 = 0x0016,
+
     /// DH KEM on x25519
     DhKem25519 = 0x0020,
 
@@ -41,6 +44,7 @@ impl core::convert::TryFrom<u16> for KemAlgorithm {
             0x0010 => Ok(KemAlgorithm::DhKemP256),
             0x0011 => Ok(KemAlgorithm::DhKemP384),
             0x0012 => Ok(KemAlgorithm::DhKemP521),
+            0x0016 => Ok(KemAlgorithm::DhKemK256),
             0x0020 => Ok(KemAlgorithm::DhKem25519),
             0x0021 => Ok(KemAlgorithm::DhKem448),
             _ => Err(Self::Error::UnknownKemAlgorithm),
@@ -55,6 +59,7 @@ impl KemAlgorithm {
             KemAlgorithm::DhKemP256 => 32,
             KemAlgorithm::DhKemP384 => 48,
             KemAlgorithm::DhKemP521 => 66,
+            KemAlgorithm::DhKemK256 => 32,
             KemAlgorithm::DhKem25519 => 32,
             KemAlgorithm::DhKem448 => 56,
         }
@@ -66,6 +71,7 @@ impl KemAlgorithm {
             KemAlgorithm::DhKemP256 => 32,
             KemAlgorithm::DhKemP384 => 48,
             KemAlgorithm::DhKemP521 => 64,
+            KemAlgorithm::DhKemK256 => 32,
             KemAlgorithm::DhKem25519 => 32,
             KemAlgorithm::DhKem448 => 64,
         }
@@ -195,6 +201,7 @@ impl From<KemAlgorithm> for KdfAlgorithm {
             KemAlgorithm::DhKemP256 => KdfAlgorithm::HkdfSha256,
             KemAlgorithm::DhKemP384 => KdfAlgorithm::HkdfSha384,
             KemAlgorithm::DhKemP521 => KdfAlgorithm::HkdfSha512,
+            KemAlgorithm::DhKemK256 => KdfAlgorithm::HkdfSha256,
             KemAlgorithm::DhKem25519 => KdfAlgorithm::HkdfSha256,
             KemAlgorithm::DhKem448 => KdfAlgorithm::HkdfSha512,
         }
