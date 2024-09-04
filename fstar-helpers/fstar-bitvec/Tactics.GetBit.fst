@@ -12,8 +12,8 @@ open FStar.Option
 open Tactics.Utils
 open Tactics.Pow2
 
-open BitVecEq {}
-open Tactics.Seq {norm_index, tactic_list_index}
+open BitVecEq
+open Tactics.Seq
 
 
 let _ = Rust_primitives.Hax.array_of_list
