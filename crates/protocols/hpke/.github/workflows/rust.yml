@@ -16,7 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-11
+          - macos-13
+          - macos-latest
           - ubuntu-latest
           - windows-latest
 
@@ -41,23 +42,20 @@ jobs:
       working-directory: rust_crypto_provider
       run: cargo build --verbose --all-features
     # Apple Silicon
-    - if: matrix.os == 'macos-11'
+    - if: matrix.os == 'macos-13'
       run: |
-        brew install pkg-config
-        sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*
-        sudo xcode-select -s /Applications/Xcode_12.4.app
         rustup target install aarch64-apple-darwin
         rustup target install aarch64-apple-ios
     - name: Build
       run: cargo build --verbose
     - name: Apple Silicon Build
-      if: matrix.os == 'macos-11'
+      if: matrix.os == 'macos-13'
       run: |
         cargo build --target aarch64-apple-darwin --tests --verbose
         cargo build --release --target aarch64-apple-darwin --tests --verbose
     # ARM64 iOS
     - name: iOS aarch64
-      if: matrix.os == 'macos-11'
+      if: matrix.os == 'macos-13'
       run: |
         cargo build --target aarch64-apple-ios --tests --verbose
         cargo build --release --target aarch64-apple-ios --tests --verbose
@@ -96,7 +94,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-11
+          - macos-13
           - ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:

@@ -12,14 +12,12 @@ env:
 
 jobs:
   build:
-    runs-on: macos-11
+    runs-on: macos-13
 
     steps:
     - uses: actions/checkout@v2
     - name: Setup MacOS
       run: |
-        sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*
-        sudo xcode-select -s /Applications/Xcode_12.4.app
         rustup target install aarch64-apple-darwin
         rustup target install aarch64-apple-ios
     - name: Apple Silicon Build
