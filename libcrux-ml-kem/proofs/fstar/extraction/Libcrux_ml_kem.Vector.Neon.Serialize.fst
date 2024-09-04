@@ -18,9 +18,7 @@ let deserialize_1_ (a: t_Slice u8) =
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let shift:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize shifter <: t_Slice i16)
-  in
+  let shift:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (shifter <: t_Slice i16) in
   let low:u8 = Libcrux_intrinsics.Arm64_extract.v__vshlq_s16 low shift in
   let high:u8 = Libcrux_intrinsics.Arm64_extract.v__vshlq_s16 high shift in
   {
@@ -42,17 +40,13 @@ let deserialize_12_ (v: t_Slice u8) =
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
     Rust_primitives.Hax.array_of_list 16 list
   in
-  let index_vec:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_u8 (Rust_primitives.unsize indexes <: t_Slice u8)
-  in
+  let index_vec:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_u8 (indexes <: t_Slice u8) in
   let (shifts: t_Array i16 (sz 8)):t_Array i16 (sz 8) =
     let list = [0s; (-4s); 0s; (-4s); 0s; (-4s); 0s; (-4s)] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let shift_vec:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize shifts <: t_Slice i16)
-  in
+  let shift_vec:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (shifts <: t_Slice i16) in
   let mask12:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u16 4095us in
   let input0:t_Array u8 (sz 16) = Rust_primitives.Hax.repeat 0uy (sz 16) in
   let input0:t_Array u8 (sz 16) =
@@ -74,9 +68,7 @@ let deserialize_12_ (v: t_Slice u8) =
         <:
         t_Slice u8)
   in
-  let input_vec0:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_u8 (Rust_primitives.unsize input0 <: t_Slice u8)
-  in
+  let input_vec0:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_u8 (input0 <: t_Slice u8) in
   let input1:t_Array u8 (sz 16) = Rust_primitives.Hax.repeat 0uy (sz 16) in
   let input1:t_Array u8 (sz 16) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range input1
@@ -97,9 +89,7 @@ let deserialize_12_ (v: t_Slice u8) =
         <:
         t_Slice u8)
   in
-  let input_vec1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_u8 (Rust_primitives.unsize input1 <: t_Slice u8)
-  in
+  let input_vec1:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_u8 (input1 <: t_Slice u8) in
   let moved0:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u16_u8 (Libcrux_intrinsics.Arm64_extract.v__vqtbl1q_u8
           input_vec0
@@ -143,9 +133,7 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let shift:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize shifter <: t_Slice i16)
-  in
+  let shift:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (shifter <: t_Slice i16) in
   let low:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vshlq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
       shift
@@ -516,9 +504,7 @@ let serialize_4_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let shift:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize shifter <: t_Slice i16)
-  in
+  let shift:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (shifter <: t_Slice i16) in
   let lowt:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vshlq_u16 (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u16_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
@@ -728,7 +714,7 @@ let serialize_11_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Libcrux_ml_kem.Vector.Traits.f_from_i16_array #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       #FStar.Tactics.Typeclasses.solve
-      (Rust_primitives.unsize out_i16s <: t_Slice i16)
+      (out_i16s <: t_Slice i16)
   in
   Libcrux_ml_kem.Vector.Traits.f_serialize_11_ #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
     #FStar.Tactics.Typeclasses.solve
@@ -739,7 +725,7 @@ let serialize_5_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Libcrux_ml_kem.Vector.Traits.f_from_i16_array #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       #FStar.Tactics.Typeclasses.solve
-      (Rust_primitives.unsize out_i16s <: t_Slice i16)
+      (out_i16s <: t_Slice i16)
   in
   Libcrux_ml_kem.Vector.Traits.f_serialize_5_ #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
     #FStar.Tactics.Typeclasses.solve

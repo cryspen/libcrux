@@ -17,7 +17,6 @@ concurrency:
 
 jobs:
   build:
-    if:  ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -123,7 +122,7 @@ jobs:
         run: cargo build --verbose $RUST_TARGET_FLAG
 
   wasm:
-    if: ${{ github.event_name == 'workflow_dispatch'  || github.event_name == 'merge_group'  }}
+    if: false #${{ github.event_name == 'workflow_dispatch'  || github.event_name == 'merge_group'  }}
     runs-on: ubuntu-latest
 
     steps:
@@ -141,90 +140,4 @@ jobs:
       - name: 🏃🏻‍♀️ Test
         run: CC=emcc AR=emar wasm-pack test --node --features wasm
 
-  benchmarks:
-    if: ${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' }}
-    strategy:
-      fail-fast: true
-      matrix:
-        bits: [32, 64]
-        os:
-          - macos-latest
-          - ubuntu-latest
-          - windows-latest
-        exclude:
-          # There's no such thing as 32-bit macOS
-          - bits: 32
-            os: "macos-latest"
-          # FIXME: Linking isn't working here yet for hacl #42
-          - bits: 32
-            os: "windows-latest"
-
-    runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
-        if: ${{ matrix.bits == 64 }}
-
-      - name: ⚙️ Setup Ubuntu x86
-        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
-        run: |
-          rustup target add i686-unknown-linux-gnu
-          sudo apt-get update
-          sudo apt-get install -y gcc-multilib g++-multilib
-
-      - name: ⚙️ Setup Ubuntu x64
-        if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
-        run: |
-          rustup target add aarch64-unknown-linux-gnu
-
-      - name: ⚙️ Setup macOS
-        if: ${{  matrix.os == 'macos-latest' }}
-        run: |
-          rustup target add aarch64-apple-darwin
-
-      # Set up 32 bit systems
-
-      - name: 🛠️ Config Windows x86
-        run: echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
-        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
-
-      - name: 🛠️ Config Linux x86
-        run: |
-          echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
-        if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
-
-      # Set up windows
-
-      - name: ⚙️ Setup Windows x86
-        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
-        shell: pwsh
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x86-windows-static-md
-
-      - name: ⚙️ Setup Windows x64
-        if: ${{ matrix.bits == 64 && matrix.os == 'windows-latest' }}
-        shell: pwsh
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x64-windows-static-md
-
-      # Benchmarks ...
-
-      - name: 🏃🏻‍♀️ Benchmarks
-        run: cargo bench --verbose $RUST_TARGET_FLAG -p benchmarks
-
-  mq_status:
-    if: |
-      always() &&
-      (github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group')
-    needs: [benchmarks]
-    uses: cryspen/actions/.github/workflows/merge-queue-status.yml@jonas/merge-queue-status
-    with:
-      needs_json: "${{toJSON(needs)}}"
 

@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 962f26311ccdf09a6a3cfeacbccafba22bf3d405
- * Eurydice: e66abbc2119485abfafa17c1911bdbdada5b04f3
- * Karamel: 7862fdc3899b718d39ec98568f78ec40592a622a
+ * Charon: 6b5e110342a771a3e1c739b10294b1778e4be8b4
+ * Eurydice: 31be7d65ca5d6acdacfb33652e478d24dd85c1cb
+ * Karamel: 3205d3365ea2790b02368f79fcee38e38d0b5908
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 322297aa4545eea6f5ba5d5fdd1565a790e5f726
+ * Libcrux: 4ad532b206174114dd4140b718e7794a28fc59ee
  */
 
 #ifndef __libcrux_mlkem512_avx2_H
@@ -20,7 +20,6 @@ extern "C" {
 
 #include "eurydice_glue.h"
 #include "libcrux_core.h"
-#include "libcrux_mlkem_avx2.h"
 
 /**
  Decapsulate ML-KEM 512
@@ -31,17 +30,6 @@ extern "C" {
 */
 void libcrux_ml_kem_mlkem512_avx2_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]);
-
-/**
- Decapsulate ML-KEM 512 (unpacked)
-
- Generates an [`MlKemSharedSecret`].
- The input is a reference to an unpacked key pair of type
- [`MlKem512KeyPairUnpacked`] and an [`MlKem512Ciphertext`].
-*/
-void libcrux_ml_kem_mlkem512_avx2_decapsulate_unpacked(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_d6 *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]);
 
 /**
@@ -56,37 +44,27 @@ tuple_ec libcrux_ml_kem_mlkem512_avx2_encapsulate(
     uint8_t randomness[32U]);
 
 /**
- Encapsulate ML-KEM 512 (unpacked)
-
- Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
- The input is a reference to an unpacked public key of type
- [`MlKem512PublicKeyUnpacked`], the SHA3-256 hash of this public key, and
- [`SHARED_SECRET_SIZE`] bytes of `randomness`.
-*/
-tuple_ec libcrux_ml_kem_mlkem512_avx2_encapsulate_unpacked(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d6 *public_key,
-    uint8_t randomness[32U]);
-
-/**
  Generate ML-KEM 512 Key Pair
 */
 libcrux_ml_kem_types_MlKemKeyPair_cb
 libcrux_ml_kem_mlkem512_avx2_generate_key_pair(uint8_t randomness[64U]);
 
 /**
- Generate ML-KEM 512 Key Pair in "unpacked" form
+ Validate a private key.
+
+ Returns `true` if valid, and `false` otherwise.
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_d6
-libcrux_ml_kem_mlkem512_avx2_generate_key_pair_unpacked(
-    uint8_t randomness[64U]);
+bool libcrux_ml_kem_mlkem512_avx2_validate_private_key(
+    libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext);
 
 /**
  Validate a public key.
 
- Returns `Some(public_key)` if valid, and `None` otherwise.
+ Returns `true` if valid, and `false` otherwise.
 */
-core_option_Option_04 libcrux_ml_kem_mlkem512_avx2_validate_public_key(
-    libcrux_ml_kem_types_MlKemPublicKey_be public_key);
+bool libcrux_ml_kem_mlkem512_avx2_validate_public_key(
+    libcrux_ml_kem_types_MlKemPublicKey_be *public_key);
 
 #if defined(__cplusplus)
 }

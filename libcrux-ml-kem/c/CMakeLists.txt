@@ -102,6 +102,11 @@ endif()
 
 # --- Tests
 
+if(DEFINED ENV{LIBCRUX_UNPACKED})
+    add_compile_definitions(LIBCRUX_UNPACKED)
+endif(DEFINED ENV{LIBCRUX_UNPACKED})
+
+
 # Get gtests
 include(FetchContent)
 FetchContent_Declare(googletest

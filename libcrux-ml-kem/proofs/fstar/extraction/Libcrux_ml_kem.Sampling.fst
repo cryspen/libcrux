@@ -219,8 +219,7 @@ let sample_from_binomial_distribution_2_
                 in
                 sampled_i16s))
   in
-  Libcrux_ml_kem.Polynomial.impl__from_i16_array #v_Vector
-    (Rust_primitives.unsize sampled_i16s <: t_Slice i16)
+  Libcrux_ml_kem.Polynomial.impl__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
 
 let sample_from_binomial_distribution_3_
       (#v_Vector: Type0)
@@ -291,8 +290,7 @@ let sample_from_binomial_distribution_3_
                 in
                 sampled_i16s))
   in
-  Libcrux_ml_kem.Polynomial.impl__from_i16_array #v_Vector
-    (Rust_primitives.unsize sampled_i16s <: t_Slice i16)
+  Libcrux_ml_kem.Polynomial.impl__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
 
 let sample_from_binomial_distribution
       (v_ETA: usize)

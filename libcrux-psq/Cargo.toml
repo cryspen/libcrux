@@ -10,6 +10,9 @@ readme.workspace = true
 description = "Libcrux Pre-Shared post-Quantum key establishement protocol"
 publish = false
 
+[lib]
+bench = false # so libtest doesn't eat the arguments to criterion
+
 [dependencies]
 libcrux-kem = { version = "0.0.2-alpha.3", path = "../libcrux-kem", features = [
     "pre-verification",
