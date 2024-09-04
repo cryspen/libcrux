@@ -91,46 +91,41 @@ pub trait Operations: Copy + Clone + Repr {
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
         -> Self;
 
-    // #[requires(fstar!("Spec.MLKEM.serialize_pre 1 (f_repr $a)"))]
-    // #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 1 (f_repr $a) ==> Spec.MLKEM.serialize_post 1 (f_repr $a) $result"))]
-    #[requires(true)]
+    // Serialization and deserialization
+    #[requires(fstar!("Spec.MLKEM.serialize_pre 1 (f_repr $a)"))]
+    #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 1 (f_repr $a) ==> Spec.MLKEM.serialize_post 1 (f_repr $a) $result"))]
     fn serialize_1(a: Self) -> [u8; 2];
-    #[requires(true)]
+    #[requires(a.len() == 2)]
+    #[ensures(|result| fstar!("sz (Seq.length $a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $a (f_repr $result)"))]
     fn deserialize_1(a: &[u8]) -> Self;
 
-    // #[requires(fstar!("Spec.MLKEM.serialize_pre 4 (f_repr $a)"))]
-    // #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 4 (f_repr $a) ==> Spec.MLKEM.serialize_post 4 (f_repr $a) $result"))]
-    #[requires(true)]
+    #[requires(fstar!("Spec.MLKEM.serialize_pre 4 (f_repr $a)"))]
+    #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 4 (f_repr $a) ==> Spec.MLKEM.serialize_post 4 (f_repr $a) $result"))]
     fn serialize_4(a: Self) -> [u8; 8];
-    #[requires(true)]
+    #[requires(a.len() == 8)]
+    #[ensures(|result| fstar!("sz (Seq.length $a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $a (f_repr $result)"))]
     fn deserialize_4(a: &[u8]) -> Self;
 
-    // #[requires(fstar!("Spec.MLKEM.serialize_pre 5 (f_repr $a)"))]
-    // #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 5 (f_repr $a) ==> Spec.MLKEM.serialize_post 5 (f_repr $a) $result"))]
-    #[requires(true)]
     fn serialize_5(a: Self) -> [u8; 10];
-    #[requires(true)]
+    #[requires(a.len() == 10)]
     fn deserialize_5(a: &[u8]) -> Self;
 
-    // #[requires(fstar!("Spec.MLKEM.serialize_pre 10 (f_repr $a)"))]
-    // #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 10 (f_repr $a) ==> Spec.MLKEM.serialize_post 10 (f_repr $a) $result"))]
-    #[requires(true)]
+    #[requires(fstar!("Spec.MLKEM.serialize_pre 10 (f_repr $a)"))]
+    #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 10 (f_repr $a) ==> Spec.MLKEM.serialize_post 10 (f_repr $a) $result"))]
     fn serialize_10(a: Self) -> [u8; 20];
-    #[requires(true)]
+    #[requires(a.len() == 20)]
+    #[ensures(|result| fstar!("sz (Seq.length $a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $a (f_repr $result)"))]
     fn deserialize_10(a: &[u8]) -> Self;
 
-    // #[requires(fstar!("Spec.MLKEM.serialize_pre 11 (f_repr $a)"))]
-    // #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 11 (f_repr $a) ==> Spec.MLKEM.serialize_post 11 (f_repr $a) $result"))]
-    #[requires(true)]
     fn serialize_11(a: Self) -> [u8; 22];
-    #[requires(true)]
+    #[requires(a.len() == 22)]
     fn deserialize_11(a: &[u8]) -> Self;
 
-    // #[requires(fstar!("Spec.MLKEM.serialize_pre 12 (f_repr $a)"))]
-    // #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 12 (f_repr $a) ==> Spec.MLKEM.serialize_post 12 (f_repr $a) $result"))]
-    #[requires(true)]
+    #[requires(fstar!("Spec.MLKEM.serialize_pre 12 (f_repr $a)"))]
+    #[ensures(|result| fstar!("Spec.MLKEM.serialize_pre 12 (f_repr $a) ==> Spec.MLKEM.serialize_post 12 (f_repr $a) $result"))]
     fn serialize_12(a: Self) -> [u8; 24];
-    #[requires(true)]
+    #[requires(a.len() == 24)]
+    #[ensures(|result| fstar!("sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (f_repr $result)"))]
     fn deserialize_12(a: &[u8]) -> Self;
 
     #[requires(true)]

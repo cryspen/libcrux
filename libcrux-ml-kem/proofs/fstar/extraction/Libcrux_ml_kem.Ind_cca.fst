@@ -11,6 +11,8 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+#push-options "--z3rlimit 150"
+
 let serialize_kem_secret_key
       (v_K v_SERIALIZED_KEY_LEN: usize)
       (#v_Hasher: Type0)
@@ -156,6 +158,8 @@ let serialize_kem_secret_key
       implicit_rejection_value
   in
   out
+
+#pop-options
 
 let validate_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)

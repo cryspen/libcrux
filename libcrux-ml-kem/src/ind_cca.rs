@@ -39,6 +39,7 @@ pub(crate) mod instantiations;
 
 /// Serialize the secret key.
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $SERIALIZED_KEY_LEN == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
     ${private_key.len()} == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\

@@ -1,5 +1,14 @@
 # Base Makefile for F* in libcrux.
 # This inherits from Makefile.generic, and adds the `specs` folder from HACL and the `libcrux-ml-kem/proofs/fstar/spec` folder. 
 
-FSTAR_INCLUDE_DIRS_EXTRA = $(HACL_HOME)/specs $(shell git rev-parse --show-toplevel)/libcrux-ml-kem/proofs/fstar/spec $(shell git rev-parse --show-toplevel)/fstar-helpers/fstar-bitvec
+VERIFY_SLOW_MODULES ?= no
+ifeq (${VERIFY_SLOW_MODULES},no)
+	ADMIT_MODULES += ${SLOW_MODULES}
+endif
+
+EXTRA_HELPMESSAGE += printf "Libcrux specifics:\n";
+EXTRA_HELPMESSAGE += target SLOW_MODULES 'a list of modules to verify fully only when `VERIFY_SLOW_MODULES` is set to `yes`. When `VERIFY_SLOW_MODULES`, those modules are admitted.';
+EXTRA_HELPMESSAGE += target VERIFY_SLOW_MODULES '`yes` or `no`, defaults to `no`';
+
+FSTAR_INCLUDE_DIRS_EXTRA += $(HACL_HOME)/specs $(shell git rev-parse --show-toplevel)/libcrux-ml-kem/proofs/fstar/spec $(shell git rev-parse --show-toplevel)/fstar-helpers/fstar-bitvec
 include $(shell git rev-parse --show-toplevel)/fstar-helpers/Makefile.generic

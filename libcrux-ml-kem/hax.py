@@ -31,7 +31,7 @@ class extractAction(argparse.Action):
 
     def __call__(self, parser, args, values, option_string=None) -> None:
         # Extract platform interfaces
-        include_str = "+:**"
+        include_str = "+:** -**::x86::init::cpuid -**::x86::init::cpuid_count"
         interface_include = "+**"
         cargo_hax_into = [
             "cargo",
@@ -40,6 +40,8 @@ class extractAction(argparse.Action):
             "-i",
             include_str,
             "fstar",
+            "--z3rlimit",
+            "80",
             "--interfaces",
             interface_include,
         ]
