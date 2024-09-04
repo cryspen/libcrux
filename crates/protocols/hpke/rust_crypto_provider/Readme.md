@@ -5,13 +5,14 @@
 ![Rust Version][rustc-image]
 
 This crate provides an implementation of the [HpkeCrypto] trait using native Rust crypto implementations
-([hkdf], [sha2], [p256], [p384], [x25519-dalek], [chacha20poly1305], [aes-gcm]).
+([hkdf], [sha2], [p256], [k256], [p384], [x25519-dalek], [chacha20poly1305], [aes-gcm]).
 
 Please see [hpke-rs] for more details.
 
 [hkdf]: https://docs.rs/hkdf/
 [sha2]: https://docs.rs/sha2
 [p256]: https://docs.rs/p256
+[k256]: https://docs.rs/k256
 [p384]: https://docs.rs/p384
 [x25519-dalek]: https://docs.rs/x25519-dalek
 [chacha20poly1305]: https://docs.rs/chacha20poly1305

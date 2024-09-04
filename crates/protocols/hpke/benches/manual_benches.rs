@@ -29,8 +29,9 @@ const KDF_IDS: [KdfAlgorithm; 3] = [
     KdfAlgorithm::HkdfSha384,
     KdfAlgorithm::HkdfSha512,
 ];
-const KEM_IDS: [KemAlgorithm; 5] = [
+const KEM_IDS: [KemAlgorithm; 6] = [
     KemAlgorithm::DhKemP256,
+    KemAlgorithm::DhKemK256,
     KemAlgorithm::DhKemP384,
     KemAlgorithm::DhKemP521,
     KemAlgorithm::DhKem25519,
