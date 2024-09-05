@@ -36,16 +36,20 @@ impl<
         }
 
         let mut true_hints_seen = 0;
-        let hint_serialized = &mut signature[offset..];
 
+        // Unfortunately the following does not go through hax:
+        //
+        //     let hint_serialized = &mut signature[offset..];
+        //
+        // Instead, we have to mutate signature[offset + ..] directly.
         for i in 0..ROWS_IN_A {
             for (j, hint) in self.hint[i].into_iter().enumerate() {
                 if hint == 1 {
-                    hint_serialized[true_hints_seen] = j as u8;
+                    signature[offset + true_hints_seen] = j as u8;
                     true_hints_seen += 1;
                 }
             }
-            hint_serialized[MAX_ONES_IN_HINT + i] = true_hints_seen as u8;
+            signature[offset + MAX_ONES_IN_HINT + i] = true_hints_seen as u8;
         }
 
         signature
