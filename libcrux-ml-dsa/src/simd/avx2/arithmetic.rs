@@ -13,17 +13,18 @@ fn to_unsigned_representatives(t: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-pub fn add(lhs: Vec256, rhs: Vec256) -> Vec256 {
+pub(crate) fn add(lhs: Vec256, rhs: Vec256) -> Vec256 {
     mm256_add_epi32(lhs, rhs)
 }
 
 #[inline(always)]
-pub fn subtract(lhs: Vec256, rhs: Vec256) -> Vec256 {
+pub(crate) fn subtract(lhs: Vec256, rhs: Vec256) -> Vec256 {
     mm256_sub_epi32(lhs, rhs)
 }
 
 // Multiply two vectors of 32-bit integers and return two vectors containing
 // the high 32 bits of each of the pairwise products.
+#[inline(always)]
 fn simd_multiply_i32_and_return_high(lhs: Vec256, rhs: Vec256) -> Vec256 {
     let prod02 = mm256_mul_epi32(lhs, rhs);
     let prod13 = mm256_mul_epi32(
@@ -38,24 +39,13 @@ fn simd_multiply_i32_and_return_high(lhs: Vec256, rhs: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-pub fn montgomery_multiply_by_constant(simd_unit: Vec256, constant: i32) -> Vec256 {
+pub(crate) fn montgomery_multiply_by_constant(simd_unit: Vec256, constant: i32) -> Vec256 {
     let constant = mm256_set1_epi32(constant);
-    let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
-    let inverse_of_modulus_mod_montgomery_r =
-        mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
-
-    let product_low = mm256_mullo_epi32(simd_unit, constant);
-
-    let k = mm256_mullo_epi32(product_low, inverse_of_modulus_mod_montgomery_r);
-
-    let c = simd_multiply_i32_and_return_high(k, field_modulus);
-    let product_high = simd_multiply_i32_and_return_high(simd_unit, constant);
-
-    mm256_sub_epi32(product_high, c)
+    montgomery_multiply(simd_unit, constant)
 }
 
 #[inline(always)]
-pub fn montgomery_multiply(lhs: Vec256, rhs: Vec256) -> Vec256 {
+pub(crate) fn montgomery_multiply(lhs: Vec256, rhs: Vec256) -> Vec256 {
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
     let inverse_of_modulus_mod_montgomery_r =
         mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
@@ -71,7 +61,7 @@ pub fn montgomery_multiply(lhs: Vec256, rhs: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-pub fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Vec256) -> Vec256 {
+pub(crate) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Vec256) -> Vec256 {
     let shifted = mm256_slli_epi32::<SHIFT_BY>(simd_unit);
 
     let quotient = mm256_add_epi32(shifted, mm256_set1_epi32(1 << 22));
@@ -86,7 +76,7 @@ pub fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Vec256) -> Vec256 
 // TODO: Revisit this function when doing the range analysis and testing
 // additional KATs.
 #[inline(always)]
-pub fn infinity_norm_exceeds(simd_unit: Vec256, bound: i32) -> bool {
+pub(crate) fn infinity_norm_exceeds(simd_unit: Vec256, bound: i32) -> bool {
     let absolute_values = mm256_abs_epi32(simd_unit);
 
     // We will test if |simd_unit| > bound - 1, because if this is the case then
@@ -106,7 +96,7 @@ pub fn infinity_norm_exceeds(simd_unit: Vec256, bound: i32) -> bool {
 }
 
 #[inline(always)]
-pub fn power2round(r: Vec256) -> (Vec256, Vec256) {
+pub(crate) fn power2round(r: Vec256) -> (Vec256, Vec256) {
     let r = to_unsigned_representatives(r);
 
     let r1 = mm256_add_epi32(
@@ -123,7 +113,7 @@ pub fn power2round(r: Vec256) -> (Vec256, Vec256) {
 
 #[allow(non_snake_case)]
 #[inline(always)]
-pub fn decompose<const GAMMA2: i32>(r: Vec256) -> (Vec256, Vec256) {
+pub(crate) fn decompose<const GAMMA2: i32>(r: Vec256) -> (Vec256, Vec256) {
     let r = to_unsigned_representatives(r);
 
     let field_modulus_halved = mm256_set1_epi32((FIELD_MODULUS - 1) / 2);
@@ -185,7 +175,7 @@ pub fn decompose<const GAMMA2: i32>(r: Vec256) -> (Vec256, Vec256) {
 }
 
 #[inline(always)]
-pub fn compute_hint<const GAMMA2: i32>(low: Vec256, high: Vec256) -> (usize, Vec256) {
+pub(crate) fn compute_hint<const GAMMA2: i32>(low: Vec256, high: Vec256) -> (usize, Vec256) {
     let gamma2 = mm256_set1_epi32(GAMMA2);
     let minus_gamma2 = mm256_set1_epi32(-GAMMA2);
 

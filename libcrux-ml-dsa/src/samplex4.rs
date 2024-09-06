@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[inline(always)]
-fn generate_domain_separator(row: u8, column: u8) -> u16 {
+const fn generate_domain_separator(row: u8, column: u8) -> u16 {
     (column as u16) | ((row as u16) << 8)
 }
 

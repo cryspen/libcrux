@@ -2,7 +2,7 @@ use super::arithmetic::*;
 use crate::simd::portable::PortableSIMDUnit;
 
 #[inline(always)]
-pub fn ntt_at_layer_0(
+pub(crate) fn ntt_at_layer_0(
     mut simd_unit: PortableSIMDUnit,
     zeta0: i32,
     zeta1: i32,
@@ -28,7 +28,11 @@ pub fn ntt_at_layer_0(
     simd_unit
 }
 #[inline(always)]
-pub fn ntt_at_layer_1(mut simd_unit: PortableSIMDUnit, zeta1: i32, zeta2: i32) -> PortableSIMDUnit {
+pub(crate) fn ntt_at_layer_1(
+    mut simd_unit: PortableSIMDUnit,
+    zeta1: i32,
+    zeta2: i32,
+) -> PortableSIMDUnit {
     let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[2], zeta1);
     simd_unit.coefficients[2] = simd_unit.coefficients[0] - t;
     simd_unit.coefficients[0] = simd_unit.coefficients[0] + t;
@@ -47,8 +51,22 @@ pub fn ntt_at_layer_1(mut simd_unit: PortableSIMDUnit, zeta1: i32, zeta2: i32) -
 
     simd_unit
 }
+
 #[inline(always)]
-pub fn ntt_at_layer_2(mut simd_unit: PortableSIMDUnit, zeta: i32) -> PortableSIMDUnit {
+pub(crate) fn ntt_at_layer_2_2(
+    simd_unit1: PortableSIMDUnit,
+    simd_unit2: PortableSIMDUnit,
+    zeta1: i32,
+    zeta2: i32,
+) -> (PortableSIMDUnit, PortableSIMDUnit) {
+    (
+        ntt_at_layer_2(simd_unit1, zeta1),
+        ntt_at_layer_2(simd_unit2, zeta2),
+    )
+}
+
+#[inline(always)]
+pub(crate) fn ntt_at_layer_2(mut simd_unit: PortableSIMDUnit, zeta: i32) -> PortableSIMDUnit {
     let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[4], zeta);
     simd_unit.coefficients[4] = simd_unit.coefficients[0] - t;
     simd_unit.coefficients[0] = simd_unit.coefficients[0] + t;
@@ -69,7 +87,7 @@ pub fn ntt_at_layer_2(mut simd_unit: PortableSIMDUnit, zeta: i32) -> PortableSIM
 }
 
 #[inline(always)]
-pub fn invert_ntt_at_layer_0(
+pub(crate) fn invert_ntt_at_layer_0(
     mut simd_unit: PortableSIMDUnit,
     zeta0: i32,
     zeta1: i32,
@@ -95,7 +113,7 @@ pub fn invert_ntt_at_layer_0(
     simd_unit
 }
 #[inline(always)]
-pub fn invert_ntt_at_layer_1(
+pub(crate) fn invert_ntt_at_layer_1(
     mut simd_unit: PortableSIMDUnit,
     zeta0: i32,
     zeta1: i32,
@@ -118,8 +136,12 @@ pub fn invert_ntt_at_layer_1(
 
     simd_unit
 }
+
 #[inline(always)]
-pub fn invert_ntt_at_layer_2(mut simd_unit: PortableSIMDUnit, zeta: i32) -> PortableSIMDUnit {
+pub(crate) fn invert_ntt_at_layer_2(
+    mut simd_unit: PortableSIMDUnit,
+    zeta: i32,
+) -> PortableSIMDUnit {
     let a_minus_b = simd_unit.coefficients[4] - simd_unit.coefficients[0];
     simd_unit.coefficients[0] = simd_unit.coefficients[0] + simd_unit.coefficients[4];
     simd_unit.coefficients[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
@@ -137,4 +159,17 @@ pub fn invert_ntt_at_layer_2(mut simd_unit: PortableSIMDUnit, zeta: i32) -> Port
     simd_unit.coefficients[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
     simd_unit
+}
+
+#[inline(always)]
+pub(crate) fn invert_ntt_at_layer_2_2(
+    simd_unit1: PortableSIMDUnit,
+    simd_unit2: PortableSIMDUnit,
+    zeta1: i32,
+    zeta2: i32,
+) -> (PortableSIMDUnit, PortableSIMDUnit) {
+    (
+        invert_ntt_at_layer_2(simd_unit1, zeta1),
+        invert_ntt_at_layer_2(simd_unit2, zeta2),
+    )
 }

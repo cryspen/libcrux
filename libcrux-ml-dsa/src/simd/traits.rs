@@ -67,7 +67,7 @@ pub(crate) trait Operations: Copy + Clone {
     // NTT
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self;
     fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self;
-    fn ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self;
+    fn ntt_at_layer_2(simd_unit1: Self, simd_unit2: Self, zeta1: i32, zeta2: i32) -> (Self, Self);
 
     // Inverse NTT
     fn invert_ntt_at_layer_0(
@@ -78,7 +78,12 @@ pub(crate) trait Operations: Copy + Clone {
         zeta3: i32,
     ) -> Self;
     fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self;
-    fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self;
+    fn invert_ntt_at_layer_2(
+        simd_unit1: Self,
+        simd_unit2: Self,
+        zeta1: i32,
+        zeta2: i32,
+    ) -> (Self, Self);
 }
 
 // hax does not support trait with default implementations, so we use the

@@ -124,8 +124,14 @@ impl Operations for AVX2SIMDUnit {
     fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
         ntt::ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1).into()
     }
-    fn ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        ntt::ntt_at_layer_2(simd_unit.coefficients, zeta).into()
+    fn ntt_at_layer_2(simd_unit1: Self, simd_unit2: Self, zeta1: i32, zeta2: i32) -> (Self, Self) {
+        let (e1, e2) = ntt::ntt_at_layer_2_2(
+            simd_unit1.coefficients,
+            simd_unit2.coefficients,
+            zeta1,
+            zeta2,
+        );
+        (Self { coefficients: e1 }, Self { coefficients: e2 })
     }
 
     fn invert_ntt_at_layer_0(
@@ -140,7 +146,18 @@ impl Operations for AVX2SIMDUnit {
     fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
         ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1).into()
     }
-    fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta).into()
+    fn invert_ntt_at_layer_2(
+        simd_unit1: Self,
+        simd_unit2: Self,
+        zeta1: i32,
+        zeta2: i32,
+    ) -> (Self, Self) {
+        let (e1, e2) = ntt::invert_ntt_at_layer_2_2(
+            simd_unit1.coefficients,
+            simd_unit2.coefficients,
+            zeta1,
+            zeta2,
+        );
+        (Self { coefficients: e1 }, Self { coefficients: e2 })
     }
 }
