@@ -26,6 +26,8 @@ echo "export KRML_HOME=$HOME/karamel" >>$HOME/.profile
 echo "export EURYDICE_HOME=$HOME/eurydice" >>$HOME/.profile
 echo "export CHARON_HOME=$HOME/charon" >>$HOME/.profile
 
+source $HOME/.profile
+
 # Build everything
 cd karamel
 make -j

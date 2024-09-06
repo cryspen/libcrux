@@ -9,7 +9,7 @@ opam init --bare --disable-sandboxing --shell-setup --yes
 opam switch create 4.14.1
 
 # Get F*, HACL*, Charon, Karamel, Eurydice for running proofs and extraction
-curl -L https://github.com/FStarLang/FStar/releases/download/v2024.01.13/fstar_2024.01.13_Linux_x86_64.tar.gz \
+curl -L https://github.com/FStarLang/FStar/releases/download/v2024.09.05/fstar_2024.09.05_Linux_x86_64.tar.gz \
     --output Fstar.tar.gz
 tar --extract --file Fstar.tar.gz
 rm -f Fstar.tar.gz
