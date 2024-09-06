@@ -173,6 +173,7 @@ pub(crate) mod portable {
 }
 
 /// A SIMD256 implementation of [`Hash`] for AVX2
+#[cfg(feature = "simd256")]
 pub(crate) mod avx2 {
     use super::*;
     use libcrux_sha3::{
