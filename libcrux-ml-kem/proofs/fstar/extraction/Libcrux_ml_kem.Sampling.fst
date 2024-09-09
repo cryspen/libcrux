@@ -10,6 +10,8 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+#push-options "--admit_smt_queries true"
+
 let sample_from_uniform_distribution_next
       (#v_Vector: Type0)
       (v_K v_N: usize)
@@ -144,6 +146,10 @@ let sample_from_uniform_distribution_next
   <:
   (t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool)
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let sample_from_binomial_distribution_2_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -205,6 +211,10 @@ let sample_from_binomial_distribution_2_
   in
   Libcrux_ml_kem.Polynomial.impl_1__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let sample_from_binomial_distribution_3_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -264,6 +274,10 @@ let sample_from_binomial_distribution_3_
   in
   Libcrux_ml_kem.Polynomial.impl_1__from_i16_array #v_Vector (sampled_i16s <: t_Slice i16)
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let sample_from_binomial_distribution
       (v_ETA: usize)
       (#v_Vector: Type0)
@@ -280,6 +294,10 @@ let sample_from_binomial_distribution
 
         <:
         Rust_primitives.Hax.t_Never)
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let sample_from_xof
       (v_K: usize)
@@ -374,3 +392,5 @@ let sample_from_xof
             t_Slice i16)
         <:
         Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+
+#pop-options

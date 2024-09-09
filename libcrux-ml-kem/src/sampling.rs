@@ -42,6 +42,7 @@ use crate::{
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, const N: usize>(
     randomness: [[u8; N]; K],
     sampled_coefficients: &mut [usize; K],
@@ -71,6 +72,7 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K>>(
     seeds: [[u8; 34]; K],
 ) -> [PolynomialRingElement<Vector>; K] {
@@ -158,6 +160,7 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
 //         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 2
 // ))))]
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 fn sample_from_binomial_distribution_2<Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
@@ -195,6 +198,7 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
 //         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 3
 // ))))]
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 fn sample_from_binomial_distribution_3<Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
@@ -226,6 +230,7 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
