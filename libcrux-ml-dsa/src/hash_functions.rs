@@ -438,7 +438,6 @@ pub(crate) mod simd256 {
 
 /// A SIMD256 implementation of [`shake128::Xof`] and [`shake256::Xof`] for Neon.
 pub(crate) mod neon {
-    // FIXME: This is only a portable implementation for now.
 
     use libcrux_sha3::neon::x2::{self, incremental::KeccakState};
 
