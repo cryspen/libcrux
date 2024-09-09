@@ -7,8 +7,8 @@
  * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
  * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
  * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
- * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: 6ff01fb3c57ff29ecb59bc62d9dc7fd231060cfb
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: 99498eed461fa03566e0382b445c77bd2af5b59d
  */
 
 #include "libcrux_sha3_neon.h"
@@ -71,7 +71,7 @@ KRML_MUSTINLINE void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0,
  Initialise the `KeccakState2`.
 */
 KRML_MUSTINLINE libcrux_sha3_neon_x2_incremental_KeccakState
-libcrux_sha3_neon_x2_incremental_shake128_init(void) {
+libcrux_sha3_neon_x2_incremental_init(void) {
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -107,6 +107,53 @@ libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
 */
 KRML_MUSTINLINE void
 libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
+    libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
+    Eurydice_slice out1) {
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
+}
+
+/**
+ Squeeze five blocks
+*/
+KRML_MUSTINLINE void
+libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_five_blocks(
+    libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
+    Eurydice_slice out1) {
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
+}
+
+/**
+ Shake256 absorb `data0` and `data1` in the [`KeccakState`] `s`.
+*/
+KRML_MUSTINLINE void libcrux_sha3_neon_x2_incremental_shake256_absorb_final(
+    libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice data0,
+    Eurydice_slice data1) {
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
+}
+
+/**
+ Squeeze block
+*/
+KRML_MUSTINLINE void
+libcrux_sha3_neon_x2_incremental_shake256_squeeze_first_block(
+    libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
+    Eurydice_slice out1) {
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
+}
+
+/**
+ Squeeze next block
+*/
+KRML_MUSTINLINE void
+libcrux_sha3_neon_x2_incremental_shake256_squeeze_next_block(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
     Eurydice_slice out1) {
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
