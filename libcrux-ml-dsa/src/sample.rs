@@ -410,7 +410,7 @@ pub(crate) fn sample_mask_vector<
         seed[65] = (*domain_separator >> 8) as u8;
         *domain_separator += 1;
 
-        // TODO: We may want to do another 4.
+        // TODO: For 87 we may want to do another 4 and discard 1.
         mask[i] = sample_mask_ring_element::<SIMDUnit, Shake256, GAMMA1_EXPONENT>(seed);
     }
 
@@ -773,7 +773,7 @@ mod tests {
         fn test_sample_ring_element_uniform() {
             test_sample_ring_element_uniform_generic::<
                 simd::avx2::AVX2SIMDUnit,
-                crate::hash_functions::simd256::Shake128,
+                crate::hash_functions::simd256::Shake128x4,
             >();
         }
 
@@ -781,7 +781,7 @@ mod tests {
         fn test_sample_error_ring_element() {
             test_sample_error_ring_element_generic::<
                 simd::avx2::AVX2SIMDUnit,
-                hash_functions::simd256::Shake256X4,
+                hash_functions::simd256::Shake256x4,
             >();
         }
 

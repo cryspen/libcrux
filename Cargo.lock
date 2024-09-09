@@ -1028,6 +1028,7 @@ dependencies = [
  "criterion",
  "hex",
  "libcrux-intrinsics",
+ "libcrux-platform",
  "libcrux-sha3",
  "pqcrypto-dilithium",
  "rand",
