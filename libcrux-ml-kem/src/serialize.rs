@@ -6,6 +6,7 @@ use crate::{
 };
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(super) fn compress_then_serialize_message<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
 ) -> [u8; SHARED_SECRET_SIZE] {
@@ -33,6 +34,7 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; BYTES_PER_RING_ELEMENT] {
@@ -116,6 +118,7 @@ pub(super) fn deserialize_ring_elements_reduced<
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(
     OUT_LEN == 320
 )]
@@ -134,6 +137,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(
     OUT_LEN == 352
 )]
@@ -174,6 +178,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(
     serialized.len() == 128
 )]
@@ -196,6 +201,7 @@ fn compress_then_serialize_4<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(
     serialized.len() == 160
 )]
