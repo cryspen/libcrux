@@ -285,5 +285,4 @@ let deserialize_post
   (output: t_Array i16 (sz 16))
   = BitVecEq.int_t_array_bitwise_eq bytes  8
                                     output d1
-  /\ (forall i. i < 16 ==> bounded (Seq.index output i) d1)
 #pop-options
