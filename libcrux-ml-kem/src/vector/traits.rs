@@ -129,6 +129,10 @@ pub trait Operations: Copy + Clone + Repr {
     fn deserialize_12(a: &[u8]) -> Self;
 
     #[requires(true)]
+    #[ensures(|result|
+        fstar!("Seq.length $out_future == Seq.length $out /\\
+            range (v $result + 255) usize_inttype")
+    )]
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }
 

@@ -289,7 +289,12 @@ class t_Operations (v_Self: Type0) = {
   f_deserialize_12_:x0: t_Slice u8
     -> Prims.Pure v_Self (f_deserialize_12_pre x0) (fun result -> f_deserialize_12_post x0 result);
   f_rej_sample_pre:a: t_Slice u8 -> out: t_Slice i16 -> pred: Type0{true ==> pred};
-  f_rej_sample_post:t_Slice u8 -> t_Slice i16 -> (t_Slice i16 & usize) -> Type0;
+  f_rej_sample_post:a: t_Slice u8 -> out: t_Slice i16 -> x: (t_Slice i16 & usize)
+    -> pred:
+      Type0
+        { pred ==>
+          (let out_future, result:(t_Slice i16 & usize) = x in
+            Seq.length out_future == Seq.length out /\ range (v result + 255) usize_inttype) };
   f_rej_sample:x0: t_Slice u8 -> x1: t_Slice i16
     -> Prims.Pure (t_Slice i16 & usize)
         (f_rej_sample_pre x0 x1)

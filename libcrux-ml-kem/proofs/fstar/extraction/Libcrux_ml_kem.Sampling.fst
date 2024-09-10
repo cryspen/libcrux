@@ -10,8 +10,6 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-#push-options "--admit_smt_queries true"
-
 let sample_from_uniform_distribution_next
       (#v_Vector: Type0)
       (v_K v_N: usize)
@@ -146,9 +144,7 @@ let sample_from_uniform_distribution_next
   <:
   (t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool)
 
-#pop-options
-
-#push-options "--admit_smt_queries true"
+#push-options "--z3rlimit 800"
 
 let sample_from_binomial_distribution_2_
       (#v_Vector: Type0)
@@ -157,6 +153,10 @@ let sample_from_binomial_distribution_2_
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (randomness: t_Slice u8)
      =
+  let _:Prims.unit =
+    assert (v (sz 2 *! sz 64) == 128);
+    assert (Seq.length randomness == 128)
+  in
   let sampled_i16s:t_Array i16 (sz 256) = Rust_primitives.Hax.repeat 0s (sz 256) in
   let sampled_i16s:t_Array i16 (sz 256) =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 4)
@@ -181,6 +181,10 @@ let sample_from_binomial_distribution_2_
           in
           let even_bits:u32 = random_bits_as_u32 &. 1431655765ul in
           let odd_bits:u32 = (random_bits_as_u32 >>! 1l <: u32) &. 1431655765ul in
+          let _:Prims.unit =
+            logand_lemma random_bits_as_u32 1431655765ul;
+            logand_lemma (random_bits_as_u32 >>! 1l) 1431655765ul
+          in
           let coin_toss_outcomes:u32 = even_bits +! odd_bits in
           Rust_primitives.Hax.Folds.fold_range_step_by 0ul
             Core.Num.impl__u32__BITS
@@ -200,6 +204,15 @@ let sample_from_binomial_distribution_2_
                   cast ((coin_toss_outcomes >>! (outcome_set +! 2ul <: u32) <: u32) &. 3ul <: u32)
                   <:
                   i16
+                in
+                let _:Prims.unit =
+                  logand_lemma (coin_toss_outcomes >>! outcome_set <: u32) 3ul;
+                  logand_lemma (coin_toss_outcomes >>! (outcome_set +! 2ul <: u32) <: u32) 3ul;
+                  assert (v outcome_1_ >= 0 /\ v outcome_1_ <= 3);
+                  assert (v outcome_2_ >= 0 /\ v outcome_2_ <= 3);
+                  assert (v chunk_number <= 31);
+                  assert (v (sz 8 *! chunk_number <: usize) <= 248);
+                  assert (v (cast (outcome_set >>! 2l <: u32) <: usize) <= 7)
                 in
                 let offset:usize = cast (outcome_set >>! 2l <: u32) <: usize in
                 let sampled_i16s:t_Array i16 (sz 256) =
