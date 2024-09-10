@@ -84,7 +84,7 @@ pub(crate) fn sign<
     signing_key: &[u8; SIGNING_KEY_SIZE],
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-) -> MLDSASignature<SIGNATURE_SIZE> {
+) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     if libcrux_platform::simd256_support() {
         sign_avx2::<
             ROWS_IN_A,

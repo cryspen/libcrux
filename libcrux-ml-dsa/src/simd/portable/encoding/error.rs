@@ -43,7 +43,7 @@ fn serialize_when_eta_is_4<const OUTPUT_SIZE: usize>(
 pub(crate) fn serialize<const OUTPUT_SIZE: usize>(
     simd_unit: PortableSIMDUnit,
 ) -> [u8; OUTPUT_SIZE] {
-    match OUTPUT_SIZE {
+    match OUTPUT_SIZE as u8 {
         3 => serialize_when_eta_is_2::<OUTPUT_SIZE>(simd_unit),
         4 => serialize_when_eta_is_4::<OUTPUT_SIZE>(simd_unit),
         _ => unreachable!(),
@@ -88,7 +88,7 @@ fn deserialize_when_eta_is_4(serialized: &[u8]) -> PortableSIMDUnit {
 }
 #[inline(always)]
 pub(crate) fn deserialize<const ETA: usize>(serialized: &[u8]) -> PortableSIMDUnit {
-    match ETA {
+    match ETA as u8 {
         2 => deserialize_when_eta_is_2(serialized),
         4 => deserialize_when_eta_is_4(serialized),
         _ => unreachable!(),

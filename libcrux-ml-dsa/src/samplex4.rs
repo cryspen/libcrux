@@ -374,7 +374,7 @@ pub(crate) fn matrix_A<
 >(
     seed: [u8; 34],
 ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
-    match (ROWS_IN_A, COLUMNS_IN_A) {
+    match (ROWS_IN_A as u8, COLUMNS_IN_A as u8) {
         (4, 4) => matrix_A_4_by_4::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(seed),
         (6, 5) => matrix_A_6_by_5::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(seed),
         (8, 7) => matrix_A_8_by_7::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(seed),
@@ -504,7 +504,7 @@ pub(crate) fn sample_s1_and_s2<
     [PolynomialRingElement<SIMDUnit>; S1_DIMENSION],
     [PolynomialRingElement<SIMDUnit>; S2_DIMENSION],
 ) {
-    match (S1_DIMENSION, S2_DIMENSION) {
+    match (S1_DIMENSION as u8, S2_DIMENSION as u8) {
         (4, 4) => {
             sample_s1_and_s2_4_by_4::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(seed)
         }
