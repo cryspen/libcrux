@@ -111,10 +111,10 @@ fn sample_vector_cbd_then_ntt<
     Vector: Operations,
     Hasher: Hash<K>,
 >(
+    re_as_ntt: &mut [PolynomialRingElement<Vector>; K],
     prf_input: [u8; 33],
     mut domain_separator: u8,
-) -> ([PolynomialRingElement<Vector>; K], u8) {
-    let mut re_as_ntt = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+) -> u8 {
     let mut prf_inputs = [prf_input; K];
     for i in 0..K {
         prf_inputs[i][32] = domain_separator;
@@ -125,6 +125,26 @@ fn sample_vector_cbd_then_ntt<
         re_as_ntt[i] = sample_from_binomial_distribution::<ETA, Vector>(&prf_outputs[i]);
         ntt_binomially_sampled_ring_element(&mut re_as_ntt[i]);
     }
+    domain_separator
+}
+
+#[inline(always)]
+fn sample_vector_cbd_then_ntt_out<
+    const K: usize,
+    const ETA: usize,
+    const ETA_RANDOMNESS_SIZE: usize,
+    Vector: Operations,
+    Hasher: Hash<K>,
+>(
+    prf_input: [u8; 33],
+    mut domain_separator: u8,
+) -> ([PolynomialRingElement<Vector>; K], u8) {
+    let mut re_as_ntt = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    domain_separator = sample_vector_cbd_then_ntt::<K, ETA, ETA_RANDOMNESS_SIZE, Vector, Hasher>(
+        &mut re_as_ntt,
+        prf_input,
+        domain_separator,
+    );
     (re_as_ntt, domain_separator)
 }
 
@@ -176,40 +196,41 @@ pub(crate) fn generate_keypair_unpacked<
     Hasher: Hash<K>,
 >(
     key_generation_seed: &[u8],
-) -> (
-    IndCpaPrivateKeyUnpacked<K, Vector>,
-    IndCpaPublicKeyUnpacked<K, Vector>,
+    private_key: &mut IndCpaPrivateKeyUnpacked<K, Vector>,
+    public_key: &mut IndCpaPublicKeyUnpacked<K, Vector>,
 ) {
     // (ρ,σ) := G(d) for Kyber, (ρ,σ) := G(d || K) for ML-KEM
     let hashed = MlKem::cpa_keygen_seed::<K, Hasher>(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed_for_A), true);
+    sample_matrix_A::<K, Vector, Hasher>(&mut public_key.A, into_padded_array(seed_for_A), true);
 
     let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
-    let (secret_as_ntt, domain_separator) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(prf_input, 0);
-    let (error_as_ntt, _) =
+    let domain_separator =
         sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+            &mut private_key.secret_as_ntt,
+            prf_input,
+            0,
+        );
+    let (error_as_ntt, _) =
+        sample_vector_cbd_then_ntt_out::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
             prf_input,
             domain_separator,
         );
 
     // tˆ := Aˆ ◦ sˆ + eˆ
-    let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
+    compute_As_plus_e(
+        &mut public_key.t_as_ntt,
+        &public_key.A,
+        &private_key.secret_as_ntt,
+        &error_as_ntt,
+    );
 
-    let seed_for_A: [u8; 32] = seed_for_A.try_into().unwrap();
+    public_key.seed_for_A = seed_for_A.try_into().unwrap();
 
     // For encapsulation, we need to store A not Aˆ, and so we untranspose A
     // However, we pass A_transpose here and let the IND-CCA layer do the untranspose.
     // We could do it here, but then we would pay the performance cost (if any) for the packed API as well.
-    let pk = IndCpaPublicKeyUnpacked {
-        t_as_ntt,
-        A: A_transpose,
-        seed_for_A,
-    };
-    let sk = IndCpaPrivateKeyUnpacked { secret_as_ntt };
-    (sk, pk)
 }
 
 #[allow(non_snake_case)]
@@ -232,19 +253,22 @@ pub(crate) fn generate_keypair<
     let hashed = Scheme::cpa_keygen_seed::<K, Hasher>(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed_for_A), true);
+    let A_transpose = sample_matrix_a_out::<K, Vector, Hasher>(into_padded_array(seed_for_A), true);
 
     let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
     let (secret_as_ntt, domain_separator) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(prf_input, 0);
+        sample_vector_cbd_then_ntt_out::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+            prf_input, 0,
+        );
     let (error_as_ntt, _) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+        sample_vector_cbd_then_ntt_out::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
             prf_input,
             domain_separator,
         );
 
     // tˆ := Aˆ ◦ sˆ + eˆ
-    let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
+    let mut t_as_ntt = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    compute_As_plus_e(&mut t_as_ntt, &A_transpose, &secret_as_ntt, &error_as_ntt);
 
     let seed_for_A: [u8; 32] = seed_for_A.try_into().unwrap();
 
@@ -352,7 +376,9 @@ pub(crate) fn encrypt_unpacked<
     // rˆ := NTT(r)
     let mut prf_input: [u8; 33] = into_padded_array(randomness);
     let (r_as_ntt, domain_separator) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(prf_input, 0);
+        sample_vector_cbd_then_ntt_out::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+            prf_input, 0,
+        );
 
     // for i from 0 to k−1 do
     //     e1[i] := CBD_{η2}(PRF(r,N))
@@ -431,7 +457,7 @@ pub(crate) fn encrypt<
     //     end for
     // end for
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
-    let A = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed), false);
+    let A = sample_matrix_a_out::<K, Vector, Hasher>(into_padded_array(seed), false);
 
     // Note that we do not use the unpacked function internally here and instead
     // duplicate the code to avoid blowing up the stack.
@@ -443,7 +469,9 @@ pub(crate) fn encrypt<
     // rˆ := NTT(r)
     let mut prf_input: [u8; 33] = into_padded_array(randomness);
     let (r_as_ntt, domain_separator) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(prf_input, 0);
+        sample_vector_cbd_then_ntt_out::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+            prf_input, 0,
+        );
 
     // for i from 0 to k−1 do
     //     e1[i] := CBD_{η2}(PRF(r,N))

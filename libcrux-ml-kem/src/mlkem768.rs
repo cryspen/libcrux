@@ -234,6 +234,101 @@ macro_rules! instantiate {
                 >(private_key, ciphertext)
             }
 
+            /// Unpacked APIs that don't use serialized keys.
+            #[cfg(feature = "unpacked")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
+            pub mod unpacked {
+                use super::*;
+
+                /// Generate ML-KEM 768 Key Pair in "unpacked" form.
+                pub fn generate_key_pair(
+                    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+                    key_pair: &mut MlKem768KeyPairUnpacked<$vec>,
+                ) {
+                    p::unpacked::generate_keypair::<
+                        RANK_768,
+                        CPA_PKE_SECRET_KEY_SIZE_768,
+                        SECRET_KEY_SIZE_768,
+                        CPA_PKE_PUBLIC_KEY_SIZE_768,
+                        RANKED_BYTES_PER_RING_ELEMENT_768,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                    >(randomness, key_pair)
+                }
+
+                /// Encapsulate ML-KEM 768 (unpacked)
+                ///
+                /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+                /// The input is a reference to an unpacked public key of type [`MlKem768PublicKeyUnpacked`],
+                /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+                #[cfg_attr(
+                    hax,
+                    hax_lib::fstar::before(
+                        interface,
+                        "
+                let _ =
+                (* This module has implicit dependencies, here we make them explicit. *)
+                (* The implicit dependencies arise from typeclasses instances. *)
+                let open Libcrux_ml_kem.Vector.Portable in
+                let open Libcrux_ml_kem.Vector.Neon in
+                ()"
+                    )
+                )]
+                #[cfg(feature = "unpacked")]
+                #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
+                pub fn encapsulate_unpacked(
+                    public_key: &MlKem768PublicKeyUnpacked<$vec>,
+                    randomness: [u8; SHARED_SECRET_SIZE],
+                ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+                    p::encapsulate_unpacked::<
+                        RANK_768,
+                        CPA_PKE_CIPHERTEXT_SIZE_768,
+                        CPA_PKE_PUBLIC_KEY_SIZE_768,
+                        T_AS_NTT_ENCODED_SIZE_768,
+                        C1_SIZE_768,
+                        C2_SIZE_768,
+                        VECTOR_U_COMPRESSION_FACTOR_768,
+                        VECTOR_V_COMPRESSION_FACTOR_768,
+                        C1_BLOCK_SIZE_768,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                    >(public_key, randomness)
+                }
+
+                /// Decapsulate ML-KEM 768 (unpacked)
+                ///
+                /// Generates an [`MlKemSharedSecret`].
+                /// The input is a reference to an unpacked key pair of type [`MlKem768KeyPairUnpacked`]
+                /// and an [`MlKem768Ciphertext`].
+                #[cfg(feature = "unpacked")]
+                #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
+                pub fn decapsulate_unpacked(
+                    private_key: &MlKem768KeyPairUnpacked<$vec>,
+                    ciphertext: &MlKem768Ciphertext,
+                ) -> MlKemSharedSecret {
+                    p::decapsulate_unpacked::<
+                        RANK_768,
+                        SECRET_KEY_SIZE_768,
+                        CPA_PKE_SECRET_KEY_SIZE_768,
+                        CPA_PKE_PUBLIC_KEY_SIZE_768,
+                        CPA_PKE_CIPHERTEXT_SIZE_768,
+                        T_AS_NTT_ENCODED_SIZE_768,
+                        C1_SIZE_768,
+                        C2_SIZE_768,
+                        VECTOR_U_COMPRESSION_FACTOR_768,
+                        VECTOR_V_COMPRESSION_FACTOR_768,
+                        C1_BLOCK_SIZE_768,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                    >(private_key, ciphertext)
+                }
+            }
+
             /// Generate ML-KEM 768 Key Pair in "unpacked" form
             #[cfg(feature = "unpacked")]
             #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]

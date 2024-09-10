@@ -28,11 +28,27 @@ val serialize_kem_secret_key
       (private_key public_key implicit_rejection_value: t_Slice u8)
     : Prims.Pure (t_Array u8 v_SERIALIZED_KEY_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Validate an ML-KEM public key.
+/// This implements the Modulus check in 7.2 2.
+/// Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
+/// `public_key` type.
 val validate_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
+/// Validate an ML-KEM private key.
+/// This implements the Hash check in 7.3 3.
+/// Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
+/// and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
+val validate_private_key
+      (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
+      (#v_Hasher: Type0)
+      {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (v__ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 val encapsulate

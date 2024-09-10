@@ -16,21 +16,14 @@ let compute_As_plus_e
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (matrix_A:
           t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
       (s_as_ntt error_as_ntt:
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
      =
-  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      v_K
-      (fun v__i ->
-          let v__i:usize = v__i in
-          Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
-          <:
-          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-  in
-  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+  let tt_as_ntt, hax_temp_output:t_Array
+    (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_Iter
               (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)))
@@ -55,16 +48,16 @@ let compute_As_plus_e
         Core.Iter.Adapters.Enumerate.t_Enumerate
         (Core.Slice.Iter.t_Iter
           (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)))
-      result
-      (fun result temp_1_ ->
-          let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-            result
+      tt_as_ntt
+      (fun tt_as_ntt temp_1_ ->
+          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            tt_as_ntt
           in
           let i, row:(usize &
             t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) =
             temp_1_
           in
-          let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
                     (Core.Slice.Iter.t_Iter
                       (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)))
@@ -88,11 +81,11 @@ let compute_As_plus_e
                 Core.Iter.Adapters.Enumerate.t_Enumerate
                 (Core.Slice.Iter.t_Iter (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                 ))
-              result
-              (fun result temp_1_ ->
-                  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+              tt_as_ntt
+              (fun tt_as_ntt temp_1_ ->
+                  let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                     v_K =
-                    result
+                    tt_as_ntt
                   in
                   let j, matrix_element:(usize &
                     Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
@@ -103,33 +96,33 @@ let compute_As_plus_e
                       matrix_element
                       (s_as_ntt.[ j ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                   in
-                  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                  let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                     v_K =
-                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
+                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tt_as_ntt
                       i
                       (Libcrux_ml_kem.Polynomial.impl__add_to_ring_element #v_Vector
                           v_K
-                          (result.[ i ]
+                          (tt_as_ntt.[ i ]
                             <:
                             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                           product
                         <:
                         Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                   in
-                  result)
+                  tt_as_ntt)
           in
-          let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
+          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tt_as_ntt
               i
               (Libcrux_ml_kem.Polynomial.impl__add_standard_error_reduce #v_Vector
-                  (result.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                  (tt_as_ntt.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                   (error_as_ntt.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                 <:
                 Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           in
-          result)
+          tt_as_ntt)
   in
-  result
+  tt_as_ntt
 
 let compute_ring_element_v
       (v_K: usize)
@@ -356,26 +349,12 @@ let sample_matrix_A
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (v_A_transpose:
+          t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
       (seed: t_Array u8 (sz 34))
       (transpose: bool)
      =
-  let v_A_transpose:t_Array
-    (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
-    Core.Array.from_fn #(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      v_K
-      (fun v__i ->
-          let v__i:usize = v__i in
-          Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-            v_K
-            (fun v__j ->
-                let v__j:usize = v__j in
-                Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
-                <:
-                Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-          <:
-          t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-  in
-  let v_A_transpose:t_Array
+  let v_A_transpose, hax_temp_output:t_Array
     (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
@@ -499,3 +478,35 @@ let sample_matrix_A
                   v_A_transpose))
   in
   v_A_transpose
+
+let sample_matrix_a_out
+      (v_K: usize)
+      (#v_Vector #v_Hasher: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i3:
+          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (seed: t_Array u8 (sz 34))
+      (transpose: bool)
+     =
+  let a:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
+    Core.Array.from_fn #(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      v_K
+      (fun v__i ->
+          let v__i:usize = v__i in
+          Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+            v_K
+            (fun v__j ->
+                let v__j:usize = v__j in
+                Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+                <:
+                Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+          <:
+          t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+  in
+  let a:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
+    sample_matrix_A v_K #v_Vector #v_Hasher a seed transpose
+  in
+  a

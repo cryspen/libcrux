@@ -269,6 +269,36 @@ macro_rules! instantiate {
 
             /// Unpacked API
             #[cfg(feature = "unpacked")]
+            pub(crate) mod unpacked {
+                use super::*;
+
+                pub(crate) fn generate_keypair<
+                    const K: usize,
+                    const CPA_PRIVATE_KEY_SIZE: usize,
+                    const PRIVATE_KEY_SIZE: usize,
+                    const PUBLIC_KEY_SIZE: usize,
+                    const BYTES_PER_RING_ELEMENT: usize,
+                    const ETA1: usize,
+                    const ETA1_RANDOMNESS_SIZE: usize,
+                >(
+                    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+                    out: &mut MlKemKeyPairUnpacked<K>,
+                ) {
+                    crate::ind_cca::unpacked::generate_keypair::<
+                        K,
+                        CPA_PRIVATE_KEY_SIZE,
+                        PRIVATE_KEY_SIZE,
+                        PUBLIC_KEY_SIZE,
+                        BYTES_PER_RING_ELEMENT,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        $vector,
+                        $hash,
+                    >(randomness, out)
+                }
+            }
+
+            #[cfg(feature = "unpacked")]
             pub(crate) fn generate_keypair_unpacked<
                 const K: usize,
                 const CPA_PRIVATE_KEY_SIZE: usize,
@@ -280,7 +310,8 @@ macro_rules! instantiate {
             >(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKemKeyPairUnpacked<K> {
-                crate::ind_cca::generate_keypair_unpacked::<
+                let mut out = MlKemKeyPairUnpacked::<K>::default();
+                crate::ind_cca::unpacked::generate_keypair::<
                     K,
                     CPA_PRIVATE_KEY_SIZE,
                     PRIVATE_KEY_SIZE,
@@ -290,7 +321,8 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     $vector,
                     $hash,
-                >(randomness)
+                >(randomness, &mut out);
+                out
             }
 
             /// Portable encapsualte
@@ -313,7 +345,7 @@ macro_rules! instantiate {
                 public_key: &MlKemPublicKeyUnpacked<K>,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-                crate::ind_cca::encapsulate_unpacked::<
+                crate::ind_cca::unpacked::encapsulate::<
                     K,
                     CIPHERTEXT_SIZE,
                     PUBLIC_KEY_SIZE,
@@ -355,7 +387,7 @@ macro_rules! instantiate {
                 key_pair: &MlKemKeyPairUnpacked<K>,
                 ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
             ) -> MlKemSharedSecret {
-                crate::ind_cca::decapsulate_unpacked::<
+                crate::ind_cca::unpacked::decapsulate::<
                     K,
                     SECRET_KEY_SIZE,
                     CPA_SECRET_KEY_SIZE,

@@ -156,6 +156,38 @@ let validate_public_key
   in
   public_key =. public_key_serialized
 
+let validate_private_key
+      (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
+      (#v_Hasher: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (v__ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+     =
+  let t:t_Array u8 (sz 32) =
+    Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
+      #v_K
+      #FStar.Tactics.Typeclasses.solve
+      (private_key.Libcrux_ml_kem.Types.f_value.[ {
+            Core.Ops.Range.f_start = sz 384 *! v_K <: usize;
+            Core.Ops.Range.f_end = (sz 768 *! v_K <: usize) +! sz 32 <: usize
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  let expected:t_Slice u8 =
+    private_key.Libcrux_ml_kem.Types.f_value.[ {
+        Core.Ops.Range.f_start = (sz 768 *! v_K <: usize) +! sz 32 <: usize;
+        Core.Ops.Range.f_end = (sz 768 *! v_K <: usize) +! sz 64 <: usize
+      }
+      <:
+      Core.Ops.Range.t_Range usize ]
+  in
+  t =. expected
+
 let encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)

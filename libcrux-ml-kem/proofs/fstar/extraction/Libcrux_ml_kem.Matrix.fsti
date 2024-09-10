@@ -15,6 +15,7 @@ val compute_As_plus_e
       (v_K: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (matrix_A:
           t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
       (s_as_ntt error_as_ntt:
@@ -62,6 +63,20 @@ val compute_message
       (fun _ -> Prims.l_True)
 
 val sample_matrix_A
+      (v_K: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (v_A_transpose:
+          t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
+      (seed: t_Array u8 (sz 34))
+      (transpose: bool)
+    : Prims.Pure
+      (t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val sample_matrix_a_out
       (v_K: usize)
       (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}

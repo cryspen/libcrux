@@ -3,6 +3,13 @@ module Libcrux_ml_kem.Mlkem1024.Avx2
 open Core
 open FStar.Mul
 
+/// Validate a private key.
+/// Returns `true` if valid, and `false` otherwise.
+val validate_private_key
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 3168))
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1568))
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
 /// Encapsulate ML-KEM 1024
 /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
 /// The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
@@ -15,11 +22,9 @@ val encapsulate
       (fun _ -> Prims.l_True)
 
 /// Validate a public key.
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
+/// Returns `true` if valid, and `false` otherwise.
 val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568))
-    : Prims.Pure (Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 /// Decapsulate ML-KEM 1024
 /// Generates an [`MlKemSharedSecret`].

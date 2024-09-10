@@ -30,6 +30,18 @@ val sample_vector_cbd_then_ntt
       (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (re_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (prf_input: t_Array u8 (sz 33))
+      (domain_separator: u8)
+    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val sample_vector_cbd_then_ntt_out
+      (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (prf_input: t_Array u8 (sz 33))
       (domain_separator: u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)

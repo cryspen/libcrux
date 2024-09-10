@@ -3,6 +3,13 @@ module Libcrux_ml_kem.Mlkem768.Avx2
 open Core
 open FStar.Mul
 
+/// Validate a private key.
+/// Returns `true` if valid, and `false` otherwise.
+val validate_private_key
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
 /// Encapsulate ML-KEM 768
 /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
 /// The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
@@ -15,11 +22,9 @@ val encapsulate
       (fun _ -> Prims.l_True)
 
 /// Validate a public key.
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
+/// Returns `true` if valid, and `false` otherwise.
 val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-    : Prims.Pure (Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 /// Decapsulate ML-KEM 768
 /// Generates an [`MlKemSharedSecret`].

@@ -106,18 +106,10 @@ let sample_vector_cbd_then_ntt
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (re_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (prf_input: t_Array u8 (sz 33))
       (domain_separator: u8)
      =
-  let re_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      v_K
-      (fun v__i ->
-          let v__i:usize = v__i in
-          Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
-          <:
-          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-  in
   let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K = Rust_primitives.Hax.repeat prf_input v_K in
   let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
@@ -188,6 +180,44 @@ let sample_vector_cbd_then_ntt
           in
           re_as_ntt)
   in
+  let hax_temp_output:u8 = domain_separator in
+  re_as_ntt, hax_temp_output
+  <:
+  (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
+
+let sample_vector_cbd_then_ntt_out
+      (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
+      (#v_Vector #v_Hasher: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i3:
+          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (prf_input: t_Array u8 (sz 33))
+      (domain_separator: u8)
+     =
+  let re_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+    Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      v_K
+      (fun v__i ->
+          let v__i:usize = v__i in
+          Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+          <:
+          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+  in
+  let tmp0, out:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8) =
+    sample_vector_cbd_then_ntt v_K
+      v_ETA
+      v_ETA_RANDOMNESS_SIZE
+      #v_Vector
+      #v_Hasher
+      re_as_ntt
+      prf_input
+      domain_separator
+  in
+  let re_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = tmp0 in
+  let domain_separator:u8 = out in
   re_as_ntt, domain_separator
   <:
   (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
@@ -358,7 +388,7 @@ let encrypt
       Core.Ops.Range.t_RangeFrom usize ]
   in
   let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
-    Libcrux_ml_kem.Matrix.sample_matrix_A v_K
+    Libcrux_ml_kem.Matrix.sample_matrix_a_out v_K
       #v_Vector
       #v_Hasher
       (Libcrux_ml_kem.Utils.into_padded_array (sz 34) seed <: t_Array u8 (sz 34))
@@ -370,7 +400,13 @@ let encrypt
   let r_as_ntt, domain_separator:(t_Array
       (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
     u8) =
-    sample_vector_cbd_then_ntt v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE #v_Vector #v_Hasher prf_input 0uy
+    sample_vector_cbd_then_ntt_out v_K
+      v_ETA1
+      v_ETA1_RANDOMNESS_SIZE
+      #v_Vector
+      #v_Hasher
+      prf_input
+      0uy
   in
   let error_1_, domain_separator:(t_Array
       (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
@@ -641,7 +677,7 @@ let generate_keypair
   in
   let v_A_transpose:t_Array
     (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
-    Libcrux_ml_kem.Matrix.sample_matrix_A v_K
+    Libcrux_ml_kem.Matrix.sample_matrix_a_out v_K
       #v_Vector
       #v_Hasher
       (Libcrux_ml_kem.Utils.into_padded_array (sz 34) seed_for_A <: t_Array u8 (sz 34))
@@ -653,11 +689,17 @@ let generate_keypair
   let secret_as_ntt, domain_separator:(t_Array
       (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
     u8) =
-    sample_vector_cbd_then_ntt v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE #v_Vector #v_Hasher prf_input 0uy
+    sample_vector_cbd_then_ntt_out v_K
+      v_ETA1
+      v_ETA1_RANDOMNESS_SIZE
+      #v_Vector
+      #v_Hasher
+      prf_input
+      0uy
   in
   let error_as_ntt, _:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8
   ) =
-    sample_vector_cbd_then_ntt v_K
+    sample_vector_cbd_then_ntt_out v_K
       v_ETA1
       v_ETA1_RANDOMNESS_SIZE
       #v_Vector
@@ -666,7 +708,21 @@ let generate_keypair
       domain_separator
   in
   let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Libcrux_ml_kem.Matrix.compute_As_plus_e v_K #v_Vector v_A_transpose secret_as_ntt error_as_ntt
+    Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      v_K
+      (fun v__i ->
+          let v__i:usize = v__i in
+          Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+          <:
+          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+  in
+  let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+    Libcrux_ml_kem.Matrix.compute_As_plus_e v_K
+      #v_Vector
+      tt_as_ntt
+      v_A_transpose
+      secret_as_ntt
+      error_as_ntt
   in
   let (seed_for_A: t_Array u8 (sz 32)):t_Array u8 (sz 32) =
     Core.Result.impl__unwrap #(t_Array u8 (sz 32))
