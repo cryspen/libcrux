@@ -175,11 +175,12 @@ pub(crate) fn sign<
     let mut hint = None;
 
     // Depending on the mode, one try has a chance between 1/7 and 1/4
-    // of succeeding.  Thus it is safe to say that 576 iterations
-    // are enough as (6/7)⁵⁷⁶ < 2⁻¹²⁸[1].
+    // of succeeding.  Thus it is safe to say that 576
+    // (REJECTION_SAMPLE_BOUND) iterations are enough as (6/7)⁵⁷⁶ <
+    // 2⁻¹²⁸[1].
     //
     // [1]: https://github.com/cloudflare/circl/blob/main/sign/dilithium/mode2/internal/dilithium.go#L341
-    while attempt < 576 {
+    while attempt < REJECTION_SAMPLE_BOUND {
         attempt += 1;
 
         let mask =
@@ -261,7 +262,7 @@ pub(crate) fn sign<
 
                     if ones_in_hint > MAX_ONES_IN_HINT {
                     } else {
-                        attempt = 576; // exit loop now
+                        attempt = REJECTION_SAMPLE_BOUND; // exit loop now
                         commitment_hash = Some(commitment_hash_candidate);
                         signer_response = Some(signer_response_candidate);
                         hint = Some(hint_candidate);
