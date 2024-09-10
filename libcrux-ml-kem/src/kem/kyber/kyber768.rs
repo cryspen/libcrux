@@ -42,18 +42,13 @@ pub type MlKem768PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
 
 /// Validate a public key.
 ///
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
-pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768PublicKey> {
-    if super::validate_public_key::<
+/// Returns `true` if valid, and `false` otherwise.
+pub fn validate_public_key(public_key: &MlKem768PublicKey) -> bool {
+    super::validate_public_key::<
         RANK_768,
         RANKED_BYTES_PER_RING_ELEMENT_768,
         CPA_PKE_PUBLIC_KEY_SIZE_768,
     >(&public_key.value)
-    {
-        Some(public_key)
-    } else {
-        None
-    }
 }
 
 /// Generate ML-KEM 768 Key Pair
@@ -176,7 +171,7 @@ pub(crate) fn decapsulate_unpacked(
 
 #[cfg(test)]
 mod tests {
-    use rand_core::{OsRng, RngCore};
+    use rand::{rngs::OsRng, RngCore};
 
     use super::{
         kyber768::{generate_key_pair, validate_public_key},
@@ -189,6 +184,6 @@ mod tests {
         OsRng.fill_bytes(&mut randomness);
 
         let key_pair = generate_key_pair(randomness);
-        assert!(validate_public_key(key_pair.pk).is_some());
+        assert!(validate_public_key(&key_pair.pk));
     }
 }

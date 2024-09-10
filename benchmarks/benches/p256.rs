@@ -1,7 +1,6 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use libcrux::ecdh;
 
-mod util;
 use rand_core::OsRng;
 
 fn derive(c: &mut Criterion) {

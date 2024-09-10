@@ -1,0 +1,33 @@
+name: Skip Benchmarks in PRs
+
+on: [ pull_request ]
+
+jobs: 
+  benchmark:
+    strategy:
+      fail-fast: false
+      matrix:
+        bits: [32, 64]
+        os:
+          - macos-13
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+     - run: true
+
+  benchmark_without_bits:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-13
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    name: "benchmark (${{ matrix.os }})"
+    steps:
+     - run: true
+

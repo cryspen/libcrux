@@ -215,10 +215,14 @@ pub struct X25519MlKem768Draft00PublicKey {
 impl X25519MlKem768Draft00PublicKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
-            mlkem: MlKem768PublicKey::try_from(&bytes[32..])
-                .ok()
-                .and_then(mlkem768::validate_public_key)
-                .ok_or(Error::InvalidPublicKey)?,
+            mlkem: {
+                let key = MlKem768PublicKey::try_from(&bytes[32..])
+                    .map_err(|_| Error::InvalidPublicKey)?;
+                if !mlkem768::validate_public_key(&key) {
+                    return Err(Error::InvalidPublicKey);
+                }
+                key
+            },
             x25519: bytes[0..32]
                 .try_into()
                 .map_err(|_| Error::InvalidPublicKey)?,
@@ -241,10 +245,14 @@ pub struct XWingKemDraft02PublicKey {
 impl XWingKemDraft02PublicKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
-            pk_m: MlKem768PublicKey::try_from(&bytes[0..1184])
-                .ok()
-                .and_then(mlkem768::validate_public_key)
-                .ok_or(Error::InvalidPublicKey)?,
+            pk_m: {
+                let key = MlKem768PublicKey::try_from(&bytes[0..1184])
+                    .map_err(|_| Error::InvalidPublicKey)?;
+                if !mlkem768::validate_public_key(&key) {
+                    return Err(Error::InvalidPublicKey);
+                }
+                key
+            },
             pk_x: bytes[1184..]
                 .try_into()
                 .map_err(|_| Error::InvalidPublicKey)?,
@@ -654,16 +662,22 @@ impl PublicKey {
                 .try_into()
                 .map(Self::P256)
                 .map_err(|_| Error::InvalidPublicKey),
-            Algorithm::MlKem512 => MlKem512PublicKey::try_from(bytes)
-                .ok()
-                .and_then(mlkem512::validate_public_key)
-                .map(Self::MlKem512)
-                .ok_or(Error::InvalidPublicKey),
-            Algorithm::MlKem768 => MlKem768PublicKey::try_from(bytes)
-                .ok()
-                .and_then(mlkem768::validate_public_key)
-                .map(Self::MlKem768)
-                .ok_or(Error::InvalidPublicKey),
+            Algorithm::MlKem512 => {
+                let key =
+                    MlKem512PublicKey::try_from(bytes).map_err(|_| Error::InvalidPublicKey)?;
+                if !mlkem512::validate_public_key(&key) {
+                    return Err(Error::InvalidPublicKey);
+                }
+                Ok(Self::MlKem512(key))
+            }
+            Algorithm::MlKem768 => {
+                let key =
+                    MlKem768PublicKey::try_from(bytes).map_err(|_| Error::InvalidPublicKey)?;
+                if !mlkem768::validate_public_key(&key) {
+                    return Err(Error::InvalidPublicKey);
+                }
+                Ok(Self::MlKem768(key))
+            }
             Algorithm::X25519MlKem768Draft00 => {
                 X25519MlKem768Draft00PublicKey::decode(bytes).map(Self::X25519MlKem768Draft00)
             }
@@ -678,11 +692,14 @@ impl PublicKey {
             Algorithm::XWingKyberDraft02 => {
                 XWingKemDraft02PublicKey::decode(bytes).map(Self::XWingKyberDraft02)
             }
-            Algorithm::MlKem1024 => MlKem1024PublicKey::try_from(bytes)
-                .ok()
-                .and_then(mlkem1024::validate_public_key)
-                .map(Self::MlKem1024)
-                .ok_or(Error::InvalidPublicKey),
+            Algorithm::MlKem1024 => {
+                let key =
+                    MlKem1024PublicKey::try_from(bytes).map_err(|_| Error::InvalidPublicKey)?;
+                if !mlkem1024::validate_public_key(&key) {
+                    return Err(Error::InvalidPublicKey);
+                }
+                Ok(Self::MlKem1024(key))
+            }
             _ => Err(Error::UnsupportedAlgorithm),
         }
     }

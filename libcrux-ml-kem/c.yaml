@@ -32,7 +32,7 @@ files:
         - [libcrux_sha3, neon, "*"]
         - [libcrux_sha3, simd, arm64, "*"]
       monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, "KeccakState__core_core_arch_arm_shared_neon_uint64x2_t_$2size_t"]
+        - [libcrux_sha3, generic_keccak, "KeccakState_fc"]
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_arm64.h"'
 
@@ -42,12 +42,9 @@ files:
     # they match immediately (and get promoted to internal), then the rest of
     # the behavior applies.
     internal:
-      exact:
-        - [libcrux_sha3, avx2, x4, incremental, KeccakState4]
       monomorphizations_exact:
-        - [libcrux_sha3, avx2, x4, incremental, KeccakState4]
-        - [libcrux_sha3, generic_keccak, absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t ]
-        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t ]
+        - [libcrux_sha3, generic_keccak, absorb_final_7f ]
+        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks_ed ]
     api:
       - [libcrux_sha3, avx2, "*"]
     private:
@@ -62,7 +59,7 @@ files:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
       monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, "KeccakState__core_core_arch_x86___m256i_$4size_t"]
+        - [libcrux_sha3, generic_keccak, KeccakState_29]
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
 
@@ -233,3 +230,10 @@ files:
     private:
       - [libcrux_ml_kem, "*"]
     inline_static: true
+
+naming:
+  skip_prefix:
+    - [ core, core_arch, arm_shared, neon ]
+    - [ core, core_arch, x86 ]
+    - [libcrux_intrinsics, arm64]
+    - [libcrux_intrinsics, avx2]

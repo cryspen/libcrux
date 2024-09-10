@@ -18,13 +18,12 @@
 #include "internal/libcrux_core.h"
 
 #ifdef LIBCRUX_X64
-#include "intrinsics/libcrux_intrinsics_avx2.h"
 #include "internal/libcrux_sha3_avx2.h"
 #endif
 
 void generate_random(uint8_t *output, uint32_t output_len)
 {
-    for (int i = 0; i < output_len; i++)
+    for (uint32_t i = 0; i < output_len; i++)
         output[i] = 13;
 }
 
@@ -59,8 +58,7 @@ sha3_512_64(benchmark::State &state)
 }
 
 #ifdef LIBCRUX_X64
-__attribute__((target("avx2")))
-static void
+__attribute__((target("avx2"))) static void
 shake128_34_504(benchmark::State &state)
 {
     uint8_t digest0[504];
@@ -72,20 +70,19 @@ shake128_34_504(benchmark::State &state)
 
     Eurydice_slice last[4] = {EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34)};
     Eurydice_slice out[4] = {EURYDICE_SLICE(digest0, 0, 504), EURYDICE_SLICE(digest1, 0, 504), EURYDICE_SLICE(digest2, 0, 504), EURYDICE_SLICE(digest3, 0, 504)};
-    libcrux_sha3_avx2_x4_incremental_KeccakState st = libcrux_sha3_avx2_x4_incremental_shake128_init();
-    libcrux_sha3_generic_keccak_absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t(&st, last);
-    libcrux_sha3_generic_keccak_squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t(&st, out);
+    auto st = libcrux_sha3_avx2_x4_incremental_init();
+    libcrux_sha3_generic_keccak_absorb_final_7f(&st, last);
+    libcrux_sha3_generic_keccak_squeeze_first_three_blocks_ed(&st, out);
 
     for (auto _ : state)
     {
-        libcrux_sha3_avx2_x4_incremental_KeccakState st = libcrux_sha3_avx2_x4_incremental_shake128_init();
-        libcrux_sha3_generic_keccak_absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t(&st, last);
-        libcrux_sha3_generic_keccak_squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t(&st, out);
+        auto st = libcrux_sha3_avx2_x4_incremental_init();
+        libcrux_sha3_generic_keccak_absorb_final_7f(&st, last);
+        libcrux_sha3_generic_keccak_squeeze_first_three_blocks_ed(&st, out);
     }
 }
 
-__attribute__((target("avx2")))
-static void
+__attribute__((target("avx2"))) static void
 shake256_1120_32(benchmark::State &state)
 {
     uint8_t input[1120];
@@ -108,8 +105,7 @@ shake256_1120_32(benchmark::State &state)
     }
 }
 
-__attribute__((target("avx2")))
-static void
+__attribute__((target("avx2"))) static void
 shake256_33_128(benchmark::State &state)
 {
     uint8_t input[33];

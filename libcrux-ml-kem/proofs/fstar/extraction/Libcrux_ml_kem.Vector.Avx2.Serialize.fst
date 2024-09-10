@@ -492,8 +492,7 @@ let deserialize_11_ (bytes: t_Slice u8) =
       #FStar.Tactics.Typeclasses.solve
       output
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_i16 (Rust_primitives.unsize array <: t_Slice i16
-    )
+  Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_i16 (array <: t_Slice i16)
 
 let serialize_11_ (vector: u8) =
   let array:t_Array i16 (sz 16) = Rust_primitives.Hax.repeat 0s (sz 16) in
@@ -503,7 +502,7 @@ let serialize_11_ (vector: u8) =
   let input:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Libcrux_ml_kem.Vector.Traits.f_from_i16_array #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       #FStar.Tactics.Typeclasses.solve
-      (Rust_primitives.unsize array <: t_Slice i16)
+      (array <: t_Slice i16)
   in
   Libcrux_ml_kem.Vector.Traits.f_serialize_11_ #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
     #FStar.Tactics.Typeclasses.solve

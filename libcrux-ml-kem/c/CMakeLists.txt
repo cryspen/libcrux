@@ -29,6 +29,8 @@ if(NOT MSVC)
 endif(NOT MSVC)
 
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
+# For LSP-based editors
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 include_directories(
     ${PROJECT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/internal
@@ -99,6 +101,11 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8" AND DEFINED ENV{LIBCRU
 endif()
 
 # --- Tests
+
+if(DEFINED ENV{LIBCRUX_UNPACKED})
+    add_compile_definitions(LIBCRUX_UNPACKED)
+endif(DEFINED ENV{LIBCRUX_UNPACKED})
+
 
 # Get gtests
 include(FetchContent)

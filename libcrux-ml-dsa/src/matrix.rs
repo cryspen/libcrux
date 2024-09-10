@@ -1,38 +1,10 @@
 use crate::{
     arithmetic::shift_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
-    hash_functions::shake128,
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
     polynomial::PolynomialRingElement,
-    sample::sample_ring_element_uniform,
     simd::traits::Operations,
 };
-
-#[allow(non_snake_case)]
-#[inline(always)]
-pub(crate) fn expand_to_A<
-    SIMDUnit: Operations,
-    Shake128: shake128::Xof,
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
->(
-    mut seed: [u8; 34],
-) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
-    let mut A = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
-
-    // Mutable iterators won't go through hax, so we need these range loops.
-    #[allow(clippy::needless_range_loop)]
-    for i in 0..ROWS_IN_A {
-        for j in 0..COLUMNS_IN_A {
-            seed[32] = j as u8;
-            seed[33] = i as u8;
-
-            A[i][j] = sample_ring_element_uniform::<SIMDUnit, Shake128>(seed);
-        }
-    }
-
-    A
-}
 
 /// Compute InvertNTT(Â ◦ ŝ₁) + s₂
 #[allow(non_snake_case)]

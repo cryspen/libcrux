@@ -1,4 +1,9 @@
-use crate::{constants::*, ml_dsa_generic, types::*, VerificationError};
+use crate::{
+    constants::*,
+    ml_dsa_generic::{self, multiplexing},
+    types::*,
+    VerificationError,
+};
 
 // ML-DSA-44-specific parameters
 
@@ -60,28 +65,100 @@ pub type MLDSA44VerificationKey = MLDSAVerificationKey<VERIFICATION_KEY_SIZE>;
 pub type MLDSA44KeyPair = MLDSAKeyPair<VERIFICATION_KEY_SIZE, SIGNING_KEY_SIZE>;
 pub type MLDSA44Signature = MLDSASignature<SIGNATURE_SIZE>;
 
-// TODO: Multiplex more intelligently.
-#[cfg(feature = "simd256")]
-type SIMDUnit = crate::simd::avx2::AVX2SIMDUnit;
-#[cfg(not(feature = "simd256"))]
-type SIMDUnit = crate::simd::portable::PortableSIMDUnit;
+// Instantiate the different functions.
+macro_rules! instantiate {
+    ($modp:ident, $p:path, $doc:expr) => {
+        #[doc = $doc]
+        pub mod $modp {
+            use super::*;
+            use $p as p;
 
-#[cfg(feature = "simd256")]
-type Shake128 = crate::hash_functions::portable::PortableShake128;
-#[cfg(not(feature = "simd256"))]
-type Shake128 = crate::hash_functions::portable::PortableShake128;
+            /// Generate an ML-DSA-44 Key Pair
+            pub fn generate_key_pair(
+                randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+            ) -> MLDSA44KeyPair {
+                let (signing_key, verification_key) = p::generate_key_pair::<
+                    ROWS_IN_A,
+                    COLUMNS_IN_A,
+                    ETA,
+                    ERROR_RING_ELEMENT_SIZE,
+                    SIGNING_KEY_SIZE,
+                    VERIFICATION_KEY_SIZE,
+                >(randomness);
 
-#[cfg(feature = "simd256")]
-type Shake256 = crate::hash_functions::portable::PortableShake256;
-#[cfg(not(feature = "simd256"))]
-type Shake256 = crate::hash_functions::portable::PortableShake256;
+                MLDSA44KeyPair {
+                    signing_key: MLDSASigningKey(signing_key),
+                    verification_key: MLDSAVerificationKey(verification_key),
+                }
+            }
 
-/// Generate an ML-DSA-44 Key Pair
-pub fn generate_key_pair(randomness: [u8; 32]) -> MLDSA44KeyPair {
-    let (signing_key, verification_key) = ml_dsa_generic::generate_key_pair::<
-        SIMDUnit, // TODO: Multiplex this based on platform detection.
-        Shake128,
-        Shake256,
+            /// Generate an ML-DSA-44 Signature
+            pub fn sign(
+                signing_key: &MLDSA44SigningKey,
+                message: &[u8],
+                randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+            ) -> MLDSA44Signature {
+                p::sign::<
+                    ROWS_IN_A,
+                    COLUMNS_IN_A,
+                    ETA,
+                    ERROR_RING_ELEMENT_SIZE,
+                    GAMMA1_EXPONENT,
+                    GAMMA2,
+                    COMMITMENT_RING_ELEMENT_SIZE,
+                    COMMITMENT_VECTOR_SIZE,
+                    COMMITMENT_HASH_SIZE,
+                    ONES_IN_VERIFIER_CHALLENGE,
+                    MAX_ONES_IN_HINT,
+                    GAMMA1_RING_ELEMENT_SIZE,
+                    SIGNING_KEY_SIZE,
+                    SIGNATURE_SIZE,
+                >(&signing_key.0, message, randomness)
+            }
+
+            /// Verify an ML-DSA-44 Signature
+            pub fn verify(
+                verification_key: &MLDSA44VerificationKey,
+                message: &[u8],
+                signature: &MLDSA44Signature,
+            ) -> Result<(), VerificationError> {
+                p::verify::<
+                    ROWS_IN_A,
+                    COLUMNS_IN_A,
+                    SIGNATURE_SIZE,
+                    VERIFICATION_KEY_SIZE,
+                    GAMMA1_EXPONENT,
+                    GAMMA1_RING_ELEMENT_SIZE,
+                    GAMMA2,
+                    BETA,
+                    COMMITMENT_RING_ELEMENT_SIZE,
+                    COMMITMENT_VECTOR_SIZE,
+                    COMMITMENT_HASH_SIZE,
+                    ONES_IN_VERIFIER_CHALLENGE,
+                    MAX_ONES_IN_HINT,
+                >(&verification_key.0, message, &signature.0)
+            }
+        }
+    };
+}
+
+// Instantiations
+
+instantiate! {portable, ml_dsa_generic::instantiations::portable, "Portable ML-DSA 44"}
+#[cfg(feature = "simd256")]
+instantiate! {avx2, ml_dsa_generic::instantiations::avx2, "AVX2 Optimised ML-DSA 44"}
+#[cfg(feature = "simd128")]
+instantiate! {neon, ml_dsa_generic::instantiations::neon, "Neon Optimised ML-DSA 44"}
+
+/// Generate an ML-DSA 44 Key Pair
+///
+/// Generate an ML-DSA key pair. The input is a byte array of size
+/// [`KEY_GENERATION_RANDOMNESS_SIZE`].
+///
+/// This function returns an [`MLDSA44KeyPair`].
+#[cfg(not(eurydice))]
+pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> MLDSA44KeyPair {
+    let (signing_key, verification_key) = multiplexing::generate_key_pair::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -96,16 +173,18 @@ pub fn generate_key_pair(randomness: [u8; 32]) -> MLDSA44KeyPair {
     }
 }
 
-/// Generate an ML-DSA-44 Signature
+/// Sign with ML-DSA 44
+///
+/// Sign a `message` with the ML-DSA `signing_key`.
+///
+/// This function returns an [`MLDSA44Signature`].
+#[cfg(not(eurydice))]
 pub fn sign(
     signing_key: &MLDSA44SigningKey,
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> MLDSA44Signature {
-    ml_dsa_generic::sign::<
-        SIMDUnit, // TODO: Multiplex this based on platform detection.
-        Shake128,
-        Shake256,
+    multiplexing::sign::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -124,15 +203,16 @@ pub fn sign(
 }
 
 /// Verify an ML-DSA-44 Signature
+///
+/// Returns `Ok` when the `signature` is valid for the `message` and
+/// `verification_key`, and a [`VerificationError`] otherwise.
+#[cfg(not(eurydice))]
 pub fn verify(
     verification_key: &MLDSA44VerificationKey,
     message: &[u8],
     signature: &MLDSA44Signature,
 ) -> Result<(), VerificationError> {
-    ml_dsa_generic::verify::<
-        SIMDUnit, // TODO: Multiplex this based on platform detection.
-        Shake128,
-        Shake256,
+    multiplexing::verify::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
