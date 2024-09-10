@@ -70,7 +70,8 @@ macro_rules! bench {
 
 #[macro_export]
 macro_rules! bench_group_libcrux {
-    ($variant:literal, $mod:ident, $keypair_t:ident, $signature_t:ident) => {{
+    ($variant:literal, $mod:path, $keypair_t:ident, $signature_t:ident) => {{
+        use $mod as p;
         bench!(
             "(libcrux) KeyGen",
             $variant,
@@ -81,7 +82,7 @@ macro_rules! bench_group_libcrux {
                 key_generation_seed
             },
             |key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE]| {
-                $mod::generate_key_pair(key_generation_seed)
+                p::generate_key_pair(key_generation_seed)
             }
         );
 
@@ -94,7 +95,7 @@ macro_rules! bench_group_libcrux {
                     bench_utils::random_array();
                 let signing_randomness: [u8; SIGNING_RANDOMNESS_SIZE] = bench_utils::random_array();
                 let message = bench_utils::random_array::<1023>();
-                let keypair = $mod::generate_key_pair(key_generation_seed);
+                let keypair = p::generate_key_pair(key_generation_seed);
 
                 (keypair, message, signing_randomness)
             },
@@ -102,7 +103,7 @@ macro_rules! bench_group_libcrux {
                 $keypair_t,
                 [u8; 1023],
                 [u8; SIGNING_RANDOMNESS_SIZE]
-            )| { $mod::sign(&keypair.signing_key, &message, signing_randomness) }
+            )| { p::sign(&keypair.signing_key, &message, signing_randomness) }
         );
 
         bench!(
@@ -114,12 +115,12 @@ macro_rules! bench_group_libcrux {
                     bench_utils::random_array();
                 let signing_randomness: [u8; SIGNING_RANDOMNESS_SIZE] = bench_utils::random_array();
                 let message = bench_utils::random_array::<1023>();
-                let keypair = $mod::generate_key_pair(key_generation_seed);
-                let signature = $mod::sign(&keypair.signing_key, &message, signing_randomness);
+                let keypair = p::generate_key_pair(key_generation_seed);
+                let signature = p::sign(&keypair.signing_key, &message, signing_randomness);
                 (keypair, message, signature)
             },
             |(keypair, message, signature): ($keypair_t, [u8; 1023], $signature_t)| {
-                $mod::verify(&keypair.verification_key, &message, &signature).unwrap()
+                p::verify(&keypair.verification_key, &message, &signature).unwrap()
             }
         );
 

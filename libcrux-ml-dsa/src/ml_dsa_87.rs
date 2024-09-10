@@ -71,16 +71,13 @@ type SIMDUnit = crate::simd::avx2::AVX2SIMDUnit;
 #[cfg(not(feature = "simd256"))]
 type SIMDUnit = crate::simd::portable::PortableSIMDUnit;
 
-// For regular shake128 we only use portable.
-type Shake128 = crate::hash_functions::portable::Shake128;
-
 #[cfg(feature = "simd256")]
-type Shake128X4 = crate::hash_functions::simd256::Shake128;
+type Shake128X4 = crate::hash_functions::simd256::Shake128x4;
 #[cfg(not(feature = "simd256"))]
 type Shake128X4 = crate::hash_functions::portable::Shake128X4;
 
 #[cfg(feature = "simd256")]
-type Shake256X4 = crate::hash_functions::simd256::Shake256X4;
+type Shake256X4 = crate::hash_functions::simd256::Shake256x4;
 #[cfg(not(feature = "simd256"))]
 type Shake256X4 = crate::hash_functions::portable::Shake256X4;
 
@@ -94,7 +91,6 @@ type Shake256 = crate::hash_functions::portable::Shake256;
 pub fn generate_key_pair(randomness: [u8; 32]) -> MLDSA87KeyPair {
     let (signing_key, verification_key) = crate::ml_dsa_generic::generate_key_pair::<
         SIMDUnit,
-        Shake128,
         Shake128X4,
         Shake256,
         Shake256X4,
@@ -120,7 +116,6 @@ pub fn sign(
 ) -> Result<MLDSA87Signature, SigningError> {
     crate::ml_dsa_generic::sign::<
         SIMDUnit,
-        Shake128,
         Shake128X4,
         Shake256,
         Shake256X4,
@@ -149,7 +144,6 @@ pub fn verify(
 ) -> Result<(), VerificationError> {
     crate::ml_dsa_generic::verify::<
         SIMDUnit,
-        Shake128,
         Shake128X4,
         Shake256,
         ROWS_IN_A,
