@@ -307,14 +307,12 @@ pub(crate) mod unpacked {
         pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
     }
 
-    #[inline(always)]
-    fn init_re<const K: usize, Vector: Operations>() -> [PolynomialRingElement<Vector>; K] {
-        core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO())
-    }
-
-    #[inline(always)]
-    fn init_ae<const K: usize, Vector: Operations>() -> [[PolynomialRingElement<Vector>; K]; K] {
-        core::array::from_fn(|_| core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO()))
+    impl<const K: usize, Vector: Operations> MlKemKeyPairUnpacked<K, Vector> {
+        /// Create a new empty unpacked key pair.
+        #[inline(always)]
+        pub fn new() -> Self {
+            Self::default()
+        }
     }
 
     impl<const K: usize, Vector: Operations> Default for MlKemKeyPairUnpacked<K, Vector> {
@@ -323,16 +321,15 @@ pub(crate) mod unpacked {
             Self {
                 private_key: MlKemPrivateKeyUnpacked {
                     ind_cpa_private_key: IndCpaPrivateKeyUnpacked {
-                        secret_as_ntt: init_re(),
+                        secret_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
                     },
                     implicit_rejection_value: [0u8; 32],
                 },
                 public_key: MlKemPublicKeyUnpacked {
                     ind_cpa_public_key: IndCpaPublicKeyUnpacked {
-                        t_as_ntt: init_re(),
+                        t_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
                         seed_for_A: [0u8; 32],
-                        // XXX: initializing inline here makes eurydice fail.
-                        A: init_ae(),
+                        A: [[PolynomialRingElement::<Vector>::ZERO(); K]; K],
                     },
                     public_key_hash: [0u8; 32],
                 },

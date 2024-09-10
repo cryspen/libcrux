@@ -6,13 +6,6 @@ macro_rules! instantiate {
                 KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE,
             };
 
-            #[cfg(feature = "unpacked")]
-            pub(crate) type MlKemKeyPairUnpacked<const K: usize> =
-                crate::ind_cca::unpacked::MlKemKeyPairUnpacked<K, $vector>;
-            #[cfg(feature = "unpacked")]
-            pub(crate) type MlKemPublicKeyUnpacked<const K: usize> =
-                crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
-
             /// Portable generate key pair.
             pub(crate) fn generate_keypair<
                 const K: usize,
@@ -272,6 +265,11 @@ macro_rules! instantiate {
             pub(crate) mod unpacked {
                 use super::*;
 
+                pub(crate) type MlKemKeyPairUnpacked<const K: usize> =
+                    crate::ind_cca::unpacked::MlKemKeyPairUnpacked<K, $vector>;
+                pub(crate) type MlKemPublicKeyUnpacked<const K: usize> =
+                    crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
+
                 pub(crate) fn generate_keypair<
                     const K: usize,
                     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -296,117 +294,88 @@ macro_rules! instantiate {
                         $hash,
                     >(randomness, out)
                 }
-            }
 
-            #[cfg(feature = "unpacked")]
-            pub(crate) fn generate_keypair_unpacked<
-                const K: usize,
-                const CPA_PRIVATE_KEY_SIZE: usize,
-                const PRIVATE_KEY_SIZE: usize,
-                const PUBLIC_KEY_SIZE: usize,
-                const BYTES_PER_RING_ELEMENT: usize,
-                const ETA1: usize,
-                const ETA1_RANDOMNESS_SIZE: usize,
-            >(
-                randomness: [u8; KEY_GENERATION_SEED_SIZE],
-            ) -> MlKemKeyPairUnpacked<K> {
-                let mut out = MlKemKeyPairUnpacked::<K>::default();
-                crate::ind_cca::unpacked::generate_keypair::<
-                    K,
-                    CPA_PRIVATE_KEY_SIZE,
-                    PRIVATE_KEY_SIZE,
-                    PUBLIC_KEY_SIZE,
-                    BYTES_PER_RING_ELEMENT,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    $vector,
-                    $hash,
-                >(randomness, &mut out);
-                out
-            }
+                /// Unpacked encapsulate
+                pub(crate) fn encapsulate<
+                    const K: usize,
+                    const CIPHERTEXT_SIZE: usize,
+                    const PUBLIC_KEY_SIZE: usize,
+                    const T_AS_NTT_ENCODED_SIZE: usize,
+                    const C1_SIZE: usize,
+                    const C2_SIZE: usize,
+                    const VECTOR_U_COMPRESSION_FACTOR: usize,
+                    const VECTOR_V_COMPRESSION_FACTOR: usize,
+                    const VECTOR_U_BLOCK_LEN: usize,
+                    const ETA1: usize,
+                    const ETA1_RANDOMNESS_SIZE: usize,
+                    const ETA2: usize,
+                    const ETA2_RANDOMNESS_SIZE: usize,
+                >(
+                    public_key: &MlKemPublicKeyUnpacked<K>,
+                    randomness: [u8; SHARED_SECRET_SIZE],
+                ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
+                    crate::ind_cca::unpacked::encapsulate::<
+                        K,
+                        CIPHERTEXT_SIZE,
+                        PUBLIC_KEY_SIZE,
+                        T_AS_NTT_ENCODED_SIZE,
+                        C1_SIZE,
+                        C2_SIZE,
+                        VECTOR_U_COMPRESSION_FACTOR,
+                        VECTOR_V_COMPRESSION_FACTOR,
+                        VECTOR_U_BLOCK_LEN,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                        $vector,
+                        $hash,
+                    >(public_key, randomness)
+                }
 
-            /// Portable encapsualte
-            #[cfg(feature = "unpacked")]
-            pub(crate) fn encapsulate_unpacked<
-                const K: usize,
-                const CIPHERTEXT_SIZE: usize,
-                const PUBLIC_KEY_SIZE: usize,
-                const T_AS_NTT_ENCODED_SIZE: usize,
-                const C1_SIZE: usize,
-                const C2_SIZE: usize,
-                const VECTOR_U_COMPRESSION_FACTOR: usize,
-                const VECTOR_V_COMPRESSION_FACTOR: usize,
-                const VECTOR_U_BLOCK_LEN: usize,
-                const ETA1: usize,
-                const ETA1_RANDOMNESS_SIZE: usize,
-                const ETA2: usize,
-                const ETA2_RANDOMNESS_SIZE: usize,
-            >(
-                public_key: &MlKemPublicKeyUnpacked<K>,
-                randomness: [u8; SHARED_SECRET_SIZE],
-            ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-                crate::ind_cca::unpacked::encapsulate::<
-                    K,
-                    CIPHERTEXT_SIZE,
-                    PUBLIC_KEY_SIZE,
-                    T_AS_NTT_ENCODED_SIZE,
-                    C1_SIZE,
-                    C2_SIZE,
-                    VECTOR_U_COMPRESSION_FACTOR,
-                    VECTOR_V_COMPRESSION_FACTOR,
-                    VECTOR_U_BLOCK_LEN,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    ETA2,
-                    ETA2_RANDOMNESS_SIZE,
-                    $vector,
-                    $hash,
-                >(public_key, randomness)
-            }
-
-            /// Portable decapsulate
-            #[cfg(feature = "unpacked")]
-            pub(crate) fn decapsulate_unpacked<
-                const K: usize,
-                const SECRET_KEY_SIZE: usize,
-                const CPA_SECRET_KEY_SIZE: usize,
-                const PUBLIC_KEY_SIZE: usize,
-                const CIPHERTEXT_SIZE: usize,
-                const T_AS_NTT_ENCODED_SIZE: usize,
-                const C1_SIZE: usize,
-                const C2_SIZE: usize,
-                const VECTOR_U_COMPRESSION_FACTOR: usize,
-                const VECTOR_V_COMPRESSION_FACTOR: usize,
-                const C1_BLOCK_SIZE: usize,
-                const ETA1: usize,
-                const ETA1_RANDOMNESS_SIZE: usize,
-                const ETA2: usize,
-                const ETA2_RANDOMNESS_SIZE: usize,
-                const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
-            >(
-                key_pair: &MlKemKeyPairUnpacked<K>,
-                ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
-            ) -> MlKemSharedSecret {
-                crate::ind_cca::unpacked::decapsulate::<
-                    K,
-                    SECRET_KEY_SIZE,
-                    CPA_SECRET_KEY_SIZE,
-                    PUBLIC_KEY_SIZE,
-                    CIPHERTEXT_SIZE,
-                    T_AS_NTT_ENCODED_SIZE,
-                    C1_SIZE,
-                    C2_SIZE,
-                    VECTOR_U_COMPRESSION_FACTOR,
-                    VECTOR_V_COMPRESSION_FACTOR,
-                    C1_BLOCK_SIZE,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    ETA2,
-                    ETA2_RANDOMNESS_SIZE,
-                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-                    $vector,
-                    $hash,
-                >(key_pair, ciphertext)
+                /// Unpacked decapsulate
+                pub(crate) fn decapsulate<
+                    const K: usize,
+                    const SECRET_KEY_SIZE: usize,
+                    const CPA_SECRET_KEY_SIZE: usize,
+                    const PUBLIC_KEY_SIZE: usize,
+                    const CIPHERTEXT_SIZE: usize,
+                    const T_AS_NTT_ENCODED_SIZE: usize,
+                    const C1_SIZE: usize,
+                    const C2_SIZE: usize,
+                    const VECTOR_U_COMPRESSION_FACTOR: usize,
+                    const VECTOR_V_COMPRESSION_FACTOR: usize,
+                    const C1_BLOCK_SIZE: usize,
+                    const ETA1: usize,
+                    const ETA1_RANDOMNESS_SIZE: usize,
+                    const ETA2: usize,
+                    const ETA2_RANDOMNESS_SIZE: usize,
+                    const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
+                >(
+                    key_pair: &MlKemKeyPairUnpacked<K>,
+                    ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+                ) -> MlKemSharedSecret {
+                    crate::ind_cca::unpacked::decapsulate::<
+                        K,
+                        SECRET_KEY_SIZE,
+                        CPA_SECRET_KEY_SIZE,
+                        PUBLIC_KEY_SIZE,
+                        CIPHERTEXT_SIZE,
+                        T_AS_NTT_ENCODED_SIZE,
+                        C1_SIZE,
+                        C2_SIZE,
+                        VECTOR_U_COMPRESSION_FACTOR,
+                        VECTOR_V_COMPRESSION_FACTOR,
+                        C1_BLOCK_SIZE,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                        $vector,
+                        $hash,
+                    >(key_pair, ciphertext)
+                }
             }
         }
     };

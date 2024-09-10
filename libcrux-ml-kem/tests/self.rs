@@ -41,7 +41,8 @@ macro_rules! impl_consistency_unpacked {
         #[test]
         fn $name() {
             let randomness = random_array();
-            let key_pair_unpacked = $key_gen_unpacked(randomness);
+            let mut key_pair_unpacked = Default::default();
+            $key_gen_unpacked(randomness, &mut key_pair_unpacked);
             let key_pair = $key_gen(randomness);
             let randomness = random_array();
             let (ciphertext, shared_secret) = $encaps(key_pair.public_key(), randomness);
@@ -238,9 +239,9 @@ impl_consistency_unpacked!(
     consistency_unpacked_512_portable,
     libcrux_ml_kem::mlkem512::portable::generate_key_pair,
     libcrux_ml_kem::mlkem512::portable::encapsulate,
-    libcrux_ml_kem::mlkem512::portable::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem512::portable::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem512::portable::decapsulate_unpacked
+    libcrux_ml_kem::mlkem512::portable::unpacked::generate_key_pair,
+    libcrux_ml_kem::mlkem512::portable::unpacked::encapsulate,
+    libcrux_ml_kem::mlkem512::portable::unpacked::decapsulate
 );
 
 #[cfg(all(
@@ -253,9 +254,9 @@ impl_consistency_unpacked!(
     consistency_unpacked_512_neon,
     libcrux_ml_kem::mlkem512::neon::generate_key_pair,
     libcrux_ml_kem::mlkem512::neon::encapsulate,
-    libcrux_ml_kem::mlkem512::neon::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem512::neon::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem512::neon::decapsulate_unpacked
+    libcrux_ml_kem::mlkem512::neon::unpacked::generate_key_pair,
+    libcrux_ml_kem::mlkem512::neon::unpacked::encapsulate,
+    libcrux_ml_kem::mlkem512::neon::unpacked::decapsulate
 );
 
 #[cfg(all(
@@ -268,9 +269,9 @@ impl_consistency_unpacked!(
     consistency_unpacked_512_avx2,
     libcrux_ml_kem::mlkem512::avx2::generate_key_pair,
     libcrux_ml_kem::mlkem512::avx2::encapsulate,
-    libcrux_ml_kem::mlkem512::avx2::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem512::avx2::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem512::avx2::decapsulate_unpacked
+    libcrux_ml_kem::mlkem512::avx2::unpacked::generate_key_pair,
+    libcrux_ml_kem::mlkem512::avx2::unpacked::encapsulate,
+    libcrux_ml_kem::mlkem512::avx2::unpacked::decapsulate
 );
 
 #[cfg(all(
@@ -282,9 +283,9 @@ impl_consistency_unpacked!(
     consistency_unpacked_1024_portable,
     libcrux_ml_kem::mlkem1024::portable::generate_key_pair,
     libcrux_ml_kem::mlkem1024::portable::encapsulate,
-    libcrux_ml_kem::mlkem1024::portable::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem1024::portable::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem1024::portable::decapsulate_unpacked
+    libcrux_ml_kem::mlkem1024::portable::unpacked::generate_key_pair,
+    libcrux_ml_kem::mlkem1024::portable::unpacked::encapsulate,
+    libcrux_ml_kem::mlkem1024::portable::unpacked::decapsulate
 );
 
 #[cfg(all(
@@ -297,9 +298,9 @@ impl_consistency_unpacked!(
     consistency_unpacked_1024_neon,
     libcrux_ml_kem::mlkem1024::neon::generate_key_pair,
     libcrux_ml_kem::mlkem1024::neon::encapsulate,
-    libcrux_ml_kem::mlkem1024::neon::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem1024::neon::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem1024::neon::decapsulate_unpacked
+    libcrux_ml_kem::mlkem1024::neon::unpacked::generate_key_pair,
+    libcrux_ml_kem::mlkem1024::neon::unpacked::encapsulate,
+    libcrux_ml_kem::mlkem1024::neon::unpacked::decapsulate
 );
 
 #[cfg(all(
@@ -312,9 +313,9 @@ impl_consistency_unpacked!(
     consistency_unpacked_1024_avx2,
     libcrux_ml_kem::mlkem1024::avx2::generate_key_pair,
     libcrux_ml_kem::mlkem1024::avx2::encapsulate,
-    libcrux_ml_kem::mlkem1024::avx2::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem1024::avx2::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem1024::avx2::decapsulate_unpacked
+    libcrux_ml_kem::mlkem1024::avx2::unpacked::generate_key_pair,
+    libcrux_ml_kem::mlkem1024::avx2::unpacked::encapsulate,
+    libcrux_ml_kem::mlkem1024::avx2::unpacked::decapsulate
 );
 
 #[cfg(all(
@@ -326,9 +327,9 @@ impl_consistency_unpacked!(
     consistency_unpacked_768_portable,
     libcrux_ml_kem::mlkem768::portable::generate_key_pair,
     libcrux_ml_kem::mlkem768::portable::encapsulate,
-    libcrux_ml_kem::mlkem768::portable::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem768::portable::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem768::portable::decapsulate_unpacked
+    libcrux_ml_kem::mlkem768::portable::unpacked::generate_key_pair,
+    libcrux_ml_kem::mlkem768::portable::unpacked::encapsulate,
+    libcrux_ml_kem::mlkem768::portable::unpacked::decapsulate
 );
 
 #[cfg(all(
@@ -341,9 +342,9 @@ impl_consistency_unpacked!(
     consistency_unpacked_768_neon,
     libcrux_ml_kem::mlkem768::neon::generate_key_pair,
     libcrux_ml_kem::mlkem768::neon::encapsulate,
-    libcrux_ml_kem::mlkem768::neon::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem768::neon::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem768::neon::decapsulate_unpacked
+    libcrux_ml_kem::mlkem768::neon::unpacked::generate_key_pair,
+    libcrux_ml_kem::mlkem768::neon::unpacked::encapsulate,
+    libcrux_ml_kem::mlkem768::neon::unpacked::decapsulate
 );
 
 #[cfg(all(
@@ -356,9 +357,9 @@ impl_consistency_unpacked!(
     consistency_unpacked_768_avx2,
     libcrux_ml_kem::mlkem768::avx2::generate_key_pair,
     libcrux_ml_kem::mlkem768::avx2::encapsulate,
-    libcrux_ml_kem::mlkem768::avx2::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem768::avx2::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem768::avx2::decapsulate_unpacked
+    libcrux_ml_kem::mlkem768::avx2::unpacked::generate_key_pair,
+    libcrux_ml_kem::mlkem768::avx2::unpacked::encapsulate,
+    libcrux_ml_kem::mlkem768::avx2::unpacked::decapsulate
 );
 
 #[cfg(feature = "mlkem512")]

@@ -46,17 +46,6 @@ pub type MlKem1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 /// An ML-KEM 1024 Key pair
 pub type MlKem1024KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 
-/// An Unpacked ML-KEM 1024 Public key
-#[allow(type_alias_bounds)]
-#[cfg(feature = "unpacked")]
-#[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
-pub type MlKem1024PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_1024, Vector>;
-/// Am Unpacked ML-KEM 1024 Key pair
-#[allow(type_alias_bounds)]
-#[cfg(feature = "unpacked")]
-#[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
-pub type MlKem1024KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_1024, Vector>;
-
 // Instantiate the different functions.
 macro_rules! instantiate {
     ($modp:ident, $p:path, $vec:path, $doc:expr) => {
@@ -234,95 +223,109 @@ macro_rules! instantiate {
                 >(private_key, ciphertext)
             }
 
-            /// Generate ML-KEM 1024 Key Pair in "unpacked" form
+            /// Unpacked APIs that don't use serialized keys.
             #[cfg(feature = "unpacked")]
             #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
-            pub fn generate_key_pair_unpacked(
-                randomness: [u8; KEY_GENERATION_SEED_SIZE],
-            ) -> MlKem1024KeyPairUnpacked<$vec> {
-                p::generate_keypair_unpacked::<
-                    RANK_1024,
-                    CPA_PKE_SECRET_KEY_SIZE_1024,
-                    SECRET_KEY_SIZE_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    RANKED_BYTES_PER_RING_ELEMENT_1024,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                >(randomness)
-            }
+            pub mod unpacked {
+                use super::*;
 
-            /// Encapsulate ML-KEM 1024 (unpacked)
-            ///
-            /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
-            /// The input is a reference to an unpacked public key of type [`MlKem1024PublicKeyUnpacked`],
-            /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
-            /// TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
-            /// <https://github.com/hacspec/hax/issues/770>
-            #[cfg_attr(
-                hax,
-                hax_lib::fstar::before(
-                    interface,
-                    "
-let _ =
-    (* This module has implicit dependencies, here we make them explicit. *)
-    (* The implicit dependencies arise from typeclasses instances. *)
-    let open Libcrux_ml_kem.Vector.Portable in
-    let open Libcrux_ml_kem.Vector.Neon in
-    ()"
-                )
-            )]
-            #[cfg(feature = "unpacked")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
-            pub fn encapsulate_unpacked(
-                public_key: &MlKem1024PublicKeyUnpacked<$vec>,
-                randomness: [u8; SHARED_SECRET_SIZE],
-            ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
-                p::encapsulate_unpacked::<
-                    RANK_1024,
-                    CPA_PKE_CIPHERTEXT_SIZE_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    T_AS_NTT_ENCODED_SIZE_1024,
-                    C1_SIZE_1024,
-                    C2_SIZE_1024,
-                    VECTOR_U_COMPRESSION_FACTOR_1024,
-                    VECTOR_V_COMPRESSION_FACTOR_1024,
-                    C1_BLOCK_SIZE_1024,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    ETA2,
-                    ETA2_RANDOMNESS_SIZE,
-                >(public_key, randomness)
-            }
+                /// An Unpacked ML-KEM 1024 Public key
+                #[allow(type_alias_bounds)]
+                pub type MlKem1024PublicKeyUnpacked<Vector: VectorType> =
+                    MlKemPublicKeyUnpacked<RANK_1024, Vector>;
 
-            /// Decapsulate ML-KEM 1024 (unpacked)
-            ///
-            /// Generates an [`MlKemSharedSecret`].
-            /// The input is a reference to an unpacked key pair of type [`MlKem1024KeyPairUnpacked`]
-            /// and an [`MlKem1024Ciphertext`].
-            #[cfg(feature = "unpacked")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
-            pub fn decapsulate_unpacked(
-                private_key: &MlKem1024KeyPairUnpacked<$vec>,
-                ciphertext: &MlKem1024Ciphertext,
-            ) -> MlKemSharedSecret {
-                p::decapsulate_unpacked::<
-                    RANK_1024,
-                    SECRET_KEY_SIZE_1024,
-                    CPA_PKE_SECRET_KEY_SIZE_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    CPA_PKE_CIPHERTEXT_SIZE_1024,
-                    T_AS_NTT_ENCODED_SIZE_1024,
-                    C1_SIZE_1024,
-                    C2_SIZE_1024,
-                    VECTOR_U_COMPRESSION_FACTOR_1024,
-                    VECTOR_V_COMPRESSION_FACTOR_1024,
-                    C1_BLOCK_SIZE_1024,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    ETA2,
-                    ETA2_RANDOMNESS_SIZE,
-                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-                >(private_key, ciphertext)
+                /// Am Unpacked ML-KEM 1024 Key pair
+                #[allow(type_alias_bounds)]
+                pub type MlKem1024KeyPairUnpacked<Vector: VectorType> =
+                    MlKemKeyPairUnpacked<RANK_1024, Vector>;
+
+                /// Generate ML-KEM 1024 Key Pair in "unpacked" form
+                #[cfg(feature = "unpacked")]
+                #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
+                pub fn generate_key_pair(
+                    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+                    key_pair: &mut MlKem1024KeyPairUnpacked<$vec>,
+                ) {
+                    p::unpacked::generate_keypair::<
+                        RANK_1024,
+                        CPA_PKE_SECRET_KEY_SIZE_1024,
+                        SECRET_KEY_SIZE_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                        RANKED_BYTES_PER_RING_ELEMENT_1024,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                    >(randomness, key_pair)
+                }
+
+                /// Encapsulate ML-KEM 1024 (unpacked)
+                ///
+                /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
+                /// The input is a reference to an unpacked public key of type [`MlKem1024PublicKeyUnpacked`],
+                /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+                /// TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
+                /// <https://github.com/hacspec/hax/issues/770>
+                #[cfg_attr(
+                    hax,
+                    hax_lib::fstar::before(
+                        interface,
+                        "
+    let _ =
+        (* This module has implicit dependencies, here we make them explicit. *)
+        (* The implicit dependencies arise from typeclasses instances. *)
+        let open Libcrux_ml_kem.Vector.Portable in
+        let open Libcrux_ml_kem.Vector.Neon in
+        ()"
+                    )
+                )]
+                pub fn encapsulate(
+                    public_key: &MlKem1024PublicKeyUnpacked<$vec>,
+                    randomness: [u8; SHARED_SECRET_SIZE],
+                ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
+                    p::unpacked::encapsulate::<
+                        RANK_1024,
+                        CPA_PKE_CIPHERTEXT_SIZE_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                        T_AS_NTT_ENCODED_SIZE_1024,
+                        C1_SIZE_1024,
+                        C2_SIZE_1024,
+                        VECTOR_U_COMPRESSION_FACTOR_1024,
+                        VECTOR_V_COMPRESSION_FACTOR_1024,
+                        C1_BLOCK_SIZE_1024,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                    >(public_key, randomness)
+                }
+
+                /// Decapsulate ML-KEM 1024 (unpacked)
+                ///
+                /// Generates an [`MlKemSharedSecret`].
+                /// The input is a reference to an unpacked key pair of type [`MlKem1024KeyPairUnpacked`]
+                /// and an [`MlKem1024Ciphertext`].
+                pub fn decapsulate(
+                    private_key: &MlKem1024KeyPairUnpacked<$vec>,
+                    ciphertext: &MlKem1024Ciphertext,
+                ) -> MlKemSharedSecret {
+                    p::unpacked::decapsulate::<
+                        RANK_1024,
+                        SECRET_KEY_SIZE_1024,
+                        CPA_PKE_SECRET_KEY_SIZE_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                        CPA_PKE_CIPHERTEXT_SIZE_1024,
+                        T_AS_NTT_ENCODED_SIZE_1024,
+                        C1_SIZE_1024,
+                        C2_SIZE_1024,
+                        VECTOR_U_COMPRESSION_FACTOR_1024,
+                        VECTOR_V_COMPRESSION_FACTOR_1024,
+                        C1_BLOCK_SIZE_1024,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                    >(private_key, ciphertext)
+                }
             }
         }
     };

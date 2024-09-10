@@ -17,6 +17,7 @@ if(NOT MSVC)
     add_compile_options(
         -Wall
         -fstack-usage
+        -Wunused-function
         $<$<CONFIG:DEBUG>:-g>
         $<$<CONFIG:DEBUG>:-Og>
         $<$<CONFIG:RELEASE>:-g>
