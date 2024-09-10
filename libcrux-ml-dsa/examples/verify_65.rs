@@ -18,6 +18,6 @@ fn main() {
         .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
     for _i in 0..100_000 {
-        ml_dsa_65::verify(&keypair.verification_key, &message, &signature).unwrap();
+        ml_dsa_65::verify(&keypair.verification_key, &message, &signature);
     }
 }
