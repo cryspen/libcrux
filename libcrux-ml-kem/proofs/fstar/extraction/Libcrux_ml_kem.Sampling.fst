@@ -226,7 +226,7 @@ let sample_from_binomial_distribution_2_
 
 #pop-options
 
-#push-options "--admit_smt_queries true"
+#push-options "--z3rlimit 800"
 
 let sample_from_binomial_distribution_3_
       (#v_Vector: Type0)
@@ -235,6 +235,10 @@ let sample_from_binomial_distribution_3_
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (randomness: t_Slice u8)
      =
+  let _:Prims.unit =
+    assert (v (sz 3 *! sz 64) == 192);
+    assert (Seq.length randomness == 192)
+  in
   let sampled_i16s:t_Array i16 (sz 256) = Rust_primitives.Hax.repeat 0s (sz 256) in
   let sampled_i16s:t_Array i16 (sz 256) =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 3)
@@ -257,6 +261,11 @@ let sample_from_binomial_distribution_3_
           let first_bits:u32 = random_bits_as_u24 &. 2396745ul in
           let second_bits:u32 = (random_bits_as_u24 >>! 1l <: u32) &. 2396745ul in
           let third_bits:u32 = (random_bits_as_u24 >>! 2l <: u32) &. 2396745ul in
+          let _:Prims.unit =
+            logand_lemma random_bits_as_u24 2396745ul;
+            logand_lemma (random_bits_as_u24 >>! 1l <: u32) 2396745ul;
+            logand_lemma (random_bits_as_u24 >>! 2l <: u32) 2396745ul
+          in
           let coin_toss_outcomes:u32 = (first_bits +! second_bits <: u32) +! third_bits in
           Rust_primitives.Hax.Folds.fold_range_step_by 0l
             24l
@@ -277,6 +286,15 @@ let sample_from_binomial_distribution_3_
                   <:
                   i16
                 in
+                let _:Prims.unit =
+                  logand_lemma (coin_toss_outcomes >>! outcome_set <: u32) 7ul;
+                  logand_lemma (coin_toss_outcomes >>! (outcome_set +! 3l <: i32) <: u32) 7ul;
+                  assert (v outcome_1_ >= 0 /\ v outcome_1_ <= 7);
+                  assert (v outcome_2_ >= 0 /\ v outcome_2_ <= 7);
+                  assert (v chunk_number <= 63);
+                  assert (v (sz 4 *! chunk_number <: usize) <= 252);
+                  assert (v (cast (outcome_set /! 6l <: i32) <: usize) <= 3)
+                in
                 let offset:usize = cast (outcome_set /! 6l <: i32) <: usize in
                 let sampled_i16s:t_Array i16 (sz 256) =
                   Rust_primitives.Hax.Monomorphized_update_at.update_at_usize sampled_i16s
@@ -289,8 +307,6 @@ let sample_from_binomial_distribution_3_
 
 #pop-options
 
-#push-options "--admit_smt_queries true"
-
 let sample_from_binomial_distribution
       (v_ETA: usize)
       (#v_Vector: Type0)
@@ -299,6 +315,7 @@ let sample_from_binomial_distribution
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (randomness: t_Slice u8)
      =
+  let _:Prims.unit = assert ((v (cast v_ETA <: u32) == 2) \/ (v (cast v_ETA <: u32) == 3)) in
   match cast (v_ETA <: usize) <: u32 with
   | 2ul -> sample_from_binomial_distribution_2_ #v_Vector randomness
   | 3ul -> sample_from_binomial_distribution_3_ #v_Vector randomness
@@ -307,8 +324,6 @@ let sample_from_binomial_distribution
 
         <:
         Rust_primitives.Hax.t_Never)
-
-#pop-options
 
 #push-options "--admit_smt_queries true"
 
