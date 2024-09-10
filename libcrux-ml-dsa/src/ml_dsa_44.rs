@@ -2,10 +2,8 @@ use crate::{
     constants::*,
     ml_dsa_generic::{self, multiplexing},
     types::*,
-SigningError,
-    VerificationError,
+    SigningError, VerificationError,
 };
-
 
 // ML-DSA-44-specific parameters
 

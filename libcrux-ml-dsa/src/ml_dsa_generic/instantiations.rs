@@ -1,7 +1,11 @@
 macro_rules! instantiate {
     ($modp:ident, $simdunit:path, $shake128x4:path, $shake256:path, $shake256x4:path) => {
         pub mod $modp {
-            use crate::{constants::*, ml_dsa_generic::{VerificationError, SigningError}, types::*};
+            use crate::{
+                constants::*,
+                ml_dsa_generic::{SigningError, VerificationError},
+                types::*,
+            };
 
             /// Generate key pair.
             pub(crate) fn generate_key_pair<
