@@ -116,7 +116,8 @@ macro_rules! bench_group_libcrux {
                 let signing_randomness: [u8; SIGNING_RANDOMNESS_SIZE] = bench_utils::random_array();
                 let message = bench_utils::random_array::<1023>();
                 let keypair = p::generate_key_pair(key_generation_seed);
-                let signature = p::sign(&keypair.signing_key, &message, signing_randomness).unwrap();
+                let signature =
+                    p::sign(&keypair.signing_key, &message, signing_randomness).unwrap();
                 (keypair, message, signature)
             },
             |(keypair, message, signature): ($keypair_t, [u8; 1023], $signature_t)| {
