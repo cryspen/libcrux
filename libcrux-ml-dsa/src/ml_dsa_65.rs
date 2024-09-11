@@ -1,4 +1,4 @@
-use crate::{constants::*, types::*, VerificationError};
+use crate::{constants::*, types::*, SigningError, VerificationError};
 
 // ML-DSA-65-specific parameters
 
@@ -110,7 +110,7 @@ pub fn sign(
     signing_key: &MLDSA65SigningKey,
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-) -> MLDSA65Signature {
+) -> Result<MLDSA65Signature, SigningError> {
     crate::ml_dsa_generic::sign::<
         SIMDUnit,
         Shake128X4,
