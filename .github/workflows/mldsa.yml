@@ -98,3 +98,9 @@ jobs:
         run: |
           cargo clean
           cargo test --verbose --release $RUST_TARGET_FLAG
+
+      # Benchmarks
+      - name: 🔨 Build Benchmarks
+        run: |
+          cargo clean
+          cargo bench --no-run
