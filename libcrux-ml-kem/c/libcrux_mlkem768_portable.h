@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
- * Karamel: f9cdef256a2b88282398a609847b34dd8c9cf3e3
- * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: 06b02e72e21705b53062d5988d3233715af43ad2
+ * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
+ * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
+ * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: 99498eed461fa03566e0382b445c77bd2af5b59d
  */
 
 #ifndef __libcrux_mlkem768_portable_H
@@ -20,33 +20,51 @@ extern "C" {
 
 #include "eurydice_glue.h"
 #include "libcrux_core.h"
-#include "libcrux_mlkem_portable.h"
 
+/**
+ Decapsulate ML-KEM 768
+
+ Generates an [`MlKemSharedSecret`].
+ The input is a reference to an [`MlKem768PrivateKey`] and an
+ [`MlKem768Ciphertext`].
+*/
 void libcrux_ml_kem_mlkem768_portable_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
 
-void libcrux_ml_kem_mlkem768_portable_decapsulate_unpacked(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_f8 *private_key,
-    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
+/**
+ Encapsulate ML-KEM 768
 
+ Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+ The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
+ bytes of `randomness`.
+*/
 tuple_3c libcrux_ml_kem_mlkem768_portable_encapsulate(
     libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
     uint8_t randomness[32U]);
 
-tuple_3c libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 *public_key,
-    uint8_t randomness[32U]);
-
+/**
+ Generate ML-KEM 768 Key Pair
+*/
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_mlkem768_portable_generate_key_pair(uint8_t randomness[64U]);
 
-libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_f8
-libcrux_ml_kem_mlkem768_portable_generate_key_pair_unpacked(
-    uint8_t randomness[64U]);
+/**
+ Validate a private key.
 
-core_option_Option_92 libcrux_ml_kem_mlkem768_portable_validate_public_key(
-    libcrux_ml_kem_types_MlKemPublicKey_15 public_key);
+ Returns `true` if valid, and `false` otherwise.
+*/
+bool libcrux_ml_kem_mlkem768_portable_validate_private_key(
+    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext);
+
+/**
+ Validate a public key.
+
+ Returns `true` if valid, and `false` otherwise.
+*/
+bool libcrux_ml_kem_mlkem768_portable_validate_public_key(
+    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key);
 
 #if defined(__cplusplus)
 }

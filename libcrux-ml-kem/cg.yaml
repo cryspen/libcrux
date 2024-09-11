@@ -27,8 +27,8 @@ files:
         - [libcrux_sha3, simd, avx2, "*"]
       monomorphizations_exact:
         - [libcrux_sha3, generic_keccak, KeccakState_29]
-        - [libcrux_sha3, generic_keccak, absorb_final_d9 ]
-        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks_2a ]
+        - [libcrux_sha3, generic_keccak, absorb_final_7f ]
+        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks_ed ]
       monomorphizations_of:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
@@ -96,8 +96,8 @@ files:
     inline_static: true
     private:
       exact:
-        - [ libcrux_ml_kem, ind_cca, MlKem ]
-        - [ libcrux_ml_kem, ind_cca, Kyber ]
+        - [ libcrux_ml_kem, variant, MlKem ]
+        - [ libcrux_ml_kem, variant, Kyber ]
     api:
       patterns:
         - [libcrux_ml_kem, "*"]
@@ -116,3 +116,11 @@ files:
         - [libcrux_ml_kem, vector, "*"]
         - [libcrux_ml_kem, hash_functions, portable, "*"]
         - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
+
+naming:
+  skip_prefix:
+    - [ core, core_arch, arm_shared, neon ]
+    - [ core, core_arch, x86 ]
+    - [ core, option ]
+    - [ core, result ]
+    - [ core, array ]

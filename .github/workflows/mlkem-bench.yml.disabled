@@ -1,0 +1,105 @@
+name: Benchmark ML-KEM
+
+on:
+  workflow_dispatch:
+  merge_group:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    strategy:
+      fail-fast: true
+      matrix:
+        bits: [32, 64]
+        os:
+          - macos-13
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        exclude:
+          # There's no such thing as 32-bit macOS
+          - bits: 32
+            os: "macos-latest"
+          - bits: 32
+            os: "macos-13"
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: libcrux-ml-kem
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update dependencies
+        run: cargo update
+
+      - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
+        if: ${{ matrix.bits == 64 }}
+
+      - name: 🛠️ Setup Ubuntu x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: |
+          rustup target add i686-unknown-linux-gnu
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib
+
+      - name: 🛠️ Setup Ubuntu x64
+        if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
+        run: |
+          rustup target add aarch64-unknown-linux-gnu
+
+      - name: 🛠️ Setup macOS
+        if: ${{  matrix.os == 'macos-latest' }}
+        run: |
+          rustup target add aarch64-apple-darwin
+
+      # Set up 32 bit systems
+
+      - name: 🛠️ Config Windows x86
+        run: echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
+
+      - name: 🛠️ Config Linux x86
+        run: |
+          echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
+
+      # - name: 🔨 Build
+      #   run: cargo build --benches
+
+      # - name: ⬆ Upload build
+      #   uses: ./.github/actions/upload_artifacts
+      #   with:
+      #     name: benchmarks_${{ matrix.os }}_${{ matrix.bits }}
+
+      # Benchmarks ...
+
+      - name: 🏃🏻‍♀️ Benchmarks
+        run: cargo bench --verbose $RUST_TARGET_FLAG -- --output-format bencher | tee bench.txt 
+
+      - name: 🏃🏻‍♀️ Benchmarks Portable
+        run: |
+          cargo clean
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo bench --verbose $RUST_TARGET_FLAG -- --output-format bencher | sed 's/^test \(.*\) \.\.\. bench/test portable \1 ... bench/' | tee -a bench.txt 
+      - name: Clear Cargo.lock so it doesn't interfere with git
+        run: git checkout Cargo.lock
+      - name: Store benchmarks
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: ML-KEM Benchmark
+          tool: 'cargo'
+          output-file-path: libcrux-ml-kem/bench.txt
+          benchmark-data-dir-path: dev/bench/mlkem
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+
+        
+

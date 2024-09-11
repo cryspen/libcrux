@@ -7,7 +7,7 @@ use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
 fn shift_interval<const ETA: usize>(coefficients: Vec256) -> Vec256 {
-    match ETA {
+    match ETA as u8 {
         2 => {
             let quotient = mm256_mullo_epi32(coefficients, mm256_set1_epi32(26));
             let quotient = mm256_srai_epi32::<7>(quotient);
@@ -29,7 +29,7 @@ pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usiz
     // values that are 4-bits wide.
     let potential_coefficients = encoding::error::deserialize_to_unsigned::<4>(input);
 
-    let interval_boundary: i32 = match ETA {
+    let interval_boundary: i32 = match ETA as u8 {
         2 => 15,
         4 => 9,
         _ => unreachable!(),

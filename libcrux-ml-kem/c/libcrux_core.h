@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 53530427db2941ce784201e64086766504bc5642
- * Eurydice: 67f4341506300372fba9cb8de070234935839cb7
- * Karamel: f9cdef256a2b88282398a609847b34dd8c9cf3e3
- * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
- * Libcrux: 06b02e72e21705b53062d5988d3233715af43ad2
+ * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
+ * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
+ * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: 99498eed461fa03566e0382b445c77bd2af5b59d
  */
 
 #ifndef __libcrux_core_H
@@ -64,16 +64,6 @@ typedef struct libcrux_ml_kem_types_MlKemPublicKey_1f_s {
 } libcrux_ml_kem_types_MlKemPublicKey_1f;
 
 /**
-A monomorphic instance of core.option.Option
-with types libcrux_ml_kem_types_MlKemPublicKey[[$1568size_t]]
-
-*/
-typedef struct core_option_Option_99_s {
-  core_option_Option_ef_tags tag;
-  libcrux_ml_kem_types_MlKemPublicKey_1f f0;
-} core_option_Option_99;
-
-/**
 A monomorphic instance of libcrux_ml_kem.types.MlKemPrivateKey
 with const generics
 - $3168size_t
@@ -112,16 +102,6 @@ typedef struct libcrux_ml_kem_types_MlKemPublicKey_15_s {
 } libcrux_ml_kem_types_MlKemPublicKey_15;
 
 /**
-A monomorphic instance of core.option.Option
-with types libcrux_ml_kem_types_MlKemPublicKey[[$1184size_t]]
-
-*/
-typedef struct core_option_Option_92_s {
-  core_option_Option_ef_tags tag;
-  libcrux_ml_kem_types_MlKemPublicKey_15 f0;
-} core_option_Option_92;
-
-/**
 A monomorphic instance of libcrux_ml_kem.types.MlKemPrivateKey
 with const generics
 - $2400size_t
@@ -158,16 +138,6 @@ with const generics
 typedef struct libcrux_ml_kem_types_MlKemPublicKey_be_s {
   uint8_t value[800U];
 } libcrux_ml_kem_types_MlKemPublicKey_be;
-
-/**
-A monomorphic instance of core.option.Option
-with types libcrux_ml_kem_types_MlKemPublicKey[[$800size_t]]
-
-*/
-typedef struct core_option_Option_04_s {
-  core_option_Option_ef_tags tag;
-  libcrux_ml_kem_types_MlKemPublicKey_be f0;
-} core_option_Option_04;
 
 /**
 A monomorphic instance of libcrux_ml_kem.types.MlKemPrivateKey
@@ -229,7 +199,7 @@ A monomorphic instance of core.result.unwrap_41
 with types uint8_t[8size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_ac(core_result_Result_56 self, uint8_t ret[8U]);
+void core_result_unwrap_41_0e(core_result_Result_56 self, uint8_t ret[8U]);
 
 typedef struct Eurydice_slice_uint8_t_x2_s {
   Eurydice_slice fst;

@@ -2,8 +2,7 @@ use std::hint::black_box;
 use std::time::Duration;
 
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use rand_core::OsRng;
-use rand_core::RngCore;
+use rand::{rngs::OsRng, RngCore};
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 
@@ -48,7 +47,8 @@ pub fn key_generation(c: &mut Criterion) {
     #[cfg(all(
         feature = "mlkem768",
         feature = "pre-verification",
-        feature = "simd256"
+        feature = "simd256",
+        feature = "unpacked"
     ))]
     c.bench_function("libcrux avx2 unpacked (external random)", |b| {
         let mut seed = [0; 64];
@@ -71,7 +71,11 @@ pub fn key_generation(c: &mut Criterion) {
         })
     });
 
-    #[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+    #[cfg(all(
+        feature = "mlkem768",
+        feature = "pre-verification",
+        feature = "unpacked"
+    ))]
     c.bench_function("libcrux portable unpacked (external random)", |b| {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
@@ -94,10 +98,10 @@ pub fn pk_validation(c: &mut Criterion) {
                 b.iter_batched(
                     || {
                         let keypair = p::generate_key_pair(seed);
-                        keypair.public_key().as_slice().into()
+                        keypair
                     },
-                    |public_key| {
-                        let _valid = black_box(p::validate_public_key(public_key));
+                    |keypair| {
+                        let _valid = black_box(p::validate_public_key(keypair.public_key()));
                     },
                     BatchSize::SmallInput,
                 )
@@ -135,7 +139,11 @@ pub fn encapsulation(c: &mut Criterion) {
     init!(mlkem768, "Encapsulation", c);
     init!(mlkem1024, "Encapsulation", c);
 
-    #[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+    #[cfg(all(
+        feature = "mlkem768",
+        feature = "pre-verification",
+        feature = "unpacked"
+    ))]
     c.bench_function("libcrux unpacked portable (external random)", |b| {
         let mut seed1 = [0; 64];
         OsRng.fill_bytes(&mut seed1);
@@ -174,7 +182,8 @@ pub fn encapsulation(c: &mut Criterion) {
     #[cfg(all(
         feature = "mlkem768",
         feature = "pre-verification",
-        feature = "simd256"
+        feature = "simd256",
+        feature = "unpacked"
     ))]
     c.bench_function("libcrux unpacked avx2 (external random)", |b| {
         let mut seed1 = [0; 64];
@@ -222,7 +231,11 @@ pub fn decapsulation(c: &mut Criterion) {
     init!(mlkem768, "Decapsulation", c);
     init!(mlkem1024, "Decapsulation", c);
 
-    #[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+    #[cfg(all(
+        feature = "mlkem768",
+        feature = "pre-verification",
+        feature = "unpacked"
+    ))]
     c.bench_function("libcrux unpacked portable", |b| {
         let mut seed1 = [0; 64];
         OsRng.fill_bytes(&mut seed1);
@@ -270,7 +283,8 @@ pub fn decapsulation(c: &mut Criterion) {
     #[cfg(all(
         feature = "mlkem768",
         feature = "pre-verification",
-        feature = "simd256"
+        feature = "simd256",
+        feature = "unpacked"
     ))]
     c.bench_function("libcrux unpacked avx2", |b| {
         let mut seed1 = [0; 64];

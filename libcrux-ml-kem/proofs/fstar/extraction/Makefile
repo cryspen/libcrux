@@ -64,7 +64,6 @@ PANIC_FREE = Libcrux_ml_kem.Constant_time_ops.fst \
              Libcrux_ml_kem.Ind_cca.Instantiations.Portable.fsti \
              Libcrux_ml_kem.Ind_cca.Multiplexing.fst \
              Libcrux_ml_kem.Ind_cca.Multiplexing.fsti \
-             Libcrux_ml_kem.Ind_cca.Unpacked.fsti \
              Libcrux_ml_kem.Ind_cpa.fsti \
              Libcrux_ml_kem.Ind_cpa.Unpacked.fsti \
              Libcrux_ml_kem.Invert_ntt.fsti \
@@ -99,14 +98,12 @@ PANIC_FREE = Libcrux_ml_kem.Constant_time_ops.fst \
              Libcrux_ml_kem.Serialize.fsti \
              Libcrux_ml_kem.Types.fst \
              Libcrux_ml_kem.Types.fsti \
-             Libcrux_ml_kem.Types.Unpacked.fsti \
              Libcrux_ml_kem.Utils.fst \
              Libcrux_ml_kem.Utils.fsti \
              Libcrux_ml_kem.Vector.Avx2.Arithmetic.fsti \
              Libcrux_ml_kem.Vector.Avx2.Compress.fsti \
              Libcrux_ml_kem.Vector.Avx2.fsti \
              Libcrux_ml_kem.Vector.Avx2.Ntt.fsti \
-             Libcrux_ml_kem.Vector.Avx2.Portable.fsti \
              Libcrux_ml_kem.Vector.Avx2.Sampling.fsti \
              Libcrux_ml_kem.Vector.Avx2.Serialize.fsti \
              Libcrux_ml_kem.Vector.Neon.Arithmetic.fsti \

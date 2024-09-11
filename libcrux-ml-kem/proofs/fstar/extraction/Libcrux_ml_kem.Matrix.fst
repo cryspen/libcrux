@@ -40,7 +40,7 @@ let compute_As_plus_e
               #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__iter #(t_Array
                       (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-                  (Rust_primitives.unsize matrix_A
+                  (matrix_A
                     <:
                     t_Slice
                     (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
@@ -74,7 +74,7 @@ let compute_As_plus_e
                       #FStar.Tactics.Typeclasses.solve
                       (Core.Slice.impl__iter #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
                             v_Vector)
-                          (Rust_primitives.unsize row
+                          (row
                             <:
                             t_Slice (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
                         <:
@@ -203,7 +203,7 @@ let compute_vector_u
               #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__iter #(t_Array
                       (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-                  (Rust_primitives.unsize a_as_ntt
+                  (a_as_ntt
                     <:
                     t_Slice
                     (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
@@ -237,7 +237,7 @@ let compute_vector_u
                       #FStar.Tactics.Typeclasses.solve
                       (Core.Slice.impl__iter #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
                             v_Vector)
-                          (Rust_primitives.unsize row
+                          (row
                             <:
                             t_Slice (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
                         <:
