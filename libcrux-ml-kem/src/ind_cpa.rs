@@ -1,3 +1,5 @@
+use core::array::from_fn;
+
 #[cfg(feature = "unpacked")]
 use crate::variant::MlKem;
 use crate::{
@@ -30,12 +32,30 @@ pub mod unpacked {
         pub(crate) secret_as_ntt: [PolynomialRingElement<Vector>; K],
     }
 
+    impl<const K: usize, Vector: Operations> Default for IndCpaPrivateKeyUnpacked<K, Vector> {
+        fn default() -> Self {
+            Self {
+                secret_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
+            }
+        }
+    }
+
     /// An unpacked ML-KEM IND-CPA Private Key
     #[cfg(feature = "unpacked")]
     pub(crate) struct IndCpaPublicKeyUnpacked<const K: usize, Vector: Operations> {
         pub(crate) t_as_ntt: [PolynomialRingElement<Vector>; K],
         pub(crate) seed_for_A: [u8; 32],
         pub(crate) A: [[PolynomialRingElement<Vector>; K]; K],
+    }
+
+    impl<const K: usize, Vector: Operations> Default for IndCpaPublicKeyUnpacked<K, Vector> {
+        fn default() -> Self {
+            Self {
+                t_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
+                seed_for_A: [0u8; 32],
+                A: [[PolynomialRingElement::<Vector>::ZERO(); K]; K],
+            }
+        }
     }
 }
 use unpacked::*;
@@ -88,7 +108,7 @@ fn sample_ring_element_cbd<
     prf_input: [u8; 33],
     mut domain_separator: u8,
 ) -> ([PolynomialRingElement<Vector>; K], u8) {
-    let mut error_1 = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    let mut error_1 = from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut prf_inputs = [prf_input; K];
     for i in 0..K {
         prf_inputs[i][32] = domain_separator;
@@ -139,7 +159,7 @@ fn sample_vector_cbd_then_ntt_out<
     prf_input: [u8; 33],
     mut domain_separator: u8,
 ) -> ([PolynomialRingElement<Vector>; K], u8) {
-    let mut re_as_ntt = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    let mut re_as_ntt = from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     domain_separator = sample_vector_cbd_then_ntt::<K, ETA, ETA_RANDOMNESS_SIZE, Vector, Hasher>(
         &mut re_as_ntt,
         prf_input,
@@ -246,14 +266,8 @@ pub(crate) fn generate_keypair<
 >(
     key_generation_seed: &[u8],
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
-    let mut private_key = IndCpaPrivateKeyUnpacked {
-        secret_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
-    };
-    let mut public_key = IndCpaPublicKeyUnpacked {
-        t_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
-        seed_for_A: [0u8; 32],
-        A: [[PolynomialRingElement::<Vector>::ZERO(); K]; K],
-    };
+    let mut private_key = IndCpaPrivateKeyUnpacked::default();
+    let mut public_key = IndCpaPublicKeyUnpacked::default();
 
     generate_keypair_unpacked::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
         key_generation_seed,
@@ -512,7 +526,7 @@ fn deserialize_then_decompress_u<
 >(
     ciphertext: &[u8; CIPHERTEXT_SIZE],
 ) -> [PolynomialRingElement<Vector>; K] {
-    let mut u_as_ntt = core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
+    let mut u_as_ntt = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
     cloop! {
         for (i, u_bytes) in ciphertext
             .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
@@ -530,7 +544,7 @@ fn deserialize_then_decompress_u<
 fn deserialize_secret_key<const K: usize, Vector: Operations>(
     secret_key: &[u8],
 ) -> [PolynomialRingElement<Vector>; K] {
-    let mut secret_as_ntt = core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
+    let mut secret_as_ntt = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
     cloop! {
         for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
             secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(secret_bytes);

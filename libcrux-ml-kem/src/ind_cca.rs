@@ -279,12 +279,14 @@ pub(crate) fn decapsulate<
 /// Types for the unpacked API.
 #[cfg(feature = "unpacked")]
 pub(crate) mod unpacked {
+    use core::array::from_fn;
+
     use super::*;
     use crate::{
         constant_time_ops::{
             compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
         },
-        ind_cpa::{self, generate_keypair_unpacked, unpacked::*},
+        ind_cpa::{generate_keypair_unpacked, unpacked::*},
         matrix::sample_matrix_a_out,
         polynomial::PolynomialRingElement,
         vector::traits::Operations,
@@ -308,35 +310,37 @@ pub(crate) mod unpacked {
         pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
     }
 
-    impl<const K: usize, Vector: Operations> MlKemPublicKeyUnpacked<K, Vector> {
-        /// Generate an unpacked key from a packed key.
-        pub(crate) fn from_public_key<
-            const T_AS_NTT_ENCODED_SIZE: usize,
-            const RANKED_BYTES_PER_RING_ELEMENT: usize,
-            const PUBLIC_KEY_SIZE: usize,
-            Hasher: Hash<K>,
-        >(
-            public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-        ) -> Self {
-            let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
-                &public_key[..T_AS_NTT_ENCODED_SIZE],
-            );
-            let seed_for_a = into_padded_array(&public_key[T_AS_NTT_ENCODED_SIZE..]);
-            let a = sample_matrix_a_out::<K, Vector, Hasher>(
-                into_padded_array(&public_key[T_AS_NTT_ENCODED_SIZE..]),
-                false,
-            );
+    /// Generate an unpacked key from a packed key.
+    pub(crate) fn unpack_public_key<
+        const K: usize,
+        const T_AS_NTT_ENCODED_SIZE: usize,
+        const RANKED_BYTES_PER_RING_ELEMENT: usize,
+        const PUBLIC_KEY_SIZE: usize,
+        Hasher: Hash<K>,
+        Vector: Operations,
+    >(
+        public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
+    ) -> MlKemPublicKeyUnpacked<K, Vector> {
+        let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
+            &public_key[..T_AS_NTT_ENCODED_SIZE],
+        );
+        let seed_for_a = into_padded_array(&public_key[T_AS_NTT_ENCODED_SIZE..]);
+        let a = sample_matrix_a_out::<K, Vector, Hasher>(
+            into_padded_array(&public_key[T_AS_NTT_ENCODED_SIZE..]),
+            false,
+        );
 
-            Self {
-                ind_cpa_public_key: IndCpaPublicKeyUnpacked {
-                    t_as_ntt,
-                    seed_for_A: seed_for_a,
-                    A: a,
-                },
-                public_key_hash: Hasher::H(public_key.as_slice()),
-            }
+        MlKemPublicKeyUnpacked {
+            ind_cpa_public_key: IndCpaPublicKeyUnpacked {
+                t_as_ntt,
+                seed_for_A: seed_for_a,
+                A: a,
+            },
+            public_key_hash: Hasher::H(public_key.as_slice()),
         }
+    }
 
+    impl<const K: usize, Vector: Operations> MlKemPublicKeyUnpacked<K, Vector> {
         /// Get the serialized public key.
         pub fn serialized_public_key<
             const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -351,13 +355,6 @@ pub(crate) mod unpacked {
                 );
 
             MlKemPublicKey::from(public_key_serialized)
-        }
-    }
-
-    impl<const K: usize, Vector: Operations> MlKemPrivateKeyUnpacked<K, Vector> {
-        /// Generate an unpacked key from a packed key.
-        pub fn from_private_key(private_key: MlKemPrivateKey<K>) -> Self {
-            todo!()
         }
     }
 
@@ -390,17 +387,11 @@ pub(crate) mod unpacked {
         fn default() -> Self {
             Self {
                 private_key: MlKemPrivateKeyUnpacked {
-                    ind_cpa_private_key: IndCpaPrivateKeyUnpacked {
-                        secret_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
-                    },
+                    ind_cpa_private_key: IndCpaPrivateKeyUnpacked::default(),
                     implicit_rejection_value: [0u8; 32],
                 },
                 public_key: MlKemPublicKeyUnpacked {
-                    ind_cpa_public_key: IndCpaPublicKeyUnpacked {
-                        t_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
-                        seed_for_A: [0u8; 32],
-                        A: [[PolynomialRingElement::<Vector>::ZERO(); K]; K],
-                    },
+                    ind_cpa_public_key: IndCpaPublicKeyUnpacked::default(),
                     public_key_hash: [0u8; 32],
                 },
             }
@@ -435,14 +426,12 @@ pub(crate) mod unpacked {
         //  We would like to write the following but it is not supported by Eurydice yet.
         //  https://github.com/AeneasVerif/eurydice/issues/39
         //
-        //    let A = core::array::from_fn(|i| {
-        //        core::array::from_fn(|j| A_transpose[j][i])
+        //    let A = from_fn(|i| {
+        //        from_fn(|j| A_transpose[j][i])
         //    });
 
         #[allow(non_snake_case)]
-        let mut A = core::array::from_fn(|_i| {
-            core::array::from_fn(|_j| PolynomialRingElement::<Vector>::ZERO())
-        });
+        let mut A = from_fn(|_i| from_fn(|_j| PolynomialRingElement::<Vector>::ZERO()));
         for i in 0..K {
             for j in 0..K {
                 A[i][j] = out.public_key.ind_cpa_public_key.A[j][i].clone();

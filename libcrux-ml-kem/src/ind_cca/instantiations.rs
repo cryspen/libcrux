@@ -283,7 +283,7 @@ macro_rules! instantiate {
                 }
 
                 /// Get the unpacked public key.
-                pub(crate) fn unpacked_public_key<
+                pub(crate) fn unpack_public_key<
                     const K: usize,
                     const T_AS_NTT_ENCODED_SIZE: usize,
                     const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -291,11 +291,13 @@ macro_rules! instantiate {
                 >(
                     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
                 ) -> MlKemPublicKeyUnpacked<K> {
-                    MlKemPublicKeyUnpacked::from_public_key::<
+                    crate::ind_cca::unpacked::unpack_public_key::<
+                        K,
                         T_AS_NTT_ENCODED_SIZE,
                         RANKED_BYTES_PER_RING_ELEMENT,
                         PUBLIC_KEY_SIZE,
                         $hash,
+                        $vector,
                     >(public_key)
                 }
 

@@ -245,7 +245,7 @@ macro_rules! instantiate {
                 pub fn unpacked_public_key(
                     public_key: &MlKem512PublicKey,
                 ) -> MlKem512PublicKeyUnpacked {
-                    p::unpacked::unpacked_public_key::<
+                    p::unpacked::unpack_public_key::<
                         RANK_512,
                         T_AS_NTT_ENCODED_SIZE_512,
                         RANKED_BYTES_PER_RING_ELEMENT_512,
