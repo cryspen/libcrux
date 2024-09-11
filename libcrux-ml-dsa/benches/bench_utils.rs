@@ -51,7 +51,7 @@ macro_rules! bench {
         // Warmup
         for _ in 0..bench_utils::WARMUP_ITERATIONS {
             let input = $setup($input);
-            $routine(input);
+            let _ = $routine(input);
         }
 
         // Benchmark
@@ -59,7 +59,7 @@ macro_rules! bench {
             let input = $setup($input);
 
             let start = std::time::Instant::now();
-            core::hint::black_box($routine(input));
+            let _ = core::hint::black_box($routine(input));
             let end = std::time::Instant::now();
 
             time += end.duration_since(start);
@@ -116,7 +116,7 @@ macro_rules! bench_group_libcrux {
                 let signing_randomness: [u8; SIGNING_RANDOMNESS_SIZE] = bench_utils::random_array();
                 let message = bench_utils::random_array::<1023>();
                 let keypair = p::generate_key_pair(key_generation_seed);
-                let signature = p::sign(&keypair.signing_key, &message, signing_randomness);
+                let signature = p::sign(&keypair.signing_key, &message, signing_randomness).unwrap();
                 (keypair, message, signature)
             },
             |(keypair, message, signature): ($keypair_t, [u8; 1023], $signature_t)| {
