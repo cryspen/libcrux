@@ -1,7 +1,5 @@
 //! ML-KEM 1024
 use super::{constants::*, ind_cca::*, types::*, *};
-#[cfg(feature = "unpacked")]
-use super::{ind_cca::unpacked::*, vector::traits::VectorType};
 
 // Kyber 1024 parameters
 const RANK_1024: usize = 4;
@@ -230,21 +228,46 @@ macro_rules! instantiate {
                 use super::*;
 
                 /// An Unpacked ML-KEM 1024 Public key
-                #[allow(type_alias_bounds)]
-                pub type MlKem1024PublicKeyUnpacked<Vector: VectorType> =
-                    MlKemPublicKeyUnpacked<RANK_1024, Vector>;
+                pub type MlKem1024PublicKeyUnpacked =
+                    p::unpacked::MlKemPublicKeyUnpacked<RANK_1024>;
 
                 /// Am Unpacked ML-KEM 1024 Key pair
-                #[allow(type_alias_bounds)]
-                pub type MlKem1024KeyPairUnpacked<Vector: VectorType> =
-                    MlKemKeyPairUnpacked<RANK_1024, Vector>;
+                pub type MlKem1024KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK_1024>;
+
+                /// Create a new, empty unpacked key.
+                pub fn init_key_pair() -> MlKem1024KeyPairUnpacked {
+                    MlKem1024KeyPairUnpacked::default()
+                }
+
+                /// Get the serialized public key.
+                pub fn serialized_public_key(
+                    public_key: &MlKem1024PublicKeyUnpacked,
+                ) -> MlKem1024PublicKey {
+                    p::unpacked::serialized_public_key::<
+                        RANK_1024,
+                        RANKED_BYTES_PER_RING_ELEMENT_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                    >(public_key)
+                }
+
+                /// Get the unpacked public key.
+                pub fn unpacked_public_key(
+                    public_key: &MlKem1024PublicKey,
+                ) -> MlKem1024PublicKeyUnpacked {
+                    p::unpacked::unpacked_public_key::<
+                        RANK_1024,
+                        T_AS_NTT_ENCODED_SIZE_1024,
+                        RANKED_BYTES_PER_RING_ELEMENT_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                    >(public_key)
+                }
 
                 /// Generate ML-KEM 1024 Key Pair in "unpacked" form
                 #[cfg(feature = "unpacked")]
                 #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
                 pub fn generate_key_pair(
                     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-                    key_pair: &mut MlKem1024KeyPairUnpacked<$vec>,
+                    key_pair: &mut MlKem1024KeyPairUnpacked,
                 ) {
                     p::unpacked::generate_keypair::<
                         RANK_1024,
@@ -278,7 +301,7 @@ macro_rules! instantiate {
                     )
                 )]
                 pub fn encapsulate(
-                    public_key: &MlKem1024PublicKeyUnpacked<$vec>,
+                    public_key: &MlKem1024PublicKeyUnpacked,
                     randomness: [u8; SHARED_SECRET_SIZE],
                 ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
                     p::unpacked::encapsulate::<
@@ -304,7 +327,7 @@ macro_rules! instantiate {
                 /// The input is a reference to an unpacked key pair of type [`MlKem1024KeyPairUnpacked`]
                 /// and an [`MlKem1024Ciphertext`].
                 pub fn decapsulate(
-                    private_key: &MlKem1024KeyPairUnpacked<$vec>,
+                    private_key: &MlKem1024KeyPairUnpacked,
                     ciphertext: &MlKem1024Ciphertext,
                 ) -> MlKemSharedSecret {
                     p::unpacked::decapsulate::<

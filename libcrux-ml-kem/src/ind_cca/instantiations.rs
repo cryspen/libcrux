@@ -270,6 +270,36 @@ macro_rules! instantiate {
                 pub(crate) type MlKemPublicKeyUnpacked<const K: usize> =
                     crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
 
+                /// Get the serialized public key.
+                pub fn serialized_public_key<
+                    const K: usize,
+                    const RANKED_BYTES_PER_RING_ELEMENT: usize,
+                    const PUBLIC_KEY_SIZE: usize,
+                >(
+                    public_key: &MlKemPublicKeyUnpacked<K>,
+                ) -> MlKemPublicKey<PUBLIC_KEY_SIZE> {
+                    public_key
+                        .serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>()
+                }
+
+                /// Get the unpacked public key.
+                pub(crate) fn unpacked_public_key<
+                    const K: usize,
+                    const T_AS_NTT_ENCODED_SIZE: usize,
+                    const RANKED_BYTES_PER_RING_ELEMENT: usize,
+                    const PUBLIC_KEY_SIZE: usize,
+                >(
+                    public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
+                ) -> MlKemPublicKeyUnpacked<K> {
+                    MlKemPublicKeyUnpacked::from_public_key::<
+                        T_AS_NTT_ENCODED_SIZE,
+                        RANKED_BYTES_PER_RING_ELEMENT,
+                        PUBLIC_KEY_SIZE,
+                        $hash,
+                    >(public_key)
+                }
+
+                /// Generate a key pair
                 pub(crate) fn generate_keypair<
                     const K: usize,
                     const CPA_PRIVATE_KEY_SIZE: usize,

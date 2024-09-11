@@ -81,12 +81,3 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
 pub fn decompress_1<T: Operations>(v: T) -> T {
     T::bitwise_and_with_constant(T::sub(T::ZERO(), &v), 1665)
 }
-
-/// Internal vectors.
-///
-/// Used in the unpacked API.
-#[cfg(feature = "unpacked")]
-pub trait VectorType: Operations {}
-
-#[cfg(feature = "unpacked")]
-impl<T: Operations> VectorType for T {}

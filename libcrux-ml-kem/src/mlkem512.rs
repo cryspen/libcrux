@@ -1,7 +1,5 @@
 //! ML-KEM 512
 use super::{constants::*, ind_cca::*, types::*, *};
-#[cfg(feature = "unpacked")]
-use super::{ind_cca::unpacked::*, vector::traits::VectorType};
 
 // Kyber 512 parameters
 const RANK_512: usize = 2;
@@ -227,20 +225,38 @@ macro_rules! instantiate {
             pub mod unpacked {
                 use super::*;
 
-
                 /// An Unpacked ML-KEM 512 Public key
-                #[allow(type_alias_bounds)]
-                pub type MlKem512PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_512, Vector>;
+                pub type MlKem512PublicKeyUnpacked = p::unpacked::MlKemPublicKeyUnpacked<RANK_512>;
 
                 /// Am Unpacked ML-KEM 512 Key pair
-                #[allow(type_alias_bounds)]
-                pub type MlKem512KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_512, Vector>;
+                pub type MlKem512KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK_512>;
 
+                /// Create a new, empty unpacked key.
+                pub fn init_key_pair() -> MlKem512KeyPairUnpacked {
+                    MlKem512KeyPairUnpacked::default()
+                }
+
+                /// Get the serialized public key.
+                pub fn serialized_public_key(public_key: &MlKem512PublicKeyUnpacked) -> MlKem512PublicKey {
+                    p::unpacked::serialized_public_key::<RANK_512, RANKED_BYTES_PER_RING_ELEMENT_512, CPA_PKE_PUBLIC_KEY_SIZE_512>(public_key)
+                }
+
+                /// Get the unpacked public key.
+                pub fn unpacked_public_key(
+                    public_key: &MlKem512PublicKey,
+                ) -> MlKem512PublicKeyUnpacked {
+                    p::unpacked::unpacked_public_key::<
+                        RANK_512,
+                        T_AS_NTT_ENCODED_SIZE_512,
+                        RANKED_BYTES_PER_RING_ELEMENT_512,
+                        CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    >(public_key)
+                }
 
                 /// Generate ML-KEM 512 Key Pair in "unpacked" form
                 pub fn generate_key_pair(
                     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-                    key_pair: &mut MlKem512KeyPairUnpacked<$vec>,
+                    key_pair: &mut MlKem512KeyPairUnpacked,
                 ) {
                     p::unpacked::generate_keypair::<
                         RANK_512,
@@ -272,7 +288,7 @@ macro_rules! instantiate {
                     )
                 )]
                 pub fn encapsulate(
-                    public_key: &MlKem512PublicKeyUnpacked<$vec>,
+                    public_key: &MlKem512PublicKeyUnpacked,
                     randomness: [u8; SHARED_SECRET_SIZE],
                 ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
                     p::unpacked::encapsulate::<
@@ -298,7 +314,7 @@ macro_rules! instantiate {
                 /// The input is a reference to an unpacked key pair of type [`MlKem512KeyPairUnpacked`]
                 /// and an [`MlKem512Ciphertext`].
                 pub fn decapsulate(
-                    private_key: &MlKem512KeyPairUnpacked<$vec>,
+                    private_key: &MlKem512KeyPairUnpacked,
                     ciphertext: &MlKem512Ciphertext,
                 ) -> MlKemSharedSecret {
                     p::unpacked::decapsulate::<

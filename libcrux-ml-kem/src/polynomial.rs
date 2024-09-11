@@ -14,7 +14,7 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = [
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
-#[cfg_attr(eurydice, derive(Clone, Copy))]
+#[cfg_attr(eurydice, derive(Clone))]
 #[cfg_attr(not(eurydice), derive(Clone, Copy))]
 pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],

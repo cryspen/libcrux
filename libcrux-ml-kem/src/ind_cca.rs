@@ -284,7 +284,8 @@ pub(crate) mod unpacked {
         constant_time_ops::{
             compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
         },
-        ind_cpa::{generate_keypair_unpacked, unpacked::*},
+        ind_cpa::{self, generate_keypair_unpacked, unpacked::*},
+        matrix::sample_matrix_a_out,
         polynomial::PolynomialRingElement,
         vector::traits::Operations,
     };
@@ -307,11 +308,80 @@ pub(crate) mod unpacked {
         pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
     }
 
+    impl<const K: usize, Vector: Operations> MlKemPublicKeyUnpacked<K, Vector> {
+        /// Generate an unpacked key from a packed key.
+        pub(crate) fn from_public_key<
+            const T_AS_NTT_ENCODED_SIZE: usize,
+            const RANKED_BYTES_PER_RING_ELEMENT: usize,
+            const PUBLIC_KEY_SIZE: usize,
+            Hasher: Hash<K>,
+        >(
+            public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
+        ) -> Self {
+            let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
+                &public_key[..T_AS_NTT_ENCODED_SIZE],
+            );
+            let seed_for_a = into_padded_array(&public_key[T_AS_NTT_ENCODED_SIZE..]);
+            let a = sample_matrix_a_out::<K, Vector, Hasher>(
+                into_padded_array(&public_key[T_AS_NTT_ENCODED_SIZE..]),
+                false,
+            );
+
+            Self {
+                ind_cpa_public_key: IndCpaPublicKeyUnpacked {
+                    t_as_ntt,
+                    seed_for_A: seed_for_a,
+                    A: a,
+                },
+                public_key_hash: Hasher::H(public_key.as_slice()),
+            }
+        }
+
+        /// Get the serialized public key.
+        pub fn serialized_public_key<
+            const RANKED_BYTES_PER_RING_ELEMENT: usize,
+            const PUBLIC_KEY_SIZE: usize,
+        >(
+            &self,
+        ) -> MlKemPublicKey<PUBLIC_KEY_SIZE> {
+            let public_key_serialized =
+                serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
+                    &self.ind_cpa_public_key.t_as_ntt,
+                    &self.ind_cpa_public_key.seed_for_A,
+                );
+
+            MlKemPublicKey::from(public_key_serialized)
+        }
+    }
+
+    impl<const K: usize, Vector: Operations> MlKemPrivateKeyUnpacked<K, Vector> {
+        /// Generate an unpacked key from a packed key.
+        pub fn from_private_key(private_key: MlKemPrivateKey<K>) -> Self {
+            todo!()
+        }
+    }
+
     impl<const K: usize, Vector: Operations> MlKemKeyPairUnpacked<K, Vector> {
         /// Create a new empty unpacked key pair.
         #[inline(always)]
         pub fn new() -> Self {
             Self::default()
+        }
+
+        /// Get the serialized public key.
+        pub fn serialized_public_key<
+            const RANKED_BYTES_PER_RING_ELEMENT: usize,
+            const PUBLIC_KEY_SIZE: usize,
+        >(
+            &self,
+        ) -> MlKemPublicKey<PUBLIC_KEY_SIZE> {
+            self.public_key
+                .serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>()
+        }
+
+        /// Get the serialized private key.
+        pub fn serialized_private_key(&self) -> MlKemPrivateKey<K> {
+            todo!()
         }
     }
 
@@ -337,8 +407,7 @@ pub(crate) mod unpacked {
         }
     }
 
-    // Unpacked API
-    // Generate Unpacked Keys
+    /// Generate Unpacked Keys
     pub(crate) fn generate_keypair<
         const K: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
