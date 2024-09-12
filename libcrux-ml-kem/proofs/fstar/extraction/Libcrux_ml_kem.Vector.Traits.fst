@@ -3,21 +3,23 @@ module Libcrux_ml_kem.Vector.Traits
 open Core
 open FStar.Mul
 
+#push-options "--z3rlimit 50"
+
 let decompress_1_
       (#v_T: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: t_Operations v_T)
-      (v: v_T)
+      (vec: v_T)
      =
-  let _:Prims.unit = assert (i1.f_bitwise_and_with_constant_pre (i1.f_ZERO ()) 0s) in
-  f_bitwise_and_with_constant #v_T
-    #FStar.Tactics.Typeclasses.solve
-    (f_sub #v_T
-        #FStar.Tactics.Typeclasses.solve
-        (f_ZERO #v_T #FStar.Tactics.Typeclasses.solve () <: v_T)
-        v
-      <:
-      v_T)
-    1665s
+  let s:v_T =
+    f_sub #v_T
+      #FStar.Tactics.Typeclasses.solve
+      (f_ZERO #v_T #FStar.Tactics.Typeclasses.solve () <: v_T)
+      vec
+  in
+  let _:Prims.unit = assert (i1.f_bitwise_and_with_constant_pre s 1665s) in
+  f_bitwise_and_with_constant #v_T #FStar.Tactics.Typeclasses.solve s 1665s
+
+#pop-options
 
 let montgomery_multiply_fe
       (#v_T: Type0)

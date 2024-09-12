@@ -70,11 +70,18 @@ val montgomery_multiply_fe_by_fer (fe fer: i16)
 
 val add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
+      (requires
+        forall i.
+          i < 16 ==>
+          Spec.Utils.is_intb (pow2 15)
+            (v (Seq.index lhs.f_elements i) + v (Seq.index rhs.f_elements i)))
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
-          result.f_elements == Spec.Utils.map2 ( +. ) (lhs.f_elements) (rhs.f_elements))
+          forall i.
+            i < 16 ==>
+            (v (Seq.index result.f_elements i) ==
+              v (Seq.index lhs.f_elements i) + v (Seq.index rhs.f_elements i)))
 
 val barrett_reduce (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -117,11 +124,13 @@ val montgomery_multiply_by_constant
 
 val multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
+      (requires
+        forall i. i < 16 ==> Spec.Utils.is_intb (pow2 31) (v (Seq.index vec.f_elements i) * v c))
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
-          result.f_elements == Spec.Utils.map_array (fun x -> x *. c) (vec.f_elements))
+          forall i.
+            i < 16 ==> (v (Seq.index result.f_elements i) == v (Seq.index vec.f_elements i) * v c))
 
 val shift_right (v_SHIFT_BY: i32) (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -134,8 +143,15 @@ val shift_right (v_SHIFT_BY: i32) (vec: Libcrux_ml_kem.Vector.Portable.Vector_ty
 
 val sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
+      (requires
+        forall i.
+          i < 16 ==>
+          Spec.Utils.is_intb (pow2 15)
+            (v (Seq.index lhs.f_elements i) - v (Seq.index rhs.f_elements i)))
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
-          result.f_elements == Spec.Utils.map2 ( -. ) (lhs.f_elements) (rhs.f_elements))
+          forall i.
+            i < 16 ==>
+            (v (Seq.index result.f_elements i) ==
+              v (Seq.index lhs.f_elements i) - v (Seq.index rhs.f_elements i)))

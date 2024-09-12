@@ -29,17 +29,26 @@ pub trait Operations: Copy + Clone + Repr {
     fn to_i16_array(x: Self) -> [i16; 16];
 
     // Basic arithmetic
-    #[requires(true)]
-    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map2 (+.) (f_repr $lhs) (f_repr $rhs)"))]
+    #[requires(fstar!("forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 15) (v (Seq.index (f_repr ${lhs}) i) + v (Seq.index (f_repr ${rhs}) i))"))]
+    #[ensures(|result| fstar!("forall i. i < 16 ==> 
+        (v (Seq.index (f_repr ${result}) i) == 
+         v (Seq.index (f_repr ${lhs}) i) + v (Seq.index (f_repr ${rhs}) i))"))]
     fn add(lhs: Self, rhs: &Self) -> Self;
 
-    #[requires(true)]
-    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map2 (-.) (f_repr $lhs) (f_repr $rhs)"))]
+    #[requires(fstar!("forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 15) (v (Seq.index (f_repr ${lhs}) i) - v (Seq.index (f_repr ${rhs}) i))"))]
+    #[ensures(|result| fstar!("forall i. i < 16 ==> 
+        (v (Seq.index (f_repr ${result}) i) == 
+         v (Seq.index (f_repr ${lhs}) i) - v (Seq.index (f_repr ${rhs}) i))"))]
     fn sub(lhs: Self, rhs: &Self) -> Self;
 
-    #[requires(true)]
-    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map_array (fun x -> x *. c) (f_repr $v)"))]
-    fn multiply_by_constant(v: Self, c: i16) -> Self;
+    #[requires(fstar!("forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 31) (v (Seq.index (f_repr ${vec}) i) * v c)"))]
+    #[ensures(|result| fstar!("forall i. i < 16 ==> 
+        (v (Seq.index (f_repr ${result}) i) == 
+         v (Seq.index (f_repr ${vec}) i) * v c)"))]
+    fn multiply_by_constant(vec: Self, c: i16) -> Self;
 
     // Bitwise operations
     #[requires(true)]
@@ -182,15 +191,20 @@ pub fn to_standard_domain<T: Operations>(v: T) -> T {
     T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
 
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 3328 (i1._super_8706949974463268012.f_repr a)"))]
 pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
     let t = T::shift_right::<15>(a);
     let fm = T::bitwise_and_with_constant(t, FIELD_MODULUS);
     T::add(a, &fm)
 }
 
-pub fn decompress_1<T: Operations>(v: T) -> T {
-    hax_lib::fstar!("assert (i1.f_bitwise_and_with_constant_pre (i1.f_ZERO ()) 0s)"); // No idea why, but this helps F* typeclass inference
-    T::bitwise_and_with_constant(T::sub(T::ZERO(), &v), 1665)
+#[hax_lib::fstar::options("--z3rlimit 50")]
+#[hax_lib::requires(fstar!("forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
+                                      (x == 0s \\/ x == 1s)"))]
+pub fn decompress_1<T: Operations>(vec: T) -> T {
+    let s = T::sub(T::ZERO(), &vec);
+    hax_lib::fstar!("assert (i1.f_bitwise_and_with_constant_pre ${s} 1665s)");
+    T::bitwise_and_with_constant(s, 1665)
 }
 
 /// Internal vectors.

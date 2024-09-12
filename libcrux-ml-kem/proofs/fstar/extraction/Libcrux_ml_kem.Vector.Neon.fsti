@@ -39,7 +39,7 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     f_ZERO_pre = (fun (_: Prims.unit) -> true);
     f_ZERO_post
     =
-    (fun (_: Prims.unit) (result: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+    (fun (_: Prims.unit) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         impl.f_repr out == Seq.create 16 0s);
     f_ZERO = (fun (_: Prims.unit) -> Libcrux_ml_kem.Vector.Neon.Vector_type.v_ZERO ());
     f_from_i16_array_pre
@@ -47,7 +47,7 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     (fun (array: t_Slice i16) -> (Core.Slice.impl__len #i16 array <: usize) =. sz 16);
     f_from_i16_array_post
     =
-    (fun (array: t_Slice i16) (result: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+    (fun (array: t_Slice i16) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         impl.f_repr out == array);
     f_from_i16_array
     =
@@ -55,10 +55,7 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     f_to_i16_array_pre = (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_to_i16_array_post
     =
-    (fun
-        (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        (result: t_Array i16 (sz 16))
-        ->
+    (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Array i16 (sz 16)) ->
         out == impl.f_repr x);
     f_to_i16_array
     =

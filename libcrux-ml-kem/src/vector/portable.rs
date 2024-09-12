@@ -41,19 +41,31 @@ impl Operations for PortableVector {
         to_i16_array(x)
     }
 
-    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map2 (+.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]
+    #[requires(fstar!("forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 15) (v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"))]
+    #[ensures(|result| fstar!("forall i. i < 16 ==> 
+        (v (Seq.index ${result}.f_elements i) == 
+         v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"))]
     fn add(lhs: Self, rhs: &Self) -> Self {
         add(lhs, rhs)
     }
 
-    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map2 (-.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]
+    #[requires(fstar!("forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 15) (v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"))]
+    #[ensures(|result| fstar!("forall i. i < 16 ==> 
+        (v (Seq.index ${result}.f_elements i) == 
+         v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"))]
     fn sub(lhs: Self, rhs: &Self) -> Self {
         sub(lhs, rhs)
     }
 
-    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr $v)"))]
-    fn multiply_by_constant(v: Self, c: i16) -> Self {
-        multiply_by_constant(v, c)
+    #[requires(fstar!("forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 31) (v (Seq.index ${vec}.f_elements i) * v c)"))]
+    #[ensures(|result| fstar!("forall i. i < 16 ==> 
+        (v (Seq.index ${result}.f_elements i) == 
+        v (Seq.index ${vec}.f_elements i) * v c)"))]
+    fn multiply_by_constant(vec: Self, c: i16) -> Self {
+        multiply_by_constant(vec, c)
     }
 
     #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> x &. c) (impl.f_repr $v)"))]
@@ -99,26 +111,32 @@ impl Operations for PortableVector {
         decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(v)
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
         ntt_layer_2_step(a, zeta0, zeta1)
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self {
         ntt_layer_3_step(a, zeta)
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         inv_ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
         inv_ntt_layer_2_step(a, zeta0, zeta1)
     }
 
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
     fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self {
         inv_ntt_layer_3_step(a, zeta)
     }

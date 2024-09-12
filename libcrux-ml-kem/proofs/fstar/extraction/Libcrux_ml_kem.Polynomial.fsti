@@ -28,6 +28,14 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
   Rust_primitives.Hax.array_of_list 128 list
 
+val get_zeta (i: usize)
+    : Prims.Pure i16
+      (requires i <. sz 128)
+      (ensures
+        fun result ->
+          let result:i16 = result in
+          Spec.Utils.is_i16b 1664 result)
+
 let v_VECTORS_IN_RING_ELEMENT: usize =
   Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!
   Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR

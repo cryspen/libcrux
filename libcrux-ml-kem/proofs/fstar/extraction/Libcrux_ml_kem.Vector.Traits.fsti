@@ -42,19 +42,53 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure (t_Array i16 (sz 16))
         (f_to_i16_array_pre x0)
         (fun result -> f_to_i16_array_post x0 result);
-  f_add_pre:lhs: v_Self -> rhs: v_Self -> pred: Type0{true ==> pred};
+  f_add_pre:lhs: v_Self -> rhs: v_Self
+    -> pred:
+      Type0
+        { (forall i.
+              i < 16 ==>
+              Spec.Utils.is_intb (pow2 15)
+                (v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i))) ==>
+          pred };
   f_add_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
-    -> pred: Type0{pred ==> f_repr result == Spec.Utils.map2 ( +. ) (f_repr lhs) (f_repr rhs)};
+    -> pred:
+      Type0
+        { pred ==>
+          (forall i.
+              i < 16 ==>
+              (v (Seq.index (f_repr result) i) ==
+                v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i))) };
   f_add:x0: v_Self -> x1: v_Self
     -> Prims.Pure v_Self (f_add_pre x0 x1) (fun result -> f_add_post x0 x1 result);
-  f_sub_pre:lhs: v_Self -> rhs: v_Self -> pred: Type0{true ==> pred};
+  f_sub_pre:lhs: v_Self -> rhs: v_Self
+    -> pred:
+      Type0
+        { (forall i.
+              i < 16 ==>
+              Spec.Utils.is_intb (pow2 15)
+                (v (Seq.index (f_repr lhs) i) - v (Seq.index (f_repr rhs) i))) ==>
+          pred };
   f_sub_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
-    -> pred: Type0{pred ==> f_repr result == Spec.Utils.map2 ( -. ) (f_repr lhs) (f_repr rhs)};
+    -> pred:
+      Type0
+        { pred ==>
+          (forall i.
+              i < 16 ==>
+              (v (Seq.index (f_repr result) i) ==
+                v (Seq.index (f_repr lhs) i) - v (Seq.index (f_repr rhs) i))) };
   f_sub:x0: v_Self -> x1: v_Self
     -> Prims.Pure v_Self (f_sub_pre x0 x1) (fun result -> f_sub_post x0 x1 result);
-  f_multiply_by_constant_pre:v: v_Self -> c: i16 -> pred: Type0{true ==> pred};
-  f_multiply_by_constant_post:v: v_Self -> c: i16 -> result: v_Self
-    -> pred: Type0{pred ==> f_repr result == Spec.Utils.map_array (fun x -> x *. c) (f_repr v)};
+  f_multiply_by_constant_pre:vec: v_Self -> c: i16
+    -> pred:
+      Type0
+        { (forall i. i < 16 ==> Spec.Utils.is_intb (pow2 31) (v (Seq.index (f_repr vec) i) * v c)) ==>
+          pred };
+  f_multiply_by_constant_post:vec: v_Self -> c: i16 -> result: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          (forall i.
+              i < 16 ==> (v (Seq.index (f_repr result) i) == v (Seq.index (f_repr vec) i) * v c)) };
   f_multiply_by_constant:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
         (f_multiply_by_constant_pre x0 x1)
@@ -319,8 +353,13 @@ let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209ul
 
 let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353s
 
-val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
-    : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
+val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (vec: v_T)
+    : Prims.Pure v_T
+      (requires
+        forall i.
+          let x = Seq.index (i1._super_8706949974463268012.f_repr vec) i in
+          (x == 0s \/ x == 1s))
+      (fun _ -> Prims.l_True)
 
 val montgomery_multiply_fe (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T) (fer: i16)
     : Prims.Pure v_T (requires Spec.Utils.is_i16b 3328 fer) (fun _ -> Prims.l_True)
@@ -329,4 +368,6 @@ val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
 
 val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
-    : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure v_T
+      (requires Spec.Utils.is_i16b_array 3328 (i1._super_8706949974463268012.f_repr a))
+      (fun _ -> Prims.l_True)

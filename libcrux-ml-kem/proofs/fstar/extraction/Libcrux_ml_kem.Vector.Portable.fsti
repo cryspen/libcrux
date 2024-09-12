@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Vector.Portable
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -40,7 +40,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_ZERO_pre = (fun (_: Prims.unit) -> true);
     f_ZERO_post
     =
-    (fun (_: Prims.unit) (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+    (fun (_: Prims.unit) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         impl.f_repr out == Seq.create 16 0s);
     f_ZERO = (fun (_: Prims.unit) -> Libcrux_ml_kem.Vector.Portable.Vector_type.zero ());
     f_from_i16_array_pre
@@ -48,10 +48,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     (fun (array: t_Slice i16) -> (Core.Slice.impl__len #i16 array <: usize) =. sz 16);
     f_from_i16_array_post
     =
-    (fun
-        (array: t_Slice i16)
-        (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
+    (fun (array: t_Slice i16) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         impl.f_repr out == array);
     f_from_i16_array
     =
@@ -63,7 +60,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun
         (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (result: t_Array i16 (sz 16))
+        (out: t_Array i16 (sz 16))
         ->
         out == impl.f_repr x);
     f_to_i16_array
@@ -76,7 +73,10 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        forall i.
+          i < 16 ==>
+          Spec.Utils.is_intb (pow2 15)
+            (v (Seq.index lhs.f_elements i) + v (Seq.index rhs.f_elements i)));
     f_add_post
     =
     (fun
@@ -84,7 +84,10 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        impl.f_repr out == Spec.Utils.map2 ( +. ) (impl.f_repr lhs) (impl.f_repr rhs));
+        forall i.
+          i < 16 ==>
+          (v (Seq.index result.f_elements i) ==
+            v (Seq.index lhs.f_elements i) + v (Seq.index rhs.f_elements i)));
     f_add
     =
     (fun
@@ -98,7 +101,10 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        forall i.
+          i < 16 ==>
+          Spec.Utils.is_intb (pow2 15)
+            (v (Seq.index lhs.f_elements i) - v (Seq.index rhs.f_elements i)));
     f_sub_post
     =
     (fun
@@ -106,7 +112,10 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        impl.f_repr out == Spec.Utils.map2 ( -. ) (impl.f_repr lhs) (impl.f_repr rhs));
+        forall i.
+          i < 16 ==>
+          (v (Seq.index result.f_elements i) ==
+            v (Seq.index lhs.f_elements i) - v (Seq.index rhs.f_elements i)));
     f_sub
     =
     (fun
@@ -116,19 +125,21 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         Libcrux_ml_kem.Vector.Portable.Arithmetic.sub lhs rhs);
     f_multiply_by_constant_pre
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) -> true);
+    (fun (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
+        forall i. i < 16 ==> Spec.Utils.is_intb (pow2 31) (v (Seq.index vec.f_elements i) * v c));
     f_multiply_by_constant_post
     =
     (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (c: i16)
         (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr v));
+        forall i.
+          i < 16 ==> (v (Seq.index result.f_elements i) == v (Seq.index vec.f_elements i) * v c));
     f_multiply_by_constant
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.multiply_by_constant v c);
+    (fun (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
+        Libcrux_ml_kem.Vector.Portable.Arithmetic.multiply_by_constant vec c);
     f_bitwise_and_with_constant_pre
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) -> true);
@@ -137,7 +148,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     (fun
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (c: i16)
-        (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
         impl.f_repr out == Spec.Utils.map_array (fun x -> x &. c) (impl.f_repr v));
     f_bitwise_and_with_constant
@@ -153,7 +164,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     (fun
         (v_SHIFT_BY: i32)
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
         (v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==>
         impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (impl.f_repr v));
@@ -169,7 +180,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
         impl.f_repr out ==
         Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr v));
@@ -278,7 +289,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (zeta2: i16)
         (zeta3: i16)
         ->
-        true);
+        Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
+        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3);
     f_ntt_layer_1_step_post
     =
     (fun
@@ -307,7 +319,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (zeta0: i16)
         (zeta1: i16)
         ->
-        true);
+        Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1);
     f_ntt_layer_2_step_post
     =
     (fun
@@ -327,7 +339,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         Libcrux_ml_kem.Vector.Portable.Ntt.ntt_layer_2_step a zeta0 zeta1);
     f_ntt_layer_3_step_pre
     =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16) -> true);
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16) ->
+        Spec.Utils.is_i16b 1664 zeta);
     f_ntt_layer_3_step_post
     =
     (fun
@@ -349,7 +362,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (zeta2: i16)
         (zeta3: i16)
         ->
-        true);
+        Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
+        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3);
     f_inv_ntt_layer_1_step_post
     =
     (fun
@@ -378,7 +392,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (zeta0: i16)
         (zeta1: i16)
         ->
-        true);
+        Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1);
     f_inv_ntt_layer_2_step_post
     =
     (fun
@@ -398,7 +412,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         Libcrux_ml_kem.Vector.Portable.Ntt.inv_ntt_layer_2_step a zeta0 zeta1);
     f_inv_ntt_layer_3_step_pre
     =
-    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16) -> true);
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16) ->
+        Spec.Utils.is_i16b 1664 zeta);
     f_inv_ntt_layer_3_step_post
     =
     (fun

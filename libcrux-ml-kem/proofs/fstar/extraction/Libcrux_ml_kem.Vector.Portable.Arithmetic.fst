@@ -183,7 +183,7 @@ let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           (forall j.
               j < v i ==>
               (Seq.index lhs.f_elements j) ==
-              (Seq.index v__lhs0.f_elements j) +. (Seq.index rhs.f_elements j)) /\
+              (Seq.index v__lhs0.f_elements j) +! (Seq.index rhs.f_elements j)) /\
           (forall j. j >= v i ==> (Seq.index lhs.f_elements j) == (Seq.index v__lhs0.f_elements j)))
       lhs
       (fun lhs i ->
@@ -197,11 +197,8 @@ let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
                   .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
                 i
-                (Core.Num.impl__i16__wrapping_add (lhs
-                        .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
-                      <:
-                      i16)
-                    (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
+                ((lhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) +!
+                  (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
                   <:
                   i16)
             }
@@ -211,7 +208,7 @@ let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           lhs)
   in
   let _:Prims.unit =
-    Seq.lemma_eq_intro lhs.f_elements (Spec.Utils.map2 ( +. ) v__lhs0.f_elements rhs.f_elements)
+    Seq.lemma_eq_intro lhs.f_elements (Spec.Utils.map2 ( +! ) v__lhs0.f_elements rhs.f_elements)
   in
   lhs
 
@@ -409,7 +406,7 @@ let multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Port
           let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
           let i:usize = i in
           (forall j.
-              j < v i ==> (Seq.index vec.f_elements j) == (Seq.index v__vec0.f_elements j) *. c) /\
+              j < v i ==> (Seq.index vec.f_elements j) == (Seq.index v__vec0.f_elements j) *! c) /\
           (forall j. j >= v i ==> (Seq.index vec.f_elements j) == (Seq.index v__vec0.f_elements j)))
       vec
       (fun vec i ->
@@ -423,11 +420,7 @@ let multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Port
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
                   .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
                 i
-                (Core.Num.impl__i16__wrapping_mul (vec
-                        .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
-                      <:
-                      i16)
-                    c
+                ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) *! c
                   <:
                   i16)
             }
@@ -437,7 +430,7 @@ let multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Port
           vec)
   in
   let _:Prims.unit =
-    Seq.lemma_eq_intro vec.f_elements (Spec.Utils.map_array (fun x -> x *. c) v__vec0.f_elements)
+    Seq.lemma_eq_intro vec.f_elements (Spec.Utils.map_array (fun x -> x *! c) v__vec0.f_elements)
   in
   vec
 
@@ -492,7 +485,7 @@ let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           (forall j.
               j < v i ==>
               (Seq.index lhs.f_elements j) ==
-              (Seq.index v__lhs0.f_elements j) -. (Seq.index rhs.f_elements j)) /\
+              (Seq.index v__lhs0.f_elements j) -! (Seq.index rhs.f_elements j)) /\
           (forall j. j >= v i ==> (Seq.index lhs.f_elements j) == (Seq.index v__lhs0.f_elements j)))
       lhs
       (fun lhs i ->
@@ -506,11 +499,8 @@ let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
                   .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
                 i
-                (Core.Num.impl__i16__wrapping_sub (lhs
-                        .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
-                      <:
-                      i16)
-                    (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
+                ((lhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) -!
+                  (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
                   <:
                   i16)
             }
@@ -520,6 +510,6 @@ let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           lhs)
   in
   let _:Prims.unit =
-    Seq.lemma_eq_intro lhs.f_elements (Spec.Utils.map2 ( -. ) v__lhs0.f_elements rhs.f_elements)
+    Seq.lemma_eq_intro lhs.f_elements (Spec.Utils.map2 ( -! ) v__lhs0.f_elements rhs.f_elements)
   in
   lhs

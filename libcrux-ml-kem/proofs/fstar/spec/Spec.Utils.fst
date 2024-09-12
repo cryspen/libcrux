@@ -101,19 +101,20 @@ let update_at_range_lemma #n
 
 /// Bounded integers
 
-let is_i16b (l:nat) (x:i16) = (v x <= l) && (v x >= -l)
+let is_intb (l:nat) (x:int) = (x <= l) && (x >= -l)
+let is_i16b (l:nat) (x:i16) = is_intb l (v x)
 let is_i16b_array (l:nat) (x:t_Slice i16) = forall i. i < Seq.length x ==> is_i16b l (Seq.index x i)
 let is_i16b_vector (l:nat) (r:usize) (x:t_Array (t_Array i16 (sz 256)) r) = forall i. i < v r ==> is_i16b_array l (Seq.index x i)
 let is_i16b_matrix (l:nat) (r:usize) (x:t_Array (t_Array (t_Array i16 (sz 256)) r) r) = forall i. i < v r ==> is_i16b_vector l r (Seq.index x i)
 
-let is_i32b (l:nat) (x:i32) = (v x <= l) && (v x >= -l)
+let is_i32b (l:nat) (x:i32) = is_intb l (v x)
 let is_i32b_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i32b l (Seq.index x i)
 
 let nat_div_ceil (x:nat) (y:pos) : nat = if (x % y = 0) then x/y else (x/y)+1
 
 val lemma_mul_intb (b1 b2: nat) (n1 n2: int) 
-    : Lemma (requires (n1 <= b1 /\ n1 >= -b1 /\ n2 <= b2 /\ n2 >= -b2))
-      (ensures ((n1 * n2) <= (b1 * b2) /\ (n1 * n2) >= - (b1 * b2)))
+    : Lemma (requires (is_intb b1 n1 /\ is_intb b2 n2))
+      (ensures (is_intb (b1 * b2) (n1 * n2)))
 let lemma_mul_intb (b1 b2: nat) (n1 n2: int) = ()
 
 val lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) 

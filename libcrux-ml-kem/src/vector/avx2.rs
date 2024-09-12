@@ -69,24 +69,36 @@ impl Operations for SIMD256Vector {
         vec_to_i16_array(x)
     }
 
-    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map2 (+.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]
+    #[requires(fstar!("forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 15) (v (Seq.index (impl.f_repr ${lhs}) i) + v (Seq.index (impl.f_repr ${rhs}) i))"))]
+    #[ensures(|result| fstar!("forall i. i < 16 ==> 
+        (v (Seq.index (impl.f_repr ${result}) i) == 
+         v (Seq.index (impl.f_repr ${lhs}) i) + v (Seq.index (impl.f_repr ${rhs}) i))"))]
     fn add(lhs: Self, rhs: &Self) -> Self {
         Self {
             elements: arithmetic::add(lhs.elements, rhs.elements),
         }
     }
 
-    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map2 (-.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]
+    #[requires(fstar!("forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 15) (v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"))]
+    #[ensures(|result| fstar!("forall i. i < 16 ==> 
+        (v (Seq.index (impl.f_repr ${result}) i) == 
+         v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"))]
     fn sub(lhs: Self, rhs: &Self) -> Self {
         Self {
             elements: arithmetic::sub(lhs.elements, rhs.elements),
         }
     }
 
-    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr $v)"))]
-    fn multiply_by_constant(v: Self, c: i16) -> Self {
+    #[requires(fstar!("forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 31) (v (Seq.index (impl.f_repr ${vec}) i) * v c)"))]
+    #[ensures(|result| fstar!("forall i. i < 16 ==> 
+        (v (Seq.index (impl.f_repr ${result}) i) == 
+         v (Seq.index (impl.f_repr ${vec}) i) * v c)"))]
+    fn multiply_by_constant(vec: Self, c: i16) -> Self {
         Self {
-            elements: arithmetic::multiply_by_constant(v.elements, c),
+            elements: arithmetic::multiply_by_constant(vec.elements, c),
         }
     }
 
