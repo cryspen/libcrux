@@ -40,33 +40,33 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map2 (+.) (${lhs}.f_elements) (${rhs}.f_elements)"))]
 pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        lhs.elements[i] = lhs.elements[i].wrapping_add(rhs.elements[i]);
+        lhs.elements[i] = lhs.elements[i] + rhs.elements[i];
     }
 
     lhs
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map2 (-.) (${lhs}.f_elements) (${rhs}.f_elements)"))]
 pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        lhs.elements[i] = lhs.elements[i].wrapping_sub(rhs.elements[i]);
+        lhs.elements[i] = lhs.elements[i] - rhs.elements[i];
     }
 
     lhs
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map_array (fun x -> x *. c) (${v}.f_elements)"))]
 pub fn multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] = v.elements[i].wrapping_mul(c);
+        v.elements[i] = v.elements[i] * c;
     }
 
     v

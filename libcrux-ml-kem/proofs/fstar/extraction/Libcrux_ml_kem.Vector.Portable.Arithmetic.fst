@@ -170,6 +170,8 @@ let montgomery_multiply_fe_by_fer (fe fer: i16) =
 
 #pop-options
 
+#push-options "--admit_smt_queries true"
+
 let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
@@ -189,11 +191,8 @@ let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
                 .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
               i
-              (Core.Num.impl__i16__wrapping_add (lhs
-                      .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
-                    <:
-                    i16)
-                  (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
+              ((lhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) +!
+                (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
                 <:
                 i16)
             <:
@@ -202,9 +201,9 @@ let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           <:
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
-  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  lhs
+
+#pop-options
 
 let barrett_reduce (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
@@ -355,6 +354,8 @@ let montgomery_multiply_by_constant
 
 #pop-options
 
+#push-options "--admit_smt_queries true"
+
 let multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
@@ -374,22 +375,16 @@ let multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Portab
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
                 .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
               i
-              (Core.Num.impl__i16__wrapping_mul (v
-                      .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
-                    <:
-                    i16)
-                  c
-                <:
-                i16)
+              ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) *! c <: i16)
             <:
             t_Array i16 (sz 16)
           }
           <:
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
-  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  v
+
+#pop-options
 
 let shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -423,6 +418,8 @@ let shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+#push-options "--admit_smt_queries true"
+
 let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
@@ -442,11 +439,8 @@ let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
                 .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
               i
-              (Core.Num.impl__i16__wrapping_sub (lhs
-                      .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
-                    <:
-                    i16)
-                  (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
+              ((lhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) -!
+                (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
                 <:
                 i16)
             <:
@@ -455,6 +449,6 @@ let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           <:
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
-  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  lhs
+
+#pop-options
