@@ -704,17 +704,7 @@ name = "hax-lib"
 version = "0.1.0-pre.1"
 source = "git+https://github.com/hacspec/hax/?branch=main#503591c020c485c283f7a40d0c139029ac7ceca5"
 dependencies = [
- "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
- "num-bigint",
- "num-traits",
-]
-
-[[package]]
-name = "hax-lib"
-version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/#503591c020c485c283f7a40d0c139029ac7ceca5"
-dependencies = [
- "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
+ "hax-lib-macros",
  "num-bigint",
  "num-traits",
 ]
@@ -724,20 +714,7 @@ name = "hax-lib-macros"
 version = "0.1.0-pre.1"
 source = "git+https://github.com/hacspec/hax/?branch=main#503591c020c485c283f7a40d0c139029ac7ceca5"
 dependencies = [
- "hax-lib-macros-types 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
- "paste",
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "syn 2.0.76",
-]
-
-[[package]]
-name = "hax-lib-macros"
-version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/#503591c020c485c283f7a40d0c139029ac7ceca5"
-dependencies = [
- "hax-lib-macros-types 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
+ "hax-lib-macros-types",
  "paste",
  "proc-macro-error",
  "proc-macro2",
@@ -749,18 +726,6 @@ dependencies = [
 name = "hax-lib-macros-types"
 version = "0.1.0-pre.1"
 source = "git+https://github.com/hacspec/hax/?branch=main#503591c020c485c283f7a40d0c139029ac7ceca5"
-dependencies = [
- "proc-macro2",
- "quote",
- "serde",
- "serde_json",
- "uuid",
-]
-
-[[package]]
-name = "hax-lib-macros-types"
-version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/#503591c020c485c283f7a40d0c139029ac7ceca5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -934,8 +899,6 @@ version = "0.0.2-alpha.3"
 dependencies = [
  "clap",
  "getrandom",
- "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
- "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
  "hex",
  "libcrux",
  "libcrux-ecdh",
@@ -1008,6 +971,9 @@ dependencies = [
 [[package]]
 name = "libcrux-intrinsics"
 version = "0.0.2-alpha.3"
+dependencies = [
+ "hax-lib",
+]
 
 [[package]]
 name = "libcrux-kem"
@@ -1028,7 +994,6 @@ dependencies = [
  "criterion",
  "hex",
  "libcrux-intrinsics",
- "libcrux-platform",
  "libcrux-sha3",
  "pqcrypto-dilithium",
  "rand",
@@ -1041,7 +1006,7 @@ name = "libcrux-ml-kem"
 version = "0.0.2-alpha.3"
 dependencies = [
  "criterion",
- "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
+ "hax-lib",
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",
@@ -1087,7 +1052,7 @@ version = "0.0.2-alpha.3"
 dependencies = [
  "cavp",
  "criterion",
- "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
+ "hax-lib",
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",
