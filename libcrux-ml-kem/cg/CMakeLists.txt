@@ -33,6 +33,7 @@ if((CMAKE_C_COMPILER_ID STREQUAL "Clang" AND
 endif()
 
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 include_directories(
     ${PROJECT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/internal
