@@ -129,7 +129,7 @@ instantiate! {portable,
 // AVX2 generic implementation.
 #[cfg(feature = "simd256")]
 instantiate! {avx2,
-    crate::simd::portable::PortableSIMDUnit,
+    crate::simd::avx2::AVX2SIMDUnit,
     crate::hash_functions::simd256::Shake128x4,
     crate::hash_functions::simd256::Shake256,
     crate::hash_functions::simd256::Shake256x4
