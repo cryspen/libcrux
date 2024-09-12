@@ -168,7 +168,6 @@ static inline uint16_t core_num__i16_1__wrapping_mul(int16_t x, int16_t y) {
   return x * y;
 }
 
-
 // ITERATORS
 
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t) \

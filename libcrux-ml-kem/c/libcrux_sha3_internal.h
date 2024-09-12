@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 6b5e110342a771a3e1c739b10294b1778e4be8b4
- * Eurydice: 31be7d65ca5d6acdacfb33652e478d24dd85c1cb
- * Karamel: 3205d3365ea2790b02368f79fcee38e38d0b5908
+ * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
+ * Eurydice: b2946d0484e60b53f4c3d553c8101d92661a28da
+ * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
- * Libcrux: 33d08ed8cc74e9d1b2c29d754e70a5b2998bd6e5
+ * Libcrux: e2a1da025c2d908adbab323bcea0078ba3bc1fb6
  */
 
 #ifndef __libcrux_sha3_internal_H
@@ -79,14 +79,14 @@ with const generics
 - RIGHT= 63
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc(uint64_t x) {
   return x << (uint32_t)(int32_t)1 | x >> (uint32_t)(int32_t)63;
 }
 
 static KRML_MUSTINLINE uint64_t
 libcrux_sha3_portable_keccak__vrax1q_u64(uint64_t a, uint64_t b) {
   uint64_t uu____0 = a;
-  return uu____0 ^ libcrux_sha3_portable_keccak_rotate_left_db(b);
+  return uu____0 ^ libcrux_sha3_portable_keccak_rotate_left_fc(b);
 }
 
 /**
@@ -192,16 +192,16 @@ typedef struct libcrux_sha3_generic_keccak_KeccakState_48_s {
 */
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
-N>[TraitClause@0]#1}
+N>[TraitClause@0, TraitClause@1]#1}
 */
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.new_1e
+A monomorphic instance of libcrux_sha3.generic_keccak.new_89
 with types uint64_t
 with const generics
 - N= 1
 */
 static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_48
-libcrux_sha3_generic_keccak_new_1e_f2(void) {
+libcrux_sha3_generic_keccak_new_89_ba(void) {
   libcrux_sha3_generic_keccak_KeccakState_48 lit;
   lit.st[0U][0U] = libcrux_sha3_portable_keccak_zero_5a();
   lit.st[0U][1U] = libcrux_sha3_portable_keccak_zero_5a();
@@ -236,7 +236,7 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block
 with const generics
 - RATE= 168
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b3(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_28(
     uint64_t (*s)[5U], Eurydice_slice blocks[1U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -247,7 +247,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b3(
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_ac(dst, uu____0);
+    core_result_unwrap_26_0e(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -260,11 +260,11 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_full
 with const generics
 - RATE= 168
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_7a(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_86(
     uint64_t (*s)[5U], uint8_t blocks[1U][200U]) {
   Eurydice_slice buf[1U] = {
       Eurydice_array_to_slice((size_t)200U, blocks[0U], uint8_t)};
-  libcrux_sha3_portable_keccak_load_block_b3(s, buf);
+  libcrux_sha3_portable_keccak_load_block_28(s, buf);
 }
 
 /**
@@ -276,13 +276,13 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_full_5a
 with const generics
 - BLOCKSIZE= 168
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_5a_71(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_5a_4c(
     uint64_t (*a)[5U], uint8_t b[1U][200U]) {
   uint64_t(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_b[1U][200U];
   memcpy(copy_of_b, b, (size_t)1U * sizeof(uint8_t[200U]));
-  libcrux_sha3_portable_keccak_load_block_full_7a(uu____0, copy_of_b);
+  libcrux_sha3_portable_keccak_load_block_full_86(uu____0, copy_of_b);
 }
 
 /**
@@ -292,7 +292,7 @@ with const generics
 - RIGHT= 28
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db0(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc0(uint64_t x) {
   return x << (uint32_t)(int32_t)36 | x >> (uint32_t)(int32_t)28;
 }
 
@@ -303,9 +303,9 @@ with const generics
 - RIGHT= 28
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db0(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc0(ab);
 }
 
 /**
@@ -319,8 +319,8 @@ with const generics
 - RIGHT= 28
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b4(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac(a, b);
 }
 
 /**
@@ -330,7 +330,7 @@ with const generics
 - RIGHT= 61
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db1(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc1(uint64_t x) {
   return x << (uint32_t)(int32_t)3 | x >> (uint32_t)(int32_t)61;
 }
 
@@ -341,9 +341,9 @@ with const generics
 - RIGHT= 61
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d0(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac0(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db1(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc1(ab);
 }
 
 /**
@@ -357,8 +357,8 @@ with const generics
 - RIGHT= 61
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da0(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d0(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b40(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac0(a, b);
 }
 
 /**
@@ -368,7 +368,7 @@ with const generics
 - RIGHT= 23
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db2(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc2(uint64_t x) {
   return x << (uint32_t)(int32_t)41 | x >> (uint32_t)(int32_t)23;
 }
 
@@ -379,9 +379,9 @@ with const generics
 - RIGHT= 23
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d1(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac1(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db2(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc2(ab);
 }
 
 /**
@@ -395,8 +395,8 @@ with const generics
 - RIGHT= 23
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da1(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d1(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b41(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac1(a, b);
 }
 
 /**
@@ -406,7 +406,7 @@ with const generics
 - RIGHT= 46
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db3(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc3(uint64_t x) {
   return x << (uint32_t)(int32_t)18 | x >> (uint32_t)(int32_t)46;
 }
 
@@ -417,9 +417,9 @@ with const generics
 - RIGHT= 46
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d2(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac2(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db3(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc3(ab);
 }
 
 /**
@@ -433,8 +433,8 @@ with const generics
 - RIGHT= 46
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da2(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d2(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b42(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac2(a, b);
 }
 
 /**
@@ -444,9 +444,9 @@ with const generics
 - RIGHT= 63
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d3(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac3(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc(ab);
 }
 
 /**
@@ -460,8 +460,8 @@ with const generics
 - RIGHT= 63
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da3(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d3(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b43(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac3(a, b);
 }
 
 /**
@@ -471,7 +471,7 @@ with const generics
 - RIGHT= 20
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db4(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc4(uint64_t x) {
   return x << (uint32_t)(int32_t)44 | x >> (uint32_t)(int32_t)20;
 }
 
@@ -482,9 +482,9 @@ with const generics
 - RIGHT= 20
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d4(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac4(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db4(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc4(ab);
 }
 
 /**
@@ -498,8 +498,8 @@ with const generics
 - RIGHT= 20
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da4(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d4(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b44(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac4(a, b);
 }
 
 /**
@@ -509,7 +509,7 @@ with const generics
 - RIGHT= 54
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db5(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc5(uint64_t x) {
   return x << (uint32_t)(int32_t)10 | x >> (uint32_t)(int32_t)54;
 }
 
@@ -520,9 +520,9 @@ with const generics
 - RIGHT= 54
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d5(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac5(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db5(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc5(ab);
 }
 
 /**
@@ -536,8 +536,8 @@ with const generics
 - RIGHT= 54
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da5(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d5(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b45(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac5(a, b);
 }
 
 /**
@@ -547,7 +547,7 @@ with const generics
 - RIGHT= 19
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db6(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc6(uint64_t x) {
   return x << (uint32_t)(int32_t)45 | x >> (uint32_t)(int32_t)19;
 }
 
@@ -558,9 +558,9 @@ with const generics
 - RIGHT= 19
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d6(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac6(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db6(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc6(ab);
 }
 
 /**
@@ -574,8 +574,8 @@ with const generics
 - RIGHT= 19
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da6(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d6(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b46(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac6(a, b);
 }
 
 /**
@@ -585,7 +585,7 @@ with const generics
 - RIGHT= 62
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db7(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc7(uint64_t x) {
   return x << (uint32_t)(int32_t)2 | x >> (uint32_t)(int32_t)62;
 }
 
@@ -596,9 +596,9 @@ with const generics
 - RIGHT= 62
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d7(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac7(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db7(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc7(ab);
 }
 
 /**
@@ -612,8 +612,8 @@ with const generics
 - RIGHT= 62
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da7(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d7(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b47(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac7(a, b);
 }
 
 /**
@@ -623,7 +623,7 @@ with const generics
 - RIGHT= 2
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db8(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc8(uint64_t x) {
   return x << (uint32_t)(int32_t)62 | x >> (uint32_t)(int32_t)2;
 }
 
@@ -634,9 +634,9 @@ with const generics
 - RIGHT= 2
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d8(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac8(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db8(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc8(ab);
 }
 
 /**
@@ -650,8 +650,8 @@ with const generics
 - RIGHT= 2
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da8(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d8(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b48(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac8(a, b);
 }
 
 /**
@@ -661,7 +661,7 @@ with const generics
 - RIGHT= 58
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db9(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc9(uint64_t x) {
   return x << (uint32_t)(int32_t)6 | x >> (uint32_t)(int32_t)58;
 }
 
@@ -672,9 +672,9 @@ with const generics
 - RIGHT= 58
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d9(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac9(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db9(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc9(ab);
 }
 
 /**
@@ -688,8 +688,8 @@ with const generics
 - RIGHT= 58
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da9(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d9(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b49(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac9(a, b);
 }
 
 /**
@@ -699,7 +699,7 @@ with const generics
 - RIGHT= 21
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db10(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc10(uint64_t x) {
   return x << (uint32_t)(int32_t)43 | x >> (uint32_t)(int32_t)21;
 }
 
@@ -710,9 +710,9 @@ with const generics
 - RIGHT= 21
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d10(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac10(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db10(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc10(ab);
 }
 
 /**
@@ -726,8 +726,8 @@ with const generics
 - RIGHT= 21
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da10(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d10(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b410(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac10(a, b);
 }
 
 /**
@@ -737,7 +737,7 @@ with const generics
 - RIGHT= 49
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db11(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc11(uint64_t x) {
   return x << (uint32_t)(int32_t)15 | x >> (uint32_t)(int32_t)49;
 }
 
@@ -748,9 +748,9 @@ with const generics
 - RIGHT= 49
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d11(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac11(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db11(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc11(ab);
 }
 
 /**
@@ -764,8 +764,8 @@ with const generics
 - RIGHT= 49
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da11(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d11(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b411(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac11(a, b);
 }
 
 /**
@@ -775,7 +775,7 @@ with const generics
 - RIGHT= 3
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db12(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc12(uint64_t x) {
   return x << (uint32_t)(int32_t)61 | x >> (uint32_t)(int32_t)3;
 }
 
@@ -786,9 +786,9 @@ with const generics
 - RIGHT= 3
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d12(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac12(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db12(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc12(ab);
 }
 
 /**
@@ -802,8 +802,8 @@ with const generics
 - RIGHT= 3
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da12(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d12(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b412(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac12(a, b);
 }
 
 /**
@@ -813,7 +813,7 @@ with const generics
 - RIGHT= 36
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db13(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc13(uint64_t x) {
   return x << (uint32_t)(int32_t)28 | x >> (uint32_t)(int32_t)36;
 }
 
@@ -824,9 +824,9 @@ with const generics
 - RIGHT= 36
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d13(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac13(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db13(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc13(ab);
 }
 
 /**
@@ -840,8 +840,8 @@ with const generics
 - RIGHT= 36
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da13(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d13(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b413(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac13(a, b);
 }
 
 /**
@@ -851,7 +851,7 @@ with const generics
 - RIGHT= 9
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db14(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc14(uint64_t x) {
   return x << (uint32_t)(int32_t)55 | x >> (uint32_t)(int32_t)9;
 }
 
@@ -862,9 +862,9 @@ with const generics
 - RIGHT= 9
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d14(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac14(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db14(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc14(ab);
 }
 
 /**
@@ -878,8 +878,8 @@ with const generics
 - RIGHT= 9
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da14(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d14(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b414(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac14(a, b);
 }
 
 /**
@@ -889,7 +889,7 @@ with const generics
 - RIGHT= 39
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db15(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc15(uint64_t x) {
   return x << (uint32_t)(int32_t)25 | x >> (uint32_t)(int32_t)39;
 }
 
@@ -900,9 +900,9 @@ with const generics
 - RIGHT= 39
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d15(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac15(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db15(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc15(ab);
 }
 
 /**
@@ -916,8 +916,8 @@ with const generics
 - RIGHT= 39
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da15(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d15(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b415(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac15(a, b);
 }
 
 /**
@@ -927,7 +927,7 @@ with const generics
 - RIGHT= 43
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db16(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc16(uint64_t x) {
   return x << (uint32_t)(int32_t)21 | x >> (uint32_t)(int32_t)43;
 }
 
@@ -938,9 +938,9 @@ with const generics
 - RIGHT= 43
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d16(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac16(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db16(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc16(ab);
 }
 
 /**
@@ -954,8 +954,8 @@ with const generics
 - RIGHT= 43
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da16(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d16(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b416(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac16(a, b);
 }
 
 /**
@@ -965,7 +965,7 @@ with const generics
 - RIGHT= 8
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db17(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc17(uint64_t x) {
   return x << (uint32_t)(int32_t)56 | x >> (uint32_t)(int32_t)8;
 }
 
@@ -976,9 +976,9 @@ with const generics
 - RIGHT= 8
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d17(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac17(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db17(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc17(ab);
 }
 
 /**
@@ -992,8 +992,8 @@ with const generics
 - RIGHT= 8
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da17(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d17(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b417(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac17(a, b);
 }
 
 /**
@@ -1003,7 +1003,7 @@ with const generics
 - RIGHT= 37
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db18(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc18(uint64_t x) {
   return x << (uint32_t)(int32_t)27 | x >> (uint32_t)(int32_t)37;
 }
 
@@ -1014,9 +1014,9 @@ with const generics
 - RIGHT= 37
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d18(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac18(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db18(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc18(ab);
 }
 
 /**
@@ -1030,8 +1030,8 @@ with const generics
 - RIGHT= 37
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da18(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d18(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b418(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac18(a, b);
 }
 
 /**
@@ -1041,7 +1041,7 @@ with const generics
 - RIGHT= 44
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db19(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc19(uint64_t x) {
   return x << (uint32_t)(int32_t)20 | x >> (uint32_t)(int32_t)44;
 }
 
@@ -1052,9 +1052,9 @@ with const generics
 - RIGHT= 44
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d19(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac19(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db19(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc19(ab);
 }
 
 /**
@@ -1068,8 +1068,8 @@ with const generics
 - RIGHT= 44
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da19(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d19(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b419(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac19(a, b);
 }
 
 /**
@@ -1079,7 +1079,7 @@ with const generics
 - RIGHT= 25
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db20(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc20(uint64_t x) {
   return x << (uint32_t)(int32_t)39 | x >> (uint32_t)(int32_t)25;
 }
 
@@ -1090,9 +1090,9 @@ with const generics
 - RIGHT= 25
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d20(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac20(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db20(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc20(ab);
 }
 
 /**
@@ -1106,8 +1106,8 @@ with const generics
 - RIGHT= 25
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da20(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d20(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b420(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac20(a, b);
 }
 
 /**
@@ -1117,7 +1117,7 @@ with const generics
 - RIGHT= 56
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db21(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc21(uint64_t x) {
   return x << (uint32_t)(int32_t)8 | x >> (uint32_t)(int32_t)56;
 }
 
@@ -1128,9 +1128,9 @@ with const generics
 - RIGHT= 56
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d21(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac21(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db21(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc21(ab);
 }
 
 /**
@@ -1144,8 +1144,8 @@ with const generics
 - RIGHT= 56
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da21(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d21(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b421(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac21(a, b);
 }
 
 /**
@@ -1155,7 +1155,7 @@ with const generics
 - RIGHT= 50
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_rotate_left_db22(uint64_t x) {
+libcrux_sha3_portable_keccak_rotate_left_fc22(uint64_t x) {
   return x << (uint32_t)(int32_t)14 | x >> (uint32_t)(int32_t)50;
 }
 
@@ -1166,9 +1166,9 @@ with const generics
 - RIGHT= 50
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak__vxarq_u64_3d22(uint64_t a, uint64_t b) {
+libcrux_sha3_portable_keccak__vxarq_u64_ac22(uint64_t a, uint64_t b) {
   uint64_t ab = a ^ b;
-  return libcrux_sha3_portable_keccak_rotate_left_db22(ab);
+  return libcrux_sha3_portable_keccak_rotate_left_fc22(ab);
 }
 
 /**
@@ -1182,8 +1182,8 @@ with const generics
 - RIGHT= 50
 */
 static KRML_MUSTINLINE uint64_t
-libcrux_sha3_portable_keccak_xor_and_rotate_5a_da22(uint64_t a, uint64_t b) {
-  return libcrux_sha3_portable_keccak__vxarq_u64_3d22(a, b);
+libcrux_sha3_portable_keccak_xor_and_rotate_5a_b422(uint64_t a, uint64_t b) {
+  return libcrux_sha3_portable_keccak__vxarq_u64_ac22(a, b);
 }
 
 /**
@@ -1192,7 +1192,7 @@ with types uint64_t
 with const generics
 - N= 1
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_theta_rho_eb(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_theta_rho_0d(
     libcrux_sha3_generic_keccak_KeccakState_48 *s) {
   uint64_t c[5U] = {
       libcrux_sha3_portable_keccak_xor5_5a(s->st[0U][0U], s->st[1U][0U],
@@ -1228,53 +1228,53 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_theta_rho_eb(
                         c[((size_t)4U + (size_t)1U) % (size_t)5U])};
   s->st[0U][0U] = libcrux_sha3_portable_keccak_xor_5a(s->st[0U][0U], t[0U]);
   s->st[1U][0U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da(s->st[1U][0U], t[0U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b4(s->st[1U][0U], t[0U]);
   s->st[2U][0U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da0(s->st[2U][0U], t[0U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b40(s->st[2U][0U], t[0U]);
   s->st[3U][0U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da1(s->st[3U][0U], t[0U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b41(s->st[3U][0U], t[0U]);
   s->st[4U][0U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da2(s->st[4U][0U], t[0U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b42(s->st[4U][0U], t[0U]);
   s->st[0U][1U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da3(s->st[0U][1U], t[1U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b43(s->st[0U][1U], t[1U]);
   s->st[1U][1U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da4(s->st[1U][1U], t[1U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b44(s->st[1U][1U], t[1U]);
   s->st[2U][1U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da5(s->st[2U][1U], t[1U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b45(s->st[2U][1U], t[1U]);
   s->st[3U][1U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da6(s->st[3U][1U], t[1U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b46(s->st[3U][1U], t[1U]);
   s->st[4U][1U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da7(s->st[4U][1U], t[1U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b47(s->st[4U][1U], t[1U]);
   s->st[0U][2U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da8(s->st[0U][2U], t[2U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b48(s->st[0U][2U], t[2U]);
   s->st[1U][2U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da9(s->st[1U][2U], t[2U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b49(s->st[1U][2U], t[2U]);
   s->st[2U][2U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da10(s->st[2U][2U], t[2U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b410(s->st[2U][2U], t[2U]);
   s->st[3U][2U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da11(s->st[3U][2U], t[2U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b411(s->st[3U][2U], t[2U]);
   s->st[4U][2U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da12(s->st[4U][2U], t[2U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b412(s->st[4U][2U], t[2U]);
   s->st[0U][3U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da13(s->st[0U][3U], t[3U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b413(s->st[0U][3U], t[3U]);
   s->st[1U][3U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da14(s->st[1U][3U], t[3U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b414(s->st[1U][3U], t[3U]);
   s->st[2U][3U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da15(s->st[2U][3U], t[3U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b415(s->st[2U][3U], t[3U]);
   s->st[3U][3U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da16(s->st[3U][3U], t[3U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b416(s->st[3U][3U], t[3U]);
   s->st[4U][3U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da17(s->st[4U][3U], t[3U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b417(s->st[4U][3U], t[3U]);
   s->st[0U][4U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da18(s->st[0U][4U], t[4U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b418(s->st[0U][4U], t[4U]);
   s->st[1U][4U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da19(s->st[1U][4U], t[4U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b419(s->st[1U][4U], t[4U]);
   s->st[2U][4U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da20(s->st[2U][4U], t[4U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b420(s->st[2U][4U], t[4U]);
   s->st[3U][4U] =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da21(s->st[3U][4U], t[4U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b421(s->st[3U][4U], t[4U]);
   uint64_t uu____27 =
-      libcrux_sha3_portable_keccak_xor_and_rotate_5a_da22(s->st[4U][4U], t[4U]);
+      libcrux_sha3_portable_keccak_xor_and_rotate_5a_b422(s->st[4U][4U], t[4U]);
   s->st[4U][4U] = uu____27;
 }
 
@@ -1284,7 +1284,7 @@ with types uint64_t
 with const generics
 - N= 1
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_pi_b8(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_pi_f0(
     libcrux_sha3_generic_keccak_KeccakState_48 *s) {
   uint64_t old[5U][5U];
   memcpy(old, s->st, (size_t)5U * sizeof(uint64_t[5U]));
@@ -1320,7 +1320,7 @@ with types uint64_t
 with const generics
 - N= 1
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_chi_1f(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_chi_e2(
     libcrux_sha3_generic_keccak_KeccakState_48 *s) {
   uint64_t old[5U][5U];
   memcpy(old, s->st, (size_t)5U * sizeof(uint64_t[5U]));
@@ -1338,7 +1338,7 @@ with types uint64_t
 with const generics
 - N= 1
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_iota_83(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_iota_ae(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, size_t i) {
   s->st[0U][0U] = libcrux_sha3_portable_keccak_xor_constant_5a(
       s->st[0U][0U], libcrux_sha3_generic_keccak_ROUNDCONSTANTS[i]);
@@ -1350,14 +1350,14 @@ with types uint64_t
 with const generics
 - N= 1
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccakf1600_85(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccakf1600_7e(
     libcrux_sha3_generic_keccak_KeccakState_48 *s) {
   for (size_t i = (size_t)0U; i < (size_t)24U; i++) {
     size_t i0 = i;
-    libcrux_sha3_generic_keccak_theta_rho_eb(s);
-    libcrux_sha3_generic_keccak_pi_b8(s);
-    libcrux_sha3_generic_keccak_chi_1f(s);
-    libcrux_sha3_generic_keccak_iota_83(s, i0);
+    libcrux_sha3_generic_keccak_theta_rho_0d(s);
+    libcrux_sha3_generic_keccak_pi_f0(s);
+    libcrux_sha3_generic_keccak_chi_e2(s);
+    libcrux_sha3_generic_keccak_iota_ae(s, i0);
   }
 }
 
@@ -1369,7 +1369,7 @@ with const generics
 - RATE= 168
 - DELIM= 31
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_72(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_f3(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice last[1U]) {
   size_t last_len = Eurydice_slice_len(last[0U], uint8_t);
   uint8_t blocks[1U][200U] = {{0U}};
@@ -1388,8 +1388,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_72(
   uint64_t(*uu____3)[5U] = s->st;
   uint8_t uu____4[1U][200U];
   memcpy(uu____4, blocks, (size_t)1U * sizeof(uint8_t[200U]));
-  libcrux_sha3_portable_keccak_load_block_full_5a_71(uu____3, uu____4);
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
+  libcrux_sha3_portable_keccak_load_block_full_5a_4c(uu____3, uu____4);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
 }
 
 /**
@@ -1397,7 +1397,7 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block
 with const generics
 - RATE= 168
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_58(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_3d(
     uint64_t (*s)[5U], Eurydice_slice out[1U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -1419,9 +1419,9 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block_5a
 with const generics
 - BLOCKSIZE= 168
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_5a_6f(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_5a_7d(
     uint64_t (*a)[5U], Eurydice_slice b[1U]) {
-  libcrux_sha3_portable_keccak_store_block_58(a, b);
+  libcrux_sha3_portable_keccak_store_block_3d(a, b);
 }
 
 /**
@@ -1431,9 +1431,9 @@ with const generics
 - N= 1
 - RATE= 168
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_09(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_80(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
-  libcrux_sha3_portable_keccak_store_block_5a_6f(s->st, out);
+  libcrux_sha3_portable_keccak_store_block_5a_7d(s->st, out);
 }
 
 /**
@@ -1443,10 +1443,10 @@ with const generics
 - N= 1
 - RATE= 168
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_1f(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_87(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
-  libcrux_sha3_portable_keccak_store_block_5a_6f(s->st, out);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
+  libcrux_sha3_portable_keccak_store_block_5a_7d(s->st, out);
 }
 
 /**
@@ -1454,7 +1454,7 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block
 with const generics
 - RATE= 136
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b30(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_280(
     uint64_t (*s)[5U], Eurydice_slice blocks[1U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -1465,7 +1465,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b30(
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_ac(dst, uu____0);
+    core_result_unwrap_26_0e(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -1478,11 +1478,11 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_full
 with const generics
 - RATE= 136
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_7a0(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_860(
     uint64_t (*s)[5U], uint8_t blocks[1U][200U]) {
   Eurydice_slice buf[1U] = {
       Eurydice_array_to_slice((size_t)200U, blocks[0U], uint8_t)};
-  libcrux_sha3_portable_keccak_load_block_b30(s, buf);
+  libcrux_sha3_portable_keccak_load_block_280(s, buf);
 }
 
 /**
@@ -1494,13 +1494,13 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_full_5a
 with const generics
 - BLOCKSIZE= 136
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_5a_710(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_5a_4c0(
     uint64_t (*a)[5U], uint8_t b[1U][200U]) {
   uint64_t(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_b[1U][200U];
   memcpy(copy_of_b, b, (size_t)1U * sizeof(uint8_t[200U]));
-  libcrux_sha3_portable_keccak_load_block_full_7a0(uu____0, copy_of_b);
+  libcrux_sha3_portable_keccak_load_block_full_860(uu____0, copy_of_b);
 }
 
 /**
@@ -1511,7 +1511,7 @@ with const generics
 - RATE= 136
 - DELIM= 31
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_720(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_f30(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice last[1U]) {
   size_t last_len = Eurydice_slice_len(last[0U], uint8_t);
   uint8_t blocks[1U][200U] = {{0U}};
@@ -1530,8 +1530,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_720(
   uint64_t(*uu____3)[5U] = s->st;
   uint8_t uu____4[1U][200U];
   memcpy(uu____4, blocks, (size_t)1U * sizeof(uint8_t[200U]));
-  libcrux_sha3_portable_keccak_load_block_full_5a_710(uu____3, uu____4);
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
+  libcrux_sha3_portable_keccak_load_block_full_5a_4c0(uu____3, uu____4);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
 }
 
 /**
@@ -1539,7 +1539,7 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block
 with const generics
 - RATE= 136
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_580(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_3d0(
     uint64_t (*s)[5U], Eurydice_slice out[1U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -1561,9 +1561,9 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block_5a
 with const generics
 - BLOCKSIZE= 136
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_5a_6f0(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_5a_7d0(
     uint64_t (*a)[5U], Eurydice_slice b[1U]) {
-  libcrux_sha3_portable_keccak_store_block_580(a, b);
+  libcrux_sha3_portable_keccak_store_block_3d0(a, b);
 }
 
 /**
@@ -1573,9 +1573,9 @@ with const generics
 - N= 1
 - RATE= 136
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_090(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_800(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
-  libcrux_sha3_portable_keccak_store_block_5a_6f0(s->st, out);
+  libcrux_sha3_portable_keccak_store_block_5a_7d0(s->st, out);
 }
 
 /**
@@ -1585,10 +1585,10 @@ with const generics
 - N= 1
 - RATE= 136
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_1f0(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_870(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
-  libcrux_sha3_portable_keccak_store_block_5a_6f0(s->st, out);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
+  libcrux_sha3_portable_keccak_store_block_5a_7d0(s->st, out);
 }
 
 /**
@@ -1600,13 +1600,13 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_5a
 with const generics
 - BLOCKSIZE= 168
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_5a_fd3(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_5a_153(
     uint64_t (*a)[5U], Eurydice_slice b[1U]) {
   uint64_t(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_b[1U];
   memcpy(copy_of_b, b, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_portable_keccak_load_block_b3(uu____0, copy_of_b);
+  libcrux_sha3_portable_keccak_load_block_28(uu____0, copy_of_b);
 }
 
 /**
@@ -1616,13 +1616,13 @@ with const generics
 - N= 1
 - RATE= 168
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_753(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_283(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice blocks[1U]) {
   uint64_t(*uu____0)[5U] = s->st;
   Eurydice_slice uu____1[1U];
   memcpy(uu____1, blocks, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_portable_keccak_load_block_5a_fd3(uu____0, uu____1);
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
+  libcrux_sha3_portable_keccak_load_block_5a_153(uu____0, uu____1);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
 }
 
 /**
@@ -1630,12 +1630,12 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block_full
 with const generics
 - RATE= 168
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_full_fa3(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_full_853(
     uint64_t (*s)[5U], uint8_t ret[1U][200U]) {
   uint8_t out[200U] = {0U};
   Eurydice_slice buf[1U] = {
       Eurydice_array_to_slice((size_t)200U, out, uint8_t)};
-  libcrux_sha3_portable_keccak_store_block_58(s, buf);
+  libcrux_sha3_portable_keccak_store_block_3d(s, buf);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_out[200U];
   memcpy(copy_of_out, out, (size_t)200U * sizeof(uint8_t));
@@ -1652,9 +1652,9 @@ with const generics
 - BLOCKSIZE= 168
 */
 static KRML_MUSTINLINE void
-libcrux_sha3_portable_keccak_store_block_full_5a_783(uint64_t (*a)[5U],
+libcrux_sha3_portable_keccak_store_block_full_5a_1e3(uint64_t (*a)[5U],
                                                      uint8_t ret[1U][200U]) {
-  libcrux_sha3_portable_keccak_store_block_full_fa3(a, ret);
+  libcrux_sha3_portable_keccak_store_block_full_853(a, ret);
 }
 
 /**
@@ -1665,10 +1665,10 @@ with const generics
 - RATE= 168
 */
 static KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_squeeze_first_and_last_5d3(
+libcrux_sha3_generic_keccak_squeeze_first_and_last_d93(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
   uint8_t b[1U][200U];
-  libcrux_sha3_portable_keccak_store_block_full_5a_783(s->st, b);
+  libcrux_sha3_portable_keccak_store_block_full_5a_1e3(s->st, b);
   {
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = out[i];
@@ -1691,11 +1691,11 @@ with const generics
 - N= 1
 - RATE= 168
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_last_833(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_last_c93(
     libcrux_sha3_generic_keccak_KeccakState_48 s, Eurydice_slice out[1U]) {
-  libcrux_sha3_generic_keccak_keccakf1600_85(&s);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(&s);
   uint8_t b[1U][200U];
-  libcrux_sha3_portable_keccak_store_block_full_5a_783(s.st, b);
+  libcrux_sha3_portable_keccak_store_block_full_5a_1e3(s.st, b);
   {
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = out[i];
@@ -1719,10 +1719,10 @@ with const generics
 - RATE= 168
 - DELIM= 31
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_754(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_924(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 s =
-      libcrux_sha3_generic_keccak_new_1e_f2();
+      libcrux_sha3_generic_keccak_new_89_ba();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)168U; i++) {
     size_t i0 = i;
@@ -1733,7 +1733,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_754(
     Eurydice_slice ret[1U];
     libcrux_sha3_portable_keccak_slice_n_5a(copy_of_data, i0 * (size_t)168U,
                                             (size_t)168U, ret);
-    libcrux_sha3_generic_keccak_absorb_block_753(uu____0, ret);
+    libcrux_sha3_generic_keccak_absorb_block_283(uu____0, ret);
   }
   size_t rem = Eurydice_slice_len(data[0U], uint8_t) % (size_t)168U;
   libcrux_sha3_generic_keccak_KeccakState_48 *uu____2 = &s;
@@ -1743,12 +1743,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_754(
   Eurydice_slice ret[1U];
   libcrux_sha3_portable_keccak_slice_n_5a(
       copy_of_data, Eurydice_slice_len(data[0U], uint8_t) - rem, rem, ret);
-  libcrux_sha3_generic_keccak_absorb_final_72(uu____2, ret);
+  libcrux_sha3_generic_keccak_absorb_final_f3(uu____2, ret);
   size_t outlen = Eurydice_slice_len(out[0U], uint8_t);
   size_t blocks = outlen / (size_t)168U;
   size_t last = outlen - outlen % (size_t)168U;
   if (blocks == (size_t)0U) {
-    libcrux_sha3_generic_keccak_squeeze_first_and_last_5d3(&s, out);
+    libcrux_sha3_generic_keccak_squeeze_first_and_last_d93(&s, out);
   } else {
     Eurydice_slice_uint8_t_1size_t__x2 uu____4 =
         libcrux_sha3_portable_keccak_split_at_mut_n_5a(out, (size_t)168U);
@@ -1756,14 +1756,14 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_754(
     memcpy(o0, uu____4.fst, (size_t)1U * sizeof(Eurydice_slice));
     Eurydice_slice o1[1U];
     memcpy(o1, uu____4.snd, (size_t)1U * sizeof(Eurydice_slice));
-    libcrux_sha3_generic_keccak_squeeze_first_block_09(&s, o0);
+    libcrux_sha3_generic_keccak_squeeze_first_block_80(&s, o0);
     core_ops_range_Range_b3 iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
             (CLITERAL(core_ops_range_Range_b3){.start = (size_t)1U,
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;
@@ -1774,12 +1774,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_754(
         memcpy(o, uu____5.fst, (size_t)1U * sizeof(Eurydice_slice));
         Eurydice_slice orest[1U];
         memcpy(orest, uu____5.snd, (size_t)1U * sizeof(Eurydice_slice));
-        libcrux_sha3_generic_keccak_squeeze_next_block_1f(&s, o);
+        libcrux_sha3_generic_keccak_squeeze_next_block_87(&s, o);
         memcpy(o1, orest, (size_t)1U * sizeof(Eurydice_slice));
       }
     }
     if (last < outlen) {
-      libcrux_sha3_generic_keccak_squeeze_last_833(s, o1);
+      libcrux_sha3_generic_keccak_squeeze_last_c93(s, o1);
     }
   }
 }
@@ -1790,12 +1790,12 @@ with const generics
 - RATE= 168
 - DELIM= 31
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_2a4(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_974(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_generic_keccak_keccak_754(copy_of_data, out);
+  libcrux_sha3_generic_keccak_keccak_924(copy_of_data, out);
 }
 
 /**
@@ -1803,7 +1803,7 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block
 with const generics
 - RATE= 104
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b33(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_283(
     uint64_t (*s)[5U], Eurydice_slice blocks[1U]) {
   for (size_t i = (size_t)0U; i < (size_t)104U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -1814,7 +1814,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b33(
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_ac(dst, uu____0);
+    core_result_unwrap_26_0e(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -1831,13 +1831,13 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_5a
 with const generics
 - BLOCKSIZE= 104
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_5a_fd2(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_5a_152(
     uint64_t (*a)[5U], Eurydice_slice b[1U]) {
   uint64_t(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_b[1U];
   memcpy(copy_of_b, b, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_portable_keccak_load_block_b33(uu____0, copy_of_b);
+  libcrux_sha3_portable_keccak_load_block_283(uu____0, copy_of_b);
 }
 
 /**
@@ -1847,13 +1847,13 @@ with const generics
 - N= 1
 - RATE= 104
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_752(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_282(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice blocks[1U]) {
   uint64_t(*uu____0)[5U] = s->st;
   Eurydice_slice uu____1[1U];
   memcpy(uu____1, blocks, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_portable_keccak_load_block_5a_fd2(uu____0, uu____1);
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
+  libcrux_sha3_portable_keccak_load_block_5a_152(uu____0, uu____1);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
 }
 
 /**
@@ -1861,11 +1861,11 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_full
 with const generics
 - RATE= 104
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_7a3(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_863(
     uint64_t (*s)[5U], uint8_t blocks[1U][200U]) {
   Eurydice_slice buf[1U] = {
       Eurydice_array_to_slice((size_t)200U, blocks[0U], uint8_t)};
-  libcrux_sha3_portable_keccak_load_block_b33(s, buf);
+  libcrux_sha3_portable_keccak_load_block_283(s, buf);
 }
 
 /**
@@ -1877,13 +1877,13 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_full_5a
 with const generics
 - BLOCKSIZE= 104
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_5a_713(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_5a_4c3(
     uint64_t (*a)[5U], uint8_t b[1U][200U]) {
   uint64_t(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_b[1U][200U];
   memcpy(copy_of_b, b, (size_t)1U * sizeof(uint8_t[200U]));
-  libcrux_sha3_portable_keccak_load_block_full_7a3(uu____0, copy_of_b);
+  libcrux_sha3_portable_keccak_load_block_full_863(uu____0, copy_of_b);
 }
 
 /**
@@ -1894,7 +1894,7 @@ with const generics
 - RATE= 104
 - DELIM= 6
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_724(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_f34(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice last[1U]) {
   size_t last_len = Eurydice_slice_len(last[0U], uint8_t);
   uint8_t blocks[1U][200U] = {{0U}};
@@ -1913,8 +1913,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_724(
   uint64_t(*uu____3)[5U] = s->st;
   uint8_t uu____4[1U][200U];
   memcpy(uu____4, blocks, (size_t)1U * sizeof(uint8_t[200U]));
-  libcrux_sha3_portable_keccak_load_block_full_5a_713(uu____3, uu____4);
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
+  libcrux_sha3_portable_keccak_load_block_full_5a_4c3(uu____3, uu____4);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
 }
 
 /**
@@ -1922,7 +1922,7 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block
 with const generics
 - RATE= 104
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_583(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_3d3(
     uint64_t (*s)[5U], Eurydice_slice out[1U]) {
   for (size_t i = (size_t)0U; i < (size_t)104U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -1940,12 +1940,12 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block_full
 with const generics
 - RATE= 104
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_full_fa2(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_full_852(
     uint64_t (*s)[5U], uint8_t ret[1U][200U]) {
   uint8_t out[200U] = {0U};
   Eurydice_slice buf[1U] = {
       Eurydice_array_to_slice((size_t)200U, out, uint8_t)};
-  libcrux_sha3_portable_keccak_store_block_583(s, buf);
+  libcrux_sha3_portable_keccak_store_block_3d3(s, buf);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_out[200U];
   memcpy(copy_of_out, out, (size_t)200U * sizeof(uint8_t));
@@ -1962,9 +1962,9 @@ with const generics
 - BLOCKSIZE= 104
 */
 static KRML_MUSTINLINE void
-libcrux_sha3_portable_keccak_store_block_full_5a_782(uint64_t (*a)[5U],
+libcrux_sha3_portable_keccak_store_block_full_5a_1e2(uint64_t (*a)[5U],
                                                      uint8_t ret[1U][200U]) {
-  libcrux_sha3_portable_keccak_store_block_full_fa2(a, ret);
+  libcrux_sha3_portable_keccak_store_block_full_852(a, ret);
 }
 
 /**
@@ -1975,10 +1975,10 @@ with const generics
 - RATE= 104
 */
 static KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_squeeze_first_and_last_5d2(
+libcrux_sha3_generic_keccak_squeeze_first_and_last_d92(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
   uint8_t b[1U][200U];
-  libcrux_sha3_portable_keccak_store_block_full_5a_782(s->st, b);
+  libcrux_sha3_portable_keccak_store_block_full_5a_1e2(s->st, b);
   {
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = out[i];
@@ -2003,9 +2003,9 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block_5a
 with const generics
 - BLOCKSIZE= 104
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_5a_6f3(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_5a_7d3(
     uint64_t (*a)[5U], Eurydice_slice b[1U]) {
-  libcrux_sha3_portable_keccak_store_block_583(a, b);
+  libcrux_sha3_portable_keccak_store_block_3d3(a, b);
 }
 
 /**
@@ -2015,9 +2015,9 @@ with const generics
 - N= 1
 - RATE= 104
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_093(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_803(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
-  libcrux_sha3_portable_keccak_store_block_5a_6f3(s->st, out);
+  libcrux_sha3_portable_keccak_store_block_5a_7d3(s->st, out);
 }
 
 /**
@@ -2027,10 +2027,10 @@ with const generics
 - N= 1
 - RATE= 104
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_1f3(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_873(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
-  libcrux_sha3_portable_keccak_store_block_5a_6f3(s->st, out);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
+  libcrux_sha3_portable_keccak_store_block_5a_7d3(s->st, out);
 }
 
 /**
@@ -2040,11 +2040,11 @@ with const generics
 - N= 1
 - RATE= 104
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_last_832(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_last_c92(
     libcrux_sha3_generic_keccak_KeccakState_48 s, Eurydice_slice out[1U]) {
-  libcrux_sha3_generic_keccak_keccakf1600_85(&s);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(&s);
   uint8_t b[1U][200U];
-  libcrux_sha3_portable_keccak_store_block_full_5a_782(s.st, b);
+  libcrux_sha3_portable_keccak_store_block_full_5a_1e2(s.st, b);
   {
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = out[i];
@@ -2068,10 +2068,10 @@ with const generics
 - RATE= 104
 - DELIM= 6
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_753(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_923(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 s =
-      libcrux_sha3_generic_keccak_new_1e_f2();
+      libcrux_sha3_generic_keccak_new_89_ba();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)104U; i++) {
     size_t i0 = i;
@@ -2082,7 +2082,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_753(
     Eurydice_slice ret[1U];
     libcrux_sha3_portable_keccak_slice_n_5a(copy_of_data, i0 * (size_t)104U,
                                             (size_t)104U, ret);
-    libcrux_sha3_generic_keccak_absorb_block_752(uu____0, ret);
+    libcrux_sha3_generic_keccak_absorb_block_282(uu____0, ret);
   }
   size_t rem = Eurydice_slice_len(data[0U], uint8_t) % (size_t)104U;
   libcrux_sha3_generic_keccak_KeccakState_48 *uu____2 = &s;
@@ -2092,12 +2092,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_753(
   Eurydice_slice ret[1U];
   libcrux_sha3_portable_keccak_slice_n_5a(
       copy_of_data, Eurydice_slice_len(data[0U], uint8_t) - rem, rem, ret);
-  libcrux_sha3_generic_keccak_absorb_final_724(uu____2, ret);
+  libcrux_sha3_generic_keccak_absorb_final_f34(uu____2, ret);
   size_t outlen = Eurydice_slice_len(out[0U], uint8_t);
   size_t blocks = outlen / (size_t)104U;
   size_t last = outlen - outlen % (size_t)104U;
   if (blocks == (size_t)0U) {
-    libcrux_sha3_generic_keccak_squeeze_first_and_last_5d2(&s, out);
+    libcrux_sha3_generic_keccak_squeeze_first_and_last_d92(&s, out);
   } else {
     Eurydice_slice_uint8_t_1size_t__x2 uu____4 =
         libcrux_sha3_portable_keccak_split_at_mut_n_5a(out, (size_t)104U);
@@ -2105,14 +2105,14 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_753(
     memcpy(o0, uu____4.fst, (size_t)1U * sizeof(Eurydice_slice));
     Eurydice_slice o1[1U];
     memcpy(o1, uu____4.snd, (size_t)1U * sizeof(Eurydice_slice));
-    libcrux_sha3_generic_keccak_squeeze_first_block_093(&s, o0);
+    libcrux_sha3_generic_keccak_squeeze_first_block_803(&s, o0);
     core_ops_range_Range_b3 iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
             (CLITERAL(core_ops_range_Range_b3){.start = (size_t)1U,
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;
@@ -2123,12 +2123,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_753(
         memcpy(o, uu____5.fst, (size_t)1U * sizeof(Eurydice_slice));
         Eurydice_slice orest[1U];
         memcpy(orest, uu____5.snd, (size_t)1U * sizeof(Eurydice_slice));
-        libcrux_sha3_generic_keccak_squeeze_next_block_1f3(&s, o);
+        libcrux_sha3_generic_keccak_squeeze_next_block_873(&s, o);
         memcpy(o1, orest, (size_t)1U * sizeof(Eurydice_slice));
       }
     }
     if (last < outlen) {
-      libcrux_sha3_generic_keccak_squeeze_last_832(s, o1);
+      libcrux_sha3_generic_keccak_squeeze_last_c92(s, o1);
     }
   }
 }
@@ -2139,12 +2139,12 @@ with const generics
 - RATE= 104
 - DELIM= 6
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_2a3(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_973(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_generic_keccak_keccak_753(copy_of_data, out);
+  libcrux_sha3_generic_keccak_keccak_923(copy_of_data, out);
 }
 
 /**
@@ -2152,7 +2152,7 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block
 with const generics
 - RATE= 144
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b32(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_282(
     uint64_t (*s)[5U], Eurydice_slice blocks[1U]) {
   for (size_t i = (size_t)0U; i < (size_t)144U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -2163,7 +2163,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b32(
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_ac(dst, uu____0);
+    core_result_unwrap_26_0e(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -2180,13 +2180,13 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_5a
 with const generics
 - BLOCKSIZE= 144
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_5a_fd1(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_5a_151(
     uint64_t (*a)[5U], Eurydice_slice b[1U]) {
   uint64_t(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_b[1U];
   memcpy(copy_of_b, b, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_portable_keccak_load_block_b32(uu____0, copy_of_b);
+  libcrux_sha3_portable_keccak_load_block_282(uu____0, copy_of_b);
 }
 
 /**
@@ -2196,13 +2196,13 @@ with const generics
 - N= 1
 - RATE= 144
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_751(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_281(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice blocks[1U]) {
   uint64_t(*uu____0)[5U] = s->st;
   Eurydice_slice uu____1[1U];
   memcpy(uu____1, blocks, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_portable_keccak_load_block_5a_fd1(uu____0, uu____1);
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
+  libcrux_sha3_portable_keccak_load_block_5a_151(uu____0, uu____1);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
 }
 
 /**
@@ -2210,11 +2210,11 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_full
 with const generics
 - RATE= 144
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_7a2(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_862(
     uint64_t (*s)[5U], uint8_t blocks[1U][200U]) {
   Eurydice_slice buf[1U] = {
       Eurydice_array_to_slice((size_t)200U, blocks[0U], uint8_t)};
-  libcrux_sha3_portable_keccak_load_block_b32(s, buf);
+  libcrux_sha3_portable_keccak_load_block_282(s, buf);
 }
 
 /**
@@ -2226,13 +2226,13 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_full_5a
 with const generics
 - BLOCKSIZE= 144
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_5a_712(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_5a_4c2(
     uint64_t (*a)[5U], uint8_t b[1U][200U]) {
   uint64_t(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_b[1U][200U];
   memcpy(copy_of_b, b, (size_t)1U * sizeof(uint8_t[200U]));
-  libcrux_sha3_portable_keccak_load_block_full_7a2(uu____0, copy_of_b);
+  libcrux_sha3_portable_keccak_load_block_full_862(uu____0, copy_of_b);
 }
 
 /**
@@ -2243,7 +2243,7 @@ with const generics
 - RATE= 144
 - DELIM= 6
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_723(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_f33(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice last[1U]) {
   size_t last_len = Eurydice_slice_len(last[0U], uint8_t);
   uint8_t blocks[1U][200U] = {{0U}};
@@ -2262,8 +2262,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_723(
   uint64_t(*uu____3)[5U] = s->st;
   uint8_t uu____4[1U][200U];
   memcpy(uu____4, blocks, (size_t)1U * sizeof(uint8_t[200U]));
-  libcrux_sha3_portable_keccak_load_block_full_5a_712(uu____3, uu____4);
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
+  libcrux_sha3_portable_keccak_load_block_full_5a_4c2(uu____3, uu____4);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
 }
 
 /**
@@ -2271,7 +2271,7 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block
 with const generics
 - RATE= 144
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_582(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_3d2(
     uint64_t (*s)[5U], Eurydice_slice out[1U]) {
   for (size_t i = (size_t)0U; i < (size_t)144U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -2289,12 +2289,12 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block_full
 with const generics
 - RATE= 144
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_full_fa1(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_full_851(
     uint64_t (*s)[5U], uint8_t ret[1U][200U]) {
   uint8_t out[200U] = {0U};
   Eurydice_slice buf[1U] = {
       Eurydice_array_to_slice((size_t)200U, out, uint8_t)};
-  libcrux_sha3_portable_keccak_store_block_582(s, buf);
+  libcrux_sha3_portable_keccak_store_block_3d2(s, buf);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_out[200U];
   memcpy(copy_of_out, out, (size_t)200U * sizeof(uint8_t));
@@ -2311,9 +2311,9 @@ with const generics
 - BLOCKSIZE= 144
 */
 static KRML_MUSTINLINE void
-libcrux_sha3_portable_keccak_store_block_full_5a_781(uint64_t (*a)[5U],
+libcrux_sha3_portable_keccak_store_block_full_5a_1e1(uint64_t (*a)[5U],
                                                      uint8_t ret[1U][200U]) {
-  libcrux_sha3_portable_keccak_store_block_full_fa1(a, ret);
+  libcrux_sha3_portable_keccak_store_block_full_851(a, ret);
 }
 
 /**
@@ -2324,10 +2324,10 @@ with const generics
 - RATE= 144
 */
 static KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_squeeze_first_and_last_5d1(
+libcrux_sha3_generic_keccak_squeeze_first_and_last_d91(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
   uint8_t b[1U][200U];
-  libcrux_sha3_portable_keccak_store_block_full_5a_781(s->st, b);
+  libcrux_sha3_portable_keccak_store_block_full_5a_1e1(s->st, b);
   {
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = out[i];
@@ -2352,9 +2352,9 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block_5a
 with const generics
 - BLOCKSIZE= 144
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_5a_6f2(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_5a_7d2(
     uint64_t (*a)[5U], Eurydice_slice b[1U]) {
-  libcrux_sha3_portable_keccak_store_block_582(a, b);
+  libcrux_sha3_portable_keccak_store_block_3d2(a, b);
 }
 
 /**
@@ -2364,9 +2364,9 @@ with const generics
 - N= 1
 - RATE= 144
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_092(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_802(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
-  libcrux_sha3_portable_keccak_store_block_5a_6f2(s->st, out);
+  libcrux_sha3_portable_keccak_store_block_5a_7d2(s->st, out);
 }
 
 /**
@@ -2376,10 +2376,10 @@ with const generics
 - N= 1
 - RATE= 144
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_1f2(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_872(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
-  libcrux_sha3_portable_keccak_store_block_5a_6f2(s->st, out);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
+  libcrux_sha3_portable_keccak_store_block_5a_7d2(s->st, out);
 }
 
 /**
@@ -2389,11 +2389,11 @@ with const generics
 - N= 1
 - RATE= 144
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_last_831(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_last_c91(
     libcrux_sha3_generic_keccak_KeccakState_48 s, Eurydice_slice out[1U]) {
-  libcrux_sha3_generic_keccak_keccakf1600_85(&s);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(&s);
   uint8_t b[1U][200U];
-  libcrux_sha3_portable_keccak_store_block_full_5a_781(s.st, b);
+  libcrux_sha3_portable_keccak_store_block_full_5a_1e1(s.st, b);
   {
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = out[i];
@@ -2417,10 +2417,10 @@ with const generics
 - RATE= 144
 - DELIM= 6
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_752(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_922(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 s =
-      libcrux_sha3_generic_keccak_new_1e_f2();
+      libcrux_sha3_generic_keccak_new_89_ba();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)144U; i++) {
     size_t i0 = i;
@@ -2431,7 +2431,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_752(
     Eurydice_slice ret[1U];
     libcrux_sha3_portable_keccak_slice_n_5a(copy_of_data, i0 * (size_t)144U,
                                             (size_t)144U, ret);
-    libcrux_sha3_generic_keccak_absorb_block_751(uu____0, ret);
+    libcrux_sha3_generic_keccak_absorb_block_281(uu____0, ret);
   }
   size_t rem = Eurydice_slice_len(data[0U], uint8_t) % (size_t)144U;
   libcrux_sha3_generic_keccak_KeccakState_48 *uu____2 = &s;
@@ -2441,12 +2441,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_752(
   Eurydice_slice ret[1U];
   libcrux_sha3_portable_keccak_slice_n_5a(
       copy_of_data, Eurydice_slice_len(data[0U], uint8_t) - rem, rem, ret);
-  libcrux_sha3_generic_keccak_absorb_final_723(uu____2, ret);
+  libcrux_sha3_generic_keccak_absorb_final_f33(uu____2, ret);
   size_t outlen = Eurydice_slice_len(out[0U], uint8_t);
   size_t blocks = outlen / (size_t)144U;
   size_t last = outlen - outlen % (size_t)144U;
   if (blocks == (size_t)0U) {
-    libcrux_sha3_generic_keccak_squeeze_first_and_last_5d1(&s, out);
+    libcrux_sha3_generic_keccak_squeeze_first_and_last_d91(&s, out);
   } else {
     Eurydice_slice_uint8_t_1size_t__x2 uu____4 =
         libcrux_sha3_portable_keccak_split_at_mut_n_5a(out, (size_t)144U);
@@ -2454,14 +2454,14 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_752(
     memcpy(o0, uu____4.fst, (size_t)1U * sizeof(Eurydice_slice));
     Eurydice_slice o1[1U];
     memcpy(o1, uu____4.snd, (size_t)1U * sizeof(Eurydice_slice));
-    libcrux_sha3_generic_keccak_squeeze_first_block_092(&s, o0);
+    libcrux_sha3_generic_keccak_squeeze_first_block_802(&s, o0);
     core_ops_range_Range_b3 iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
             (CLITERAL(core_ops_range_Range_b3){.start = (size_t)1U,
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;
@@ -2472,12 +2472,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_752(
         memcpy(o, uu____5.fst, (size_t)1U * sizeof(Eurydice_slice));
         Eurydice_slice orest[1U];
         memcpy(orest, uu____5.snd, (size_t)1U * sizeof(Eurydice_slice));
-        libcrux_sha3_generic_keccak_squeeze_next_block_1f2(&s, o);
+        libcrux_sha3_generic_keccak_squeeze_next_block_872(&s, o);
         memcpy(o1, orest, (size_t)1U * sizeof(Eurydice_slice));
       }
     }
     if (last < outlen) {
-      libcrux_sha3_generic_keccak_squeeze_last_831(s, o1);
+      libcrux_sha3_generic_keccak_squeeze_last_c91(s, o1);
     }
   }
 }
@@ -2488,12 +2488,12 @@ with const generics
 - RATE= 144
 - DELIM= 6
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_2a2(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_972(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_generic_keccak_keccak_752(copy_of_data, out);
+  libcrux_sha3_generic_keccak_keccak_922(copy_of_data, out);
 }
 
 /**
@@ -2505,13 +2505,13 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_5a
 with const generics
 - BLOCKSIZE= 136
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_5a_fd0(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_5a_150(
     uint64_t (*a)[5U], Eurydice_slice b[1U]) {
   uint64_t(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_b[1U];
   memcpy(copy_of_b, b, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_portable_keccak_load_block_b30(uu____0, copy_of_b);
+  libcrux_sha3_portable_keccak_load_block_280(uu____0, copy_of_b);
 }
 
 /**
@@ -2521,13 +2521,13 @@ with const generics
 - N= 1
 - RATE= 136
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_750(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_280(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice blocks[1U]) {
   uint64_t(*uu____0)[5U] = s->st;
   Eurydice_slice uu____1[1U];
   memcpy(uu____1, blocks, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_portable_keccak_load_block_5a_fd0(uu____0, uu____1);
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
+  libcrux_sha3_portable_keccak_load_block_5a_150(uu____0, uu____1);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
 }
 
 /**
@@ -2535,12 +2535,12 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block_full
 with const generics
 - RATE= 136
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_full_fa0(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_full_850(
     uint64_t (*s)[5U], uint8_t ret[1U][200U]) {
   uint8_t out[200U] = {0U};
   Eurydice_slice buf[1U] = {
       Eurydice_array_to_slice((size_t)200U, out, uint8_t)};
-  libcrux_sha3_portable_keccak_store_block_580(s, buf);
+  libcrux_sha3_portable_keccak_store_block_3d0(s, buf);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_out[200U];
   memcpy(copy_of_out, out, (size_t)200U * sizeof(uint8_t));
@@ -2557,9 +2557,9 @@ with const generics
 - BLOCKSIZE= 136
 */
 static KRML_MUSTINLINE void
-libcrux_sha3_portable_keccak_store_block_full_5a_780(uint64_t (*a)[5U],
+libcrux_sha3_portable_keccak_store_block_full_5a_1e0(uint64_t (*a)[5U],
                                                      uint8_t ret[1U][200U]) {
-  libcrux_sha3_portable_keccak_store_block_full_fa0(a, ret);
+  libcrux_sha3_portable_keccak_store_block_full_850(a, ret);
 }
 
 /**
@@ -2570,10 +2570,10 @@ with const generics
 - RATE= 136
 */
 static KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_squeeze_first_and_last_5d0(
+libcrux_sha3_generic_keccak_squeeze_first_and_last_d90(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
   uint8_t b[1U][200U];
-  libcrux_sha3_portable_keccak_store_block_full_5a_780(s->st, b);
+  libcrux_sha3_portable_keccak_store_block_full_5a_1e0(s->st, b);
   {
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = out[i];
@@ -2596,11 +2596,11 @@ with const generics
 - N= 1
 - RATE= 136
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_last_830(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_last_c90(
     libcrux_sha3_generic_keccak_KeccakState_48 s, Eurydice_slice out[1U]) {
-  libcrux_sha3_generic_keccak_keccakf1600_85(&s);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(&s);
   uint8_t b[1U][200U];
-  libcrux_sha3_portable_keccak_store_block_full_5a_780(s.st, b);
+  libcrux_sha3_portable_keccak_store_block_full_5a_1e0(s.st, b);
   {
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = out[i];
@@ -2624,10 +2624,10 @@ with const generics
 - RATE= 136
 - DELIM= 31
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_751(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_921(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 s =
-      libcrux_sha3_generic_keccak_new_1e_f2();
+      libcrux_sha3_generic_keccak_new_89_ba();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)136U; i++) {
     size_t i0 = i;
@@ -2638,7 +2638,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_751(
     Eurydice_slice ret[1U];
     libcrux_sha3_portable_keccak_slice_n_5a(copy_of_data, i0 * (size_t)136U,
                                             (size_t)136U, ret);
-    libcrux_sha3_generic_keccak_absorb_block_750(uu____0, ret);
+    libcrux_sha3_generic_keccak_absorb_block_280(uu____0, ret);
   }
   size_t rem = Eurydice_slice_len(data[0U], uint8_t) % (size_t)136U;
   libcrux_sha3_generic_keccak_KeccakState_48 *uu____2 = &s;
@@ -2648,12 +2648,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_751(
   Eurydice_slice ret[1U];
   libcrux_sha3_portable_keccak_slice_n_5a(
       copy_of_data, Eurydice_slice_len(data[0U], uint8_t) - rem, rem, ret);
-  libcrux_sha3_generic_keccak_absorb_final_720(uu____2, ret);
+  libcrux_sha3_generic_keccak_absorb_final_f30(uu____2, ret);
   size_t outlen = Eurydice_slice_len(out[0U], uint8_t);
   size_t blocks = outlen / (size_t)136U;
   size_t last = outlen - outlen % (size_t)136U;
   if (blocks == (size_t)0U) {
-    libcrux_sha3_generic_keccak_squeeze_first_and_last_5d0(&s, out);
+    libcrux_sha3_generic_keccak_squeeze_first_and_last_d90(&s, out);
   } else {
     Eurydice_slice_uint8_t_1size_t__x2 uu____4 =
         libcrux_sha3_portable_keccak_split_at_mut_n_5a(out, (size_t)136U);
@@ -2661,14 +2661,14 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_751(
     memcpy(o0, uu____4.fst, (size_t)1U * sizeof(Eurydice_slice));
     Eurydice_slice o1[1U];
     memcpy(o1, uu____4.snd, (size_t)1U * sizeof(Eurydice_slice));
-    libcrux_sha3_generic_keccak_squeeze_first_block_090(&s, o0);
+    libcrux_sha3_generic_keccak_squeeze_first_block_800(&s, o0);
     core_ops_range_Range_b3 iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
             (CLITERAL(core_ops_range_Range_b3){.start = (size_t)1U,
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;
@@ -2679,12 +2679,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_751(
         memcpy(o, uu____5.fst, (size_t)1U * sizeof(Eurydice_slice));
         Eurydice_slice orest[1U];
         memcpy(orest, uu____5.snd, (size_t)1U * sizeof(Eurydice_slice));
-        libcrux_sha3_generic_keccak_squeeze_next_block_1f0(&s, o);
+        libcrux_sha3_generic_keccak_squeeze_next_block_870(&s, o);
         memcpy(o1, orest, (size_t)1U * sizeof(Eurydice_slice));
       }
     }
     if (last < outlen) {
-      libcrux_sha3_generic_keccak_squeeze_last_830(s, o1);
+      libcrux_sha3_generic_keccak_squeeze_last_c90(s, o1);
     }
   }
 }
@@ -2695,12 +2695,12 @@ with const generics
 - RATE= 136
 - DELIM= 31
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_2a1(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_971(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_generic_keccak_keccak_751(copy_of_data, out);
+  libcrux_sha3_generic_keccak_keccak_921(copy_of_data, out);
 }
 
 /**
@@ -2711,7 +2711,7 @@ with const generics
 - RATE= 136
 - DELIM= 6
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_722(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_f32(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice last[1U]) {
   size_t last_len = Eurydice_slice_len(last[0U], uint8_t);
   uint8_t blocks[1U][200U] = {{0U}};
@@ -2730,8 +2730,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_722(
   uint64_t(*uu____3)[5U] = s->st;
   uint8_t uu____4[1U][200U];
   memcpy(uu____4, blocks, (size_t)1U * sizeof(uint8_t[200U]));
-  libcrux_sha3_portable_keccak_load_block_full_5a_710(uu____3, uu____4);
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
+  libcrux_sha3_portable_keccak_load_block_full_5a_4c0(uu____3, uu____4);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
 }
 
 /**
@@ -2742,10 +2742,10 @@ with const generics
 - RATE= 136
 - DELIM= 6
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_750(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_920(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 s =
-      libcrux_sha3_generic_keccak_new_1e_f2();
+      libcrux_sha3_generic_keccak_new_89_ba();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)136U; i++) {
     size_t i0 = i;
@@ -2756,7 +2756,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_750(
     Eurydice_slice ret[1U];
     libcrux_sha3_portable_keccak_slice_n_5a(copy_of_data, i0 * (size_t)136U,
                                             (size_t)136U, ret);
-    libcrux_sha3_generic_keccak_absorb_block_750(uu____0, ret);
+    libcrux_sha3_generic_keccak_absorb_block_280(uu____0, ret);
   }
   size_t rem = Eurydice_slice_len(data[0U], uint8_t) % (size_t)136U;
   libcrux_sha3_generic_keccak_KeccakState_48 *uu____2 = &s;
@@ -2766,12 +2766,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_750(
   Eurydice_slice ret[1U];
   libcrux_sha3_portable_keccak_slice_n_5a(
       copy_of_data, Eurydice_slice_len(data[0U], uint8_t) - rem, rem, ret);
-  libcrux_sha3_generic_keccak_absorb_final_722(uu____2, ret);
+  libcrux_sha3_generic_keccak_absorb_final_f32(uu____2, ret);
   size_t outlen = Eurydice_slice_len(out[0U], uint8_t);
   size_t blocks = outlen / (size_t)136U;
   size_t last = outlen - outlen % (size_t)136U;
   if (blocks == (size_t)0U) {
-    libcrux_sha3_generic_keccak_squeeze_first_and_last_5d0(&s, out);
+    libcrux_sha3_generic_keccak_squeeze_first_and_last_d90(&s, out);
   } else {
     Eurydice_slice_uint8_t_1size_t__x2 uu____4 =
         libcrux_sha3_portable_keccak_split_at_mut_n_5a(out, (size_t)136U);
@@ -2779,14 +2779,14 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_750(
     memcpy(o0, uu____4.fst, (size_t)1U * sizeof(Eurydice_slice));
     Eurydice_slice o1[1U];
     memcpy(o1, uu____4.snd, (size_t)1U * sizeof(Eurydice_slice));
-    libcrux_sha3_generic_keccak_squeeze_first_block_090(&s, o0);
+    libcrux_sha3_generic_keccak_squeeze_first_block_800(&s, o0);
     core_ops_range_Range_b3 iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
             (CLITERAL(core_ops_range_Range_b3){.start = (size_t)1U,
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;
@@ -2797,12 +2797,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_750(
         memcpy(o, uu____5.fst, (size_t)1U * sizeof(Eurydice_slice));
         Eurydice_slice orest[1U];
         memcpy(orest, uu____5.snd, (size_t)1U * sizeof(Eurydice_slice));
-        libcrux_sha3_generic_keccak_squeeze_next_block_1f0(&s, o);
+        libcrux_sha3_generic_keccak_squeeze_next_block_870(&s, o);
         memcpy(o1, orest, (size_t)1U * sizeof(Eurydice_slice));
       }
     }
     if (last < outlen) {
-      libcrux_sha3_generic_keccak_squeeze_last_830(s, o1);
+      libcrux_sha3_generic_keccak_squeeze_last_c90(s, o1);
     }
   }
 }
@@ -2813,12 +2813,12 @@ with const generics
 - RATE= 136
 - DELIM= 6
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_2a0(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_970(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_generic_keccak_keccak_750(copy_of_data, out);
+  libcrux_sha3_generic_keccak_keccak_920(copy_of_data, out);
 }
 
 /**
@@ -2826,7 +2826,7 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block
 with const generics
 - RATE= 72
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b31(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_281(
     uint64_t (*s)[5U], Eurydice_slice blocks[1U]) {
   for (size_t i = (size_t)0U; i < (size_t)72U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -2837,7 +2837,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_b31(
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_ac(dst, uu____0);
+    core_result_unwrap_26_0e(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -2854,13 +2854,13 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_5a
 with const generics
 - BLOCKSIZE= 72
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_5a_fd(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_5a_15(
     uint64_t (*a)[5U], Eurydice_slice b[1U]) {
   uint64_t(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_b[1U];
   memcpy(copy_of_b, b, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_portable_keccak_load_block_b31(uu____0, copy_of_b);
+  libcrux_sha3_portable_keccak_load_block_281(uu____0, copy_of_b);
 }
 
 /**
@@ -2870,13 +2870,13 @@ with const generics
 - N= 1
 - RATE= 72
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_75(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_28(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice blocks[1U]) {
   uint64_t(*uu____0)[5U] = s->st;
   Eurydice_slice uu____1[1U];
   memcpy(uu____1, blocks, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_portable_keccak_load_block_5a_fd(uu____0, uu____1);
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
+  libcrux_sha3_portable_keccak_load_block_5a_15(uu____0, uu____1);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
 }
 
 /**
@@ -2884,11 +2884,11 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_full
 with const generics
 - RATE= 72
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_7a1(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_861(
     uint64_t (*s)[5U], uint8_t blocks[1U][200U]) {
   Eurydice_slice buf[1U] = {
       Eurydice_array_to_slice((size_t)200U, blocks[0U], uint8_t)};
-  libcrux_sha3_portable_keccak_load_block_b31(s, buf);
+  libcrux_sha3_portable_keccak_load_block_281(s, buf);
 }
 
 /**
@@ -2900,13 +2900,13 @@ A monomorphic instance of libcrux_sha3.portable_keccak.load_block_full_5a
 with const generics
 - BLOCKSIZE= 72
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_5a_711(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_full_5a_4c1(
     uint64_t (*a)[5U], uint8_t b[1U][200U]) {
   uint64_t(*uu____0)[5U] = a;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_b[1U][200U];
   memcpy(copy_of_b, b, (size_t)1U * sizeof(uint8_t[200U]));
-  libcrux_sha3_portable_keccak_load_block_full_7a1(uu____0, copy_of_b);
+  libcrux_sha3_portable_keccak_load_block_full_861(uu____0, copy_of_b);
 }
 
 /**
@@ -2917,7 +2917,7 @@ with const generics
 - RATE= 72
 - DELIM= 6
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_721(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_f31(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice last[1U]) {
   size_t last_len = Eurydice_slice_len(last[0U], uint8_t);
   uint8_t blocks[1U][200U] = {{0U}};
@@ -2936,8 +2936,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_721(
   uint64_t(*uu____3)[5U] = s->st;
   uint8_t uu____4[1U][200U];
   memcpy(uu____4, blocks, (size_t)1U * sizeof(uint8_t[200U]));
-  libcrux_sha3_portable_keccak_load_block_full_5a_711(uu____3, uu____4);
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
+  libcrux_sha3_portable_keccak_load_block_full_5a_4c1(uu____3, uu____4);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
 }
 
 /**
@@ -2945,7 +2945,7 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block
 with const generics
 - RATE= 72
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_581(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_3d1(
     uint64_t (*s)[5U], Eurydice_slice out[1U]) {
   for (size_t i = (size_t)0U; i < (size_t)72U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -2963,12 +2963,12 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block_full
 with const generics
 - RATE= 72
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_full_fa(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_full_85(
     uint64_t (*s)[5U], uint8_t ret[1U][200U]) {
   uint8_t out[200U] = {0U};
   Eurydice_slice buf[1U] = {
       Eurydice_array_to_slice((size_t)200U, out, uint8_t)};
-  libcrux_sha3_portable_keccak_store_block_581(s, buf);
+  libcrux_sha3_portable_keccak_store_block_3d1(s, buf);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_out[200U];
   memcpy(copy_of_out, out, (size_t)200U * sizeof(uint8_t));
@@ -2984,9 +2984,9 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block_full_5a
 with const generics
 - BLOCKSIZE= 72
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_full_5a_78(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_full_5a_1e(
     uint64_t (*a)[5U], uint8_t ret[1U][200U]) {
-  libcrux_sha3_portable_keccak_store_block_full_fa(a, ret);
+  libcrux_sha3_portable_keccak_store_block_full_85(a, ret);
 }
 
 /**
@@ -2997,10 +2997,10 @@ with const generics
 - RATE= 72
 */
 static KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_squeeze_first_and_last_5d(
+libcrux_sha3_generic_keccak_squeeze_first_and_last_d9(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
   uint8_t b[1U][200U];
-  libcrux_sha3_portable_keccak_store_block_full_5a_78(s->st, b);
+  libcrux_sha3_portable_keccak_store_block_full_5a_1e(s->st, b);
   {
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = out[i];
@@ -3025,9 +3025,9 @@ A monomorphic instance of libcrux_sha3.portable_keccak.store_block_5a
 with const generics
 - BLOCKSIZE= 72
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_5a_6f1(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_5a_7d1(
     uint64_t (*a)[5U], Eurydice_slice b[1U]) {
-  libcrux_sha3_portable_keccak_store_block_581(a, b);
+  libcrux_sha3_portable_keccak_store_block_3d1(a, b);
 }
 
 /**
@@ -3037,9 +3037,9 @@ with const generics
 - N= 1
 - RATE= 72
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_091(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_801(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
-  libcrux_sha3_portable_keccak_store_block_5a_6f1(s->st, out);
+  libcrux_sha3_portable_keccak_store_block_5a_7d1(s->st, out);
 }
 
 /**
@@ -3049,10 +3049,10 @@ with const generics
 - N= 1
 - RATE= 72
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_1f1(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_871(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
-  libcrux_sha3_generic_keccak_keccakf1600_85(s);
-  libcrux_sha3_portable_keccak_store_block_5a_6f1(s->st, out);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(s);
+  libcrux_sha3_portable_keccak_store_block_5a_7d1(s->st, out);
 }
 
 /**
@@ -3062,11 +3062,11 @@ with const generics
 - N= 1
 - RATE= 72
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_last_83(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_last_c9(
     libcrux_sha3_generic_keccak_KeccakState_48 s, Eurydice_slice out[1U]) {
-  libcrux_sha3_generic_keccak_keccakf1600_85(&s);
+  libcrux_sha3_generic_keccak_keccakf1600_7e(&s);
   uint8_t b[1U][200U];
-  libcrux_sha3_portable_keccak_store_block_full_5a_78(s.st, b);
+  libcrux_sha3_portable_keccak_store_block_full_5a_1e(s.st, b);
   {
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = out[i];
@@ -3090,10 +3090,10 @@ with const generics
 - RATE= 72
 - DELIM= 6
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_75(
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_92(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 s =
-      libcrux_sha3_generic_keccak_new_1e_f2();
+      libcrux_sha3_generic_keccak_new_89_ba();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)72U; i++) {
     size_t i0 = i;
@@ -3104,7 +3104,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_75(
     Eurydice_slice ret[1U];
     libcrux_sha3_portable_keccak_slice_n_5a(copy_of_data, i0 * (size_t)72U,
                                             (size_t)72U, ret);
-    libcrux_sha3_generic_keccak_absorb_block_75(uu____0, ret);
+    libcrux_sha3_generic_keccak_absorb_block_28(uu____0, ret);
   }
   size_t rem = Eurydice_slice_len(data[0U], uint8_t) % (size_t)72U;
   libcrux_sha3_generic_keccak_KeccakState_48 *uu____2 = &s;
@@ -3114,12 +3114,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_75(
   Eurydice_slice ret[1U];
   libcrux_sha3_portable_keccak_slice_n_5a(
       copy_of_data, Eurydice_slice_len(data[0U], uint8_t) - rem, rem, ret);
-  libcrux_sha3_generic_keccak_absorb_final_721(uu____2, ret);
+  libcrux_sha3_generic_keccak_absorb_final_f31(uu____2, ret);
   size_t outlen = Eurydice_slice_len(out[0U], uint8_t);
   size_t blocks = outlen / (size_t)72U;
   size_t last = outlen - outlen % (size_t)72U;
   if (blocks == (size_t)0U) {
-    libcrux_sha3_generic_keccak_squeeze_first_and_last_5d(&s, out);
+    libcrux_sha3_generic_keccak_squeeze_first_and_last_d9(&s, out);
   } else {
     Eurydice_slice_uint8_t_1size_t__x2 uu____4 =
         libcrux_sha3_portable_keccak_split_at_mut_n_5a(out, (size_t)72U);
@@ -3127,14 +3127,14 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_75(
     memcpy(o0, uu____4.fst, (size_t)1U * sizeof(Eurydice_slice));
     Eurydice_slice o1[1U];
     memcpy(o1, uu____4.snd, (size_t)1U * sizeof(Eurydice_slice));
-    libcrux_sha3_generic_keccak_squeeze_first_block_091(&s, o0);
+    libcrux_sha3_generic_keccak_squeeze_first_block_801(&s, o0);
     core_ops_range_Range_b3 iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
             (CLITERAL(core_ops_range_Range_b3){.start = (size_t)1U,
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;
@@ -3145,12 +3145,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_75(
         memcpy(o, uu____5.fst, (size_t)1U * sizeof(Eurydice_slice));
         Eurydice_slice orest[1U];
         memcpy(orest, uu____5.snd, (size_t)1U * sizeof(Eurydice_slice));
-        libcrux_sha3_generic_keccak_squeeze_next_block_1f1(&s, o);
+        libcrux_sha3_generic_keccak_squeeze_next_block_871(&s, o);
         memcpy(o1, orest, (size_t)1U * sizeof(Eurydice_slice));
       }
     }
     if (last < outlen) {
-      libcrux_sha3_generic_keccak_squeeze_last_83(s, o1);
+      libcrux_sha3_generic_keccak_squeeze_last_c9(s, o1);
     }
   }
 }
@@ -3161,12 +3161,12 @@ with const generics
 - RATE= 72
 - DELIM= 6
 */
-static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_2a(
+static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_97(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
-  libcrux_sha3_generic_keccak_keccak_75(copy_of_data, out);
+  libcrux_sha3_generic_keccak_keccak_92(copy_of_data, out);
 }
 
 #if defined(__cplusplus)
