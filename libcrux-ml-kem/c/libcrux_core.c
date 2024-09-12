@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
- * Eurydice: b2946d0484e60b53f4c3d553c8101d92661a28da
- * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
+ * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
+ * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
+ * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
  * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
- * Libcrux: 89225f577ecb51f695fb96b22bcdb0261a171948
+ * Libcrux: 1f4aea1d4660a27cb6b539c82ebbc476e6a0708a
  */
 
 #include "internal/libcrux_core.h"
@@ -433,15 +433,14 @@ void libcrux_ml_kem_utils_into_padded_array_172(Eurydice_slice slice,
 }
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
+This function found in impl {core::result::Result<T, E>}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_41
 with types uint8_t[32size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_26_33(core_result_Result_00 self, uint8_t ret[32U]) {
+void core_result_unwrap_41_33(core_result_Result_00 self, uint8_t ret[32U]) {
   if (self.tag == core_result_Ok) {
     uint8_t f0[32U];
     memcpy(f0, self.val.case_Ok, (size_t)32U * sizeof(uint8_t));
@@ -525,15 +524,14 @@ void libcrux_ml_kem_utils_into_padded_array_17(Eurydice_slice slice,
 }
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
+This function found in impl {core::result::Result<T, E>}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_41
 with types uint8_t[24size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_26_76(core_result_Result_6f self, uint8_t ret[24U]) {
+void core_result_unwrap_41_76(core_result_Result_6f self, uint8_t ret[24U]) {
   if (self.tag == core_result_Ok) {
     uint8_t f0[24U];
     memcpy(f0, self.val.case_Ok, (size_t)24U * sizeof(uint8_t));
@@ -546,15 +544,14 @@ void core_result_unwrap_26_76(core_result_Result_6f self, uint8_t ret[24U]) {
 }
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
+This function found in impl {core::result::Result<T, E>}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_41
 with types uint8_t[20size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_26_ea(core_result_Result_7a self, uint8_t ret[20U]) {
+void core_result_unwrap_41_ea(core_result_Result_7a self, uint8_t ret[20U]) {
   if (self.tag == core_result_Ok) {
     uint8_t f0[20U];
     memcpy(f0, self.val.case_Ok, (size_t)20U * sizeof(uint8_t));
@@ -567,15 +564,14 @@ void core_result_unwrap_26_ea(core_result_Result_7a self, uint8_t ret[20U]) {
 }
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
+This function found in impl {core::result::Result<T, E>}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_41
 with types uint8_t[10size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_26_07(core_result_Result_cd self, uint8_t ret[10U]) {
+void core_result_unwrap_41_07(core_result_Result_cd self, uint8_t ret[10U]) {
   if (self.tag == core_result_Ok) {
     uint8_t f0[10U];
     memcpy(f0, self.val.case_Ok, (size_t)10U * sizeof(uint8_t));
@@ -588,15 +584,14 @@ void core_result_unwrap_26_07(core_result_Result_cd self, uint8_t ret[10U]) {
 }
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
+This function found in impl {core::result::Result<T, E>}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_41
 with types int16_t[16size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_26_30(core_result_Result_c0 self, int16_t ret[16U]) {
+void core_result_unwrap_41_30(core_result_Result_c0 self, int16_t ret[16U]) {
   if (self.tag == core_result_Ok) {
     int16_t f0[16U];
     memcpy(f0, self.val.case_Ok, (size_t)16U * sizeof(int16_t));
@@ -609,15 +604,14 @@ void core_result_unwrap_26_30(core_result_Result_c0 self, int16_t ret[16U]) {
 }
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
+This function found in impl {core::result::Result<T, E>}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_41
 with types uint8_t[8size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_26_0e(core_result_Result_56 self, uint8_t ret[8U]) {
+void core_result_unwrap_41_0e(core_result_Result_56 self, uint8_t ret[8U]) {
   if (self.tag == core_result_Ok) {
     uint8_t f0[8U];
     memcpy(f0, self.val.case_Ok, (size_t)8U * sizeof(uint8_t));
