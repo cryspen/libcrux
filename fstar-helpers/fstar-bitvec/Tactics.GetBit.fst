@@ -12,8 +12,8 @@ open FStar.Option
 open Tactics.Utils
 open Tactics.Pow2
 
-open BitVecEq {}
-open Tactics.Seq {norm_index, tactic_list_index}
+open BitVecEq
+open Tactics.Seq
 
 
 let norm_machine_int () = Tactics.MachineInts.(transform norm_machine_int_term)
