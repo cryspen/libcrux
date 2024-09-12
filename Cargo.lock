@@ -702,7 +702,7 @@ dependencies = [
 [[package]]
 name = "hax-lib"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax?branch=fold-step-boundary#0e95327c0fa4e1d482de404c961fc2b825eb842b"
+source = "git+https://github.com/hacspec/hax?branch=fold-step-boundary#172bd8a4238abf7fb77efe5e9b69f169d5b760e5"
 dependencies = [
  "hax-lib-macros",
  "num-bigint",
@@ -712,7 +712,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax?branch=fold-step-boundary#0e95327c0fa4e1d482de404c961fc2b825eb842b"
+source = "git+https://github.com/hacspec/hax?branch=fold-step-boundary#172bd8a4238abf7fb77efe5e9b69f169d5b760e5"
 dependencies = [
  "hax-lib-macros-types",
  "paste",
@@ -725,7 +725,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros-types"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax?branch=fold-step-boundary#0e95327c0fa4e1d482de404c961fc2b825eb842b"
+source = "git+https://github.com/hacspec/hax?branch=fold-step-boundary#172bd8a4238abf7fb77efe5e9b69f169d5b760e5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1569,9 +1569,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.36"
+version = "0.38.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f55e80d50763938498dd5ebb18647174e0c76dc38c5505294bb224624f30f36"
+checksum = "8acb788b847c24f28525660c4d7758620a7210875711f79e7f663cc152726811"
 dependencies = [
  "bitflags",
  "errno",
@@ -1773,9 +1773,9 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.12"
+version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
+checksum = "e91b56cd4cadaeb79bbf1a5645f6b4f8dc5bde8834ad5894a8db35fda9efa1fe"
 
 [[package]]
 name = "universal-hash"
