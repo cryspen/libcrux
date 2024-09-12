@@ -8,7 +8,7 @@
  * Eurydice: b2946d0484e60b53f4c3d553c8101d92661a28da
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 83de47ccd1ac9aa7c1b708da52072fa809ad30f2
+ * Libcrux: f4cf47e0ec7fcca0495666dcfd09178907a9fe64
  */
 
 #ifndef __libcrux_core_H
@@ -19,7 +19,6 @@ extern "C" {
 #endif
 
 #include "eurydice_glue.h"
-#include "libcrux_mlkem768_types.h"
 
 /**
 A monomorphic instance of core.ops.range.Range
@@ -212,6 +211,15 @@ static inline uint8_t *libcrux_ml_kem_types_as_slice_d4_8c(
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.types.MlKemPublicKey
+with const generics
+- $1184size_t
+*/
+typedef struct libcrux_ml_kem_types_MlKemPublicKey_15_s {
+  uint8_t value[1184U];
+} libcrux_ml_kem_types_MlKemPublicKey_15;
+
+/**
 This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
 libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#14}
 */
@@ -229,6 +237,20 @@ libcrux_ml_kem_types_from_b6_eb(uint8_t value[1184U]) {
   memcpy(lit.value, copy_of_value, (size_t)1184U * sizeof(uint8_t));
   return lit;
 }
+
+/**
+A monomorphic instance of libcrux_ml_kem.types.MlKemPrivateKey
+with const generics
+- $2400size_t
+*/
+typedef struct libcrux_ml_kem_types_MlKemPrivateKey_55_s {
+  uint8_t value[2400U];
+} libcrux_ml_kem_types_MlKemPrivateKey_55;
+
+typedef struct libcrux_ml_kem_mlkem768_MlKem768KeyPair_s {
+  libcrux_ml_kem_types_MlKemPrivateKey_55 sk;
+  libcrux_ml_kem_types_MlKemPublicKey_15 pk;
+} libcrux_ml_kem_mlkem768_MlKem768KeyPair;
 
 /**
  Create a new [`MlKemKeyPair`] from the secret and public key.

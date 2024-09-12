@@ -8,7 +8,7 @@
  * Eurydice: b2946d0484e60b53f4c3d553c8101d92661a28da
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: 83de47ccd1ac9aa7c1b708da52072fa809ad30f2
+ * Libcrux: f4cf47e0ec7fcca0495666dcfd09178907a9fe64
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -43,8 +43,6 @@ static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_H(
       Eurydice_array_to_slice((size_t)32U, digest, uint8_t), input);
   memcpy(ret, digest, (size_t)32U * sizeof(uint8_t));
 }
-
-typedef __m256i libcrux_ml_kem_vector_avx2_SIMD256Vector;
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_zero(void) {
@@ -1192,15 +1190,6 @@ static inline size_t libcrux_ml_kem_vector_avx2_rej_sample_ea(
 }
 
 /**
-A monomorphic instance of libcrux_ml_kem.polynomial.PolynomialRingElement
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-
-*/
-typedef struct libcrux_ml_kem_polynomial_PolynomialRingElement_d2_s {
-  __m256i coefficients[16U];
-} libcrux_ml_kem_polynomial_PolynomialRingElement_d2;
-
-/**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,
 TraitClause@1]}
@@ -1304,16 +1293,6 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_deserialize_secret_key_32(
       ret, secret_as_ntt,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
 }
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.IndCpaPrivateKeyUnpacked with types
-libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 secret_as_ntt[3U];
-} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0;
 
 /**
 A monomorphic instance of
@@ -4550,18 +4529,6 @@ libcrux_ml_kem_ind_cpa_unpacked_default_1a_19(void) {
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked with types
-libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 t_as_ntt[3U];
-  uint8_t seed_for_A[32U];
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 A[3U][3U];
-} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0;
-
-/**
 This function found in impl {(core::default::Default for
 libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,
 K>[TraitClause@0, TraitClause@1])#1}
@@ -5730,34 +5697,6 @@ static inline bool libcrux_ml_kem_mlkem768_avx2_validate_public_key(
   return libcrux_ml_kem_ind_cca_instantiations_avx2_validate_public_key_ec(
       public_key->value);
 }
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.unpacked.MlKemPrivateKeyUnpacked with types
-libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0_s {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0
-      ind_cpa_private_key;
-  uint8_t implicit_rejection_value[32U];
-} libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0;
-
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPublicKeyUnpacked
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0_s {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 ind_cpa_public_key;
-  uint8_t public_key_hash[32U];
-} libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0;
-
-typedef struct libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked_s {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0 private_key;
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 public_key;
-} libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked;
 
 /**
  This function implements <strong>Algorithm 13</strong> of the
