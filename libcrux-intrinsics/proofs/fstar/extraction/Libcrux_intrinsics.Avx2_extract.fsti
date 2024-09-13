@@ -4,10 +4,14 @@ open Core
 open FStar.Mul
 
 unfold type t_Vec128 = bit_vec 128
-				      val vec128_as_i16x8 (x:t_Vec128) : t_Array i16 (sz 8)
+     val vec128_as_i16x8 (x:t_Vec128) : t_Array i16 (sz 8)
+     let get_lane128 (v:t_Vec128) (i:nat{i < 8}) =
+       Seq.index (vec128_as_i16x8 v) i
 
 unfold type t_Vec256 = bit_vec 256
-				      val vec256_as_i16x16 (x:t_Vec256) : t_Array i16 (sz 16)
+     val vec256_as_i16x16 (x:t_Vec256) : t_Array i16 (sz 16)
+     let get_lane (v:t_Vec256) (i:nat{i < 16}) =
+       Seq.index (vec256_as_i16x16 v) i
 
 val mm256_add_epi16 (lhs rhs: t_Vec256)
     : Prims.Pure t_Vec256

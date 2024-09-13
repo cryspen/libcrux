@@ -3,42 +3,62 @@ use crate::vector::{traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, FIELD_MODULUS};
 use super::*;
 
 #[inline(always)]
+#[hax_lib::fstar::before(interface,"open Libcrux_intrinsics.Avx2_extract")]
+#[hax_lib::fstar::before("
+let lemma_add_i (lhs rhs: t_Vec256) (i:nat): Lemma 
+  (requires (i < 16 /\\ Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane lhs i) + v (get_lane rhs i))))
+  (ensures (v (add_mod (get_lane lhs i) (get_lane rhs i)) ==
+            (v (get_lane lhs i) + v (get_lane rhs i))))
+  [SMTPat (v (add_mod (get_lane lhs i) (get_lane rhs i)))] = ()")]
 #[hax_lib::requires(fstar!("forall i. i < 16 ==> 
-    Spec.Utils.is_intb (pow2 15) (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) i) + 
-                                  v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs) i))"))]
+    Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane $lhs i) + v (get_lane $rhs i))"))]
 #[hax_lib::ensures(|result| fstar!("forall i. i < 16 ==> 
-    v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result) i) ==
-    (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) i) + 
-     v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs) i))"))]
+    v (get_lane $result i) == (v (get_lane $lhs i) + v (get_lane $rhs i))"))]
 pub(crate) fn add(lhs: Vec256, rhs: Vec256) -> Vec256 {
-    mm256_add_epi16(lhs, rhs)
+    let result = mm256_add_epi16(lhs, rhs);
+    hax_lib::fstar!("assert (forall i. get_lane result i == get_lane lhs i +. get_lane rhs i);
+                     assert (forall i. v (get_lane result i) == v (get_lane lhs i) + v (get_lane rhs i))");
+    result
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before("
+let lemma_sub_i (lhs rhs: t_Vec256) (i:nat):  Lemma 
+  (requires (i < 16 /\\ Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane lhs i) - v (get_lane rhs i))))
+  (ensures (v (sub_mod (get_lane lhs i) (get_lane rhs i)) ==
+            (v (get_lane lhs i) - v (get_lane rhs i))))
+  [SMTPat (v (sub_mod (get_lane lhs i) (get_lane rhs i)))] = ()")]
 #[hax_lib::requires(fstar!("forall i. i < 16 ==> 
-    Spec.Utils.is_intb (pow2 15) (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) i) -
-                                  v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs) i))"))]
+    Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane $lhs i) - v (get_lane $rhs i))"))]
 #[hax_lib::ensures(|result| fstar!("forall i. i < 16 ==> 
-    v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result) i) ==
-    (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) i) - 
-     v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs) i))"))]
+    v (get_lane $result i) == (v (get_lane $lhs i) - v (get_lane $rhs i))"))]
 pub(crate) fn sub(lhs: Vec256, rhs: Vec256) -> Vec256 {
-    mm256_sub_epi16(lhs, rhs)
+    let result = mm256_sub_epi16(lhs, rhs);
+    hax_lib::fstar!("assert (forall i. get_lane result i == get_lane lhs i -. get_lane rhs i);
+                     assert (forall i. v (get_lane result i) == v (get_lane lhs i) - v (get_lane rhs i))");
+    result
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before("
+let lemma_mul_i (lhs: t_Vec256) (i:nat) (c:i16):  Lemma 
+  (requires (i < 16 /\\ Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane lhs i) * v c)))
+  (ensures (v (mul_mod (get_lane lhs i) c) ==
+            (v (get_lane lhs i) * v c)))
+  [SMTPat (v (mul_mod (get_lane lhs i) c))] = ()")]
 #[hax_lib::requires(fstar!("forall i. i < 16 ==> 
-    Spec.Utils.is_intb (pow2 31) (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector) i) * 
-                                  v constant)"))]
+    Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane $vector i) * v constant)"))]
 #[hax_lib::ensures(|result| fstar!("forall i. i < 16 ==> 
-    v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result) i) ==
-    (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector) i) * v constant)"))]
+    v (get_lane $result i) == (v (get_lane $vector i) * v constant)"))]
 pub(crate) fn multiply_by_constant(vector: Vec256, constant: i16) -> Vec256 {
     let cv = mm256_set1_epi16(constant);
     let result = mm256_mullo_epi16(vector, cv);
-    hax_lib::fstar!("Seq.lemma_eq_intro (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result})
+    hax_lib::fstar!("Seq.lemma_eq_intro (vec256_as_i16x16 ${result})
                         (Spec.Utils.map_array (fun x -> x *. $constant) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector))");
     
+    hax_lib::fstar!("assert (forall i. get_lane result i == get_lane vector i *. constant);
+                     assert (forall i. v (get_lane vector i *. constant) == v (get_lane vector i) * v constant);
+                     assert (forall i. v (get_lane result i) == v (get_lane vector i) * v constant)");
     result
 }
 

@@ -5,22 +5,17 @@ open FStar.Mul
 
 let v_BARRETT_MULTIPLIER: i16 = 20159s
 
+open Libcrux_intrinsics.Avx2_extract
+
 val add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
       (requires
         forall i.
-          i < 16 ==>
-          Spec.Utils.is_intb (pow2 15)
-            (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 lhs) i) +
-              v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 rhs) i)))
+          i < 16 ==> Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane lhs i) + v (get_lane rhs i)))
       (ensures
         fun result ->
           let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
-          forall i.
-            i < 16 ==>
-            v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result) i) ==
-            (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 lhs) i) +
-              v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 rhs) i)))
+          forall i. i < 16 ==> v (get_lane result i) == (v (get_lane lhs i) + v (get_lane rhs i)))
 
 val bitwise_and_with_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i16)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
@@ -35,19 +30,11 @@ val bitwise_and_with_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
 val multiply_by_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i16)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
       (requires
-        forall i.
-          i < 16 ==>
-          Spec.Utils.is_intb (pow2 31)
-            (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector) i) * v constant)
-      )
+        forall i. i < 16 ==> Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane vector i) * v constant))
       (ensures
         fun result ->
           let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
-          forall i.
-            i < 16 ==>
-            v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result) i) ==
-            (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector) i) * v constant)
-      )
+          forall i. i < 16 ==> v (get_lane result i) == (v (get_lane vector i) * v constant))
 
 val shift_right (v_SHIFT_BY: i32) (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
@@ -64,18 +51,11 @@ val sub (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
       (requires
         forall i.
-          i < 16 ==>
-          Spec.Utils.is_intb (pow2 15)
-            (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 lhs) i) -
-              v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 rhs) i)))
+          i < 16 ==> Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane lhs i) - v (get_lane rhs i)))
       (ensures
         fun result ->
           let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
-          forall i.
-            i < 16 ==>
-            v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result) i) ==
-            (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 lhs) i) -
-              v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 rhs) i)))
+          forall i. i < 16 ==> v (get_lane result i) == (v (get_lane lhs i) - v (get_lane rhs i)))
 
 /// See Section 3.2 of the implementation notes document for an explanation
 /// of this code.

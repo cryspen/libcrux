@@ -115,7 +115,7 @@ let nat_div_ceil (x:nat) (y:pos) : nat = if (x % y = 0) then x/y else (x/y)+1
 val lemma_mul_intb (b1 b2: nat) (n1 n2: int) 
     : Lemma (requires (is_intb b1 n1 /\ is_intb b2 n2))
       (ensures (is_intb (b1 * b2) (n1 * n2)))
-let lemma_mul_intb (b1 b2: nat) (n1 n2: int) = ()
+let lemma_mul_intb (b1 b2: nat) (n1 n2: int) = () 
 
 val lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) 
     : Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 * b2 < pow2 31))

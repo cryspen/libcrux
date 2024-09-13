@@ -3,8 +3,21 @@ module Libcrux_ml_kem.Vector.Avx2.Arithmetic
 open Core
 open FStar.Mul
 
+let lemma_add_i (lhs rhs: t_Vec256) (i:nat): Lemma 
+  (requires (i < 16 /\ Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane lhs i) + v (get_lane rhs i))))
+  (ensures (v (add_mod (get_lane lhs i) (get_lane rhs i)) ==
+            (v (get_lane lhs i) + v (get_lane rhs i))))
+  [SMTPat (v (add_mod (get_lane lhs i) (get_lane rhs i)))] = ()
+
 let add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
+  in
+  let _:Prims.unit =
+    assert (forall i. get_lane result i == get_lane lhs i +. get_lane rhs i);
+    assert (forall i. v (get_lane result i) == v (get_lane lhs i) + v (get_lane rhs i))
+  in
+  result
 
 let bitwise_and_with_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i16) =
   let cv:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -20,6 +33,12 @@ let bitwise_and_with_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   result
 
+let lemma_mul_i (lhs: t_Vec256) (i:nat) (c:i16):  Lemma 
+  (requires (i < 16 /\ Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane lhs i) * v c)))
+  (ensures (v (mul_mod (get_lane lhs i) c) ==
+            (v (get_lane lhs i) * v c)))
+  [SMTPat (v (mul_mod (get_lane lhs i) c))] = ()
+
 let multiply_by_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i16) =
   let cv:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 constant
@@ -28,9 +47,14 @@ let multiply_by_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (con
     Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 vector cv
   in
   let _:Prims.unit =
-    Seq.lemma_eq_intro (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result)
+    Seq.lemma_eq_intro (vec256_as_i16x16 result)
       (Spec.Utils.map_array (fun x -> x *. constant)
           (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector))
+  in
+  let _:Prims.unit =
+    assert (forall i. get_lane result i == get_lane vector i *. constant);
+    assert (forall i. v (get_lane vector i *. constant) == v (get_lane vector i) * v constant);
+    assert (forall i. v (get_lane result i) == v (get_lane vector i) * v constant)
   in
   result
 
@@ -45,8 +69,21 @@ let shift_right (v_SHIFT_BY: i32) (vector: Libcrux_intrinsics.Avx2_extract.t_Vec
   in
   result
 
+let lemma_sub_i (lhs rhs: t_Vec256) (i:nat):  Lemma 
+  (requires (i < 16 /\ Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane lhs i) - v (get_lane rhs i))))
+  (ensures (v (sub_mod (get_lane lhs i) (get_lane rhs i)) ==
+            (v (get_lane lhs i) - v (get_lane rhs i))))
+  [SMTPat (v (sub_mod (get_lane lhs i) (get_lane rhs i)))] = ()
+
 let sub (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 lhs rhs
+  let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 lhs rhs
+  in
+  let _:Prims.unit =
+    assert (forall i. get_lane result i == get_lane lhs i -. get_lane rhs i);
+    assert (forall i. v (get_lane result i) == v (get_lane lhs i) - v (get_lane rhs i))
+  in
+  result
 
 let barrett_reduce (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let t:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
