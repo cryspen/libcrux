@@ -128,6 +128,7 @@ fn ntt_at_layer_1(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEME
     *zeta_i -= 1;
 }
 
+// Compute (a,b) ↦ (a + ζb, a - ζb) at layer 1 for 2 SIMD Units in one go.
 #[inline(always)]
 fn butterfly_4(
     a: Vec256,
@@ -156,10 +157,11 @@ fn butterfly_4(
     (sout0, sout1)
 }
 
-// Compute (a,b) ↦ (a + ζb, a - ζb).
+// Compute (a,b) ↦ (a + ζb, a - ζb) at layer 2 for 2 SIMD Units in one go.
+#[inline(always)]
 fn butterfly_8(a0: Vec256, b0: Vec256, zeta0: i32, zeta1: i32) -> (Vec256, Vec256) {
     let a = mm256_set_m128i(mm256_castsi256_si128(b0), mm256_castsi256_si128(a0));
-    let b = mm256_set_m128i(mm256_extracti128_si256::<1>(b0), mm256_extracti128_si256::<1>(a0));
+    let b = mm256_permute2x128_si256::<0b0001_0011>(b0, a0);
 
     let zetas = mm256_set_epi32(zeta1, zeta1, zeta1, zeta1, zeta0, zeta0, zeta0, zeta0);
     let t = arithmetic::montgomery_multiply(b, zetas);
@@ -168,15 +170,21 @@ fn butterfly_8(a0: Vec256, b0: Vec256, zeta0: i32, zeta1: i32) -> (Vec256, Vec25
     let out1 = arithmetic::subtract(a, t);
 
     let sout0 = mm256_set_m128i(mm256_castsi256_si128(out1), mm256_castsi256_si128(out0));
-    let sout1 = mm256_set_m128i(mm256_extracti128_si256::<1>(out1), mm256_extracti128_si256::<1>(out0));
+    let sout1 = mm256_permute2x128_si256::<0b0001_0011>(out1, out0);
 
     (sout0, sout1)
 }
+
 #[inline(always)]
 fn ntt_at_layer_2(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     for round in (0..re.len()).step_by(2) {
         *zeta_i += 1;
-        let (a, b) = butterfly_8(re[round], re[round + 1], ZETAS_TIMES_MONTGOMERY_R[*zeta_i], ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1]);
+        let (a, b) = butterfly_8(
+            re[round],
+            re[round + 1],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
+        );
         re[round] = a;
         re[round + 1] = b;
 
