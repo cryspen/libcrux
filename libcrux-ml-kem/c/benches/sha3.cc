@@ -71,14 +71,14 @@ shake128_34_504(benchmark::State &state)
     Eurydice_slice last[4] = {EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34)};
     Eurydice_slice out[4] = {EURYDICE_SLICE(digest0, 0, 504), EURYDICE_SLICE(digest1, 0, 504), EURYDICE_SLICE(digest2, 0, 504), EURYDICE_SLICE(digest3, 0, 504)};
     libcrux_sha3_avx2_x4_incremental_KeccakState st = libcrux_sha3_avx2_x4_incremental_init();
-    libcrux_sha3_generic_keccak_absorb_final_f3(&st, last);
-    libcrux_sha3_generic_keccak_squeeze_first_three_blocks_80(&st, out);
+    libcrux_sha3_generic_keccak_absorb_final_80(&st, last);
+    libcrux_sha3_generic_keccak_squeeze_first_three_blocks_6d(&st, out);
 
     for (auto _ : state)
     {
         libcrux_sha3_avx2_x4_incremental_KeccakState st = libcrux_sha3_avx2_x4_incremental_init();
-        libcrux_sha3_generic_keccak_absorb_final_f3(&st, last);
-        libcrux_sha3_generic_keccak_squeeze_first_three_blocks_80(&st, out);
+        libcrux_sha3_generic_keccak_absorb_final_80(&st, last);
+        libcrux_sha3_generic_keccak_squeeze_first_three_blocks_6d(&st, out);
     }
 }
 
