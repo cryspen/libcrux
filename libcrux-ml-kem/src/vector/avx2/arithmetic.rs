@@ -6,18 +6,22 @@ use super::*;
 #[hax_lib::requires(fstar!("forall i. i < 16 ==> 
     Spec.Utils.is_intb (pow2 15) (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) i) + 
                                   v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs) i))"))]
-#[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
-                           Spec.Utils.map2 (+!) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs)"))]
+#[hax_lib::ensures(|result| fstar!("forall i. i < 16 ==> 
+    v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result) i) ==
+    (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) i) + 
+     v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs) i))"))]
 pub(crate) fn add(lhs: Vec256, rhs: Vec256) -> Vec256 {
     mm256_add_epi16(lhs, rhs)
 }
 
 #[inline(always)]
 #[hax_lib::requires(fstar!("forall i. i < 16 ==> 
-    Spec.Utils.is_intb (pow2 15) (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) i) = 
+    Spec.Utils.is_intb (pow2 15) (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) i) -
                                   v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs) i))"))]
-#[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
-                           Spec.Utils.map2 (-!) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs)"))]
+#[hax_lib::ensures(|result| fstar!("forall i. i < 16 ==> 
+    v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result) i) ==
+    (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $lhs) i) - 
+     v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $rhs) i))"))]
 pub(crate) fn sub(lhs: Vec256, rhs: Vec256) -> Vec256 {
     mm256_sub_epi16(lhs, rhs)
 }
@@ -26,8 +30,9 @@ pub(crate) fn sub(lhs: Vec256, rhs: Vec256) -> Vec256 {
 #[hax_lib::requires(fstar!("forall i. i < 16 ==> 
     Spec.Utils.is_intb (pow2 31) (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector) i) * 
                                   v constant)"))]
-#[hax_lib::ensures(|result| fstar!("Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result == 
-                           Spec.Utils.map_array (fun x -> x *. $constant) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]
+#[hax_lib::ensures(|result| fstar!("forall i. i < 16 ==> 
+    v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result) i) ==
+    (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector) i) * v constant)"))]
 pub(crate) fn multiply_by_constant(vector: Vec256, constant: i16) -> Vec256 {
     let cv = mm256_set1_epi16(constant);
     let result = mm256_mullo_epi16(vector, cv);

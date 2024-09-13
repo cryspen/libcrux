@@ -16,10 +16,11 @@ val add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
       (ensures
         fun result ->
           let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
-          Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result ==
-          Spec.Utils.map2 ( +! )
-            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 lhs)
-            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 rhs))
+          forall i.
+            i < 16 ==>
+            v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result) i) ==
+            (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 lhs) i) +
+              v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 rhs) i)))
 
 val bitwise_and_with_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i16)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
@@ -42,9 +43,11 @@ val multiply_by_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (con
       (ensures
         fun result ->
           let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
-          Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result ==
-          Spec.Utils.map_array (fun x -> x *. constant)
-            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector))
+          forall i.
+            i < 16 ==>
+            v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result) i) ==
+            (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector) i) * v constant)
+      )
 
 val shift_right (v_SHIFT_BY: i32) (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
@@ -63,15 +66,16 @@ val sub (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         forall i.
           i < 16 ==>
           Spec.Utils.is_intb (pow2 15)
-            (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 lhs) i) =
+            (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 lhs) i) -
               v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 rhs) i)))
       (ensures
         fun result ->
           let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
-          Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result ==
-          Spec.Utils.map2 ( -! )
-            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 lhs)
-            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 rhs))
+          forall i.
+            i < 16 ==>
+            v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result) i) ==
+            (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 lhs) i) -
+              v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 rhs) i)))
 
 /// See Section 3.2 of the implementation notes document for an explanation
 /// of this code.
