@@ -139,10 +139,15 @@ val lemma_add_i16b (b1 b2:nat) (n1 n2:i16) :
                   is_i16b (b1 + b2) (n1 +! n2)))
 let lemma_add_i16b (b1 b2:nat) (n1 n2:i16) = ()
 
+
+let lemma_range_at_percent (v:int) (p:int{p>0/\ p%2=0 /\ v < p/2 /\ v >= -p / 2}):
+  Lemma (v @% p == v) = ()
+
 val lemma_sub_i16b (b1 b2:nat) (n1 n2:i16) :
   Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 + b2 < pow2 15))
         (ensures (range (v n1 - v n2) i16_inttype /\
-                  is_i16b (b1 + b2) (n1 -. n2)))
+                  is_i16b (b1 + b2) (n1 -. n2) /\
+                  v (n1 -. n2) == v n1 - v n2))
 let lemma_sub_i16b (b1 b2:nat) (n1 n2:i16) = ()
 
 let mont_mul_red_i16 (x:i16) (y:i16) : i16=
@@ -164,17 +169,8 @@ let lemma_at_percent_mod (v:int) (p:int{p>0/\ p%2=0}):
 
 let lemma_div_at_percent (v:int) (p:int{p>0/\ p%2=0 /\ (v/p) < p/2 /\ (v/p) >= -p / 2}):
   Lemma ((v / p) @% p == v / p) = 
-    let m = (v / p) % p in
-    if m >= p/2 then(
-      assert ((v/p) < 0);
-      assert (m - p == v/p)
-    )
-    else (
-     assert ((v / p) @% p ==  (v / p) % p);
-     assert ((v / p) < p)
-    )
+    lemma_range_at_percent (v/p) p
 
-#push-options "--z3rlimit 1200 --split_queries always"
 val lemma_mont_red_i32 (x:i32): Lemma
   (requires (is_i32b (3328 * pow2 16) x))
   (ensures (
@@ -182,7 +178,7 @@ val lemma_mont_red_i32 (x:i32): Lemma
           is_i16b (3328 + 1665) result /\
           (is_i32b (3328 * 3328) x ==> is_i16b 3328 result) /\
           v result % 3329 == (v x * 169) % 3329))
-          
+
 let lemma_mont_red_i32 (x:i32) =
   let vlow = cast x <: i16 in
   assert (v vlow == v x @% pow2 16);
@@ -192,14 +188,17 @@ let lemma_mont_red_i32 (x:i32) =
   assert (v k_times_modulus == (v k * 3329));
   let c = cast (k_times_modulus >>! 16l) <: i16 in
   assert (v c == (((v k * 3329) / pow2 16) @% pow2 16));
+  lemma_div_at_percent (v k * 3329) (pow2 16);
   assert (v c == (((v k * 3329) / pow2 16)));
   assert (is_i16b 1665 c);
   let vhigh = cast (x >>! 16l) <: i16 in
+  lemma_div_at_percent (v x) (pow2 16);
   assert (v vhigh == v x / pow2 16);
   assert (is_i16b 3328 vhigh);
   assert (is_i32b (3328 * 3328) x ==> is_i16b 169 vhigh);
   let result = vhigh -. c in
-  assert (v result = (v vhigh - v c) @% pow2 16);
+  lemma_sub_i16b 3328 1665 vhigh c;
+  assert (is_i16b (3328 + 1665) result);
   assert (v result = v vhigh - v c);
   assert (is_i16b (3328 + 1665) result);
   assert (is_i32b (3328 * 3328) x ==> is_i16b 3328 result);
@@ -238,14 +237,12 @@ let lemma_mont_red_i32 (x:i32) =
       (((v x - v k_times_modulus) / pow2 16) * pow2 16 * 169) % 3329;
       ( == ) { Math.Lemmas.lemma_div_exact (v x - v k_times_modulus) (pow2 16) }
       ((v x - v k_times_modulus) * 169) % 3329;
-      ( == ) { assert (v k_times_modulus == (v k @% pow2 16) * 3329) }
-      ((v x * 169) - ((v k @% pow2 16) * 3329 * 169)) % 3329;
-      ( == ) { Math.Lemmas.lemma_mod_sub (v x * 169) 3329 ((v k @% pow2 16) * 169) }
+      ( == ) { assert (v k_times_modulus == v k * 3329) }
+      ((v x * 169) - (v k * 3329 * 169)) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_sub (v x * 169) 3329 (v k * 169) }
       (v x * 169) % 3329;
     }
-#pop-options 
 
-#push-options "--z3rlimit 800 --split_queries always"
 val lemma_mont_mul_red_i16 (x y:i16): Lemma
   (requires (is_i16b 3328 y))
   (ensures (
@@ -266,11 +263,13 @@ let lemma_mont_mul_red_i16 (x y:i16) =
   assert (v c == (((v k * 3329) / pow2 16)));
   assert (is_i16b 1665 c);
   let vhigh = cast (((cast x <: i32) *. (cast y <: i32)) >>! 16l) <: i16 in
-  assert (v vhigh == (((prod) @% pow2 32) / pow2 16) @% pow2 16);
   lemma_mul_intb (pow2 15) 3328 (v x) (v y);
+  assert (v x @% pow2 32 == v x);
+  assert (v y @% pow2 32 == v y);
+  assert (v ((cast x <: i32) *. (cast y <: i32)) == (v x * v y) @% pow2 32);
+  assert (v vhigh == (((prod) @% pow2 32) / pow2 16) @% pow2 16);
   assert_norm (pow2 15 * 3328 < pow2 31);
-  assert (prod < pow2 31 /\ prod > - pow2 31);
-  assert (prod @% pow2 32 == prod);
+  lemma_range_at_percent prod (pow2 32);
   assert (v vhigh == (prod / pow2 16) @% pow2 16);
   lemma_div_at_percent prod (pow2 16);
   assert (v vhigh == prod / pow2 16);
@@ -278,7 +277,6 @@ let lemma_mont_mul_red_i16 (x y:i16) =
   let result = vhigh -. c in
   lemma_sub_i16b 1664 1665 vhigh c;
   assert (is_i16b 3329 result);
-  assert (v result = (v vhigh - v c) @% pow2 16);
   assert (v result = v vhigh - v c);
   calc ( == ) {
       v k_times_modulus % pow2 16;
@@ -318,4 +316,4 @@ let lemma_mont_mul_red_i16 (x y:i16) =
       ( == ) { Math.Lemmas.lemma_mod_sub ((prod) * 169) 3329 (v k * 169)}
       ((prod) * 169) % 3329; 
     }
-#pop-options 
+
