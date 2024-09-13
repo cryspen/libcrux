@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
- * Eurydice: b2946d0484e60b53f4c3d553c8101d92661a28da
+ * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
- * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: f4cf47e0ec7fcca0495666dcfd09178907a9fe64
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: f07d78fabdf3bdaec305a271f826e41a0e6c2366
  */
 
 #ifndef __libcrux_mlkem768_portable_H
@@ -21,6 +21,7 @@ extern "C" {
 #include "eurydice_glue.h"
 #include "libcrux_core.h"
 #include "libcrux_ct_ops.h"
+#include "libcrux_mlkem768_portable_types.h"
 #include "libcrux_sha3_portable.h"
 
 #define LIBCRUX_ML_KEM_HASH_FUNCTIONS_BLOCK_SIZE ((size_t)168U)
@@ -100,10 +101,6 @@ static const int16_t libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[128U] =
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R \
   (62209U)
-
-typedef struct libcrux_ml_kem_vector_portable_vector_type_PortableVector_s {
-  int16_t elements[16U];
-} libcrux_ml_kem_vector_portable_vector_type_PortableVector;
 
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_vector_type_from_i16_array(
@@ -2407,15 +2404,6 @@ typedef libcrux_ml_kem_types_MlKemPublicKey_15
    LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE)
 
 /**
-A monomorphic instance of libcrux_ml_kem.polynomial.PolynomialRingElement
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-
-*/
-typedef struct libcrux_ml_kem_polynomial_PolynomialRingElement_f0_s {
-  libcrux_ml_kem_vector_portable_vector_type_PortableVector coefficients[16U];
-} libcrux_ml_kem_polynomial_PolynomialRingElement_f0;
-
-/**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,
 TraitClause@1]}
@@ -2517,16 +2505,6 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_deserialize_secret_key_d1(
       ret, secret_as_ntt,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f0));
 }
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.IndCpaPrivateKeyUnpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_f8_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 secret_as_ntt[3U];
-} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_f8;
 
 /**
 A monomorphic instance of
@@ -5483,18 +5461,6 @@ libcrux_ml_kem_ind_cpa_unpacked_default_1a_a3(void) {
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_f8_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 t_as_ntt[3U];
-  uint8_t seed_for_A[32U];
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 A[3U][3U];
-} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_f8;
-
-/**
 This function found in impl {(core::default::Default for
 libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,
 K>[TraitClause@0, TraitClause@1])#1}
@@ -6639,37 +6605,8 @@ static inline bool libcrux_ml_kem_mlkem768_portable_validate_public_key(
       public_key->value);
 }
 
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPublicKeyUnpacked
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8_s {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_f8 ind_cpa_public_key;
-  uint8_t public_key_hash[32U];
-} libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8;
-
 typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768PublicKeyUnpacked;
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.unpacked.MlKemPrivateKeyUnpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_f8_s {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_f8
-      ind_cpa_private_key;
-  uint8_t implicit_rejection_value[32U];
-} libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_f8;
-
-typedef struct
-    libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked_s {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_f8 private_key;
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 public_key;
-} libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked;
 
 /**
  This function implements <strong>Algorithm 13</strong> of the
@@ -6730,7 +6667,7 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static inline void libcrux_ml_kem_ind_cpa_encrypt_unpacked_91(
+static inline void libcrux_ml_kem_ind_cpa_encrypt_unpacked_4c(
     libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_f8 *public_key,
     uint8_t message[32U], Eurydice_slice randomness, uint8_t ret[1088U]) {
   uint8_t prf_input[33U];
@@ -6811,7 +6748,7 @@ generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-static inline void libcrux_ml_kem_ind_cca_unpacked_decapsulate_fc(
+static inline void libcrux_ml_kem_ind_cca_unpacked_decapsulate_8e(
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
   uint8_t decrypted[32U];
@@ -6857,7 +6794,7 @@ static inline void libcrux_ml_kem_ind_cca_unpacked_decapsulate_fc(
   uint8_t copy_of_decrypted[32U];
   memcpy(copy_of_decrypted, decrypted, (size_t)32U * sizeof(uint8_t));
   uint8_t expected_ciphertext[1088U];
-  libcrux_ml_kem_ind_cpa_encrypt_unpacked_91(
+  libcrux_ml_kem_ind_cpa_encrypt_unpacked_4c(
       uu____3, copy_of_decrypted, pseudorandomness, expected_ciphertext);
   uint8_t selector =
       libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
@@ -6897,10 +6834,10 @@ generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
 static inline void
-libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_decapsulate_b3(
+libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_decapsulate_30(
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_unpacked_decapsulate_fc(key_pair, ciphertext, ret);
+  libcrux_ml_kem_ind_cca_unpacked_decapsulate_8e(key_pair, ciphertext, ret);
 }
 
 /**
@@ -6914,7 +6851,7 @@ static inline void libcrux_ml_kem_mlkem768_portable_unpacked_decapsulate(
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
         *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_decapsulate_b3(
+  libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_decapsulate_30(
       private_key, ciphertext, ret);
 }
 
@@ -6937,7 +6874,7 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static inline tuple_3c libcrux_ml_kem_ind_cca_unpacked_encapsulate_03(
+static inline tuple_3c libcrux_ml_kem_ind_cca_unpacked_encapsulate_cf(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 *public_key,
     uint8_t randomness[32U]) {
   uint8_t to_hash[64U];
@@ -6965,7 +6902,7 @@ static inline tuple_3c libcrux_ml_kem_ind_cca_unpacked_encapsulate_03(
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
   uint8_t ciphertext[1088U];
-  libcrux_ml_kem_ind_cpa_encrypt_unpacked_91(uu____2, copy_of_randomness,
+  libcrux_ml_kem_ind_cpa_encrypt_unpacked_4c(uu____2, copy_of_randomness,
                                              pseudorandomness, ciphertext);
   uint8_t shared_secret_array[32U] = {0U};
   Eurydice_slice_copy(
@@ -7008,7 +6945,7 @@ generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 static inline tuple_3c
-libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_encapsulate_4f(
+libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_encapsulate_24(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 *public_key,
     uint8_t randomness[32U]) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 *uu____0 =
@@ -7016,7 +6953,7 @@ libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_encapsulate_4f(
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_unpacked_encapsulate_03(uu____0,
+  return libcrux_ml_kem_ind_cca_unpacked_encapsulate_cf(uu____0,
                                                         copy_of_randomness);
 }
 
@@ -7036,7 +6973,7 @@ static inline tuple_3c libcrux_ml_kem_mlkem768_portable_unpacked_encapsulate(
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_encapsulate_4f(
+  return libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_encapsulate_24(
       uu____0, copy_of_randomness);
 }
 
@@ -7055,7 +6992,7 @@ generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f0
-libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_closure_17(size_t _j) {
+libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_closure_ab(size_t _j) {
   return libcrux_ml_kem_polynomial_ZERO_d6_19();
 }
 
@@ -7073,7 +7010,7 @@ generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static inline void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_ea(
+static inline void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_ac(
     size_t _i, libcrux_ml_kem_polynomial_PolynomialRingElement_f0 ret[3U]) {
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
     ret[i] = libcrux_ml_kem_polynomial_ZERO_d6_19();
@@ -7092,7 +7029,7 @@ with const generics
 
 */
 static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f0
-libcrux_ml_kem_polynomial_clone_17_1c(
+libcrux_ml_kem_polynomial_clone_17_86(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f0 *self) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f0 lit;
   libcrux_ml_kem_vector_portable_vector_type_PortableVector ret[16U];
@@ -7121,7 +7058,7 @@ generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static inline void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_7b(
+static inline void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_51(
     uint8_t randomness[64U],
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *out) {
   Eurydice_slice ind_cpa_keypair_randomness = Eurydice_array_to_subslice2(
@@ -7136,14 +7073,14 @@ static inline void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_7b(
       &out->public_key.ind_cpa_public_key);
   libcrux_ml_kem_polynomial_PolynomialRingElement_f0 A[3U][3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_ea(i, A[i]);
+    libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_ac(i, A[i]);
   }
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++) {
     size_t i1 = i0;
     for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
       size_t j = i;
       libcrux_ml_kem_polynomial_PolynomialRingElement_f0 uu____0 =
-          libcrux_ml_kem_polynomial_clone_17_1c(
+          libcrux_ml_kem_polynomial_clone_17_86(
               &out->public_key.ind_cpa_public_key.A[j][i1]);
       A[i1][j] = uu____0;
     }
@@ -7191,13 +7128,13 @@ const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 static inline void
-libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_generate_keypair_14(
+libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_generate_keypair_77(
     uint8_t randomness[64U],
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *out) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  libcrux_ml_kem_ind_cca_unpacked_generate_keypair_7b(copy_of_randomness, out);
+  libcrux_ml_kem_ind_cca_unpacked_generate_keypair_51(copy_of_randomness, out);
 }
 
 /**
@@ -7210,7 +7147,7 @@ static inline void libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_generate_keypair_14(
+  libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_generate_keypair_77(
       copy_of_randomness, key_pair);
 }
 
@@ -7227,7 +7164,7 @@ with const generics
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
-    libcrux_ml_kem_ind_cca_unpacked_default_43_9b(void) {
+    libcrux_ml_kem_ind_cca_unpacked_default_43_b1(void) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_f8 uu____0;
   uu____0.ind_cpa_private_key = libcrux_ml_kem_ind_cpa_unpacked_default_1a_a3();
   uu____0.implicit_rejection_value[0U] = 0U;
@@ -7307,7 +7244,7 @@ static KRML_MUSTINLINE
 */
 static inline libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_mlkem768_portable_unpacked_init_key_pair(void) {
-  return libcrux_ml_kem_ind_cca_unpacked_default_43_9b();
+  return libcrux_ml_kem_ind_cca_unpacked_default_43_b1();
 }
 
 /**
@@ -7385,77 +7322,54 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 static inline libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8
 libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_40(
     libcrux_ml_kem_types_MlKemPublicKey_15 *public_key) {
-  KRML_HOST_EPRINTF(
-      "KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-      "Eurydice error: Failure(\"TODO: TraitTypes "
-      "libcrux_ml_kem::types::index_impls::{core::ops::index::Index<core::ops::"
-      "range::RangeTo<usize>[core::marker::Sized<usize>]> for "
-      "libcrux_ml_kem::types::MlKemPublicKey<SIZE>}#20<C@0>::Output\")\nRaised "
-      "at Stdlib.failwith in file \"stdlib.ml\", line 29, characters "
-      "17-33\nCalled from Eurydice__AstOfLlbc.typ_of_ty in file "
-      "\"lib/AstOfLlbc.ml\", line 340, characters 14-29\nCalled from "
-      "Eurydice__AstOfLlbc.lookup_signature in file \"lib/AstOfLlbc.ml\", line "
-      "842, characters 15-35\nCalled from "
-      "Eurydice__AstOfLlbc.lookup_fun.lookup_result_of_fun_id in file "
-      "\"lib/AstOfLlbc.ml\", line 945, characters 26-62\nCalled from "
-      "Eurydice__AstOfLlbc.expression_of_fn_ptr in file \"lib/AstOfLlbc.ml\", "
-      "line 1028, characters 4-31\nCalled from "
-      "Eurydice__AstOfLlbc.expression_of_fn_ptr in file \"lib/AstOfLlbc.ml\" "
-      "(inlined), line 1179, characters 51-85\nCalled from "
-      "Eurydice__AstOfLlbc.expression_of_raw_statement in file "
-      "\"lib/AstOfLlbc.ml\", line 1436, characters 44-75\nCalled from "
-      "Eurydice__AstOfLlbc.expression_of_raw_statement in file "
-      "\"lib/AstOfLlbc.ml\", line 1488, characters 15-65\nCalled from "
-      "Eurydice__AstOfLlbc.expression_of_raw_statement in file "
-      "\"lib/AstOfLlbc.ml\", line 1489, characters 15-65\nCalled from "
-      "Eurydice__AstOfLlbc.expression_of_raw_statement in file "
-      "\"lib/AstOfLlbc.ml\", line 1489, characters 15-65\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.with_locals in file "
-      "\"lib/AstOfLlbc.ml\", line 489, characters 49-75\nCalled from "
-      "Eurydice__AstOfLlbc.with_locals in file \"lib/AstOfLlbc.ml\", line 489, "
-      "characters 49-75\nCalled from Eurydice__AstOfLlbc.decl_of_id in file "
-      "\"lib/AstOfLlbc.ml\", line 1751, characters 20-169\n");
-  KRML_HOST_EXIT(255U);
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 t_as_ntt[3U];
+  libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_58(
+      Eurydice_array_to_subslice_to((size_t)1184U, public_key->value,
+                                    (size_t)1152U, uint8_t, size_t),
+      t_as_ntt);
+  uint8_t seed_for_a[32U];
+  libcrux_ml_kem_utils_into_padded_array_423(
+      Eurydice_array_to_subslice_from((size_t)1184U, public_key->value,
+                                      (size_t)1152U, uint8_t, size_t),
+      seed_for_a);
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 a[3U][3U];
+  uint8_t ret0[34U];
+  libcrux_ml_kem_utils_into_padded_array_421(
+      Eurydice_array_to_subslice_from((size_t)1184U, public_key->value,
+                                      (size_t)1152U, uint8_t, size_t),
+      ret0);
+  libcrux_ml_kem_matrix_sample_matrix_a_out_29(ret0, false, a);
+  /* Passing arrays by value in Rust generates a copy in C */
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 copy_of_t_as_ntt[3U];
+  memcpy(
+      copy_of_t_as_ntt, t_as_ntt,
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f0));
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_seed_for_a[32U];
+  memcpy(copy_of_seed_for_a, seed_for_a, (size_t)32U * sizeof(uint8_t));
+  /* Passing arrays by value in Rust generates a copy in C */
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 copy_of_a[3U][3U];
+  memcpy(copy_of_a, a,
+         (size_t)3U *
+             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f0[3U]));
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_f8 uu____3;
+  memcpy(
+      uu____3.t_as_ntt, copy_of_t_as_ntt,
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f0));
+  memcpy(uu____3.seed_for_A, copy_of_seed_for_a, (size_t)32U * sizeof(uint8_t));
+  memcpy(uu____3.A, copy_of_a,
+         (size_t)3U *
+             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f0[3U]));
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 lit;
+  lit.ind_cpa_public_key = uu____3;
+  uint8_t ret[32U];
+  libcrux_ml_kem_hash_functions_portable_H_f1_c6(
+      Eurydice_array_to_slice((size_t)1184U,
+                              libcrux_ml_kem_types_as_slice_cb_60(public_key),
+                              uint8_t),
+      ret);
+  memcpy(lit.public_key_hash, ret, (size_t)32U * sizeof(uint8_t));
+  return lit;
 }
 
 /**
@@ -7471,7 +7385,7 @@ const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 static inline libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8
-libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_unpack_public_key_8f(
+libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_unpack_public_key_5f(
     libcrux_ml_kem_types_MlKemPublicKey_15 *public_key) {
   return libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_40(public_key);
 }
@@ -7482,7 +7396,7 @@ libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_unpack_public_key_8f(
 static inline libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8
 libcrux_ml_kem_mlkem768_portable_unpacked_unpacked_public_key(
     libcrux_ml_kem_types_MlKemPublicKey_15 *public_key) {
-  return libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_unpack_public_key_8f(
+  return libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_unpack_public_key_5f(
       public_key);
 }
 

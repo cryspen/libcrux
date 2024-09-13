@@ -322,11 +322,11 @@ pub(crate) mod unpacked {
         public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     ) -> MlKemPublicKeyUnpacked<K, Vector> {
         let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
-            &public_key[..T_AS_NTT_ENCODED_SIZE],
+            &public_key.value[..T_AS_NTT_ENCODED_SIZE],
         );
-        let seed_for_a = into_padded_array(&public_key[T_AS_NTT_ENCODED_SIZE..]);
+        let seed_for_a = into_padded_array(&public_key.value[T_AS_NTT_ENCODED_SIZE..]);
         let a = sample_matrix_a_out::<K, Vector, Hasher>(
-            into_padded_array(&public_key[T_AS_NTT_ENCODED_SIZE..]),
+            into_padded_array(&public_key.value[T_AS_NTT_ENCODED_SIZE..]),
             false,
         );
 

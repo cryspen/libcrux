@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
- * Eurydice: b2946d0484e60b53f4c3d553c8101d92661a28da
+ * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
- * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
- * Libcrux: f4cf47e0ec7fcca0495666dcfd09178907a9fe64
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: f07d78fabdf3bdaec305a271f826e41a0e6c2366
  */
 
 #ifndef __libcrux_core_H
@@ -189,6 +189,25 @@ typedef struct Eurydice_slice_uint8_t_4size_t__x2_s {
   Eurydice_slice fst[4U];
   Eurydice_slice snd[4U];
 } Eurydice_slice_uint8_t_4size_t__x2;
+
+/**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 32
+*/
+static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_423(
+    Eurydice_slice slice, uint8_t ret[32U]) {
+  uint8_t out[32U] = {0U};
+  uint8_t *uu____0 = out;
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
+                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
+      slice, uint8_t);
+  memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
+}
 
 typedef struct libcrux_ml_kem_mlkem768_MlKem768Ciphertext_s {
   uint8_t value[1088U];

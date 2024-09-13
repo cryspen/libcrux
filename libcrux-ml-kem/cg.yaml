@@ -53,15 +53,10 @@ files:
 
   # Header with types only
 
-  - name: libcrux_mlkem768_types
+  - name: libcrux_mlkem768_avx2_types
     inline_static: true
-    include_in_h:
-      - '"intrinsics/libcrux_intrinsics_avx2.h"'
     api:
       monomorphizations_exact:
-        # - [ libcrux_ml_kem, mlkem768, MlKem768KeyPair ]
-        # - [ libcrux_ml_kem, types, MlKemPrivateKey_55 ]
-        # - [ libcrux_ml_kem, types, MlKemPublicKey_15 ]
         - [ libcrux_ml_kem, mlkem768, avx2, unpacked, MlKem768KeyPairUnpacked ]
         - [ libcrux_ml_kem, ind_cca, unpacked, MlKemPrivateKeyUnpacked_a0 ]
         - [ libcrux_ml_kem, ind_cca, unpacked, MlKemPublicKeyUnpacked_a0 ]
@@ -69,6 +64,18 @@ files:
         - [ libcrux_ml_kem, ind_cpa, unpacked, IndCpaPublicKeyUnpacked_a0 ]
         - [ libcrux_ml_kem, polynomial, PolynomialRingElement_d2 ]
         - [ libcrux_ml_kem, vector, avx2, SIMD256Vector ]
+
+  - name: libcrux_mlkem768_portable_types
+    inline_static: true
+    api:
+      monomorphizations_exact:
+        - [ libcrux_ml_kem, mlkem768, portable, unpacked, MlKem768KeyPairUnpacked ]
+        - [ libcrux_ml_kem, ind_cca, unpacked, MlKemPrivateKeyUnpacked_f8 ]
+        - [ libcrux_ml_kem, ind_cca, unpacked, MlKemPublicKeyUnpacked_f8 ]
+        - [ libcrux_ml_kem, ind_cpa, unpacked, IndCpaPrivateKeyUnpacked_f8 ]
+        - [ libcrux_ml_kem, ind_cpa, unpacked, IndCpaPublicKeyUnpacked_f8 ]
+        - [ libcrux_ml_kem, polynomial, PolynomialRingElement_f0 ]
+        - [ libcrux_ml_kem, vector, portable, vector_type, PortableVector ]
 
   # MLKEM: MISC NON-ARCHITECTURE SPECIFIC HEADERS
   - name: libcrux_core
@@ -96,6 +103,8 @@ files:
   - name: libcrux_mlkem768_avx2
     inline_static: true
     target: "avx2"
+    include_in_h:
+      - '"intrinsics/libcrux_intrinsics_avx2.h"'
     api:
       patterns:  
         - [libcrux_ml_kem, vector, avx2, "*"]
