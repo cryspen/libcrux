@@ -169,7 +169,10 @@ let lemma_div_at_percent (v:int) (p:int{p>0/\ p%2=0 /\ (v/p) < p/2 /\ (v/p) >= -
       assert ((v/p) < 0);
       assert (m - p == v/p)
     )
-    else ()
+    else (
+     assert ((v / p) @% p ==  (v / p) % p);
+     assert ((v / p) < p)
+    )
 
 #push-options "--z3rlimit 1200 --split_queries always"
 val lemma_mont_red_i32 (x:i32): Lemma
