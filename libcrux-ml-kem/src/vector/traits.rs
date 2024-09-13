@@ -137,10 +137,9 @@ pub trait Operations: Copy + Clone + Repr {
     #[ensures(|result| fstar!("sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (f_repr $result)"))]
     fn deserialize_12(a: &[u8]) -> Self;
 
-    #[requires(true)]
+    #[requires(a.len() == 24 && out.len() == 16)]
     #[ensures(|result|
-        fstar!("Seq.length $out_future == Seq.length $out /\\
-            range (v $result + 255) usize_inttype")
+        fstar!("Seq.length $out_future == Seq.length $out /\\ v $result <= 16")
     )]
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }

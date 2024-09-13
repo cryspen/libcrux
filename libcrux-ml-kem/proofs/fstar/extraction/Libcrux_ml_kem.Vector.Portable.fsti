@@ -610,10 +610,15 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     (fun (a: t_Slice u8) ->
         let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma a in
         Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_ a);
-    f_rej_sample_pre = (fun (a: t_Slice u8) (out: t_Slice i16) -> true);
+    f_rej_sample_pre
+    =
+    (fun (a: t_Slice u8) (out: t_Slice i16) ->
+        (Core.Slice.impl__len #u8 a <: usize) =. sz 24 &&
+        (Core.Slice.impl__len #i16 out <: usize) =. sz 16);
     f_rej_sample_post
     =
-    (fun (a: t_Slice u8) (out: t_Slice i16) (out2: (t_Slice i16 & usize)) -> true);
+    (fun (a: t_Slice u8) (out: t_Slice i16) (out_future, result: (t_Slice i16 & usize)) ->
+        Seq.length out_future == Seq.length out /\ v result <= 16);
     f_rej_sample
     =
     fun (a: t_Slice u8) (out: t_Slice i16) ->

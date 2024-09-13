@@ -550,10 +550,15 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         { f_elements = Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_12_ bytes }
         <:
         t_SIMD256Vector);
-    f_rej_sample_pre = (fun (input: t_Slice u8) (output: t_Slice i16) -> true);
+    f_rej_sample_pre
+    =
+    (fun (input: t_Slice u8) (output: t_Slice i16) ->
+        (Core.Slice.impl__len #u8 input <: usize) =. sz 24 &&
+        (Core.Slice.impl__len #i16 output <: usize) =. sz 16);
     f_rej_sample_post
     =
-    (fun (input: t_Slice u8) (output: t_Slice i16) (out1: (t_Slice i16 & usize)) -> true);
+    (fun (input: t_Slice u8) (output: t_Slice i16) (output_future, result: (t_Slice i16 & usize)) ->
+        Seq.length output_future == Seq.length output /\ v result <= 16);
     f_rej_sample
     =
     fun (input: t_Slice u8) (output: t_Slice i16) ->

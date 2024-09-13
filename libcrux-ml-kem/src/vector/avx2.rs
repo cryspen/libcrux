@@ -315,6 +315,10 @@ impl Operations for SIMD256Vector {
         }
     }
 
+    #[requires(input.len() == 24 && output.len() == 16)]
+    #[ensures(|result|
+        fstar!("Seq.length $output_future == Seq.length $output /\\ v $result <= 16")
+    )]
     fn rej_sample(input: &[u8], output: &mut [i16]) -> usize {
         sampling::rejection_sample(input, output)
     }
