@@ -116,11 +116,18 @@ val cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Porta
           Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (vec.f_elements))
 
 val montgomery_multiply_by_constant
-      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (c: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       (requires Spec.Utils.is_i16b 3328 c)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          Spec.Utils.is_i16b_array (3328 + 1665) result.f_elements /\
+          (forall i.
+              i < 16 ==>
+              (v (Seq.index result.f_elements i) % 3329 ==
+                (v (Seq.index vec.f_elements i) * v c * 169) % 3329)))
 
 val multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector

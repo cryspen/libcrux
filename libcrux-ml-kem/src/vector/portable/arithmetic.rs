@@ -135,7 +135,6 @@ pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVect
 /// Note: This function is not secret independent
 /// Only use with public values.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array (pow2 12 - 1) ${vec}.f_elements"))]
 #[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map_array 
                 (fun x -> if x >=. 3329s then x -! 3329s else x) (${vec}.f_elements)"))]
@@ -334,9 +333,21 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 c")))]
-pub(crate) fn montgomery_multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVector {
+#[cfg_attr(hax, hax_lib::ensures(|result| fstar!("
+Spec.Utils.is_i16b_array (3328 + 1665) ${result}.f_elements /\\
+(forall i. i < 16 ==> 
+    (v (Seq.index ${result}.f_elements i) % 3329 == 
+       (v (Seq.index ${vec}.f_elements i) * v c * 169) %3329))")))]
+pub(crate) fn montgomery_multiply_by_constant(mut vec: PortableVector, c: i16) -> PortableVector {
+    let _vec0 = vec;
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] = montgomery_multiply_fe_by_fer(v.elements[i], c)
+        hax_lib::loop_invariant!(|i: usize| { fstar!("
+              (forall j. j < v i ==>
+	      	  (let vecj = Seq.index ${vec}.f_elements j in
+		       (Spec.Utils.is_i16b (3328 + 1665) vecj /\\
+                v vecj % 3329 == (v (Seq.index ${_vec0}.f_elements j) * v c * 169) % 3329))) /\\
+              (forall j. j >= v i ==> (Seq.index ${vec}.f_elements j) == (Seq.index ${_vec0}.f_elements j))") });
+        vec.elements[i] = montgomery_multiply_fe_by_fer(vec.elements[i], c)
     }
-    v
+    vec
 }

@@ -354,35 +354,39 @@ let cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Porta
     Seq.lemma_eq_intro vec.f_elements
       (Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) v__vec0.f_elements)
   in
-  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  vec
 
 #push-options "--z3rlimit 150"
 
 let montgomery_multiply_by_constant
-      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (c: i16)
      =
-  let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+  let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-      (fun v temp_1_ ->
-          let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
-          let _:usize = temp_1_ in
-          true)
-      v
-      (fun v i ->
-          let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
+      (fun vec i ->
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+          let i:usize = i in
+          (forall j.
+              j < v i ==>
+              (let vecj = Seq.index vec.f_elements j in
+                (Spec.Utils.is_i16b (3328 + 1665) vecj /\
+                  v vecj % 3329 == (v (Seq.index v__vec0.f_elements j) * v c * 169) % 3329))) /\
+          (forall j. j >= v i ==> (Seq.index vec.f_elements j) == (Seq.index v__vec0.f_elements j)))
+      vec
+      (fun vec i ->
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
           let i:usize = i in
           {
-            v with
+            vec with
             Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
             =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
                 .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
               i
-              (montgomery_multiply_fe_by_fer (v
+              (montgomery_multiply_fe_by_fer (vec
                       .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
                     <:
                     i16)
@@ -395,7 +399,7 @@ let montgomery_multiply_by_constant
           <:
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
-  v
+  vec
 
 #pop-options
 
