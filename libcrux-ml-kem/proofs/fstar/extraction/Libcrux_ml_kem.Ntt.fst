@@ -26,6 +26,10 @@ let ntt_layer_int_vec_step
   in
   a, b <: (v_Vector & v_Vector)
 
+let zetas_b_lemma (i:nat{i >= 0 /\ i < 128}) : Lemma
+   (Spec.Utils.is_i16b 1664 Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ sz i ]) =
+   admit()
+
 let ntt_at_layer_1_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -35,15 +39,16 @@ let ntt_at_layer_1_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer v__initial_coefficient_bound: usize)
      =
+  let v__zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 16)
-      (fun temp_0_ temp_1_ ->
+      (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
           in
-          let _:usize = temp_1_ in
-          true)
+          let round:usize = round in
+          v zeta_i == v v__zeta_i_init + v round * 4)
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
@@ -51,6 +56,12 @@ let ntt_at_layer_1_
           in
           let round:usize = round in
           let zeta_i:usize = zeta_i +! sz 1 in
+          let _:Prims.unit =
+            zetas_b_lemma (v zeta_i);
+            zetas_b_lemma (v zeta_i + 1);
+            zetas_b_lemma (v zeta_i + 2);
+            zetas_b_lemma (v zeta_i + 3)
+          in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
               re with
@@ -96,15 +107,16 @@ let ntt_at_layer_2_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer v__initial_coefficient_bound: usize)
      =
+  let v__zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 16)
-      (fun temp_0_ temp_1_ ->
+      (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
           in
-          let _:usize = temp_1_ in
-          true)
+          let round:usize = round in
+          v zeta_i == v v__zeta_i_init + v round * 2)
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
@@ -112,6 +124,10 @@ let ntt_at_layer_2_
           in
           let round:usize = round in
           let zeta_i:usize = zeta_i +! sz 1 in
+          let _:Prims.unit =
+            zetas_b_lemma (v zeta_i);
+            zetas_b_lemma (v zeta_i + 1)
+          in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
               re with
@@ -149,15 +165,16 @@ let ntt_at_layer_3_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer v__initial_coefficient_bound: usize)
      =
+  let v__zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 16)
-      (fun temp_0_ temp_1_ ->
+      (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
           in
-          let _:usize = temp_1_ in
-          true)
+          let round:usize = round in
+          v zeta_i == v v__zeta_i_init + v round)
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
@@ -165,6 +182,7 @@ let ntt_at_layer_3_
           in
           let round:usize = round in
           let zeta_i:usize = zeta_i +! sz 1 in
+          let _:Prims.unit = zetas_b_lemma (v zeta_i) in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
               re with
@@ -188,6 +206,8 @@ let ntt_at_layer_3_
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
+#push-options "--z3rlimit 200"
+
 let ntt_at_layer_4_plus
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -197,30 +217,31 @@ let ntt_at_layer_4_plus
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (layer v__initial_coefficient_bound: usize)
      =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit = Hax_lib.v_assert (layer >=. sz 4 <: bool) in
-      ()
-  in
   let step:usize = sz 1 <<! layer in
+  let v__zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 128 >>! layer <: usize)
-      (fun temp_0_ temp_1_ ->
+      (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
           in
-          let _:usize = temp_1_ in
-          true)
+          let round:usize = round in
+          v zeta_i == v v__zeta_i_init + v round)
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
           in
           let round:usize = round in
+          let _:Prims.unit =
+            assert (v round < 8);
+            assert (v step >= 16 /\ v step <= 128);
+            assert (v (round *! step) >= 0 /\ v (round *! step) <= 112)
+          in
           let zeta_i:usize = zeta_i +! sz 1 in
           let offset:usize = (round *! step <: usize) *! sz 2 in
+          let _:Prims.unit = assert (v offset >= 0 /\ v offset <= 224) in
           let offset_vec:usize = offset /! sz 16 in
           let step_vec:usize = step /! sz 16 in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
@@ -234,6 +255,7 @@ let ntt_at_layer_4_plus
               (fun re j ->
                   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
                   let j:usize = j in
+                  let _:Prims.unit = zetas_b_lemma (v zeta_i) in
                   let x, y:(v_Vector & v_Vector) =
                     ntt_layer_int_vec_step #v_Vector
                       (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ j ] <: v_Vector)
@@ -274,6 +296,8 @@ let ntt_at_layer_4_plus
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+
+#pop-options
 
 let ntt_at_layer_7_
       (#v_Vector: Type0)
@@ -396,6 +420,8 @@ let ntt_binomially_sampled_ring_element
   in
   re
 
+#push-options "--z3rlimit 200"
+
 let ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
@@ -454,3 +480,5 @@ let ntt_vector_u
     (Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in
   re
+
+#pop-options
