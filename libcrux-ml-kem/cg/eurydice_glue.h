@@ -173,8 +173,7 @@ static inline uint16_t core_num__i16_1__wrapping_mul(int16_t x, int16_t y) {
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
   (((iter_ptr)->start == (iter_ptr)->end)            \
        ? (CLITERAL(ret_t){.tag = None})  \
-       : (CLITERAL(ret_t){.tag = Some,   \
-                          .f0 = (iter_ptr)->start++}))
+       : (CLITERAL(ret_t){.tag = Some, .f0 = (iter_ptr)->start++}))
 
 #define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next \
   Eurydice_range_iter_next
