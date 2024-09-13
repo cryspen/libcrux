@@ -33,8 +33,6 @@ typedef struct core_ops_range_Range_b3_s {
 #define None 0
 #define Some 1
 
-#define core_array_TryFromSliceError uint8_t
-
 typedef uint8_t Option_ef_tags;
 
 /**
