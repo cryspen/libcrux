@@ -65,7 +65,3 @@ jobs:
               HAX_HOME=${{ github.workspace }}/hax \
               PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
               ./hax.py prove --admit
-
-      - name: 🏃 Extract ML-DSA crate
-        working-directory: libcrux-ml-dsa
-        run: cargo hax into fstar

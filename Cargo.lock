@@ -1012,6 +1012,7 @@ dependencies = [
  "libcrux-platform",
  "libcrux-sha3",
  "rand",
+ "rand_core",
  "serde",
  "serde_json",
 ]
