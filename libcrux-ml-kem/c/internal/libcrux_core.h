@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 6b5e110342a771a3e1c739b10294b1778e4be8b4
- * Eurydice: 31be7d65ca5d6acdacfb33652e478d24dd85c1cb
- * Karamel: 3205d3365ea2790b02368f79fcee38e38d0b5908
+ * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
+ * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
+ * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
  * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
- * Libcrux: 33d08ed8cc74e9d1b2c29d754e70a5b2998bd6e5
+ * Libcrux: e22fa84f63313933e959470afcad633146b9b207
  */
 
 #ifndef __internal_libcrux_core_H
@@ -20,12 +20,6 @@ extern "C" {
 
 #include "../libcrux_core.h"
 #include "eurydice_glue.h"
-
-static inline int16_t core_num__i16_1__wrapping_add(int16_t x0, int16_t x1);
-
-static inline int16_t core_num__i16_1__wrapping_mul(int16_t x0, int16_t x1);
-
-static inline int16_t core_num__i16_1__wrapping_sub(int16_t x0, int16_t x1);
 
 #define CORE_NUM__U32_8__BITS (32U)
 
@@ -81,7 +75,7 @@ A monomorphic instance of libcrux_ml_kem.types.from_07
 with const generics
 - SIZE= 1568
 */
-libcrux_ml_kem_types_MlKemPublicKey_1f libcrux_ml_kem_types_from_07_3a1(
+libcrux_ml_kem_types_MlKemPublicKey_1f libcrux_ml_kem_types_from_07_fd1(
     uint8_t value[1568U]);
 
 /**
@@ -94,7 +88,7 @@ with const generics
 - PRIVATE_KEY_SIZE= 3168
 - PUBLIC_KEY_SIZE= 1568
 */
-libcrux_ml_kem_mlkem1024_MlKem1024KeyPair libcrux_ml_kem_types_from_64_751(
+libcrux_ml_kem_mlkem1024_MlKem1024KeyPair libcrux_ml_kem_types_from_64_7d1(
     libcrux_ml_kem_types_MlKemPrivateKey_95 sk,
     libcrux_ml_kem_types_MlKemPublicKey_1f pk);
 
@@ -107,7 +101,7 @@ A monomorphic instance of libcrux_ml_kem.types.from_e7
 with const generics
 - SIZE= 3168
 */
-libcrux_ml_kem_types_MlKemPrivateKey_95 libcrux_ml_kem_types_from_e7_201(
+libcrux_ml_kem_types_MlKemPrivateKey_95 libcrux_ml_kem_types_from_e7_9a1(
     uint8_t value[3168U]);
 
 /**
@@ -119,7 +113,7 @@ A monomorphic instance of libcrux_ml_kem.types.from_15
 with const generics
 - SIZE= 1568
 */
-libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext libcrux_ml_kem_types_from_15_301(
+libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext libcrux_ml_kem_types_from_15_5f1(
     uint8_t value[1568U]);
 
 /**
@@ -130,7 +124,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_slice_f6
 with const generics
 - SIZE= 1568
 */
-uint8_t *libcrux_ml_kem_types_as_slice_f6_941(
+uint8_t *libcrux_ml_kem_types_as_slice_f6_891(
     libcrux_ml_kem_types_MlKemPublicKey_1f *self);
 
 /**
@@ -142,7 +136,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_ba
 with const generics
 - SIZE= 1568
 */
-Eurydice_slice libcrux_ml_kem_types_as_ref_ba_cc1(
+Eurydice_slice libcrux_ml_kem_types_as_ref_ba_681(
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *self);
 
 /**
@@ -153,7 +147,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 1600
 */
-void libcrux_ml_kem_utils_into_padded_array_2d4(Eurydice_slice slice,
+void libcrux_ml_kem_utils_into_padded_array_174(Eurydice_slice slice,
                                                 uint8_t ret[1600U]);
 
 /**
@@ -165,7 +159,7 @@ A monomorphic instance of libcrux_ml_kem.types.from_07
 with const generics
 - SIZE= 1184
 */
-libcrux_ml_kem_types_MlKemPublicKey_15 libcrux_ml_kem_types_from_07_3a0(
+libcrux_ml_kem_types_MlKemPublicKey_15 libcrux_ml_kem_types_from_07_fd0(
     uint8_t value[1184U]);
 
 /**
@@ -178,7 +172,7 @@ with const generics
 - PRIVATE_KEY_SIZE= 2400
 - PUBLIC_KEY_SIZE= 1184
 */
-libcrux_ml_kem_mlkem768_MlKem768KeyPair libcrux_ml_kem_types_from_64_750(
+libcrux_ml_kem_mlkem768_MlKem768KeyPair libcrux_ml_kem_types_from_64_7d0(
     libcrux_ml_kem_types_MlKemPrivateKey_55 sk,
     libcrux_ml_kem_types_MlKemPublicKey_15 pk);
 
@@ -191,7 +185,7 @@ A monomorphic instance of libcrux_ml_kem.types.from_e7
 with const generics
 - SIZE= 2400
 */
-libcrux_ml_kem_types_MlKemPrivateKey_55 libcrux_ml_kem_types_from_e7_200(
+libcrux_ml_kem_types_MlKemPrivateKey_55 libcrux_ml_kem_types_from_e7_9a0(
     uint8_t value[2400U]);
 
 /**
@@ -203,7 +197,7 @@ A monomorphic instance of libcrux_ml_kem.types.from_15
 with const generics
 - SIZE= 1088
 */
-libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_from_15_300(
+libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_from_15_5f0(
     uint8_t value[1088U]);
 
 /**
@@ -214,7 +208,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_slice_f6
 with const generics
 - SIZE= 1184
 */
-uint8_t *libcrux_ml_kem_types_as_slice_f6_940(
+uint8_t *libcrux_ml_kem_types_as_slice_f6_890(
     libcrux_ml_kem_types_MlKemPublicKey_15 *self);
 
 /**
@@ -226,7 +220,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_ba
 with const generics
 - SIZE= 1088
 */
-Eurydice_slice libcrux_ml_kem_types_as_ref_ba_cc0(
+Eurydice_slice libcrux_ml_kem_types_as_ref_ba_680(
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self);
 
 /**
@@ -237,7 +231,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 1120
 */
-void libcrux_ml_kem_utils_into_padded_array_2d3(Eurydice_slice slice,
+void libcrux_ml_kem_utils_into_padded_array_173(Eurydice_slice slice,
                                                 uint8_t ret[1120U]);
 
 /**
@@ -249,7 +243,7 @@ A monomorphic instance of libcrux_ml_kem.types.from_07
 with const generics
 - SIZE= 800
 */
-libcrux_ml_kem_types_MlKemPublicKey_be libcrux_ml_kem_types_from_07_3a(
+libcrux_ml_kem_types_MlKemPublicKey_be libcrux_ml_kem_types_from_07_fd(
     uint8_t value[800U]);
 
 /**
@@ -262,7 +256,7 @@ with const generics
 - PRIVATE_KEY_SIZE= 1632
 - PUBLIC_KEY_SIZE= 800
 */
-libcrux_ml_kem_types_MlKemKeyPair_cb libcrux_ml_kem_types_from_64_75(
+libcrux_ml_kem_types_MlKemKeyPair_cb libcrux_ml_kem_types_from_64_7d(
     libcrux_ml_kem_types_MlKemPrivateKey_5e sk,
     libcrux_ml_kem_types_MlKemPublicKey_be pk);
 
@@ -275,7 +269,7 @@ A monomorphic instance of libcrux_ml_kem.types.from_e7
 with const generics
 - SIZE= 1632
 */
-libcrux_ml_kem_types_MlKemPrivateKey_5e libcrux_ml_kem_types_from_e7_20(
+libcrux_ml_kem_types_MlKemPrivateKey_5e libcrux_ml_kem_types_from_e7_9a(
     uint8_t value[1632U]);
 
 /**
@@ -287,7 +281,7 @@ A monomorphic instance of libcrux_ml_kem.types.from_15
 with const generics
 - SIZE= 768
 */
-libcrux_ml_kem_types_MlKemCiphertext_e8 libcrux_ml_kem_types_from_15_30(
+libcrux_ml_kem_types_MlKemCiphertext_e8 libcrux_ml_kem_types_from_15_5f(
     uint8_t value[768U]);
 
 /**
@@ -298,7 +292,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_slice_f6
 with const generics
 - SIZE= 800
 */
-uint8_t *libcrux_ml_kem_types_as_slice_f6_94(
+uint8_t *libcrux_ml_kem_types_as_slice_f6_89(
     libcrux_ml_kem_types_MlKemPublicKey_be *self);
 
 /**
@@ -309,7 +303,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 33
 */
-void libcrux_ml_kem_utils_into_padded_array_2d2(Eurydice_slice slice,
+void libcrux_ml_kem_utils_into_padded_array_172(Eurydice_slice slice,
                                                 uint8_t ret[33U]);
 
 /**
@@ -333,7 +327,7 @@ A monomorphic instance of core.result.unwrap_41
 with types uint8_t[32size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_83(core_result_Result_00 self, uint8_t ret[32U]);
+void core_result_unwrap_41_33(core_result_Result_00 self, uint8_t ret[32U]);
 
 /**
  Pad the `slice` with `0`s at the end.
@@ -343,7 +337,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 34
 */
-void libcrux_ml_kem_utils_into_padded_array_2d1(Eurydice_slice slice,
+void libcrux_ml_kem_utils_into_padded_array_171(Eurydice_slice slice,
                                                 uint8_t ret[34U]);
 
 /**
@@ -355,7 +349,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_ba
 with const generics
 - SIZE= 768
 */
-Eurydice_slice libcrux_ml_kem_types_as_ref_ba_cc(
+Eurydice_slice libcrux_ml_kem_types_as_ref_ba_68(
     libcrux_ml_kem_types_MlKemCiphertext_e8 *self);
 
 /**
@@ -366,7 +360,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 800
 */
-void libcrux_ml_kem_utils_into_padded_array_2d0(Eurydice_slice slice,
+void libcrux_ml_kem_utils_into_padded_array_170(Eurydice_slice slice,
                                                 uint8_t ret[800U]);
 
 /**
@@ -377,7 +371,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 64
 */
-void libcrux_ml_kem_utils_into_padded_array_2d(Eurydice_slice slice,
+void libcrux_ml_kem_utils_into_padded_array_17(Eurydice_slice slice,
                                                uint8_t ret[64U]);
 
 /**
@@ -401,7 +395,7 @@ A monomorphic instance of core.result.unwrap_41
 with types uint8_t[24size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_1c(core_result_Result_6f self, uint8_t ret[24U]);
+void core_result_unwrap_41_76(core_result_Result_6f self, uint8_t ret[24U]);
 
 /**
 A monomorphic instance of core.result.Result
@@ -424,7 +418,7 @@ A monomorphic instance of core.result.unwrap_41
 with types uint8_t[20size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_34(core_result_Result_7a self, uint8_t ret[20U]);
+void core_result_unwrap_41_ea(core_result_Result_7a self, uint8_t ret[20U]);
 
 /**
 A monomorphic instance of core.result.Result
@@ -447,7 +441,7 @@ A monomorphic instance of core.result.unwrap_41
 with types uint8_t[10size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_e8(core_result_Result_cd self, uint8_t ret[10U]);
+void core_result_unwrap_41_07(core_result_Result_cd self, uint8_t ret[10U]);
 
 /**
 A monomorphic instance of core.result.Result
@@ -470,7 +464,7 @@ A monomorphic instance of core.result.unwrap_41
 with types int16_t[16size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_f9(core_result_Result_c0 self, int16_t ret[16U]);
+void core_result_unwrap_41_30(core_result_Result_c0 self, int16_t ret[16U]);
 
 typedef struct Eurydice_slice_uint8_t_4size_t__x2_s {
   Eurydice_slice fst[4U];

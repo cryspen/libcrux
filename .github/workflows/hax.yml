@@ -11,6 +11,7 @@ on:
     - cron: "0 0 * * *"
 
   workflow_dispatch:
+  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
@@ -29,7 +30,7 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: ⤵ Install FStar
-        run: nix profile install github:FStarLang/FStar/v2024.01.13
+        run: nix profile install github:FStarLang/FStar/v2024.09.05
 
       - name: ⤵ Clone HACL-star repository
         uses: actions/checkout@v4
