@@ -1,6 +1,7 @@
 use crate::vector::{to_standard_domain, Operations, FIELD_ELEMENTS_IN_VECTOR};
 
-const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = [
+const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
+    hax_lib::fstar!("assert_norm (pow2 16 == 65536)"); [
     -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474, 1468,
     573, -1325, 264, 383, -829, 1458, -1602, -130, -681, 1017, 732, 608, -1542, 411, -205, -1571,
     1223, 652, -552, 1015, -1293, 1491, -282, -1544, 516, -8, -320, -666, -1618, -1162, 126, 1469,
@@ -9,7 +10,7 @@ const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = [
     778, 1159, -147, -777, 1483, -602, 1119, -1590, 644, -872, 349, 418, 329, -156, -75, 817, 1097,
     603, 610, 1322, -1285, -1465, 384, -1215, -136, 1218, -1335, -874, 220, -1187, -1659, -1185,
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
-];
+]};
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
@@ -74,6 +75,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub fn poly_barrett_reduce(&mut self) {
+        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
+        hax_lib::fstar!("admit ()");
         // The semicolon and parentheses at the end of loop are a workaround
         // for the following bug https://github.com/hacspec/hax/issues/720
         for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -84,6 +87,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub(crate) fn subtract_reduce(&self, mut b: Self) -> Self {
+        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
+        hax_lib::fstar!("admit ()");
         for i in 0..VECTORS_IN_RING_ELEMENT {
             let coefficient_normal_form =
                 Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
@@ -95,6 +100,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub(crate) fn add_message_error_reduce(&self, message: &Self, mut result: Self) -> Self {
+        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
+        hax_lib::fstar!("admit ()");
         for i in 0..VECTORS_IN_RING_ELEMENT {
             let coefficient_normal_form =
                 Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
@@ -124,6 +131,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub(crate) fn add_error_reduce(&mut self, error: &Self) {
+        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
+        hax_lib::fstar!("admit ()");
         // The semicolon and parentheses at the end of loop are a workaround
         // for the following bug https://github.com/hacspec/hax/issues/720
         for j in 0..VECTORS_IN_RING_ELEMENT {
@@ -140,6 +149,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub(crate) fn add_standard_error_reduce(&mut self, error: &Self) {
+        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
+        hax_lib::fstar!("admit ()");
         // The semicolon and parentheses at the end of loop are a workaround
         // for the following bug https://github.com/hacspec/hax/issues/720
         for j in 0..VECTORS_IN_RING_ELEMENT {
@@ -195,6 +206,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     // ))))]
     #[inline(always)]
     pub(crate) fn ntt_multiply(&self, rhs: &Self) -> Self {
+        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
+        hax_lib::fstar!("admit ()");
         // hax_debug_debug_assert!(lhs
         //     .coefficients
         //     .into_iter()
@@ -203,14 +216,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         let mut out = PolynomialRingElement::ZERO();
 
         for i in 0..VECTORS_IN_RING_ELEMENT {
-            // hax_lib::assert!(64 + 4 * i < 128);
-            // hax_lib::assert!(64 + 4 * i + 1 < 128);
-            // hax_lib::assert!(64 + 4 * i + 2 < 128);
-            // hax_lib::assert!(64 + 4 * i + 3 < 128);
-            hax_lib::fstar!("assert(64 + 4 * v $i < 128);
-                assert(64 + 4 * v $i + 1 < 128);
-                assert(64 + 4 * v $i + 2 < 128);
-                assert(64 + 4 * v $i + 3 < 128)");
             out.coefficients[i] = Vector::ntt_multiply(
                 &self.coefficients[i],
                 &rhs.coefficients[i],

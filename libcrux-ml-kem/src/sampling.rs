@@ -1,5 +1,5 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, hax_utils::hax_debug_assert,
+    constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*,
     helper::cloop, polynomial::PolynomialRingElement, vector::Operations,
 };
 

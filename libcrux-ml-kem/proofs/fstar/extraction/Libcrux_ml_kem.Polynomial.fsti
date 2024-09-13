@@ -10,6 +10,7 @@ let _ =
   ()
 
 let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
+  let _:Prims.unit = assert_norm (pow2 16 == 65536) in
   let list =
     [
       (-1044s); (-758s); (-359s); (-1517s); 1493s; 1422s; 287s; 202s; (-171s); 622s; 1577s; 182s;
