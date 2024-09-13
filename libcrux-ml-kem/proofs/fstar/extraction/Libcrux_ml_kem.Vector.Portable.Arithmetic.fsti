@@ -73,7 +73,7 @@ val add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (requires
         forall i.
           i < 16 ==>
-          Spec.Utils.is_intb (pow2 15)
+          Spec.Utils.is_intb (pow2 15 - 1)
             (v (Seq.index lhs.f_elements i) + v (Seq.index rhs.f_elements i)))
       (ensures
         fun result ->
@@ -125,7 +125,8 @@ val montgomery_multiply_by_constant
 val multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       (requires
-        forall i. i < 16 ==> Spec.Utils.is_intb (pow2 31) (v (Seq.index vec.f_elements i) * v c))
+        forall i. i < 16 ==> Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index vec.f_elements i) * v c)
+      )
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
@@ -146,7 +147,7 @@ val sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (requires
         forall i.
           i < 16 ==>
-          Spec.Utils.is_intb (pow2 15)
+          Spec.Utils.is_intb (pow2 15 - 1)
             (v (Seq.index lhs.f_elements i) - v (Seq.index rhs.f_elements i)))
       (ensures
         fun result ->

@@ -22,6 +22,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
     serialized
 }
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
     serialized: [u8; SHARED_SECRET_SIZE],
 ) -> PolynomialRingElement<Vector> {

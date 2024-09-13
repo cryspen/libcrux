@@ -30,21 +30,21 @@ pub trait Operations: Copy + Clone + Repr {
 
     // Basic arithmetic
     #[requires(fstar!("forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15) (v (Seq.index (f_repr ${lhs}) i) + v (Seq.index (f_repr ${rhs}) i))"))]
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (f_repr ${lhs}) i) + v (Seq.index (f_repr ${rhs}) i))"))]
     #[ensures(|result| fstar!("forall i. i < 16 ==> 
         (v (Seq.index (f_repr ${result}) i) == 
          v (Seq.index (f_repr ${lhs}) i) + v (Seq.index (f_repr ${rhs}) i))"))]
     fn add(lhs: Self, rhs: &Self) -> Self;
 
     #[requires(fstar!("forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15) (v (Seq.index (f_repr ${lhs}) i) - v (Seq.index (f_repr ${rhs}) i))"))]
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (f_repr ${lhs}) i) - v (Seq.index (f_repr ${rhs}) i))"))]
     #[ensures(|result| fstar!("forall i. i < 16 ==> 
         (v (Seq.index (f_repr ${result}) i) == 
          v (Seq.index (f_repr ${lhs}) i) - v (Seq.index (f_repr ${rhs}) i))"))]
     fn sub(lhs: Self, rhs: &Self) -> Self;
 
     #[requires(fstar!("forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 31) (v (Seq.index (f_repr ${vec}) i) * v c)"))]
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (f_repr ${vec}) i) * v c)"))]
     #[ensures(|result| fstar!("forall i. i < 16 ==> 
         (v (Seq.index (f_repr ${result}) i) == 
          v (Seq.index (f_repr ${vec}) i) * v c)"))]

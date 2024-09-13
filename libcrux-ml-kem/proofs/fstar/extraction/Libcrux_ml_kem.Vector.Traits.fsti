@@ -47,7 +47,7 @@ class t_Operations (v_Self: Type0) = {
       Type0
         { (forall i.
               i < 16 ==>
-              Spec.Utils.is_intb (pow2 15)
+              Spec.Utils.is_intb (pow2 15 - 1)
                 (v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i))) ==>
           pred };
   f_add_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
@@ -65,7 +65,7 @@ class t_Operations (v_Self: Type0) = {
       Type0
         { (forall i.
               i < 16 ==>
-              Spec.Utils.is_intb (pow2 15)
+              Spec.Utils.is_intb (pow2 15 - 1)
                 (v (Seq.index (f_repr lhs) i) - v (Seq.index (f_repr rhs) i))) ==>
           pred };
   f_sub_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
@@ -81,7 +81,8 @@ class t_Operations (v_Self: Type0) = {
   f_multiply_by_constant_pre:vec: v_Self -> c: i16
     -> pred:
       Type0
-        { (forall i. i < 16 ==> Spec.Utils.is_intb (pow2 31) (v (Seq.index (f_repr vec) i) * v c)) ==>
+        { (forall i.
+              i < 16 ==> Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (f_repr vec) i) * v c)) ==>
           pred };
   f_multiply_by_constant_post:vec: v_Self -> c: i16 -> result: v_Self
     -> pred:

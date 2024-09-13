@@ -593,6 +593,8 @@ let deserialize_then_decompress_5_
   in
   re
 
+#push-options "--admit_smt_queries true"
+
 let deserialize_then_decompress_message
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -644,6 +646,8 @@ let deserialize_then_decompress_message
           re)
   in
   re
+
+#pop-options
 
 let deserialize_then_decompress_ring_element_u
       (v_COMPRESSION_FACTOR: usize)

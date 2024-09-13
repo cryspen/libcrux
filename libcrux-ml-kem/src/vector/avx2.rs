@@ -70,7 +70,7 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(fstar!("forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15) (v (Seq.index (impl.f_repr ${lhs}) i) + v (Seq.index (impl.f_repr ${rhs}) i))"))]
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${lhs}) i) + v (Seq.index (impl.f_repr ${rhs}) i))"))]
     #[ensures(|result| fstar!("forall i. i < 16 ==> 
         (v (Seq.index (impl.f_repr ${result}) i) == 
          v (Seq.index (impl.f_repr ${lhs}) i) + v (Seq.index (impl.f_repr ${rhs}) i))"))]
@@ -81,7 +81,7 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(fstar!("forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15) (v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"))]
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"))]
     #[ensures(|result| fstar!("forall i. i < 16 ==> 
         (v (Seq.index (impl.f_repr ${result}) i) == 
          v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"))]
@@ -92,7 +92,7 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(fstar!("forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 31) (v (Seq.index (impl.f_repr ${vec}) i) * v c)"))]
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${vec}) i) * v c)"))]
     #[ensures(|result| fstar!("forall i. i < 16 ==> 
         (v (Seq.index (impl.f_repr ${result}) i) == 
          v (Seq.index (impl.f_repr ${vec}) i) * v c)"))]

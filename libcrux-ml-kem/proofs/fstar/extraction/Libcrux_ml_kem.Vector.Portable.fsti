@@ -75,7 +75,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         ->
         forall i.
           i < 16 ==>
-          Spec.Utils.is_intb (pow2 15)
+          Spec.Utils.is_intb (pow2 15 - 1)
             (v (Seq.index lhs.f_elements i) + v (Seq.index rhs.f_elements i)));
     f_add_post
     =
@@ -103,7 +103,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         ->
         forall i.
           i < 16 ==>
-          Spec.Utils.is_intb (pow2 15)
+          Spec.Utils.is_intb (pow2 15 - 1)
             (v (Seq.index lhs.f_elements i) - v (Seq.index rhs.f_elements i)));
     f_sub_post
     =
@@ -126,7 +126,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_multiply_by_constant_pre
     =
     (fun (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
-        forall i. i < 16 ==> Spec.Utils.is_intb (pow2 31) (v (Seq.index vec.f_elements i) * v c));
+        forall i. i < 16 ==> Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index vec.f_elements i) * v c)
+    );
     f_multiply_by_constant_post
     =
     (fun
@@ -475,6 +476,9 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_serialize_1_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        let _:Prims.unit =
+          assert (forall i. Rust_primitives.bounded (Seq.index a.f_elements i) 1)
+        in
         let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_lemma a in
         Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_ a);
     f_deserialize_1_pre = (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. sz 2);
@@ -502,6 +506,9 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_serialize_4_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        let _:Prims.unit =
+          assert (forall i. Rust_primitives.bounded (Seq.index a.f_elements i) 4)
+        in
         let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_lemma a in
         Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_ a);
     f_deserialize_4_pre = (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. sz 8);

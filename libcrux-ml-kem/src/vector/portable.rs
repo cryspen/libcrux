@@ -42,7 +42,7 @@ impl Operations for PortableVector {
     }
 
     #[requires(fstar!("forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15) (v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"))]
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"))]
     #[ensures(|result| fstar!("forall i. i < 16 ==> 
         (v (Seq.index ${result}.f_elements i) == 
          v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"))]
@@ -51,7 +51,7 @@ impl Operations for PortableVector {
     }
 
     #[requires(fstar!("forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15) (v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"))]
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"))]
     #[ensures(|result| fstar!("forall i. i < 16 ==> 
         (v (Seq.index ${result}.f_elements i) == 
          v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"))]
@@ -60,7 +60,7 @@ impl Operations for PortableVector {
     }
 
     #[requires(fstar!("forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 31) (v (Seq.index ${vec}.f_elements i) * v c)"))]
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${vec}.f_elements i) * v c)"))]
     #[ensures(|result| fstar!("forall i. i < 16 ==> 
         (v (Seq.index ${result}.f_elements i) == 
         v (Seq.index ${vec}.f_elements i) * v c)"))]
@@ -155,6 +155,7 @@ impl Operations for PortableVector {
     #[requires(fstar!("Spec.MLKEM.serialize_pre 1 (impl.f_repr $a)"))]
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 1 (impl.f_repr $a) $out"))]
     fn serialize_1(a: Self) -> [u8; 2] {
+        hax_lib::fstar!("assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 1)");
         hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_lemma $a");
         serialize_1(a)
     }
@@ -169,6 +170,7 @@ impl Operations for PortableVector {
     #[requires(fstar!("Spec.MLKEM.serialize_pre 4 (impl.f_repr $a)"))]
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $a) $out"))]
     fn serialize_4(a: Self) -> [u8; 8] {
+        hax_lib::fstar!("assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 4)");
         hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_lemma $a");
         serialize_4(a)
     }

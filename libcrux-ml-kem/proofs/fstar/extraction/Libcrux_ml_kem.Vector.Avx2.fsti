@@ -77,7 +77,7 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
         forall i.
           i < 16 ==>
-          Spec.Utils.is_intb (pow2 15)
+          Spec.Utils.is_intb (pow2 15 - 1)
             (v (Seq.index (impl.f_repr lhs) i) + v (Seq.index (impl.f_repr rhs) i)));
     f_add_post
     =
@@ -97,7 +97,7 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
         forall i.
           i < 16 ==>
-          Spec.Utils.is_intb (pow2 15)
+          Spec.Utils.is_intb (pow2 15 - 1)
             (v (Seq.index (impl.f_repr lhs) i) - v (Seq.index (impl.f_repr rhs) i)));
     f_sub_post
     =
@@ -115,7 +115,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_multiply_by_constant_pre
     =
     (fun (vec: t_SIMD256Vector) (c: i16) ->
-        forall i. i < 16 ==> Spec.Utils.is_intb (pow2 31) (v (Seq.index (impl.f_repr vec) i) * v c));
+        forall i.
+          i < 16 ==> Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr vec) i) * v c));
     f_multiply_by_constant_post
     =
     (fun (vec: t_SIMD256Vector) (c: i16) (result: t_SIMD256Vector) ->

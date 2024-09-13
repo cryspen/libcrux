@@ -42,7 +42,7 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(fstar!("forall i. i < 16 ==> 
-    Spec.Utils.is_intb (pow2 15) (v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"))]
+    Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"))]
 #[hax_lib::ensures(|result| fstar!("forall i. i < 16 ==> 
     (v (Seq.index ${result}.f_elements i) == 
      v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"))]
@@ -55,13 +55,14 @@ pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
               (forall j. j >= v i ==> (Seq.index ${lhs}.f_elements j) == (Seq.index ${_lhs0}.f_elements j))") });
         lhs.elements[i] += rhs.elements[i];
     }
-    hax_lib::fstar!("Seq.lemma_eq_intro ${lhs}.f_elements (Spec.Utils.map2 (+!) ${_lhs0}.f_elements ${rhs}.f_elements)");
+    hax_lib::fstar!("assert (forall i. v (Seq.index ${lhs}.f_elements i) ==
+    			          v (Seq.index ${_lhs0}.f_elements i) + v (Seq.index ${rhs}.f_elements i))");
     lhs
 }
 
 #[inline(always)]
 #[hax_lib::requires(fstar!("forall i. i < 16 ==> 
-    Spec.Utils.is_intb (pow2 15) (v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"))]
+    Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"))]
 #[hax_lib::ensures(|result| fstar!("forall i. i < 16 ==> 
     (v (Seq.index ${result}.f_elements i) == 
      v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"))]
@@ -74,13 +75,14 @@ pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
               (forall j. j >= v i ==> (Seq.index ${lhs}.f_elements j) == (Seq.index ${_lhs0}.f_elements j))") });
         lhs.elements[i] -= rhs.elements[i];
     }
-    hax_lib::fstar!("Seq.lemma_eq_intro ${lhs}.f_elements (Spec.Utils.map2 (-!) ${_lhs0}.f_elements ${rhs}.f_elements)");
+    hax_lib::fstar!("assert (forall i. v (Seq.index ${lhs}.f_elements i) ==
+    			          v (Seq.index ${_lhs0}.f_elements i) - v (Seq.index ${rhs}.f_elements i))");
     lhs
 }
 
 #[inline(always)]
 #[hax_lib::requires(fstar!("forall i. i < 16 ==> 
-    Spec.Utils.is_intb (pow2 31) (v (Seq.index ${vec}.f_elements i) * v c)"))]
+    Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${vec}.f_elements i) * v c)"))]
 #[hax_lib::ensures(|result| fstar!("forall i. i < 16 ==> 
     (v (Seq.index ${result}.f_elements i) == 
      v (Seq.index ${vec}.f_elements i) * v c)"))]
@@ -93,7 +95,8 @@ pub fn multiply_by_constant(mut vec: PortableVector, c: i16) -> PortableVector {
               (forall j. j >= v i ==> (Seq.index ${vec}.f_elements j) == (Seq.index ${_vec0}.f_elements j))") });
         vec.elements[i] *= c;
     }
-    hax_lib::fstar!("Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array (fun x -> x *! c) ${_vec0}.f_elements)");
+    hax_lib::fstar!("assert (forall i. v (Seq.index ${vec}.f_elements i) ==
+    			          v (Seq.index ${_vec0}.f_elements i) * v c)");
     vec
 }
 

@@ -208,7 +208,9 @@ let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           lhs)
   in
   let _:Prims.unit =
-    Seq.lemma_eq_intro lhs.f_elements (Spec.Utils.map2 ( +! ) v__lhs0.f_elements rhs.f_elements)
+    assert (forall i.
+          v (Seq.index lhs.f_elements i) ==
+          v (Seq.index v__lhs0.f_elements i) + v (Seq.index rhs.f_elements i))
   in
   lhs
 
@@ -430,7 +432,7 @@ let multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Port
           vec)
   in
   let _:Prims.unit =
-    Seq.lemma_eq_intro vec.f_elements (Spec.Utils.map_array (fun x -> x *! c) v__vec0.f_elements)
+    assert (forall i. v (Seq.index vec.f_elements i) == v (Seq.index v__vec0.f_elements i) * v c)
   in
   vec
 
@@ -510,6 +512,8 @@ let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           lhs)
   in
   let _:Prims.unit =
-    Seq.lemma_eq_intro lhs.f_elements (Spec.Utils.map2 ( -! ) v__lhs0.f_elements rhs.f_elements)
+    assert (forall i.
+          v (Seq.index lhs.f_elements i) ==
+          v (Seq.index v__lhs0.f_elements i) - v (Seq.index rhs.f_elements i))
   in
   lhs
