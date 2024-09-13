@@ -110,18 +110,50 @@ fn ntt_at_layer_0(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEME
 #[inline(always)]
 fn ntt_at_layer_1(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     *zeta_i += 1;
-
-    for round in 0..re.len() {
-        re[round] = simd_unit_ntt_at_layer_1(
+    for round in (0..re.len()).step_by(2) {
+        let (a, b) = butterfly_4(
             re[round],
+            re[round + 1],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 2],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 3],
         );
+        re[round] = a;
+        re[round + 1] = b;
 
-        *zeta_i += 2;
+        *zeta_i += 4;
     }
 
     *zeta_i -= 1;
+}
+
+#[inline(always)]
+fn butterfly_4(
+    a: Vec256,
+    b: Vec256,
+    zeta_a0: i32,
+    zeta_a1: i32,
+    zeta_b0: i32,
+    zeta_b1: i32,
+) -> (Vec256, Vec256) {
+    let lo_i64s = mm256_unpacklo_epi64(a, b);
+    let hi_i64s = mm256_unpackhi_epi64(a, b);
+
+    let zetas = mm256_set_epi32(
+        zeta_b1, zeta_b1, zeta_a1, zeta_a1, zeta_b0, zeta_b0, zeta_a0, zeta_a0,
+    );
+    let t = arithmetic::montgomery_multiply(hi_i64s, zetas);
+
+    let res0 = arithmetic::add(lo_i64s, t);
+    let res1 = arithmetic::subtract(lo_i64s, t);
+
+    // Results are shuffled across the two SIMD registers.
+    // We need to bring them in the right order.
+    let sout0 = mm256_unpacklo_epi64(res0, res1);
+    let sout1 = mm256_unpackhi_epi64(res0, res1);
+
+    (sout0, sout1)
 }
 
 // Compute (a,b) ↦ (a + ζb, a - ζb).
