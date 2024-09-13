@@ -47,7 +47,7 @@ let lemma_bitand_properties #t (x:int_t t) :
   Lemma ((x &. ones) == x /\ (x &. mk_int #t 0) == mk_int #t 0 /\ (ones #t &. x) == x /\ (mk_int #t 0 &. x) == mk_int #t 0) = 
     logand_lemma #t x x
 
-#push-options "--z3rlimit 200"
+#push-options "--z3rlimit 250"
 let flatten #t #n
   (#m: usize {range (v n * v m) usize_inttype})
   (x: t_Array (t_Array t m) n)
@@ -112,10 +112,22 @@ let is_i32b_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i3
 
 let nat_div_ceil (x:nat) (y:pos) : nat = if (x % y = 0) then x/y else (x/y)+1
 
+#push-options "--z3rlimit 200"
 val lemma_mul_intb (b1 b2: nat) (n1 n2: int) 
     : Lemma (requires (is_intb b1 n1 /\ is_intb b2 n2))
       (ensures (is_intb (b1 * b2) (n1 * n2)))
-let lemma_mul_intb (b1 b2: nat) (n1 n2: int) = () 
+let lemma_mul_intb (b1 b2: nat) (n1 n2: int) =
+  if n1 = 0 || n2 = 0
+  then ()
+  else 
+    let open FStar.Math.Lemmas in
+    lemma_abs_bound n1 b1;
+    lemma_abs_bound n2 b2;
+    lemma_abs_mul n1 n2;
+    lemma_mult_le_left (abs n1) (abs n2) b2;
+    lemma_mult_le_right b2 (abs n1) b1;
+    lemma_abs_bound (n1 * n2) (b1 * b2)
+#pop-options
 
 val lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) 
     : Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 * b2 < pow2 31))
