@@ -42,7 +42,6 @@ use crate::{
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, const N: usize>(
     randomness: [[u8; N]; K],
     sampled_coefficients: &mut [usize; K],
@@ -160,10 +159,12 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
 //         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 2
 // ))))]
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::options("--z3rlimit 800")]
 fn sample_from_binomial_distribution_2<Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
+    hax_lib::fstar!("assert (v (sz 2 *! sz 64) == 128);
+        assert (Seq.length $randomness == 128)");
     let mut sampled_i16s = [0i16; 256];
 
     cloop! {
@@ -175,12 +176,21 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
 
             let even_bits = random_bits_as_u32 & 0x55555555;
             let odd_bits = (random_bits_as_u32 >> 1) & 0x55555555;
+            hax_lib::fstar!("logand_lemma $random_bits_as_u32 1431655765ul;
+                logand_lemma ($random_bits_as_u32 >>! 1l) 1431655765ul");
             let coin_toss_outcomes = even_bits + odd_bits;
 
             cloop! {
                 for outcome_set in (0..u32::BITS).step_by(4) {
                     let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as i16;
                     let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i16;
+                    hax_lib::fstar!("logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) 3ul;
+                        logand_lemma ($coin_toss_outcomes >>! ($outcome_set +! 2ul <: u32) <: u32) 3ul;
+                        assert (v $outcome_1 >= 0 /\\ v $outcome_1 <= 3);
+                        assert (v $outcome_2 >= 0 /\\ v $outcome_2 <= 3);
+                        assert (v $chunk_number <= 31);
+                        assert (v (sz 8 *! $chunk_number <: usize) <= 248);
+                        assert (v (cast ($outcome_set >>! 2l <: u32) <: usize) <= 7)");
 
                     let offset = (outcome_set >> 2) as usize;
                     sampled_i16s[8 * chunk_number + offset] = outcome_1 - outcome_2;
