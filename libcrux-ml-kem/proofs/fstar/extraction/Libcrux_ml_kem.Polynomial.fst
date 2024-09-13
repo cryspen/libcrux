@@ -199,6 +199,7 @@ let impl_1__add_to_ring_element
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self rhs: t_PolynomialRingElement v_Vector)
      =
+  let _:Prims.unit = admit () in
   let self:t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (Core.Slice.impl__len #v_Vector (self.f_coefficients <: t_Slice v_Vector) <: usize)

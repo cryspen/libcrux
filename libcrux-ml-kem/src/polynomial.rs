@@ -65,6 +65,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     /// sum of their constituent coefficients.
     #[inline(always)]
     pub(crate) fn add_to_ring_element<const K: usize>(&mut self, rhs: &Self) {
+        hax_lib::fstar!("admit ()");
         // The semicolon and parentheses at the end of loop are a workaround
         // for the following bug https://github.com/hacspec/hax/issues/720
         for i in 0..self.coefficients.len() {
