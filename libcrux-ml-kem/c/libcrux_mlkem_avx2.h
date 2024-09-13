@@ -8,7 +8,7 @@
  * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
  * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
  * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
- * Libcrux: e22fa84f63313933e959470afcad633146b9b207
+ * Libcrux: 1735cba2e140f5092bd1f11f902c535cb93a35dc
  */
 
 #ifndef __libcrux_mlkem_avx2_H
@@ -77,7 +77,7 @@ __m256i libcrux_ml_kem_vector_avx2_arithmetic_multiply_by_constant(
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)#2}
 */
-__m256i libcrux_ml_kem_vector_avx2_multiply_by_constant_09(__m256i v,
+__m256i libcrux_ml_kem_vector_avx2_multiply_by_constant_09(__m256i vec,
                                                            int16_t c);
 
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_bitwise_and_with_constant(
