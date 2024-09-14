@@ -63,7 +63,16 @@ val mm256_madd_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun
 
 val mm256_mul_epu32 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val mm256_mulhi_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+val mm256_mulhi_epi16 (lhs rhs: t_Vec256)
+    : Prims.Pure t_Vec256
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec256 = result in
+          vec256_as_i16x16 result ==
+          Spec.Utils.map2 (fun x y -> cast (((cast x <: i32) *. (cast y <: i32)) >>! 16l) <: i16)
+            (vec256_as_i16x16 lhs)
+            (vec256_as_i16x16 rhs))
 
 unfold let mm256_mullo_epi16 = BitVec.Intrinsics.mm256_mullo_epi16
      let lemma_mm256_mullo_epi16 v1 v2 :
@@ -186,13 +195,35 @@ val mm_loadu_si128 (input: t_Slice u8) : Prims.Pure t_Vec128 Prims.l_True (fun _
 
 unfold let mm_movemask_epi8 = BitVec.Intrinsics.mm_movemask_epi8
 
-val mm_mulhi_epi16 (lhs rhs: t_Vec128) : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
+val mm_mulhi_epi16 (lhs rhs: t_Vec128)
+    : Prims.Pure t_Vec128
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec128 = result in
+          vec128_as_i16x8 result ==
+          Spec.Utils.map2 (fun x y -> cast (((cast x <: i32) *. (cast y <: i32)) >>! 16l) <: i16)
+            (vec128_as_i16x8 lhs)
+            (vec128_as_i16x8 rhs))
 
-val mm_mullo_epi16 (lhs rhs: t_Vec128) : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
+val mm_mullo_epi16 (lhs rhs: t_Vec128)
+    : Prims.Pure t_Vec128
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec128 = result in
+          vec128_as_i16x8 result ==
+          Spec.Utils.map2 mul_mod (vec128_as_i16x8 lhs) (vec128_as_i16x8 rhs))
 
 unfold let mm_packs_epi16 = BitVec.Intrinsics.mm_packs_epi16
 
-val mm_set1_epi16 (constant: i16) : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
+val mm_set1_epi16 (constant: i16)
+    : Prims.Pure t_Vec128
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec128 = result in
+          vec128_as_i16x8 result == Spec.Utils.create (sz 8) constant)
 
 val mm_set_epi8
       (byte15 byte14 byte13 byte12 byte11 byte10 byte9 byte8 byte7 byte6 byte5 byte4 byte3 byte2 byte1 byte0:
@@ -214,4 +245,11 @@ val mm_storeu_si128 (output: t_Slice i16) (vector: t_Vec128)
           (Core.Slice.impl__len #i16 output_future <: usize) =.
           (Core.Slice.impl__len #i16 output <: usize))
 
-val mm_sub_epi16 (lhs rhs: t_Vec128) : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
+val mm_sub_epi16 (lhs rhs: t_Vec128)
+    : Prims.Pure t_Vec128
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec128 = result in
+          vec128_as_i16x8 result ==
+          Spec.Utils.map2 ( -. ) (vec128_as_i16x8 lhs) (vec128_as_i16x8 rhs))

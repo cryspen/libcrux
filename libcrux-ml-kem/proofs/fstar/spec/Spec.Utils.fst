@@ -265,6 +265,7 @@ val lemma_mont_mul_red_i16 (x y:i16): Lemma
           let result:i16 = mont_mul_red_i16 x y in
           is_i16b 3329 result /\
           v result % 3329 == (v x * v y * 169) % 3329))
+          [SMTPat (mont_mul_red_i16 x y)]
 let lemma_mont_mul_red_i16 (x y:i16) = 
   let vlow = x *. y in
   let prod = v x * v y in
@@ -332,4 +333,32 @@ let lemma_mont_mul_red_i16 (x y:i16) =
       ( == ) { Math.Lemmas.lemma_mod_sub ((prod) * 169) 3329 (v k * 169)}
       ((prod) * 169) % 3329; 
     }
+
+
+let barrett_red (x:i16) = 
+  let t1 = cast (((cast x <: i32) *. (cast 20159s <: i32)) >>! 16l) <: i16 in
+  let t2 = t1 +. 512s in
+  let q = t2 >>! 10l in
+  let qm = q *. 3329s in
+  x -. qm
+
+let lemma_barrett_red (x:i16) : Lemma
+   (requires (Spec.Utils.is_i16b 28296 x))
+   (ensures (let result = barrett_red x in
+             Spec.Utils.is_i16b 3328 result /\
+             v result % 3329 == v x % 3329)) 
+   [SMTPat (barrett_red x)]
+   = admit()
+
+let cond_sub (x:i16) =
+  let xm = x -. 3329s in
+  let mask = xm >>! 15l in
+  let mm = mask &. 3329s in
+  xm +. mm
+
+let lemma_cond_sub x:
+  Lemma (let r = cond_sub x in
+         if x >=. 3329s then r == x -! 3329s else r == x)
+        [SMTPat (cond_sub x)]
+  = admit()
 
