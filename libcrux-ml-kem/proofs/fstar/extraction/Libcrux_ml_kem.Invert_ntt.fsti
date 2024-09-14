@@ -14,7 +14,12 @@ val inv_ntt_layer_int_vec_step_reduce
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (a b: v_Vector)
       (zeta_r: i16)
-    : Prims.Pure (v_Vector & v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (v_Vector & v_Vector)
+      (requires
+        Spec.Utils.is_i16b 3328 zeta_r /\
+        Spec.Utils.is_i16b_array 28296
+          (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Libcrux_ml_kem.Vector.Traits.f_add a b)))
+      (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer_1_
       (#v_Vector: Type0)
@@ -23,7 +28,7 @@ val invert_ntt_at_layer_1_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires v zeta_i >= 64 && v zeta_i <= 128)
       (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer_2_
@@ -33,7 +38,7 @@ val invert_ntt_at_layer_2_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires v zeta_i >= 32 && v zeta_i <= 128)
       (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer_3_
@@ -43,7 +48,7 @@ val invert_ntt_at_layer_3_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires v zeta_i >= 16 && v zeta_i <= 128)
       (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer_4_plus
@@ -53,7 +58,8 @@ val invert_ntt_at_layer_4_plus
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (layer: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires
+        v layer >= 4 /\ v layer <= 7 /\ v zeta_i - v (sz 128 >>! layer) >= 0 /\ v zeta_i <= 128)
       (fun _ -> Prims.l_True)
 
 val invert_ntt_montgomery
