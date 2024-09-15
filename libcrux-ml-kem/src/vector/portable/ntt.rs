@@ -3,6 +3,10 @@ use super::vector_type::*;
 
 #[inline(always)]
 #[hax_lib::requires(fstar!("v i < 16 /\\ v j < 16 /\\ Spec.Utils.is_i16b 1664 $zeta"))]
+#[hax_lib::ensures(|result| fstar!("forall b. (Spec.Utils.is_i16b b ${vec}.f_elements.[i] /\\
+                                               Spec.Utils.is_i16b b ${vec}.f_elements.[j]) ==>
+                                              (Spec.Utils.is_i16b (b+3328+1665) ${vec}_future.f_elements.[i] /\\
+                                               Spec.Utils.is_i16b (b+3328+1665) ${vec}_future.f_elements.[j])"))]
 pub(crate) fn ntt_step(vec: &mut PortableVector, zeta: i16, i: usize, j: usize) {
     let t = montgomery_multiply_fe_by_fer(vec.elements[j], zeta);
     vec.elements[j] = vec.elements[i] - t;
@@ -10,6 +14,7 @@ pub(crate) fn ntt_step(vec: &mut PortableVector, zeta: i16, i: usize, j: usize) 
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 100")]
 #[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
 pub(crate) fn ntt_layer_1_step(
     mut vec: PortableVector,
@@ -58,7 +63,9 @@ pub(crate) fn ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> PortableVe
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!("v i < 16 /\\ v j < 16 /\\ Spec.Utils.is_i16b 1664 $zeta"))]
+#[hax_lib::requires(fstar!("v i < 16 /\\ v j < 16 /\\ Spec.Utils.is_i16b 1664 $zeta /\\
+                        Spec.Utils.is_i16b_array (3328 + 1665) ${vec}.f_elements"))]
+#[hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array (3328 + 1665) ${vec}_future.f_elements"))]
 pub(crate) fn inv_ntt_step(vec: &mut PortableVector, zeta: i16, i: usize, j: usize) {
     let a_minus_b = vec.elements[j] - vec.elements[i];
     vec.elements[i] = barrett_reduce_element(vec.elements[i] + vec.elements[j]);
@@ -66,7 +73,11 @@ pub(crate) fn inv_ntt_step(vec: &mut PortableVector, zeta: i16, i: usize, j: usi
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
+#[hax_lib::fstar::options("--z3rlimit 100")]
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                            Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+                            Spec.Utils.is_i16b_array (3328 + 1665) ${vec}.f_elements"))]
+#[hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array (3328 + 1665) ${result}.f_elements"))]
 pub(crate) fn inv_ntt_layer_1_step(
     mut vec: PortableVector,
     zeta0: i16,
@@ -86,7 +97,10 @@ pub(crate) fn inv_ntt_layer_1_step(
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
+#[hax_lib::fstar::options("--z3rlimit 100")]
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                            Spec.Utils.is_i16b_array (3328 + 1665) ${vec}.f_elements"))]
+#[hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array (3328 + 1665) ${result}.f_elements"))]
 pub(crate) fn inv_ntt_layer_2_step(
     mut vec: PortableVector,
     zeta0: i16,
@@ -104,7 +118,10 @@ pub(crate) fn inv_ntt_layer_2_step(
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
+#[hax_lib::fstar::options("--z3rlimit 100")]
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 zeta /\\
+                            Spec.Utils.is_i16b_array (3328 + 1665) ${vec}.f_elements"))]
+#[hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array (3328 + 1665) ${result}.f_elements"))]
 pub(crate) fn inv_ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> PortableVector {
     inv_ntt_step(&mut vec, zeta, 0, 8);
     inv_ntt_step(&mut vec, zeta, 1, 9);

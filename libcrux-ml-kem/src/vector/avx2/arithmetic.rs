@@ -153,8 +153,8 @@ pub(crate) fn barrett_reduce(vector: Vec256) -> Vec256 {
 
 #[inline(always)]
 #[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 100"))]
-#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 constant")))]
-#[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array (3328 + 1665) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\\
+#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 constant")))]
+#[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\\
                 (forall i. i < 16 ==> v (get_lane $result i) % 3329 == 
                                       ((v (get_lane $vector i) * v constant * 169) % 3329))")))]
 pub(crate) fn montgomery_multiply_by_constant(vector: Vec256, constant: i16) -> Vec256 {
@@ -188,18 +188,17 @@ pub(crate) fn montgomery_multiply_by_constant(vector: Vec256, constant: i16) -> 
                     assert ((cast 3329s <: i32) == 3329l);
                     assert (forall i. get_lane $result i == (get_lane $value_high i) -. (get_lane $k_times_modulus i));
                     assert (forall i. get_lane $result i == Spec.Utils.mont_mul_red_i16 (get_lane $vector i) $constant);
-                    assert (forall i. Spec.Utils.is_i16b 3329 (get_lane $result i));
-                    assert (forall i. Spec.Utils.is_i16b (3328+1665) (get_lane $result i));
-                    assert (forall (i:nat). i < 16 ==> Spec.Utils.is_i16b (3328+1665) (get_lane $result i));
-                    assert (Spec.Utils.is_i16b_array (3328+1665) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result));
+                    assert (forall i. Spec.Utils.is_i16b 3328 (get_lane $result i));
+                    assert (forall (i:nat). i < 16 ==> Spec.Utils.is_i16b 3328 (get_lane $result i));
+                    assert (Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result));
                     assert (forall i. v (get_lane $result i) % 3329 == ((v (get_lane $vector i) * v $constant * 169) % 3329))");
     result
 }
 
 #[inline(always)]
 #[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 100"))]
-#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $constants))")))]
-#[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array (3328 + 1665) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\\
+#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $constants))")))]
+#[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\\
                 (forall i. i < 16 ==> v (get_lane $result i) % 3329 == 
                                       ((v (get_lane $vec i) * v (get_lane $constants i) * 169) % 3329))")))]
 pub(crate) fn montgomery_multiply_by_constants(vec: Vec256, constants: Vec256) -> Vec256 {
@@ -235,10 +234,9 @@ pub(crate) fn montgomery_multiply_by_constants(vec: Vec256, constants: Vec256) -
                     assert ((cast 3329s <: i32) == 3329l);
                     assert (forall i. get_lane $result i == (get_lane $value_high i) -. (get_lane $k_times_modulus i));
                     assert (forall i. get_lane $result i == Spec.Utils.mont_mul_red_i16 (get_lane $vec i) (get_lane $constants i));
-                    assert (forall i. Spec.Utils.is_i16b 3329 (get_lane $result i));
-                    assert (forall i. Spec.Utils.is_i16b (3328+1665) (get_lane $result i));
-                    assert (forall (i:nat). i < 16 ==> Spec.Utils.is_i16b (3328+1665) (get_lane $result i));
-                    assert (Spec.Utils.is_i16b_array (3328+1665) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result));
+                    assert (forall i. Spec.Utils.is_i16b 3328 (get_lane $result i));
+                    assert (forall (i:nat). i < 16 ==> Spec.Utils.is_i16b 3328 (get_lane $result i));
+                    assert (Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result));
                     assert (forall i. v (get_lane $result i) % 3329 == ((v (get_lane $vec i) * v (get_lane $constants i) * 169) % 3329))");   
     result
 }
@@ -247,7 +245,7 @@ pub(crate) fn montgomery_multiply_by_constants(vec: Vec256, constants: Vec256) -
 #[hax_lib::fstar::verification_status(panic_free)]
 #[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b_array (3328 * pow2 16) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vec))")))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array (3328 + 1665) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\\
-                (Spec.Utils.is_i16b_array (3328 * 3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vec) ==>
+                (Spec.Utils.is_i16b_array (3328 * pow2 15) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vec) ==>
                  Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result)) /\\
                 (forall i. i < 16 ==> v (get_lane $result i) % 3329 == 
                                       ((v (get_lane $vec i) * 169) % 3329))")))]
@@ -269,8 +267,8 @@ pub(crate) fn montgomery_reduce_i32s(vec: Vec256) -> Vec256 {
 
 #[inline(always)]
 #[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 100"))]
-#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 $constants))")))]
-#[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array (3328 + 1665) (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 ${result}) /\\
+#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 $constants))")))]
+#[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 ${result}) /\\
                 (forall i. i < 8 ==> v (get_lane128 $result i) % 3329 == 
                                       ((v (get_lane128 $vec i) * v (get_lane128 $constants i) * 169) % 3329))")))]
 pub(crate) fn montgomery_multiply_m128i_by_constants(vec: Vec128, constants: Vec128) -> Vec128 {
@@ -307,10 +305,9 @@ pub(crate) fn montgomery_multiply_m128i_by_constants(vec: Vec128, constants: Vec
                     assert ((cast 3329s <: i32) == 3329l);
                     assert (forall i. get_lane128 $result i == (get_lane128 $value_high i) -. (get_lane128 $k_times_modulus i));
                     assert (forall i. get_lane128 $result i == Spec.Utils.mont_mul_red_i16 (get_lane128 $vec i) (get_lane128 $constants i));
-                    assert (forall i. Spec.Utils.is_i16b 3329 (get_lane128 $result i));
-                    assert (forall i. Spec.Utils.is_i16b (3328+1665) (get_lane128 $result i));
-                    assert (forall (i:nat). i < 8 ==> Spec.Utils.is_i16b (3328+1665) (get_lane128 $result i));
-                    assert (Spec.Utils.is_i16b_array (3328+1665) (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 $result));
+                    assert (forall i. Spec.Utils.is_i16b 3328 (get_lane128 $result i));
+                    assert (forall (i:nat). i < 8 ==> Spec.Utils.is_i16b 3328 (get_lane128 $result i));
+                    assert (Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 $result));
                     assert (forall i. v (get_lane128 $result i) % 3329 == ((v (get_lane128 $vec i) * v (get_lane128 $constants i) * 169) % 3329))");   
     
     result

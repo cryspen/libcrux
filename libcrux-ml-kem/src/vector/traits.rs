@@ -68,7 +68,7 @@ pub trait Operations: Copy + Clone + Repr {
     #[requires(fstar!("Spec.Utils.is_i16b_array 28296 (f_repr $vector)"))]
     fn barrett_reduce(vector: Self) -> Self;
 
-    #[requires(fstar!("Spec.Utils.is_i16b 3328 c"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 c"))]
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
 
     // Compression
@@ -185,7 +185,7 @@ pub trait Operations: Copy + Clone {
 }
 
 // hax does not support trait with default implementations, so we use the following pattern
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 $fer"))]
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 $fer"))]
 pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
     T::montgomery_multiply_by_constant(v, fer)
 }

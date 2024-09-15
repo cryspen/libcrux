@@ -244,7 +244,7 @@ val lemma_mont_red_i32 (x:i32): Lemma
   (ensures (
           let result:i16 = mont_red_i32 x in
           is_i16b (3328 + 1665) result /\
-          (is_i32b (3328 * 3328) x ==> is_i16b 3328 result) /\
+          (is_i32b (3328 * pow2 15) x ==> is_i16b 3328 result) /\
           v result % 3329 == (v x * 169) % 3329))
 
 let lemma_mont_red_i32 (x:i32) =
@@ -263,13 +263,12 @@ let lemma_mont_red_i32 (x:i32) =
   lemma_div_at_percent (v x) (pow2 16);
   assert (v vhigh == v x / pow2 16);
   assert (is_i16b 3328 vhigh);
-  assert (is_i32b (3328 * 3328) x ==> is_i16b 169 vhigh);
   let result = vhigh -. c in
   lemma_sub_i16b 3328 1665 vhigh c;
   assert (is_i16b (3328 + 1665) result);
   assert (v result = v vhigh - v c);
   assert (is_i16b (3328 + 1665) result);
-  assert (is_i32b (3328 * 3328) x ==> is_i16b 3328 result);
+  assert (is_i32b (3328 * pow2 15) x ==> is_i16b 3328 result);
   calc ( == ) {
       v k_times_modulus % pow2 16;
       ( == ) { assert (v k_times_modulus == v k * 3329) }
@@ -312,15 +311,18 @@ let lemma_mont_red_i32 (x:i32) =
     }
 
 val lemma_mont_mul_red_i16 (x y:i16): Lemma
-  (requires (is_i16b 3328 y))
+  (requires (is_intb (3326 * pow2 15) (v x * v y)))
   (ensures (
           let result:i16 = mont_mul_red_i16 x y in
-          is_i16b 3329 result /\
+          is_i16b 3328 result /\
           v result % 3329 == (v x * v y * 169) % 3329))
           [SMTPat (mont_mul_red_i16 x y)]
 let lemma_mont_mul_red_i16 (x y:i16) = 
   let vlow = x *. y in
   let prod = v x * v y in
+  assert (v x <= pow2 15);
+  assert (is_intb (pow2 15 * 1664) prod \/ is_intb (3326 * pow2 15) prod);
+  assert (is_intb (3326 * pow2 15) prod);
   assert (v vlow == prod @% pow2 16);
   let k = vlow *. (neg 3327s) in
   assert (v k == (((prod) @% pow2 16) * (- 3327)) @% pow2 16);
@@ -332,7 +334,6 @@ let lemma_mont_mul_red_i16 (x y:i16) =
   assert (v c == (((v k * 3329) / pow2 16)));
   assert (is_i16b 1665 c);
   let vhigh = cast (((cast x <: i32) *. (cast y <: i32)) >>! 16l) <: i16 in
-  lemma_mul_intb (pow2 15) 3328 (v x) (v y);
   assert (v x @% pow2 32 == v x);
   assert (v y @% pow2 32 == v y);
   assert (v ((cast x <: i32) *. (cast y <: i32)) == (v x * v y) @% pow2 32);
@@ -342,10 +343,10 @@ let lemma_mont_mul_red_i16 (x y:i16) =
   assert (v vhigh == (prod / pow2 16) @% pow2 16);
   lemma_div_at_percent prod (pow2 16);
   assert (v vhigh == prod / pow2 16);
-  assert (is_i16b 1664 vhigh);
   let result = vhigh -. c in
-  lemma_sub_i16b 1664 1665 vhigh c;
-  assert (is_i16b 3329 result);
+  assert (is_i16b 1663 vhigh);
+  lemma_sub_i16b 1663 1665 vhigh c;
+  assert (is_i16b 3328 result);
   assert (v result = v vhigh - v c);
   calc ( == ) {
       v k_times_modulus % pow2 16;

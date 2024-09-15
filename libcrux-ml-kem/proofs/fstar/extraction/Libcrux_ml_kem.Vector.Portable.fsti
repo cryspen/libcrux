@@ -207,7 +207,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_montgomery_multiply_by_constant_pre
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (r: i16) ->
-        Spec.Utils.is_i16b 3328 r);
+        Spec.Utils.is_i16b 1664 r);
     f_montgomery_multiply_by_constant_post
     =
     (fun

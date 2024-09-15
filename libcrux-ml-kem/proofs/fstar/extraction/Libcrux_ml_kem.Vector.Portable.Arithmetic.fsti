@@ -51,7 +51,7 @@ val montgomery_reduce_element (value: i32)
         fun result ->
           let result:i16 = result in
           Spec.Utils.is_i16b (3328 + 1665) result /\
-          (Spec.Utils.is_i32b (3328 * 3328) value ==> Spec.Utils.is_i16b 3328 result) /\
+          (Spec.Utils.is_i32b (3328 * pow2 15) value ==> Spec.Utils.is_i16b 3328 result) /\
           v result % 3329 == (v value * 169) % 3329)
 
 /// If `fe` is some field element \'x\' of the Kyber field and `fer` is congruent to
@@ -62,11 +62,11 @@ val montgomery_reduce_element (value: i32)
 /// `x · y · MONTGOMERY_R * MONTGOMERY_R^{-1} ≡ x · y (mod FIELD_MODULUS)`.
 val montgomery_multiply_fe_by_fer (fe fer: i16)
     : Prims.Pure i16
-      (requires Spec.Utils.is_i16b 3328 fer)
+      (requires Spec.Utils.is_i16b 1664 fer)
       (ensures
         fun result ->
           let result:i16 = result in
-          Spec.Utils.is_i16b (3328 + 1665) result /\ v result % 3329 == (v fe * v fer * 169) % 3329)
+          Spec.Utils.is_i16b 3328 result /\ v result % 3329 == (v fe * v fer * 169) % 3329)
 
 val add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -119,11 +119,11 @@ val montgomery_multiply_by_constant
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (c: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires Spec.Utils.is_i16b 3328 c)
+      (requires Spec.Utils.is_i16b 1664 c)
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
-          Spec.Utils.is_i16b_array (3328 + 1665) result.f_elements /\
+          Spec.Utils.is_i16b_array 3328 result.f_elements /\
           (forall i.
               i < 16 ==>
               (v (Seq.index result.f_elements i) % 3329 ==

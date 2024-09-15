@@ -131,7 +131,7 @@ class t_Operations (v_Self: Type0) = {
   f_barrett_reduce:x0: v_Self
     -> Prims.Pure v_Self (f_barrett_reduce_pre x0) (fun result -> f_barrett_reduce_post x0 result);
   f_montgomery_multiply_by_constant_pre:v: v_Self -> c: i16
-    -> pred: Type0{Spec.Utils.is_i16b 3328 c ==> pred};
+    -> pred: Type0{Spec.Utils.is_i16b 1664 c ==> pred};
   f_montgomery_multiply_by_constant_post:v_Self -> i16 -> v_Self -> Type0;
   f_montgomery_multiply_by_constant:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
@@ -373,7 +373,7 @@ val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (vec: v_T)
       (fun _ -> Prims.l_True)
 
 val montgomery_multiply_fe (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T) (fer: i16)
-    : Prims.Pure v_T (requires Spec.Utils.is_i16b 3328 fer) (fun _ -> Prims.l_True)
+    : Prims.Pure v_T (requires Spec.Utils.is_i16b 1664 fer) (fun _ -> Prims.l_True)
 
 val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)

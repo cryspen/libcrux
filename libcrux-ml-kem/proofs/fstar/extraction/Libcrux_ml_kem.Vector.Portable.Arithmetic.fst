@@ -113,7 +113,7 @@ let montgomery_reduce_element (value: i32) =
   let res:i16 = value_high -! c in
   let _:Prims.unit = assert (Spec.Utils.is_i16b (3328 + 1665) res) in
   let _:Prims.unit =
-    assert (Spec.Utils.is_i32b (3328 * 3328) value ==> Spec.Utils.is_i16b 3328 res)
+    assert (Spec.Utils.is_i32b (3328 * pow2 15) value ==> Spec.Utils.is_i16b 3328 res)
   in
   let _:Prims.unit =
     calc ( == ) {
@@ -164,7 +164,7 @@ let montgomery_reduce_element (value: i32) =
 #push-options "--z3rlimit 300"
 
 let montgomery_multiply_fe_by_fer (fe fer: i16) =
-  let _:Prims.unit = Spec.Utils.lemma_mul_i16b (pow2 16) (3328) fe fer in
+  let _:Prims.unit = Spec.Utils.lemma_mul_i16b (pow2 15) (1664) fe fer in
   let product:i32 = (cast (fe <: i16) <: i32) *! (cast (fer <: i16) <: i32) in
   montgomery_reduce_element product
 
@@ -372,7 +372,7 @@ let montgomery_multiply_by_constant
           (forall j.
               j < v i ==>
               (let vecj = Seq.index vec.f_elements j in
-                (Spec.Utils.is_i16b (3328 + 1665) vecj /\
+                (Spec.Utils.is_i16b 3328 vecj /\
                   v vecj % 3329 == (v (Seq.index v__vec0.f_elements j) * v c * 169) % 3329))) /\
           (forall j. j >= v i ==> (Seq.index vec.f_elements j) == (Seq.index v__vec0.f_elements j)))
       vec

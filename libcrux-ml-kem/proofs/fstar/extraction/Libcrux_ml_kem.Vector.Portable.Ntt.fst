@@ -50,6 +50,8 @@ let inv_ntt_step
   in
   vec
 
+#push-options "--z3rlimit 100"
+
 let inv_ntt_layer_1_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta0 zeta1 zeta2 zeta3: i16)
@@ -79,6 +81,10 @@ let inv_ntt_layer_1_step
     inv_ntt_step vec zeta3 (sz 13) (sz 15)
   in
   vec
+
+#pop-options
+
+#push-options "--z3rlimit 100"
 
 let inv_ntt_layer_2_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -110,6 +116,10 @@ let inv_ntt_layer_2_step
   in
   vec
 
+#pop-options
+
+#push-options "--z3rlimit 100"
+
 let inv_ntt_layer_3_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta: i16)
@@ -139,6 +149,8 @@ let inv_ntt_layer_3_step
     inv_ntt_step vec zeta (sz 7) (sz 15)
   in
   vec
+
+#pop-options
 
 let ntt_multiply_binomials
       (a b: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -277,6 +289,8 @@ let ntt_step
   in
   vec
 
+#push-options "--z3rlimit 100"
+
 let ntt_layer_1_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta0 zeta1 zeta2 zeta3: i16)
@@ -306,6 +320,8 @@ let ntt_layer_1_step
     ntt_step vec zeta3 (sz 13) (sz 15)
   in
   vec
+
+#pop-options
 
 let ntt_layer_2_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)

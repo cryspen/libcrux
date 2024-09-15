@@ -90,7 +90,7 @@ impl Operations for PortableVector {
         barrett_reduce(v)
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 3328 $r"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 $r"))]
     fn montgomery_multiply_by_constant(v: Self, r: i16) -> Self {
         montgomery_multiply_by_constant(v, r)
     }

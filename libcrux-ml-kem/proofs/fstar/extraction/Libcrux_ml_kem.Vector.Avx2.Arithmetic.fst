@@ -247,11 +247,9 @@ let montgomery_multiply_by_constant
     assert ((cast 3329s <: i32) == 3329l);
     assert (forall i. get_lane result i == (get_lane value_high i) -. (get_lane k_times_modulus i));
     assert (forall i. get_lane result i == Spec.Utils.mont_mul_red_i16 (get_lane vector i) constant);
-    assert (forall i. Spec.Utils.is_i16b 3329 (get_lane result i));
-    assert (forall i. Spec.Utils.is_i16b (3328 + 1665) (get_lane result i));
-    assert (forall (i: nat). i < 16 ==> Spec.Utils.is_i16b (3328 + 1665) (get_lane result i));
-    assert (Spec.Utils.is_i16b_array (3328 + 1665)
-          (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result));
+    assert (forall i. Spec.Utils.is_i16b 3328 (get_lane result i));
+    assert (forall (i: nat). i < 16 ==> Spec.Utils.is_i16b 3328 (get_lane result i));
+    assert (Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result));
     assert (forall i.
           v (get_lane result i) % 3329 == ((v (get_lane vector i) * v constant * 169) % 3329))
   in
@@ -318,11 +316,9 @@ let montgomery_multiply_by_constants (vec constants: Libcrux_intrinsics.Avx2_ext
     assert (forall i. get_lane result i == (get_lane value_high i) -. (get_lane k_times_modulus i));
     assert (forall i.
           get_lane result i == Spec.Utils.mont_mul_red_i16 (get_lane vec i) (get_lane constants i));
-    assert (forall i. Spec.Utils.is_i16b 3329 (get_lane result i));
-    assert (forall i. Spec.Utils.is_i16b (3328 + 1665) (get_lane result i));
-    assert (forall (i: nat). i < 16 ==> Spec.Utils.is_i16b (3328 + 1665) (get_lane result i));
-    assert (Spec.Utils.is_i16b_array (3328 + 1665)
-          (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result));
+    assert (forall i. Spec.Utils.is_i16b 3328 (get_lane result i));
+    assert (forall (i: nat). i < 16 ==> Spec.Utils.is_i16b 3328 (get_lane result i));
+    assert (Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result));
     assert (forall i.
           v (get_lane result i) % 3329 ==
           ((v (get_lane vec i) * v (get_lane constants i) * 169) % 3329))
@@ -393,11 +389,9 @@ let montgomery_multiply_m128i_by_constants (vec constants: Libcrux_intrinsics.Av
     assert (forall i.
           get_lane128 result i ==
           Spec.Utils.mont_mul_red_i16 (get_lane128 vec i) (get_lane128 constants i));
-    assert (forall i. Spec.Utils.is_i16b 3329 (get_lane128 result i));
-    assert (forall i. Spec.Utils.is_i16b (3328 + 1665) (get_lane128 result i));
-    assert (forall (i: nat). i < 8 ==> Spec.Utils.is_i16b (3328 + 1665) (get_lane128 result i));
-    assert (Spec.Utils.is_i16b_array (3328 + 1665)
-          (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 result));
+    assert (forall i. Spec.Utils.is_i16b 3328 (get_lane128 result i));
+    assert (forall (i: nat). i < 8 ==> Spec.Utils.is_i16b 3328 (get_lane128 result i));
+    assert (Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 result));
     assert (forall i.
           v (get_lane128 result i) % 3329 ==
           ((v (get_lane128 vec i) * v (get_lane128 constants i) * 169) % 3329))

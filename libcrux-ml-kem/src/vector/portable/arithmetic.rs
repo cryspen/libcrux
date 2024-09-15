@@ -236,7 +236,7 @@ pub(crate) fn barrett_reduce(mut vec: PortableVector) -> PortableVector {
 #[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
 #[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i32b (3328 * pow2 16) value ")))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b (3328 + 1665) result /\\
-                (Spec.Utils.is_i32b (3328 * 3328) value ==> Spec.Utils.is_i16b 3328 result) /\\
+                (Spec.Utils.is_i32b (3328 * pow2 15) value ==> Spec.Utils.is_i16b 3328 result) /\\
                 v result % 3329 == (v value * 169) % 3329")))]
 pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
@@ -270,7 +270,7 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
                      assert(Spec.Utils.is_i16b 3328 value_high)");
     let res = value_high - c;
     hax_lib::fstar!("assert(Spec.Utils.is_i16b (3328 + 1665) res)");
-    hax_lib::fstar!("assert(Spec.Utils.is_i32b (3328 * 3328) value ==> Spec.Utils.is_i16b 3328 res)");
+    hax_lib::fstar!("assert(Spec.Utils.is_i32b (3328 * pow2 15) value ==> Spec.Utils.is_i16b 3328 res)");
     hax_lib::fstar!("calc ( == ) {
         v k_times_modulus % pow2 16;
           ( == ) { assert (v k_times_modulus == (v k @% pow2 16) * 3329) }
@@ -318,23 +318,23 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
 /// `x · y · MONTGOMERY_R * MONTGOMERY_R^{-1} ≡ x · y (mod FIELD_MODULUS)`.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 fer")))]
-#[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b (3328 + 1665) result /\\
+#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 fer")))]
+#[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b 3328 result /\\
                 v result % 3329 == (v fe * v fer * 169) % 3329")))]
 pub(crate) fn montgomery_multiply_fe_by_fer(
     fe: FieldElement,
     fer: FieldElementTimesMontgomeryR,
 ) -> FieldElement {
-    hax_lib::fstar!("Spec.Utils.lemma_mul_i16b (pow2 16) (3328) fe fer");
+    hax_lib::fstar!("Spec.Utils.lemma_mul_i16b (pow2 15) (1664) fe fer");
     let product = (fe as i32) * (fer as i32);
     montgomery_reduce_element(product)
 }
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 c")))]
+#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 c")))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!("
-Spec.Utils.is_i16b_array (3328 + 1665) ${result}.f_elements /\\
+Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\\
 (forall i. i < 16 ==> 
     (v (Seq.index ${result}.f_elements i) % 3329 == 
        (v (Seq.index ${vec}.f_elements i) * v c * 169) %3329))")))]
@@ -344,7 +344,7 @@ pub(crate) fn montgomery_multiply_by_constant(mut vec: PortableVector, c: i16) -
         hax_lib::loop_invariant!(|i: usize| { fstar!("
               (forall j. j < v i ==>
 	      	  (let vecj = Seq.index ${vec}.f_elements j in
-		       (Spec.Utils.is_i16b (3328 + 1665) vecj /\\
+		       (Spec.Utils.is_i16b 3328 vecj /\\
                 v vecj % 3329 == (v (Seq.index ${_vec0}.f_elements j) * v c * 169) % 3329))) /\\
               (forall j. j >= v i ==> (Seq.index ${vec}.f_elements j) == (Seq.index ${_vec0}.f_elements j))") });
         vec.elements[i] = montgomery_multiply_fe_by_fer(vec.elements[i], c)

@@ -188,7 +188,7 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         t_SIMD256Vector);
     f_montgomery_multiply_by_constant_pre
     =
-    (fun (vector: t_SIMD256Vector) (constant: i16) -> Spec.Utils.is_i16b 3328 constant);
+    (fun (vector: t_SIMD256Vector) (constant: i16) -> Spec.Utils.is_i16b 1664 constant);
     f_montgomery_multiply_by_constant_post
     =
     (fun (vector: t_SIMD256Vector) (constant: i16) (out: t_SIMD256Vector) -> true);

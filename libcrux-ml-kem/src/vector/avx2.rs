@@ -132,7 +132,7 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 3328 $constant"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 $constant"))]
     fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
         Self {
             elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),

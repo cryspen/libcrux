@@ -8,8 +8,13 @@ val inv_ntt_step
       (zeta: i16)
       (i j: usize)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires v i < 16 /\ v j < 16 /\ Spec.Utils.is_i16b 1664 zeta)
-      (fun _ -> Prims.l_True)
+      (requires
+        v i < 16 /\ v j < 16 /\ Spec.Utils.is_i16b 1664 zeta /\
+        Spec.Utils.is_i16b_array (3328 + 1665) vec.f_elements)
+      (ensures
+        fun vec_future ->
+          let vec_future:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec_future in
+          Spec.Utils.is_i16b_array (3328 + 1665) vec_future.f_elements)
 
 val inv_ntt_layer_1_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -17,22 +22,35 @@ val inv_ntt_layer_1_step
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       (requires
         Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3)
-      (fun _ -> Prims.l_True)
+        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
+        Spec.Utils.is_i16b_array (3328 + 1665) vec.f_elements)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          Spec.Utils.is_i16b_array (3328 + 1665) result.f_elements)
 
 val inv_ntt_layer_2_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta0 zeta1: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1)
-      (fun _ -> Prims.l_True)
+      (requires
+        Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
+        Spec.Utils.is_i16b_array (3328 + 1665) vec.f_elements)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          Spec.Utils.is_i16b_array (3328 + 1665) result.f_elements)
 
 val inv_ntt_layer_3_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires Spec.Utils.is_i16b 1664 zeta)
-      (fun _ -> Prims.l_True)
+      (requires
+        Spec.Utils.is_i16b 1664 zeta /\ Spec.Utils.is_i16b_array (3328 + 1665) vec.f_elements)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          Spec.Utils.is_i16b_array (3328 + 1665) result.f_elements)
 
 /// Compute the product of two Kyber binomials with respect to the
 /// modulus `X² - zeta`.
@@ -76,7 +94,13 @@ val ntt_step
       (i j: usize)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       (requires v i < 16 /\ v j < 16 /\ Spec.Utils.is_i16b 1664 zeta)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun vec_future ->
+          let vec_future:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec_future in
+          forall b.
+            (Spec.Utils.is_i16b b vec.f_elements.[ i ] /\ Spec.Utils.is_i16b b vec.f_elements.[ j ]) ==>
+            (Spec.Utils.is_i16b (b + 3328 + 1665) vec_future.f_elements.[ i ] /\
+              Spec.Utils.is_i16b (b + 3328 + 1665) vec_future.f_elements.[ j ]))
 
 val ntt_layer_1_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
