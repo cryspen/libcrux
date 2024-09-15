@@ -23,6 +23,58 @@ let create len c = createi len (fun i -> c)
 
 let repeati #acc (l:usize) (f:(i:usize{v i < v l}) -> acc -> acc) acc0 : acc = Lib.LoopCombinators.repeati (v l) (fun i acc -> f (sz i) acc) acc0
 
+let createL len l = Rust_primitives.Hax.array_of_list len l 
+
+let create16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 =
+  let l = [v15; v14; v13; v12; v11; v10; v9; v8; v7; v6; v5; v4; v3; v2; v1; v0] in
+  assert_norm (List.Tot.length l == 16);
+  createL 16 l
+
+
+val lemma_createL_index #a len l i :
+  Lemma (Seq.index (createL #a len l) i == List.Tot.index l i)
+        [SMTPat (Seq.index (createL #a len l) i)]
+let lemma_createL_index #a len l i = ()
+
+val lemma_create16_index #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 i :
+  Lemma (Seq.index (create16 #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0) i ==
+        (if i = 0 then v15 else
+         if i = 1 then v14 else
+         if i = 2 then v13 else
+         if i = 3 then v12 else
+         if i = 4 then v11 else
+         if i = 5 then v10 else
+         if i = 6 then v9 else
+         if i = 7 then v8 else
+         if i = 8 then v7 else
+         if i = 9 then v6 else
+         if i = 10 then v5 else
+         if i = 11 then v4 else
+         if i = 12 then v3 else
+         if i = 13 then v2 else
+         if i = 14 then v1 else
+         if i = 15 then v0))
+        [SMTPat (Seq.index (create16 #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0) i)]
+let lemma_create16_index #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 i =
+  let l = [v15; v14; v13; v12; v11; v10; v9; v8; v7; v6; v5; v4; v3; v2; v1; v0] in
+  assert_norm (List.Tot.index l 0 == v15);
+  assert_norm (List.Tot.index l 1 == v14);
+  assert_norm (List.Tot.index l 2 == v13);
+  assert_norm (List.Tot.index l 3 == v12);
+  assert_norm (List.Tot.index l 4 == v11);
+  assert_norm (List.Tot.index l 5 == v10);
+  assert_norm (List.Tot.index l 6 == v9);
+  assert_norm (List.Tot.index l 7 == v8);
+  assert_norm (List.Tot.index l 8 == v7);
+  assert_norm (List.Tot.index l 9 == v6);
+  assert_norm (List.Tot.index l 10 == v5);
+  assert_norm (List.Tot.index l 11 == v4);
+  assert_norm (List.Tot.index l 12 == v3);
+  assert_norm (List.Tot.index l 13 == v2);
+  assert_norm (List.Tot.index l 14 == v1);
+  assert_norm (List.Tot.index l 15 == v0)
+
+
 val lemma_createi_index #a len f i :
   Lemma (Seq.index (createi #a len f) i == f (sz i))
         [SMTPat (Seq.index (createi #a len f) i)]

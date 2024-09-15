@@ -136,7 +136,11 @@ pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
 
 #[hax_lib::fstar::replace(
     interface,
-    "unfold let ${mm256_set_epi16} = BitVec.Intrinsics.mm256_set_epi16"
+    "unfold let ${mm256_set_epi16} = BitVec.Intrinsics.mm256_set_epi16
+let lemma_mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 :
+    Lemma (vec256_as_i16x16 (${mm256_set_epi16} v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0) == 
+            Spec.Utils.create16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15)
+            [SMTPat (vec256_as_i16x16 (${mm256_set_epi16} v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0))] = admit()"
 )]
 pub fn mm256_set_epi16(
     input15: i16,
