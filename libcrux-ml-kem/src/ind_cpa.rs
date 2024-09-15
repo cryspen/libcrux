@@ -42,6 +42,7 @@ pub mod unpacked {
 
     /// An unpacked ML-KEM IND-CPA Private Key
     #[cfg(feature = "unpacked")]
+    #[derive(Clone)]
     pub(crate) struct IndCpaPublicKeyUnpacked<const K: usize, Vector: Operations> {
         pub(crate) t_as_ntt: [PolynomialRingElement<Vector>; K],
         pub(crate) seed_for_A: [u8; 32],
@@ -72,11 +73,32 @@ pub(crate) fn serialize_public_key<
     seed_for_a: &[u8],
 ) -> [u8; PUBLIC_KEY_SIZE] {
     let mut public_key_serialized = [0u8; PUBLIC_KEY_SIZE];
-    public_key_serialized[0..RANKED_BYTES_PER_RING_ELEMENT].copy_from_slice(
-        &serialize_secret_key::<K, RANKED_BYTES_PER_RING_ELEMENT, Vector>(t_as_ntt),
+    serialize_public_key_mut::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
+        t_as_ntt,
+        seed_for_a,
+        &mut public_key_serialized,
     );
-    public_key_serialized[RANKED_BYTES_PER_RING_ELEMENT..].copy_from_slice(seed_for_a);
     public_key_serialized
+}
+
+/// Concatenate `t` and `ρ` into the public key.
+#[inline(always)]
+pub(crate) fn serialize_public_key_mut<
+    const K: usize,
+    const RANKED_BYTES_PER_RING_ELEMENT: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    Vector: Operations,
+>(
+    t_as_ntt: &[PolynomialRingElement<Vector>; K],
+    seed_for_a: &[u8],
+    serialized: &mut [u8; PUBLIC_KEY_SIZE],
+) {
+    serialized[0..RANKED_BYTES_PER_RING_ELEMENT].copy_from_slice(&serialize_secret_key::<
+        K,
+        RANKED_BYTES_PER_RING_ELEMENT,
+        Vector,
+    >(t_as_ntt));
+    serialized[RANKED_BYTES_PER_RING_ELEMENT..].copy_from_slice(seed_for_a);
 }
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.

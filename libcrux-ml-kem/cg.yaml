@@ -58,6 +58,7 @@ files:
     api:
       monomorphizations_exact:
         - [ libcrux_ml_kem, mlkem768, avx2, unpacked, MlKem768KeyPairUnpacked ]
+        - [ libcrux_ml_kem, mlkem768, avx2, unpacked, MlKem768PublicKeyUnpacked ]
         - [ libcrux_ml_kem, ind_cca, unpacked, MlKemPrivateKeyUnpacked_a0 ]
         - [ libcrux_ml_kem, ind_cca, unpacked, MlKemPublicKeyUnpacked_a0 ]
         - [ libcrux_ml_kem, ind_cpa, unpacked, IndCpaPrivateKeyUnpacked_a0 ]
@@ -70,6 +71,7 @@ files:
     api:
       monomorphizations_exact:
         - [ libcrux_ml_kem, mlkem768, portable, unpacked, MlKem768KeyPairUnpacked ]
+        - [ libcrux_ml_kem, mlkem768, portable, unpacked, MlKem768PublicKeyUnpacked ]
         - [ libcrux_ml_kem, ind_cca, unpacked, MlKemPrivateKeyUnpacked_f8 ]
         - [ libcrux_ml_kem, ind_cca, unpacked, MlKemPublicKeyUnpacked_f8 ]
         - [ libcrux_ml_kem, ind_cpa, unpacked, IndCpaPrivateKeyUnpacked_f8 ]

@@ -239,27 +239,33 @@ macro_rules! instantiate {
                     MlKem1024KeyPairUnpacked::default()
                 }
 
+                /// Create a new, empty unpacked public key.
+                pub fn init_public_key() -> MlKem1024PublicKeyUnpacked {
+                    MlKem1024PublicKeyUnpacked::default()
+                }
+
                 /// Get the serialized public key.
                 pub fn serialized_public_key(
                     public_key: &MlKem1024PublicKeyUnpacked,
-                ) -> MlKem1024PublicKey {
-                    p::unpacked::serialized_public_key::<
-                        RANK_1024,
+                    serialized: &mut MlKem1024PublicKey,
+                ) {
+                    public_key.serialized_public_key_mut::<
                         RANKED_BYTES_PER_RING_ELEMENT_1024,
                         CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    >(public_key)
+                    >(serialized);
                 }
 
                 /// Get the unpacked public key.
                 pub fn unpacked_public_key(
                     public_key: &MlKem1024PublicKey,
-                ) -> MlKem1024PublicKeyUnpacked {
+                    unpacked_public_key: &mut MlKem1024PublicKeyUnpacked,
+                ) {
                     p::unpacked::unpack_public_key::<
                         RANK_1024,
                         T_AS_NTT_ENCODED_SIZE_1024,
                         RANKED_BYTES_PER_RING_ELEMENT_1024,
                         CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    >(public_key)
+                    >(public_key, unpacked_public_key)
                 }
 
                 /// Generate ML-KEM 1024 Key Pair in "unpacked" form

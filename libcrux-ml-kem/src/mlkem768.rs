@@ -238,21 +238,37 @@ macro_rules! instantiate {
                     MlKem768KeyPairUnpacked::default()
                 }
 
+                /// Create a new, empty unpacked public key.
+                pub fn init_public_key() -> MlKem768PublicKeyUnpacked {
+                    MlKem768PublicKeyUnpacked::default()
+                }
+
                 /// Get the serialized public key.
-                pub fn serialized_public_key(public_key: &MlKem768PublicKeyUnpacked) -> MlKem768PublicKey {
-                    p::unpacked::serialized_public_key::<RANK_768, RANKED_BYTES_PER_RING_ELEMENT_768, CPA_PKE_PUBLIC_KEY_SIZE_768>(public_key)
+                pub fn serialized_public_key(public_key: &MlKem768PublicKeyUnpacked, serialized : &mut MlKem768PublicKey) {
+                    public_key.serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT_768, CPA_PKE_PUBLIC_KEY_SIZE_768>(serialized);
+                }
+
+                /// Get the serialized public key.
+                pub fn key_pair_serialized_public_key(key_pair: &MlKem768KeyPairUnpacked, serialized : &mut MlKem768PublicKey) {
+                    key_pair.serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT_768, CPA_PKE_PUBLIC_KEY_SIZE_768>(serialized);
+                }
+
+                /// Get the unpacked public key.
+                pub fn public_key(key_pair: &MlKem768KeyPairUnpacked, pk: &mut MlKem768PublicKeyUnpacked) {
+                    *pk = (*key_pair.public_key()).clone();
                 }
 
                 /// Get the unpacked public key.
                 pub fn unpacked_public_key(
                     public_key: &MlKem768PublicKey,
-                ) -> MlKem768PublicKeyUnpacked {
+                    unpacked_public_key: &mut MlKem768PublicKeyUnpacked
+                ) {
                     p::unpacked::unpack_public_key::<
                         RANK_768,
                         T_AS_NTT_ENCODED_SIZE_768,
                         RANKED_BYTES_PER_RING_ELEMENT_768,
                         CPA_PKE_PUBLIC_KEY_SIZE_768,
-                    >(public_key)
+                    >(public_key, unpacked_public_key)
                 }
 
                 /// Generate ML-KEM 768 Key Pair in "unpacked" form.

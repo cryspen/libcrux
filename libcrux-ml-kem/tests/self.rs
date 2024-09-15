@@ -53,15 +53,21 @@ macro_rules! impl_consistency_unpacked {
             let key_pair = p::generate_key_pair(randomness);
 
             // Ensure the two keys are the same
-            assert_eq!(
-                key_pair.public_key().as_slice(),
-                p::unpacked::serialized_public_key(&key_pair_unpacked.public_key).as_slice()
+            let mut serialized_public_key = Default::default();
+            p::unpacked::serialized_public_key(
+                key_pair_unpacked.public_key(),
+                &mut serialized_public_key,
             );
             assert_eq!(
-                p::unpacked::serialized_public_key(&p::unpacked::unpacked_public_key(
-                    key_pair.public_key()
-                ))
-                .as_slice(),
+                key_pair.public_key().as_slice(),
+                serialized_public_key.as_slice()
+            );
+            let mut re_unpacked_public_key = Default::default();
+            p::unpacked::unpacked_public_key(key_pair.public_key(), &mut re_unpacked_public_key);
+            let mut serialized_public_key = Default::default();
+            p::unpacked::serialized_public_key(&re_unpacked_public_key, &mut serialized_public_key);
+            assert_eq!(
+                serialized_public_key.as_slice(),
                 key_pair.public_key().as_slice()
             );
 

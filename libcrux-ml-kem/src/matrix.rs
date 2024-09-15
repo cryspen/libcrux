@@ -124,6 +124,9 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
 ) {
     cloop! {
         for (i, row) in matrix_A.iter().enumerate() {
+            // This may be externally provided memory. Ensure that `t_as_ntt`
+            // is all 0.
+            t_as_ntt[i] = PolynomialRingElement::<Vector>::ZERO();
             cloop! {
                 for (j, matrix_element) in row.iter().enumerate() {
                     let product = matrix_element.ntt_multiply(&s_as_ntt[j]);

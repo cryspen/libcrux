@@ -236,21 +236,33 @@ macro_rules! instantiate {
                     MlKem512KeyPairUnpacked::default()
                 }
 
+                /// Create a new, empty unpacked public key.
+                pub fn init_public_key() -> MlKem512PublicKeyUnpacked {
+                    MlKem512PublicKeyUnpacked::default()
+                }
+
                 /// Get the serialized public key.
-                pub fn serialized_public_key(public_key: &MlKem512PublicKeyUnpacked) -> MlKem512PublicKey {
-                    p::unpacked::serialized_public_key::<RANK_512, RANKED_BYTES_PER_RING_ELEMENT_512, CPA_PKE_PUBLIC_KEY_SIZE_512>(public_key)
+                pub fn serialized_public_key(
+                    public_key: &MlKem512PublicKeyUnpacked,
+                    serialized: &mut MlKem512PublicKey
+                ) {
+                    public_key.serialized_public_key_mut::<
+                        RANKED_BYTES_PER_RING_ELEMENT_512,
+                        CPA_PKE_PUBLIC_KEY_SIZE_512
+                    >(serialized)
                 }
 
                 /// Get the unpacked public key.
                 pub fn unpacked_public_key(
                     public_key: &MlKem512PublicKey,
-                ) -> MlKem512PublicKeyUnpacked {
+                    unpacked_public_key: &mut MlKem512PublicKeyUnpacked ,
+                ) {
                     p::unpacked::unpack_public_key::<
                         RANK_512,
                         T_AS_NTT_ENCODED_SIZE_512,
                         RANKED_BYTES_PER_RING_ELEMENT_512,
                         CPA_PKE_PUBLIC_KEY_SIZE_512,
-                    >(public_key)
+                    >(public_key, unpacked_public_key)
                 }
 
                 /// Generate ML-KEM 512 Key Pair in "unpacked" form
