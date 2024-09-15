@@ -164,6 +164,11 @@ let is_i32b_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i3
 
 let nat_div_ceil (x:nat) (y:pos) : nat = if (x % y = 0) then x/y else (x/y)+1
 
+val lemma_intb_le b b'
+  : Lemma (requires (b <= b'))
+          (ensures (forall n. is_intb b n ==> is_intb b' n))
+let lemma_intb_le b b' = ()          
+
 #push-options "--z3rlimit 200"
 val lemma_mul_intb (b1 b2: nat) (n1 n2: int) 
     : Lemma (requires (is_intb b1 n1 /\ is_intb b2 n2))
@@ -310,19 +315,16 @@ let lemma_mont_red_i32 (x:i32) =
       (v x * 169) % 3329;
     }
 
-val lemma_mont_mul_red_i16 (x y:i16): Lemma
+val lemma_mont_mul_red_i16_int (x y:i16): Lemma
   (requires (is_intb (3326 * pow2 15) (v x * v y)))
   (ensures (
           let result:i16 = mont_mul_red_i16 x y in
           is_i16b 3328 result /\
           v result % 3329 == (v x * v y * 169) % 3329))
-          [SMTPat (mont_mul_red_i16 x y)]
-let lemma_mont_mul_red_i16 (x y:i16) = 
+          
+let lemma_mont_mul_red_i16_int (x y:i16) = 
   let vlow = x *. y in
   let prod = v x * v y in
-  assert (v x <= pow2 15);
-  assert (is_intb (pow2 15 * 1664) prod \/ is_intb (3326 * pow2 15) prod);
-  assert (is_intb (3326 * pow2 15) prod);
   assert (v vlow == prod @% pow2 16);
   let k = vlow *. (neg 3327s) in
   assert (v k == (((prod) @% pow2 16) * (- 3327)) @% pow2 16);
@@ -338,7 +340,7 @@ let lemma_mont_mul_red_i16 (x y:i16) =
   assert (v y @% pow2 32 == v y);
   assert (v ((cast x <: i32) *. (cast y <: i32)) == (v x * v y) @% pow2 32);
   assert (v vhigh == (((prod) @% pow2 32) / pow2 16) @% pow2 16);
-  assert_norm (pow2 15 * 3328 < pow2 31);
+  assert_norm (pow2 15 * 3326 < pow2 31);
   lemma_range_at_percent prod (pow2 32);
   assert (v vhigh == (prod / pow2 16) @% pow2 16);
   lemma_div_at_percent prod (pow2 16);
@@ -388,6 +390,20 @@ let lemma_mont_mul_red_i16 (x y:i16) =
     }
 
 
+val lemma_mont_mul_red_i16 (x y:i16): Lemma
+  (requires (is_i16b 1664 y \/ is_intb (3326 * pow2 15) (v x * v y)))
+  (ensures (
+          let result:i16 = mont_mul_red_i16 x y in
+          is_i16b 3328 result /\
+          v result % 3329 == (v x * v y * 169) % 3329))
+          [SMTPat (mont_mul_red_i16 x y)]
+let lemma_mont_mul_red_i16 x y =
+  if is_i16b 1664 y then (
+    lemma_mul_intb (pow2 15) 1664 (v x) (v y);
+    assert(is_intb (3326 * pow2 15) (v x * v y));
+    lemma_mont_mul_red_i16_int x y) 
+  else lemma_mont_mul_red_i16_int x y
+ 
 let barrett_red (x:i16) = 
   let t1 = cast (((cast x <: i32) *. (cast 20159s <: i32)) >>! 16l) <: i16 in
   let t2 = t1 +. 512s in
