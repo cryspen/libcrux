@@ -62,41 +62,41 @@ fn butterfly_4(
     zeta_b0: i32,
     zeta_b1: i32,
 ) -> (Vec256, Vec256) {
-    let lo_i64s = mm256_unpacklo_epi64(a, b);
-    let hi_i64s = mm256_unpackhi_epi64(a, b);
+    let summands = mm256_unpacklo_epi64(a, b);
+    let zeta_multiplicands = mm256_unpackhi_epi64(a, b);
 
     let zetas = mm256_set_epi32(
         zeta_b1, zeta_b1, zeta_a1, zeta_a1, zeta_b0, zeta_b0, zeta_a0, zeta_a0,
     );
-    let t = arithmetic::montgomery_multiply(hi_i64s, zetas);
+    let zeta_products = arithmetic::montgomery_multiply(zeta_multiplicands, zetas);
 
-    let res0 = arithmetic::add(lo_i64s, t);
-    let res1 = arithmetic::subtract(lo_i64s, t);
+    let add_terms = arithmetic::add(summands, zeta_products);
+    let sub_terms = arithmetic::subtract(summands, zeta_products);
 
     // Results are shuffled across the two SIMD registers.
     // We need to bring them in the right order.
-    let sout0 = mm256_unpacklo_epi64(res0, res1);
-    let sout1 = mm256_unpackhi_epi64(res0, res1);
+    let a_out = mm256_unpacklo_epi64(add_terms, sub_terms);
+    let b_out = mm256_unpackhi_epi64(add_terms, sub_terms);
 
-    (sout0, sout1)
+    (a_out, b_out)
 }
 
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 2 for 2 SIMD Units in one go.
 #[inline(always)]
-fn butterfly_8(a0: Vec256, b0: Vec256, zeta0: i32, zeta1: i32) -> (Vec256, Vec256) {
-    let a = mm256_set_m128i(mm256_castsi256_si128(b0), mm256_castsi256_si128(a0));
-    let b = mm256_permute2x128_si256::<0b0001_0011>(b0, a0);
+fn butterfly_8(a: Vec256, b: Vec256, zeta0: i32, zeta1: i32) -> (Vec256, Vec256) {
+    let summands = mm256_set_m128i(mm256_castsi256_si128(b), mm256_castsi256_si128(a));
+    let zeta_multiplicands = mm256_permute2x128_si256::<0b0001_0011>(b, a);
 
     let zetas = mm256_set_epi32(zeta1, zeta1, zeta1, zeta1, zeta0, zeta0, zeta0, zeta0);
-    let t = arithmetic::montgomery_multiply(b, zetas);
+    let zeta_products = arithmetic::montgomery_multiply(zeta_multiplicands, zetas);
 
-    let out0 = arithmetic::add(a, t);
-    let out1 = arithmetic::subtract(a, t);
+    let add_terms = arithmetic::add(summands, zeta_products);
+    let sub_terms = arithmetic::subtract(summands, zeta_products);
 
-    let sout0 = mm256_set_m128i(mm256_castsi256_si128(out1), mm256_castsi256_si128(out0));
-    let sout1 = mm256_permute2x128_si256::<0b0001_0011>(out1, out0);
+    let a_out = mm256_set_m128i(mm256_castsi256_si128(sub_terms), mm256_castsi256_si128(add_terms));
+    let b_out = mm256_permute2x128_si256::<0b0001_0011>(sub_terms, add_terms);
 
-    (sout0, sout1)
+    (a_out, b_out)
 }
 
 #[inline(always)]
