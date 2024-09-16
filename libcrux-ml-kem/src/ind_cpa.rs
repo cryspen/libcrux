@@ -16,7 +16,7 @@ use crate::{
         serialize_uncompressed_ring_element,
     },
     utils::into_padded_array,
-    variant::{MlKem, Variant},
+    variant::Variant,
     vector::Operations,
 };
 
@@ -232,13 +232,14 @@ pub(crate) fn generate_keypair_unpacked<
     const ETA1_RANDOMNESS_SIZE: usize,
     Vector: Operations,
     Hasher: Hash<K>,
+    Scheme: Variant,
 >(
     key_generation_seed: &[u8],
     private_key: &mut IndCpaPrivateKeyUnpacked<K, Vector>,
     public_key: &mut IndCpaPublicKeyUnpacked<K, Vector>,
 ) {
     // (ρ,σ) := G(d) for Kyber, (ρ,σ) := G(d || K) for ML-KEM
-    let hashed = MlKem::cpa_keygen_seed::<K, Hasher>(key_generation_seed);
+    let hashed = Scheme::cpa_keygen_seed::<K, Hasher>(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     sample_matrix_A::<K, Vector, Hasher>(&mut public_key.A, into_padded_array(seed_for_A), true);
@@ -288,7 +289,7 @@ pub(crate) fn generate_keypair<
     let mut private_key = IndCpaPrivateKeyUnpacked::default();
     let mut public_key = IndCpaPublicKeyUnpacked::default();
 
-    generate_keypair_unpacked::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+    generate_keypair_unpacked::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher, Scheme>(
         key_generation_seed,
         &mut private_key,
         &mut public_key,

@@ -457,6 +457,7 @@ pub(crate) mod unpacked {
         const ETA1_RANDOMNESS_SIZE: usize,
         Vector: Operations,
         Hasher: Hash<K>,
+        Scheme: Variant,
     >(
         randomness: [u8; KEY_GENERATION_SEED_SIZE],
         out: &mut MlKemKeyPairUnpacked<K, Vector>,
@@ -464,7 +465,7 @@ pub(crate) mod unpacked {
         let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
         let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
-        generate_keypair_unpacked::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+        generate_keypair_unpacked::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher, Scheme>(
             ind_cpa_keypair_randomness,
             &mut out.private_key.ind_cpa_private_key,
             &mut out.public_key.ind_cpa_public_key,

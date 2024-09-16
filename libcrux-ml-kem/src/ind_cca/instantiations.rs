@@ -312,6 +312,7 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         $vector,
                         $hash,
+                        crate::variant::MlKem,
                     >(randomness, out)
                 }
 
