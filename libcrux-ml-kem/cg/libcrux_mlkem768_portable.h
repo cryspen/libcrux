@@ -8,7 +8,7 @@
  * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 97f7cefe14dabf275e4671ffea87e032d7779b71
+ * Libcrux: 65d06b7e81ff34bcc90ca741249b4545ebcec5b3
  */
 
 #ifndef __libcrux_mlkem768_portable_H
@@ -7441,11 +7441,9 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 *
-    libcrux_ml_kem_ind_cca_unpacked_public_key_de_0a(
-        libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
-            *self) {
+static KRML_MUSTINLINE libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 *
+libcrux_ml_kem_ind_cca_unpacked_public_key_de_0a(
+    libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self) {
   return &self->public_key;
 }
 
