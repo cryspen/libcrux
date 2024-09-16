@@ -690,8 +690,7 @@ let deserialize_ring_elements_reduced
       (public_key: t_Slice u8)
       (deserialized_pk: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
      =
-  let deserialized_pk, hax_temp_output:t_Array
-    (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+  let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT
       public_key
       (fun deserialized_pk temp_1_ ->
@@ -716,6 +715,7 @@ let deserialize_ring_elements_reduced
           <:
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   deserialized_pk
 
 let deserialize_ring_elements_reduced_out

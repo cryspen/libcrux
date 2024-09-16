@@ -22,8 +22,7 @@ let compute_As_plus_e
       (s_as_ntt error_as_ntt:
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
      =
-  let tt_as_ntt, hax_temp_output:t_Array
-    (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+  let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Rust_primitives.Hax.Folds.fold_enumerated_slice (matrix_A
         <:
         t_Slice (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
@@ -101,6 +100,7 @@ let compute_As_plus_e
           in
           tt_as_ntt)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   tt_as_ntt
 
 let compute_ring_element_v
@@ -301,7 +301,7 @@ let sample_matrix_A
       (seed: t_Array u8 (sz 34))
       (transpose: bool)
      =
-  let v_A_transpose, hax_temp_output:t_Array
+  let v_A_transpose:t_Array
     (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       v_K
@@ -409,4 +409,5 @@ let sample_matrix_A
                   in
                   v_A_transpose))
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   v_A_transpose

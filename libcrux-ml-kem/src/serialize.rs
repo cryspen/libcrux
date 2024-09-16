@@ -121,7 +121,8 @@ pub(super) fn deserialize_ring_elements_reduced<
         {
             deserialized_pk[i] = deserialize_to_reduced_ring_element(ring_element);
         }
-    }
+    };
+    ()
 }
 
 #[inline(always)]

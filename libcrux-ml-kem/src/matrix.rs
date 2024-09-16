@@ -27,7 +27,8 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
                 }
             }
         }
-    }
+    };
+    ()
 }
 
 /// The following functions compute various expressions involving
@@ -123,5 +124,6 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
             }
             t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
         }
-    }
+    };
+    ()
 }
