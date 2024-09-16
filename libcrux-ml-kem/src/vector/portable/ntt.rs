@@ -156,20 +156,26 @@ pub(crate) fn inv_ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> Portab
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
 #[hax_lib::requires(fstar!("v i < 16 /\\ v j < 16 /\\ Spec.Utils.is_i16b 1664 $zeta /\\
-        Spec.Utils.is_i16b_array ${a}.f_elements /\\
-        Spec.Utils.is_i16b_array ${b}.f_elements "))]
+        Spec.Utils.is_i16b_array 3228 ${a}.f_elements /\\
+        Spec.Utils.is_i16b_array 3228 ${b}.f_elements "))]
 #[hax_lib::ensures(|()| fstar!("
         (forall k. (k <> v i /\\ k <> v j) ==> 
                     Seq.index out_future.f_elements k == Seq.index out.f_elements k) /\\                 
-         (let (x,y) = 
+         (let ai = Seq.index a.f_elements (v i) in
+          let aj = Seq.index a.f_elements (v j) in
+          let bi = Seq.index b.f_elements (v i) in
+          let bj = Seq.index b.f_elements (v j) in
+          let oi = Seq.index out_future.f_elements (v i) in
+          let oj = Seq.index out_future.f_elements (v j) in
+          let (x,y) = 
           Spec.MLKEM.Math.poly_base_case_multiply 
-            (v (Seq.index a.f_elements (v i)) % 3329)
-            (v (Seq.index a.f_elements (v j)) % 3329)
-            (v (Seq.index b.f_elements (v i)) % 3329)
-            (v (Seq.index b.f_elements (v j)) % 3329)
-            ((v zeta * 169) % 3329) in
-          (x == v (Seq.index out_future.f_elements (v i)) % 3329 /\\
-           y == v (Seq.index out_future.f_elements (v j)) % 3329)))"))]
+             ((v ai * 169) % 3329)
+             ((v aj * 169) % 3329)
+             ((v bi * 169) % 3329)
+             ((v bj * 169) % 3329)
+             ((v zeta * 169) % 3329) in
+          (x == ((v oi * 169) % 3329) /\\
+           y == ((v oj * 169) % 3329)))"))]
 pub(crate) fn ntt_multiply_binomials(
     a: &PortableVector,
     b: &PortableVector,
