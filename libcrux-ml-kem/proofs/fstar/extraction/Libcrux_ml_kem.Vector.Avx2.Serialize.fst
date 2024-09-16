@@ -2,6 +2,7 @@ module Libcrux_ml_kem.Vector.Avx2.Serialize
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
+#push-options "--ext context_pruning"
 
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
@@ -369,6 +370,7 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
     ))
   );
   result
+
 
 let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in

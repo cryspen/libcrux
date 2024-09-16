@@ -245,7 +245,7 @@ let unify_app (t fn: term) norm_steps: Tac (option (list term))
       let?# substs = fst (try_unify (cur_env ()) vars fn t) in
       raise (UnifyAppReturn (
         if List.Tot.length substs <> List.Tot.length bds + 1
-        then (print "unify_app: WARNING: inconsistent lengths"; None)
+        then (print ("unify_app: WARNING: inconsistent lengths: " ^ string_of_int (List.Tot.length substs) ^ " - 1 VS " ^ string_of_int (List.Tot.length bds + 1)); None)
         else (
           match substs with
           | [] -> None

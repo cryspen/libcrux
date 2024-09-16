@@ -181,6 +181,10 @@ pub fn mm_add_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
 pub fn mm256_add_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
+#[hax_lib::fstar::replace(
+    interface,
+    "include BitVec.Intrinsics {mm256_madd_epi16 as ${mm256_madd_epi16}}"
+)]
 pub fn mm256_madd_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }

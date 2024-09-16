@@ -42,7 +42,7 @@ val mm256_loadu_si256_i16 (input: t_Slice i16)
 val mm256_loadu_si256_u8 (input: t_Slice u8)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val mm256_madd_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+include BitVec.Intrinsics {mm256_madd_epi16 as mm256_madd_epi16}
 
 val mm256_mul_epu32 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
