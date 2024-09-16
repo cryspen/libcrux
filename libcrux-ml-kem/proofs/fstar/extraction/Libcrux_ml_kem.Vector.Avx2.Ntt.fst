@@ -3,6 +3,8 @@ module Libcrux_ml_kem.Vector.Avx2.Ntt
 open Core
 open FStar.Mul
 
+#push-options "--admit_smt_queries true"
+
 let inv_ntt_layer_1_step
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
       (zeta0 zeta1 zeta2 zeta3: i16)
@@ -34,6 +36,8 @@ let inv_ntt_layer_1_step
     Libcrux_ml_kem.Vector.Avx2.Arithmetic.barrett_reduce sum
   in
   Libcrux_intrinsics.Avx2_extract.mm256_blend_epi16 204l sum sum_times_zetas
+
+#pop-options
 
 let inv_ntt_layer_2_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta0 zeta1: i16) =
   let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =

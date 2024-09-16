@@ -158,69 +158,69 @@ let ntt_multiply_binomials
       (i j: usize)
       (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
+  let ai:i16 = a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] in
+  let bi:i16 = b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] in
+  let aj:i16 = a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] in
+  let bj:i16 = b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] in
   let _:Prims.unit =
-    Spec.Utils.lemma_mul_i16b 3328
-      3328
-      (Seq.index (a.f_elements) (v i))
-      (Seq.index (b.f_elements) (v i))
+    assert (Spec.Utils.is_i16b 3328 ai);
+    assert (Spec.Utils.is_i16b 3328 bi);
+    assert (Spec.Utils.is_i16b 3328 aj);
+    assert (Spec.Utils.is_i16b 3328 bj);
+    assert_norm (3328 * 3328 < pow2 31);
+    assert_norm (3328 * 3328 <= 3328 * pow2 15);
+    assert_norm (3328 * 3328 + 3328 * 1664 <= 3328 * pow2 15);
+    assert_norm (3328 * 3328 + 3328 * 3328 <= 3328 * pow2 15)
   in
   let _:Prims.unit =
-    Spec.Utils.lemma_mul_i16b 3328
-      3328
-      (Seq.index (a.f_elements) (v j))
-      (Seq.index (b.f_elements) (v j))
+    Spec.Utils.lemma_mul_i16b 3328 3328 ai bi;
+    Spec.Utils.lemma_mul_i16b 3328 3328 aj bj;
+    Spec.Utils.lemma_mul_i16b 3328 3328 ai bj;
+    Spec.Utils.lemma_mul_i16b 3328 3328 aj bi
   in
-  let ai_bi:i32 =
-    (cast (a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) <: i32) *!
-    (cast (b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) <: i32)
-  in
-  let aj_bj:i16 =
-    Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_reduce_element ((cast (a
-                .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ]
-              <:
-              i16)
-          <:
-          i32) *!
-        (cast (b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] <: i16) <: i32)
-        <:
-        i32)
-  in
+  let ai_bi:i32 = (cast (ai <: i16) <: i32) *! (cast (bi <: i16) <: i32) in
+  let aj_bj___:i32 = (cast (aj <: i16) <: i32) *! (cast (bj <: i16) <: i32) in
+  let aj_bj:i16 = Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_reduce_element aj_bj___ in
   let _:Prims.unit = Spec.Utils.lemma_mul_i16b 3328 1664 aj_bj zeta in
-  let o0:i16 =
-    Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_reduce_element (ai_bi +!
-        ((cast (aj_bj <: i16) <: i32) *! (cast (zeta <: i16) <: i32) <: i32)
-        <:
-        i32)
-  in
+  let aj_bj_zeta:i32 = (cast (aj_bj <: i16) <: i32) *! (cast (zeta <: i16) <: i32) in
+  let ai_bi_aj_bj:i32 = ai_bi +! aj_bj_zeta in
+  let _:Prims.unit = Spec.Utils.is_i32b (3328 * 3328 + 3328 * 1664) ai_bi_aj_bj in
+  let o0:i16 = Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_reduce_element ai_bi_aj_bj in
   let _:Prims.unit =
-    Spec.Utils.lemma_mul_i16b 3328
-      3328
-      (Seq.index (a.f_elements) (v i))
-      (Seq.index (b.f_elements) (v j))
+    calc ( == ) {
+      v o0 % 3329;
+      ( == ) { () }
+      (v ai_bi_aj_bj * 169) % 3329;
+      ( == ) { assert (v ai_bi_aj_bj == v ai_bi + v aj_bj_zeta) }
+      ((v ai_bi + v aj_bj_zeta) * 169) % 3329;
+      ( == ) { assert (v aj_bj_zeta == v aj_bj * v zeta) }
+      (((v ai * v bi) + (v aj_bj * v zeta)) * 169) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_mul_distr_l ((v ai * v bi) + (v aj_bj * v zeta)) 169 3329 }
+      ((((v ai * v bi) + (v aj_bj * v zeta)) % 3329) * 169) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_add_distr (v ai * v bi) (v aj_bj * v zeta) 3329 }
+      ((((v ai * v bi) + ((v aj_bj * v zeta) % 3329)) % 3329) * 169) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_mul_distr_l (v aj_bj) (v zeta) 3329 }
+      ((((v ai * v bi) + (((v aj_bj % 3329) * v zeta) % 3329)) % 3329) * 169) % 3329;
+      ( == ) { assert (v aj_bj % 3329 == (v aj_bj_ * 169) % 3329) }
+      ((((v ai * v bi) + ((((v aj_bj_ * 169) % 3329) * v zeta) % 3329)) % 3329) * 169) % 3329;
+      ( == ) { assert (v aj_bj_ == v aj * v bj) }
+      ((((v ai * v bi) + ((((v aj * v bj * 169) % 3329) * v zeta) % 3329)) % 3329) * 169) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_mul_distr_l (v aj * v bj * 169) (v zeta) 3329 }
+      ((((v ai * v bi) + (((v aj * v bj * 169 * v zeta) % 3329))) % 3329) * 169) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_add_distr (v ai * v bi) (v aj * v bj * 169 * v zeta) 3329 }
+      ((((v ai * v bi) + ((v aj * v bj * 169 * v zeta))) % 3329) * 169) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_mul_distr_l ((v ai * v bi) + ((v aj * v bj * 169 * v zeta)))
+        169
+        3329 }
+      (((v ai * v bi) + ((v aj * v bj * 169 * v zeta))) * 169) % 3329;
+    }
   in
-  let _:Prims.unit =
-    Spec.Utils.lemma_mul_i16b 3328
-      3328
-      (Seq.index (a.f_elements) (v j))
-      (Seq.index (b.f_elements) (v i))
-  in
-  let o1:i16 =
-    Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_reduce_element (((cast (a
-                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
-                <:
-                i16)
-            <:
-            i32) *!
-          (cast (b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] <: i16) <: i32)
-          <:
-          i32) +!
-        ((cast (a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] <: i16) <: i32) *!
-          (cast (b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) <: i32)
-          <:
-          i32)
-        <:
-        i32)
-  in
+  let ai_bj:i32 = (cast (ai <: i16) <: i32) *! (cast (bj <: i16) <: i32) in
+  let aj_bi:i32 = (cast (aj <: i16) <: i32) *! (cast (bi <: i16) <: i32) in
+  let ai_bj_aj_bi:i32 = ai_bj +! aj_bi in
+  let _:Prims.unit = Spec.Utils.is_i32b (3328 * 3328 + 3328 * 3328) ai_bj_aj_bi in
+  let o1:i16 = Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_reduce_element ai_bj_aj_bi in
+  let _:Prims.unit = admit () in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     {
       out with

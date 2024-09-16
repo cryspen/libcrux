@@ -74,19 +74,24 @@ val ntt_multiply_binomials
       (i j: usize)
       (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires v i < 16 /\ v j < 16 /\ Spec.Utils.is_i16b 1664 zeta)
+      (requires
+        v i < 16 /\ v j < 16 /\ Spec.Utils.is_i16b 1664 zeta /\
+        Spec.Utils.is_i16b_array a.f_elements /\ Spec.Utils.is_i16b_array b.f_elements)
       (ensures
         fun out_future ->
           let out_future:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = out_future in
-          let x, y =
-            Spec.MLKEM.Math.poly_base_case_multiply (v (Seq.index a.f_elements (v i)) % 3329)
-              (v (Seq.index a.f_elements (v j)) % 3329)
-              (v (Seq.index b.f_elements (v i)) % 3329)
-              (v (Seq.index b.f_elements (v j)) % 3329)
-              ((v zeta * 169) % 3329)
-          in
-          (x == v (Seq.index out_future.f_elements (v i)) % 3329 /\
-            y == v (Seq.index out_future.f_elements (v j)) % 3329))
+          (forall k.
+              (k <> v i /\ k <> v j) ==>
+              Seq.index out_future.f_elements k == Seq.index out.f_elements k) /\
+          (let x, y =
+              Spec.MLKEM.Math.poly_base_case_multiply (v (Seq.index a.f_elements (v i)) % 3329)
+                (v (Seq.index a.f_elements (v j)) % 3329)
+                (v (Seq.index b.f_elements (v i)) % 3329)
+                (v (Seq.index b.f_elements (v j)) % 3329)
+                ((v zeta * 169) % 3329)
+            in
+            (x == v (Seq.index out_future.f_elements (v i)) % 3329 /\
+              y == v (Seq.index out_future.f_elements (v j)) % 3329)))
 
 val ntt_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
