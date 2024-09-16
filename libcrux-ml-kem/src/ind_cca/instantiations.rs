@@ -261,7 +261,6 @@ macro_rules! instantiate {
             }
 
             /// Unpacked API
-            #[cfg(feature = "unpacked")]
             pub(crate) mod unpacked {
                 use super::*;
 

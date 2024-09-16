@@ -1,7 +1,5 @@
 use core::array::from_fn;
 
-#[cfg(feature = "unpacked")]
-use crate::variant::MlKem;
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     hash_functions::Hash,
@@ -18,7 +16,7 @@ use crate::{
         serialize_uncompressed_ring_element,
     },
     utils::into_padded_array,
-    variant::Variant,
+    variant::{MlKem, Variant},
     vector::Operations,
 };
 
@@ -41,7 +39,6 @@ pub mod unpacked {
     }
 
     /// An unpacked ML-KEM IND-CPA Private Key
-    #[cfg(feature = "unpacked")]
     #[derive(Clone)]
     pub(crate) struct IndCpaPublicKeyUnpacked<const K: usize, Vector: Operations> {
         pub(crate) t_as_ntt: [PolynomialRingElement<Vector>; K],
@@ -373,7 +370,6 @@ fn compress_then_serialize_u<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
-#[cfg(feature = "unpacked")]
 pub(crate) fn encrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -470,9 +466,12 @@ pub(crate) fn encrypt<
     message: [u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
+    let mut unpacked_public_key = IndCpaPublicKeyUnpacked::<K, Vector>::default();
+
     // tˆ := Decode_12(pk)
-    let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
+    deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
         &public_key[..T_AS_NTT_ENCODED_SIZE],
+        &mut unpacked_public_key.t_as_ntt,
     );
 
     // ρ := pk + 12·k·n / 8
@@ -482,59 +481,29 @@ pub(crate) fn encrypt<
     //     end for
     // end for
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
-    let A = sample_matrix_a_out::<K, Vector, Hasher>(into_padded_array(seed), false);
-
-    // Note that we do not use the unpacked function internally here and instead
-    // duplicate the code to avoid blowing up the stack.
-
-    // for i from 0 to k−1 do
-    //     r[i] := CBD{η1}(PRF(r, N))
-    //     N := N + 1
-    // end for
-    // rˆ := NTT(r)
-    let mut prf_input: [u8; 33] = into_padded_array(randomness);
-    let (r_as_ntt, domain_separator) =
-        sample_vector_cbd_then_ntt_out::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
-            prf_input, 0,
-        );
-
-    // for i from 0 to k−1 do
-    //     e1[i] := CBD_{η2}(PRF(r,N))
-    //     N := N + 1
-    // end for
-    let (error_1, domain_separator) =
-        sample_ring_element_cbd::<K, ETA2_RANDOMNESS_SIZE, ETA2, Vector, Hasher>(
-            prf_input,
-            domain_separator,
-        );
-
-    // e_2 := CBD{η2}(PRF(r, N))
-    prf_input[32] = domain_separator;
-    let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = Hasher::PRF(&prf_input);
-    let error_2 = sample_from_binomial_distribution::<ETA2, Vector>(&prf_output);
-
-    // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-    let u = compute_vector_u(&A, &r_as_ntt, &error_1);
-
-    // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
-    let message_as_ring_element = deserialize_then_decompress_message(message);
-    let v = compute_ring_element_v(&t_as_ntt, &r_as_ntt, &error_2, &message_as_ring_element);
-
-    let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
-
-    // c_1 := Encode_{du}(Compress_q(u,d_u))
-    compress_then_serialize_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN, Vector>(
-        u,
-        &mut ciphertext[0..C1_LEN],
+    sample_matrix_A::<K, Vector, Hasher>(
+        &mut unpacked_public_key.A,
+        into_padded_array(seed),
+        false,
     );
 
-    // c_2 := Encode_{dv}(Compress_q(v,d_v))
-    compress_then_serialize_ring_element_v::<V_COMPRESSION_FACTOR, C2_LEN, Vector>(
-        v,
-        &mut ciphertext[C1_LEN..],
-    );
-
-    ciphertext
+    // After unpacking the public key we can now call the unpacked decryption.
+    encrypt_unpacked::<
+        K,
+        CIPHERTEXT_SIZE,
+        T_AS_NTT_ENCODED_SIZE,
+        C1_LEN,
+        C2_LEN,
+        U_COMPRESSION_FACTOR,
+        V_COMPRESSION_FACTOR,
+        BLOCK_LEN,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        Vector,
+        Hasher,
+    >(&unpacked_public_key, message, randomness)
 }
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
@@ -638,7 +607,6 @@ pub(crate) fn decrypt<
 ) -> [u8; SHARED_SECRET_SIZE] {
     // sˆ := Decode_12(sk)
     let secret_as_ntt = deserialize_secret_key::<K, Vector>(secret_key);
-
     let secret_key_unpacked = IndCpaPrivateKeyUnpacked { secret_as_ntt };
 
     decrypt_unpacked::<

@@ -222,8 +222,6 @@ macro_rules! instantiate {
             }
 
             /// Unpacked APIs that don't use serialized keys.
-            #[cfg(feature = "unpacked")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
             pub mod unpacked {
                 use super::*;
 
@@ -305,8 +303,6 @@ macro_rules! instantiate {
                 ()"
                     )
                 )]
-                #[cfg(feature = "unpacked")]
-                #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
                 pub fn encapsulate(
                     public_key: &MlKem768PublicKeyUnpacked,
                     randomness: [u8; SHARED_SECRET_SIZE],
@@ -333,8 +329,6 @@ macro_rules! instantiate {
                 /// Generates an [`MlKemSharedSecret`].
                 /// The input is a reference to an unpacked key pair of type [`MlKem768KeyPairUnpacked`]
                 /// and an [`MlKem768Ciphertext`].
-                #[cfg(feature = "unpacked")]
-                #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
                 pub fn decapsulate(
                     private_key: &MlKem768KeyPairUnpacked,
                     ciphertext: &MlKem768Ciphertext,

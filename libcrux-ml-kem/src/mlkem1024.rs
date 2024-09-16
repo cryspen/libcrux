@@ -222,8 +222,6 @@ macro_rules! instantiate {
             }
 
             /// Unpacked APIs that don't use serialized keys.
-            #[cfg(feature = "unpacked")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
             pub mod unpacked {
                 use super::*;
 
@@ -269,8 +267,6 @@ macro_rules! instantiate {
                 }
 
                 /// Generate ML-KEM 1024 Key Pair in "unpacked" form
-                #[cfg(feature = "unpacked")]
-                #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
                 pub fn generate_key_pair(
                     randomness: [u8; KEY_GENERATION_SEED_SIZE],
                     key_pair: &mut MlKem1024KeyPairUnpacked,

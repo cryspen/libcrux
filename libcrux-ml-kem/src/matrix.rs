@@ -30,18 +30,6 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
     }
 }
 
-#[inline(always)]
-pub(crate) fn sample_matrix_a_out<const K: usize, Vector: Operations, Hasher: Hash<K>>(
-    seed: [u8; 34],
-    transpose: bool,
-) -> [[PolynomialRingElement<Vector>; K]; K] {
-    let mut a = core::array::from_fn(|_i| {
-        core::array::from_fn(|_j| PolynomialRingElement::<Vector>::ZERO())
-    });
-    sample_matrix_A::<K, Vector, Hasher>(&mut a, seed, transpose);
-    a
-}
-
 /// The following functions compute various expressions involving
 /// vectors and matrices. The computation of these expressions has been
 /// abstracted away into these functions in order to save on loop iterations.

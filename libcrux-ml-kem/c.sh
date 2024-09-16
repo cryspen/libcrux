@@ -41,7 +41,6 @@ while [ $# -gt 0 ]; do
     --glue) glue="$2"; shift ;;
     --mlkem768) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
     --kyber768) features="${features} --cargo-arg=--features=kyber" ;;
-    --unpacked) features="${features} --cargo-arg=--features=unpacked" ;;
     --no-glue) eurydice_glue=0 ;;
     --no-karamel_include) karamel_include=0 ;;
     --no-unrolling) unrolling=0 ;;

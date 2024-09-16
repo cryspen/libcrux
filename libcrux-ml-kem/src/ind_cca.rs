@@ -3,7 +3,7 @@ use crate::{
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::Hash,
     ind_cpa::serialize_public_key,
-    serialize::deserialize_ring_elements_reduced,
+    serialize::deserialize_ring_elements_reduced_out,
     types::*,
     utils::into_padded_array,
     variant::*,
@@ -67,7 +67,7 @@ fn validate_public_key<
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    let deserialized_pk = deserialize_ring_elements_reduced::<PUBLIC_KEY_SIZE, K, Vector>(
+    let deserialized_pk = deserialize_ring_elements_reduced_out::<PUBLIC_KEY_SIZE, K, Vector>(
         &public_key[..RANKED_BYTES_PER_RING_ELEMENT],
     );
     let public_key_serialized =
@@ -277,7 +277,6 @@ pub(crate) fn decapsulate<
 }
 
 /// Types for the unpacked API.
-#[cfg(feature = "unpacked")]
 pub(crate) mod unpacked {
     use core::array::from_fn;
 
@@ -287,8 +286,9 @@ pub(crate) mod unpacked {
             compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
         },
         ind_cpa::{generate_keypair_unpacked, serialize_public_key_mut, unpacked::*},
-        matrix::sample_matrix_a_out,
+        matrix::sample_matrix_A,
         polynomial::PolynomialRingElement,
+        serialize::deserialize_ring_elements_reduced,
         vector::traits::Operations,
     };
 
@@ -324,13 +324,14 @@ pub(crate) mod unpacked {
         public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
         unpacked_public_key: &mut MlKemPublicKeyUnpacked<K, Vector>,
     ) {
-        unpacked_public_key.ind_cpa_public_key.t_as_ntt =
-            deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
-                &public_key.value[..T_AS_NTT_ENCODED_SIZE],
-            );
+        deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
+            &public_key.value[..T_AS_NTT_ENCODED_SIZE],
+            &mut unpacked_public_key.ind_cpa_public_key.t_as_ntt,
+        );
         unpacked_public_key.ind_cpa_public_key.seed_for_A =
             into_padded_array(&public_key.value[T_AS_NTT_ENCODED_SIZE..]);
-        unpacked_public_key.ind_cpa_public_key.A = sample_matrix_a_out::<K, Vector, Hasher>(
+        sample_matrix_A::<K, Vector, Hasher>(
+            &mut unpacked_public_key.ind_cpa_public_key.A,
             into_padded_array(&public_key.value[T_AS_NTT_ENCODED_SIZE..]),
             false,
         );

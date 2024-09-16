@@ -13,25 +13,20 @@ macro_rules! init {
 
         use $version as version;
         #[cfg(feature = "pre-verification")]
-        fun!("portable", version::portable, group);
-        #[cfg(all(feature = "pre-verification", feature = "unpacked"))]
-        fun_unpacked!("portable", version::portable::unpacked, group);
+        {
+            fun!("portable", version::portable, group);
+            fun_unpacked!("portable", version::portable::unpacked, group);
+        }
         #[cfg(all(feature = "simd128", feature = "pre-verification"))]
-        fun!("neon", version::neon, group);
-        #[cfg(all(
-            feature = "simd128",
-            feature = "pre-verification",
-            feature = "unpacked"
-        ))]
-        fun_unpacked!("neon", version::neon::unpacked, group);
+        {
+            fun!("neon", version::neon, group);
+            fun_unpacked!("neon", version::neon::unpacked, group);
+        }
         #[cfg(all(feature = "simd256", feature = "pre-verification"))]
-        fun!("avx2", version::avx2, group);
-        #[cfg(all(
-            feature = "simd256",
-            feature = "pre-verification",
-            feature = "unpacked"
-        ))]
-        fun_unpacked!("avx2", version::avx2::unpacked, group);
+        {
+            fun!("avx2", version::avx2, group);
+            fun_unpacked!("avx2", version::avx2::unpacked, group);
+        }
         #[cfg(not(feature = "pre-verification"))]
         fun!("verified", version, group);
     }};

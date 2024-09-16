@@ -220,8 +220,6 @@ macro_rules! instantiate {
 
 
             /// Unpacked APIs that don't use serialized keys.
-            #[cfg(feature = "unpacked")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
             pub mod unpacked {
                 use super::*;
 
