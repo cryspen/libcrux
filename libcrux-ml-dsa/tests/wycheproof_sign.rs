@@ -48,7 +48,8 @@ macro_rules! wycheproof_sign_test {
                 for test in test_group.tests {
                     let message = hex::decode(test.msg).unwrap();
 
-                    let signature = $sign(&signing_key, &message, signing_randomness);
+                    let signature = $sign(&signing_key, &message, signing_randomness)
+                        .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
                     if test.result == Result::Valid {
                         assert_eq!(

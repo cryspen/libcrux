@@ -2,7 +2,7 @@ use crate::{
     constants::*,
     ml_dsa_generic::{self, multiplexing},
     types::*,
-    VerificationError,
+    SigningError, VerificationError,
 };
 
 // ML-DSA-44-specific parameters
@@ -97,7 +97,7 @@ macro_rules! instantiate {
                 signing_key: &MLDSA44SigningKey,
                 message: &[u8],
                 randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-            ) -> MLDSA44Signature {
+            ) -> Result<MLDSA44Signature, SigningError> {
                 p::sign::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
@@ -183,7 +183,7 @@ pub fn sign(
     signing_key: &MLDSA44SigningKey,
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-) -> MLDSA44Signature {
+) -> Result<MLDSA44Signature, SigningError> {
     multiplexing::sign::<
         ROWS_IN_A,
         COLUMNS_IN_A,

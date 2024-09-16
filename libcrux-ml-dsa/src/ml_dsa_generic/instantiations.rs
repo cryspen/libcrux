@@ -1,7 +1,11 @@
 macro_rules! instantiate {
     ($modp:ident, $simdunit:path, $shake128x4:path, $shake256:path, $shake256x4:path) => {
         pub mod $modp {
-            use crate::{constants::*, ml_dsa_generic::VerificationError, types::*};
+            use crate::{
+                constants::*,
+                ml_dsa_generic::{SigningError, VerificationError},
+                types::*,
+            };
 
             /// Generate key pair.
             pub(crate) fn generate_key_pair<
@@ -48,7 +52,7 @@ macro_rules! instantiate {
                 signing_key: &[u8; SIGNING_KEY_SIZE],
                 message: &[u8],
                 randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-            ) -> MLDSASignature<SIGNATURE_SIZE> {
+            ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
                 crate::ml_dsa_generic::sign::<
                     $simdunit,
                     $shake128x4,
@@ -125,7 +129,7 @@ instantiate! {portable,
 // AVX2 generic implementation.
 #[cfg(feature = "simd256")]
 instantiate! {avx2,
-    crate::simd::portable::PortableSIMDUnit,
+    crate::simd::avx2::AVX2SIMDUnit,
     crate::hash_functions::simd256::Shake128x4,
     crate::hash_functions::simd256::Shake256,
     crate::hash_functions::simd256::Shake256x4
