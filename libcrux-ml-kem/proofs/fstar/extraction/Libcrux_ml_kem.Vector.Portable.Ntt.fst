@@ -201,9 +201,9 @@ let ntt_multiply_binomials
       ((((v ai * v bi) + ((v aj_bj * v zeta) % 3329)) % 3329) * 169) % 3329;
       ( == ) { Math.Lemmas.lemma_mod_mul_distr_l (v aj_bj) (v zeta) 3329 }
       ((((v ai * v bi) + (((v aj_bj % 3329) * v zeta) % 3329)) % 3329) * 169) % 3329;
-      ( == ) { assert (v aj_bj % 3329 == (v aj_bj_ * 169) % 3329) }
-      ((((v ai * v bi) + ((((v aj_bj_ * 169) % 3329) * v zeta) % 3329)) % 3329) * 169) % 3329;
-      ( == ) { assert (v aj_bj_ == v aj * v bj) }
+      ( == ) { assert (v aj_bj % 3329 == (v aj_bj___ * 169) % 3329) }
+      ((((v ai * v bi) + ((((v aj_bj___ * 169) % 3329) * v zeta) % 3329)) % 3329) * 169) % 3329;
+      ( == ) { assert (v aj_bj___ == v aj * v bj) }
       ((((v ai * v bi) + ((((v aj * v bj * 169) % 3329) * v zeta) % 3329)) % 3329) * 169) % 3329;
       ( == ) { Math.Lemmas.lemma_mod_mul_distr_l (v aj * v bj * 169) (v zeta) 3329 }
       ((((v ai * v bi) + (((v aj * v bj * 169 * v zeta) % 3329))) % 3329) * 169) % 3329;
