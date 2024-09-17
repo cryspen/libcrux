@@ -177,11 +177,21 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         }
         <:
         t_SIMD256Vector);
-    f_compress_1_pre = (fun (vector: t_SIMD256Vector) -> true);
-    f_compress_1_post = (fun (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    f_compress_1_pre
+    =
+    (fun (vector: t_SIMD256Vector) ->
+        forall (i: nat).
+          i < 16 ==>
+          v (Seq.index (impl.f_repr vector) i) >= 0 /\
+          v (Seq.index (impl.f_repr vector) i) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS);
+    f_compress_1_post
+    =
+    (fun (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->
+        forall (i: nat). i < 16 ==> bounded (Seq.index (impl.f_repr out) i) 1);
     f_compress_1_
     =
     (fun (vector: t_SIMD256Vector) ->
+        let _:Prims.unit = admit () in
         {
           f_elements
           =
@@ -192,14 +202,23 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_compress_pre
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) ->
-        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
-        v_COEFFICIENT_BITS =. 11l);
+        (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
+          v v_COEFFICIENT_BITS == 11) /\
+        (forall (i: nat).
+            i < 16 ==>
+            v (Seq.index (impl.f_repr vector) i) >= 0 /\
+            v (Seq.index (impl.f_repr vector) i) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS));
     f_compress_post
     =
-    (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->
+        (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
+          v v_COEFFICIENT_BITS == 11) ==>
+        (forall (i: nat). i < 16 ==> bounded (Seq.index (impl.f_repr out) i) (v v_COEFFICIENT_BITS))
+    );
     f_compress
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) ->
+        let _:Prims.unit = admit () in
         {
           f_elements
           =

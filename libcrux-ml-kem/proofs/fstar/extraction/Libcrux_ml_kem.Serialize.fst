@@ -9,7 +9,18 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-#push-options "--admit_smt_queries true"
+let to_unsigned_field_modulus
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (a: v_Vector)
+     =
+  let result:v_Vector = Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector a in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
+
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
 
 let compress_then_serialize_10_
       (v_OUT_LEN: usize)
@@ -19,23 +30,37 @@ let compress_then_serialize_10_
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =
+  let _:Prims.unit = assert_norm (pow2 10 == 1024) in
   let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let serialized:t_Array u8 v_OUT_LEN =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
-      (fun serialized temp_1_ ->
+      (fun serialized i ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          v i >= 0 /\ v i <= 16 /\
+          (v i < 16 ==>
+            (forall (j: nat).
+                j < 16 ==>
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ])
+                      j) >=
+                -
+                (v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) /\
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ])
+                      j) <
+                v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)))
       serialized
       (fun serialized i ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
+          let _:Prims.unit = assert (20 * v i + 20 <= 320) in
           let coefficient:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_compress #v_Vector
               #FStar.Tactics.Typeclasses.solve
               10l
-              (Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector
+              (to_unsigned_field_modulus #v_Vector
                   (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
                 <:
                 v_Vector)
@@ -68,7 +93,9 @@ let compress_then_serialize_10_
           in
           serialized)
   in
-  serialized
+  let result:t_Array u8 v_OUT_LEN = serialized in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #pop-options
 
@@ -135,7 +162,7 @@ let compress_then_serialize_11_
 
 #pop-options
 
-#push-options "--admit_smt_queries true"
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
 
 let compress_then_serialize_4_
       (#v_Vector: Type0)
@@ -145,6 +172,7 @@ let compress_then_serialize_4_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (serialized: t_Slice u8)
      =
+  let _:Prims.unit = assert_norm (pow2 4 == 16) in
   let v__serialized_len:usize = Core.Slice.impl__len #u8 serialized in
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
@@ -152,16 +180,29 @@ let compress_then_serialize_4_
       (fun serialized i ->
           let serialized:t_Slice u8 = serialized in
           let i:usize = i in
-          (Core.Slice.impl__len #u8 serialized <: usize) =. v__serialized_len <: bool)
+          v i >= 0 /\ v i <= 16 /\ Seq.length serialized == v v__serialized_len /\
+          (v i < 16 ==>
+            (forall (j: nat).
+                j < 16 ==>
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ])
+                      j) >=
+                -
+                (v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) /\
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ])
+                      j) <
+                v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)))
       serialized
       (fun serialized i ->
           let serialized:t_Slice u8 = serialized in
           let i:usize = i in
+          let _:Prims.unit = assert (8 * v i + 8 <= 128) in
           let coefficient:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_compress #v_Vector
               #FStar.Tactics.Typeclasses.solve
               4l
-              (Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector
+              (to_unsigned_field_modulus #v_Vector
                   (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
                 <:
                 v_Vector)
@@ -194,7 +235,9 @@ let compress_then_serialize_4_
           in
           serialized)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
+  let result:Prims.unit = () <: Prims.unit in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  let hax_temp_output:Prims.unit = result in
   serialized
 
 #pop-options
@@ -263,8 +306,6 @@ let compress_then_serialize_5_
 
 #pop-options
 
-#push-options "--admit_smt_queries true"
-
 let compress_then_serialize_message
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -276,16 +317,28 @@ let compress_then_serialize_message
   let serialized:t_Array u8 (sz 32) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 16)
-      (fun serialized temp_1_ ->
+      (fun serialized i ->
           let serialized:t_Array u8 (sz 32) = serialized in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          v i < 16 ==>
+          (forall (j: nat).
+              j < 16 ==>
+              v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                          .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ])
+                    j) >=
+              -
+              (v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) /\
+              v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                          .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ])
+                    j) <
+              v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS))
       serialized
       (fun serialized i ->
           let serialized:t_Array u8 (sz 32) = serialized in
           let i:usize = i in
+          let _:Prims.unit = assert (2 * v i + 2 <= 32) in
           let coefficient:v_Vector =
-            Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector
+            to_unsigned_field_modulus #v_Vector
               (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
           in
           let coefficient_compressed:v_Vector =
@@ -321,9 +374,11 @@ let compress_then_serialize_message
           in
           serialized)
   in
-  serialized
+  let result:t_Array u8 (sz 32) = serialized in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
-#pop-options
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
 
 let compress_then_serialize_ring_element_u
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
@@ -335,7 +390,8 @@ let compress_then_serialize_ring_element_u
      =
   let _:Prims.unit =
     assert ((v (cast v_COMPRESSION_FACTOR <: u32) == 10) \/
-        (v (cast v_COMPRESSION_FACTOR <: u32) == 11))
+        (v (cast v_COMPRESSION_FACTOR <: u32) == 11));
+    Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR)
   in
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> compress_then_serialize_10_ v_OUT_LEN #v_Vector re
@@ -345,6 +401,10 @@ let compress_then_serialize_ring_element_u
 
         <:
         Rust_primitives.Hax.t_Never)
+
+#pop-options
+
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
 
 let compress_then_serialize_ring_element_v
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
@@ -357,7 +417,8 @@ let compress_then_serialize_ring_element_v
      =
   let _:Prims.unit =
     assert ((v (cast v_COMPRESSION_FACTOR <: u32) == 4) \/
-        (v (cast v_COMPRESSION_FACTOR <: u32) == 5))
+        (v (cast v_COMPRESSION_FACTOR <: u32) == 5));
+    Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR)
   in
   let out, hax_temp_output:(t_Slice u8 & Prims.unit) =
     match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
@@ -373,6 +434,8 @@ let compress_then_serialize_ring_element_v
       (t_Slice u8 & Prims.unit)
   in
   out
+
+#pop-options
 
 let deserialize_then_decompress_10_
       (#v_Vector: Type0)
@@ -821,7 +884,7 @@ let deserialize_to_uncompressed_ring_element
   in
   re
 
-#push-options "--admit_smt_queries true"
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
 
 let serialize_uncompressed_ring_element
       (#v_Vector: Type0)
@@ -830,20 +893,34 @@ let serialize_uncompressed_ring_element
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =
+  let _:Prims.unit = assert_norm (pow2 12 == 4096) in
   let serialized:t_Array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
   let serialized:t_Array u8 (sz 384) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
-      (fun serialized temp_1_ ->
+      (fun serialized i ->
           let serialized:t_Array u8 (sz 384) = serialized in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          v i >= 0 /\ v i <= 16 /\
+          (v i < 16 ==>
+            (forall (j: nat).
+                j < 16 ==>
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ])
+                      j) >=
+                -
+                (v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) /\
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ])
+                      j) <
+                v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)))
       serialized
       (fun serialized i ->
           let serialized:t_Array u8 (sz 384) = serialized in
           let i:usize = i in
+          let _:Prims.unit = assert (24 * v i + 24 <= 384) in
           let coefficient:v_Vector =
-            Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector
+            to_unsigned_field_modulus #v_Vector
               (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
           in
           let bytes:t_Array u8 (sz 24) =
@@ -874,6 +951,8 @@ let serialize_uncompressed_ring_element
           in
           serialized)
   in
-  serialized
+  let result:t_Array u8 (sz 384) = serialized in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #pop-options

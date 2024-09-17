@@ -101,17 +101,32 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_montgomery_multiply_by_constant_pre x0 x1)
         (fun result -> f_montgomery_multiply_by_constant_post x0 x1 result);
-  f_compress_1_pre:v: v_Self -> pred: Type0{true ==> pred};
-  f_compress_1_post:v_Self -> v_Self -> Type0;
-  f_compress_1_:x0: v_Self
-    -> Prims.Pure v_Self (f_compress_1_pre x0) (fun result -> f_compress_1_post x0 result);
-  f_compress_pre:v_COEFFICIENT_BITS: i32 -> v: v_Self
+  f_compress_1_pre:a: v_Self
     -> pred:
       Type0
-        { v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
-          v_COEFFICIENT_BITS =. 11l ==>
+        { (forall (i: nat).
+              i < 16 ==> v (Seq.index (f_repr a) i) >= 0 /\ v (Seq.index (f_repr a) i) < 3329) ==>
           pred };
-  f_compress_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> Type0;
+  f_compress_1_post:a: v_Self -> result: v_Self
+    -> pred: Type0{pred ==> (forall (i: nat). i < 16 ==> bounded (Seq.index (f_repr result) i) 1)};
+  f_compress_1_:x0: v_Self
+    -> Prims.Pure v_Self (f_compress_1_pre x0) (fun result -> f_compress_1_post x0 result);
+  f_compress_pre:v_COEFFICIENT_BITS: i32 -> a: v_Self
+    -> pred:
+      Type0
+        { (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
+            v v_COEFFICIENT_BITS == 11) /\
+          (forall (i: nat).
+              i < 16 ==> v (Seq.index (f_repr a) i) >= 0 /\ v (Seq.index (f_repr a) i) < 3329) ==>
+          pred };
+  f_compress_post:v_COEFFICIENT_BITS: i32 -> a: v_Self -> result: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
+            v v_COEFFICIENT_BITS == 11) ==>
+          (forall (i: nat). i < 16 ==> bounded (Seq.index (f_repr result) i) (v v_COEFFICIENT_BITS))
+        };
   f_compress:v_COEFFICIENT_BITS: i32 -> x0: v_Self
     -> Prims.Pure v_Self
         (f_compress_pre v_COEFFICIENT_BITS x0)
@@ -333,4 +348,12 @@ val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
 
 val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
-    : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure v_T
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:v_T = result in
+          f_to_i16_array result ==
+          Spec.Utils.map2 ( +. )
+            (f_to_i16_array a)
+            (Spec.Utils.map_array (fun x -> (x >>! 15l) &. v_FIELD_MODULUS) (f_to_i16_array a)))

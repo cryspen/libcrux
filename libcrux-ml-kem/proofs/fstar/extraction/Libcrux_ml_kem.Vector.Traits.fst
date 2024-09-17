@@ -45,4 +45,6 @@ let to_unsigned_representative
   let fm:v_T =
     f_bitwise_and_with_constant #v_T #FStar.Tactics.Typeclasses.solve t v_FIELD_MODULUS
   in
-  f_add #v_T #FStar.Tactics.Typeclasses.solve a fm
+  let result:v_T = f_add #v_T #FStar.Tactics.Typeclasses.solve a fm in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result

@@ -9,19 +9,57 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+val to_unsigned_field_modulus
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (a: v_Vector)
+    : Prims.Pure v_Vector
+      (requires
+        forall (i: nat).
+          i < 16 ==>
+          v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i) >=
+          -
+          (v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) /\
+          v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i) <
+          v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)
+      (ensures
+        fun result ->
+          let result:v_Vector = result in
+          forall (i: nat).
+            i < 16 ==>
+            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array result) i) >= 0 /\
+            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array result) i) <
+            v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)
+
 val compress_then_serialize_10_
       (v_OUT_LEN: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_Array u8 v_OUT_LEN) (requires v_OUT_LEN =. sz 320) (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_OUT_LEN)
+      (requires
+        v v_OUT_LEN == 320 /\
+        (forall (i: nat).
+            i < 16 ==>
+            (forall (j: nat).
+                j < 16 ==>
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ sz i ])
+                      j) >=
+                -
+                (v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) /\
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ sz i ])
+                      j) <
+                v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)))
+      (fun _ -> Prims.l_True)
 
 val compress_then_serialize_11_
       (v_OUT_LEN: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_Array u8 v_OUT_LEN) (requires v_OUT_LEN =. sz 352) (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
 val compress_then_serialize_4_
       (#v_Vector: Type0)
@@ -29,7 +67,21 @@ val compress_then_serialize_4_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (serialized: t_Slice u8)
     : Prims.Pure (t_Slice u8)
-      (requires (Core.Slice.impl__len #u8 serialized <: usize) =. sz 128)
+      (requires
+        Seq.length serialized == 128 /\
+        (forall (i: nat).
+            i < 16 ==>
+            (forall (j: nat).
+                j < 16 ==>
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ sz i ])
+                      j) >=
+                -
+                (v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) /\
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ sz i ])
+                      j) <
+                v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)))
       (fun _ -> Prims.l_True)
 
 val compress_then_serialize_5_
@@ -45,7 +97,22 @@ val compress_then_serialize_message
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 32))
+      (requires
+        forall (i: nat).
+          i < 16 ==>
+          (forall (j: nat).
+              j < 16 ==>
+              v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                          .Libcrux_ml_kem.Polynomial.f_coefficients.[ sz i ])
+                    j) >=
+              -
+              (v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) /\
+              v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                          .Libcrux_ml_kem.Polynomial.f_coefficients.[ sz i ])
+                    j) <
+              v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS))
+      (fun _ -> Prims.l_True)
 
 val compress_then_serialize_ring_element_u
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
@@ -54,8 +121,21 @@ val compress_then_serialize_ring_element_u
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_Array u8 v_OUT_LEN)
       (requires
-        (v_COMPRESSION_FACTOR =. sz 10 || v_COMPRESSION_FACTOR =. sz 11) &&
-        v_OUT_LEN =. (sz 32 *! v_COMPRESSION_FACTOR <: usize))
+        (v v_COMPRESSION_FACTOR == 10 \/ v v_COMPRESSION_FACTOR == 11) /\
+        v v_OUT_LEN == 32 * v v_COMPRESSION_FACTOR /\
+        (forall (i: nat).
+            i < 16 ==>
+            (forall (j: nat).
+                j < 16 ==>
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ sz i ])
+                      j) >=
+                -
+                (v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) /\
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ sz i ])
+                      j) <
+                v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)))
       (fun _ -> Prims.l_True)
 
 val compress_then_serialize_ring_element_v
@@ -66,9 +146,21 @@ val compress_then_serialize_ring_element_v
       (out: t_Slice u8)
     : Prims.Pure (t_Slice u8)
       (requires
-        (v_COMPRESSION_FACTOR =. sz 4 || v_COMPRESSION_FACTOR =. sz 5) &&
-        v_OUT_LEN =. (sz 32 *! v_COMPRESSION_FACTOR <: usize) &&
-        (Core.Slice.impl__len #u8 out <: usize) =. v_OUT_LEN)
+        (v v_COMPRESSION_FACTOR == 4 \/ v v_COMPRESSION_FACTOR == 5) /\
+        v v_OUT_LEN == 32 * v v_COMPRESSION_FACTOR /\ Seq.length out == v v_OUT_LEN /\
+        (forall (i: nat).
+            i < 16 ==>
+            (forall (j: nat).
+                j < 16 ==>
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ sz i ])
+                      j) >=
+                -
+                (v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) /\
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                            .Libcrux_ml_kem.Polynomial.f_coefficients.[ sz i ])
+                      j) <
+                v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)))
       (ensures
         fun out_future ->
           let out_future:t_Slice u8 = out_future in
@@ -176,4 +268,19 @@ val serialize_uncompressed_ring_element
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_Array u8 (sz 384)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 384))
+      (requires
+        forall (i: nat).
+          i < 16 ==>
+          (forall (j: nat).
+              j < 16 ==>
+              v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                          .Libcrux_ml_kem.Polynomial.f_coefficients.[ sz i ])
+                    j) >=
+              -
+              (v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) /\
+              v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re
+                          .Libcrux_ml_kem.Polynomial.f_coefficients.[ sz i ])
+                    j) <
+              v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS))
+      (fun _ -> Prims.l_True)

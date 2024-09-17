@@ -206,41 +206,52 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_by_constant v r);
     f_compress_1_pre
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        forall (i: nat).
+          i < 16 ==>
+          v (Seq.index (impl.f_repr a) i) >= 0 /\
+          v (Seq.index (impl.f_repr a) i) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS);
     f_compress_1_post
     =
     (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        forall (i: nat). i < 16 ==> bounded (Seq.index (impl.f_repr out) i) 1);
     f_compress_1_
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Compress.compress_1_ v);
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Libcrux_ml_kem.Vector.Portable.Compress.compress_1_ a);
     f_compress_pre
     =
     (fun
         (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
-        v_COEFFICIENT_BITS =. 11l);
+        (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
+          v v_COEFFICIENT_BITS == 11) /\
+        (forall (i: nat).
+            i < 16 ==>
+            v (Seq.index (impl.f_repr a) i) >= 0 /\
+            v (Seq.index (impl.f_repr a) i) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS));
     f_compress_post
     =
     (fun
         (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
+          v v_COEFFICIENT_BITS == 11) ==>
+        (forall (i: nat). i < 16 ==> bounded (Seq.index (impl.f_repr out) i) (v v_COEFFICIENT_BITS))
+    );
     f_compress
     =
     (fun
         (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        Libcrux_ml_kem.Vector.Portable.Compress.compress v_COEFFICIENT_BITS v);
+        Libcrux_ml_kem.Vector.Portable.Compress.compress v_COEFFICIENT_BITS a);
     f_decompress_ciphertext_coefficient_pre
     =
     (fun
