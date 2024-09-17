@@ -36,7 +36,6 @@ macro_rules! impl_consistency {
 
 #[cfg(all(feature = "pre-verification",))]
 macro_rules! impl_consistency_unpacked {
-    // $key_gen:expr, $encaps:expr, $key_gen_unpacked:expr, $encaps_unpacked:expr, $decaps_unpacked:expr
     ($name:ident, $modp:path) => {
         #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
         #[test]
