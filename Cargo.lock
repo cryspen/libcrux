@@ -1046,6 +1046,7 @@ dependencies = [
  "libcrux-intrinsics",
  "libcrux-platform",
  "libcrux-sha3",
+ "libcrux-zeroize",
  "rand",
  "serde",
  "serde_json",
@@ -1094,6 +1095,10 @@ dependencies = [
  "pretty_env_logger",
  "rand",
 ]
+
+[[package]]
+name = "libcrux-zeroize"
+version = "0.0.2-alpha.3"
 
 [[package]]
 name = "libfuzzer-sys"

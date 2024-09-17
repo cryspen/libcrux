@@ -280,6 +280,8 @@ pub(crate) fn decapsulate<
 pub(crate) mod unpacked {
     use core::array::from_fn;
 
+    use libcrux_zeroize::Zeroize;
+
     use super::*;
     use crate::{
         constant_time_ops::{
@@ -296,6 +298,14 @@ pub(crate) mod unpacked {
     pub struct MlKemPrivateKeyUnpacked<const K: usize, Vector: Operations> {
         pub(crate) ind_cpa_private_key: IndCpaPrivateKeyUnpacked<K, Vector>,
         pub(crate) implicit_rejection_value: [u8; 32],
+    }
+
+    impl<const K: usize, Vector: Operations> Drop for MlKemPrivateKeyUnpacked<K, Vector> {
+        fn drop(&mut self) {
+            use libcrux_zeroize::*;
+
+            self.implicit_rejection_value.zeroize();
+        }
     }
 
     /// An unpacked ML-KEM IND-CCA Private Key
@@ -588,6 +598,7 @@ pub(crate) mod unpacked {
             into_padded_array(&key_pair.private_key.implicit_rejection_value);
         to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
         let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
+        to_hash.zeroize();
 
         let expected_ciphertext = crate::ind_cpa::encrypt_unpacked::<
             K,

@@ -66,6 +66,14 @@ macro_rules! impl_generic_struct {
                 SIZE
             }
         }
+
+        impl<const SIZE: usize> core::ops::Drop for $name<SIZE> {
+            fn drop(&mut self) {
+                use libcrux_zeroize::*;
+
+                self.value.zeroize();
+            }
+        }
     };
 }
 macro_rules! impl_index_impls_for_generic_struct {

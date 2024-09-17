@@ -38,6 +38,14 @@ pub mod unpacked {
         }
     }
 
+    impl<const K: usize, Vector: Operations> Drop for IndCpaPrivateKeyUnpacked<K, Vector> {
+        fn drop(&mut self) {
+            use libcrux_zeroize::*;
+
+            self.secret_as_ntt.zeroize();
+        }
+    }
+
     /// An unpacked ML-KEM IND-CPA Private Key
     #[derive(Clone)]
     pub(crate) struct IndCpaPublicKeyUnpacked<const K: usize, Vector: Operations> {

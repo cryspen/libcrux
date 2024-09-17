@@ -20,6 +20,14 @@ pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
 
+impl<Vector: Operations> Default for PolynomialRingElement<Vector> {
+    fn default() -> Self {
+        Self {
+            coefficients: [Vector::ZERO(); VECTORS_IN_RING_ELEMENT],
+        }
+    }
+}
+
 impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
