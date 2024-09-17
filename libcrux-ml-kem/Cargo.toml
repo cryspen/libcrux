@@ -47,9 +47,6 @@ mlkem512 = []
 mlkem768 = []
 mlkem1024 = []
 
-# Enable the unpacked API
-unpacked = []
-
 # Enable Round 3 Kyber in addition to ML-KEM
 kyber = []
 
@@ -86,7 +83,7 @@ name = "keygen"
 required-features = ["mlkem768"]
 
 [package.metadata."docs.rs"]
-features = ["pre-verification", "kyber", "unpacked"]
+features = ["pre-verification", "kyber"]
 rustdoc-args = ["--cfg", "doc_cfg"]
 
 [lints.rust]
