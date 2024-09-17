@@ -63,11 +63,22 @@ pub trait Operations: Copy + Clone + Repr {
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
 
     // Compression
-    #[requires(true)]
-    fn compress_1(v: Self) -> Self;
-    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
-               COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
-    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
+    #[requires(fstar!("forall (i:nat). i < 16 ==> v (Seq.index (f_repr $a) i) >= 0 /\\
+        v (Seq.index (f_repr $a) i) < 3329"))]
+    #[ensures(|result| fstar!("forall (i:nat). i < 16 ==> bounded (Seq.index (f_repr $result) i) 1"))]
+    fn compress_1(a: Self) -> Self;
+    #[requires(fstar!("(v $COEFFICIENT_BITS == 4 \\/
+            v $COEFFICIENT_BITS == 5 \\/
+            v $COEFFICIENT_BITS == 10 \\/
+            v $COEFFICIENT_BITS == 11) /\\
+        (forall (i:nat). i < 16 ==> v (Seq.index (f_repr $a) i) >= 0 /\\
+            v (Seq.index (f_repr $a) i) < 3329)"))]
+    #[ensures(|result| fstar!("(v $COEFFICIENT_BITS == 4 \\/
+            v $COEFFICIENT_BITS == 5 \\/
+            v $COEFFICIENT_BITS == 10 \\/
+            v $COEFFICIENT_BITS == 11) ==>
+                (forall (i:nat). i < 16 ==> bounded (Seq.index (f_repr $result) i) (v $COEFFICIENT_BITS))"))]
+    fn compress<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
     #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
         COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
@@ -186,6 +197,9 @@ pub fn to_standard_domain<T: Operations>(v: T) -> T {
     T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
 
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|result| fstar!("f_to_i16_array $result == Spec.Utils.map2 (+.) (f_to_i16_array $a)
+    (Spec.Utils.map_array (fun x -> (x >>! 15l) &. $FIELD_MODULUS) (f_to_i16_array $a))"))]
 pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
     let t = T::shift_right::<15>(a);
     let fm = T::bitwise_and_with_constant(t, FIELD_MODULUS);

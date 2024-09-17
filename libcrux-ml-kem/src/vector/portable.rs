@@ -15,6 +15,8 @@ use vector_type::*;
 
 pub(crate) use vector_type::PortableVector;
 
+use crate::vector::FIELD_MODULUS;
+
 #[cfg(hax)]
 impl crate::vector::traits::Repr for PortableVector {
     fn repr(x: Self) -> [i16; 16] {
@@ -83,14 +85,26 @@ impl Operations for PortableVector {
         montgomery_multiply_by_constant(v, r)
     }
 
-    fn compress_1(v: Self) -> Self {
-        compress_1(v)
+    #[requires(fstar!("forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\\
+        v (Seq.index (impl.f_repr $a) i) < v $FIELD_MODULUS"))]
+    #[ensures(|out| fstar!("forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) 1"))]
+    fn compress_1(a: Self) -> Self {
+        compress_1(a)
     }
 
-    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
-               COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
-    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
-        compress::<COEFFICIENT_BITS>(v)
+    #[requires(fstar!("(v $COEFFICIENT_BITS == 4 \\/
+            v $COEFFICIENT_BITS == 5 \\/
+            v $COEFFICIENT_BITS == 10 \\/
+            v $COEFFICIENT_BITS == 11) /\\
+        (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\\
+            v (Seq.index (impl.f_repr $a) i) < v $FIELD_MODULUS)"))]
+    #[ensures(|out| fstar!("(v $COEFFICIENT_BITS == 4 \\/
+            v $COEFFICIENT_BITS == 5 \\/
+            v $COEFFICIENT_BITS == 10 \\/
+            v $COEFFICIENT_BITS == 11) ==>
+                (forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) (v $COEFFICIENT_BITS))"))]
+    fn compress<const COEFFICIENT_BITS: i32>(a: Self) -> Self {
+        compress::<COEFFICIENT_BITS>(a)
     }
 
     #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
