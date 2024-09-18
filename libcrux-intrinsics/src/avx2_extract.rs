@@ -8,7 +8,9 @@
 #[hax_lib::fstar::replace(
     interface,
     "unfold type $:{Vec256} = bit_vec 256
-				      val vec256_as_i16x16 (x:t_Vec256) : t_Array i16 (sz 16)"
+     val vec256_as_i16x16 (x:t_Vec256) : t_Array i16 (sz 16)
+     let get_lane (v:t_Vec256) (i:nat{i < 16}) =
+       Seq.index (vec256_as_i16x16 v) i"
 )]
 pub struct Vec256(u8);
 
@@ -17,7 +19,9 @@ pub struct Vec256(u8);
 #[hax_lib::fstar::replace(
     interface,
     "unfold type $:{Vec128} = bit_vec 128
-				      val vec128_as_i16x8 (x:t_Vec128) : t_Array i16 (sz 8)"
+     val vec128_as_i16x8 (x:t_Vec128) : t_Array i16 (sz 8)
+     let get_lane128 (v:t_Vec128) (i:nat{i < 8}) =
+       Seq.index (vec128_as_i16x8 v) i"
 )]
 pub struct Vec128(u8);
 
@@ -124,13 +128,19 @@ pub fn mm256_set_epi8(
     unimplemented!()
 }
 
+#[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == 
+                                    Spec.Utils.create (sz 16) $constant"))]
 pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
     unimplemented!()
 }
 
 #[hax_lib::fstar::replace(
     interface,
-    "unfold let ${mm256_set_epi16} = BitVec.Intrinsics.mm256_set_epi16"
+    "unfold let ${mm256_set_epi16} = BitVec.Intrinsics.mm256_set_epi16
+let lemma_mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 :
+    Lemma (vec256_as_i16x16 (${mm256_set_epi16} v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0) == 
+            Spec.Utils.create16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15)
+            [SMTPat (vec256_as_i16x16 (${mm256_set_epi16} v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0))] = admit()"
 )]
 pub fn mm256_set_epi16(
     input15: i16,
@@ -153,6 +163,8 @@ pub fn mm256_set_epi16(
     unimplemented!()
 }
 
+#[hax_lib::ensures(|result| fstar!("vec128_as_i16x8 $result == 
+                                    Spec.Utils.create (sz 8) $constant"))]
 pub fn mm_set1_epi16(constant: i16) -> Vec128 {
     unimplemented!()
 }
@@ -173,12 +185,18 @@ pub fn mm256_set_epi32(
     unimplemented!()
 }
 
+#[hax_lib::ensures(|result| fstar!("vec128_as_i16x8 $result == 
+            Spec.Utils.map2 (+.) (vec128_as_i16x8 $lhs) (vec128_as_i16x8 $rhs)"))]
 pub fn mm_add_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unimplemented!()
 }
+
+#[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == 
+            Spec.Utils.map2 (+.) (vec256_as_i16x16 $lhs) (vec256_as_i16x16 $rhs)"))]
 pub fn mm256_add_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
+
 pub fn mm256_madd_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
@@ -186,21 +204,33 @@ pub fn mm256_add_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == 
+            Spec.Utils.map2 (-.) (vec256_as_i16x16 $lhs) (vec256_as_i16x16 $rhs)"))]
 pub fn mm256_sub_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
+
+#[hax_lib::ensures(|result| fstar!("vec128_as_i16x8 $result == 
+            Spec.Utils.map2 (-.) (vec128_as_i16x8 $lhs) (vec128_as_i16x8 $rhs)"))]
 pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unimplemented!()
 }
 
 #[hax_lib::fstar::replace(
     interface,
-    "unfold let ${mm256_mullo_epi16} = BitVec.Intrinsics.mm256_mullo_epi16"
+    "unfold let ${mm256_mullo_epi16} = BitVec.Intrinsics.mm256_mullo_epi16
+     let lemma_mm256_mullo_epi16 v1 v2 :
+        Lemma (vec256_as_i16x16 (${mm256_mullo_epi16} v1 v2) == 
+            Spec.Utils.map2 mul_mod (vec256_as_i16x16 v1) (vec256_as_i16x16 v2))
+            [SMTPat (vec256_as_i16x16 (${mm256_mullo_epi16} v1 v2))] = admit()
+     "
 )]
 pub fn mm256_mullo_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::ensures(|result| fstar!("vec128_as_i16x8 $result == 
+            Spec.Utils.map2 mul_mod (vec128_as_i16x8 $lhs) (vec128_as_i16x8 $rhs)"))]
 pub fn mm_mullo_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unimplemented!()
 }
@@ -209,6 +239,9 @@ pub fn mm256_cmpgt_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::ensures(|result| fstar!("vec128_as_i16x8 $result == 
+            Spec.Utils.map2 (fun x y -> cast (((cast x <: i32) *. (cast y <: i32)) >>! 16l) <: i16) 
+                (vec128_as_i16x8 $lhs) (vec128_as_i16x8 $rhs)"))]
 pub fn mm_mulhi_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unimplemented!()
 }
@@ -217,6 +250,8 @@ pub fn mm256_mullo_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == 
+            Spec.Utils.map2 (fun x y -> cast (((cast x <: i32) *. (cast y <: i32)) >>! 16l) <: i16) (vec256_as_i16x16 $lhs) (vec256_as_i16x16 $rhs)"))]
 pub fn mm256_mulhi_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
@@ -225,6 +260,8 @@ pub fn mm256_mul_epu32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == 
+            Spec.Utils.map2 (&.) (vec256_as_i16x16 $lhs) (vec256_as_i16x16 $rhs)"))]
 pub fn mm256_and_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
@@ -233,6 +270,9 @@ pub fn mm256_xor_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
+#[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == 
+            Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (vec256_as_i16x16 $vector)"))]
 pub fn mm256_srai_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     unimplemented!()

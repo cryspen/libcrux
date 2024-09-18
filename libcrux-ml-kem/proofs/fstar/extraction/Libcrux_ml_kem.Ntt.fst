@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ntt
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -62,19 +62,10 @@ let ntt_at_layer_1_
                 (Libcrux_ml_kem.Vector.Traits.f_ntt_layer_1_step #v_Vector
                     #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i16)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i +! sz 1 <: usize
-                      ]
-                      <:
-                      i16)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i +! sz 2 <: usize
-                      ]
-                      <:
-                      i16)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i +! sz 3 <: usize
-                      ]
-                      <:
-                      i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! sz 1 <: usize) <: i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! sz 2 <: usize) <: i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! sz 3 <: usize) <: i16)
                   <:
                   v_Vector)
             }
@@ -123,11 +114,8 @@ let ntt_at_layer_2_
                 (Libcrux_ml_kem.Vector.Traits.f_ntt_layer_2_step #v_Vector
                     #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i16)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i +! sz 1 <: usize
-                      ]
-                      <:
-                      i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! sz 1 <: usize) <: i16)
                   <:
                   v_Vector)
             }
@@ -176,7 +164,7 @@ let ntt_at_layer_3_
                 (Libcrux_ml_kem.Vector.Traits.f_ntt_layer_3_step #v_Vector
                     #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
                   <:
                   v_Vector)
             }
@@ -240,7 +228,7 @@ let ntt_at_layer_4_plus
                       (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ j +! step_vec <: usize ]
                         <:
                         v_Vector)
-                      (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i16)
+                      (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
                   in
                   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
                     {
@@ -353,37 +341,37 @@ let ntt_binomially_sampled_ring_element
   in
   let zeta_i:usize = sz 1 in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 6) (sz 3)
+    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 6) (sz 11207)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 5) (sz 3)
+    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 5) (sz 11207 +! sz 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 4) (sz 3)
+    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 4) (sz 11207 +! (sz 2 *! sz 3328 <: usize) <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_3_ #v_Vector zeta_i re (sz 3) (sz 3)
+    ntt_at_layer_3_ #v_Vector zeta_i re (sz 3) (sz 11207 +! (sz 3 *! sz 3328 <: usize) <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_2_ #v_Vector zeta_i re (sz 2) (sz 3)
+    ntt_at_layer_2_ #v_Vector zeta_i re (sz 2) (sz 11207 +! (sz 4 *! sz 3328 <: usize) <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_1_ #v_Vector zeta_i re (sz 1) (sz 3)
+    ntt_at_layer_1_ #v_Vector zeta_i re (sz 1) (sz 11207 +! (sz 5 *! sz 3328 <: usize) <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
@@ -412,37 +400,37 @@ let ntt_vector_u
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 6) (sz 3328)
+    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 6) (sz 2 *! sz 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 5) (sz 3328)
+    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 5) (sz 3 *! sz 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 4) (sz 3328)
+    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 4) (sz 4 *! sz 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_3_ #v_Vector zeta_i re (sz 3) (sz 3328)
+    ntt_at_layer_3_ #v_Vector zeta_i re (sz 3) (sz 5 *! sz 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_2_ #v_Vector zeta_i re (sz 2) (sz 3328)
+    ntt_at_layer_2_ #v_Vector zeta_i re (sz 2) (sz 6 *! sz 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_1_ #v_Vector zeta_i re (sz 1) (sz 3328)
+    ntt_at_layer_1_ #v_Vector zeta_i re (sz 1) (sz 7 *! sz 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in

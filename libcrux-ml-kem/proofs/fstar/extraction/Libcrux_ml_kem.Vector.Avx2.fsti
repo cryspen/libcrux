@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Vector.Avx2
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -72,37 +72,61 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     =
     (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> out == impl.f_repr x);
     f_to_i16_array = (fun (x: t_SIMD256Vector) -> vec_to_i16_array x);
-    f_add_pre = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) -> true);
+    f_add_pre
+    =
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
+        forall i.
+          i < 16 ==>
+          Spec.Utils.is_intb (pow2 15 - 1)
+            (v (Seq.index (impl.f_repr lhs) i) + v (Seq.index (impl.f_repr rhs) i)));
     f_add_post
     =
-    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) ->
-        impl.f_repr out == Spec.Utils.map2 ( +. ) (impl.f_repr lhs) (impl.f_repr rhs));
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (result: t_SIMD256Vector) ->
+        forall i.
+          i < 16 ==>
+          (v (Seq.index (impl.f_repr result) i) ==
+            v (Seq.index (impl.f_repr lhs) i) + v (Seq.index (impl.f_repr rhs) i)));
     f_add
     =
     (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
         { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.add lhs.f_elements rhs.f_elements }
         <:
         t_SIMD256Vector);
-    f_sub_pre = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) -> true);
+    f_sub_pre
+    =
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
+        forall i.
+          i < 16 ==>
+          Spec.Utils.is_intb (pow2 15 - 1)
+            (v (Seq.index (impl.f_repr lhs) i) - v (Seq.index (impl.f_repr rhs) i)));
     f_sub_post
     =
-    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) ->
-        impl.f_repr out == Spec.Utils.map2 ( -. ) (impl.f_repr lhs) (impl.f_repr rhs));
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (result: t_SIMD256Vector) ->
+        forall i.
+          i < 16 ==>
+          (v (Seq.index (impl.f_repr result) i) ==
+            v (Seq.index (impl.f_repr lhs) i) - v (Seq.index (impl.f_repr rhs) i)));
     f_sub
     =
     (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
         { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.sub lhs.f_elements rhs.f_elements }
         <:
         t_SIMD256Vector);
-    f_multiply_by_constant_pre = (fun (v: t_SIMD256Vector) (c: i16) -> true);
+    f_multiply_by_constant_pre
+    =
+    (fun (vec: t_SIMD256Vector) (c: i16) ->
+        forall i.
+          i < 16 ==> Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr vec) i) * v c));
     f_multiply_by_constant_post
     =
-    (fun (v: t_SIMD256Vector) (c: i16) (out: t_SIMD256Vector) ->
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr v));
+    (fun (vec: t_SIMD256Vector) (c: i16) (result: t_SIMD256Vector) ->
+        forall i.
+          i < 16 ==>
+          (v (Seq.index (impl.f_repr result) i) == v (Seq.index (impl.f_repr vec) i) * v c));
     f_multiply_by_constant
     =
-    (fun (v: t_SIMD256Vector) (c: i16) ->
-        { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.multiply_by_constant v.f_elements c }
+    (fun (vec: t_SIMD256Vector) (c: i16) ->
+        { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.multiply_by_constant vec.f_elements c }
         <:
         t_SIMD256Vector);
     f_bitwise_and_with_constant_pre = (fun (vector: t_SIMD256Vector) (constant: i16) -> true);
@@ -138,7 +162,9 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         }
         <:
         t_SIMD256Vector);
-    f_cond_subtract_3329_pre = (fun (vector: t_SIMD256Vector) -> true);
+    f_cond_subtract_3329_pre
+    =
+    (fun (vector: t_SIMD256Vector) -> Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr vector));
     f_cond_subtract_3329_post
     =
     (fun (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->
@@ -162,7 +188,7 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         t_SIMD256Vector);
     f_montgomery_multiply_by_constant_pre
     =
-    (fun (vector: t_SIMD256Vector) (constant: i16) -> Spec.Utils.is_i16b 3328 constant);
+    (fun (vector: t_SIMD256Vector) (constant: i16) -> Spec.Utils.is_i16b 1664 constant);
     f_montgomery_multiply_by_constant_post
     =
     (fun (vector: t_SIMD256Vector) (constant: i16) (out: t_SIMD256Vector) -> true);
@@ -250,7 +276,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (zeta2: i16) (zeta3: i16) ->
         Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3);
+        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
+        Spec.Utils.is_i16b_array (11207 + 5 * 3328) (impl.f_repr vector));
     f_ntt_layer_1_step_post
     =
     (fun
@@ -261,7 +288,7 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         (zeta3: i16)
         (out: t_SIMD256Vector)
         ->
-        true);
+        Spec.Utils.is_i16b_array (11207 + 6 * 3328) (impl.f_repr out));
     f_ntt_layer_1_step
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (zeta2: i16) (zeta3: i16) ->
@@ -275,10 +302,12 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_ntt_layer_2_step_pre
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) ->
-        Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1);
+        Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
+        Spec.Utils.is_i16b_array (11207 + 4 * 3328) (impl.f_repr vector));
     f_ntt_layer_2_step_post
     =
-    (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (out: t_SIMD256Vector) -> true);
+    (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (out: t_SIMD256Vector) ->
+        Spec.Utils.is_i16b_array (11207 + 5 * 3328) (impl.f_repr out));
     f_ntt_layer_2_step
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) ->
@@ -289,10 +318,13 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         t_SIMD256Vector);
     f_ntt_layer_3_step_pre
     =
-    (fun (vector: t_SIMD256Vector) (zeta: i16) -> Spec.Utils.is_i16b 1664 zeta);
+    (fun (vector: t_SIMD256Vector) (zeta: i16) ->
+        Spec.Utils.is_i16b 1664 zeta /\
+        Spec.Utils.is_i16b_array (11207 + 3 * 3328) (impl.f_repr vector));
     f_ntt_layer_3_step_post
     =
-    (fun (vector: t_SIMD256Vector) (zeta: i16) (out: t_SIMD256Vector) -> true);
+    (fun (vector: t_SIMD256Vector) (zeta: i16) (out: t_SIMD256Vector) ->
+        Spec.Utils.is_i16b_array (11207 + 4 * 3328) (impl.f_repr out));
     f_ntt_layer_3_step
     =
     (fun (vector: t_SIMD256Vector) (zeta: i16) ->
@@ -303,7 +335,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (zeta2: i16) (zeta3: i16) ->
         Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3);
+        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
+        Spec.Utils.is_i16b_array (4 * 3328) (impl.f_repr vector));
     f_inv_ntt_layer_1_step_post
     =
     (fun
@@ -314,7 +347,7 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         (zeta3: i16)
         (out: t_SIMD256Vector)
         ->
-        true);
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr out));
     f_inv_ntt_layer_1_step
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (zeta2: i16) (zeta3: i16) ->
@@ -332,10 +365,12 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_inv_ntt_layer_2_step_pre
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) ->
-        Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1);
+        Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr vector));
     f_inv_ntt_layer_2_step_post
     =
-    (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (out: t_SIMD256Vector) -> true);
+    (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (out: t_SIMD256Vector) ->
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr out));
     f_inv_ntt_layer_2_step
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) ->
@@ -348,10 +383,12 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         t_SIMD256Vector);
     f_inv_ntt_layer_3_step_pre
     =
-    (fun (vector: t_SIMD256Vector) (zeta: i16) -> Spec.Utils.is_i16b 1664 zeta);
+    (fun (vector: t_SIMD256Vector) (zeta: i16) ->
+        Spec.Utils.is_i16b 1664 zeta /\ Spec.Utils.is_i16b_array 3328 (impl.f_repr vector));
     f_inv_ntt_layer_3_step_post
     =
-    (fun (vector: t_SIMD256Vector) (zeta: i16) (out: t_SIMD256Vector) -> true);
+    (fun (vector: t_SIMD256Vector) (zeta: i16) (out: t_SIMD256Vector) ->
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr out));
     f_inv_ntt_layer_3_step
     =
     (fun (vector: t_SIMD256Vector) (zeta: i16) ->
@@ -369,7 +406,9 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         (zeta3: i16)
         ->
         Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3);
+        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
+        Spec.Utils.is_i16b_array 3228 (impl.f_repr lhs) /\
+        Spec.Utils.is_i16b_array 3228 (impl.f_repr rhs));
     f_ntt_multiply_post
     =
     (fun
@@ -381,7 +420,7 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         (zeta3: i16)
         (out: t_SIMD256Vector)
         ->
-        true);
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr out));
     f_ntt_multiply
     =
     (fun
@@ -544,10 +583,15 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         { f_elements = Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_12_ bytes }
         <:
         t_SIMD256Vector);
-    f_rej_sample_pre = (fun (input: t_Slice u8) (output: t_Slice i16) -> true);
+    f_rej_sample_pre
+    =
+    (fun (input: t_Slice u8) (output: t_Slice i16) ->
+        (Core.Slice.impl__len #u8 input <: usize) =. sz 24 &&
+        (Core.Slice.impl__len #i16 output <: usize) =. sz 16);
     f_rej_sample_post
     =
-    (fun (input: t_Slice u8) (output: t_Slice i16) (out1: (t_Slice i16 & usize)) -> true);
+    (fun (input: t_Slice u8) (output: t_Slice i16) (output_future, result: (t_Slice i16 & usize)) ->
+        Seq.length output_future == Seq.length output /\ v result <= 16);
     f_rej_sample
     =
     fun (input: t_Slice u8) (output: t_Slice i16) ->
