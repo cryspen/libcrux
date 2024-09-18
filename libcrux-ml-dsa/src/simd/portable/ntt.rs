@@ -1,7 +1,10 @@
 use super::arithmetic;
 use crate::simd::{
     portable::PortableSIMDUnit,
-    traits::{montgomery_multiply_by_fer, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT, ZETAS_TIMES_MONTGOMERY_R},
+    traits::{
+        montgomery_multiply_by_fer, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT,
+        ZETAS_TIMES_MONTGOMERY_R,
+    },
 };
 
 #[inline(always)]

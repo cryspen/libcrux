@@ -2,7 +2,10 @@ use crate::{
     constants::BITS_IN_LOWER_PART_OF_T,
     simd::{
         portable::PortableSIMDUnit,
-        traits::{Operations, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, FieldElementTimesMontgomeryR},
+        traits::{
+            FieldElementTimesMontgomeryR, Operations, FIELD_MODULUS,
+            INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
+        },
     },
 };
 

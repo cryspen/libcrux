@@ -93,7 +93,10 @@ fn butterfly_8(a: Vec256, b: Vec256, zeta0: i32, zeta1: i32) -> (Vec256, Vec256)
     let add_terms = arithmetic::add(summands, zeta_products);
     let sub_terms = arithmetic::subtract(summands, zeta_products);
 
-    let a_out = mm256_set_m128i(mm256_castsi256_si128(sub_terms), mm256_castsi256_si128(add_terms));
+    let a_out = mm256_set_m128i(
+        mm256_castsi256_si128(sub_terms),
+        mm256_castsi256_si128(add_terms),
+    );
     let b_out = mm256_permute2x128_si256::<0b0001_0011>(sub_terms, add_terms);
 
     (a_out, b_out)
