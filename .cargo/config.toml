@@ -1,2 +1,3 @@
 [build]
 rustflags = ["-Ctarget-cpu=native"]
+debuginfo-level = 1
