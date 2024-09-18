@@ -197,14 +197,12 @@ pub fn mm256_add_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
-
 pub fn mm256_madd_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 pub fn mm256_add_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
-
 
 #[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == 
             Spec.Utils.map2 (-.) (vec256_as_i16x16 $lhs) (vec256_as_i16x16 $rhs)"))]
