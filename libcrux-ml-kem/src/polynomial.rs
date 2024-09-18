@@ -1,6 +1,6 @@
 use crate::vector::{to_standard_domain, Operations, FIELD_ELEMENTS_IN_VECTOR};
 
-pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
+const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
     hax_lib::fstar!("assert_norm (pow2 16 == 65536)"); [
     -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474, 1468,
     573, -1325, 264, 383, -829, 1458, -1602, -130, -681, 1017, 732, 608, -1542, 411, -205, -1571,
@@ -11,6 +11,14 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
     603, 610, 1322, -1285, -1465, 384, -1215, -136, 1218, -1335, -874, 220, -1187, -1659, -1185,
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
 ]};
+
+#[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(i < 128)]
+#[hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b 1664 result"))]
+pub fn get_zeta(i:usize) -> i16 {
+    ZETAS_TIMES_MONTGOMERY_R[i]
+}
 
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
@@ -57,6 +65,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     /// sum of their constituent coefficients.
     #[inline(always)]
     pub(crate) fn add_to_ring_element<const K: usize>(&mut self, rhs: &Self) {
+        hax_lib::fstar!("admit ()");
         // The semicolon and parentheses at the end of loop are a workaround
         // for the following bug https://github.com/hacspec/hax/issues/720
         for i in 0..self.coefficients.len() {
@@ -211,10 +220,10 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
             out.coefficients[i] = Vector::ntt_multiply(
                 &self.coefficients[i],
                 &rhs.coefficients[i],
-                ZETAS_TIMES_MONTGOMERY_R[64 + 4 * i],
-                ZETAS_TIMES_MONTGOMERY_R[64 + 4 * i + 1],
-                ZETAS_TIMES_MONTGOMERY_R[64 + 4 * i + 2],
-                ZETAS_TIMES_MONTGOMERY_R[64 + 4 * i + 3],
+                get_zeta (64 + 4 * i),
+                get_zeta (64 + 4 * i + 1),
+                get_zeta (64 + 4 * i + 2),
+                get_zeta (64 + 4 * i + 3),
             );
         }
 

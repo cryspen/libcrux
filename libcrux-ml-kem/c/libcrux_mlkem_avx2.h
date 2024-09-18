@@ -8,7 +8,7 @@
  * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
  * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
  * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
- * Libcrux: e22fa84f63313933e959470afcad633146b9b207
+ * Libcrux: e8928fc5424f83c8cb35b980033be17621fc0ef0
  */
 
 #ifndef __libcrux_mlkem_avx2_H
@@ -77,7 +77,7 @@ __m256i libcrux_ml_kem_vector_avx2_arithmetic_multiply_by_constant(
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)#2}
 */
-__m256i libcrux_ml_kem_vector_avx2_multiply_by_constant_09(__m256i v,
+__m256i libcrux_ml_kem_vector_avx2_multiply_by_constant_09(__m256i vec,
                                                            int16_t c);
 
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_bitwise_and_with_constant(
@@ -137,7 +137,7 @@ __m256i libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(__m256i lhs,
                                                               __m256i rhs);
 
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constants(
-    __m256i v, __m256i c);
+    __m256i vec, __m256i constants);
 
 __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_layer_1_step(
     __m256i vector, int16_t zeta0, int16_t zeta1, int16_t zeta2, int16_t zeta3);
@@ -163,7 +163,7 @@ __m256i libcrux_ml_kem_vector_avx2_ntt_layer_2_step_09(__m256i vector,
 
 __m128i
 libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_m128i_by_constants(
-    __m128i v, __m128i c);
+    __m128i vec, __m128i constants);
 
 __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_layer_3_step(__m256i vector,
                                                         int16_t zeta);
@@ -207,7 +207,8 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)#2}
 __m256i libcrux_ml_kem_vector_avx2_inv_ntt_layer_3_step_09(__m256i vector,
                                                            int16_t zeta);
 
-__m256i libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(__m256i v);
+__m256i libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(
+    __m256i vec);
 
 __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(__m256i lhs, __m256i rhs,
                                                     int16_t zeta0,

@@ -1,6 +1,6 @@
 use crate::{
     hax_utils::hax_debug_assert,
-    polynomial::{PolynomialRingElement, ZETAS_TIMES_MONTGOMERY_R},
+    polynomial::{PolynomialRingElement, get_zeta},
     vector::{montgomery_multiply_fe, Operations, FIELD_ELEMENTS_IN_VECTOR},
 };
 
@@ -16,10 +16,10 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
         *zeta_i -= 1;
         re.coefficients[round] = Vector::inv_ntt_layer_1_step(
             re.coefficients[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 2],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 3],
+            get_zeta (*zeta_i),
+            get_zeta (*zeta_i - 1),
+            get_zeta (*zeta_i - 2),
+            get_zeta (*zeta_i - 3),
         );
         *zeta_i -= 3;
     }
@@ -38,8 +38,8 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
         *zeta_i -= 1;
         re.coefficients[round] = Vector::inv_ntt_layer_2_step(
             re.coefficients[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
+            get_zeta (*zeta_i),
+            get_zeta (*zeta_i - 1),
         );
         *zeta_i -= 1;
     }
@@ -57,7 +57,7 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
     for round in 0..16 {
         *zeta_i -= 1;
         re.coefficients[round] =
-            Vector::inv_ntt_layer_3_step(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+            Vector::inv_ntt_layer_3_step(re.coefficients[round], get_zeta (*zeta_i));
     }
     ()
 }
@@ -94,7 +94,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
             let (x, y) = inv_ntt_layer_int_vec_step_reduce(
                 re.coefficients[j],
                 re.coefficients[j + step_vec],
-                ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+                get_zeta (*zeta_i),
             );
             re.coefficients[j] = x;
             re.coefficients[j + step_vec] = y;

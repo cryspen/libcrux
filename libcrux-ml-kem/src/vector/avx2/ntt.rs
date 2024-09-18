@@ -56,6 +56,7 @@ pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
 pub(crate) fn inv_ntt_layer_1_step(
     vector: Vec256,

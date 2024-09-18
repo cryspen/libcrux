@@ -5,6 +5,11 @@ use super::{
 };
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(input.len() == 24 && output.len() == 16)]
+#[hax_lib::ensures(|res|
+        fstar!("Seq.length $output_future == Seq.length $output /\\ v $res <= 16")
+    )]
 pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
 
