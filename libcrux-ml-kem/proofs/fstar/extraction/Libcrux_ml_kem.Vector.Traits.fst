@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Vector.Traits
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -10,14 +10,24 @@ let decompress_1_
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: t_Operations v_T)
       (vec: v_T)
      =
-  let s:v_T =
-    f_sub #v_T
-      #FStar.Tactics.Typeclasses.solve
-      (f_ZERO #v_T #FStar.Tactics.Typeclasses.solve () <: v_T)
-      vec
+  let z:v_T = f_ZERO #v_T #FStar.Tactics.Typeclasses.solve () in
+  let _:Prims.unit =
+    assert (forall i. Seq.index (i1._super_8706949974463268012.f_repr z) i == 0s)
+  in
+  let s:v_T = f_sub #v_T #FStar.Tactics.Typeclasses.solve z vec in
+  let _:Prims.unit =
+    assert (forall i.
+          Seq.index (i1._super_8706949974463268012.f_repr s) i == 0s \/
+          Seq.index (i1._super_8706949974463268012.f_repr s) i == (-1s))
   in
   let _:Prims.unit = assert (i1.f_bitwise_and_with_constant_pre s 1665s) in
-  f_bitwise_and_with_constant #v_T #FStar.Tactics.Typeclasses.solve s 1665s
+  let res:v_T = f_bitwise_and_with_constant #v_T #FStar.Tactics.Typeclasses.solve s 1665s in
+  let _:Prims.unit =
+    assert (forall i.
+          Seq.index (i1._super_8706949974463268012.f_repr s) i == 0s \/
+          Seq.index (i1._super_8706949974463268012.f_repr s) i == 1665s)
+  in
+  res
 
 #pop-options
 

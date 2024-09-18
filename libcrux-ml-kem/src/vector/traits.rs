@@ -82,21 +82,39 @@ pub trait Operations: Copy + Clone + Repr {
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
 
     // NTT
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+                       Spec.Utils.is_i16b_array (11207+5*3328) (f_repr ${a})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+6*3328) (f_repr $out)"))]
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                       Spec.Utils.is_i16b_array (11207+4*3328) (f_repr ${a})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+5*3328) (f_repr $out)"))]
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta /\\
+                       Spec.Utils.is_i16b_array (11207+3*3328) (f_repr ${a})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+4*3328) (f_repr $out)"))]
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self;
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+                       Spec.Utils.is_i16b_array (4 * 3328) (f_repr ${a})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (f_repr $out)"))]
     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                       Spec.Utils.is_i16b_array 3328 (f_repr ${a})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (f_repr $out)"))]
     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta/\\
+                       Spec.Utils.is_i16b_array 3328 (f_repr ${a})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (f_repr $out)"))]
     fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self;
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+                       Spec.Utils.is_i16b_array 3228 (f_repr ${lhs}) /\\
+                       Spec.Utils.is_i16b_array 3228 (f_repr ${rhs}) "))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (f_repr $out)"))]
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
         -> Self;
 
@@ -205,9 +223,16 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
 #[hax_lib::requires(fstar!("forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
                                       (x == 0s \\/ x == 1s)"))]
 pub fn decompress_1<T: Operations>(vec: T) -> T {
-    let s = T::sub(T::ZERO(), &vec);
+    let z = T::ZERO();
+    hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${z}) i == 0s)");
+    let s = T::sub(z, &vec);
+    hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == 0s \\/ 
+                                      Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == -1s)");
     hax_lib::fstar!("assert (i1.f_bitwise_and_with_constant_pre ${s} 1665s)");
-    T::bitwise_and_with_constant(s, 1665)
+    let res = T::bitwise_and_with_constant(s, 1665);
+    hax_lib::fstar!("assert (forall i. Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == 0s \\/ 
+                                       Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == 1665s)");
+    res
 }
 
 /// Internal vectors.

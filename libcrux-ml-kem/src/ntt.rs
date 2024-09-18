@@ -130,12 +130,12 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     ntt_at_layer_7(re);
 
     let mut zeta_i = 1;
-    ntt_at_layer_4_plus(&mut zeta_i, re, 6, 3);
-    ntt_at_layer_4_plus(&mut zeta_i, re, 5, 3);
-    ntt_at_layer_4_plus(&mut zeta_i, re, 4, 3);
-    ntt_at_layer_3(&mut zeta_i, re, 3, 3);
-    ntt_at_layer_2(&mut zeta_i, re, 2, 3);
-    ntt_at_layer_1(&mut zeta_i, re, 1, 3);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 6, 11207);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 5, 11207+3328);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 4, 11207+2*3328);
+    ntt_at_layer_3(&mut zeta_i, re, 3, 11207+3*3328);
+    ntt_at_layer_2(&mut zeta_i, re, 2, 11207+4*3328);
+    ntt_at_layer_1(&mut zeta_i, re, 1, 11207+5*3328);
 
     re.poly_barrett_reduce()
 }
@@ -151,12 +151,12 @@ pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize, Vector: Ope
     let mut zeta_i = 0;
 
     ntt_at_layer_4_plus(&mut zeta_i, re, 7, 3328);
-    ntt_at_layer_4_plus(&mut zeta_i, re, 6, 3328);
-    ntt_at_layer_4_plus(&mut zeta_i, re, 5, 3328);
-    ntt_at_layer_4_plus(&mut zeta_i, re, 4, 3328);
-    ntt_at_layer_3(&mut zeta_i, re, 3, 3328);
-    ntt_at_layer_2(&mut zeta_i, re, 2, 3328);
-    ntt_at_layer_1(&mut zeta_i, re, 1, 3328);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 6, 2*3328);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 5, 3*3328);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 4, 4*3328);
+    ntt_at_layer_3(&mut zeta_i, re, 3, 5*3328);
+    ntt_at_layer_2(&mut zeta_i, re, 2, 6*3328);
+    ntt_at_layer_1(&mut zeta_i, re, 1, 7*3328);
 
     re.poly_barrett_reduce()
 }

@@ -165,49 +165,67 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+                       Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+6*3328) (impl.f_repr $out)"))]
     fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         Self {
             elements: ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                       Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr $out)"))]
     fn ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
         Self {
             elements: ntt::ntt_layer_2_step(vector.elements, zeta0, zeta1),
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta /\\
+                       Spec.Utils.is_i16b_array (11207+3*3328) (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr $out)"))]
     fn ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
         Self {
             elements: ntt::ntt_layer_3_step(vector.elements, zeta),
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3  /\\
+                       Spec.Utils.is_i16b_array (4*3328) (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
     fn inv_ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         Self {
             elements: ntt::inv_ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
     fn inv_ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
         Self {
             elements: ntt::inv_ntt_layer_2_step(vector.elements, zeta0, zeta1),
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta /\\
+                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
     fn inv_ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
         Self {
             elements: ntt::inv_ntt_layer_3_step(vector.elements, zeta),
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+                       Spec.Utils.is_i16b_array 3228 (impl.f_repr ${lhs}) /\\
+                       Spec.Utils.is_i16b_array 3228 (impl.f_repr ${rhs})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
     fn ntt_multiply(
         lhs: &Self,
         rhs: &Self,
