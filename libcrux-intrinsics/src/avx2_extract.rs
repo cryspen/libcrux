@@ -40,6 +40,10 @@ pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(
+    interface,
+    "include BitVec.Intrinsics {mm_storeu_bytes_si128 as ${mm_storeu_bytes_si128}}"
+)]
 pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
     debug_assert_eq!(output.len(), 16);
     unimplemented!()

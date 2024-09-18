@@ -60,8 +60,7 @@ val mm256_permute2x128_si256 (v_IMM8: i32) (a b: t_Vec256)
 val mm256_permute4x64_epi64 (v_CONTROL: i32) (vector: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val mm256_permutevar8x32_epi32 (vector control: t_Vec256)
-    : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+include BitVec.Intrinsics {mm256_permutevar8x32_epi32}
 
 include BitVec.Intrinsics {mm256_set1_epi16 as mm256_set1_epi16}
 // val mm256_set1_epi16 (constant: i16) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
@@ -72,21 +71,16 @@ val mm256_set1_epi64x (a: i64) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prim
 
 include BitVec.Intrinsics {mm256_set_epi16 as mm256_set_epi16}
 
-val mm256_set_epi32 (input7 input6 input5 input4 input3 input2 input1 input0: i32)
-    : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+include BitVec.Intrinsics {mm256_set_epi32}
 
-val mm256_set_epi8
-      (byte31 byte30 byte29 byte28 byte27 byte26 byte25 byte24 byte23 byte22 byte21 byte20 byte19 byte18 byte17 byte16 byte15 byte14 byte13 byte12 byte11 byte10 byte9 byte8 byte7 byte6 byte5 byte4 byte3 byte2 byte1 byte0:
-          i8)
-    : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+include BitVec.Intrinsics {mm256_set_epi8}
 
 val mm256_setzero_si256: Prims.unit -> Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_shuffle_epi32 (v_CONTROL: i32) (vector: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val mm256_shuffle_epi8 (vector control: t_Vec256)
-    : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+include BitVec.Intrinsics {mm256_shuffle_epi8}
 
 include BitVec.Intrinsics {mm256_slli_epi16 as mm256_slli_epi16}
 

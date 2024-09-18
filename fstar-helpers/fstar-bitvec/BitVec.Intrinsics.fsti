@@ -24,6 +24,14 @@ let mm256_castsi256_si128 (vec: bit_vec 256): bit_vec 128
 let mm256_extracti128_si256 (control: i32{control == 1l}) (vec: bit_vec 256): bit_vec 128
   = mk_bv (fun i -> vec (i + 128))
 
+let mm256_set_epi32 (x0 x1 x2 x3 x4 x5 x6 x7: i32)
+  : bit_vec 256
+  = mk_bv (fun i ->
+      let h (x: i32) = get_bit x (sz (i % 32)) in
+      match i / 32 with
+      |  0 -> h x7 |  1 -> h x6 |  2 -> h x5 |  3 -> h x4
+      |  4 -> h x3 |  5 -> h x2 |  6 -> h x1  |  7 -> h x0)
+
 let mm256_set_epi16 (x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15: i16)
   : bit_vec 256
   = mk_bv (fun i ->
@@ -56,10 +64,7 @@ let mm256_set1_epi16_pow2_minus_one (n: nat): bit_vec 256
   = mk_bv (fun i -> if i <= n then 1 else 0)
 
 let mm256_and_si256 (x y: bit_vec 256): bit_vec 256
-  = mk_bv (fun i -> if y i = 0
-                 then 0
-                 else x i
-          )
+  = mk_bv (fun i -> if y i = 0 then 0 else x i)
 
 let mm256_set1_epi16 (constant: i16)
   (#[Tactics.exact (match unify_app (quote constant) (quote (fun n -> ((1s <<! Int32.int_to_t n <: i16) -! 1s <: i16))) [] with
@@ -182,41 +187,44 @@ val mm256_madd_epi16_no_semantic: bit_vec 256 -> bit_vec 256 -> bit_vec 256
 let forall_bool (#max: pos) (f: (n: nat {n < max}) -> bool)
   : r:bool {r <==> (forall i. f i)}
   = let rec h (n: nat {n <= max}): r:bool {r <==> (forall i. i < n ==> f i)} = 
-        n = 0 || f (n - 1) && h (n - 1)
+        match n with
+        | 0 -> true
+        | _ -> f (n - 1) && h (n - 1)
     in h max
 
+/// We view `x` as a sequence of pairs of 16 bits, of the shape
+/// `(0b0…0a₁…aₙ, 0b0…0b₁…bₙ)`: only the last `n` bits are non-zero.
+/// We output a sequence of 32 bits `0b0…0b₁…bₙa₁…aₙ`.
 let mm256_madd_epi16_specialized' (x: bit_vec 256) (n: nat {n < 16}): bit_vec 256 =
-  mk_bv (fun i -> let local_i = i % 32 in
-               if local_i > 8 then 0 
-                              else if i >= 4 then x (i - 4)
-                                            else x (i + 16))
+  mk_bv (fun i -> let j = i % 32 in
+               // `x i` is the `j`th bit in the `i/32`th pair of 16 bits `(0b0…0a₁…aₙ, 0b0…0b₁…bₙ)`
+               // we want to construct the `j`th bit of `0b0…0b₁…bₙa₁…aₙ`
+               let is_zero = 
+                 // `|b₁…bₙa₁…aₙ| = n * 2`: if we're above that, we want to produce the bit `0`
+                 j >= n * 2
+               in
+               if is_zero
+               then 0
+               else if j < n
+                    then x i        // we want to produce the bit `aⱼ`
+                    else 
+                      // the bit from `b` is in the second item of the pair `(0b0…0a₁…aₙ, 0b0…0b₁…bₙ)`
+                      x (i - n + 16)
+         )
   
 let mm256_madd_epi16_specialized (x: bit_vec 256) (n: nat {n < 16}) =
-  if forall_bool (fun (i: nat {i < 256}) -> i % 16 < 4 || x i = 0)
-  then mm256_madd_epi16_no_semantic x (madd_rhs n)
-  else mm256_madd_epi16_specialized' x n
+  if forall_bool (fun (i: nat {i < 256}) -> i % 16 < n || x i = 0)
+  then mm256_madd_epi16_specialized' x n
+  else mm256_madd_epi16_no_semantic x (madd_rhs n)
 
-let mm256_shuffle_epi8_no_semantics (a b: bit_vec 256): bit_vec 256 =
-  mk_bv (fun i -> 
-    0
-  )
-  
-let mm256_shuffle_epi8_i8 a (b: list _ {List.Tot.length b == 32}): bit_vec 256 =
+val mm256_shuffle_epi8_no_semantics (a b: bit_vec 256): bit_vec 256
+let mm256_shuffle_epi8_i8 (a: bit_vec 256) (b: list _ {List.Tot.length b == 32}): bit_vec 256 =
   mk_bv (fun i -> 
      let nth = i / 8 in
-     let index = List.Tot.index b nth in
-     if index < 0
-     then 0
-     else 
-       let index = index % 16 in
-       a (index + i % 8)
-  )
-
-let mk_list_32 #a (x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15 x16 x17 x18 x19 x20 x21 x22 x23 x24 x25 x26 x27 x28 x29 x30 x31: a)
-  : (l:list a {List.Tot.length l == 32})
-  = let l = [x0;x1;x2;x3;x4;x5;x6;x7;x8;x9;x10;x11;x12;x13;x14;x15;x16;x17;x18;x19;x20;x21;x22;x23;x24;x25;x26;x27;x28;x29;x30;x31] in
-    assert_norm (List.Tot.length l == 32);
-    l
+     let index = List.Tot.index b (31 - nth) in
+     if index < 0 then 0
+                  else let index = index % 16 in
+                       a (index * 8 + i % 8 + i / 128 * 128))
 
 let mm256_shuffle_epi8
   (x y: bit_vec 256) 
@@ -241,11 +249,32 @@ let mm256_shuffle_epi8
   : bit_vec 256 
   = result
 
-let asdsad x =
-  mm256_shuffle_epi8 x (mm256_set_epi8 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y 1y)
+val mm256_permutevar8x32_epi32_no_semantics (a b: bit_vec 256): bit_vec 256
+let mm256_permutevar8x32_epi32_i32 (a: bit_vec 256) (b: list _ {List.Tot.length b == 8}): bit_vec 256 =
+  mk_bv (fun i ->
+     let j = i / 32 in
+     let index = (List.Tot.index b (7 - j) % 8) * 32 in
+     a (index + i % 32))
+
+let mm256_permutevar8x32_epi32
+  (x y: bit_vec 256) 
+  (#[(
+    let t = match unify_app (quote y) 
+      (quote (fun x0 x1 x2 x3 x4 x5 x6 x7 -> 
+        mm256_set_epi32
+          (Int32.int_to_t x0) (Int32.int_to_t x1) (Int32.int_to_t x2) (Int32.int_to_t x3) 
+          (Int32.int_to_t x4) (Int32.int_to_t x5) (Int32.int_to_t x6) (Int32.int_to_t x7))) [] with
+    | Some [x0;x1;x2;x3;x4;x5;x6;x7] ->
+      `(mm256_permutevar8x32_epi32_i32 (`@x)
+                              (mk_list_8 (`#x0 ) (`#x1 ) (`#x2 ) (`#x3 ) (`#x4 ) (`#x5 ) (`#x6 ) (`#x7 )))
+    | _ -> quote (mm256_permutevar8x32_epi32_no_semantics x y) in
+    exact t
+  )]result: bit_vec 256)
+  : bit_vec 256 
+  = result
 
 let mm256_madd_epi16
-  (x y: bit_vec 256) 
+  (x y: bit_vec 256)
   (#[(
     let t = match unify_app (quote y) (quote (fun n -> madd_rhs n)) [delta_only [`%madd_rhs]] with
     | Some [n] -> `(mm256_madd_epi16_specialized (`@x) (`#n))
@@ -254,6 +283,8 @@ let mm256_madd_epi16
   )]result: bit_vec 256)
   : bit_vec 256
   = result
+
+val mm_storeu_bytes_si128 (_output vec: bit_vec 128): t_Slice u8
 
 open FStar.Stubs.Tactics.V2.Builtins
 open FStar.Stubs.Tactics.V2

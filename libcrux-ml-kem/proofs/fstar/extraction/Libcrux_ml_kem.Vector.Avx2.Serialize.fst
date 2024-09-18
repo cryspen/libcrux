@@ -371,7 +371,6 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   );
   result
 
-
 let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -614,6 +613,94 @@ let serialize_5_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
           t_Slice u8)
       <:
       Core.Result.t_Result (t_Array u8 (sz 10)) Core.Array.t_TryFromSliceError)
+
+let dummy_lemma n f: Lemma (BitVec.Intrinsics.forall_bool #n f == true) = admit ()
+
+let suppose_false (scrut: bool) (arm_true arm_false: bit)
+  : Lemma
+    (requires not scrut)
+    (ensures (match scrut with true -> arm_true | false -> arm_false) == arm_false)
+  = ()
+
+#push-options "--print_implicits"
+let serialize_4__ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+  let serialized:t_Array u8 (sz 16) = Rust_primitives.Hax.repeat 0uy (sz 16) in
+  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_madd_epi16 vector
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (1s <<! 4l <: i16) 1s (1s <<! 4l <: i16) 1s
+          (1s <<! 4l <: i16) 1s (1s <<! 4l <: i16) 1s (1s <<! 4l <: i16) 1s (1s <<! 4l <: i16) 1s
+          (1s <<! 4l <: i16) 1s (1s <<! 4l <: i16) 1s
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let adjacent_8_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 adjacent_2_combined
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (-1y) (-1y) (-1y) (-1y) (-1y) (-1y) (-1y)
+          (-1y) (-1y) (-1y) (-1y) (-1y) 12y 8y 4y 0y (-1y) (-1y) (-1y) (-1y) (-1y) (-1y) (-1y) (-1y)
+          (-1y) (-1y) (-1y) (-1y) 12y 8y 4y 0y
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_permutevar8x32_epi32 adjacent_8_combined
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 0l 0l 0l 0l 0l 4l 0l
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let combined:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+    Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 combined
+  in
+  assume (BitVec.Intrinsics.forall_bool #256 (fun i -> i % 16 < 4 || vector i = 0));
+  assert (forall (i: nat {i < 64}).
+    // let local_i = i / 4 in
+    combined i == vector ((i / 4) * 16 + i % 4)
+  ) by (
+    // unfold wrappers
+    norm [primops; iota; zeta; delta_namespace [
+      `%BitVec.Intrinsics.mm256_shuffle_epi8;
+      `%BitVec.Intrinsics.mm256_permutevar8x32_epi32;
+      `%BitVec.Intrinsics.mm256_madd_epi16;
+      `%BitVec.Intrinsics.mm256_castsi256_si128;
+      "BitVec.Utils";
+    ]];
+    Tactics.Utils.prove_forall_nat_pointwise (Tactics.Utils.print_time "SMT query succeeded in " (fun _ ->
+      let reduce t =
+        norm [primops; iota; zeta_full; delta_namespace [
+          "FStar.FunctionalExtensionality";
+          t;
+          `%BitVec.Utils.mk_bv;
+          `%( + ); `%op_Subtraction; `%( / ); `%( * ); `%( % )
+        ]];
+        norm [primops; iota; zeta_full; delta_namespace [
+          "FStar.List.Tot"; `%( + ); `%op_Subtraction; `%( / ); `%( * ); `%( % )
+        ]]
+      in
+      reduce (`%BitVec.Intrinsics.mm256_permutevar8x32_epi32_i32);
+      reduce (`%BitVec.Intrinsics.mm256_shuffle_epi8_i8);
+      reduce (`%BitVec.Intrinsics.mm256_madd_epi16_specialized);
+      grewrite (quote (forall_bool #256 (fun i -> i % 16 < 4 || op_Equality #int (vector i) 0))) (`true);
+      flip (); smt ();
+      reduce (`%BitVec.Intrinsics.mm256_madd_epi16_specialized');
+      trivial ()
+    ))
+  );
+  combined
+  // let serialized:t_Array u8 (sz 16) =
+  //   Libcrux_intrinsics.Avx2_extract.mm_storeu_bytes_si128 serialized combined
+  // in
+  // Core.Result.impl__unwrap #(t_Array u8 (sz 8))
+  //   #Core.Array.t_TryFromSliceError
+  //   (Core.Convert.f_try_into #(t_Slice u8)
+  //       #(t_Array u8 (sz 8))
+  //       #FStar.Tactics.Typeclasses.solve
+  //       (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
+  //           <:
+  //           Core.Ops.Range.t_Range usize ]
+  //         <:
+  //         t_Slice u8)
+  //     <:
+  //     Core.Result.t_Result (t_Array u8 (sz 8)) Core.Array.t_TryFromSliceError)
+
 
 let serialize_4_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let serialized:t_Array u8 (sz 16) = Rust_primitives.Hax.repeat 0uy (sz 16) in
