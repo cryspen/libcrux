@@ -8,7 +8,7 @@
  * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
  * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
  * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
- * Libcrux: 1735cba2e140f5092bd1f11f902c535cb93a35dc
+ * Libcrux: e8928fc5424f83c8cb35b980033be17621fc0ef0
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -275,7 +275,7 @@ int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_fe_by_fer(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_by_constant(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t c);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
