@@ -30,7 +30,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
       Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x
   }
 
-#push-options "--z3rlimit 400"
+#push-options "--z3rlimit 200"
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_1: Libcrux_ml_kem.Vector.Traits.t_Operations

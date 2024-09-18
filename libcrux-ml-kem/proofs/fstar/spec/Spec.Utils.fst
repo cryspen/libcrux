@@ -209,9 +209,25 @@ val lemma_add_i16b (b1 b2:nat) (n1 n2:i16) :
 let lemma_add_i16b (b1 b2:nat) (n1 n2:i16) = ()
 
 
-#push-options "--z3rlimit 250"
+#push-options "--z3rlimit 100 --split_queries always"
 let lemma_range_at_percent (v:int) (p:int{p>0/\ p%2=0 /\ v < p/2 /\ v >= -p / 2}):
-  Lemma (v @% p == v) = ()
+  Lemma (v @% p == v) =
+    let m = v % p in
+    if v < 0 then (
+      Math.Lemmas.modulo_lemma (v+p) p;
+      assert ((v + p) % p == v % p);
+      Math.Lemmas.lemma_mod_plus v 1 p;
+      assert (m == v + p);
+      assert (m >= p/2);
+      assert (v @% p == m - p);
+      assert (v @% p == v))
+    else (
+      assert (v >= 0 /\ v < p);
+      Math.Lemmas.modulo_lemma v p;
+      assert (v % p == v);
+      assert (m < p/2);
+      assert (v @% p == v)
+    )
 #pop-options
 
 val lemma_sub_i16b (b1 b2:nat) (n1 n2:i16) :
@@ -235,9 +251,22 @@ let mont_red_i32 (x:i32) : i16 =
   let vhigh = cast (x >>! 16l) <: i16 in
   vhigh -. k_times_modulus
 
-#push-options "--z3rlimit 250"
+#push-options "--z3rlimit 100"
 let lemma_at_percent_mod (v:int) (p:int{p>0/\ p%2=0}):
-  Lemma ((v @% p) % p == v % p) = ()
+  Lemma ((v @% p) % p == v % p) =
+  let m = v % p in
+  assert (m >= 0 /\ m < p);
+  if m >= p/2 then (
+    assert ((v @%p) % p == (m - p) %p);
+    Math.Lemmas.lemma_mod_plus m (-1) p;
+    assert ((v @%p) % p == m %p);
+    Math.Lemmas.lemma_mod_mod m v p;
+    assert ((v @%p) % p == v % p)
+  ) else (
+    assert ((v @%p) % p == m%p);
+    Math.Lemmas.lemma_mod_mod m v p;
+    assert ((v @%p) % p == v % p)
+  ) 
 #pop-options
 
 let lemma_div_at_percent (v:int) (p:int{p>0/\ p%2=0 /\ (v/p) < p/2 /\ (v/p) >= -p / 2}):
@@ -412,9 +441,9 @@ let barrett_red (x:i16) =
   x -. qm
 
 let lemma_barrett_red (x:i16) : Lemma
-   (requires (Spec.Utils.is_i16b 28296 x))
+   (requires (is_i16b 28296 x))
    (ensures (let result = barrett_red x in
-             Spec.Utils.is_i16b 3328 result /\
+             is_i16b 3328 result /\
              v result % 3329 == v x % 3329)) 
    [SMTPat (barrett_red x)]
    = admit()
