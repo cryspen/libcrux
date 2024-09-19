@@ -9,22 +9,24 @@
 
 #include "libcrux_mlkem768_portable.h"
 
-extern "C" {
-
-int LLVMFuzzerTestOneInput(const uint8_t* input, size_t len)
+extern "C"
 {
-	uint8_t rnd[32];
-	libcrux_ml_kem_mlkem768_MlKem768PublicKey pk;
 
-	memset(rnd, 0, sizeof(rnd));
-	memset(&pk, 0, sizeof(pk));
-	if (len > sizeof(pk.value)) {
-		len = sizeof(pk.value);
+	int LLVMFuzzerTestOneInput(const uint8_t *input, size_t len)
+	{
+		uint8_t rnd[32];
+		libcrux_ml_kem_mlkem768_MlKem768PublicKey pk;
+
+		memset(rnd, 0, sizeof(rnd));
+		memset(&pk, 0, sizeof(pk));
+		if (len > sizeof(pk.value))
+		{
+			len = sizeof(pk.value);
+		}
+		memcpy(pk.value, input, len);
+
+		(void)libcrux_ml_kem_mlkem768_portable_validate_public_key(&pk);
+		return 0;
 	}
-	memcpy(pk.value, input, len);
-
-	(void)libcrux_ml_kem_mlkem768_portable_validate_public_key(&pk);
-	return 0;
-}
 
 } // extern

@@ -1,7 +1,7 @@
-CC=clang-16
-CXX=clang++-16
+CC=clang-18
+CXX=clang++-18
 FUZZ_FLAGS=-fsanitize=address,undefined,fuzzer -fno-omit-frame-pointer
-FUZZ_LIBS=-L/usr/lib/llvm-16/lib -lFuzzer
+FUZZ_LIBS=-L/usr/lib/llvm-18/lib -lFuzzer
 
 CXXFLAGS=-O2 -g -Wall -Wextra -Wno-unused-parameter -Wno-exceptions -I..
 CFLAGS=$(CXXFLAGS)
