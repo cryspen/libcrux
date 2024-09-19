@@ -1,0 +1,5 @@
+dec_fuzz
+enc_fuzz
+mkcorpus
+valid_fuzz
+*.o
