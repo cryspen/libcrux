@@ -20,6 +20,9 @@ use crate::{
     MLDSASignature,
 };
 
+pub(crate) mod instantiations;
+pub(crate) mod multiplexing;
+
 pub(crate) struct Signature<
     SIMDUnit: Operations,
     const COMMITMENT_HASH_SIZE: usize,
@@ -31,10 +34,9 @@ pub(crate) struct Signature<
     pub hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
 }
 
-#[allow(non_snake_case)]
+/// Generate a key pair.
 pub(crate) fn generate_key_pair<
     SIMDUnit: Operations,
-    Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
     Shake256X4: shake256::XofX4,
@@ -51,19 +53,19 @@ pub(crate) fn generate_key_pair<
     let mut seed_expanded = [0; 128];
     Shake256::shake256::<128>(&randomness, &mut seed_expanded);
 
-    let (seed_for_A, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
+    let (seed_for_a, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-    let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
-        into_padded_array(seed_for_A),
+    let a_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+        into_padded_array(seed_for_a),
     );
 
     let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
         into_padded_array(seed_for_error_vectors),
     );
 
-    let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, &s1, &s2);
+    let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1, &s2);
 
     let (t0, t1) = power2round_vector::<SIMDUnit, ROWS_IN_A>(t);
 
@@ -71,7 +73,7 @@ pub(crate) fn generate_key_pair<
         SIMDUnit,
         ROWS_IN_A,
         VERIFICATION_KEY_SIZE,
-    >(seed_for_A, t1);
+    >(seed_for_a, t1);
 
     let signing_key_serialized = encoding::signing_key::generate_serialized::<
         SIMDUnit,
@@ -82,7 +84,7 @@ pub(crate) fn generate_key_pair<
         ERROR_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
     >(
-        seed_for_A,
+        seed_for_a,
         seed_for_signing,
         &verification_key_serialized,
         s1,
@@ -100,10 +102,14 @@ pub enum VerificationError {
     CommitmentHashesDontMatchError,
 }
 
+#[derive(Debug)]
+pub enum SigningError {
+    RejectionSamplingError,
+}
+
 #[allow(non_snake_case)]
 pub(crate) fn sign<
     SIMDUnit: Operations,
-    Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
     Shake256X4: shake256::XofX4,
@@ -125,7 +131,7 @@ pub(crate) fn sign<
     signing_key: &[u8; SIGNING_KEY_SIZE],
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-) -> MLDSASignature<SIGNATURE_SIZE> {
+) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
         encoding::signing_key::deserialize_then_ntt::<
             SIMDUnit,
@@ -165,18 +171,18 @@ pub(crate) fn sign<
 
     let mut attempt = 0;
 
-    // TODO: This style of rejection sampling, with the break and the continues,
-    // won't pass through hax; it'll need to be rewritten.
-    // See https://github.com/cryspen/libcrux/issues/341
-    let (commitment_hash, signer_response, hint) = loop {
-        attempt += 1;
+    let mut commitment_hash = None;
+    let mut signer_response = None;
+    let mut hint = None;
 
-        // Depending on the mode, one try has a chance between 1/7 and 1/4
-        // of succeeding.  Thus it is safe to say that 576 iterations
-        // are enough as (6/7)⁵⁷⁶ < 2⁻¹²⁸[1].
-        //
-        // [1]: https://github.com/cloudflare/circl/blob/main/sign/dilithium/mode2/internal/dilithium.go#L341
-        debug_assert!(attempt < 576);
+    // Depending on the mode, one try has a chance between 1/7 and 1/4
+    // of succeeding.  Thus it is safe to say that 576
+    // (REJECTION_SAMPLE_BOUND) iterations are enough as (6/7)⁵⁷⁶ <
+    // 2⁻¹²⁸[1].
+    //
+    // [1]: https://github.com/cloudflare/circl/blob/main/sign/dilithium/mode2/internal/dilithium.go#L341
+    while attempt < REJECTION_SAMPLE_BOUND {
+        attempt += 1;
 
         let mask =
             sample_mask_vector::<SIMDUnit, Shake256, Shake256X4, COLUMNS_IN_A, GAMMA1_EXPONENT>(
@@ -189,7 +195,7 @@ pub(crate) fn sign<
 
         let (w0, commitment) = decompose_vector::<SIMDUnit, ROWS_IN_A, GAMMA2>(A_times_mask);
 
-        let mut commitment_hash = [0; COMMITMENT_HASH_SIZE];
+        let mut commitment_hash_candidate = [0; COMMITMENT_HASH_SIZE];
         {
             let commitment_serialized = encoding::commitment::serialize_vector::<
                 SIMDUnit,
@@ -202,7 +208,7 @@ pub(crate) fn sign<
             shake.absorb(&message_representative);
             let mut shake = shake.absorb_final(&commitment_serialized);
 
-            shake.squeeze(&mut commitment_hash);
+            shake.squeeze(&mut commitment_hash_candidate);
         }
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
@@ -210,7 +216,7 @@ pub(crate) fn sign<
             Shake256,
             ONES_IN_VERIFIER_CHALLENGE,
         >(
-            commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
+            commitment_hash_candidate[0..VERIFIER_CHALLENGE_SEED_SIZE]
                 .try_into()
                 .unwrap(),
         ));
@@ -224,44 +230,63 @@ pub(crate) fn sign<
             &verifier_challenge_as_ntt,
         );
 
-        let signer_response = add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mask, &challenge_times_s1);
+        let signer_response_candidate =
+            add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mask, &challenge_times_s1);
 
         let w0_minus_challenge_times_s2 =
             subtract_vectors::<SIMDUnit, ROWS_IN_A>(&w0, &challenge_times_s2);
 
         if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
-            signer_response,
+            signer_response_candidate,
             (1 << GAMMA1_EXPONENT) - BETA,
         ) {
-            continue;
-        }
-        if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(
-            w0_minus_challenge_times_s2,
-            GAMMA2 - BETA,
-        ) {
-            continue;
-        }
+        } else {
+            if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(
+                w0_minus_challenge_times_s2,
+                GAMMA2 - BETA,
+            ) {
+            } else {
+                let challenge_times_t0 = vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
+                    &t0_as_ntt,
+                    &verifier_challenge_as_ntt,
+                );
+                if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(challenge_times_t0, GAMMA2) {
+                } else {
+                    let w0_minus_c_times_s2_plus_c_times_t0 = add_vectors::<SIMDUnit, ROWS_IN_A>(
+                        &w0_minus_challenge_times_s2,
+                        &challenge_times_t0,
+                    );
+                    let (hint_candidate, ones_in_hint) = make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(
+                        w0_minus_c_times_s2_plus_c_times_t0,
+                        commitment,
+                    );
 
-        let challenge_times_t0 = vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
-            &t0_as_ntt,
-            &verifier_challenge_as_ntt,
-        );
-        if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(challenge_times_t0, GAMMA2) {
-            continue;
+                    if ones_in_hint > MAX_ONES_IN_HINT {
+                    } else {
+                        attempt = REJECTION_SAMPLE_BOUND; // exit loop now
+                        commitment_hash = Some(commitment_hash_candidate);
+                        signer_response = Some(signer_response_candidate);
+                        hint = Some(hint_candidate);
+                    }
+                }
+            }
         }
+    }
 
-        let w0_minus_c_times_s2_plus_c_times_t0 =
-            add_vectors::<SIMDUnit, ROWS_IN_A>(&w0_minus_challenge_times_s2, &challenge_times_t0);
-        let (hint, ones_in_hint) = make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(
-            w0_minus_c_times_s2_plus_c_times_t0,
-            commitment,
-        );
-        if ones_in_hint > MAX_ONES_IN_HINT {
-            continue;
-        }
+    let commitment_hash = match commitment_hash {
+        Some(commitment_hash) => Ok(commitment_hash),
+        None => Err(SigningError::RejectionSamplingError),
+    }?;
 
-        break (commitment_hash, signer_response, hint);
-    };
+    let signer_response = match signer_response {
+        Some(signer_response) => Ok(signer_response),
+        None => Err(SigningError::RejectionSamplingError),
+    }?;
+
+    let hint = match hint {
+        Some(hint) => Ok(hint),
+        None => Err(SigningError::RejectionSamplingError),
+    }?;
 
     let signature = Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A> {
         commitment_hash,
@@ -270,13 +295,12 @@ pub(crate) fn sign<
     }
     .serialize::<GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE, MAX_ONES_IN_HINT, SIGNATURE_SIZE>();
 
-    MLDSASignature(signature)
+    Ok(MLDSASignature(signature))
 }
 
 #[allow(non_snake_case)]
 pub(crate) fn verify<
     SIMDUnit: Operations,
-    Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
     const ROWS_IN_A: usize,

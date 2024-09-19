@@ -43,8 +43,8 @@ files:
     # the behavior applies.
     internal:
       monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, absorb_final_d9 ]
-        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks_2a ]
+        - [libcrux_sha3, generic_keccak, absorb_final_7f ]
+        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks_ed ]
     api:
       - [libcrux_sha3, avx2, "*"]
     private:

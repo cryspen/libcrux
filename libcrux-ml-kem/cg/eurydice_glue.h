@@ -167,7 +167,7 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
        ? (CLITERAL(ret_t){.tag = None})              \
        : (CLITERAL(ret_t){.tag = Some, .f0 = (iter_ptr)->start++}))
 
-#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next \
+#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this
