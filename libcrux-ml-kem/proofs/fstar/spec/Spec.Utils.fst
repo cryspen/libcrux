@@ -208,10 +208,10 @@ val lemma_add_i16b (b1 b2:nat) (n1 n2:i16) :
                   is_i16b (b1 + b2) (n1 +! n2)))
 let lemma_add_i16b (b1 b2:nat) (n1 n2:i16) = ()
 
-
-#push-options "--z3rlimit 250"
-let lemma_range_at_percent (v:int) (p:int{p>0/\ p%2=0 /\ v < p/2 /\ v >= -p / 2}):
-  Lemma (v @% p == v) = ()
+#push-options "--z3rlimit 50"
+let lemma_range_at_percent (v:int) (p:int{p>0 /\ p%2=0 /\ v < p/2 /\ v >= -p / 2}):
+  Lemma (v @% p == v) = 
+    if v % p >= p/2 then () else ()
 #pop-options
 
 val lemma_sub_i16b (b1 b2:nat) (n1 n2:i16) :
@@ -235,9 +235,9 @@ let mont_red_i32 (x:i32) : i16 =
   let vhigh = cast (x >>! 16l) <: i16 in
   vhigh -. k_times_modulus
 
-#push-options "--z3rlimit 250"
+#push-options "--z3rlimit 550"
 let lemma_at_percent_mod (v:int) (p:int{p>0/\ p%2=0}):
-  Lemma ((v @% p) % p == v % p) = ()
+  Lemma ((v @% p) % p == v % p) = if v % p >= p/2 then () else ()
 #pop-options
 
 let lemma_div_at_percent (v:int) (p:int{p>0/\ p%2=0 /\ (v/p) < p/2 /\ (v/p) >= -p / 2}):
