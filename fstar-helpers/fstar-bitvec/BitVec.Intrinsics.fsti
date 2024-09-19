@@ -66,6 +66,7 @@ let mm256_set1_epi16_pow2_minus_one (n: nat): bit_vec 256
 let mm256_and_si256 (x y: bit_vec 256): bit_vec 256
   = mk_bv (fun i -> if y i = 0 then 0 else x i)
 
+
 let mm256_set1_epi16 (constant: i16)
   (#[Tactics.exact (match unify_app (quote constant) (quote (fun n -> ((1s <<! Int32.int_to_t n <: i16) -! 1s <: i16))) [] with
      | Some [x] -> `(mm256_set1_epi16_pow2_minus_one (`#x))

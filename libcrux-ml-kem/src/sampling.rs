@@ -1,5 +1,5 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, hax_utils::hax_debug_assert,
+    constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*,
     helper::cloop, polynomial::PolynomialRingElement, vector::Operations,
 };
 
@@ -71,6 +71,7 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K>>(
     seeds: [[u8; 34]; K],
 ) -> [PolynomialRingElement<Vector>; K] {
@@ -151,16 +152,19 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[cfg_attr(hax, hax_lib::requires(randomness.len() == 2 * 64))]
+#[hax_lib::requires(randomness.len() == 2 * 64)]
 // TODO: Remove or replace with something that works and is useful for the proof.
 // #[cfg_attr(hax, hax_lib::ensures(|result|
 //     hax_lib::forall(|i:usize|
 //         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 2
 // ))))]
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 800")]
 fn sample_from_binomial_distribution_2<Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
+    hax_lib::fstar!("assert (v (sz 2 *! sz 64) == 128);
+        assert (Seq.length $randomness == 128)");
     let mut sampled_i16s = [0i16; 256];
 
     cloop! {
@@ -172,12 +176,21 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
 
             let even_bits = random_bits_as_u32 & 0x55555555;
             let odd_bits = (random_bits_as_u32 >> 1) & 0x55555555;
+            hax_lib::fstar!("logand_lemma $random_bits_as_u32 1431655765ul;
+                logand_lemma ($random_bits_as_u32 >>! 1l) 1431655765ul");
             let coin_toss_outcomes = even_bits + odd_bits;
 
             cloop! {
                 for outcome_set in (0..u32::BITS).step_by(4) {
                     let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as i16;
                     let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i16;
+                    hax_lib::fstar!("logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) 3ul;
+                        logand_lemma ($coin_toss_outcomes >>! ($outcome_set +! 2ul <: u32) <: u32) 3ul;
+                        assert (v $outcome_1 >= 0 /\\ v $outcome_1 <= 3);
+                        assert (v $outcome_2 >= 0 /\\ v $outcome_2 <= 3);
+                        assert (v $chunk_number <= 31);
+                        assert (v (sz 8 *! $chunk_number <: usize) <= 248);
+                        assert (v (cast ($outcome_set >>! 2l <: u32) <: usize) <= 7)");
 
                     let offset = (outcome_set >> 2) as usize;
                     sampled_i16s[8 * chunk_number + offset] = outcome_1 - outcome_2;
@@ -188,16 +201,19 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
     PolynomialRingElement::from_i16_array(&sampled_i16s)
 }
 
-#[cfg_attr(hax, hax_lib::requires(randomness.len() == 3 * 64))]
+#[hax_lib::requires(randomness.len() == 3 * 64)]
 // TODO: Remove or replace with something that works and is useful for the proof.
 // #[cfg_attr(hax, hax_lib::ensures(|result|
 //     hax_lib::forall(|i:usize|
 //         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 3
 // ))))]
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 800")]
 fn sample_from_binomial_distribution_3<Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
+    hax_lib::fstar!("assert (v (sz 3 *! sz 64) == 192);
+        assert (Seq.length $randomness == 192)");
     let mut sampled_i16s = [0i16; 256];
 
     cloop! {
@@ -208,6 +224,9 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
             let first_bits = random_bits_as_u24 & 0x00249249;
             let second_bits = (random_bits_as_u24 >> 1) & 0x00249249;
             let third_bits = (random_bits_as_u24 >> 2) & 0x00249249;
+            hax_lib::fstar!("logand_lemma $random_bits_as_u24 2396745ul;
+                logand_lemma ($random_bits_as_u24 >>! 1l <: u32) 2396745ul;
+                logand_lemma ($random_bits_as_u24 >>! 2l <: u32) 2396745ul");
 
             let coin_toss_outcomes = first_bits + second_bits + third_bits;
 
@@ -215,6 +234,13 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
                 for outcome_set in (0..24).step_by(6) {
                     let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as i16;
                     let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as i16;
+                    hax_lib::fstar!("logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) 7ul;
+                        logand_lemma ($coin_toss_outcomes >>! ($outcome_set +! 3l <: i32) <: u32) 7ul;
+                        assert (v $outcome_1 >= 0 /\\ v $outcome_1 <= 7);
+                        assert (v $outcome_2 >= 0 /\\ v $outcome_2 <= 7);
+                        assert (v $chunk_number <= 63);
+                        assert (v (sz 4 *! $chunk_number <: usize) <= 252);
+                        assert (v (cast ($outcome_set /! 6l <: i32) <: usize) <= 3)");
 
                     let offset = (outcome_set / 6) as usize;
                     sampled_i16s[4 * chunk_number + offset] = outcome_1 - outcome_2;
@@ -226,11 +252,13 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires((ETA == 2 || ETA == 3) && randomness.len() == ETA * 64)]
 pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_debug_assert!(randomness.len() == ETA * 64);
-
+    hax_lib::fstar!("assert (
+        (v (cast $ETA <: u32) == 2) \\/
+        (v (cast $ETA <: u32) == 3))");
     match ETA as u32 {
         2 => sample_from_binomial_distribution_2(randomness),
         3 => sample_from_binomial_distribution_3(randomness),

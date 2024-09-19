@@ -2,7 +2,7 @@ module Tactics.Seq
 
 open Core
 module L = FStar.List.Tot
-module S = FStar.Seq.Base
+module S = FStar.Seq
 open FStar.Tactics.V2
 open FStar.Tactics.V2.SyntaxHelpers
 open FStar.Class.Printable

@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: ["main", "dev", "*"]
   workflow_dispatch:
+  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
@@ -97,3 +98,9 @@ jobs:
         run: |
           cargo clean
           cargo test --verbose --release $RUST_TARGET_FLAG
+
+      # Benchmarks
+      - name: 🔨 Build Benchmarks
+        run: |
+          cargo clean
+          cargo bench --no-run

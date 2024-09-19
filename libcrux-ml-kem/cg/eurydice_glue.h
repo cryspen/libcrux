@@ -93,7 +93,7 @@ typedef struct {
 #define core_array___core__clone__Clone_for__Array_T__N___20__clone( \
     len, src, dst, elem_type, _ret_t)                                \
   (memcpy(dst, src, len * sizeof(elem_type)))
-#define core_array_TryFromSliceError uint8_t
+#define TryFromSliceError uint8_t
 
 #define Eurydice_array_eq(sz, a1, a2, t, _a, _b) \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
@@ -148,7 +148,7 @@ static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 #endif
 }
 
-// unsigned overflow wraparound semantics in C
+// wraparound semantics in C
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
   return x + y;
 }
@@ -156,13 +156,24 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
 
+static inline uint16_t core_num__i16_1__wrapping_add(int16_t x, int16_t y) {
+  return x + y;
+}
+
+static inline uint16_t core_num__i16_1__wrapping_sub(int16_t x, int16_t y) {
+  return x - y;
+}
+
+static inline uint16_t core_num__i16_1__wrapping_mul(int16_t x, int16_t y) {
+  return x * y;
+}
+
 // ITERATORS
 
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
   (((iter_ptr)->start == (iter_ptr)->end)            \
-       ? (CLITERAL(ret_t){.tag = core_option_None})  \
-       : (CLITERAL(ret_t){.tag = core_option_Some,   \
-                          .f0 = (iter_ptr)->start++}))
+       ? (CLITERAL(ret_t){.tag = None})              \
+       : (CLITERAL(ret_t){.tag = Some, .f0 = (iter_ptr)->start++}))
 
 #define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next \
   Eurydice_range_iter_next
