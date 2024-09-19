@@ -214,9 +214,11 @@ let lemma_range_at_percent (v:int) (p:int{p>0/\ p%2=0 /\ v < p/2 /\ v >= -p / 2}
   Lemma (v @% p == v) =
     let m = v % p in
     if v < 0 then (
-      Math.Lemmas.modulo_lemma (v+p) p;
-      assert ((v + p) % p == v % p);
       Math.Lemmas.lemma_mod_plus v 1 p;
+      assert ((v + p) % p == v % p);
+      assert (v + p >= 0);
+      assert (v + p < p);
+      Math.Lemmas.modulo_lemma (v+p) p;
       assert (m == v + p);
       assert (m >= p/2);
       assert (v @% p == m - p);
@@ -460,3 +462,9 @@ let lemma_cond_sub x:
         [SMTPat (cond_sub x)]
   = admit()
 
+
+let lemma_shift_right_15_i16 (x:i16):
+  Lemma (if v x >= 0 then (x >>! 15l) == 0s else (x >>! 15l) == -1s) =
+  Rust_primitives.Integers.mk_int_v_lemma #i16_inttype 0s;
+  Rust_primitives.Integers.mk_int_v_lemma #i16_inttype (-1s);
+  ()

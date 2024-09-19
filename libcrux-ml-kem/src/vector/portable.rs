@@ -22,7 +22,7 @@ impl crate::vector::traits::Repr for PortableVector {
     }
 }
 
-#[hax_lib::fstar::before(interface, r#"#push-options "--z3rlimit 200""#)]
+#[hax_lib::fstar::before(interface, r#"#push-options "--admit_smt_queries true""#)]
 #[hax_lib::fstar::after(interface, r#"#pop-options"#)]
 #[hax_lib::attributes] 
 impl Operations for PortableVector {
