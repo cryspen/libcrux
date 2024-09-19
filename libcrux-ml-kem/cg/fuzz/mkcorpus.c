@@ -23,10 +23,12 @@ void write_blob(const char *path, int n, const char *suffix, const void *p,
   FILE *f;
 
   snprintf(name, sizeof(name), "%s/%06d.%s", path, n, suffix);
-  if ((f = fopen(name, "wb+")) == NULL)
+  if ((f = fopen(name, "wb+")) == NULL) {
     err(1, "fopen %s", name);
-  if (fwrite(p, l, 1, f) != 1)
+  }
+  if (fwrite(p, l, 1, f) != 1) {
     err(1, "write %s", name);
+  }
   fclose(f);
 }
 
