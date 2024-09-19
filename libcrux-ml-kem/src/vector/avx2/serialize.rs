@@ -211,6 +211,11 @@ assert (forall (i: nat {i < 256}). (if i % 16 = 0 then bv i else 0) == result i)
     result
 }
 
+#[hax_lib::requires(
+    fstar!(
+        r#"BitVec.Intrinsics.forall_bool #256 (fun i -> i % 16 < 4 || vector i = 0)"#
+    )
+)]
 #[inline(always)]
 pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
     let mut serialized = [0u8; 16];
@@ -303,7 +308,7 @@ assert (forall (i: nat {i < 64}).
     reduce (`%BitVec.Intrinsics.mm256_madd_epi16_specialized');
     trivial ()
   ))
-);
+)
 "#
     );
 
@@ -313,6 +318,7 @@ assert (forall (i: nat {i < 64}).
     serialized[0..8].try_into().unwrap()
 }
 
+#[hax_lib::requires(bytes.len() == 8)]
 #[inline(always)]
 pub(crate) fn deserialize_4(bytes: &[u8]) -> Vec256 {
     // Every 4 bits from each byte of input should be put into its own 16-bit lane.

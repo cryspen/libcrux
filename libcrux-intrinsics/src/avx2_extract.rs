@@ -16,8 +16,10 @@ pub struct Vec256(u8);
 #[derive(Copy, Clone)]
 #[hax_lib::fstar::replace(
     interface,
-    "unfold type $:{Vec128} = bit_vec 128
-				      val vec128_as_i16x8 (x:t_Vec128) : t_Array i16 (sz 8)"
+    r#"
+unfold type $:{Vec128} = bit_vec 128
+val vec128_as_i16x8 (x:t_Vec128) : t_Array i16 (sz 8)
+"#
 )]
 pub struct Vec128(u8);
 
@@ -40,10 +42,7 @@ pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
     unimplemented!()
 }
 
-#[hax_lib::fstar::replace(
-    interface,
-    "include BitVec.Intrinsics {mm_storeu_bytes_si128 as ${mm_storeu_bytes_si128}}"
-)]
+#[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm_storeu_bytes_si128}")]
 pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
     debug_assert_eq!(output.len(), 16);
     unimplemented!()
