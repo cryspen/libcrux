@@ -3,21 +3,6 @@ module Libcrux_ml_kem.Mlkem768.Neon
 open Core
 open FStar.Mul
 
-let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)) =
-  if
-    Libcrux_ml_kem.Ind_cca.Instantiations.Neon.validate_public_key (sz 3)
-      (sz 1152)
-      (sz 1184)
-      public_key.Libcrux_ml_kem.Types.f_value
-  then
-    Core.Option.Option_Some public_key
-    <:
-    Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-  else
-    Core.Option.Option_None
-    <:
-    Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-
 let decapsulate
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
@@ -42,6 +27,21 @@ let generate_key_pair (randomness: t_Array u8 (sz 64)) =
     (sz 2)
     (sz 128)
     randomness
+
+let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)) =
+  if
+    Libcrux_ml_kem.Ind_cca.Instantiations.Neon.validate_public_key (sz 3)
+      (sz 1152)
+      (sz 1184)
+      public_key.Libcrux_ml_kem.Types.f_value
+  then
+    Core.Option.Option_Some public_key
+    <:
+    Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+  else
+    Core.Option.Option_None
+    <:
+    Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
 
 let encapsulate_unpacked
       (public_key:

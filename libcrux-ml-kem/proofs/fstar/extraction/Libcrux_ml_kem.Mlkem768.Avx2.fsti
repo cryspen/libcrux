@@ -3,13 +3,6 @@ module Libcrux_ml_kem.Mlkem768.Avx2
 open Core
 open FStar.Mul
 
-/// Validate a public key.
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
-val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-    : Prims.Pure (Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 /// Decapsulate ML-KEM 768
 /// Generates an [`MlKemSharedSecret`].
 /// The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
@@ -32,6 +25,13 @@ val encapsulate
 /// Generate ML-KEM 768 Key Pair
 val generate_key_pair (randomness: t_Array u8 (sz 64))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemKeyPair (sz 2400) (sz 1184))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Validate a public key.
+/// Returns `Some(public_key)` if valid, and `None` otherwise.
+val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+    : Prims.Pure (Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)))
       Prims.l_True
       (fun _ -> Prims.l_True)
 

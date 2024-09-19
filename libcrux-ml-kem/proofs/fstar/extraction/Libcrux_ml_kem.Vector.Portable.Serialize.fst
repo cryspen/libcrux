@@ -244,6 +244,127 @@ let serialize_5_int (v: t_Slice i16) =
   in
   r0, r1, r2, r3, r4 <: (u8 & u8 & u8 & u8 & u8)
 
+let deserialize_11_ (bytes: t_Slice u8) =
+  let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
+    deserialize_11_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 11 }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  let v8_15_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
+    deserialize_11_int (bytes.[ { Core.Ops.Range.f_start = sz 11; Core.Ops.Range.f_end = sz 22 }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  {
+    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+    =
+    let list =
+      [
+        v0_7_._1; v0_7_._2; v0_7_._3; v0_7_._4; v0_7_._5; v0_7_._6; v0_7_._7; v0_7_._8; v8_15_._1;
+        v8_15_._2; v8_15_._3; v8_15_._4; v8_15_._5; v8_15_._6; v8_15_._7; v8_15_._8
+      ]
+    in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
+    Rust_primitives.Hax.array_of_list 16 list
+  }
+  <:
+  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+
+let deserialize_5_ (bytes: t_Slice u8) =
+  let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
+    deserialize_5_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 5 }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  let v8_15_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
+    deserialize_5_int (bytes.[ { Core.Ops.Range.f_start = sz 5; Core.Ops.Range.f_end = sz 10 }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  {
+    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+    =
+    let list =
+      [
+        v0_7_._1; v0_7_._2; v0_7_._3; v0_7_._4; v0_7_._5; v0_7_._6; v0_7_._7; v0_7_._8; v8_15_._1;
+        v8_15_._2; v8_15_._3; v8_15_._4; v8_15_._5; v8_15_._6; v8_15_._7; v8_15_._8
+      ]
+    in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
+    Rust_primitives.Hax.array_of_list 16 list
+  }
+  <:
+  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+
+let serialize_11_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let r0_10_:(u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8) =
+    serialize_11_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = sz 0;
+            Core.Ops.Range.f_end = sz 8
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let r11_21_:(u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8) =
+    serialize_11_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = sz 8;
+            Core.Ops.Range.f_end = sz 16
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let list =
+    [
+      r0_10_._1; r0_10_._2; r0_10_._3; r0_10_._4; r0_10_._5; r0_10_._6; r0_10_._7; r0_10_._8;
+      r0_10_._9; r0_10_._10; r0_10_._11; r11_21_._1; r11_21_._2; r11_21_._3; r11_21_._4; r11_21_._5;
+      r11_21_._6; r11_21_._7; r11_21_._8; r11_21_._9; r11_21_._10; r11_21_._11
+    ]
+  in
+  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 22);
+  Rust_primitives.Hax.array_of_list 22 list
+
+let serialize_5_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let r0_4_:(u8 & u8 & u8 & u8 & u8) =
+    serialize_5_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = sz 0;
+            Core.Ops.Range.f_end = sz 8
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let r5_9_:(u8 & u8 & u8 & u8 & u8) =
+    serialize_5_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = sz 8;
+            Core.Ops.Range.f_end = sz 16
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let list =
+    [
+      r0_4_._1; r0_4_._2; r0_4_._3; r0_4_._4; r0_4_._5; r5_9_._1; r5_9_._2; r5_9_._3; r5_9_._4;
+      r5_9_._5
+    ]
+  in
+  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 10);
+  Rust_primitives.Hax.array_of_list 10 list
+
 let deserialize_1_ (v: t_Slice u8) =
   let result0:i16 = cast ((v.[ sz 0 ] <: u8) &. 1uy <: u8) <: i16 in
   let result1:i16 = cast (((v.[ sz 0 ] <: u8) >>! 1l <: u8) &. 1uy <: u8) <: i16 in
@@ -347,36 +468,6 @@ let deserialize_10_lemma inputs =
     (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
 
 #pop-options
-
-let deserialize_11_ (bytes: t_Slice u8) =
-  let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    deserialize_11_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 11 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  let v8_15_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    deserialize_11_int (bytes.[ { Core.Ops.Range.f_start = sz 11; Core.Ops.Range.f_end = sz 22 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  {
-    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-    =
-    let list =
-      [
-        v0_7_._1; v0_7_._2; v0_7_._3; v0_7_._4; v0_7_._5; v0_7_._6; v0_7_._7; v0_7_._8; v8_15_._1;
-        v8_15_._2; v8_15_._3; v8_15_._4; v8_15_._5; v8_15_._6; v8_15_._7; v8_15_._8
-      ]
-    in
-    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
-    Rust_primitives.Hax.array_of_list 16 list
-  }
-  <:
-  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
 let deserialize_12_ (bytes: t_Slice u8) =
   let v0_1_:(i16 & i16) =
@@ -521,36 +612,6 @@ let deserialize_4_lemma inputs =
     (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
 
 #pop-options
-
-let deserialize_5_ (bytes: t_Slice u8) =
-  let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    deserialize_5_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 5 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  let v8_15_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    deserialize_5_int (bytes.[ { Core.Ops.Range.f_start = sz 5; Core.Ops.Range.f_end = sz 10 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  {
-    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-    =
-    let list =
-      [
-        v0_7_._1; v0_7_._2; v0_7_._3; v0_7_._4; v0_7_._5; v0_7_._6; v0_7_._7; v0_7_._8; v8_15_._1;
-        v8_15_._2; v8_15_._3; v8_15_._4; v8_15_._5; v8_15_._6; v8_15_._7; v8_15_._8
-      ]
-    in
-    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
-    Rust_primitives.Hax.array_of_list 16 list
-  }
-  <:
-  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
 let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let result0:u8 =
@@ -742,37 +803,6 @@ let serialize_10_lemma inputs =
 
 #pop-options
 
-let serialize_11_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-  let r0_10_:(u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8) =
-    serialize_11_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
-            Core.Ops.Range.f_start = sz 0;
-            Core.Ops.Range.f_end = sz 8
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice i16)
-  in
-  let r11_21_:(u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8) =
-    serialize_11_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
-            Core.Ops.Range.f_start = sz 8;
-            Core.Ops.Range.f_end = sz 16
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice i16)
-  in
-  let list =
-    [
-      r0_10_._1; r0_10_._2; r0_10_._3; r0_10_._4; r0_10_._5; r0_10_._6; r0_10_._7; r0_10_._8;
-      r0_10_._9; r0_10_._10; r0_10_._11; r11_21_._1; r11_21_._2; r11_21_._3; r11_21_._4; r11_21_._5;
-      r11_21_._6; r11_21_._7; r11_21_._8; r11_21_._9; r11_21_._10; r11_21_._11
-    ]
-  in
-  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 22);
-  Rust_primitives.Hax.array_of_list 22 list
-
 let serialize_12_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let r0_2_:(u8 & u8 & u8) =
     serialize_12_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
@@ -943,33 +973,3 @@ let serialize_4_lemma inputs =
     (BitVecEq.retype (bit_vec_of_int_t_array inputs.f_elements 4))
 
 #pop-options
-
-let serialize_5_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-  let r0_4_:(u8 & u8 & u8 & u8 & u8) =
-    serialize_5_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
-            Core.Ops.Range.f_start = sz 0;
-            Core.Ops.Range.f_end = sz 8
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice i16)
-  in
-  let r5_9_:(u8 & u8 & u8 & u8 & u8) =
-    serialize_5_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
-            Core.Ops.Range.f_start = sz 8;
-            Core.Ops.Range.f_end = sz 16
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice i16)
-  in
-  let list =
-    [
-      r0_4_._1; r0_4_._2; r0_4_._3; r0_4_._4; r0_4_._5; r5_9_._1; r5_9_._2; r5_9_._3; r5_9_._4;
-      r5_9_._5
-    ]
-  in
-  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 10);
-  Rust_primitives.Hax.array_of_list 10 list

@@ -53,6 +53,22 @@ val serialize_5_int (v: t_Slice i16)
       (requires Core.Slice.impl__len #i16 v =. sz 8)
       (fun _ -> Prims.l_True)
 
+val deserialize_11_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      (requires Core.Slice.impl__len #u8 bytes =. sz 22)
+      (fun _ -> Prims.l_True)
+
+val deserialize_5_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      (requires Core.Slice.impl__len #u8 bytes =. sz 10)
+      (fun _ -> Prims.l_True)
+
+val serialize_11_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure (t_Array u8 (sz 22)) Prims.l_True (fun _ -> Prims.l_True)
+
+val serialize_5_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure (t_Array u8 (sz 10)) Prims.l_True (fun _ -> Prims.l_True)
+
 val deserialize_1_ (v: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       (requires Core.Slice.impl__len #u8 v =. sz 2)
@@ -68,11 +84,6 @@ val deserialize_10_ (bytes: t_Slice u8)
 
 val deserialize_10_lemma (inputs: t_Array u8 (sz 20)) : Lemma
   (ensures bit_vec_of_int_t_array (deserialize_10_ inputs).f_elements 10 == bit_vec_of_int_t_array inputs 8)
-
-val deserialize_11_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires Core.Slice.impl__len #u8 bytes =. sz 22)
-      (fun _ -> Prims.l_True)
 
 val deserialize_12_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -90,11 +101,6 @@ val deserialize_4_ (bytes: t_Slice u8)
 val deserialize_4_lemma (inputs: t_Array u8 (sz 8)) : Lemma
   (ensures bit_vec_of_int_t_array (deserialize_4_ inputs).f_elements 4 == bit_vec_of_int_t_array inputs 8)
 
-val deserialize_5_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires Core.Slice.impl__len #u8 bytes =. sz 10)
-      (fun _ -> Prims.l_True)
-
 val serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure (t_Array u8 (sz 2)) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -109,9 +115,6 @@ val serialize_10_lemma (inputs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Por
   (requires (forall i. Rust_primitives.bounded (Seq.index inputs.f_elements i) 10)) 
   (ensures bit_vec_of_int_t_array (serialize_10_ inputs) 8 == bit_vec_of_int_t_array inputs.f_elements 10)
 
-val serialize_11_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure (t_Array u8 (sz 22)) Prims.l_True (fun _ -> Prims.l_True)
-
 val serialize_12_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure (t_Array u8 (sz 24)) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -125,6 +128,3 @@ val serialize_4_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 val serialize_4_lemma (inputs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) : Lemma
   (requires (forall i. Rust_primitives.bounded (Seq.index inputs.f_elements i) 4)) 
   (ensures bit_vec_of_int_t_array (serialize_4_ inputs) 8 == bit_vec_of_int_t_array inputs.f_elements 4)
-
-val serialize_5_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure (t_Array u8 (sz 10)) Prims.l_True (fun _ -> Prims.l_True)
