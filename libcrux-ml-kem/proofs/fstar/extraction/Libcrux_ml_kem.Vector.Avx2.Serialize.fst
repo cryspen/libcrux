@@ -10,26 +10,8 @@ let _ =
   let open Libcrux_ml_kem.Vector.Portable in
   ()
 
-open FStar.Tactics
-
-open Tactics.Utils
-
-let rw_get_bit_cast #t #u
-  (x: int_t t) (nth: usize)
-  : Lemma (requires v nth < bits u /\ v nth < bits u)
-          (ensures eq2 #bit (get_bit (cast_mod #t #u x) nth) (if v nth < bits t then get_bit x nth else 0))
-          [SMTPat (get_bit (cast_mod #t #u x) nth)]
-  = ()
-
-let rw_get_bit_shr #t #u (x: int_t t) (y: int_t u) (i: usize {v i < bits t})
-  : Lemma (requires v y >= 0 /\ v y < bits t)
-          (ensures eq2 #bit (get_bit (x >>! y) i )
-                (if v i < bits t - v y
-                    then get_bit x (mk_int (v i + v y))
-                    else if signed t
-                         then get_bit x (mk_int (bits t - 1))
-                         else 0))
-  = ()
+// open FStar.Tactics
+// open Tactics.Utils
 
 #push-options "--compat_pre_core 2"
 // [@@Tactics.postprocess_with (fun _ -> norm [delta_only [`%Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16]]; fail "x")]
@@ -59,7 +41,9 @@ let deserialize_1_ (bytes: t_Slice u8 {Seq.length bytes == 2}) =
   in
   let result = Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 15l coefficients_in_msb in
   let bv = bit_vec_of_int_t_array (bytes <: t_Array _ (sz 2)) 8 in
-  assert (forall (i: nat {i < 16}). bv i == result (i * 16)) by (
+  assert (forall (i: nat {i < 256}). (if i % 16 = 0 then bv i else 0) == result i) by (
+    let open FStar.Tactics in
+    let open Tactics.Utils in
     let light_norm () = 
       // simplify the term: compute `+/*+` on ints, remove cast/array_of_list/funext indirections
       norm [ iota; primops
@@ -73,7 +57,7 @@ let deserialize_1_ (bytes: t_Slice u8 {Seq.length bytes == 2}) =
       ] in
     light_norm ();
     // instantiate the forall with concrete values, and run a tactic for each possible values
-    Tactics.Utils.prove_forall_nat_pointwise (Tactics.Utils.print_time "SMT query succeeded in " (fun _ ->
+    prove_forall_nat_pointwise (print_time "SMT query succeeded in " (fun _ ->
       light_norm ();
       // norm index rewrites `Seq.index (Seq.seq_of_list ...) N` or
       // `List.Tot.index ... N` when we have list literals
@@ -241,6 +225,8 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Libcrux_intrinsics.Avx2_extract.t_Vec256) in
   let bv = bit_vec_of_int_t_array (bytes <: t_Array _ (sz 8)) 8 in  
   assert (forall (i: nat {i < 64}). bv i == result ((i / 4) * 16 + i % 4)) by (
+    let open FStar.Tactics in
+    let open Tactics.Utils in
     let light_norm () = 
       norm [ iota; primops
            ; delta_namespace [
@@ -252,7 +238,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
              ]
       ] in
     light_norm ();
-    Tactics.Utils.prove_forall_nat_pointwise (Tactics.Utils.print_time "SMT query succeeded in " (fun _ ->
+    prove_forall_nat_pointwise (print_time "SMT query succeeded in " (fun _ ->
       light_norm ();
       Tactics.Seq.norm_index ();
       norm [iota; primops; zeta_full;
@@ -307,8 +293,6 @@ let deserialize_5_ (bytes: t_Slice u8) =
   in
   Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 11l coefficients
 
-open Tactics.Utils
-
 
 let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let lsb_to_msb:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -329,7 +313,9 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let result: t_Array u8 (sz 2) = Rust_primitives.Hax.array_of_list 2 list in
   let bv = bit_vec_of_int_t_array result 8 in
   assert (forall (i: nat {i < 16}). bv i == vector (i * 16)) by (
-    Tactics.Utils.prove_forall_nat_pointwise (Tactics.Utils.print_time "SMT query succeeded in " (fun _ ->
+    let open FStar.Tactics in
+    let open Tactics.Utils in
+    prove_forall_nat_pointwise (print_time "SMT query succeeded in " (fun _ ->
       let light_norm () = 
         // get rid of indirections (array_of_list, funext, casts, etc.)
         norm [ iota; primops
@@ -350,7 +336,7 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
       // three times. It's basically the same thing.
       let _ = repeatn 3 (fun _ -> 
         // Try to rewrite any subterm using the following three lemmas (corresponding to (1) (3) and (2))
-        l_to_r[`rw_get_bit_cast; `bit_vec_to_int_t_lemma; `rw_get_bit_shr];
+        l_to_r[`BitVec.Utils.rw_get_bit_cast; `bit_vec_to_int_t_lemma; `BitVec.Utils.rw_get_bit_shr];
         // get rid of useless indirections
         light_norm ();
         // after using those lemmas, more mk_int and v appears, let's get rid of those
@@ -652,9 +638,10 @@ let serialize_4__ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   in
   assume (BitVec.Intrinsics.forall_bool #256 (fun i -> i % 16 < 4 || vector i = 0));
   assert (forall (i: nat {i < 64}).
-    // let local_i = i / 4 in
     combined i == vector ((i / 4) * 16 + i % 4)
   ) by (
+    let open FStar.Tactics in
+    let open Tactics.Utils in
     // unfold wrappers
     norm [primops; iota; zeta; delta_namespace [
       `%BitVec.Intrinsics.mm256_shuffle_epi8;
@@ -663,7 +650,7 @@ let serialize_4__ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
       `%BitVec.Intrinsics.mm256_castsi256_si128;
       "BitVec.Utils";
     ]];
-    Tactics.Utils.prove_forall_nat_pointwise (Tactics.Utils.print_time "SMT query succeeded in " (fun _ ->
+    prove_forall_nat_pointwise (print_time "SMT query succeeded in " (fun _ ->
       let reduce t =
         norm [primops; iota; zeta_full; delta_namespace [
           "FStar.FunctionalExtensionality";
@@ -678,7 +665,7 @@ let serialize_4__ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
       reduce (`%BitVec.Intrinsics.mm256_permutevar8x32_epi32_i32);
       reduce (`%BitVec.Intrinsics.mm256_shuffle_epi8_i8);
       reduce (`%BitVec.Intrinsics.mm256_madd_epi16_specialized);
-      grewrite (quote (forall_bool #256 (fun i -> i % 16 < 4 || op_Equality #int (vector i) 0))) (`true);
+      grewrite (quote (BitVec.Intrinsics.forall_bool #256 (fun i -> i % 16 < 4 || op_Equality #int (vector i) 0))) (`true);
       flip (); smt ();
       reduce (`%BitVec.Intrinsics.mm256_madd_epi16_specialized');
       trivial ()

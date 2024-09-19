@@ -19,3 +19,19 @@ let mk_list_8 #a (x0 x1 x2 x3 x4 x5 x6 x7: a)
     assert_norm (List.Tot.length l == 8);
     l
 
+let rw_get_bit_cast #t #u
+  (x: int_t t) (nth: usize)
+  : Lemma (requires v nth < bits u /\ v nth < bits u)
+          (ensures eq2 #bit (get_bit (cast_mod #t #u x) nth) (if v nth < bits t then get_bit x nth else 0))
+          [SMTPat (get_bit (cast_mod #t #u x) nth)]
+  = ()
+
+let rw_get_bit_shr #t #u (x: int_t t) (y: int_t u) (i: usize {v i < bits t})
+  : Lemma (requires v y >= 0 /\ v y < bits t)
+          (ensures eq2 #bit (get_bit (x >>! y) i )
+                (if v i < bits t - v y
+                    then get_bit x (mk_int (v i + v y))
+                    else if signed t
+                         then get_bit x (mk_int (bits t - 1))
+                         else 0))
+  = ()

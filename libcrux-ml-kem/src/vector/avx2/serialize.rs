@@ -47,7 +47,58 @@ pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
     // significant bit from each element and collate them into two bytes.
     let bits_packed = mm_movemask_epi8(msbs);
 
-    [bits_packed as u8, (bits_packed >> 8) as u8]
+    let result = [bits_packed as u8, (bits_packed >> 8) as u8];
+
+    hax_lib::fstar!(
+        r#"
+let bv = bit_vec_of_int_t_array ${result} 8 in
+assert (forall (i: nat {i < 16}). bv i == ${vector} (i * 16)) by (
+  let open FStar.Tactics in
+  let open Tactics.Utils in
+  prove_forall_nat_pointwise (print_time "SMT query succeeded in " (fun _ ->
+    let light_norm () = 
+      // get rid of indirections (array_of_list, funext, casts, etc.)
+      norm [ iota; primops
+           ; delta_only [
+                 `%cast; `%cast_tc_integers
+               ; `%bit_vec_of_int_t_array
+               ; `%Rust_primitives.Hax.array_of_list
+               ; `%FunctionalExtensionality.on
+               ; `%bits;`%Lib.IntTypes.bits
+             ]
+      ] in
+    light_norm ();
+    // normalize List.index / Seq.index when we have literals
+    Tactics.Seq.norm_index ();
+    // here, we need to take care of (1) the cast and (2) the shift
+    // (introduced in `list`) and (3) bv<->i16 indirection
+    // introduced by `bit_vec_to_int_t`. Thus, we repeat the tactic
+    // three times. It's basically the same thing.
+    let _ = repeatn 3 (fun _ -> 
+      // Try to rewrite any subterm using the following three lemmas (corresponding to (1) (3) and (2))
+      l_to_r[`BitVec.Utils.rw_get_bit_cast; `bit_vec_to_int_t_lemma; `BitVec.Utils.rw_get_bit_shr];
+      // get rid of useless indirections
+      light_norm ();
+      // after using those lemmas, more mk_int and v appears, let's get rid of those
+      Tactics.MachineInts.(transform norm_machine_int_term);
+      // Special treatment for case (3)
+      norm [primops; iota; zeta_full; delta_only [
+        `%BitVec.Intrinsics.mm_movemask_epi8;
+      ]]
+    ) in
+    // Now we normalize away all the FunExt / mk_bv terms
+    norm [primops; iota; zeta_full; delta_namespace ["BitVec"; "FStar"]];
+    // Ask the SMT to solve now
+    // dump' "Goal:";
+    smt_sync ();
+    // dump' "Success";
+    smt ()
+  ))
+)
+"#
+    );
+
+    result
 }
 
 #[inline(always)]
@@ -111,7 +162,53 @@ pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
 
     // Now that they're all in the most significant bit position, shift them
     // down to the least significant bit.
-    mm256_srli_epi16::<15>(coefficients_in_msb)
+    let result = mm256_srli_epi16::<15>(coefficients_in_msb);
+
+    hax_lib::fstar!(
+        r#"
+let bv = bit_vec_of_int_t_array (${bytes} <: t_Array _ (sz 2)) 8 in
+assert (forall (i: nat {i < 256}). (if i % 16 = 0 then bv i else 0) == result i) by (
+  let open FStar.Tactics in
+  let open Tactics.Utils in
+  let light_norm () =
+    // simplify the term: compute `+/*+` on ints, remove cast/array_of_list/funext indirections
+    norm [ iota; primops
+         ; delta_namespace [
+           `%cast; `%cast_tc_integers
+             ; `%bit_vec_of_int_t_array
+             ; `%Rust_primitives.Hax.array_of_list
+             ; "FStar.FunctionalExtensionality"
+             ; `%bits;`%Lib.IntTypes.bits
+           ]
+    ] in
+  light_norm ();
+  // instantiate the forall with concrete values, and run a tactic for each possible values
+  prove_forall_nat_pointwise (print_time "SMT query succeeded in " (fun _ ->
+    light_norm ();
+    // norm index rewrites `Seq.index (Seq.seq_of_list ...) N` or
+    // `List.Tot.index ... N` when we have list literals
+    Tactics.Seq.norm_index ();
+    // Reduce more aggressively
+    norm [iota; primops; zeta_full;
+          delta_namespace [
+            "FStar";
+            "BitVec";
+          ]; unascribe
+          ];
+    // Rewrite and normalize machine integers, hopefully in ints
+    Tactics.MachineInts.(transform norm_machine_int_term);
+    // norm: primops to get rid of >=, <=, +, *, -, etc.
+    //       zeta delta iota: normalize bitvectors
+    norm [iota; primops; zeta; delta];
+    dump' "Goal:";
+    // ask the smt to solve now
+    smt_sync ()
+  ))
+)
+"#
+    );
+
+    result
 }
 
 #[inline(always)]
@@ -170,6 +267,45 @@ pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
     let combined =
         mm256_permutevar8x32_epi32(adjacent_8_combined, mm256_set_epi32(0, 0, 0, 0, 0, 0, 4, 0));
     let combined = mm256_castsi256_si128(combined);
+
+    hax_lib::fstar!(
+        r#"
+assert (forall (i: nat {i < 64}).
+    ${combined} i == ${vector} ((i / 4) * 16 + i % 4)
+) by (
+  let open FStar.Tactics in
+  let open Tactics.Utils in
+  // unfold wrappers
+  norm [primops; iota; zeta; delta_namespace [
+    `%BitVec.Intrinsics.mm256_shuffle_epi8;
+    `%BitVec.Intrinsics.mm256_permutevar8x32_epi32;
+    `%BitVec.Intrinsics.mm256_madd_epi16;
+    `%BitVec.Intrinsics.mm256_castsi256_si128;
+    "BitVec.Utils";
+  ]];
+  prove_forall_nat_pointwise (print_time "SMT query succeeded in " (fun _ ->
+    let reduce t =
+      norm [primops; iota; zeta_full; delta_namespace [
+        "FStar.FunctionalExtensionality";
+        t;
+        `%BitVec.Utils.mk_bv;
+        `%( + ); `%op_Subtraction; `%( / ); `%( * ); `%( % )
+      ]];
+      norm [primops; iota; zeta_full; delta_namespace [
+        "FStar.List.Tot"; `%( + ); `%op_Subtraction; `%( / ); `%( * ); `%( % )
+      ]]
+    in
+    reduce (`%BitVec.Intrinsics.mm256_permutevar8x32_epi32_i32);
+    reduce (`%BitVec.Intrinsics.mm256_shuffle_epi8_i8);
+    reduce (`%BitVec.Intrinsics.mm256_madd_epi16_specialized);
+    grewrite (quote (BitVec.Intrinsics.forall_bool #256 (fun i -> i % 16 < 4 || op_Equality #int (${vector} i) 0))) (`true);
+    flip (); smt ();
+    reduce (`%BitVec.Intrinsics.mm256_madd_epi16_specialized');
+    trivial ()
+  ))
+);
+"#
+    );
 
     // ... so that we can read them out in one go.
     mm_storeu_bytes_si128(&mut serialized, combined);
@@ -239,7 +375,49 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> Vec256 {
     let coefficients_in_lsb = mm256_srli_epi16::<4>(coefficients_in_msb);
 
     // Zero the remaining bits.
-    mm256_and_si256(coefficients_in_lsb, mm256_set1_epi16((1 << 4) - 1))
+    let result = mm256_and_si256(coefficients_in_lsb, mm256_set1_epi16((1 << 4) - 1));
+
+    hax_lib::fstar!(
+        r#"
+let bv = bit_vec_of_int_t_array (${bytes} <: t_Array _ (sz 8)) 8 in  
+assert (forall (i: nat {i < 64}). bv i == ${result} ((i / 4) * 16 + i % 4)) by (
+  let open FStar.Tactics in
+  let open Tactics.Utils in
+  let light_norm () = 
+    norm [ iota; primops
+         ; delta_namespace [
+           `%cast; `%cast_tc_integers
+             ; `%bit_vec_of_int_t_array
+             ; `%Rust_primitives.Hax.array_of_list
+             ; "FStar.FunctionalExtensionality"
+             ; `%bits;`%Lib.IntTypes.bits
+           ]
+    ] in
+  light_norm ();
+  prove_forall_nat_pointwise (print_time "SMT query succeeded in " (fun _ ->
+    light_norm ();
+    Tactics.Seq.norm_index ();
+    norm [iota; primops; zeta_full;
+          delta_namespace [
+            "FStar";
+            "BitVec";
+          ]; unascribe
+          ];
+    Tactics.MachineInts.(transform norm_machine_int_term);
+    norm [iota; primops; zeta_full;
+          delta_namespace [
+            "FStar";
+            "BitVec";
+          ]; unascribe
+          ];
+    dump' "Goal:";
+    smt_sync ()
+  ))
+)
+"#
+    );
+
+    result
 }
 
 #[inline(always)]
