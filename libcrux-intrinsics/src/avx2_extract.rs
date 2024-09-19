@@ -135,7 +135,14 @@ pub fn mm256_set_epi8(
                                     Spec.Utils.create (sz 16) $constant"))]
 #[hax_lib::fstar::replace(
     interface,
-    "include BitVec.Intrinsics {mm256_set1_epi16 as ${mm256_set1_epi16}}"
+    r#"
+include BitVec.Intrinsics {mm256_set1_epi16 as ${mm256_set1_epi16}}
+val lemma_mm256_set1_epi16 constant
+  : Lemma (   vec256_as_i16x16 (mm256_set1_epi16 constant)
+           == Spec.Utils.create (sz 16) constant
+          )
+          [SMTPat (vec256_as_i16x16 (mm256_set1_epi16 constant))]
+"#
 )]
 pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
     unimplemented!()
@@ -148,7 +155,7 @@ include BitVec.Intrinsics {mm256_set_epi16 as ${mm256_set_epi16}}
 let lemma_mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 :
     Lemma (vec256_as_i16x16 (${mm256_set_epi16} v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0) == 
             Spec.Utils.create16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15)
-            [SMTPat (vec256_as_i16x16 (${mm256_set_epi16} v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0))] = admit()"
+            [SMTPat (vec256_as_i16x16 (${mm256_set_epi16} v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0))] = admit()
 "#
 )]
 pub fn mm256_set_epi16(
@@ -273,8 +280,17 @@ pub fn mm256_mul_epu32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
-#[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == 
-            Spec.Utils.map2 (&.) (vec256_as_i16x16 $lhs) (vec256_as_i16x16 $rhs)"))]
+#[hax_lib::fstar::replace(
+    interface,
+    r#"
+include BitVec.Intrinsics {mm256_and_si256 as ${mm256_and_si256}}
+val lemma_mm256_and_si256 lhs rhs
+  : Lemma (   vec256_as_i16x16 (mm256_and_si256 lhs rhs)
+           == Spec.Utils.map2 (&.) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs)
+          )
+          [SMTPat (vec256_as_i16x16 (mm256_and_si256 lhs rhs))]
+"#
+)]
 pub fn mm256_and_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }

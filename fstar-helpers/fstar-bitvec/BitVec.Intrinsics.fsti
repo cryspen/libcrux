@@ -285,7 +285,7 @@ let mm256_madd_epi16
   : bit_vec 256
   = result
 
-val mm_storeu_bytes_si128 (_output vec: bit_vec 128): t_Slice u8
+val mm_storeu_bytes_si128 (_output: t_Slice u8) (vec: bit_vec 128): t_Slice u8
 
 open FStar.Stubs.Tactics.V2.Builtins
 open FStar.Stubs.Tactics.V2
