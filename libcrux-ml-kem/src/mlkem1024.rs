@@ -232,6 +232,13 @@ macro_rules! instantiate {
                 /// Am Unpacked ML-KEM 1024 Key pair
                 pub type MlKem1024KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK_1024>;
 
+                /// Read the key pair from `bytes``.
+                ///
+                /// `bytes` has to point to at least ??? bytes.
+                pub fn key_pair_from_bytes(bytes: &[u8]) -> MlKem1024KeyPairUnpacked {
+                    MlKem1024KeyPairUnpacked::from_bytes(bytes)
+                }
+
                 /// Create a new, empty unpacked key.
                 pub fn init_key_pair() -> MlKem1024KeyPairUnpacked {
                     MlKem1024KeyPairUnpacked::default()

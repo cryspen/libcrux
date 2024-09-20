@@ -70,6 +70,20 @@ macro_rules! impl_consistency_unpacked {
                 key_pair.public_key().as_slice()
             );
 
+            // Get the serialized keys as bytes
+            let mut bytes = [0u8; 12384]; // max for 1024
+            key_pair_unpacked.to_bytes(&mut bytes);
+            let unpacked_key_again = p::unpacked::key_pair_from_bytes(&bytes);
+            let mut serialized_public_key = Default::default();
+            p::unpacked::serialized_public_key(
+                unpacked_key_again.public_key(),
+                &mut serialized_public_key,
+            );
+            assert_eq!(
+                key_pair.public_key().as_slice(),
+                serialized_public_key.as_slice()
+            );
+
             let randomness = random_array();
             let (ciphertext, shared_secret) = p::encapsulate(key_pair.public_key(), randomness);
             let (ciphertext_unpacked, shared_secret_unpacked) =
