@@ -5,16 +5,16 @@ pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1
 pub const BARRETT_SHIFT: i32 = 26;
 pub const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 
-#[cfg(hax)]
+#[cfg(not(eurydice))]
 #[hax_lib::attributes]
 pub trait Repr: Copy + Clone {
     #[requires(true)]
     fn repr(x: Self) -> [i16; 16];
 }
 
-#[cfg(hax)]
+#[cfg(not(eurydice))]
 #[hax_lib::attributes]
-pub trait Operations: Copy + Clone + Repr {
+pub trait ArithOperations: Copy + Clone + Repr {
     #[allow(non_snake_case)]
     #[requires(true)]
     #[ensures(|result| fstar!("f_repr $result == Seq.create 16 0s"))]
@@ -71,16 +71,11 @@ pub trait Operations: Copy + Clone + Repr {
     #[requires(fstar!("Spec.Utils.is_i16b 1664 c"))]
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
 
-    // Compression
-    #[requires(true)]
-    fn compress_1(v: Self) -> Self;
-    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
-               COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
-    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
-    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
-        COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
-    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
+}
 
+#[cfg(not(eurydice))]
+#[hax_lib::attributes]
+pub trait NTTOperations: Copy + Clone + Repr {
     // NTT
     #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
                        Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
@@ -117,6 +112,20 @@ pub trait Operations: Copy + Clone + Repr {
     #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (f_repr $out)"))]
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
         -> Self;
+}
+
+#[cfg(not(eurydice))]
+#[hax_lib::attributes]
+pub trait SerializeOperations: Copy + Clone + Repr {
+    // Compression
+    #[requires(true)]
+    fn compress_1(v: Self) -> Self;
+    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
+               COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
+    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
+    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
+        COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
 
     // Serialization and deserialization
     #[requires(fstar!("Spec.MLKEM.serialize_pre 1 (f_repr $a)"))]
@@ -162,7 +171,11 @@ pub trait Operations: Copy + Clone + Repr {
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }
 
-#[cfg(not(hax))]
+#[cfg(not(eurydice))]
+#[hax_lib::attributes]
+pub trait Operations: Copy + Clone + ArithOperations + NTTOperations + SerializeOperations {}
+
+#[cfg(eurydice)]
 pub trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
@@ -176,9 +189,6 @@ pub trait Operations: Copy + Clone {
     fn cond_subtract_3329(v: Self) -> Self;
     fn barrett_reduce(vector: Self) -> Self;
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
-    fn compress_1(v: Self) -> Self;
-    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
-    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self;
@@ -187,6 +197,9 @@ pub trait Operations: Copy + Clone {
     fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self;
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
         -> Self;
+    fn compress_1(v: Self) -> Self;
+    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
     fn serialize_1(a: Self) -> [u8; 2];
     fn deserialize_1(a: &[u8]) -> Self;
     fn serialize_4(a: Self) -> [u8; 8];

@@ -1,4 +1,4 @@
-use super::traits::Operations;
+use super::traits::*;
 pub(crate) use libcrux_intrinsics::avx2::*;
 
 mod arithmetic;
@@ -43,15 +43,16 @@ fn vec_from_i16_array(array: &[i16]) -> SIMD256Vector {
     }
 }
 
-#[cfg(hax)]
-impl crate::vector::traits::Repr for SIMD256Vector {
+#[cfg(not(eurydice))]
+impl Repr for SIMD256Vector {
     fn repr(x: Self) -> [i16; 16] {
         vec_to_i16_array(x)
     }
 }
 
 #[hax_lib::attributes]
-impl Operations for SIMD256Vector {
+#[cfg(not(eurydice))]
+impl ArithOperations for SIMD256Vector {
     #[inline(always)]
     #[ensures(|out| fstar!("impl.f_repr out == Seq.create 16 0s"))]
     fn ZERO() -> Self {
@@ -138,7 +139,11 @@ impl Operations for SIMD256Vector {
             elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),
         }
     }
+}
 
+#[hax_lib::attributes]
+#[cfg(not(eurydice))]
+impl SerializeOperations for SIMD256Vector {
     fn compress_1(vector: Self) -> Self {
         Self {
             elements: compress::compress_message_coefficient(vector.elements),
@@ -162,80 +167,6 @@ impl Operations for SIMD256Vector {
             elements: compress::decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(
                 vector.elements,
             ),
-        }
-    }
-
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
-                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
-                       Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr ${vector})"))]
-    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+6*3328) (impl.f_repr $out)"))]
-    fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
-        Self {
-            elements: ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
-        }
-    }
-
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
-                       Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr ${vector})"))]
-    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr $out)"))]
-    fn ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
-        Self {
-            elements: ntt::ntt_layer_2_step(vector.elements, zeta0, zeta1),
-        }
-    }
-
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta /\\
-                       Spec.Utils.is_i16b_array (11207+3*3328) (impl.f_repr ${vector})"))]
-    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr $out)"))]
-    fn ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
-        Self {
-            elements: ntt::ntt_layer_3_step(vector.elements, zeta),
-        }
-    }
-
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
-                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3  /\\
-                       Spec.Utils.is_i16b_array (4*3328) (impl.f_repr ${vector})"))]
-    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
-    fn inv_ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
-        Self {
-            elements: ntt::inv_ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
-        }
-    }
-
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"))]
-    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
-    fn inv_ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
-        Self {
-            elements: ntt::inv_ntt_layer_2_step(vector.elements, zeta0, zeta1),
-        }
-    }
-
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta /\\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"))]
-    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
-    fn inv_ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
-        Self {
-            elements: ntt::inv_ntt_layer_3_step(vector.elements, zeta),
-        }
-    }
-
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
-                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
-                       Spec.Utils.is_i16b_array 3228 (impl.f_repr ${lhs}) /\\
-                       Spec.Utils.is_i16b_array 3228 (impl.f_repr ${rhs})"))]
-    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
-    fn ntt_multiply(
-        lhs: &Self,
-        rhs: &Self,
-        zeta0: i16,
-        zeta1: i16,
-        zeta2: i16,
-        zeta3: i16,
-    ) -> Self {
-        Self {
-            elements: ntt::ntt_multiply(lhs.elements, rhs.elements, zeta0, zeta1, zeta2, zeta3),
         }
     }
 
@@ -339,5 +270,234 @@ impl Operations for SIMD256Vector {
     )]
     fn rej_sample(input: &[u8], output: &mut [i16]) -> usize {
         sampling::rejection_sample(input, output)
+    }
+}
+
+#[hax_lib::attributes]
+#[cfg(not(eurydice))]
+impl NTTOperations for SIMD256Vector {
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+                       Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+6*3328) (impl.f_repr $out)"))]
+    fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
+        Self {
+            elements: ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
+        }
+    }
+
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                       Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr $out)"))]
+    fn ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
+        Self {
+            elements: ntt::ntt_layer_2_step(vector.elements, zeta0, zeta1),
+        }
+    }
+
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta /\\
+                       Spec.Utils.is_i16b_array (11207+3*3328) (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr $out)"))]
+    fn ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
+        Self {
+            elements: ntt::ntt_layer_3_step(vector.elements, zeta),
+        }
+    }
+
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3  /\\
+                       Spec.Utils.is_i16b_array (4*3328) (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
+    fn inv_ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
+        Self {
+            elements: ntt::inv_ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
+        }
+    }
+
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
+    fn inv_ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
+        Self {
+            elements: ntt::inv_ntt_layer_2_step(vector.elements, zeta0, zeta1),
+        }
+    }
+
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta /\\
+                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
+    fn inv_ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
+        Self {
+            elements: ntt::inv_ntt_layer_3_step(vector.elements, zeta),
+        }
+    }
+
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+                       Spec.Utils.is_i16b_array 3228 (impl.f_repr ${lhs}) /\\
+                       Spec.Utils.is_i16b_array 3228 (impl.f_repr ${rhs})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
+    fn ntt_multiply(
+        lhs: &Self,
+        rhs: &Self,
+        zeta0: i16,
+        zeta1: i16,
+        zeta2: i16,
+        zeta3: i16,
+    ) -> Self {
+        Self {
+            elements: ntt::ntt_multiply(lhs.elements, rhs.elements, zeta0, zeta1, zeta2, zeta3),
+        }
+    }
+}
+
+#[cfg(not(eurydice))]
+impl Operations for SIMD256Vector {}
+
+#[cfg(eurydice)]
+impl Operations for PortableVector {
+    fn ZERO() -> Self {
+        zero()
+    }
+
+    fn from_i16_array(array: &[i16]) -> Self {
+        from_i16_array(array)
+    }
+
+    fn to_i16_array(x: Self) -> [i16; 16] {
+        to_i16_array(x)
+    }
+
+    fn add(lhs: Self, rhs: &Self) -> Self {
+        add(lhs, rhs)
+    }
+
+    fn sub(lhs: Self, rhs: &Self) -> Self {
+        sub(lhs, rhs)
+    }
+
+    fn multiply_by_constant(vec: Self, c: i16) -> Self {
+        multiply_by_constant(vec, c)
+    }
+
+    fn bitwise_and_with_constant(v: Self, c: i16) -> Self {
+        bitwise_and_with_constant(v, c)
+    }
+
+    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
+        shift_right::<{ SHIFT_BY }>(v)
+    }
+
+    fn cond_subtract_3329(v: Self) -> Self {
+        cond_subtract_3329(v)
+    }
+
+    fn barrett_reduce(v: Self) -> Self {
+        barrett_reduce(v)
+    }
+
+    fn montgomery_multiply_by_constant(v: Self, r: i16) -> Self {
+        montgomery_multiply_by_constant(v, r)
+    }
+
+    fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
+        ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
+    }
+
+    fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
+        ntt_layer_2_step(a, zeta0, zeta1)
+    }
+
+    fn ntt_layer_3_step(a: Self, zeta: i16) -> Self {
+        ntt_layer_3_step(a, zeta)
+    }
+
+    fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
+        inv_ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
+    }
+
+    fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
+        inv_ntt_layer_2_step(a, zeta0, zeta1)
+    }
+
+    fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self {
+        inv_ntt_layer_3_step(a, zeta)
+    }
+
+    
+    fn ntt_multiply(
+        lhs: &Self,
+        rhs: &Self,
+        zeta0: i16,
+        zeta1: i16,
+        zeta2: i16,
+        zeta3: i16,
+    ) -> Self {
+        ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
+    }   
+
+    fn compress_1(v: Self) -> Self {
+        compress_1(v)
+    }
+
+    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
+        compress::<COEFFICIENT_BITS>(v)
+    }
+
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
+        decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(v)
+    }
+    
+    fn serialize_1(a: Self) -> [u8; 2] {
+        serialize_1(a)
+    }
+
+    fn deserialize_1(a: &[u8]) -> Self {
+        deserialize_1(a)
+    }
+
+    fn serialize_4(a: Self) -> [u8; 8] {
+        serialize_4(a)
+    }
+
+    fn deserialize_4(a: &[u8]) -> Self {
+        deserialize_4(a)
+    }
+
+    fn serialize_5(a: Self) -> [u8; 10] {
+        serialize_5(a)
+    }
+
+    #[requires(a.len() == 10)]
+    fn deserialize_5(a: &[u8]) -> Self {
+        deserialize_5(a)
+    }
+
+    fn serialize_10(a: Self) -> [u8; 20] {
+        serialize_10(a)
+    }
+
+    fn deserialize_10(a: &[u8]) -> Self {
+        deserialize_10(a)
+    }
+
+    fn serialize_11(a: Self) -> [u8; 22] {
+        serialize_11(a)
+    }
+
+    fn deserialize_11(a: &[u8]) -> Self {
+        deserialize_11(a)
+    }
+
+    fn serialize_12(a: Self) -> [u8; 24] {
+        serialize_12(a)
+    }
+
+    fn deserialize_12(a: &[u8]) -> Self {
+        deserialize_12(a)
+    }
+
+    fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
+        rej_sample(a, out)
     }
 }
