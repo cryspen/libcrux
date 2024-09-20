@@ -113,9 +113,6 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_serialize_1_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        let _:Prims.unit =
-          assert (forall i. Rust_primitives.bounded (Seq.index a.f_elements i) 1)
-        in
         let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_lemma a in
         Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_ a);
     f_deserialize_1_pre = (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. sz 2);
@@ -143,9 +140,6 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_serialize_4_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        let _:Prims.unit =
-          assert (forall i. Rust_primitives.bounded (Seq.index a.f_elements i) 4)
-        in
         let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_lemma a in
         Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_ a);
     f_deserialize_4_pre = (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. sz 8);

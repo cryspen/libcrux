@@ -429,7 +429,9 @@ val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (vec: v_T)
     : Prims.Pure v_T
       (requires
         forall i.
-          let x = Seq.index (i1._super_8706949974463268012.f_repr vec) i in
+          let x =
+            Seq.index (i1._super_13198556198845860418._super_8706949974463268012.f_repr vec) i
+          in
           (x == 0s \/ x == 1s))
       (fun _ -> Prims.l_True)
 
@@ -441,11 +443,18 @@ val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
 
 val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
     : Prims.Pure v_T
-      (requires Spec.Utils.is_i16b_array 3328 (i1._super_8706949974463268012.f_repr a))
+      (requires
+        Spec.Utils.is_i16b_array 3328
+          (i1._super_13198556198845860418._super_8706949974463268012.f_repr a))
       (ensures
         fun result ->
           let result:v_T = result in
           forall i.
-            (let x = Seq.index (i1._super_8706949974463268012.f_repr a) i in
-              let y = Seq.index (i1._super_8706949974463268012.f_repr result) i in
+            (let x =
+                Seq.index (i1._super_13198556198845860418._super_8706949974463268012.f_repr a) i
+              in
+              let y =
+                Seq.index (i1._super_13198556198845860418._super_8706949974463268012.f_repr result)
+                  i
+              in
               (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))))
