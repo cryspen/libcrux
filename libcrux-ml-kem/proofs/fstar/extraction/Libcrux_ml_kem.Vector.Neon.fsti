@@ -30,7 +30,7 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Repr Libcrux_ml_kem.Vector.Neon.Vector_
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl_1: Libcrux_ml_kem.Vector.Traits.t_Operations
+let impl_2: Libcrux_ml_kem.Vector.Traits.t_ArithOperations
 Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
   {
     _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
@@ -189,52 +189,17 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
         true);
     f_montgomery_multiply_by_constant
     =
-    (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) ->
-        Libcrux_ml_kem.Vector.Neon.Arithmetic.montgomery_multiply_by_constant v c);
-    f_compress_1_pre = (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_compress_1_post
-    =
-    (fun
-        (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        ->
-        true);
-    f_compress_1_
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
-        Libcrux_ml_kem.Vector.Neon.Compress.compress_1_ v);
-    f_compress_pre
-    =
-    (fun (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
-        true);
-    f_compress_post
-    =
-    (fun
-        (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        ->
-        true);
-    f_compress
-    =
-    (fun (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
-        Libcrux_ml_kem.Vector.Neon.Compress.compress v_COEFFICIENT_BITS v);
-    f_decompress_ciphertext_coefficient_pre
-    =
-    (fun (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
-        true);
-    f_decompress_ciphertext_coefficient_post
-    =
-    (fun
-        (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        ->
-        true);
-    f_decompress_ciphertext_coefficient
-    =
-    (fun (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
-        Libcrux_ml_kem.Vector.Neon.Compress.decompress_ciphertext_coefficient v_COEFFICIENT_BITS v);
+    fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) ->
+      Libcrux_ml_kem.Vector.Neon.Arithmetic.montgomery_multiply_by_constant v c
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_4: Libcrux_ml_kem.Vector.Traits.t_NTTOperations
+Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+  {
+    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
+    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    _super_8706949974463268012 = FStar.Tactics.Typeclasses.solve;
     f_ntt_layer_1_step_pre
     =
     (fun
@@ -386,15 +351,68 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
         true);
     f_ntt_multiply
     =
+    fun
+      (lhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+      (rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+      (zeta1: i16)
+      (zeta2: i16)
+      (zeta3: i16)
+      (zeta4: i16)
+      ->
+      Libcrux_ml_kem.Vector.Neon.Ntt.ntt_multiply lhs rhs zeta1 zeta2 zeta3 zeta4
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_3: Libcrux_ml_kem.Vector.Traits.t_SerializeOperations
+Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+  {
+    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
+    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    _super_8706949974463268012 = FStar.Tactics.Typeclasses.solve;
+    f_compress_1_pre = (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_compress_1_post
+    =
     (fun
-        (lhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        (rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        (zeta1: i16)
-        (zeta2: i16)
-        (zeta3: i16)
-        (zeta4: i16)
+        (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
         ->
-        Libcrux_ml_kem.Vector.Neon.Ntt.ntt_multiply lhs rhs zeta1 zeta2 zeta3 zeta4);
+        true);
+    f_compress_1_
+    =
+    (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+        Libcrux_ml_kem.Vector.Neon.Compress.compress_1_ v);
+    f_compress_pre
+    =
+    (fun (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+        true);
+    f_compress_post
+    =
+    (fun
+        (v_COEFFICIENT_BITS: i32)
+        (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        ->
+        true);
+    f_compress
+    =
+    (fun (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+        Libcrux_ml_kem.Vector.Neon.Compress.compress v_COEFFICIENT_BITS v);
+    f_decompress_ciphertext_coefficient_pre
+    =
+    (fun (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+        true);
+    f_decompress_ciphertext_coefficient_post
+    =
+    (fun
+        (v_COEFFICIENT_BITS: i32)
+        (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        ->
+        true);
+    f_decompress_ciphertext_coefficient
+    =
+    (fun (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+        Libcrux_ml_kem.Vector.Neon.Compress.decompress_ciphertext_coefficient v_COEFFICIENT_BITS v);
     f_serialize_1_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_serialize_1_post
     =
@@ -502,4 +520,15 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
       let out:t_Slice i16 = tmp0 in
       let hax_temp_output:usize = out1 in
       out, hax_temp_output <: (t_Slice i16 & usize)
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_1: Libcrux_ml_kem.Vector.Traits.t_Operations
+Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+  {
+    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
+    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    _super_13198556198845860418 = FStar.Tactics.Typeclasses.solve;
+    _super_14737252538680454651 = FStar.Tactics.Typeclasses.solve;
+    _super_1330649163392849158 = FStar.Tactics.Typeclasses.solve
   }

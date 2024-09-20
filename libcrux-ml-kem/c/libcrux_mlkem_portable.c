@@ -7,8 +7,8 @@
  * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
  * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
  * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
- * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
- * Libcrux: e8928fc5424f83c8cb35b980033be17621fc0ef0
+ * F*: 650b216aeb5901ec6f1c44ff275acd924e54bdbd
+ * Libcrux: 2010f03fc3ff9700169ae4a5934fec93a09a1fc0
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -1113,77 +1113,6 @@ libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(
       v, r);
 }
 
-/**
- The `compress_*` functions implement the `Compress` function specified in the
- NIST FIPS 203 standard (Page 18, Expression 4.5), which is defined as:
-
- ```plaintext
- Compress_d: ℤq -> ℤ_{2ᵈ}
- Compress_d(x) = ⌈(2ᵈ/q)·x⌋
- ```
-
- Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
-
- ```plaintext
- Compress_d(x) = ⌊(2ᵈ/q)·x + 1/2⌋
-               = ⌊(2^{d+1}·x + q) / 2q⌋
- ```
-
- For further information about the function implementations, consult the
- `implementation_notes.pdf` document in this directory.
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
-uint8_t libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(
-    uint16_t fe) {
-  int16_t shifted = (int16_t)1664 - (int16_t)fe;
-  int16_t mask = shifted >> 15U;
-  int16_t shifted_to_positive = mask ^ shifted;
-  int16_t shifted_positive_in_range = shifted_to_positive - (int16_t)832;
-  return (uint8_t)(shifted_positive_in_range >> 15U & (int16_t)1);
-}
-
-KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_compress_compress_1(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
-  for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
-    size_t i0 = i;
-    v.elements[i0] = (int16_t)
-        libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(
-            (uint16_t)v.elements[i0]);
-  }
-  return v;
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
-*/
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_compress_1_0d(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
-  return libcrux_ml_kem_vector_portable_compress_compress_1(v);
-}
-
-KRML_MUSTINLINE uint32_t
-libcrux_ml_kem_vector_portable_arithmetic_get_n_least_significant_bits(
-    uint8_t n, uint32_t value) {
-  return value & ((1U << (uint32_t)n) - 1U);
-}
-
-int16_t libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
-    uint8_t coefficient_bits, uint16_t fe) {
-  uint64_t compressed = (uint64_t)fe << (uint32_t)coefficient_bits;
-  compressed = compressed + 1664ULL;
-  compressed = compressed * 10321340ULL;
-  compressed = compressed >> 35U;
-  return (int16_t)
-      libcrux_ml_kem_vector_portable_arithmetic_get_n_least_significant_bits(
-          coefficient_bits, (uint32_t)compressed);
-}
-
 KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_ntt_ntt_step(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
     int16_t zeta, size_t i, size_t j) {
@@ -1482,6 +1411,77 @@ libcrux_ml_kem_vector_portable_ntt_multiply_0d(
     int16_t zeta0, int16_t zeta1, int16_t zeta2, int16_t zeta3) {
   return libcrux_ml_kem_vector_portable_ntt_ntt_multiply(lhs, rhs, zeta0, zeta1,
                                                          zeta2, zeta3);
+}
+
+/**
+ The `compress_*` functions implement the `Compress` function specified in the
+ NIST FIPS 203 standard (Page 18, Expression 4.5), which is defined as:
+
+ ```plaintext
+ Compress_d: ℤq -> ℤ_{2ᵈ}
+ Compress_d(x) = ⌈(2ᵈ/q)·x⌋
+ ```
+
+ Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
+
+ ```plaintext
+ Compress_d(x) = ⌊(2ᵈ/q)·x + 1/2⌋
+               = ⌊(2^{d+1}·x + q) / 2q⌋
+ ```
+
+ For further information about the function implementations, consult the
+ `implementation_notes.pdf` document in this directory.
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
+uint8_t libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(
+    uint16_t fe) {
+  int16_t shifted = (int16_t)1664 - (int16_t)fe;
+  int16_t mask = shifted >> 15U;
+  int16_t shifted_to_positive = mask ^ shifted;
+  int16_t shifted_positive_in_range = shifted_to_positive - (int16_t)832;
+  return (uint8_t)(shifted_positive_in_range >> 15U & (int16_t)1);
+}
+
+KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_compress_compress_1(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
+  for (size_t i = (size_t)0U;
+       i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
+    size_t i0 = i;
+    v.elements[i0] = (int16_t)
+        libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(
+            (uint16_t)v.elements[i0]);
+  }
+  return v;
+}
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
+*/
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_compress_1_0d(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
+  return libcrux_ml_kem_vector_portable_compress_compress_1(v);
+}
+
+KRML_MUSTINLINE uint32_t
+libcrux_ml_kem_vector_portable_arithmetic_get_n_least_significant_bits(
+    uint8_t n, uint32_t value) {
+  return value & ((1U << (uint32_t)n) - 1U);
+}
+
+int16_t libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
+    uint8_t coefficient_bits, uint16_t fe) {
+  uint64_t compressed = (uint64_t)fe << (uint32_t)coefficient_bits;
+  compressed = compressed + 1664ULL;
+  compressed = compressed * 10321340ULL;
+  compressed = compressed >> 35U;
+  return (int16_t)
+      libcrux_ml_kem_vector_portable_arithmetic_get_n_least_significant_bits(
+          coefficient_bits, (uint32_t)compressed);
 }
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_1(
@@ -4237,7 +4237,7 @@ with const generics
 - COEFFICIENT_BITS= 10
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-compress_0c(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
+compress_0b(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
@@ -4258,9 +4258,9 @@ A monomorphic instance of libcrux_ml_kem.vector.portable.compress_0d
 with const generics
 - COEFFICIENT_BITS= 10
 */
-static libcrux_ml_kem_vector_portable_vector_type_PortableVector compress_0d_9a(
+static libcrux_ml_kem_vector_portable_vector_type_PortableVector compress_0d_70(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
-  return compress_0c(v);
+  return compress_0b(v);
 }
 
 /**
@@ -4269,7 +4269,7 @@ with const generics
 - COEFFICIENT_BITS= 11
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-compress_0c0(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
+compress_0b0(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
@@ -4291,8 +4291,8 @@ with const generics
 - COEFFICIENT_BITS= 11
 */
 static libcrux_ml_kem_vector_portable_vector_type_PortableVector
-compress_0d_9a0(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
-  return compress_0c0(v);
+compress_0d_700(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
+  return compress_0b0(v);
 }
 
 /**
@@ -4308,7 +4308,7 @@ static KRML_MUSTINLINE void compress_then_serialize_11_e20(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector coefficient =
-        compress_0d_9a0(to_unsigned_representative_87(re->coefficients[i0]));
+        compress_0d_700(to_unsigned_representative_87(re->coefficients[i0]));
     uint8_t bytes[22U];
     libcrux_ml_kem_vector_portable_serialize_11_0d(coefficient, bytes);
     Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
@@ -4370,7 +4370,7 @@ with const generics
 - COEFFICIENT_BITS= 4
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-compress_0c1(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
+compress_0b1(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
@@ -4392,8 +4392,8 @@ with const generics
 - COEFFICIENT_BITS= 4
 */
 static libcrux_ml_kem_vector_portable_vector_type_PortableVector
-compress_0d_9a1(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
-  return compress_0c1(v);
+compress_0d_701(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
+  return compress_0b1(v);
 }
 
 /**
@@ -4411,7 +4411,7 @@ static KRML_MUSTINLINE void compress_then_serialize_4_55(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector coefficient =
-        compress_0d_9a1(to_unsigned_representative_87(re.coefficients[i0]));
+        compress_0d_701(to_unsigned_representative_87(re.coefficients[i0]));
     uint8_t bytes[8U];
     libcrux_ml_kem_vector_portable_serialize_4_0d(coefficient, bytes);
     Eurydice_slice_copy(
@@ -4427,7 +4427,7 @@ with const generics
 - COEFFICIENT_BITS= 5
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-compress_0c2(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
+compress_0b2(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
@@ -4449,8 +4449,8 @@ with const generics
 - COEFFICIENT_BITS= 5
 */
 static libcrux_ml_kem_vector_portable_vector_type_PortableVector
-compress_0d_9a2(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
-  return compress_0c2(v);
+compress_0d_702(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
+  return compress_0b2(v);
 }
 
 /**
@@ -4468,7 +4468,7 @@ static KRML_MUSTINLINE void compress_then_serialize_5_a3(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector coefficients =
-        compress_0d_9a2(to_unsigned_representative_87(re.coefficients[i0]));
+        compress_0d_702(to_unsigned_representative_87(re.coefficients[i0]));
     uint8_t bytes[10U];
     libcrux_ml_kem_vector_portable_serialize_5_0d(coefficients, bytes);
     Eurydice_slice_copy(
@@ -4812,7 +4812,7 @@ const generics
 - COEFFICIENT_BITS= 10
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-decompress_ciphertext_coefficient_df(
+decompress_ciphertext_coefficient_e9(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
@@ -4837,9 +4837,9 @@ generics
 - COEFFICIENT_BITS= 10
 */
 static libcrux_ml_kem_vector_portable_vector_type_PortableVector
-decompress_ciphertext_coefficient_0d_8f(
+decompress_ciphertext_coefficient_0d_e9(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
-  return decompress_ciphertext_coefficient_df(v);
+  return decompress_ciphertext_coefficient_e9(v);
 }
 
 /**
@@ -4866,7 +4866,7 @@ deserialize_then_decompress_10_0e(Eurydice_slice serialized) {
     libcrux_ml_kem_vector_portable_vector_type_PortableVector coefficient =
         libcrux_ml_kem_vector_portable_deserialize_10_0d(bytes);
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        decompress_ciphertext_coefficient_0d_8f(coefficient);
+        decompress_ciphertext_coefficient_0d_e9(coefficient);
     re.coefficients[i0] = uu____0;
   }
   return re;
@@ -4879,7 +4879,7 @@ const generics
 - COEFFICIENT_BITS= 11
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-decompress_ciphertext_coefficient_df0(
+decompress_ciphertext_coefficient_e90(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
@@ -4904,9 +4904,9 @@ generics
 - COEFFICIENT_BITS= 11
 */
 static libcrux_ml_kem_vector_portable_vector_type_PortableVector
-decompress_ciphertext_coefficient_0d_8f0(
+decompress_ciphertext_coefficient_0d_e90(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
-  return decompress_ciphertext_coefficient_df0(v);
+  return decompress_ciphertext_coefficient_e90(v);
 }
 
 /**
@@ -4926,7 +4926,7 @@ deserialize_then_decompress_11_73(Eurydice_slice serialized) {
     libcrux_ml_kem_vector_portable_vector_type_PortableVector coefficient =
         libcrux_ml_kem_vector_portable_deserialize_11_0d(bytes);
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        decompress_ciphertext_coefficient_0d_8f0(coefficient);
+        decompress_ciphertext_coefficient_0d_e90(coefficient);
     re.coefficients[i0] = uu____0;
   }
   return re;
@@ -5008,7 +5008,7 @@ const generics
 - COEFFICIENT_BITS= 4
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-decompress_ciphertext_coefficient_df1(
+decompress_ciphertext_coefficient_e91(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
@@ -5033,9 +5033,9 @@ generics
 - COEFFICIENT_BITS= 4
 */
 static libcrux_ml_kem_vector_portable_vector_type_PortableVector
-decompress_ciphertext_coefficient_0d_8f1(
+decompress_ciphertext_coefficient_0d_e91(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
-  return decompress_ciphertext_coefficient_df1(v);
+  return decompress_ciphertext_coefficient_e91(v);
 }
 
 /**
@@ -5055,7 +5055,7 @@ deserialize_then_decompress_4_33(Eurydice_slice serialized) {
     libcrux_ml_kem_vector_portable_vector_type_PortableVector coefficient =
         libcrux_ml_kem_vector_portable_deserialize_4_0d(bytes);
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        decompress_ciphertext_coefficient_0d_8f1(coefficient);
+        decompress_ciphertext_coefficient_0d_e91(coefficient);
     re.coefficients[i0] = uu____0;
   }
   return re;
@@ -5068,7 +5068,7 @@ const generics
 - COEFFICIENT_BITS= 5
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-decompress_ciphertext_coefficient_df2(
+decompress_ciphertext_coefficient_e92(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
@@ -5093,9 +5093,9 @@ generics
 - COEFFICIENT_BITS= 5
 */
 static libcrux_ml_kem_vector_portable_vector_type_PortableVector
-decompress_ciphertext_coefficient_0d_8f2(
+decompress_ciphertext_coefficient_0d_e92(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
-  return decompress_ciphertext_coefficient_df2(v);
+  return decompress_ciphertext_coefficient_e92(v);
 }
 
 /**
@@ -5115,7 +5115,7 @@ deserialize_then_decompress_5_df(Eurydice_slice serialized) {
     re.coefficients[i0] =
         libcrux_ml_kem_vector_portable_deserialize_5_0d(bytes);
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____1 =
-        decompress_ciphertext_coefficient_0d_8f2(re.coefficients[i0]);
+        decompress_ciphertext_coefficient_0d_e92(re.coefficients[i0]);
     re.coefficients[i0] = uu____1;
   }
   return re;
@@ -6767,7 +6767,7 @@ static KRML_MUSTINLINE void compress_then_serialize_10_a9(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector coefficient =
-        compress_0d_9a(to_unsigned_representative_87(re->coefficients[i0]));
+        compress_0d_70(to_unsigned_representative_87(re->coefficients[i0]));
     uint8_t bytes[20U];
     libcrux_ml_kem_vector_portable_serialize_10_0d(coefficient, bytes);
     Eurydice_slice uu____0 = Eurydice_array_to_subslice2(

@@ -412,7 +412,7 @@ impl Operations for SIMD256Vector {
 
     fn montgomery_multiply_by_constant(v: Self, r: i16) -> Self {
         Self {
-            elements: arithmetic::montgomery_multiply_by_constant(v.elements),
+            elements: arithmetic::montgomery_multiply_by_constant(v.elements, r),
         }
     }
 
@@ -430,7 +430,7 @@ impl Operations for SIMD256Vector {
 
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self {
         Self {
-            elements: ntt::ntt_layer_1_step(a.elements, zeta),
+            elements: ntt::ntt_layer_3_step(a.elements, zeta),
         }
     }
 
@@ -468,13 +468,13 @@ impl Operations for SIMD256Vector {
 
     fn compress_1(v: Self) -> Self {
         Self {
-            elements: compress::compress_1(v.elements),
+            elements: compress::compress_message_coefficient(v.elements),
         }
     }
 
     fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         Self {
-            elements: compress::compress::<COEFFICIENT_BITS>(v.elements),
+            elements: compress::compress_ciphertext_coefficient::<COEFFICIENT_BITS>(v.elements),
         }
     }
 
@@ -485,80 +485,66 @@ impl Operations for SIMD256Vector {
     }
     
     fn serialize_1(a: Self) -> [u8; 2] {
-        Self {
-            elements: serialize::serialize_1(a.elements),
-        }
+       serialize::serialize_1(a.elements)
     }
 
     fn deserialize_1(a: &[u8]) -> Self {
         Self {
-            elements: serialize::deserialize_1(a.elements),
+            elements: serialize::deserialize_1(a),
         }
     }
 
     fn serialize_4(a: Self) -> [u8; 8] {
-        Self {
-            elements: serialize::serialize_4(a.elements),
-        }
+       serialize::serialize_4(a.elements)
     }
 
     fn deserialize_4(a: &[u8]) -> Self {
         Self {
-            elements: serialize::deserialize_4(a.elements),
+            elements: serialize::deserialize_4(a),
         }
     }
 
     fn serialize_5(a: Self) -> [u8; 10] {
-        Self {
-            elements: serialize::serialize_5(a.elements),
-        }
+       serialize::serialize_5(a.elements)
     }
 
     fn deserialize_5(a: &[u8]) -> Self {
         Self {
-            elements: serialize::deserialize_5(a.elements),
+            elements: serialize::deserialize_5(a),
         }
     }
 
     fn serialize_10(a: Self) -> [u8; 20] {
-        Self {
-            elements: serialize::serialize_10(a.elements),
-        }
+       serialize::serialize_10(a.elements)
     }
 
     fn deserialize_10(a: &[u8]) -> Self {
         Self {
-            elements: serialize::deserialize_10(a.elements),
+            elements: serialize::deserialize_10(a),
         }
     }
 
     fn serialize_11(a: Self) -> [u8; 22] {
-        Self {
-            elements: serialize::serialize_11(a.elements),
-        }
+       serialize::serialize_11(a.elements)
     }
 
     fn deserialize_11(a: &[u8]) -> Self {
         Self {
-            elements: serialize::deserialize_11(a.elements),
+            elements: serialize::deserialize_11(a),
         }
     }
 
     fn serialize_12(a: Self) -> [u8; 24] {
-        Self {
-            elements: serialize::serialize_12(a.elements),
-        }
+       serialize::serialize_12(a.elements)
     }
 
     fn deserialize_12(a: &[u8]) -> Self {
         Self {
-            elements: serialize::deserialize_12(a.elements),
+            elements: serialize::deserialize_12(a),
         }
     }
 
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
-        Self {
-            elements: sampling::rej_sample(a.elements,out),
-        }
+       sampling::rejection_sample(a,out)
     }
 }

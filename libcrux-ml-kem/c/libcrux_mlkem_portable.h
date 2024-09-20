@@ -7,8 +7,8 @@
  * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
  * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
  * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
- * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
- * Libcrux: e8928fc5424f83c8cb35b980033be17621fc0ef0
+ * F*: 650b216aeb5901ec6f1c44ff275acd924e54bdbd
+ * Libcrux: 2010f03fc3ff9700169ae4a5934fec93a09a1fc0
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -285,49 +285,6 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t r);
 
-/**
- The `compress_*` functions implement the `Compress` function specified in the
- NIST FIPS 203 standard (Page 18, Expression 4.5), which is defined as:
-
- ```plaintext
- Compress_d: ℤq -> ℤ_{2ᵈ}
- Compress_d(x) = ⌈(2ᵈ/q)·x⌋
- ```
-
- Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
-
- ```plaintext
- Compress_d(x) = ⌊(2ᵈ/q)·x + 1/2⌋
-               = ⌊(2^{d+1}·x + q) / 2q⌋
- ```
-
- For further information about the function implementations, consult the
- `implementation_notes.pdf` document in this directory.
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
-uint8_t libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(
-    uint16_t fe);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_compress_compress_1(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
-*/
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_compress_1_0d(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v);
-
-uint32_t libcrux_ml_kem_vector_portable_arithmetic_get_n_least_significant_bits(
-    uint8_t n, uint32_t value);
-
-int16_t libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
-    uint8_t coefficient_bits, uint16_t fe);
-
 void libcrux_ml_kem_vector_portable_ntt_ntt_step(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
     int16_t zeta, size_t i, size_t j);
@@ -439,6 +396,49 @@ libcrux_ml_kem_vector_portable_ntt_multiply_0d(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *lhs,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *rhs,
     int16_t zeta0, int16_t zeta1, int16_t zeta2, int16_t zeta3);
+
+/**
+ The `compress_*` functions implement the `Compress` function specified in the
+ NIST FIPS 203 standard (Page 18, Expression 4.5), which is defined as:
+
+ ```plaintext
+ Compress_d: ℤq -> ℤ_{2ᵈ}
+ Compress_d(x) = ⌈(2ᵈ/q)·x⌋
+ ```
+
+ Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
+
+ ```plaintext
+ Compress_d(x) = ⌊(2ᵈ/q)·x + 1/2⌋
+               = ⌊(2^{d+1}·x + q) / 2q⌋
+ ```
+
+ For further information about the function implementations, consult the
+ `implementation_notes.pdf` document in this directory.
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
+uint8_t libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(
+    uint16_t fe);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_compress_compress_1(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector v);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
+*/
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_compress_1_0d(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector v);
+
+uint32_t libcrux_ml_kem_vector_portable_arithmetic_get_n_least_significant_bits(
+    uint8_t n, uint32_t value);
+
+int16_t libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
+    uint8_t coefficient_bits, uint16_t fe);
 
 void libcrux_ml_kem_vector_portable_serialize_serialize_1(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v,

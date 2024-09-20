@@ -12,7 +12,7 @@ class t_Repr (v_Self: Type0) = {
     -> Prims.Pure (t_Array i16 (sz 16)) (f_repr_pre x0) (fun result -> f_repr_post x0 result)
 }
 
-class t_Operations (v_Self: Type0) = {
+class t_ArithOperations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_8706949974463268012:t_Repr v_Self;
@@ -136,33 +136,13 @@ class t_Operations (v_Self: Type0) = {
   f_montgomery_multiply_by_constant:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
         (f_montgomery_multiply_by_constant_pre x0 x1)
-        (fun result -> f_montgomery_multiply_by_constant_post x0 x1 result);
-  f_compress_1_pre:v: v_Self -> pred: Type0{true ==> pred};
-  f_compress_1_post:v_Self -> v_Self -> Type0;
-  f_compress_1_:x0: v_Self
-    -> Prims.Pure v_Self (f_compress_1_pre x0) (fun result -> f_compress_1_post x0 result);
-  f_compress_pre:v_COEFFICIENT_BITS: i32 -> v: v_Self
-    -> pred:
-      Type0
-        { v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
-          v_COEFFICIENT_BITS =. 11l ==>
-          pred };
-  f_compress_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> Type0;
-  f_compress:v_COEFFICIENT_BITS: i32 -> x0: v_Self
-    -> Prims.Pure v_Self
-        (f_compress_pre v_COEFFICIENT_BITS x0)
-        (fun result -> f_compress_post v_COEFFICIENT_BITS x0 result);
-  f_decompress_ciphertext_coefficient_pre:v_COEFFICIENT_BITS: i32 -> v: v_Self
-    -> pred:
-      Type0
-        { v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
-          v_COEFFICIENT_BITS =. 11l ==>
-          pred };
-  f_decompress_ciphertext_coefficient_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> Type0;
-  f_decompress_ciphertext_coefficient:v_COEFFICIENT_BITS: i32 -> x0: v_Self
-    -> Prims.Pure v_Self
-        (f_decompress_ciphertext_coefficient_pre v_COEFFICIENT_BITS x0)
-        (fun result -> f_decompress_ciphertext_coefficient_post v_COEFFICIENT_BITS x0 result);
+        (fun result -> f_montgomery_multiply_by_constant_post x0 x1 result)
+}
+
+class t_NTTOperations (v_Self: Type0) = {
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_8706949974463268012:t_Repr v_Self;
   f_ntt_layer_1_step_pre:a: v_Self -> zeta0: i16 -> zeta1: i16 -> zeta2: i16 -> zeta3: i16
     -> pred:
       Type0
@@ -270,7 +250,39 @@ class t_Operations (v_Self: Type0) = {
   f_ntt_multiply:x0: v_Self -> x1: v_Self -> x2: i16 -> x3: i16 -> x4: i16 -> x5: i16
     -> Prims.Pure v_Self
         (f_ntt_multiply_pre x0 x1 x2 x3 x4 x5)
-        (fun result -> f_ntt_multiply_post x0 x1 x2 x3 x4 x5 result);
+        (fun result -> f_ntt_multiply_post x0 x1 x2 x3 x4 x5 result)
+}
+
+class t_SerializeOperations (v_Self: Type0) = {
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_8706949974463268012:t_Repr v_Self;
+  f_compress_1_pre:v: v_Self -> pred: Type0{true ==> pred};
+  f_compress_1_post:v_Self -> v_Self -> Type0;
+  f_compress_1_:x0: v_Self
+    -> Prims.Pure v_Self (f_compress_1_pre x0) (fun result -> f_compress_1_post x0 result);
+  f_compress_pre:v_COEFFICIENT_BITS: i32 -> v: v_Self
+    -> pred:
+      Type0
+        { v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
+          v_COEFFICIENT_BITS =. 11l ==>
+          pred };
+  f_compress_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> Type0;
+  f_compress:v_COEFFICIENT_BITS: i32 -> x0: v_Self
+    -> Prims.Pure v_Self
+        (f_compress_pre v_COEFFICIENT_BITS x0)
+        (fun result -> f_compress_post v_COEFFICIENT_BITS x0 result);
+  f_decompress_ciphertext_coefficient_pre:v_COEFFICIENT_BITS: i32 -> v: v_Self
+    -> pred:
+      Type0
+        { v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
+          v_COEFFICIENT_BITS =. 11l ==>
+          pred };
+  f_decompress_ciphertext_coefficient_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> Type0;
+  f_decompress_ciphertext_coefficient:v_COEFFICIENT_BITS: i32 -> x0: v_Self
+    -> Prims.Pure v_Self
+        (f_decompress_ciphertext_coefficient_pre v_COEFFICIENT_BITS x0)
+        (fun result -> f_decompress_ciphertext_coefficient_post v_COEFFICIENT_BITS x0 result);
   f_serialize_1_pre:a: v_Self -> pred: Type0{Spec.MLKEM.serialize_pre 1 (f_repr a) ==> pred};
   f_serialize_1_post:a: v_Self -> result: t_Array u8 (sz 2)
     -> pred:
@@ -381,6 +393,14 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure (t_Slice i16 & usize)
         (f_rej_sample_pre x0 x1)
         (fun result -> f_rej_sample_post x0 x1 result)
+}
+
+class t_Operations (v_Self: Type0) = {
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_13198556198845860418:t_ArithOperations v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_14737252538680454651:t_NTTOperations v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_1330649163392849158:t_SerializeOperations v_Self
 }
 
 /// Internal vectors.
