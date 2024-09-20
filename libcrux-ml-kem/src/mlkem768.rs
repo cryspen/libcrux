@@ -231,6 +231,41 @@ macro_rules! instantiate {
                 /// Am Unpacked ML-KEM 768 Key pair
                 pub type MlKem768KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK_768>;
 
+                /// Write out the public key.
+                ///
+                /// `out` has to point to at least 6208 bytes.
+                pub fn public_key_to_bytes(key: &MlKem768PublicKeyUnpacked, out: &mut [u8]) {
+                    key.to_bytes(out);
+                }
+
+                /// Read the public key from `bytes``.
+                ///
+                /// `bytes` has to point to at least 6208 bytes.
+                pub fn public_key_from_bytes(bytes: &[u8]) -> MlKem768PublicKeyUnpacked {
+                    MlKem768PublicKeyUnpacked::from_bytes(bytes)
+                }
+
+                /// Write out the key pair.
+                ///
+                /// `out` has to point to at least 7776 bytes.
+                pub fn key_pair_to_bytes(key_pair: &MlKem768KeyPairUnpacked, out: &mut [u8]) {
+                    key_pair.to_bytes(out);
+                }
+
+                /// Read the key pair from `bytes``.
+                ///
+                /// `bytes` has to point to at least 7776 bytes.
+                pub fn key_pair_from_bytes(bytes: &[u8]) -> MlKem768KeyPairUnpacked {
+                    MlKem768KeyPairUnpacked::from_bytes(bytes)
+                }
+
+                /// Read bytes into the key pair.
+                ///
+                /// `bytes` has to point to at least 7776 bytes.
+                pub fn from_bytes(bytes: &[u8]) -> MlKem768KeyPairUnpacked{
+                    MlKem768KeyPairUnpacked::from_bytes(bytes)
+                }
+
                 /// Create a new, empty unpacked key.
                 pub fn init_key_pair() -> MlKem768KeyPairUnpacked {
                     MlKem768KeyPairUnpacked::default()

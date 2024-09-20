@@ -305,10 +305,119 @@ pub(crate) mod unpacked {
         pub(crate) public_key_hash: [u8; 32],
     }
 
+    impl<const K: usize, Vector: Operations> MlKemPublicKeyUnpacked<K, Vector> {
+        /// Write the key into the `out` buffer.
+        pub fn to_bytes(&self, out: &mut [u8]) {
+            let mut p = 0;
+            for i in 0..self.ind_cpa_public_key.t_as_ntt.len() {
+                let t = &self.ind_cpa_public_key.t_as_ntt[i];
+                for j in 0..t.coefficients.len() {
+                    Vector::to_bytes(t.coefficients[j], &mut out[p..p + 32]);
+                    p += 32;
+                }
+            }
+            out[p..p + 32].copy_from_slice(&self.ind_cpa_public_key.seed_for_A);
+            p += 32;
+            for i in 0..self.ind_cpa_public_key.A.len() {
+                let a1 = &self.ind_cpa_public_key.A[i];
+                for j in 0..a1.len() {
+                    let a = a1[j];
+                    for k in 0..a.coefficients.len() {
+                        Vector::to_bytes(a.coefficients[k], &mut out[p..p + 32]);
+                        p += 32;
+                    }
+                }
+            }
+            out[p..p + 32].copy_from_slice(&self.public_key_hash);
+        }
+
+        /// Read the bytes into an unpacked key pair.
+        pub fn from_bytes(bytes: &[u8]) -> MlKemPublicKeyUnpacked<K, Vector> {
+            let mut p = 0;
+            let mut ind_cpa_public_key = IndCpaPublicKeyUnpacked::<K, Vector>::default();
+            for i in 0..ind_cpa_public_key.t_as_ntt.len() {
+                for j in 0..ind_cpa_public_key.t_as_ntt[i].coefficients.len() {
+                    ind_cpa_public_key.t_as_ntt[i].coefficients[j] =
+                        Vector::from_bytes(&bytes[p..p + 32]);
+                    p += 32;
+                }
+            }
+            ind_cpa_public_key
+                .seed_for_A
+                .copy_from_slice(&bytes[p..p + 32]);
+            p += 32;
+            for i in 0..ind_cpa_public_key.A.len() {
+                for j in 0..ind_cpa_public_key.A[i].len() {
+                    for k in 0..ind_cpa_public_key.A[i][j].coefficients.len() {
+                        ind_cpa_public_key.A[i][j].coefficients[k] =
+                            Vector::from_bytes(&bytes[p..p + 32]);
+                        p += 32;
+                    }
+                }
+            }
+            let mut public_key_hash = [0u8; 32];
+            public_key_hash.copy_from_slice(&bytes[p..p + 32]);
+
+            MlKemPublicKeyUnpacked {
+                ind_cpa_public_key,
+                public_key_hash,
+            }
+        }
+    }
+
     /// An unpacked ML-KEM KeyPair
     pub struct MlKemKeyPairUnpacked<const K: usize, Vector: Operations> {
         pub private_key: MlKemPrivateKeyUnpacked<K, Vector>,
         pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
+    }
+
+    impl<const K: usize, Vector: Operations> MlKemKeyPairUnpacked<K, Vector> {
+        /// Write the key into the `out` buffer.
+        pub fn to_bytes(&self, out: &mut [u8]) {
+            let mut p = 0;
+            // Private key
+            for i in 0..self.private_key.ind_cpa_private_key.secret_as_ntt.len() {
+                let s = &self.private_key.ind_cpa_private_key.secret_as_ntt[i];
+                for j in 0..s.coefficients.len() {
+                    Vector::to_bytes(s.coefficients[j], &mut out[p..p + 32]);
+                    p += 32;
+                }
+            }
+            out[p..p + 32].copy_from_slice(&self.private_key.implicit_rejection_value);
+            p += 32;
+
+            // Public key
+            self.public_key.to_bytes(&mut out[p..]);
+        }
+
+        /// Read the bytes into an unpacked key pair.
+        pub fn from_bytes(bytes: &[u8]) -> MlKemKeyPairUnpacked<K, Vector> {
+            let mut p = 0;
+
+            // Read private key
+            let mut ind_cpa_private_key = IndCpaPrivateKeyUnpacked::<K, Vector>::default();
+            for i in 0..ind_cpa_private_key.secret_as_ntt.len() {
+                for j in 0..ind_cpa_private_key.secret_as_ntt[i].coefficients.len() {
+                    ind_cpa_private_key.secret_as_ntt[i].coefficients[j] =
+                        Vector::from_bytes(&bytes[p..p + 32]);
+                    p += 32;
+                }
+            }
+            let mut implicit_rejection_value = [0u8; 32];
+            implicit_rejection_value.copy_from_slice(&bytes[p..p + 32]);
+            p += 32;
+
+            // Read public key
+            let public_key = MlKemPublicKeyUnpacked::from_bytes(&bytes[p..]);
+
+            MlKemKeyPairUnpacked {
+                private_key: MlKemPrivateKeyUnpacked {
+                    ind_cpa_private_key,
+                    implicit_rejection_value,
+                },
+                public_key,
+            }
+        }
     }
 
     /// Generate an unpacked key from a serialized key.

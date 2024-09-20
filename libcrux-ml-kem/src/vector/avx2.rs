@@ -48,6 +48,16 @@ impl Operations for SIMD256Vector {
         to_i16_array(x)
     }
 
+    fn to_bytes(x: Self, out: &mut [u8]) {
+        mm256_storeu_si256_u8(out, x.elements);
+    }
+
+    fn from_bytes(bytes: &[u8]) -> Self {
+        Self {
+            elements: mm256_loadu_si256_u8(bytes),
+        }
+    }
+
     fn add(lhs: Self, rhs: &Self) -> Self {
         Self {
             elements: arithmetic::add(lhs.elements, rhs.elements),
