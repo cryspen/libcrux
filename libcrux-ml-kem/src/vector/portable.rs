@@ -381,7 +381,6 @@ impl Operations for PortableVector {
         serialize_5(a)
     }
 
-    #[requires(a.len() == 10)]
     fn deserialize_5(a: &[u8]) -> Self {
         deserialize_5(a)
     }

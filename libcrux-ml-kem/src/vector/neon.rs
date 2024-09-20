@@ -76,7 +76,6 @@ impl ArithOperations for SIMD128Vector {
     }
 }
 
-#[cfg(not(eurydice))]
 #[inline(always)]
 pub(crate) fn rej_sample(a: &[u8], result: &mut [i16]) -> usize {
     let mut sampled = 0;
@@ -215,7 +214,7 @@ impl Operations for SIMD128Vector {}
 #[cfg(eurydice)]
 impl Operations for SIMD128Vector {
     fn ZERO() -> Self {
-        zero()
+        ZERO()
     }
 
     fn from_i16_array(array: &[i16]) -> Self {
@@ -326,7 +325,6 @@ impl Operations for SIMD128Vector {
         serialize_5(a)
     }
 
-    #[requires(a.len() == 10)]
     fn deserialize_5(a: &[u8]) -> Self {
         deserialize_5(a)
     }
