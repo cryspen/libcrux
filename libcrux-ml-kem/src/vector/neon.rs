@@ -213,7 +213,7 @@ impl NTTOperations for SIMD128Vector {
 impl Operations for SIMD128Vector {}
 
 #[cfg(eurydice)]
-impl Operations for PortableVector {
+impl Operations for SIMD128Vector {
     fn ZERO() -> Self {
         zero()
     }
