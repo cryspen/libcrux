@@ -50,6 +50,13 @@ val sample_vector_cbd_then_ntt
             (Seq.slice prf_input 0 32)
             (sz (v domain_separator)))
 
+let compress_then_serialize_u_helper_f (v_K: usize) (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (input: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) =
+  forall (i:nat). i < v v_K ==> (let re = Seq.index input i in forall (j:nat). j < 256 ==>
+    (let coef:t_Array i16 (sz 16) = Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Seq.index re.f_coefficients (j / 16)) in
+    v (Seq.index coef (j % 16)) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS))
+
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
 val compress_then_serialize_u
       (v_K v_OUT_LEN v_COMPRESSION_FACTOR v_BLOCK_LEN: usize)
@@ -61,7 +68,8 @@ val compress_then_serialize_u
       (requires
         Spec.MLKEM.is_rank v_K /\ v_OUT_LEN == Spec.MLKEM.v_C1_SIZE v_K /\
         v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
-        v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\ Core.Slice.impl__len #u8 out == v_OUT_LEN)
+        v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\ Core.Slice.impl__len #u8 out == v_OUT_LEN /\
+        compress_then_serialize_u_helper_f v_K #v_Vector input)
       (ensures
         fun out_future ->
           let out_future:t_Slice u8 = out_future in

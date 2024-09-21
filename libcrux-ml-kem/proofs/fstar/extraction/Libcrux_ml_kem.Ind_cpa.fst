@@ -197,7 +197,32 @@ let sample_vector_cbd_then_ntt
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
-#push-options "--z3rlimit 200"
+val compress_then_serialize_ring_element_u1
+      (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_Array u8 v_OUT_LEN)
+      (requires True)
+      (fun _ -> Prims.l_True)
+
+let compress_then_serialize_ring_element_u1 = admit()
+
+val compress_then_serialize_u_helper (i v_K v_OUT_LEN v_BLOCK_LEN: usize) :
+  Lemma (requires (Spec.MLKEM.is_rank v_K /\ v_OUT_LEN == Spec.MLKEM.v_C1_SIZE v_K /\
+          v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\ v i < v v_K))
+        (ensures (v (v_OUT_LEN /! v_K) == v ((i +! sz 1) *! (v_OUT_LEN /! v_K)) - v (i *! (v_OUT_LEN /! v_K)) /\
+          v (v_OUT_LEN /! v_K) == v v_BLOCK_LEN /\
+          v i * (v v_OUT_LEN / v v_K) < v v_OUT_LEN /\
+          v i * (v v_OUT_LEN / v v_K) + (v v_OUT_LEN / v v_K) <= v v_OUT_LEN))
+
+let compress_then_serialize_u_helper i v_K v_OUT_LEN v_BLOCK_LEN =
+  assert (v (v_OUT_LEN /! v_K) == v ((i +! sz 1) *! (v_OUT_LEN /! v_K)) - v (i *! (v_OUT_LEN /! v_K)));
+  assert (v (v_OUT_LEN /! v_K) == v v_BLOCK_LEN);
+  assert (v i * (v v_OUT_LEN / v v_K) < v v_OUT_LEN);
+  assert (v i * (v v_OUT_LEN / v v_K) + (v v_OUT_LEN / v v_K) <= v v_OUT_LEN)
+
+#push-options "--max_fuel 1 --max_ifuel 1 --z3rlimit 2000"
 
 let compress_then_serialize_u
       (v_K v_OUT_LEN v_COMPRESSION_FACTOR v_BLOCK_LEN: usize)
@@ -208,6 +233,8 @@ let compress_then_serialize_u
       (input: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (out: t_Slice u8)
      =
+  //assume (forall (i:nat). i < v v_K ==> (forall (j:nat). j < 16 ==> (forall (k:nat). k < 16 ==>
+  //  v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Seq.index input i).f_coefficients.[sz j]) k) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)));
   let _:Prims.unit =
     assert ((v Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT * v v_COMPRESSION_FACTOR) / 8 ==
         320 \/
@@ -219,13 +246,20 @@ let compress_then_serialize_u
       (fun out i ->
           let out:t_Slice u8 = out in
           let i:usize = i in
-          (Core.Slice.impl__len #u8 out <: usize) =. v_OUT_LEN <: bool)
+          v i >= 0 /\ v i <= v v_K /\
+          v (Core.Slice.impl__len #u8 out <: usize) == v v_OUT_LEN)
       out
       (fun out temp_1_ ->
           let out:t_Slice u8 = out in
           let i, re:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
             temp_1_
           in
+          assert (v i >= 0 /\ v i < v v_K);
+          assert (v (v_OUT_LEN /! v_K) == v v_OUT_LEN / v v_K);
+          assert (v (i *! (v_OUT_LEN /! v_K <: usize)) == v i * v (v_OUT_LEN /! v_K));
+          assert (v (i +! sz 1) == v i + 1);
+          assert (v ((i +! sz 1 <: usize) *! (v_OUT_LEN /! v_K <: usize)) == v (i +! sz 1) * v (v_OUT_LEN /! v_K));
+          compress_then_serialize_u_helper i v_K v_OUT_LEN v_BLOCK_LEN;
           let out:t_Slice u8 =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
               ({
@@ -247,7 +281,7 @@ let compress_then_serialize_u
                       Core.Ops.Range.t_Range usize ]
                     <:
                     t_Slice u8)
-                  (Libcrux_ml_kem.Serialize.compress_then_serialize_ring_element_u v_COMPRESSION_FACTOR
+                  (compress_then_serialize_ring_element_u1 v_COMPRESSION_FACTOR
                       v_BLOCK_LEN
                       #v_Vector
                       re
