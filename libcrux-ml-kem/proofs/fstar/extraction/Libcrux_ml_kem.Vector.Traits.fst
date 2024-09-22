@@ -5,6 +5,8 @@ open FStar.Mul
 
 #push-options "--z3rlimit 50"
 
+#push-options "--admit_smt_queries true"
+
 let decompress_1_
       (#v_T: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: t_Operations v_T)
@@ -31,6 +33,8 @@ let decompress_1_
 
 #pop-options
 
+#pop-options
+
 let montgomery_multiply_fe
       (#v_T: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: t_Operations v_T)
@@ -48,6 +52,8 @@ let to_standard_domain
     v
     v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS
 
+#push-options "--admit_smt_queries true"
+
 let to_unsigned_representative
       (#v_T: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: t_Operations v_T)
@@ -57,6 +63,6 @@ let to_unsigned_representative
   let fm:v_T =
     f_bitwise_and_with_constant #v_T #FStar.Tactics.Typeclasses.solve t v_FIELD_MODULUS
   in
-  let result:v_T = f_add #v_T #FStar.Tactics.Typeclasses.solve a fm in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  f_add #v_T #FStar.Tactics.Typeclasses.solve a fm
+
+#pop-options

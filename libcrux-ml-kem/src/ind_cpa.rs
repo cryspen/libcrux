@@ -291,12 +291,13 @@ pub(crate) fn generate_keypair<
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $OUT_LEN == Spec.MLKEM.v_C1_SIZE $K /\\
     $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\\
     $BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
-    ${out.len()} == $OUT_LEN"))]
+    ${out.len()} == $OUT_LEN /\\
+    (forall (i:nat). i < v $K ==>
+        Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index $input i))"))]
 #[hax_lib::ensures(|_|
     fstar!("$out_future == Spec.MLKEM.compress_then_encode_u #$K
                (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $input)")
@@ -317,7 +318,8 @@ fn compress_then_serialize_u<
     // for the following bug https://github.com/hacspec/hax/issues/720
     cloop! {
         for (i, re) in input.into_iter().enumerate() {
-            hax_lib::loop_invariant!(|i: usize| out.len() == OUT_LEN);
+            hax_lib::loop_invariant!(|i: usize| { fstar!("v $i < v $K ==> (Seq.length out == v $OUT_LEN /\\
+                Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index $input (v $i)))") });
             out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(
                 &compress_then_serialize_ring_element_u::<COMPRESSION_FACTOR, BLOCK_LEN, Vector>(&re),
             );

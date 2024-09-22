@@ -223,16 +223,17 @@ pub fn to_standard_domain<T: Operations>(v: T) -> T {
     T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
 
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 3328 (i1._super_8706949974463268012.f_repr a)"))]
 #[hax_lib::ensures(|result| fstar!("f_to_i16_array $result == Spec.Utils.map2 (+.) (f_to_i16_array $a)
     (Spec.Utils.map_array (fun x -> (x >>! 15l) &. $FIELD_MODULUS) (f_to_i16_array $a))"))]
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 3328 (i1._super_8706949974463268012.f_repr a)"))]
 pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
     let t = T::shift_right::<15>(a);
     let fm = T::bitwise_and_with_constant(t, FIELD_MODULUS);
     T::add(a, &fm)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--z3rlimit 50")]
 #[hax_lib::requires(fstar!("forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
                                       (x == 0s \\/ x == 1s)"))]

@@ -61,6 +61,9 @@ val deserialize_1_ (v: t_Slice u8)
 val deserialize_1_lemma (inputs: t_Array u8 (sz 2)) : Lemma
   (ensures bit_vec_of_int_t_array (deserialize_1_ inputs).f_elements 1 == bit_vec_of_int_t_array inputs 8)
 
+val deserialize_1_bounded_lemma (inputs: t_Array u8 (sz 2)) : Lemma
+  (ensures forall i. i < 16 ==> bounded (Seq.index (deserialize_1_ inputs).f_elements i) 1)
+
 val deserialize_10_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       (requires Core.Slice.impl__len #u8 bytes =. sz 20)
@@ -68,6 +71,9 @@ val deserialize_10_ (bytes: t_Slice u8)
 
 val deserialize_10_lemma (inputs: t_Array u8 (sz 20)) : Lemma
   (ensures bit_vec_of_int_t_array (deserialize_10_ inputs).f_elements 10 == bit_vec_of_int_t_array inputs 8)
+
+val deserialize_10_bounded_lemma (inputs: t_Array u8 (sz 20)) : Lemma
+  (ensures forall i. i < 16 ==> bounded (Seq.index (deserialize_10_ inputs).f_elements i) 10)
 
 val deserialize_11_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -82,6 +88,9 @@ val deserialize_12_ (bytes: t_Slice u8)
 val deserialize_12_lemma (inputs: t_Array u8 (sz 24)) : Lemma
   (ensures bit_vec_of_int_t_array (deserialize_12_ inputs).f_elements 12 == bit_vec_of_int_t_array inputs 8)
 
+val deserialize_12_bounded_lemma (inputs: t_Array u8 (sz 24)) : Lemma
+  (ensures forall i. i < 16 ==> bounded (Seq.index (deserialize_12_ inputs).f_elements i) 12)
+
 val deserialize_4_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       (requires Core.Slice.impl__len #u8 bytes =. sz 8)
@@ -89,6 +98,9 @@ val deserialize_4_ (bytes: t_Slice u8)
 
 val deserialize_4_lemma (inputs: t_Array u8 (sz 8)) : Lemma
   (ensures bit_vec_of_int_t_array (deserialize_4_ inputs).f_elements 4 == bit_vec_of_int_t_array inputs 8)
+
+val deserialize_4_bounded_lemma (inputs: t_Array u8 (sz 8)) : Lemma
+  (ensures forall i. i < 16 ==> bounded (Seq.index (deserialize_4_ inputs).f_elements i) 4)
 
 val deserialize_5_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector

@@ -53,9 +53,7 @@ val compress
         (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
           v v_COEFFICIENT_BITS == 11) /\
         (forall (i: nat).
-            i < 16 ==>
-            v (Seq.index a.f_elements i) >= 0 /\
-            v (Seq.index a.f_elements i) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS))
+            i < 16 ==> v (Seq.index a.f_elements i) >= 0 /\ v (Seq.index a.f_elements i) < 3329))
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
@@ -68,9 +66,7 @@ val compress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       (requires
         forall (i: nat).
-          i < 16 ==>
-          v (Seq.index a.f_elements i) >= 0 /\
-          v (Seq.index a.f_elements i) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)
+          i < 16 ==> v (Seq.index a.f_elements i) >= 0 /\ v (Seq.index a.f_elements i) < 3329)
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in

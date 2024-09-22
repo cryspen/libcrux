@@ -208,8 +208,7 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     (fun (vector: t_SIMD256Vector) ->
         forall (i: nat).
           i < 16 ==>
-          v (Seq.index (impl.f_repr vector) i) >= 0 /\
-          v (Seq.index (impl.f_repr vector) i) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS);
+          v (Seq.index (impl.f_repr vector) i) >= 0 /\ v (Seq.index (impl.f_repr vector) i) < 3329);
     f_compress_1_post
     =
     (fun (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->
@@ -232,8 +231,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
           v v_COEFFICIENT_BITS == 11) /\
         (forall (i: nat).
             i < 16 ==>
-            v (Seq.index (impl.f_repr vector) i) >= 0 /\
-            v (Seq.index (impl.f_repr vector) i) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS));
+            v (Seq.index (impl.f_repr vector) i) >= 0 /\ v (Seq.index (impl.f_repr vector) i) < 3329
+        ));
     f_compress_post
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->

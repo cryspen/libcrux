@@ -6,34 +6,43 @@ use crate::{
 };
 
 #[inline(always)]
+#[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]
+let coefficients_field_modulus_range (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
+    forall (i:nat). i < 16 ==> field_modulus_range (Seq.index re.f_coefficients i)")]
+#[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]
+let field_modulus_range (#v_Vector: Type0)
+        {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+        (a: v_Vector) =
+    let coef = Libcrux_ml_kem.Vector.Traits.f_to_i16_array a in
+    forall (i:nat). i < 16 ==> v (Seq.index coef i) > -(v $FIELD_MODULUS) /\\
+        v (Seq.index coef i) < v $FIELD_MODULUS")]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(fstar!("forall (i:nat). i < 16 ==>
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) >= -(v $FIELD_MODULUS) /\\
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) < v $FIELD_MODULUS"))]
+#[hax_lib::requires(fstar!("field_modulus_range $a"))]
 #[hax_lib::ensures(|result| fstar!("forall (i:nat). i < 16 ==>
     v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) >= 0 /\\
     v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) < v $FIELD_MODULUS"))]
 pub(super) fn to_unsigned_field_modulus<Vector: Operations>(
     a: Vector,
 ) -> Vector {
+    hax_lib::fstar!("reveal_opaque (`%field_modulus_range) (field_modulus_range #$:Vector)");
     to_unsigned_representative::<Vector>(a)
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(fstar!("forall (i:nat). i < 16 ==>
-    (forall (j:nat). j < 16 ==>
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[sz i]) j) >= -(v $FIELD_MODULUS) /\\
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[sz i]) j) < v $FIELD_MODULUS)"))]
+#[hax_lib::requires(fstar!("coefficients_field_modulus_range $re"))]
 pub(super) fn compress_then_serialize_message<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
 ) -> [u8; SHARED_SECRET_SIZE] {
     let mut serialized = [0u8; SHARED_SECRET_SIZE];
     for i in 0..16 {
-        hax_lib::loop_invariant!(|i: usize| { fstar!("v $i < 16 ==> (forall (j:nat). j < 16 ==>
-            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[i]) j) >= -(v $FIELD_MODULUS) /\\
-            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[i]) j) < v $FIELD_MODULUS)") });
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v $i < 16 ==>
+            coefficients_field_modulus_range $re") });
         hax_lib::fstar!("assert (2 * v $i + 2 <= 32)");
+        hax_lib::fstar!("reveal_opaque (`%coefficients_field_modulus_range)
+            (coefficients_field_modulus_range #$:Vector)");
         let coefficient = to_unsigned_field_modulus(re.coefficients[i]);
         let coefficient_compressed = Vector::compress_1(coefficient);
 
@@ -43,6 +52,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
 
     serialized
 }
+
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
@@ -58,21 +68,18 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 500")]
-#[hax_lib::requires(fstar!("forall (i:nat). i < 16 ==>
-    (forall (j:nat). j < 16 ==>
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[sz i]) j) >= -(v $FIELD_MODULUS) /\\
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[sz i]) j) < v $FIELD_MODULUS)"))]
+#[hax_lib::requires(fstar!("coefficients_field_modulus_range $re"))]
 pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; BYTES_PER_RING_ELEMENT] {
     hax_lib::fstar!("assert_norm (pow2 12 == 4096)");
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        hax_lib::loop_invariant!(|i: usize| { fstar!("v $i >= 0 /\\ v $i <= 16 /\\ (v $i < 16 ==> (forall (j:nat). j < 16 ==>
-            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[i]) j) >= -(v $FIELD_MODULUS) /\\
-            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[i]) j) < v $FIELD_MODULUS))") });
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v $i >= 0 /\\ v $i <= 16 /\\
+            v $i < 16 ==> coefficients_field_modulus_range $re") });
         hax_lib::fstar!("assert (24 * v $i + 24 <= 384)");
+        hax_lib::fstar!("reveal_opaque (`%coefficients_field_modulus_range)
+            (coefficients_field_modulus_range #$:Vector)");
         let coefficient = to_unsigned_field_modulus(re.coefficients[i]);
 
         let bytes = Vector::serialize_12(coefficient);
@@ -152,21 +159,18 @@ pub(super) fn deserialize_ring_elements_reduced<
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 500")]
-#[hax_lib::requires(fstar!("v $OUT_LEN == 320 /\\ (forall (i:nat). i < 16 ==>
-    (forall (j:nat). j < 16 ==>
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[sz i]) j) >= -(v $FIELD_MODULUS) /\\
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[sz i]) j) < v $FIELD_MODULUS))"))]
+#[hax_lib::requires(fstar!("v $OUT_LEN == 320 /\\ coefficients_field_modulus_range $re"))]
 fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
     hax_lib::fstar!("assert_norm (pow2 10 == 1024)");
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        hax_lib::loop_invariant!(|i: usize| { fstar!("v $i >= 0 /\\ v $i <= 16 /\\ (v $i < 16 ==> (forall (j:nat). j < 16 ==>
-            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[i]) j) >= -(v $FIELD_MODULUS) /\\
-            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[i]) j) < v $FIELD_MODULUS))") });
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v $i >= 0 /\\ v $i <= 16 /\\
+            v $i < 16 ==> coefficients_field_modulus_range $re") });
         hax_lib::fstar!("assert (20 * v $i + 20 <= 320)");
+        hax_lib::fstar!("reveal_opaque (`%coefficients_field_modulus_range)
+            (coefficients_field_modulus_range #$:Vector)");
         let coefficient =
             Vector::compress::<10>(to_unsigned_field_modulus(re.coefficients[i]));
 
@@ -193,11 +197,8 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 500")]
-#[hax_lib::requires(fstar!("(v $COMPRESSION_FACTOR == 10 \\/ v $COMPRESSION_FACTOR == 11) /\\ v $OUT_LEN == 32 * v $COMPRESSION_FACTOR /\\
-    (forall (i:nat). i < 16 ==> (forall (j:nat). j < 16 ==>
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[sz i]) j) >= -(v $FIELD_MODULUS) /\\
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[sz i]) j) < v $FIELD_MODULUS))"))]
+#[hax_lib::requires(fstar!("(v $COMPRESSION_FACTOR == 10 \\/ v $COMPRESSION_FACTOR == 11) /\\
+    v $OUT_LEN == 32 * v $COMPRESSION_FACTOR /\\ coefficients_field_modulus_range $re"))]
 pub(super) fn compress_then_serialize_ring_element_u<
     const COMPRESSION_FACTOR: usize,
     const OUT_LEN: usize,
@@ -218,26 +219,25 @@ pub(super) fn compress_then_serialize_ring_element_u<
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 500")]
-#[hax_lib::requires(fstar!("Seq.length $serialized == 128 /\\ (forall (i:nat). i < 16 ==>
-    (forall (j:nat). j < 16 ==>
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[sz i]) j) >= -(v $FIELD_MODULUS) /\\
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[sz i]) j) < v $FIELD_MODULUS))"))]
+#[hax_lib::requires(fstar!("Seq.length $serialized == 128 /\\
+    coefficients_field_modulus_range $re"))]
+#[hax_lib::ensures(|_|
+    fstar!("${serialized_future.len()} == ${serialized.len()}")
+)]
 fn compress_then_serialize_4<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
     serialized: &mut [u8],
 ) {
     hax_lib::fstar!("assert_norm (pow2 4 == 16)");
-    let _serialized_len = serialized.len();
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..VECTORS_IN_RING_ELEMENT {
         // NOTE: Using `$serialized` in loop_invariant doesn't work here
         hax_lib::loop_invariant!(|i: usize| { fstar!("v $i >= 0 /\\ v $i <= 16 /\\
-            Seq.length serialized == v $_serialized_len /\\ (v $i < 16 ==> (forall (j:nat). j < 16 ==>
-                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[i]) j) >= -(v $FIELD_MODULUS) /\\
-                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[i]) j) < v $FIELD_MODULUS))") });
+            v $i < 16 ==> (Seq.length serialized == 128 /\\ coefficients_field_modulus_range $re)") });
         hax_lib::fstar!("assert (8 * v $i + 8 <= 128)");
+        hax_lib::fstar!("reveal_opaque (`%coefficients_field_modulus_range)
+            (coefficients_field_modulus_range #$:Vector)");
         let coefficient =
             Vector::compress::<4>(to_unsigned_field_modulus(re.coefficients[i]));
 
@@ -252,15 +252,16 @@ fn compress_then_serialize_4<Vector: Operations>(
 #[hax_lib::requires(
     serialized.len() == 160
 )]
+#[hax_lib::ensures(|_|
+    fstar!("${serialized_future.len()} == ${serialized.len()}")
+)]
 fn compress_then_serialize_5<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
     serialized: &mut [u8],
 ) {
-    let _serialized_len = serialized.len();
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        hax_lib::loop_invariant!(|i: usize| serialized.len() == _serialized_len);
         let coefficients =
             Vector::compress::<5>(to_unsigned_representative::<Vector>(re.coefficients[i]));
 
@@ -271,11 +272,8 @@ fn compress_then_serialize_5<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 500")]
 #[hax_lib::requires(fstar!("(v $COMPRESSION_FACTOR == 4 \\/ v $COMPRESSION_FACTOR == 5) /\\ v $OUT_LEN == 32 * v $COMPRESSION_FACTOR /\\
-    Seq.length $out == v $OUT_LEN /\\ (forall (i:nat). i < 16 ==> (forall (j:nat). j < 16 ==>
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[sz i]) j) >= -(v $FIELD_MODULUS) /\\
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re.coefficients}.[sz i]) j) < v $FIELD_MODULUS))"))]
+    Seq.length $out == v $OUT_LEN /\\ coefficients_field_modulus_range $re"))]
 #[hax_lib::ensures(|_|
     fstar!("${out_future.len()} == ${out.len()}")
 )]
