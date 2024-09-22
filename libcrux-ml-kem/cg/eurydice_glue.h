@@ -2,11 +2,7 @@
  * SPDX-FileCopyrightText: 2024 Eurydice Contributors
  * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
  *
-<<<<<<< HEAD
- * SPDX-License-Identifier: Apache-2.0
-=======
  * SPDX-License-Identifier: MIT or Apache-2.0
->>>>>>> main
  */
 
 #pragma once
@@ -99,12 +95,8 @@ typedef struct {
   (memcpy(dst, src, len * sizeof(elem_type)))
 #define TryFromSliceError uint8_t
 
-<<<<<<< HEAD
-#define Eurydice_array_eq(sz, a1, a2, t, _a, _b) \
-=======
 #define Eurydice_array_eq(sz, a1, a2, t, _) \
->>>>>>> main
-    (memcmp(a1, a2, sz * sizeof(t)) == 0)
+  (memcmp(a1, a2, sz * sizeof(t)) == 0)
 #define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq( \
     sz, a1, a2, t, _, _ret_t)                                                           \
   Eurydice_array_eq(sz, a1, a2, t, _)
@@ -129,10 +121,8 @@ typedef struct {
   Eurydice_slice_to_array3(&(dst)->tag, (char *)&(dst)->val.case_Ok, src, \
                            sizeof(t_arr))
 
-        static inline void Eurydice_slice_to_array3(uint8_t *dst_tag,
-                                                    char *dst_ok,
-                                                    Eurydice_slice src,
-                                                    size_t sz) {
+static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
+                                            Eurydice_slice src, size_t sz) {
   *dst_tag = 0;
   memcpy(dst_ok, src.ptr, sz);
 }
@@ -162,7 +152,7 @@ static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 #endif
 }
 
-// wraparound semantics in C
+// unsigned overflow wraparound semantics in C
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
   return x + y;
 }
@@ -170,39 +160,21 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
 
-static inline uint16_t core_num__i16_1__wrapping_add(int16_t x, int16_t y) {
-  return x + y;
-}
-
-static inline uint16_t core_num__i16_1__wrapping_sub(int16_t x, int16_t y) {
-  return x - y;
-}
-
-static inline uint16_t core_num__i16_1__wrapping_mul(int16_t x, int16_t y) {
-  return x * y;
-}
-
 // ITERATORS
 
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
   (((iter_ptr)->start == (iter_ptr)->end)            \
-<<<<<<< HEAD
-       ? (CLITERAL(ret_t){.tag = None})              \
-=======
        ? (CLITERAL(ret_t){.tag = None, .f0 = 0})     \
->>>>>>> main
        : (CLITERAL(ret_t){.tag = Some, .f0 = (iter_ptr)->start++}))
 
 #define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next \
-         Eurydice_range_iter_next
+  Eurydice_range_iter_next
 
-       // See note in karamel/lib/Inlining.ml if you change this
+// See note in karamel/lib/Inlining.ml if you change this
 #define Eurydice_into_iter(x, t, _ret_t) (x)
 #define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter \
-         Eurydice_into_iter
-
-#define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
+  Eurydice_into_iter
 
 #if defined(__cplusplus)
-       }
+}
 #endif
