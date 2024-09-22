@@ -214,7 +214,6 @@ pub fn mm_add_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unimplemented!()
 }
 
-
 #[hax_lib::ensures(|result| fstar!("vec128_as_i16x8 $result == 
             Spec.Utils.map2 (-.) (vec128_as_i16x8 $lhs) (vec128_as_i16x8 $rhs)"))]
 pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
@@ -254,7 +253,6 @@ pub fn mm256_abs_epi32(a: Vec256) -> Vec256 {
 pub fn mm256_sub_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
-
 
 #[hax_lib::fstar::replace(
     interface,
@@ -470,7 +468,6 @@ pub fn mm256_blend_epi16<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
     unimplemented!()
 }
-
 
 #[inline(always)]
 pub fn mm256_blend_epi32<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
