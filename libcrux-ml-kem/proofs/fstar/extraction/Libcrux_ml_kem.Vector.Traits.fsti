@@ -440,7 +440,7 @@ val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
       (ensures
         fun result ->
           let result:v_T = result in
-          f_to_i16_array result ==
-          Spec.Utils.map2 ( +. )
-            (f_to_i16_array a)
-            (Spec.Utils.map_array (fun x -> (x >>! 15l) &. v_FIELD_MODULUS) (f_to_i16_array a)))
+          forall i.
+            (let x = Seq.index (i1._super_8706949974463268012.f_repr a) i in
+              let y = Seq.index (i1._super_8706949974463268012.f_repr result) i in
+              (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))))
