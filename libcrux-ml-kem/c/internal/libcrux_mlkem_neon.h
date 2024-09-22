@@ -4,11 +4,19 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
+<<<<<<< HEAD
  * Charon: 3f6d1c304e0e5bef1e9e2ea65aec703661b05f39
  * Eurydice: 392674166bac86e60f5fffa861181a398fdc3896
  * Karamel: fc56fce6a58754766809845f88fc62063b2c6b92
  * F*: 04413e808445c4f78fe89cd15b85ff549ed3be62
  * Libcrux: 1ecfc745f64e318b06fd59a787d07818640c56cc
+=======
+ * Charon: 53530427db2941ce784201e64086766504bc5642
+ * Eurydice: 7834acbb41b06c34f198a1cb6b88241cc10b9aeb
+ * Karamel: bdf06956e6ee025d4819bf2f8cc92651e572ad85
+ * F*: e5cef6f266ece8a8b55ef4cd9b61cdf103520d38
+ * Libcrux: d5574e8f6c62bf622ab6b61c291abeb66c1b7221
+>>>>>>> main
  */
 
 #ifndef __internal_libcrux_mlkem_neon_H
@@ -50,6 +58,14 @@ libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_66
 libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_a51(
     uint8_t randomness[64U]);
 
+/**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
@@ -189,6 +205,14 @@ libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_a50(
     uint8_t randomness[64U]);
 
 /**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash with const generics
@@ -326,6 +350,14 @@ libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_2c
 libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_a5(
     uint8_t randomness[64U]);
 
+/**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,

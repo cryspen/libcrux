@@ -48,7 +48,8 @@ macro_rules! wycheproof_sign_test {
                 for test in test_group.tests {
                     let message = hex::decode(test.msg).unwrap();
 
-                    let signature = $sign(&signing_key, &message, signing_randomness);
+                    let signature = $sign(&signing_key, &message, signing_randomness)
+                        .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
                     if test.result == Result::Valid {
                         assert_eq!(
@@ -66,6 +67,37 @@ macro_rules! wycheproof_sign_test {
     };
 }
 
+// 44
+
 wycheproof_sign_test!(wycheproof_sign_44, 44, MLDSA44SigningKey, ml_dsa_44::sign);
+
+wycheproof_sign_test!(
+    wycheproof_sign_44_portable,
+    44,
+    MLDSA44SigningKey,
+    ml_dsa_44::portable::sign
+);
+
+#[cfg(feature = "simd128")]
+wycheproof_sign_test!(
+    wycheproof_sign_44_simd128,
+    44,
+    MLDSA44SigningKey,
+    ml_dsa_44::neon::sign
+);
+
+#[cfg(feature = "simd256")]
+wycheproof_sign_test!(
+    wycheproof_sign_44_simd256,
+    44,
+    MLDSA44SigningKey,
+    ml_dsa_44::avx2::sign
+);
+
+// 65
+
 wycheproof_sign_test!(wycheproof_sign_65, 65, MLDSA65SigningKey, ml_dsa_65::sign);
+
+// 87
+
 wycheproof_sign_test!(wycheproof_sign_87, 87, MLDSA87SigningKey, ml_dsa_87::sign);

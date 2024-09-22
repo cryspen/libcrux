@@ -34,19 +34,46 @@ macro_rules! impl_consistency {
     };
 }
 
-#[cfg(feature = "pre-verification")]
+#[cfg(all(feature = "pre-verification",))]
 macro_rules! impl_consistency_unpacked {
-    ($name:ident, $key_gen:expr, $encaps:expr, $key_gen_unpacked:expr, $encaps_unpacked:expr, $decaps_unpacked:expr) => {
+    ($name:ident, $modp:path) => {
         #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
         #[test]
         fn $name() {
+            use $modp as p;
+
             let randomness = random_array();
-            let key_pair_unpacked = $key_gen_unpacked(randomness);
-            let key_pair = $key_gen(randomness);
+
+            // Generate unpacked key
+            let mut key_pair_unpacked = Default::default();
+            p::unpacked::generate_key_pair(randomness, &mut key_pair_unpacked);
+
+            // Generate regular key
+            let key_pair = p::generate_key_pair(randomness);
+
+            // Ensure the two keys are the same
+            let mut serialized_public_key = Default::default();
+            p::unpacked::serialized_public_key(
+                key_pair_unpacked.public_key(),
+                &mut serialized_public_key,
+            );
+            assert_eq!(
+                key_pair.public_key().as_slice(),
+                serialized_public_key.as_slice()
+            );
+            let mut re_unpacked_public_key = Default::default();
+            p::unpacked::unpacked_public_key(key_pair.public_key(), &mut re_unpacked_public_key);
+            let mut serialized_public_key = Default::default();
+            p::unpacked::serialized_public_key(&re_unpacked_public_key, &mut serialized_public_key);
+            assert_eq!(
+                serialized_public_key.as_slice(),
+                key_pair.public_key().as_slice()
+            );
+
             let randomness = random_array();
-            let (ciphertext, shared_secret) = $encaps(key_pair.public_key(), randomness);
+            let (ciphertext, shared_secret) = p::encapsulate(key_pair.public_key(), randomness);
             let (ciphertext_unpacked, shared_secret_unpacked) =
-                $encaps_unpacked(&key_pair_unpacked.public_key, randomness);
+                p::unpacked::encapsulate(&key_pair_unpacked.public_key, randomness);
             assert_eq!(
                 shared_secret, shared_secret_unpacked,
                 "lhs: shared_secret, rhs: shared_secret_unpacked"
@@ -56,10 +83,16 @@ macro_rules! impl_consistency_unpacked {
                 ciphertext_unpacked.as_slice(),
                 "lhs: ciphertext, rhs: ciphertext_unpacked"
             );
-            let shared_secret_decapsulated = $decaps_unpacked(&key_pair_unpacked, &ciphertext);
+            let shared_secret_decapsulated =
+                p::unpacked::decapsulate(&key_pair_unpacked, &ciphertext);
+            let shared_secret = p::decapsulate(key_pair.private_key(), &ciphertext);
             assert_eq!(
                 shared_secret_unpacked, shared_secret_decapsulated,
                 "lhs: shared_secret_unpacked, rhs: shared_secret_decapsulated"
+            );
+            assert_eq!(
+                shared_secret, shared_secret_decapsulated,
+                "lhs: shared_secret, rhs: shared_secret_decapsulated"
             );
             // If the randomness was not enough for the rejection sampling step
             // in key-generation and encapsulation, simply return without
@@ -229,118 +262,82 @@ impl_consistency!(
     libcrux_ml_kem::mlkem1024::decapsulate
 );
 
-#[cfg(all(feature = "mlkem512", feature = "pre-verification"))]
+#[cfg(all(feature = "mlkem512", feature = "pre-verification",))]
 impl_consistency_unpacked!(
     consistency_unpacked_512_portable,
-    libcrux_ml_kem::mlkem512::portable::generate_key_pair,
-    libcrux_ml_kem::mlkem512::portable::encapsulate,
-    libcrux_ml_kem::mlkem512::portable::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem512::portable::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem512::portable::decapsulate_unpacked
+    libcrux_ml_kem::mlkem512::portable
 );
 
 #[cfg(all(
     feature = "mlkem512",
     feature = "pre-verification",
-    feature = "simd128"
+    feature = "simd128",
 ))]
 impl_consistency_unpacked!(
     consistency_unpacked_512_neon,
-    libcrux_ml_kem::mlkem512::neon::generate_key_pair,
-    libcrux_ml_kem::mlkem512::neon::encapsulate,
-    libcrux_ml_kem::mlkem512::neon::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem512::neon::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem512::neon::decapsulate_unpacked
+    libcrux_ml_kem::mlkem512::neon
 );
 
 #[cfg(all(
     feature = "mlkem512",
     feature = "pre-verification",
-    feature = "simd256"
+    feature = "simd256",
 ))]
 impl_consistency_unpacked!(
     consistency_unpacked_512_avx2,
-    libcrux_ml_kem::mlkem512::avx2::generate_key_pair,
-    libcrux_ml_kem::mlkem512::avx2::encapsulate,
-    libcrux_ml_kem::mlkem512::avx2::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem512::avx2::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem512::avx2::decapsulate_unpacked
+    libcrux_ml_kem::mlkem512::avx2
 );
 
-#[cfg(all(feature = "mlkem1024", feature = "pre-verification"))]
+#[cfg(all(feature = "mlkem1024", feature = "pre-verification",))]
 impl_consistency_unpacked!(
     consistency_unpacked_1024_portable,
-    libcrux_ml_kem::mlkem1024::portable::generate_key_pair,
-    libcrux_ml_kem::mlkem1024::portable::encapsulate,
-    libcrux_ml_kem::mlkem1024::portable::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem1024::portable::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem1024::portable::decapsulate_unpacked
+    libcrux_ml_kem::mlkem1024::portable
 );
 
 #[cfg(all(
     feature = "mlkem1024",
     feature = "pre-verification",
-    feature = "simd128"
+    feature = "simd128",
 ))]
 impl_consistency_unpacked!(
     consistency_unpacked_1024_neon,
-    libcrux_ml_kem::mlkem1024::neon::generate_key_pair,
-    libcrux_ml_kem::mlkem1024::neon::encapsulate,
-    libcrux_ml_kem::mlkem1024::neon::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem1024::neon::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem1024::neon::decapsulate_unpacked
+    libcrux_ml_kem::mlkem1024::neon
 );
 
 #[cfg(all(
     feature = "mlkem1024",
     feature = "pre-verification",
-    feature = "simd256"
+    feature = "simd256",
 ))]
 impl_consistency_unpacked!(
     consistency_unpacked_1024_avx2,
-    libcrux_ml_kem::mlkem1024::avx2::generate_key_pair,
-    libcrux_ml_kem::mlkem1024::avx2::encapsulate,
-    libcrux_ml_kem::mlkem1024::avx2::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem1024::avx2::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem1024::avx2::decapsulate_unpacked
+    libcrux_ml_kem::mlkem1024::avx2
 );
 
-#[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+#[cfg(all(feature = "mlkem768", feature = "pre-verification",))]
 impl_consistency_unpacked!(
     consistency_unpacked_768_portable,
-    libcrux_ml_kem::mlkem768::portable::generate_key_pair,
-    libcrux_ml_kem::mlkem768::portable::encapsulate,
-    libcrux_ml_kem::mlkem768::portable::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem768::portable::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem768::portable::decapsulate_unpacked
+    libcrux_ml_kem::mlkem768::portable
 );
 
 #[cfg(all(
     feature = "mlkem768",
     feature = "pre-verification",
-    feature = "simd128"
+    feature = "simd128",
 ))]
 impl_consistency_unpacked!(
     consistency_unpacked_768_neon,
-    libcrux_ml_kem::mlkem768::neon::generate_key_pair,
-    libcrux_ml_kem::mlkem768::neon::encapsulate,
-    libcrux_ml_kem::mlkem768::neon::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem768::neon::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem768::neon::decapsulate_unpacked
+    libcrux_ml_kem::mlkem768::neon
 );
 
 #[cfg(all(
     feature = "mlkem768",
     feature = "pre-verification",
-    feature = "simd256"
+    feature = "simd256",
 ))]
 impl_consistency_unpacked!(
     consistency_unpacked_768_avx2,
-    libcrux_ml_kem::mlkem768::avx2::generate_key_pair,
-    libcrux_ml_kem::mlkem768::avx2::encapsulate,
-    libcrux_ml_kem::mlkem768::avx2::generate_key_pair_unpacked,
-    libcrux_ml_kem::mlkem768::avx2::encapsulate_unpacked,
-    libcrux_ml_kem::mlkem768::avx2::decapsulate_unpacked
+    libcrux_ml_kem::mlkem768::avx2
 );
 
 #[cfg(feature = "mlkem512")]

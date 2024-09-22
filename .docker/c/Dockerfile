@@ -23,6 +23,8 @@ COPY --chown=$USER:$USER . $HOME/$USER
 # Setup & install.
 ADD install.sh /tmp/install.sh
 RUN bash /tmp/install.sh
+ADD ext-tools.sh /tmp/ext-tools.sh
+RUN bash /tmp/ext-tools.sh
 
 ENV FSTAR_HOME=$HOME/fstar
 ENV HACL_HOME=$HOME/hacl-star

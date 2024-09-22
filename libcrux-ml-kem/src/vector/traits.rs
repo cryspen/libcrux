@@ -244,10 +244,3 @@ pub fn decompress_1<T: Operations>(vec: T) -> T {
     let res = T::bitwise_and_with_constant(s, 1665);
     res
 }
-
-/// Internal vectors.
-///
-/// Used in the unpacked API.
-pub trait VectorType: Operations {}
-
-impl<T: Operations> VectorType for T {}

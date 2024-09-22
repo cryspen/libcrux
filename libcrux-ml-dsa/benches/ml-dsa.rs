@@ -67,7 +67,7 @@ pub fn comparisons_verification(c: &mut Criterion) {
     let keypair = ml_dsa_65::generate_key_pair(randomness);
 
     rng.fill_bytes(&mut randomness);
-    let signature = ml_dsa_65::sign(&keypair.signing_key, &message, randomness);
+    let signature = ml_dsa_65::sign(&keypair.signing_key, &message, randomness).unwrap();
 
     group.bench_function("libcrux", move |b| {
         b.iter(|| {

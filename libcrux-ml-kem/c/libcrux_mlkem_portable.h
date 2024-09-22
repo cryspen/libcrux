@@ -4,11 +4,19 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
+<<<<<<< HEAD
  * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
  * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
  * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
  * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
  * Libcrux: e8928fc5424f83c8cb35b980033be17621fc0ef0
+=======
+ * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
+ * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
+ * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: 97f7cefe14dabf275e4671ffea87e032d7779b71
+>>>>>>> main
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -215,9 +223,13 @@ libcrux_ml_kem_vector_portable_cond_subtract_3329_0d(
 
  `|result| ≤ FIELD_MODULUS / 2 · (|value|/BARRETT_R + 1)
 
+<<<<<<< HEAD
  Note: The input bound is 28296 to prevent overflow in the multiplication of
  quotient by FIELD_MODULUS
 
+=======
+ In particular, if `|value| < BARRETT_R`, then `|result| < FIELD_MODULUS`.
+>>>>>>> main
 */
 int16_t libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce_element(
     int16_t value);
@@ -249,12 +261,19 @@ libcrux_ml_kem_vector_portable_barrett_reduce_0d(
  - o ≡ value · MONTGOMERY_R^(-1) (mod FIELD_MODULUS)
  - the absolute value of `o` is bound as follows:
 
+<<<<<<< HEAD
  `|result| ≤ ceil(|value| / MONTGOMERY_R) + 1665
 
  In particular, if `|value| ≤ FIELD_MODULUS-1 * FIELD_MODULUS-1`, then `|o| <=
  FIELD_MODULUS-1`. And, if `|value| ≤ pow2 16 * FIELD_MODULUS-1`, then `|o| <=
  FIELD_MODULUS + 1664
 
+=======
+ `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
+
+ In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 ·
+ FIELD_MODULUS) / 2`.
+>>>>>>> main
 */
 int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
     int32_t value);
@@ -418,6 +437,28 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_inv_ntt_layer_3_step_0d(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a, int16_t zeta);
 
+/**
+ Compute the product of two Kyber binomials with respect to the
+ modulus `X² - zeta`.
+
+ This function almost implements <strong>Algorithm 11</strong> of the
+ NIST FIPS 203 standard, which is reproduced below:
+
+ ```plaintext
+ Input:  a₀, a₁, b₀, b₁ ∈ ℤq.
+ Input: γ ∈ ℤq.
+ Output: c₀, c₁ ∈ ℤq.
+
+ c₀ ← a₀·b₀ + a₁·b₁·γ
+ c₁ ← a₀·b₁ + a₁·b₀
+ return c₀, c₁
+ ```
+ We say "almost" because the coefficients output by this function are in
+ the Montgomery domain (unlike in the specification).
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 void libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *b, int16_t zeta,
@@ -617,183 +658,6 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_vector_type_clone_3b(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *self);
-
-/**
-A monomorphic instance of libcrux_ml_kem.polynomial.PolynomialRingElement
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-
-*/
-typedef struct libcrux_ml_kem_polynomial_PolynomialRingElement_f0_s {
-  libcrux_ml_kem_vector_portable_vector_type_PortableVector coefficients[16U];
-} libcrux_ml_kem_polynomial_PolynomialRingElement_f0;
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.IndCpaPrivateKeyUnpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-- $4size_t
-*/
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_42_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 secret_as_ntt[4U];
-} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_42;
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.unpacked.MlKemPrivateKeyUnpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-- $4size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_42_s {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_42
-      ind_cpa_private_key;
-  uint8_t implicit_rejection_value[32U];
-} libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_42;
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-- $4size_t
-*/
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_42_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 t_as_ntt[4U];
-  uint8_t seed_for_A[32U];
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 A[4U][4U];
-} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_42;
-
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPublicKeyUnpacked
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-- $4size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_42_s {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_42 ind_cpa_public_key;
-  uint8_t public_key_hash[32U];
-} libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_42;
-
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemKeyPairUnpacked
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-- $4size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42_s {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_42 private_key;
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_42 public_key;
-} libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42;
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.IndCpaPrivateKeyUnpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-- $2size_t
-*/
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_ae_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 secret_as_ntt[2U];
-} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_ae;
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.unpacked.MlKemPrivateKeyUnpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-- $2size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_ae_s {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_ae
-      ind_cpa_private_key;
-  uint8_t implicit_rejection_value[32U];
-} libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_ae;
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-- $2size_t
-*/
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_ae_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 t_as_ntt[2U];
-  uint8_t seed_for_A[32U];
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 A[2U][2U];
-} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_ae;
-
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPublicKeyUnpacked
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-- $2size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ae_s {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_ae ind_cpa_public_key;
-  uint8_t public_key_hash[32U];
-} libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ae;
-
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemKeyPairUnpacked
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-- $2size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_ae_s {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_ae private_key;
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ae public_key;
-} libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_ae;
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.IndCpaPrivateKeyUnpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_f8_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 secret_as_ntt[3U];
-} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_f8;
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.unpacked.MlKemPrivateKeyUnpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_f8_s {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_f8
-      ind_cpa_private_key;
-  uint8_t implicit_rejection_value[32U];
-} libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_f8;
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_f8_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 t_as_ntt[3U];
-  uint8_t seed_for_A[32U];
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f0 A[3U][3U];
-} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_f8;
-
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPublicKeyUnpacked
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8_s {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_f8 ind_cpa_public_key;
-  uint8_t public_key_hash[32U];
-} libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8;
-
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemKeyPairUnpacked
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-- $3size_t
-*/
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_f8_s {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_f8 private_key;
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 public_key;
-} libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_f8;
 
 #if defined(__cplusplus)
 }

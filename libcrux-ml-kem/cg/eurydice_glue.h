@@ -2,7 +2,11 @@
  * SPDX-FileCopyrightText: 2024 Eurydice Contributors
  * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
  *
+<<<<<<< HEAD
  * SPDX-License-Identifier: Apache-2.0
+=======
+ * SPDX-License-Identifier: MIT or Apache-2.0
+>>>>>>> main
  */
 
 #pragma once
@@ -95,10 +99,18 @@ typedef struct {
   (memcpy(dst, src, len * sizeof(elem_type)))
 #define TryFromSliceError uint8_t
 
+<<<<<<< HEAD
 #define Eurydice_array_eq(sz, a1, a2, t, _a, _b) \
+=======
+#define Eurydice_array_eq(sz, a1, a2, t, _) \
+>>>>>>> main
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
-#define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq \
-  Eurydice_array_eq
+#define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq( \
+    sz, a1, a2, t, _, _ret_t)                                                           \
+  Eurydice_array_eq(sz, a1, a2, t, _)
+#define core_array_equality___core__cmp__PartialEq__0___Slice_U____for__Array_T__N___3__eq( \
+    sz, a1, a2, t, _, _ret_t)                                                               \
+  Eurydice_array_eq(sz, a1, ((a2)->ptr), t, _)
 
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t) \
   (CLITERAL(ret_t){                                              \
@@ -172,10 +184,14 @@ static inline uint16_t core_num__i16_1__wrapping_mul(int16_t x, int16_t y) {
 
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
   (((iter_ptr)->start == (iter_ptr)->end)            \
+<<<<<<< HEAD
        ? (CLITERAL(ret_t){.tag = None})              \
+=======
+       ? (CLITERAL(ret_t){.tag = None, .f0 = 0})     \
+>>>>>>> main
        : (CLITERAL(ret_t){.tag = Some, .f0 = (iter_ptr)->start++}))
 
-#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next \
+#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this

@@ -4,11 +4,19 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
+<<<<<<< HEAD
  * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
  * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
  * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
  * F*: 86be6d1083452ef1a2c8991bcf72e36e8f6f5efb
  * Libcrux: e8928fc5424f83c8cb35b980033be17621fc0ef0
+=======
+ * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
+ * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
+ * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: 97f7cefe14dabf275e4671ffea87e032d7779b71
+>>>>>>> main
  */
 
 #ifndef __internal_libcrux_mlkem_portable_H
@@ -30,6 +38,22 @@ int16_t libcrux_ml_kem_polynomial_get_zeta(size_t i);
    LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR)
 
 /**
+A monomorphic instance of libcrux_ml_kem.polynomial.PolynomialRingElement
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+
+*/
+typedef struct libcrux_ml_kem_polynomial_PolynomialRingElement_f0_s {
+  libcrux_ml_kem_vector_portable_vector_type_PortableVector coefficients[16U];
+} libcrux_ml_kem_polynomial_PolynomialRingElement_f0;
+
+/**
+ Validate an ML-KEM public key.
+
+ This implements the Modulus check in 7.2 2.
+ Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
+ `public_key` type.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -37,6 +61,7 @@ with const generics
 - RANKED_BYTES_PER_RING_ELEMENT= 1536
 - PUBLIC_KEY_SIZE= 1568
 */
+<<<<<<< HEAD
 bool libcrux_ml_kem_ind_cca_validate_public_key_821(uint8_t *public_key);
 
 /**
@@ -56,12 +81,42 @@ generics
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_42
 libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_b21(
     uint8_t randomness[64U]);
+=======
+bool libcrux_ml_kem_ind_cca_validate_public_key_951(uint8_t *public_key);
 
+/**
+ Validate an ML-KEM private key.
+>>>>>>> main
+
+ This implements the Hash check in 7.3 3.
+ Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
+ and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
+with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]]
+with const generics
+- K= 4
+- SECRET_KEY_SIZE= 3168
+- CIPHERTEXT_SIZE= 1568
+*/
+bool libcrux_ml_kem_ind_cca_validate_private_key_0f(
+    libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_1f *_ciphertext);
+
+/**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] with const
-generics
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]],
+libcrux_ml_kem_variant_MlKem with const generics
 - K= 4
 - CPA_PRIVATE_KEY_SIZE= 1536
 - PRIVATE_KEY_SIZE= 3168
@@ -71,6 +126,7 @@ generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
+<<<<<<< HEAD
 libcrux_ml_kem_ind_cca_generate_keypair_6c1(uint8_t randomness[64U]);
 
 /**
@@ -95,12 +151,15 @@ generics
 tuple_21 libcrux_ml_kem_ind_cca_unpacked_encapsulate_unpacked_6f1(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_42 *public_key,
     uint8_t randomness[32U]);
+=======
+libcrux_ml_kem_ind_cca_generate_keypair_541(uint8_t randomness[64U]);
+>>>>>>> main
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]],
-libcrux_ml_kem_ind_cca_MlKem with const generics
+libcrux_ml_kem_variant_MlKem with const generics
 - K= 4
 - CIPHERTEXT_SIZE= 1568
 - PUBLIC_KEY_SIZE= 1568
@@ -115,11 +174,16 @@ libcrux_ml_kem_ind_cca_MlKem with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
+<<<<<<< HEAD
 tuple_21 libcrux_ml_kem_ind_cca_encapsulate_931(
+=======
+tuple_21 libcrux_ml_kem_ind_cca_encapsulate_b11(
+>>>>>>> main
     libcrux_ml_kem_types_MlKemPublicKey_1f *public_key,
     uint8_t randomness[32U]);
 
 /**
+<<<<<<< HEAD
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.decapsulate_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]] with const
@@ -146,10 +210,12 @@ void libcrux_ml_kem_ind_cca_unpacked_decapsulate_unpacked_f21(
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext, uint8_t ret[32U]);
 
 /**
+=======
+>>>>>>> main
 A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]],
-libcrux_ml_kem_ind_cca_MlKem with const generics
+libcrux_ml_kem_variant_MlKem with const generics
 - K= 4
 - SECRET_KEY_SIZE= 3168
 - CPA_SECRET_KEY_SIZE= 1536
@@ -167,10 +233,21 @@ libcrux_ml_kem_ind_cca_MlKem with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
+<<<<<<< HEAD
 void libcrux_ml_kem_ind_cca_decapsulate_161(
+=======
+void libcrux_ml_kem_ind_cca_decapsulate_6a1(
+>>>>>>> main
     libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
-    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext, uint8_t ret[32U]);
+    libcrux_ml_kem_types_MlKemCiphertext_1f *ciphertext, uint8_t ret[32U]);
 
+/**
+ Validate an ML-KEM public key.
+
+ This implements the Modulus check in 7.2 2.
+ Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
+ `public_key` type.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -179,6 +256,7 @@ with const generics
 - RANKED_BYTES_PER_RING_ELEMENT= 768
 - PUBLIC_KEY_SIZE= 800
 */
+<<<<<<< HEAD
 bool libcrux_ml_kem_ind_cca_validate_public_key_820(uint8_t *public_key);
 
 /**
@@ -198,12 +276,42 @@ generics
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_ae
 libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_b20(
     uint8_t randomness[64U]);
+=======
+bool libcrux_ml_kem_ind_cca_validate_public_key_950(uint8_t *public_key);
 
+/**
+ Validate an ML-KEM private key.
+>>>>>>> main
+
+ This implements the Hash check in 7.3 3.
+ Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
+ and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
+with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]]
+with const generics
+- K= 2
+- SECRET_KEY_SIZE= 1632
+- CIPHERTEXT_SIZE= 768
+*/
+bool libcrux_ml_kem_ind_cca_validate_private_key_3d(
+    libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_e8 *_ciphertext);
+
+/**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] with const
-generics
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]],
+libcrux_ml_kem_variant_MlKem with const generics
 - K= 2
 - CPA_PRIVATE_KEY_SIZE= 768
 - PRIVATE_KEY_SIZE= 1632
@@ -213,6 +321,7 @@ generics
 - ETA1_RANDOMNESS_SIZE= 192
 */
 libcrux_ml_kem_types_MlKemKeyPair_cb
+<<<<<<< HEAD
 libcrux_ml_kem_ind_cca_generate_keypair_6c0(uint8_t randomness[64U]);
 
 /**
@@ -237,12 +346,15 @@ generics
 tuple_ec libcrux_ml_kem_ind_cca_unpacked_encapsulate_unpacked_6f0(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ae *public_key,
     uint8_t randomness[32U]);
+=======
+libcrux_ml_kem_ind_cca_generate_keypair_540(uint8_t randomness[64U]);
+>>>>>>> main
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]],
-libcrux_ml_kem_ind_cca_MlKem with const generics
+libcrux_ml_kem_variant_MlKem with const generics
 - K= 2
 - CIPHERTEXT_SIZE= 768
 - PUBLIC_KEY_SIZE= 800
@@ -257,11 +369,16 @@ libcrux_ml_kem_ind_cca_MlKem with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
+<<<<<<< HEAD
 tuple_ec libcrux_ml_kem_ind_cca_encapsulate_930(
+=======
+tuple_ec libcrux_ml_kem_ind_cca_encapsulate_b10(
+>>>>>>> main
     libcrux_ml_kem_types_MlKemPublicKey_be *public_key,
     uint8_t randomness[32U]);
 
 /**
+<<<<<<< HEAD
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.decapsulate_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] with const
@@ -288,10 +405,12 @@ void libcrux_ml_kem_ind_cca_unpacked_decapsulate_unpacked_f20(
     libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]);
 
 /**
+=======
+>>>>>>> main
 A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]],
-libcrux_ml_kem_ind_cca_MlKem with const generics
+libcrux_ml_kem_variant_MlKem with const generics
 - K= 2
 - SECRET_KEY_SIZE= 1632
 - CPA_SECRET_KEY_SIZE= 768
@@ -309,10 +428,21 @@ libcrux_ml_kem_ind_cca_MlKem with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
+<<<<<<< HEAD
 void libcrux_ml_kem_ind_cca_decapsulate_160(
+=======
+void libcrux_ml_kem_ind_cca_decapsulate_6a0(
+>>>>>>> main
     libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]);
 
+/**
+ Validate an ML-KEM public key.
+
+ This implements the Modulus check in 7.2 2.
+ Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
+ `public_key` type.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -321,6 +451,7 @@ with const generics
 - RANKED_BYTES_PER_RING_ELEMENT= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
+<<<<<<< HEAD
 bool libcrux_ml_kem_ind_cca_validate_public_key_82(uint8_t *public_key);
 
 /**
@@ -340,12 +471,42 @@ generics
 libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_f8
 libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_b2(
     uint8_t randomness[64U]);
+=======
+bool libcrux_ml_kem_ind_cca_validate_public_key_95(uint8_t *public_key);
 
+/**
+ Validate an ML-KEM private key.
+>>>>>>> main
+
+ This implements the Hash check in 7.3 3.
+ Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
+ and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
+with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]]
+with const generics
+- K= 3
+- SECRET_KEY_SIZE= 2400
+- CIPHERTEXT_SIZE= 1088
+*/
+bool libcrux_ml_kem_ind_cca_validate_private_key_46(
+    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *_ciphertext);
+
+/**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] with const
-generics
+libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
+libcrux_ml_kem_variant_MlKem with const generics
 - K= 3
 - CPA_PRIVATE_KEY_SIZE= 1152
 - PRIVATE_KEY_SIZE= 2400
@@ -355,6 +516,7 @@ generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
+<<<<<<< HEAD
 libcrux_ml_kem_ind_cca_generate_keypair_6c(uint8_t randomness[64U]);
 
 /**
@@ -379,12 +541,15 @@ generics
 tuple_3c libcrux_ml_kem_ind_cca_unpacked_encapsulate_unpacked_6f(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_f8 *public_key,
     uint8_t randomness[32U]);
+=======
+libcrux_ml_kem_ind_cca_generate_keypair_54(uint8_t randomness[64U]);
+>>>>>>> main
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
-libcrux_ml_kem_ind_cca_MlKem with const generics
+libcrux_ml_kem_variant_MlKem with const generics
 - K= 3
 - CIPHERTEXT_SIZE= 1088
 - PUBLIC_KEY_SIZE= 1184
@@ -399,11 +564,16 @@ libcrux_ml_kem_ind_cca_MlKem with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
+<<<<<<< HEAD
 tuple_3c libcrux_ml_kem_ind_cca_encapsulate_93(
+=======
+tuple_3c libcrux_ml_kem_ind_cca_encapsulate_b1(
+>>>>>>> main
     libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
     uint8_t randomness[32U]);
 
 /**
+<<<<<<< HEAD
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.decapsulate_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] with const
@@ -430,10 +600,12 @@ void libcrux_ml_kem_ind_cca_unpacked_decapsulate_unpacked_f2(
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
 
 /**
+=======
+>>>>>>> main
 A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
-libcrux_ml_kem_ind_cca_MlKem with const generics
+libcrux_ml_kem_variant_MlKem with const generics
 - K= 3
 - SECRET_KEY_SIZE= 2400
 - CPA_SECRET_KEY_SIZE= 1152
@@ -451,7 +623,11 @@ libcrux_ml_kem_ind_cca_MlKem with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
+<<<<<<< HEAD
 void libcrux_ml_kem_ind_cca_decapsulate_16(
+=======
+void libcrux_ml_kem_ind_cca_decapsulate_6a(
+>>>>>>> main
     libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
 

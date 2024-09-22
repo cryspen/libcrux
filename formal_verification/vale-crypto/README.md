@@ -1,6 +1,6 @@
 # Vale Crypto in libcrux
 
-##Vale: Verified Assembly Language for Everest
+## Vale: Verified Assembly Language for Everest
 
 Vale is a tool for constructing formally verified high-performance assembly language code, with an emphasis on cryptographic code. It uses existing verification frameworks, such as Dafny and F*, for formal verification. It supports multiple architectures, such as x86, x64, and ARM, and multiple platforms, such as Windows, Mac, and Linux. Additional architectures and platforms can be supported with no changes to the Vale tool.
 Each assembly implementation in Vale is verified for:

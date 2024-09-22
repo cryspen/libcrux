@@ -383,16 +383,6 @@ class t_Operations (v_Self: Type0) = {
         (fun result -> f_rej_sample_post x0 x1 result)
 }
 
-/// Internal vectors.
-/// Used in the unpacked API.
-class t_VectorType (v_Self: Type0) = {
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_14104493667227926613:t_Operations v_Self
-}
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl (#v_T: Type0) (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: t_Operations v_T)
-    : t_VectorType v_T = { _super_14104493667227926613 = FStar.Tactics.Typeclasses.solve }
-
 let v_BARRETT_SHIFT: i32 = 26l
 
 let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT

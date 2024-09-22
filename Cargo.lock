@@ -191,9 +191,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.1.18"
+version = "1.1.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b62ac837cdb5cb22e10a256099b4fc502b1dfe560cb282963a974d7abd80e476"
+checksum = "07b1695e2c7e8fc85310cde85aeaab7e3097f593c91d209d3f9df76c928100f0"
 dependencies = [
  "jobserver",
  "libc",
@@ -290,9 +290,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.17"
+version = "4.5.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e5a21b8495e732f1b3c364c9949b201ca7bae518c502c80256c96ad79eaf6ac"
+checksum = "b0956a43b323ac1afaffc053ed5c4b7c1f1800bacd1683c353aabbb752515dd3"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -300,9 +300,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.17"
+version = "4.5.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cf2dd12af7a047ad9d6da2b6b249759a22a7abc0f474c1dae1777afa4b21a73"
+checksum = "4d72166dd41634086d5803a47eb71ae740e61d84709c36f3c34110173db3961b"
 dependencies = [
  "anstream",
  "anstyle",
@@ -312,9 +312,9 @@ dependencies = [
 
 [[package]]
 name = "clap_derive"
-version = "4.5.13"
+version = "4.5.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "501d359d5f3dcaf6ecdeee48833ae73ec6e42723a1e52419c79abf9507eec0a0"
+checksum = "4ac6a0c7b1a9e9a5186361f67dfa1b88213572f427fb9ab038efb2bd8c582dab"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -702,7 +702,7 @@ dependencies = [
 [[package]]
 name = "hax-lib"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#9313dbaa10a1c769daded71b641cf1d4854c8dfb"
+source = "git+https://github.com/hacspec/hax/?branch=main#288f77f086bbbd28a953ac66f77281750dbf8138"
 dependencies = [
  "hax-lib-macros",
  "num-bigint",
@@ -712,7 +712,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#9313dbaa10a1c769daded71b641cf1d4854c8dfb"
+source = "git+https://github.com/hacspec/hax/?branch=main#288f77f086bbbd28a953ac66f77281750dbf8138"
 dependencies = [
  "hax-lib-macros-types",
  "paste",
@@ -725,7 +725,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros-types"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#9313dbaa10a1c769daded71b641cf1d4854c8dfb"
+source = "git+https://github.com/hacspec/hax/?branch=main#288f77f086bbbd28a953ac66f77281750dbf8138"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -994,6 +994,7 @@ dependencies = [
  "criterion",
  "hex",
  "libcrux-intrinsics",
+ "libcrux-platform",
  "libcrux-sha3",
  "pqcrypto-dilithium",
  "rand",
@@ -1012,7 +1013,6 @@ dependencies = [
  "libcrux-platform",
  "libcrux-sha3",
  "rand",
- "rand_core",
  "serde",
  "serde_json",
 ]
