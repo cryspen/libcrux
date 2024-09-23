@@ -214,10 +214,10 @@ pub fn to_standard_domain<T: Operations>(v: T) -> T {
 
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--z3rlimit 100")]
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 3328 (i1.f_repr a)"))]
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 3328 (i1._super_8706949974463268012.f_repr a)"))]
 #[hax_lib::ensures(|result| fstar!("forall i.
-                                       (let x = Seq.index (i1.f_repr ${a}) i in
-                                        let y = Seq.index (i1.f_repr ${result}) i in
+                                       (let x = Seq.index (i1._super_8706949974463268012.f_repr ${a}) i in
+                                        let y = Seq.index (i1._super_8706949974463268012.f_repr ${result}) i in
                                         (v y >= 0 /\\ v y <= 3328 /\\ (v y % 3329 == v x % 3329)))"))]
 pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
     let t = T::shift_right::<15>(a);
@@ -226,20 +226,20 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
 }
 
 #[hax_lib::fstar::options("--z3rlimit 100")]
-#[hax_lib::requires(fstar!("forall i. let x = Seq.index (i1.f_repr ${vec}) i in 
+#[hax_lib::requires(fstar!("forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
                                       (x == 0s \\/ x == 1s)"))]
 pub fn decompress_1<T: Operations>(vec: T) -> T {
     let z = T::ZERO();
-    hax_lib::fstar!("assert(forall i. Seq.index (i1.f_repr ${z}) i == 0s)");
-    hax_lib::fstar!("assert(forall i. let x = Seq.index (i1.f_repr ${vec}) i in 
+    hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${z}) i == 0s)");
+    hax_lib::fstar!("assert(forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
                                       ((0 - v x) == 0 \\/ (0 - v x) == -1))"); 
     hax_lib::fstar!("assert(forall i. i < 16 ==>
                                       Spec.Utils.is_intb (pow2 15 - 1) 
-                                        (0 - v (Seq.index (i1.f_repr ${vec}) i)))");                               
+                                        (0 - v (Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i)))");                               
     
     let s = T::sub(z, &vec);
-    hax_lib::fstar!("assert(forall i. Seq.index (i1.f_repr ${s}) i == 0s \\/ 
-                                      Seq.index (i1.f_repr ${s}) i == -1s)");
+    hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == 0s \\/ 
+                                      Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == -1s)");
     hax_lib::fstar!("assert (i1.f_bitwise_and_with_constant_pre ${s} 1665s)");
     let res = T::bitwise_and_with_constant(s, 1665);
     res
