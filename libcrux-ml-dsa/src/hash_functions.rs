@@ -150,6 +150,10 @@ pub(crate) mod portable {
     pub(crate) struct Shake256 {
         state: KeccakState,
     }
+
+   // #[hax_lib::opaque]
+    pub(crate) type Shake256Absorb = libcrux_sha3::portable::incremental::Shake256Absorb;
+
     impl shake256::Xof for Shake256 {
         fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
             shake256(out, input);

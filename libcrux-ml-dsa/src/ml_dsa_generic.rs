@@ -1,4 +1,4 @@
-use libcrux_sha3::portable::incremental::{Shake256Absorb, XofAbsorb, XofSqueeze};
+//use libcrux_sha3::portable::incremental::{Shake256Absorb, XofAbsorb, XofSqueeze};
 
 use crate::{
     arithmetic::{
@@ -6,7 +6,7 @@ use crate::{
     },
     constants::*,
     encoding,
-    hash_functions::{shake128, shake256},
+    hash_functions::{shake128, shake256, portable::Shake256Absorb},
     matrix::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
         vector_times_ring_element,
