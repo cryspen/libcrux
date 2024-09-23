@@ -53,7 +53,7 @@ let to_standard_domain
     v
     v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS
 
-#push-options "--z3rlimit 100"
+#push-options "--admit_smt_queries true"
 
 let to_unsigned_representative
       (#v_T: Type0)
