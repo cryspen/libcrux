@@ -55,8 +55,6 @@ val mm256_castsi128_si256 (vector: t_Vec128)
 
 val mm256_castsi256_ps (a: t_Vec256) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
-unfold let mm256_castsi256_si128 = BitVec.Intrinsics.mm256_castsi256_si128
-
 val mm256_cmpeq_epi32 (a b: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_cmpgt_epi16 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
@@ -65,8 +63,6 @@ val mm256_cmpgt_epi32 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fu
 
 val mm256_cvtepi16_epi32 (vector: t_Vec128)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
-
-unfold let mm256_extracti128_si256 = BitVec.Intrinsics.mm256_extracti128_si256
 
 val mm256_inserti128_si256 (v_CONTROL: i32) (vector: t_Vec256) (vector_i128: t_Vec128)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
@@ -97,12 +93,6 @@ val mm256_mulhi_epi16 (lhs rhs: t_Vec256)
             (vec256_as_i16x16 lhs)
             (vec256_as_i16x16 rhs))
 
-unfold let mm256_mullo_epi16 = BitVec.Intrinsics.mm256_mullo_epi16
-     let lemma_mm256_mullo_epi16 v1 v2 :
-        Lemma (vec256_as_i16x16 (mm256_mullo_epi16 v1 v2) == 
-            Spec.Utils.map2 mul_mod (vec256_as_i16x16 v1) (vec256_as_i16x16 v2))
-            [SMTPat (vec256_as_i16x16 (mm256_mullo_epi16 v1 v2))] = admit()
-
 val mm256_mullo_epi32 (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
 val mm256_or_si256 (a b: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
@@ -130,12 +120,6 @@ val mm256_set1_epi32 (constant: i32) : Prims.Pure t_Vec256 Prims.l_True (fun _ -
 
 val mm256_set1_epi64x (a: i64) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-unfold let mm256_set_epi16 = BitVec.Intrinsics.mm256_set_epi16
-let lemma_mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 :
-    Lemma (vec256_as_i16x16 (mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0) == 
-            Spec.Utils.create16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15)
-            [SMTPat (vec256_as_i16x16 (mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0))] = admit()
-
 val mm256_set_epi32 (input7 input6 input5 input4 input3 input2 input1 input0: i32)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
@@ -159,8 +143,6 @@ val mm256_shuffle_epi8 (vector control: t_Vec256)
 
 val mm256_sign_epi32 (a b: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-unfold let mm256_slli_epi16 = BitVec.Intrinsics.mm256_slli_epi16
-
 val mm256_slli_epi32 (v_SHIFT_BY: i32) (vector: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
@@ -181,8 +163,6 @@ val mm256_srai_epi16 (v_SHIFT_BY: i32) (vector: t_Vec256)
 
 val mm256_srai_epi32 (v_SHIFT_BY: i32) (vector: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
-
-unfold let mm256_srli_epi16 = BitVec.Intrinsics.mm256_srli_epi16
 
 val mm256_srli_epi32 (v_SHIFT_BY: i32) (vector: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
@@ -248,8 +228,6 @@ val mm_add_epi16 (lhs rhs: t_Vec128)
 
 val mm_loadu_si128 (input: t_Slice u8) : Prims.Pure t_Vec128 Prims.l_True (fun _ -> Prims.l_True)
 
-unfold let mm_movemask_epi8 = BitVec.Intrinsics.mm_movemask_epi8
-
 val mm_mulhi_epi16 (lhs rhs: t_Vec128)
     : Prims.Pure t_Vec128
       Prims.l_True
@@ -269,8 +247,6 @@ val mm_mullo_epi16 (lhs rhs: t_Vec128)
           let result:t_Vec128 = result in
           vec128_as_i16x8 result ==
           Spec.Utils.map2 mul_mod (vec128_as_i16x8 lhs) (vec128_as_i16x8 rhs))
-
-unfold let mm_packs_epi16 = BitVec.Intrinsics.mm_packs_epi16
 
 val mm_set1_epi16 (constant: i16)
     : Prims.Pure t_Vec128
@@ -317,3 +293,27 @@ val mm_sub_epi16 (lhs rhs: t_Vec128)
 
 val vec256_blendv_epi32 (a b mask: t_Vec256)
     : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+
+unfold let mm256_castsi256_si128 = BitVec.Intrinsics.mm256_castsi256_si128
+
+unfold let mm256_extracti128_si256 = BitVec.Intrinsics.mm256_extracti128_si256
+
+unfold let mm256_mullo_epi16 = BitVec.Intrinsics.mm256_mullo_epi16
+     let lemma_mm256_mullo_epi16 v1 v2 :
+        Lemma (vec256_as_i16x16 (mm256_mullo_epi16 v1 v2) == 
+            Spec.Utils.map2 mul_mod (vec256_as_i16x16 v1) (vec256_as_i16x16 v2))
+            [SMTPat (vec256_as_i16x16 (mm256_mullo_epi16 v1 v2))] = admit()
+
+unfold let mm256_set_epi16 = BitVec.Intrinsics.mm256_set_epi16
+let lemma_mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 :
+    Lemma (vec256_as_i16x16 (mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0) == 
+            Spec.Utils.create16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15)
+            [SMTPat (vec256_as_i16x16 (mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0))] = admit()
+
+unfold let mm256_slli_epi16 = BitVec.Intrinsics.mm256_slli_epi16
+
+unfold let mm256_srli_epi16 = BitVec.Intrinsics.mm256_srli_epi16
+
+unfold let mm_movemask_epi8 = BitVec.Intrinsics.mm_movemask_epi8
+
+unfold let mm_packs_epi16 = BitVec.Intrinsics.mm_packs_epi16
