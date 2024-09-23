@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Serialize
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -8,6 +8,8 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Vector.Traits in
   ()
+
+#push-options "--admit_smt_queries true"
 
 let compress_then_serialize_10_
       (v_OUT_LEN: usize)
@@ -68,6 +70,10 @@ let compress_then_serialize_10_
   in
   serialized
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let compress_then_serialize_11_
       (v_OUT_LEN: usize)
       (#v_Vector: Type0)
@@ -126,6 +132,10 @@ let compress_then_serialize_11_
           serialized)
   in
   serialized
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let compress_then_serialize_4_
       (#v_Vector: Type0)
@@ -187,6 +197,10 @@ let compress_then_serialize_4_
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let compress_then_serialize_5_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -247,6 +261,10 @@ let compress_then_serialize_5_
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let compress_then_serialize_message
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -304,6 +322,8 @@ let compress_then_serialize_message
           serialized)
   in
   serialized
+
+#pop-options
 
 let compress_then_serialize_ring_element_u
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
@@ -573,6 +593,8 @@ let deserialize_then_decompress_5_
   in
   re
 
+#push-options "--admit_smt_queries true"
+
 let deserialize_then_decompress_message
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -625,6 +647,8 @@ let deserialize_then_decompress_message
   in
   re
 
+#pop-options
+
 let deserialize_then_decompress_ring_element_u
       (v_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
@@ -666,6 +690,8 @@ let deserialize_then_decompress_ring_element_v
 
         <:
         Rust_primitives.Hax.t_Never)
+
+#push-options "--admit_smt_queries true"
 
 let deserialize_to_reduced_ring_element
       (#v_Vector: Type0)
@@ -714,6 +740,8 @@ let deserialize_to_reduced_ring_element
           re)
   in
   re
+
+#pop-options
 
 let deserialize_ring_elements_reduced
       (v_K: usize)
@@ -801,6 +829,8 @@ let deserialize_to_uncompressed_ring_element
   in
   re
 
+#push-options "--admit_smt_queries true"
+
 let serialize_uncompressed_ring_element
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -853,3 +883,5 @@ let serialize_uncompressed_ring_element
           serialized)
   in
   serialized
+
+#pop-options

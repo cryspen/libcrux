@@ -69,24 +69,36 @@ impl Operations for SIMD256Vector {
         vec_to_i16_array(x)
     }
 
-    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map2 (+.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]
+    #[requires(fstar!("forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${lhs}) i) + v (Seq.index (impl.f_repr ${rhs}) i))"))]
+    #[ensures(|result| fstar!("forall i. i < 16 ==> 
+        (v (Seq.index (impl.f_repr ${result}) i) == 
+         v (Seq.index (impl.f_repr ${lhs}) i) + v (Seq.index (impl.f_repr ${rhs}) i))"))]
     fn add(lhs: Self, rhs: &Self) -> Self {
         Self {
             elements: arithmetic::add(lhs.elements, rhs.elements),
         }
     }
 
-    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map2 (-.) (impl.f_repr $lhs) (impl.f_repr $rhs)"))]
+    #[requires(fstar!("forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"))]
+    #[ensures(|result| fstar!("forall i. i < 16 ==> 
+        (v (Seq.index (impl.f_repr ${result}) i) == 
+         v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"))]
     fn sub(lhs: Self, rhs: &Self) -> Self {
         Self {
             elements: arithmetic::sub(lhs.elements, rhs.elements),
         }
     }
 
-    #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> x *. c) (impl.f_repr $v)"))]
-    fn multiply_by_constant(v: Self, c: i16) -> Self {
+    #[requires(fstar!("forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${vec}) i) * v c)"))]
+    #[ensures(|result| fstar!("forall i. i < 16 ==> 
+        (v (Seq.index (impl.f_repr ${result}) i) == 
+         v (Seq.index (impl.f_repr ${vec}) i) * v c)"))]
+    fn multiply_by_constant(vec: Self, c: i16) -> Self {
         Self {
-            elements: arithmetic::multiply_by_constant(v.elements, c),
+            elements: arithmetic::multiply_by_constant(vec.elements, c),
         }
     }
 
@@ -105,7 +117,7 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(true)]
+    #[requires(fstar!("Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr $vector)"))]
     #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr $vector)"))]
     fn cond_subtract_3329(vector: Self) -> Self {
         Self {
@@ -120,7 +132,7 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 3328 $constant"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 $constant"))]
     fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
         Self {
             elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),
@@ -153,49 +165,67 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+                       Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+6*3328) (impl.f_repr $out)"))]
     fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         Self {
             elements: ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                       Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr $out)"))]
     fn ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
         Self {
             elements: ntt::ntt_layer_2_step(vector.elements, zeta0, zeta1),
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta /\\
+                       Spec.Utils.is_i16b_array (11207+3*3328) (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr $out)"))]
     fn ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
         Self {
             elements: ntt::ntt_layer_3_step(vector.elements, zeta),
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3  /\\
+                       Spec.Utils.is_i16b_array (4*3328) (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
     fn inv_ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         Self {
             elements: ntt::inv_ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
     fn inv_ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
         Self {
             elements: ntt::inv_ntt_layer_2_step(vector.elements, zeta0, zeta1),
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta /\\
+                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
     fn inv_ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
         Self {
             elements: ntt::inv_ntt_layer_3_step(vector.elements, zeta),
         }
     }
 
-    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3"))]
+    #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+                       Spec.Utils.is_i16b_array 3228 (impl.f_repr ${lhs}) /\\
+                       Spec.Utils.is_i16b_array 3228 (impl.f_repr ${rhs})"))]
+    #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
     fn ntt_multiply(
         lhs: &Self,
         rhs: &Self,
@@ -303,6 +333,10 @@ impl Operations for SIMD256Vector {
         }
     }
 
+    #[requires(input.len() == 24 && output.len() == 16)]
+    #[ensures(|result|
+        fstar!("Seq.length $output_future == Seq.length $output /\\ v $result <= 16")
+    )]
     fn rej_sample(input: &[u8], output: &mut [i16]) -> usize {
         sampling::rejection_sample(input, output)
     }

@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cca
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -192,6 +192,8 @@ let validate_public_key
   in
   public_key =. public_key_serialized
 
+#push-options "--admit_smt_queries true"
+
 #push-options "--z3rlimit 500"
 
 let decapsulate
@@ -316,21 +318,18 @@ let decapsulate
       shared_secret
       ciphertext
   in
-  let shared_secret:t_Array u8 (sz 32) =
-    Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_select_shared_secret_in_constant_time (Core.Convert.f_as_ref
-          #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-          #(t_Slice u8)
-          #FStar.Tactics.Typeclasses.solve
-          ciphertext
-        <:
-        t_Slice u8)
-      (expected_ciphertext <: t_Slice u8)
-      (shared_secret <: t_Slice u8)
-      (implicit_rejection_shared_secret <: t_Slice u8)
-  in
-  let result:t_Array u8 (sz 32) = shared_secret in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_select_shared_secret_in_constant_time (Core.Convert.f_as_ref
+        #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+        #(t_Slice u8)
+        #FStar.Tactics.Typeclasses.solve
+        ciphertext
+      <:
+      t_Slice u8)
+    (expected_ciphertext <: t_Slice u8)
+    (shared_secret <: t_Slice u8)
+    (implicit_rejection_shared_secret <: t_Slice u8)
+
+#pop-options
 
 #pop-options
 

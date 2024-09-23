@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Polynomial
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -10,6 +10,7 @@ let _ =
   ()
 
 let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
+  let _:Prims.unit = assert_norm (pow2 16 == 65536) in
   let list =
     [
       (-1044s); (-758s); (-359s); (-1517s); 1493s; 1422s; 287s; 202s; (-171s); 622s; 1577s; 182s;
@@ -27,6 +28,14 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
   in
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
   Rust_primitives.Hax.array_of_list 128 list
+
+val get_zeta (i: usize)
+    : Prims.Pure i16
+      (requires i <. sz 128)
+      (ensures
+        fun result ->
+          let result:i16 = result in
+          Spec.Utils.is_i16b 1664 result)
 
 let v_VECTORS_IN_RING_ELEMENT: usize =
   Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!

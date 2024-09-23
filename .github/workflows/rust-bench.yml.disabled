@@ -1,10 +1,6 @@
-name: Build & Test
+name: Benchmark
 
 on:
-  push:
-    branches: ["main", "dev"]
-  pull_request:
-    branches: ["main", "dev"]
   workflow_dispatch:
   merge_group:
 
@@ -16,9 +12,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  benchmark:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         bits: [32, 64]
         os:
@@ -26,6 +22,7 @@ jobs:
           - ubuntu-latest
           - windows-latest
         exclude:
+          # There's no such thing as 32-bit macOS
           - bits: 32
             os: "macos-latest"
           # FIXME: Linking isn't working here yet for hacl #42
@@ -39,9 +36,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Update dependencies
-        run: cargo update
 
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
@@ -90,54 +84,15 @@ jobs:
           echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
           vcpkg install openssl:x64-windows-static-md
 
-      # Build ...
+      # Benchmarks ...
 
-      - name: 🔨 Build
-        run: cargo build --verbose $RUST_TARGET_FLAG
-
-      - name: 🔨 Build Release
-        run: cargo build --verbose --release $RUST_TARGET_FLAG
-
-      # Cross compilation
-
-      - name: 🔨 Build aarch64 macOS
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: cargo build --verbose --target aarch64-apple-darwin
-
-      # TODO: #42 linking fails here for some reason
-      # - name: Build aarch64 Ubuntu
-      #   if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
-      #   run: CC=clang cargo build --verbose --target aarch64-unknown-linux-gnu
-
-      # Test ...
-
-      - name: 🏃🏻‍♀️ Test
-        run: cargo test --verbose $RUST_TARGET_FLAG
-
-      - name: 🏃🏻‍♀️ Test Release
-        run: cargo test --verbose --release $RUST_TARGET_FLAG
-
-      - name: 🔨 Build sys/hacl
-        working-directory: sys/hacl
-        run: cargo build --verbose $RUST_TARGET_FLAG
-
-  wasm:
-    if: false #${{ github.event_name == 'workflow_dispatch'  || github.event_name == 'merge_group'  }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: mymindstorm/setup-emsdk@6ab9eb1bda2574c4ddb79809fc9247783eaf9021
-
-      - name: Setup
-        run: |
-          rustup target add wasm32-unknown-unknown
-          cargo install wasm-pack
-
-      - name: 🔨 Build
-        run: CC=emcc AR=emar cargo build --features wasm --target wasm32-unknown-unknown
-
-      - name: 🏃🏻‍♀️ Test
-        run: CC=emcc AR=emar wasm-pack test --node --features wasm
-
-
+      - name: 🏃🏻‍♀️ Benchmarks
+        run: cargo bench --verbose $RUST_TARGET_FLAG -p benchmarks -- --output-format bencher | tee bench.txt
+      - name: Store Benchmarks
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Rust Benchmark
+          tool: 'cargo'
+          output-file-path: bench.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true

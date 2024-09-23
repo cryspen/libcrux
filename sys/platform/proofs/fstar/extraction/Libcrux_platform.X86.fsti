@@ -1,5 +1,5 @@
 module Libcrux_platform.X86
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -40,12 +40,6 @@ val t_Feature_cast_to_repr (x: t_Feature) : Prims.Pure isize Prims.l_True (fun _
 
 /// Initialize CPU detection.
 val init: Prims.unit -> Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
-
-val init__cpuid (leaf: u32)
-    : Prims.Pure Core.Core_arch.X86.Cpuid.t_CpuidResult Prims.l_True (fun _ -> Prims.l_True)
-
-val init__cpuid_count (leaf sub_leaf: u32)
-    : Prims.Pure Core.Core_arch.X86.Cpuid.t_CpuidResult Prims.l_True (fun _ -> Prims.l_True)
 
 /// Check hardware [`Feature`] support.
 val supported (feature: t_Feature) : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
