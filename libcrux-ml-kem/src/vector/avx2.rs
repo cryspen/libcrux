@@ -7,8 +7,6 @@ mod ntt;
 mod sampling;
 mod serialize;
 
-use crate::vector::FIELD_MODULUS;
-
 #[derive(Clone, Copy)]
 #[hax_lib::fstar::before(interface,"noeq")]
 #[hax_lib::fstar::after(interface,"let repr (x:t_SIMD256Vector) : t_Array i16 (sz 16) = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 x.f_elements")]

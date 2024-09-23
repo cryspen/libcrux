@@ -15,8 +15,6 @@ use vector_type::*;
 
 pub(crate) use vector_type::PortableVector;
 
-use crate::vector::FIELD_MODULUS;
-
 #[cfg(hax)]
 impl crate::vector::traits::Repr for PortableVector {
     fn repr(x: Self) -> [i16; 16] {
