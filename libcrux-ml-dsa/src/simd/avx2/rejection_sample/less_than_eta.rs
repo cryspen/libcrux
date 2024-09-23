@@ -1,7 +1,4 @@
-use crate::simd::avx2::{
-    encoding,
-    rejection_sample::{shuffle_table::SHUFFLE_TABLE, utils},
-};
+use crate::simd::avx2::{encoding, rejection_sample::shuffle_table::SHUFFLE_TABLE};
 
 use libcrux_intrinsics::avx2::*;
 
@@ -10,7 +7,7 @@ use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
 fn shift_interval<const ETA: usize>(coefficients: Vec256) -> Vec256 {
-    match ETA {
+    match ETA as u8 {
         2 => {
             let quotient = mm256_mullo_epi32(coefficients, mm256_set1_epi32(26));
             let quotient = mm256_srai_epi32::<7>(quotient);
@@ -32,7 +29,7 @@ pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usiz
     // values that are 4-bits wide.
     let potential_coefficients = encoding::error::deserialize_to_unsigned::<4>(input);
 
-    let interval_boundary: i32 = match ETA {
+    let interval_boundary: i32 = match ETA as u8 {
         2 => 15,
         4 => 9,
         _ => unreachable!(),
@@ -44,7 +41,7 @@ pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usiz
     // Since every bit in each lane is either 0 or all 1s, we only need one bit
     // from each lane to tell us what coefficients to keep and what to throw-away.
     // Combine all the bits (there are 8) into one byte.
-    let good = utils::extract_least_significant_bits(compare_with_interval_boundary);
+    let good = mm256_movemask_ps(mm256_castsi256_ps(compare_with_interval_boundary));
 
     let good_lower_half = good & 0x0F;
     let good_upper_half = good >> 4;

@@ -7,50 +7,55 @@ use super::*;
 #[cfg(feature = "simd256")]
 use instantiations::avx2::{
     decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
-    generate_keypair as generate_keypair_avx2, validate_public_key as validate_public_key_avx2,
+    generate_keypair as generate_keypair_avx2,
 };
 
 #[cfg(feature = "simd128")]
 use instantiations::neon::{
     decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
-    generate_keypair as generate_keypair_neon, validate_public_key as validate_public_key_neon,
+    generate_keypair as generate_keypair_neon,
 };
 
 #[cfg(not(feature = "simd256"))]
 use instantiations::portable::{
     decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
-    generate_keypair as generate_keypair_avx2, validate_public_key as validate_public_key_avx2,
+    generate_keypair as generate_keypair_avx2,
 };
 
 #[cfg(not(feature = "simd128"))]
 use instantiations::portable::{
     decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
-    generate_keypair as generate_keypair_neon, validate_public_key as validate_public_key_neon,
+    generate_keypair as generate_keypair_neon,
 };
 
 #[cfg(all(feature = "simd256", feature = "kyber"))]
 use instantiations::avx2::{
     kyber_decapsulate as kyber_decapsulate_avx2, kyber_encapsulate as kyber_encapsulate_avx2,
+    kyber_generate_keypair as kyber_generate_keypair_avx2,
 };
 
 #[cfg(all(feature = "simd128", feature = "kyber"))]
 use instantiations::neon::{
     kyber_decapsulate as kyber_decapsulate_neon, kyber_encapsulate as kyber_encapsulate_neon,
+    kyber_generate_keypair as kyber_generate_keypair_neon,
 };
 
 #[cfg(all(not(feature = "simd256"), feature = "kyber"))]
 use instantiations::portable::{
     kyber_decapsulate as kyber_decapsulate_avx2, kyber_encapsulate as kyber_encapsulate_avx2,
+    kyber_generate_keypair as kyber_generate_keypair_avx2,
 };
 
 #[cfg(all(not(feature = "simd128"), feature = "kyber"))]
 use instantiations::portable::{
     kyber_decapsulate as kyber_decapsulate_neon, kyber_encapsulate as kyber_encapsulate_neon,
+    kyber_generate_keypair as kyber_generate_keypair_neon,
 };
 
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"))]
+#[inline(always)]
 pub(crate) fn validate_public_key<
     const K: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -58,16 +63,72 @@ pub(crate) fn validate_public_key<
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
+    instantiations::portable::validate_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
+        public_key,
+    )
+}
+
+#[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+                $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
+                $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"))]
+pub(crate) fn validate_private_key<
+    const K: usize,
+    const SECRET_KEY_SIZE: usize,
+    const CIPHERTEXT_SIZE: usize,
+>(
+    private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+    ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+) -> bool {
+    instantiations::portable::validate_private_key::<K, SECRET_KEY_SIZE, CIPHERTEXT_SIZE>(
+        private_key,
+        ciphertext,
+    )
+}
+
+#[cfg(feature = "kyber")]
+pub(crate) fn kyber_generate_keypair<
+    const K: usize,
+    const CPA_PRIVATE_KEY_SIZE: usize,
+    const PRIVATE_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const BYTES_PER_RING_ELEMENT: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+>(
+    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
+    // Runtime feature detection.
     if libcrux_platform::simd256_support() {
-        validate_public_key_avx2::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(public_key)
-    } else if libcrux_platform::simd128_support() {
-        validate_public_key_neon::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(public_key)
-    } else {
-        instantiations::portable::validate_public_key::<
+        kyber_generate_keypair_avx2::<
             K,
-            RANKED_BYTES_PER_RING_ELEMENT,
+            CPA_PRIVATE_KEY_SIZE,
+            PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
-        >(public_key)
+            BYTES_PER_RING_ELEMENT,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
+    } else if libcrux_platform::simd128_support() {
+        kyber_generate_keypair_neon::<
+            K,
+            CPA_PRIVATE_KEY_SIZE,
+            PRIVATE_KEY_SIZE,
+            PUBLIC_KEY_SIZE,
+            BYTES_PER_RING_ELEMENT,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
+    } else {
+        instantiations::portable::kyber_generate_keypair::<
+            K,
+            CPA_PRIVATE_KEY_SIZE,
+            PRIVATE_KEY_SIZE,
+            PUBLIC_KEY_SIZE,
+            BYTES_PER_RING_ELEMENT,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
     }
 }
 

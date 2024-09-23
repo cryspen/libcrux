@@ -1,9 +1,8 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use libcrux::ecdh;
 
-mod util;
+use benchmarks::util::*;
 use rand::RngCore;
-use util::*;
 
 fn derive(c: &mut Criterion) {
     // Comparing libcrux performance for different payload sizes and other implementations.

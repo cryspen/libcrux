@@ -3,20 +3,21 @@ module Libcrux_ml_kem.Mlkem1024
 open Core
 open FStar.Mul
 
+let validate_private_key
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 3168))
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1568))
+     =
+  Libcrux_ml_kem.Ind_cca.Multiplexing.validate_private_key (sz 4)
+    (sz 3168)
+    (sz 1568)
+    private_key
+    ciphertext
+
 let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568)) =
-  if
-    Libcrux_ml_kem.Ind_cca.Multiplexing.validate_public_key (sz 4)
-      (sz 1536)
-      (sz 1568)
-      public_key.Libcrux_ml_kem.Types.f_value
-  then
-    Core.Option.Option_Some public_key
-    <:
-    Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568))
-  else
-    Core.Option.Option_None
-    <:
-    Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568))
+  Libcrux_ml_kem.Ind_cca.Multiplexing.validate_public_key (sz 4)
+    (sz 1536)
+    (sz 1568)
+    public_key.Libcrux_ml_kem.Types.f_value
 
 let decapsulate
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 3168))

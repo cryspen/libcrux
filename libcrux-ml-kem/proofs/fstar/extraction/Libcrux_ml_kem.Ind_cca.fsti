@@ -8,6 +8,7 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Hash_functions in
   let open Libcrux_ml_kem.Types in
+  let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
@@ -39,13 +40,10 @@ val serialize_kem_secret_key
             (Seq.append public_key (Seq.append (Spec.Utils.v_H public_key) implicit_rejection_value)
             ))
 
-/// Implements [`Variant`], to perform the ML-KEM-specific actions
-/// during encapsulation and decapsulation.
-/// Specifically,
-/// * during encapsulation, the initial randomness is used without prior hashing,
-/// * the derivation of the shared secret does not include a hash of the ML-KEM ciphertext.
-type t_MlKem = | MlKem : t_MlKem
-
+/// Validate an ML-KEM public key.
+/// This implements the Modulus check in 7.2 2.
+/// Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
+/// `public_key` type.
 val validate_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
@@ -58,153 +56,21 @@ val validate_public_key
         v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE v_K)
       (fun _ -> Prims.l_True)
 
-/// This trait collects differences in specification between ML-KEM
-/// (Draft FIPS 203) and the Round 3 CRYSTALS-Kyber submission in the
-/// NIST PQ competition.
-/// cf. FIPS 203 (Draft), section 1.3
-class t_Variant (v_Self: Type0) = {
-  f_kdf_pre:
-      v_K: usize ->
-      v_CIPHERTEXT_SIZE: usize ->
-      #v_Hasher: Type0 ->
-      {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      shared_secret: t_Slice u8 ->
-      ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE
-    -> pred: Type0{(Core.Slice.impl__len #u8 shared_secret <: usize) =. sz 32 ==> pred};
-  f_kdf_post:
-      v_K: usize ->
-      v_CIPHERTEXT_SIZE: usize ->
-      #v_Hasher: Type0 ->
-      {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      shared_secret: t_Slice u8 ->
-      ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE ->
-      res: t_Array u8 (sz 32)
-    -> pred: Type0{pred ==> res == shared_secret};
-  f_kdf:
-      v_K: usize ->
-      v_CIPHERTEXT_SIZE: usize ->
-      #v_Hasher: Type0 ->
-      {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      x0: t_Slice u8 ->
-      x1: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE
-    -> Prims.Pure (t_Array u8 (sz 32))
-        (f_kdf_pre v_K v_CIPHERTEXT_SIZE #v_Hasher #i1 x0 x1)
-        (fun result -> f_kdf_post v_K v_CIPHERTEXT_SIZE #v_Hasher #i1 x0 x1 result);
-  f_entropy_preprocess_pre:
-      v_K: usize ->
-      #v_Hasher: Type0 ->
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      randomness: t_Slice u8
-    -> pred: Type0{(Core.Slice.impl__len #u8 randomness <: usize) =. sz 32 ==> pred};
-  f_entropy_preprocess_post:
-      v_K: usize ->
-      #v_Hasher: Type0 ->
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      t_Slice u8 ->
-      t_Array u8 (sz 32)
-    -> Type0;
-  f_entropy_preprocess:
-      v_K: usize ->
-      #v_Hasher: Type0 ->
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      x0: t_Slice u8
-    -> Prims.Pure (t_Array u8 (sz 32))
-        (f_entropy_preprocess_pre v_K #v_Hasher #i3 x0)
-        (fun result -> f_entropy_preprocess_post v_K #v_Hasher #i3 x0 result)
-}
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: t_Variant t_MlKem =
-  {
-    f_kdf_pre
-    =
-    (fun
-        (v_K: usize)
-        (v_CIPHERTEXT_SIZE: usize)
-        (#v_Hasher: Type0)
-        (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-        (shared_secret: t_Slice u8)
-        (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-        ->
-        (Core.Slice.impl__len #u8 shared_secret <: usize) =. sz 32);
-    f_kdf_post
-    =
-    (fun
-        (v_K: usize)
-        (v_CIPHERTEXT_SIZE: usize)
-        (#v_Hasher: Type0)
-        (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-        (shared_secret: t_Slice u8)
-        (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-        (out: t_Array u8 (sz 32))
-        ->
-        out == shared_secret);
-    f_kdf
-    =
-    (fun
-        (v_K: usize)
-        (v_CIPHERTEXT_SIZE: usize)
-        (#v_Hasher: Type0)
-        (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-        (shared_secret: t_Slice u8)
-        (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-        ->
-        Core.Result.impl__unwrap #(t_Array u8 (sz 32))
-          #Core.Array.t_TryFromSliceError
-          (Core.Convert.f_try_into #(t_Slice u8)
-              #(t_Array u8 (sz 32))
-              #FStar.Tactics.Typeclasses.solve
-              shared_secret
-            <:
-            Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError));
-    f_entropy_preprocess_pre
-    =
-    (fun
-        (v_K: usize)
-        (#v_Hasher: Type0)
-        (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-        (randomness: t_Slice u8)
-        ->
-        (Core.Slice.impl__len #u8 randomness <: usize) =. sz 32);
-    f_entropy_preprocess_post
-    =
-    (fun
-        (v_K: usize)
-        (#v_Hasher: Type0)
-        (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-        (randomness: t_Slice u8)
-        (out: t_Array u8 (sz 32))
-        ->
-        true);
-    f_entropy_preprocess
-    =
-    fun
-      (v_K: usize)
+/// Validate an ML-KEM private key.
+/// This implements the Hash check in 7.3 3.
+/// Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
+/// and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
+val validate_private_key
+      (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
       (#v_Hasher: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-        i3:
-        Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-      (randomness: t_Slice u8)
-      ->
-      Core.Result.impl__unwrap #(t_Array u8 (sz 32))
-        #Core.Array.t_TryFromSliceError
-        (Core.Convert.f_try_into #(t_Slice u8)
-            #(t_Array u8 (sz 32))
-            #FStar.Tactics.Typeclasses.solve
-            randomness
-          <:
-          Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError)
-  }
+      {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (v__ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+    : Prims.Pure bool
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
+        v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K)
+      (fun _ -> Prims.l_True)
 
 /// This code verifies on some machines, runs out of memory on others
 val decapsulate
@@ -213,7 +79,7 @@ val decapsulate
       (#v_Vector #v_Hasher #v_Scheme: Type0)
       {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      {| i5: t_Variant v_Scheme |}
+      {| i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme |}
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
     : Prims.Pure (t_Array u8 (sz 32))
@@ -245,7 +111,7 @@ val encapsulate
       (#v_Vector #v_Hasher #v_Scheme: Type0)
       {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      {| i5: t_Variant v_Scheme |}
+      {| i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme |}
       (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: t_Array u8 (sz 32))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
@@ -276,9 +142,10 @@ val encapsulate
 val generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
+      {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      {| i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme |}
       (randomness: t_Array u8 (sz 64))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
       (requires

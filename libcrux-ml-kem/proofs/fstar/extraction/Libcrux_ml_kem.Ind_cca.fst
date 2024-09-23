@@ -8,6 +8,7 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Hash_functions in
   let open Libcrux_ml_kem.Types in
+  let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
@@ -170,7 +171,7 @@ let validate_public_key
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
      =
   let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_K
+    Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced_out v_K
       #v_Vector
       (public_key.[ { Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
           <:
@@ -192,6 +193,38 @@ let validate_public_key
   in
   public_key =. public_key_serialized
 
+let validate_private_key
+      (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
+      (#v_Hasher: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (v__ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+     =
+  let t:t_Array u8 (sz 32) =
+    Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
+      #v_K
+      #FStar.Tactics.Typeclasses.solve
+      (private_key.Libcrux_ml_kem.Types.f_value.[ {
+            Core.Ops.Range.f_start = sz 384 *! v_K <: usize;
+            Core.Ops.Range.f_end = (sz 768 *! v_K <: usize) +! sz 32 <: usize
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  let expected:t_Slice u8 =
+    private_key.Libcrux_ml_kem.Types.f_value.[ {
+        Core.Ops.Range.f_start = (sz 768 *! v_K <: usize) +! sz 32 <: usize;
+        Core.Ops.Range.f_end = (sz 768 *! v_K <: usize) +! sz 64 <: usize
+      }
+      <:
+      Core.Ops.Range.t_Range usize ]
+  in
+  t =. expected
+
 #push-options "--admit_smt_queries true"
 
 #push-options "--z3rlimit 500"
@@ -206,7 +239,7 @@ let decapsulate
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i4:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()] i5: t_Variant v_Scheme)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme)
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
      =
@@ -301,7 +334,7 @@ let decapsulate
       decrypted pseudorandomness
   in
   let implicit_rejection_shared_secret:t_Array u8 (sz 32) =
-    f_kdf #v_Scheme
+    Libcrux_ml_kem.Variant.f_kdf #v_Scheme
       #FStar.Tactics.Typeclasses.solve
       v_K
       v_CIPHERTEXT_SIZE
@@ -310,7 +343,7 @@ let decapsulate
       ciphertext
   in
   let shared_secret:t_Array u8 (sz 32) =
-    f_kdf #v_Scheme
+    Libcrux_ml_kem.Variant.f_kdf #v_Scheme
       #FStar.Tactics.Typeclasses.solve
       v_K
       v_CIPHERTEXT_SIZE
@@ -345,12 +378,12 @@ let encapsulate
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i4:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()] i5: t_Variant v_Scheme)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme)
       (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: t_Array u8 (sz 32))
      =
   let randomness:t_Array u8 (sz 32) =
-    f_entropy_preprocess #v_Scheme
+    Libcrux_ml_kem.Variant.f_entropy_preprocess #v_Scheme
       #FStar.Tactics.Typeclasses.solve
       v_K
       #v_Hasher
@@ -373,7 +406,7 @@ let encapsulate
           (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
               #v_K
               #FStar.Tactics.Typeclasses.solve
-              (Libcrux_ml_kem.Types.impl_17__as_slice v_PUBLIC_KEY_SIZE public_key <: t_Slice u8)
+              (Libcrux_ml_kem.Types.impl_20__as_slice v_PUBLIC_KEY_SIZE public_key <: t_Slice u8)
             <:
             t_Slice u8)
         <:
@@ -394,7 +427,7 @@ let encapsulate
     Libcrux_ml_kem.Ind_cpa.encrypt v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE
       v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1
       v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE #v_Vector #v_Hasher
-      (Libcrux_ml_kem.Types.impl_17__as_slice v_PUBLIC_KEY_SIZE public_key <: t_Slice u8) randomness
+      (Libcrux_ml_kem.Types.impl_20__as_slice v_PUBLIC_KEY_SIZE public_key <: t_Slice u8) randomness
       pseudorandomness
   in
   let ciphertext:Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE =
@@ -404,7 +437,7 @@ let encapsulate
       ciphertext
   in
   let shared_secret_array:t_Array u8 (sz 32) =
-    f_kdf #v_Scheme
+    Libcrux_ml_kem.Variant.f_kdf #v_Scheme
       #FStar.Tactics.Typeclasses.solve
       v_K
       v_CIPHERTEXT_SIZE
@@ -425,13 +458,14 @@ let encapsulate
 let generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i4:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme)
       (randomness: t_Array u8 (sz 64))
      =
   let ind_cpa_keypair_randomness:t_Slice u8 =
@@ -451,14 +485,8 @@ let generate_keypair
   in
   let ind_cpa_private_key, public_key:(t_Array u8 v_CPA_PRIVATE_KEY_SIZE &
     t_Array u8 v_PUBLIC_KEY_SIZE) =
-    Libcrux_ml_kem.Ind_cpa.generate_keypair v_K
-      v_CPA_PRIVATE_KEY_SIZE
-      v_PUBLIC_KEY_SIZE
-      v_RANKED_BYTES_PER_RING_ELEMENT
-      v_ETA1
-      v_ETA1_RANDOMNESS_SIZE
-      #v_Vector
-      #v_Hasher
+    Libcrux_ml_kem.Ind_cpa.generate_keypair v_K v_CPA_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE
+      v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE #v_Vector #v_Hasher #v_Scheme
       ind_cpa_keypair_randomness
   in
   let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
@@ -476,7 +504,7 @@ let generate_keypair
       #FStar.Tactics.Typeclasses.solve
       secret_key_serialized
   in
-  Libcrux_ml_kem.Types.impl_18__from v_PRIVATE_KEY_SIZE
+  Libcrux_ml_kem.Types.impl_21__from v_PRIVATE_KEY_SIZE
     v_PUBLIC_KEY_SIZE
     private_key
     (Core.Convert.f_from #(Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)

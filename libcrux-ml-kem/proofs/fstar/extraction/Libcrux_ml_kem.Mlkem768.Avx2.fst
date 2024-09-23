@@ -3,20 +3,15 @@ module Libcrux_ml_kem.Mlkem768.Avx2
 open Core
 open FStar.Mul
 
-let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)) =
-  if
-    Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.validate_public_key (sz 3)
-      (sz 1152)
-      (sz 1184)
-      public_key.Libcrux_ml_kem.Types.f_value
-  then
-    Core.Option.Option_Some public_key
-    <:
-    Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-  else
-    Core.Option.Option_None
-    <:
-    Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+let validate_private_key
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
+     =
+  Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.validate_private_key (sz 3)
+    (sz 2400)
+    (sz 1088)
+    private_key
+    ciphertext
 
 let decapsulate
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
@@ -43,32 +38,8 @@ let generate_key_pair (randomness: t_Array u8 (sz 64)) =
     (sz 128)
     randomness
 
-let encapsulate_unpacked
-      (public_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
-            Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
-      (randomness: t_Array u8 (sz 32))
-     =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.encapsulate_unpacked (sz 3) (sz 1088) (sz 1184)
-    (sz 1152) (sz 960) (sz 128) (sz 10) (sz 4) (sz 320) (sz 2) (sz 128) (sz 2) (sz 128) public_key
-    randomness
-
-let decapsulate_unpacked
-      (private_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
-            Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
-      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
-     =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.decapsulate_unpacked (sz 3) (sz 2400) (sz 1152)
-    (sz 1184) (sz 1088) (sz 1152) (sz 960) (sz 128) (sz 10) (sz 4) (sz 320) (sz 2) (sz 128) (sz 2)
-    (sz 128) (sz 1120) private_key ciphertext
-
-let generate_key_pair_unpacked (randomness: t_Array u8 (sz 64)) =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.generate_keypair_unpacked (sz 3)
+let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)) =
+  Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.validate_public_key (sz 3)
     (sz 1152)
-    (sz 2400)
     (sz 1184)
-    (sz 1152)
-    (sz 2)
-    (sz 128)
-    randomness
+    public_key.Libcrux_ml_kem.Types.f_value

@@ -4,7 +4,7 @@ use crate::simd::portable::PortableSIMDUnit;
 pub fn serialize<const OUTPUT_SIZE: usize>(simd_unit: PortableSIMDUnit) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
 
-    match OUTPUT_SIZE {
+    match OUTPUT_SIZE as u8 {
         4 => {
             // The commitment has coefficients in [0,15] => each coefficient occupies
             // 4 bits.
