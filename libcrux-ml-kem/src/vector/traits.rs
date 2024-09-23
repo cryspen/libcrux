@@ -223,7 +223,6 @@ pub fn to_standard_domain<T: Operations>(v: T) -> T {
     T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
 
-#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--z3rlimit 100")]
 #[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 3328 (i1._super_8706949974463268012.f_repr a)"))]
 #[hax_lib::ensures(|result| fstar!("forall i.
