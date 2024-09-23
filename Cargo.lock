@@ -702,7 +702,7 @@ dependencies = [
 [[package]]
 name = "hax-lib"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=fold-enum-slice#0bb2f9bdce8f36cecd87a0adb59a975ddf660fca"
+source = "git+https://github.com/hacspec/hax/?branch=main#0bd125aa5ab3ce2400ac3e01072710bb628b270f"
 dependencies = [
  "hax-lib-macros",
  "num-bigint",
@@ -712,7 +712,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=fold-enum-slice#0bb2f9bdce8f36cecd87a0adb59a975ddf660fca"
+source = "git+https://github.com/hacspec/hax/?branch=main#0bd125aa5ab3ce2400ac3e01072710bb628b270f"
 dependencies = [
  "hax-lib-macros-types",
  "paste",
@@ -725,7 +725,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros-types"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=fold-enum-slice#0bb2f9bdce8f36cecd87a0adb59a975ddf660fca"
+source = "git+https://github.com/hacspec/hax/?branch=main#0bd125aa5ab3ce2400ac3e01072710bb628b270f"
 dependencies = [
  "proc-macro2",
  "quote",

@@ -79,8 +79,8 @@ getrandom = { version = "0.2", features = ["js"], optional = true }
 # This is only required when doing proofs.
 #[target.'cfg(hax)'.dependencies]
 [workspace.dependencies]
-hax-lib-macros = { git = "https://github.com/hacspec/hax", branch = "fold-enum-slice" }
-hax-lib = { git = "https://github.com/hacspec/hax/", branch = "fold-enum-slice" }
+hax-lib-macros = { git = "https://github.com/hacspec/hax", branch = "main" }
+hax-lib = { git = "https://github.com/hacspec/hax/", branch = "main" }
 
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand", "tests"] }
