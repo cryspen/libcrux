@@ -11,25 +11,19 @@ let decompress_1_
       (vec: v_T)
      =
   let z:v_T = f_ZERO #v_T #FStar.Tactics.Typeclasses.solve () in
-  let _:Prims.unit =
-    assert (forall i. Seq.index (i1._super_8706949974463268012.f_repr z) i == 0s)
-  in
+  let _:Prims.unit = assert (forall i. Seq.index (i1.f_repr z) i == 0s) in
   let _:Prims.unit =
     assert (forall i.
-          let x = Seq.index (i1._super_8706949974463268012.f_repr vec) i in
+          let x = Seq.index (i1.f_repr vec) i in
           ((0 - v x) == 0 \/ (0 - v x) == - 1))
   in
   let _:Prims.unit =
     assert (forall i.
-          i < 16 ==>
-          Spec.Utils.is_intb (pow2 15 - 1)
-            (0 - v (Seq.index (i1._super_8706949974463268012.f_repr vec) i)))
+          i < 16 ==> Spec.Utils.is_intb (pow2 15 - 1) (0 - v (Seq.index (i1.f_repr vec) i)))
   in
   let s:v_T = f_sub #v_T #FStar.Tactics.Typeclasses.solve z vec in
   let _:Prims.unit =
-    assert (forall i.
-          Seq.index (i1._super_8706949974463268012.f_repr s) i == 0s \/
-          Seq.index (i1._super_8706949974463268012.f_repr s) i == (-1s))
+    assert (forall i. Seq.index (i1.f_repr s) i == 0s \/ Seq.index (i1.f_repr s) i == (-1s))
   in
   let _:Prims.unit = assert (i1.f_bitwise_and_with_constant_pre s 1665s) in
   f_bitwise_and_with_constant #v_T #FStar.Tactics.Typeclasses.solve s 1665s
