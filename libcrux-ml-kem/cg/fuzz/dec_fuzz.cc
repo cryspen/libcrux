@@ -28,7 +28,7 @@ extern "C"
 	{
 		static bool once;
 		uint8_t ret[32];
-		libcrux_ml_kem_types_MlKemPrivateKey_55 zero_sk, rnd_sk;
+		static libcrux_ml_kem_types_MlKemPrivateKey_55 zero_sk, rnd_sk;
 		libcrux_ml_kem_mlkem768_MlKem768Ciphertext ct;
 
 		if (!once)
