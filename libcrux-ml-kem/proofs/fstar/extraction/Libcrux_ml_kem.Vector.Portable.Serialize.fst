@@ -472,42 +472,9 @@ let deserialize_10_lemma inputs =
 
 #pop-options
 
-<<<<<<< HEAD
 let deserialize_10_bounded_lemma inputs =
   admit()
 
-let deserialize_11_ (bytes: t_Slice u8) =
-  let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    deserialize_11_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 11 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  let v8_15_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    deserialize_11_int (bytes.[ { Core.Ops.Range.f_start = sz 11; Core.Ops.Range.f_end = sz 22 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  {
-    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-    =
-    let list =
-      [
-        v0_7_._1; v0_7_._2; v0_7_._3; v0_7_._4; v0_7_._5; v0_7_._6; v0_7_._7; v0_7_._8; v8_15_._1;
-        v8_15_._2; v8_15_._3; v8_15_._4; v8_15_._5; v8_15_._6; v8_15_._7; v8_15_._8
-      ]
-    in
-    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
-    Rust_primitives.Hax.array_of_list 16 list
-  }
-  <:
-  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-
-=======
->>>>>>> dev
 let deserialize_12_ (bytes: t_Slice u8) =
   let v0_1_:(i16 & i16) =
     deserialize_12_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 3 }
@@ -655,42 +622,9 @@ let deserialize_4_lemma inputs =
 
 #pop-options
 
-<<<<<<< HEAD
 let deserialize_4_bounded_lemma inputs =
   admit()
 
-let deserialize_5_ (bytes: t_Slice u8) =
-  let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    deserialize_5_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 5 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  let v8_15_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    deserialize_5_int (bytes.[ { Core.Ops.Range.f_start = sz 5; Core.Ops.Range.f_end = sz 10 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  {
-    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-    =
-    let list =
-      [
-        v0_7_._1; v0_7_._2; v0_7_._3; v0_7_._4; v0_7_._5; v0_7_._6; v0_7_._7; v0_7_._8; v8_15_._1;
-        v8_15_._2; v8_15_._3; v8_15_._4; v8_15_._5; v8_15_._6; v8_15_._7; v8_15_._8
-      ]
-    in
-    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
-    Rust_primitives.Hax.array_of_list 16 list
-  }
-  <:
-  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-
-=======
->>>>>>> dev
 let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let result0:u8 =
     (((((((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 0 ] <: i16) <: u8) |.
