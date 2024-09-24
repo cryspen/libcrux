@@ -13,5 +13,5 @@ description = "Libcrux HKDF implementation"
 path = "src/hkdf.rs"
 
 [dependencies]
-libcrux-hacl = { version = "=0.0.2-beta.1", path = "../sys/hacl" }
+libcrux-hacl = { version = "=0.0.2-beta.2", path = "../sys/hacl" }
 
