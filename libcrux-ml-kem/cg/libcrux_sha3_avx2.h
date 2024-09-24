@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
- * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
- * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * Charon: 1bd0af95285033fec42133810440d56977c17ade
+ * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
+ * Karamel: baec61db14d5132ae8eb4bd7a288638b7f2f1db8
  * F*: 650b216aeb5901ec6f1c44ff275acd924e54bdbd
- * Libcrux: 9e07b1b2962c1f8d7ad6c5cacb94bd68fd4d8a3d
+ * Libcrux: 5971b6982c7af3edf6b84c36aa90697e599288a4
  */
 
 #ifndef __libcrux_sha3_avx2_H
@@ -212,17 +212,17 @@ typedef struct libcrux_sha3_generic_keccak_KeccakState_29_s {
 */
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
-N>[TraitClause@0]#1}
+N>[TraitClause@0, TraitClause@1]#1}
 */
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.new_1e
+A monomorphic instance of libcrux_sha3.generic_keccak.new_89
 with types core_core_arch_x86___m256i
 with const generics
 - N= 4
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_29
-libcrux_sha3_generic_keccak_new_1e_71(void) {
+libcrux_sha3_generic_keccak_new_89_71(void) {
   libcrux_sha3_generic_keccak_KeccakState_29 lit;
   lit.st[0U][0U] = libcrux_sha3_simd_avx2_zero_ef();
   lit.st[0U][1U] = libcrux_sha3_simd_avx2_zero_ef();
@@ -1964,7 +1964,7 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_b9(
     Eurydice_slice data[4U], Eurydice_slice out[4U]) {
   libcrux_sha3_generic_keccak_KeccakState_29 s =
-      libcrux_sha3_generic_keccak_new_1e_71();
+      libcrux_sha3_generic_keccak_new_89_71();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)136U; i++) {
     size_t i0 = i;
@@ -2005,7 +2005,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_b9(
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, Option_b3)
               .tag == None) {
         break;
@@ -2048,7 +2048,7 @@ typedef libcrux_sha3_generic_keccak_KeccakState_29
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_29
 libcrux_sha3_avx2_x4_incremental_init(void) {
-  return libcrux_sha3_generic_keccak_new_1e_71();
+  return libcrux_sha3_generic_keccak_new_89_71();
 }
 
 /**
