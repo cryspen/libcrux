@@ -231,8 +231,6 @@ let sample_vector_cbd_then_ntt_out
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
-#push-options "--z3rlimit 200"
-
 let compress_then_serialize_u
       (v_K v_OUT_LEN v_COMPRESSION_FACTOR v_BLOCK_LEN: usize)
       (#v_Vector: Type0)
@@ -253,7 +251,9 @@ let compress_then_serialize_u
       (fun out i ->
           let out:t_Slice u8 = out in
           let i:usize = i in
-          (Core.Slice.impl__len #u8 out <: usize) =. v_OUT_LEN <: bool)
+          v i < v v_K ==>
+          (Seq.length out == v v_OUT_LEN /\
+            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index input (v i))))
       out
       (fun out temp_1_ ->
           let out:t_Slice u8 = out in
@@ -296,8 +296,6 @@ let compress_then_serialize_u
   let _:Prims.unit = admit () (* Panic freedom *) in
   let hax_temp_output:Prims.unit = result in
   out
-
-#pop-options
 
 #push-options "--admit_smt_queries true"
 

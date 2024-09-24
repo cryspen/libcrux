@@ -89,7 +89,10 @@ val compress_then_serialize_u
       (requires
         Spec.MLKEM.is_rank v_K /\ v_OUT_LEN == Spec.MLKEM.v_C1_SIZE v_K /\
         v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
-        v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\ Core.Slice.impl__len #u8 out == v_OUT_LEN)
+        v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\ Core.Slice.impl__len #u8 out == v_OUT_LEN /\
+        (forall (i: nat).
+            i < v v_K ==>
+            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index input i)))
       (ensures
         fun out_future ->
           let out_future:t_Slice u8 = out_future in
