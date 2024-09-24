@@ -19,7 +19,6 @@ extern "C" {
 
 #include "karamel/target.h"
 
-// Ignore an expression.
 #define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
 
 // SLICES, ARRAYS, ETC.

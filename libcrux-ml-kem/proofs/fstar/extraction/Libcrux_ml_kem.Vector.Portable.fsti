@@ -30,7 +30,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
       Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x
   }
 
-#push-options "--admit_smt_queries true"
+#push-options "--z3rlimit 200"
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_1: Libcrux_ml_kem.Vector.Traits.t_Operations
@@ -224,41 +224,49 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_by_constant v r);
     f_compress_1_pre
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        forall (i: nat).
+          i < 16 ==> v (Seq.index (impl.f_repr a) i) >= 0 /\ v (Seq.index (impl.f_repr a) i) < 3329);
     f_compress_1_post
     =
     (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        forall (i: nat). i < 16 ==> bounded (Seq.index (impl.f_repr out) i) 1);
     f_compress_1_
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Compress.compress_1_ v);
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Libcrux_ml_kem.Vector.Portable.Compress.compress_1_ a);
     f_compress_pre
     =
     (fun
         (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
-        v_COEFFICIENT_BITS =. 11l);
+        (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
+          v v_COEFFICIENT_BITS == 11) /\
+        (forall (i: nat).
+            i < 16 ==>
+            v (Seq.index (impl.f_repr a) i) >= 0 /\ v (Seq.index (impl.f_repr a) i) < 3329));
     f_compress_post
     =
     (fun
         (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
+          v v_COEFFICIENT_BITS == 11) ==>
+        (forall (i: nat). i < 16 ==> bounded (Seq.index (impl.f_repr out) i) (v v_COEFFICIENT_BITS))
+    );
     f_compress
     =
     (fun
         (v_COEFFICIENT_BITS: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        Libcrux_ml_kem.Vector.Portable.Compress.compress v_COEFFICIENT_BITS v);
+        Libcrux_ml_kem.Vector.Portable.Compress.compress v_COEFFICIENT_BITS a);
     f_decompress_ciphertext_coefficient_pre
     =
     (fun
@@ -499,6 +507,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun (a: t_Slice u8) ->
         let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma a in
+        let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_bounded_lemma a in
         Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_ a);
     f_serialize_4_pre
     =
@@ -529,6 +538,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun (a: t_Slice u8) ->
         let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma a in
+        let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_bounded_lemma a in
         Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_ a);
     f_serialize_5_pre
     =
@@ -577,6 +587,9 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun (a: t_Slice u8) ->
         let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma a in
+        let _:Prims.unit =
+          Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_bounded_lemma a
+        in
         Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_ a);
     f_serialize_11_pre
     =
@@ -625,6 +638,9 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun (a: t_Slice u8) ->
         let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma a in
+        let _:Prims.unit =
+          Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_bounded_lemma a
+        in
         Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_ a);
     f_rej_sample_pre
     =
