@@ -23,8 +23,6 @@ pub fn get_zeta(i:usize) -> i16 {
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
-#[cfg_attr(eurydice, derive(Clone, Copy))]
-#[cfg_attr(not(eurydice), derive(Clone))]
 #[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r =
@@ -37,6 +35,8 @@ pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
     admit()"))]
+// XXX: We don't want to copy this. But for eurydice we have to have this.
+#[derive(Clone, Copy)]
 pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
