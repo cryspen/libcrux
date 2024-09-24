@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
- * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
- * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
+ * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
+ * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 650b216aeb5901ec6f1c44ff275acd924e54bdbd
- * Libcrux: 9e07b1b2962c1f8d7ad6c5cacb94bd68fd4d8a3d
+ * Libcrux: ff16b9e8164d0fd89efabd103d4a6c874df0c127
  */
 
 #include "internal/libcrux_sha3_avx2.h"
@@ -167,16 +167,16 @@ split_at_mut_n_ef(Eurydice_slice a[4U], size_t mid) {
 */
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
-N>[TraitClause@0]#1}
+N>[TraitClause@0, TraitClause@1]#1}
 */
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.new_1e
+A monomorphic instance of libcrux_sha3.generic_keccak.new_89
 with types core_core_arch_x86___m256i
 with const generics
 - N= 4
 */
 static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_29
-new_1e_71(void) {
+new_89_71(void) {
   libcrux_sha3_generic_keccak_KeccakState_29 lit;
   lit.st[0U][0U] = zero_ef();
   lit.st[0U][1U] = zero_ef();
@@ -1679,7 +1679,7 @@ with const generics
 */
 static KRML_MUSTINLINE void keccak_b9(Eurydice_slice data[4U],
                                       Eurydice_slice out[4U]) {
-  libcrux_sha3_generic_keccak_KeccakState_29 s = new_1e_71();
+  libcrux_sha3_generic_keccak_KeccakState_29 s = new_89_71();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)136U; i++) {
     size_t i0 = i;
@@ -1719,7 +1719,7 @@ static KRML_MUSTINLINE void keccak_b9(Eurydice_slice data[4U],
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;
@@ -1757,7 +1757,7 @@ void libcrux_sha3_avx2_x4_shake256(Eurydice_slice input0, Eurydice_slice input1,
 */
 libcrux_sha3_generic_keccak_KeccakState_29
 libcrux_sha3_avx2_x4_incremental_init(void) {
-  return new_1e_71();
+  return new_89_71();
 }
 
 /**

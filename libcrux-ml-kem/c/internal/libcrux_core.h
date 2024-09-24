@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
- * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
- * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
+ * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
+ * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 650b216aeb5901ec6f1c44ff275acd924e54bdbd
- * Libcrux: 9e07b1b2962c1f8d7ad6c5cacb94bd68fd4d8a3d
+ * Libcrux: ff16b9e8164d0fd89efabd103d4a6c874df0c127
  */
 
 #ifndef __internal_libcrux_core_H
@@ -291,14 +291,15 @@ typedef struct core_result_Result_00_s {
 } core_result_Result_00;
 
 /**
-This function found in impl {core::result::Result<T, E>}
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_41
+A monomorphic instance of core.result.unwrap_26
 with types uint8_t[32size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_33(core_result_Result_00 self, uint8_t ret[32U]);
+void core_result_unwrap_26_33(core_result_Result_00 self, uint8_t ret[32U]);
 
 /**
  Pad the `slice` with `0`s at the end.
@@ -382,14 +383,15 @@ typedef struct core_result_Result_6f_s {
 } core_result_Result_6f;
 
 /**
-This function found in impl {core::result::Result<T, E>}
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_41
+A monomorphic instance of core.result.unwrap_26
 with types uint8_t[24size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_76(core_result_Result_6f self, uint8_t ret[24U]);
+void core_result_unwrap_26_76(core_result_Result_6f self, uint8_t ret[24U]);
 
 /**
 A monomorphic instance of core.result.Result
@@ -405,14 +407,15 @@ typedef struct core_result_Result_7a_s {
 } core_result_Result_7a;
 
 /**
-This function found in impl {core::result::Result<T, E>}
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_41
+A monomorphic instance of core.result.unwrap_26
 with types uint8_t[20size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_ea(core_result_Result_7a self, uint8_t ret[20U]);
+void core_result_unwrap_26_ea(core_result_Result_7a self, uint8_t ret[20U]);
 
 /**
 A monomorphic instance of core.result.Result
@@ -428,14 +431,15 @@ typedef struct core_result_Result_cd_s {
 } core_result_Result_cd;
 
 /**
-This function found in impl {core::result::Result<T, E>}
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_41
+A monomorphic instance of core.result.unwrap_26
 with types uint8_t[10size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_07(core_result_Result_cd self, uint8_t ret[10U]);
+void core_result_unwrap_26_07(core_result_Result_cd self, uint8_t ret[10U]);
 
 /**
 A monomorphic instance of core.result.Result
@@ -451,14 +455,15 @@ typedef struct core_result_Result_c0_s {
 } core_result_Result_c0;
 
 /**
-This function found in impl {core::result::Result<T, E>}
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_41
+A monomorphic instance of core.result.unwrap_26
 with types int16_t[16size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_30(core_result_Result_c0 self, int16_t ret[16U]);
+void core_result_unwrap_26_30(core_result_Result_c0 self, int16_t ret[16U]);
 
 typedef struct Eurydice_slice_uint8_t_4size_t__x2_s {
   Eurydice_slice fst[4U];

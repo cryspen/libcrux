@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 1bd0af95285033fec42133810440d56977c17ade
+ * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
  * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
- * Karamel: baec61db14d5132ae8eb4bd7a288638b7f2f1db8
+ * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 650b216aeb5901ec6f1c44ff275acd924e54bdbd
- * Libcrux: 5971b6982c7af3edf6b84c36aa90697e599288a4
+ * Libcrux: ff16b9e8164d0fd89efabd103d4a6c874df0c127
  */
 
 #ifndef __libcrux_sha3_avx2_H
