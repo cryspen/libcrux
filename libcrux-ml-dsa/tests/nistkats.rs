@@ -57,7 +57,8 @@ macro_rules! impl_nist_known_answer_tests {
 
                 let message = hex::decode(kat.message).expect("Hex-decoding the message failed.");
 
-                let signature = $sign(&key_pair.signing_key, &message, kat.signing_randomness);
+                let signature = $sign(&key_pair.signing_key, &message, kat.signing_randomness)
+                    .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
                 let signature_hash = libcrux_sha3::sha256(&signature.0);
                 assert_eq!(
@@ -72,6 +73,8 @@ macro_rules! impl_nist_known_answer_tests {
     };
 }
 
+// 44
+
 impl_nist_known_answer_tests!(
     nist_known_answer_tests_44,
     44,
@@ -81,12 +84,42 @@ impl_nist_known_answer_tests!(
 );
 
 impl_nist_known_answer_tests!(
+    nist_known_answer_tests_44_portable,
+    44,
+    libcrux_ml_dsa::ml_dsa_44::portable::generate_key_pair,
+    libcrux_ml_dsa::ml_dsa_44::portable::sign,
+    libcrux_ml_dsa::ml_dsa_44::portable::verify
+);
+
+#[cfg(feature = "simd128")]
+impl_nist_known_answer_tests!(
+    nist_known_answer_tests_44_simd128,
+    44,
+    libcrux_ml_dsa::ml_dsa_44::neon::generate_key_pair,
+    libcrux_ml_dsa::ml_dsa_44::neon::sign,
+    libcrux_ml_dsa::ml_dsa_44::neon::verify
+);
+
+#[cfg(feature = "simd256")]
+impl_nist_known_answer_tests!(
+    nist_known_answer_tests_44_simd256,
+    44,
+    libcrux_ml_dsa::ml_dsa_44::avx2::generate_key_pair,
+    libcrux_ml_dsa::ml_dsa_44::avx2::sign,
+    libcrux_ml_dsa::ml_dsa_44::avx2::verify
+);
+
+// 65
+
+impl_nist_known_answer_tests!(
     nist_known_answer_tests_65,
     65,
     libcrux_ml_dsa::ml_dsa_65::generate_key_pair,
     libcrux_ml_dsa::ml_dsa_65::sign,
     libcrux_ml_dsa::ml_dsa_65::verify
 );
+
+// 87
 
 impl_nist_known_answer_tests!(
     nist_known_answer_tests_87,

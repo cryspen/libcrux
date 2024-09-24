@@ -37,12 +37,17 @@ let v_VECTOR_U_COMPRESSION_FACTOR_512_: usize = sz 10
 
 let v_VECTOR_V_COMPRESSION_FACTOR_512_: usize = sz 4
 
+/// Validate a private key.
+/// Returns `true` if valid, and `false` otherwise.
+val validate_private_key
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 768))
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
 /// Validate a public key.
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
+/// Returns `true` if valid, and `false` otherwise.
 val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
-    : Prims.Pure (Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 /// Decapsulate ML-KEM 512
 /// Generates an [`MlKemSharedSecret`].

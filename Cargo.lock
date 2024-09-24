@@ -994,6 +994,7 @@ dependencies = [
  "criterion",
  "hex",
  "libcrux-intrinsics",
+ "libcrux-platform",
  "libcrux-sha3",
  "pqcrypto-dilithium",
  "rand",
@@ -1012,7 +1013,6 @@ dependencies = [
  "libcrux-platform",
  "libcrux-sha3",
  "rand",
- "rand_core",
  "serde",
  "serde_json",
 ]

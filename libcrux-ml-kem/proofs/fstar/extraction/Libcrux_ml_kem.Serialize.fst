@@ -409,7 +409,7 @@ let deserialize_then_decompress_10_
     assert (v ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 10) /! sz 8) == 320)
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let v__coefficients_length:usize =
     Core.Slice.impl__len #v_Vector (re.Libcrux_ml_kem.Polynomial.f_coefficients <: t_Slice v_Vector)
@@ -463,7 +463,7 @@ let deserialize_then_decompress_11_
     assert (v ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 11) /! sz 8) == 352)
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 22)
@@ -514,7 +514,7 @@ let deserialize_then_decompress_4_
     assert (v ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 4) /! sz 8) == 128)
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 8)
@@ -565,7 +565,7 @@ let deserialize_then_decompress_5_
     assert (v ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 5) /! sz 8) == 160)
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 10)
@@ -625,7 +625,7 @@ let deserialize_then_decompress_message
       (serialized: t_Array u8 (sz 32))
      =
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
@@ -722,7 +722,7 @@ let deserialize_to_reduced_ring_element
      =
   let _:Prims.unit = assert (v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT / 24 == 16) in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 24)
@@ -770,16 +770,8 @@ let deserialize_ring_elements_reduced
           i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (public_key: t_Slice u8)
+      (deserialized_pk: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
      =
-  let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      v_K
-      (fun v__i ->
-          let v__i:usize = v__i in
-          Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
-          <:
-          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-  in
   let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT
       public_key
@@ -805,6 +797,29 @@ let deserialize_ring_elements_reduced
           <:
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
+  deserialized_pk
+
+let deserialize_ring_elements_reduced_out
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (public_key: t_Slice u8)
+     =
+  let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+    Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      v_K
+      (fun v__i ->
+          let v__i:usize = v__i in
+          Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
+          <:
+          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+  in
+  let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+    deserialize_ring_elements_reduced v_K #v_Vector public_key deserialized_pk
+  in
   deserialized_pk
 
 let deserialize_to_uncompressed_ring_element
@@ -816,7 +831,7 @@ let deserialize_to_uncompressed_ring_element
      =
   let _:Prims.unit = assert (v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT / 24 == 16) in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl_1__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 24)

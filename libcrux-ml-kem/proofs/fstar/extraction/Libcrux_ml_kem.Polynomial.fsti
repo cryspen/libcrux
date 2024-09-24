@@ -60,25 +60,25 @@ let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
     (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r =
     createi r (fun i -> to_spec_vector_t #r #v_Vector (m.[i]))
 
-val impl_1__ZERO:
+val impl_2__ZERO:
     #v_Vector: Type0 ->
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
     Prims.unit
   -> Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl_1__add_error_reduce
+val impl_2__add_error_reduce
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self error: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl_1__add_message_error_reduce
+val impl_2__add_message_error_reduce
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self message result: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl_1__add_standard_error_reduce
+val impl_2__add_standard_error_reduce
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self error: t_PolynomialRingElement v_Vector)
@@ -86,14 +86,14 @@ val impl_1__add_standard_error_reduce
 
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
 /// sum of their constituent coefficients.
-val impl_1__add_to_ring_element
+val impl_2__add_to_ring_element
       (#v_Vector: Type0)
       (v_K: usize)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self rhs: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl_1__from_i16_array
+val impl_2__from_i16_array
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (a: t_Slice i16)
@@ -122,19 +122,19 @@ val impl_1__from_i16_array
 /// this function are in the Montgomery domain.
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-val impl_1__ntt_multiply
+val impl_2__ntt_multiply
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self rhs: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl_1__poly_barrett_reduce
+val impl_2__poly_barrett_reduce
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl_1__subtract_reduce
+val impl_2__subtract_reduce
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self b: t_PolynomialRingElement v_Vector)

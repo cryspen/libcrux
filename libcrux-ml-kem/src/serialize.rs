@@ -139,13 +139,33 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
     fstar!("Spec.MLKEM.is_rank v_K /\\ 
             Seq.length public_key == v (Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K)")
 )]
-pub(super) fn deserialize_ring_elements_reduced<
+pub(super) fn deserialize_ring_elements_reduced_out<
     const K: usize,
     Vector: Operations,
 >(
     public_key: &[u8],
 ) -> [PolynomialRingElement<Vector>; K] {
     let mut deserialized_pk = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    deserialize_ring_elements_reduced::<K, Vector>(
+        public_key,
+        &mut deserialized_pk,
+    );
+    deserialized_pk
+}
+
+/// See [deserialize_ring_elements_reduced_out].
+#[inline(always)]
+#[hax_lib::requires(
+    fstar!("Spec.MLKEM.is_rank v_K /\\ 
+            Seq.length public_key == v (Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K)")
+)]
+pub(super) fn deserialize_ring_elements_reduced<
+    const K: usize,
+    Vector: Operations,
+>(
+    public_key: &[u8],
+    deserialized_pk: &mut [PolynomialRingElement<Vector>; K],
+) {
     cloop! {
         for (i, ring_element) in public_key
             .chunks_exact(BYTES_PER_RING_ELEMENT)
@@ -153,8 +173,8 @@ pub(super) fn deserialize_ring_elements_reduced<
         {
             deserialized_pk[i] = deserialize_to_reduced_ring_element(ring_element);
         }
-    }
-    deserialized_pk
+    };
+    ()
 }
 
 #[inline(always)]

@@ -10,17 +10,14 @@ use crate::{
 #[hax_lib::ensures(|res|
     fstar!("let (matrix_A, valid) = Spec.MLKEM.sample_matrix_A_ntt (Seq.slice $seed 0 32) in
         valid ==> (
-        if $transpose then Libcrux_ml_kem.Polynomial.to_spec_matrix_t $res == matrix_A
-        else Libcrux_ml_kem.Polynomial.to_spec_matrix_t $res == Spec.MLKEM.matrix_transpose matrix_A)")
+        if $transpose then Libcrux_ml_kem.Polynomial.to_spec_matrix_t ${A_transpose}_future == matrix_A
+        else Libcrux_ml_kem.Polynomial.to_spec_matrix_t ${A_transpose}_future == Spec.MLKEM.matrix_transpose matrix_A)")
 )]
 pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K>>(
+    A_transpose: &mut [[PolynomialRingElement<Vector>; K]; K],
     seed: [u8; 34],
     transpose: bool,
-) -> [[PolynomialRingElement<Vector>; K]; K] {
-    let mut A_transpose = core::array::from_fn(|_i| {
-        core::array::from_fn(|_j| PolynomialRingElement::<Vector>::ZERO())
-    });
-
+) {
     for i in 0..K {
         let mut seeds = [seed; K];
         for j in 0..K {
@@ -38,9 +35,8 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
                 }
             }
         }
-    }
-
-    A_transpose
+    };
+    ()
 }
 
 /// The following functions compute various expressions involving
@@ -152,30 +148,31 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K"))]
 #[hax_lib::ensures(|res|
     fstar!("let open Libcrux_ml_kem.Polynomial in
-        to_spec_vector_t $res =
+        to_spec_vector_t ${t_as_ntt}_future =
              Spec.MLKEM.compute_As_plus_e_ntt
                (to_spec_matrix_t $matrix_A) 
                (to_spec_vector_t $s_as_ntt) 
                (to_spec_vector_t $error_as_ntt)")
 )]
 pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
+    t_as_ntt: &mut [PolynomialRingElement<Vector>; K],
     matrix_A: &[[PolynomialRingElement<Vector>; K]; K],
     s_as_ntt: &[PolynomialRingElement<Vector>; K],
     error_as_ntt: &[PolynomialRingElement<Vector>; K],
-) -> [PolynomialRingElement<Vector>; K] {
-    let mut result = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
-
+) {
     cloop! {
         for (i, row) in matrix_A.iter().enumerate() {
+            // This may be externally provided memory. Ensure that `t_as_ntt`
+            // is all 0.
+            t_as_ntt[i] = PolynomialRingElement::<Vector>::ZERO();
             cloop! {
                 for (j, matrix_element) in row.iter().enumerate() {
                     let product = matrix_element.ntt_multiply(&s_as_ntt[j]);
-                    result[i].add_to_ring_element::<K>(&product);
+                    t_as_ntt[i].add_to_ring_element::<K>(&product);
                 }
             }
-            result[i].add_standard_error_reduce(&error_as_ntt[i]);
+            t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
         }
-    }
-
-    result
+    };
+    ()
 }

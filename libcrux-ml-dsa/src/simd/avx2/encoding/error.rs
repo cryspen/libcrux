@@ -65,7 +65,7 @@ fn serialize_when_eta_is_4<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; 
 }
 #[inline(always)]
 pub fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
-    match OUTPUT_SIZE {
+    match OUTPUT_SIZE as u8 {
         3 => serialize_when_eta_is_2::<OUTPUT_SIZE>(simd_unit),
         4 => serialize_when_eta_is_4::<OUTPUT_SIZE>(simd_unit),
         _ => unreachable!(),
@@ -118,7 +118,7 @@ fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
 }
 #[inline(always)]
 pub(crate) fn deserialize_to_unsigned<const ETA: usize>(serialized: &[u8]) -> Vec256 {
-    match ETA {
+    match ETA as u8 {
         2 => deserialize_to_unsigned_when_eta_is_2(serialized),
         4 => deserialize_to_unsigned_when_eta_is_4(serialized),
         _ => unreachable!(),

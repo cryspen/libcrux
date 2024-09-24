@@ -3,8 +3,7 @@ use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criteri
 
 use libcrux::digest::{self, *};
 
-mod util;
-use util::*;
+use benchmarks::util::*;
 
 macro_rules! impl_comp {
     ($fun:ident, $libcrux:expr, $ring:expr, $rust_crypto:ty, $openssl:expr) => {

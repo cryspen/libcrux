@@ -10,6 +10,9 @@ readme = "README.md"
 description = "Libcrux SHA-3 implementation"
 exclude = ["/proofs", "/c.sh", "/c.yaml", "/tests/tv", "tests/cavp.rs"]
 
+[lib]
+bench = false # so libtest doesn't eat the arguments to criterion
+
 [dependencies]
 libcrux-platform = { version = "0.0.2-alpha.3", path = "../sys/platform" }
 libcrux-intrinsics = { version = "0.0.2-alpha.3", path = "../libcrux-intrinsics" }
