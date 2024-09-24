@@ -506,3 +506,14 @@ pub fn mm256_unpacklo_epi64(a: Vec256, b: Vec256) -> Vec256 {
 pub fn mm256_permute2x128_si256<const IMM8: i32>(a: Vec256, b: Vec256) -> Vec256 {
     unsafe { _mm256_permute2x128_si256::<IMM8>(a, b) }
 }
+
+
+#[inline(always)]
+pub fn mm256_moveldup_ps(a: Vec256Float) -> Vec256Float {
+    unsafe { _mm256_moveldup_ps(a) }
+}
+
+#[inline(always)]
+pub fn mm256_castps_si256(a: Vec256Float) -> Vec256 {
+    unsafe { _mm256_castps_si256(a) }
+}
