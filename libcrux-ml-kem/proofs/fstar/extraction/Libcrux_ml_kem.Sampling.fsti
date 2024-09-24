@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Sampling
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -114,7 +114,9 @@ val sample_from_binomial_distribution
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (randomness: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires
+        (v_ETA =. sz 2 || v_ETA =. sz 3) &&
+        (Core.Slice.impl__len #u8 randomness <: usize) =. (v_ETA *! sz 64 <: usize))
       (fun _ -> Prims.l_True)
 
 val sample_from_xof

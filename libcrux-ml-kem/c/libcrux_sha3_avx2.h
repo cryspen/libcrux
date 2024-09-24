@@ -8,7 +8,7 @@
  * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 97f7cefe14dabf275e4671ffea87e032d7779b71
+ * Libcrux: 2cc5d08dc51d9011b73e45fa933da711162d0d01
  */
 
 #ifndef __libcrux_sha3_avx2_H
@@ -55,16 +55,16 @@ void libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
     Eurydice_slice data1, Eurydice_slice data2, Eurydice_slice data3);
 
 /**
- Squeeze another block
+ Squeeze three blocks
 */
-void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
+void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3);
 
 /**
- Squeeze three blocks
+ Squeeze another block
 */
-void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
+void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3);
 

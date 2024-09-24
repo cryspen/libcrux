@@ -8,7 +8,7 @@
  * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 97f7cefe14dabf275e4671ffea87e032d7779b71
+ * Libcrux: 2cc5d08dc51d9011b73e45fa933da711162d0d01
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -97,9 +97,6 @@ int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_11_int(
     Eurydice_slice bytes);
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_vector_type_zero(void);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_serialize_deserialize_11(Eurydice_slice bytes);
 
 /**
@@ -124,6 +121,9 @@ void libcrux_ml_kem_vector_portable_to_i16_array_0d(
 extern const uint8_t
     libcrux_ml_kem_vector_rej_sample_table_REJECTION_SAMPLE_SHUFFLE_TABLE[256U]
                                                                          [16U];
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_vector_type_zero(void);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -162,7 +162,7 @@ libcrux_ml_kem_vector_portable_sub_0d(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_arithmetic_multiply_by_constant(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t c);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -170,11 +170,11 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
 */
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_multiply_by_constant_0d(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t c);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t c);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -186,7 +186,7 @@ libcrux_ml_kem_vector_portable_bitwise_and_with_constant_0d(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_arithmetic_cond_subtract_3329(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -199,11 +199,10 @@ libcrux_ml_kem_vector_portable_cond_subtract_3329_0d(
 #define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_BARRETT_MULTIPLIER \
   ((int32_t)20159)
 
-#define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_BARRETT_SHIFT ((int32_t)26)
+#define LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_SHIFT ((int32_t)26)
 
-#define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_BARRETT_R \
-  ((int32_t)1 << (uint32_t)                                 \
-       LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_BARRETT_SHIFT)
+#define LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_R \
+  ((int32_t)1 << (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_SHIFT)
 
 /**
  Signed Barrett Reduction
@@ -216,14 +215,16 @@ libcrux_ml_kem_vector_portable_cond_subtract_3329_0d(
 
  `|result| ≤ FIELD_MODULUS / 2 · (|value|/BARRETT_R + 1)
 
- In particular, if `|value| < BARRETT_R`, then `|result| < FIELD_MODULUS`.
+ Note: The input bound is 28296 to prevent overflow in the multiplication of
+ quotient by FIELD_MODULUS
+
 */
 int16_t libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce_element(
     int16_t value);
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -248,10 +249,12 @@ libcrux_ml_kem_vector_portable_barrett_reduce_0d(
  - o ≡ value · MONTGOMERY_R^(-1) (mod FIELD_MODULUS)
  - the absolute value of `o` is bound as follows:
 
- `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
+ `|result| ≤ ceil(|value| / MONTGOMERY_R) + 1665
 
- In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 ·
- FIELD_MODULUS) / 2`.
+ In particular, if `|value| ≤ FIELD_MODULUS-1 * FIELD_MODULUS-1`, then `|o| <=
+ FIELD_MODULUS-1`. And, if `|value| ≤ pow2 16 * FIELD_MODULUS-1`, then `|o| <=
+ FIELD_MODULUS + 1664
+
 */
 int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
     int32_t value);
@@ -272,7 +275,7 @@ int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_fe_by_fer(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_by_constant(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t c);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -326,13 +329,13 @@ int16_t libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
     uint8_t coefficient_bits, uint16_t fe);
 
 void libcrux_ml_kem_vector_portable_ntt_ntt_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector *v, int16_t zeta,
-    size_t i, size_t j);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
+    int16_t zeta, size_t i, size_t j);
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_ntt_ntt_layer_1_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t zeta0,
-    int16_t zeta1, int16_t zeta2, int16_t zeta3);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec,
+    int16_t zeta0, int16_t zeta1, int16_t zeta2, int16_t zeta3);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -345,8 +348,8 @@ libcrux_ml_kem_vector_portable_ntt_layer_1_step_0d(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_ntt_ntt_layer_2_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t zeta0,
-    int16_t zeta1);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec,
+    int16_t zeta0, int16_t zeta1);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -359,7 +362,8 @@ libcrux_ml_kem_vector_portable_ntt_layer_2_step_0d(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_ntt_ntt_layer_3_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t zeta);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec,
+    int16_t zeta);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -370,13 +374,13 @@ libcrux_ml_kem_vector_portable_ntt_layer_3_step_0d(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a, int16_t zeta);
 
 void libcrux_ml_kem_vector_portable_ntt_inv_ntt_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector *v, int16_t zeta,
-    size_t i, size_t j);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
+    int16_t zeta, size_t i, size_t j);
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_ntt_inv_ntt_layer_1_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t zeta0,
-    int16_t zeta1, int16_t zeta2, int16_t zeta3);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec,
+    int16_t zeta0, int16_t zeta1, int16_t zeta2, int16_t zeta3);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -389,8 +393,8 @@ libcrux_ml_kem_vector_portable_inv_ntt_layer_1_step_0d(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_ntt_inv_ntt_layer_2_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t zeta0,
-    int16_t zeta1);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec,
+    int16_t zeta0, int16_t zeta1);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -403,7 +407,8 @@ libcrux_ml_kem_vector_portable_inv_ntt_layer_2_step_0d(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_ntt_inv_ntt_layer_3_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t zeta);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec,
+    int16_t zeta);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -413,28 +418,6 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_inv_ntt_layer_3_step_0d(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a, int16_t zeta);
 
-/**
- Compute the product of two Kyber binomials with respect to the
- modulus `X² - zeta`.
-
- This function almost implements <strong>Algorithm 11</strong> of the
- NIST FIPS 203 standard, which is reproduced below:
-
- ```plaintext
- Input:  a₀, a₁, b₀, b₁ ∈ ℤq.
- Input: γ ∈ ℤq.
- Output: c₀, c₁ ∈ ℤq.
-
- c₀ ← a₀·b₀ + a₁·b₁·γ
- c₁ ← a₀·b₁ + a₁·b₀
- return c₀, c₁
- ```
- We say "almost" because the coefficients output by this function are in
- the Montgomery domain (unlike in the specification).
-
- The NIST FIPS 203 standard can be found at
- <https://csrc.nist.gov/pubs/fips/203/ipd>.
-*/
 void libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *b, int16_t zeta,

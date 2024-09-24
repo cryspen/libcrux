@@ -8,7 +8,7 @@
  * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 65d06b7e81ff34bcc90ca741249b4545ebcec5b3
+ * Libcrux: 2cc5d08dc51d9011b73e45fa933da711162d0d01
  */
 
 #ifndef __libcrux_sha3_portable_H
@@ -2294,6 +2294,18 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_5a_491(
 }
 
 /**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block
+with types uint64_t
+with const generics
+- N= 1
+- RATE= 168
+*/
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_7b1(
+    libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
+  libcrux_sha3_portable_keccak_store_block_5a_491(s->st, out);
+}
+
+/**
 A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_next_block
 with types uint64_t
 with const generics
@@ -2303,28 +2315,6 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_c21(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_keccakf1600_b8(s);
-  libcrux_sha3_portable_keccak_store_block_5a_491(s->st, out);
-}
-
-/**
- Squeeze another block
-*/
-static KRML_MUSTINLINE void
-libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
-    libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out0) {
-  Eurydice_slice buf[1U] = {out0};
-  libcrux_sha3_generic_keccak_squeeze_next_block_c21(s, buf);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block
-with types uint64_t
-with const generics
-- N= 1
-- RATE= 168
-*/
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_7b1(
-    libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
   libcrux_sha3_portable_keccak_store_block_5a_491(s->st, out);
 }
 
@@ -2363,6 +2353,16 @@ libcrux_sha3_portable_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out0) {
   Eurydice_slice buf[1U] = {out0};
   libcrux_sha3_generic_keccak_squeeze_first_three_blocks_5c(s, buf);
+}
+
+/**
+ Squeeze another block
+*/
+static KRML_MUSTINLINE void
+libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
+    libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out0) {
+  Eurydice_slice buf[1U] = {out0};
+  libcrux_sha3_generic_keccak_squeeze_next_block_c21(s, buf);
 }
 
 #define libcrux_sha3_Sha224 0

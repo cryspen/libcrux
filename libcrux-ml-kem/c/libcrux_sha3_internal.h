@@ -8,7 +8,7 @@
  * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 97f7cefe14dabf275e4671ffea87e032d7779b71
+ * Libcrux: 2cc5d08dc51d9011b73e45fa933da711162d0d01
  */
 
 #ifndef __libcrux_sha3_internal_H
@@ -1425,6 +1425,18 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_store_block_5a_49(
 }
 
 /**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block
+with types uint64_t
+with const generics
+- N= 1
+- RATE= 168
+*/
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_7b(
+    libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
+  libcrux_sha3_portable_keccak_store_block_5a_49(s->st, out);
+}
+
+/**
 A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_next_block
 with types uint64_t
 with const generics
@@ -1434,18 +1446,6 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_c2(
     libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_keccakf1600_b8(s);
-  libcrux_sha3_portable_keccak_store_block_5a_49(s->st, out);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block
-with types uint64_t
-with const generics
-- N= 1
-- RATE= 168
-*/
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_7b(
-    libcrux_sha3_generic_keccak_KeccakState_48 *s, Eurydice_slice out[1U]) {
   libcrux_sha3_portable_keccak_store_block_5a_49(s->st, out);
 }
 

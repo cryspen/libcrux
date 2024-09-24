@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Serialize
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -8,6 +8,8 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Vector.Traits in
   ()
+
+#push-options "--admit_smt_queries true"
 
 let compress_then_serialize_10_
       (v_OUT_LEN: usize)
@@ -68,6 +70,10 @@ let compress_then_serialize_10_
   in
   serialized
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let compress_then_serialize_11_
       (v_OUT_LEN: usize)
       (#v_Vector: Type0)
@@ -127,6 +133,10 @@ let compress_then_serialize_11_
   in
   serialized
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let compress_then_serialize_4_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -135,13 +145,14 @@ let compress_then_serialize_4_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (serialized: t_Slice u8)
      =
+  let v__serialized_len:usize = Core.Slice.impl__len #u8 serialized in
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
-      (fun serialized temp_1_ ->
+      (fun serialized i ->
           let serialized:t_Slice u8 = serialized in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          (Core.Slice.impl__len #u8 serialized <: usize) =. v__serialized_len <: bool)
       serialized
       (fun serialized i ->
           let serialized:t_Slice u8 = serialized in
@@ -186,6 +197,10 @@ let compress_then_serialize_4_
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let compress_then_serialize_5_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -194,13 +209,14 @@ let compress_then_serialize_5_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (serialized: t_Slice u8)
      =
+  let v__serialized_len:usize = Core.Slice.impl__len #u8 serialized in
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
-      (fun serialized temp_1_ ->
+      (fun serialized i ->
           let serialized:t_Slice u8 = serialized in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          (Core.Slice.impl__len #u8 serialized <: usize) =. v__serialized_len <: bool)
       serialized
       (fun serialized i ->
           let serialized:t_Slice u8 = serialized in
@@ -244,6 +260,10 @@ let compress_then_serialize_5_
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let compress_then_serialize_message
       (#v_Vector: Type0)
@@ -303,6 +323,8 @@ let compress_then_serialize_message
   in
   serialized
 
+#pop-options
+
 let compress_then_serialize_ring_element_u
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
       (#v_Vector: Type0)
@@ -311,6 +333,10 @@ let compress_then_serialize_ring_element_u
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =
+  let _:Prims.unit =
+    assert ((v (cast v_COMPRESSION_FACTOR <: u32) == 10) \/
+        (v (cast v_COMPRESSION_FACTOR <: u32) == 11))
+  in
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> compress_then_serialize_10_ v_OUT_LEN #v_Vector re
   | 11ul -> compress_then_serialize_11_ v_OUT_LEN #v_Vector re
@@ -329,6 +355,10 @@ let compress_then_serialize_ring_element_v
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (out: t_Slice u8)
      =
+  let _:Prims.unit =
+    assert ((v (cast v_COMPRESSION_FACTOR <: u32) == 4) \/
+        (v (cast v_COMPRESSION_FACTOR <: u32) == 5))
+  in
   let out, hax_temp_output:(t_Slice u8 & Prims.unit) =
     match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
     | 4ul -> compress_then_serialize_4_ #v_Vector re out, () <: (t_Slice u8 & Prims.unit)
@@ -351,8 +381,14 @@ let deserialize_then_decompress_10_
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (serialized: t_Slice u8)
      =
+  let _:Prims.unit =
+    assert (v ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 10) /! sz 8) == 320)
+  in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
+  in
+  let v__coefficients_length:usize =
+    Core.Slice.impl__len #v_Vector (re.Libcrux_ml_kem.Polynomial.f_coefficients <: t_Slice v_Vector)
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 20)
@@ -399,8 +435,11 @@ let deserialize_then_decompress_11_
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (serialized: t_Slice u8)
      =
+  let _:Prims.unit =
+    assert (v ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 11) /! sz 8) == 352)
+  in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 22)
@@ -447,8 +486,11 @@ let deserialize_then_decompress_4_
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (serialized: t_Slice u8)
      =
+  let _:Prims.unit =
+    assert (v ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 4) /! sz 8) == 128)
+  in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 8)
@@ -495,8 +537,11 @@ let deserialize_then_decompress_5_
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (serialized: t_Slice u8)
      =
+  let _:Prims.unit =
+    assert (v ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 5) /! sz 8) == 160)
+  in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 10)
@@ -548,6 +593,8 @@ let deserialize_then_decompress_5_
   in
   re
 
+#push-options "--admit_smt_queries true"
+
 let deserialize_then_decompress_message
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -556,7 +603,7 @@ let deserialize_then_decompress_message
       (serialized: t_Array u8 (sz 32))
      =
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
@@ -600,6 +647,8 @@ let deserialize_then_decompress_message
   in
   re
 
+#pop-options
+
 let deserialize_then_decompress_ring_element_u
       (v_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
@@ -608,6 +657,10 @@ let deserialize_then_decompress_ring_element_u
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (serialized: t_Slice u8)
      =
+  let _:Prims.unit =
+    assert ((v (cast v_COMPRESSION_FACTOR <: u32) == 10) \/
+        (v (cast v_COMPRESSION_FACTOR <: u32) == 11))
+  in
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> deserialize_then_decompress_10_ #v_Vector serialized
   | 11ul -> deserialize_then_decompress_11_ #v_Vector serialized
@@ -625,6 +678,10 @@ let deserialize_then_decompress_ring_element_v
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (serialized: t_Slice u8)
      =
+  let _:Prims.unit =
+    assert ((v (cast v_COMPRESSION_FACTOR <: u32) == 4) \/
+        (v (cast v_COMPRESSION_FACTOR <: u32) == 5))
+  in
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 4ul -> deserialize_then_decompress_4_ #v_Vector serialized
   | 5ul -> deserialize_then_decompress_5_ #v_Vector serialized
@@ -634,6 +691,8 @@ let deserialize_then_decompress_ring_element_v
         <:
         Rust_primitives.Hax.t_Never)
 
+#push-options "--admit_smt_queries true"
+
 let deserialize_to_reduced_ring_element
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -641,8 +700,9 @@ let deserialize_to_reduced_ring_element
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (serialized: t_Slice u8)
      =
+  let _:Prims.unit = assert (v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT / 24 == 16) in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 24)
@@ -681,8 +741,10 @@ let deserialize_to_reduced_ring_element
   in
   re
 
+#pop-options
+
 let deserialize_ring_elements_reduced
-      (v_PUBLIC_KEY_SIZE v_K: usize)
+      (v_K: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
@@ -719,7 +781,7 @@ let deserialize_ring_elements_reduced
   deserialized_pk
 
 let deserialize_ring_elements_reduced_out
-      (v_PUBLIC_KEY_SIZE v_K: usize)
+      (v_K: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
@@ -731,12 +793,12 @@ let deserialize_ring_elements_reduced_out
       v_K
       (fun v__i ->
           let v__i:usize = v__i in
-          Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+          Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
           <:
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in
   let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    deserialize_ring_elements_reduced v_PUBLIC_KEY_SIZE v_K #v_Vector public_key deserialized_pk
+    deserialize_ring_elements_reduced v_K #v_Vector public_key deserialized_pk
   in
   deserialized_pk
 
@@ -747,8 +809,9 @@ let deserialize_to_uncompressed_ring_element
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (serialized: t_Slice u8)
      =
+  let _:Prims.unit = assert (v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT / 24 == 16) in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 24)
@@ -780,6 +843,8 @@ let deserialize_to_uncompressed_ring_element
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in
   re
+
+#push-options "--admit_smt_queries true"
 
 let serialize_uncompressed_ring_element
       (#v_Vector: Type0)
@@ -833,3 +898,5 @@ let serialize_uncompressed_ring_element
           serialized)
   in
   serialized
+
+#pop-options

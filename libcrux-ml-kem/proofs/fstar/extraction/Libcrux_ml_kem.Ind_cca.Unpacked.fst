@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cca.Unpacked
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -10,6 +10,7 @@ let _ =
   let open Libcrux_ml_kem.Ind_cpa.Unpacked in
   let open Libcrux_ml_kem.Polynomial in
   let open Libcrux_ml_kem.Types in
+  let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
@@ -143,8 +144,7 @@ let unpack_public_key
         unpacked_public_key.f_ind_cpa_public_key with
         Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
         =
-        Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_T_AS_NTT_ENCODED_SIZE
-          v_K
+        Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_K
           #v_Vector
           (public_key.Libcrux_ml_kem.Types.f_value.[ {
                 Core.Ops.Range.f_end = v_T_AS_NTT_ENCODED_SIZE
@@ -224,7 +224,7 @@ let unpack_public_key
       Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
         #v_K
         #FStar.Tactics.Typeclasses.solve
-        (Libcrux_ml_kem.Types.impl_21__as_slice v_PUBLIC_KEY_SIZE public_key <: t_Slice u8)
+        (Libcrux_ml_kem.Types.impl_20__as_slice v_PUBLIC_KEY_SIZE public_key <: t_Slice u8)
     }
     <:
     t_MlKemPublicKeyUnpacked v_K v_Vector
@@ -417,13 +417,14 @@ let decapsulate
 let generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i4:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme)
       (randomness: t_Array u8 (sz 64))
       (out: t_MlKemKeyPairUnpacked v_K v_Vector)
      =
@@ -449,6 +450,7 @@ let generate_keypair
       v_ETA1_RANDOMNESS_SIZE
       #v_Vector
       #v_Hasher
+      #v_Scheme
       ind_cpa_keypair_randomness
       out.f_private_key.f_ind_cpa_private_key
       out.f_public_key.f_ind_cpa_public_key
@@ -485,7 +487,7 @@ let generate_keypair
             v_K
             (fun v__j ->
                 let v__j:usize = v__j in
-                Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+                Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
                 <:
                 Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           <:

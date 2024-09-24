@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -7,6 +7,7 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Hash_functions.Neon in
+  let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Neon in
   ()
 

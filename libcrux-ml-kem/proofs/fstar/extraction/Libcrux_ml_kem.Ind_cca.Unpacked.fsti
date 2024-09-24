@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cca.Unpacked
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -10,6 +10,7 @@ let _ =
   let open Libcrux_ml_kem.Ind_cpa.Unpacked in
   let open Libcrux_ml_kem.Polynomial in
   let open Libcrux_ml_kem.Types in
+  let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
@@ -216,9 +217,10 @@ val decapsulate
 val generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
+      {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      {| i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme |}
       (randomness: t_Array u8 (sz 64))
       (out: t_MlKemKeyPairUnpacked v_K v_Vector)
     : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
