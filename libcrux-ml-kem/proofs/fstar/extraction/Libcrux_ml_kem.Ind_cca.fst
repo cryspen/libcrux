@@ -192,8 +192,6 @@ let validate_public_key
   in
   public_key =. public_key_serialized
 
-#push-options "--admit_smt_queries true"
-
 #push-options "--z3rlimit 500"
 
 let decapsulate
@@ -210,6 +208,10 @@ let decapsulate
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
      =
+  let _:Prims.unit =
+    assert (v v_CIPHERTEXT_SIZE ==
+        v v_IMPLICIT_REJECTION_HASH_INPUT_SIZE - v Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE)
+  in
   let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
       (private_key.Libcrux_ml_kem.Types.f_value <: t_Slice u8)
@@ -220,6 +222,20 @@ let decapsulate
   in
   let ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8 secret_key Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE
+  in
+  let _:Prims.unit =
+    assert (ind_cpa_secret_key == slice private_key.f_value (sz 0) v_CPA_SECRET_KEY_SIZE);
+    assert (ind_cpa_public_key ==
+        slice private_key.f_value v_CPA_SECRET_KEY_SIZE (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE)
+      );
+    assert (ind_cpa_public_key_hash ==
+        slice private_key.f_value
+          (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE)
+          (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE +! Spec.MLKEM.v_H_DIGEST_SIZE));
+    assert (implicit_rejection_value ==
+        slice private_key.f_value
+          (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE +! Spec.MLKEM.v_H_DIGEST_SIZE)
+          (length private_key.f_value))
   in
   let decrypted:t_Array u8 (sz 32) =
     Libcrux_ml_kem.Ind_cpa.decrypt v_K
@@ -234,6 +250,7 @@ let decapsulate
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
     Libcrux_ml_kem.Utils.into_padded_array (sz 64) (decrypted <: t_Slice u8)
   in
+  let _:Prims.unit = eq_intro (Seq.slice to_hash 0 32) decrypted in
   let to_hash:t_Array u8 (sz 64) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
       ({ Core.Ops.Range.f_start = Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE }
@@ -249,6 +266,11 @@ let decapsulate
         <:
         t_Slice u8)
   in
+  let _:Prims.unit =
+    lemma_slice_append to_hash decrypted ind_cpa_public_key_hash;
+    assert (decrypted == Spec.MLKEM.ind_cpa_decrypt v_K ind_cpa_secret_key ciphertext.f_value);
+    assert (to_hash == concat decrypted ind_cpa_public_key_hash)
+  in
   let hashed:t_Array u8 (sz 64) =
     Libcrux_ml_kem.Hash_functions.f_G #v_Hasher
       #v_K
@@ -260,11 +282,21 @@ let decapsulate
       (hashed <: t_Slice u8)
       Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
   in
+  let _:Prims.unit =
+    assert ((shared_secret, pseudorandomness) ==
+        split hashed Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE);
+    assert (length implicit_rejection_value =
+        v_SECRET_KEY_SIZE -! v_CPA_SECRET_KEY_SIZE -! v_PUBLIC_KEY_SIZE -!
+        Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE);
+    assert (length implicit_rejection_value = Spec.MLKEM.v_SHARED_SECRET_SIZE);
+    assert (Spec.MLKEM.v_SHARED_SECRET_SIZE <=. Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE v_K)
+  in
   let (to_hash: t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE):t_Array u8
     v_IMPLICIT_REJECTION_HASH_INPUT_SIZE =
     Libcrux_ml_kem.Utils.into_padded_array v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
       implicit_rejection_value
   in
+  let _:Prims.unit = eq_intro (Seq.slice to_hash 0 32) implicit_rejection_value in
   let to_hash:t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
       ({ Core.Ops.Range.f_start = Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE }
@@ -285,14 +317,22 @@ let decapsulate
         <:
         t_Slice u8)
   in
-  let _:Prims.unit = assert (v (sz 32) < pow2 32) in
-  let _:Prims.unit = assert (i4.f_PRF_pre (sz 32) to_hash) in
+  let _:Prims.unit =
+    assert_norm (pow2 32 == 0x100000000);
+    assert (v (sz 32) < pow2 32);
+    assert (i4.f_PRF_pre (sz 32) to_hash);
+    lemma_slice_append to_hash implicit_rejection_value ciphertext.f_value
+  in
   let (implicit_rejection_shared_secret: t_Array u8 (sz 32)):t_Array u8 (sz 32) =
     Libcrux_ml_kem.Hash_functions.f_PRF #v_Hasher
       #v_K
       #FStar.Tactics.Typeclasses.solve
       (sz 32)
       (to_hash <: t_Slice u8)
+  in
+  let _:Prims.unit =
+    assert (implicit_rejection_shared_secret == Spec.Utils.v_PRF (sz 32) to_hash);
+    assert (Seq.length ind_cpa_public_key == v v_PUBLIC_KEY_SIZE)
   in
   let expected_ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
     Libcrux_ml_kem.Ind_cpa.encrypt v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE
@@ -331,8 +371,6 @@ let decapsulate
 
 #pop-options
 
-#pop-options
-
 #push-options "--z3rlimit 150"
 
 let encapsulate
@@ -359,6 +397,7 @@ let encapsulate
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
     Libcrux_ml_kem.Utils.into_padded_array (sz 64) (randomness <: t_Slice u8)
   in
+  let _:Prims.unit = eq_intro (Seq.slice to_hash 0 32) randomness in
   let to_hash:t_Array u8 (sz 64) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
       ({ Core.Ops.Range.f_start = Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE }
@@ -378,6 +417,11 @@ let encapsulate
             t_Slice u8)
         <:
         t_Slice u8)
+  in
+  let _:Prims.unit =
+    assert (Seq.slice to_hash 0 (v Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE) == randomness);
+    lemma_slice_append to_hash randomness (Spec.Utils.v_H public_key.f_value);
+    assert (to_hash == concat randomness (Spec.Utils.v_H public_key.f_value))
   in
   let hashed:t_Array u8 (sz 64) =
     Libcrux_ml_kem.Hash_functions.f_G #v_Hasher
@@ -412,13 +456,9 @@ let encapsulate
       shared_secret
       ciphertext
   in
-  let result:(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32)) =
-    ciphertext, shared_secret_array
-    <:
-    (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  ciphertext, shared_secret_array
+  <:
+  (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
 
 #pop-options
 

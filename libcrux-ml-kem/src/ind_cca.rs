@@ -163,10 +163,7 @@ fn generate_keypair<
     MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key))
 }
 
-// For some reason F* manages to assert the post-condition but fails to verify it
-// as a part of function signature 
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
@@ -205,7 +202,11 @@ fn encapsulate<
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     let randomness = Scheme::entropy_preprocess::<K, Hasher>(&randomness);
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
+    hax_lib::fstar!("eq_intro (Seq.slice $to_hash 0 32) $randomness");
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()));
+    hax_lib::fstar!("assert (Seq.slice to_hash 0 (v $H_DIGEST_SIZE) == $randomness);
+        lemma_slice_append $to_hash $randomness (Spec.Utils.v_H ${public_key}.f_value);
+        assert ($to_hash == concat $randomness (Spec.Utils.v_H ${public_key}.f_value))");
     let hashed = Hasher::G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
@@ -233,7 +234,6 @@ fn encapsulate<
 
 /// This code verifies on some machines, runs out of memory on others
 #[hax_lib::fstar::options("--z3rlimit 500")]
-#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
     $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
@@ -276,10 +276,17 @@ pub(crate) fn decapsulate<
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
+    hax_lib::fstar!("assert (v $CIPHERTEXT_SIZE == v $IMPLICIT_REJECTION_HASH_INPUT_SIZE - v $SHARED_SECRET_SIZE)");
     let (ind_cpa_secret_key, secret_key) = private_key.value.split_at(CPA_SECRET_KEY_SIZE);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(PUBLIC_KEY_SIZE);
     let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
 
+    hax_lib::fstar!("assert ($ind_cpa_secret_key == slice ${private_key}.f_value (sz 0) $CPA_SECRET_KEY_SIZE);
+        assert ($ind_cpa_public_key == slice ${private_key}.f_value $CPA_SECRET_KEY_SIZE ($CPA_SECRET_KEY_SIZE +! $PUBLIC_KEY_SIZE));
+        assert ($ind_cpa_public_key_hash == slice ${private_key}.f_value ($CPA_SECRET_KEY_SIZE +! $PUBLIC_KEY_SIZE)
+            ($CPA_SECRET_KEY_SIZE +! $PUBLIC_KEY_SIZE +! Spec.MLKEM.v_H_DIGEST_SIZE));
+        assert ($implicit_rejection_value == slice ${private_key}.f_value ($CPA_SECRET_KEY_SIZE +! $PUBLIC_KEY_SIZE +! Spec.MLKEM.v_H_DIGEST_SIZE)
+            (length ${private_key}.f_value))");
     let decrypted = crate::ind_cpa::decrypt::<
         K,
         CIPHERTEXT_SIZE,
@@ -290,18 +297,31 @@ pub(crate) fn decapsulate<
     >(ind_cpa_secret_key, &ciphertext.value);
 
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
+    hax_lib::fstar!("eq_intro (Seq.slice $to_hash 0 32) $decrypted");
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
 
+    hax_lib::fstar!("lemma_slice_append to_hash $decrypted $ind_cpa_public_key_hash;
+        assert ($decrypted == Spec.MLKEM.ind_cpa_decrypt $K $ind_cpa_secret_key ${ciphertext}.f_value);
+        assert ($to_hash == concat $decrypted $ind_cpa_public_key_hash)");
     let hashed = Hasher::G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
+    hax_lib::fstar!("assert (($shared_secret , $pseudorandomness) == split $hashed $SHARED_SECRET_SIZE);
+        assert (length $implicit_rejection_value = $SECRET_KEY_SIZE -! $CPA_SECRET_KEY_SIZE -! $PUBLIC_KEY_SIZE -! $H_DIGEST_SIZE);
+        assert (length $implicit_rejection_value = Spec.MLKEM.v_SHARED_SECRET_SIZE);
+        assert (Spec.MLKEM.v_SHARED_SECRET_SIZE <=. Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K)");
     let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
         into_padded_array(implicit_rejection_value);
+    hax_lib::fstar!("eq_intro (Seq.slice $to_hash 0 32) $implicit_rejection_value");
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
-    hax_lib::fstar!("assert (v (sz 32) < pow2 32)");
-    hax_lib::fstar!("assert (i4.f_PRF_pre (sz 32) to_hash)");
+    hax_lib::fstar!("assert_norm (pow2 32 == 0x100000000);
+        assert (v (sz 32) < pow2 32);
+        assert (i4.f_PRF_pre (sz 32) $to_hash);
+        lemma_slice_append $to_hash $implicit_rejection_value ${ciphertext}.f_value");
     let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
 
+    hax_lib::fstar!("assert ($implicit_rejection_shared_secret == Spec.Utils.v_PRF (sz 32) $to_hash);
+        assert (Seq.length $ind_cpa_public_key == v $PUBLIC_KEY_SIZE)");
     let expected_ciphertext = crate::ind_cpa::encrypt::<
         K,
         CIPHERTEXT_SIZE,
@@ -551,6 +571,9 @@ pub(crate) trait Variant {
         ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
     ) -> [u8; 32];
     #[requires(randomness.len() == 32)]
+    #[ensures(|result|
+        fstar!("$result == $randomness"))
+    ]
     fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32];
 }
 
@@ -578,6 +601,9 @@ impl Variant for Kyber {
 
     #[inline(always)]
     #[requires(randomness.len() == 32)]
+    #[ensures(|result|
+        fstar!("$result == Spec.Utils.v_H $randomness"))
+    ]
     fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
         Hasher::H(&randomness)
     }
@@ -605,6 +631,9 @@ impl Variant for MlKem {
 
     #[inline(always)]
     #[requires(randomness.len() == 32)]
+    #[ensures(|result|
+        fstar!("$result == $randomness"))
+    ]
     fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
         randomness.try_into().unwrap()
     }
