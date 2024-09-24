@@ -56,7 +56,7 @@ exclude = [
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]
-bench = false # so libtest doesn't eat the arguments for criterion
+bench = false                               # so libtest doesn't eat the arguments for criterion
 
 [build-dependencies]
 libcrux-platform = { version = "=0.0.2-alpha.3", path = "sys/platform" }
@@ -98,14 +98,25 @@ wasm-bindgen-test = "0.3"
 getrandom = { version = "0.2", features = ["js"] }
 
 [features]
-hacspec = []            # TODO: #7 Use specs instead of efficient implementations
+hacspec = []                         # TODO: #7 Use specs instead of efficient implementations
 rand = []
 wasm = ["wasm-bindgen", "getrandom"]
 log = ["dep:log"]
-tests = []              # Expose functions for testing.
-experimental = []       # Expose experimental APIs.
+tests = []                           # Expose functions for testing.
+experimental = []                    # Expose experimental APIs.
 
 [profile.release]
 lto = "fat"
 codegen-units = 1
 panic = "abort"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(hax)',
+    'cfg(eurydice)',
+    'cfg(doc_cfg)',
+    'cfg(libjade)',
+    'cfg(simd128)',
+    'cfg(simd256)',
+    'cfg(aes_ni)',
+] }
