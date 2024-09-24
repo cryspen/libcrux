@@ -327,9 +327,7 @@ fn zeta_layer_offset(layer: usize) -> usize {
 }
 
 #[inline(always)]
-fn ntt_at_layer_3_plus<const LAYER: usize>(
-    re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
-) {
+fn ntt_at_layer_3_plus<const LAYER: usize>(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     let step = 1 << LAYER;
 
     for round in 0..(128 >> LAYER) {
@@ -361,33 +359,174 @@ fn ntt_at_layer_3_plus<const LAYER: usize>(
 }
 
 #[inline(always)]
-fn ntt_from_layer_5(
-    re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
-) {
+fn load_zetas(
+    layer: usize,
+    inner_round: usize,
+    outer_round: usize,
+) -> (Vec256, Vec256, Vec256, Vec256) {
+    let multiplier = match layer {
+        5 => 1,
+        4 => 2,
+        3 => 4,
+        2 => 4,
+        _ => panic!(),
+    };
+    let zeta_index = zeta_round_index(layer, outer_round * multiplier + inner_round);
+    let zeta_index = if layer == 2 {
+        zeta_index + outer_round * 2
+    } else {
+        zeta_index
+    };
+
+    let zetas = ZETAS[zeta_index];
+    let zetas_l = mm256_loadu_si256_i32(&zetas);
+    let zetas_h = zetas_l;
+    let zetas_l_qinv = ZETAS_QINV[zeta_index];
+    let zetas_qinv_l = mm256_loadu_si256_i32(&zetas_l_qinv);
+    let zetas_qinv_h = zetas_qinv_l;
+    (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l)
+}
+
+#[inline(always)]
+fn ntt_from_layer_5(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+    macro_rules! butterfly {
+        ($chunk:ident, $l:literal, $h:literal, $zetas_h:ident, $zetas_l:ident, $zetas_qinv_h:ident, $zetas_qinv_l:ident) => {
+            ($chunk[$l], $chunk[$h]) = butterfly(
+                $chunk[$l],
+                $chunk[$h],
+                $zetas_h,
+                $zetas_l,
+                $zetas_qinv_h,
+                $zetas_qinv_l,
+            );
+        };
+    }
+
     for (layer_5_round, current_chunk) in re.chunks_exact_mut(8).enumerate() {
-        let re0 = current_chunk[0];
-        let re1 = current_chunk[1];
-        let re2 = current_chunk[2];
-        let re3 = current_chunk[3];
-        let re4 = current_chunk[4];
-        let re5 = current_chunk[5];
-        let re6 = current_chunk[6];
-        let re7 = current_chunk[7];
+        let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(5, 0, layer_5_round);
+        butterfly!(
+            current_chunk,
+            0,
+            4,
+            zetas_h,
+            zetas_l,
+            zetas_qinv_h,
+            zetas_qinv_l
+        );
+        butterfly!(
+            current_chunk,
+            1,
+            5,
+            zetas_h,
+            zetas_l,
+            zetas_qinv_h,
+            zetas_qinv_l
+        );
+        butterfly!(
+            current_chunk,
+            2,
+            6,
+            zetas_h,
+            zetas_l,
+            zetas_qinv_h,
+            zetas_qinv_l
+        );
+        butterfly!(
+            current_chunk,
+            3,
+            7,
+            zetas_h,
+            zetas_l,
+            zetas_qinv_h,
+            zetas_qinv_l
+        );
 
-        let zeta_index = zeta_round_index(5, layer_5_round);
+        // layer 4
+        let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(4, 0, layer_5_round);
 
-        let zetas = ZETAS[zeta_index];
-        let zetas_l = mm256_loadu_si256_i32(&zetas);
-        let zetas_h = zetas_l;
-        let zetas_l_qinv = ZETAS_QINV[zeta_index];
-        let zetas_qinv_l = mm256_loadu_si256_i32(&zetas_l_qinv);
-        let zetas_qinv_h = zetas_qinv_l;
+        butterfly!(
+            current_chunk,
+            0,
+            2,
+            zetas_h,
+            zetas_l,
+            zetas_qinv_h,
+            zetas_qinv_l
+        );
+        butterfly!(
+            current_chunk,
+            1,
+            3,
+            zetas_h,
+            zetas_l,
+            zetas_qinv_h,
+            zetas_qinv_l
+        );
 
-        (current_chunk[0], current_chunk[4]) = butterfly(re0, re4, zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l);
-        (current_chunk[1], current_chunk[5]) = butterfly(re1, re5, zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l);
-        (current_chunk[2], current_chunk[6]) = butterfly(re2, re6, zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l);
-        (current_chunk[3], current_chunk[7]) = butterfly(re3, re7, zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l);
+        let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(4, 1, layer_5_round);
+        butterfly!(
+            current_chunk,
+            4,
+            6,
+            zetas_h,
+            zetas_l,
+            zetas_qinv_h,
+            zetas_qinv_l
+        );
+        butterfly!(
+            current_chunk,
+            5,
+            7,
+            zetas_h,
+            zetas_l,
+            zetas_qinv_h,
+            zetas_qinv_l
+        );
 
+        // layer 3
+        let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(3, 0, layer_5_round);
+        butterfly!(
+            current_chunk,
+            0,
+            1,
+            zetas_h,
+            zetas_l,
+            zetas_qinv_h,
+            zetas_qinv_l
+        );
+
+        let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(3, 1, layer_5_round);
+        butterfly!(
+            current_chunk,
+            2,
+            3,
+            zetas_h,
+            zetas_l,
+            zetas_qinv_h,
+            zetas_qinv_l
+        );
+
+        let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(3, 2, layer_5_round);
+        butterfly!(
+            current_chunk,
+            4,
+            5,
+            zetas_h,
+            zetas_l,
+            zetas_qinv_h,
+            zetas_qinv_l
+        );
+
+        let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(3, 3, layer_5_round);
+        butterfly!(
+            current_chunk,
+            6,
+            7,
+            zetas_h,
+            zetas_l,
+            zetas_qinv_h,
+            zetas_qinv_l
+        );
         // TODO: Remaining layers
     }
 }
@@ -399,9 +538,7 @@ pub(crate) fn ntt(
     let mut zeta_i = 0;
     ntt_at_layer_3_plus::<7>(&mut re);
     ntt_at_layer_3_plus::<6>(&mut re);
-    ntt_from_layer_5(&mut re);
-    ntt_at_layer_3_plus::<4>( &mut re);
-    ntt_at_layer_3_plus::<3>( &mut re);
+    ntt_from_layer_5(&mut re); // 5 + 4 + 3 in one
     ntt_at_layer_2(&mut zeta_i, &mut re);
     ntt_at_layer_1(&mut zeta_i, &mut re);
     ntt_at_layer_0(&mut zeta_i, &mut re);
