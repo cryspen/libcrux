@@ -62,6 +62,26 @@ let v_CPA_PKE_CIPHERTEXT_SIZE_768_: usize = v_C1_SIZE_768_ +! v_C2_SIZE_768_
 let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize =
   Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE +! v_CPA_PKE_CIPHERTEXT_SIZE_768_
 
+/// Validate a private key.
+/// Returns `true` if valid, and `false` otherwise.
+val validate_private_key
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
+/// Validate a public key.
+/// Returns `true` if valid, and `false` otherwise.
+val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
+/// Decapsulate ML-KEM 768
+/// Generates an [`MlKemSharedSecret`].
+/// The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
+val decapsulate
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
+    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+
 /// Encapsulate ML-KEM 768
 /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
 /// The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
@@ -72,21 +92,6 @@ val encapsulate
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088) & t_Array u8 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
-
-/// Validate a public key.
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
-val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-    : Prims.Pure (Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-/// Decapsulate ML-KEM 768
-/// Generates an [`MlKemSharedSecret`].
-/// The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
-val decapsulate
-      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
-      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
-    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Generate ML-KEM 768 Key Pair
 /// Generate an ML-KEM key pair. The input is a byte array of size
