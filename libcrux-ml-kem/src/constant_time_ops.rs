@@ -11,14 +11,8 @@ use crate::constants::SHARED_SECRET_SIZE;
 // XXX: We have to disable this for C extraction for now. See eurydice/issues#37
 
 /// Return 1 if `value` is not zero and 0 otherwise.
-#[hax_lib::ensures(|result| fstar!("Hax_lib.implies ($value =. 0uy <: bool)
-    (fun temp_0_ ->
-        let _:Prims.unit = temp_0_ in
-        $result =. 0uy <: bool) &&
-    Hax_lib.implies ($value <>. 0uy <: bool)
-    (fun temp_0_ ->
-        let _:Prims.unit = temp_0_ in
-        $result =. 1uy <: bool)"))]
+#[hax_lib::ensures(|result| fstar!("($value == 0uy ==> $result == 0uy) /\\
+    ($value !== 0uy ==> $result == 1uy)"))]
 fn inz(value: u8) -> u8 {
     let _orig_value = value;
     let value = value as u16;
@@ -53,14 +47,8 @@ fn inz(value: u8) -> u8 {
 }
 
 #[inline(never)] // Don't inline this to avoid that the compiler optimizes this out.
-#[hax_lib::ensures(|result| fstar!("Hax_lib.implies ($value =. 0uy <: bool)
-    (fun temp_0_ ->
-        let _:Prims.unit = temp_0_ in
-        $result =. 0uy <: bool) &&
-    Hax_lib.implies ($value <>. 0uy <: bool)
-    (fun temp_0_ ->
-        let _:Prims.unit = temp_0_ in
-        $result =. 1uy <: bool)"))]
+#[hax_lib::ensures(|result| fstar!("($value == 0uy ==> $result == 0uy) /\\
+    ($value !== 0uy ==> $result == 1uy)"))]
 fn is_non_zero(value: u8) -> u8 {
     #[cfg(eurydice)]
     return inz(value);
@@ -72,14 +60,8 @@ fn is_non_zero(value: u8) -> u8 {
 /// Return 1 if the bytes of `lhs` and `rhs` do not exactly
 /// match and 0 otherwise.
 #[hax_lib::requires(lhs.len() == rhs.len())]
-#[hax_lib::ensures(|result| fstar!("Hax_lib.implies ($lhs =. $rhs <: bool)
-    (fun temp_0_ ->
-        let _:Prims.unit = temp_0_ in
-        $result =. 0uy <: bool) &&
-    Hax_lib.implies ($lhs <>. $rhs <: bool)
-    (fun temp_0_ ->
-        let _:Prims.unit = temp_0_ in
-        $result =. 1uy <: bool)"))]
+#[hax_lib::ensures(|result| fstar!("($lhs == $rhs ==> $result == 0uy) /\\
+    ($lhs !== $rhs ==> $result == 1uy)"))]
 fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
     let mut r: u8 = 0;
     for i in 0..lhs.len() {
@@ -128,9 +110,8 @@ fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
     lhs.len() == rhs.len() &&
     lhs.len() == SHARED_SECRET_SIZE
 )]
-#[hax_lib::ensures(|result| fstar!("Hax_lib.implies ($selector =. 0uy <: bool)
-            (fun _ -> $result =. $lhs <: bool) &&
-        Hax_lib.implies ($selector <>. 0uy <: bool) (fun _ -> $result =. $rhs <: bool)"))]
+#[hax_lib::ensures(|result| fstar!("($selector == 0uy ==> $result == $lhs) /\\
+        ($selector !== 0uy ==> $result == $rhs)"))]
 #[hax_lib::fstar::options("--ifuel 0 --z3rlimit 50")]
 fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8) -> [u8; SHARED_SECRET_SIZE] {
     let mask = is_non_zero(selector).wrapping_sub(1);
@@ -182,14 +163,8 @@ fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8) -> [u8; SHARED_SECRET_SIZE] {
 
 #[inline(never)] // Don't inline this to avoid that the compiler optimizes this out.
 #[hax_lib::requires(lhs.len() == rhs.len())]
-#[hax_lib::ensures(|result| fstar!("Hax_lib.implies ($lhs =. $rhs <: bool)
-    (fun temp_0_ ->
-        let _:Prims.unit = temp_0_ in
-        $result =. 0uy <: bool) &&
-    Hax_lib.implies ($lhs <>. $rhs <: bool)
-    (fun temp_0_ ->
-        let _:Prims.unit = temp_0_ in
-        $result =. 1uy <: bool)"))]
+#[hax_lib::ensures(|result| fstar!("($lhs == $rhs ==> $result == 0uy) /\\
+    ($lhs !== $rhs ==> $result == 1uy)"))]
 pub(crate) fn compare_ciphertexts_in_constant_time(lhs: &[u8], rhs: &[u8]) -> u8 {
     #[cfg(eurydice)]
     return compare(lhs, rhs);
@@ -203,9 +178,8 @@ pub(crate) fn compare_ciphertexts_in_constant_time(lhs: &[u8], rhs: &[u8]) -> u8
     lhs.len() == rhs.len() &&
     lhs.len() == SHARED_SECRET_SIZE
 )]
-#[hax_lib::ensures(|result| fstar!("Hax_lib.implies ($selector =. 0uy <: bool)
-            (fun _ -> $result =. $lhs <: bool) &&
-        Hax_lib.implies ($selector <>. 0uy <: bool) (fun _ -> $result =. $rhs <: bool)"))]
+#[hax_lib::ensures(|result| fstar!("($selector == 0uy ==> $result == $lhs) /\\
+       ($selector !== 0uy ==> $result == $rhs)"))]
 pub(crate) fn select_shared_secret_in_constant_time(
     lhs: &[u8],
     rhs: &[u8],
@@ -224,9 +198,8 @@ pub(crate) fn select_shared_secret_in_constant_time(
     lhs_s.len() == SHARED_SECRET_SIZE
 )]
 #[hax_lib::ensures(|result| fstar!("let selector = if $lhs_c =. $rhs_c then 0uy else 1uy in
-    Hax_lib.implies (selector =. 0uy <: bool)
-        (fun _ -> $result =. $lhs_s <: bool) &&
-    Hax_lib.implies (selector <>. 0uy <: bool) (fun _ -> $result =. $rhs_s <: bool)"))]
+    ((selector == 0uy ==> $result == $lhs_s) /\\
+     (selector !== 0uy ==> $result == $rhs_s))"))]
 pub(crate) fn compare_ciphertexts_select_shared_secret_in_constant_time(
     lhs_c: &[u8],
     rhs_c: &[u8],
