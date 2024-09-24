@@ -50,7 +50,7 @@ pqcrypto-kyber = { version = "0.8.0" }
 openssl = "0.10"
 
 [target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64"))'.dev-dependencies]
-libjade-sys = { version = "=0.0.2-alpha.3", path = "../sys/libjade" }
+libjade-sys = { version = "=0.0.2-beta.1", path = "../sys/libjade" }
 
 [[bench]]
 name = "sha2"

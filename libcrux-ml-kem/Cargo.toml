@@ -23,9 +23,9 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 rand = { version = "0.8", optional = true }
-libcrux-platform = { version = "0.0.2-alpha.3", path = "../sys/platform" }
-libcrux-sha3 = { version = "0.0.2-alpha.3", path = "../libcrux-sha3" }
-libcrux-intrinsics = { version = "0.0.2-alpha.3", path = "../libcrux-intrinsics" }
+libcrux-platform = { version = "0.0.2-beta.1", path = "../sys/platform" }
+libcrux-sha3 = { version = "0.0.2-beta.1", path = "../libcrux-sha3" }
+libcrux-intrinsics = { version = "0.0.2-beta.1", path = "../libcrux-intrinsics" }
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
