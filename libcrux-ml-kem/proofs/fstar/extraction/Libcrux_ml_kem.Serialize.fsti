@@ -212,7 +212,12 @@ val deserialize_ring_elements_reduced_out
       (requires
         Spec.MLKEM.is_rank v_K /\
         Seq.length public_key == v (Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K))
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            result
+          in
+          forall (i: nat). i < v v_K ==> coefficients_field_modulus_range (Seq.index result i))
 
 val deserialize_to_uncompressed_ring_element
       (#v_Vector: Type0)

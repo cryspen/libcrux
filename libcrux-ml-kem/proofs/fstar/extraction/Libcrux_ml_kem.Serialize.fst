@@ -820,7 +820,11 @@ let deserialize_ring_elements_reduced_out
   let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     deserialize_ring_elements_reduced v_K #v_Vector public_key deserialized_pk
   in
-  deserialized_pk
+  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+    deserialized_pk
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let deserialize_to_uncompressed_ring_element
       (#v_Vector: Type0)

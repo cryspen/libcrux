@@ -135,9 +135,14 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
 ///
 /// This function MUST NOT be used on secret inputs.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(
     fstar!("Spec.MLKEM.is_rank v_K /\\ 
             Seq.length public_key == v (Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K)")
+)]
+#[hax_lib::ensures(|result|
+    fstar!("forall (i:nat). i < v $K ==>
+        coefficients_field_modulus_range (Seq.index $result i)")
 )]
 pub(super) fn deserialize_ring_elements_reduced_out<
     const K: usize,
