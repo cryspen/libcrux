@@ -54,6 +54,7 @@ pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm_loadu_si128}")]
 pub fn mm_loadu_si128(input: &[u8]) -> Vec128 {
     debug_assert_eq!(input.len(), 16);
     unimplemented!()
@@ -73,6 +74,7 @@ pub fn mm256_setzero_si256() -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm_set_epi8}")]
 pub fn mm_set_epi8(
     byte15: u8,
     byte14: u8,
@@ -94,6 +96,7 @@ pub fn mm_set_epi8(
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_set_epi8}")]
 pub fn mm256_set_epi8(
     byte31: i8,
     byte30: i8,
@@ -188,6 +191,8 @@ pub fn mm_set1_epi16(constant: i16) -> Vec128 {
 pub fn mm256_set1_epi32(constant: i32) -> Vec256 {
     unimplemented!()
 }
+
+#[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_set_epi32}")]
 pub fn mm256_set_epi32(
     input7: i32,
     input6: i32,
@@ -324,6 +329,10 @@ pub fn mm256_srli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(
+    interface,
+    "include BitVec.Intrinsics {mm256_srli_epi64 as ${mm256_srli_epi64::<0>}}"
+)]
 pub fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
     unimplemented!()
@@ -343,9 +352,11 @@ pub fn mm256_slli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm_shuffle_epi8}")]
 pub fn mm_shuffle_epi8(vector: Vec128, control: Vec128) -> Vec128 {
     unimplemented!()
 }
+#[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_shuffle_epi8}")]
 pub fn mm256_shuffle_epi8(vector: Vec256, control: Vec256) -> Vec256 {
     unimplemented!()
 }
@@ -424,10 +435,12 @@ pub fn mm_movemask_epi8(vector: Vec128) -> i32 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_permutevar8x32_epi32}")]
 pub fn mm256_permutevar8x32_epi32(vector: Vec256, control: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_sllv_epi32}")]
 pub fn mm256_sllv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unimplemented!()
 }
