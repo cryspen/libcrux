@@ -421,49 +421,51 @@ let serialize_secret_key
   let out:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let out:t_Array u8 v_OUT_LEN =
     Rust_primitives.Hax.Folds.fold_enumerated_slice key
-      (fun out temp_1_ ->
+      (fun out i ->
           let out:t_Array u8 v_OUT_LEN = out in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          v i < v v_K ==>
+          Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key (v i)))
       out
       (fun out temp_1_ ->
           let out:t_Array u8 v_OUT_LEN = out in
           let i, re:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
             temp_1_
           in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
-            ({
-                Core.Ops.Range.f_start
-                =
-                i *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
-                Core.Ops.Range.f_end
-                =
-                (i +! sz 1 <: usize) *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize)
-            (Core.Slice.impl__copy_from_slice #u8
-                (out.[ {
-                      Core.Ops.Range.f_start
-                      =
-                      i *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
-                      Core.Ops.Range.f_end
-                      =
-                      (i +! sz 1 <: usize) *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT
+          let out:t_Array u8 v_OUT_LEN =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+              ({
+                  Core.Ops.Range.f_start
+                  =
+                  i *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
+                  Core.Ops.Range.f_end
+                  =
+                  (i +! sz 1 <: usize) *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize
+                }
+                <:
+                Core.Ops.Range.t_Range usize)
+              (Core.Slice.impl__copy_from_slice #u8
+                  (out.[ {
+                        Core.Ops.Range.f_start
+                        =
+                        i *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
+                        Core.Ops.Range.f_end
+                        =
+                        (i +! sz 1 <: usize) *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT
+                        <:
+                        usize
+                      }
                       <:
-                      usize
-                    }
+                      Core.Ops.Range.t_Range usize ]
                     <:
-                    Core.Ops.Range.t_Range usize ]
-                  <:
-                  t_Slice u8)
-                (Libcrux_ml_kem.Serialize.serialize_uncompressed_ring_element #v_Vector re
-                  <:
-                  t_Slice u8)
-              <:
-              t_Slice u8)
-          <:
-          t_Array u8 v_OUT_LEN)
+                    t_Slice u8)
+                  (Libcrux_ml_kem.Serialize.serialize_uncompressed_ring_element #v_Vector re
+                    <:
+                    t_Slice u8)
+                <:
+                t_Slice u8)
+          in
+          out)
   in
   let result:t_Array u8 v_OUT_LEN = out in
   let _:Prims.unit = admit () (* Panic freedom *) in

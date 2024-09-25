@@ -64,7 +64,9 @@ use unpacked::*;
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
-    length $seed_for_a == sz 32"))]
+    length $seed_for_a == sz 32 /\\
+    (forall (i:nat). i < v $K ==>
+        Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index $t_as_ntt i))"))]
 #[hax_lib::ensures(|res|
     fstar!("$res == Seq.append (Spec.MLKEM.vector_encode_12 #$K
                             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $t_as_ntt))
@@ -94,7 +96,9 @@ pub(crate) fn serialize_public_key<
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
-    length $seed_for_a == sz 32"))]
+    length $seed_for_a == sz 32 /\\
+    (forall (i:nat). i < v $K ==>
+        Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index $t_as_ntt i))"))]
 #[hax_lib::ensures(|res|
     fstar!("${serialized}_future == 
                         Seq.append (Spec.MLKEM.vector_encode_12 #$K
@@ -124,7 +128,9 @@ pub(crate) fn serialize_public_key_mut<
 #[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
-    $OUT_LEN == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K"))]
+    $OUT_LEN == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
+    (forall (i:nat). i < v $K ==>
+        Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index $key i))"))]
 #[hax_lib::ensures(|res|
     fstar!("$res == Spec.MLKEM.vector_encode_12 #$K
                     (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $key)")
@@ -136,6 +142,8 @@ pub(crate) fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector:
 
     cloop! {
         for (i, re) in key.into_iter().enumerate() {
+            hax_lib::loop_invariant!(|i: usize| { fstar!("v $i < v $K ==>
+                Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index $key (v $i))") });
             out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
             .copy_from_slice(&serialize_uncompressed_ring_element(&re));
         }
@@ -291,6 +299,12 @@ fn sample_vector_cbd_then_ntt_out<
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
     length $key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE"))]
+#[hax_lib::ensures(|_| fstar!("
+    (forall (i:nat). i < v $K ==>
+        Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index ${private_key}_future.f_secret_as_ntt i)) /\\
+    (forall (i:nat). i < v $K ==>
+        Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index ${public_key}_future.f_t_as_ntt i))
+"))]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
     const ETA1: usize,
