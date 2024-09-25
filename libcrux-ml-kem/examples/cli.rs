@@ -221,21 +221,30 @@ enum PublicKey {
 impl PublicKey {
     fn decode(alg: Algorithm, pk: &[u8]) -> Result<Self, Error> {
         match alg {
-            Algorithm::MlKem1024 => MlKem1024PublicKey::try_from(pk)
-                .ok()
-                .and_then(mlkem1024::validate_public_key)
-                .map(Self::MlKem1024)
-                .ok_or(Error::InvalidPublicKey),
-            Algorithm::MlKem768 => MlKem768PublicKey::try_from(pk)
-                .ok()
-                .and_then(mlkem768::validate_public_key)
-                .map(Self::MlKem768)
-                .ok_or(Error::InvalidPublicKey),
-            Algorithm::MlKem512 => MlKem512PublicKey::try_from(pk)
-                .ok()
-                .and_then(mlkem512::validate_public_key)
-                .map(Self::MlKem512)
-                .ok_or(Error::InvalidPublicKey),
+            Algorithm::MlKem1024 => {
+                let pk = MlKem1024PublicKey::try_from(pk).map_err(|_| Error::InvalidPublicKey)?;
+                if mlkem1024::validate_public_key(&pk) {
+                    Ok(Self::MlKem1024(pk))
+                } else {
+                    Err(Error::InvalidPublicKey)
+                }
+            }
+            Algorithm::MlKem768 => {
+                let pk = MlKem768PublicKey::try_from(pk).map_err(|_| Error::InvalidPublicKey)?;
+                if mlkem768::validate_public_key(&pk) {
+                    Ok(Self::MlKem768(pk))
+                } else {
+                    Err(Error::InvalidPublicKey)
+                }
+            }
+            Algorithm::MlKem512 => {
+                let pk = MlKem512PublicKey::try_from(pk).map_err(|_| Error::InvalidPublicKey)?;
+                if mlkem512::validate_public_key(&pk) {
+                    Ok(Self::MlKem512(pk))
+                } else {
+                    Err(Error::InvalidPublicKey)
+                }
+            }
         }
     }
 

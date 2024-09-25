@@ -158,39 +158,39 @@ fn no_sequential_elements(seed: &[u8]) -> bool {
     }
 }
 
-/// Generate a fake key pair that only encodes the input values.
-pub(crate) fn generate_fake_key_pair<
-    const K: usize,
-    const CPA_PRIVATE_KEY_SIZE: usize,
-    const PRIVATE_KEY_SIZE: usize,
-    const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
-    const ETA1: usize,
-    const ETA1_RANDOMNESS_SIZE: usize,
-    Vector: Operations,
-    Hasher: Hash<K>,
->(
-    private_key: [&[i16]; K],
-    public_key: [&[i16]; K],
-    seed: &[u8],
-) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
-    let pk =
-        public_key.map(|v| PolynomialRingElement::<Vector>::from_i16_array(v));
+// /// Generate a fake key pair that only encodes the input values.
+// pub(crate) fn generate_fake_key_pair<
+//     const K: usize,
+//     const CPA_PRIVATE_KEY_SIZE: usize,
+//     const PRIVATE_KEY_SIZE: usize,
+//     const PUBLIC_KEY_SIZE: usize,
+//     const BYTES_PER_RING_ELEMENT: usize,
+//     const ETA1: usize,
+//     const ETA1_RANDOMNESS_SIZE: usize,
+//     Vector: Operations,
+//     Hasher: Hash<K>,
+// >(
+//     private_key: [&[i16]; K],
+//     public_key: [&[i16]; K],
+//     seed: &[u8],
+// ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
+//     let pk =
+//         public_key.map(|v| PolynomialRingElement::<Vector>::from_i16_array(v));
 
-    // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    let public_key_serialized =
-        serialize_public_key::<K, BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(&pk, seed);
+//     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
+//     let public_key_serialized =
+//         serialize_public_key::<K, BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(&pk, seed);
 
-    // sk := Encode_12(sˆ mod^{+}q)
-    let sk =
-        private_key.map(|v| PolynomialRingElement::<Vector>::from_i16_array(v));
-    let secret_key_serialized = crate::ind_cpa::serialize_secret_key(&sk);
+//     // sk := Encode_12(sˆ mod^{+}q)
+//     let sk =
+//         private_key.map(|v| PolynomialRingElement::<Vector>::from_i16_array(v));
+//     let secret_key_serialized = crate::ind_cpa::serialize_secret_key(&sk);
 
-    let private_key: MlKemPrivateKey<PRIVATE_KEY_SIZE> =
-        MlKemPrivateKey::from(secret_key_serialized);
+//     let private_key: MlKemPrivateKey<PRIVATE_KEY_SIZE> =
+//         MlKemPrivateKey::from(secret_key_serialized);
 
-    MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key_serialized))
-}
+//     MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key_serialized))
+// }
 
 /// Validate an ML-KEM private key.
 ///
