@@ -17,7 +17,6 @@ concurrency:
 
 jobs:
   build:
-    if: ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -156,7 +155,7 @@ jobs:
       - name: 🏃🏻‍♀️ Test Kyber
         run: |
           cargo clean
-          cargo test --features kyber --verbose $RUST_TARGET_FLAG
+          cargo test --features pre-verification,kyber --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Cargo Check Features
         if: ${{ matrix.bits == 64 }}
@@ -169,96 +168,3 @@ jobs:
         run: |
           cargo clean
           cargo hack test --each-feature $EXCLUDE_FEATURES --verbose $RUST_TARGET_FLAG
-
-  benchmarks:
-    if: ${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' }}
-    strategy:
-      fail-fast: true
-      matrix:
-        bits: [32, 64]
-        os:
-          - macos-13
-          - macos-latest
-          - ubuntu-latest
-          - windows-latest
-        exclude:
-          # There's no such thing as 32-bit macOS
-          - bits: 32
-            os: "macos-latest"
-          - bits: 32
-            os: "macos-13"
-
-    runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash
-        working-directory: libcrux-ml-kem
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Update dependencies
-        run: cargo update
-
-      - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
-        if: ${{ matrix.bits == 64 }}
-
-      - name: 🛠️ Setup Ubuntu x86
-        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
-        run: |
-          rustup target add i686-unknown-linux-gnu
-          sudo apt-get update
-          sudo apt-get install -y gcc-multilib g++-multilib
-
-      - name: 🛠️ Setup Ubuntu x64
-        if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
-        run: |
-          rustup target add aarch64-unknown-linux-gnu
-
-      - name: 🛠️ Setup macOS
-        if: ${{  matrix.os == 'macos-latest' }}
-        run: |
-          rustup target add aarch64-apple-darwin
-
-      # Set up 32 bit systems
-
-      - name: 🛠️ Config Windows x86
-        run: echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
-        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
-
-      - name: 🛠️ Config Linux x86
-        run: |
-          echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
-        if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
-
-      # - name: 🔨 Build
-      #   run: cargo build --benches
-
-      # - name: ⬆ Upload build
-      #   uses: ./.github/actions/upload_artifacts
-      #   with:
-      #     name: benchmarks_${{ matrix.os }}_${{ matrix.bits }}
-
-      # Benchmarks ...
-
-      - name: 🏃🏻‍♀️ Benchmarks
-        run: cargo bench --verbose $RUST_TARGET_FLAG
-
-      - name: 🏃🏻‍♀️ Benchmarks Portable
-        run: |
-          cargo clean
-          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo bench --verbose $RUST_TARGET_FLAG
-
-  mq_status:
-    if: |
-      always() &&
-      github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group'
-    needs: [benchmarks]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        run: exit 0
-      - name: Failing
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1

@@ -16,17 +16,12 @@ let is_non_zero (value: u8) = Core.Hint.black_box #u8 (inz value <: u8)
 let compare (lhs rhs: t_Slice u8) =
   let (r: u8):u8 = 0uy in
   let r:u8 =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Core.Slice.impl__len #u8 lhs <: usize
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (Core.Slice.impl__len #u8 lhs <: usize)
+      (fun r temp_1_ ->
+          let r:u8 = r in
+          let _:usize = temp_1_ in
+          true)
       r
       (fun r i ->
           let r:u8 = r in
@@ -42,17 +37,12 @@ let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
   let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in
   let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let out:t_Array u8 (sz 32) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
+      (fun out temp_1_ ->
+          let out:t_Array u8 (sz 32) = out in
+          let _:usize = temp_1_ in
+          true)
       out
       (fun out i ->
           let out:t_Array u8 (sz 32) = out in

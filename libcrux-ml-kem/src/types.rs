@@ -5,6 +5,12 @@ macro_rules! impl_generic_struct {
             pub(crate) value: [u8; SIZE],
         }
 
+        impl<const SIZE: usize> Default for $name<SIZE> {
+            fn default() -> Self {
+                Self { value: [0u8; SIZE] }
+            }
+        }
+
         impl<const SIZE: usize> AsRef<[u8]> for $name<SIZE> {
             fn as_ref(&self) -> &[u8] {
                 &self.value

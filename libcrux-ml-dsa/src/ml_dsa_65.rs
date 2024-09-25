@@ -1,4 +1,9 @@
-use crate::{constants::*, types::*, VerificationError};
+use crate::{
+    constants::*,
+    ml_dsa_generic::{self, multiplexing},
+    types::*,
+    SigningError, VerificationError,
+};
 
 // ML-DSA-65-specific parameters
 
@@ -62,39 +67,100 @@ pub type MLDSA65VerificationKey = MLDSAVerificationKey<VERIFICATION_KEY_SIZE>;
 pub type MLDSA65KeyPair = MLDSAKeyPair<VERIFICATION_KEY_SIZE, SIGNING_KEY_SIZE>;
 pub type MLDSA65Signature = MLDSASignature<SIGNATURE_SIZE>;
 
-// TODO: Multiplex more intelligently.
+// Instantiate the different functions.
+macro_rules! instantiate {
+    ($modp:ident, $p:path, $doc:expr) => {
+        #[doc = $doc]
+        pub mod $modp {
+            use super::*;
+            use $p as p;
+
+            /// Generate an ML-DSA-65 Key Pair
+            pub fn generate_key_pair(
+                randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+            ) -> MLDSA65KeyPair {
+                let (signing_key, verification_key) = p::generate_key_pair::<
+                    ROWS_IN_A,
+                    COLUMNS_IN_A,
+                    ETA,
+                    ERROR_RING_ELEMENT_SIZE,
+                    SIGNING_KEY_SIZE,
+                    VERIFICATION_KEY_SIZE,
+                >(randomness);
+
+                MLDSA65KeyPair {
+                    signing_key: MLDSASigningKey(signing_key),
+                    verification_key: MLDSAVerificationKey(verification_key),
+                }
+            }
+
+            /// Generate an ML-DSA-65 Signature
+            pub fn sign(
+                signing_key: &MLDSA65SigningKey,
+                message: &[u8],
+                randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+            ) -> Result<MLDSA65Signature, SigningError> {
+                p::sign::<
+                    ROWS_IN_A,
+                    COLUMNS_IN_A,
+                    ETA,
+                    ERROR_RING_ELEMENT_SIZE,
+                    GAMMA1_EXPONENT,
+                    GAMMA2,
+                    COMMITMENT_RING_ELEMENT_SIZE,
+                    COMMITMENT_VECTOR_SIZE,
+                    COMMITMENT_HASH_SIZE,
+                    ONES_IN_VERIFIER_CHALLENGE,
+                    MAX_ONES_IN_HINT,
+                    GAMMA1_RING_ELEMENT_SIZE,
+                    SIGNING_KEY_SIZE,
+                    SIGNATURE_SIZE,
+                >(&signing_key.0, message, randomness)
+            }
+
+            /// Verify an ML-DSA-65 Signature
+            pub fn verify(
+                verification_key: &MLDSA65VerificationKey,
+                message: &[u8],
+                signature: &MLDSA65Signature,
+            ) -> Result<(), VerificationError> {
+                p::verify::<
+                    ROWS_IN_A,
+                    COLUMNS_IN_A,
+                    SIGNATURE_SIZE,
+                    VERIFICATION_KEY_SIZE,
+                    GAMMA1_EXPONENT,
+                    GAMMA1_RING_ELEMENT_SIZE,
+                    GAMMA2,
+                    BETA,
+                    COMMITMENT_RING_ELEMENT_SIZE,
+                    COMMITMENT_VECTOR_SIZE,
+                    COMMITMENT_HASH_SIZE,
+                    ONES_IN_VERIFIER_CHALLENGE,
+                    MAX_ONES_IN_HINT,
+                >(&verification_key.0, message, &signature.0)
+            }
+        }
+    };
+}
+
+// Instantiations
+
+instantiate! {portable, ml_dsa_generic::instantiations::portable, "Portable ML-DSA 65"}
 #[cfg(feature = "simd256")]
-type SIMDUnit = crate::simd::avx2::AVX2SIMDUnit;
-#[cfg(not(feature = "simd256"))]
-type SIMDUnit = crate::simd::portable::PortableSIMDUnit;
+instantiate! {avx2, ml_dsa_generic::instantiations::avx2, "AVX2 Optimised ML-DSA 65"}
+#[cfg(feature = "simd128")]
+instantiate! {neon, ml_dsa_generic::instantiations::neon, "Neon Optimised ML-DSA 65"}
 
-// For regular shake128 we only use portable.
-type Shake128 = crate::hash_functions::portable::Shake128;
-
-#[cfg(feature = "simd256")]
-type Shake128X4 = crate::hash_functions::simd256::Shake128;
-#[cfg(not(feature = "simd256"))]
-type Shake128X4 = crate::hash_functions::portable::Shake128X4;
-
-#[cfg(feature = "simd256")]
-type Shake256X4 = crate::hash_functions::simd256::Shake256X4;
-#[cfg(not(feature = "simd256"))]
-type Shake256X4 = crate::hash_functions::portable::Shake256X4;
-
-// TODO: This is all portable for now.
-#[cfg(feature = "simd256")]
-type Shake256 = crate::hash_functions::portable::Shake256;
-#[cfg(not(feature = "simd256"))]
-type Shake256 = crate::hash_functions::portable::Shake256;
-
-/// Generate an ML-DSA-65 Key Pair
+/// Generate an ML-DSA 65 Key Pair
+///
+/// Generate an ML-DSA key pair. The input is a byte array of size
+/// [`KEY_GENERATION_RANDOMNESS_SIZE`].
+///
+/// This function returns an [`MLDSA65KeyPair`].
+#[cfg(not(eurydice))]
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> MLDSA65KeyPair {
-    let (signing_key, verification_key) = crate::ml_dsa_generic::generate_key_pair::<
-        SIMDUnit,
-        Shake128,
-        Shake128X4,
-        Shake256,
-        Shake256X4,
+    let (signing_key, verification_key) = multiplexing::generate_key_pair::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -109,18 +175,18 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> ML
     }
 }
 
-/// Generate an ML-DSA-65 Signature
+/// Sign with ML-DSA 65
+///
+/// Sign a `message` with the ML-DSA `signing_key`.
+///
+/// This function returns an [`MLDSA65Signature`].
+#[cfg(not(eurydice))]
 pub fn sign(
     signing_key: &MLDSA65SigningKey,
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-) -> MLDSA65Signature {
-    crate::ml_dsa_generic::sign::<
-        SIMDUnit,
-        Shake128,
-        Shake128X4,
-        Shake256,
-        Shake256X4,
+) -> Result<MLDSA65Signature, SigningError> {
+    multiplexing::sign::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -139,16 +205,16 @@ pub fn sign(
 }
 
 /// Verify an ML-DSA-65 Signature
+///
+/// Returns `Ok` when the `signature` is valid for the `message` and
+/// `verification_key`, and a [`VerificationError`] otherwise.
+#[cfg(not(eurydice))]
 pub fn verify(
     verification_key: &MLDSA65VerificationKey,
     message: &[u8],
     signature: &MLDSA65Signature,
 ) -> Result<(), VerificationError> {
-    crate::ml_dsa_generic::verify::<
-        SIMDUnit,
-        Shake128,
-        Shake128X4,
-        Shake256,
+    multiplexing::verify::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,

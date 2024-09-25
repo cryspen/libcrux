@@ -3,6 +3,12 @@ module Libcrux_ml_kem.Ind_cca.Multiplexing
 open Core
 open FStar.Mul
 
+val validate_private_key
+      (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
 val validate_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)

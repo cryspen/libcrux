@@ -210,7 +210,7 @@ pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: us
     sampled: &mut usize,
     out: &mut [i32; 263],
 ) -> bool {
-    match ETA {
+    match ETA as u8 {
         2 => rejection_sample_less_than_eta_equals_2::<SIMDUnit>(randomness, sampled, out),
         4 => rejection_sample_less_than_eta_equals_4::<SIMDUnit>(randomness, sampled, out),
         _ => unreachable!(),
@@ -337,7 +337,7 @@ fn sample_mask_ring_element<
 >(
     seed: [u8; 66],
 ) -> PolynomialRingElement<SIMDUnit> {
-    match GAMMA1_EXPONENT {
+    match GAMMA1_EXPONENT as u8 {
         17 => {
             let mut out = [0u8; 576];
             Shake256::shake256::<576>(&seed, &mut out);
@@ -374,7 +374,7 @@ pub(crate) fn sample_mask_vector<
     let seed2 = update_seed(seed, domain_separator);
     let seed3 = update_seed(seed, domain_separator);
 
-    match GAMMA1_EXPONENT {
+    match GAMMA1_EXPONENT as u8 {
         17 => {
             let mut out0 = [0; 576];
             let mut out1 = [0; 576];
@@ -410,7 +410,7 @@ pub(crate) fn sample_mask_vector<
         seed[65] = (*domain_separator >> 8) as u8;
         *domain_separator += 1;
 
-        // TODO: We may want to do another 4.
+        // TODO: For 87 we may want to do another 4 and discard 1.
         mask[i] = sample_mask_ring_element::<SIMDUnit, Shake256, GAMMA1_EXPONENT>(seed);
     }
 
@@ -773,7 +773,7 @@ mod tests {
         fn test_sample_ring_element_uniform() {
             test_sample_ring_element_uniform_generic::<
                 simd::avx2::AVX2SIMDUnit,
-                crate::hash_functions::simd256::Shake128,
+                crate::hash_functions::simd256::Shake128x4,
             >();
         }
 
@@ -781,7 +781,7 @@ mod tests {
         fn test_sample_error_ring_element() {
             test_sample_error_ring_element_generic::<
                 simd::avx2::AVX2SIMDUnit,
-                hash_functions::simd256::Shake256X4,
+                hash_functions::simd256::Shake256x4,
             >();
         }
 

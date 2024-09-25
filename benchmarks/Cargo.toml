@@ -9,13 +9,16 @@ repository.workspace = true
 readme.workspace = true
 publish = false
 
+[lib]
+bench = false # so libtest doesn't eat the arguments for criterion
+
 [dependencies]
+rand = { version = "0.8" }
 
 [dev-dependencies]
 libcrux = { path = "../", features = ["rand", "tests"] }
 libcrux-kem = { path = "../libcrux-kem", features = ["tests"] }
 libcrux-ml-kem = { path = "../libcrux-ml-kem" }
-rand = { version = "0.8" }
 rand_core = { version = "0.6" }
 # Benchmarking "RustCrypto"
 chacha20poly1305 = "0.10"
@@ -47,7 +50,7 @@ pqcrypto-kyber = { version = "0.8.0" }
 openssl = "0.10"
 
 [target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64"))'.dev-dependencies]
-libjade-sys = { version = "=0.0.2-alpha.3", path = "../sys/libjade" }
+libjade-sys = { version = "=0.0.2-beta.2", path = "../sys/libjade" }
 
 [[bench]]
 name = "sha2"

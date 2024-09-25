@@ -173,6 +173,7 @@ pub(crate) mod portable {
 }
 
 /// A SIMD256 implementation of [`Hash`] for AVX2
+#[cfg(feature = "simd256")]
 pub(crate) mod avx2 {
     use super::*;
     use libcrux_sha3::{
@@ -394,6 +395,7 @@ pub(crate) mod avx2 {
 }
 
 /// A SIMD128 implementation of [`Hash`] for NEON
+#[cfg(feature = "simd128")]
 pub(crate) mod neon {
     use super::*;
     use libcrux_sha3::neon::x2::{self, incremental::KeccakState};
@@ -467,8 +469,8 @@ pub(crate) mod neon {
     fn shake128_init_absorb<const K: usize>(input: [[u8; 34]; K]) -> Simd128Hash {
         debug_assert!(K == 2 || K == 3 || K == 4);
         let mut state = [
-            x2::incremental::shake128_init(),
-            x2::incremental::shake128_init(),
+            x2::incremental::init(),
+            x2::incremental::init(),
         ];
         match K as u8 {
             2 => {

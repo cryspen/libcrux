@@ -1,13 +1,6 @@
 //! ML-KEM 768
-//!
 
-use super::{
-    constants::*,
-    ind_cca::{unpacked::*, *},
-    types::*,
-    vector::traits::VectorType,
-    *,
-};
+use super::{constants::*, ind_cca::*, types::*, *};
 
 // Kyber 768 parameters
 const RANK_768: usize = 3;
@@ -51,13 +44,6 @@ pub type MlKem768PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
 /// An ML-KEM 768 Key pair
 pub type MlKem768KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768>;
 
-/// An Unpacked ML-KEM 768 Public key
-#[allow(type_alias_bounds)]
-pub type MlKem768PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_768, Vector>;
-/// Am Unpacked ML-KEM 768 Key pair
-#[allow(type_alias_bounds)]
-pub type MlKem768KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_768, Vector>;
-
 // Instantiate the different functions.
 macro_rules! instantiate {
     ($modp:ident, $p:path, $vec:path, $doc:expr) => {
@@ -68,18 +54,27 @@ macro_rules! instantiate {
 
             /// Validate a public key.
             ///
-            /// Returns `Some(public_key)` if valid, and `None` otherwise.
-            pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768PublicKey> {
-                if p::validate_public_key::<
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_public_key(public_key: &MlKem768PublicKey) -> bool {
+                p::validate_public_key::<
                     RANK_768,
                     RANKED_BYTES_PER_RING_ELEMENT_768,
                     CPA_PKE_PUBLIC_KEY_SIZE_768,
                 >(&public_key.value)
-                {
-                    Some(public_key)
-                } else {
-                    None
-                }
+            }
+
+            /// Validate a private key.
+            ///
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_private_key(
+                private_key: &MlKem768PrivateKey,
+                ciphertext: &MlKem768Ciphertext,
+            ) -> bool {
+                p::validate_private_key::<
+                    RANK_768,
+                    SECRET_KEY_SIZE_768,
+                    CPA_PKE_CIPHERTEXT_SIZE_768,
+                >(private_key, ciphertext)
             }
 
             /// Generate ML-KEM 768 Key Pair
@@ -87,6 +82,23 @@ macro_rules! instantiate {
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem768KeyPair {
                 p::generate_keypair::<
+                    RANK_768,
+                    CPA_PKE_SECRET_KEY_SIZE_768,
+                    SECRET_KEY_SIZE_768,
+                    CPA_PKE_PUBLIC_KEY_SIZE_768,
+                    RANKED_BYTES_PER_RING_ELEMENT_768,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                >(randomness)
+            }
+
+            /// Generate Kyber 768 Key Pair
+            #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
+            pub fn kyber_generate_key_pair(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKem768KeyPair {
+                p::kyber_generate_keypair::<
                     RANK_768,
                     CPA_PKE_SECRET_KEY_SIZE_768,
                     SECRET_KEY_SIZE_768,
@@ -129,6 +141,7 @@ macro_rules! instantiate {
             /// The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
             /// bytes of `randomness`.
             #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
             pub fn kyber_encapsulate(
                 public_key: &MlKem768PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
@@ -183,6 +196,7 @@ macro_rules! instantiate {
             /// Generates an [`MlKemSharedSecret`].
             /// The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
             #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
             pub fn kyber_decapsulate(
                 private_key: &MlKem768PrivateKey,
                 ciphertext: &MlKem768Ciphertext,
@@ -207,87 +221,137 @@ macro_rules! instantiate {
                 >(private_key, ciphertext)
             }
 
-            /// Generate ML-KEM 768 Key Pair in "unpacked" form
-            pub fn generate_key_pair_unpacked(
-                randomness: [u8; KEY_GENERATION_SEED_SIZE],
-            ) -> MlKem768KeyPairUnpacked<$vec> {
-                p::generate_keypair_unpacked::<
-                    RANK_768,
-                    CPA_PKE_SECRET_KEY_SIZE_768,
-                    SECRET_KEY_SIZE_768,
-                    CPA_PKE_PUBLIC_KEY_SIZE_768,
-                    RANKED_BYTES_PER_RING_ELEMENT_768,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                >(randomness)
-            }
+            /// Unpacked APIs that don't use serialized keys.
+            pub mod unpacked {
+                use super::*;
 
-            /// Encapsulate ML-KEM 768 (unpacked)
-            ///
-            /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
-            /// The input is a reference to an unpacked public key of type [`MlKem768PublicKeyUnpacked`],
-            /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
-            #[cfg_attr(
-                hax,
-                hax_lib::fstar::before(
-                    interface,
-                    "
-let _ =
-    (* This module has implicit dependencies, here we make them explicit. *)
-    (* The implicit dependencies arise from typeclasses instances. *)
-    let open Libcrux_ml_kem.Vector.Portable in
-    let open Libcrux_ml_kem.Vector.Neon in
-    ()"
-                )
-            )]
-            pub fn encapsulate_unpacked(
-                public_key: &MlKem768PublicKeyUnpacked<$vec>,
-                randomness: [u8; SHARED_SECRET_SIZE],
-            ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
-                p::encapsulate_unpacked::<
-                    RANK_768,
-                    CPA_PKE_CIPHERTEXT_SIZE_768,
-                    CPA_PKE_PUBLIC_KEY_SIZE_768,
-                    T_AS_NTT_ENCODED_SIZE_768,
-                    C1_SIZE_768,
-                    C2_SIZE_768,
-                    VECTOR_U_COMPRESSION_FACTOR_768,
-                    VECTOR_V_COMPRESSION_FACTOR_768,
-                    C1_BLOCK_SIZE_768,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    ETA2,
-                    ETA2_RANDOMNESS_SIZE,
-                >(public_key, randomness)
-            }
+                /// An Unpacked ML-KEM 768 Public key
+                pub type MlKem768PublicKeyUnpacked = p::unpacked::MlKemPublicKeyUnpacked<RANK_768>;
 
-            /// Decapsulate ML-KEM 768 (unpacked)
-            ///
-            /// Generates an [`MlKemSharedSecret`].
-            /// The input is a reference to an unpacked key pair of type [`MlKem768KeyPairUnpacked`]
-            /// and an [`MlKem768Ciphertext`].
-            pub fn decapsulate_unpacked(
-                private_key: &MlKem768KeyPairUnpacked<$vec>,
-                ciphertext: &MlKem768Ciphertext,
-            ) -> MlKemSharedSecret {
-                p::decapsulate_unpacked::<
-                    RANK_768,
-                    SECRET_KEY_SIZE_768,
-                    CPA_PKE_SECRET_KEY_SIZE_768,
-                    CPA_PKE_PUBLIC_KEY_SIZE_768,
-                    CPA_PKE_CIPHERTEXT_SIZE_768,
-                    T_AS_NTT_ENCODED_SIZE_768,
-                    C1_SIZE_768,
-                    C2_SIZE_768,
-                    VECTOR_U_COMPRESSION_FACTOR_768,
-                    VECTOR_V_COMPRESSION_FACTOR_768,
-                    C1_BLOCK_SIZE_768,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    ETA2,
-                    ETA2_RANDOMNESS_SIZE,
-                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-                >(private_key, ciphertext)
+                /// Am Unpacked ML-KEM 768 Key pair
+                pub type MlKem768KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK_768>;
+
+                /// Create a new, empty unpacked key.
+                pub fn init_key_pair() -> MlKem768KeyPairUnpacked {
+                    MlKem768KeyPairUnpacked::default()
+                }
+
+                /// Create a new, empty unpacked public key.
+                pub fn init_public_key() -> MlKem768PublicKeyUnpacked {
+                    MlKem768PublicKeyUnpacked::default()
+                }
+
+                /// Get the serialized public key.
+                pub fn serialized_public_key(public_key: &MlKem768PublicKeyUnpacked, serialized : &mut MlKem768PublicKey) {
+                    public_key.serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT_768, CPA_PKE_PUBLIC_KEY_SIZE_768>(serialized);
+                }
+
+                /// Get the serialized public key.
+                pub fn key_pair_serialized_public_key(key_pair: &MlKem768KeyPairUnpacked, serialized : &mut MlKem768PublicKey) {
+                    key_pair.serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT_768, CPA_PKE_PUBLIC_KEY_SIZE_768>(serialized);
+                }
+
+                /// Get the unpacked public key.
+                pub fn public_key(key_pair: &MlKem768KeyPairUnpacked, pk: &mut MlKem768PublicKeyUnpacked) {
+                    *pk = (*key_pair.public_key()).clone();
+                }
+
+                /// Get the unpacked public key.
+                pub fn unpacked_public_key(
+                    public_key: &MlKem768PublicKey,
+                    unpacked_public_key: &mut MlKem768PublicKeyUnpacked
+                ) {
+                    p::unpacked::unpack_public_key::<
+                        RANK_768,
+                        T_AS_NTT_ENCODED_SIZE_768,
+                        RANKED_BYTES_PER_RING_ELEMENT_768,
+                        CPA_PKE_PUBLIC_KEY_SIZE_768,
+                    >(public_key, unpacked_public_key)
+                }
+
+                /// Generate ML-KEM 768 Key Pair in "unpacked" form.
+                pub fn generate_key_pair(
+                    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+                    key_pair: &mut MlKem768KeyPairUnpacked,
+                ) {
+                    p::unpacked::generate_keypair::<
+                        RANK_768,
+                        CPA_PKE_SECRET_KEY_SIZE_768,
+                        SECRET_KEY_SIZE_768,
+                        CPA_PKE_PUBLIC_KEY_SIZE_768,
+                        RANKED_BYTES_PER_RING_ELEMENT_768,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                    >(randomness, key_pair);
+                }
+
+                /// Encapsulate ML-KEM 768 (unpacked)
+                ///
+                /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+                /// The input is a reference to an unpacked public key of type [`MlKem768PublicKeyUnpacked`],
+                /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+                #[cfg_attr(
+                    hax,
+                    hax_lib::fstar::before(
+                        interface,
+                        "
+                let _ =
+                (* This module has implicit dependencies, here we make them explicit. *)
+                (* The implicit dependencies arise from typeclasses instances. *)
+                let open Libcrux_ml_kem.Vector.Portable in
+                let open Libcrux_ml_kem.Vector.Neon in
+                ()"
+                    )
+                )]
+                pub fn encapsulate(
+                    public_key: &MlKem768PublicKeyUnpacked,
+                    randomness: [u8; SHARED_SECRET_SIZE],
+                ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+                    p::unpacked::encapsulate::<
+                        RANK_768,
+                        CPA_PKE_CIPHERTEXT_SIZE_768,
+                        CPA_PKE_PUBLIC_KEY_SIZE_768,
+                        T_AS_NTT_ENCODED_SIZE_768,
+                        C1_SIZE_768,
+                        C2_SIZE_768,
+                        VECTOR_U_COMPRESSION_FACTOR_768,
+                        VECTOR_V_COMPRESSION_FACTOR_768,
+                        C1_BLOCK_SIZE_768,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                    >(public_key, randomness)
+                }
+
+                /// Decapsulate ML-KEM 768 (unpacked)
+                ///
+                /// Generates an [`MlKemSharedSecret`].
+                /// The input is a reference to an unpacked key pair of type [`MlKem768KeyPairUnpacked`]
+                /// and an [`MlKem768Ciphertext`].
+                pub fn decapsulate(
+                    private_key: &MlKem768KeyPairUnpacked,
+                    ciphertext: &MlKem768Ciphertext,
+                ) -> MlKemSharedSecret {
+                    p::unpacked::decapsulate::<
+                        RANK_768,
+                        SECRET_KEY_SIZE_768,
+                        CPA_PKE_SECRET_KEY_SIZE_768,
+                        CPA_PKE_PUBLIC_KEY_SIZE_768,
+                        CPA_PKE_CIPHERTEXT_SIZE_768,
+                        T_AS_NTT_ENCODED_SIZE_768,
+                        C1_SIZE_768,
+                        C2_SIZE_768,
+                        VECTOR_U_COMPRESSION_FACTOR_768,
+                        VECTOR_V_COMPRESSION_FACTOR_768,
+                        C1_BLOCK_SIZE_768,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                    >(private_key, ciphertext)
+                }
             }
         }
     };
@@ -303,19 +367,28 @@ instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon 
 
 /// Validate a public key.
 ///
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
+/// Returns `true` if valid, and `false` otherwise.
 #[cfg(not(eurydice))]
-pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768PublicKey> {
-    if multiplexing::validate_public_key::<
+pub fn validate_public_key(public_key: &MlKem768PublicKey) -> bool {
+    multiplexing::validate_public_key::<
         RANK_768,
         RANKED_BYTES_PER_RING_ELEMENT_768,
         CPA_PKE_PUBLIC_KEY_SIZE_768,
     >(&public_key.value)
-    {
-        Some(public_key)
-    } else {
-        None
-    }
+}
+
+/// Validate a private key.
+///
+/// Returns `true` if valid, and `false` otherwise.
+#[cfg(not(eurydice))]
+pub fn validate_private_key(
+    private_key: &MlKem768PrivateKey,
+    ciphertext: &MlKem768Ciphertext,
+) -> bool {
+    multiplexing::validate_private_key::<RANK_768, SECRET_KEY_SIZE_768, CPA_PKE_CIPHERTEXT_SIZE_768>(
+        private_key,
+        ciphertext,
+    )
 }
 
 /// Generate ML-KEM 768 Key Pair
@@ -412,9 +485,72 @@ pub fn decapsulate(
     >(private_key, ciphertext)
 }
 
+/// Randomized APIs
+///
+/// The functions in this module are equivalent to the one in the main module,
+/// but sample their own randomness, provided a random number generator that
+/// implements `RngCore` and `CryptoRng`.
+///
+/// Decapsulation is not provided in this module as it does not require randomness.
+#[cfg(all(not(eurydice), feature = "rand"))]
+pub mod rand {
+    use super::{
+        MlKem768Ciphertext, MlKem768KeyPair, MlKem768PublicKey, MlKemSharedSecret,
+        KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE,
+    };
+    use ::rand::{CryptoRng, RngCore};
+
+    /// Generate ML-KEM 768 Key Pair
+    ///
+    /// The random number generator `rng` needs to implement `RngCore` and
+    /// `CryptoRng` to sample the required randomness internally.
+    ///
+    /// This function returns an [`MlKem768KeyPair`].
+    pub fn generate_key_pair(rng: &mut (impl RngCore + CryptoRng)) -> MlKem768KeyPair {
+        let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
+        rng.fill_bytes(&mut randomness);
+
+        super::generate_key_pair(randomness)
+    }
+
+    /// Encapsulate ML-KEM 768
+    ///
+    /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+    /// The input is a reference to an [`MlKem768PublicKey`].
+    /// The random number generator `rng` needs to implement `RngCore` and
+    /// `CryptoRng` to sample the required randomness internally.
+    pub fn encapsulate(
+        public_key: &MlKem768PublicKey,
+        rng: &mut (impl RngCore + CryptoRng),
+    ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+        let mut randomness = [0u8; SHARED_SECRET_SIZE];
+        rng.fill_bytes(&mut randomness);
+
+        super::encapsulate(public_key, randomness)
+    }
+}
+
 #[cfg(all(not(eurydice), feature = "kyber"))]
 pub(crate) mod kyber {
     use super::*;
+
+    /// Generate Kyber 768 Key Pair
+    ///
+    /// Generate a Kyber key pair. The input is a byte array of size
+    /// [`KEY_GENERATION_SEED_SIZE`].
+    ///
+    /// This function returns an [`MlKem768KeyPair`].
+    pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPair {
+        multiplexing::kyber_generate_keypair::<
+            RANK_768,
+            CPA_PKE_SECRET_KEY_SIZE_768,
+            SECRET_KEY_SIZE_768,
+            CPA_PKE_PUBLIC_KEY_SIZE_768,
+            RANKED_BYTES_PER_RING_ELEMENT_768,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
+    }
 
     /// Encapsulate Kyber 768
     ///
@@ -487,7 +623,7 @@ mod tests {
         OsRng.fill_bytes(&mut randomness);
 
         let key_pair = generate_key_pair(randomness);
-        assert!(validate_public_key(key_pair.pk).is_some());
+        assert!(validate_public_key(&key_pair.pk));
     }
 
     #[test]

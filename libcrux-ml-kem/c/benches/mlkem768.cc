@@ -69,6 +69,7 @@ BENCHMARK(kyber768_key_generation);
 BENCHMARK(kyber768_encapsulation);
 BENCHMARK(kyber768_decapsulation);
 
+#ifdef LIBCRUX_UNPACKED
 static void
 kyber768_key_generation_unpacked(benchmark::State &state)
 {
@@ -119,6 +120,7 @@ kyber768_decapsulation_unpacked(benchmark::State &state)
 BENCHMARK(kyber768_key_generation_unpacked);
 BENCHMARK(kyber768_encapsulation_unpacked);
 BENCHMARK(kyber768_decapsulation_unpacked);
+#endif // #ifdef LIBCRUX_UNPACKED
 
 #ifdef LIBCRUX_AARCH64
 #include "libcrux_mlkem768_neon.h"
@@ -229,6 +231,7 @@ BENCHMARK(kyber768_key_generation_avx2);
 BENCHMARK(kyber768_encapsulation_avx2);
 BENCHMARK(kyber768_decapsulation_avx2);
 
+#ifdef LIBCRUX_UNPACKED
 static void
 kyber768_key_generation_avx2_unpacked(benchmark::State &state)
 {
@@ -279,6 +282,7 @@ kyber768_decapsulation_avx2_unpacked(benchmark::State &state)
 BENCHMARK(kyber768_key_generation_avx2_unpacked);
 BENCHMARK(kyber768_encapsulation_avx2_unpacked);
 BENCHMARK(kyber768_decapsulation_avx2_unpacked);
+#endif // #ifdef LIBCRUX_UNPACKED
 
 #endif
 

@@ -7,6 +7,8 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Hash_functions in
+  let open Libcrux_ml_kem.Ind_cpa.Unpacked in
+  let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
@@ -25,6 +27,18 @@ val sample_ring_element_cbd
 /// Sample a vector of ring elements from a centered binomial distribution and
 /// convert them into their NTT representations.
 val sample_vector_cbd_then_ntt
+      (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (re_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (prf_input: t_Array u8 (sz 33))
+      (domain_separator: u8)
+    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val sample_vector_cbd_then_ntt_out
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
       (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -72,6 +86,16 @@ val serialize_secret_key
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (key: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
     : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Concatenate `t` and `ρ` into the public key.
+val serialize_public_key_mut
+      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (seed_for_a: t_Slice u8)
+      (serialized: t_Array u8 v_PUBLIC_KEY_SIZE)
+    : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Concatenate `t` and `ρ` into the public key.
 val serialize_public_key
@@ -214,6 +238,8 @@ val generate_keypair_unpacked
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (key_generation_seed: t_Slice u8)
+      (private_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
+      (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
     : Prims.Pure
       (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector &
         Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
@@ -223,9 +249,10 @@ val generate_keypair_unpacked
 val generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
+      {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      {| i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme |}
       (key_generation_seed: t_Slice u8)
     : Prims.Pure (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
       Prims.l_True
