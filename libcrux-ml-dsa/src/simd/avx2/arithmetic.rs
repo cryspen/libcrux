@@ -38,20 +38,29 @@ fn simd_multiply_i32_and_return_high(lhs: Vec256, rhs: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-pub fn montgomery_multiply_by_constant(simd_unit: Vec256, constant: i32) -> Vec256 {
-    let constant = mm256_set1_epi32(constant);
+pub fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec256 {
+    let rhs = mm256_set1_epi32(constant);
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
     let inverse_of_modulus_mod_montgomery_r =
         mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
 
-    let product_low = mm256_mullo_epi32(simd_unit, constant);
+    let prod02 = mm256_mul_epi32(lhs, rhs);
+    let prod13 = mm256_mul_epi32(
+        mm256_shuffle_epi32::<0b11_11_01_01>(lhs),
+        mm256_shuffle_epi32::<0b11_11_01_01>(rhs),
+    );
 
-    let k = mm256_mullo_epi32(product_low, inverse_of_modulus_mod_montgomery_r);
+    let k02 = mm256_mul_epi32(prod02, inverse_of_modulus_mod_montgomery_r);
+    let k13 = mm256_mul_epi32(prod13, inverse_of_modulus_mod_montgomery_r);
 
-    let c = simd_multiply_i32_and_return_high(k, field_modulus);
-    let product_high = simd_multiply_i32_and_return_high(simd_unit, constant);
+    let c02 = mm256_mul_epi32(k02, field_modulus);
+    let c13 = mm256_mul_epi32(k13, field_modulus);
 
-    mm256_sub_epi32(product_high, c)
+    let res02 = mm256_sub_epi32(prod02, c02);
+    let res13 = mm256_sub_epi32(prod13, c13);
+    let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02);
+    let res = mm256_blend_epi32::<0b10101010>(res02_shifted, res13);
+    res
 }
 
 #[inline(always)]
@@ -60,14 +69,22 @@ pub fn montgomery_multiply(lhs: Vec256, rhs: Vec256) -> Vec256 {
     let inverse_of_modulus_mod_montgomery_r =
         mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
 
-    let product_low = mm256_mullo_epi32(lhs, rhs);
+    let prod02 = mm256_mul_epi32(lhs, rhs);
+    let prod13 = mm256_mul_epi32(
+        mm256_shuffle_epi32::<0b11_11_01_01>(lhs),
+        mm256_shuffle_epi32::<0b11_11_01_01>(rhs),
+    );
+    let k02 = mm256_mul_epi32(prod02, inverse_of_modulus_mod_montgomery_r);
+    let k13 = mm256_mul_epi32(prod13, inverse_of_modulus_mod_montgomery_r);
 
-    let k = mm256_mullo_epi32(product_low, inverse_of_modulus_mod_montgomery_r);
+    let c02 = mm256_mul_epi32(k02, field_modulus);
+    let c13 = mm256_mul_epi32(k13, field_modulus);
 
-    let c = simd_multiply_i32_and_return_high(k, field_modulus);
-    let product_high = simd_multiply_i32_and_return_high(lhs, rhs);
-
-    mm256_sub_epi32(product_high, c)
+    let res02 = mm256_sub_epi32(prod02, c02);
+    let res13 = mm256_sub_epi32(prod13, c13);
+    let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02);
+    let res = mm256_blend_epi32::<0b10101010>(res02_shifted, res13);
+    res
 }
 
 #[inline(always)]

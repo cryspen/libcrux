@@ -1,4 +1,4 @@
-use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT};
+use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
 mod arithmetic;
 
@@ -110,14 +110,8 @@ impl Operations for PortableSIMDUnit {
         encoding::t1::deserialize(serialized)
     }
 
-    fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
-        ntt::ntt_at_layer_0(simd_unit, zeta0, zeta1, zeta2, zeta3)
-    }
-    fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        ntt::ntt_at_layer_1(simd_unit, zeta0, zeta1)
-    }
-    fn ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        ntt::ntt_at_layer_2(simd_unit, zeta)
+    fn ntt(simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT]) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
+        ntt::ntt(simd_units)
     }
 
     fn invert_ntt_at_layer_0(
