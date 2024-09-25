@@ -135,8 +135,11 @@ val serialize_5_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
 val serialize_4_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure (t_Array u8 (sz 8))
-      (requires BitVec.Intrinsics.forall_bool #256 (fun i -> i % 16 < 4 || vector i = 0))
-      (fun _ -> Prims.l_True)
+      (requires forall (i: nat{i < 256}). i % 16 < 4 || vector i = 0)
+      (ensures
+        fun r ->
+          let r:t_Array u8 (sz 8) = r in
+          forall (i: nat{i < 64}). bit_vec_of_int_t_array r 8 i == vector ((i / 4) * 16 + i % 4))
 
 include BitVec.Intrinsics {mm256_si256_from_two_si128 as mm256_si256_from_two_si128}
 

@@ -172,13 +172,14 @@ fn mm256_concat_pairs_n(n: u8, x: Vec256) -> Vec256 {
     )
 }
 
+#[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
 #[hax_lib::requires(
     fstar!(
-        r#"BitVec.Intrinsics.forall_bool #256 (fun i -> i % 16 < 4 || vector i = 0)"#
+        r#"forall (i: nat{i < 256}). i % 16 < 4 || $vector i = 0"#
     )
 )]
+#[hax_lib::ensures(|r| fstar!("forall (i: nat{i < 64}). bit_vec_of_int_t_array $r 8 i == $vector ((i/4) * 16 + i%4)"))]
 #[inline(always)]
-#[hax_lib::fstar::options("--ext context_pruning")]
 pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
     let mut serialized = [0u8; 16];
 
@@ -215,47 +216,17 @@ pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
         mm256_permutevar8x32_epi32(adjacent_8_combined, mm256_set_epi32(0, 0, 0, 0, 0, 0, 4, 0));
     let combined = mm256_castsi256_si128(combined);
 
-    hax_lib::fstar!(
-        r#"
-assert (forall (i: nat {i < 64}).
-    ${combined} i == ${vector} ((i / 4) * 16 + i % 4)
-) by (
-  let open FStar.Tactics in
-  let open Tactics.Utils in
-  // unfold wrappers
-  norm [primops; iota; zeta; delta_namespace [
-    `%BitVec.Intrinsics.mm256_shuffle_epi8;
-    `%BitVec.Intrinsics.mm256_permutevar8x32_epi32;
-    `%BitVec.Intrinsics.mm256_madd_epi16;
-    `%BitVec.Intrinsics.mm256_castsi256_si128;
-    "BitVec.Utils";
-  ]];
-  prove_forall_nat_pointwise (print_time "SMT query succeeded in " (fun _ ->
-    let reduce t =
-      norm [primops; iota; zeta_full; delta_namespace [
-        "FStar.FunctionalExtensionality";
-        t;
-        `%BitVec.Utils.mk_bv;
-        `%( + ); `%op_Subtraction; `%( / ); `%( * ); `%( % )
-      ]];
-      norm [primops; iota; zeta_full; delta_namespace [
-        "FStar.List.Tot"; `%( + ); `%op_Subtraction; `%( / ); `%( * ); `%( % )
-      ]]
-    in
-    reduce (`%BitVec.Intrinsics.mm256_permutevar8x32_epi32_i32);
-    reduce (`%BitVec.Intrinsics.mm256_shuffle_epi8_i8);
-    reduce (`%BitVec.Intrinsics.mm256_madd_epi16_specialized);
-    grewrite (quote (BitVec.Intrinsics.forall_bool #256 (fun i -> i % 16 < 4 || op_Equality #int (${vector} i) 0))) (`true);
-    flip (); smt ();
-    reduce (`%BitVec.Intrinsics.mm256_madd_epi16_specialized');
-    trivial ()
-  ))
-)
-"#
-    );
-
     // ... so that we can read them out in one go.
     mm_storeu_bytes_si128(&mut serialized, combined);
+
+    hax_lib::fstar!(
+        r#"
+assert (forall (i: nat{i < 64}). $combined i == bit_vec_of_int_t_array serialized 8 i);
+  introduce forall (i: nat {i < 64}). $combined i = vector ((i / 4) * 16 + i % 4)
+  with assert_norm (BitVec.Utils.forall64 (fun i -> $combined i = $vector ((i / 4) * 16 + i % 4)));
+  assert (forall (i: nat{i < 64}). bit_vec_of_int_t_array serialized 8 i == $vector ((i / 4) * 16 + i % 4))
+"#
+    );
 
     serialized[0..8].try_into().unwrap()
 }

@@ -119,7 +119,7 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
 
 #pop-options
 
-#push-options "--ext context_pruning"
+#push-options "--ext context_pruning --split_queries always --z3rlimit 300"
 
 let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
@@ -166,10 +166,6 @@ let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let upper_8_:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l adjacent_8_combined
   in
-  let _:Prims.unit =
-    assert_norm (BitVec.Utils.forall_n 80 (fun i -> lower_8_ i = vector ((i / 10) * 16 + i % 10)) &&
-        BitVec.Utils.forall_n 80 (fun i -> upper_8_ i = vector (128 + (i / 10) * 16 + i % 10)))
-  in
   let serialized:t_Array u8 (sz 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
       ({ Core.Ops.Range.f_start = sz 10; Core.Ops.Range.f_end = sz 26 }
@@ -187,7 +183,24 @@ let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
         <:
         t_Slice u8)
   in
-  let _:Prims.unit = admit () in
+  assert (forall (i: nat{i < 80}). lower_8_ i == bit_vec_of_int_t_array serialized 8 i);
+  assert (forall (i: nat{i < 80}). upper_8_ i == bit_vec_of_int_t_array serialized 8 (80 + i));
+  introduce forall (i: nat {i < 80}). lower_8_ i = vector ((i / 10) * 16 + i % 10)
+  with assert_norm (BitVec.Utils.forall_n 80 (fun i -> lower_8_ i = vector ((i / 10) * 16 + i % 10)));
+  introduce forall (i: nat {i < 160}). i >= 80 ==> upper_8_ (i - 80) = vector ((i / 10) * 16 + i % 10)
+  with 
+    introduce forall (i: nat {i < 80}). upper_8_ i = vector (128 + (i / 10) * 16 + i % 10)
+    with assert_norm (BitVec.Utils.forall_n 80 (fun i -> upper_8_ i = vector (128 + (i / 10) * 16 + i % 10)));
+  assert (forall (i: nat{i < 160}). 
+         bit_vec_of_int_t_array serialized 8 i == (if i < 80 then lower_8_ i else upper_8_ (i - 80))
+  );
+  // forall (i: nat{i < 160}). 
+  //        bit_vec_of_int_t_array r          8 i == vector ((i / 10) * 16 + i % 10)
+  assert (forall (i: nat{i < 160}). 
+         bit_vec_of_int_t_array serialized 8 i == vector ((i / 10) * 16 + i % 10)
+  );
+  admit ()
+  admit ();
   Core.Result.impl__unwrap #(t_Array u8 (sz 20))
     #Core.Array.t_TryFromSliceError
     (Core.Convert.f_try_into #(t_Slice u8)
@@ -366,6 +379,8 @@ let serialize_5_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
       <:
       Core.Result.t_Result (t_Array u8 (sz 10)) Core.Array.t_TryFromSliceError)
 
+#push-options "--ext context_pruning --split_queries always"
+
 let serialize_4_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let serialized:t_Array u8 (sz 16) = Rust_primitives.Hax.repeat 0uy (sz 16) in
   let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -388,9 +403,15 @@ let serialize_4_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let combined:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 combined
   in
-  assert_norm (BitVec.Utils.forall64 (fun i -> combined i = vector ((i / 4) * 16 + i % 4)));
   let serialized:t_Array u8 (sz 16) =
     Libcrux_intrinsics.Avx2_extract.mm_storeu_bytes_si128 serialized combined
+  in
+  let _:Prims.unit =
+    assert (forall (i: nat{i < 64}). combined i == bit_vec_of_int_t_array serialized 8 i);
+    introduce forall (i: nat{i < 64}) . combined i = vector ((i / 4) * 16 + i % 4)
+    with assert_norm (BitVec.Utils.forall64 (fun i -> combined i = vector ((i / 4) * 16 + i % 4)));
+    assert (forall (i: nat{i < 64}).
+          bit_vec_of_int_t_array serialized 8 i == vector ((i / 4) * 16 + i % 4))
   in
   Core.Result.impl__unwrap #(t_Array u8 (sz 8))
     #Core.Array.t_TryFromSliceError
@@ -404,6 +425,8 @@ let serialize_4_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
           t_Slice u8)
       <:
       Core.Result.t_Result (t_Array u8 (sz 8)) Core.Array.t_TryFromSliceError)
+
+#pop-options
 
 [@@"opaque_to_smt"]
 let deserialize_10___deserialize_10_vec
