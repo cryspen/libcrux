@@ -112,7 +112,12 @@ val deserialize_4_ (bytes: t_Slice u8)
 include BitVec.Intrinsics {mm256_concat_pairs_n}
 
 val serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure (t_Array u8 (sz 2)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 2))
+      (requires forall i. i % 16 >= 1 ==> vector i == 0)
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 2) = result in
+          forall i. bit_vec_of_int_t_array result 8 i == vector (i * 16))
 
 val serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure (t_Array u8 (sz 20))
@@ -144,7 +149,8 @@ val deserialize_10___deserialize_10_vec
           let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 = coefficients in
           forall (i: nat{i < 256}).
             coefficients i =
-            (if i % 16 >= 10 then 0
+            (if i % 16 >= 10
+              then 0
               else
                 let j = (i / 16) * 10 + i % 16 in
                 if i < 128 then lower_coefficients0 j else upper_coefficients0 (j - 32)))
@@ -172,9 +178,11 @@ val deserialize_12___deserialize_12_vec
           let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 = coefficients in
           forall (i: nat{i < 256}).
             coefficients i =
-            (if i % 16 >= 12 then 0
-             else let j = (i / 16) * 12 + i % 16 in
-                  if i < 128 then lower_coefficients0 j else upper_coefficients0 (j - 64)))
+            (if i % 16 >= 12
+              then 0
+              else
+                let j = (i / 16) * 12 + i % 16 in
+                if i < 128 then lower_coefficients0 j else upper_coefficients0 (j - 64)))
 
 val deserialize_12_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256

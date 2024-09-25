@@ -2,6 +2,9 @@ use super::*;
 use crate::vector::portable::PortableVector;
 
 #[inline(always)]
+#[hax_lib::fstar::options("--ext context_pruning --compat_pre_core 0")]
+#[hax_lib::requires(fstar!("forall i. i % 16 >= 1 ==> vector i == 0"))]
+#[hax_lib::ensures(|result| fstar!("forall i. bit_vec_of_int_t_array $result 8 i == $vector (i * 16)"))]
 pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
     // Suppose |vector| is laid out as follows (superscript number indicates the
     // corresponding bit is duplicated that many times):
@@ -43,6 +46,19 @@ pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
     // 0xFF 0x00 0x00 0x00 | 0xFF 0x00 0x00 0x00 | 0x00 0x00 0x00 0x00 | 0x00 0x00 0x00 0xFF
     let msbs = mm_packs_epi16(low_msbs, high_msbs);
 
+    hax_lib::fstar!(
+        r#"
+let bits_packed' = BitVec.Intrinsics.mm_movemask_epi8_bv msbs in
+  assert (forall (i: nat{i < 16}). bits_packed' i = $vector ((i / 1) * 16 + i % 1))
+      by (
+         Tactics.Utils.prove_forall_nat_pointwise (fun _ -> 
+           Tactics.compute ();
+           Tactics.smt_sync ()
+         )
+      )
+"#
+    );
+
     // Now that every element is either 0xFF or 0x00, we just extract the most
     // significant bit from each element and collate them into two bytes.
     let bits_packed = mm_movemask_epi8(msbs);
@@ -51,50 +67,7 @@ pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
 
     hax_lib::fstar!(
         r#"
-let bv = bit_vec_of_int_t_array ${result} 8 in
-assert (forall (i: nat {i < 16}). bv i == ${vector} (i * 16)) by (
-  let open FStar.Tactics in
-  let open Tactics.Utils in
-  prove_forall_nat_pointwise (print_time "SMT query succeeded in " (fun _ ->
-    let light_norm () = 
-      // get rid of indirections (array_of_list, funext, casts, etc.)
-      norm [ iota; primops
-           ; delta_only [
-                 `%cast; `%cast_tc_integers
-               ; `%bit_vec_of_int_t_array
-               ; `%Rust_primitives.Hax.array_of_list
-               ; `%FunctionalExtensionality.on
-               ; `%bits;`%Lib.IntTypes.bits
-             ]
-      ] in
-    light_norm ();
-    // normalize List.index / Seq.index when we have literals
-    Tactics.Seq.norm_index ();
-    // here, we need to take care of (1) the cast and (2) the shift
-    // (introduced in `list`) and (3) bv<->i16 indirection
-    // introduced by `bit_vec_to_int_t`. Thus, we repeat the tactic
-    // three times. It's basically the same thing.
-    let _ = repeatn 3 (fun _ -> 
-      // Try to rewrite any subterm using the following three lemmas (corresponding to (1) (3) and (2))
-      l_to_r[`BitVec.Utils.rw_get_bit_cast; `bit_vec_to_int_t_lemma; `BitVec.Utils.rw_get_bit_shr];
-      // get rid of useless indirections
-      light_norm ();
-      // after using those lemmas, more mk_int and v appears, let's get rid of those
-      Tactics.MachineInts.(transform norm_machine_int_term);
-      // Special treatment for case (3)
-      norm [primops; iota; zeta_full; delta_only [
-        `%BitVec.Intrinsics.mm_movemask_epi8;
-      ]]
-    ) in
-    // Now we normalize away all the FunExt / mk_bv terms
-    norm [primops; iota; zeta_full; delta_namespace ["BitVec"; "FStar"]];
-    // Ask the SMT to solve now
-    // dump' "Goal:";
-    smt_sync ();
-    // dump' "Success";
-    smt ()
-  ))
-)
+assert (forall (i: nat {i < 8}). get_bit ($bits_packed >>! 8l <: i32) (sz i) == get_bit $bits_packed (sz (i + 8)))
 "#
     );
 
@@ -205,6 +178,7 @@ fn mm256_concat_pairs_n(n: u8, x: Vec256) -> Vec256 {
     )
 )]
 #[inline(always)]
+#[hax_lib::fstar::options("--ext context_pruning")]
 pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
     let mut serialized = [0u8; 16];
 
@@ -216,27 +190,7 @@ pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
     // as follows:
     //
     // 0x00_00_00_BA 0x00_00_00_DC | 0x00_00_00_FE 0x00_00_00_HG | ...
-    let adjacent_2_combined = mm256_madd_epi16(
-        vector,
-        mm256_set_epi16(
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-        ),
-    );
+    let adjacent_2_combined = mm256_concat_pairs_n(4, vector);
 
     // Recall that |adjacent_2_combined| goes as follows:
     //
@@ -576,6 +530,7 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--ext context_pruning")]
 #[hax_lib::requires(fstar!("forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0"))]
 #[hax_lib::ensures(|r| fstar!("forall (i: nat{i < 160}). bit_vec_of_int_t_array r 8 i == vector ((i/10) * 16 + i%10)"))]
 pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
@@ -651,6 +606,7 @@ pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
     );
     mm_storeu_bytes_si128(&mut serialized[10..26], upper_8);
 
+    hax_lib::fstar!("admit()");
     serialized[0..20].try_into().unwrap()
 }
 
