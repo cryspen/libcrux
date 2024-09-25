@@ -7,7 +7,7 @@ use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
 /// We use 'fe' as a shorthand for this type.
 pub(crate) type FieldElement = i16;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct PortableVector {
     pub(crate) elements: [FieldElement; FIELD_ELEMENTS_IN_VECTOR],
 }

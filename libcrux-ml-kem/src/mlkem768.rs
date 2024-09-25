@@ -58,6 +58,7 @@ macro_rules! instantiate {
             pub fn validate_public_key(public_key: &MlKem768PublicKey) -> bool {
                 p::validate_public_key::<
                     RANK_768,
+                    T_AS_NTT_ENCODED_SIZE_768,
                     RANKED_BYTES_PER_RING_ELEMENT_768,
                     CPA_PKE_PUBLIC_KEY_SIZE_768,
                 >(&public_key.value)
@@ -372,6 +373,7 @@ instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon 
 pub fn validate_public_key(public_key: &MlKem768PublicKey) -> bool {
     multiplexing::validate_public_key::<
         RANK_768,
+        T_AS_NTT_ENCODED_SIZE_768,
         RANKED_BYTES_PER_RING_ELEMENT_768,
         CPA_PKE_PUBLIC_KEY_SIZE_768,
     >(&public_key.value)
@@ -717,9 +719,8 @@ mod tests {
         ];
 
         let pk = MlKem768PublicKey::try_from(&pk).unwrap();
-        let validated = validate_public_key(pk);
+        let valid = validate_public_key(&pk);
 
-        // let key_pair = generate_key_pair(randomness);
-        assert!(validated.is_none());
+        assert!(!valid);
     }
 }

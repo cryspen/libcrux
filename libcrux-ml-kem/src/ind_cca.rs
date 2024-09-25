@@ -1,4 +1,5 @@
-use std::eprintln;
+use core::hash::{Hash as _, Hasher};
+use std::{eprintln, hash::DefaultHasher, vec::Vec};
 
 use crate::{
     constant_time_ops::compare_ciphertexts_select_shared_secret_in_constant_time,
@@ -9,7 +10,7 @@ use crate::{
     types::*,
     utils::into_padded_array,
     variant::*,
-    vector::Operations,
+    vector::{portable::PortableVector, Operations},
 };
 
 /// Seed size for key generation
@@ -63,8 +64,10 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
 #[inline(always)]
 fn validate_public_key<
     const K: usize,
+    const T_AS_NTT_ENCODED_SIZE: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const PUBLIC_KEY_SIZE: usize,
+    Hasher: Hash<K>,
     Vector: Operations,
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
@@ -117,12 +120,160 @@ fn validate_public_key<
 
         valid &= balanced;
 
+        // Unpack the public key
+        let mut unpacked = unpacked::MlKemPublicKeyUnpacked::default();
+        unpacked::unpack_public_key::<
+            K,
+            T_AS_NTT_ENCODED_SIZE,
+            RANKED_BYTES_PER_RING_ELEMENT,
+            PUBLIC_KEY_SIZE,
+            Hasher,
+            PortableVector,
+        >(
+            &MlKemPublicKey::try_from(public_key).unwrap(),
+            &mut unpacked,
+        );
+
         // ML_KEM_DIS_04: not more than 14, 18, 21 same elements in A'
-        // ML_KEM_DIS_05: no more than 3 sequential elements in A (not transposed - not fully defined)
-        // ML_KEM_DIS_06: no more than 656, 1369, 2338 over or under 1664
+        let counts = count_elements(&unpacked.ind_cpa_public_key.A);
+        let max = match K {
+            2 => 14,
+            3 => 18,
+            4 => 21,
+            _ => unreachable!(),
+        };
+        let too_many: Vec<_> = counts.values().into_iter().filter(|&&x| x > max).collect();
+        if !too_many.is_empty() {
+            #[cfg(all(feature = "std"))]
+            std::eprintln!("too many entries in A with the same value");
+
+            valid = false;
+        }
+
+        // ML_KEM_DIS_05: no more than 3 sequential elements in A
+        valid &= long_sequence_in_a(&unpacked.ind_cpa_public_key.A);
+
+        // ML_KEM_DIS_06: no more than 656, 1369, 2338 over or under 1664 in Z_q
+        let (small, large) = count_elements_zq(&unpacked.ind_cpa_public_key.A);
+        let max = match K {
+            2 => 656,
+            3 => 1369,
+            4 => 2338,
+            _ => unreachable!(),
+        };
+        let too_many = small > max || large > max;
+        if too_many {
+            #[cfg(all(feature = "std"))]
+            std::eprintln!("too many large or little entries in A");
+
+            valid = false;
+        }
     }
 
     valid
+}
+
+fn count_elements_zq<const K: usize>(
+    matrix: &[[crate::polynomial::PolynomialRingElement<PortableVector>; K]; K],
+) -> (u32, u32) {
+    let mut large = 0;
+    let mut small = 0;
+
+    for row in matrix {
+        for element in row {
+            for v in element.coefficients {
+                for e in v.elements {
+                    if e > 1664 {
+                        large += 1;
+                    }
+                    if e < 1664 {
+                        small += 1;
+                    }
+                }
+            }
+        }
+    }
+
+    (small, large)
+}
+
+fn count_elements<const K: usize>(
+    matrix: &[[crate::polynomial::PolynomialRingElement<PortableVector>; K]; K],
+) -> std::collections::HashMap<Vec<u64>, u64> {
+    let mut counts = std::collections::HashMap::new();
+
+    for row in matrix {
+        for element in row {
+            let e: Vec<u64> = element
+                .coefficients
+                .iter()
+                .map(|v| {
+                    let mut hasher = DefaultHasher::new();
+                    v.hash(&mut hasher);
+                    hasher.finish()
+                })
+                .collect();
+            *counts.entry(e).or_insert(0u64) += 1;
+        }
+    }
+
+    counts
+}
+
+fn long_sequence_in_a<const K: usize>(
+    matrix: &[[crate::polynomial::PolynomialRingElement<PortableVector>; K]; K],
+) -> bool {
+    let mut current_value = hash_re(matrix);
+    let mut current_len = 1;
+    let mut longest_len = current_len;
+
+    for row in matrix {
+        for element in row.iter().skip(1) {
+            let e: Vec<u64> = element
+                .coefficients
+                .iter()
+                .map(|v| {
+                    let mut hasher = DefaultHasher::new();
+                    v.hash(&mut hasher);
+                    hasher.finish()
+                })
+                .collect();
+            if e == current_value {
+                // Count the values
+                current_len += 1;
+                if current_len > longest_len {
+                    longest_len = current_len;
+                }
+            } else {
+                // Value changed
+                current_value = e;
+                current_len = 1;
+            }
+        }
+    }
+
+    if longest_len > 3 {
+        #[cfg(all(feature = "std"))]
+        std::eprintln!("too many sequential values in public key ({longest_len}x)");
+
+        false
+    } else {
+        true
+    }
+}
+
+fn hash_re<const K: usize>(
+    matrix: &[[crate::polynomial::PolynomialRingElement<PortableVector>; K]; K],
+) -> Vec<u64> {
+    matrix[0][0]
+        .coefficients
+        .iter()
+        .map(|v| {
+            let mut hasher = DefaultHasher::new();
+            v.hash(&mut hasher);
+            hasher.finish()
+        })
+        .collect()
 }
 
 fn no_sequential_elements(seed: &[u8]) -> bool {

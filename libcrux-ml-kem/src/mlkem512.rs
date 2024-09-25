@@ -56,6 +56,7 @@ macro_rules! instantiate {
             pub fn validate_public_key(public_key: &MlKem512PublicKey) -> bool {
                 p::validate_public_key::<
                     RANK_512,
+                    T_AS_NTT_ENCODED_SIZE_512,
                     RANKED_BYTES_PER_RING_ELEMENT_512,
                     CPA_PKE_PUBLIC_KEY_SIZE_512,
                 >(&public_key.value)
@@ -366,6 +367,7 @@ instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon 
 pub fn validate_public_key(public_key: &MlKem512PublicKey) -> bool {
     multiplexing::validate_public_key::<
         RANK_512,
+        T_AS_NTT_ENCODED_SIZE_512,
         RANKED_BYTES_PER_RING_ELEMENT_512,
         CPA_PKE_PUBLIC_KEY_SIZE_512,
     >(&public_key.value)
