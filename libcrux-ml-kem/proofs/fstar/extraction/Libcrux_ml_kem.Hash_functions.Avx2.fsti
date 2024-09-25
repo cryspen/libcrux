@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Hash_functions.Avx2
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 

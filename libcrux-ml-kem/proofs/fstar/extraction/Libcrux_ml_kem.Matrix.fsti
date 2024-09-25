@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Matrix
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -15,6 +15,7 @@ val compute_As_plus_e
       (v_K: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (matrix_A:
           t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
       (s_as_ntt error_as_ntt:
@@ -22,10 +23,13 @@ val compute_As_plus_e
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (requires Spec.MLKEM.is_rank v_K)
       (ensures
-        fun res ->
-          let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
+        fun tt_as_ntt_future ->
+          let tt_as_ntt_future:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+            v_K =
+            tt_as_ntt_future
+          in
           let open Libcrux_ml_kem.Polynomial in
-          to_spec_vector_t res =
+          to_spec_vector_t tt_as_ntt_future =
           Spec.MLKEM.compute_As_plus_e_ntt (to_spec_matrix_t matrix_A)
             (to_spec_vector_t s_as_ntt)
             (to_spec_vector_t error_as_ntt))
@@ -102,21 +106,23 @@ val sample_matrix_A
       (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (v_A_transpose:
+          t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
       (seed: t_Array u8 (sz 34))
       (transpose: bool)
     : Prims.Pure
       (t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
       (requires Spec.MLKEM.is_rank v_K)
       (ensures
-        fun res ->
-          let res:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-            v_K =
-            res
+        fun v_A_transpose_future ->
+          let v_A_transpose_future:t_Array
+            (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
+            v_A_transpose_future
           in
           let matrix_A, valid = Spec.MLKEM.sample_matrix_A_ntt (Seq.slice seed 0 32) in
           valid ==>
           (if transpose
-            then Libcrux_ml_kem.Polynomial.to_spec_matrix_t res == matrix_A
+            then Libcrux_ml_kem.Polynomial.to_spec_matrix_t v_A_transpose_future == matrix_A
             else
-              Libcrux_ml_kem.Polynomial.to_spec_matrix_t res == Spec.MLKEM.matrix_transpose matrix_A
-          ))
+              Libcrux_ml_kem.Polynomial.to_spec_matrix_t v_A_transpose_future ==
+              Spec.MLKEM.matrix_transpose matrix_A))

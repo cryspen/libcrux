@@ -59,6 +59,16 @@ pub(crate) fn serialize_1(v: PortableVector) -> [u8; 2] {
     ]
 }
 
+//deserialize_1_bounded_lemma
+#[cfg_attr(hax, hax_lib::fstar::after(interface, "
+val deserialize_1_bounded_lemma (inputs: t_Array u8 (sz 2)) : Lemma
+  (ensures forall i. i < 16 ==> bounded (Seq.index (${deserialize_1} inputs).f_elements i) 1)
+"))]
+#[cfg_attr(hax, hax_lib::fstar::after("
+let deserialize_1_bounded_lemma inputs =
+  admit()
+"))]
+//deserialize_1_lemma
 #[cfg_attr(hax, hax_lib::fstar::after(interface, "
 val deserialize_1_lemma (inputs: t_Array u8 (sz 2)) : Lemma
   (ensures bit_vec_of_int_t_array (${deserialize_1} inputs).f_elements 1 == bit_vec_of_int_t_array inputs 8)
@@ -73,6 +83,7 @@ let deserialize_1_lemma inputs =
 
 #pop-options
 "))]
+//deserialize_1_bit_vec_lemma
 #[cfg_attr(hax, hax_lib::fstar::after("
 #push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
@@ -200,6 +211,16 @@ pub(crate) fn deserialize_4_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16, 
     (v0, v1, v2, v3, v4, v5, v6, v7)
 }
 
+//deserialize_4_bounded_lemma
+#[cfg_attr(hax, hax_lib::fstar::after(interface, "
+val deserialize_4_bounded_lemma (inputs: t_Array u8 (sz 8)) : Lemma
+  (ensures forall i. i < 16 ==> bounded (Seq.index (${deserialize_4} inputs).f_elements i) 4)
+"))]
+#[cfg_attr(hax, hax_lib::fstar::after("
+let deserialize_4_bounded_lemma inputs =
+  admit()
+"))]
+//deserialize_4_lemma
 #[cfg_attr(hax, hax_lib::fstar::after(interface, "
 val deserialize_4_lemma (inputs: t_Array u8 (sz 8)) : Lemma
   (ensures bit_vec_of_int_t_array (${deserialize_4} inputs).f_elements 4 == bit_vec_of_int_t_array inputs 8)
@@ -214,6 +235,7 @@ let deserialize_4_lemma inputs =
 
 #pop-options
 "))]
+//deserialize_4_bit_vec_lemma
 #[cfg_attr(hax, hax_lib::fstar::after("
 #push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
@@ -454,6 +476,16 @@ pub(crate) fn deserialize_10_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16,
     (r0, r1, r2, r3, r4, r5, r6, r7)
 }
 
+//deserialize_10_bounded_lemma
+#[cfg_attr(hax, hax_lib::fstar::after(interface, "
+val deserialize_10_bounded_lemma (inputs: t_Array u8 (sz 20)) : Lemma
+  (ensures forall i. i < 16 ==> bounded (Seq.index (${deserialize_10} inputs).f_elements i) 10)
+"))]
+#[cfg_attr(hax, hax_lib::fstar::after("
+let deserialize_10_bounded_lemma inputs =
+  admit()
+"))]
+//deserialize_10_lemma
 #[cfg_attr(hax, hax_lib::fstar::after(interface, "
 val deserialize_10_lemma (inputs: t_Array u8 (sz 20)) : Lemma
   (ensures bit_vec_of_int_t_array (${deserialize_10} inputs).f_elements 10 == bit_vec_of_int_t_array inputs 8)
@@ -468,6 +500,7 @@ let deserialize_10_lemma inputs =
 
 #pop-options
 "))]
+//deserialize_10_bit_vec_lemma
 #[cfg_attr(hax, hax_lib::fstar::after("
 #push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
@@ -711,6 +744,16 @@ pub(crate) fn deserialize_12_int(bytes: &[u8]) -> (i16, i16) {
     (r0, r1)
 }
 
+//deserialize_12_bounded_lemma
+#[cfg_attr(hax, hax_lib::fstar::after(interface, "
+val deserialize_12_bounded_lemma (inputs: t_Array u8 (sz 24)) : Lemma
+  (ensures forall i. i < 16 ==> bounded (Seq.index (${deserialize_12} inputs).f_elements i) 12)
+"))]
+#[cfg_attr(hax, hax_lib::fstar::after("
+let deserialize_12_bounded_lemma inputs =
+  admit()
+"))]
+//deserialize_12_lemma
 #[cfg_attr(hax, hax_lib::fstar::after(interface, "
 val deserialize_12_lemma (inputs: t_Array u8 (sz 24)) : Lemma
   (ensures bit_vec_of_int_t_array (${deserialize_12} inputs).f_elements 12 == bit_vec_of_int_t_array inputs 8)
@@ -725,6 +768,7 @@ let deserialize_12_lemma inputs =
 
 #pop-options
 "))]
+//deserialize_12_bit_vec_lemma
 #[cfg_attr(hax, hax_lib::fstar::after("
 #push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 

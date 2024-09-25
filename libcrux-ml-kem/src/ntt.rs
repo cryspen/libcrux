@@ -1,6 +1,6 @@
 use crate::{
     hax_utils::hax_debug_assert,
-    polynomial::{PolynomialRingElement, VECTORS_IN_RING_ELEMENT, ZETAS_TIMES_MONTGOMERY_R},
+    polynomial::{PolynomialRingElement, VECTORS_IN_RING_ELEMENT, get_zeta},
     vector::{montgomery_multiply_fe, Operations},
 };
 
@@ -27,10 +27,10 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
             zetas_b_lemma (v zeta_i + 3)");
         re.coefficients[round] = Vector::ntt_layer_1_step(
             re.coefficients[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 2],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 3],
+            get_zeta (*zeta_i),
+            get_zeta (*zeta_i + 1),
+            get_zeta (*zeta_i + 2),
+            get_zeta (*zeta_i + 3),
         );
         *zeta_i += 3;
     }
@@ -55,8 +55,8 @@ pub(crate) fn ntt_at_layer_2<Vector: Operations>(
             zetas_b_lemma (v zeta_i + 1)");
         re.coefficients[round] = Vector::ntt_layer_2_step(
             re.coefficients[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
+            get_zeta (*zeta_i),
+            get_zeta (*zeta_i + 1),
         );
         *zeta_i += 1;
     }
@@ -79,7 +79,7 @@ pub(crate) fn ntt_at_layer_3<Vector: Operations>(
         *zeta_i += 1;
         hax_lib::fstar!("zetas_b_lemma (v zeta_i)");
         re.coefficients[round] =
-            Vector::ntt_layer_3_step(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+            Vector::ntt_layer_3_step(re.coefficients[round], get_zeta (*zeta_i));
     }
     ()
 }
@@ -129,7 +129,7 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
             let (x, y) = ntt_layer_int_vec_step(
                 re.coefficients[j],
                 re.coefficients[j + step_vec],
-                ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+                get_zeta (*zeta_i),
             );
             re.coefficients[j] = x;
             re.coefficients[j + step_vec] = y;
@@ -160,12 +160,12 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     ntt_at_layer_7(re);
 
     let mut zeta_i = 1;
-    ntt_at_layer_4_plus(&mut zeta_i, re, 6, 3);
-    ntt_at_layer_4_plus(&mut zeta_i, re, 5, 3);
-    ntt_at_layer_4_plus(&mut zeta_i, re, 4, 3);
-    ntt_at_layer_3(&mut zeta_i, re, 3, 3);
-    ntt_at_layer_2(&mut zeta_i, re, 2, 3);
-    ntt_at_layer_1(&mut zeta_i, re, 1, 3);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 6, 11207);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 5, 11207+3328);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 4, 11207+2*3328);
+    ntt_at_layer_3(&mut zeta_i, re, 3, 11207+3*3328);
+    ntt_at_layer_2(&mut zeta_i, re, 2, 11207+4*3328);
+    ntt_at_layer_1(&mut zeta_i, re, 1, 11207+5*3328);
 
     re.poly_barrett_reduce()
 }
@@ -182,12 +182,12 @@ pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize, Vector: Ope
     let mut zeta_i = 0;
 
     ntt_at_layer_4_plus(&mut zeta_i, re, 7, 3328);
-    ntt_at_layer_4_plus(&mut zeta_i, re, 6, 3328);
-    ntt_at_layer_4_plus(&mut zeta_i, re, 5, 3328);
-    ntt_at_layer_4_plus(&mut zeta_i, re, 4, 3328);
-    ntt_at_layer_3(&mut zeta_i, re, 3, 3328);
-    ntt_at_layer_2(&mut zeta_i, re, 2, 3328);
-    ntt_at_layer_1(&mut zeta_i, re, 1, 3328);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 6, 2*3328);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 5, 3*3328);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 4, 4*3328);
+    ntt_at_layer_3(&mut zeta_i, re, 3, 5*3328);
+    ntt_at_layer_2(&mut zeta_i, re, 2, 6*3328);
+    ntt_at_layer_1(&mut zeta_i, re, 1, 7*3328);
 
     re.poly_barrett_reduce()
 }

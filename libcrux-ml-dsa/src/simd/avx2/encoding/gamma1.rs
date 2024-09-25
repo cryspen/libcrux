@@ -66,7 +66,7 @@ fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
 
 #[inline(always)]
 pub(crate) fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
-    match OUTPUT_SIZE {
+    match OUTPUT_SIZE as u8 {
         18 => serialize_when_gamma1_is_2_pow_17::<OUTPUT_SIZE>(simd_unit),
         20 => serialize_when_gamma1_is_2_pow_19::<OUTPUT_SIZE>(simd_unit),
         _ => unreachable!(),
@@ -130,7 +130,7 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8]) -> Vec256 {
 
 #[inline(always)]
 pub(crate) fn deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Vec256 {
-    match GAMMA1_EXPONENT {
+    match GAMMA1_EXPONENT as u8 {
         17 => deserialize_when_gamma1_is_2_pow_17(serialized),
         19 => deserialize_when_gamma1_is_2_pow_19(serialized),
         _ => unreachable!(),

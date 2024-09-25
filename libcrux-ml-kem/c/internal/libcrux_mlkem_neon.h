@@ -51,6 +51,14 @@ libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_a51(
     uint8_t randomness[64U]);
 
 /**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash with const generics
@@ -189,6 +197,14 @@ libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_a50(
     uint8_t randomness[64U]);
 
 /**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,
 libcrux_ml_kem_hash_functions_neon_Simd128Hash with const generics
@@ -326,6 +342,14 @@ libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked_2c
 libcrux_ml_kem_ind_cca_unpacked_generate_keypair_unpacked_a5(
     uint8_t randomness[64U]);
 
+/**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector,

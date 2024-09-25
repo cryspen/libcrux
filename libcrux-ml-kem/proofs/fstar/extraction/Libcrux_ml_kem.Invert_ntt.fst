@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Invert_ntt
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -76,19 +76,10 @@ let invert_ntt_at_layer_1_
                 (Libcrux_ml_kem.Vector.Traits.f_inv_ntt_layer_1_step #v_Vector
                     #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i16)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! sz 1 <: usize
-                      ]
-                      <:
-                      i16)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! sz 2 <: usize
-                      ]
-                      <:
-                      i16)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! sz 3 <: usize
-                      ]
-                      <:
-                      i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i -! sz 1 <: usize) <: i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i -! sz 2 <: usize) <: i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i -! sz 3 <: usize) <: i16)
                   <:
                   v_Vector)
             }
@@ -142,11 +133,8 @@ let invert_ntt_at_layer_2_
                 (Libcrux_ml_kem.Vector.Traits.f_inv_ntt_layer_2_step #v_Vector
                     #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i16)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! sz 1 <: usize
-                      ]
-                      <:
-                      i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i -! sz 1 <: usize) <: i16)
                   <:
                   v_Vector)
             }
@@ -197,7 +185,7 @@ let invert_ntt_at_layer_3_
                 (Libcrux_ml_kem.Vector.Traits.f_inv_ntt_layer_3_step #v_Vector
                     #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
-                    (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
                   <:
                   v_Vector)
             }
@@ -273,7 +261,7 @@ let invert_ntt_at_layer_4_plus
                       (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ j +! step_vec <: usize ]
                         <:
                         v_Vector)
-                      (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i16)
+                      (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
                   in
                   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
                     {
@@ -365,7 +353,7 @@ let invert_ntt_montgomery
   let _:Prims.unit = () in
   let hax_temp_output, re:(Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   =
-    (), Libcrux_ml_kem.Polynomial.impl_1__poly_barrett_reduce #v_Vector re
+    (), Libcrux_ml_kem.Polynomial.impl_2__poly_barrett_reduce #v_Vector re
     <:
     (Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in

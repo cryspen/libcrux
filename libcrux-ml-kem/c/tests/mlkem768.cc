@@ -203,6 +203,7 @@ TEST(MlKem768TestPortable, ConsistencyTest)
                      LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 }
 
+#ifdef LIBCRUX_UNPACKED
 TEST(MlKem768TestPortableUnpacked, ConsistencyTest)
 {
     uint8_t randomness[64];
@@ -221,6 +222,7 @@ TEST(MlKem768TestPortableUnpacked, ConsistencyTest)
                      sharedSecret2,
                      LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 }
+#endif // #ifdef LIBCRUX_UNPACKED
 
 TEST(Kyber768TestPortable, ModifiedCiphertextTest)
 {
@@ -336,6 +338,7 @@ TEST(MlKem768TestPortable, NISTKnownAnswerTest)
     }
 }
 
+#ifdef LIBCRUX_UNPACKED
 TEST(MlKem768TestPortableUnpacked, NISTKnownAnswerTest)
 {
     // XXX: This should be done in a portable way.
@@ -370,6 +373,7 @@ TEST(MlKem768TestPortableUnpacked, NISTKnownAnswerTest)
                          LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
     }
 }
+#endif // #ifdef LIBCRUX_UNPACKED
 
 #ifdef LIBCRUX_X64
 #include "libcrux_mlkem768_avx2.h"
@@ -504,6 +508,7 @@ TEST(MlKem768TestAvx2, NISTKnownAnswerTest)
     }
 }
 
+#ifdef LIBCRUX_UNPACKED
 TEST(MlKem768TestAvx2Unpacked, NISTKnownAnswerTest)
 {
     // XXX: This should be done in a portable way.
@@ -538,6 +543,8 @@ TEST(MlKem768TestAvx2Unpacked, NISTKnownAnswerTest)
                          LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
     }
 }
+#endif // #ifdef LIBCRUX_UNPACKED
+
 #endif // LIBCRUX_X64
 
 #ifdef LIBCRUX_AARCH64

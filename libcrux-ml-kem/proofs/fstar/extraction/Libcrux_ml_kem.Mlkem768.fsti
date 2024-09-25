@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Mlkem768
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -62,12 +62,17 @@ let v_CPA_PKE_CIPHERTEXT_SIZE_768_: usize = v_C1_SIZE_768_ +! v_C2_SIZE_768_
 let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize =
   Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE +! v_CPA_PKE_CIPHERTEXT_SIZE_768_
 
+/// Validate a private key.
+/// Returns `true` if valid, and `false` otherwise.
+val validate_private_key
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
 /// Validate a public key.
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
+/// Returns `true` if valid, and `false` otherwise.
 val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-    : Prims.Pure (Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 /// Decapsulate ML-KEM 768
 /// Generates an [`MlKemSharedSecret`].

@@ -75,6 +75,9 @@ analogously for encapsulation and decapsulation."##
 // Enable doc cfg feature for doc builds. They use nightly.
 #![cfg_attr(doc_cfg, feature(doc_cfg))]
 
+#[cfg(feature = "std")]
+extern crate std;
+
 /// Feature gating helper macros
 #[macro_use]
 mod cfg;
@@ -107,6 +110,7 @@ cfg_pre_verification! {
     mod hash_functions;
     mod ind_cca;
     mod ind_cpa;
+    mod variant;
     mod invert_ntt;
     mod matrix;
     mod ntt;
@@ -141,10 +145,11 @@ cfg_pre_verification! {
         pub mod kyber512 {
             //! Kyber 512 (NIST PQC Round 3)
             cfg_no_eurydice! {
-                pub use crate::mlkem512::generate_key_pair;
+                pub use crate::mlkem512::kyber::generate_key_pair;
                 pub use crate::mlkem512::kyber::decapsulate;
                 pub use crate::mlkem512::kyber::encapsulate;
                 pub use crate::mlkem512::validate_public_key;
+                pub use crate::mlkem512::validate_private_key;
             }
         }
 
@@ -153,10 +158,11 @@ cfg_pre_verification! {
         pub mod kyber768 {
             //! Kyber 768 (NIST PQC Round 3)
             cfg_no_eurydice! {
-                pub use crate::mlkem768::generate_key_pair;
+                pub use crate::mlkem768::kyber::generate_key_pair;
                 pub use crate::mlkem768::kyber::decapsulate;
                 pub use crate::mlkem768::kyber::encapsulate;
                 pub use crate::mlkem768::validate_public_key;
+                pub use crate::mlkem768::validate_private_key;
             }
         }
 
@@ -165,10 +171,11 @@ cfg_pre_verification! {
         pub mod kyber1024 {
             //! Kyber 1024 (NIST PQC Round 3)
             cfg_no_eurydice! {
-                pub use crate::mlkem1024::generate_key_pair;
+                pub use crate::mlkem1024::kyber::generate_key_pair;
                 pub use crate::mlkem1024::kyber::decapsulate;
                 pub use crate::mlkem1024::kyber::encapsulate;
                 pub use crate::mlkem1024::validate_public_key;
+                pub use crate::mlkem1024::validate_private_key;
             }
         }
     }

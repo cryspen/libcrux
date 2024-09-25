@@ -15,6 +15,7 @@ macro_rules! cfg_pre_verification {
     ($($item:item)*) => {
         $(
             #[cfg(feature = "pre-verification")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "pre-verification")))]
             $item
         )*
     }
@@ -26,6 +27,7 @@ macro_rules! cfg_kyber {
     ($($item:item)*) => {
         $(
             #[cfg(feature = "kyber")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
             $item
         )*
     }

@@ -22,7 +22,7 @@ fi
 ./c.sh --config cg.yaml --out cg --mlkem768 --kyber768 \
     --no-glue --no-unrolling --no-karamel_include --no-karamel_include
 
-clang-format --style=Google -i cg/*.h
+clang-format-18 --style=Google -i cg/*.h
 
 if [[ -n "$BORINGSSL_HOME" ]]; then
     echo "Copying the files into $BORINGSSL_HOME/third_party/libcrux/"
