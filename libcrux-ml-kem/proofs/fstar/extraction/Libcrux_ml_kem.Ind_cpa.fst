@@ -297,8 +297,6 @@ let compress_then_serialize_u
   let hax_temp_output:Prims.unit = result in
   out
 
-#push-options "--admit_smt_queries true"
-
 let deserialize_then_decompress_u
       (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
@@ -357,9 +355,9 @@ let deserialize_then_decompress_u
           in
           u_as_ntt)
   in
-  u_as_ntt
-
-#pop-options
+  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = u_as_ntt in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let deserialize_secret_key
       (v_K: usize)
@@ -410,7 +408,7 @@ let deserialize_secret_key
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
-#push-options "--admit_smt_queries true"
+#push-options "--z3rlimit 200"
 
 let serialize_secret_key
       (v_K v_OUT_LEN: usize)
@@ -467,7 +465,9 @@ let serialize_secret_key
           <:
           t_Array u8 v_OUT_LEN)
   in
-  out
+  let result:t_Array u8 v_OUT_LEN = out in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #pop-options
 
@@ -544,8 +544,6 @@ let serialize_public_key
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
-#push-options "--admit_smt_queries true"
-
 let decrypt_unpacked
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
           usize)
@@ -576,8 +574,6 @@ let decrypt_unpacked
       u_as_ntt
   in
   Libcrux_ml_kem.Serialize.compress_then_serialize_message #v_Vector message
-
-#pop-options
 
 let decrypt
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
@@ -610,7 +606,7 @@ let decrypt
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
-#push-options "--admit_smt_queries true"
+#push-options "--z3rlimit 200"
 
 let encrypt_unpacked
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:

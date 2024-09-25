@@ -6,7 +6,7 @@ use crate::{
 
 #[inline(always)]
 #[cfg_attr(hax, hax_lib::fstar::before("let zetas_b_lemma (i:nat{i >= 0 /\\ i < 128}) : Lemma
-   (Spec.Utils.is_i16b 1664 ${ZETAS_TIMES_MONTGOMERY_R}.[ sz i ]) =
+   (Spec.Utils.is_i16b 1664 (${get_zeta} (sz i))) =
    admit()"))]
 #[hax_lib::requires(fstar!("v ${*zeta_i} >= 64 && v ${*zeta_i} <= 128"))]
 pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(

@@ -30,7 +30,7 @@ let inv_ntt_layer_int_vec_step_reduce
   a, b <: (v_Vector & v_Vector)
 
 let zetas_b_lemma (i:nat{i >= 0 /\ i < 128}) : Lemma
-   (Spec.Utils.is_i16b 1664 Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ sz i ]) =
+   (Spec.Utils.is_i16b 1664 (Libcrux_ml_kem.Polynomial.get_zeta (sz i))) =
    admit()
 
 let invert_ntt_at_layer_1_

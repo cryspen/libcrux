@@ -221,7 +221,8 @@ val decrypt_unpacked
       (requires
         Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
         v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
-        v v_VECTOR_U_ENCODED_SIZE <= v v_CIPHERTEXT_SIZE)
+        v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
+        v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K)
       (fun _ -> Prims.l_True)
 
 val decrypt
@@ -293,10 +294,12 @@ val encrypt_unpacked
         v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
         v_ETA2 == Spec.MLKEM.v_ETA2 v_K /\
         v_ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE v_K /\
-        v_C1_LEN == Spec.MLKEM.v_C1_SIZE v_K /\
+        v_C1_LEN == Spec.MLKEM.v_C1_SIZE v_K /\ v_C2_LEN == Spec.MLKEM.v_C2_SIZE v_K /\
         v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
-        v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\ v v_C1_LEN <= v v_CIPHERTEXT_SIZE /\
-        v (Core.Slice.impl__len #u8 randomness) <= 33)
+        v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
+        v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\
+        v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
+        length randomness == Spec.MLKEM.v_SHARED_SECRET_SIZE)
       (fun _ -> Prims.l_True)
 
 val encrypt
