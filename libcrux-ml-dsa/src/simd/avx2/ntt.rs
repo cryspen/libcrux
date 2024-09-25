@@ -7,6 +7,53 @@ use crate::simd::traits::{
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
+pub fn ntt_montgomery_multiply_x2(
+    lhs_1: Vec256,
+    zetas_h_1: Vec256,
+    zetas_l_1: Vec256,
+    zetas_qinv_h_1: Vec256,
+    zetas_qinv_l_1: Vec256,
+    lhs_2: Vec256,
+    zetas_h_2: Vec256,
+    zetas_l_2: Vec256,
+    zetas_qinv_h_2: Vec256,
+    zetas_qinv_l_2: Vec256,
+) -> (Vec256, Vec256) {
+    let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
+
+    let prod02_qinv_1 = mm256_mul_epi32(zetas_qinv_l_1, lhs_1);
+    let prod02_1 = mm256_mul_epi32(lhs_1, zetas_l_1);
+    let prod02_qinv_2 = mm256_mul_epi32(zetas_qinv_l_2, lhs_2);
+    let prod02_2 = mm256_mul_epi32(lhs_2, zetas_l_2);
+
+    let lhs_h_1 = mm256_shuffle_epi32::<0b11_11_01_01>(lhs_1);
+    let lhs_h_2 = mm256_shuffle_epi32::<0b11_11_01_01>(lhs_2);
+    
+    let prod13_qinv_1 = mm256_mul_epi32(zetas_qinv_h_1, lhs_h_1);
+    let prod13_1 = mm256_mul_epi32(lhs_h_1, zetas_h_1);
+    let prod13_qinv_2 = mm256_mul_epi32(zetas_qinv_h_2, lhs_h_2);
+    let prod13_2 = mm256_mul_epi32(lhs_h_2, zetas_h_2);
+
+    let c02_1 = mm256_mul_epi32(prod02_qinv_1, field_modulus);
+    let c13_1 = mm256_mul_epi32(prod13_qinv_1, field_modulus);
+    let c02_2 = mm256_mul_epi32(prod02_qinv_2, field_modulus);
+    let c13_2 = mm256_mul_epi32(prod13_qinv_2, field_modulus);
+
+    let res02_1 = mm256_sub_epi32(prod02_1, c02_1);
+    let res13_1 = mm256_sub_epi32(prod13_1, c13_1);
+    let res02_2 = mm256_sub_epi32(prod02_2, c02_2);
+    let res13_2 = mm256_sub_epi32(prod13_2, c13_2);
+
+    let res02_shifted_1 = mm256_shuffle_epi32::<0b11_11_01_01>(res02_1);
+    let res02_shifted_2 = mm256_shuffle_epi32::<0b11_11_01_01>(res02_2);
+
+    let res_1 = mm256_blend_epi32::<0b10101010>(res02_shifted_1, res13_1);
+    let res_2 = mm256_blend_epi32::<0b10101010>(res02_shifted_2, res13_2);
+    
+    (res_1, res_2)
+}
+
+#[inline(always)]
 pub fn ntt_montgomery_multiply(
     lhs: Vec256,
     zetas_h: Vec256,
@@ -97,6 +144,44 @@ fn precompute_zetas(zetas_l: Vec256) {
 
     mm256_storeu_si256_i32(&mut zetas_array, zetas_l_qinv);
     mm256_storeu_si256_i32(&mut zetas_array, zetas_h_qinv);
+}
+
+/// Compute (a,b) ↦ (a + ζb, a - ζb).
+#[inline(always)]
+fn butterfly_x2(
+    summands_1: Vec256,
+    zeta_multiplicands_1: Vec256,
+    zetas_h_1: Vec256,
+    zetas_l_1: Vec256,
+    zetas_qinv_h_1: Vec256,
+    zetas_qinv_l_1: Vec256,
+    summands_2: Vec256,
+    zeta_multiplicands_2: Vec256,
+    zetas_h_2: Vec256,
+    zetas_l_2: Vec256,
+    zetas_qinv_h_2: Vec256,
+    zetas_qinv_l_2: Vec256,
+) -> (Vec256, Vec256, Vec256, Vec256) {
+    let (zeta_products_1, zeta_products_2) = ntt_montgomery_multiply_x2(
+        zeta_multiplicands_1,
+        zetas_h_1,
+        zetas_l_1,
+        zetas_qinv_h_1,
+        zetas_qinv_l_1,
+        zeta_multiplicands_2,
+        zetas_h_2,
+        zetas_l_2,
+        zetas_qinv_h_2,
+        zetas_qinv_l_2,
+    );
+
+    let addition_terms_1 = arithmetic::add(summands_1, zeta_products_1);
+    let addition_terms_2 = arithmetic::add(summands_2, zeta_products_2);
+
+    let subtraction_terms_1 = arithmetic::subtract(summands_1, zeta_products_1);
+    let subtraction_terms_2 = arithmetic::subtract(summands_2, zeta_products_2);
+    
+    (addition_terms_1, subtraction_terms_1, addition_terms_2, subtraction_terms_2)
 }
 
 /// Compute (a,b) ↦ (a + ζb, a - ζb).
@@ -402,131 +487,255 @@ fn ntt_from_layer_5(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
         };
     }
 
+    macro_rules! butterfly_x2_same {
+        ($chunk:ident, $l_1:literal, $h_1:literal, $zetas_h_1:ident, $zetas_l_1:ident, $zetas_qinv_h_1:ident, $zetas_qinv_l_1:ident, $l_2:literal, $h_2:literal) => {
+            ($chunk[$l_1], $chunk[$h_1], $chunk[$l_2], $chunk[$h_2]) = butterfly_x2(
+                $chunk[$l_1],
+                $chunk[$h_1],
+                $zetas_h_1,
+                $zetas_l_1,
+                $zetas_qinv_h_1,
+                $zetas_qinv_l_1,
+                $chunk[$l_2],
+                $chunk[$h_2],
+                $zetas_h_1,
+                $zetas_l_1,
+                $zetas_qinv_h_1,
+                $zetas_qinv_l_1,
+            );
+        };
+    }
+
+        macro_rules! butterfly_x2 {
+            ($chunk:ident, $l_1:literal, $h_1:literal, $zetas_h_1:ident, $zetas_l_1:ident, $zetas_qinv_h_1:ident, $zetas_qinv_l_1:ident, $l_2:literal, $h_2:literal, $zetas_h_2:ident, $zetas_l_2:ident, $zetas_qinv_h_2:ident, $zetas_qinv_l_2:ident) => {
+            ($chunk[$l_1], $chunk[$h_1], $chunk[$l_2], $chunk[$h_2]) = butterfly_x2(
+                $chunk[$l_1],
+                $chunk[$h_1],
+                $zetas_h_1,
+                $zetas_l_1,
+                $zetas_qinv_h_1,
+                $zetas_qinv_l_1,
+                $chunk[$l_2],
+                $chunk[$h_2],
+                $zetas_h_2,
+                $zetas_l_2,
+                $zetas_qinv_h_2,
+                $zetas_qinv_l_2,
+            );
+        };
+    }
+    
     for (layer_5_round, current_chunk) in re.chunks_exact_mut(8).enumerate() {
         let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(5, 0, layer_5_round);
-        butterfly!(
+        // butterfly!(
+        //     current_chunk,
+        //     0,
+        //     4,
+        //     zetas_h,
+        //     zetas_l,
+        //     zetas_qinv_h,
+        //     zetas_qinv_l
+        // );
+        // butterfly!(
+        //     current_chunk,
+        //     1,
+        //     5,
+        //     zetas_h,
+        //     zetas_l,
+        //     zetas_qinv_h,
+        //     zetas_qinv_l
+        // );
+        
+        butterfly_x2_same!(
             current_chunk,
             0,
             4,
             zetas_h,
             zetas_l,
             zetas_qinv_h,
-            zetas_qinv_l
-        );
-        butterfly!(
-            current_chunk,
+            zetas_qinv_l,
             1,
-            5,
-            zetas_h,
-            zetas_l,
-            zetas_qinv_h,
-            zetas_qinv_l
+            5
         );
-        butterfly!(
+                
+        // butterfly!(
+        //     current_chunk,
+        //     2,
+        //     6,
+        //     zetas_h,
+        //     zetas_l,
+        //     zetas_qinv_h,
+        //     zetas_qinv_l
+        // );
+        // butterfly!(
+        //     current_chunk,
+        //     3,
+        //     7,
+        //     zetas_h,
+        //     zetas_l,
+        //     zetas_qinv_h,
+        //     zetas_qinv_l
+        // );
+        
+        butterfly_x2_same!(
             current_chunk,
             2,
             6,
             zetas_h,
             zetas_l,
             zetas_qinv_h,
-            zetas_qinv_l
-        );
-        butterfly!(
-            current_chunk,
+            zetas_qinv_l,
             3,
-            7,
-            zetas_h,
-            zetas_l,
-            zetas_qinv_h,
-            zetas_qinv_l
+            7
         );
-
+        
         // layer 4
         let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(4, 0, layer_5_round);
 
-        butterfly!(
+        butterfly_x2_same!(
             current_chunk,
             0,
             2,
             zetas_h,
             zetas_l,
             zetas_qinv_h,
-            zetas_qinv_l
-        );
-        butterfly!(
-            current_chunk,
+            zetas_qinv_l,
             1,
-            3,
-            zetas_h,
-            zetas_l,
-            zetas_qinv_h,
-            zetas_qinv_l
+            3
         );
+        
+        // butterfly!(
+        //     current_chunk,
+        //     0,
+        //     2,
+        //     zetas_h,
+        //     zetas_l,
+        //     zetas_qinv_h,
+        //     zetas_qinv_l
+        // );
+        // butterfly!(
+        //     current_chunk,
+        //     1,
+        //     3,
+        //     zetas_h,
+        //     zetas_l,
+        //     zetas_qinv_h,
+        //     zetas_qinv_l
+        // );
 
         let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(4, 1, layer_5_round);
-        butterfly!(
+
+        butterfly_x2_same!(
             current_chunk,
             4,
             6,
             zetas_h,
             zetas_l,
             zetas_qinv_h,
-            zetas_qinv_l
-        );
-        butterfly!(
-            current_chunk,
+            zetas_qinv_l,
             5,
-            7,
-            zetas_h,
-            zetas_l,
-            zetas_qinv_h,
-            zetas_qinv_l
+            7
         );
+        
+        // butterfly!(
+        //     current_chunk,
+        //     4,
+        //     6,
+        //     zetas_h,
+        //     zetas_l,
+        //     zetas_qinv_h,
+        //     zetas_qinv_l
+        // );
+        // butterfly!(
+        //     current_chunk,
+        //     5,
+        //     7,
+        //     zetas_h,
+        //     zetas_l,
+        //     zetas_qinv_h,
+        //     zetas_qinv_l
+        // );
 
         // layer 3
-        let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(3, 0, layer_5_round);
-        butterfly!(
+        let (zetas_h_1, zetas_l_1, zetas_qinv_h_1, zetas_qinv_l_1) = load_zetas(3, 0, layer_5_round);
+        let (zetas_h_2, zetas_l_2, zetas_qinv_h_2, zetas_qinv_l_2) = load_zetas(3, 1, layer_5_round);
+
+        butterfly_x2!(
             current_chunk,
             0,
             1,
-            zetas_h,
-            zetas_l,
-            zetas_qinv_h,
-            zetas_qinv_l
-        );
-
-        let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(3, 1, layer_5_round);
-        butterfly!(
-            current_chunk,
+            zetas_h_1,
+            zetas_l_1,
+            zetas_qinv_h_1,
+            zetas_qinv_l_1,
             2,
             3,
-            zetas_h,
-            zetas_l,
-            zetas_qinv_h,
-            zetas_qinv_l
+            zetas_h_2,
+            zetas_l_2,
+            zetas_qinv_h_2,
+            zetas_qinv_l_2
         );
 
-        let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(3, 2, layer_5_round);
-        butterfly!(
+        // butterfly!(
+        //     current_chunk,
+        //     0,
+        //     1,
+        //     zetas_h_1,
+        //     zetas_l_1,
+        //     zetas_qinv_h_1,
+        //     zetas_qinv_l_1
+        // );
+
+        // butterfly!(
+        //     current_chunk,
+        //     2,
+        //     3,
+        //     zetas_h_2,
+        //     zetas_l_2,
+        //     zetas_qinv_h_2,
+        //     zetas_qinv_l_2
+        // );
+
+        let (zetas_h_1, zetas_l_1, zetas_qinv_h_1, zetas_qinv_l_1) = load_zetas(3, 2, layer_5_round);
+        let (zetas_h_2, zetas_l_2, zetas_qinv_h_2, zetas_qinv_l_2) = load_zetas(3, 3, layer_5_round);
+
+
+        butterfly_x2!(
             current_chunk,
             4,
             5,
-            zetas_h,
-            zetas_l,
-            zetas_qinv_h,
-            zetas_qinv_l
-        );
-
-        let (zetas_h, zetas_l, zetas_qinv_h, zetas_qinv_l) = load_zetas(3, 3, layer_5_round);
-        butterfly!(
-            current_chunk,
+            zetas_h_1,
+            zetas_l_1,
+            zetas_qinv_h_1,
+            zetas_qinv_l_1,
             6,
             7,
-            zetas_h,
-            zetas_l,
-            zetas_qinv_h,
-            zetas_qinv_l
+            zetas_h_2,
+            zetas_l_2,
+            zetas_qinv_h_2,
+            zetas_qinv_l_2
         );
+        
+        // butterfly!(
+        //     current_chunk,
+        //     4,
+        //     5,
+        //     zetas_h_1,
+        //     zetas_l_1,
+        //     zetas_qinv_h_1,
+        //     zetas_qinv_l_1
+        // );
+
+
+        // butterfly!(
+        //     current_chunk,
+        //     6,
+        //     7,
+        //     zetas_h_2,
+        //     zetas_l_2,
+        //     zetas_qinv_h_2,
+        //     zetas_qinv_l_2
+        // );
         // TODO: Remaining layers
     }
 }
