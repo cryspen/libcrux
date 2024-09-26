@@ -139,15 +139,29 @@ impl Operations for SIMD256Vector {
         }
     }
 
+    #[requires(fstar!("forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\\
+        v (Seq.index (impl.f_repr $vector) i) < 3329"))]
+    #[ensures(|out| fstar!("forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) 1"))]
     fn compress_1(vector: Self) -> Self {
+        hax_lib::fstar!("admit()");
         Self {
             elements: compress::compress_message_coefficient(vector.elements),
         }
     }
 
-    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
-        COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
+    #[requires(fstar!("(v $COEFFICIENT_BITS == 4 \\/
+            v $COEFFICIENT_BITS == 5 \\/
+            v $COEFFICIENT_BITS == 10 \\/
+            v $COEFFICIENT_BITS == 11) /\\
+        (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\\
+            v (Seq.index (impl.f_repr $vector) i) < 3329)"))]
+    #[ensures(|out| fstar!("(v $COEFFICIENT_BITS == 4 \\/
+            v $COEFFICIENT_BITS == 5 \\/
+            v $COEFFICIENT_BITS == 10 \\/
+            v $COEFFICIENT_BITS == 11) ==>
+                (forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) (v $COEFFICIENT_BITS))"))]
     fn compress<const COEFFICIENT_BITS: i32>(vector: Self) -> Self {
+        hax_lib::fstar!("admit()");
         Self {
             elements: compress::compress_ciphertext_coefficient::<COEFFICIENT_BITS>(
                 vector.elements,

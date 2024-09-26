@@ -31,11 +31,7 @@ pub struct Vec128(u8);
 pub type Vec256 = u8;
 #[cfg(not(hax))]
 pub type Vec128 = u8;
-
-pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
-    debug_assert_eq!(output.len(), 16);
-    unimplemented!()
-}
+pub type Vec256Float = u8;
 
 pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
     debug_assert_eq!(output.len(), 32);
@@ -43,8 +39,21 @@ pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
 }
 
 #[hax_lib::ensures(|()| future(output).len() == output.len())]
+pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
+    debug_assert_eq!(output.len(), 16);
+    unimplemented!()
+}
+pub fn mm256_storeu_si256_i32(output: &mut [i32], vector: Vec256) {
+    debug_assert_eq!(output.len(), 8);
+    unimplemented!()
+}
+
 pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
-    // debug_assert_eq!(output.len(), 8);
+    debug_assert!(output.len() >= 8);
+    unimplemented!()
+}
+pub fn mm_storeu_si128_i32(output: &mut [i32], vector: Vec128) {
+    debug_assert_eq!(output.len(), 4);
     unimplemented!()
 }
 
@@ -64,13 +73,19 @@ pub fn mm256_loadu_si256_u8(input: &[u8]) -> Vec256 {
     debug_assert_eq!(input.len(), 32);
     unimplemented!()
 }
-
 pub fn mm256_loadu_si256_i16(input: &[i16]) -> Vec256 {
     debug_assert_eq!(input.len(), 16);
     unimplemented!()
 }
+pub fn mm256_loadu_si256_i32(input: &[i32]) -> Vec256 {
+    debug_assert_eq!(input.len(), 8);
+    unimplemented!()
+}
 
 pub fn mm256_setzero_si256() -> Vec256 {
+    unimplemented!()
+}
+pub fn mm256_set_m128i(hi: Vec128, lo: Vec128) -> Vec256 {
     unimplemented!()
 }
 
@@ -184,15 +199,23 @@ pub fn mm256_set_epi16(
 
 #[hax_lib::ensures(|result| fstar!("vec128_as_i16x8 $result == 
                                     Spec.Utils.create (sz 8) $constant"))]
+#[inline(always)]
 pub fn mm_set1_epi16(constant: i16) -> Vec128 {
     unimplemented!()
 }
 
+#[inline(always)]
 pub fn mm256_set1_epi32(constant: i32) -> Vec256 {
     unimplemented!()
 }
 
+#[inline(always)]
+pub fn mm_set_epi32(input3: i32, input2: i32, input1: i32, input0: i32) -> Vec128 {
+    unimplemented!()
+}
+
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_set_epi32}")]
+#[inline(always)]
 pub fn mm256_set_epi32(
     input7: i32,
     input6: i32,
@@ -212,6 +235,12 @@ pub fn mm_add_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unimplemented!()
 }
 
+#[hax_lib::ensures(|result| fstar!("vec128_as_i16x8 $result == 
+            Spec.Utils.map2 (-.) (vec128_as_i16x8 $lhs) (vec128_as_i16x8 $rhs)"))]
+pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
 #[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == 
             Spec.Utils.map2 (+.) (vec256_as_i16x16 $lhs) (vec256_as_i16x16 $rhs)"))]
 pub fn mm256_add_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
@@ -224,6 +253,7 @@ pub fn mm256_add_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
 pub fn mm256_madd_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
+#[inline(always)]
 pub fn mm256_add_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
@@ -234,9 +264,17 @@ pub fn mm256_sub_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
-#[hax_lib::ensures(|result| fstar!("vec128_as_i16x8 $result == 
-            Spec.Utils.map2 (-.) (vec128_as_i16x8 $lhs) (vec128_as_i16x8 $rhs)"))]
-pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
+#[inline(always)]
+pub fn mm256_add_epi64(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm256_abs_epi32(a: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
+pub fn mm256_sub_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
@@ -260,7 +298,31 @@ pub fn mm_mullo_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unimplemented!()
 }
 
+#[inline(always)]
 pub fn mm256_cmpgt_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unimplemented!()
+}
+#[inline(always)]
+pub fn mm256_cmpgt_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unimplemented!()
+}
+#[inline(always)]
+pub fn mm256_cmpeq_epi32(a: Vec256, b: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm256_sign_epi32(a: Vec256, b: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm256_castsi256_ps(a: Vec256) -> Vec256Float {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm256_movemask_ps(a: Vec256Float) -> i32 {
     unimplemented!()
 }
 
@@ -285,6 +347,11 @@ pub fn mm256_mul_epu32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[inline(always)]
+pub fn mm256_mul_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -296,7 +363,17 @@ val lemma_mm256_and_si256 lhs rhs
           [SMTPat (vec256_as_i16x16 (mm256_and_si256 lhs rhs))]
 "#
 )]
+#[inline(always)]
 pub fn mm256_and_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm256_or_si256(a: Vec256, b: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
+pub fn mm256_testz_si256(lhs: Vec256, rhs: Vec256) -> i32 {
     unimplemented!()
 }
 
@@ -326,6 +403,11 @@ pub fn mm256_srli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 }
 pub fn mm256_srli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
+    unimplemented!()
+}
+
+pub fn mm_srli_epi64<const SHIFT_BY: i32>(vector: Vec128) -> Vec128 {
+    debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
     unimplemented!()
 }
 
@@ -422,8 +504,22 @@ pub fn mm256_inserti128_si256<const CONTROL: i32>(vector: Vec256, vector_i128: V
     unimplemented!()
 }
 
+#[inline(always)]
 pub fn mm256_blend_epi16<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm256_blend_epi32<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    debug_assert!(CONTROL >= 0 && CONTROL < 256);
+    unimplemented!()
+}
+
+// This is essentially _mm256_blendv_ps adapted for use with the Vec256 type.
+// It is not offered by the AVX2 instruction set.
+#[inline(always)]
+pub fn vec256_blendv_epi32(a: Vec256, b: Vec256, mask: Vec256) -> Vec256 {
     unimplemented!()
 }
 
@@ -431,15 +527,30 @@ pub fn mm256_blend_epi16<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256
     interface,
     "include BitVec.Intrinsics {mm_movemask_epi8 as ${mm_movemask_epi8}}"
 )]
+#[inline(always)]
 pub fn mm_movemask_epi8(vector: Vec128) -> i32 {
     unimplemented!()
 }
 
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_permutevar8x32_epi32}")]
+#[inline(always)]
 pub fn mm256_permutevar8x32_epi32(vector: Vec256, control: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+pub fn mm256_srlv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
+    unimplemented!()
+}
+#[inline(always)]
+pub fn mm256_srlv_epi64(vector: Vec256, counts: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
+pub fn mm_sllv_epi32(vector: Vec128, counts: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_sllv_epi32}")]
 pub fn mm256_sllv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unimplemented!()
@@ -451,12 +562,22 @@ pub fn mm256_slli_epi64<const LEFT: i32>(x: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+pub fn mm256_bsrli_epi128<const SHIFT_BY: i32>(x: Vec256) -> Vec256 {
+    debug_assert!(SHIFT_BY > 0 && SHIFT_BY < 16);
+    unimplemented!()
+}
+
+#[inline(always)]
 pub fn mm256_andnot_si256(a: Vec256, b: Vec256) -> Vec256 {
     unimplemented!()
 }
 
 #[inline(always)]
 pub fn mm256_set1_epi64x(a: i64) -> Vec256 {
+    unimplemented!()
+}
+#[inline(always)]
+pub fn mm256_set_epi64x(input3: i64, input2: i64, input1: i64, input0: i64) -> Vec256 {
     unimplemented!()
 }
 

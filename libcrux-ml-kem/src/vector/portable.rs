@@ -96,14 +96,26 @@ impl Operations for PortableVector {
         montgomery_multiply_by_constant(v, r)
     }
 
-    fn compress_1(v: Self) -> Self {
-        compress_1(v)
+    #[requires(fstar!("forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\\
+        v (Seq.index (impl.f_repr $a) i) < 3329"))]
+    #[ensures(|out| fstar!("forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) 1"))]
+    fn compress_1(a: Self) -> Self {
+        compress_1(a)
     }
 
-    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
-               COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
-    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
-        compress::<COEFFICIENT_BITS>(v)
+    #[requires(fstar!("(v $COEFFICIENT_BITS == 4 \\/
+            v $COEFFICIENT_BITS == 5 \\/
+            v $COEFFICIENT_BITS == 10 \\/
+            v $COEFFICIENT_BITS == 11) /\\
+        (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\\
+            v (Seq.index (impl.f_repr $a) i) < 3329)"))]
+    #[ensures(|out| fstar!("(v $COEFFICIENT_BITS == 4 \\/
+            v $COEFFICIENT_BITS == 5 \\/
+            v $COEFFICIENT_BITS == 10 \\/
+            v $COEFFICIENT_BITS == 11) ==>
+                (forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) (v $COEFFICIENT_BITS))"))]
+    fn compress<const COEFFICIENT_BITS: i32>(a: Self) -> Self {
+        compress::<COEFFICIENT_BITS>(a)
     }
 
     #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
@@ -185,6 +197,7 @@ impl Operations for PortableVector {
     #[ensures(|out| fstar!("sz (Seq.length $a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $a (impl.f_repr $out)"))]
     fn deserialize_1(a: &[u8]) -> Self {
         hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma $a");
+        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_bounded_lemma $a");
         deserialize_1(a)
     }
 
@@ -200,6 +213,7 @@ impl Operations for PortableVector {
     #[ensures(|out| fstar!("sz (Seq.length $a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $a (impl.f_repr $out)"))]
     fn deserialize_4(a: &[u8]) -> Self {
         hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma $a");
+        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_bounded_lemma $a");
         deserialize_4(a)
     }
 
@@ -223,6 +237,7 @@ impl Operations for PortableVector {
     #[ensures(|out| fstar!("sz (Seq.length $a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $a (impl.f_repr $out)"))]
     fn deserialize_10(a: &[u8]) -> Self {
         hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma $a");
+        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_bounded_lemma $a");
         deserialize_10(a)
     }
 
@@ -246,6 +261,7 @@ impl Operations for PortableVector {
     #[ensures(|out| fstar!("sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (impl.f_repr $out)"))]
     fn deserialize_12(a: &[u8]) -> Self {
         hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma $a");
+        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_bounded_lemma $a");
         deserialize_12(a)
     }
 

@@ -8,7 +8,7 @@ pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZ
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
 
-    match ETA {
+    match ETA as u8 {
         2 => {
             const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 3;
 
@@ -41,7 +41,7 @@ pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZ
 fn deserialize<SIMDUnit: Operations, const ETA: usize>(
     serialized: &[u8],
 ) -> PolynomialRingElement<SIMDUnit> {
-    let mut serialized_chunks = match ETA {
+    let mut serialized_chunks = match ETA as u8 {
         2 => serialized.chunks(3),
         4 => serialized.chunks(4),
         _ => unreachable!(),

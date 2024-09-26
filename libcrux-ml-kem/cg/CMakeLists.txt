@@ -14,13 +14,10 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 
 if(NOT MSVC)
-    # TODO: Clean up
     add_compile_options(
         -Wall
-        # -Wextra
-        # -pedantic
-        # -Wconversion
-        # -Wsign-conversion
+        -fstack-usage
+        -Wunused-function
         $<$<CONFIG:DEBUG>:-g>
         $<$<CONFIG:DEBUG>:-Og>
         $<$<CONFIG:RELEASE>:-g>
@@ -28,7 +25,15 @@ if(NOT MSVC)
     )
 endif(NOT MSVC)
 
+if((CMAKE_C_COMPILER_ID STREQUAL "Clang" AND
+      CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0") OR
+     (CMAKE_C_COMPILER_ID STREQUAL "AppleClang" AND
+      CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.1.6"))
+      add_compile_options(-Werror -Wframe-larger-than=25344)
+endif()
+
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 include_directories(
     ${PROJECT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/internal

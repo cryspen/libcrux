@@ -1,5 +1,5 @@
 module Spec.MLKEM.Math
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 30"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 
 open FStar.Mul
 open Core
@@ -94,6 +94,7 @@ let poly_ntt_step (a:field_element) (b:field_element) (i:nat{i < 128}) =
   let a = field_add a t in
   (a,b)
 
+#push-options "--split_queries always"
 let poly_ntt_layer (p:polynomial) (l:nat{l > 0 /\ l < 8}) : polynomial =
   let len = pow2 l in
   let k = (128 / len) - 1 in
@@ -103,6 +104,7 @@ let poly_ntt_layer (p:polynomial) (l:nat{l > 0 /\ l < 8}) : polynomial =
     let (idx0, idx1) = if idx < len then (idx, idx+len) else (idx-len,idx) in
     let (a_ntt, b_ntt) = poly_ntt_step p.[sz idx0] p.[sz idx1] (round + k) in
     if idx < len then a_ntt else b_ntt)
+#pop-options
 
 val poly_ntt: polynomial -> polynomial
 let poly_ntt p =
@@ -277,7 +279,7 @@ let serialize_post
   (coefficients: t_Array i16 (sz 16) { serialize_pre d1 coefficients })
   (output: t_Array u8 (sz (d1 * 2)))
   = BitVecEq.int_t_array_bitwise_eq coefficients d1
-                                    output       8
+                                   output       8
 
 // TODO: this is an alternative version of byte_decode
 //   rename to decoded bytes
@@ -286,5 +288,6 @@ let deserialize_post
   (bytes: t_Array u8 (sz (d1 * 2)))
   (output: t_Array i16 (sz 16))
   = BitVecEq.int_t_array_bitwise_eq bytes  8
-                                    output d1
+                                   output d1 /\
+  forall (i:nat). i < 16 ==> bounded (Seq.index output i) d1
 #pop-options

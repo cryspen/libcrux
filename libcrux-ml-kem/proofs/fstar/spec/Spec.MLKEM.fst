@@ -240,7 +240,8 @@ val ind_cpa_encrypt (r:rank) (public_key: t_MLKEMPublicKey r)
                     (message: t_Array u8 v_SHARED_SECRET_SIZE)
                     (randomness:t_Array u8 v_SHARED_SECRET_SIZE) :
                     (t_MLKEMCiphertext r & bool)
-    
+
+[@ "opaque_to_smt"]
 let ind_cpa_encrypt r public_key message randomness =
     let (t_as_ntt_bytes, seed_for_A) = split public_key (v_T_AS_NTT_ENCODED_SIZE r) in
     let t_as_ntt = vector_decode_12 #r t_as_ntt_bytes in 
@@ -262,6 +263,7 @@ val ind_cpa_decrypt (r:rank) (secret_key: t_MLKEMCPAPrivateKey r)
                     (ciphertext: t_MLKEMCiphertext r): 
                     t_MLKEMSharedSecret
 
+[@ "opaque_to_smt"]
 let ind_cpa_decrypt r secret_key ciphertext =
     let (c1,c2) = split ciphertext (v_C1_SIZE r) in
     let u = decode_then_decompress_u #r c1 in
