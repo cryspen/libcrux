@@ -215,11 +215,8 @@ pub(crate) fn sign<
             SIMDUnit,
             Shake256,
             ONES_IN_VERIFIER_CHALLENGE,
-        >(
-            commitment_hash_candidate[0..VERIFIER_CHALLENGE_SEED_SIZE]
-                .try_into()
-                .unwrap(),
-        ));
+            COMMITMENT_HASH_SIZE,
+        >(commitment_hash_candidate));
 
         let challenge_times_s1 = vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(
             &s1_as_ntt,
@@ -361,11 +358,8 @@ pub(crate) fn verify<
             SIMDUnit,
             Shake256,
             ONES_IN_VERIFIER_CHALLENGE,
-        >(
-            signature.commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
-                .try_into()
-                .unwrap(),
-        ));
+            COMMITMENT_HASH_SIZE,
+        >(signature.commitment_hash));
 
         let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
             &A_as_ntt,

@@ -497,7 +497,7 @@ class Dilithium:
             # Create challenge polynomial
             w1_bytes = w1.bit_pack_w(self.gamma_2)
             c_tilde = self._h(mu + w1_bytes, self.ctildebytes)
-            c = self._sample_in_ball(c_tilde[:32])  # SEEDBYTES
+            c = self._sample_in_ball(c_tilde)  # SEEDBYTES
 
             # Store c in NTT form
             c.to_ntt()
@@ -539,7 +539,7 @@ class Dilithium:
 
         tr = self._h(pk_bytes, 64)  # TRBYTES
         mu = self._h(tr + m, 64)
-        c = self._sample_in_ball(c_tilde[:32])
+        c = self._sample_in_ball(c_tilde)
 
         # Convert to NTT for computation
         c.to_ntt()
