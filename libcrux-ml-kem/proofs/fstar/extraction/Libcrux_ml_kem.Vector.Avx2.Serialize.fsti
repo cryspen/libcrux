@@ -7,6 +7,7 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Vector.Portable in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 val deserialize_1___deserialize_1_i16s (a b: i16)
@@ -119,6 +120,19 @@ val serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
           let result:t_Array u8 (sz 2) = result in
           forall i. bit_vec_of_int_t_array result 8 i == vector (i * 16))
 
+val serialize_10___serialize_10_vec (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+    : Prims.Pure
+      (Libcrux_intrinsics.Avx2_extract.t_Vec128 & Libcrux_intrinsics.Avx2_extract.t_Vec128)
+      (requires forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0)
+      (ensures
+        fun temp_0_ ->
+          let lower_8_, upper_8_:(Libcrux_intrinsics.Avx2_extract.t_Vec128 &
+            Libcrux_intrinsics.Avx2_extract.t_Vec128) =
+            temp_0_
+          in
+          forall (i: nat{i < 160}).
+            vector ((i / 10) * 16 + i % 10) == (if i < 80 then lower_8_ i else upper_8_ (i - 80)))
+
 val serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure (t_Array u8 (sz 20))
       (requires forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0)
@@ -202,7 +216,9 @@ val deserialize_12_ (bytes: t_Slice u8)
                 bit_vec_of_int_t_array (bytes <: t_Array _ (sz 24)) 8 j))
 
 val deserialize_5_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
+      (requires Seq.length bytes == 10)
+      (fun _ -> Prims.l_True)
 
 val deserialize_11_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)

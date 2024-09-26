@@ -460,6 +460,7 @@ fn mm256_si256_from_two_si128(lower: Vec128, upper: Vec128) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"Seq.length bytes == 10"#))]
 pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
     let coefficients = mm_set_epi8(
         bytes[9], bytes[8], bytes[8], bytes[7], bytes[7], bytes[6], bytes[6], bytes[5], bytes[4],
@@ -501,83 +502,94 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--ext context_pruning")]
+#[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
 #[hax_lib::requires(fstar!("forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0"))]
 #[hax_lib::ensures(|r| fstar!("forall (i: nat{i < 160}). bit_vec_of_int_t_array r 8 i == vector ((i/10) * 16 + i%10)"))]
 pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
-    let mut serialized = [0u8; 32];
-
-    // If |vector| is laid out as follows (superscript number indicates the
-    // corresponding bit is duplicated that many times):
-    //
-    // 0⁶a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀ 0⁶b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀ 0⁶c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀ 0⁶d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀ | ↩
-    // 0⁶e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀ 0⁶f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀ 0⁶g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀ 0⁶h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀ | ↩
-    // ...
-    //
-    // |adjacent_2_combined| will be laid out as a series of 32-bit integers,
-    // as follows:
-    //
-    // 0¹²b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀ 0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀ | ↩
-    // 0¹²f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀ 0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀ | ↩
-    // ....
-    let adjacent_2_combined = mm256_concat_pairs_n(10, vector);
-
-    // Shifting up the values at the even indices by 12, we get:
-    //
-    // b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀0¹² 0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀ | ↩
-    // f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀0¹² 0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀ | ↩
-    // ...
-    let adjacent_4_combined = mm256_sllv_epi32(
-        adjacent_2_combined,
-        mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12),
-    );
-
-    // Viewing this as a set of 64-bit integers we get:
-    //
-    // 0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀0¹²  | ↩
-    // 0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀0¹²  | ↩
-    // ...
-    //
-    // Shifting down by 12 gives us:
-    //
-    // 0²⁴d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀ | ↩
-    // 0²⁴h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀ | ↩
-    // ...
-    let adjacent_4_combined = mm256_srli_epi64::<12>(adjacent_4_combined);
-
-    // |adjacent_4_combined|, when the bottom and top 128 bit-lanes are grouped
-    // into bytes, looks like:
-    //
-    // 0₇0₆0₅B₄B₃B₂B₁B₀ | ↩
-    // 0₁₅0₁₄0₁₃B₁₂B₁₁B₁₀B₉B₈ | ↩
-    //
-    // In each 128-bit lane, we want to put bytes 8, 9, 10, 11, 12 after
-    // bytes 0, 1, 2, 3 to allow for sequential reading.
-    let adjacent_8_combined = mm256_shuffle_epi8(
-        adjacent_4_combined,
-        mm256_set_epi8(
-            -1, -1, -1, -1, -1, -1, 12, 11, 10, 9, 8, 4, 3, 2, 1, 0, -1, -1, -1, -1, -1, -1, 12,
-            11, 10, 9, 8, 4, 3, 2, 1, 0,
-        ),
-    );
-
-    // We now have 64 bits starting at position 0 in the lower 128-bit lane, ...
-    let lower_8 = mm256_castsi256_si128(adjacent_8_combined);
-    mm_storeu_bytes_si128(&mut serialized[0..16], lower_8);
-
-    // and 64 bits starting at position 0 in the upper 128-bit lane.
-    let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
-    hax_lib::fstar!(
+    #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
+    #[hax_lib::requires(fstar!("forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0"))]
+    #[hax_lib::ensures(|(lower_8, upper_8)| fstar!(
         r#"
-      assert_norm (
-         BitVec.Utils.forall_n 80 (fun i -> lower_8_ i = vector (      (i/10) * 16 + i%10))
-      && BitVec.Utils.forall_n 80 (fun i -> upper_8_ i = vector (128 + (i/10) * 16 + i%10))
+         forall (i: nat{i < 160}).
+           vector ((i/10) * 16 + i%10) == (if i < 80 then $lower_8 i else $upper_8 (i - 80))
       )
     "#
-    );
+    ))]
+    fn serialize_10_vec(vector: Vec256) -> (Vec128, Vec128) {
+        // If |vector| is laid out as follows (superscript number indicates the
+        // corresponding bit is duplicated that many times):
+        //
+        // 0⁶a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀ 0⁶b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀ 0⁶c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀ 0⁶d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀ | ↩
+        // 0⁶e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀ 0⁶f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀ 0⁶g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀ 0⁶h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀ | ↩
+        // ...
+        //
+        // |adjacent_2_combined| will be laid out as a series of 32-bit integers,
+        // as follows:
+        //
+        // 0¹²b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀ 0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀ | ↩
+        // 0¹²f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀ 0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀ | ↩
+        // ....
+        let adjacent_2_combined = mm256_concat_pairs_n(10, vector);
+
+        // Shifting up the values at the even indices by 12, we get:
+        //
+        // b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀0¹² 0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀ | ↩
+        // f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀0¹² 0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀ | ↩
+        // ...
+        let adjacent_4_combined = mm256_sllv_epi32(
+            adjacent_2_combined,
+            mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12),
+        );
+
+        // Viewing this as a set of 64-bit integers we get:
+        //
+        // 0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀0¹²  | ↩
+        // 0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀0¹²  | ↩
+        // ...
+        //
+        // Shifting down by 12 gives us:
+        //
+        // 0²⁴d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀ | ↩
+        // 0²⁴h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀ | ↩
+        // ...
+        let adjacent_4_combined = mm256_srli_epi64::<12>(adjacent_4_combined);
+
+        // |adjacent_4_combined|, when the bottom and top 128 bit-lanes are grouped
+        // into bytes, looks like:
+        //
+        // 0₇0₆0₅B₄B₃B₂B₁B₀ | ↩
+        // 0₁₅0₁₄0₁₃B₁₂B₁₁B₁₀B₉B₈ | ↩
+        //
+        // In each 128-bit lane, we want to put bytes 8, 9, 10, 11, 12 after
+        // bytes 0, 1, 2, 3 to allow for sequential reading.
+        let adjacent_8_combined = mm256_shuffle_epi8(
+            adjacent_4_combined,
+            mm256_set_epi8(
+                -1, -1, -1, -1, -1, -1, 12, 11, 10, 9, 8, 4, 3, 2, 1, 0, -1, -1, -1, -1, -1, -1,
+                12, 11, 10, 9, 8, 4, 3, 2, 1, 0,
+            ),
+        );
+        // We now have 64 bits starting at position 0 in the lower 128-bit lane, ...
+        let lower_8 = mm256_castsi256_si128(adjacent_8_combined);
+        // and 64 bits starting at position 0 in the upper 128-bit lane.
+        let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
+        hax_lib::fstar!(
+            r#"
+    introduce forall (i:nat{i < 80}). lower_8_ i = vector ((i / 10) * 16 + i % 10)
+    with assert_norm (BitVec.Utils.forall_n 80 (fun i -> lower_8_ i = vector ((i / 10) * 16 + i % 10)));
+    introduce forall (i:nat{i < 80}). upper_8_ i = vector (128 + (i / 10) * 16 + i % 10)
+    with assert_norm (BitVec.Utils.forall_n 80 (fun i -> upper_8_ i = vector (128 + (i / 10) * 16 + i % 10)))
+    "#
+        );
+        (lower_8, upper_8)
+    }
+
+    let (lower_8, upper_8) = serialize_10_vec(vector);
+
+    let mut serialized = [0u8; 32];
+    mm_storeu_bytes_si128(&mut serialized[0..16], lower_8);
     mm_storeu_bytes_si128(&mut serialized[10..26], upper_8);
 
-    hax_lib::fstar!("admit()");
     serialized[0..20].try_into().unwrap()
 }
 
@@ -655,6 +667,7 @@ assert_norm(BitVec.Utils.forall256 (fun i ->
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
     let mut array = [0i16; 16];
     mm256_storeu_si256_i16(&mut array, vector);
@@ -663,6 +676,7 @@ pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn deserialize_11(bytes: &[u8]) -> Vec256 {
     let output = PortableVector::deserialize_11(bytes);
     let array = PortableVector::to_i16_array(output);

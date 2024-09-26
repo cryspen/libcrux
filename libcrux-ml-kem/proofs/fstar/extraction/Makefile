@@ -1,5 +1,4 @@
 SLOW_MODULES += Libcrux_ml_kem.Vector.Portable.Serialize.fst
-SLOW_MODULES += Libcrux_ml_kem.Vector.Avx2.Serialize.fst
 
 ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
               Libcrux_ml_kem.Invert_ntt.fst \

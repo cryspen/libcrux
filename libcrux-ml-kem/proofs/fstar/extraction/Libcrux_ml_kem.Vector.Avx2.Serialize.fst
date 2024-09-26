@@ -7,9 +7,11 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Vector.Portable in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 [@@"opaque_to_smt"]
+
 let deserialize_1___deserialize_1_i16s (a b: i16) =
   let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 b b b b b b b b a a a a a a a a
@@ -26,6 +28,7 @@ let deserialize_1___deserialize_1_i16s (a b: i16) =
   Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 15l coefficients_in_msb
 
 [@@"opaque_to_smt"]
+
 let deserialize_1___deserialize_1_u8s (a b: u8) =
   deserialize_1___deserialize_1_i16s (cast (a <: u8) <: i16) (cast (b <: u8) <: i16)
 
@@ -35,6 +38,7 @@ let deserialize_1_ (bytes: t_Slice u8) =
   deserialize_1___deserialize_1_u8s (bytes.[ sz 0 ] <: u8) (bytes.[ sz 1 ] <: u8)
 
 [@@"opaque_to_smt"]
+
 let deserialize_4___deserialize_4_i16s (b0 b1 b2 b3 b4 b5 b6 b7: i16) =
   let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 b7 b7 b6 b6 b5 b5 b4 b4 b3 b3 b2 b2 b1 b1 b0 b0
@@ -58,6 +62,7 @@ let deserialize_4___deserialize_4_i16s (b0 b1 b2 b3 b4 b5 b6 b7: i16) =
       Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
 [@@"opaque_to_smt"]
+
 let deserialize_4___deserialize_4_u8s (b0 b1 b2 b3 b4 b5 b6 b7: u8) =
   deserialize_4___deserialize_4_i16s (cast (b0 <: u8) <: i16)
     (cast (b1 <: u8) <: i16)
@@ -119,10 +124,9 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
 
 #pop-options
 
-#push-options "--ext context_pruning --split_queries always --z3rlimit 300"
+#push-options "--ext context_pruning --split_queries always"
 
-let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
+let serialize_10___serialize_10_vec (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     mm256_concat_pairs_n 10uy vector
   in
@@ -146,6 +150,31 @@ let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let lower_8_:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 adjacent_8_combined
   in
+  let upper_8_:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l adjacent_8_combined
+  in
+  let _:Prims.unit =
+    introduce forall (i: nat{i < 80}) . lower_8_ i = vector ((i / 10) * 16 + i % 10)
+    with assert_norm (BitVec.Utils.forall_n 80
+          (fun i -> lower_8_ i = vector ((i / 10) * 16 + i % 10)));
+    introduce forall (i: nat{i < 80}) . upper_8_ i = vector (128 + (i / 10) * 16 + i % 10)
+    with assert_norm (BitVec.Utils.forall_n 80
+          (fun i -> upper_8_ i = vector (128 + (i / 10) * 16 + i % 10)))
+  in
+  lower_8_, upper_8_
+  <:
+  (Libcrux_intrinsics.Avx2_extract.t_Vec128 & Libcrux_intrinsics.Avx2_extract.t_Vec128)
+
+#pop-options
+
+#push-options "--ext context_pruning --split_queries always"
+
+let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+  let lower_8_, upper_8_:(Libcrux_intrinsics.Avx2_extract.t_Vec128 &
+    Libcrux_intrinsics.Avx2_extract.t_Vec128) =
+    serialize_10___serialize_10_vec vector
+  in
+  let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let serialized:t_Array u8 (sz 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
       ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
@@ -162,9 +191,6 @@ let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
           lower_8_
         <:
         t_Slice u8)
-  in
-  let upper_8_:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l adjacent_8_combined
   in
   let serialized:t_Array u8 (sz 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
@@ -183,24 +209,6 @@ let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
         <:
         t_Slice u8)
   in
-  assert (forall (i: nat{i < 80}). lower_8_ i == bit_vec_of_int_t_array serialized 8 i);
-  assert (forall (i: nat{i < 80}). upper_8_ i == bit_vec_of_int_t_array serialized 8 (80 + i));
-  introduce forall (i: nat {i < 80}). lower_8_ i = vector ((i / 10) * 16 + i % 10)
-  with assert_norm (BitVec.Utils.forall_n 80 (fun i -> lower_8_ i = vector ((i / 10) * 16 + i % 10)));
-  introduce forall (i: nat {i < 160}). i >= 80 ==> upper_8_ (i - 80) = vector ((i / 10) * 16 + i % 10)
-  with 
-    introduce forall (i: nat {i < 80}). upper_8_ i = vector (128 + (i / 10) * 16 + i % 10)
-    with assert_norm (BitVec.Utils.forall_n 80 (fun i -> upper_8_ i = vector (128 + (i / 10) * 16 + i % 10)));
-  assert (forall (i: nat{i < 160}). 
-         bit_vec_of_int_t_array serialized 8 i == (if i < 80 then lower_8_ i else upper_8_ (i - 80))
-  );
-  // forall (i: nat{i < 160}). 
-  //        bit_vec_of_int_t_array r          8 i == vector ((i / 10) * 16 + i % 10)
-  assert (forall (i: nat{i < 160}). 
-         bit_vec_of_int_t_array serialized 8 i == vector ((i / 10) * 16 + i % 10)
-  );
-  admit ()
-  admit ();
   Core.Result.impl__unwrap #(t_Array u8 (sz 20))
     #Core.Array.t_TryFromSliceError
     (Core.Convert.f_try_into #(t_Slice u8)
@@ -429,6 +437,7 @@ let serialize_4_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
 #pop-options
 
 [@@"opaque_to_smt"]
+
 let deserialize_10___deserialize_10_vec
       (lower_coefficients0 upper_coefficients0: Libcrux_intrinsics.Avx2_extract.t_Vec128)
      =
@@ -499,6 +508,7 @@ let deserialize_10_ (bytes: t_Slice u8) =
       Libcrux_intrinsics.Avx2_extract.t_Vec128)
 
 [@@"opaque_to_smt"]
+
 let deserialize_12___deserialize_12_vec
       (lower_coefficients0 upper_coefficients0: Libcrux_intrinsics.Avx2_extract.t_Vec128)
      =
@@ -602,6 +612,8 @@ let deserialize_5_ (bytes: t_Slice u8) =
   in
   Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 11l coefficients
 
+#push-options "--admit_smt_queries true"
+
 let deserialize_11_ (bytes: t_Slice u8) =
   let output:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Libcrux_ml_kem.Vector.Traits.f_deserialize_11_ #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -614,6 +626,10 @@ let deserialize_11_ (bytes: t_Slice u8) =
       output
   in
   Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_i16 (array <: t_Slice i16)
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let serialize_11_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let array:t_Array i16 (sz 16) = Rust_primitives.Hax.repeat 0s (sz 16) in
@@ -628,3 +644,5 @@ let serialize_11_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   Libcrux_ml_kem.Vector.Traits.f_serialize_11_ #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
     #FStar.Tactics.Typeclasses.solve
     input
+
+#pop-options
