@@ -684,46 +684,49 @@ pub(crate) fn deserialize_11(bytes: &[u8]) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
+#[hax_lib::requires(fstar!("forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0"))]
+#[hax_lib::ensures(|r| fstar!("forall (i: nat{i < 192}). bit_vec_of_int_t_array r 8 i == vector ((i/12) * 16 + i%12)"))]
 pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
+    #[inline(always)]
+    #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
+    #[hax_lib::requires(fstar!("forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0"))]
+    #[hax_lib::ensures(|(lower_8, upper_8)| fstar!(
+        r#"
+         forall (i: nat{i < 192}).
+           vector ((i/12) * 16 + i%12) == (if i < 96 then $lower_8 i else $upper_8 (i - 96))
+      )
+    "#
+    ))]
+    fn serialize_12_vec(vector: Vec256) -> (Vec128, Vec128) {
+        let adjacent_2_combined = mm256_concat_pairs_n(12, vector);
+        let adjacent_4_combined =
+            mm256_sllv_epi32(adjacent_2_combined, mm256_set_epi32(0, 8, 0, 8, 0, 8, 0, 8));
+        let adjacent_4_combined = mm256_srli_epi64::<8>(adjacent_4_combined);
+
+        let adjacent_8_combined = mm256_shuffle_epi8(
+            adjacent_4_combined,
+            mm256_set_epi8(
+                -1, -1, -1, -1, 13, 12, 11, 10, 9, 8, 5, 4, 3, 2, 1, 0, -1, -1, -1, -1, 13, 12, 11,
+                10, 9, 8, 5, 4, 3, 2, 1, 0,
+            ),
+        );
+
+        let lower_8 = mm256_castsi256_si128(adjacent_8_combined);
+        let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
+        hax_lib::fstar!(
+            r#"
+    introduce forall (i:nat{i < 96}). lower_8_ i = vector ((i / 12) * 16 + i % 12)
+    with assert_norm (BitVec.Utils.forall_n 96 (fun i -> lower_8_ i = vector ((i / 12) * 16 + i % 12)));
+    introduce forall (i:nat{i < 96}). upper_8_ i = vector (128 + (i / 12) * 16 + i % 12)
+    with assert_norm (BitVec.Utils.forall_n 96 (fun i -> upper_8_ i = vector (128 + (i / 12) * 16 + i % 12)))
+    "#
+        );
+        (lower_8, upper_8)
+    }
+
     let mut serialized = [0u8; 32];
-
-    let adjacent_2_combined = mm256_madd_epi16(
-        vector,
-        mm256_set_epi16(
-            1 << 12,
-            1,
-            1 << 12,
-            1,
-            1 << 12,
-            1,
-            1 << 12,
-            1,
-            1 << 12,
-            1,
-            1 << 12,
-            1,
-            1 << 12,
-            1,
-            1 << 12,
-            1,
-        ),
-    );
-
-    let adjacent_4_combined =
-        mm256_sllv_epi32(adjacent_2_combined, mm256_set_epi32(0, 8, 0, 8, 0, 8, 0, 8));
-    let adjacent_4_combined = mm256_srli_epi64::<8>(adjacent_4_combined);
-
-    let adjacent_8_combined = mm256_shuffle_epi8(
-        adjacent_4_combined,
-        mm256_set_epi8(
-            -1, -1, -1, -1, 13, 12, 11, 10, 9, 8, 5, 4, 3, 2, 1, 0, -1, -1, -1, -1, 13, 12, 11, 10,
-            9, 8, 5, 4, 3, 2, 1, 0,
-        ),
-    );
-
-    let lower_8 = mm256_castsi256_si128(adjacent_8_combined);
-    let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
-
+    let (lower_8, upper_8) = serialize_12_vec(vector);
     mm_storeu_bytes_si128(&mut serialized[0..16], lower_8);
     mm_storeu_bytes_si128(&mut serialized[12..28], upper_8);
 
