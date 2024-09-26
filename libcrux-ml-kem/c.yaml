@@ -32,7 +32,7 @@ files:
         - [libcrux_sha3, neon, "*"]
         - [libcrux_sha3, simd, arm64, "*"]
       monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, "KeccakState_fc"]
+        - [libcrux_sha3, generic_keccak, "KeccakState_fc"] # FIXME grep for "old hash: fc" in hash_map on neon machine
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_arm64.h"'
 
@@ -43,8 +43,8 @@ files:
     # the behavior applies.
     internal:
       monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, absorb_final_7f ]
-        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks_ed ]
+        - [libcrux_sha3, generic_keccak, absorb_final_fb ]
+        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks_97 ]
     api:
       - [libcrux_sha3, avx2, "*"]
     private:
@@ -59,7 +59,7 @@ files:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
       monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, KeccakState_29]
+        - [libcrux_sha3, generic_keccak, KeccakState_55]
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
 

@@ -112,6 +112,7 @@ echo " */" >> header.txt
 echo "Running eurydice ..."
 echo $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
     --header header.txt \
+    --debug hashes \
     ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
 $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
     --header header.txt \
