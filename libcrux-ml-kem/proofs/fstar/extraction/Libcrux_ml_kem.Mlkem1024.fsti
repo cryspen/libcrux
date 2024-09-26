@@ -62,6 +62,18 @@ let v_CPA_PKE_CIPHERTEXT_SIZE_1024_: usize = v_C1_SIZE_1024_ +! v_C2_SIZE_1024_
 let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize =
   Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE +! v_CPA_PKE_CIPHERTEXT_SIZE_1024_
 
+/// Validate a private key.
+/// Returns `true` if valid, and `false` otherwise.
+val validate_private_key
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 3168))
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1568))
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
+/// Validate a public key.
+/// Returns `true` if valid, and `false` otherwise.
+val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568))
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
 /// Decapsulate ML-KEM 1024
 /// Generates an [`MlKemSharedSecret`].
 /// The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
@@ -110,10 +122,3 @@ val generate_key_pair (randomness: t_Array u8 (sz 64))
             Spec.MLKEM.Instances.mlkem1024_generate_keypair randomness
           in
           valid ==> (res.f_sk.f_value == secret_key /\ res.f_pk.f_value == public_key))
-
-/// Validate a public key.
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
-val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568))
-    : Prims.Pure (Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)

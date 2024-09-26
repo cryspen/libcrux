@@ -133,6 +133,19 @@ val serialize_10___serialize_10_vec (vector: Libcrux_intrinsics.Avx2_extract.t_V
           forall (i: nat{i < 160}).
             vector ((i / 10) * 16 + i % 10) == (if i < 80 then lower_8_ i else upper_8_ (i - 80)))
 
+val serialize_12___serialize_12_vec (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+    : Prims.Pure
+      (Libcrux_intrinsics.Avx2_extract.t_Vec128 & Libcrux_intrinsics.Avx2_extract.t_Vec128)
+      (requires forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0)
+      (ensures
+        fun temp_0_ ->
+          let lower_8_, upper_8_:(Libcrux_intrinsics.Avx2_extract.t_Vec128 &
+            Libcrux_intrinsics.Avx2_extract.t_Vec128) =
+            temp_0_
+          in
+          forall (i: nat{i < 192}).
+            vector ((i / 12) * 16 + i % 12) == (if i < 96 then lower_8_ i else upper_8_ (i - 96)))
+
 val serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure (t_Array u8 (sz 20))
       (requires forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0)
@@ -142,7 +155,12 @@ val serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
           forall (i: nat{i < 160}). bit_vec_of_int_t_array r 8 i == vector ((i / 10) * 16 + i % 10))
 
 val serialize_12_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure (t_Array u8 (sz 24)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 24))
+      (requires forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0)
+      (ensures
+        fun r ->
+          let r:t_Array u8 (sz 24) = r in
+          forall (i: nat{i < 192}). bit_vec_of_int_t_array r 8 i == vector ((i / 12) * 16 + i % 12))
 
 val serialize_5_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure (t_Array u8 (sz 10)) Prims.l_True (fun _ -> Prims.l_True)

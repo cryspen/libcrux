@@ -7,6 +7,8 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Hash_functions in
+  let open Libcrux_ml_kem.Ind_cpa.Unpacked in
+  let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
@@ -31,6 +33,7 @@ val sample_vector_cbd_then_ntt
       (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (re_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (prf_input: t_Array u8 (sz 33))
       (domain_separator: u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
@@ -40,12 +43,37 @@ val sample_vector_cbd_then_ntt
         range (v domain_separator + v v_K) u8_inttype)
       (ensures
         fun temp_0_ ->
-          let x, ds:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
+          let re_as_ntt_future, ds:(t_Array
+              (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
+            u8) =
+            temp_0_
+          in
+          v ds == v domain_separator + v v_K /\
+          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector re_as_ntt_future ==
+          Spec.MLKEM.sample_vector_cbd_then_ntt #v_K
+            (Seq.slice prf_input 0 32)
+            (sz (v domain_separator)))
+
+val sample_vector_cbd_then_ntt_out
+      (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (prf_input: t_Array u8 (sz 33))
+      (domain_separator: u8)
+    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_ETA_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
+        v_ETA == Spec.MLKEM.v_ETA1 v_K /\ v domain_separator < 2 * v v_K /\
+        range (v domain_separator + v v_K) u8_inttype)
+      (ensures
+        fun temp_0_ ->
+          let re, ds:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
           =
             temp_0_
           in
           v ds == v domain_separator + v v_K /\
-          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector x ==
+          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector re ==
           Spec.MLKEM.sample_vector_cbd_then_ntt #v_K
             (Seq.slice prf_input 0 32)
             (sz (v domain_separator)))
@@ -61,7 +89,10 @@ val compress_then_serialize_u
       (requires
         Spec.MLKEM.is_rank v_K /\ v_OUT_LEN == Spec.MLKEM.v_C1_SIZE v_K /\
         v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
-        v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\ Core.Slice.impl__len #u8 out == v_OUT_LEN)
+        v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\ Core.Slice.impl__len #u8 out == v_OUT_LEN /\
+        (forall (i: nat).
+            i < v v_K ==>
+            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index input i)))
       (ensures
         fun out_future ->
           let out_future:t_Slice u8 = out_future in
@@ -119,6 +150,27 @@ val serialize_secret_key
           res ==
           Spec.MLKEM.vector_encode_12 #v_K
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key))
+
+/// Concatenate `t` and `ρ` into the public key.
+val serialize_public_key_mut
+      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (seed_for_a: t_Slice u8)
+      (serialized: t_Array u8 v_PUBLIC_KEY_SIZE)
+    : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE)
+      (requires
+        Spec.MLKEM.is_rank v_K /\
+        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\ length seed_for_a == sz 32)
+      (ensures
+        fun serialized_future ->
+          let serialized_future:t_Array u8 v_PUBLIC_KEY_SIZE = serialized_future in
+          serialized_future ==
+          Seq.append (Spec.MLKEM.vector_encode_12 #v_K
+                (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector tt_as_ntt))
+            seed_for_a)
 
 /// Concatenate `t` and `ρ` into the public key.
 val serialize_public_key
@@ -310,24 +362,29 @@ val encrypt
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 val generate_keypair_unpacked
       (v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE: usize)
-      (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
+      {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      {| i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme |}
       (key_generation_seed: t_Slice u8)
+      (private_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
+      (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
     : Prims.Pure
       (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector &
         Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
       (requires
         Spec.MLKEM.is_rank v_K /\ v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
-        v_ETA1 == Spec.MLKEM.v_ETA1 v_K)
+        v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
+        length key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE)
       (fun _ -> Prims.l_True)
 
 val generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
+      {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      {| i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme |}
       (key_generation_seed: t_Slice u8)
     : Prims.Pure (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
       (requires

@@ -137,17 +137,32 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_montgomery_multiply_by_constant_pre x0 x1)
         (fun result -> f_montgomery_multiply_by_constant_post x0 x1 result);
-  f_compress_1_pre:v: v_Self -> pred: Type0{true ==> pred};
-  f_compress_1_post:v_Self -> v_Self -> Type0;
-  f_compress_1_:x0: v_Self
-    -> Prims.Pure v_Self (f_compress_1_pre x0) (fun result -> f_compress_1_post x0 result);
-  f_compress_pre:v_COEFFICIENT_BITS: i32 -> v: v_Self
+  f_compress_1_pre:a: v_Self
     -> pred:
       Type0
-        { v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
-          v_COEFFICIENT_BITS =. 11l ==>
+        { (forall (i: nat).
+              i < 16 ==> v (Seq.index (f_repr a) i) >= 0 /\ v (Seq.index (f_repr a) i) < 3329) ==>
           pred };
-  f_compress_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> Type0;
+  f_compress_1_post:a: v_Self -> result: v_Self
+    -> pred: Type0{pred ==> (forall (i: nat). i < 16 ==> bounded (Seq.index (f_repr result) i) 1)};
+  f_compress_1_:x0: v_Self
+    -> Prims.Pure v_Self (f_compress_1_pre x0) (fun result -> f_compress_1_post x0 result);
+  f_compress_pre:v_COEFFICIENT_BITS: i32 -> a: v_Self
+    -> pred:
+      Type0
+        { (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
+            v v_COEFFICIENT_BITS == 11) /\
+          (forall (i: nat).
+              i < 16 ==> v (Seq.index (f_repr a) i) >= 0 /\ v (Seq.index (f_repr a) i) < 3329) ==>
+          pred };
+  f_compress_post:v_COEFFICIENT_BITS: i32 -> a: v_Self -> result: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
+            v v_COEFFICIENT_BITS == 11) ==>
+          (forall (i: nat). i < 16 ==> bounded (Seq.index (f_repr result) i) (v v_COEFFICIENT_BITS))
+        };
   f_compress:v_COEFFICIENT_BITS: i32 -> x0: v_Self
     -> Prims.Pure v_Self
         (f_compress_pre v_COEFFICIENT_BITS x0)
@@ -383,16 +398,6 @@ class t_Operations (v_Self: Type0) = {
         (fun result -> f_rej_sample_post x0 x1 result)
 }
 
-/// Internal vectors.
-/// Used in the unpacked API.
-class t_VectorType (v_Self: Type0) = {
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_14104493667227926613:t_Operations v_Self
-}
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl (#v_T: Type0) (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: t_Operations v_T)
-    : t_VectorType v_T = { _super_14104493667227926613 = FStar.Tactics.Typeclasses.solve }
-
 let v_BARRETT_SHIFT: i32 = 26l
 
 let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
@@ -422,4 +427,10 @@ val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
 val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
     : Prims.Pure v_T
       (requires Spec.Utils.is_i16b_array 3328 (i1._super_8706949974463268012.f_repr a))
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:v_T = result in
+          forall i.
+            (let x = Seq.index (i1._super_8706949974463268012.f_repr a) i in
+              let y = Seq.index (i1._super_8706949974463268012.f_repr result) i in
+              (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))))

@@ -418,6 +418,9 @@ let deserialize_1_lemma inputs =
 
 #pop-options
 
+let deserialize_1_bounded_lemma inputs =
+  admit()
+
 let deserialize_10_ (bytes: t_Slice u8) =
   let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
     deserialize_10_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 10 }
@@ -468,6 +471,9 @@ let deserialize_10_lemma inputs =
     (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
 
 #pop-options
+
+let deserialize_10_bounded_lemma inputs =
+  admit()
 
 let deserialize_12_ (bytes: t_Slice u8) =
   let v0_1_:(i16 & i16) =
@@ -562,6 +568,9 @@ let deserialize_12_lemma inputs =
 
 #pop-options
 
+let deserialize_12_bounded_lemma inputs =
+  admit()
+
 let deserialize_4_ (bytes: t_Slice u8) =
   let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
     deserialize_4_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 4 }
@@ -612,6 +621,9 @@ let deserialize_4_lemma inputs =
     (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
 
 #pop-options
+
+let deserialize_4_bounded_lemma inputs =
+  admit()
 
 let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let result0:u8 =
