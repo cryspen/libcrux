@@ -8,7 +8,7 @@
  * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 97f7cefe14dabf275e4671ffea87e032d7779b71
+ * Libcrux: 49c07712f755745796ce294c5267a1945b9e9b6b
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -131,6 +131,25 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
 */
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_ZERO_0d(void);
+
+void libcrux_ml_kem_vector_portable_i16_to_be_bytes(int16_t x, uint8_t ret[2U]);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
+*/
+void libcrux_ml_kem_vector_portable_to_bytes_0d(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector x,
+    Eurydice_slice out);
+
+int16_t libcrux_ml_kem_vector_portable_bytes_to_i16(Eurydice_slice bytes);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
+*/
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_from_bytes_0d(Eurydice_slice bytes);
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_arithmetic_add(
