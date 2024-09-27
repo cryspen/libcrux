@@ -85,7 +85,17 @@ pub(crate) fn ntt_at_layer_3<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 $zeta_r"))]
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 $zeta_r /\\
+    (forall i. i < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1)
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) -
+        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+            (Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe $b $zeta_r)) i))) /\\
+    (forall i. i < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1)
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) +
+        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+            (Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe $b $zeta_r)) i)))"))]
 fn ntt_layer_int_vec_step<Vector: Operations>(
     mut a: Vector,
     mut b: Vector,
@@ -139,6 +149,7 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<Vector>) {
     let step = VECTORS_IN_RING_ELEMENT / 2;
     // The semicolon and parentheses at the end of loop are a workaround

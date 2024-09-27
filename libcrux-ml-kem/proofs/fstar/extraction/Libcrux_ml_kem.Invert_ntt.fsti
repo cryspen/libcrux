@@ -9,16 +9,28 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+[@@ "opaque_to_smt"]
+let inv_ntt_reduce_condition (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (a b: v_Vector) =
+    (forall i. i < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1)
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array b) i) -
+        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i))) /\
+    (forall i. i < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1)
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i) +
+        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array b) i))) /\
+    Spec.Utils.is_i16b_array 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (Libcrux_ml_kem.Vector.Traits.f_add a b))
+
 val inv_ntt_layer_int_vec_step_reduce
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (a b: v_Vector)
       (zeta_r: i16)
     : Prims.Pure (v_Vector & v_Vector)
-      (requires
-        Spec.Utils.is_i16b 3328 zeta_r /\
-        Spec.Utils.is_i16b_array 28296
-          (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Libcrux_ml_kem.Vector.Traits.f_add a b)))
+      (requires Spec.Utils.is_i16b 1664 zeta_r /\ inv_ntt_reduce_condition a b)
       (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer_1_

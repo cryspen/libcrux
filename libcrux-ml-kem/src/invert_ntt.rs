@@ -82,9 +82,22 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 $zeta_r /\\
+#[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]
+let inv_ntt_reduce_condition (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (a b: v_Vector) =
+    (forall i. i < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1)
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array b) i) -
+        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i))) /\\
+    (forall i. i < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1)
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i) +
+        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array b) i))) /\\
     Spec.Utils.is_i16b_array 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-        (Libcrux_ml_kem.Vector.Traits.f_add $a $b))"))]
+        (Libcrux_ml_kem.Vector.Traits.f_add a b))")]
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 $zeta_r /\\
+    inv_ntt_reduce_condition $a $b"))]
 pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     mut a: Vector,
     mut b: Vector,
@@ -124,8 +137,9 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 
         for j in offset_vec..offset_vec + step_vec {
             hax_lib::fstar!("zetas_b_lemma (v zeta_i)");
-            hax_lib::fstar!("assume (Spec.Utils.is_i16b_array 28296
-                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Libcrux_ml_kem.Vector.Traits.f_add re.f_coefficients.[j] re.f_coefficients.[j +! step_vec])))");
+            
+            hax_lib::fstar!("assume (inv_ntt_reduce_condition
+                re.f_coefficients.[ $j ] re.f_coefficients.[ $j +! $step_vec ])");
             let (x, y) = inv_ntt_layer_int_vec_step_reduce(
                 re.coefficients[j],
                 re.coefficients[j + step_vec],

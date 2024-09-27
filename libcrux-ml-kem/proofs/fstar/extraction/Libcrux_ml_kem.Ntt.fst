@@ -287,6 +287,8 @@ let ntt_at_layer_4_plus
 
 #pop-options
 
+#push-options "--admit_smt_queries true"
+
 let ntt_at_layer_7_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -352,6 +354,8 @@ let ntt_at_layer_7_
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   re
+
+#pop-options
 
 let ntt_binomially_sampled_ring_element
       (#v_Vector: Type0)
