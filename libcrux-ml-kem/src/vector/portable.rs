@@ -40,14 +40,18 @@ impl Operations for PortableVector {
     }
 
     fn to_bytes(x: Self, out: &mut [u8]) {
+        // We use C style loops here to avoid having to use the cloop macro.
+        // Eurydice unfortunately can't handle iterators.
         let mut p = 0;
-        for e in x.elements {
-            out[p..p + 2].copy_from_slice(&i16_to_be_bytes(e));
+        for i in 0..x.elements.len() {
+            out[p..p + 2].copy_from_slice(&i16_to_be_bytes(x.elements[i]));
             p += 2;
         }
     }
 
     fn from_bytes(bytes: &[u8]) -> Self {
+        // We use C style loops here to avoid having to use the cloop macro.
+        // Eurydice unfortunately can't handle iterators.
         let mut out = zero();
 
         for i in 0..bytes.len() / 2 {

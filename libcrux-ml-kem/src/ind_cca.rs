@@ -308,7 +308,11 @@ pub(crate) mod unpacked {
     impl<const K: usize, Vector: Operations> MlKemPublicKeyUnpacked<K, Vector> {
         /// Write the key into the `out` buffer.
         pub fn to_bytes(&self, out: &mut [u8]) {
+            // We use C style loops here to avoid having to use the cloop macro.
+            // Eurydice unfortunately can't handle iterators.
+
             let mut p = 0;
+
             for i in 0..self.ind_cpa_public_key.t_as_ntt.len() {
                 let t = &self.ind_cpa_public_key.t_as_ntt[i];
                 for j in 0..t.coefficients.len() {
@@ -333,8 +337,12 @@ pub(crate) mod unpacked {
 
         /// Read the bytes into an unpacked key pair.
         pub fn from_bytes(bytes: &[u8]) -> MlKemPublicKeyUnpacked<K, Vector> {
+            // We use C style loops here to avoid having to use the cloop macro.
+            // Eurydice unfortunately can't handle iterators.
+
             let mut p = 0;
             let mut ind_cpa_public_key = IndCpaPublicKeyUnpacked::<K, Vector>::default();
+
             for i in 0..ind_cpa_public_key.t_as_ntt.len() {
                 for j in 0..ind_cpa_public_key.t_as_ntt[i].coefficients.len() {
                     ind_cpa_public_key.t_as_ntt[i].coefficients[j] =
@@ -374,7 +382,11 @@ pub(crate) mod unpacked {
     impl<const K: usize, Vector: Operations> MlKemKeyPairUnpacked<K, Vector> {
         /// Write the key into the `out` buffer.
         pub fn to_bytes(&self, out: &mut [u8]) {
+            // We use C style loops here to avoid having to use the cloop macro.
+            // Eurydice unfortunately can't handle iterators.
+
             let mut p = 0;
+
             // Private key
             for i in 0..self.private_key.ind_cpa_private_key.secret_as_ntt.len() {
                 let s = &self.private_key.ind_cpa_private_key.secret_as_ntt[i];
@@ -392,6 +404,9 @@ pub(crate) mod unpacked {
 
         /// Read the bytes into an unpacked key pair.
         pub fn from_bytes(bytes: &[u8]) -> MlKemKeyPairUnpacked<K, Vector> {
+            // We use C style loops here to avoid having to use the cloop macro.
+            // Eurydice unfortunately can't handle iterators.
+
             let mut p = 0;
 
             // Read private key
