@@ -235,7 +235,7 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
     T::add(a, &fm)
 }
 
-#[hax_lib::fstar::options("--z3rlimit 100")]
+#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::requires(fstar!("forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
                                       (x == 0s \\/ x == 1s)"))]
 pub fn decompress_1<T: Operations>(vec: T) -> T {

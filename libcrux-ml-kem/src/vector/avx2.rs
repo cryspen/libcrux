@@ -8,7 +8,7 @@ mod sampling;
 mod serialize;
 
 #[derive(Clone, Copy)]
-#[hax_lib::fstar::before(interface,"noeq")]
+#[hax_lib::fstar::before(interface, "noeq")]
 #[hax_lib::fstar::after(interface,"let repr (x:t_SIMD256Vector) : t_Array i16 (sz 16) = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 x.f_elements")]
 pub struct SIMD256Vector {
     elements: Vec256,
@@ -22,7 +22,6 @@ fn vec_zero() -> SIMD256Vector {
         elements: mm256_setzero_si256(),
     }
 }
-
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
@@ -120,6 +119,7 @@ impl Operations for SIMD256Vector {
     #[requires(fstar!("Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr $vector)"))]
     #[ensures(|out| fstar!("impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr $vector)"))]
     fn cond_subtract_3329(vector: Self) -> Self {
+        hax_lib::fstar!("admit()");
         Self {
             elements: arithmetic::cond_subtract_3329(vector.elements),
         }
@@ -184,6 +184,7 @@ impl Operations for SIMD256Vector {
                        Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr ${vector})"))]
     #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+6*3328) (impl.f_repr $out)"))]
     fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
+        hax_lib::fstar!("admit()");
         Self {
             elements: ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
         }
@@ -193,6 +194,7 @@ impl Operations for SIMD256Vector {
                        Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr ${vector})"))]
     #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr $out)"))]
     fn ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
+        hax_lib::fstar!("admit()");
         Self {
             elements: ntt::ntt_layer_2_step(vector.elements, zeta0, zeta1),
         }
@@ -202,6 +204,7 @@ impl Operations for SIMD256Vector {
                        Spec.Utils.is_i16b_array (11207+3*3328) (impl.f_repr ${vector})"))]
     #[ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr $out)"))]
     fn ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
+        hax_lib::fstar!("admit()");
         Self {
             elements: ntt::ntt_layer_3_step(vector.elements, zeta),
         }
@@ -212,6 +215,7 @@ impl Operations for SIMD256Vector {
                        Spec.Utils.is_i16b_array (4*3328) (impl.f_repr ${vector})"))]
     #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
     fn inv_ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
+        hax_lib::fstar!("admit()");
         Self {
             elements: ntt::inv_ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
         }
@@ -221,6 +225,7 @@ impl Operations for SIMD256Vector {
                        Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"))]
     #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
     fn inv_ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
+        hax_lib::fstar!("admit()");
         Self {
             elements: ntt::inv_ntt_layer_2_step(vector.elements, zeta0, zeta1),
         }
@@ -230,6 +235,7 @@ impl Operations for SIMD256Vector {
                        Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"))]
     #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
     fn inv_ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
+        hax_lib::fstar!("admit()");
         Self {
             elements: ntt::inv_ntt_layer_3_step(vector.elements, zeta),
         }
@@ -248,6 +254,7 @@ impl Operations for SIMD256Vector {
         zeta2: i16,
         zeta3: i16,
     ) -> Self {
+        hax_lib::fstar!("admit()");
         Self {
             elements: ntt::ntt_multiply(lhs.elements, rhs.elements, zeta0, zeta1, zeta2, zeta3),
         }
@@ -257,7 +264,6 @@ impl Operations for SIMD256Vector {
     // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 1 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 1 (impl.f_repr $vector) $out"))]
     fn serialize_1(vector: Self) -> [u8; 2] {
-        hax_lib::fstar!("admit()");
         serialize::serialize_1(vector.elements)
     }
 
@@ -265,7 +271,6 @@ impl Operations for SIMD256Vector {
     // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("sz (Seq.length $bytes) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $bytes (impl.f_repr $out)"))]
     fn deserialize_1(bytes: &[u8]) -> Self {
-        hax_lib::fstar!("admit()");
         Self {
             elements: serialize::deserialize_1(bytes),
         }
@@ -275,7 +280,6 @@ impl Operations for SIMD256Vector {
     // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 4 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $vector) $out"))]
     fn serialize_4(vector: Self) -> [u8; 8] {
-        hax_lib::fstar!("admit()");
         serialize::serialize_4(vector.elements)
     }
 
@@ -283,18 +287,19 @@ impl Operations for SIMD256Vector {
     // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("sz (Seq.length $bytes) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $bytes (impl.f_repr $out)"))]
     fn deserialize_4(bytes: &[u8]) -> Self {
-        hax_lib::fstar!("admit()");
         Self {
             elements: serialize::deserialize_4(bytes),
         }
     }
 
     fn serialize_5(vector: Self) -> [u8; 10] {
+        hax_lib::fstar!("admit()");
         serialize::serialize_5(vector.elements)
     }
 
     #[requires(bytes.len() == 10)]
     fn deserialize_5(bytes: &[u8]) -> Self {
+        hax_lib::fstar!("admit()");
         Self {
             elements: serialize::deserialize_5(bytes),
         }
@@ -304,7 +309,6 @@ impl Operations for SIMD256Vector {
     // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 10 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $vector) $out"))]
     fn serialize_10(vector: Self) -> [u8; 20] {
-        hax_lib::fstar!("admit()");
         serialize::serialize_10(vector.elements)
     }
 
@@ -312,7 +316,6 @@ impl Operations for SIMD256Vector {
     // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("sz (Seq.length $bytes) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $bytes (impl.f_repr $out)"))]
     fn deserialize_10(bytes: &[u8]) -> Self {
-        hax_lib::fstar!("admit()");
         Self {
             elements: serialize::deserialize_10(bytes),
         }
@@ -333,7 +336,6 @@ impl Operations for SIMD256Vector {
     // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 12 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $vector) $out"))]
     fn serialize_12(vector: Self) -> [u8; 24] {
-        hax_lib::fstar!("admit()");
         serialize::serialize_12(vector.elements)
     }
 
@@ -341,7 +343,6 @@ impl Operations for SIMD256Vector {
     // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("sz (Seq.length $bytes) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $bytes (impl.f_repr $out)"))]
     fn deserialize_12(bytes: &[u8]) -> Self {
-        hax_lib::fstar!("admit()");
         Self {
             elements: serialize::deserialize_12(bytes),
         }

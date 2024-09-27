@@ -3,30 +3,94 @@ module BitVec.Intrinsics
 open Core
 open Rust_primitives
 open FStar.Mul
-
-(*** BitVec related utils *)
-open FStar.FunctionalExtensionality
+open BitVec.Utils
 open BitVec.Equality
-open Rust_primitives.BitVectors
-
-let mk_bv #len (f: (i:nat{i < len}) -> bit) = on (i:nat {i < len}) f
+open Tactics.Utils
 
 (*** The intrinsics *)
-
 let mm256_slli_epi16 (shift: i32 {v shift >= 0 /\ v shift <= 16}) (vec: bit_vec 256): bit_vec 256
   = mk_bv (fun i -> let nth_bit = i % 16 in
-                 if nth_bit >= v shift 
-                 then vec (i - v shift)
-                 else 0)
+                 if nth_bit >= v shift then vec (i - v shift) else 0)
 
 let mm256_srli_epi16 (shift: i32 {v shift >= 0 /\ v shift <= 16}) (vec: bit_vec 256): bit_vec 256
   = mk_bv (fun i -> let nth_bit = i % 16 in
                  if nth_bit < 16 - v shift then vec (i + v shift) else 0)
 
+let mm256_srli_epi64 (shift: i32 {v shift >= 0 /\ v shift <= 64}) (vec: bit_vec 256): bit_vec 256
+  = mk_bv (fun i -> let nth_bit = i % 64 in
+                 if nth_bit < 64 - v shift then vec (i + v shift) else 0)
+
 let mm256_castsi256_si128 (vec: bit_vec 256): bit_vec 128
   = mk_bv (fun i -> vec i)
 let mm256_extracti128_si256 (control: i32{control == 1l}) (vec: bit_vec 256): bit_vec 128
   = mk_bv (fun i -> vec (i + 128))
+
+let mm256_si256_from_two_si128 (lower upper: bit_vec 128): bit_vec 256
+  = mk_bv (fun i -> if i < 128 then lower i else upper (i - 128))
+
+let mm_loadu_si128 (bytes: t_Array u8 (sz 16)): bit_vec 128
+  = mk_bv (fun i -> get_bit (Seq.index bytes (i / 8)) (sz (i % 8)))
+
+let mm256_set_epi32 (x0 x1 x2 x3 x4 x5 x6 x7: i32)
+  : bit_vec 256
+  = mk_bv (fun i ->
+      let h (x: i32) = get_bit x (sz (i % 32)) in
+      match i / 32 with
+      |  0 -> h x7 |  1 -> h x6 |  2 -> h x5 |  3 -> h x4
+      |  4 -> h x3 |  5 -> h x2 |  6 -> h x1  |  7 -> h x0)
+
+let mm256_set_epi16 (x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15: i16)
+  : bit_vec 256
+  = mk_bv (fun i ->
+      let h (x: i16) = get_bit x (sz (i % 16)) in
+      match i / 16 with
+      |  0 -> h x15 |  1 -> h x14 |  2 -> h x13 |  3 -> h x12
+      |  4 -> h x11 |  5 -> h x10 |  6 -> h x9  |  7 -> h x8
+      |  8 -> h x7  |  9 -> h x6  | 10 -> h x5  | 11 -> h x4
+      | 12 -> h x3  | 13 -> h x2  | 14 -> h x1  | 15 -> h x0
+    )
+
+let mm_set_epi8
+  (x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15: u8)
+  : bit_vec 128
+  = mk_bv (fun i ->
+      let h (x: u8) = get_bit x (sz (i % 8)) in
+      match i / 8 with
+      |  0 -> h x15 |  1 -> h x14 |  2 -> h x13 |  3 -> h x12
+      |  4 -> h x11 |  5 -> h x10 |  6 -> h x9  |  7 -> h x8
+      |  8 -> h x7  |  9 -> h x6  | 10 -> h x5  | 11 -> h x4
+      | 12 -> h x3  | 13 -> h x2  | 14 -> h x1  | 15 -> h x0
+    )
+
+let mm256_set_epi8
+  (x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15 x16 x17 x18 x19 x20 x21 x22 x23 x24 x25 x26 x27 x28 x29 x30 x31: i8)
+  : bit_vec 256
+  = mk_bv (fun i ->
+      let h (x: i8) = get_bit x (sz (i % 8)) in
+      match i / 8 with
+      | 0  -> h x31 | 1  -> h x30 | 2  -> h x29 | 3  -> h x28
+      | 4  -> h x27 | 5  -> h x26 | 6  -> h x25 | 7  -> h x24
+      | 8  -> h x23 | 9  -> h x22 | 10 -> h x21 | 11 -> h x20
+      | 12 -> h x19 | 13 -> h x18 | 14 -> h x17 | 15 -> h x16
+      | 16 -> h x15 | 17 -> h x14 | 18 -> h x13 | 19 -> h x12
+      | 20 -> h x11 | 21 -> h x10 | 22 -> h x9  | 23 -> h x8
+      | 24 -> h x7  | 25 -> h x6  | 26 -> h x5  | 27 -> h x4
+      | 28 -> h x3  | 29 -> h x2  | 30 -> h x1  | 31 -> h x0
+    )
+
+val mm256_set1_epi16_no_semantics: i16 -> bit_vec 256
+let mm256_set1_epi16_pow2_minus_one (n: nat): bit_vec 256
+  = mk_bv (fun i -> if i % 16 < n then 1 else 0)
+
+let mm256_and_si256 (x y: bit_vec 256): bit_vec 256
+  = mk_bv (fun i -> if y i = 0 then 0 else x i)
+  
+let mm256_set1_epi16 (constant: i16)
+  (#[Tactics.exact (match unify_app (quote constant) (quote (fun n -> ((1s <<! Int32.int_to_t n <: i16) -! 1s <: i16))) [] with
+     | Some [x] -> `(mm256_set1_epi16_pow2_minus_one (`#x))
+     | _ -> (quote (mm256_set1_epi16_no_semantics constant))
+  )]result: bit_vec 256)
+  : bit_vec 256 = result
 
 private let saturate8 (v: bit_vec 16): bit_vec 8
   = let on_upper_bits (+) (f: (n:nat{n >= 8 && n <= 15}) -> _) 
@@ -60,29 +124,6 @@ let mm_movemask_epi8_bv (a: bit_vec 128): bit_vec 128
 let mm_movemask_epi8 (a: bit_vec 128): i32
   = bit_vec_to_int_t 32 (mk_bv (fun i -> mm_movemask_epi8_bv a i))
 
-let mm256_set_epi16 (x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15: i16)
-  : bit_vec 256
-  = mk_bv (fun i ->
-      let offset = i % 16 in
-      match i / 16 with
-      |  0 -> get_bit x15 (sz offset)
-      |  1 -> get_bit x14 (sz offset)
-      |  2 -> get_bit x13 (sz offset)
-      |  3 -> get_bit x12 (sz offset)
-      |  4 -> get_bit x11 (sz offset)
-      |  5 -> get_bit x10 (sz offset)
-      |  6 -> get_bit x9 (sz offset)
-      |  7 -> get_bit x8 (sz offset)
-      |  8 -> get_bit x7 (sz offset)
-      |  9 -> get_bit x6 (sz offset)
-      | 10 -> get_bit x5 (sz offset)
-      | 11 -> get_bit x4 (sz offset)
-      | 12 -> get_bit x3 (sz offset)
-      | 13 -> get_bit x2 (sz offset)
-      | 14 -> get_bit x1 (sz offset)
-      | 15 -> get_bit x0 (sz offset)
-    )
-
 let mm_packs_epi16 (a b: bit_vec 128): bit_vec 128
   = mk_bv (fun i ->
       let nth_block = i / 8 in
@@ -96,7 +137,7 @@ let mm_packs_epi16 (a b: bit_vec 128): bit_vec 128
 
 
 // This is a very specialized version of mm256_mullo_epi16
-let specialized_mm256_mullo_epi16 (a: bit_vec 256): bit_vec 256 =
+let mm256_mullo_epi16_specialized1 (a: bit_vec 256): bit_vec 256 =
   mk_bv (fun i -> 
     let nth_bit = i % 16 in
     let nth_i16 = i / 16 in
@@ -104,16 +145,241 @@ let specialized_mm256_mullo_epi16 (a: bit_vec 256): bit_vec 256 =
     if nth_bit >= shift then a (i - shift) else 0
   )
 
+// This is a very specialized version of mm256_mullo_epi16
+let mm256_mullo_epi16_specialized2 (a: bit_vec 256): bit_vec 256 =
+  mk_bv (fun i -> 
+    let nth_bit = i % 16 in
+    let nth_i16 = i / 16 in
+    let shift = if nth_i16 % 2 = 0 then 4 else 0 in
+    if nth_bit >= shift then a (i - shift) else 0
+  )
+
+// This is a very specialized version of mm256_mullo_epi16
+let mm256_mullo_epi16_specialized3 (a: bit_vec 256): bit_vec 256 =
+  mk_bv (fun i -> 
+    let nth_bit = i % 16 in
+    let nth_i16 = i / 16 in
+    let shift = 6 - (nth_i16 % 4) * 2 in
+    if nth_bit >= shift then a (i - shift) else 0
+  )
+
 // This term will be stuck, we don't know anything about it
 val mm256_mullo_epi16_no_semantics (a count: bit_vec 256): bit_vec 256
 
-let mm256_mullo_epi16 (a count: bit_vec 256): bit_vec 256 =
-  if count `bv_equality` mm256_set_epi16 (1s <<! 8l <: i16) (1s <<! 9l <: i16)
-      (1s <<! 10l <: i16) (1s <<! 11l <: i16) (1s <<! 12l <: i16) (1s <<! 13l <: i16)
-      (1s <<! 14l <: i16) (-32768s) (1s <<! 8l <: i16) (1s <<! 9l <: i16) (1s <<! 10l <: i16)
-      (1s <<! 11l <: i16) (1s <<! 12l <: i16) (1s <<! 13l <: i16) (1s <<! 14l <: i16) (-32768s)
-  then specialized_mm256_mullo_epi16 a
-  else mm256_mullo_epi16_no_semantics a count
+open FStar.Tactics.V2
+
+
+
+let mm256_mullo_epi16
+    (a count: bit_vec 256) 
+    (#[(
+      if match unify_app (quote count) (quote (fun x -> mm256_set_epi16 (1s <<! 8l <: i16) (x <<! 9l <: i16)
+                                                               (1s <<! 10l <: i16) (1s <<! 11l <: i16) (1s <<! 12l <: i16) (1s <<! 13l <: i16)
+                                                               (1s <<! 14l <: i16) (-32768s) (1s <<! 8l <: i16) (1s <<! 9l <: i16) (1s <<! 10l <: i16)
+                                                               (1s <<! 11l <: i16) (1s <<! 12l <: i16) (1s <<! 13l <: i16) (1s <<! 14l <: i16) (-32768s))) [] with
+         | Some [x] -> unquote x = 1s
+         | _ -> false
+      then Tactics.exact (quote (mm256_mullo_epi16_specialized1 a))
+      else if match unify_app (quote count) (quote (fun x -> mm256_set_epi16 (1s <<! 0l <: i16) (x <<! 4l <: i16)
+                                                               (1s <<! 0l <: i16) (1s <<! 4l <: i16) (1s <<! 0l <: i16) (1s <<! 4l <: i16) (1s <<! 0l <: i16)
+                                                               (1s <<! 4l <: i16) (1s <<! 0l <: i16) (1s <<! 4l <: i16) (1s <<! 0l <: i16) (1s <<! 4l <: i16)
+                                                               (1s <<! 0l <: i16) (1s <<! 4l <: i16) (1s <<! 0l <: i16) (1s <<! 4l <: i16))) [] with
+              | Some [x] -> unquote x = 1s
+              | _ -> false
+           then Tactics.exact (quote (mm256_mullo_epi16_specialized2 a))
+           else 
+             if match unify_app (quote count) (quote (fun x -> mm256_set_epi16 (1s <<! 0l <: i16) (x <<! 2l <: i16)
+                                                               (1s <<! 4l <: i16) (1s <<! 6l <: i16) (1s <<! 0l <: i16) (1s <<! 2l <: i16) (1s <<! 4l <: i16)
+                                                               (1s <<! 6l <: i16) (1s <<! 0l <: i16) (1s <<! 2l <: i16) (1s <<! 4l <: i16) (1s <<! 6l <: i16)
+                                                               (1s <<! 0l <: i16) (1s <<! 2l <: i16) (1s <<! 4l <: i16) (1s <<! 6l <: i16))) [] with
+                | Some [x] -> unquote x = 1s
+                | _ -> false
+             then Tactics.exact (quote (mm256_mullo_epi16_specialized3 a))
+             else 
+               Tactics.exact (quote (mm256_mullo_epi16_no_semantics a count))
+    )]result: bit_vec 256): bit_vec 256 = result
+
+let madd_rhs (n: nat {n < 16}) = 
+  mm256_set_epi16 
+    (1s <<! Int32.int_to_t n <: i16) 
+    1s 
+    (1s <<! Int32.int_to_t n <: i16) 
+    1s
+    (1s <<! Int32.int_to_t n <: i16) 
+    1s 
+    (1s <<! Int32.int_to_t n <: i16)
+    1s 
+    (1s <<! Int32.int_to_t n <: i16) 
+    1s 
+    (1s <<! Int32.int_to_t n <: i16) 
+    1s
+    (1s <<! Int32.int_to_t n <: i16) 
+    1s 
+    (1s <<! Int32.int_to_t n <: i16) 
+    1s
+
+val mm256_madd_epi16_no_semantic: bit_vec 256 -> bit_vec 256 -> bit_vec 256
+
+let forall_bool (#max: pos) (f: (n: nat {n < max}) -> bool)
+  : r:bool {r <==> (forall i. f i)}
+  = let rec h (n: nat {n <= max}): r:bool {r <==> (forall i. i < n ==> f i)} = 
+        match n with
+        | 0 -> true
+        | _ -> f (n - 1) && h (n - 1)
+    in h max
+
+/// We view `x` as a sequence of pairs of 16 bits, of the shape
+/// `(0b0…0a₁…aₙ, 0b0…0b₁…bₙ)`: only the last `n` bits are non-zero.
+/// We output a sequence of 32 bits `0b0…0b₁…bₙa₁…aₙ`.
+let mm256_madd_epi16_specialized' (x: bit_vec 256) (n: nat {n < 16}): bit_vec 256 =
+  mk_bv (fun i -> let j = i % 32 in
+               // `x i` is the `j`th bit in the `i/32`th pair of 16 bits `(0b0…0a₁…aₙ, 0b0…0b₁…bₙ)`
+               // we want to construct the `j`th bit of `0b0…0b₁…bₙa₁…aₙ`
+               let is_zero = 
+                 // `|b₁…bₙa₁…aₙ| = n * 2`: if we're above that, we want to produce the bit `0`
+                 j >= n * 2
+               in
+               if is_zero
+               then 0
+               else if j < n
+                    then x i        // we want to produce the bit `aⱼ`
+                    else 
+                      // the bit from `b` is in the second item of the pair `(0b0…0a₁…aₙ, 0b0…0b₁…bₙ)`
+                      x (i - n + 16)
+         )
+
+let mm256_concat_pairs_n 
+  (n: u8 {v n < 16})
+  (x: bit_vec 256 {forall (i: nat {i < 256}). i % 16 < v n || x i = 0}) =
+  mm256_madd_epi16_specialized' x (v n)
+
+let mm256_madd_epi16_specialized (x: bit_vec 256) (n: nat {n < 16}) =
+  if forall_bool (fun (i: nat {i < 256}) -> i % 16 < n || x i = 0)
+  then mm256_madd_epi16_specialized' x n
+  else mm256_madd_epi16_no_semantic x (madd_rhs n)
+
+val mm_shuffle_epi8_no_semantics (a b: bit_vec 128): bit_vec 128
+let mm_shuffle_epi8_u8 (a: bit_vec 128) (b: list int {List.Tot.length b == 16}): bit_vec 128 =
+  mk_bv (fun i -> 
+     let nth = i / 8 in
+     let index = List.Tot.index b (15 - nth) in
+     if index < 0 then 0
+                  else let index = index % 16 in
+                       a (index * 8 + i % 8 + i / 128 * 128))
+
+let mm_shuffle_epi8
+  (x y: bit_vec 128) 
+  (#[(
+    let t = match unify_app (quote y) 
+      (quote (fun x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15 -> 
+        mm_set_epi8
+          (UInt8.uint_to_t x0 ) (UInt8.uint_to_t x1 ) (UInt8.uint_to_t x2 ) (UInt8.uint_to_t x3 ) (UInt8.uint_to_t x4 ) (UInt8.uint_to_t x5 ) (UInt8.uint_to_t x6 ) (UInt8.uint_to_t x7 )
+          (UInt8.uint_to_t x8 ) (UInt8.uint_to_t x9 ) (UInt8.uint_to_t x10) (UInt8.uint_to_t x11) (UInt8.uint_to_t x12) (UInt8.uint_to_t x13) (UInt8.uint_to_t x14) (UInt8.uint_to_t x15))) [] with
+    | Some [x0;x1;x2;x3;x4;x5;x6;x7;x8;x9;x10;x11;x12;x13;x14;x15] ->
+      `(mm_shuffle_epi8_u8 (`@x)
+                              (mk_list_16
+                                 (`#x0 ) (`#x1 ) (`#x2 ) (`#x3 ) (`#x4 ) (`#x5 ) (`#x6 ) (`#x7 )
+                                 (`#x8 ) (`#x9 ) (`#x10) (`#x11) (`#x12) (`#x13) (`#x14) (`#x15)))
+    | _ -> quote (mm_shuffle_epi8_no_semantics x y) in
+    exact t
+  )]result: bit_vec 128)
+  : bit_vec 128 
+  = result
+
+val mm256_shuffle_epi8_no_semantics (a b: bit_vec 256): bit_vec 256
+let mm256_shuffle_epi8_i8 (a: bit_vec 256) (b: list _ {List.Tot.length b == 32}): bit_vec 256 =
+  mk_bv (fun i -> 
+     let nth = i / 8 in
+     let index = List.Tot.index b (31 - nth) in
+     if index < 0 then 0
+                  else let index = index % 16 in
+                       a (index * 8 + i % 8 + i / 128 * 128))
+
+let mm256_shuffle_epi8
+  (x y: bit_vec 256) 
+  (#[(
+    let t = match unify_app (quote y) 
+      (quote (fun x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15 x16 x17 x18 x19 x20 x21 x22 x23 x24 x25 x26 x27 x28 x29 x30 x31 -> 
+        mm256_set_epi8
+          (Int8.int_to_t x0 ) (Int8.int_to_t x1 ) (Int8.int_to_t x2 ) (Int8.int_to_t x3 ) (Int8.int_to_t x4 ) (Int8.int_to_t x5 ) (Int8.int_to_t x6 ) (Int8.int_to_t x7 )
+          (Int8.int_to_t x8 ) (Int8.int_to_t x9 ) (Int8.int_to_t x10) (Int8.int_to_t x11) (Int8.int_to_t x12) (Int8.int_to_t x13) (Int8.int_to_t x14) (Int8.int_to_t x15)
+          (Int8.int_to_t x16) (Int8.int_to_t x17) (Int8.int_to_t x18) (Int8.int_to_t x19) (Int8.int_to_t x20) (Int8.int_to_t x21) (Int8.int_to_t x22) (Int8.int_to_t x23)
+          (Int8.int_to_t x24) (Int8.int_to_t x25) (Int8.int_to_t x26) (Int8.int_to_t x27) (Int8.int_to_t x28) (Int8.int_to_t x29) (Int8.int_to_t x30) (Int8.int_to_t x31))) [] with
+    | Some [x0;x1;x2;x3;x4;x5;x6;x7;x8;x9;x10;x11;x12;x13;x14;x15;x16;x17;x18;x19;x20;x21;x22;x23;x24;x25;x26;x27;x28;x29;x30;x31] ->
+      `(mm256_shuffle_epi8_i8 (`@x)
+                              (mk_list_32
+                                 (`#x0 ) (`#x1 ) (`#x2 ) (`#x3 ) (`#x4 ) (`#x5 ) (`#x6 ) (`#x7 )
+                                 (`#x8 ) (`#x9 ) (`#x10) (`#x11) (`#x12) (`#x13) (`#x14) (`#x15)
+                                 (`#x16) (`#x17) (`#x18) (`#x19) (`#x20) (`#x21) (`#x22) (`#x23) 
+                                 (`#x24) (`#x25) (`#x26) (`#x27) (`#x28) (`#x29) (`#x30) (`#x31)))
+    | _ -> quote (mm256_shuffle_epi8_no_semantics x y) in
+    exact t
+  )]result: bit_vec 256)
+  : bit_vec 256 
+  = result
+
+val mm256_permutevar8x32_epi32_no_semantics (a b: bit_vec 256): bit_vec 256
+let mm256_permutevar8x32_epi32_i32 (a: bit_vec 256) (b: list _ {List.Tot.length b == 8}): bit_vec 256 =
+  mk_bv (fun i ->
+     let j = i / 32 in
+     let index = (List.Tot.index b (7 - j) % 8) * 32 in
+     a (index + i % 32))
+
+let mm256_permutevar8x32_epi32
+  (x y: bit_vec 256) 
+  (#[(
+    let t = match unify_app (quote y) 
+      (quote (fun x0 x1 x2 x3 x4 x5 x6 x7 -> 
+        mm256_set_epi32
+          (Int32.int_to_t x0) (Int32.int_to_t x1) (Int32.int_to_t x2) (Int32.int_to_t x3) 
+          (Int32.int_to_t x4) (Int32.int_to_t x5) (Int32.int_to_t x6) (Int32.int_to_t x7))) [] with
+    | Some [x0;x1;x2;x3;x4;x5;x6;x7] ->
+      `(mm256_permutevar8x32_epi32_i32 (`@x)
+                              (mk_list_8 (`#x0 ) (`#x1 ) (`#x2 ) (`#x3 ) (`#x4 ) (`#x5 ) (`#x6 ) (`#x7 )))
+    | _ -> quote (mm256_permutevar8x32_epi32_no_semantics x y) in
+    exact t
+  )]result: bit_vec 256)
+  : bit_vec 256 
+  = result
+
+val mm256_sllv_epi32_no_semantics (x y: bit_vec 256): bit_vec 256
+let mm256_sllv_epi32_i32 (vec: bit_vec 256) (counts: list _ {List.Tot.length counts == 8}): bit_vec 256
+  = mk_bv (fun i -> let nth_bit = i % 32 in
+                 let shift = List.Tot.index counts (7 - i / 32) in
+                 if shift >= 0 && nth_bit >= shift then vec (i - shift) else 0)
+
+let mm256_sllv_epi32
+  (x y: bit_vec 256) 
+  (#[(
+    let t = match unify_app (quote y) 
+      (quote (fun x0 x1 x2 x3 x4 x5 x6 x7 -> 
+        mm256_set_epi32
+          (Int32.int_to_t x0) (Int32.int_to_t x1) (Int32.int_to_t x2) (Int32.int_to_t x3) 
+          (Int32.int_to_t x4) (Int32.int_to_t x5) (Int32.int_to_t x6) (Int32.int_to_t x7))) [] with
+    | Some [x0;x1;x2;x3;x4;x5;x6;x7] ->
+      `(mm256_sllv_epi32_i32 (`@x)
+                              (mk_list_8 (`#x0 ) (`#x1 ) (`#x2 ) (`#x3 ) (`#x4 ) (`#x5 ) (`#x6 ) (`#x7 )))
+    | _ -> quote (mm256_sllv_epi32_no_semantics x y) in
+    exact t
+  )]result: bit_vec 256)
+  : bit_vec 256 
+  = result
+
+
+let mm256_madd_epi16
+  (x y: bit_vec 256)
+  (#[(
+    let t = match unify_app (quote y) (quote (fun n -> madd_rhs n)) [delta_only [`%madd_rhs]] with
+    | Some [n] -> `(mm256_madd_epi16_specialized (`@x) (`#n))
+    | _ -> quote (mm256_madd_epi16_no_semantic x y) in
+    exact t
+  )]result: bit_vec 256)
+  : bit_vec 256
+  = result
+
+val mm_storeu_bytes_si128 (_output: t_Slice u8) (vec: bit_vec 128)
+  // : r: t_Array u8 (sz 16) {forall i. vec i == get_bit (Seq.index r (i / 8)) (sz (i % 8))}
+  : r: t_Array u8 (sz 16) {forall i. vec i == bit_vec_of_int_t_array r 8 i}
 
 open FStar.Stubs.Tactics.V2.Builtins
 open FStar.Stubs.Tactics.V2

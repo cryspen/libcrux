@@ -3,7 +3,7 @@ module Libcrux_ml_kem.Vector.Traits
 open Core
 open FStar.Mul
 
-#push-options "--z3rlimit 100"
+#push-options "--z3rlimit 200 --split_queries always"
 
 let decompress_1_
       (#v_T: Type0)

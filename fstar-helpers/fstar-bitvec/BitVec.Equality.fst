@@ -33,7 +33,16 @@ let bv_equality' #n (bv1 bv2: bit_vec n)
 
 
 let bv_equality #n (bv1 bv2: bit_vec n) = bv_equality' bv1 bv2
-  
+
+let bv_equality_elim #n (bv1 bv2: bit_vec n)
+  : Lemma (requires bv_equality bv1 bv2)
+          (ensures  bv1 == bv2)
+  = ()
+let bv_equality_intro #n (bv1 bv2: bit_vec n)
+  : Lemma (requires bv1 == bv2)
+          (ensures  bv_equality bv1 bv2)
+  = ()
+
 let rewrite n (bv1: bit_vec n)
   : Lemma (bv_equality #n bv1 bv1 == true)
   = ()
