@@ -145,7 +145,9 @@ const BARRETT_MULTIPLIER: i16 = 20159;
 pub(crate) fn barrett_reduce(vector: Vec256) -> Vec256 {
     let t0 = mm256_mulhi_epi16(vector, mm256_set1_epi16(BARRETT_MULTIPLIER));
     hax_lib::fstar!("assert (forall i. get_lane $t0 i == (cast (((cast (get_lane $vector i) <: i32) *. (cast v_BARRETT_MULTIPLIER <: i32)) >>! 16l) <: i16))");
-    let t1 = mm256_add_epi16(t0, mm256_set1_epi16(512));
+    let t512 = mm256_set1_epi16(512);
+    hax_lib::fstar!("assert (forall i. get_lane $t512 i == 512s)");
+    let t1 = mm256_add_epi16(t0, t512);
     hax_lib::fstar!("assert (forall i. get_lane $t1 i == get_lane $t0 i +. 512s)");
     let quotient = mm256_srai_epi16::<10>(t1);
     hax_lib::fstar!(
