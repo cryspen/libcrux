@@ -8,6 +8,7 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Ind_cca.Unpacked in
   let open Libcrux_ml_kem.Vector.Avx2 in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 let _ =
@@ -35,6 +36,22 @@ val init_public_key: Prims.unit
   -> Prims.Pure
       (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
           Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Read the public key from `bytes``.
+/// `bytes` has to point to at least 6208 bytes.
+val public_key_from_bytes (bytes: t_Slice u8)
+    : Prims.Pure
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+          Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Write out the public key.
+/// `out` has to point to at least 6208 bytes.
+val public_key_to_bytes
+      (key:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
+      (out: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Get the serialized public key.
 val serialized_public_key
@@ -67,6 +84,13 @@ val decapsulate
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
     : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Read bytes into the key pair.
+/// `bytes` has to point to at least 7776 bytes.
+val from_bytes (bytes: t_Slice u8)
+    : Prims.Pure
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+          Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) Prims.l_True (fun _ -> Prims.l_True)
+
 /// Generate ML-KEM 768 Key Pair in "unpacked" form.
 val generate_key_pair
       (randomness: t_Array u8 (sz 64))
@@ -83,6 +107,13 @@ val init_key_pair: Prims.unit
       (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
           Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Read the key pair from `bytes``.
+/// `bytes` has to point to at least 7776 bytes.
+val key_pair_from_bytes (bytes: t_Slice u8)
+    : Prims.Pure
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+          Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) Prims.l_True (fun _ -> Prims.l_True)
+
 /// Get the serialized public key.
 val key_pair_serialized_public_key
       (key_pair:
@@ -92,6 +123,15 @@ val key_pair_serialized_public_key
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
       Prims.l_True
       (fun _ -> Prims.l_True)
+
+/// Write out the key pair.
+/// `out` has to point to at least 7776 bytes.
+val key_pair_to_bytes
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
+      (out: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Get the unpacked public key.
 val public_key

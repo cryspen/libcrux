@@ -47,6 +47,7 @@ impl Operations for PortableVector {
             out[p..p + 2].copy_from_slice(&i16_to_be_bytes(x.elements[i]));
             p += 2;
         }
+        ()
     }
 
     fn from_bytes(bytes: &[u8]) -> Self {

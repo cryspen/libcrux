@@ -8,6 +8,7 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Ind_cca.Unpacked in
   let open Libcrux_ml_kem.Vector.Avx2 in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 let encapsulate
@@ -26,6 +27,25 @@ let init_public_key (_: Prims.unit) =
     #FStar.Tactics.Typeclasses.solve
     ()
 
+let public_key_from_bytes (bytes: t_Slice u8) =
+  Libcrux_ml_kem.Ind_cca.Unpacked.impl__from_bytes (sz 3)
+    #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
+    bytes
+
+let public_key_to_bytes
+      (key:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
+      (out: t_Slice u8)
+     =
+  let out:t_Slice u8 =
+    Libcrux_ml_kem.Ind_cca.Unpacked.impl__to_bytes (sz 3)
+      #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
+      key
+      out
+  in
+  out
+
 let serialized_public_key
       (public_key:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
@@ -33,7 +53,7 @@ let serialized_public_key
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
      =
   let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184) =
-    Libcrux_ml_kem.Ind_cca.Unpacked.impl__serialized_public_key_mut (sz 3)
+    Libcrux_ml_kem.Ind_cca.Unpacked.impl_2__serialized_public_key_mut (sz 3)
       #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
       (sz 1152)
       (sz 1184)
@@ -75,6 +95,11 @@ let decapsulate
     (sz 1184) (sz 1088) (sz 1152) (sz 960) (sz 128) (sz 10) (sz 4) (sz 320) (sz 2) (sz 128) (sz 2)
     (sz 128) (sz 1120) private_key ciphertext
 
+let from_bytes (bytes: t_Slice u8) =
+  Libcrux_ml_kem.Ind_cca.Unpacked.impl_1__from_bytes (sz 3)
+    #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
+    bytes
+
 let generate_key_pair
       (randomness: t_Array u8 (sz 64))
       (key_pair:
@@ -101,6 +126,11 @@ let init_key_pair (_: Prims.unit) =
     #FStar.Tactics.Typeclasses.solve
     ()
 
+let key_pair_from_bytes (bytes: t_Slice u8) =
+  Libcrux_ml_kem.Ind_cca.Unpacked.impl_1__from_bytes (sz 3)
+    #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
+    bytes
+
 let key_pair_serialized_public_key
       (key_pair:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
@@ -108,7 +138,7 @@ let key_pair_serialized_public_key
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
      =
   let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184) =
-    Libcrux_ml_kem.Ind_cca.Unpacked.impl_2__serialized_public_key_mut (sz 3)
+    Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_public_key_mut (sz 3)
       #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
       (sz 1152)
       (sz 1184)
@@ -116,6 +146,20 @@ let key_pair_serialized_public_key
       serialized
   in
   serialized
+
+let key_pair_to_bytes
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
+      (out: t_Slice u8)
+     =
+  let out:t_Slice u8 =
+    Libcrux_ml_kem.Ind_cca.Unpacked.impl_1__to_bytes (sz 3)
+      #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
+      key_pair
+      out
+  in
+  out
 
 let public_key
       (key_pair:
@@ -130,7 +174,7 @@ let public_key
     Core.Clone.f_clone #(Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
           Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
       #FStar.Tactics.Typeclasses.solve
-      (Libcrux_ml_kem.Ind_cca.Unpacked.impl_2__public_key (sz 3)
+      (Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__public_key (sz 3)
           #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
           key_pair
         <:

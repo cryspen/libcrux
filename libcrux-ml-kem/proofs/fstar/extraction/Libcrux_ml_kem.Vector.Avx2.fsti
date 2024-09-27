@@ -27,6 +27,23 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_to_i16_array_pre = (fun (x: t_SIMD256Vector) -> true);
     f_to_i16_array_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> true);
     f_to_i16_array = (fun (x: t_SIMD256Vector) -> to_i16_array x);
+    f_to_bytes_pre = (fun (x: t_SIMD256Vector) (out: t_Slice u8) -> true);
+    f_to_bytes_post = (fun (x: t_SIMD256Vector) (out: t_Slice u8) (out1: t_Slice u8) -> true);
+    f_to_bytes
+    =
+    (fun (x: t_SIMD256Vector) (out: t_Slice u8) ->
+        let out:t_Slice u8 =
+          Libcrux_intrinsics.Avx2_extract.mm256_storeu_si256_u8 out x.f_elements
+        in
+        out);
+    f_from_bytes_pre = (fun (bytes: t_Slice u8) -> true);
+    f_from_bytes_post = (fun (bytes: t_Slice u8) (out: t_SIMD256Vector) -> true);
+    f_from_bytes
+    =
+    (fun (bytes: t_Slice u8) ->
+        { f_elements = Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_u8 bytes }
+        <:
+        t_SIMD256Vector);
     f_add_pre = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) -> true);
     f_add_post = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
     f_add
@@ -384,14 +401,14 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_rej_sample_pre = (fun (input: t_Slice u8) (output: t_Slice i16) -> true);
     f_rej_sample_post
     =
-    (fun (input: t_Slice u8) (output: t_Slice i16) (out1: (t_Slice i16 & usize)) -> true);
+    (fun (input: t_Slice u8) (output: t_Slice i16) (out2: (t_Slice i16 & usize)) -> true);
     f_rej_sample
     =
     fun (input: t_Slice u8) (output: t_Slice i16) ->
-      let tmp0, out:(t_Slice i16 & usize) =
+      let tmp0, out1:(t_Slice i16 & usize) =
         Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample input output
       in
       let output:t_Slice i16 = tmp0 in
-      let hax_temp_output:usize = out in
+      let hax_temp_output:usize = out1 in
       output, hax_temp_output <: (t_Slice i16 & usize)
   }

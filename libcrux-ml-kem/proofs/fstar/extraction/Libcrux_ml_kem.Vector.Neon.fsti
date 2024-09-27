@@ -39,6 +39,68 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array x);
+    f_to_bytes_pre
+    =
+    (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Slice u8) -> true);
+    f_to_bytes_post
+    =
+    (fun
+        (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: t_Slice u8)
+        (out1: t_Slice u8)
+        ->
+        true);
+    f_to_bytes
+    =
+    (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Slice u8) ->
+        let out:t_Slice u8 =
+          Libcrux_intrinsics.Arm64_extract.v__vst1q_u8 out
+            (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u8_s16 x
+                  .Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+              <:
+              u8)
+        in
+        let out:t_Slice u8 =
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from out
+            ({ Core.Ops.Range.f_start = sz 16 } <: Core.Ops.Range.t_RangeFrom usize)
+            (Libcrux_intrinsics.Arm64_extract.v__vst1q_u8 (out.[ { Core.Ops.Range.f_start = sz 16 }
+                    <:
+                    Core.Ops.Range.t_RangeFrom usize ]
+                  <:
+                  t_Slice u8)
+                (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u8_s16 x
+                      .Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+                  <:
+                  u8)
+              <:
+              t_Slice u8)
+        in
+        out);
+    f_from_bytes_pre = (fun (bytes: t_Slice u8) -> true);
+    f_from_bytes_post
+    =
+    (fun (bytes: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_from_bytes
+    =
+    (fun (bytes: t_Slice u8) ->
+        {
+          Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+          =
+          Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_u8 (Libcrux_intrinsics.Arm64_extract.v__vld1q_u8
+                (bytes.[ { Core.Ops.Range.f_start = sz 16 } <: Core.Ops.Range.t_RangeFrom usize ]
+                  <:
+                  t_Slice u8)
+              <:
+              u8);
+          Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+          =
+          Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_u8 (Libcrux_intrinsics.Arm64_extract.v__vld1q_u8
+                bytes
+              <:
+              u8)
+        }
+        <:
+        Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector);
     f_add_pre
     =
     (fun

@@ -10,6 +10,7 @@ let _ =
   let open Libcrux_ml_kem.Ind_cpa.Unpacked in
   let open Libcrux_ml_kem.Polynomial in
   let open Libcrux_ml_kem.Types in
+  let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
@@ -29,8 +30,25 @@ type t_MlKemPublicKeyUnpacked
   f_public_key_hash:t_Array u8 (sz 32)
 }
 
+/// Read the bytes into an unpacked key pair.
+val impl__from_bytes
+      (v_K: usize)
+      (#v_Vector: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (bytes: t_Slice u8)
+    : Prims.Pure (t_MlKemPublicKeyUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Write the key into the `out` buffer.
+val impl__to_bytes
+      (v_K: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self: t_MlKemPublicKeyUnpacked v_K v_Vector)
+      (out: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
 /// Get the serialized public key.
-val impl__serialized_public_key
+val impl_2__serialized_public_key
       (v_K: usize)
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
@@ -41,7 +59,7 @@ val impl__serialized_public_key
       (fun _ -> Prims.l_True)
 
 /// Get the serialized public key.
-val impl__serialized_public_key_mut
+val impl_2__serialized_public_key_mut
       (v_K: usize)
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
@@ -53,7 +71,7 @@ val impl__serialized_public_key_mut
       (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl_1
+let impl_3
       (v_K: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -109,8 +127,25 @@ type t_MlKemKeyPairUnpacked
   f_public_key:t_MlKemPublicKeyUnpacked v_K v_Vector
 }
 
+/// Read the bytes into an unpacked key pair.
+val impl_1__from_bytes
+      (v_K: usize)
+      (#v_Vector: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (bytes: t_Slice u8)
+    : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Write the key into the `out` buffer.
+val impl_1__to_bytes
+      (v_K: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self: t_MlKemKeyPairUnpacked v_K v_Vector)
+      (out: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
 /// Get the serialized public key.
-val impl_2__private_key
+val impl_4__private_key
       (v_K: usize)
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -118,7 +153,7 @@ val impl_2__private_key
     : Prims.Pure (t_MlKemPrivateKeyUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Get the serialized public key.
-val impl_2__public_key
+val impl_4__public_key
       (v_K: usize)
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -126,7 +161,7 @@ val impl_2__public_key
     : Prims.Pure (t_MlKemPublicKeyUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Get the serialized private key.
-val impl_2__serialized_private_key
+val impl_4__serialized_private_key
       (v_K: usize)
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -134,7 +169,7 @@ val impl_2__serialized_private_key
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey v_K) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Get the serialized public key.
-val impl_2__serialized_public_key
+val impl_4__serialized_public_key
       (v_K: usize)
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
@@ -145,7 +180,7 @@ val impl_2__serialized_public_key
       (fun _ -> Prims.l_True)
 
 /// Get the serialized public key.
-val impl_2__serialized_public_key_mut
+val impl_4__serialized_public_key_mut
       (v_K: usize)
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
@@ -157,7 +192,7 @@ val impl_2__serialized_public_key_mut
       (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl_3
+let impl_5
       (v_K: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -195,7 +230,7 @@ let impl_3
   }
 
 /// Create a new empty unpacked key pair.
-val impl_2__new:
+val impl_4__new:
     v_K: usize ->
     #v_Vector: Type0 ->
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
@@ -216,9 +251,10 @@ val decapsulate
 val generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
+      {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      {| i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme |}
       (randomness: t_Array u8 (sz 64))
       (out: t_MlKemKeyPairUnpacked v_K v_Vector)
     : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
