@@ -3,7 +3,10 @@ use super::vector_type::*;
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!("v i < 16 /\\ v j < 16 /\\ Spec.Utils.is_i16b 1664 $zeta"))]
+#[hax_lib::requires(fstar!("v i < 16 /\\ v j < 16 /\\ Spec.Utils.is_i16b 1664 $zeta  /\\
+                            Spec.Utils.is_i16b_array (11207 + 6 * 3328) vec.f_elements /\\
+                            Spec.Utils.is_i16b (11207 + 5*3328) vec.f_elements.[i] /\\
+                            Spec.Utils.is_i16b (11207 + 5*3328) vec.f_elements.[j]"))]
 #[hax_lib::ensures(|result| fstar!("(forall k. (k <> v i /\\ k <> v j) ==>
                                          Seq.index ${vec}_future.f_elements k == Seq.index ${vec}.f_elements k) /\\
                                     (forall b. (Spec.Utils.is_i16b b ${vec}.f_elements.[i] /\\
@@ -191,6 +194,7 @@ pub(crate) fn inv_ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> Portab
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options("--z3rlimit 250 --split_queries always --query_stats --ext context_prune")]
 #[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]")]
 #[hax_lib::requires(fstar!("v i < 8 /\\ Spec.Utils.is_i16b 1664 $zeta /\\
@@ -199,8 +203,8 @@ pub(crate) fn inv_ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> Portab
         Spec.Utils.is_i16b_array 3328 ${out}.f_elements "))]
 #[hax_lib::ensures(|()| fstar!("
         Spec.Utils.is_i16b_array 3328 ${out}_future.f_elements /\\
-        (forall k. (k < 2 * v $i \\/ k > 2 * v $i + 1) ==> 
-                    Seq.index out_future.f_elements k == Seq.index out.f_elements k) /\\                 
+        (forall k. (k <> 2 * v $i /\\ k <> 2 * v $i + 1) ==> 
+                    Seq.index ${out}_future.f_elements k == Seq.index ${out}.f_elements k) /\\                 
         (let ai = Seq.index ${a}.f_elements (2 * v $i) in
          let aj = Seq.index ${a}.f_elements (2 * v $i + 1) in
          let bi = Seq.index ${b}.f_elements (2 * v $i) in
@@ -293,7 +297,6 @@ pub(crate) fn ntt_multiply_binomials(
                      assert (forall k. (k <> 2 * v i /\\ k <> 2 * v i + 1) ==>
                                         Seq.index out.f_elements k ==
                                         Seq.index ${_out0} k)");
-    hax_lib::fstar!("admit()");
 }
 
 // #[inline(always)]
@@ -346,10 +349,13 @@ pub(crate) fn ntt_multiply(
     hax_lib::fstar!("assert (Spec.Utils.is_i16b_array 3328 out.f_elements)");
     ntt_multiply_binomials(lhs, rhs, nzeta1, 3, &mut out);
     hax_lib::fstar!("assert (Spec.Utils.is_i16b_array 3328 out.f_elements)");
-    hax_lib::fstar!("admit()");
     ntt_multiply_binomials(lhs, rhs, zeta2, 4, &mut out);
+    hax_lib::fstar!("assert (Spec.Utils.is_i16b_array 3328 out.f_elements)");
     ntt_multiply_binomials(lhs, rhs, nzeta2, 5, &mut out);
+    hax_lib::fstar!("assert (Spec.Utils.is_i16b_array 3328 out.f_elements)");
     ntt_multiply_binomials(lhs, rhs, zeta3, 6, &mut out);
+    hax_lib::fstar!("assert (Spec.Utils.is_i16b_array 3328 out.f_elements)");
     ntt_multiply_binomials(lhs, rhs, nzeta3, 7, &mut out);
+    hax_lib::fstar!("assert (Spec.Utils.is_i16b_array 3328 out.f_elements)");
     out
 }

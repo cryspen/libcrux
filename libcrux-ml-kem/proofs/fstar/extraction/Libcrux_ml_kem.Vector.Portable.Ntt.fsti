@@ -88,7 +88,7 @@ val ntt_multiply_binomials
           let out_future:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = out_future in
           Spec.Utils.is_i16b_array 3328 out_future.f_elements /\
           (forall k.
-              (k < 2 * v i \/ k > 2 * v i + 1) ==>
+              (k <> 2 * v i /\ k <> 2 * v i + 1) ==>
               Seq.index out_future.f_elements k == Seq.index out.f_elements k) /\
           (let ai = Seq.index a.f_elements (2 * v i) in
             let aj = Seq.index a.f_elements (2 * v i + 1) in
@@ -104,7 +104,11 @@ val ntt_step
       (zeta: i16)
       (i j: usize)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires v i < 16 /\ v j < 16 /\ Spec.Utils.is_i16b 1664 zeta)
+      (requires
+        v i < 16 /\ v j < 16 /\ Spec.Utils.is_i16b 1664 zeta /\
+        Spec.Utils.is_i16b_array (11207 + 6 * 3328) vec.f_elements /\
+        Spec.Utils.is_i16b (11207 + 5 * 3328) vec.f_elements.[ i ] /\
+        Spec.Utils.is_i16b (11207 + 5 * 3328) vec.f_elements.[ j ])
       (ensures
         fun vec_future ->
           let vec_future:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec_future in

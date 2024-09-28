@@ -296,7 +296,7 @@ let ntt_multiply_binomials
     assert (forall k.
           (k <> 2 * v i /\ k <> 2 * v i + 1) ==> Seq.index out.f_elements k == Seq.index v__out0 k)
   in
-  let _:Prims.unit = admit () in
+  let hax_temp_output:Prims.unit = admit () (* Panic freedom *) in
   out
 
 #pop-options
@@ -478,19 +478,22 @@ let ntt_multiply
     ntt_multiply_binomials lhs rhs nzeta1 (sz 3) out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
-  let _:Prims.unit = admit () in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     ntt_multiply_binomials lhs rhs zeta2 (sz 4) out
   in
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     ntt_multiply_binomials lhs rhs nzeta2 (sz 5) out
   in
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     ntt_multiply_binomials lhs rhs zeta3 (sz 6) out
   in
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     ntt_multiply_binomials lhs rhs nzeta3 (sz 7) out
   in
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   out
 
 #pop-options
