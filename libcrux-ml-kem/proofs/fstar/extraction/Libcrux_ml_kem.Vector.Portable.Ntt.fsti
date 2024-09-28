@@ -56,6 +56,8 @@ val inv_ntt_layer_3_step
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
           Spec.Utils.is_i16b_array 3328 result.f_elements)
 
+[@@ "opaque_to_smt"]
+
 /// Compute the product of two Kyber binomials with respect to the
 /// modulus `X² - zeta`.
 /// This function almost implements <strong>Algorithm 11</strong> of the
@@ -75,33 +77,27 @@ val inv_ntt_layer_3_step
 val ntt_multiply_binomials
       (a b: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta: i16)
-      (i j: usize)
+      (i: usize)
       (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       (requires
-        v i < 16 /\ v j < 16 /\ Spec.Utils.is_i16b 1664 zeta /\
-        Spec.Utils.is_i16b_array 3228 a.f_elements /\ Spec.Utils.is_i16b_array 3228 b.f_elements)
+        v i < 8 /\ Spec.Utils.is_i16b 1664 zeta /\ Spec.Utils.is_i16b_array 3328 a.f_elements /\
+        Spec.Utils.is_i16b_array 3328 b.f_elements /\ Spec.Utils.is_i16b_array 3328 out.f_elements)
       (ensures
         fun out_future ->
           let out_future:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = out_future in
-          Spec.Utils.is_i16b_array 3328 out.f_elements /\
+          Spec.Utils.is_i16b_array 3328 out_future.f_elements /\
           (forall k.
-              (k <> v i /\ k <> v j) ==>
+              (k < 2 * v i \/ k > 2 * v i + 1) ==>
               Seq.index out_future.f_elements k == Seq.index out.f_elements k) /\
-          (let ai = Seq.index a.f_elements (v i) in
-            let aj = Seq.index a.f_elements (v j) in
-            let bi = Seq.index b.f_elements (v i) in
-            let bj = Seq.index b.f_elements (v j) in
-            let oi = Seq.index out_future.f_elements (v i) in
-            let oj = Seq.index out_future.f_elements (v j) in
-            let x, y =
-              Spec.MLKEM.Math.poly_base_case_multiply (v ai % 3329)
-                (v aj % 3329)
-                (v bi % 3329)
-                (v bj % 3329)
-                ((v zeta * 169) % 3329)
-            in
-            ((x * 169) % 3329 == v oi % 3329) /\ (y * 169) % 3329 == v oj % 3329))
+          (let ai = Seq.index a.f_elements (2 * v i) in
+            let aj = Seq.index a.f_elements (2 * v i + 1) in
+            let bi = Seq.index b.f_elements (2 * v i) in
+            let bj = Seq.index b.f_elements (2 * v i + 1) in
+            let oi = Seq.index out_future.f_elements (2 * v i) in
+            let oj = Seq.index out_future.f_elements (2 * v i + 1) in
+            ((v oi % 3329) == (((v ai * v bi + (v aj * v bj * v zeta * 169)) * 169) % 3329)) /\
+            ((v oj % 3329) == (((v ai * v bj + v aj * v bi) * 169) % 3329))))
 
 val ntt_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -162,7 +158,7 @@ val ntt_multiply
       (requires
         Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
         Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-        Spec.Utils.is_i16b_array 3228 lhs.f_elements /\ Spec.Utils.is_i16b_array 3228 rhs.f_elements
+        Spec.Utils.is_i16b_array 3328 lhs.f_elements /\ Spec.Utils.is_i16b_array 3328 rhs.f_elements
       )
       (ensures
         fun result ->

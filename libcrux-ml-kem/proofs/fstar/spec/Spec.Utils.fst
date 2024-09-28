@@ -188,7 +188,9 @@ let lemma_mul_intb (b1 b2: nat) (n1 n2: int) =
 
 val lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) 
     : Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 * b2 < pow2 31))
-      (ensures (range (v n1 * v n2) i32_inttype /\ is_i32b (b1 * b2) ((cast n1 <: i32) *! (cast n2 <: i32))))
+      (ensures (range (v n1 * v n2) i32_inttype /\ 
+                is_i32b (b1 * b2) ((cast n1 <: i32) *! (cast n2 <: i32)) /\
+                v ((cast n1 <: i32) *! (cast n2 <: i32)) == v n1 * v n2))
       
 let lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) =
   if v n1 = 0 || v n2 = 0

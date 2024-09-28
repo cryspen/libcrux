@@ -406,8 +406,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         ->
         Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
         Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-        Spec.Utils.is_i16b_array 3228 (impl.f_repr lhs) /\
-        Spec.Utils.is_i16b_array 3228 (impl.f_repr rhs));
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr lhs) /\
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr rhs));
     f_ntt_multiply_post
     =
     (fun
