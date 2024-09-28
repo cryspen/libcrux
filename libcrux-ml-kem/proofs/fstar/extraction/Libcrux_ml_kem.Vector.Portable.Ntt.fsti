@@ -167,4 +167,27 @@ val ntt_multiply
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
-          Spec.Utils.is_i16b_array 3328 result.f_elements)
+          Spec.Utils.is_i16b_array 3328 result.f_elements /\
+          (let zetas =
+              Seq.seq_of_list [
+                  v zeta0;
+                  - v zeta0;
+                  v zeta1;
+                  - v zeta1;
+                  v zeta2;
+                  - v zeta2;
+                  v zeta3;
+                  - v zeta3
+                ]
+            in
+            (forall (i: nat).
+                i < 8 ==>
+                (let ai = Seq.index lhs.f_elements (2 * i) in
+                  let aj = Seq.index lhs.f_elements (2 * i + 1) in
+                  let bi = Seq.index rhs.f_elements (2 * i) in
+                  let bj = Seq.index rhs.f_elements (2 * i + 1) in
+                  let oi = Seq.index result.f_elements (2 * i) in
+                  let oj = Seq.index result.f_elements (2 * i + 1) in
+                  ((v oi % 3329) ==
+                    (((v ai * v bi + (v aj * v bj * (Seq.index zetas i) * 169)) * 169) % 3329)) /\
+                  ((v oj % 3329) == (((v ai * v bj + v aj * v bi) * 169) % 3329))))))
