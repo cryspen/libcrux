@@ -159,6 +159,9 @@ let is_i16b_array (l:nat) (x:t_Slice i16) = forall i. i < Seq.length x ==> is_i1
 let is_i16b_vector (l:nat) (r:usize) (x:t_Array (t_Array i16 (sz 256)) r) = forall i. i < v r ==> is_i16b_array l (Seq.index x i)
 let is_i16b_matrix (l:nat) (r:usize) (x:t_Array (t_Array (t_Array i16 (sz 256)) r) r) = forall i. i < v r ==> is_i16b_vector l r (Seq.index x i)
 
+[@ "opaque_to_smt"]
+let is_i16b_array_opaque (l:nat) (x:t_Slice i16) = forall i. i < Seq.length x ==> is_i16b l (Seq.index x i)
+
 let is_i32b (l:nat) (x:i32) = is_intb l (v x)
 let is_i32b_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i32b l (Seq.index x i)
 

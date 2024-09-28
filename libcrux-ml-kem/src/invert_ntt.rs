@@ -5,20 +5,42 @@ use crate::{
 };
 
 #[inline(always)]
-#[cfg_attr(hax, hax_lib::fstar::before("let zetas_b_lemma (i:nat{i >= 0 /\\ i < 128}) : Lemma
+#[hax_lib::fstar::before("let zetas_b_lemma (i:nat{i >= 0 /\\ i < 128}) : Lemma
    (Spec.Utils.is_i16b 1664 (${get_zeta} (sz i))) =
-   admit()"))]
-#[hax_lib::requires(fstar!("v ${*zeta_i} >= 64 && v ${*zeta_i} <= 128"))]
+   admit()")]
+#[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]
+   let invert_ntt_re_range_2 (#v_Vector: Type0)
+           {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+           (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
+       forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque 3328
+               (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))")]
+#[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]
+   let invert_ntt_re_range_1 (#v_Vector: Type0)
+         {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+         (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
+       forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (4 * 3328)
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))")]
+#[hax_lib::requires(fstar!("v ${*zeta_i} == 128 /\\
+    invert_ntt_re_range_1 $re"))]
+#[hax_lib::ensures(|result| fstar!("invert_ntt_re_range_2 ${re}_future /\\
+    v ${*zeta_i}_future == 64"))]
 pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     _layer: usize,
 ) {
+    hax_lib::fstar!("reveal_opaque (`%invert_ntt_re_range_1) (invert_ntt_re_range_1 #$:Vector)");
+    hax_lib::fstar!("reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)");
     let _zeta_i_init = *zeta_i;
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
-        hax_lib::loop_invariant!(|round: usize| { fstar!("v zeta_i == v $_zeta_i_init - v $round * 4") });
+        hax_lib::loop_invariant!(|round: usize| { fstar!("v zeta_i == v $_zeta_i_init - v $round * 4 /\\
+          (v round < 16 ==> (forall (i:nat). (i >= v round /\\ i < 16) ==>
+            Spec.Utils.is_i16b_array_opaque (4 * 3328)
+              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))) /\\
+          (forall (i:nat). i < v $round ==> Spec.Utils.is_i16b_array_opaque 3328
+              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))") });
         *zeta_i -= 1;
         hax_lib::fstar!("zetas_b_lemma (v zeta_i);
             zetas_b_lemma (v zeta_i - 1);
@@ -32,22 +54,33 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
             get_zeta (*zeta_i - 3),
         );
         *zeta_i -= 3;
+        hax_lib::fstar!("assert (Spec.Utils.is_i16b_array_opaque 3328
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))");
     }
     ()
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!("v ${*zeta_i} >= 32 && v ${*zeta_i} <= 128"))]
+#[hax_lib::requires(fstar!("v ${*zeta_i} == 64 /\\
+    invert_ntt_re_range_2 $re "))]
+#[hax_lib::ensures(|result| fstar!("invert_ntt_re_range_2 ${re}_future /\\
+    v ${*zeta_i}_future == 32"))]
 pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     _layer: usize,
 ) {
+    hax_lib::fstar!("reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)");
     let _zeta_i_init = *zeta_i;
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
-        hax_lib::loop_invariant!(|round: usize| { fstar!("v zeta_i == v $_zeta_i_init - v $round * 2") });
+        hax_lib::loop_invariant!(|round: usize| { fstar!("v zeta_i == v $_zeta_i_init - v $round * 2 /\\
+          (v round < 16 ==> (forall (i:nat). (i >= v round /\\ i < 16) ==>
+            Spec.Utils.is_i16b_array_opaque 3328
+              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))) /\\
+          (forall (i:nat). i < v $round ==> Spec.Utils.is_i16b_array_opaque 3328
+              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))") });
         *zeta_i -= 1;
         hax_lib::fstar!("zetas_b_lemma (v zeta_i);
             zetas_b_lemma (v zeta_i - 1)");
@@ -57,32 +90,53 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
             get_zeta (*zeta_i - 1),
         );
         *zeta_i -= 1;
+        hax_lib::fstar!("assert (Spec.Utils.is_i16b_array_opaque 3328
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))");
     }
     ()
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!("v ${*zeta_i} >= 16 && v ${*zeta_i} <= 128"))]
+#[hax_lib::requires(fstar!("v ${*zeta_i} == 32 /\\
+    invert_ntt_re_range_2 $re"))]
+#[hax_lib::ensures(|result| fstar!("invert_ntt_re_range_2 ${re}_future /\\
+    v ${*zeta_i}_future == 16"))]
 pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     _layer: usize,
 ) {
+    hax_lib::fstar!("reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)");
     let _zeta_i_init = *zeta_i;
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
-        hax_lib::loop_invariant!(|round: usize| { fstar!("v zeta_i == v $_zeta_i_init - v $round") });
+        hax_lib::loop_invariant!(|round: usize| { fstar!("v zeta_i == v $_zeta_i_init - v $round /\\
+          (v round < 16 ==> (forall (i:nat). (i >= v round /\\ i < 16) ==>
+            Spec.Utils.is_i16b_array_opaque 3328
+              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))) /\\
+          (forall (i:nat). i < v $round ==> Spec.Utils.is_i16b_array_opaque 3328
+              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))") });
         *zeta_i -= 1;
         hax_lib::fstar!("zetas_b_lemma (v zeta_i)");
         re.coefficients[round] =
             Vector::inv_ntt_layer_3_step(re.coefficients[round], get_zeta (*zeta_i));
+        hax_lib::fstar!("assert (Spec.Utils.is_i16b_array_opaque 3328
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))");
     }
     ()
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 3328 $zeta_r /\\
+#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 $zeta_r /\\
+    (forall i. i < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1)
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $b) i) -
+        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i))) /\\
+    (forall i. i < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1)
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) +
+        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $b) i))) /\\
     Spec.Utils.is_i16b_array 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
         (Libcrux_ml_kem.Vector.Traits.f_add $a $b))"))]
 pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
@@ -97,9 +151,8 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 200")]
-#[hax_lib::requires(fstar!("v $layer >= 4 /\\ v $layer <= 7 /\\
-    v ${*zeta_i} - v (sz 128 >>! $layer) >= 0 /\\ v ${*zeta_i} <= 128"))]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!("v $layer >= 4 /\\ v $layer <= 7"))]
 pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
@@ -107,25 +160,16 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 ) {
     let step = 1 << layer;
 
-    let _zeta_i_init = *zeta_i;
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..(128 >> layer) {
-        hax_lib::loop_invariant!(|round: usize| { fstar!("v zeta_i == v $_zeta_i_init - v $round") });
-        hax_lib::fstar!("assert (v $round < 8);
-          assert (v $step >= 16 /\\ v $step <= 128);
-          assert (v ($round *! $step) >= 0 /\\ v ($round *! $step) <= 112)");
         *zeta_i -= 1;
 
         let offset = round * step * 2;
-        hax_lib::fstar!("assert (v $offset >= 0 /\\ v $offset <= 224)");
         let offset_vec = offset / FIELD_ELEMENTS_IN_VECTOR;
         let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
 
         for j in offset_vec..offset_vec + step_vec {
-            hax_lib::fstar!("zetas_b_lemma (v zeta_i)");
-            hax_lib::fstar!("assume (Spec.Utils.is_i16b_array 28296
-                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Libcrux_ml_kem.Vector.Traits.f_add re.f_coefficients.[j] re.f_coefficients.[j +! step_vec])))");
             let (x, y) = inv_ntt_layer_int_vec_step_reduce(
                 re.coefficients[j],
                 re.coefficients[j + step_vec],
@@ -139,7 +183,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 200")]
+#[hax_lib::requires(fstar!("invert_ntt_re_range_1 $re"))]
 pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
 ) {
