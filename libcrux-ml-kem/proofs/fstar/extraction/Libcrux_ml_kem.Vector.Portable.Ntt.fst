@@ -12,17 +12,34 @@ let inv_ntt_step
     (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] <: i16) -!
     (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
   in
-  let o0:i16 =
-    Libcrux_ml_kem.Vector.Portable.Arithmetic.barrett_reduce_element ((vec
-            .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
-          <:
-          i16) +!
-        (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] <: i16)
-        <:
-        i16)
+  let a_plus_b:i16 =
+    (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] <: i16) +!
+    (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
   in
+  let _:Prims.unit =
+    assert (v a_minus_b = v (Seq.index vec.f_elements (v j)) - v (Seq.index vec.f_elements (v i)));
+    assert (v a_plus_b = v (Seq.index vec.f_elements (v j)) + v (Seq.index vec.f_elements (v i)))
+  in
+  let o0:i16 = Libcrux_ml_kem.Vector.Portable.Arithmetic.barrett_reduce_element a_plus_b in
   let o1:i16 =
     Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_fe_by_fer a_minus_b zeta
+  in
+  let _:Prims.unit =
+    calc ( == ) {
+      v o0 % 3329;
+      ( == ) { () }
+      v a_plus_b % 3329;
+      ( == ) { () }
+      (v (Seq.index vec.f_elements (v j)) + v (Seq.index vec.f_elements (v i))) % 3329;
+    };
+    calc ( == ) {
+      v o1 % 3329;
+      ( == ) { () }
+      (v a_minus_b * v zeta * 169) % 3329;
+      ( == ) { () }
+      ((v (Seq.index vec.f_elements (v j)) - v (Seq.index vec.f_elements (v i))) * v zeta * 169) %
+      3329;
+    }
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     {
@@ -49,6 +66,10 @@ let inv_ntt_step
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+  in
+  let _:Prims.unit =
+    assert (Seq.index vec.f_elements (v i) == o0);
+    assert (Seq.index vec.f_elements (v j) == o1)
   in
   vec
 

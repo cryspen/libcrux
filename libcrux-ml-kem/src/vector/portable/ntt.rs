@@ -3,7 +3,8 @@ use super::vector_type::*;
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!("v i < 16 /\\ v j < 16 /\\ Spec.Utils.is_i16b 1664 $zeta  /\\
+#[hax_lib::requires(fstar!("v i < 16 /\\ v j < 16 /\\ v i <> v j /\\ 
+                            Spec.Utils.is_i16b 1664 $zeta  /\\
                             Spec.Utils.is_i16b_array (11207 + 6 * 3328) vec.f_elements /\\
                             Spec.Utils.is_i16b (11207 + 5*3328) vec.f_elements.[i] /\\
                             Spec.Utils.is_i16b (11207 + 5*3328) vec.f_elements.[j]"))]
@@ -78,19 +79,45 @@ pub(crate) fn ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> PortableVe
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!("v i < 16 /\\ v j < 16 /\\ Spec.Utils.is_i16b 1664 $zeta /\\
+#[hax_lib::requires(fstar!("v i < 16 /\\ v j < 16 /\\  v i <> v j /\\ 
+                        Spec.Utils.is_i16b 1664 $zeta /\\
                         Spec.Utils.is_i16b_array (4*3328) ${vec}.f_elements"))]
 #[hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array (4*3328) ${vec}_future.f_elements /\\
                                     (forall k. (k <> v i /\\ k <> v j) ==>
                                          Seq.index ${vec}_future.f_elements k == Seq.index ${vec}.f_elements k) /\\
                                     (Spec.Utils.is_i16b 3328 (Seq.index ${vec}_future.f_elements (v i)) /\\
-                                     Spec.Utils.is_i16b 3328 (Seq.index ${vec}_future.f_elements (v j)))"))]
+                                     Spec.Utils.is_i16b 3328 (Seq.index ${vec}_future.f_elements (v j))) /\\
+                                    ((v (Seq.index ${vec}_future.f_elements (v i)) % 3329) ==
+                                    (v (Seq.index ${vec}.f_elements (v j)) + v (Seq.index ${vec}.f_elements (v i))) % 3329) /\\
+                                    ((v (Seq.index ${vec}_future.f_elements (v j)) % 3329) ==
+                                    ((v (Seq.index ${vec}.f_elements (v j)) - v (Seq.index ${vec}.f_elements (v i))) 
+                                      * v ${zeta} * 169) % 3329)"))]
 pub(crate) fn inv_ntt_step(vec: &mut PortableVector, zeta: i16, i: usize, j: usize) {
     let a_minus_b = vec.elements[j] - vec.elements[i];
-    let o0 = barrett_reduce_element(vec.elements[i] + vec.elements[j]);
+    let a_plus_b = vec.elements[j] + vec.elements[i];
+    hax_lib::fstar!("assert (v a_minus_b = v (Seq.index vec.f_elements (v j)) - v (Seq.index vec.f_elements (v i)));
+                     assert (v a_plus_b = v (Seq.index vec.f_elements (v j)) + v (Seq.index vec.f_elements (v i)))");
+    let o0 = barrett_reduce_element(a_plus_b);
     let o1 = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    hax_lib::fstar!("
+    calc (==) {
+        v o0 % 3329;
+        (==) { }
+        v a_plus_b % 3329;
+        (==) { }
+        (v (Seq.index vec.f_elements (v j)) + v (Seq.index vec.f_elements (v i))) % 3329;
+    };
+    calc (==) {
+        v o1 % 3329;
+        (==) { }
+        (v a_minus_b * v zeta * 169) % 3329;
+        (==) { }
+        ((v (Seq.index vec.f_elements (v j)) - v (Seq.index vec.f_elements (v i))) * v zeta * 169) % 3329;
+    }");     
     vec.elements[i] = o0;
     vec.elements[j] = o1;
+    hax_lib::fstar!("assert (Seq.index vec.f_elements (v i) == o0);
+                     assert (Seq.index vec.f_elements (v j) == o1)");
 }
 
 #[inline(always)]
