@@ -98,6 +98,7 @@ class extractAction(argparse.Action):
             "simd128,simd256,pre-verification",
             ";",
             "into",
+            "-vv",
             "-i",
             include_str,
             "fstar",

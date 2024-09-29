@@ -101,11 +101,12 @@ let barrett_reduce (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
             <:
             i16))
   in
+  let t512:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 512s
+  in
+  let _:Prims.unit = assert (forall i. get_lane t512 i == 512s) in
   let t1:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 t0
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 512s
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+    Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 t0 t512
   in
   let _:Prims.unit = assert (forall i. get_lane t1 i == get_lane t0 i +. 512s) in
   let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =

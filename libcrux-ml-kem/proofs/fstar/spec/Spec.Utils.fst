@@ -215,7 +215,6 @@ val lemma_add_i16b (b1 b2:nat) (n1 n2:i16) :
                   is_i16b (b1 + b2) (n1 +! n2)))
 let lemma_add_i16b (b1 b2:nat) (n1 n2:i16) = ()
 
-
 #push-options "--z3rlimit 100 --split_queries always"
 let lemma_range_at_percent (v:int) (p:int{p>0/\ p%2=0 /\ v < p/2 /\ v >= -p / 2}):
   Lemma (v @% p == v) =
