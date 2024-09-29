@@ -85,7 +85,7 @@ let sub (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   in
   result
 
-#push-options "--z3rlimit 100"
+#push-options "--z3rlimit 200"
 
 let barrett_reduce (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let t0:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -184,7 +184,7 @@ let cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
 
 #pop-options
 
-#push-options "--z3rlimit 100"
+#push-options "--z3rlimit 200"
 
 let montgomery_multiply_by_constant
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)

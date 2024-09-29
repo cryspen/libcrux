@@ -137,7 +137,7 @@ const BARRETT_MULTIPLIER: i16 = 20159;
 /// See Section 3.2 of the implementation notes document for an explanation
 /// of this code.
 #[inline(always)]
-#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 100"))]
+#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 200"))]
 #[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 28296 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})")))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\\
                 (forall i. i < 16 ==> v (get_lane $result i) % 3329 == 
@@ -170,7 +170,7 @@ pub(crate) fn barrett_reduce(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 100"))]
+#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 200"))]
 #[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 constant")))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\\
                 (forall i. i < 16 ==> v (get_lane $result i) % 3329 == 
