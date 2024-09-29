@@ -271,7 +271,7 @@ class t_Operations (v_Self: Type0) = {
       Type0
         { Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
           Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-          Spec.Utils.is_i16b_array 3228 (f_repr lhs) /\ Spec.Utils.is_i16b_array 3228 (f_repr rhs) ==>
+          Spec.Utils.is_i16b_array 3328 (f_repr lhs) /\ Spec.Utils.is_i16b_array 3328 (f_repr rhs) ==>
           pred };
   f_ntt_multiply_post:
       lhs: v_Self ->

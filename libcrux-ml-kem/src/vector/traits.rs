@@ -123,8 +123,8 @@ pub trait Operations: Copy + Clone + Repr {
 
     #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
                        Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
-                       Spec.Utils.is_i16b_array 3228 (f_repr ${lhs}) /\\
-                       Spec.Utils.is_i16b_array 3228 (f_repr ${rhs}) "))]
+                       Spec.Utils.is_i16b_array 3328 (f_repr ${lhs}) /\\
+                       Spec.Utils.is_i16b_array 3328 (f_repr ${rhs}) "))]
     #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (f_repr $out)"))]
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
         -> Self;

@@ -105,6 +105,8 @@ let compute_As_plus_e
   let hax_temp_output:Prims.unit = result in
   tt_as_ntt
 
+#push-options "--admit_smt_queries true"
+
 let compute_ring_element_v
       (v_K: usize)
       (#v_Vector: Type0)
@@ -144,9 +146,11 @@ let compute_ring_element_v
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Libcrux_ml_kem.Polynomial.impl_2__add_message_error_reduce #v_Vector error_2_ message result
   in
-  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
-  let _:Prims.unit = admit () (* Panic freedom *) in
   result
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let compute_vector_u
       (v_K: usize)
@@ -247,9 +251,11 @@ let compute_vector_u
           in
           result)
   in
-  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = result in
-  let _:Prims.unit = admit () (* Panic freedom *) in
   result
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let compute_message
       (v_K: usize)
@@ -291,9 +297,9 @@ let compute_message
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Libcrux_ml_kem.Polynomial.impl_2__subtract_reduce #v_Vector v result
   in
-  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
-  let _:Prims.unit = admit () (* Panic freedom *) in
   result
+
+#pop-options
 
 let sample_matrix_A
       (v_K: usize)

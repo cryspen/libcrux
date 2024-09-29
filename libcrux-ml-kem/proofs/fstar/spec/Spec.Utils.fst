@@ -159,6 +159,9 @@ let is_i16b_array (l:nat) (x:t_Slice i16) = forall i. i < Seq.length x ==> is_i1
 let is_i16b_vector (l:nat) (r:usize) (x:t_Array (t_Array i16 (sz 256)) r) = forall i. i < v r ==> is_i16b_array l (Seq.index x i)
 let is_i16b_matrix (l:nat) (r:usize) (x:t_Array (t_Array (t_Array i16 (sz 256)) r) r) = forall i. i < v r ==> is_i16b_vector l r (Seq.index x i)
 
+[@ "opaque_to_smt"]
+let is_i16b_array_opaque (l:nat) (x:t_Slice i16) = is_i16b_array l x
+
 let is_i32b (l:nat) (x:i32) = is_intb l (v x)
 let is_i32b_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i32b l (Seq.index x i)
 
@@ -186,9 +189,12 @@ let lemma_mul_intb (b1 b2: nat) (n1 n2: int) =
     lemma_abs_bound (n1 * n2) (b1 * b2)
 #pop-options
 
+#push-options "--z3rlimit 200"
 val lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) 
     : Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 * b2 < pow2 31))
-      (ensures (range (v n1 * v n2) i32_inttype /\ is_i32b (b1 * b2) ((cast n1 <: i32) *! (cast n2 <: i32))))
+      (ensures (range (v n1 * v n2) i32_inttype /\ 
+                is_i32b (b1 * b2) ((cast n1 <: i32) *! (cast n2 <: i32)) /\
+                v ((cast n1 <: i32) *! (cast n2 <: i32)) == v n1 * v n2))
       
 let lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) =
   if v n1 = 0 || v n2 = 0
@@ -201,6 +207,7 @@ let lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) =
     lemma_mult_le_left (abs (v n1)) (abs (v n2)) b2;
     lemma_mult_le_right b2 (abs (v n1)) b1;
     lemma_abs_bound (v n1 * v n2) (b1 * b2)
+#pop-options
 
 val lemma_add_i16b (b1 b2:nat) (n1 n2:i16) :
   Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 + b2 < pow2 15))
@@ -467,3 +474,20 @@ let lemma_shift_right_15_i16 (x:i16):
   Rust_primitives.Integers.mk_int_v_lemma #i16_inttype 0s;
   Rust_primitives.Integers.mk_int_v_lemma #i16_inttype (-1s);
   ()
+
+val ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) (j: nat{j < v len}) 
+                  (vec_out: t_Array i16 len) : Type0
+let ntt_spec vec_in zeta i j vec_out =
+  ((v (Seq.index vec_out i) % 3329) ==
+   ((v (Seq.index vec_in i) + (v (Seq.index vec_in j) * zeta * 169)) % 3329)) /\
+  ((v (Seq.index vec_out j) % 3329) ==
+   ((v (Seq.index vec_in i) - (v (Seq.index vec_in j) * zeta * 169)) % 3329))
+
+val inv_ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) (j: nat{j < v len}) 
+                 (vec_out: t_Array i16 len) : Type0
+let inv_ntt_spec vec_in zeta i j vec_out =
+  ((v (Seq.index vec_out i) % 3329) ==
+   ((v (Seq.index vec_in j) + v (Seq.index vec_in i)) % 3329)) /\
+  ((v (Seq.index vec_out j) % 3329) ==
+   (((v (Seq.index vec_in j) - v (Seq.index vec_in i)) * zeta * 169) % 3329))
+

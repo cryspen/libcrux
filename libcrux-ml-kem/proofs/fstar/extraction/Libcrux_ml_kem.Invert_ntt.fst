@@ -38,15 +38,27 @@ let invert_ntt_at_layer_1_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer: usize)
      =
+  let _:Prims.unit = reveal_opaque (`%invert_ntt_re_range_1) (invert_ntt_re_range_1 #v_Vector) in
+  let _:Prims.unit = reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #v_Vector) in
+  let v__zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 16)
-      (fun temp_0_ temp_1_ ->
+      (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
           in
-          let _:usize = temp_1_ in
-          true)
+          let round:usize = round in
+          v zeta_i == v v__zeta_i_init - v round * 4 /\
+          (v round < 16 ==>
+            (forall (i: nat).
+                (i >= v round /\ i < 16) ==>
+                Spec.Utils.is_i16b_array_opaque (4 * 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))) /\
+          (forall (i: nat).
+              i < v round ==>
+              Spec.Utils.is_i16b_array_opaque 3328
+                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))))
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
@@ -54,6 +66,11 @@ let invert_ntt_at_layer_1_
           in
           let round:usize = round in
           let zeta_i:usize = zeta_i -! sz 1 in
+          let _:Prims.unit =
+            reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+              (Spec.Utils.is_i16b_array_opaque (4 * 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
               re with
@@ -76,6 +93,15 @@ let invert_ntt_at_layer_1_
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
           in
           let zeta_i:usize = zeta_i -! sz 3 in
+          let _:Prims.unit =
+            reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+              (Spec.Utils.is_i16b_array_opaque 3328
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
+          let _:Prims.unit =
+            assert (Spec.Utils.is_i16b_array_opaque 3328
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
           re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
@@ -90,15 +116,26 @@ let invert_ntt_at_layer_2_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer: usize)
      =
+  let _:Prims.unit = reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #v_Vector) in
+  let v__zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 16)
-      (fun temp_0_ temp_1_ ->
+      (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
           in
-          let _:usize = temp_1_ in
-          true)
+          let round:usize = round in
+          v zeta_i == v v__zeta_i_init - v round * 2 /\
+          (v round < 16 ==>
+            (forall (i: nat).
+                (i >= v round /\ i < 16) ==>
+                Spec.Utils.is_i16b_array_opaque 3328
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))) /\
+          (forall (i: nat).
+              i < v round ==>
+              Spec.Utils.is_i16b_array_opaque 3328
+                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))))
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
@@ -106,6 +143,11 @@ let invert_ntt_at_layer_2_
           in
           let round:usize = round in
           let zeta_i:usize = zeta_i -! sz 1 in
+          let _:Prims.unit =
+            reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+              (Spec.Utils.is_i16b_array_opaque 3328
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
               re with
@@ -126,6 +168,15 @@ let invert_ntt_at_layer_2_
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
           in
           let zeta_i:usize = zeta_i -! sz 1 in
+          let _:Prims.unit =
+            reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+              (Spec.Utils.is_i16b_array_opaque 3328
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
+          let _:Prims.unit =
+            assert (Spec.Utils.is_i16b_array_opaque 3328
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
           re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
@@ -140,15 +191,26 @@ let invert_ntt_at_layer_3_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer: usize)
      =
+  let _:Prims.unit = reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #v_Vector) in
+  let v__zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 16)
-      (fun temp_0_ temp_1_ ->
+      (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
           in
-          let _:usize = temp_1_ in
-          true)
+          let round:usize = round in
+          v zeta_i == v v__zeta_i_init - v round /\
+          (v round < 16 ==>
+            (forall (i: nat).
+                (i >= v round /\ i < 16) ==>
+                Spec.Utils.is_i16b_array_opaque 3328
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))) /\
+          (forall (i: nat).
+              i < v round ==>
+              Spec.Utils.is_i16b_array_opaque 3328
+                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))))
       (re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
@@ -156,6 +218,11 @@ let invert_ntt_at_layer_3_
           in
           let round:usize = round in
           let zeta_i:usize = zeta_i -! sz 1 in
+          let _:Prims.unit =
+            reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+              (Spec.Utils.is_i16b_array_opaque 3328
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
               re with
@@ -174,10 +241,21 @@ let invert_ntt_at_layer_3_
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
           in
+          let _:Prims.unit =
+            reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+              (Spec.Utils.is_i16b_array_opaque 3328
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
+          let _:Prims.unit =
+            assert (Spec.Utils.is_i16b_array_opaque 3328
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
           re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+
+#push-options "--admit_smt_queries true"
 
 let invert_ntt_at_layer_4_plus
       (#v_Vector: Type0)
@@ -261,6 +339,8 @@ let invert_ntt_at_layer_4_plus
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+
+#pop-options
 
 let invert_ntt_montgomery
       (v_K: usize)

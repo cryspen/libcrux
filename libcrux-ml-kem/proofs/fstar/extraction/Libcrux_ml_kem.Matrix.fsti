@@ -54,7 +54,7 @@ val compute_ring_element_v
           let res_spec = to_spec_poly_t res in
           res_spec ==
           Spec.MLKEM.(poly_add (poly_add (vector_dot_product_ntt #v_K tt_spec r_spec) e2_spec)
-              m_spec))
+              m_spec) /\ Libcrux_ml_kem.Serialize.coefficients_field_modulus_range res)
 
 /// Compute u := InvertNTT(Aᵀ ◦ r\u{302}) + e₁
 val compute_vector_u
@@ -75,7 +75,10 @@ val compute_vector_u
           let e_spec = to_spec_vector_t error_1_ in
           let res_spec = to_spec_vector_t res in
           res_spec ==
-          Spec.MLKEM.(vector_add (vector_inv_ntt (matrix_vector_mul_ntt a_spec r_spec)) e_spec))
+          Spec.MLKEM.(vector_add (vector_inv_ntt (matrix_vector_mul_ntt a_spec r_spec)) e_spec) /\
+          (forall (i: nat).
+              i < v v_K ==>
+              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index res i)))
 
 /// The following functions compute various expressions involving
 /// vectors and matrices. The computation of these expressions has been
@@ -99,7 +102,8 @@ val compute_message
           let v_spec = to_spec_poly_t v in
           to_spec_poly_t res ==
           Spec.MLKEM.(poly_sub v_spec
-              (poly_inv_ntt (vector_dot_product_ntt #v_K secret_spec u_spec))))
+              (poly_inv_ntt (vector_dot_product_ntt #v_K secret_spec u_spec))) /\
+          Libcrux_ml_kem.Serialize.coefficients_field_modulus_range res)
 
 val sample_matrix_A
       (v_K: usize)
