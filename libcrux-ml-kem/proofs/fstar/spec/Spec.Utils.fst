@@ -470,3 +470,20 @@ let lemma_shift_right_15_i16 (x:i16):
   Rust_primitives.Integers.mk_int_v_lemma #i16_inttype 0s;
   Rust_primitives.Integers.mk_int_v_lemma #i16_inttype (-1s);
   ()
+
+val ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) (j: nat{j < v len}) 
+                  (vec_out: t_Array i16 len) : Type0
+let ntt_spec vec_in zeta i j vec_out =
+  ((v (Seq.index vec_out i) % 3329) ==
+   ((v (Seq.index vec_in i) + (v (Seq.index vec_in j) * zeta * 169)) % 3329)) /\
+  ((v (Seq.index vec_out j) % 3329) ==
+   ((v (Seq.index vec_in i) - (v (Seq.index vec_in j) * zeta * 169)) % 3329))
+
+val inv_ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) (j: nat{j < v len}) 
+                 (vec_out: t_Array i16 len) : Type0
+let inv_ntt_spec vec_in zeta i j vec_out =
+  ((v (Seq.index vec_out i) % 3329) ==
+   ((v (Seq.index vec_in j) + v (Seq.index vec_in i)) % 3329)) /\
+  ((v (Seq.index vec_out j) % 3329) ==
+   (((v (Seq.index vec_in j) - v (Seq.index vec_in i)) * zeta * 169) % 3329))
+

@@ -20,14 +20,9 @@ val inv_ntt_step
           (forall k.
               (k <> v i /\ k <> v j) ==>
               Seq.index vec_future.f_elements k == Seq.index vec.f_elements k) /\
-          (Spec.Utils.is_i16b 3328 (Seq.index vec_future.f_elements (v i)) /\
-            Spec.Utils.is_i16b 3328 (Seq.index vec_future.f_elements (v j))) /\
-          ((v (Seq.index vec_future.f_elements (v i)) % 3329) ==
-            (v (Seq.index vec.f_elements (v j)) + v (Seq.index vec.f_elements (v i))) % 3329) /\
-          ((v (Seq.index vec_future.f_elements (v j)) % 3329) ==
-            ((v (Seq.index vec.f_elements (v j)) - v (Seq.index vec.f_elements (v i))) * v zeta *
-              169) %
-            3329))
+          Spec.Utils.is_i16b 3328 (Seq.index vec_future.f_elements (v i)) /\
+          Spec.Utils.is_i16b 3328 (Seq.index vec_future.f_elements (v j)) /\
+          Spec.Utils.inv_ntt_spec vec.f_elements (v zeta) (v i) (v j) vec_future.f_elements)
 
 val inv_ntt_layer_1_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)

@@ -14,10 +14,7 @@ use super::vector_type::*;
                                                Spec.Utils.is_i16b b ${vec}.f_elements.[j]) ==>
                                               (Spec.Utils.is_i16b (b+3328) ${vec}_future.f_elements.[i] /\\
                                                Spec.Utils.is_i16b (b+3328) ${vec}_future.f_elements.[j])) /\\
-                                    ((v (Seq.index ${vec}_future.f_elements (v i)) % 3329) ==
-                                     (v (Seq.index ${vec}.f_elements (v $i)) + (v (Seq.index ${vec}.f_elements (v $j)) * v $zeta * 169)) % 3329) /\\
-                                    ((v (Seq.index ${vec}_future.f_elements (v j)) % 3329) ==
-                                     (v (Seq.index ${vec}.f_elements (v $i)) - (v (Seq.index ${vec}.f_elements (v $j)) * v $zeta * 169)) % 3329)"))]
+                                    Spec.Utils.ntt_spec ${vec}.f_elements (v $zeta) (v $i) (v $j) ${vec}_future.f_elements"))]
 pub(crate) fn ntt_step(vec: &mut PortableVector, zeta: i16, i: usize, j: usize) {
     let t = montgomery_multiply_fe_by_fer(vec.elements[j], zeta);
     hax_lib::fstar!("assert (v t % 3329 == ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329))");
@@ -119,13 +116,9 @@ pub(crate) fn ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> PortableVe
 #[hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array (4*3328) ${vec}_future.f_elements /\\
                                     (forall k. (k <> v i /\\ k <> v j) ==>
                                          Seq.index ${vec}_future.f_elements k == Seq.index ${vec}.f_elements k) /\\
-                                    (Spec.Utils.is_i16b 3328 (Seq.index ${vec}_future.f_elements (v i)) /\\
-                                     Spec.Utils.is_i16b 3328 (Seq.index ${vec}_future.f_elements (v j))) /\\
-                                    ((v (Seq.index ${vec}_future.f_elements (v i)) % 3329) ==
-                                    (v (Seq.index ${vec}.f_elements (v j)) + v (Seq.index ${vec}.f_elements (v i))) % 3329) /\\
-                                    ((v (Seq.index ${vec}_future.f_elements (v j)) % 3329) ==
-                                    ((v (Seq.index ${vec}.f_elements (v j)) - v (Seq.index ${vec}.f_elements (v i))) 
-                                      * v ${zeta} * 169) % 3329)"))]
+                                    Spec.Utils.is_i16b 3328 (Seq.index ${vec}_future.f_elements (v i)) /\\
+                                    Spec.Utils.is_i16b 3328 (Seq.index ${vec}_future.f_elements (v j)) /\\
+                                    Spec.Utils.inv_ntt_spec ${vec}.f_elements (v $zeta) (v $i) (v $j) ${vec}_future.f_elements"))]
 pub(crate) fn inv_ntt_step(vec: &mut PortableVector, zeta: i16, i: usize, j: usize) {
     let a_minus_b = vec.elements[j] - vec.elements[i];
     let a_plus_b = vec.elements[j] + vec.elements[i];
