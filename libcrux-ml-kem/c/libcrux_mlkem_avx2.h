@@ -8,7 +8,7 @@
  * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 3063d19312f8ec3af5945f24ed3ebbb6b6cd9678
- * Libcrux: 0e1943ac02e87b0a0f08a6b0dff97932b196f845
+ * Libcrux: 098de7d283a7867de9c3e5672d7b3c915ef9b2f1
  */
 
 #ifndef __libcrux_mlkem_avx2_H
@@ -234,6 +234,12 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)#2}
 */
 void libcrux_ml_kem_vector_avx2_serialize_1_09(__m256i vector, uint8_t ret[2U]);
 
+__m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_i16s(
+    int16_t a, int16_t b);
+
+__m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_u8s(
+    uint8_t a, uint8_t b);
+
 __m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_1(
     Eurydice_slice bytes);
 
@@ -243,6 +249,15 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)#2}
 */
 __m256i libcrux_ml_kem_vector_avx2_deserialize_1_09(Eurydice_slice bytes);
 
+/**
+ `mm256_concat_pairs_n(n, x)` is then a sequence of 32 bits packets
+ of the shape `0b0…0b₁…bₙa₁…aₙ`, if `x` is a sequence of pairs of
+ 16 bits, of the shape `(0b0…0a₁…aₙ, 0b0…0b₁…bₙ)` (where the last
+ `n` bits are non-zero).
+*/
+__m256i libcrux_ml_kem_vector_avx2_serialize_mm256_concat_pairs_n(uint8_t n,
+                                                                  __m256i x);
+
 void libcrux_ml_kem_vector_avx2_serialize_serialize_4(__m256i vector,
                                                       uint8_t ret[8U]);
 
@@ -251,6 +266,14 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)#2}
 */
 void libcrux_ml_kem_vector_avx2_serialize_4_09(__m256i vector, uint8_t ret[8U]);
+
+__m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_i16s(
+    int16_t b0, int16_t b1, int16_t b2, int16_t b3, int16_t b4, int16_t b5,
+    int16_t b6, int16_t b7);
+
+__m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_u8s(
+    uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint8_t b5,
+    uint8_t b6, uint8_t b7);
 
 __m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_4(
     Eurydice_slice bytes);
@@ -271,6 +294,18 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)#2}
 void libcrux_ml_kem_vector_avx2_serialize_5_09(__m256i vector,
                                                uint8_t ret[10U]);
 
+/**
+ We cannot model `mm256_inserti128_si256` on its own: it produces a
+ Vec256 where the upper 128 bits are undefined. Thus
+ `mm256_inserti128_si256` is not pure.
+
+ Luckily, we always call `mm256_castsi128_si256` right after
+ `mm256_inserti128_si256`: this composition sets the upper bits,
+ making the whole computation pure again.
+*/
+__m256i libcrux_ml_kem_vector_avx2_serialize_mm256_si256_from_two_si128(
+    __m128i lower, __m128i upper);
+
 __m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_5(
     Eurydice_slice bytes);
 
@@ -279,6 +314,15 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)#2}
 */
 __m256i libcrux_ml_kem_vector_avx2_deserialize_5_09(Eurydice_slice bytes);
+
+typedef struct core_core_arch_x86___m128i_x2_s {
+  __m128i fst;
+  __m128i snd;
+} core_core_arch_x86___m128i_x2;
+
+core_core_arch_x86___m128i_x2
+libcrux_ml_kem_vector_avx2_serialize_serialize_10_serialize_10_vec(
+    __m256i vector);
 
 void libcrux_ml_kem_vector_avx2_serialize_serialize_10(__m256i vector,
                                                        uint8_t ret[20U]);
@@ -289,6 +333,9 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)#2}
 */
 void libcrux_ml_kem_vector_avx2_serialize_10_09(__m256i vector,
                                                 uint8_t ret[20U]);
+
+__m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_10_deserialize_10_vec(
+    __m128i lower_coefficients0, __m128i upper_coefficients0);
 
 __m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_10(
     Eurydice_slice bytes);
@@ -318,6 +365,10 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)#2}
 */
 __m256i libcrux_ml_kem_vector_avx2_deserialize_11_09(Eurydice_slice bytes);
 
+core_core_arch_x86___m128i_x2
+libcrux_ml_kem_vector_avx2_serialize_serialize_12_serialize_12_vec(
+    __m256i vector);
+
 void libcrux_ml_kem_vector_avx2_serialize_serialize_12(__m256i vector,
                                                        uint8_t ret[24U]);
 
@@ -327,6 +378,9 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)#2}
 */
 void libcrux_ml_kem_vector_avx2_serialize_12_09(__m256i vector,
                                                 uint8_t ret[24U]);
+
+__m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_12_deserialize_12_vec(
+    __m128i lower_coefficients0, __m128i upper_coefficients0);
 
 __m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_12(
     Eurydice_slice bytes);

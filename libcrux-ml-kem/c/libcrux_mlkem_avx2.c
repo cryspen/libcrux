@@ -8,7 +8,7 @@
  * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 3063d19312f8ec3af5945f24ed3ebbb6b6cd9678
- * Libcrux: 0e1943ac02e87b0a0f08a6b0dff97932b196f845
+ * Libcrux: 098de7d283a7867de9c3e5672d7b3c915ef9b2f1
  */
 
 #include "internal/libcrux_mlkem_avx2.h"
@@ -164,7 +164,8 @@ libcrux_ml_kem_vector_avx2_arithmetic_barrett_reduce(__m256i vector) {
   __m256i t0 = mm256_mulhi_epi16(
       vector, mm256_set1_epi16(
                   LIBCRUX_ML_KEM_VECTOR_AVX2_ARITHMETIC_BARRETT_MULTIPLIER));
-  __m256i t1 = mm256_add_epi16(t0, mm256_set1_epi16((int16_t)512));
+  __m256i t512 = mm256_set1_epi16((int16_t)512);
+  __m256i t1 = mm256_add_epi16(t0, t512);
   __m256i quotient = mm256_srai_epi16((int32_t)10, t1, __m256i);
   __m256i quotient_times_field_modulus = mm256_mullo_epi16(
       quotient, mm256_set1_epi16(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
@@ -522,8 +523,8 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_1(
   __m128i high_msbs = mm256_extracti128_si256((int32_t)1, lsb_to_msb, __m128i);
   __m128i msbs = mm_packs_epi16(low_msbs, high_msbs);
   int32_t bits_packed = mm_movemask_epi8(msbs);
-  ret[0U] = (uint8_t)bits_packed;
-  ret[1U] = (uint8_t)(bits_packed >> 8U);
+  uint8_t result[2U] = {(uint8_t)bits_packed, (uint8_t)(bits_packed >> 8U)};
+  memcpy(ret, result, (size_t)2U * sizeof(uint8_t));
 }
 
 /**
@@ -536,32 +537,33 @@ void libcrux_ml_kem_vector_avx2_serialize_1_09(__m256i vector,
 }
 
 KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_serialize_deserialize_1(Eurydice_slice bytes) {
-  __m256i coefficients = mm256_set_epi16(
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *));
-  __m256i shift_lsb_to_msb = mm256_set_epi16(
-      (int16_t)1 << 8U, (int16_t)1 << 9U, (int16_t)1 << 10U, (int16_t)1 << 11U,
-      (int16_t)1 << 12U, (int16_t)1 << 13U, (int16_t)1 << 14U, (int16_t)-32768,
-      (int16_t)1 << 8U, (int16_t)1 << 9U, (int16_t)1 << 10U, (int16_t)1 << 11U,
-      (int16_t)1 << 12U, (int16_t)1 << 13U, (int16_t)1 << 14U, (int16_t)-32768);
-  __m256i coefficients_in_msb =
-      mm256_mullo_epi16(coefficients, shift_lsb_to_msb);
+libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_i16s(
+    int16_t a, int16_t b) {
+  __m256i coefficients =
+      mm256_set_epi16(b, b, b, b, b, b, b, b, a, a, a, a, a, a, a, a);
+  __m256i coefficients_in_msb = mm256_mullo_epi16(
+      coefficients,
+      mm256_set_epi16((int16_t)1 << 8U, (int16_t)1 << 9U, (int16_t)1 << 10U,
+                      (int16_t)1 << 11U, (int16_t)1 << 12U, (int16_t)1 << 13U,
+                      (int16_t)1 << 14U, (int16_t)-32768, (int16_t)1 << 8U,
+                      (int16_t)1 << 9U, (int16_t)1 << 10U, (int16_t)1 << 11U,
+                      (int16_t)1 << 12U, (int16_t)1 << 13U, (int16_t)1 << 14U,
+                      (int16_t)-32768));
   return mm256_srli_epi16((int32_t)15, coefficients_in_msb, __m256i);
+}
+
+KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_u8s(
+    uint8_t a, uint8_t b) {
+  return libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_i16s(
+      (int16_t)a, (int16_t)b);
+}
+
+KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_serialize_deserialize_1(Eurydice_slice bytes) {
+  return libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_u8s(
+      Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *),
+      Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *));
 }
 
 /**
@@ -572,15 +574,27 @@ __m256i libcrux_ml_kem_vector_avx2_deserialize_1_09(Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_serialize_deserialize_1(bytes);
 }
 
+/**
+ `mm256_concat_pairs_n(n, x)` is then a sequence of 32 bits packets
+ of the shape `0b0…0b₁…bₙa₁…aₙ`, if `x` is a sequence of pairs of
+ 16 bits, of the shape `(0b0…0a₁…aₙ, 0b0…0b₁…bₙ)` (where the last
+ `n` bits are non-zero).
+*/
+KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_serialize_mm256_concat_pairs_n(uint8_t n,
+                                                          __m256i x) {
+  int16_t n0 = (int16_t)1 << (uint32_t)n;
+  return mm256_madd_epi16(
+      x, mm256_set_epi16(n0, (int16_t)1, n0, (int16_t)1, n0, (int16_t)1, n0,
+                         (int16_t)1, n0, (int16_t)1, n0, (int16_t)1, n0,
+                         (int16_t)1, n0, (int16_t)1));
+}
+
 KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_4(
     __m256i vector, uint8_t ret[8U]) {
   uint8_t serialized[16U] = {0U};
-  __m256i adjacent_2_combined = mm256_madd_epi16(
-      vector, mm256_set_epi16(
-                  (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1,
-                  (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1,
-                  (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1,
-                  (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1));
+  __m256i adjacent_2_combined =
+      libcrux_ml_kem_vector_avx2_serialize_mm256_concat_pairs_n(4U, vector);
   __m256i adjacent_8_combined = mm256_shuffle_epi8(
       adjacent_2_combined,
       mm256_set_epi8((int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
@@ -617,35 +631,45 @@ void libcrux_ml_kem_vector_avx2_serialize_4_09(__m256i vector,
 }
 
 KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_serialize_deserialize_4(Eurydice_slice bytes) {
-  __m256i coefficients = mm256_set_epi16(
-      (int16_t)Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *));
-  __m256i shift_lsbs_to_msbs = mm256_set_epi16(
-      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
-      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
-      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
-      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U);
-  __m256i coefficients_in_msb =
-      mm256_mullo_epi16(coefficients, shift_lsbs_to_msbs);
+libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_i16s(
+    int16_t b0, int16_t b1, int16_t b2, int16_t b3, int16_t b4, int16_t b5,
+    int16_t b6, int16_t b7) {
+  __m256i coefficients = mm256_set_epi16(b7, b7, b6, b6, b5, b5, b4, b4, b3, b3,
+                                         b2, b2, b1, b1, b0, b0);
+  __m256i coefficients_in_msb = mm256_mullo_epi16(
+      coefficients,
+      mm256_set_epi16((int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
+                      (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
+                      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
+                      (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
+                      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
+                      (int16_t)1 << 4U));
   __m256i coefficients_in_lsb =
       mm256_srli_epi16((int32_t)4, coefficients_in_msb, __m256i);
   return mm256_and_si256(coefficients_in_lsb,
                          mm256_set1_epi16(((int16_t)1 << 4U) - (int16_t)1));
+}
+
+KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_u8s(
+    uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint8_t b5,
+    uint8_t b6, uint8_t b7) {
+  return libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_i16s(
+      (int16_t)b0, (int16_t)b1, (int16_t)b2, (int16_t)b3, (int16_t)b4,
+      (int16_t)b5, (int16_t)b6, (int16_t)b7);
+}
+
+KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_serialize_deserialize_4(Eurydice_slice bytes) {
+  return libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_u8s(
+      Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *),
+      Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
+      Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *),
+      Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *),
+      Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *),
+      Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *),
+      Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *),
+      Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *));
 }
 
 /**
@@ -707,6 +731,22 @@ void libcrux_ml_kem_vector_avx2_serialize_5_09(__m256i vector,
   libcrux_ml_kem_vector_avx2_serialize_serialize_5(vector, ret);
 }
 
+/**
+ We cannot model `mm256_inserti128_si256` on its own: it produces a
+ Vec256 where the upper 128 bits are undefined. Thus
+ `mm256_inserti128_si256` is not pure.
+
+ Luckily, we always call `mm256_castsi128_si256` right after
+ `mm256_inserti128_si256`: this composition sets the upper bits,
+ making the whole computation pure again.
+*/
+KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_serialize_mm256_si256_from_two_si128(__m128i lower,
+                                                                __m128i upper) {
+  return mm256_inserti128_si256((int32_t)1, mm256_castsi128_si256(lower), upper,
+                                __m256i);
+}
+
 KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_5(Eurydice_slice bytes) {
   __m128i coefficients =
@@ -726,11 +766,11 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_5(Eurydice_slice bytes) {
                   Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
                   Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
                   Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *));
-  __m256i coefficients_loaded = mm256_castsi128_si256(coefficients);
-  __m256i coefficients_loaded0 = mm256_inserti128_si256(
-      (int32_t)1, coefficients_loaded, coefficients, __m256i);
+  __m256i coefficients_loaded =
+      libcrux_ml_kem_vector_avx2_serialize_mm256_si256_from_two_si128(
+          coefficients, coefficients);
   __m256i coefficients0 = mm256_shuffle_epi8(
-      coefficients_loaded0,
+      coefficients_loaded,
       mm256_set_epi8((int8_t)15, (int8_t)14, (int8_t)15, (int8_t)14, (int8_t)13,
                      (int8_t)12, (int8_t)13, (int8_t)12, (int8_t)11, (int8_t)10,
                      (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)9,
@@ -757,16 +797,11 @@ __m256i libcrux_ml_kem_vector_avx2_deserialize_5_09(Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_serialize_deserialize_5(bytes);
 }
 
-KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_10(
-    __m256i vector, uint8_t ret[20U]) {
-  uint8_t serialized[32U] = {0U};
-  __m256i adjacent_2_combined = mm256_madd_epi16(
-      vector, mm256_set_epi16((int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U,
-                              (int16_t)1, (int16_t)1 << 10U, (int16_t)1,
-                              (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U,
-                              (int16_t)1, (int16_t)1 << 10U, (int16_t)1,
-                              (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U,
-                              (int16_t)1));
+core_core_arch_x86___m128i_x2
+libcrux_ml_kem_vector_avx2_serialize_serialize_10_serialize_10_vec(
+    __m256i vector) {
+  __m256i adjacent_2_combined =
+      libcrux_ml_kem_vector_avx2_serialize_mm256_concat_pairs_n(10U, vector);
   __m256i adjacent_4_combined = mm256_sllv_epi32(
       adjacent_2_combined,
       mm256_set_epi32((int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12,
@@ -783,11 +818,23 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_10(
                      (int8_t)9, (int8_t)8, (int8_t)4, (int8_t)3, (int8_t)2,
                      (int8_t)1, (int8_t)0));
   __m128i lower_8 = mm256_castsi256_si128(adjacent_8_combined);
+  __m128i upper_8 =
+      mm256_extracti128_si256((int32_t)1, adjacent_8_combined, __m128i);
+  return (
+      CLITERAL(core_core_arch_x86___m128i_x2){.fst = lower_8, .snd = upper_8});
+}
+
+KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_10(
+    __m256i vector, uint8_t ret[20U]) {
+  core_core_arch_x86___m128i_x2 uu____0 =
+      libcrux_ml_kem_vector_avx2_serialize_serialize_10_serialize_10_vec(
+          vector);
+  __m128i lower_8 = uu____0.fst;
+  __m128i upper_8 = uu____0.snd;
+  uint8_t serialized[32U] = {0U};
   mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t),
       lower_8);
-  __m128i upper_8 =
-      mm256_extracti128_si256((int32_t)1, adjacent_8_combined, __m128i);
   mm_storeu_bytes_si128(Eurydice_array_to_subslice2(serialized, (size_t)10U,
                                                     (size_t)26U, uint8_t),
                         upper_8);
@@ -811,29 +858,38 @@ void libcrux_ml_kem_vector_avx2_serialize_10_09(__m256i vector,
 }
 
 KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_serialize_deserialize_10(Eurydice_slice bytes) {
-  __m256i shift_lsbs_to_msbs = mm256_set_epi16(
-      (int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U, (int16_t)1 << 6U,
-      (int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U, (int16_t)1 << 6U,
-      (int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U, (int16_t)1 << 6U,
-      (int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U, (int16_t)1 << 6U);
-  __m128i lower_coefficients = mm_loadu_si128(
-      Eurydice_slice_subslice2(bytes, (size_t)0U, (size_t)16U, uint8_t));
-  __m128i lower_coefficients0 = mm_shuffle_epi8(
-      lower_coefficients, mm_set_epi8(9U, 8U, 8U, 7U, 7U, 6U, 6U, 5U, 4U, 3U,
-                                      3U, 2U, 2U, 1U, 1U, 0U));
-  __m128i upper_coefficients = mm_loadu_si128(
-      Eurydice_slice_subslice2(bytes, (size_t)4U, (size_t)20U, uint8_t));
-  __m128i upper_coefficients0 = mm_shuffle_epi8(
-      upper_coefficients, mm_set_epi8(15U, 14U, 14U, 13U, 13U, 12U, 12U, 11U,
-                                      10U, 9U, 9U, 8U, 8U, 7U, 7U, 6U));
-  __m256i coefficients = mm256_castsi128_si256(lower_coefficients0);
-  __m256i coefficients0 = mm256_inserti128_si256((int32_t)1, coefficients,
-                                                 upper_coefficients0, __m256i);
-  __m256i coefficients1 = mm256_mullo_epi16(coefficients0, shift_lsbs_to_msbs);
-  __m256i coefficients2 = mm256_srli_epi16((int32_t)6, coefficients1, __m256i);
-  return mm256_and_si256(coefficients2,
+libcrux_ml_kem_vector_avx2_serialize_deserialize_10_deserialize_10_vec(
+    __m128i lower_coefficients0, __m128i upper_coefficients0) {
+  __m128i lower_coefficients = mm_shuffle_epi8(
+      lower_coefficients0, mm_set_epi8(9U, 8U, 8U, 7U, 7U, 6U, 6U, 5U, 4U, 3U,
+                                       3U, 2U, 2U, 1U, 1U, 0U));
+  __m128i upper_coefficients = mm_shuffle_epi8(
+      upper_coefficients0, mm_set_epi8(15U, 14U, 14U, 13U, 13U, 12U, 12U, 11U,
+                                       10U, 9U, 9U, 8U, 8U, 7U, 7U, 6U));
+  __m256i coefficients =
+      libcrux_ml_kem_vector_avx2_serialize_mm256_si256_from_two_si128(
+          lower_coefficients, upper_coefficients);
+  __m256i coefficients0 = mm256_mullo_epi16(
+      coefficients,
+      mm256_set_epi16((int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U,
+                      (int16_t)1 << 6U, (int16_t)1 << 0U, (int16_t)1 << 2U,
+                      (int16_t)1 << 4U, (int16_t)1 << 6U, (int16_t)1 << 0U,
+                      (int16_t)1 << 2U, (int16_t)1 << 4U, (int16_t)1 << 6U,
+                      (int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U,
+                      (int16_t)1 << 6U));
+  __m256i coefficients1 = mm256_srli_epi16((int32_t)6, coefficients0, __m256i);
+  return mm256_and_si256(coefficients1,
                          mm256_set1_epi16(((int16_t)1 << 10U) - (int16_t)1));
+}
+
+KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_serialize_deserialize_10(Eurydice_slice bytes) {
+  Eurydice_slice lower_coefficients =
+      Eurydice_slice_subslice2(bytes, (size_t)0U, (size_t)16U, uint8_t);
+  Eurydice_slice upper_coefficients =
+      Eurydice_slice_subslice2(bytes, (size_t)4U, (size_t)20U, uint8_t);
+  return libcrux_ml_kem_vector_avx2_serialize_deserialize_10_deserialize_10_vec(
+      mm_loadu_si128(lower_coefficients), mm_loadu_si128(upper_coefficients));
 }
 
 /**
@@ -884,16 +940,11 @@ __m256i libcrux_ml_kem_vector_avx2_deserialize_11_09(Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_serialize_deserialize_11(bytes);
 }
 
-KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_12(
-    __m256i vector, uint8_t ret[24U]) {
-  uint8_t serialized[32U] = {0U};
-  __m256i adjacent_2_combined = mm256_madd_epi16(
-      vector, mm256_set_epi16((int16_t)1 << 12U, (int16_t)1, (int16_t)1 << 12U,
-                              (int16_t)1, (int16_t)1 << 12U, (int16_t)1,
-                              (int16_t)1 << 12U, (int16_t)1, (int16_t)1 << 12U,
-                              (int16_t)1, (int16_t)1 << 12U, (int16_t)1,
-                              (int16_t)1 << 12U, (int16_t)1, (int16_t)1 << 12U,
-                              (int16_t)1));
+KRML_MUSTINLINE core_core_arch_x86___m128i_x2
+libcrux_ml_kem_vector_avx2_serialize_serialize_12_serialize_12_vec(
+    __m256i vector) {
+  __m256i adjacent_2_combined =
+      libcrux_ml_kem_vector_avx2_serialize_mm256_concat_pairs_n(12U, vector);
   __m256i adjacent_4_combined = mm256_sllv_epi32(
       adjacent_2_combined,
       mm256_set_epi32((int32_t)0, (int32_t)8, (int32_t)0, (int32_t)8,
@@ -912,6 +963,18 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_12(
   __m128i lower_8 = mm256_castsi256_si128(adjacent_8_combined);
   __m128i upper_8 =
       mm256_extracti128_si256((int32_t)1, adjacent_8_combined, __m128i);
+  return (
+      CLITERAL(core_core_arch_x86___m128i_x2){.fst = lower_8, .snd = upper_8});
+}
+
+KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_12(
+    __m256i vector, uint8_t ret[24U]) {
+  uint8_t serialized[32U] = {0U};
+  core_core_arch_x86___m128i_x2 uu____0 =
+      libcrux_ml_kem_vector_avx2_serialize_serialize_12_serialize_12_vec(
+          vector);
+  __m128i lower_8 = uu____0.fst;
+  __m128i upper_8 = uu____0.snd;
   mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t),
       lower_8);
@@ -938,29 +1001,38 @@ void libcrux_ml_kem_vector_avx2_serialize_12_09(__m256i vector,
 }
 
 KRML_MUSTINLINE __m256i
+libcrux_ml_kem_vector_avx2_serialize_deserialize_12_deserialize_12_vec(
+    __m128i lower_coefficients0, __m128i upper_coefficients0) {
+  __m128i lower_coefficients = mm_shuffle_epi8(
+      lower_coefficients0, mm_set_epi8(11U, 10U, 10U, 9U, 8U, 7U, 7U, 6U, 5U,
+                                       4U, 4U, 3U, 2U, 1U, 1U, 0U));
+  __m128i upper_coefficients = mm_shuffle_epi8(
+      upper_coefficients0, mm_set_epi8(15U, 14U, 14U, 13U, 12U, 11U, 11U, 10U,
+                                       9U, 8U, 8U, 7U, 6U, 5U, 5U, 4U));
+  __m256i coefficients =
+      libcrux_ml_kem_vector_avx2_serialize_mm256_si256_from_two_si128(
+          lower_coefficients, upper_coefficients);
+  __m256i coefficients0 = mm256_mullo_epi16(
+      coefficients,
+      mm256_set_epi16((int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
+                      (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
+                      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
+                      (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
+                      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
+                      (int16_t)1 << 4U));
+  __m256i coefficients1 = mm256_srli_epi16((int32_t)4, coefficients0, __m256i);
+  return mm256_and_si256(coefficients1,
+                         mm256_set1_epi16(((int16_t)1 << 12U) - (int16_t)1));
+}
+
+KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_12(Eurydice_slice bytes) {
-  __m256i shift_lsbs_to_msbs = mm256_set_epi16(
-      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
-      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
-      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
-      (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U);
   __m128i lower_coefficients = mm_loadu_si128(
       Eurydice_slice_subslice2(bytes, (size_t)0U, (size_t)16U, uint8_t));
-  __m128i lower_coefficients0 = mm_shuffle_epi8(
-      lower_coefficients, mm_set_epi8(11U, 10U, 10U, 9U, 8U, 7U, 7U, 6U, 5U, 4U,
-                                      4U, 3U, 2U, 1U, 1U, 0U));
   __m128i upper_coefficients = mm_loadu_si128(
       Eurydice_slice_subslice2(bytes, (size_t)8U, (size_t)24U, uint8_t));
-  __m128i upper_coefficients0 = mm_shuffle_epi8(
-      upper_coefficients, mm_set_epi8(15U, 14U, 14U, 13U, 12U, 11U, 11U, 10U,
-                                      9U, 8U, 8U, 7U, 6U, 5U, 5U, 4U));
-  __m256i coefficients = mm256_castsi128_si256(lower_coefficients0);
-  __m256i coefficients0 = mm256_inserti128_si256((int32_t)1, coefficients,
-                                                 upper_coefficients0, __m256i);
-  __m256i coefficients1 = mm256_mullo_epi16(coefficients0, shift_lsbs_to_msbs);
-  __m256i coefficients2 = mm256_srli_epi16((int32_t)4, coefficients1, __m256i);
-  return mm256_and_si256(coefficients2,
-                         mm256_set1_epi16(((int16_t)1 << 12U) - (int16_t)1));
+  return libcrux_ml_kem_vector_avx2_serialize_deserialize_12_deserialize_12_vec(
+      lower_coefficients, upper_coefficients);
 }
 
 /**
@@ -2954,7 +3026,7 @@ generics
 - COEFFICIENT_BITS= 10
 */
 static KRML_MUSTINLINE __m256i
-compress_ciphertext_coefficient_44(__m256i vector) {
+compress_ciphertext_coefficient_76(__m256i vector) {
   __m256i field_modulus_halved = mm256_set1_epi32(
       ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
       (int32_t)2);
@@ -3001,8 +3073,8 @@ A monomorphic instance of libcrux_ml_kem.vector.avx2.compress_09
 with const generics
 - COEFFICIENT_BITS= 10
 */
-static __m256i compress_09_c6(__m256i vector) {
-  return compress_ciphertext_coefficient_44(vector);
+static __m256i compress_09_70(__m256i vector) {
+  return compress_ciphertext_coefficient_76(vector);
 }
 
 /**
@@ -3018,7 +3090,7 @@ static KRML_MUSTINLINE void compress_then_serialize_10_170(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     __m256i coefficient =
-        compress_09_c6(to_unsigned_field_modulus_88(re->coefficients[i0]));
+        compress_09_70(to_unsigned_field_modulus_88(re->coefficients[i0]));
     uint8_t bytes[20U];
     libcrux_ml_kem_vector_avx2_serialize_10_09(coefficient, bytes);
     Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
@@ -3038,7 +3110,7 @@ generics
 - COEFFICIENT_BITS= 11
 */
 static KRML_MUSTINLINE __m256i
-compress_ciphertext_coefficient_440(__m256i vector) {
+compress_ciphertext_coefficient_760(__m256i vector) {
   __m256i field_modulus_halved = mm256_set1_epi32(
       ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
       (int32_t)2);
@@ -3085,8 +3157,8 @@ A monomorphic instance of libcrux_ml_kem.vector.avx2.compress_09
 with const generics
 - COEFFICIENT_BITS= 11
 */
-static __m256i compress_09_c60(__m256i vector) {
-  return compress_ciphertext_coefficient_440(vector);
+static __m256i compress_09_700(__m256i vector) {
+  return compress_ciphertext_coefficient_760(vector);
 }
 
 /**
@@ -3141,7 +3213,7 @@ generics
 - COEFFICIENT_BITS= 4
 */
 static KRML_MUSTINLINE __m256i
-compress_ciphertext_coefficient_441(__m256i vector) {
+compress_ciphertext_coefficient_761(__m256i vector) {
   __m256i field_modulus_halved = mm256_set1_epi32(
       ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
       (int32_t)2);
@@ -3188,8 +3260,8 @@ A monomorphic instance of libcrux_ml_kem.vector.avx2.compress_09
 with const generics
 - COEFFICIENT_BITS= 4
 */
-static __m256i compress_09_c61(__m256i vector) {
-  return compress_ciphertext_coefficient_441(vector);
+static __m256i compress_09_701(__m256i vector) {
+  return compress_ciphertext_coefficient_761(vector);
 }
 
 /**
@@ -3205,7 +3277,7 @@ static KRML_MUSTINLINE void compress_then_serialize_4_06(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     __m256i coefficient =
-        compress_09_c61(to_unsigned_field_modulus_88(re.coefficients[i0]));
+        compress_09_701(to_unsigned_field_modulus_88(re.coefficients[i0]));
     uint8_t bytes[8U];
     libcrux_ml_kem_vector_avx2_serialize_4_09(coefficient, bytes);
     Eurydice_slice_copy(
@@ -3222,7 +3294,7 @@ generics
 - COEFFICIENT_BITS= 5
 */
 static KRML_MUSTINLINE __m256i
-compress_ciphertext_coefficient_442(__m256i vector) {
+compress_ciphertext_coefficient_762(__m256i vector) {
   __m256i field_modulus_halved = mm256_set1_epi32(
       ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
       (int32_t)2);
@@ -3269,8 +3341,8 @@ A monomorphic instance of libcrux_ml_kem.vector.avx2.compress_09
 with const generics
 - COEFFICIENT_BITS= 5
 */
-static __m256i compress_09_c62(__m256i vector) {
-  return compress_ciphertext_coefficient_442(vector);
+static __m256i compress_09_702(__m256i vector) {
+  return compress_ciphertext_coefficient_762(vector);
 }
 
 /**
@@ -3286,7 +3358,7 @@ static KRML_MUSTINLINE void compress_then_serialize_5_7a(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     __m256i coefficients =
-        compress_09_c62(to_unsigned_representative_b5(re.coefficients[i0]));
+        compress_09_702(to_unsigned_representative_b5(re.coefficients[i0]));
     uint8_t bytes[10U];
     libcrux_ml_kem_vector_avx2_serialize_5_09(coefficients, bytes);
     Eurydice_slice_copy(
@@ -3572,7 +3644,7 @@ generics
 - COEFFICIENT_BITS= 10
 */
 static KRML_MUSTINLINE __m256i
-decompress_ciphertext_coefficient_8f(__m256i vector) {
+decompress_ciphertext_coefficient_6c(__m256i vector) {
   __m256i field_modulus =
       mm256_set1_epi32((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i two_pow_coefficient_bits =
@@ -3616,8 +3688,8 @@ libcrux_ml_kem.vector.avx2.decompress_ciphertext_coefficient_09 with const
 generics
 - COEFFICIENT_BITS= 10
 */
-static __m256i decompress_ciphertext_coefficient_09_c1(__m256i vector) {
-  return decompress_ciphertext_coefficient_8f(vector);
+static __m256i decompress_ciphertext_coefficient_09_0f(__m256i vector) {
+  return decompress_ciphertext_coefficient_6c(vector);
 }
 
 /**
@@ -3640,7 +3712,7 @@ deserialize_then_decompress_10_47(Eurydice_slice serialized) {
     Eurydice_slice bytes = Eurydice_slice_subslice2(
         serialized, i0 * (size_t)20U, i0 * (size_t)20U + (size_t)20U, uint8_t);
     __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_10_09(bytes);
-    re.coefficients[i0] = decompress_ciphertext_coefficient_09_c1(coefficient);
+    re.coefficients[i0] = decompress_ciphertext_coefficient_09_0f(coefficient);
   }
   return re;
 }
@@ -3652,7 +3724,7 @@ generics
 - COEFFICIENT_BITS= 11
 */
 static KRML_MUSTINLINE __m256i
-decompress_ciphertext_coefficient_8f0(__m256i vector) {
+decompress_ciphertext_coefficient_6c0(__m256i vector) {
   __m256i field_modulus =
       mm256_set1_epi32((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i two_pow_coefficient_bits =
@@ -3696,8 +3768,8 @@ libcrux_ml_kem.vector.avx2.decompress_ciphertext_coefficient_09 with const
 generics
 - COEFFICIENT_BITS= 11
 */
-static __m256i decompress_ciphertext_coefficient_09_c10(__m256i vector) {
-  return decompress_ciphertext_coefficient_8f0(vector);
+static __m256i decompress_ciphertext_coefficient_09_0f0(__m256i vector) {
+  return decompress_ciphertext_coefficient_6c0(vector);
 }
 
 /**
@@ -3715,7 +3787,7 @@ deserialize_then_decompress_11_a8(Eurydice_slice serialized) {
     Eurydice_slice bytes = Eurydice_slice_subslice2(
         serialized, i0 * (size_t)22U, i0 * (size_t)22U + (size_t)22U, uint8_t);
     __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_11_09(bytes);
-    re.coefficients[i0] = decompress_ciphertext_coefficient_09_c10(coefficient);
+    re.coefficients[i0] = decompress_ciphertext_coefficient_09_0f0(coefficient);
   }
   return re;
 }
@@ -3800,7 +3872,7 @@ generics
 - COEFFICIENT_BITS= 4
 */
 static KRML_MUSTINLINE __m256i
-decompress_ciphertext_coefficient_8f1(__m256i vector) {
+decompress_ciphertext_coefficient_6c1(__m256i vector) {
   __m256i field_modulus =
       mm256_set1_epi32((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i two_pow_coefficient_bits =
@@ -3844,8 +3916,8 @@ libcrux_ml_kem.vector.avx2.decompress_ciphertext_coefficient_09 with const
 generics
 - COEFFICIENT_BITS= 4
 */
-static __m256i decompress_ciphertext_coefficient_09_c11(__m256i vector) {
-  return decompress_ciphertext_coefficient_8f1(vector);
+static __m256i decompress_ciphertext_coefficient_09_0f1(__m256i vector) {
+  return decompress_ciphertext_coefficient_6c1(vector);
 }
 
 /**
@@ -3863,7 +3935,7 @@ deserialize_then_decompress_4_98(Eurydice_slice serialized) {
     Eurydice_slice bytes = Eurydice_slice_subslice2(
         serialized, i0 * (size_t)8U, i0 * (size_t)8U + (size_t)8U, uint8_t);
     __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_4_09(bytes);
-    re.coefficients[i0] = decompress_ciphertext_coefficient_09_c11(coefficient);
+    re.coefficients[i0] = decompress_ciphertext_coefficient_09_0f1(coefficient);
   }
   return re;
 }
@@ -3875,7 +3947,7 @@ generics
 - COEFFICIENT_BITS= 5
 */
 static KRML_MUSTINLINE __m256i
-decompress_ciphertext_coefficient_8f2(__m256i vector) {
+decompress_ciphertext_coefficient_6c2(__m256i vector) {
   __m256i field_modulus =
       mm256_set1_epi32((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i two_pow_coefficient_bits =
@@ -3919,8 +3991,8 @@ libcrux_ml_kem.vector.avx2.decompress_ciphertext_coefficient_09 with const
 generics
 - COEFFICIENT_BITS= 5
 */
-static __m256i decompress_ciphertext_coefficient_09_c12(__m256i vector) {
-  return decompress_ciphertext_coefficient_8f2(vector);
+static __m256i decompress_ciphertext_coefficient_09_0f2(__m256i vector) {
+  return decompress_ciphertext_coefficient_6c2(vector);
 }
 
 /**
@@ -3939,7 +4011,7 @@ deserialize_then_decompress_5_45(Eurydice_slice serialized) {
         serialized, i0 * (size_t)10U, i0 * (size_t)10U + (size_t)10U, uint8_t);
     re.coefficients[i0] = libcrux_ml_kem_vector_avx2_deserialize_5_09(bytes);
     re.coefficients[i0] =
-        decompress_ciphertext_coefficient_09_c12(re.coefficients[i0]);
+        decompress_ciphertext_coefficient_09_0f2(re.coefficients[i0]);
   }
   return re;
 }
@@ -5452,7 +5524,7 @@ static KRML_MUSTINLINE void compress_then_serialize_11_b8(
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     __m256i coefficient =
-        compress_09_c60(to_unsigned_representative_b5(re->coefficients[i0]));
+        compress_09_700(to_unsigned_representative_b5(re->coefficients[i0]));
     uint8_t bytes[22U];
     libcrux_ml_kem_vector_avx2_serialize_11_09(coefficient, bytes);
     Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
