@@ -12,17 +12,34 @@ let inv_ntt_step
     (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] <: i16) -!
     (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
   in
-  let o0:i16 =
-    Libcrux_ml_kem.Vector.Portable.Arithmetic.barrett_reduce_element ((vec
-            .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
-          <:
-          i16) +!
-        (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] <: i16)
-        <:
-        i16)
+  let a_plus_b:i16 =
+    (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] <: i16) +!
+    (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
   in
+  let _:Prims.unit =
+    assert (v a_minus_b = v (Seq.index vec.f_elements (v j)) - v (Seq.index vec.f_elements (v i)));
+    assert (v a_plus_b = v (Seq.index vec.f_elements (v j)) + v (Seq.index vec.f_elements (v i)))
+  in
+  let o0:i16 = Libcrux_ml_kem.Vector.Portable.Arithmetic.barrett_reduce_element a_plus_b in
   let o1:i16 =
     Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_fe_by_fer a_minus_b zeta
+  in
+  let _:Prims.unit =
+    calc ( == ) {
+      v o0 % 3329;
+      ( == ) { () }
+      v a_plus_b % 3329;
+      ( == ) { () }
+      (v (Seq.index vec.f_elements (v j)) + v (Seq.index vec.f_elements (v i))) % 3329;
+    };
+    calc ( == ) {
+      v o1 % 3329;
+      ( == ) { () }
+      (v a_minus_b * v zeta * 169) % 3329;
+      ( == ) { () }
+      ((v (Seq.index vec.f_elements (v j)) - v (Seq.index vec.f_elements (v i))) * v zeta * 169) %
+      3329;
+    }
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     {
@@ -49,6 +66,10 @@ let inv_ntt_step
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+  in
+  let _:Prims.unit =
+    assert (Seq.index vec.f_elements (v i) == o0);
+    assert (Seq.index vec.f_elements (v j) == o1)
   in
   vec
 
@@ -173,18 +194,24 @@ let inv_ntt_layer_3_step
 
 #pop-options
 
-#push-options "--z3rlimit 200 --split_queries always --query_stats"
+#push-options "--z3rlimit 250 --split_queries always --query_stats --ext context_prune"
 
 let ntt_multiply_binomials
       (a b: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta: i16)
-      (i j: usize)
+      (i: usize)
       (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
-  let ai:i16 = a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] in
-  let bi:i16 = b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] in
-  let aj:i16 = a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] in
-  let bj:i16 = b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ] in
+  let ai:i16 = a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 2 *! i <: usize ] in
+  let bi:i16 = b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 2 *! i <: usize ] in
+  let aj:i16 =
+    a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ (sz 2 *! i <: usize) +! sz 1 <: usize
+    ]
+  in
+  let bj:i16 =
+    b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ (sz 2 *! i <: usize) +! sz 1 <: usize
+    ]
+  in
   let _:Prims.unit =
     assert (Spec.Utils.is_i16b 3328 ai);
     assert (Spec.Utils.is_i16b 3328 bi);
@@ -211,6 +238,8 @@ let ntt_multiply_binomials
       (v ai_bi_aj_bj * 169) % 3329;
       ( == ) { assert (v ai_bi_aj_bj == v ai_bi + v aj_bj_zeta) }
       ((v ai_bi + v aj_bj_zeta) * 169) % 3329;
+      ( == ) { assert (v ai_bi == v ai * v bi) }
+      (((v ai * v bi) + v aj_bj_zeta) * 169) % 3329;
       ( == ) { assert (v aj_bj_zeta == v aj_bj * v zeta) }
       (((v ai * v bi) + (v aj_bj * v zeta)) * 169) % 3329;
       ( == ) { Math.Lemmas.lemma_mod_mul_distr_l ((v ai * v bi) + (v aj_bj * v zeta)) 169 3329 }
@@ -241,6 +270,20 @@ let ntt_multiply_binomials
   let _:Prims.unit = assert (Spec.Utils.is_i32b (3328 * 3328 + 3328 * 3328) ai_bj_aj_bi) in
   let _:Prims.unit = assert_norm (3328 * 3328 + 3328 * 3328 <= 3328 * pow2 15) in
   let o1:i16 = Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_reduce_element ai_bj_aj_bi in
+  let _:Prims.unit =
+    calc ( == ) {
+      v o1 % 3329;
+      ( == ) { () }
+      (v ai_bj_aj_bi * 169) % 3329;
+      ( == ) { assert (v ai_bj_aj_bi == v ai_bj + v aj_bi) }
+      ((v ai_bj + v aj_bi) * 169) % 3329;
+      ( == ) { assert (v ai_bj == v ai * v bj) }
+      ((v ai * v bj + v aj_bi) * 169) % 3329;
+      ( == ) { assert (v aj_bi == v aj * v bi) }
+      ((v ai * v bj + v aj * v bi) * 169) % 3329;
+    }
+  in
+  let v__out0:t_Array i16 (sz 16) = out.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     {
       out with
@@ -248,7 +291,7 @@ let ntt_multiply_binomials
       =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-        i
+        (sz 2 *! i <: usize)
         o0
     }
     <:
@@ -261,18 +304,23 @@ let ntt_multiply_binomials
       =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-        j
+        ((sz 2 *! i <: usize) +! sz 1 <: usize)
         o1
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
   in
-  let _:Prims.unit = admit () in
+  let _:Prims.unit =
+    assert (Seq.index out.f_elements (2 * v i) == o0);
+    assert (Seq.index out.f_elements (2 * v i + 1) == o1);
+    assert (Spec.Utils.is_i16b_array 3328 out.f_elements);
+    assert (forall k.
+          (k <> 2 * v i /\ k <> 2 * v i + 1) ==> Seq.index out.f_elements k == Seq.index v__out0 k)
+  in
+  let hax_temp_output:Prims.unit = admit () (* Panic freedom *) in
   out
 
 #pop-options
-
-#push-options "--admit_smt_queries true"
 
 let ntt_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -286,6 +334,51 @@ let ntt_step
         i16)
       zeta
   in
+  let _:Prims.unit =
+    assert (v t % 3329 == ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329))
+  in
+  let a_minus_t:i16 =
+    (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) -! t
+  in
+  let _:Prims.unit =
+    calc ( == ) {
+      v a_minus_t % 3329;
+      ( == ) { () }
+      (v (Seq.index vec.f_elements (v i)) - v t) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_sub_distr (v (Seq.index vec.f_elements (v i))) (v t) 3329 }
+      (v (Seq.index vec.f_elements (v i)) - (v t % 3329)) % 3329;
+      ( == ) { () }
+      (v (Seq.index vec.f_elements (v i)) -
+        ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329)) %
+      3329;
+      ( == ) { Math.Lemmas.lemma_mod_sub_distr (v (Seq.index vec.f_elements (v i)))
+        (v (Seq.index vec.f_elements (v j)) * v zeta * 169)
+        3329 }
+      (v (Seq.index vec.f_elements (v i)) - (v (Seq.index vec.f_elements (v j)) * v zeta * 169)) %
+      3329;
+    }
+  in
+  let a_plus_t:i16 =
+    (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) +! t
+  in
+  let _:Prims.unit =
+    calc ( == ) {
+      v a_plus_t % 3329;
+      ( == ) { () }
+      (v (Seq.index vec.f_elements (v i)) + v t) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_add_distr (v (Seq.index vec.f_elements (v i))) (v t) 3329 }
+      (v (Seq.index vec.f_elements (v i)) + (v t % 3329)) % 3329;
+      ( == ) { () }
+      (v (Seq.index vec.f_elements (v i)) +
+        ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329)) %
+      3329;
+      ( == ) { Math.Lemmas.lemma_mod_add_distr (v (Seq.index vec.f_elements (v i)))
+        (v (Seq.index vec.f_elements (v j)) * v zeta * 169)
+        3329 }
+      (v (Seq.index vec.f_elements (v i)) + (v (Seq.index vec.f_elements (v j)) * v zeta * 169)) %
+      3329;
+    }
+  in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     {
       vec with
@@ -294,7 +387,7 @@ let ntt_step
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         j
-        ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) -! t <: i16)
+        a_minus_t
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -307,14 +400,16 @@ let ntt_step
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         i
-        ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) +! t <: i16)
+        a_plus_t
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
   in
+  let _:Prims.unit =
+    assert (Seq.index vec.f_elements (v i) == a_plus_t);
+    assert (Seq.index vec.f_elements (v j) == a_minus_t)
+  in
   vec
-
-#pop-options
 
 #push-options "--z3rlimit 100"
 
@@ -432,31 +527,41 @@ let ntt_multiply
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Libcrux_ml_kem.Vector.Portable.Vector_type.zero ()
   in
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs zeta0 (sz 0) (sz 1) out
+    ntt_multiply_binomials lhs rhs zeta0 (sz 0) out
   in
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs nzeta0 (sz 2) (sz 3) out
+    ntt_multiply_binomials lhs rhs nzeta0 (sz 1) out
   in
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs zeta1 (sz 4) (sz 5) out
+    ntt_multiply_binomials lhs rhs zeta1 (sz 2) out
   in
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs nzeta1 (sz 6) (sz 7) out
+    ntt_multiply_binomials lhs rhs nzeta1 (sz 3) out
   in
-  let _:Prims.unit = admit () in
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs zeta2 (sz 8) (sz 9) out
+    ntt_multiply_binomials lhs rhs zeta2 (sz 4) out
   in
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs nzeta2 (sz 10) (sz 11) out
+    ntt_multiply_binomials lhs rhs nzeta2 (sz 5) out
   in
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs zeta3 (sz 12) (sz 13) out
+    ntt_multiply_binomials lhs rhs zeta3 (sz 6) out
   in
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs nzeta3 (sz 14) (sz 15) out
+    ntt_multiply_binomials lhs rhs nzeta3 (sz 7) out
   in
-  out
+  let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
+  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = out in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #pop-options

@@ -10,7 +10,6 @@ use arithmetic::*;
 use compress::*;
 use ntt::*;
 use sampling::*;
-use serialize::*;
 use vector_type::*;
 
 pub(crate) use vector_type::PortableVector;
@@ -22,7 +21,88 @@ impl crate::vector::traits::Repr for PortableVector {
     }
 }
 
-#[hax_lib::fstar::before(interface, r#"#push-options "--z3rlimit 200""#)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.serialize_pre 1 (impl.f_repr $a)"))]
+#[hax_lib::ensures(|out| fstar!("Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) ==> 
+                                 Spec.MLKEM.serialize_post 1 (impl.f_repr $a) $out"))]
+fn serialize_1(a: PortableVector) -> [u8; 2] {
+    hax_lib::fstar!("assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 1)");
+    hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_lemma $a");
+    serialize::serialize_1(a)
+}
+
+#[hax_lib::requires(a.len() == 2)]
+#[hax_lib::ensures(|out| fstar!("sz (Seq.length $a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $a (impl.f_repr $out)"))]
+fn deserialize_1(a: &[u8]) -> PortableVector {
+    hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma $a");
+    hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_bounded_lemma $a");
+    serialize::deserialize_1(a)
+}
+
+#[hax_lib::requires(fstar!("Spec.MLKEM.serialize_pre 4 (impl.f_repr $a)"))]
+#[hax_lib::ensures(|out| fstar!("Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $a) $out"))]
+fn serialize_4(a: PortableVector) -> [u8; 8] {
+    hax_lib::fstar!("assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 4)");
+    hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_lemma $a");
+    serialize::serialize_4(a)
+}
+
+#[hax_lib::requires(a.len() == 8)]
+#[hax_lib::ensures(|out| fstar!("sz (Seq.length $a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $a (impl.f_repr $out)"))]
+fn deserialize_4(a: &[u8]) -> PortableVector {
+    hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma $a");
+    hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_bounded_lemma $a");
+    serialize::deserialize_4(a)
+}
+
+fn serialize_5(a: PortableVector) -> [u8; 10] {
+    serialize::serialize_5(a)
+}
+
+#[hax_lib::requires(a.len() == 10)]
+fn deserialize_5(a: &[u8]) -> PortableVector {
+    serialize::deserialize_5(a)
+}
+
+#[hax_lib::requires(fstar!("Spec.MLKEM.serialize_pre 10 (impl.f_repr $a)"))]
+#[hax_lib::ensures(|out| fstar!("Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $a) $out"))]
+fn serialize_10(a: PortableVector) -> [u8; 20] {
+    hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_lemma $a");
+    serialize::serialize_10(a)
+}
+
+#[hax_lib::requires(a.len() == 20)]
+#[hax_lib::ensures(|out| fstar!("sz (Seq.length $a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $a (impl.f_repr $out)"))]
+fn deserialize_10(a: &[u8]) -> PortableVector {
+    hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma $a");
+    hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_bounded_lemma $a");
+    serialize::deserialize_10(a)
+}
+
+fn serialize_11(a: PortableVector) -> [u8; 22] {
+    serialize::serialize_11(a)
+}
+
+#[hax_lib::requires(a.len() == 22)]
+fn deserialize_11(a: &[u8]) -> PortableVector {
+    serialize::deserialize_11(a)
+}
+
+#[hax_lib::requires(fstar!("Spec.MLKEM.serialize_pre 12 (impl.f_repr $a)"))]
+#[hax_lib::ensures(|out| fstar!("Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $a) $out"))]
+fn serialize_12(a: PortableVector) -> [u8; 24] {
+    hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_lemma $a");
+    serialize::serialize_12(a)
+}
+
+#[hax_lib::requires(a.len() == 24)]
+#[hax_lib::ensures(|out| fstar!("sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (impl.f_repr $out)"))]
+fn deserialize_12(a: &[u8]) -> PortableVector {
+    hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma $a");
+    hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_bounded_lemma $a");
+    serialize::deserialize_12(a)
+}
+
+#[hax_lib::fstar::before(interface, r#"#push-options "--z3rlimit 400 --split_queries always""#)]
 #[hax_lib::fstar::after(interface, r#"#pop-options"#)]
 #[hax_lib::attributes] 
 impl Operations for PortableVector {
@@ -171,8 +251,8 @@ impl Operations for PortableVector {
     
     #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
                        Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
-                       Spec.Utils.is_i16b_array 3228 (impl.f_repr ${lhs}) /\\
-                       Spec.Utils.is_i16b_array 3228 (impl.f_repr ${rhs})"))]
+                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${lhs}) /\\
+                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${rhs})"))]
     #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"))]
     fn ntt_multiply(
         lhs: &Self,
@@ -188,32 +268,24 @@ impl Operations for PortableVector {
     #[requires(fstar!("Spec.MLKEM.serialize_pre 1 (impl.f_repr $a)"))]
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 1 (impl.f_repr $a) $out"))]
     fn serialize_1(a: Self) -> [u8; 2] {
-        hax_lib::fstar!("assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 1)");
-        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_lemma $a");
         serialize_1(a)
     }
 
     #[requires(a.len() == 2)]
     #[ensures(|out| fstar!("sz (Seq.length $a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $a (impl.f_repr $out)"))]
     fn deserialize_1(a: &[u8]) -> Self {
-        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma $a");
-        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_bounded_lemma $a");
         deserialize_1(a)
     }
 
     #[requires(fstar!("Spec.MLKEM.serialize_pre 4 (impl.f_repr $a)"))]
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $a) $out"))]
     fn serialize_4(a: Self) -> [u8; 8] {
-        hax_lib::fstar!("assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 4)");
-        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_lemma $a");
-        serialize_4(a)
+       serialize_4(a)
     }
 
     #[requires(a.len() == 8)]
     #[ensures(|out| fstar!("sz (Seq.length $a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $a (impl.f_repr $out)"))]
     fn deserialize_4(a: &[u8]) -> Self {
-        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma $a");
-        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_bounded_lemma $a");
         deserialize_4(a)
     }
 
@@ -229,15 +301,12 @@ impl Operations for PortableVector {
     #[requires(fstar!("Spec.MLKEM.serialize_pre 10 (impl.f_repr $a)"))]
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $a) $out"))]
     fn serialize_10(a: Self) -> [u8; 20] {
-        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_lemma $a");
         serialize_10(a)
     }
 
     #[requires(a.len() == 20)]
     #[ensures(|out| fstar!("sz (Seq.length $a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $a (impl.f_repr $out)"))]
     fn deserialize_10(a: &[u8]) -> Self {
-        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma $a");
-        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_bounded_lemma $a");
         deserialize_10(a)
     }
 
@@ -253,15 +322,12 @@ impl Operations for PortableVector {
     #[requires(fstar!("Spec.MLKEM.serialize_pre 12 (impl.f_repr $a)"))]
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $a) $out"))]
     fn serialize_12(a: Self) -> [u8; 24] {
-        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_lemma $a");
         serialize_12(a)
     }
 
     #[requires(a.len() == 24)]
     #[ensures(|out| fstar!("sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (impl.f_repr $out)"))]
     fn deserialize_12(a: &[u8]) -> Self {
-        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma $a");
-        hax_lib::fstar!("Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_bounded_lemma $a");
         deserialize_12(a)
     }
 

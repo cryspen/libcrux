@@ -192,7 +192,9 @@ let lemma_mul_intb (b1 b2: nat) (n1 n2: int) =
 #push-options "--z3rlimit 200"
 val lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) 
     : Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 * b2 < pow2 31))
-      (ensures (range (v n1 * v n2) i32_inttype /\ is_i32b (b1 * b2) ((cast n1 <: i32) *! (cast n2 <: i32))))
+      (ensures (range (v n1 * v n2) i32_inttype /\ 
+                is_i32b (b1 * b2) ((cast n1 <: i32) *! (cast n2 <: i32)) /\
+                v ((cast n1 <: i32) *! (cast n2 <: i32)) == v n1 * v n2))
       
 let lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) =
   if v n1 = 0 || v n2 = 0
@@ -473,3 +475,20 @@ let lemma_shift_right_15_i16 (x:i16):
   Rust_primitives.Integers.mk_int_v_lemma #i16_inttype 0s;
   Rust_primitives.Integers.mk_int_v_lemma #i16_inttype (-1s);
   ()
+
+val ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) (j: nat{j < v len}) 
+                  (vec_out: t_Array i16 len) : Type0
+let ntt_spec vec_in zeta i j vec_out =
+  ((v (Seq.index vec_out i) % 3329) ==
+   ((v (Seq.index vec_in i) + (v (Seq.index vec_in j) * zeta * 169)) % 3329)) /\
+  ((v (Seq.index vec_out j) % 3329) ==
+   ((v (Seq.index vec_in i) - (v (Seq.index vec_in j) * zeta * 169)) % 3329))
+
+val inv_ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) (j: nat{j < v len}) 
+                 (vec_out: t_Array i16 len) : Type0
+let inv_ntt_spec vec_in zeta i j vec_out =
+  ((v (Seq.index vec_out i) % 3329) ==
+   ((v (Seq.index vec_in j) + v (Seq.index vec_in i)) % 3329)) /\
+  ((v (Seq.index vec_out j) % 3329) ==
+   (((v (Seq.index vec_in j) - v (Seq.index vec_in i)) * zeta * 169) % 3329))
+

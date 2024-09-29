@@ -6,9 +6,11 @@ open FStar.Mul
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_kem.Hash_functions in
   let open Libcrux_ml_kem.Hash_functions.Avx2 in
   let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Avx2 in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 /// Portable private key validation
