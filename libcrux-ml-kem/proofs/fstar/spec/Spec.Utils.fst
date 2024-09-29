@@ -189,6 +189,7 @@ let lemma_mul_intb (b1 b2: nat) (n1 n2: int) =
     lemma_abs_bound (n1 * n2) (b1 * b2)
 #pop-options
 
+#push-options "--z3rlimit 200"
 val lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) 
     : Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 * b2 < pow2 31))
       (ensures (range (v n1 * v n2) i32_inttype /\ is_i32b (b1 * b2) ((cast n1 <: i32) *! (cast n2 <: i32))))
@@ -204,6 +205,7 @@ let lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) =
     lemma_mult_le_left (abs (v n1)) (abs (v n2)) b2;
     lemma_mult_le_right b2 (abs (v n1)) b1;
     lemma_abs_bound (v n1 * v n2) (b1 * b2)
+#pop-options
 
 val lemma_add_i16b (b1 b2:nat) (n1 n2:i16) :
   Lemma (requires (is_i16b b1 n1 /\ is_i16b b2 n2 /\ b1 + b2 < pow2 15))
