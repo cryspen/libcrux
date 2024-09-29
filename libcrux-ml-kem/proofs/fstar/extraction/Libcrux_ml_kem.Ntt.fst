@@ -26,10 +26,6 @@ let ntt_layer_int_vec_step
   in
   a, b <: (v_Vector & v_Vector)
 
-let zetas_b_lemma (i:nat{i >= 0 /\ i < 128}) : Lemma
-   (Spec.Utils.is_i16b 1664 (Libcrux_ml_kem.Polynomial.get_zeta (sz i))) =
-   admit()
-
 let ntt_at_layer_1_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -68,10 +64,9 @@ let ntt_at_layer_1_
           let round:usize = round in
           let zeta_i:usize = zeta_i +! sz 1 in
           let _:Prims.unit =
-            zetas_b_lemma (v zeta_i);
-            zetas_b_lemma (v zeta_i + 1);
-            zetas_b_lemma (v zeta_i + 2);
-            zetas_b_lemma (v zeta_i + 3)
+            reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+              (Spec.Utils.is_i16b_array_opaque (11207 + 5 * 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
@@ -95,6 +90,11 @@ let ntt_at_layer_1_
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
           in
           let zeta_i:usize = zeta_i +! sz 3 in
+          let _:Prims.unit =
+            reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+              (Spec.Utils.is_i16b_array_opaque (11207 + 6 * 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
           let _:Prims.unit =
             assert (Spec.Utils.is_i16b_array_opaque (11207 + 6 * 3328)
                   (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
@@ -142,8 +142,9 @@ let ntt_at_layer_2_
           let round:usize = round in
           let zeta_i:usize = zeta_i +! sz 1 in
           let _:Prims.unit =
-            zetas_b_lemma (v zeta_i);
-            zetas_b_lemma (v zeta_i + 1)
+            reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+              (Spec.Utils.is_i16b_array_opaque (11207 + 4 * 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
@@ -165,6 +166,11 @@ let ntt_at_layer_2_
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
           in
           let zeta_i:usize = zeta_i +! sz 1 in
+          let _:Prims.unit =
+            reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+              (Spec.Utils.is_i16b_array_opaque (11207 + 5 * 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
           let _:Prims.unit =
             assert (Spec.Utils.is_i16b_array_opaque (11207 + 5 * 3328)
                   (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
@@ -211,7 +217,11 @@ let ntt_at_layer_3_
           in
           let round:usize = round in
           let zeta_i:usize = zeta_i +! sz 1 in
-          let _:Prims.unit = zetas_b_lemma (v zeta_i) in
+          let _:Prims.unit =
+            reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+              (Spec.Utils.is_i16b_array_opaque (11207 + 3 * 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
               re with
@@ -229,6 +239,11 @@ let ntt_at_layer_3_
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
+          in
+          let _:Prims.unit =
+            reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+              (Spec.Utils.is_i16b_array_opaque (11207 + 4 * 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
           in
           let _:Prims.unit =
             assert (Spec.Utils.is_i16b_array_opaque (11207 + 4 * 3328)

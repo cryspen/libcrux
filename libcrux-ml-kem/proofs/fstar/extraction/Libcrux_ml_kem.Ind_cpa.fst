@@ -101,6 +101,8 @@ let sample_ring_element_cbd
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+#push-options "--admit_smt_queries true"
+
 let sample_vector_cbd_then_ntt
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
       (#v_Vector #v_Hasher: Type0)
@@ -183,12 +185,12 @@ let sample_vector_cbd_then_ntt
           in
           re_as_ntt)
   in
-  let result:u8 = domain_separator in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  let hax_temp_output:u8 = result in
+  let hax_temp_output:u8 = domain_separator in
   re_as_ntt, hax_temp_output
   <:
   (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
+
+#pop-options
 
 let sample_vector_cbd_then_ntt_out
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)

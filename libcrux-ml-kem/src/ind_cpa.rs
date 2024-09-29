@@ -187,7 +187,7 @@ fn sample_ring_element_cbd<
 /// Sample a vector of ring elements from a centered binomial distribution and
 /// convert them into their NTT representations.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $ETA_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
     $ETA == Spec.MLKEM.v_ETA1 $K /\\

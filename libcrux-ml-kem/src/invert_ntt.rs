@@ -5,9 +5,6 @@ use crate::{
 };
 
 #[inline(always)]
-#[hax_lib::fstar::before("let zetas_b_lemma (i:nat{i >= 0 /\\ i < 128}) : Lemma
-   (Spec.Utils.is_i16b 1664 (${get_zeta} (sz i))) =
-   admit()")]
 #[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]
    let invert_ntt_re_range_2 (#v_Vector: Type0)
            {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -42,10 +39,9 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
           (forall (i:nat). i < v $round ==> Spec.Utils.is_i16b_array_opaque 3328
               (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))") });
         *zeta_i -= 1;
-        hax_lib::fstar!("zetas_b_lemma (v zeta_i);
-            zetas_b_lemma (v zeta_i - 1);
-            zetas_b_lemma (v zeta_i - 2);
-            zetas_b_lemma (v zeta_i - 3)");
+        hax_lib::fstar!("reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (4*3328) 
+                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))");
         re.coefficients[round] = Vector::inv_ntt_layer_1_step(
             re.coefficients[round],
             get_zeta (*zeta_i),
@@ -54,6 +50,9 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
             get_zeta (*zeta_i - 3),
         );
         *zeta_i -= 3;
+        hax_lib::fstar!("reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328 
+                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))");
         hax_lib::fstar!("assert (Spec.Utils.is_i16b_array_opaque 3328
             (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))");
     }
@@ -82,14 +81,18 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
           (forall (i:nat). i < v $round ==> Spec.Utils.is_i16b_array_opaque 3328
               (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))") });
         *zeta_i -= 1;
-        hax_lib::fstar!("zetas_b_lemma (v zeta_i);
-            zetas_b_lemma (v zeta_i - 1)");
+        hax_lib::fstar!("reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328 
+                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))");
         re.coefficients[round] = Vector::inv_ntt_layer_2_step(
             re.coefficients[round],
             get_zeta (*zeta_i),
             get_zeta (*zeta_i - 1),
         );
         *zeta_i -= 1;
+        hax_lib::fstar!("reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328 
+                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))");
         hax_lib::fstar!("assert (Spec.Utils.is_i16b_array_opaque 3328
             (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))");
     }
@@ -118,9 +121,14 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
           (forall (i:nat). i < v $round ==> Spec.Utils.is_i16b_array_opaque 3328
               (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))") });
         *zeta_i -= 1;
-        hax_lib::fstar!("zetas_b_lemma (v zeta_i)");
+        hax_lib::fstar!("reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328 
+                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))");
         re.coefficients[round] =
             Vector::inv_ntt_layer_3_step(re.coefficients[round], get_zeta (*zeta_i));
+        hax_lib::fstar!("reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+            (Spec.Utils.is_i16b_array_opaque 3328 
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))");
         hax_lib::fstar!("assert (Spec.Utils.is_i16b_array_opaque 3328
             (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))");
     }

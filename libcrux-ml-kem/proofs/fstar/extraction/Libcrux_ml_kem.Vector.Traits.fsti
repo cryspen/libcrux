@@ -183,7 +183,7 @@ class t_Operations (v_Self: Type0) = {
       Type0
         { Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
           Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-          Spec.Utils.is_i16b_array_opaque (11207 + 5 * 3328) (f_repr a) ==>
+          Spec.Utils.is_i16b_array (11207 + 5 * 3328) (f_repr a) ==>
           pred };
   f_ntt_layer_1_step_post:
       a: v_Self ->
@@ -192,7 +192,7 @@ class t_Operations (v_Self: Type0) = {
       zeta2: i16 ->
       zeta3: i16 ->
       out: v_Self
-    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array_opaque (11207 + 6 * 3328) (f_repr out)};
+    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array (11207 + 6 * 3328) (f_repr out)};
   f_ntt_layer_1_step:x0: v_Self -> x1: i16 -> x2: i16 -> x3: i16 -> x4: i16
     -> Prims.Pure v_Self
         (f_ntt_layer_1_step_pre x0 x1 x2 x3 x4)
@@ -201,10 +201,10 @@ class t_Operations (v_Self: Type0) = {
     -> pred:
       Type0
         { Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-          Spec.Utils.is_i16b_array_opaque (11207 + 4 * 3328) (f_repr a) ==>
+          Spec.Utils.is_i16b_array (11207 + 4 * 3328) (f_repr a) ==>
           pred };
   f_ntt_layer_2_step_post:a: v_Self -> zeta0: i16 -> zeta1: i16 -> out: v_Self
-    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array_opaque (11207 + 5 * 3328) (f_repr out)};
+    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array (11207 + 5 * 3328) (f_repr out)};
   f_ntt_layer_2_step:x0: v_Self -> x1: i16 -> x2: i16
     -> Prims.Pure v_Self
         (f_ntt_layer_2_step_pre x0 x1 x2)
@@ -212,11 +212,10 @@ class t_Operations (v_Self: Type0) = {
   f_ntt_layer_3_step_pre:a: v_Self -> zeta: i16
     -> pred:
       Type0
-        { Spec.Utils.is_i16b 1664 zeta /\
-          Spec.Utils.is_i16b_array_opaque (11207 + 3 * 3328) (f_repr a) ==>
+        { Spec.Utils.is_i16b 1664 zeta /\ Spec.Utils.is_i16b_array (11207 + 3 * 3328) (f_repr a) ==>
           pred };
   f_ntt_layer_3_step_post:a: v_Self -> zeta: i16 -> out: v_Self
-    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array_opaque (11207 + 4 * 3328) (f_repr out)};
+    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array (11207 + 4 * 3328) (f_repr out)};
   f_ntt_layer_3_step:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
         (f_ntt_layer_3_step_pre x0 x1)
@@ -226,7 +225,7 @@ class t_Operations (v_Self: Type0) = {
       Type0
         { Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
           Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-          Spec.Utils.is_i16b_array_opaque (4 * 3328) (f_repr a) ==>
+          Spec.Utils.is_i16b_array (4 * 3328) (f_repr a) ==>
           pred };
   f_inv_ntt_layer_1_step_post:
       a: v_Self ->
@@ -235,7 +234,7 @@ class t_Operations (v_Self: Type0) = {
       zeta2: i16 ->
       zeta3: i16 ->
       out: v_Self
-    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array_opaque 3328 (f_repr out)};
+    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array 3328 (f_repr out)};
   f_inv_ntt_layer_1_step:x0: v_Self -> x1: i16 -> x2: i16 -> x3: i16 -> x4: i16
     -> Prims.Pure v_Self
         (f_inv_ntt_layer_1_step_pre x0 x1 x2 x3 x4)
@@ -244,20 +243,19 @@ class t_Operations (v_Self: Type0) = {
     -> pred:
       Type0
         { Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-          Spec.Utils.is_i16b_array_opaque 3328 (f_repr a) ==>
+          Spec.Utils.is_i16b_array 3328 (f_repr a) ==>
           pred };
   f_inv_ntt_layer_2_step_post:a: v_Self -> zeta0: i16 -> zeta1: i16 -> out: v_Self
-    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array_opaque 3328 (f_repr out)};
+    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array 3328 (f_repr out)};
   f_inv_ntt_layer_2_step:x0: v_Self -> x1: i16 -> x2: i16
     -> Prims.Pure v_Self
         (f_inv_ntt_layer_2_step_pre x0 x1 x2)
         (fun result -> f_inv_ntt_layer_2_step_post x0 x1 x2 result);
   f_inv_ntt_layer_3_step_pre:a: v_Self -> zeta: i16
     -> pred:
-      Type0
-        {Spec.Utils.is_i16b 1664 zeta /\ Spec.Utils.is_i16b_array_opaque 3328 (f_repr a) ==> pred};
+      Type0{Spec.Utils.is_i16b 1664 zeta /\ Spec.Utils.is_i16b_array 3328 (f_repr a) ==> pred};
   f_inv_ntt_layer_3_step_post:a: v_Self -> zeta: i16 -> out: v_Self
-    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array_opaque 3328 (f_repr out)};
+    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array 3328 (f_repr out)};
   f_inv_ntt_layer_3_step:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
         (f_inv_ntt_layer_3_step_pre x0 x1)
