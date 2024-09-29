@@ -3,6 +3,8 @@ module Libcrux_ml_kem.Vector.Portable.Ntt
 open Core
 open FStar.Mul
 
+[@@ "opaque_to_smt"]
+
 val inv_ntt_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta: i16)
@@ -105,6 +107,8 @@ val ntt_multiply_binomials
             ((v oi % 3329) == (((v ai * v bi + (v aj * v bj * v zeta * 169)) * 169) % 3329)) /\
             ((v oj % 3329) == (((v ai * v bj + v aj * v bi) * 169) % 3329))))
 
+[@@ "opaque_to_smt"]
+
 val ntt_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta: i16)
@@ -125,7 +129,15 @@ val ntt_step
               (Spec.Utils.is_i16b b vec.f_elements.[ i ] /\
                 Spec.Utils.is_i16b b vec.f_elements.[ j ]) ==>
               (Spec.Utils.is_i16b (b + 3328) vec_future.f_elements.[ i ] /\
-                Spec.Utils.is_i16b (b + 3328) vec_future.f_elements.[ j ])))
+                Spec.Utils.is_i16b (b + 3328) vec_future.f_elements.[ j ])) /\
+          ((v (Seq.index vec_future.f_elements (v i)) % 3329) ==
+            (v (Seq.index vec.f_elements (v i)) +
+              (v (Seq.index vec.f_elements (v j)) * v zeta * 169)) %
+            3329) /\
+          ((v (Seq.index vec_future.f_elements (v j)) % 3329) ==
+            (v (Seq.index vec.f_elements (v i)) -
+              (v (Seq.index vec.f_elements (v j)) * v zeta * 169)) %
+            3329))
 
 val ntt_layer_1_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)

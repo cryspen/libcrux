@@ -2,7 +2,7 @@ use super::arithmetic::*;
 use super::vector_type::*;
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]")]
 #[hax_lib::requires(fstar!("v i < 16 /\\ v j < 16 /\\ v i <> v j /\\ 
                             Spec.Utils.is_i16b 1664 $zeta  /\\
                             Spec.Utils.is_i16b_array (11207 + 6 * 3328) vec.f_elements /\\
@@ -13,11 +13,44 @@ use super::vector_type::*;
                                     (forall b. (Spec.Utils.is_i16b b ${vec}.f_elements.[i] /\\
                                                Spec.Utils.is_i16b b ${vec}.f_elements.[j]) ==>
                                               (Spec.Utils.is_i16b (b+3328) ${vec}_future.f_elements.[i] /\\
-                                               Spec.Utils.is_i16b (b+3328) ${vec}_future.f_elements.[j]))"))]
+                                               Spec.Utils.is_i16b (b+3328) ${vec}_future.f_elements.[j])) /\\
+                                    ((v (Seq.index ${vec}_future.f_elements (v i)) % 3329) ==
+                                     (v (Seq.index ${vec}.f_elements (v $i)) + (v (Seq.index ${vec}.f_elements (v $j)) * v $zeta * 169)) % 3329) /\\
+                                    ((v (Seq.index ${vec}_future.f_elements (v j)) % 3329) ==
+                                     (v (Seq.index ${vec}.f_elements (v $i)) - (v (Seq.index ${vec}.f_elements (v $j)) * v $zeta * 169)) % 3329)"))]
 pub(crate) fn ntt_step(vec: &mut PortableVector, zeta: i16, i: usize, j: usize) {
     let t = montgomery_multiply_fe_by_fer(vec.elements[j], zeta);
-    vec.elements[j] = vec.elements[i] - t;
-    vec.elements[i] = vec.elements[i] + t;
+    hax_lib::fstar!("assert (v t % 3329 == ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329))");
+    let a_minus_t = vec.elements[i] - t;
+    hax_lib::fstar!("
+    calc (==) {
+        v $a_minus_t % 3329;
+        (==) {}
+        (v (Seq.index vec.f_elements (v i)) - v ${t}) % 3329;
+        (==) {Math.Lemmas.lemma_mod_sub_distr (v (Seq.index vec.f_elements (v $i))) (v $t) 3329}
+        (v (Seq.index vec.f_elements (v $i)) - (v $t % 3329)) % 3329;
+        (==) {}
+        (v (Seq.index vec.f_elements (v i)) - ((v (Seq.index vec.f_elements (v $j)) * v $zeta * 169) % 3329)) % 3329;
+        (==) {Math.Lemmas.lemma_mod_sub_distr (v (Seq.index vec.f_elements (v $i))) (v (Seq.index vec.f_elements (v $j)) * v zeta * 169) 3329}
+        (v (Seq.index vec.f_elements (v $i)) - (v (Seq.index vec.f_elements (v $j)) * v $zeta * 169)) % 3329;
+        }");
+    let a_plus_t = vec.elements[i] + t;
+    hax_lib::fstar!("
+    calc (==) {
+        v a_plus_t % 3329;
+        (==) {}
+        (v (Seq.index vec.f_elements (v $i)) + v $t) % 3329;
+        (==) {Math.Lemmas.lemma_mod_add_distr (v (Seq.index vec.f_elements (v $i))) (v $t) 3329}
+        (v (Seq.index vec.f_elements (v $i)) + (v $t % 3329)) % 3329;
+        (==) {}
+        (v (Seq.index vec.f_elements (v $i)) + ((v (Seq.index vec.f_elements (v $j)) * v $zeta * 169) % 3329)) % 3329;
+        (==) {Math.Lemmas.lemma_mod_add_distr (v (Seq.index vec.f_elements (v $i))) (v (Seq.index vec.f_elements (v $j)) * v zeta * 169) 3329}
+        (v (Seq.index vec.f_elements (v $i)) + (v (Seq.index vec.f_elements (v $j)) * v $zeta * 169)) % 3329;
+    }");
+    vec.elements[j] = a_minus_t;
+    vec.elements[i] = a_plus_t;
+    hax_lib::fstar!("assert (Seq.index vec.f_elements (v i) == a_plus_t);
+                     assert (Seq.index vec.f_elements (v j) == a_minus_t)");
 }
 
 #[inline(always)]
@@ -79,6 +112,7 @@ pub(crate) fn ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> PortableVe
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]")]
 #[hax_lib::requires(fstar!("v i < 16 /\\ v j < 16 /\\  v i <> v j /\\ 
                         Spec.Utils.is_i16b 1664 $zeta /\\
                         Spec.Utils.is_i16b_array (4*3328) ${vec}.f_elements"))]
