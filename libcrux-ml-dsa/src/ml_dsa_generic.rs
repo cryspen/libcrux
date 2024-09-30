@@ -6,17 +6,14 @@ use crate::{
     },
     constants::*,
     encoding,
-    hash_functions::{
-        self,
-        shake128::{self, Xof},
-        shake256,
-    },
+    hash_functions::{shake128, shake256},
     matrix::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
         vector_times_ring_element,
     },
     ntt::ntt,
     polynomial::PolynomialRingElement,
+    pre_hash::{PreHash, PreHashOID, PRE_HASH_OID_LEN},
     sample::{sample_challenge_ring_element, sample_mask_vector},
     samplex4,
     simd::traits::Operations,
@@ -119,6 +116,8 @@ pub(crate) fn sign_pre_hashed<
     Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
     Shake256X4: shake256::XofX4,
+    PH: PreHash<PH_DIGEST_LEN>,
+    const PH_DIGEST_LEN: usize,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
@@ -137,14 +136,14 @@ pub(crate) fn sign_pre_hashed<
     signing_key: &[u8; SIGNING_KEY_SIZE],
     message: &[u8],
     context: &[u8],
-    pre_hash: PreHash,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     if context.len() > CONTEXT_MAX_LEN {
         Err(SigningError::ContextTooLongError)
     } else {
-        let (domain_separated_context, ctx_len) = domain_separate_context(context, Some(&pre_hash));
-        let pre_hashed_message = pre_hash.hash(message);
+        let (domain_separated_context, ctx_len) =
+            domain_separate_context(context, Some(&PH::to_oid()));
+        let pre_hashed_message = PH::hash(message);
 
         sign_internal::<
             SIMDUnit,
@@ -584,6 +583,8 @@ pub(crate) fn verify_pre_hashed<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
+    PH: PreHash<PH_DIGEST_LEN>,
+    const PH_DIGEST_LEN: usize,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const SIGNATURE_SIZE: usize,
@@ -602,13 +603,13 @@ pub(crate) fn verify_pre_hashed<
     message: &[u8],
     context: &[u8],
     signature_serialized: &[u8; SIGNATURE_SIZE],
-    pre_hash: PreHash,
 ) -> Result<(), VerificationError> {
     if context.len() > CONTEXT_MAX_LEN {
         Err(VerificationError::ContextTooLongError)
     } else {
-        let (domain_separated_context, ctx_len) = domain_separate_context(context, Some(&pre_hash));
-        let pre_hashed_message = pre_hash.hash(message);
+        let (domain_separated_context, ctx_len) =
+            domain_separate_context(context, Some(&PH::to_oid()));
+        let pre_hashed_message = PH::hash(message);
 
         verify_internal::<
             SIMDUnit,
@@ -636,31 +637,6 @@ pub(crate) fn verify_pre_hashed<
     }
 }
 
-pub type PreHashOID = [u8; 11];
-const PRE_HASH_OID_LEN: usize = 11;
-const CONTEXT_MAX_LEN: usize = 255;
-
-pub enum PreHash {
-    SHAKE128,
-}
-
-impl PreHash {
-    fn to_oid(&self) -> PreHashOID {
-        match self {
-            Self::SHAKE128 => [
-                0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x0b,
-            ],
-        }
-    }
-    fn hash(&self, message: &[u8]) -> [u8; 256] {
-        let mut output = [0u8; 256];
-        match self {
-            Self::SHAKE128 => hash_functions::portable::Shake128::shake128(message, &mut output),
-        }
-        output
-    }
-}
-
 /// Apply domain separation and length encoding to the context string.
 ///
 /// Returns a buffer that contains the domain separated context
@@ -670,18 +646,18 @@ impl PreHash {
 /// string is extended by the pre-hash OID.
 fn domain_separate_context(
     context: &[u8],
-    pre_hash: Option<&PreHash>,
+    pre_hash_oid: Option<&PreHashOID>,
 ) -> ([u8; CONTEXT_MAX_LEN + PRE_HASH_OID_LEN + 2], usize) {
-    debug_assert!(context.len() < CONTEXT_MAX_LEN);
+    debug_assert!(context.len() <= CONTEXT_MAX_LEN);
     let mut domain_separated_context = [0u8; CONTEXT_MAX_LEN + PRE_HASH_OID_LEN + 2];
     domain_separated_context[1] = context.len() as u8;
     let mut len = context.len() + 2;
     domain_separated_context[2..len].copy_from_slice(context);
 
-    if let Some(pre_hash) = pre_hash {
+    if let Some(pre_hash_oid) = pre_hash_oid {
         domain_separated_context[0] = 1;
 
-        domain_separated_context[len..len + PRE_HASH_OID_LEN].copy_from_slice(&pre_hash.to_oid());
+        domain_separated_context[len..len + PRE_HASH_OID_LEN].copy_from_slice(pre_hash_oid);
         len += PRE_HASH_OID_LEN;
     }
 

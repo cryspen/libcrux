@@ -167,7 +167,6 @@ pub(crate) fn sign_pre_hashed<
     signing_key: &[u8; SIGNING_KEY_SIZE],
     message: &[u8],
     context: &[u8],
-    pre_hash: PreHash,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     if libcrux_platform::simd256_support() {
@@ -186,7 +185,7 @@ pub(crate) fn sign_pre_hashed<
             GAMMA1_RING_ELEMENT_SIZE,
             SIGNING_KEY_SIZE,
             SIGNATURE_SIZE,
-        >(signing_key, message, context, pre_hash, randomness)
+        >(signing_key, message, context, randomness)
     } else if libcrux_platform::simd128_support() {
         sign_pre_hashed_neon::<
             ROWS_IN_A,
@@ -203,7 +202,7 @@ pub(crate) fn sign_pre_hashed<
             GAMMA1_RING_ELEMENT_SIZE,
             SIGNING_KEY_SIZE,
             SIGNATURE_SIZE,
-        >(signing_key, message, context, pre_hash, randomness)
+        >(signing_key, message, context, randomness)
     } else {
         instantiations::portable::sign_pre_hashed::<
             ROWS_IN_A,
@@ -220,7 +219,7 @@ pub(crate) fn sign_pre_hashed<
             GAMMA1_RING_ELEMENT_SIZE,
             SIGNING_KEY_SIZE,
             SIGNATURE_SIZE,
-        >(signing_key, message, context, pre_hash, randomness)
+        >(signing_key, message, context, randomness)
     }
 }
 
@@ -329,7 +328,6 @@ pub(crate) fn verify_pre_hashed<
     message: &[u8],
     context: &[u8],
     signature_serialized: &[u8; SIGNATURE_SIZE],
-    pre_hash: PreHash,
 ) -> Result<(), VerificationError> {
     if libcrux_platform::simd256_support() {
         verify_pre_hashed_avx2::<
@@ -351,7 +349,6 @@ pub(crate) fn verify_pre_hashed<
             message,
             context,
             signature_serialized,
-            pre_hash,
         )
     } else if libcrux_platform::simd128_support() {
         verify_pre_hashed_neon::<
@@ -373,7 +370,6 @@ pub(crate) fn verify_pre_hashed<
             message,
             context,
             signature_serialized,
-            pre_hash,
         )
     } else {
         instantiations::portable::verify_pre_hashed::<
@@ -395,7 +391,6 @@ pub(crate) fn verify_pre_hashed<
             message,
             context,
             signature_serialized,
-            pre_hash,
         )
     }
 }

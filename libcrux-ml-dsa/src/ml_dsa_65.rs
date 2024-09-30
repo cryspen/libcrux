@@ -1,6 +1,6 @@
 use crate::{
     constants::*,
-    ml_dsa_generic::{self, multiplexing, PreHash},
+    ml_dsa_generic::{self, multiplexing},
     types::*,
     SigningError, VerificationError,
 };
@@ -119,6 +119,31 @@ macro_rules! instantiate {
                 >(&signing_key.0, message, context, randomness)
             }
 
+            /// Generate a HashML-DSA-65 Signature, with a SHAKE128 pre-hashing
+            pub fn sign_pre_hashed(
+                signing_key: &MLDSA65SigningKey,
+                message: &[u8],
+                context: &[u8],
+                randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+            ) -> Result<MLDSA65Signature, SigningError> {
+                p::sign_pre_hashed::<
+                    ROWS_IN_A,
+                    COLUMNS_IN_A,
+                    ETA,
+                    ERROR_RING_ELEMENT_SIZE,
+                    GAMMA1_EXPONENT,
+                    GAMMA2,
+                    COMMITMENT_RING_ELEMENT_SIZE,
+                    COMMITMENT_VECTOR_SIZE,
+                    COMMITMENT_HASH_SIZE,
+                    ONES_IN_VERIFIER_CHALLENGE,
+                    MAX_ONES_IN_HINT,
+                    GAMMA1_RING_ELEMENT_SIZE,
+                    SIGNING_KEY_SIZE,
+                    SIGNATURE_SIZE,
+                >(&signing_key.0, message, context, randomness)
+            }
+
             /// Verify an ML-DSA-65 Signature
             pub fn verify(
                 verification_key: &MLDSA65VerificationKey,
@@ -127,6 +152,30 @@ macro_rules! instantiate {
                 signature: &MLDSA65Signature,
             ) -> Result<(), VerificationError> {
                 p::verify::<
+                    ROWS_IN_A,
+                    COLUMNS_IN_A,
+                    SIGNATURE_SIZE,
+                    VERIFICATION_KEY_SIZE,
+                    GAMMA1_EXPONENT,
+                    GAMMA1_RING_ELEMENT_SIZE,
+                    GAMMA2,
+                    BETA,
+                    COMMITMENT_RING_ELEMENT_SIZE,
+                    COMMITMENT_VECTOR_SIZE,
+                    COMMITMENT_HASH_SIZE,
+                    ONES_IN_VERIFIER_CHALLENGE,
+                    MAX_ONES_IN_HINT,
+                >(&verification_key.0, message, context, &signature.0)
+            }
+
+            /// Verify a HashML-DSA-65 Signature, with a SHAKE128 pre-hashing
+            pub fn verify_pre_hashed(
+                verification_key: &MLDSA65VerificationKey,
+                message: &[u8],
+                context: &[u8],
+                signature: &MLDSA65Signature,
+            ) -> Result<(), VerificationError> {
+                p::verify_pre_hashed::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
                     SIGNATURE_SIZE,
@@ -235,7 +284,7 @@ pub fn verify(
     >(&verification_key.0, message, context, &signature.0)
 }
 
-/// Sign with HashML-DSA 65
+/// Sign with HashML-DSA 65, with a SHAKE128 pre-hashing
 ///
 /// Sign a digest of `message` derived using `pre_hash` with the
 /// ML-DSA `signing_key`.
@@ -246,7 +295,6 @@ pub fn sign_pre_hashed(
     signing_key: &MLDSA65SigningKey,
     message: &[u8],
     context: &[u8],
-    pre_hash: PreHash,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSA65Signature, SigningError> {
     multiplexing::sign_pre_hashed::<
@@ -264,10 +312,10 @@ pub fn sign_pre_hashed(
         GAMMA1_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
         SIGNATURE_SIZE,
-    >(&signing_key.0, message, context, pre_hash, randomness)
+    >(&signing_key.0, message, context, randomness)
 }
 
-/// Verify a HashML-DSA-65 Signature
+/// Verify a HashML-DSA-65 Signature, with a SHAKE128 pre-hashing
 ///
 /// Returns `Ok` when the `signature` is valid for the `message` and
 /// `verification_key`, and a [`VerificationError`] otherwise.
@@ -277,7 +325,6 @@ pub fn verify_pre_hashed(
     message: &[u8],
     context: &[u8],
     signature: &MLDSA65Signature,
-    pre_hash: PreHash,
 ) -> Result<(), VerificationError> {
     multiplexing::verify_pre_hashed::<
         ROWS_IN_A,
@@ -293,11 +340,5 @@ pub fn verify_pre_hashed(
         COMMITMENT_HASH_SIZE,
         ONES_IN_VERIFIER_CHALLENGE,
         MAX_ONES_IN_HINT,
-    >(
-        &verification_key.0,
-        message,
-        context,
-        &signature.0,
-        pre_hash,
-    )
+    >(&verification_key.0, message, context, &signature.0)
 }
