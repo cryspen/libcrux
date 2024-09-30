@@ -8,7 +8,7 @@ use libcrux_ml_dsa::{
     ml_dsa_44::{self, MLDSA44SigningKey},
     ml_dsa_65::{self, MLDSA65SigningKey},
     ml_dsa_87::{self, MLDSA87SigningKey},
-    MLDSASigningKey,
+    MLDSASigningKey, SigningError,
 };
 
 include!("wycheproof/sign_schema.rs");
@@ -19,7 +19,7 @@ macro_rules! wycheproof_sign_test {
         fn $name() {
             let katfile_path = Path::new("tests")
                 .join("wycheproof")
-                .join(format!("mldsa_{}_draft_sign_test.json", $parameter_set));
+                .join(format!("mldsa_{}_standard_sign_test.json", $parameter_set));
             let katfile = File::open(katfile_path).expect("Could not open KAT file.");
             let reader = BufReader::new(katfile);
 
@@ -47,13 +47,17 @@ macro_rules! wycheproof_sign_test {
 
                 for test in test_group.tests {
                     let message = hex::decode(test.msg).unwrap();
+                    let context = hex::decode(test.ctx).unwrap();
 
-                    let signature = $sign(&signing_key, &message, signing_randomness)
-                        .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
+                    let signature = $sign(&signing_key, &message, &context, signing_randomness);
+
+                    if let Err(SigningError::ContextTooLongError) = signature {
+                        assert!(test.result == Result::Invalid)
+                    }
 
                     if test.result == Result::Valid {
                         assert_eq!(
-                            signature.0.as_slice(),
+                            signature.unwrap().0.as_slice(),
                             hex::decode(test.sig).unwrap().as_slice()
                         );
                     }
@@ -98,6 +102,52 @@ wycheproof_sign_test!(
 
 wycheproof_sign_test!(wycheproof_sign_65, 65, MLDSA65SigningKey, ml_dsa_65::sign);
 
+wycheproof_sign_test!(
+    wycheproof_sign_65_portable,
+    65,
+    MLDSA65SigningKey,
+    ml_dsa_65::portable::sign
+);
+
+#[cfg(feature = "simd128")]
+wycheproof_sign_test!(
+    wycheproof_sign_65_simd128,
+    65,
+    MLDSA65SigningKey,
+    ml_dsa_65::neon::sign
+);
+
+#[cfg(feature = "simd256")]
+wycheproof_sign_test!(
+    wycheproof_sign_65_simd256,
+    65,
+    MLDSA65SigningKey,
+    ml_dsa_65::avx2::sign
+);
+
 // 87
 
 wycheproof_sign_test!(wycheproof_sign_87, 87, MLDSA87SigningKey, ml_dsa_87::sign);
+
+wycheproof_sign_test!(
+    wycheproof_sign_87_portable,
+    87,
+    MLDSA87SigningKey,
+    ml_dsa_87::portable::sign
+);
+
+#[cfg(feature = "simd128")]
+wycheproof_sign_test!(
+    wycheproof_sign_87_simd128,
+    87,
+    MLDSA87SigningKey,
+    ml_dsa_87::neon::sign
+);
+
+#[cfg(feature = "simd256")]
+wycheproof_sign_test!(
+    wycheproof_sign_87_simd256,
+    87,
+    MLDSA87SigningKey,
+    ml_dsa_87::avx2::sign
+);
