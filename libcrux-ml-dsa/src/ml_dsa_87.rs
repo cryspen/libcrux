@@ -1,6 +1,6 @@
 use crate::{
     constants::*,
-    ml_dsa_generic::{self, multiplexing},
+    ml_dsa_generic::{self, multiplexing, PreHash},
     types::*,
     SigningError, VerificationError,
 };
@@ -101,6 +101,7 @@ macro_rules! instantiate {
             pub fn sign(
                 signing_key: &MLDSA87SigningKey,
                 message: &[u8],
+                context: &[u8],
                 randomness: [u8; SIGNING_RANDOMNESS_SIZE],
             ) -> Result<MLDSA87Signature, SigningError> {
                 p::sign::<
@@ -118,13 +119,14 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(&signing_key.0, message, randomness)
+                >(&signing_key.0, message, context, randomness)
             }
 
             /// Verify an ML-DSA-87 Signature
             pub fn verify(
                 verification_key: &MLDSA87VerificationKey,
                 message: &[u8],
+                context: &[u8],
                 signature: &MLDSA87Signature,
             ) -> Result<(), VerificationError> {
                 p::verify::<
@@ -141,7 +143,7 @@ macro_rules! instantiate {
                     COMMITMENT_HASH_SIZE,
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
-                >(&verification_key.0, message, &signature.0)
+                >(&verification_key.0, message, context, &signature.0)
             }
         }
     };
@@ -187,6 +189,7 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> ML
 pub fn sign(
     signing_key: &MLDSA87SigningKey,
     message: &[u8],
+    context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSA87Signature, SigningError> {
     multiplexing::sign::<
@@ -204,7 +207,7 @@ pub fn sign(
         GAMMA1_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
         SIGNATURE_SIZE,
-    >(&signing_key.0, message, randomness)
+    >(&signing_key.0, message, context, randomness)
 }
 
 /// Verify an ML-DSA-87 Signature
@@ -215,6 +218,7 @@ pub fn sign(
 pub fn verify(
     verification_key: &MLDSA87VerificationKey,
     message: &[u8],
+    context: &[u8],
     signature: &MLDSA87Signature,
 ) -> Result<(), VerificationError> {
     multiplexing::verify::<
@@ -231,5 +235,72 @@ pub fn verify(
         COMMITMENT_HASH_SIZE,
         ONES_IN_VERIFIER_CHALLENGE,
         MAX_ONES_IN_HINT,
-    >(&verification_key.0, message, &signature.0)
+    >(&verification_key.0, message, context, &signature.0)
+}
+
+/// Sign with HashML-DSA 87
+///
+/// Sign a digest of `message` derived using `pre_hash` with the
+/// ML-DSA `signing_key`.
+///
+/// This function returns an [`MLDSA87Signature`].
+#[cfg(not(eurydice))]
+pub fn sign_pre_hashed(
+    signing_key: &MLDSA87SigningKey,
+    message: &[u8],
+    context: &[u8],
+    pre_hash: PreHash,
+    randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+) -> Result<MLDSA87Signature, SigningError> {
+    multiplexing::sign_pre_hashed::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        ETA,
+        ERROR_RING_ELEMENT_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA2,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        SIGNING_KEY_SIZE,
+        SIGNATURE_SIZE,
+    >(&signing_key.0, message, context, pre_hash, randomness)
+}
+
+/// Verify a HashML-DSA-87 Signature
+///
+/// Returns `Ok` when the `signature` is valid for the `message` and
+/// `verification_key`, and a [`VerificationError`] otherwise.
+#[cfg(not(eurydice))]
+pub fn verify_pre_hashed(
+    verification_key: &MLDSA87VerificationKey,
+    message: &[u8],
+    context: &[u8],
+    signature: &MLDSA87Signature,
+    pre_hash: PreHash,
+) -> Result<(), VerificationError> {
+    multiplexing::verify_pre_hashed::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        SIGNATURE_SIZE,
+        VERIFICATION_KEY_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        GAMMA2,
+        BETA,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+    >(
+        &verification_key.0,
+        message,
+        context,
+        &signature.0,
+        pre_hash,
+    )
 }

@@ -462,7 +462,11 @@ class Dilithium:
         sk = self._pack_sk(rho, K, tr, s1, s2, t0)
         return pk, sk
 
-    def sign(self, sk_bytes, m, rnd=None):
+    def sign(self, sk_bytes, m, ctx=b"", rnd=None):
+        m_prime = b'\x00' + len(ctx).to_bytes(1, "little") + ctx + m
+        return self.sign_internal(sk_bytes, m_prime, rnd)
+    
+    def sign_internal(self, sk_bytes, m, rnd):
         # unpack the secret key
         rho, K, tr, s1, s2, t0 = self._unpack_sk(sk_bytes)
 
@@ -525,7 +529,11 @@ class Dilithium:
 
             return self._pack_sig(c_tilde, z, h)
 
-    def verify(self, pk_bytes, m, sig_bytes):
+    def verify(self, pk_bytes, m, sig_bytes, ctx=b""):
+        m_prime = b'\x00' + len(ctx).to_bytes(1, "little") + ctx + m
+        return self.verify_internal(sk_bytes, m_prime, rnd)
+    
+    def verify_internal(self, pk_bytes, m, sig_bytes):
         rho, t1 = self._unpack_pk(pk_bytes)
         c_tilde, z, h = self._unpack_sig(sig_bytes)
 
