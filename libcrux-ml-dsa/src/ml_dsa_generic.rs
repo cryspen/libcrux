@@ -181,7 +181,7 @@ pub(crate) fn sign<
     // 2⁻¹²⁸[1].
     //
     // [1]: https://github.com/cloudflare/circl/blob/main/sign/dilithium/mode2/internal/dilithium.go#L341
-    while attempt < REJECTION_SAMPLE_BOUND {
+    while attempt < REJECTION_SAMPLE_BOUND_SIGN {
         attempt += 1;
 
         let mask =
@@ -260,7 +260,7 @@ pub(crate) fn sign<
 
                     if ones_in_hint > MAX_ONES_IN_HINT {
                     } else {
-                        attempt = REJECTION_SAMPLE_BOUND; // exit loop now
+                        attempt = REJECTION_SAMPLE_BOUND_SIGN; // exit loop now
                         commitment_hash = Some(commitment_hash_candidate);
                         signer_response = Some(signer_response_candidate);
                         hint = Some(hint_candidate);
