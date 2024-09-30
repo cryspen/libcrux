@@ -266,6 +266,7 @@ pub(crate) mod portable {
 }
 
 /// A SIMD256 implementation of [`shake128::XofX4`] and [`shake256::Xof`] for AVX2.
+#[cfg(feature = "simd256")]
 pub(crate) mod simd256 {
 
     use libcrux_sha3::{
@@ -437,6 +438,7 @@ pub(crate) mod simd256 {
 }
 
 /// A SIMD256 implementation of [`shake128::Xof`] and [`shake256::Xof`] for Neon.
+#[cfg(feature = "simd128")]
 pub(crate) mod neon {
 
     use libcrux_sha3::neon::x2::{self, incremental::KeccakState};

@@ -181,7 +181,7 @@ pub(crate) fn sign<
     // 2⁻¹²⁸[1].
     //
     // [1]: https://github.com/cloudflare/circl/blob/main/sign/dilithium/mode2/internal/dilithium.go#L341
-    while attempt < REJECTION_SAMPLE_BOUND {
+    while attempt < REJECTION_SAMPLE_BOUND_SIGN {
         attempt += 1;
 
         let mask =
@@ -215,11 +215,8 @@ pub(crate) fn sign<
             SIMDUnit,
             Shake256,
             ONES_IN_VERIFIER_CHALLENGE,
-        >(
-            commitment_hash_candidate[0..VERIFIER_CHALLENGE_SEED_SIZE]
-                .try_into()
-                .unwrap(),
-        ));
+            COMMITMENT_HASH_SIZE,
+        >(commitment_hash_candidate));
 
         let challenge_times_s1 = vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(
             &s1_as_ntt,
@@ -263,7 +260,7 @@ pub(crate) fn sign<
 
                     if ones_in_hint > MAX_ONES_IN_HINT {
                     } else {
-                        attempt = REJECTION_SAMPLE_BOUND; // exit loop now
+                        attempt = REJECTION_SAMPLE_BOUND_SIGN; // exit loop now
                         commitment_hash = Some(commitment_hash_candidate);
                         signer_response = Some(signer_response_candidate);
                         hint = Some(hint_candidate);
@@ -361,11 +358,8 @@ pub(crate) fn verify<
             SIMDUnit,
             Shake256,
             ONES_IN_VERIFIER_CHALLENGE,
-        >(
-            signature.commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
-                .try_into()
-                .unwrap(),
-        ));
+            COMMITMENT_HASH_SIZE,
+        >(signature.commitment_hash));
 
         let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
             &A_as_ntt,
