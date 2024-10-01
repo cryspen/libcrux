@@ -158,7 +158,13 @@ pub(crate) fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector:
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
     $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
+    v $domain_separator < 2 * v $K /\\
     range (v $domain_separator + v $K) u8_inttype"))]
+#[hax_lib::ensures(|(err1,ds)|
+    fstar!("v $ds == v $domain_separator + v $K /\\
+                Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $err1 ==
+                Spec.MLKEM.sample_vector_cbd1 #$K (Seq.slice $prf_input 0 32) (sz (v $domain_separator))")
+)]
 fn sample_ring_element_cbd<
     const K: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
@@ -187,7 +193,7 @@ fn sample_ring_element_cbd<
 /// Sample a vector of ring elements from a centered binomial distribution and
 /// convert them into their NTT representations.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $ETA_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
     $ETA == Spec.MLKEM.v_ETA1 $K /\\
@@ -299,7 +305,10 @@ fn sample_vector_cbd_then_ntt_out<
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
     length $key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE"))]
-#[hax_lib::ensures(|_| fstar!("
+#[hax_lib::ensures(|_| fstar!("let (((t_as_ntt,seed_for_A), secret_as_ntt), valid) = Spec.MLKEM.ind_cpa_generate_keypair_unpacked $K $key_generation_seed in 
+    (valid ==> ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${public_key}.f_t_as_ntt) == t_as_ntt) /\\
+        (${public_key}.f_seed_for_A == seed_for_A) /\\
+        ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${private_key}.f_secret_as_ntt) == secret_as_ntt)) /\\
     (forall (i:nat). i < v $K ==>
         Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index ${private_key}_future.f_secret_as_ntt i)) /\\
     (forall (i:nat). i < v $K ==>
@@ -476,6 +485,7 @@ fn compress_then_serialize_u<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
       $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
@@ -489,6 +499,11 @@ fn compress_then_serialize_u<
       $BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
       $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
       length $randomness == Spec.MLKEM.v_SHARED_SECRET_SIZE"))]
+#[hax_lib::ensures(|result|
+    fstar!("$result == Spec.MLKEM.ind_cpa_encrypt_unpacked $K $message $randomness
+        (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${public_key}.f_t_as_ntt)
+        (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${public_key}.f_A)")
+)]
 pub(crate) fn encrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -721,11 +736,16 @@ fn deserialize_secret_key<const K: usize, Vector: Operations>(
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
     $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\\
     $V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\\
     $VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE $K"))]
+#[hax_lib::ensures(|result|
+    fstar!("$result == Spec.MLKEM.ind_cpa_decrypt_unpacked $K $ciphertext
+        (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${secret_key}.f_secret_as_ntt)")
+)]
 pub(crate) fn decrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,

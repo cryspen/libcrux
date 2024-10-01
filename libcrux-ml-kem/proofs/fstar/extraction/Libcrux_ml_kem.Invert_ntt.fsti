@@ -17,12 +17,12 @@ val inv_ntt_layer_int_vec_step_reduce
     : Prims.Pure (v_Vector & v_Vector)
       (requires
         Spec.Utils.is_i16b 1664 zeta_r /\
-        (forall i.
+        (forall (i: nat).
             i < 16 ==>
             Spec.Utils.is_intb (pow2 15 - 1)
               (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array b) i) -
                 v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i))) /\
-        (forall i.
+        (forall (i: nat).
             i < 16 ==>
             Spec.Utils.is_intb (pow2 15 - 1)
               (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i) +

@@ -18,12 +18,12 @@ val ntt_layer_int_vec_step
       (requires
         Spec.Utils.is_i16b 1664 zeta_r /\
         (let t = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe b zeta_r in
-          (forall i.
+          (forall (i: nat).
               i < 16 ==>
               Spec.Utils.is_intb (pow2 15 - 1)
                 (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i) -
                   v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))) /\
-          (forall i.
+          (forall (i: nat).
               i < 16 ==>
               Spec.Utils.is_intb (pow2 15 - 1)
                 (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i) +
@@ -131,15 +131,15 @@ val ntt_at_layer_4_plus
    let ntt_layer_7_pre (#v_Vector: Type0)
         {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
         (re_0 re_1: v_Vector) =
-    (forall i. i < 16 ==>
+    (forall (i:nat). i < 16 ==>
       Spec.Utils.is_intb (pow2 15 - 1)
       (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_1) i) * v (-1600s))) /\
     (let t = Libcrux_ml_kem.Vector.Traits.f_multiply_by_constant re_1 (-1600s) in
-    (forall i. i < 16 ==> 
+    (forall (i:nat). i < 16 ==> 
       Spec.Utils.is_intb (pow2 15 - 1) 
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_0) i) - 
           v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))) /\
-    (forall i. i < 16 ==> 
+    (forall (i:nat). i < 16 ==> 
       Spec.Utils.is_intb (pow2 15 - 1) 
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_0) i) + 
           v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))))
@@ -150,7 +150,7 @@ val ntt_at_layer_7_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires
-        forall i.
+        forall (i: nat).
           i < 8 ==>
           ntt_layer_7_pre (re.f_coefficients.[ sz i ]) (re.f_coefficients.[ sz i +! sz 8 ]))
       (fun _ -> Prims.l_True)
@@ -161,7 +161,7 @@ val ntt_binomially_sampled_ring_element
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires
-        forall i.
+        forall (i: nat).
           i < 8 ==>
           ntt_layer_7_pre (re.f_coefficients.[ sz i ]) (re.f_coefficients.[ sz i +! sz 8 ]))
       (fun _ -> Prims.l_True)

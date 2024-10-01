@@ -101,8 +101,6 @@ let sample_ring_element_cbd
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
-#push-options "--admit_smt_queries true"
-
 let sample_vector_cbd_then_ntt
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
       (#v_Vector #v_Hasher: Type0)
@@ -185,12 +183,12 @@ let sample_vector_cbd_then_ntt
           in
           re_as_ntt)
   in
-  let hax_temp_output:u8 = domain_separator in
+  let result:u8 = domain_separator in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  let hax_temp_output:u8 = result in
   re_as_ntt, hax_temp_output
   <:
   (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
-
-#pop-options
 
 let sample_vector_cbd_then_ntt_out
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
@@ -577,7 +575,11 @@ let decrypt_unpacked
       secret_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
       u_as_ntt
   in
-  Libcrux_ml_kem.Serialize.compress_then_serialize_message #v_Vector message
+  let result:t_Array u8 (sz 32) =
+    Libcrux_ml_kem.Serialize.compress_then_serialize_message #v_Vector message
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let decrypt
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
@@ -717,7 +719,9 @@ let encrypt_unpacked
         <:
         t_Slice u8)
   in
-  ciphertext
+  let result:t_Array u8 v_CIPHERTEXT_SIZE = ciphertext in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #pop-options
 

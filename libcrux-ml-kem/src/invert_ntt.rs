@@ -137,11 +137,11 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 $zeta_r /\\
-    (forall i. i < 16 ==>
+    (forall (i:nat). i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $b) i) -
         v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i))) /\\
-    (forall i. i < 16 ==>
+    (forall (i:nat). i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) +
         v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $b) i))) /\\

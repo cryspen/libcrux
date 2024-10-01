@@ -117,7 +117,13 @@ val sample_from_binomial_distribution
       (requires
         (v_ETA =. sz 2 || v_ETA =. sz 3) &&
         (Core.Slice.impl__len #u8 randomness <: usize) =. (v_ETA *! sz 64 <: usize))
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
+          forall (i: nat).
+            i < 8 ==>
+            Libcrux_ml_kem.Ntt.ntt_layer_7_pre (result.f_coefficients.[ sz i ])
+              (result.f_coefficients.[ sz i +! sz 8 ]))
 
 val sample_from_xof
       (v_K: usize)
