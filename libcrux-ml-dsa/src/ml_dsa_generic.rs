@@ -13,7 +13,7 @@ use crate::{
     },
     ntt::ntt,
     polynomial::PolynomialRingElement,
-    pre_hash::{PreHash, PreHashOID, PRE_HASH_OID_LEN},
+    pre_hash::{DomainSeparationContext, PreHash},
     sample::{sample_challenge_ring_element, sample_mask_vector},
     samplex4,
     simd::traits::Operations,
@@ -141,7 +141,6 @@ pub(crate) fn sign_pre_hashed<
     if context.len() > CONTEXT_MAX_LEN {
         return Err(SigningError::ContextTooLongError);
     }
-    let (domain_separated_context, ctx_len) = domain_separate_context(context, Some(&PH::oid()));
     let pre_hashed_message = PH::hash(message);
 
     sign_internal::<
@@ -166,7 +165,7 @@ pub(crate) fn sign_pre_hashed<
     >(
         &signing_key,
         &pre_hashed_message,
-        &domain_separated_context[..ctx_len],
+        DomainSeparationContext::new(context, Some(&PH::oid()))?,
         randomness,
     )
 }
@@ -197,10 +196,6 @@ pub(crate) fn sign<
     context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-    if context.len() > CONTEXT_MAX_LEN {
-        return Err(SigningError::ContextTooLongError);
-    }
-    let (domain_separated_context, ctx_len) = domain_separate_context(context, None);
     sign_internal::<
         SIMDUnit,
         Shake128X4,
@@ -223,7 +218,7 @@ pub(crate) fn sign<
     >(
         &signing_key,
         message,
-        &domain_separated_context[..ctx_len],
+        DomainSeparationContext::new(context, None)?,
         randomness,
     )
 }
@@ -251,7 +246,7 @@ pub(crate) fn sign_internal<
 >(
     signing_key: &[u8; SIGNING_KEY_SIZE],
     message: &[u8],
-    domain_separated_context: &[u8],
+    domain_separation_context: DomainSeparationContext,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
@@ -271,7 +266,7 @@ pub(crate) fn sign_internal<
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative(
         verification_key_hash,
-        domain_separated_context,
+        domain_separation_context,
         message,
         &mut message_representative,
     );
@@ -419,19 +414,36 @@ pub(crate) fn sign_internal<
 /// This corresponds to line 6 in algorithm 7 in FIPS 204 (line 7 in algorithm
 /// 8, resp.).
 ///
+/// Applies domain separation and length encoding to the context string,
+/// before appending the message (in the regular variant) or the
+/// pre-hash OID as well as the pre-hashed message digest.
+///
 /// In FIPS 204 M' is the concatenation of the domain separated context, any
 /// potential pre-hash OID and the message (or the message pre-hash). We do not
 /// explicitely construct the concatenation in memory since it is of statically unknown
 /// length, but feed its components directly into the incremental XOF.
+///
+/// Refer to line 10 of Algorithm 2 (and line 5 of Algorithm 3, resp.) in [FIPS
+/// 204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf#section.5)
+/// for details on the domain separation for regular ML-DSA. Line
+/// 23 of Algorithm 4 (and line 18 of Algorithm 5,resp.) describe domain separation for the HashMl-DSA
+/// variant.
 fn derive_message_representative(
     verification_key_hash: [u8; 64],
-    domain_separated_context: &[u8],
+    domain_separation_context: DomainSeparationContext,
     message: &[u8],
     message_representative: &mut [u8; 64],
 ) {
     let mut shake = Shake256Absorb::new();
     shake.absorb(&verification_key_hash);
-    shake.absorb(domain_separated_context);
+    shake.absorb(&[domain_separation_context.pre_hash_oid().is_some() as u8]);
+    shake.absorb(&[domain_separation_context.context().len() as u8]);
+    shake.absorb(domain_separation_context.context());
+
+    if let Some(pre_hash_oid) = domain_separation_context.pre_hash_oid() {
+        shake.absorb(pre_hash_oid)
+    }
+
     let mut shake = shake.absorb_final(message);
     shake.squeeze(message_representative);
 }
@@ -457,7 +469,7 @@ pub(crate) fn verify_internal<
 >(
     verification_key_serialized: &[u8; VERIFICATION_KEY_SIZE],
     message: &[u8],
-    domain_separated_context: &[u8],
+    domain_separation_context: DomainSeparationContext,
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
     let (seed_for_A, t1) =
@@ -490,7 +502,7 @@ pub(crate) fn verify_internal<
         let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
         derive_message_representative(
             verification_key_hash,
-            domain_separated_context,
+            domain_separation_context,
             message,
             &mut message_representative,
         );
@@ -560,11 +572,6 @@ pub(crate) fn verify<
     context: &[u8],
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    if context.len() > CONTEXT_MAX_LEN {
-        return Err(VerificationError::ContextTooLongError);
-    }
-    let (domain_separated_context, ctx_len) = domain_separate_context(context, None);
-
     verify_internal::<
         SIMDUnit,
         Shake128X4,
@@ -585,7 +592,7 @@ pub(crate) fn verify<
     >(
         &verification_key_serialized,
         message,
-        &domain_separated_context[..ctx_len],
+        DomainSeparationContext::new(context, None)?,
         &signature_serialized,
     )
 }
@@ -616,10 +623,6 @@ pub(crate) fn verify_pre_hashed<
     context: &[u8],
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    if context.len() > CONTEXT_MAX_LEN {
-        return Err(VerificationError::ContextTooLongError);
-    }
-    let (domain_separated_context, ctx_len) = domain_separate_context(context, Some(&PH::oid()));
     let pre_hashed_message = PH::hash(message);
 
     verify_internal::<
@@ -642,40 +645,7 @@ pub(crate) fn verify_pre_hashed<
     >(
         &verification_key_serialized,
         &pre_hashed_message,
-        &domain_separated_context[..ctx_len],
+        DomainSeparationContext::new(context, Some(&PH::oid()))?,
         &signature_serialized,
     )
-}
-
-/// Apply domain separation and length encoding to the context string.
-///
-/// Returns a buffer that contains the domain separated context
-/// string, as well as the length of the domain separated context
-/// string within the buffer.
-/// If a pre_hash option is provided the domain separated context
-/// string is extended by the pre-hash OID.
-///
-/// Refer to line 10 of Algorithm 2 (and line 5 of Algorithm 3, resp.) in [FIPS
-/// 204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf#section.5)
-/// for details on the domain separation for regular ML-DSA. Line
-/// 23 of Algorithm 4 (and line 18 of Algorithm 5,resp.) describe domain separation for the HashMl-DSA
-/// variant.
-fn domain_separate_context(
-    context: &[u8],
-    pre_hash_oid: Option<&PreHashOID>,
-) -> ([u8; CONTEXT_MAX_LEN + PRE_HASH_OID_LEN + 2], usize) {
-    debug_assert!(context.len() <= CONTEXT_MAX_LEN);
-    let mut domain_separated_context = [0u8; CONTEXT_MAX_LEN + PRE_HASH_OID_LEN + 2];
-    domain_separated_context[1] = context.len() as u8;
-    let mut len = context.len() + 2;
-    domain_separated_context[2..len].copy_from_slice(context);
-
-    if let Some(pre_hash_oid) = pre_hash_oid {
-        domain_separated_context[0] = 1;
-
-        domain_separated_context[len..len + PRE_HASH_OID_LEN].copy_from_slice(pre_hash_oid);
-        len += PRE_HASH_OID_LEN;
-    }
-
-    (domain_separated_context, len)
 }

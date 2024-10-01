@@ -4,7 +4,9 @@
 //! of FIPS 204, any NIST-approved hash function or XOF can be used to
 //!/perform the pre-hash of the message. This module implements the
 //! pre-hash trait for SHAKE-128, with a digest length of 256 bytes.
-use crate::hash_functions::shake128::Xof;
+use crate::{
+    constants::CONTEXT_MAX_LEN, hash_functions::shake128::Xof, SigningError, VerificationError,
+};
 
 pub(crate) const PRE_HASH_OID_LEN: usize = 11;
 pub(crate) type PreHashOID = [u8; PRE_HASH_OID_LEN];
@@ -35,5 +37,59 @@ impl PreHash<256> for SHAKE128_PH {
         crate::hash_functions::portable::Shake128::shake128(message, &mut output);
 
         output
+    }
+}
+
+/// Binds the context string to an optional pre-hash OID identifying
+/// the hash function or XOF used for pre-hashing.
+pub(crate) struct DomainSeparationContext<'a> {
+    context: &'a [u8],
+    pre_hash_oid: Option<&'a PreHashOID>,
+}
+
+pub(crate) enum DomainSeparationError {
+    ContextTooLongError,
+}
+
+impl<'a> DomainSeparationContext<'a> {
+    /// `context` must be at most 255 bytes long.
+    pub(crate) fn new(
+        context: &'a [u8],
+        pre_hash_oid: Option<&'a PreHashOID>,
+    ) -> Result<Self, DomainSeparationError> {
+        if context.len() > CONTEXT_MAX_LEN {
+            Err(DomainSeparationError::ContextTooLongError)
+        } else {
+            Ok(Self {
+                context,
+                pre_hash_oid,
+            })
+        }
+    }
+
+    /// Returns the context, guaranteed to be at most 255 bytes long.
+    pub fn context(&self) -> &[u8] {
+        self.context
+    }
+
+    /// Returns the pre-hash OID, if any.
+    pub fn pre_hash_oid(&self) -> Option<&PreHashOID> {
+        self.pre_hash_oid
+    }
+}
+
+impl From<DomainSeparationError> for SigningError {
+    fn from(e: DomainSeparationError) -> SigningError {
+        match e {
+            DomainSeparationError::ContextTooLongError => SigningError::ContextTooLongError,
+        }
+    }
+}
+
+impl From<DomainSeparationError> for VerificationError {
+    fn from(e: DomainSeparationError) -> VerificationError {
+        match e {
+            DomainSeparationError::ContextTooLongError => VerificationError::ContextTooLongError,
+        }
     }
 }
