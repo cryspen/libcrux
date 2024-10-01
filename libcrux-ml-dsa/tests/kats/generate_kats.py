@@ -43,6 +43,9 @@ def generate_nistkats(algorithm):
                 ).hex(),
             }
         )
+        with open("nistkats-{}{}.json".format(algorithm.k, algorithm.l), "w") as f:
+            json.dump(kats_formatted, f, ensure_ascii=False, indent=4)
+
 
     for i in range(100):
         seed = rng.random_bytes(48)

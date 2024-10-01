@@ -52,7 +52,10 @@ pub(crate) fn generate_key_pair<
 ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
     let mut seed_expanded = [0; 128];
-    Shake256::shake256::<128>(&randomness, &mut seed_expanded);
+    let mut shake = Shake256Absorb::new();
+    shake.absorb(&randomness);
+    let mut shake = shake.absorb_final(&[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
+    shake.squeeze(&mut seed_expanded);
 
     let (seed_for_a, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
     let (seed_for_error_vectors, seed_for_signing) =
