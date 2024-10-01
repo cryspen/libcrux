@@ -93,6 +93,10 @@ macro_rules! instantiate {
             }
 
             /// Generate an ML-DSA-44 Signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn sign(
                 signing_key: &MLDSA44SigningKey,
                 message: &[u8],
@@ -118,6 +122,10 @@ macro_rules! instantiate {
             }
 
             /// Generate a HashML-DSA-44 Signature, with a SHAKE128 pre-hashing
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn sign_pre_hashed(
                 signing_key: &MLDSA44SigningKey,
                 message: &[u8],
@@ -143,6 +151,10 @@ macro_rules! instantiate {
             }
 
             /// Verify an ML-DSA-44 Signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn verify(
                 verification_key: &MLDSA44VerificationKey,
                 message: &[u8],
@@ -167,6 +179,10 @@ macro_rules! instantiate {
             }
 
             /// Verify a HashML-DSA-44 Signature, with a SHAKE128 pre-hashing
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn verify_pre_hashed(
                 verification_key: &MLDSA44VerificationKey,
                 message: &[u8],
@@ -228,6 +244,10 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> ML
 ///
 /// Sign a `message` with the ML-DSA `signing_key`.
 ///
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
+///
 /// This function returns an [`MLDSA44Signature`].
 #[cfg(not(eurydice))]
 pub fn sign(
@@ -255,6 +275,10 @@ pub fn sign(
 }
 
 /// Verify an ML-DSA-44 Signature
+///
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
 ///
 /// Returns `Ok` when the `signature` is valid for the `message` and
 /// `verification_key`, and a [`VerificationError`] otherwise.
@@ -287,6 +311,10 @@ pub fn verify(
 /// Sign a digest of `message` derived using `pre_hash` with the
 /// ML-DSA `signing_key`.
 ///
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
+///
 /// This function returns an [`MLDSA44Signature`].
 #[cfg(not(eurydice))]
 pub fn sign_pre_hashed(
@@ -314,6 +342,10 @@ pub fn sign_pre_hashed(
 }
 
 /// Verify a HashML-DSA-44 Signature, with a SHAKE128 pre-hashing
+///
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
 ///
 /// Returns `Ok` when the `signature` is valid for the `message` and
 /// `verification_key`, and a [`VerificationError`] otherwise.
