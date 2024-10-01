@@ -462,6 +462,13 @@ class Dilithium:
         sk = self._pack_sk(rho, K, tr, s1, s2, t0)
         return pk, sk
 
+    def sign_pre_hashed(self, sk_bytes, m, ctx=b"", rnd=None):
+        shake128_oid = b'\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x0B'
+        m_hashed = Shake128.digest(m, 256)
+        m_prime = b'\x01' + len(ctx).to_bytes(1, "little") + ctx + shake128_oid + m_hashed
+        
+        return self.sign_internal(sk_bytes, m_prime, rnd)
+    
     def sign(self, sk_bytes, m, ctx=b"", rnd=None):
         m_prime = b'\x00' + len(ctx).to_bytes(1, "little") + ctx + m
         return self.sign_internal(sk_bytes, m_prime, rnd)
@@ -529,6 +536,13 @@ class Dilithium:
 
             return self._pack_sig(c_tilde, z, h)
 
+    def verify_pre_hashed(self, pk_bytes, m, sig_bytes, ctx=b""):
+        shake128_oid = b'\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x0B'
+        m_hashed = Shake128.digest(m, 256)
+        m_prime = b'\x01' + len(ctx).to_bytes(1, "little") + ctx + shake128_oid + m_hashed
+
+        return self.verify_internal(sk_bytes, m_prime, rnd)
+    
     def verify(self, pk_bytes, m, sig_bytes, ctx=b""):
         m_prime = b'\x00' + len(ctx).to_bytes(1, "little") + ctx + m
         return self.verify_internal(sk_bytes, m_prime, rnd)
