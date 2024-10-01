@@ -8,29 +8,29 @@ use libcrux_platform;
 #[cfg(feature = "simd256")]
 use instantiations::avx2::{
     generate_key_pair as generate_key_pair_avx2, sign as sign_avx2,
-    sign_pre_hashed as sign_pre_hashed_avx2, verify as verify_avx2,
-    verify_pre_hashed as verify_pre_hashed_avx2,
+    sign_pre_hashed_shake128 as sign_pre_hashed_shake128_avx2, verify as verify_avx2,
+    verify_pre_hashed_shake128 as verify_pre_hashed_shake128_avx2,
 };
 
 #[cfg(feature = "simd128")]
 use instantiations::neon::{
     generate_key_pair as generate_key_pair_neon, sign as sign_neon,
-    sign_pre_hashed as sign_pre_hashed_neon, verify as verify_neon,
-    verify_pre_hashed as verify_pre_hashed_neon,
+    sign_pre_hashed_shake128 as sign_pre_hashed_shake128_neon, verify as verify_neon,
+    verify_pre_hashed_shake128 as verify_pre_hashed_shake128_neon,
 };
 
 #[cfg(not(feature = "simd256"))]
 use instantiations::portable::{
     generate_key_pair as generate_key_pair_avx2, sign as sign_avx2,
-    sign_pre_hashed as sign_pre_hashed_avx2, verify as verify_avx2,
-    verify_pre_hashed as verify_pre_hashed_avx2,
+    sign_pre_hashed_shake128 as sign_pre_hashed_shake128_avx2, verify as verify_avx2,
+    verify_pre_hashed_shake128 as verify_pre_hashed_shake128_avx2,
 };
 
 #[cfg(not(feature = "simd128"))]
 use instantiations::portable::{
     generate_key_pair as generate_key_pair_neon, sign as sign_neon,
-    sign_pre_hashed as sign_pre_hashed_neon, verify as verify_neon,
-    verify_pre_hashed as verify_pre_hashed_neon,
+    sign_pre_hashed_shake128 as sign_pre_hashed_shake128_neon, verify as verify_neon,
+    verify_pre_hashed_shake128 as verify_pre_hashed_shake128_neon,
 };
 
 pub(crate) fn generate_key_pair<
@@ -148,7 +148,7 @@ pub(crate) fn sign<
     }
 }
 
-pub(crate) fn sign_pre_hashed<
+pub(crate) fn sign_pre_hashed_shake128<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
@@ -170,7 +170,7 @@ pub(crate) fn sign_pre_hashed<
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     if libcrux_platform::simd256_support() {
-        sign_pre_hashed_avx2::<
+        sign_pre_hashed_shake128_avx2::<
             ROWS_IN_A,
             COLUMNS_IN_A,
             ETA,
@@ -187,7 +187,7 @@ pub(crate) fn sign_pre_hashed<
             SIGNATURE_SIZE,
         >(signing_key, message, context, randomness)
     } else if libcrux_platform::simd128_support() {
-        sign_pre_hashed_neon::<
+        sign_pre_hashed_shake128_neon::<
             ROWS_IN_A,
             COLUMNS_IN_A,
             ETA,
@@ -204,7 +204,7 @@ pub(crate) fn sign_pre_hashed<
             SIGNATURE_SIZE,
         >(signing_key, message, context, randomness)
     } else {
-        instantiations::portable::sign_pre_hashed::<
+        instantiations::portable::sign_pre_hashed_shake128::<
             ROWS_IN_A,
             COLUMNS_IN_A,
             ETA,
@@ -309,7 +309,7 @@ pub(crate) fn verify<
     }
 }
 
-pub(crate) fn verify_pre_hashed<
+pub(crate) fn verify_pre_hashed_shake128<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const SIGNATURE_SIZE: usize,
@@ -330,7 +330,7 @@ pub(crate) fn verify_pre_hashed<
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
     if libcrux_platform::simd256_support() {
-        verify_pre_hashed_avx2::<
+        verify_pre_hashed_shake128_avx2::<
             ROWS_IN_A,
             COLUMNS_IN_A,
             SIGNATURE_SIZE,
@@ -351,7 +351,7 @@ pub(crate) fn verify_pre_hashed<
             signature_serialized,
         )
     } else if libcrux_platform::simd128_support() {
-        verify_pre_hashed_neon::<
+        verify_pre_hashed_shake128_neon::<
             ROWS_IN_A,
             COLUMNS_IN_A,
             SIGNATURE_SIZE,
@@ -372,7 +372,7 @@ pub(crate) fn verify_pre_hashed<
             signature_serialized,
         )
     } else {
-        instantiations::portable::verify_pre_hashed::<
+        instantiations::portable::verify_pre_hashed_shake128::<
             ROWS_IN_A,
             COLUMNS_IN_A,
             SIGNATURE_SIZE,

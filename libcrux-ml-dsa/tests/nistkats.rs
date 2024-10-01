@@ -125,8 +125,8 @@ impl_nist_known_answer_tests!(
     libcrux_ml_dsa::ml_dsa_44::generate_key_pair,
     libcrux_ml_dsa::ml_dsa_44::sign,
     libcrux_ml_dsa::ml_dsa_44::verify,
-    libcrux_ml_dsa::ml_dsa_44::sign_pre_hashed,
-    libcrux_ml_dsa::ml_dsa_44::verify_pre_hashed
+    libcrux_ml_dsa::ml_dsa_44::sign_pre_hashed_shake128,
+    libcrux_ml_dsa::ml_dsa_44::verify_pre_hashed_shake128
 );
 
 impl_nist_known_answer_tests!(
@@ -136,8 +136,8 @@ impl_nist_known_answer_tests!(
     libcrux_ml_dsa::ml_dsa_44::portable::generate_key_pair,
     libcrux_ml_dsa::ml_dsa_44::portable::sign,
     libcrux_ml_dsa::ml_dsa_44::portable::verify,
-    libcrux_ml_dsa::ml_dsa_44::sign_pre_hashed,
-    libcrux_ml_dsa::ml_dsa_44::verify_pre_hashed
+    libcrux_ml_dsa::ml_dsa_44::sign_pre_hashed_shake128,
+    libcrux_ml_dsa::ml_dsa_44::verify_pre_hashed_shake128
 );
 
 #[cfg(feature = "simd128")]
@@ -148,8 +148,8 @@ impl_nist_known_answer_tests!(
     libcrux_ml_dsa::ml_dsa_44::neon::generate_key_pair,
     libcrux_ml_dsa::ml_dsa_44::neon::sign,
     libcrux_ml_dsa::ml_dsa_44::neon::verify,
-    libcrux_ml_dsa::ml_dsa_44::sign_pre_hashed,
-    libcrux_ml_dsa::ml_dsa_44::verify_pre_hashed
+    libcrux_ml_dsa::ml_dsa_44::sign_pre_hashed_shake128,
+    libcrux_ml_dsa::ml_dsa_44::verify_pre_hashed_shake128
 );
 
 #[cfg(feature = "simd256")]
@@ -160,8 +160,8 @@ impl_nist_known_answer_tests!(
     libcrux_ml_dsa::ml_dsa_44::avx2::generate_key_pair,
     libcrux_ml_dsa::ml_dsa_44::avx2::sign,
     libcrux_ml_dsa::ml_dsa_44::avx2::verify,
-    libcrux_ml_dsa::ml_dsa_44::sign_pre_hashed,
-    libcrux_ml_dsa::ml_dsa_44::verify_pre_hashed
+    libcrux_ml_dsa::ml_dsa_44::sign_pre_hashed_shake128,
+    libcrux_ml_dsa::ml_dsa_44::verify_pre_hashed_shake128
 );
 
 // 65
@@ -173,8 +173,8 @@ impl_nist_known_answer_tests!(
     libcrux_ml_dsa::ml_dsa_65::generate_key_pair,
     libcrux_ml_dsa::ml_dsa_65::sign,
     libcrux_ml_dsa::ml_dsa_65::verify,
-    libcrux_ml_dsa::ml_dsa_65::sign_pre_hashed,
-    libcrux_ml_dsa::ml_dsa_65::verify_pre_hashed
+    libcrux_ml_dsa::ml_dsa_65::sign_pre_hashed_shake128,
+    libcrux_ml_dsa::ml_dsa_65::verify_pre_hashed_shake128
 );
 
 // 87
@@ -186,6 +186,6 @@ impl_nist_known_answer_tests!(
     libcrux_ml_dsa::ml_dsa_87::generate_key_pair,
     libcrux_ml_dsa::ml_dsa_87::sign,
     libcrux_ml_dsa::ml_dsa_87::verify,
-    libcrux_ml_dsa::ml_dsa_87::sign_pre_hashed,
-    libcrux_ml_dsa::ml_dsa_87::verify_pre_hashed
+    libcrux_ml_dsa::ml_dsa_87::sign_pre_hashed_shake128,
+    libcrux_ml_dsa::ml_dsa_87::verify_pre_hashed_shake128
 );

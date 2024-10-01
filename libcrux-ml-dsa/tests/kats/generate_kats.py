@@ -53,7 +53,7 @@ def generate_nistkats(algorithm):
 
         msg_len = 33 * (i + 1)
         msg = rng.random_bytes(msg_len)
-        sig_pre_hashed = algorithm.sign_pre_hashed(sk, msg)
+        sig_pre_hashed = algorithm.sign_pre_hashed_shake128(sk, msg)
 
         pre_hashed_kats_formatted.append(
             {

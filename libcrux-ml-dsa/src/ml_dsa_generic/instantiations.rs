@@ -78,7 +78,7 @@ macro_rules! instantiate {
             }
 
             /// Sign (pre-hashed).
-            pub(crate) fn sign_pre_hashed<
+            pub(crate) fn sign_pre_hashed_shake128<
                 const ROWS_IN_A: usize,
                 const COLUMNS_IN_A: usize,
                 const ETA: usize,
@@ -165,7 +165,7 @@ macro_rules! instantiate {
             }
 
             /// Verify (pre-hashed with SHAKE-128).
-            pub(crate) fn verify_pre_hashed<
+            pub(crate) fn verify_pre_hashed_shake128<
                 const ROWS_IN_A: usize,
                 const COLUMNS_IN_A: usize,
                 const SIGNATURE_SIZE: usize,

@@ -126,13 +126,13 @@ macro_rules! instantiate {
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn sign_pre_hashed(
+            pub fn sign_pre_hashed_shake128(
                 signing_key: &MLDSA44SigningKey,
                 message: &[u8],
                 context: &[u8],
                 randomness: [u8; SIGNING_RANDOMNESS_SIZE],
             ) -> Result<MLDSA44Signature, SigningError> {
-                p::sign_pre_hashed::<
+                p::sign_pre_hashed_shake128::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
                     ETA,
@@ -183,13 +183,13 @@ macro_rules! instantiate {
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn verify_pre_hashed(
+            pub fn verify_pre_hashed_shake128(
                 verification_key: &MLDSA44VerificationKey,
                 message: &[u8],
                 context: &[u8],
                 signature: &MLDSA44Signature,
             ) -> Result<(), VerificationError> {
-                p::verify_pre_hashed::<
+                p::verify_pre_hashed_shake128::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
                     SIGNATURE_SIZE,
@@ -317,13 +317,13 @@ pub fn verify(
 ///
 /// This function returns an [`MLDSA44Signature`].
 #[cfg(not(eurydice))]
-pub fn sign_pre_hashed(
+pub fn sign_pre_hashed_shake128(
     signing_key: &MLDSA44SigningKey,
     message: &[u8],
     context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSA44Signature, SigningError> {
-    multiplexing::sign_pre_hashed::<
+    multiplexing::sign_pre_hashed_shake128::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -350,13 +350,13 @@ pub fn sign_pre_hashed(
 /// Returns `Ok` when the `signature` is valid for the `message` and
 /// `verification_key`, and a [`VerificationError`] otherwise.
 #[cfg(not(eurydice))]
-pub fn verify_pre_hashed(
+pub fn verify_pre_hashed_shake128(
     verification_key: &MLDSA44VerificationKey,
     message: &[u8],
     context: &[u8],
     signature: &MLDSA44Signature,
 ) -> Result<(), VerificationError> {
-    multiplexing::verify_pre_hashed::<
+    multiplexing::verify_pre_hashed_shake128::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
