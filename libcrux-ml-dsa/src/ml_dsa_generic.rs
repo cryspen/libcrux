@@ -142,7 +142,7 @@ pub(crate) fn sign_pre_hashed<
         Err(SigningError::ContextTooLongError)
     } else {
         let (domain_separated_context, ctx_len) =
-            domain_separate_context(context, Some(&PH::to_oid()));
+            domain_separate_context(context, Some(&PH::oid()));
         let pre_hashed_message = PH::hash(message);
 
         sign_internal::<
@@ -608,7 +608,7 @@ pub(crate) fn verify_pre_hashed<
         Err(VerificationError::ContextTooLongError)
     } else {
         let (domain_separated_context, ctx_len) =
-            domain_separate_context(context, Some(&PH::to_oid()));
+            domain_separate_context(context, Some(&PH::oid()));
         let pre_hashed_message = PH::hash(message);
 
         verify_internal::<
