@@ -638,6 +638,12 @@ pub(crate) fn verify_pre_hashed<
 /// string within the buffer.
 /// If a pre_hash option is provided the domain separated context
 /// string is extended by the pre-hash OID.
+///
+/// Refer to line 10 of Algorithm 2 (and line 5 of Algorithm 3, resp.) in [FIPS
+/// 204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf#section.5)
+/// for details on the domain separation for regular ML-DSA. Line
+/// 23 of Algorithm 4 (and line 18 of Algorithm 5,resp.) describe domain separation for the HashMl-DSA
+/// variant.
 fn domain_separate_context(
     context: &[u8],
     pre_hash_oid: Option<&PreHashOID>,
