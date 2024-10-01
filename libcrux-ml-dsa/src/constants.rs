@@ -27,4 +27,6 @@ pub(crate) const MESSAGE_REPRESENTATIVE_SIZE: usize = 64;
 pub(crate) const MASK_SEED_SIZE: usize = 64;
 
 pub(crate) const REJECTION_SAMPLE_BOUND_SIGN: usize = 814;
+
+/// The length of `context` is serialized to a single `u8`.
 pub(crate) const CONTEXT_MAX_LEN: usize = 255;

@@ -143,38 +143,36 @@ pub(crate) fn sign_pre_hashed<
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     if context.len() > CONTEXT_MAX_LEN {
-        Err(SigningError::ContextTooLongError)
-    } else {
-        let (domain_separated_context, ctx_len) =
-            domain_separate_context(context, Some(&PH::to_oid()));
-        let pre_hashed_message = PH::hash(message);
-
-        sign_internal::<
-            SIMDUnit,
-            Shake128X4,
-            Shake256,
-            Shake256X4,
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-            ETA,
-            ERROR_RING_ELEMENT_SIZE,
-            GAMMA1_EXPONENT,
-            GAMMA2,
-            COMMITMENT_RING_ELEMENT_SIZE,
-            COMMITMENT_VECTOR_SIZE,
-            COMMITMENT_HASH_SIZE,
-            ONES_IN_VERIFIER_CHALLENGE,
-            MAX_ONES_IN_HINT,
-            GAMMA1_RING_ELEMENT_SIZE,
-            SIGNING_KEY_SIZE,
-            SIGNATURE_SIZE,
-        >(
-            &signing_key,
-            &pre_hashed_message,
-            &domain_separated_context[..ctx_len],
-            randomness,
-        )
+        return Err(SigningError::ContextTooLongError);
     }
+    let (domain_separated_context, ctx_len) = domain_separate_context(context, Some(&PH::oid()));
+    let pre_hashed_message = PH::hash(message);
+
+    sign_internal::<
+        SIMDUnit,
+        Shake128X4,
+        Shake256,
+        Shake256X4,
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        ETA,
+        ERROR_RING_ELEMENT_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA2,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        SIGNING_KEY_SIZE,
+        SIGNATURE_SIZE,
+    >(
+        &signing_key,
+        &pre_hashed_message,
+        &domain_separated_context[..ctx_len],
+        randomness,
+    )
 }
 
 #[allow(non_snake_case)]
@@ -204,35 +202,34 @@ pub(crate) fn sign<
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     if context.len() > CONTEXT_MAX_LEN {
-        Err(SigningError::ContextTooLongError)
-    } else {
-        let (domain_separated_context, ctx_len) = domain_separate_context(context, None);
-        sign_internal::<
-            SIMDUnit,
-            Shake128X4,
-            Shake256,
-            Shake256X4,
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-            ETA,
-            ERROR_RING_ELEMENT_SIZE,
-            GAMMA1_EXPONENT,
-            GAMMA2,
-            COMMITMENT_RING_ELEMENT_SIZE,
-            COMMITMENT_VECTOR_SIZE,
-            COMMITMENT_HASH_SIZE,
-            ONES_IN_VERIFIER_CHALLENGE,
-            MAX_ONES_IN_HINT,
-            GAMMA1_RING_ELEMENT_SIZE,
-            SIGNING_KEY_SIZE,
-            SIGNATURE_SIZE,
-        >(
-            &signing_key,
-            message,
-            &domain_separated_context[..ctx_len],
-            randomness,
-        )
+        return Err(SigningError::ContextTooLongError);
     }
+    let (domain_separated_context, ctx_len) = domain_separate_context(context, None);
+    sign_internal::<
+        SIMDUnit,
+        Shake128X4,
+        Shake256,
+        Shake256X4,
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        ETA,
+        ERROR_RING_ELEMENT_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA2,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        SIGNING_KEY_SIZE,
+        SIGNATURE_SIZE,
+    >(
+        &signing_key,
+        message,
+        &domain_separated_context[..ctx_len],
+        randomness,
+    )
 }
 
 #[allow(non_snake_case)]
@@ -276,14 +273,12 @@ pub(crate) fn sign_internal<
     );
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
-    {
-        let mut shake = Shake256Absorb::new();
-        shake.absorb(&verification_key_hash);
-        shake.absorb(domain_separated_context);
-        let mut shake = shake.absorb_final(message);
-
-        shake.squeeze(&mut message_representative);
-    }
+    derive_message_representative(
+        verification_key_hash,
+        domain_separated_context,
+        message,
+        &mut message_representative,
+    );
 
     let mut mask_seed = [0; MASK_SEED_SIZE];
     {
@@ -425,6 +420,26 @@ pub(crate) fn sign_internal<
     Ok(MLDSASignature(signature))
 }
 
+/// This corresponds to line 6 in algorithm 7 in FIPS 204 (line 7 in algorithm
+/// 8, resp.).
+///
+/// In FIPS 204 M' is the concatenation of the domain separated context, any
+/// potential pre-hash OID and the message (or the message pre-hash). We do not
+/// explicitely construct the concatenation in memory since it is of statically unknown
+/// length, but feed its components directly into the incremental XOF.
+fn derive_message_representative(
+    verification_key_hash: [u8; 64],
+    domain_separated_context: &[u8],
+    message: &[u8],
+    message_representative: &mut [u8; 64],
+) {
+    let mut shake = Shake256Absorb::new();
+    shake.absorb(&verification_key_hash);
+    shake.absorb(domain_separated_context);
+    let mut shake = shake.absorb_final(message);
+    shake.squeeze(message_representative);
+}
+
 #[allow(non_snake_case)]
 pub(crate) fn verify_internal<
     SIMDUnit: Operations,
@@ -477,14 +492,12 @@ pub(crate) fn verify_internal<
             &mut verification_key_hash,
         );
         let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
-        {
-            let mut shake = Shake256Absorb::new();
-            shake.absorb(&verification_key_hash);
-            shake.absorb(domain_separated_context);
-            let mut shake = shake.absorb_final(&message);
-
-            shake.squeeze(&mut message_representative);
-        };
+        derive_message_representative(
+            verification_key_hash,
+            domain_separated_context,
+            message,
+            &mut message_representative,
+        );
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
             SIMDUnit,
@@ -552,34 +565,33 @@ pub(crate) fn verify<
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
     if context.len() > CONTEXT_MAX_LEN {
-        Err(VerificationError::ContextTooLongError)
-    } else {
-        let (domain_separated_context, ctx_len) = domain_separate_context(context, None);
-
-        verify_internal::<
-            SIMDUnit,
-            Shake128X4,
-            Shake256,
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-            SIGNATURE_SIZE,
-            VERIFICATION_KEY_SIZE,
-            GAMMA1_EXPONENT,
-            GAMMA1_RING_ELEMENT_SIZE,
-            GAMMA2,
-            BETA,
-            COMMITMENT_RING_ELEMENT_SIZE,
-            COMMITMENT_VECTOR_SIZE,
-            COMMITMENT_HASH_SIZE,
-            ONES_IN_VERIFIER_CHALLENGE,
-            MAX_ONES_IN_HINT,
-        >(
-            &verification_key_serialized,
-            message,
-            &domain_separated_context[..ctx_len],
-            &signature_serialized,
-        )
+        return Err(VerificationError::ContextTooLongError);
     }
+    let (domain_separated_context, ctx_len) = domain_separate_context(context, None);
+
+    verify_internal::<
+        SIMDUnit,
+        Shake128X4,
+        Shake256,
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        SIGNATURE_SIZE,
+        VERIFICATION_KEY_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        GAMMA2,
+        BETA,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+    >(
+        &verification_key_serialized,
+        message,
+        &domain_separated_context[..ctx_len],
+        &signature_serialized,
+    )
 }
 
 #[allow(non_snake_case)]
@@ -609,36 +621,34 @@ pub(crate) fn verify_pre_hashed<
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
     if context.len() > CONTEXT_MAX_LEN {
-        Err(VerificationError::ContextTooLongError)
-    } else {
-        let (domain_separated_context, ctx_len) =
-            domain_separate_context(context, Some(&PH::to_oid()));
-        let pre_hashed_message = PH::hash(message);
-
-        verify_internal::<
-            SIMDUnit,
-            Shake128X4,
-            Shake256,
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-            SIGNATURE_SIZE,
-            VERIFICATION_KEY_SIZE,
-            GAMMA1_EXPONENT,
-            GAMMA1_RING_ELEMENT_SIZE,
-            GAMMA2,
-            BETA,
-            COMMITMENT_RING_ELEMENT_SIZE,
-            COMMITMENT_VECTOR_SIZE,
-            COMMITMENT_HASH_SIZE,
-            ONES_IN_VERIFIER_CHALLENGE,
-            MAX_ONES_IN_HINT,
-        >(
-            &verification_key_serialized,
-            &pre_hashed_message,
-            &domain_separated_context[..ctx_len],
-            &signature_serialized,
-        )
+        return Err(VerificationError::ContextTooLongError);
     }
+    let (domain_separated_context, ctx_len) = domain_separate_context(context, Some(&PH::oid()));
+    let pre_hashed_message = PH::hash(message);
+
+    verify_internal::<
+        SIMDUnit,
+        Shake128X4,
+        Shake256,
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        SIGNATURE_SIZE,
+        VERIFICATION_KEY_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        GAMMA2,
+        BETA,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+    >(
+        &verification_key_serialized,
+        &pre_hashed_message,
+        &domain_separated_context[..ctx_len],
+        &signature_serialized,
+    )
 }
 
 /// Apply domain separation and length encoding to the context string.
@@ -648,6 +658,12 @@ pub(crate) fn verify_pre_hashed<
 /// string within the buffer.
 /// If a pre_hash option is provided the domain separated context
 /// string is extended by the pre-hash OID.
+///
+/// Refer to line 10 of Algorithm 2 (and line 5 of Algorithm 3, resp.) in [FIPS
+/// 204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf#section.5)
+/// for details on the domain separation for regular ML-DSA. Line
+/// 23 of Algorithm 4 (and line 18 of Algorithm 5,resp.) describe domain separation for the HashMl-DSA
+/// variant.
 fn domain_separate_context(
     context: &[u8],
     pre_hash_oid: Option<&PreHashOID>,

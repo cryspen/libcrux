@@ -462,7 +462,7 @@ class Dilithium:
         sk = self._pack_sk(rho, K, tr, s1, s2, t0)
         return pk, sk
 
-    def sign_pre_hashed(self, sk_bytes, m, ctx=b"", rnd=None):
+    def sign_pre_hashed_shake128(self, sk_bytes, m, ctx=b"", rnd=None):
         shake128_oid = b'\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x0B'
         m_hashed = Shake128.digest(m, 256)
         m_prime = b'\x01' + len(ctx).to_bytes(1, "little") + ctx + shake128_oid + m_hashed
