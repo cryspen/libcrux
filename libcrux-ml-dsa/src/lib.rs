@@ -9,12 +9,12 @@ mod matrix;
 mod ml_dsa_generic;
 mod ntt;
 mod polynomial;
+mod pre_hash;
 mod sample;
 mod samplex4;
 mod simd;
 mod types;
 mod utils;
-
 // Public interface
 
 pub use {
