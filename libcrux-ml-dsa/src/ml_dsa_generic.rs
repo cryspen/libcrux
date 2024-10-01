@@ -269,14 +269,12 @@ pub(crate) fn sign_internal<
     );
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
-    {
-        let mut shake = Shake256Absorb::new();
-        shake.absorb(&verification_key_hash);
-        shake.absorb(domain_separated_context);
-        let mut shake = shake.absorb_final(message);
-
-        shake.squeeze(&mut message_representative);
-    }
+    derive_message_representative(
+        verification_key_hash,
+        domain_separated_context,
+        message,
+        &mut message_representative,
+    );
 
     let mut mask_seed = [0; MASK_SEED_SIZE];
     {
@@ -418,6 +416,26 @@ pub(crate) fn sign_internal<
     Ok(MLDSASignature(signature))
 }
 
+/// This corresponds to line 6 in algorithm 7 in FIPS 204 (line 7 in algorithm
+/// 8, resp.).
+///
+/// In FIPS 204 M' is the concatenation of the domain separated context, any
+/// potential pre-hash OID and the message (or the message pre-hash). We do not
+/// explicitely construct the concatenation in memory since it is of statically unknown
+/// length, but feed its components directly into the incremental XOF.
+fn derive_message_representative(
+    verification_key_hash: [u8; 64],
+    domain_separated_context: &[u8],
+    message: &[u8],
+    message_representative: &mut [u8; 64],
+) {
+    let mut shake = Shake256Absorb::new();
+    shake.absorb(&verification_key_hash);
+    shake.absorb(domain_separated_context);
+    let mut shake = shake.absorb_final(message);
+    shake.squeeze(message_representative);
+}
+
 #[allow(non_snake_case)]
 pub(crate) fn verify_internal<
     SIMDUnit: Operations,
@@ -470,14 +488,12 @@ pub(crate) fn verify_internal<
             &mut verification_key_hash,
         );
         let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
-        {
-            let mut shake = Shake256Absorb::new();
-            shake.absorb(&verification_key_hash);
-            shake.absorb(domain_separated_context);
-            let mut shake = shake.absorb_final(&message);
-
-            shake.squeeze(&mut message_representative);
-        };
+        derive_message_representative(
+            verification_key_hash,
+            domain_separated_context,
+            message,
+            &mut message_representative,
+        );
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
             SIMDUnit,
