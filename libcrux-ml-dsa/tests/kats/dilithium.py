@@ -435,7 +435,7 @@ class Dilithium:
     def keygen(self):
         # Random seed (with domain separation)
         zeta = self.random_bytes(32)
-        domain_separated_zeta = self.k.to_bytes(1, "little") + self.l.to_bytes(1, "little") + zeta
+        domain_separated_zeta = zeta + self.k.to_bytes(1, "little") + self.l.to_bytes(1, "little")
         self.keygen_seed = zeta
         # Expand with an XOF (SHAKE256)
         seed_bytes = self._h(domain_separated_zeta, 128)
