@@ -433,12 +433,12 @@ class Dilithium:
         return c_tilde, z, h
 
     def keygen(self):
-        # Random seed
+        # Random seed (with domain separation)
         zeta = self.random_bytes(32)
+        domain_separated_zeta = self.k.to_bytes(1, "little") + self.l.to_bytes(1, "little") + zeta
         self.keygen_seed = zeta
-
         # Expand with an XOF (SHAKE256)
-        seed_bytes = self._h(zeta, 128)
+        seed_bytes = self._h(domain_separated_zeta, 128)
 
         # Split bytes into suitable chunks
         rho, rho_prime, K = seed_bytes[:32], seed_bytes[32:96], seed_bytes[96:]
@@ -466,13 +466,13 @@ class Dilithium:
         shake128_oid = b'\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x0B'
         m_hashed = Shake128.digest(m, 256)
         m_prime = b'\x01' + len(ctx).to_bytes(1, "little") + ctx + shake128_oid + m_hashed
-        
+
         return self.sign_internal(sk_bytes, m_prime, rnd)
-    
+
     def sign(self, sk_bytes, m, ctx=b"", rnd=None):
         m_prime = b'\x00' + len(ctx).to_bytes(1, "little") + ctx + m
         return self.sign_internal(sk_bytes, m_prime, rnd)
-    
+
     def sign_internal(self, sk_bytes, m, rnd):
         # unpack the secret key
         rho, K, tr, s1, s2, t0 = self._unpack_sk(sk_bytes)
@@ -542,11 +542,11 @@ class Dilithium:
         m_prime = b'\x01' + len(ctx).to_bytes(1, "little") + ctx + shake128_oid + m_hashed
 
         return self.verify_internal(sk_bytes, m_prime, rnd)
-    
+
     def verify(self, pk_bytes, m, sig_bytes, ctx=b""):
         m_prime = b'\x00' + len(ctx).to_bytes(1, "little") + ctx + m
         return self.verify_internal(sk_bytes, m_prime, rnd)
-    
+
     def verify_internal(self, pk_bytes, m, sig_bytes):
         rho, t1 = self._unpack_pk(pk_bytes)
         c_tilde, z, h = self._unpack_sig(sig_bytes)
