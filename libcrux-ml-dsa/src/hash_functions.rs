@@ -48,6 +48,10 @@ pub(crate) mod shake128 {
     pub(crate) const BLOCK_SIZE: usize = 168;
     pub(crate) const FIVE_BLOCKS_SIZE: usize = BLOCK_SIZE * 5;
 
+    pub(crate) trait Xof {
+        fn shake128<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]);
+    }
+
     /// When sampling matrix A we always want to do 4 absorb/squeeze calls in
     /// parallel.
     pub(crate) trait XofX4 {
@@ -74,7 +78,7 @@ pub(crate) mod shake128 {
 pub(crate) mod portable {
     use libcrux_sha3::portable::{
         incremental::{self, shake128_absorb_final, shake128_init},
-        shake256, KeccakState,
+        shake128, shake256, KeccakState,
     };
 
     use super::{shake128, shake256};
@@ -143,6 +147,15 @@ pub(crate) mod portable {
             incremental::shake128_squeeze_next_block(&mut self.state3, &mut out3);
 
             (out0, out1, out2, out3)
+        }
+    }
+
+    /// Portable SHAKE 128 state
+    pub(crate) struct Shake128 {}
+
+    impl shake128::Xof for Shake128 {
+        fn shake128<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
+            shake128(out, input);
         }
     }
 
