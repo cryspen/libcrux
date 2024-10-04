@@ -8,6 +8,7 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Ind_cca.Unpacked in
   let open Libcrux_ml_kem.Vector.Portable in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 let encapsulate
@@ -34,7 +35,7 @@ let serialized_public_key
      =
   let hax_temp_output, serialized:(Prims.unit & Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800)) =
     (),
-    Libcrux_ml_kem.Ind_cca.Unpacked.impl__serialized_public_key_mut (sz 2)
+    Libcrux_ml_kem.Ind_cca.Unpacked.impl_2__serialized_public_key_mut (sz 2)
       #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       (sz 768)
       (sz 800)
@@ -103,3 +104,8 @@ let init_key_pair (_: Prims.unit) =
         Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     #FStar.Tactics.Typeclasses.solve
     ()
+
+let key_pair_from_bytes (bytes: t_Slice u8) =
+  Libcrux_ml_kem.Ind_cca.Unpacked.impl_1__from_bytes (sz 2)
+    #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+    bytes

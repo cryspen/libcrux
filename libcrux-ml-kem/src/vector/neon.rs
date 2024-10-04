@@ -30,6 +30,28 @@ impl Operations for SIMD128Vector {
         to_i16_array(x)
     }
 
+    fn to_bytes(x: Self, out: &mut [u8]) {
+        libcrux_intrinsics::arm64::_vst1q_u8(
+            out,
+            libcrux_intrinsics::arm64::_vreinterpretq_u8_s16(x.high),
+        );
+        libcrux_intrinsics::arm64::_vst1q_u8(
+            &mut out[16..],
+            libcrux_intrinsics::arm64::_vreinterpretq_u8_s16(x.low),
+        );
+    }
+
+    fn from_bytes(bytes: &[u8]) -> Self {
+        Self {
+            low: libcrux_intrinsics::arm64::_vreinterpretq_s16_u8(
+                libcrux_intrinsics::arm64::_vld1q_u8(&bytes[16..]),
+            ),
+            high: libcrux_intrinsics::arm64::_vreinterpretq_s16_u8(
+                libcrux_intrinsics::arm64::_vld1q_u8(bytes),
+            ),
+        }
+    }
+
     fn add(lhs: Self, rhs: &Self) -> Self {
         add(lhs, rhs)
     }

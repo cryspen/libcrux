@@ -732,19 +732,20 @@ let encrypt
 
 let generate_keypair_unpacked
       (v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE: usize)
-      (#v_Vector #v_Hasher: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i4:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme)
       (key_generation_seed: t_Slice u8)
       (private_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
       (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
      =
   let hashed:t_Array u8 (sz 64) =
-    Libcrux_ml_kem.Variant.f_cpa_keygen_seed #Libcrux_ml_kem.Variant.t_MlKem
+    Libcrux_ml_kem.Variant.f_cpa_keygen_seed #v_Scheme
       #FStar.Tactics.Typeclasses.solve
       v_K
       #v_Hasher
@@ -865,6 +866,7 @@ let generate_keypair
       v_ETA1_RANDOMNESS_SIZE
       #v_Vector
       #v_Hasher
+      #v_Scheme
       key_generation_seed
       private_key
       public_key

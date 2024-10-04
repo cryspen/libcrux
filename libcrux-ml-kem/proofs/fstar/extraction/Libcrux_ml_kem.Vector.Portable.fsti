@@ -9,6 +9,10 @@ let _ =
   let open Libcrux_ml_kem.Vector.Portable.Vector_type in
   ()
 
+val bytes_to_i16 (bytes: t_Slice u8) : Prims.Pure i16 Prims.l_True (fun _ -> Prims.l_True)
+
+val i16_to_be_bytes (x: i16) : Prims.Pure (t_Array u8 (sz 2)) Prims.l_True (fun _ -> Prims.l_True)
+
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_ml_kem.Vector.Traits.t_Operations
 Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -42,6 +46,109 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x);
+    f_to_bytes_pre
+    =
+    (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (out: t_Slice u8) -> true);
+    f_to_bytes_post
+    =
+    (fun
+        (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (out: t_Slice u8)
+        (out1: t_Slice u8)
+        ->
+        true);
+    f_to_bytes
+    =
+    (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (out: t_Slice u8) ->
+        let p:usize = sz 0 in
+        let out, p:(t_Slice u8 & usize) =
+          Rust_primitives.Hax.Folds.fold_range (sz 0)
+            (Core.Slice.impl__len #i16
+                (x.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements <: t_Slice i16)
+              <:
+              usize)
+            (fun temp_0_ temp_1_ ->
+                let out, p:(t_Slice u8 & usize) = temp_0_ in
+                let _:usize = temp_1_ in
+                true)
+            (out, p <: (t_Slice u8 & usize))
+            (fun temp_0_ i ->
+                let out, p:(t_Slice u8 & usize) = temp_0_ in
+                let i:usize = i in
+                let out:t_Slice u8 =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+                    ({ Core.Ops.Range.f_start = p; Core.Ops.Range.f_end = p +! sz 2 <: usize }
+                      <:
+                      Core.Ops.Range.t_Range usize)
+                    (Core.Slice.impl__copy_from_slice #u8
+                        (out.[ {
+                              Core.Ops.Range.f_start = p;
+                              Core.Ops.Range.f_end = p +! sz 2 <: usize
+                            }
+                            <:
+                            Core.Ops.Range.t_Range usize ]
+                          <:
+                          t_Slice u8)
+                        (i16_to_be_bytes (x.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i
+                              ]
+                              <:
+                              i16)
+                          <:
+                          t_Slice u8)
+                      <:
+                      t_Slice u8)
+                in
+                let p:usize = p +! sz 2 in
+                out, p <: (t_Slice u8 & usize))
+        in
+        let hax_temp_output:Prims.unit = () <: Prims.unit in
+        out);
+    f_from_bytes_pre = (fun (bytes: t_Slice u8) -> true);
+    f_from_bytes_post
+    =
+    (fun (bytes: t_Slice u8) (out1: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        true);
+    f_from_bytes
+    =
+    (fun (bytes: t_Slice u8) ->
+        let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+          Libcrux_ml_kem.Vector.Portable.Vector_type.zero ()
+        in
+        let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+          Rust_primitives.Hax.Folds.fold_range (sz 0)
+            ((Core.Slice.impl__len #u8 bytes <: usize) /! sz 2 <: usize)
+            (fun out temp_1_ ->
+                let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = out in
+                let _:usize = temp_1_ in
+                true)
+            out
+            (fun out i ->
+                let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = out in
+                let i:usize = i in
+                let chunk:t_Slice u8 =
+                  bytes.[ {
+                      Core.Ops.Range.f_start = i *! sz 2 <: usize;
+                      Core.Ops.Range.f_end = (i *! sz 2 <: usize) +! sz 2 <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize ]
+                in
+                let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+                  {
+                    out with
+                    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+                    =
+                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+                        .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+                      i
+                      (bytes_to_i16 chunk <: i16)
+                  }
+                  <:
+                  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+                in
+                out)
+        in
+        out);
     f_add_pre
     =
     (fun
