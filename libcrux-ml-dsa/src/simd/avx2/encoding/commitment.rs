@@ -4,7 +4,7 @@ use libcrux_intrinsics::avx2::*;
 pub fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; 19];
 
-    match OUTPUT_SIZE {
+    match OUTPUT_SIZE as u8 {
         4 => {
             let adjacent_2_combined =
                 mm256_sllv_epi32(simd_unit, mm256_set_epi32(0, 28, 0, 28, 0, 28, 0, 28));

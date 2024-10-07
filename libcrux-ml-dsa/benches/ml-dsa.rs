@@ -42,7 +42,7 @@ pub fn comparisons_signing(c: &mut Criterion) {
 
     group.bench_function("libcrux (external random)", move |b| {
         b.iter(|| {
-            let _ = ml_dsa_65::sign(&keypair.signing_key, &message, randomness);
+            let _ = ml_dsa_65::sign(&keypair.signing_key, &message, b"", randomness);
         })
     });
 
@@ -67,11 +67,12 @@ pub fn comparisons_verification(c: &mut Criterion) {
     let keypair = ml_dsa_65::generate_key_pair(randomness);
 
     rng.fill_bytes(&mut randomness);
-    let signature = ml_dsa_65::sign(&keypair.signing_key, &message, randomness);
+    let signature = ml_dsa_65::sign(&keypair.signing_key, &message, b"", randomness).unwrap();
 
     group.bench_function("libcrux", move |b| {
         b.iter(|| {
-            let _ = ml_dsa_65::verify(&keypair.verification_key, &message, &signature).unwrap();
+            let _ =
+                ml_dsa_65::verify(&keypair.verification_key, &message, b"", &signature).unwrap();
         })
     });
 

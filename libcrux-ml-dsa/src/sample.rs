@@ -210,7 +210,7 @@ pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: us
     sampled: &mut usize,
     out: &mut [i32; 263],
 ) -> bool {
-    match ETA {
+    match ETA as u8 {
         2 => rejection_sample_less_than_eta_equals_2::<SIMDUnit>(randomness, sampled, out),
         4 => rejection_sample_less_than_eta_equals_4::<SIMDUnit>(randomness, sampled, out),
         _ => unreachable!(),
@@ -337,7 +337,7 @@ fn sample_mask_ring_element<
 >(
     seed: [u8; 66],
 ) -> PolynomialRingElement<SIMDUnit> {
-    match GAMMA1_EXPONENT {
+    match GAMMA1_EXPONENT as u8 {
         17 => {
             let mut out = [0u8; 576];
             Shake256::shake256::<576>(&seed, &mut out);
@@ -374,7 +374,7 @@ pub(crate) fn sample_mask_vector<
     let seed2 = update_seed(seed, domain_separator);
     let seed3 = update_seed(seed, domain_separator);
 
-    match GAMMA1_EXPONENT {
+    match GAMMA1_EXPONENT as u8 {
         17 => {
             let mut out0 = [0; 576];
             let mut out1 = [0; 576];
@@ -410,7 +410,7 @@ pub(crate) fn sample_mask_vector<
         seed[65] = (*domain_separator >> 8) as u8;
         *domain_separator += 1;
 
-        // TODO: We may want to do another 4.
+        // TODO: For 87 we may want to do another 4 and discard 1.
         mask[i] = sample_mask_ring_element::<SIMDUnit, Shake256, GAMMA1_EXPONENT>(seed);
     }
 
@@ -448,8 +448,9 @@ pub(crate) fn sample_challenge_ring_element<
     SIMDUnit: Operations,
     Shake256: shake256::Xof,
     const NUMBER_OF_ONES: usize,
+    const SEED_SIZE: usize,
 >(
-    seed: [u8; 32],
+    seed: [u8; SEED_SIZE],
 ) -> PolynomialRingElement<SIMDUnit> {
     let mut state = Shake256::init_absorb(&seed);
     let randomness = state.squeeze_first_block();
@@ -683,7 +684,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_challenge_ring_element::<SIMDUnit, Shake256, 39>(seed).to_i32_array(),
+            sample_challenge_ring_element::<SIMDUnit, Shake256, 39, 32>(seed).to_i32_array(),
             expected_coefficients
         );
 
@@ -707,7 +708,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_challenge_ring_element::<SIMDUnit, Shake256, 49>(seed).to_i32_array(),
+            sample_challenge_ring_element::<SIMDUnit, Shake256, 49, 32>(seed).to_i32_array(),
             expected_coefficients
         );
 
@@ -731,7 +732,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_challenge_ring_element::<SIMDUnit, Shake256, 60>(seed).to_i32_array(),
+            sample_challenge_ring_element::<SIMDUnit, Shake256, 60, 32>(seed).to_i32_array(),
             expected_coefficients
         );
     }
@@ -773,7 +774,7 @@ mod tests {
         fn test_sample_ring_element_uniform() {
             test_sample_ring_element_uniform_generic::<
                 simd::avx2::AVX2SIMDUnit,
-                crate::hash_functions::simd256::Shake128,
+                crate::hash_functions::simd256::Shake128x4,
             >();
         }
 
@@ -781,7 +782,7 @@ mod tests {
         fn test_sample_error_ring_element() {
             test_sample_error_ring_element_generic::<
                 simd::avx2::AVX2SIMDUnit,
-                hash_functions::simd256::Shake256X4,
+                hash_functions::simd256::Shake256x4,
             >();
         }
 
