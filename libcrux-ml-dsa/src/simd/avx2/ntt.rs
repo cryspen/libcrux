@@ -250,9 +250,14 @@ fn ntt_at_layer_7_and_6(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
     let inverse_of_modulus_mod_montgomery_r =
         mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
+    let zeta7 = mm256_set1_epi32(25847);
+    const STEP_BY_7: usize = 2 * COEFFICIENTS_IN_SIMD_UNIT;
+    let zeta61 = mm256_set1_epi32(-518909);
+    let zeta62 = mm256_set1_epi32(-2608894);
+    const STEP_BY_6: usize = (1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
 
     macro_rules! mul {
-        ($i:literal, $zeta:expr, $step_by:expr) => {
+        ($i:expr, $zeta:expr, $step_by:expr) => {
             // std::eprintln!("montgomery_multiply");
             let prod02 = mm256_mul_epi32(re[$i + $step_by], $zeta);
             let prod13 = mm256_mul_epi32(
@@ -275,70 +280,31 @@ fn ntt_at_layer_7_and_6(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING
         };
     }
 
+    macro_rules! layer {
+        ($start:literal, $zeta:expr, $step_by:expr) => {{
+            mul!($start, $zeta, $step_by);
+            mul!($start + 1, $zeta, $step_by);
+            mul!($start + 2, $zeta, $step_by);
+            mul!($start + 3, $zeta, $step_by);
+        }};
+    }
+
     // Layer 7
-    {
-        *zeta_i += 1;
-        let zeta = mm256_set1_epi32(ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
-        const STEP_BY: usize = 2 * COEFFICIENTS_IN_SIMD_UNIT;
-        mul!(0, zeta, STEP_BY);
-        mul!(1, zeta, STEP_BY);
-        mul!(2, zeta, STEP_BY);
-        mul!(3, zeta, STEP_BY);
-        mul!(4, zeta, STEP_BY);
-        mul!(5, zeta, STEP_BY);
-        mul!(6, zeta, STEP_BY);
-        mul!(7, zeta, STEP_BY);
-        mul!(8, zeta, STEP_BY);
-        mul!(9, zeta, STEP_BY);
-        mul!(10, zeta, STEP_BY);
-        mul!(11, zeta, STEP_BY);
-        mul!(12, zeta, STEP_BY);
-        mul!(13, zeta, STEP_BY);
-        mul!(14, zeta, STEP_BY);
-        mul!(15, zeta, STEP_BY);
+    layer!(0, zeta7, STEP_BY_7);
+    layer!(4, zeta7, STEP_BY_7);
+    layer!(8, zeta7, STEP_BY_7);
+    layer!(12, zeta7, STEP_BY_7);
 
-        // Layer 6: 1
-        {
-            let zeta = mm256_set1_epi32(-518909);
+    // Layer 6 2
+    layer!(16, zeta61, STEP_BY_6);
+    layer!(20, zeta61, STEP_BY_6);
 
-            // 1: 16
-            const STEP_BY: usize = (1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
+    // Layer 6 1
+    layer!(0, zeta62, STEP_BY_6);
+    layer!(4, zeta62, STEP_BY_6);
 
-            mul!(16, zeta, STEP_BY);
-            mul!(17, zeta, STEP_BY);
-            mul!(18, zeta, STEP_BY);
-            mul!(19, zeta, STEP_BY);
-            mul!(20, zeta, STEP_BY);
-            mul!(21, zeta, STEP_BY);
-            mul!(22, zeta, STEP_BY);
-            mul!(23, zeta, STEP_BY);
-        }
-    }
-
-    // Layer 6
-    {
-        const STEP: usize = 1 << 6;
-        const STEP_BY: usize = STEP / COEFFICIENTS_IN_SIMD_UNIT;
-
-        {
-            *zeta_i += 1;
-            let zeta = mm256_set1_epi32(ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
-
-            // 0: 0
-            mul!(0, zeta, STEP_BY);
-            mul!(1, zeta, STEP_BY);
-            mul!(2, zeta, STEP_BY);
-            mul!(3, zeta, STEP_BY);
-            mul!(4, zeta, STEP_BY);
-            mul!(5, zeta, STEP_BY);
-            mul!(6, zeta, STEP_BY);
-            mul!(7, zeta, STEP_BY);
-        }
-        {
-            *zeta_i += 1;
-            // Done in layer 7
-        }
-    }
+    // Unused here.
+    *zeta_i += 3;
 }
 
 #[inline(always)]
