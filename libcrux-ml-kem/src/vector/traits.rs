@@ -9,8 +9,6 @@ pub trait Operations: Copy + Clone {
 
     fn from_i16_array(array: &[i16]) -> Self;
     fn to_i16_array(x: Self) -> [i16; 16];
-    fn to_bytes(x: Self, out: &mut [u8]);
-    fn from_bytes(bytes: &[u8]) -> Self;
 
     // Basic arithmetic
     fn add(lhs: Self, rhs: &Self) -> Self;

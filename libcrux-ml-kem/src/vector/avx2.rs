@@ -8,7 +8,7 @@ mod ntt;
 mod sampling;
 mod serialize;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct SIMD256Vector {
     elements: Vec256,
 }
@@ -46,16 +46,6 @@ impl Operations for SIMD256Vector {
 
     fn to_i16_array(x: Self) -> [i16; 16] {
         to_i16_array(x)
-    }
-
-    fn to_bytes(x: Self, out: &mut [u8]) {
-        mm256_storeu_si256_u8(out, x.elements);
-    }
-
-    fn from_bytes(bytes: &[u8]) -> Self {
-        Self {
-            elements: mm256_loadu_si256_u8(bytes),
-        }
     }
 
     fn add(lhs: Self, rhs: &Self) -> Self {

@@ -209,9 +209,10 @@ impl UnpackedKeyPair {
         match self {
             UnpackedKeyPair::MlKem1024(_) => todo!(),
             UnpackedKeyPair::MlKem768(kp) => {
-                let mut bytes = [0u8; 32 + 3 * 16 * 32 + 32 + 3 * 3 * 16 * 32 + 3 * 16 * 32 + 32];
-                kp.to_bytes(&mut bytes);
-                write_to_file(sk_name + "_" + &pk_name, &bytes);
+                todo!()
+                // let mut bytes = [0u8; 32 + 3 * 16 * 32 + 32 + 3 * 3 * 16 * 32 + 3 * 16 * 32 + 32];
+                // kp.to_bytes(&mut bytes);
+                // write_to_file(sk_name + "_" + &pk_name, &bytes);
             }
             UnpackedKeyPair::MlKem512(_) => todo!(),
         }
@@ -526,7 +527,7 @@ fn main() {
                 if result_key.is_ok() {
                     lint_result.result = "Pass".to_owned();
                     print_status(
-                        "Error: pk validation didn't fail for invalid lint .",
+                        "This is a valid public key",
                         &pk_bytes,
                         &lint,
                     );
