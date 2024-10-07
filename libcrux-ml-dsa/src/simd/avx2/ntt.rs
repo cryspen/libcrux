@@ -1,6 +1,7 @@
 use super::arithmetic;
 use crate::simd::traits::{
-    COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT, ZETAS_TIMES_MONTGOMERY_R,
+    COEFFICIENTS_IN_SIMD_UNIT, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
+    SIMD_UNITS_IN_RING_ELEMENT, ZETAS_TIMES_MONTGOMERY_R,
 };
 
 use libcrux_intrinsics::avx2::*;
@@ -18,6 +19,7 @@ fn butterfly_2(
     zeta_b2: i32,
     zeta_b3: i32,
 ) -> (Vec256, Vec256) {
+    // std::println!("butterfly_2");
     // We shuffle the terms to group those that need to be multiplied
     // with zetas in the high QWORDS of the vectors, i.e. if the inputs are
     //   a = (a7, a6, a5, a4, a3, a2, a1, a0)
@@ -62,6 +64,7 @@ fn butterfly_4(
     zeta_b0: i32,
     zeta_b1: i32,
 ) -> (Vec256, Vec256) {
+    // std::println!("butterfly_4");
     let summands = mm256_unpacklo_epi64(a, b);
     let zeta_multiplicands = mm256_unpackhi_epi64(a, b);
 
@@ -84,6 +87,7 @@ fn butterfly_4(
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 2 for 2 SIMD Units in one go.
 #[inline(always)]
 fn butterfly_8(a: Vec256, b: Vec256, zeta0: i32, zeta1: i32) -> (Vec256, Vec256) {
+    // std::println!("butterfly_8");
     let summands = mm256_set_m128i(mm256_castsi256_si128(b), mm256_castsi256_si128(a));
     let zeta_multiplicands = mm256_permute2x128_si256::<0b0001_0011>(b, a);
 
@@ -216,27 +220,203 @@ fn ntt_at_layer_2(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEME
     }
 }
 
+// XXX: NTT experiments
+// montgomery_multiply is called for 65 in layer 3-7:
+// (note that this is calling into the ntt many times!)
+// - key gen: 2400
+// - sign:    6320
+// - verify:  2960
+//
+// pqclean ntt
+// 4 * levels0t1 (0 1 2 3)
+//   - 4 * butterfly @ level 0
+//   - 4 * butterfly @ level 1
+// 4 * levels2t7 (0 1 2 3)
+//   - 4 * butterfly @ level 2 + 4 * shuffle4
+//   - 4 * butterfly @ level 3 + 4 * shuffle2
+//   - 4 * butterfly @ level 5
+//   - 4 * butterfly @ level 6
+//   - 4 * butterfly @ level 7
+//
+// In both versions, each multiply/butterfly has 6 multiplications (mm256_mul_epi32) each
+//
+// Multiplications in sign
+// libcrux: 768 | montogmery: 128
+// pqclean: 672 | montogmery: 112
+
+/// This is equivalent to the pqclean 0 and 1
 #[inline(always)]
-fn ntt_at_layer_3_plus<const LAYER: usize>(
-    zeta_i: &mut usize,
-    re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
-) {
-    let step = 1 << LAYER;
+fn ntt_at_layer_7_and_6(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+    let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
+    let inverse_of_modulus_mod_montgomery_r =
+        mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
 
-    for round in 0..(128 >> LAYER) {
+    macro_rules! mul {
+        ($i:literal, $zeta:expr, $step_by:expr) => {
+            // std::eprintln!("montgomery_multiply");
+            let prod02 = mm256_mul_epi32(re[$i + $step_by], $zeta);
+            let prod13 = mm256_mul_epi32(
+                mm256_shuffle_epi32::<0b11_11_01_01>(re[$i + $step_by]), // 0xF5
+                mm256_shuffle_epi32::<0b11_11_01_01>($zeta),             // 0xF5
+            );
+            let k02 = mm256_mul_epi32(prod02, inverse_of_modulus_mod_montgomery_r);
+            let k13 = mm256_mul_epi32(prod13, inverse_of_modulus_mod_montgomery_r);
+
+            let c02 = mm256_mul_epi32(k02, field_modulus);
+            let c13 = mm256_mul_epi32(k13, field_modulus);
+
+            let res02 = mm256_sub_epi32(prod02, c02);
+            let res13 = mm256_sub_epi32(prod13, c13);
+            let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02); // 0xF5
+            let t = mm256_blend_epi32::<0b10101010>(res02_shifted, res13); // 0xAA
+
+            re[$i + $step_by] = arithmetic::subtract(re[$i], t);
+            re[$i] = arithmetic::add(re[$i], t);
+        };
+    }
+
+    // Layer 7
+    {
         *zeta_i += 1;
+        let zeta = mm256_set1_epi32(ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+        const STEP_BY: usize = 2 * COEFFICIENTS_IN_SIMD_UNIT;
+        mul!(0, zeta, STEP_BY);
+        mul!(1, zeta, STEP_BY);
+        mul!(2, zeta, STEP_BY);
+        mul!(3, zeta, STEP_BY);
+        mul!(4, zeta, STEP_BY);
+        mul!(5, zeta, STEP_BY);
+        mul!(6, zeta, STEP_BY);
+        mul!(7, zeta, STEP_BY);
+        mul!(8, zeta, STEP_BY);
+        mul!(9, zeta, STEP_BY);
+        mul!(10, zeta, STEP_BY);
+        mul!(11, zeta, STEP_BY);
+        mul!(12, zeta, STEP_BY);
+        mul!(13, zeta, STEP_BY);
+        mul!(14, zeta, STEP_BY);
+        mul!(15, zeta, STEP_BY);
 
-        let offset = (round * step * 2) / COEFFICIENTS_IN_SIMD_UNIT;
-        let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
+        // Layer 6: 1
+        {
+            let zeta = mm256_set1_epi32(-518909);
 
-        for j in offset..offset + step_by {
-            let t = arithmetic::montgomery_multiply_by_constant(
-                re[j + step_by],
-                ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            // 1: 16
+            const STEP_BY: usize = (1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
+
+            mul!(16, zeta, STEP_BY);
+            mul!(17, zeta, STEP_BY);
+            mul!(18, zeta, STEP_BY);
+            mul!(19, zeta, STEP_BY);
+            mul!(20, zeta, STEP_BY);
+            mul!(21, zeta, STEP_BY);
+            mul!(22, zeta, STEP_BY);
+            mul!(23, zeta, STEP_BY);
+        }
+    }
+
+    // Layer 6
+    {
+        const STEP: usize = 1 << 6;
+        const STEP_BY: usize = STEP / COEFFICIENTS_IN_SIMD_UNIT;
+
+        {
+            *zeta_i += 1;
+            let zeta = mm256_set1_epi32(ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+
+            // 0: 0
+            mul!(0, zeta, STEP_BY);
+            mul!(1, zeta, STEP_BY);
+            mul!(2, zeta, STEP_BY);
+            mul!(3, zeta, STEP_BY);
+            mul!(4, zeta, STEP_BY);
+            mul!(5, zeta, STEP_BY);
+            mul!(6, zeta, STEP_BY);
+            mul!(7, zeta, STEP_BY);
+        }
+        {
+            *zeta_i += 1;
+            // Done in layer 7
+        }
+    }
+}
+
+#[inline(always)]
+fn ntt_at_layer_5_to_3(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+    let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
+    let inverse_of_modulus_mod_montgomery_r =
+        mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
+
+    // Layer 5
+    {
+        const STEP: usize = 1 << 5;
+        const STEP_BY: usize = STEP / COEFFICIENTS_IN_SIMD_UNIT;
+
+        for round in 0..(128 >> 5) {
+            *zeta_i += 1;
+            let rhs = mm256_set1_epi32(ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+
+            let offset = (round * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT;
+
+            for j in offset..offset + STEP_BY {
+                let t = arithmetic::montgomery_multiply2(
+                    re[j + STEP_BY],
+                    rhs,
+                    field_modulus,
+                    inverse_of_modulus_mod_montgomery_r,
+                );
+
+                re[j + STEP_BY] = arithmetic::subtract(re[j], t);
+                re[j] = arithmetic::add(re[j], t);
+            }
+        }
+    }
+
+    // Layer 4
+    {
+        const STEP: usize = 1 << 4;
+        const STEP_BY: usize = STEP / COEFFICIENTS_IN_SIMD_UNIT;
+
+        for round in 0..(128 >> 4) {
+            *zeta_i += 1;
+            let rhs = mm256_set1_epi32(ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+
+            let offset = (round * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT;
+
+            for j in offset..offset + STEP_BY {
+                let t = arithmetic::montgomery_multiply2(
+                    re[j + STEP_BY],
+                    rhs,
+                    field_modulus,
+                    inverse_of_modulus_mod_montgomery_r,
+                );
+
+                re[j + STEP_BY] = arithmetic::subtract(re[j], t);
+                re[j] = arithmetic::add(re[j], t);
+            }
+        }
+    }
+
+    // Layer 3
+    {
+        const STEP: usize = 1 << 3;
+        const STEP_BY: usize = STEP / COEFFICIENTS_IN_SIMD_UNIT;
+
+        for round in 0..(128 >> 3) {
+            *zeta_i += 1;
+            let rhs = mm256_set1_epi32(ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+
+            let offset = (round * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT;
+
+            let t = arithmetic::montgomery_multiply2(
+                re[offset + STEP_BY],
+                rhs,
+                field_modulus,
+                inverse_of_modulus_mod_montgomery_r,
             );
 
-            re[j + step_by] = arithmetic::subtract(re[j], t);
-            re[j] = arithmetic::add(re[j], t);
+            re[offset + STEP_BY] = arithmetic::subtract(re[offset], t);
+            re[offset] = arithmetic::add(re[offset], t);
         }
     }
 }
@@ -245,12 +425,10 @@ fn ntt_at_layer_3_plus<const LAYER: usize>(
 pub(crate) fn ntt(
     mut re: [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
 ) -> [Vec256; SIMD_UNITS_IN_RING_ELEMENT] {
+    // std::println!("ntt");
     let mut zeta_i = 0;
-    ntt_at_layer_3_plus::<7>(&mut zeta_i, &mut re);
-    ntt_at_layer_3_plus::<6>(&mut zeta_i, &mut re);
-    ntt_at_layer_3_plus::<5>(&mut zeta_i, &mut re);
-    ntt_at_layer_3_plus::<4>(&mut zeta_i, &mut re);
-    ntt_at_layer_3_plus::<3>(&mut zeta_i, &mut re);
+    ntt_at_layer_7_and_6(&mut zeta_i, &mut re);
+    ntt_at_layer_5_to_3(&mut zeta_i, &mut re);
     ntt_at_layer_2(&mut zeta_i, &mut re);
     ntt_at_layer_1(&mut zeta_i, &mut re);
     ntt_at_layer_0(&mut zeta_i, &mut re);

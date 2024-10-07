@@ -73,6 +73,32 @@ pub fn montgomery_multiply(lhs: Vec256, rhs: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+pub fn montgomery_multiply2(
+    lhs: Vec256,
+    rhs: Vec256,
+    field_modulus: Vec256,
+    inverse_of_modulus_mod_montgomery_r: Vec256,
+) -> Vec256 {
+    // std::eprintln!("montgomery_multiply");
+    let prod02 = mm256_mul_epi32(lhs, rhs);
+    let prod13 = mm256_mul_epi32(
+        mm256_shuffle_epi32::<0b11_11_01_01>(lhs),
+        mm256_shuffle_epi32::<0b11_11_01_01>(rhs),
+    );
+    let k02 = mm256_mul_epi32(prod02, inverse_of_modulus_mod_montgomery_r);
+    let k13 = mm256_mul_epi32(prod13, inverse_of_modulus_mod_montgomery_r);
+
+    let c02 = mm256_mul_epi32(k02, field_modulus);
+    let c13 = mm256_mul_epi32(k13, field_modulus);
+
+    let res02 = mm256_sub_epi32(prod02, c02);
+    let res13 = mm256_sub_epi32(prod13, c13);
+    let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02);
+    let res = mm256_blend_epi32::<0b10101010>(res02_shifted, res13);
+    res
+}
+
+#[inline(always)]
 pub fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Vec256) -> Vec256 {
     let shifted = mm256_slli_epi32::<SHIFT_BY>(simd_unit);
 

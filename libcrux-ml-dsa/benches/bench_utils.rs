@@ -33,7 +33,7 @@ pub(crate) fn print_time(label: &str, d: std::time::Duration) {
     println!("{label}:{space}{time}");
 }
 
-pub(crate) const ITERATIONS: usize = 100_000;
+pub(crate) const ITERATIONS: usize = 10_000;
 #[allow(unused)]
 pub(crate) const WARMUP_ITERATIONS: usize = 1_000;
 

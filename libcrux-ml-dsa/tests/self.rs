@@ -57,11 +57,14 @@ macro_rules! impl_consistency_test {
 
             let message = random_message();
 
+            std::eprintln!("key gen:");
             let key_pair = $key_gen(key_generation_seed);
 
+            std::eprintln!("sign:");
             let signature = $sign(&key_pair.signing_key, &message, b"", signing_randomness)
                 .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
+            std::eprintln!("verify:");
             $verify(&key_pair.verification_key, &message, b"", &signature)
                 .expect("Verification should pass since the signature was honestly generated");
         }
