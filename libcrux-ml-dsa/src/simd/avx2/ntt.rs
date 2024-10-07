@@ -245,20 +245,19 @@ fn ntt_at_layer_2(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEME
 // pqclean: 672 | montogmery: 112
 
 /// This is equivalent to the pqclean 0 and 1
+///
+/// This does 32 montgomery multiplications (192 multiplications).
+/// This is the same as in pqclean. The only difference is locality of registers.
 #[inline(always)]
 fn ntt_at_layer_7_and_6(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+    // std::println!("7&6");
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
     let inverse_of_modulus_mod_montgomery_r =
         mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
-    let zeta7 = mm256_set1_epi32(25847);
-    const STEP_BY_7: usize = 2 * COEFFICIENTS_IN_SIMD_UNIT;
-    let zeta61 = mm256_set1_epi32(-518909);
-    let zeta62 = mm256_set1_epi32(-2608894);
-    const STEP_BY_6: usize = (1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
 
     macro_rules! mul {
         ($i:expr, $zeta:expr, $step_by:expr) => {
-            // std::eprintln!("montgomery_multiply");
+            // std::eprintln!("mull");
             let prod02 = mm256_mul_epi32(re[$i + $step_by], $zeta);
             let prod13 = mm256_mul_epi32(
                 mm256_shuffle_epi32::<0b11_11_01_01>(re[$i + $step_by]), // 0xF5
@@ -289,19 +288,22 @@ fn ntt_at_layer_7_and_6(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING
         }};
     }
 
-    // Layer 7
+    const STEP_BY_7: usize = 2 * COEFFICIENTS_IN_SIMD_UNIT;
+    const STEP_BY_6: usize = (1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
+
+    let zeta7 = mm256_set1_epi32(25847);
+    let zeta60 = mm256_set1_epi32(-2608894);
+    let zeta61 = mm256_set1_epi32(-518909);
+
     layer!(0, zeta7, STEP_BY_7);
-    layer!(4, zeta7, STEP_BY_7);
     layer!(8, zeta7, STEP_BY_7);
-    layer!(12, zeta7, STEP_BY_7);
-
-    // Layer 6 2
+    layer!(0, zeta60, STEP_BY_6);
     layer!(16, zeta61, STEP_BY_6);
-    layer!(20, zeta61, STEP_BY_6);
 
-    // Layer 6 1
-    layer!(0, zeta62, STEP_BY_6);
-    layer!(4, zeta62, STEP_BY_6);
+    layer!(4, zeta7, STEP_BY_7);
+    layer!(12, zeta7, STEP_BY_7);
+    layer!(4, zeta60, STEP_BY_6);
+    layer!(20, zeta61, STEP_BY_6);
 
     // Unused here.
     *zeta_i += 3;
