@@ -16,6 +16,16 @@ use vector_type::*;
 
 pub(crate) use vector_type::PortableVector;
 
+#[inline(always)]
+fn i16_to_be_bytes(x: i16) -> [u8; 2] {
+    [(x >> 8) as u8, (x & 0xFF) as u8]
+}
+
+#[inline(always)]
+fn bytes_to_i16(bytes: &[u8]) -> i16 {
+    (bytes[0] as i16) << 8 | bytes[1] as i16
+}
+
 impl Operations for PortableVector {
     fn ZERO() -> Self {
         zero()
@@ -27,6 +37,29 @@ impl Operations for PortableVector {
 
     fn to_i16_array(x: Self) -> [i16; 16] {
         to_i16_array(x)
+    }
+
+    fn to_bytes(x: Self, out: &mut [u8]) {
+        // We use C style loops here to avoid having to use the cloop macro.
+        // Eurydice unfortunately can't handle iterators.
+        let mut p = 0;
+        for i in 0..x.elements.len() {
+            out[p..p + 2].copy_from_slice(&i16_to_be_bytes(x.elements[i]));
+            p += 2;
+        }
+    }
+
+    fn from_bytes(bytes: &[u8]) -> Self {
+        // We use C style loops here to avoid having to use the cloop macro.
+        // Eurydice unfortunately can't handle iterators.
+        let mut out = zero();
+
+        for i in 0..bytes.len() / 2 {
+            let chunk = &bytes[i * 2..i * 2 + 2];
+            out.elements[i] = bytes_to_i16(chunk);
+        }
+
+        out
     }
 
     fn add(lhs: Self, rhs: &Self) -> Self {

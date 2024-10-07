@@ -1,5 +1,5 @@
 use libcrux_intrinsics::arm64::*;
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 pub struct SIMD128Vector {
     pub low: _int16x8_t,
     pub high: _int16x8_t,

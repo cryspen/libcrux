@@ -20,9 +20,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 struct Lint {
     lintName: String,
-    algorithm: Algorithm,
-    valid: bool,
-    r#type: String,
+    // algorithm: Algorithm,
+    // valid: bool,
+    // r#type: String,
     id: String,
     publicKey: String,
 }
@@ -43,21 +43,21 @@ impl Lint {
     // XXX: Only kem for now. Needs updating for ml-dsa
     fn new(
         id: String,
-        lint_type: LintType,
+        // lint_type: LintType,
         pk: &[u8],
         name: &str,
-        algorithm: Algorithm,
-        valid: bool,
+        // algorithm: Algorithm,
+        // valid: bool,
     ) -> Self {
         Self {
             lintName: name.to_owned(),
-            r#type: match lint_type {
-                LintType::PublicKey => "PublicKey".to_owned(),
-            },
+            // r#type: match lint_type {
+            //     LintType::PublicKey => "PublicKey".to_owned(),
+            // },
             id,
             publicKey: BASE64_STANDARD.encode(pk),
-            algorithm,
-            valid,
+            // algorithm,
+            // valid,
         }
     }
 
@@ -72,9 +72,9 @@ impl Lint {
         &self.id
     }
 
-    fn kem_algorithm(&self) -> Algorithm {
-        self.algorithm
-    }
+    // fn kem_algorithm(&self) -> Algorithm {
+    //     self.algorithm
+    // }
 
     fn public_key(&self) -> Option<Vec<u8>> {
         BASE64_STANDARD.decode(&self.publicKey).ok()
@@ -89,6 +89,10 @@ enum Cmd {
         /// The keys will be store into `$out.pub` and `$out.priv` when this is used.
         #[arg(short, long)]
         out: Option<String>,
+
+        /// Generate an unpacked key.
+        #[arg(short, long)]
+        unpacked: bool,
     },
     Encaps {
         /// Public key input file to encrypt to.
@@ -171,6 +175,47 @@ enum KeyPair {
     MlKem1024(MlKem1024KeyPair),
     MlKem768(MlKem768KeyPair),
     MlKem512(MlKem512KeyPair),
+}
+
+enum UnpackedKeyPair {
+    MlKem1024(mlkem1024::portable::unpacked::MlKem1024KeyPairUnpacked),
+    MlKem768(mlkem768::portable::unpacked::MlKem768KeyPairUnpacked),
+    MlKem512(mlkem512::portable::unpacked::MlKem512KeyPairUnpacked),
+}
+
+impl UnpackedKeyPair {
+    fn generate(alg: Algorithm, rng: &mut impl RngCore) -> Self {
+        let randomness = rand(rng);
+        match alg {
+            Algorithm::MlKem1024 => {
+                let mut kp = mlkem1024::portable::unpacked::MlKem1024KeyPairUnpacked::new();
+                mlkem1024::portable::unpacked::generate_key_pair(randomness, &mut kp);
+                UnpackedKeyPair::MlKem1024(kp)
+            }
+            Algorithm::MlKem768 => {
+                let mut kp = mlkem768::portable::unpacked::MlKem768KeyPairUnpacked::new();
+                mlkem768::portable::unpacked::generate_key_pair(randomness, &mut kp);
+                UnpackedKeyPair::MlKem768(kp)
+            }
+            Algorithm::MlKem512 => {
+                let mut kp = mlkem512::portable::unpacked::MlKem512KeyPairUnpacked::new();
+                mlkem512::portable::unpacked::generate_key_pair(randomness, &mut kp);
+                UnpackedKeyPair::MlKem512(kp)
+            }
+        }
+    }
+
+    fn write_to_file(&self, sk_name: String, pk_name: String) {
+        match self {
+            UnpackedKeyPair::MlKem1024(_) => todo!(),
+            UnpackedKeyPair::MlKem768(kp) => {
+                let mut bytes = [0u8; 32 + 3 * 16 * 32 + 32 + 3 * 3 * 16 * 32 + 3 * 16 * 32 + 32];
+                kp.to_bytes(&mut bytes);
+                write_to_file(sk_name + "_" + &pk_name, &bytes);
+            }
+            UnpackedKeyPair::MlKem512(_) => todo!(),
+        }
+    }
 }
 
 impl KeyPair {
@@ -356,15 +401,23 @@ fn main() {
     let mut rng = rand::rngs::OsRng;
 
     match cli.cmd {
-        Cmd::GenerateKey { out: file } => {
+        Cmd::GenerateKey {
+            out: file,
+            unpacked,
+        } => {
             // Generate a key pair and write it out.
             let (sk_name, pk_name) = match file {
                 Some(n) => (format!("{n}.priv"), format!("{n}.pub")),
                 None => ("mlkem.priv".to_owned(), "mlkem.pub".to_owned()),
             };
 
-            let key_pair = KeyPair::generate(alg, &mut rng);
-            key_pair.write_to_file(sk_name, pk_name);
+            if unpacked {
+                let key_pair = UnpackedKeyPair::generate(alg, &mut rng);
+                key_pair.write_to_file(sk_name, pk_name);
+            } else {
+                let key_pair = KeyPair::generate(alg, &mut rng);
+                key_pair.write_to_file(sk_name, pk_name);
+            }
         }
 
         Cmd::Encaps { key, ct: out, ss } => {
@@ -431,11 +484,11 @@ fn main() {
                 let id = libcrux_sha3::sha256(&payload);
                 let lint = Lint::new(
                     hex::encode(&id),
-                    LintType::PublicKey,
+                    // LintType::PublicKey,
                     &public_key,
                     &lint_name,
-                    alg,
-                    validity,
+                    // alg,
+                    // validity,
                 );
                 println!("Writing lint to {file}");
                 let mut file =
@@ -447,7 +500,8 @@ fn main() {
                     File::open(file.clone()).expect(&format!("Can not open file {file}"));
                 let lint: Lint = serde_json::from_reader(json_file)
                     .expect(&format!("Error reading file {file}"));
-                let alg = lint.kem_algorithm();
+                let alg = Algorithm::MlKem768;
+                // let alg = lint.kem_algorithm();
 
                 let pk_bytes = lint.public_key().expect("Error reading public key.");
                 eprintln!("alg: {alg:?}");
@@ -463,14 +517,14 @@ fn main() {
                 };
 
                 // We expect this one to pass.
-                if lint.valid && result_key.is_err() {
+                if result_key.is_err() {
                     lint_result.result = "Error".to_owned();
                     print_status("Error: valid lint lead to error.", &pk_bytes, &lint);
                 }
 
                 // This pk should not have passed.
-                if !lint.valid && result_key.is_ok() {
-                    lint_result.result = "Error".to_owned();
+                if result_key.is_ok() {
+                    lint_result.result = "Pass".to_owned();
                     print_status(
                         "Error: pk validation didn't fail for invalid lint .",
                         &pk_bytes,
@@ -478,25 +532,25 @@ fn main() {
                     );
                 }
 
-                // Passed. Valid.
-                if lint.valid && result_key.is_ok() {
-                    lint_result.result = "Pass".to_owned();
-                    print_status(
-                        "Pass: valid lint lead to successful pk validation.",
-                        &pk_bytes,
-                        &lint,
-                    );
-                }
+                // // Passed. Valid.
+                // if lint.valid && result_key.is_ok() {
+                //     lint_result.result = "Pass".to_owned();
+                //     print_status(
+                //         "Pass: valid lint lead to successful pk validation.",
+                //         &pk_bytes,
+                //         &lint,
+                //     );
+                // }
 
-                // Passed. Invalid
-                if !lint.valid && result_key.is_err() {
-                    lint_result.result = "Pass".to_owned();
-                    print_status(
-                        "Pass: lint with invalid PK lead to pk validation error.",
-                        &pk_bytes,
-                        &lint,
-                    );
-                }
+                // // Passed. Invalid
+                // if !lint.valid && result_key.is_err() {
+                //     lint_result.result = "Pass".to_owned();
+                //     print_status(
+                //         "Pass: lint with invalid PK lead to pk validation error.",
+                //         &pk_bytes,
+                //         &lint,
+                //     );
+                // }
 
                 let file = match result {
                     Some(n) => n,

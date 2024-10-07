@@ -62,7 +62,6 @@ macro_rules! instantiate {
             #[inline(always)]
             pub(crate) fn validate_public_key<
                 const K: usize,
-                const T_AS_NTT_ENCODED_SIZE: usize,
                 const RANKED_BYTES_PER_RING_ELEMENT: usize,
                 const PUBLIC_KEY_SIZE: usize,
             >(
@@ -70,10 +69,8 @@ macro_rules! instantiate {
             ) -> bool {
                 crate::ind_cca::validate_public_key::<
                     K,
-                    T_AS_NTT_ENCODED_SIZE,
                     RANKED_BYTES_PER_RING_ELEMENT,
                     PUBLIC_KEY_SIZE,
-                    $hash,
                     $vector,
                 >(public_key)
             }

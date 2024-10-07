@@ -1,6 +1,5 @@
 {
   "lintName": "e_ml_kem_ek_seed_sl_entries",
-  "algorithm": "MlKem768",
   "valid": false,
   "type": "PublicKey",
   "id": "b8c97058b29d6a6b815d18112af792f2a690603a92c68b9c031f201f2a42923b",

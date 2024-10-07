@@ -56,7 +56,6 @@ macro_rules! instantiate {
             pub fn validate_public_key(public_key: &MlKem512PublicKey) -> bool {
                 p::validate_public_key::<
                     RANK_512,
-                    T_AS_NTT_ENCODED_SIZE_512,
                     RANKED_BYTES_PER_RING_ELEMENT_512,
                     CPA_PKE_PUBLIC_KEY_SIZE_512,
                 >(&public_key.value)
@@ -230,6 +229,13 @@ macro_rules! instantiate {
                 /// Am Unpacked ML-KEM 512 Key pair
                 pub type MlKem512KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK_512>;
 
+                /// Read the key pair from `bytes``.
+                ///
+                /// `bytes` has to point to at least ??? bytes.
+                pub fn key_pair_from_bytes(bytes: &[u8]) -> MlKem512KeyPairUnpacked {
+                    MlKem512KeyPairUnpacked::from_bytes(bytes)
+                }
+
                 /// Create a new, empty unpacked key.
                 pub fn init_key_pair() -> MlKem512KeyPairUnpacked {
                     MlKem512KeyPairUnpacked::default()
@@ -367,7 +373,6 @@ instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon 
 pub fn validate_public_key(public_key: &MlKem512PublicKey) -> bool {
     multiplexing::validate_public_key::<
         RANK_512,
-        T_AS_NTT_ENCODED_SIZE_512,
         RANKED_BYTES_PER_RING_ELEMENT_512,
         CPA_PKE_PUBLIC_KEY_SIZE_512,
     >(&public_key.value)

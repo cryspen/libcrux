@@ -1,6 +1,3 @@
-use core::hash::{Hash as _, Hasher};
-use std::{eprintln, hash::DefaultHasher, vec::Vec};
-
 use crate::{
     constant_time_ops::compare_ciphertexts_select_shared_secret_in_constant_time,
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
@@ -10,7 +7,7 @@ use crate::{
     types::*,
     utils::into_padded_array,
     variant::*,
-    vector::{portable::PortableVector, Operations},
+    vector::Operations,
 };
 
 /// Seed size for key generation
@@ -64,10 +61,8 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
 #[inline(always)]
 fn validate_public_key<
     const K: usize,
-    const T_AS_NTT_ENCODED_SIZE: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const PUBLIC_KEY_SIZE: usize,
-    Hasher: Hash<K>,
     Vector: Operations,
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
@@ -81,267 +76,8 @@ fn validate_public_key<
             &public_key[RANKED_BYTES_PER_RING_ELEMENT..],
         );
 
-    let mut valid = *public_key == public_key_serialized;
-
-    #[cfg(all(feature = "std"))]
-    if !valid {
-        std::eprintln!("Invalid public key");
-    } else {
-        std::eprintln!("Public key is in the correct domain");
-    }
-
-    // Do some additional checks on the distribution of the key.
-    // XXX: This is for linting only and not usually performed.
-    // Move to a different function
-    if valid {
-        #[cfg(all(feature = "std"))]
-        eprintln!("Checking distribution lints ...");
-        let seed = &public_key[RANKED_BYTES_PER_RING_ELEMENT..];
-
-        // ML_KEM_DIS_01: # zeroes <= 11
-        let zeroes_bytes = seed.iter().filter(|&b| *b == 0).count();
-        valid &= zeroes_bytes <= 11;
-        #[cfg(all(feature = "std"))]
-        if !valid {
-            std::eprintln!("too many zeroes in public key");
-        }
-
-        // ML_KEM_DIS_02: not more than 2 sequential elements are the same
-        valid &= no_sequential_elements(seed);
-
-        // ML_KEM_DIS_03: not more than 27 values over or under 128
-        let over_128 = seed.iter().filter(|&b| *b > 128).count();
-        let under_128 = seed.iter().filter(|&b| *b < 128).count();
-        let balanced = over_128 <= 27 && under_128 <= 27;
-        #[cfg(all(feature = "std"))]
-        if !balanced {
-            std::eprintln!("too large or small values in public key");
-        }
-
-        valid &= balanced;
-
-        // Unpack the public key
-        let mut unpacked = unpacked::MlKemPublicKeyUnpacked::default();
-        unpacked::unpack_public_key::<
-            K,
-            T_AS_NTT_ENCODED_SIZE,
-            RANKED_BYTES_PER_RING_ELEMENT,
-            PUBLIC_KEY_SIZE,
-            Hasher,
-            PortableVector,
-        >(
-            &MlKemPublicKey::try_from(public_key).unwrap(),
-            &mut unpacked,
-        );
-
-        // ML_KEM_DIS_04: not more than 14, 18, 21 same elements in A'
-        let counts = count_elements(&unpacked.ind_cpa_public_key.A);
-        let max = match K {
-            2 => 14,
-            3 => 18,
-            4 => 21,
-            _ => unreachable!(),
-        };
-        let too_many: Vec<_> = counts.values().into_iter().filter(|&&x| x > max).collect();
-        if !too_many.is_empty() {
-            #[cfg(all(feature = "std"))]
-            std::eprintln!("too many entries in A with the same value");
-
-            valid = false;
-        }
-
-        // ML_KEM_DIS_05: no more than 3 sequential elements in A
-        valid &= long_sequence_in_a(&unpacked.ind_cpa_public_key.A);
-
-        // ML_KEM_DIS_06: no more than 656, 1369, 2338 over or under 1664 in Z_q
-        let (small, large) = count_elements_zq(&unpacked.ind_cpa_public_key.A);
-        let max = match K {
-            2 => 656,
-            3 => 1369,
-            4 => 2338,
-            _ => unreachable!(),
-        };
-        let too_many = small > max || large > max;
-        if too_many {
-            #[cfg(all(feature = "std"))]
-            std::eprintln!("too many large or little entries in A");
-
-            valid = false;
-        }
-    }
-
-    valid
+    *public_key == public_key_serialized
 }
-
-fn count_elements_zq<const K: usize>(
-    matrix: &[[crate::polynomial::PolynomialRingElement<PortableVector>; K]; K],
-) -> (u32, u32) {
-    let mut large = 0;
-    let mut small = 0;
-
-    for row in matrix {
-        for element in row {
-            for v in element.coefficients {
-                for e in v.elements {
-                    if e > 1664 {
-                        large += 1;
-                    }
-                    if e < 1664 {
-                        small += 1;
-                    }
-                }
-            }
-        }
-    }
-
-    (small, large)
-}
-
-fn count_elements<const K: usize>(
-    matrix: &[[crate::polynomial::PolynomialRingElement<PortableVector>; K]; K],
-) -> std::collections::HashMap<Vec<u64>, u64> {
-    let mut counts = std::collections::HashMap::new();
-
-    for row in matrix {
-        for element in row {
-            let e: Vec<u64> = element
-                .coefficients
-                .iter()
-                .map(|v| {
-                    let mut hasher = DefaultHasher::new();
-                    v.hash(&mut hasher);
-                    hasher.finish()
-                })
-                .collect();
-            *counts.entry(e).or_insert(0u64) += 1;
-        }
-    }
-
-    counts
-}
-
-fn long_sequence_in_a<const K: usize>(
-    matrix: &[[crate::polynomial::PolynomialRingElement<PortableVector>; K]; K],
-) -> bool {
-    let mut current_value = hash_re(matrix);
-    let mut current_len = 1;
-    let mut longest_len = current_len;
-
-    for row in matrix {
-        for element in row.iter().skip(1) {
-            let e: Vec<u64> = element
-                .coefficients
-                .iter()
-                .map(|v| {
-                    let mut hasher = DefaultHasher::new();
-                    v.hash(&mut hasher);
-                    hasher.finish()
-                })
-                .collect();
-            if e == current_value {
-                // Count the values
-                current_len += 1;
-                if current_len > longest_len {
-                    longest_len = current_len;
-                }
-            } else {
-                // Value changed
-                current_value = e;
-                current_len = 1;
-            }
-        }
-    }
-
-    if longest_len > 3 {
-        #[cfg(all(feature = "std"))]
-        std::eprintln!("too many sequential values in public key ({longest_len}x)");
-
-        false
-    } else {
-        true
-    }
-}
-
-fn hash_re<const K: usize>(
-    matrix: &[[crate::polynomial::PolynomialRingElement<PortableVector>; K]; K],
-) -> Vec<u64> {
-    matrix[0][0]
-        .coefficients
-        .iter()
-        .map(|v| {
-            let mut hasher = DefaultHasher::new();
-            v.hash(&mut hasher);
-            hasher.finish()
-        })
-        .collect()
-}
-
-fn no_sequential_elements(seed: &[u8]) -> bool {
-    let mut current_value = seed[0];
-    let mut current_len = 1;
-    let mut _longest_value = current_value;
-    let mut longest_len = current_len;
-
-    for &byte in seed.iter().skip(1) {
-        if byte == current_value {
-            // Count the values
-            current_len += 1;
-            if current_len > longest_len {
-                _longest_value = current_value;
-                longest_len = current_len;
-            }
-        } else {
-            // Value changed
-            current_value = byte;
-            current_len = 1;
-        }
-    }
-
-    if longest_len > 2 {
-        #[cfg(all(feature = "std"))]
-        std::eprintln!(
-            "too many sequential values in public key ({_longest_value} {longest_len}x)"
-        );
-
-        false
-    } else {
-        true
-    }
-}
-
-// /// Generate a fake key pair that only encodes the input values.
-// pub(crate) fn generate_fake_key_pair<
-//     const K: usize,
-//     const CPA_PRIVATE_KEY_SIZE: usize,
-//     const PRIVATE_KEY_SIZE: usize,
-//     const PUBLIC_KEY_SIZE: usize,
-//     const BYTES_PER_RING_ELEMENT: usize,
-//     const ETA1: usize,
-//     const ETA1_RANDOMNESS_SIZE: usize,
-//     Vector: Operations,
-//     Hasher: Hash<K>,
-// >(
-//     private_key: [&[i16]; K],
-//     public_key: [&[i16]; K],
-//     seed: &[u8],
-// ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
-//     let pk =
-//         public_key.map(|v| PolynomialRingElement::<Vector>::from_i16_array(v));
-
-//     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-//     let public_key_serialized =
-//         serialize_public_key::<K, BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(&pk, seed);
-
-//     // sk := Encode_12(sˆ mod^{+}q)
-//     let sk =
-//         private_key.map(|v| PolynomialRingElement::<Vector>::from_i16_array(v));
-//     let secret_key_serialized = crate::ind_cpa::serialize_secret_key(&sk);
-
-//     let private_key: MlKemPrivateKey<PRIVATE_KEY_SIZE> =
-//         MlKemPrivateKey::from(secret_key_serialized);
-
-//     MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key_serialized))
-// }
 
 /// Validate an ML-KEM private key.
 ///
@@ -569,10 +305,134 @@ pub(crate) mod unpacked {
         pub(crate) public_key_hash: [u8; 32],
     }
 
+    impl<const K: usize, Vector: Operations> MlKemPublicKeyUnpacked<K, Vector> {
+        /// Write the key into the `out` buffer.
+        pub fn to_bytes(&self, out: &mut [u8]) {
+            // We use C style loops here to avoid having to use the cloop macro.
+            // Eurydice unfortunately can't handle iterators.
+
+            let mut p = 0;
+
+            for i in 0..self.ind_cpa_public_key.t_as_ntt.len() {
+                let t = &self.ind_cpa_public_key.t_as_ntt[i];
+                for j in 0..t.coefficients.len() {
+                    Vector::to_bytes(t.coefficients[j], &mut out[p..p + 32]);
+                    p += 32;
+                }
+            }
+            out[p..p + 32].copy_from_slice(&self.ind_cpa_public_key.seed_for_A);
+            p += 32;
+            for i in 0..self.ind_cpa_public_key.A.len() {
+                let a1 = &self.ind_cpa_public_key.A[i];
+                for j in 0..a1.len() {
+                    let a = a1[j];
+                    for k in 0..a.coefficients.len() {
+                        Vector::to_bytes(a.coefficients[k], &mut out[p..p + 32]);
+                        p += 32;
+                    }
+                }
+            }
+            out[p..p + 32].copy_from_slice(&self.public_key_hash);
+        }
+
+        /// Read the bytes into an unpacked key pair.
+        pub fn from_bytes(bytes: &[u8]) -> MlKemPublicKeyUnpacked<K, Vector> {
+            // We use C style loops here to avoid having to use the cloop macro.
+            // Eurydice unfortunately can't handle iterators.
+
+            let mut p = 0;
+            let mut ind_cpa_public_key = IndCpaPublicKeyUnpacked::<K, Vector>::default();
+
+            for i in 0..ind_cpa_public_key.t_as_ntt.len() {
+                for j in 0..ind_cpa_public_key.t_as_ntt[i].coefficients.len() {
+                    ind_cpa_public_key.t_as_ntt[i].coefficients[j] =
+                        Vector::from_bytes(&bytes[p..p + 32]);
+                    p += 32;
+                }
+            }
+            ind_cpa_public_key
+                .seed_for_A
+                .copy_from_slice(&bytes[p..p + 32]);
+            p += 32;
+            for i in 0..ind_cpa_public_key.A.len() {
+                for j in 0..ind_cpa_public_key.A[i].len() {
+                    for k in 0..ind_cpa_public_key.A[i][j].coefficients.len() {
+                        ind_cpa_public_key.A[i][j].coefficients[k] =
+                            Vector::from_bytes(&bytes[p..p + 32]);
+                        p += 32;
+                    }
+                }
+            }
+            let mut public_key_hash = [0u8; 32];
+            public_key_hash.copy_from_slice(&bytes[p..p + 32]);
+
+            MlKemPublicKeyUnpacked {
+                ind_cpa_public_key,
+                public_key_hash,
+            }
+        }
+    }
+
     /// An unpacked ML-KEM KeyPair
     pub struct MlKemKeyPairUnpacked<const K: usize, Vector: Operations> {
         pub private_key: MlKemPrivateKeyUnpacked<K, Vector>,
         pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
+    }
+
+    impl<const K: usize, Vector: Operations> MlKemKeyPairUnpacked<K, Vector> {
+        /// Write the key into the `out` buffer.
+        pub fn to_bytes(&self, out: &mut [u8]) {
+            // We use C style loops here to avoid having to use the cloop macro.
+            // Eurydice unfortunately can't handle iterators.
+
+            let mut p = 0;
+
+            // Private key
+            for i in 0..self.private_key.ind_cpa_private_key.secret_as_ntt.len() {
+                let s = &self.private_key.ind_cpa_private_key.secret_as_ntt[i];
+                for j in 0..s.coefficients.len() {
+                    Vector::to_bytes(s.coefficients[j], &mut out[p..p + 32]);
+                    p += 32;
+                }
+            }
+            out[p..p + 32].copy_from_slice(&self.private_key.implicit_rejection_value);
+            p += 32;
+
+            // Public key
+            self.public_key.to_bytes(&mut out[p..]);
+        }
+
+        /// Read the bytes into an unpacked key pair.
+        pub fn from_bytes(bytes: &[u8]) -> MlKemKeyPairUnpacked<K, Vector> {
+            // We use C style loops here to avoid having to use the cloop macro.
+            // Eurydice unfortunately can't handle iterators.
+
+            let mut p = 0;
+
+            // Read private key
+            let mut ind_cpa_private_key = IndCpaPrivateKeyUnpacked::<K, Vector>::default();
+            for i in 0..ind_cpa_private_key.secret_as_ntt.len() {
+                for j in 0..ind_cpa_private_key.secret_as_ntt[i].coefficients.len() {
+                    ind_cpa_private_key.secret_as_ntt[i].coefficients[j] =
+                        Vector::from_bytes(&bytes[p..p + 32]);
+                    p += 32;
+                }
+            }
+            let mut implicit_rejection_value = [0u8; 32];
+            implicit_rejection_value.copy_from_slice(&bytes[p..p + 32]);
+            p += 32;
+
+            // Read public key
+            let public_key = MlKemPublicKeyUnpacked::from_bytes(&bytes[p..]);
+
+            MlKemKeyPairUnpacked {
+                private_key: MlKemPrivateKeyUnpacked {
+                    ind_cpa_private_key,
+                    implicit_rejection_value,
+                },
+                public_key,
+            }
+        }
     }
 
     /// Generate an unpacked key from a serialized key.

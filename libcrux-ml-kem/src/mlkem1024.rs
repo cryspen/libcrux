@@ -58,7 +58,6 @@ macro_rules! instantiate {
             pub fn validate_public_key(public_key: &MlKem1024PublicKey) -> bool {
                 p::validate_public_key::<
                     RANK_1024,
-                    T_AS_NTT_ENCODED_SIZE_1024,
                     RANKED_BYTES_PER_RING_ELEMENT_1024,
                     CPA_PKE_PUBLIC_KEY_SIZE_1024,
                 >(&public_key.value)
@@ -233,6 +232,13 @@ macro_rules! instantiate {
                 /// Am Unpacked ML-KEM 1024 Key pair
                 pub type MlKem1024KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK_1024>;
 
+                /// Read the key pair from `bytes``.
+                ///
+                /// `bytes` has to point to at least ??? bytes.
+                pub fn key_pair_from_bytes(bytes: &[u8]) -> MlKem1024KeyPairUnpacked {
+                    MlKem1024KeyPairUnpacked::from_bytes(bytes)
+                }
+
                 /// Create a new, empty unpacked key.
                 pub fn init_key_pair() -> MlKem1024KeyPairUnpacked {
                     MlKem1024KeyPairUnpacked::default()
@@ -249,9 +255,9 @@ macro_rules! instantiate {
                     serialized: &mut MlKem1024PublicKey,
                 ) {
                     public_key.serialized_public_key_mut::<
-                                RANKED_BYTES_PER_RING_ELEMENT_1024,
-                                CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                            >(serialized);
+                        RANKED_BYTES_PER_RING_ELEMENT_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                    >(serialized);
                 }
 
                 /// Get the unpacked public key.
@@ -372,7 +378,6 @@ instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon 
 pub fn validate_public_key(public_key: &MlKem1024PublicKey) -> bool {
     multiplexing::validate_public_key::<
         RANK_1024,
-        T_AS_NTT_ENCODED_SIZE_1024,
         RANKED_BYTES_PER_RING_ELEMENT_1024,
         CPA_PKE_PUBLIC_KEY_SIZE_1024,
     >(&public_key.value)
