@@ -4,7 +4,6 @@
 ))]
 
 use serde::{de::DeserializeOwned, Deserialize};
-use serde_json::Value;
 use std::{fs::File, io::BufReader, path::Path};
 
 #[derive(Deserialize)]
@@ -249,40 +248,41 @@ fn encap_decap() {
                         })
                         .unwrap();
 
-                    if let EncapDecapResult::EncapResult { c, k, .. } = expected_result {
-                        let ek = test.ek;
-                        let randomness = test.m;
-                        match parameter_set.as_str() {
-                            #[cfg(feature = "mlkem512")]
-                            "ML-KEM-512" => {
-                                let (actual_ct, actual_k) = mlkem512::encapsulate(
-                                    &mlkem512::MlKem512PublicKey::try_from(ek.as_slice()).unwrap(),
-                                    randomness,
-                                );
-                                assert_eq!(actual_ct.as_ref(), c);
-                                assert_eq!(actual_k.as_ref(), k);
-                            }
-                            #[cfg(feature = "mlkem768")]
-                            "ML-KEM-768" => {
-                                let (actual_ct, actual_k) = mlkem768::encapsulate(
-                                    &mlkem768::MlKem768PublicKey::try_from(ek.as_slice()).unwrap(),
-                                    randomness,
-                                );
-                                assert_eq!(actual_ct.as_ref(), c);
-                                assert_eq!(actual_k.as_ref(), k);
-                            }
-                            #[cfg(feature = "mlkem1024")]
-                            "ML-KEM-1024" => {
-                                let (actual_ct, actual_k) = mlkem1024::encapsulate(
-                                    &mlkem1024::MlKem1024PublicKey::try_from(ek.as_slice())
-                                        .unwrap(),
-                                    randomness,
-                                );
-                                assert_eq!(actual_ct.as_ref(), c);
-                                assert_eq!(actual_k.as_ref(), k);
-                            }
-                            _ => unimplemented!(),
+                    let EncapDecapResult::EncapResult { c, k, .. } = expected_result else {
+                        unreachable!()
+                    };
+
+                    let ek = test.ek;
+                    let randomness = test.m;
+                    match parameter_set.as_str() {
+                        #[cfg(feature = "mlkem512")]
+                        "ML-KEM-512" => {
+                            let (actual_ct, actual_k) = mlkem512::encapsulate(
+                                &mlkem512::MlKem512PublicKey::try_from(ek.as_slice()).unwrap(),
+                                randomness,
+                            );
+                            assert_eq!(actual_ct.as_ref(), c);
+                            assert_eq!(actual_k.as_ref(), k);
                         }
+                        #[cfg(feature = "mlkem768")]
+                        "ML-KEM-768" => {
+                            let (actual_ct, actual_k) = mlkem768::encapsulate(
+                                &mlkem768::MlKem768PublicKey::try_from(ek.as_slice()).unwrap(),
+                                randomness,
+                            );
+                            assert_eq!(actual_ct.as_ref(), c);
+                            assert_eq!(actual_k.as_ref(), k);
+                        }
+                        #[cfg(feature = "mlkem1024")]
+                        "ML-KEM-1024" => {
+                            let (actual_ct, actual_k) = mlkem1024::encapsulate(
+                                &mlkem1024::MlKem1024PublicKey::try_from(ek.as_slice()).unwrap(),
+                                randomness,
+                            );
+                            assert_eq!(actual_ct.as_ref(), c);
+                            assert_eq!(actual_k.as_ref(), k);
+                        }
+                        _ => unimplemented!(),
                     }
                 }
             }
@@ -304,39 +304,36 @@ fn encap_decap() {
                         })
                         .unwrap();
 
-                    if let EncapDecapResult::DecapResult { k, .. } = expected_result {
-                        let c = test.c;
-                        match parameter_set.as_str() {
-                            #[cfg(feature = "mlkem512")]
-                            "ML-KEM-512" => {
-                                let dk =
-                                    mlkem512::MlKem512PrivateKey::try_from(dk.as_slice()).unwrap();
-                                let c =
-                                    mlkem512::MlKem512Ciphertext::try_from(c.as_slice()).unwrap();
-                                let actual_k = mlkem512::decapsulate(&dk, &c);
-                                assert_eq!(actual_k.as_ref(), k);
-                            }
-                            #[cfg(feature = "mlkem768")]
-                            "ML-KEM-768" => {
-                                let dk =
-                                    mlkem768::MlKem768PrivateKey::try_from(dk.as_slice()).unwrap();
-                                let c =
-                                    mlkem768::MlKem768Ciphertext::try_from(c.as_slice()).unwrap();
-                                let actual_k = mlkem768::decapsulate(&dk, &c);
-                                assert_eq!(actual_k.as_ref(), k);
-                            }
-                            #[cfg(feature = "mlkem1024")]
-                            "ML-KEM-1024" => {
-                                let dk = mlkem1024::MlKem1024PrivateKey::try_from(dk.as_slice())
-                                    .unwrap();
-                                let c =
-                                    mlkem1024::MlKem1024Ciphertext::try_from(c.as_slice()).unwrap();
-                                let actual_k = mlkem1024::decapsulate(&dk, &c);
-                                assert_eq!(actual_k.as_ref(), k);
-                            }
+                    let EncapDecapResult::DecapResult { k, .. } = expected_result else {
+                        unreachable!()
+                    };
 
-                            _ => unimplemented!(),
+                    let c = test.c;
+                    match parameter_set.as_str() {
+                        #[cfg(feature = "mlkem512")]
+                        "ML-KEM-512" => {
+                            let dk = mlkem512::MlKem512PrivateKey::try_from(dk.as_slice()).unwrap();
+                            let c = mlkem512::MlKem512Ciphertext::try_from(c.as_slice()).unwrap();
+                            let actual_k = mlkem512::decapsulate(&dk, &c);
+                            assert_eq!(actual_k.as_ref(), k);
                         }
+                        #[cfg(feature = "mlkem768")]
+                        "ML-KEM-768" => {
+                            let dk = mlkem768::MlKem768PrivateKey::try_from(dk.as_slice()).unwrap();
+                            let c = mlkem768::MlKem768Ciphertext::try_from(c.as_slice()).unwrap();
+                            let actual_k = mlkem768::decapsulate(&dk, &c);
+                            assert_eq!(actual_k.as_ref(), k);
+                        }
+                        #[cfg(feature = "mlkem1024")]
+                        "ML-KEM-1024" => {
+                            let dk =
+                                mlkem1024::MlKem1024PrivateKey::try_from(dk.as_slice()).unwrap();
+                            let c = mlkem1024::MlKem1024Ciphertext::try_from(c.as_slice()).unwrap();
+                            let actual_k = mlkem1024::decapsulate(&dk, &c);
+                            assert_eq!(actual_k.as_ref(), k);
+                        }
+
+                        _ => unimplemented!(),
                     }
                 }
             }
