@@ -97,7 +97,7 @@ macro_rules! instantiate {
                 }
             }
 
-            /// Generate an ML-DSA-87 Signature (internal API)
+            /// Generate an ML-DSA-87 Signature (Algorithm 7 in FIPS204)
             ///
             /// The message is assumed to be domain-separated.
             #[cfg(feature = "acvp")]
@@ -124,7 +124,7 @@ macro_rules! instantiate {
                 >(&signing_key.0, message, randomness)
             }
 
-            /// Verify an ML-DSA-87 Signature (internal API)
+            /// Verify an ML-DSA-87 Signature (Algorithm 8 in FIPS204)
             ///
             /// The message is assumed to be domain-separated.
             #[cfg(feature = "acvp")]
@@ -431,7 +431,7 @@ pub fn verify_pre_hashed_shake128(
     >(&verification_key.0, message, context, &signature.0)
 }
 
-/// Sign with ML-DSA 87 (internal API)
+/// Sign with ML-DSA 87 (Algorithm 7 in FIPS204)
 ///
 /// Sign a `message` (assumed to be domain-separated) with the ML-DSA `signing_key`.
 ///
@@ -460,7 +460,7 @@ pub fn sign_internal(
     >(&signing_key.0, message, randomness)
 }
 
-/// Verify an ML-DSA-87 Signature (internal API)
+/// Verify an ML-DSA-87 Signature (Algorithm 8 in FIPS204)
 ///
 /// Returns `Ok` when the `signature` is valid for the `message` (assumed to be domain-separated) and
 /// `verification_key`, and a [`VerificationError`] otherwise.

@@ -121,7 +121,7 @@ macro_rules! instantiate {
                 >(&signing_key.0, message, context, randomness)
             }
 
-            /// Generate an ML-DSA-44 Signature (internal API)
+            /// Generate an ML-DSA-44 Signature (Algorithm 7 in FIPS204)
             ///
             /// The message is assumed to be domain-separated.
             #[cfg(feature = "acvp")]
@@ -148,7 +148,7 @@ macro_rules! instantiate {
                 >(&signing_key.0, message, randomness)
             }
 
-            /// Verify an ML-DSA-44 Signature (internal API)
+            /// Verify an ML-DSA-44 Signature (Algorithm 8 in FIPS204)
             ///
             /// The message is assumed to be domain-separated.
             #[cfg(feature = "acvp")]
@@ -327,7 +327,7 @@ pub fn sign(
     >(&signing_key.0, message, context, randomness)
 }
 
-/// Sign with ML-DSA 44 (internal API)
+/// Sign with ML-DSA 44 (Algorithm 7 in FIPS204)
 ///
 /// Sign a `message` (assumed to be domain-separated) with the ML-DSA `signing_key`.
 ///
@@ -356,7 +356,7 @@ pub fn sign_internal(
     >(&signing_key.0, message, randomness)
 }
 
-/// Verify an ML-DSA-44 Signature (internal API)
+/// Verify an ML-DSA-44 Signature (Algorithm 8 in FIPS204)
 ///
 /// Returns `Ok` when the `signature` is valid for the `message` (assumed to be domain-separated) and
 /// `verification_key`, and a [`VerificationError`] otherwise.
@@ -481,8 +481,3 @@ pub fn verify_pre_hashed_shake128(
         MAX_ONES_IN_HINT,
     >(&verification_key.0, message, context, &signature.0)
 }
-
-// mod acvp {
-//     pub use multiplexing::sign_internal;
-//     pub use multiplexing::verify_internal;
-// }

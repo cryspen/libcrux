@@ -420,7 +420,7 @@ pub(crate) fn sign_internal<
 /// This corresponds to line 6 in algorithm 7 in FIPS 204 (line 7 in algorithm
 /// 8, resp.).
 ///
-/// If `domain_separatino_context` is supplied, applies domain
+/// If `domain_separation_context` is supplied, applies domain
 /// separation and length encoding to the context string,
 /// before appending the message (in the regular variant) or the
 /// pre-hash OID as well as the pre-hashed message digest. Otherwise,
