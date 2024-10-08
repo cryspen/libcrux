@@ -144,6 +144,8 @@ pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations, Shake128: shake128
         }
     }
 
+    // XXX: We could use the version loaded in the rejection_sample_less_than_field_modulus
+    // check.
     (
         PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients0),
         PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients1),

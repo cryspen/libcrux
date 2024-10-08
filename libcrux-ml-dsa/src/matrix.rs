@@ -43,13 +43,14 @@ pub(crate) fn compute_A_times_mask<
     const COLUMNS_IN_A: usize,
 >(
     A_as_ntt: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    mask: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
+    mask: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
 ) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
     let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    let mask = matrix_ntt(mask);
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery(&ring_element, &ntt(mask[j]));
+            let product = ntt_multiply_montgomery(&ring_element, &mask[j]);
             result[i] = PolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
         }
 
@@ -138,4 +139,12 @@ pub(crate) fn compute_w_approx<
     }
 
     result
+}
+
+#[inline(always)]
+pub(crate) fn matrix_ntt<SIMDUnit: Operations, const N: usize>(
+    mut matrix: [PolynomialRingElement<SIMDUnit>; N],
+) -> [PolynomialRingElement<SIMDUnit>; N] {
+    matrix.iter_mut().for_each(|e| *e = e.ntt());
+    matrix
 }

@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 
 use crate::{
-    constants::RING_ELEMENT_OF_T0S_SIZE, ntt::ntt, polynomial::PolynomialRingElement,
+    constants::RING_ELEMENT_OF_T0S_SIZE, polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
@@ -37,13 +37,13 @@ fn deserialize<SIMDUnit: Operations>(serialized: &[u8]) -> PolynomialRingElement
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations, const DIMENSION: usize>(
+pub(crate) fn deserialize_to_vector<SIMDUnit: Operations, const DIMENSION: usize>(
     serialized: &[u8],
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
     let mut ring_elements = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for (i, bytes) in serialized.chunks(RING_ELEMENT_OF_T0S_SIZE).enumerate() {
-        ring_elements[i] = ntt(deserialize::<SIMDUnit>(bytes));
+        ring_elements[i] = deserialize::<SIMDUnit>(bytes);
     }
 
     ring_elements

@@ -71,7 +71,7 @@ pub(crate) fn generate_serialized<
 
 #[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn deserialize_then_ntt<
+pub(crate) fn deserialize<
     SIMDUnit: Operations,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
@@ -86,7 +86,7 @@ pub(crate) fn deserialize_then_ntt<
     [u8; BYTES_FOR_VERIFICATION_KEY_HASH],           // verification_key_hash
     [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A], // s1
     [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],    // s2
-    [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],    // t0_as_ntt
+    [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],    // t0
 ) {
     let (seed_for_A, remaining_serialized) = serialized.split_at(SEED_FOR_A_SIZE);
     let (seed_for_signing, remaining_serialized) =
@@ -99,28 +99,26 @@ pub(crate) fn deserialize_then_ntt<
     let (s2_serialized, t0_serialized) =
         remaining_serialized.split_at(ERROR_RING_ELEMENT_SIZE * ROWS_IN_A);
 
-    let s1_as_ntt = encoding::error::deserialize_to_vector_then_ntt::<
+    let s1 = encoding::error::deserialize_to_vector::<
         SIMDUnit,
         COLUMNS_IN_A,
         ETA,
         ERROR_RING_ELEMENT_SIZE,
     >(s1_serialized);
-    let s2_as_ntt = encoding::error::deserialize_to_vector_then_ntt::<
+    let s2 = encoding::error::deserialize_to_vector::<
         SIMDUnit,
         ROWS_IN_A,
         ETA,
         ERROR_RING_ELEMENT_SIZE,
     >(s2_serialized);
-
-    let t0_as_ntt =
-        encoding::t0::deserialize_to_vector_then_ntt::<SIMDUnit, ROWS_IN_A>(t0_serialized);
+    let t0 = encoding::t0::deserialize_to_vector::<SIMDUnit, ROWS_IN_A>(t0_serialized);
 
     (
         seed_for_A.try_into().unwrap(),
         seed_for_signing.try_into().unwrap(),
         verification_key_hash.try_into().unwrap(),
-        s1_as_ntt,
-        s2_as_ntt,
-        t0_as_ntt,
+        s1,
+        s2,
+        t0,
     )
 }

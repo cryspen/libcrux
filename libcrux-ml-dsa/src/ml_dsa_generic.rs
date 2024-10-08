@@ -8,8 +8,8 @@ use crate::{
     encoding,
     hash_functions::{shake128, shake256},
     matrix::{
-        add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
-        vector_times_ring_element,
+        add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, matrix_ntt,
+        subtract_vectors, vector_times_ring_element,
     },
     ntt::ntt,
     polynomial::PolynomialRingElement,
@@ -226,6 +226,9 @@ pub(crate) fn sign<
     )
 }
 
+/// Sign
+/// 
+/// pqclean: https://github.com/PQClean/PQClean/blob/ee71d2c823982bfcf54686f3cf1d666f396dc9aa/crypto_sign/dilithium3/avx2/sign.c#L128
 #[allow(non_snake_case)]
 pub(crate) fn sign_internal<
     SIMDUnit: Operations,
@@ -252,8 +255,8 @@ pub(crate) fn sign_internal<
     domain_separation_context: DomainSeparationContext,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-    let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
-        encoding::signing_key::deserialize_then_ntt::<
+    let (seed_for_A, seed_for_signing, verification_key_hash, s1, s2, t0) =
+        encoding::signing_key::deserialize::<
             SIMDUnit,
             ROWS_IN_A,
             COLUMNS_IN_A,
@@ -261,6 +264,9 @@ pub(crate) fn sign_internal<
             ERROR_RING_ELEMENT_SIZE,
             SIGNING_KEY_SIZE,
         >(signing_key);
+    let s1_as_ntt = matrix_ntt(s1);
+    let s2_as_ntt = matrix_ntt(s2);
+    let t0_as_ntt = matrix_ntt(t0);
 
     let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
         into_padded_array(&seed_for_A),
@@ -310,7 +316,7 @@ pub(crate) fn sign_internal<
             );
 
         let A_times_mask =
-            compute_A_times_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, &mask);
+            compute_A_times_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, mask.clone());
 
         let (w0, commitment) = decompose_vector::<SIMDUnit, ROWS_IN_A, GAMMA2>(A_times_mask);
 
@@ -330,12 +336,15 @@ pub(crate) fn sign_internal<
             shake.squeeze(&mut commitment_hash_candidate);
         }
 
-        let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
+        let verifier_challenge = sample_challenge_ring_element::<
             SIMDUnit,
             Shake256,
             ONES_IN_VERIFIER_CHALLENGE,
             COMMITMENT_HASH_SIZE,
-        >(commitment_hash_candidate));
+        >(commitment_hash_candidate);
+
+        // NTT
+        let verifier_challenge_as_ntt = verifier_challenge.ntt();
 
         let challenge_times_s1 = vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(
             &s1_as_ntt,

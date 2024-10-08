@@ -127,10 +127,15 @@ pub fn invert_ntt_at_layer_0(
     mm256_blend_epi32::<0b1_0_1_0_1_0_1_0>(sums, products)
 }
 
+// 16 mont multiplications
+// pqclean does 4 * 4 here
 #[inline(always)]
 fn ntt_at_layer_0(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+    // std::eprintln!("ntt_at_layer_0");
     *zeta_i += 1;
+    // 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30
     for round in (0..re.len()).step_by(2) {
+        // std::eprintln!("round {round}");
         let (a, b) = butterfly_2(
             re[round],
             re[round + 1],
@@ -167,10 +172,15 @@ pub fn invert_ntt_at_layer_1(simd_unit: Vec256, zeta0: i32, zeta1: i32) -> Vec25
     mm256_blend_epi32::<0b1_1_0_0_1_1_0_0>(sums, products)
 }
 
+// 16 mont multiplications
+// pqclean does 4 * 4 -> 16 here
 #[inline(always)]
 fn ntt_at_layer_1(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+    // std::eprintln!("ntt_at_layer_1");
     *zeta_i += 1;
+    // 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30
     for round in (0..re.len()).step_by(2) {
+        // std::eprintln!("round {round}");
         let (a, b) = butterfly_4(
             re[round],
             re[round + 1],
@@ -203,9 +213,14 @@ pub fn invert_ntt_at_layer_2(simd_unit: Vec256, zeta: i32) -> Vec256 {
     mm256_blend_epi32::<0b1_1_1_1_0_0_0_0>(sums, products)
 }
 
+/// 16 mont multiplications
+/// pqclean does 4 * 4 -> 16
 #[inline(always)]
 fn ntt_at_layer_2(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+    // std::eprintln!("ntt_at_layer_2");
+    // 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30
     for round in (0..re.len()).step_by(2) {
+        // std::eprintln!("round {round}");
         *zeta_i += 1;
         let (a, b) = butterfly_8(
             re[round],
@@ -309,24 +324,35 @@ fn ntt_at_layer_7_and_6(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING
     *zeta_i += 3;
 }
 
+/// Layer 5, 4, 3
+///
+/// Each layer does 16 mont multiplications -> 3*16 = 48 total
+/// pqclean does 4 * 4 on each layer -> 48 total | plus 4 * 4 shuffles every time (48)
 #[inline(always)]
 fn ntt_at_layer_5_to_3(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+    // std::eprintln!("ntt_at_layer_5_to_3");
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
     let inverse_of_modulus_mod_montgomery_r =
         mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
 
     // Layer 5
     {
+        // 0: 0, 1, 2, 3
+        // 1: 8, 9, 10, 11
+        // 2: 16, 17, 18, 19
+        // 3: 24, 25, 26, 27
         const STEP: usize = 1 << 5;
         const STEP_BY: usize = STEP / COEFFICIENTS_IN_SIMD_UNIT;
 
         for round in 0..(128 >> 5) {
+            // std::eprintln!("round {round}");
             *zeta_i += 1;
             let rhs = mm256_set1_epi32(ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
 
             let offset = (round * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT;
 
             for j in offset..offset + STEP_BY {
+                // std::eprintln!("j {j}");
                 let t = arithmetic::montgomery_multiply2(
                     re[j + STEP_BY],
                     rhs,
@@ -342,16 +368,26 @@ fn ntt_at_layer_5_to_3(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_
 
     // Layer 4
     {
+        // 0: 0, 1
+        // 1: 4, 5
+        // 2: 8, 9
+        // 3: 12, 13
+        // 4: 16, 17
+        // 5: 20, 21
+        // 6: 24, 25
+        // 7: 28, 29
         const STEP: usize = 1 << 4;
         const STEP_BY: usize = STEP / COEFFICIENTS_IN_SIMD_UNIT;
 
         for round in 0..(128 >> 4) {
+            // std::eprintln!("round {round}");
             *zeta_i += 1;
             let rhs = mm256_set1_epi32(ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
 
             let offset = (round * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT;
 
             for j in offset..offset + STEP_BY {
+                // std::eprintln!("j {j}");
                 let t = arithmetic::montgomery_multiply2(
                     re[j + STEP_BY],
                     rhs,
@@ -367,10 +403,12 @@ fn ntt_at_layer_5_to_3(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_
 
     // Layer 3
     {
+        // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
         const STEP: usize = 1 << 3;
         const STEP_BY: usize = STEP / COEFFICIENTS_IN_SIMD_UNIT;
 
         for round in 0..(128 >> 3) {
+            // std::eprintln!("round {round}");
             *zeta_i += 1;
             let rhs = mm256_set1_epi32(ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
 

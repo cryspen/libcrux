@@ -1,6 +1,6 @@
 // Functions for serializing and deserializing an error ring element.
 
-use crate::{ntt::ntt, polynomial::PolynomialRingElement, simd::traits::Operations};
+use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
 pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZE: usize>(
@@ -58,7 +58,7 @@ fn deserialize<SIMDUnit: Operations, const ETA: usize>(
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_to_vector_then_ntt<
+pub(crate) fn deserialize_to_vector<
     SIMDUnit: Operations,
     const DIMENSION: usize,
     const ETA: usize,
@@ -69,7 +69,7 @@ pub(crate) fn deserialize_to_vector_then_ntt<
     let mut ring_elements = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for (i, bytes) in serialized.chunks(RING_ELEMENT_SIZE).enumerate() {
-        ring_elements[i] = ntt(deserialize::<SIMDUnit, ETA>(bytes));
+        ring_elements[i] = deserialize::<SIMDUnit, ETA>(bytes);
     }
 
     ring_elements

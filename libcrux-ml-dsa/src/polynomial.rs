@@ -4,11 +4,20 @@ use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_R
 pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
     pub(crate) simd_units: [SIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
 }
+
 impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
         Self {
             simd_units: [SIMDUnit::ZERO(); SIMD_UNITS_IN_RING_ELEMENT],
+        }
+    }
+
+    /// Move `self` into ntt.
+    #[inline(always)]
+    pub(crate) fn ntt(self) -> Self {
+        Self {
+            simd_units: SIMDUnit::ntt(self.simd_units),
         }
     }
 
