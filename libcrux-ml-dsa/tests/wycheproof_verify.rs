@@ -1,3 +1,11 @@
+// This module tests the implementation against the Wycheproof verification
+// test vectors for the final version of the ML-DSA standard, added in
+// commit
+// [https://github.com/C2SP/wycheproof/pull/112/commits/8e7fa6f87e6993d7b613cf48b46512a32df8084a].
+//
+// This set of test vectors does not cover the pre-hashed variants of
+// ML-DSA.
+
 use serde_json;
 
 use hex;
@@ -8,13 +16,14 @@ use libcrux_ml_dsa::{ml_dsa_44, ml_dsa_65, ml_dsa_87, MLDSASignature, MLDSAVerif
 
 include!("wycheproof/verify_schema.rs");
 
-macro_rules! wycheproof_sign_test {
+macro_rules! wycheproof_verify_test {
     ($name:ident, $parameter_set:literal, $verification_key_object:ty, $signature_object:ty, $verify:expr) => {
         #[test]
         fn $name() {
-            let katfile_path = Path::new("tests")
-                .join("wycheproof")
-                .join(format!("mldsa_{}_draft_verify_test.json", $parameter_set));
+            let katfile_path = Path::new("tests").join("wycheproof").join(format!(
+                "mldsa_{}_standard_verify_test.json",
+                $parameter_set
+            ));
             let katfile = File::open(katfile_path).expect("Could not open KAT file.");
             let reader = BufReader::new(katfile);
 
@@ -41,7 +50,7 @@ macro_rules! wycheproof_sign_test {
 
                 for test in test_group.tests {
                     let message = hex::decode(test.msg).unwrap();
-
+                    let context = hex::decode(test.ctx).unwrap();
                     let signature_bytes = hex::decode(test.sig).unwrap();
                     if signature_bytes.len() != <$signature_object>::len() {
                         // If the signature size in the KAT does not match the
@@ -54,7 +63,8 @@ macro_rules! wycheproof_sign_test {
                     }
                     let signature = MLDSASignature(signature_bytes.try_into().unwrap());
 
-                    let verification_result = $verify(&verification_key, &message, &signature);
+                    let verification_result =
+                        $verify(&verification_key, &message, &context, &signature);
 
                     match test.result {
                         Result::Valid => assert!(verification_result.is_ok()),
@@ -68,16 +78,16 @@ macro_rules! wycheproof_sign_test {
 
 // 44
 
-wycheproof_sign_test!(
-    wycheproof_sign_44,
+wycheproof_verify_test!(
+    wycheproof_verify_44,
     44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
     ml_dsa_44::verify
 );
 
-wycheproof_sign_test!(
-    wycheproof_sign_44_portable,
+wycheproof_verify_test!(
+    wycheproof_verify_44_portable,
     44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
@@ -85,8 +95,8 @@ wycheproof_sign_test!(
 );
 
 #[cfg(feature = "simd128")]
-wycheproof_sign_test!(
-    wycheproof_sign_44_simd128,
+wycheproof_verify_test!(
+    wycheproof_verify_44_simd128,
     44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
@@ -94,8 +104,8 @@ wycheproof_sign_test!(
 );
 
 #[cfg(feature = "simd256")]
-wycheproof_sign_test!(
-    wycheproof_sign_44_simd256,
+wycheproof_verify_test!(
+    wycheproof_verify_44_simd256,
     44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
@@ -104,20 +114,72 @@ wycheproof_sign_test!(
 
 // 65
 
-wycheproof_sign_test!(
-    wycheproof_sign_65,
+wycheproof_verify_test!(
+    wycheproof_verify_65,
     65,
     ml_dsa_65::MLDSA65VerificationKey,
     ml_dsa_65::MLDSA65Signature,
     ml_dsa_65::verify
 );
 
+wycheproof_verify_test!(
+    wycheproof_verify_65_portable,
+    65,
+    ml_dsa_65::MLDSA65VerificationKey,
+    ml_dsa_65::MLDSA65Signature,
+    ml_dsa_65::portable::verify
+);
+
+#[cfg(feature = "simd128")]
+wycheproof_verify_test!(
+    wycheproof_verify_65_simd128,
+    65,
+    ml_dsa_65::MLDSA65VerificationKey,
+    ml_dsa_65::MLDSA65Signature,
+    ml_dsa_65::neon::verify
+);
+
+#[cfg(feature = "simd256")]
+wycheproof_verify_test!(
+    wycheproof_verify_65_simd256,
+    65,
+    ml_dsa_65::MLDSA65VerificationKey,
+    ml_dsa_65::MLDSA65Signature,
+    ml_dsa_65::avx2::verify
+);
+
 // 87
 
-wycheproof_sign_test!(
-    wycheproof_sign_87,
+wycheproof_verify_test!(
+    wycheproof_verify_87,
     87,
     ml_dsa_87::MLDSA87VerificationKey,
     ml_dsa_87::MLDSA87Signature,
     ml_dsa_87::verify
+);
+
+wycheproof_verify_test!(
+    wycheproof_verify_87_portable,
+    87,
+    ml_dsa_87::MLDSA87VerificationKey,
+    ml_dsa_87::MLDSA87Signature,
+    ml_dsa_87::portable::verify
+);
+
+#[cfg(feature = "simd128")]
+wycheproof_verify_test!(
+    wycheproof_verify_87_simd128,
+    87,
+    ml_dsa_87::MLDSA87VerificationKey,
+    ml_dsa_87::MLDSA87Signature,
+    ml_dsa_87::neon::verify
+);
+
+#[cfg(feature = "simd256")]
+wycheproof_verify_test!(
+    wycheproof_verify_87_simd256,
+    87,
+    ml_dsa_87::MLDSA87VerificationKey,
+    ml_dsa_87::MLDSA87Signature,
+    ml_dsa_87::avx2::verify
 );
