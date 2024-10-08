@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
- * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
- * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
+ * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 97f7cefe14dabf275e4671ffea87e032d7779b71
+ * Libcrux: 897008ee57eed9e4574222a5e96d306ce203ecee
  */
 
 #ifndef __internal_libcrux_sha3_avx2_H
@@ -23,18 +23,7 @@ extern "C" {
 #include "internal/libcrux_core.h"
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.absorb_final
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-- RATE= 136
-- DELIM= 31
-*/
-void libcrux_sha3_generic_keccak_absorb_final_7f(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice last[4U]);
-
-typedef libcrux_sha3_generic_keccak_KeccakState_29
+typedef libcrux_sha3_generic_keccak_KeccakState_55
     libcrux_sha3_avx2_x4_incremental_KeccakState;
 
 /**
@@ -44,8 +33,8 @@ with const generics
 - N= 4
 - RATE= 168
 */
-void libcrux_sha3_generic_keccak_squeeze_first_three_blocks_ed(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out[4U]);
+void libcrux_sha3_generic_keccak_squeeze_first_three_blocks_97(
+    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out[4U]);
 
 #if defined(__cplusplus)
 }
