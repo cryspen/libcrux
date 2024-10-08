@@ -168,7 +168,7 @@ pub(crate) fn sign_pre_hashed<
     >(
         &signing_key,
         &pre_hashed_message,
-        DomainSeparationContext::new(context, Some(&PH::oid()))?,
+        Some(DomainSeparationContext::new(context, Some(&PH::oid()))?),
         randomness,
     )
 }
@@ -221,11 +221,15 @@ pub(crate) fn sign<
     >(
         &signing_key,
         message,
-        DomainSeparationContext::new(context, None)?,
+        Some(DomainSeparationContext::new(context, None)?),
         randomness,
     )
 }
 
+/// The internal signing API.
+///
+/// If no `domain_separation_context` is supplied, it is assumed that
+/// `message` already contains the domain separation.
 #[allow(non_snake_case)]
 pub(crate) fn sign_internal<
     SIMDUnit: Operations,
@@ -249,7 +253,7 @@ pub(crate) fn sign_internal<
 >(
     signing_key: &[u8; SIGNING_KEY_SIZE],
     message: &[u8],
-    domain_separation_context: DomainSeparationContext,
+    domain_separation_context: Option<DomainSeparationContext>,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
@@ -417,9 +421,12 @@ pub(crate) fn sign_internal<
 /// This corresponds to line 6 in algorithm 7 in FIPS 204 (line 7 in algorithm
 /// 8, resp.).
 ///
-/// Applies domain separation and length encoding to the context string,
+/// If `domain_separatino_context` is supplied, applies domain
+/// separation and length encoding to the context string,
 /// before appending the message (in the regular variant) or the
-/// pre-hash OID as well as the pre-hashed message digest.
+/// pre-hash OID as well as the pre-hashed message digest. Otherwise,
+/// it is assumed that `message` already contains domain separation
+/// information.
 ///
 /// In FIPS 204 M' is the concatenation of the domain separated context, any
 /// potential pre-hash OID and the message (or the message pre-hash). We do not
@@ -433,24 +440,29 @@ pub(crate) fn sign_internal<
 /// variant.
 fn derive_message_representative(
     verification_key_hash: [u8; 64],
-    domain_separation_context: DomainSeparationContext,
+    domain_separation_context: Option<DomainSeparationContext>,
     message: &[u8],
     message_representative: &mut [u8; 64],
 ) {
     let mut shake = Shake256Absorb::new();
     shake.absorb(&verification_key_hash);
-    shake.absorb(&[domain_separation_context.pre_hash_oid().is_some() as u8]);
-    shake.absorb(&[domain_separation_context.context().len() as u8]);
-    shake.absorb(domain_separation_context.context());
-
-    if let Some(pre_hash_oid) = domain_separation_context.pre_hash_oid() {
-        shake.absorb(pre_hash_oid)
+    if let Some(domain_separation_context) = domain_separation_context {
+        shake.absorb(&[domain_separation_context.pre_hash_oid().is_some() as u8]);
+        shake.absorb(&[domain_separation_context.context().len() as u8]);
+        shake.absorb(domain_separation_context.context());
+        if let Some(pre_hash_oid) = domain_separation_context.pre_hash_oid() {
+            shake.absorb(pre_hash_oid)
+        }
     }
 
     let mut shake = shake.absorb_final(message);
     shake.squeeze(message_representative);
 }
 
+/// The internal verification API.
+///
+/// If no `domain_separation_context` is supplied, it is assumed that
+/// `message` already contains the domain separation.
 #[allow(non_snake_case)]
 pub(crate) fn verify_internal<
     SIMDUnit: Operations,
@@ -472,7 +484,7 @@ pub(crate) fn verify_internal<
 >(
     verification_key_serialized: &[u8; VERIFICATION_KEY_SIZE],
     message: &[u8],
-    domain_separation_context: DomainSeparationContext,
+    domain_separation_context: Option<DomainSeparationContext>,
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
     let (seed_for_A, t1) =
@@ -595,7 +607,7 @@ pub(crate) fn verify<
     >(
         &verification_key_serialized,
         message,
-        DomainSeparationContext::new(context, None)?,
+        Some(DomainSeparationContext::new(context, None)?),
         &signature_serialized,
     )
 }
@@ -648,7 +660,7 @@ pub(crate) fn verify_pre_hashed<
     >(
         &verification_key_serialized,
         &pre_hashed_message,
-        DomainSeparationContext::new(context, Some(&PH::oid()))?,
+        Some(DomainSeparationContext::new(context, Some(&PH::oid()))?),
         &signature_serialized,
     )
 }
