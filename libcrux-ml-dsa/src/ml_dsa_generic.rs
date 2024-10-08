@@ -298,12 +298,11 @@ pub(crate) fn sign_internal<
     let mut signer_response = None;
     let mut hint = None;
 
-    // Depending on the mode, one try has a chance between 1/7 and 1/4
-    // of succeeding.  Thus it is safe to say that 576
-    // (REJECTION_SAMPLE_BOUND) iterations are enough as (6/7)⁵⁷⁶ <
-    // 2⁻¹²⁸[1].
+    // As specified in [FIPS 204, Appendix C], the minimum number of
+    // attempts in this rejection sampling loop is 814. This puts the
+    // probability of failure at 2⁻²⁵⁶ or less.
     //
-    // [1]: https://github.com/cloudflare/circl/blob/main/sign/dilithium/mode2/internal/dilithium.go#L341
+    // [FIPS 204, Appendix C]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf#appendix.C
     while attempt < REJECTION_SAMPLE_BOUND_SIGN {
         attempt += 1;
 
