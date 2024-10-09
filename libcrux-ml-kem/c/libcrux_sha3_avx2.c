@@ -8,7 +8,7 @@
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 897008ee57eed9e4574222a5e96d306ce203ecee
+ * Libcrux: 2e8f138dbcbfbfabf4bbd994c8587ec00d197102
  */
 
 #include "internal/libcrux_sha3_avx2.h"
@@ -2135,7 +2135,7 @@ with const generics
 - N= 4
 - RATE= 168
 */
-KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_three_blocks_97(
+static KRML_MUSTINLINE void squeeze_first_three_blocks_97(
     libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out[4U]) {
   Eurydice_slice_uint8_t_4size_t__x2 uu____0 =
       split_at_mut_n_ef(out, (size_t)168U);
@@ -2161,7 +2161,7 @@ void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
   Eurydice_slice buf[4U] = {out0, out1, out2, out3};
-  libcrux_sha3_generic_keccak_squeeze_first_three_blocks_97(s, buf);
+  squeeze_first_three_blocks_97(s, buf);
 }
 
 /**

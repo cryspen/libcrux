@@ -8,7 +8,7 @@
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 897008ee57eed9e4574222a5e96d306ce203ecee
+ * Libcrux: 2e8f138dbcbfbfabf4bbd994c8587ec00d197102
  */
 
 #ifndef __internal_libcrux_sha3_avx2_H
@@ -25,16 +25,6 @@ extern "C" {
 
 typedef libcrux_sha3_generic_keccak_KeccakState_55
     libcrux_sha3_avx2_x4_incremental_KeccakState;
-
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_three_blocks
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-- RATE= 168
-*/
-void libcrux_sha3_generic_keccak_squeeze_first_three_blocks_97(
-    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out[4U]);
 
 #if defined(__cplusplus)
 }
