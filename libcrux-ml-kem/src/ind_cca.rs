@@ -48,7 +48,7 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
     pointer += private_key.len();
     out[pointer..pointer + public_key.len()].copy_from_slice(public_key);
     pointer += public_key.len();
-    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&Hasher::H(public_key).declassify_each());
+    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&Hasher::H(&public_key.map(secret)).declassify_each());
     pointer += H_DIGEST_SIZE;
     out[pointer..pointer + implicit_rejection_value.len()]
         .copy_from_slice(implicit_rejection_value);
@@ -173,7 +173,7 @@ fn encapsulate<
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     let randomness = Scheme::entropy_preprocess::<K, Hasher>(&randomness);
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
-    to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()).declassify_each());
+    to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(&public_key.as_slice().map(secret)).declassify_each());
 
     let hashed = Hasher::G(&to_hash.classify_each()).declassify_each();
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
@@ -337,7 +337,7 @@ pub(crate) mod unpacked {
             into_padded_array(&public_key.value[T_AS_NTT_ENCODED_SIZE..]),
             false,
         );
-        unpacked_public_key.public_key_hash = Hasher::H(public_key.as_slice());
+        unpacked_public_key.public_key_hash = Hasher::H(&public_key.as_slice().map(secret)).declassify_each();
     }
 
     impl<const K: usize, Vector: Operations> MlKemPublicKeyUnpacked<K, Vector> {
