@@ -8,6 +8,7 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Ind_cca.Unpacked in
   let open Libcrux_ml_kem.Vector.Avx2 in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 let _ =
@@ -68,11 +69,17 @@ val decapsulate
     : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Generate ML-KEM 512 Key Pair in "unpacked" form
-val generate_key_pair
+val generate_key_pair_mut
       (randomness: t_Array u8 (sz 64))
       (key_pair:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
+    : Prims.Pure
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+          Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Generate ML-KEM 512 Key Pair in "unpacked" form.
+val generate_key_pair (randomness: t_Array u8 (sz 64))
     : Prims.Pure
       (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
           Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) Prims.l_True (fun _ -> Prims.l_True)
@@ -82,3 +89,52 @@ val init_key_pair: Prims.unit
   -> Prims.Pure
       (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
           Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Get an unpacked key from a private key.
+/// Note that this is missing the seed of A, which is unrecoverable.
+val key_pair_from_private_mut
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+            Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
+    : Prims.Pure
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+          Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Get the serialized private key.
+val key_pair_serialized_private_key
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+            Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Get the serialized private key.
+val key_pair_serialized_private_key_mut
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+            Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Get the serialized public key.
+val key_pair_serialized_public_key
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+            Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Get the serialized public key.
+val key_pair_serialized_public_key_mut
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+            Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
+      Prims.l_True
+      (fun _ -> Prims.l_True)

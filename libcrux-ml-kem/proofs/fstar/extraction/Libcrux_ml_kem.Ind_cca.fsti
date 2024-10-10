@@ -21,6 +21,15 @@ let v_KEY_GENERATION_SEED_SIZE: usize =
   Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
 
 /// Serialize the secret key.
+val serialize_kem_secret_key_mut
+      (v_K v_SERIALIZED_KEY_LEN: usize)
+      (#v_Hasher: Type0)
+      {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (private_key public_key implicit_rejection_value: t_Slice u8)
+      (serialized: t_Array u8 v_SERIALIZED_KEY_LEN)
+    : Prims.Pure (t_Array u8 v_SERIALIZED_KEY_LEN) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Serialize the secret key.
 val serialize_kem_secret_key
       (v_K v_SERIALIZED_KEY_LEN: usize)
       (#v_Hasher: Type0)
@@ -38,6 +47,13 @@ val validate_public_key
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
+val unpack_private_key
+      (v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+    : Prims.Pure (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 /// Validate an ML-KEM private key.
 /// This implements the Hash check in 7.3 3.

@@ -7,6 +7,7 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Vector.Portable in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 val deserialize_1_ (bytes: t_Slice u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
