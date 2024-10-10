@@ -26,6 +26,7 @@ pub mod unpacked {
     use crate::{polynomial::PolynomialRingElement, vector::traits::Operations};
 
     /// An unpacked ML-KEM IND-CPA Private Key
+    #[derive(Clone)]
     pub(crate) struct IndCpaPrivateKeyUnpacked<const K: usize, Vector: Operations> {
         pub(crate) secret_as_ntt: [PolynomialRingElement<Vector>; K],
     }
@@ -295,6 +296,26 @@ pub(crate) fn generate_keypair<
         &mut public_key,
     );
 
+    serialize_unpacked_secret_key::<
+        K,
+        PRIVATE_KEY_SIZE,
+        PUBLIC_KEY_SIZE,
+        RANKED_BYTES_PER_RING_ELEMENT,
+        Vector,
+    >(public_key, private_key)
+}
+
+/// Serialize the secret key from the unpacked key pair generation.
+pub(crate) fn serialize_unpacked_secret_key<
+    const K: usize,
+    const PRIVATE_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const RANKED_BYTES_PER_RING_ELEMENT: usize,
+    Vector: Operations,
+>(
+    public_key: IndCpaPublicKeyUnpacked<K, Vector>,
+    private_key: IndCpaPrivateKeyUnpacked<K, Vector>,
+) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized =
         serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(

@@ -247,7 +247,7 @@ macro_rules! instantiate {
                     public_key: &MlKem1024PublicKeyUnpacked,
                     serialized: &mut MlKem1024PublicKey,
                 ) {
-                    public_key.serialized_public_key_mut::<
+                    public_key.serialized_mut::<
                         RANKED_BYTES_PER_RING_ELEMENT_1024,
                         CPA_PKE_PUBLIC_KEY_SIZE_1024,
                     >(serialized);
