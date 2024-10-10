@@ -120,10 +120,12 @@ val sample_from_binomial_distribution
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
-          forall (i: nat).
-            i < 8 ==>
-            Libcrux_ml_kem.Ntt.ntt_layer_7_pre (result.f_coefficients.[ sz i ])
-              (result.f_coefficients.[ sz i +! sz 8 ]))
+          (forall (i: nat).
+              i < 8 ==>
+              Libcrux_ml_kem.Ntt.ntt_layer_7_pre (result.f_coefficients.[ sz i ])
+                (result.f_coefficients.[ sz i +! sz 8 ])) /\
+          Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector result ==
+          Spec.MLKEM.sample_poly_cbd v_ETA randomness)
 
 val sample_from_xof
       (v_K: usize)

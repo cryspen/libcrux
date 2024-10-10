@@ -12,6 +12,8 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+#push-options "--max_fuel 10 --z3rlimit 1000 --ext context_pruning --z3refresh --split_queries always"
+
 let sample_ring_element_cbd
       (v_K v_ETA2_RANDOMNESS_SIZE v_ETA2: usize)
       (#v_Vector #v_Hasher: Type0)
@@ -35,13 +37,22 @@ let sample_ring_element_cbd
   in
   let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K = Rust_primitives.Hax.repeat prf_input v_K in
   let v__domain_separator_init:u8 = domain_separator in
+  let v__prf_inputs_init:t_Array (t_Array u8 (sz 33)) v_K = prf_inputs in
   let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       v_K
       (fun temp_0_ i ->
           let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) = temp_0_ in
           let i:usize = i in
-          v domain_separator == v v__domain_separator_init + v i)
+          v domain_separator == v v__domain_separator_init + v i /\
+          (v i < v v_K ==>
+            (forall (j: nat).
+                (j >= v i /\ j < v v_K) ==> prf_inputs.[ sz j ] == v__prf_inputs_init.[ sz j ])) /\
+          (forall (j: nat).
+              j < v i ==>
+              v (Seq.index (Seq.index prf_inputs j) 32) == v v__domain_separator_init + j /\
+              Seq.slice (Seq.index prf_inputs j) 0 32 ==
+              Seq.slice (Seq.index v__prf_inputs_init j) 0 32))
       (domain_separator, prf_inputs <: (u8 & t_Array (t_Array u8 (sz 33)) v_K))
       (fun temp_0_ i ->
           let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) = temp_0_ in
@@ -60,6 +71,28 @@ let sample_ring_element_cbd
           let domain_separator:u8 = domain_separator +! 1uy in
           domain_separator, prf_inputs <: (u8 & t_Array (t_Array u8 (sz 33)) v_K))
   in
+  let _:Prims.unit =
+    let lemma_aux (i: nat{i < v v_K})
+        : Lemma
+        (prf_inputs.[ sz i ] ==
+          (Seq.append (Seq.slice prf_input 0 32)
+              (Seq.create 1
+                  (mk_int #u8_inttype (v (v__domain_separator_init +! (mk_int #u8_inttype i))))))) =
+      Lib.Sequence.eq_intro #u8
+        #33
+        prf_inputs.[ sz i ]
+        (Seq.append (Seq.slice prf_input 0 32)
+            (Seq.create 1 (mk_int #u8_inttype (v v__domain_separator_init + i))))
+    in
+    Classical.forall_intro lemma_aux;
+    Lib.Sequence.eq_intro #(t_Array u8 (sz 33))
+      #(v v_K)
+      prf_inputs
+      (createi v_K
+          (Spec.MLKEM.sample_vector_cbd2_prf_input #v_K
+              (Seq.slice prf_input 0 32)
+              (sz (v v__domain_separator_init))))
+  in
   let (prf_outputs: t_Array (t_Array u8 v_ETA2_RANDOMNESS_SIZE) v_K):t_Array
     (t_Array u8 v_ETA2_RANDOMNESS_SIZE) v_K =
     Libcrux_ml_kem.Hash_functions.f_PRFxN #v_Hasher
@@ -71,35 +104,45 @@ let sample_ring_element_cbd
   let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       v_K
-      (fun error_1_ temp_1_ ->
+      (fun error_1_ i ->
           let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
             error_1_
           in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          forall (j: nat).
+            j < v i ==>
+            Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector error_1_.[ sz j ] ==
+            Spec.MLKEM.sample_poly_cbd v_ETA2 prf_outputs.[ sz j ])
       error_1_
       (fun error_1_ i ->
           let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
             error_1_
           in
           let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize error_1_
-            i
-            (Libcrux_ml_kem.Sampling.sample_from_binomial_distribution v_ETA2
-                #v_Vector
-                (prf_outputs.[ i ] <: t_Slice u8)
-              <:
-              Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-          <:
-          t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+          let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize error_1_
+              i
+              (Libcrux_ml_kem.Sampling.sample_from_binomial_distribution v_ETA2
+                  #v_Vector
+                  (prf_outputs.[ i ] <: t_Slice u8)
+                <:
+                Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+          in
+          error_1_)
   in
-  let result:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8) =
-    error_1_, domain_separator
-    <:
-    (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
+  let _:Prims.unit =
+    Lib.Sequence.eq_intro #(Spec.MLKEM.polynomial)
+      #(v v_K)
+      (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector error_1_)
+      (Spec.MLKEM.sample_vector_cbd2 #v_K
+          (Seq.slice prf_input 0 32)
+          (sz (v v__domain_separator_init)))
   in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  error_1_, domain_separator
+  <:
+  (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
+
+#pop-options
 
 let sample_vector_cbd_then_ntt
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
@@ -122,7 +165,9 @@ let sample_vector_cbd_then_ntt
       (fun temp_0_ i ->
           let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) = temp_0_ in
           let i:usize = i in
-          v domain_separator == v v__domain_separator_init + v i)
+          v domain_separator == v v__domain_separator_init + v i /\
+          (forall (j: nat). j < v i ==> v (Seq.index prf_input j) == v v__domain_separator_init + j)
+      )
       (domain_separator, prf_inputs <: (u8 & t_Array (t_Array u8 (sz 33)) v_K))
       (fun temp_0_ i ->
           let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) = temp_0_ in

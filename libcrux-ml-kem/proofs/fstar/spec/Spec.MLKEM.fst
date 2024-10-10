@@ -168,8 +168,19 @@ let sample_poly_cbd1 #r seed domain_sep =
 let sample_vector_cbd1 (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r =
     createi r (fun i ->  sample_poly_cbd1 #r seed (domain_sep +! i))
 
+// let sample_vector_cbd2 (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r =
+//     createi r (fun i ->  sample_poly_cbd2 #r seed (domain_sep +! i))
+
+let sample_vector_cbd2_prf_input (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) (i:usize{i <. r}) : t_Array u8 (sz 33) =
+  Seq.append seed (Seq.create 1 (mk_int #u8_inttype (v domain_sep + v i)))
+
+let sample_vector_cbd2_prf_output (#r:rank) (prf_output:t_Array (t_Array u8 (v_ETA2_RANDOMNESS_SIZE r)) r) (i:usize{i <. r}) : polynomial =
+  sample_poly_cbd (v_ETA2 r) prf_output.[i]
+
 let sample_vector_cbd2 (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r =
-    createi r (fun i ->  sample_poly_cbd2 #r seed (domain_sep +! i))
+    let prf_input = createi r (sample_vector_cbd2_prf_input #r seed domain_sep) in
+    let prf_output = v_PRFxN r (v_ETA2_RANDOMNESS_SIZE r) prf_input in
+    createi r (sample_vector_cbd2_prf_output #r prf_output)
 
 let sample_vector_cbd_then_ntt (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r =
     vector_ntt (sample_vector_cbd1 #r seed domain_sep)

@@ -33,7 +33,7 @@ val sample_ring_element_cbd
           in
           v ds == v domain_separator + v v_K /\
           Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector err1 ==
-          Spec.MLKEM.sample_vector_cbd1 #v_K (Seq.slice prf_input 0 32) (sz (v domain_separator)))
+          Spec.MLKEM.sample_vector_cbd2 #v_K (Seq.slice prf_input 0 32) (sz (v domain_separator)))
 
 /// Sample a vector of ring elements from a centered binomial distribution and
 /// convert them into their NTT representations.
