@@ -385,11 +385,15 @@ pub(crate) mod unpacked {
         >(
             &self,
         ) -> MlKemPublicKey<PUBLIC_KEY_SIZE> {
-            serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
+            MlKemPublicKey::from(serialize_public_key::<
+                K,
+                RANKED_BYTES_PER_RING_ELEMENT,
+                PUBLIC_KEY_SIZE,
+                Vector,
+            >(
                 &self.ind_cpa_public_key.t_as_ntt,
                 &self.ind_cpa_public_key.seed_for_A,
-            )
-            .into()
+            ))
         }
     }
 

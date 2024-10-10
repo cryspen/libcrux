@@ -8,7 +8,7 @@
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 75e282cbd9d989f980f36a2a321327b706233efa
+ * Libcrux: 764d9d62e64cf9c9942b26057245b87e9e4b722d
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -6966,7 +6966,7 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_generate_keypair_c6(
  Generate ML-KEM 768 Key Pair in "unpacked" form.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_generate_key_pair(
+static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_generate_key_pair_mut(
     uint8_t randomness[64U],
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair) {
   /* Passing arrays by value in Rust generates a copy in C */
@@ -7083,6 +7083,22 @@ static KRML_MUSTINLINE
 }
 
 /**
+ Generate ML-KEM 768 Key Pair in "unpacked" form.
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked
+libcrux_ml_kem_mlkem768_avx2_unpacked_generate_key_pair(
+    uint8_t randomness[64U]) {
+  libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked key_pair =
+      libcrux_ml_kem_ind_cca_unpacked_default_07_ab();
+  uint8_t uu____0[64U];
+  memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
+  libcrux_ml_kem_mlkem768_avx2_unpacked_generate_key_pair_mut(uu____0,
+                                                              &key_pair);
+  return key_pair;
+}
+
+/**
  Create a new, empty unpacked key.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -7142,13 +7158,113 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_de_2f(
 /**
  Get the serialized private key.
 */
+/**
+This function found in impl
+{libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector,
+K>[TraitClause@0, TraitClause@1]#2}
+*/
+/**
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_de with types
+libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
+- K= 3
+- CPA_PRIVATE_KEY_SIZE= 1152
+- PRIVATE_KEY_SIZE= 2400
+- PUBLIC_KEY_SIZE= 1184
+- RANKED_BYTES_PER_RING_ELEMENT= 1152
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE libcrux_ml_kem_types_MlKemPrivateKey_d9
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_de_2f(
+    libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *self) {
+  libcrux_ml_kem_types_MlKemPrivateKey_d9 sk =
+      libcrux_ml_kem_types_default_9e_28();
+  libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_de_2f(self, &sk);
+  return sk;
+}
+
+/**
+ Get the serialized private key.
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline libcrux_ml_kem_types_MlKemPrivateKey_d9
+libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_private_key(
+    libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair) {
+  return libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_de_2f(key_pair);
+}
+
+/**
+ Get the serialized private key.
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void
-libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_private_key(
+libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_private_key_mut(
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair,
     libcrux_ml_kem_types_MlKemPrivateKey_d9 *serialized) {
   libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_de_2f(key_pair,
                                                                    serialized);
+}
+
+/**
+ Get the serialized public key.
+*/
+/**
+This function found in impl
+{libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector,
+K>[TraitClause@0, TraitClause@1]}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_dd
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+- K= 3
+- RANKED_BYTES_PER_RING_ELEMENT= 1152
+- PUBLIC_KEY_SIZE= 1184
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE libcrux_ml_kem_types_MlKemPublicKey_30
+libcrux_ml_kem_ind_cca_unpacked_serialized_dd_ed(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *self) {
+  uint8_t ret[1184U];
+  libcrux_ml_kem_ind_cpa_serialize_public_key_ed(
+      self->ind_cpa_public_key.t_as_ntt,
+      Eurydice_array_to_slice((size_t)32U, self->ind_cpa_public_key.seed_for_A,
+                              uint8_t),
+      ret);
+  return libcrux_ml_kem_types_from_40_d0(ret);
+}
+
+/**
+ Get the serialized public key.
+*/
+/**
+This function found in impl
+{libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector,
+K>[TraitClause@0, TraitClause@1]#2}
+*/
+/**
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_de with types
+libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
+- K= 3
+- RANKED_BYTES_PER_RING_ELEMENT= 1152
+- PUBLIC_KEY_SIZE= 1184
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE libcrux_ml_kem_types_MlKemPublicKey_30
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_de_ed(
+    libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *self) {
+  return libcrux_ml_kem_ind_cca_unpacked_serialized_dd_ed(&self->public_key);
+}
+
+/**
+ Get the serialized public key.
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline libcrux_ml_kem_types_MlKemPublicKey_30
+libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_public_key(
+    libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair) {
+  return libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_de_ed(key_pair);
 }
 
 /**
@@ -7209,7 +7325,7 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_de_ed(
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void
-libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_public_key(
+libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_public_key_mut(
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair,
     libcrux_ml_kem_types_MlKemPublicKey_30 *serialized) {
   libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_de_ed(key_pair,

@@ -251,8 +251,23 @@ macro_rules! instantiate {
                 }
 
                 /// Get the serialized private key.
-                pub fn key_pair_serialized_private_key(key_pair: &MlKem512KeyPairUnpacked, serialized : &mut MlKem512PrivateKey) {
+                pub fn key_pair_serialized_private_key(key_pair: &MlKem512KeyPairUnpacked) -> MlKem512PrivateKey {
+                    key_pair.serialized_private_key::<CPA_PKE_SECRET_KEY_SIZE_512, SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512, RANKED_BYTES_PER_RING_ELEMENT_512>()
+                }
+
+                /// Get the serialized private key.
+                pub fn key_pair_serialized_private_key_mut(key_pair: &MlKem512KeyPairUnpacked, serialized : &mut MlKem512PrivateKey) {
                     key_pair.serialized_private_key_mut::<CPA_PKE_SECRET_KEY_SIZE_512, SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512, RANKED_BYTES_PER_RING_ELEMENT_512>(serialized);
+                }
+
+                /// Get the serialized public key.
+                pub fn key_pair_serialized_public_key_mut(key_pair: &MlKem512KeyPairUnpacked, serialized: &mut MlKem512PublicKey) {
+                    key_pair.serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT_512, CPA_PKE_PUBLIC_KEY_SIZE_512>(serialized);
+                }
+
+                /// Get the serialized public key.
+                pub fn key_pair_serialized_public_key(key_pair: &MlKem512KeyPairUnpacked) ->MlKem512PublicKey {
+                    key_pair.serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT_512, CPA_PKE_PUBLIC_KEY_SIZE_512>()
                 }
 
                 /// Get the unpacked public key.
@@ -268,8 +283,17 @@ macro_rules! instantiate {
                     >(public_key, unpacked_public_key)
                 }
 
-                /// Generate ML-KEM 512 Key Pair in "unpacked" form
+                /// Generate ML-KEM 512 Key Pair in "unpacked" form.
                 pub fn generate_key_pair(
+                    randomness: [u8; KEY_GENERATION_SEED_SIZE]
+                ) ->  MlKem512KeyPairUnpacked {
+                    let mut key_pair = MlKem512KeyPairUnpacked::default();
+                    generate_key_pair_mut(randomness, &mut key_pair);
+                    key_pair
+                }
+
+                /// Generate ML-KEM 512 Key Pair in "unpacked" form
+                pub fn generate_key_pair_mut(
                     randomness: [u8; KEY_GENERATION_SEED_SIZE],
                     key_pair: &mut MlKem512KeyPairUnpacked,
                 ) {
