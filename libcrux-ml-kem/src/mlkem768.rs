@@ -248,7 +248,7 @@ macro_rules! instantiate {
 
                 /// Get the serialized private key.
                 pub fn key_pair_serialized_private_key(key_pair: &MlKem768KeyPairUnpacked, serialized : &mut MlKem768PrivateKey) {
-                    key_pair.serialized_private_key_mut::<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768, RANKED_BYTES_PER_RING_ELEMENT_768>(serialized);
+                    key_pair.serialized_private_key_mut::<CPA_PKE_SECRET_KEY_SIZE_768, SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768, RANKED_BYTES_PER_RING_ELEMENT_768>(serialized);
                 }
 
                 /// Get the serialized public key.

@@ -450,6 +450,7 @@ pub(crate) mod unpacked {
         /// Get the serialized private key.
         #[inline(always)]
         pub fn serialized_private_key_mut<
+            const CPA_PRIVATE_KEY_SIZE: usize,
             const PRIVATE_KEY_SIZE: usize,
             const PUBLIC_KEY_SIZE: usize,
             const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -457,20 +458,20 @@ pub(crate) mod unpacked {
             &self,
             serialized: &mut MlKemPrivateKey<PRIVATE_KEY_SIZE>,
         ) {
-            let (pk, sk) = ind_cpa::serialize_unpacked_secret_key::<
+            let (ind_cpa_private_key, ind_cpa_public_key) = ind_cpa::serialize_unpacked_secret_key::<
                 K,
-                PRIVATE_KEY_SIZE,
+                CPA_PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
                 RANKED_BYTES_PER_RING_ELEMENT,
                 Vector,
             >(
-                self.public_key.ind_cpa_public_key.clone(),
-                self.private_key.ind_cpa_private_key.clone(),
+                &self.public_key.ind_cpa_public_key,
+                &self.private_key.ind_cpa_private_key,
             );
 
             serialize_kem_secret_key_mut::<K, PRIVATE_KEY_SIZE, PortableHash<K>>(
-                &sk,
-                &pk,
+                &ind_cpa_private_key,
+                &ind_cpa_public_key,
                 &self.private_key.implicit_rejection_value,
                 &mut serialized.value,
             );
@@ -479,6 +480,7 @@ pub(crate) mod unpacked {
         /// Get the serialized private key.
         #[inline(always)]
         pub fn serialized_private_key<
+            const CPA_PRIVATE_KEY_SIZE: usize,
             const PRIVATE_KEY_SIZE: usize,
             const PUBLIC_KEY_SIZE: usize,
             const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -486,7 +488,7 @@ pub(crate) mod unpacked {
             &self,
         ) -> MlKemPrivateKey<PRIVATE_KEY_SIZE> {
             let mut sk = MlKemPrivateKey::default();
-            self.serialized_private_key_mut::<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE, RANKED_BYTES_PER_RING_ELEMENT>(&mut sk);
+            self.serialized_private_key_mut::<CPA_PRIVATE_KEY_SIZE, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE, RANKED_BYTES_PER_RING_ELEMENT>(&mut sk);
             sk
         }
     }

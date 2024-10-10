@@ -69,6 +69,15 @@ macro_rules! impl_consistency_unpacked {
                 serialized_public_key.as_slice(),
                 key_pair.public_key().as_slice()
             );
+            let mut serialized_private_key = Default::default();
+            p::unpacked::key_pair_serialized_private_key(
+                &key_pair_unpacked,
+                &mut serialized_private_key,
+            );
+            assert_eq!(
+                serialized_private_key.as_slice(),
+                key_pair.private_key().as_slice()
+            );
 
             let randomness = random_array();
             let (ciphertext, shared_secret) = p::encapsulate(key_pair.public_key(), randomness);

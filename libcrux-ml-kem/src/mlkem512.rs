@@ -250,6 +250,11 @@ macro_rules! instantiate {
                     >(serialized)
                 }
 
+                /// Get the serialized private key.
+                pub fn key_pair_serialized_private_key(key_pair: &MlKem512KeyPairUnpacked, serialized : &mut MlKem512PrivateKey) {
+                    key_pair.serialized_private_key_mut::<CPA_PKE_SECRET_KEY_SIZE_512, SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512, RANKED_BYTES_PER_RING_ELEMENT_512>(serialized);
+                }
+
                 /// Get the unpacked public key.
                 pub fn unpacked_public_key(
                     public_key: &MlKem512PublicKey,

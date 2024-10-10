@@ -302,7 +302,7 @@ pub(crate) fn generate_keypair<
         PUBLIC_KEY_SIZE,
         RANKED_BYTES_PER_RING_ELEMENT,
         Vector,
-    >(public_key, private_key)
+    >(&public_key, &private_key)
 }
 
 /// Serialize the secret key from the unpacked key pair generation.
@@ -313,8 +313,8 @@ pub(crate) fn serialize_unpacked_secret_key<
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
     Vector: Operations,
 >(
-    public_key: IndCpaPublicKeyUnpacked<K, Vector>,
-    private_key: IndCpaPrivateKeyUnpacked<K, Vector>,
+    public_key: &IndCpaPublicKeyUnpacked<K, Vector>,
+    private_key: &IndCpaPrivateKeyUnpacked<K, Vector>,
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized =
