@@ -526,6 +526,7 @@ pub mod neon {
     pub mod x2 {
         #[cfg(feature = "simd128")]
         use super::*;
+	use libcrux_secret_independence::*;
 
         /// Run SHAKE256 on both inputs in parallel.
         ///
@@ -906,7 +907,7 @@ pub mod avx2 {
         #[cfg(feature = "simd256")]
         use crate::generic_keccak::keccak;
         #[cfg(feature = "simd256")]
-        use libcrux_intrinsics::avx2::*;
+        use libcrux_intrinsics::avx2_secret::*;
 
         use libcrux_secret_independence::*;
 
@@ -1015,7 +1016,7 @@ pub mod avx2 {
             #[cfg(feature = "simd256")]
             use crate::generic_keccak::{squeeze_first_block, squeeze_first_five_blocks};
             #[cfg(feature = "simd256")]
-            use libcrux_intrinsics::avx2::*;
+            use libcrux_intrinsics::avx2_secret::*;
 
             use libcrux_secret_independence::*;
 

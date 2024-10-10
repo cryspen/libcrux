@@ -119,32 +119,32 @@ pub fn mm256_set_epi8(
     unimplemented!()
 }
 
-pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
+pub fn mm256_set1_epi16(constant: I16) -> Vec256 {
     unimplemented!()
 }
 pub fn mm256_set_epi16(
-    input15: i16,
-    input14: i16,
-    input13: i16,
-    input12: i16,
-    input11: i16,
-    input10: i16,
-    input9: i16,
-    input8: i16,
-    input7: i16,
-    input6: i16,
-    input5: i16,
-    input4: i16,
-    input3: i16,
-    input2: i16,
-    input1: i16,
-    input0: i16,
+    input15: I16,
+    input14: I16,
+    input13: I16,
+    input12: I16,
+    input11: I16,
+    input10: I16,
+    input9: I16,
+    input8: I16,
+    input7: I16,
+    input6: I16,
+    input5: I16,
+    input4: I16,
+    input3: I16,
+    input2: I16,
+    input1: I16,
+    input0: I16,
 ) -> Vec256 {
     unimplemented!()
 }
 
 #[inline(always)]
-pub fn mm_set1_epi16(constant: i16) -> Vec128 {
+pub fn mm_set1_epi16(constant: I16) -> Vec128 {
     unimplemented!()
 }
 
@@ -439,11 +439,11 @@ pub fn mm256_andnot_si256(a: Vec256, b: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-pub fn mm256_set1_epi64x(a: i64) -> Vec256 {
+pub fn mm256_set1_epi64x(a: I64) -> Vec256 {
     unimplemented!()
 }
 #[inline(always)]
-pub fn mm256_set_epi64x(input3: i64, input2: i64, input1: i64, input0: i64) -> Vec256 {
+pub fn mm256_set_epi64x(input3: I64, input2: I64, input1: I64, input0: I64) -> Vec256 {
     unimplemented!()
 }
 

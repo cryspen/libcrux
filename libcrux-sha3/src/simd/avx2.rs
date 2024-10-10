@@ -1,5 +1,6 @@
 use crate::traits::internal::*;
-use libcrux_intrinsics::avx_secret::*;
+use libcrux_intrinsics::avx2_secret::*;
+use libcrux_secret_independence::*;
 
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: Vec256) -> Vec256 {
@@ -33,9 +34,9 @@ fn _vbcaxq_u64(a: Vec256, b: Vec256, c: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-fn _veorq_n_u64(a: Vec256, c: u64) -> Vec256 {
+fn _veorq_n_u64(a: Vec256, c: U64) -> Vec256 {
     // Casting here is required, doesn't change the value.
-    let c = mm256_set1_epi64x(c as i64);
+    let c = mm256_set1_epi64x((c.declassify() as i64).classify());
     mm256_xor_si256(a, c)
 }
 
@@ -69,7 +70,7 @@ pub(crate) fn load_block<const RATE: usize>(s: &mut [[Vec256; 5]; 5], blocks: [&
 
     let rem = RATE % 32; // has to be 8 or 16
     let start = 32 * (RATE / 32);
-    let mut u8s = [0u8; 32];
+    let mut u8s = [0u8.classify(); 32];
     u8s[0..8].copy_from_slice(&blocks[0][start..start + 8]);
     u8s[8..16].copy_from_slice(&blocks[1][start..start + 8]);
     u8s[16..24].copy_from_slice(&blocks[2][start..start + 8]);
@@ -79,7 +80,7 @@ pub(crate) fn load_block<const RATE: usize>(s: &mut [[Vec256; 5]; 5], blocks: [&
     let j = (4 * (RATE / 32)) % 5;
     s[i][j] = mm256_xor_si256(s[i][j], u);
     if rem == 16 {
-        let mut u8s = [0u8; 32];
+        let mut u8s = [0u8.classify(); 32];
         u8s[0..8].copy_from_slice(&blocks[0][start + 8..start + 16]);
         u8s[8..16].copy_from_slice(&blocks[1][start + 8..start + 16]);
         u8s[16..24].copy_from_slice(&blocks[2][start + 8..start + 16]);
@@ -138,7 +139,7 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[Vec256; 5]; 5], out: [&mut [U
 
     let rem = RATE % 32; // has to be 8 or 16
     let start = 32 * (RATE / 32);
-    let mut u8s = [0u8; 32];
+    let mut u8s = [0u8.classify(); 32];
     let i = (4 * (RATE / 32)) / 5;
     let j = (4 * (RATE / 32)) % 5;
     mm256_storeu_si256_u8(&mut u8s, s[i][j]);
@@ -147,7 +148,7 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[Vec256; 5]; 5], out: [&mut [U
     out[2][start..start + 8].copy_from_slice(&u8s[16..24]);
     out[3][start..start + 8].copy_from_slice(&u8s[24..32]);
     if rem == 16 {
-        let mut u8s = [0u8; 32];
+        let mut u8s = [0u8.classify(); 32];
         let i = (4 * (RATE / 32) + 1) / 5;
         let j = (4 * (RATE / 32) + 1) % 5;
         mm256_storeu_si256_u8(&mut u8s, s[i][j]);
@@ -160,10 +161,10 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[Vec256; 5]; 5], out: [&mut [U
 
 #[inline(always)]
 pub(crate) fn store_block_full<const RATE: usize>(s: &[[Vec256; 5]; 5]) -> [[U8; 200]; 4] {
-    let mut out0 = [0u8; 200];
-    let mut out1 = [0u8; 200];
-    let mut out2 = [0u8; 200];
-    let mut out3 = [0u8; 200];
+    let mut out0 = [0u8.classify(); 200];
+    let mut out1 = [0u8.classify(); 200];
+    let mut out2 = [0u8.classify(); 200];
+    let mut out3 = [0u8.classify(); 200];
     store_block::<RATE>(s, [&mut out0, &mut out1, &mut out2, &mut out3]);
     [out0, out1, out2, out3]
 }
@@ -191,7 +192,7 @@ fn split_at_mut_4(out: [&mut [U8]; 4], mid: usize) -> ([&mut [U8]; 4], [&mut [U8
 impl KeccakItem<4> for Vec256 {
     #[inline(always)]
     fn zero() -> Self {
-        mm256_set1_epi64x(0)
+        mm256_set1_epi64x(0.classify())
     }
     #[inline(always)]
     fn xor5(a: Self, b: Self, c: Self, d: Self, e: Self) -> Self {
