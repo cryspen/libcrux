@@ -16,7 +16,7 @@ val v_ZERO: Prims.unit
       (ensures
         fun result ->
           let result:t_SIMD128Vector = result in
-          repr result == Seq.create 16 0s)
+          repr result == Seq.create 16 (mk_i16 0))
 
 val from_i16_array (array: t_Slice i16)
     : Prims.Pure t_SIMD128Vector
@@ -27,9 +27,9 @@ val from_i16_array (array: t_Slice i16)
           repr result == array)
 
 val to_i16_array (v: t_SIMD128Vector)
-    : Prims.Pure (t_Array i16 (sz 16))
+    : Prims.Pure (t_Array i16 (Rust_primitives.mk_usize 16))
       Prims.l_True
       (ensures
         fun result ->
-          let result:t_Array i16 (sz 16) = result in
+          let result:t_Array i16 (Rust_primitives.mk_usize 16) = result in
           result == repr v)

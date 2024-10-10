@@ -3,7 +3,7 @@ module Libcrux_ml_kem.Vector.Avx2.Ntt
 open Core
 open FStar.Mul
 
-let ntt_multiply__PERMUTE_WITH: i32 = 216l
+let ntt_multiply__PERMUTE_WITH: i32 = Rust_primitives.mk_i32 216
 
 val inv_ntt_layer_1_step
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)

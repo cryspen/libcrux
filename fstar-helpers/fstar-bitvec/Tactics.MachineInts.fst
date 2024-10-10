@@ -197,7 +197,8 @@ let norm_machine_int_term = combine flatten_machine_int_term (change_native_mach
 let norm_generic_machine_int_term = combine flatten_machine_int_term (change_native_machine_int_term false)
 
 /// Unfolds `mk_int` using `mk_int_equiv_lemma`
-let norm_mk_int () =
+let norm_mk_int () = Some ()
+(*
   let?# (lhs, _) = expect_lhs_eq_uvar () in
   let lhs' = term_to_machine_int_term lhs in
   match?# lhs' with
@@ -210,6 +211,7 @@ let norm_mk_int () =
      );
      Some ()
   | _ -> None
+*)
 
 /// Lemmas to deal with the special case of usize
 let rw_v_mk_int_usize x
@@ -259,15 +261,15 @@ let transform (f: machine_int_term -> option machine_int_term): Tac unit
 open Rust_primitives.Integers
 let _ = fun x -> assert (v (mk_int #usize_inttype x) == x) 
                 by (transform norm_machine_int_term; trefl ())
-let _ =       assert (mk_int #u8_inttype 3 == 3uy) 
+let _ =       assert (mk_int #u8_inttype 3 == mk_u8 3) 
                 by (transform norm_machine_int_term; trefl ())
-let _ = fun x -> assert (mk_int #u8_inttype x == FStar.UInt8.uint_to_t x)
+let _ = fun x -> assert (mk_int #u8_inttype x == mk_u8 x)
                 by (transform norm_machine_int_term)
 let _ = assert (v (mk_int #usize_inttype 3) == 3) 
                 by (transform norm_machine_int_term; trefl ())
 let _ = fun x -> assert (v (mk_int #usize_inttype x) == x) 
                 by (transform norm_machine_int_term; trefl ())
-let _ =       assert (mk_int #u8_inttype 3 == 3uy)
+let _ =       assert (mk_int #u8_inttype 3 == mk_u8 3)
                 by (transform norm_generic_machine_int_term; trefl ())
-let _ = fun x -> assert (mk_int #u8_inttype x == FStar.UInt8.uint_to_t x)
+let _ = fun x -> assert (mk_int #u8_inttype x == mk_u8 x)
                 by (transform norm_generic_machine_int_term; trefl ())

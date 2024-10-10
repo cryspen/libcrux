@@ -6,14 +6,18 @@ open FStar.Mul
 val compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
     : Prims.Pure i16
       (requires
-        (coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy ||
-        coefficient_bits =. 11uy) &&
+        (coefficient_bits =. Rust_primitives.mk_u8 4 || coefficient_bits =. Rust_primitives.mk_u8 5 ||
+        coefficient_bits =. Rust_primitives.mk_u8 10 ||
+        coefficient_bits =. Rust_primitives.mk_u8 11) &&
         fe <. (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: u16))
       (ensures
         fun result ->
           let result:i16 = result in
-          result >=. 0s &&
-          result <. (Core.Num.impl__i16__pow 2s (cast (coefficient_bits <: u8) <: u32) <: i16))
+          result >=. Rust_primitives.mk_i16 0 &&
+          result <.
+          (Core.Num.impl__i16__pow (Rust_primitives.mk_i16 2) (cast (coefficient_bits <: u8) <: u32)
+            <:
+            i16))
 
 /// The `compress_*` functions implement the `Compress` function specified in the NIST FIPS
 /// 203 standard (Page 18, Expression 4.5), which is defined as:
@@ -36,14 +40,18 @@ val compress_message_coefficient (fe: u16)
       (ensures
         fun result ->
           let result:u8 = result in
-          Hax_lib.implies ((833us <=. fe <: bool) && (fe <=. 2596us <: bool))
+          Hax_lib.implies ((Rust_primitives.mk_u16 833 <=. fe <: bool) &&
+              (fe <=. Rust_primitives.mk_u16 2596 <: bool))
             (fun temp_0_ ->
                 let _:Prims.unit = temp_0_ in
-                result =. 1uy <: bool) &&
-          Hax_lib.implies (~.((833us <=. fe <: bool) && (fe <=. 2596us <: bool)) <: bool)
+                result =. Rust_primitives.mk_u8 1 <: bool) &&
+          Hax_lib.implies (~.((Rust_primitives.mk_u16 833 <=. fe <: bool) &&
+                (fe <=. Rust_primitives.mk_u16 2596 <: bool))
+              <:
+              bool)
             (fun temp_0_ ->
                 let _:Prims.unit = temp_0_ in
-                result =. 0uy <: bool))
+                result =. Rust_primitives.mk_u8 0 <: bool))
 
 val compress
       (v_COEFFICIENT_BITS: i32)

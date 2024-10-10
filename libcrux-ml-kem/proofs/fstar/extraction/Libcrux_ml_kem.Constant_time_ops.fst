@@ -7,24 +7,31 @@ let inz (value: u8) =
   let v__orig_value:u8 = value in
   let value:u16 = cast (value <: u8) <: u16 in
   let result:u8 =
-    cast ((Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) >>! 8l <: u16) <: u8
+    cast ((Core.Num.impl__u16__wrapping_add (~.value <: u16) (Rust_primitives.mk_u16 1) <: u16) >>!
+        Rust_primitives.mk_i32 8
+        <:
+        u16)
+    <:
+    u8
   in
-  let res:u8 = result &. 1uy in
+  let res:u8 = result &. Rust_primitives.mk_u8 1 in
   let _:Prims.unit =
     if v v__orig_value = 0
     then
       (assert (value == zero);
         lognot_lemma value;
-        assert ((~.value +. 1us) == zero);
-        assert ((Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) == zero);
+        assert ((~.value +. mk_u16 1) == zero);
+        assert ((Core.Num.impl__u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16) == zero);
         logor_lemma value zero;
-        assert ((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) <: u16) ==
+        assert ((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16)
+              <:
+              u16) ==
             value);
-        assert (v result == v ((value >>! 8l)));
+        assert (v result == v ((value >>! mk_i32 8)));
         assert ((v value / pow2 8) == 0);
-        assert (result == 0uy);
-        logand_lemma 1uy result;
-        assert (res == 0uy))
+        assert (result == mk_u8 0);
+        logand_lemma (mk_u8 1) result;
+        assert (res == mk_u8 0))
     else
       (assert (v value <> 0);
         lognot_lemma value;
@@ -34,33 +41,36 @@ let inz (value: u8) =
         assert ((v (~.value) + 1) = (pow2 16 - pow2 8) + (pow2 8 - v value));
         assert ((v (~.value) + 1) = (pow2 8 - 1) * pow2 8 + (pow2 8 - v value));
         assert ((v (~.value) + 1) / pow2 8 = (pow2 8 - 1));
-        assert (v ((Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) >>! 8l) =
+        assert (v ((Core.Num.impl__u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16) >>!
+                (mk_i32 8)) =
             pow2 8 - 1);
         assert (result = ones);
-        logand_lemma 1uy result;
-        assert (res = 1uy))
+        logand_lemma (mk_u8 1) result;
+        assert (res = mk_u8 1))
   in
   res
 
 let is_non_zero (value: u8) = Core.Hint.black_box #u8 (inz value <: u8)
 
 let compare (lhs rhs: t_Slice u8) =
-  let (r: u8):u8 = 0uy in
+  let (r: u8):u8 = Rust_primitives.mk_u8 0 in
   let r:u8 =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
       (Core.Slice.impl__len #u8 lhs <: usize)
       (fun r i ->
           let r:u8 = r in
           let i:usize = i in
           v i <= Seq.length lhs /\
-          (if (Seq.slice lhs 0 (v i) = Seq.slice rhs 0 (v i)) then r == 0uy else ~(r == 0uy)))
+          (if (Seq.slice lhs 0 (v i) = Seq.slice rhs 0 (v i))
+            then r == (mk_u8 0)
+            else ~(r == (mk_u8 0))))
       r
       (fun r i ->
           let r:u8 = r in
           let i:usize = i in
           let nr:u8 = r |. ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) in
           let _:Prims.unit =
-            if r =. 0uy
+            if r =. (mk_u8 0)
             then
               (if (Seq.index lhs (v i) = Seq.index rhs (v i))
                 then
@@ -103,36 +113,40 @@ let compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8) =
 #push-options "--ifuel 0 --z3rlimit 50"
 
 let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
-  let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in
-  let _:Prims.unit =
-    assert (if selector = 0uy then mask = ones else mask = zero);
-    lognot_lemma mask;
-    assert (if selector = 0uy then ~.mask = zero else ~.mask = ones)
+  let mask:u8 =
+    Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) (Rust_primitives.mk_u8 1)
   in
-  let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
-  let out:t_Array u8 (sz 32) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+  let _:Prims.unit =
+    assert (if selector = (mk_u8 0) then mask = ones else mask = zero);
+    lognot_lemma mask;
+    assert (if selector = (mk_u8 0) then ~.mask = zero else ~.mask = ones)
+  in
+  let out:t_Array u8 (Rust_primitives.mk_usize 32) =
+    Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) (Rust_primitives.mk_usize 32)
+  in
+  let out:t_Array u8 (Rust_primitives.mk_usize 32) =
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
       Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
       (fun out i ->
-          let out:t_Array u8 (sz 32) = out in
+          let out:t_Array u8 (Rust_primitives.mk_usize 32) = out in
           let i:usize = i in
           v i <= v Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE /\
           (forall j.
               j < v i ==>
-              (if (selector =. 0uy)
+              (if (selector =. (mk_u8 0))
                 then Seq.index out j == Seq.index lhs j
                 else Seq.index out j == Seq.index rhs j)) /\
-          (forall j. j >= v i ==> Seq.index out j == 0uy))
+          (forall j. j >= v i ==> Seq.index out j == (mk_u8 0)))
       out
       (fun out i ->
-          let out:t_Array u8 (sz 32) = out in
+          let out:t_Array u8 (Rust_primitives.mk_usize 32) = out in
           let i:usize = i in
-          let _:Prims.unit = assert ((out.[ i ] <: u8) = 0uy) in
+          let _:Prims.unit = assert ((out.[ i ] <: u8) = (mk_u8 0)) in
           let outi:u8 =
             ((lhs.[ i ] <: u8) &. mask <: u8) |. ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8)
           in
           let _:Prims.unit =
-            if (selector = 0uy)
+            if (selector = (mk_u8 0))
             then
               (logand_lemma (lhs.[ i ] <: u8) mask;
                 assert (((lhs.[ i ] <: u8) &. mask <: u8) == (lhs.[ i ] <: u8));
@@ -176,18 +190,19 @@ let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
                     (rhs.[ i ] <: u8));
                 assert (outi = (rhs.[ i ] <: u8)))
           in
-          let out:t_Array u8 (sz 32) =
+          let out:t_Array u8 (Rust_primitives.mk_usize 32) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out i outi
           in
           out)
   in
-  let _:Prims.unit = if (selector =. 0uy) then (eq_intro out lhs) else (eq_intro out rhs) in
+  let _:Prims.unit = if (selector =. (mk_u8 0)) then (eq_intro out lhs) else (eq_intro out rhs) in
   out
 
 #pop-options
 
 let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
-  Core.Hint.black_box #(t_Array u8 (sz 32)) (select_ct lhs rhs selector <: t_Array u8 (sz 32))
+  Core.Hint.black_box #(t_Array u8 (Rust_primitives.mk_usize 32))
+    (select_ct lhs rhs selector <: t_Array u8 (Rust_primitives.mk_usize 32))
 
 let compare_ciphertexts_select_shared_secret_in_constant_time (lhs_c rhs_c lhs_s rhs_s: t_Slice u8) =
   let selector:u8 = compare_ciphertexts_in_constant_time lhs_c rhs_c in

@@ -233,9 +233,8 @@ pub(super) fn compress_then_serialize_ring_element_u<
 ) -> [u8; OUT_LEN] {
     hax_lib::fstar!("assert (
         (v (cast $COMPRESSION_FACTOR <: u32) == 10) \\/
-        (v (cast $COMPRESSION_FACTOR <: u32) == 11));
-        Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v $COMPRESSION_FACTOR)");
-    match COMPRESSION_FACTOR as u32 {
+        (v (cast $COMPRESSION_FACTOR <: u32) == 11))");
+    match COMPRESSION_FACTOR {
         10 => compress_then_serialize_10(re),
         11 => compress_then_serialize_11(re),
         _ => unreachable!(),
@@ -312,8 +311,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
 ) {
     hax_lib::fstar!("assert (
         (v (cast $COMPRESSION_FACTOR <: u32) == 4) \\/
-        (v (cast $COMPRESSION_FACTOR <: u32) == 5));
-        Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v $COMPRESSION_FACTOR)");
+        (v (cast $COMPRESSION_FACTOR <: u32) == 5))");
     match COMPRESSION_FACTOR as u32 {
         4 => compress_then_serialize_4(re, out),
         5 => compress_then_serialize_5(re, out),

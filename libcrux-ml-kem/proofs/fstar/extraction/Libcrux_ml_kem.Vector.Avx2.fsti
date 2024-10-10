@@ -24,11 +24,11 @@ val vec_from_i16_array (array: t_Slice i16)
           repr result == array)
 
 val vec_to_i16_array (v: t_SIMD256Vector)
-    : Prims.Pure (t_Array i16 (sz 16))
+    : Prims.Pure (t_Array i16 (Rust_primitives.mk_usize 16))
       Prims.l_True
       (ensures
         fun result ->
-          let result:t_Array i16 (sz 16) = result in
+          let result:t_Array i16 (Rust_primitives.mk_usize 16) = result in
           result == repr v)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -37,7 +37,9 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector =
     _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
     _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
     f_repr_pre = (fun (x: t_SIMD256Vector) -> true);
-    f_repr_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> true);
+    f_repr_post
+    =
+    (fun (x: t_SIMD256Vector) (out: t_Array i16 (Rust_primitives.mk_usize 16)) -> true);
     f_repr = fun (x: t_SIMD256Vector) -> vec_to_i16_array x
   }
 
@@ -47,7 +49,7 @@ val vec_zero: Prims.unit
       (ensures
         fun result ->
           let result:t_SIMD256Vector = result in
-          repr result == Seq.create 16 0s)
+          repr result == Seq.create 16 (mk_i16 0))
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
@@ -58,11 +60,12 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_ZERO_pre = (fun (_: Prims.unit) -> true);
     f_ZERO_post
     =
-    (fun (_: Prims.unit) (out: t_SIMD256Vector) -> impl.f_repr out == Seq.create 16 0s);
+    (fun (_: Prims.unit) (out: t_SIMD256Vector) -> impl.f_repr out == Seq.create 16 (mk_i16 0));
     f_ZERO = (fun (_: Prims.unit) -> vec_zero ());
     f_from_i16_array_pre
     =
-    (fun (array: t_Slice i16) -> (Core.Slice.impl__len #i16 array <: usize) =. sz 16);
+    (fun (array: t_Slice i16) ->
+        (Core.Slice.impl__len #i16 array <: usize) =. Rust_primitives.mk_usize 16);
     f_from_i16_array_post
     =
     (fun (array: t_Slice i16) (out: t_SIMD256Vector) -> impl.f_repr out == array);
@@ -70,7 +73,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_to_i16_array_pre = (fun (x: t_SIMD256Vector) -> true);
     f_to_i16_array_post
     =
-    (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> out == impl.f_repr x);
+    (fun (x: t_SIMD256Vector) (out: t_Array i16 (Rust_primitives.mk_usize 16)) ->
+        out == impl.f_repr x);
     f_to_i16_array = (fun (x: t_SIMD256Vector) -> vec_to_i16_array x);
     f_add_pre
     =
@@ -146,11 +150,12 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         t_SIMD256Vector);
     f_shift_right_pre
     =
-    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) -> v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l);
+    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) ->
+        v_SHIFT_BY >=. Rust_primitives.mk_i32 0 && v_SHIFT_BY <. Rust_primitives.mk_i32 16);
     f_shift_right_post
     =
     (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->
-        (v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==>
+        (v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==>
         impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (impl.f_repr vector));
     f_shift_right
     =
@@ -169,7 +174,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     =
     (fun (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->
         impl.f_repr out ==
-        Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr vector));
+        Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x)
+          (impl.f_repr vector));
     f_cond_subtract_3329_
     =
     (fun (vector: t_SIMD256Vector) ->
@@ -256,8 +262,10 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_decompress_ciphertext_coefficient_pre
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) ->
-        v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
-        v_COEFFICIENT_BITS =. 11l);
+        v_COEFFICIENT_BITS =. Rust_primitives.mk_i32 4 ||
+        v_COEFFICIENT_BITS =. Rust_primitives.mk_i32 5 ||
+        v_COEFFICIENT_BITS =. Rust_primitives.mk_i32 10 ||
+        v_COEFFICIENT_BITS =. Rust_primitives.mk_i32 11);
     f_decompress_ciphertext_coefficient_post
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
@@ -455,7 +463,7 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     (fun (vector: t_SIMD256Vector) -> Spec.MLKEM.serialize_pre 1 (impl.f_repr vector));
     f_serialize_1_post
     =
-    (fun (vector: t_SIMD256Vector) (out: t_Array u8 (sz 2)) ->
+    (fun (vector: t_SIMD256Vector) (out: t_Array u8 (Rust_primitives.mk_usize 2)) ->
         Spec.MLKEM.serialize_pre 1 (impl.f_repr vector) ==>
         Spec.MLKEM.serialize_post 1 (impl.f_repr vector) out);
     f_serialize_1_
@@ -464,7 +472,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_1_ vector.f_elements);
     f_deserialize_1_pre
     =
-    (fun (bytes: t_Slice u8) -> (Core.Slice.impl__len #u8 bytes <: usize) =. sz 2);
+    (fun (bytes: t_Slice u8) ->
+        (Core.Slice.impl__len #u8 bytes <: usize) =. Rust_primitives.mk_usize 2);
     f_deserialize_1_post
     =
     (fun (bytes: t_Slice u8) (out: t_SIMD256Vector) ->
@@ -480,7 +489,7 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     (fun (vector: t_SIMD256Vector) -> Spec.MLKEM.serialize_pre 4 (impl.f_repr vector));
     f_serialize_4_post
     =
-    (fun (vector: t_SIMD256Vector) (out: t_Array u8 (sz 8)) ->
+    (fun (vector: t_SIMD256Vector) (out: t_Array u8 (Rust_primitives.mk_usize 8)) ->
         Spec.MLKEM.serialize_pre 4 (impl.f_repr vector) ==>
         Spec.MLKEM.serialize_post 4 (impl.f_repr vector) out);
     f_serialize_4_
@@ -489,7 +498,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_4_ vector.f_elements);
     f_deserialize_4_pre
     =
-    (fun (bytes: t_Slice u8) -> (Core.Slice.impl__len #u8 bytes <: usize) =. sz 8);
+    (fun (bytes: t_Slice u8) ->
+        (Core.Slice.impl__len #u8 bytes <: usize) =. Rust_primitives.mk_usize 8);
     f_deserialize_4_post
     =
     (fun (bytes: t_Slice u8) (out: t_SIMD256Vector) ->
@@ -501,7 +511,9 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         <:
         t_SIMD256Vector);
     f_serialize_5_pre = (fun (vector: t_SIMD256Vector) -> true);
-    f_serialize_5_post = (fun (vector: t_SIMD256Vector) (out: t_Array u8 (sz 10)) -> true);
+    f_serialize_5_post
+    =
+    (fun (vector: t_SIMD256Vector) (out: t_Array u8 (Rust_primitives.mk_usize 10)) -> true);
     f_serialize_5_
     =
     (fun (vector: t_SIMD256Vector) ->
@@ -509,7 +521,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_5_ vector.f_elements);
     f_deserialize_5_pre
     =
-    (fun (bytes: t_Slice u8) -> (Core.Slice.impl__len #u8 bytes <: usize) =. sz 10);
+    (fun (bytes: t_Slice u8) ->
+        (Core.Slice.impl__len #u8 bytes <: usize) =. Rust_primitives.mk_usize 10);
     f_deserialize_5_post = (fun (bytes: t_Slice u8) (out: t_SIMD256Vector) -> true);
     f_deserialize_5_
     =
@@ -523,7 +536,7 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     (fun (vector: t_SIMD256Vector) -> Spec.MLKEM.serialize_pre 10 (impl.f_repr vector));
     f_serialize_10_post
     =
-    (fun (vector: t_SIMD256Vector) (out: t_Array u8 (sz 20)) ->
+    (fun (vector: t_SIMD256Vector) (out: t_Array u8 (Rust_primitives.mk_usize 20)) ->
         Spec.MLKEM.serialize_pre 10 (impl.f_repr vector) ==>
         Spec.MLKEM.serialize_post 10 (impl.f_repr vector) out);
     f_serialize_10_
@@ -532,7 +545,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_10_ vector.f_elements);
     f_deserialize_10_pre
     =
-    (fun (bytes: t_Slice u8) -> (Core.Slice.impl__len #u8 bytes <: usize) =. sz 20);
+    (fun (bytes: t_Slice u8) ->
+        (Core.Slice.impl__len #u8 bytes <: usize) =. Rust_primitives.mk_usize 20);
     f_deserialize_10_post
     =
     (fun (bytes: t_Slice u8) (out: t_SIMD256Vector) ->
@@ -544,14 +558,17 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         <:
         t_SIMD256Vector);
     f_serialize_11_pre = (fun (vector: t_SIMD256Vector) -> true);
-    f_serialize_11_post = (fun (vector: t_SIMD256Vector) (out: t_Array u8 (sz 22)) -> true);
+    f_serialize_11_post
+    =
+    (fun (vector: t_SIMD256Vector) (out: t_Array u8 (Rust_primitives.mk_usize 22)) -> true);
     f_serialize_11_
     =
     (fun (vector: t_SIMD256Vector) ->
         Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_11_ vector.f_elements);
     f_deserialize_11_pre
     =
-    (fun (bytes: t_Slice u8) -> (Core.Slice.impl__len #u8 bytes <: usize) =. sz 22);
+    (fun (bytes: t_Slice u8) ->
+        (Core.Slice.impl__len #u8 bytes <: usize) =. Rust_primitives.mk_usize 22);
     f_deserialize_11_post = (fun (bytes: t_Slice u8) (out: t_SIMD256Vector) -> true);
     f_deserialize_11_
     =
@@ -564,7 +581,7 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     (fun (vector: t_SIMD256Vector) -> Spec.MLKEM.serialize_pre 12 (impl.f_repr vector));
     f_serialize_12_post
     =
-    (fun (vector: t_SIMD256Vector) (out: t_Array u8 (sz 24)) ->
+    (fun (vector: t_SIMD256Vector) (out: t_Array u8 (Rust_primitives.mk_usize 24)) ->
         Spec.MLKEM.serialize_pre 12 (impl.f_repr vector) ==>
         Spec.MLKEM.serialize_post 12 (impl.f_repr vector) out);
     f_serialize_12_
@@ -573,7 +590,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_12_ vector.f_elements);
     f_deserialize_12_pre
     =
-    (fun (bytes: t_Slice u8) -> (Core.Slice.impl__len #u8 bytes <: usize) =. sz 24);
+    (fun (bytes: t_Slice u8) ->
+        (Core.Slice.impl__len #u8 bytes <: usize) =. Rust_primitives.mk_usize 24);
     f_deserialize_12_post
     =
     (fun (bytes: t_Slice u8) (out: t_SIMD256Vector) ->
@@ -587,8 +605,8 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_rej_sample_pre
     =
     (fun (input: t_Slice u8) (output: t_Slice i16) ->
-        (Core.Slice.impl__len #u8 input <: usize) =. sz 24 &&
-        (Core.Slice.impl__len #i16 output <: usize) =. sz 16);
+        (Core.Slice.impl__len #u8 input <: usize) =. Rust_primitives.mk_usize 24 &&
+        (Core.Slice.impl__len #i16 output <: usize) =. Rust_primitives.mk_usize 16);
     f_rej_sample_post
     =
     (fun (input: t_Slice u8) (output: t_Slice i16) (output_future, result: (t_Slice i16 & usize)) ->

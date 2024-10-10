@@ -39,8 +39,8 @@ let ntt_at_layer_1_
   let _:Prims.unit = reveal_opaque (`%ntt_re_range_1) (ntt_re_range_1 #v_Vector) in
   let v__zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (sz 16)
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+      (Rust_primitives.mk_usize 16)
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
@@ -62,7 +62,7 @@ let ntt_at_layer_1_
             temp_0_
           in
           let round:usize = round in
-          let zeta_i:usize = zeta_i +! sz 1 in
+          let zeta_i:usize = zeta_i +! Rust_primitives.mk_usize 1 in
           let _:Prims.unit =
             reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
               (Spec.Utils.is_i16b_array_opaque (11207 + 5 * 3328)
@@ -80,16 +80,28 @@ let ntt_at_layer_1_
                     #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
                     (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
-                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! sz 1 <: usize) <: i16)
-                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! sz 2 <: usize) <: i16)
-                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! sz 3 <: usize) <: i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! Rust_primitives.mk_usize 1
+                          <:
+                          usize)
+                      <:
+                      i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! Rust_primitives.mk_usize 2
+                          <:
+                          usize)
+                      <:
+                      i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! Rust_primitives.mk_usize 3
+                          <:
+                          usize)
+                      <:
+                      i16)
                   <:
                   v_Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
           in
-          let zeta_i:usize = zeta_i +! sz 3 in
+          let zeta_i:usize = zeta_i +! Rust_primitives.mk_usize 3 in
           let _:Prims.unit =
             reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
               (Spec.Utils.is_i16b_array_opaque (11207 + 6 * 3328)
@@ -117,8 +129,8 @@ let ntt_at_layer_2_
   let _:Prims.unit = reveal_opaque (`%ntt_re_range_2) (ntt_re_range_2 #v_Vector) in
   let v__zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (sz 16)
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+      (Rust_primitives.mk_usize 16)
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
@@ -140,7 +152,7 @@ let ntt_at_layer_2_
             temp_0_
           in
           let round:usize = round in
-          let zeta_i:usize = zeta_i +! sz 1 in
+          let zeta_i:usize = zeta_i +! Rust_primitives.mk_usize 1 in
           let _:Prims.unit =
             reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
               (Spec.Utils.is_i16b_array_opaque (11207 + 4 * 3328)
@@ -158,14 +170,18 @@ let ntt_at_layer_2_
                     #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
                     (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
-                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! sz 1 <: usize) <: i16)
+                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! Rust_primitives.mk_usize 1
+                          <:
+                          usize)
+                      <:
+                      i16)
                   <:
                   v_Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
           in
-          let zeta_i:usize = zeta_i +! sz 1 in
+          let zeta_i:usize = zeta_i +! Rust_primitives.mk_usize 1 in
           let _:Prims.unit =
             reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
               (Spec.Utils.is_i16b_array_opaque (11207 + 5 * 3328)
@@ -193,8 +209,8 @@ let ntt_at_layer_3_
   let _:Prims.unit = reveal_opaque (`%ntt_re_range_3) (ntt_re_range_3 #v_Vector) in
   let v__zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (sz 16)
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+      (Rust_primitives.mk_usize 16)
       (fun temp_0_ round ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
@@ -216,7 +232,7 @@ let ntt_at_layer_3_
             temp_0_
           in
           let round:usize = round in
-          let zeta_i:usize = zeta_i +! sz 1 in
+          let zeta_i:usize = zeta_i +! Rust_primitives.mk_usize 1 in
           let _:Prims.unit =
             reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
               (Spec.Utils.is_i16b_array_opaque (11207 + 3 * 3328)
@@ -265,11 +281,11 @@ let ntt_at_layer_4_plus
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (layer v__initial_coefficient_bound: usize)
      =
-  let step:usize = sz 1 <<! layer in
+  let step:usize = Rust_primitives.mk_usize 1 <<! layer in
   let v__zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (sz 128 >>! layer <: usize)
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+      (Rust_primitives.mk_usize 128 >>! layer <: usize)
       (fun temp_0_ temp_1_ ->
           let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
             temp_0_
@@ -282,10 +298,10 @@ let ntt_at_layer_4_plus
             temp_0_
           in
           let round:usize = round in
-          let zeta_i:usize = zeta_i +! sz 1 in
-          let offset:usize = (round *! step <: usize) *! sz 2 in
-          let offset_vec:usize = offset /! sz 16 in
-          let step_vec:usize = step /! sz 16 in
+          let zeta_i:usize = zeta_i +! Rust_primitives.mk_usize 1 in
+          let offset:usize = (round *! step <: usize) *! Rust_primitives.mk_usize 2 in
+          let offset_vec:usize = offset /! Rust_primitives.mk_usize 16 in
+          let step_vec:usize = step /! Rust_primitives.mk_usize 16 in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             Rust_primitives.Hax.Folds.fold_range offset_vec
               (offset_vec +! step_vec <: usize)
@@ -349,10 +365,12 @@ let ntt_at_layer_7_
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =
-  let step:usize = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT /! sz 2 in
+  let step:usize =
+    Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT /! Rust_primitives.mk_usize 2
+  in
   let _:Prims.unit = assert (v step == 8) in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
       step
       (fun re j ->
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
@@ -370,7 +388,7 @@ let ntt_at_layer_7_
             Libcrux_ml_kem.Vector.Traits.f_multiply_by_constant #v_Vector
               #FStar.Tactics.Typeclasses.solve
               (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ j +! step <: usize ] <: v_Vector)
-              (-1600s)
+              (Rust_primitives.mk_i16 (-1600))
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
@@ -427,39 +445,75 @@ let ntt_binomially_sampled_ring_element
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     ntt_at_layer_7_ #v_Vector re
   in
-  let zeta_i:usize = sz 1 in
+  let zeta_i:usize = Rust_primitives.mk_usize 1 in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 6) (sz 11207)
+    ntt_at_layer_4_plus #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 6)
+      (Rust_primitives.mk_usize 11207)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 5) (sz 11207 +! sz 3328 <: usize)
+    ntt_at_layer_4_plus #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.mk_usize 11207 +! Rust_primitives.mk_usize 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 4) (sz 11207 +! (sz 2 *! sz 3328 <: usize) <: usize)
+    ntt_at_layer_4_plus #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.mk_usize 11207 +!
+        (Rust_primitives.mk_usize 2 *! Rust_primitives.mk_usize 3328 <: usize)
+        <:
+        usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_3_ #v_Vector zeta_i re (sz 3) (sz 11207 +! (sz 3 *! sz 3328 <: usize) <: usize)
+    ntt_at_layer_3_ #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.mk_usize 11207 +!
+        (Rust_primitives.mk_usize 3 *! Rust_primitives.mk_usize 3328 <: usize)
+        <:
+        usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_2_ #v_Vector zeta_i re (sz 2) (sz 11207 +! (sz 4 *! sz 3328 <: usize) <: usize)
+    ntt_at_layer_2_ #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.mk_usize 11207 +!
+        (Rust_primitives.mk_usize 4 *! Rust_primitives.mk_usize 3328 <: usize)
+        <:
+        usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_1_ #v_Vector zeta_i re (sz 1) (sz 11207 +! (sz 5 *! sz 3328 <: usize) <: usize)
+    ntt_at_layer_1_ #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.mk_usize 11207 +!
+        (Rust_primitives.mk_usize 5 *! Rust_primitives.mk_usize 3328 <: usize)
+        <:
+        usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
@@ -484,45 +538,73 @@ let ntt_vector_u
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =
-  let zeta_i:usize = sz 0 in
+  let zeta_i:usize = Rust_primitives.mk_usize 0 in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 7) (sz 3328)
+    ntt_at_layer_4_plus #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 7)
+      (Rust_primitives.mk_usize 3328)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 6) (sz 2 *! sz 3328 <: usize)
+    ntt_at_layer_4_plus #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 6)
+      (Rust_primitives.mk_usize 2 *! Rust_primitives.mk_usize 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 5) (sz 3 *! sz 3328 <: usize)
+    ntt_at_layer_4_plus #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.mk_usize 3 *! Rust_primitives.mk_usize 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_4_plus #v_Vector zeta_i re (sz 4) (sz 4 *! sz 3328 <: usize)
+    ntt_at_layer_4_plus #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.mk_usize 4 *! Rust_primitives.mk_usize 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_3_ #v_Vector zeta_i re (sz 3) (sz 5 *! sz 3328 <: usize)
+    ntt_at_layer_3_ #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.mk_usize 5 *! Rust_primitives.mk_usize 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_2_ #v_Vector zeta_i re (sz 2) (sz 6 *! sz 3328 <: usize)
+    ntt_at_layer_2_ #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.mk_usize 6 *! Rust_primitives.mk_usize 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    ntt_at_layer_1_ #v_Vector zeta_i re (sz 1) (sz 7 *! sz 3328 <: usize)
+    ntt_at_layer_1_ #v_Vector
+      zeta_i
+      re
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.mk_usize 7 *! Rust_primitives.mk_usize 3328 <: usize)
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in

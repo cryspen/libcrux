@@ -49,8 +49,9 @@ val sample_from_uniform_distribution_next
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (randomness: t_Array (t_Array u8 v_N) v_K)
       (sampled_coefficients: t_Array usize v_K)
-      (out: t_Array (t_Array i16 (sz 272)) v_K)
-    : Prims.Pure (t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool)
+      (out: t_Array (t_Array i16 (Rust_primitives.mk_usize 272)) v_K)
+    : Prims.Pure
+      (t_Array usize v_K & t_Array (t_Array i16 (Rust_primitives.mk_usize 272)) v_K & bool)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
@@ -97,7 +98,9 @@ val sample_from_binomial_distribution_2_
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (randomness: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (requires (Core.Slice.impl__len #u8 randomness <: usize) =. (sz 2 *! sz 64 <: usize))
+      (requires
+        (Core.Slice.impl__len #u8 randomness <: usize) =.
+        (Rust_primitives.mk_usize 2 *! Rust_primitives.mk_usize 64 <: usize))
       (fun _ -> Prims.l_True)
 
 val sample_from_binomial_distribution_3_
@@ -105,7 +108,9 @@ val sample_from_binomial_distribution_3_
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (randomness: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (requires (Core.Slice.impl__len #u8 randomness <: usize) =. (sz 3 *! sz 64 <: usize))
+      (requires
+        (Core.Slice.impl__len #u8 randomness <: usize) =.
+        (Rust_primitives.mk_usize 3 *! Rust_primitives.mk_usize 64 <: usize))
       (fun _ -> Prims.l_True)
 
 val sample_from_binomial_distribution
@@ -115,8 +120,9 @@ val sample_from_binomial_distribution
       (randomness: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires
-        (v_ETA =. sz 2 || v_ETA =. sz 3) &&
-        (Core.Slice.impl__len #u8 randomness <: usize) =. (v_ETA *! sz 64 <: usize))
+        (v_ETA =. Rust_primitives.mk_usize 2 || v_ETA =. Rust_primitives.mk_usize 3) &&
+        (Core.Slice.impl__len #u8 randomness <: usize) =.
+        (v_ETA *! Rust_primitives.mk_usize 64 <: usize))
       (fun _ -> Prims.l_True)
 
 val sample_from_xof
@@ -124,7 +130,7 @@ val sample_from_xof
       (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      (seeds: t_Array (t_Array u8 (sz 34)) v_K)
+      (seeds: t_Array (t_Array u8 (Rust_primitives.mk_usize 34)) v_K)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)

@@ -4,18 +4,18 @@ open Core
 open FStar.Mul
 
 let into_padded_array (v_LEN: usize) (slice: t_Slice u8) =
-  let out:t_Array u8 v_LEN = Rust_primitives.Hax.repeat 0uy v_LEN in
+  let out:t_Array u8 v_LEN = Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_LEN in
   let out:t_Array u8 v_LEN =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
       ({
-          Core.Ops.Range.f_start = sz 0;
+          Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
           Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
         }
         <:
         Core.Ops.Range.t_Range usize)
       (Core.Slice.impl__copy_from_slice #u8
           (out.[ {
-                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
                 Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
               }
               <:
@@ -29,7 +29,7 @@ let into_padded_array (v_LEN: usize) (slice: t_Slice u8) =
   let _:Prims.unit = assert (Seq.slice out 0 (Seq.length slice) == slice) in
   let _:Prims.unit =
     assert (Seq.slice out (Seq.length slice) (v v_LEN) ==
-        Seq.slice (Seq.create (v v_LEN) 0uy) (Seq.length slice) (v v_LEN))
+        Seq.slice (Seq.create (v v_LEN) (mk_u8 0)) (Seq.length slice) (v v_LEN))
   in
   let _:Prims.unit =
     assert (forall i. i < Seq.length slice ==> Seq.index out i == Seq.index slice i)
@@ -41,6 +41,6 @@ let into_padded_array (v_LEN: usize) (slice: t_Slice u8) =
           Seq.index (Seq.slice out (Seq.length slice) (v v_LEN)) (i - Seq.length slice))
   in
   let _:Prims.unit =
-    Seq.lemma_eq_intro out (Seq.append slice (Seq.create (v v_LEN - Seq.length slice) 0uy))
+    Seq.lemma_eq_intro out (Seq.append slice (Seq.create (v v_LEN - Seq.length slice) (mk_u8 0)))
   in
   out

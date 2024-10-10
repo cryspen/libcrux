@@ -3,7 +3,7 @@ module Libcrux_ml_kem.Vector.Avx2.Arithmetic
 open Core
 open FStar.Mul
 
-let v_BARRETT_MULTIPLIER: i16 = 20159s
+let v_BARRETT_MULTIPLIER: i16 = Rust_primitives.mk_i16 20159
 
 open Libcrux_intrinsics.Avx2_extract
 
@@ -38,11 +38,11 @@ val multiply_by_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (con
 
 val shift_right (v_SHIFT_BY: i32) (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
-      (requires v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l)
+      (requires v_SHIFT_BY >=. Rust_primitives.mk_i32 0 && v_SHIFT_BY <. Rust_primitives.mk_i32 16)
       (ensures
         fun result ->
           let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
-          (v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==>
+          (v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==>
           Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result ==
           Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY)
             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector))
@@ -80,8 +80,9 @@ val cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
           forall i.
             i < 16 ==>
             get_lane result i ==
-            (if (get_lane vector i) >=. 3329s then get_lane vector i -! 3329s else get_lane vector i
-            ))
+            (if (get_lane vector i) >=. (mk_i16 3329)
+              then get_lane vector i -! (mk_i16 3329)
+              else get_lane vector i))
 
 val montgomery_multiply_by_constant
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)

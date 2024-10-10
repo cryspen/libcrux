@@ -45,7 +45,7 @@ type t_IndCpaPublicKeyUnpacked
   (v_K: usize) (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
   = {
   f_t_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K;
-  f_seed_for_A:t_Array u8 (sz 32);
+  f_seed_for_A:t_Array u8 (Rust_primitives.mk_usize 32);
   f_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K
 }
 
@@ -70,7 +70,9 @@ let impl_1
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           v_K;
-        f_seed_for_A = Rust_primitives.Hax.repeat 0uy (sz 32);
+        f_seed_for_A
+        =
+        Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) (Rust_primitives.mk_usize 32);
         f_A
         =
         Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl_2__ZERO

@@ -40,7 +40,7 @@ val deserialize_1___deserialize_1_u8s (a b: u8)
 
 val deserialize_1_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
-      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 2)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. Rust_primitives.mk_usize 2)
       (ensures
         fun coefficients ->
           let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 = coefficients in
@@ -98,7 +98,7 @@ val deserialize_4___deserialize_4_u8s (b0 b1 b2 b3 b4 b5 b6 b7: u8)
 
 val deserialize_4_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
-      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 8)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. Rust_primitives.mk_usize 8)
       (ensures
         fun result ->
           let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
@@ -113,11 +113,11 @@ val deserialize_4_ (bytes: t_Slice u8)
 include BitVec.Intrinsics {mm256_concat_pairs_n}
 
 val serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure (t_Array u8 (sz 2))
+    : Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 2))
       (requires forall i. i % 16 >= 1 ==> vector i == 0)
       (ensures
         fun result ->
-          let result:t_Array u8 (sz 2) = result in
+          let result:t_Array u8 (Rust_primitives.mk_usize 2) = result in
           forall i. bit_vec_of_int_t_array result 8 i == vector (i * 16))
 
 val serialize_10___serialize_10_vec (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -147,30 +147,30 @@ val serialize_12___serialize_12_vec (vector: Libcrux_intrinsics.Avx2_extract.t_V
             vector ((i / 12) * 16 + i % 12) == (if i < 96 then lower_8_ i else upper_8_ (i - 96)))
 
 val serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure (t_Array u8 (sz 20))
+    : Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 20))
       (requires forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0)
       (ensures
         fun r ->
-          let r:t_Array u8 (sz 20) = r in
+          let r:t_Array u8 (Rust_primitives.mk_usize 20) = r in
           forall (i: nat{i < 160}). bit_vec_of_int_t_array r 8 i == vector ((i / 10) * 16 + i % 10))
 
 val serialize_12_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure (t_Array u8 (sz 24))
+    : Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 24))
       (requires forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0)
       (ensures
         fun r ->
-          let r:t_Array u8 (sz 24) = r in
+          let r:t_Array u8 (Rust_primitives.mk_usize 24) = r in
           forall (i: nat{i < 192}). bit_vec_of_int_t_array r 8 i == vector ((i / 12) * 16 + i % 12))
 
 val serialize_5_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure (t_Array u8 (sz 10)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 10)) Prims.l_True (fun _ -> Prims.l_True)
 
 val serialize_4_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure (t_Array u8 (sz 8))
+    : Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 8))
       (requires forall (i: nat{i < 256}). i % 16 < 4 || vector i = 0)
       (ensures
         fun r ->
-          let r:t_Array u8 (sz 8) = r in
+          let r:t_Array u8 (Rust_primitives.mk_usize 8) = r in
           forall (i: nat{i < 64}). bit_vec_of_int_t_array r 8 i == vector ((i / 4) * 16 + i % 4))
 
 include BitVec.Intrinsics {mm256_si256_from_two_si128 as mm256_si256_from_two_si128}
@@ -242,4 +242,4 @@ val deserialize_11_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
 val serialize_11_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure (t_Array u8 (sz 22)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 22)) Prims.l_True (fun _ -> Prims.l_True)

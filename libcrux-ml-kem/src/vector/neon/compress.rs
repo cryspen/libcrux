@@ -40,7 +40,7 @@ fn mask_n_least_significant_bits(coefficient_bits: i16) -> i16 {
         5 => 0x1f,
         10 => 0x3ff,
         11 => 0x7ff,
-        x => (1 << x) - 1,
+        _ => (1 << coefficient_bits) - 1,
     }
 }
 

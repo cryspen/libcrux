@@ -4,42 +4,52 @@ open Core
 open FStar.Mul
 
 let validate_private_key
-      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 3168))
-      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1568))
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (Rust_primitives.mk_usize 3168))
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (Rust_primitives.mk_usize 1568))
      =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.validate_private_key (sz 4)
-    (sz 3168)
-    (sz 1568)
+  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.validate_private_key (Rust_primitives.mk_usize 4)
+    (Rust_primitives.mk_usize 3168)
+    (Rust_primitives.mk_usize 1568)
     private_key
     ciphertext
 
 let decapsulate
-      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 3168))
-      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1568))
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (Rust_primitives.mk_usize 3168))
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (Rust_primitives.mk_usize 1568))
      =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.decapsulate (sz 4) (sz 3168) (sz 1536) (sz 1568)
-    (sz 1568) (sz 1536) (sz 1408) (sz 160) (sz 11) (sz 5) (sz 352) (sz 2) (sz 128) (sz 2) (sz 128)
-    (sz 1600) private_key ciphertext
+  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.decapsulate (Rust_primitives.mk_usize 4)
+    (Rust_primitives.mk_usize 3168) (Rust_primitives.mk_usize 1536) (Rust_primitives.mk_usize 1568)
+    (Rust_primitives.mk_usize 1568) (Rust_primitives.mk_usize 1536) (Rust_primitives.mk_usize 1408)
+    (Rust_primitives.mk_usize 160) (Rust_primitives.mk_usize 11) (Rust_primitives.mk_usize 5)
+    (Rust_primitives.mk_usize 352) (Rust_primitives.mk_usize 2) (Rust_primitives.mk_usize 128)
+    (Rust_primitives.mk_usize 2) (Rust_primitives.mk_usize 128) (Rust_primitives.mk_usize 1600)
+    private_key ciphertext
 
 let encapsulate
-      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568))
-      (randomness: t_Array u8 (sz 32))
+      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (Rust_primitives.mk_usize 1568))
+      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
      =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.encapsulate (sz 4) (sz 1568) (sz 1568) (sz 1536)
-    (sz 1408) (sz 160) (sz 11) (sz 5) (sz 352) (sz 2) (sz 128) (sz 2) (sz 128) public_key randomness
+  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.encapsulate (Rust_primitives.mk_usize 4)
+    (Rust_primitives.mk_usize 1568) (Rust_primitives.mk_usize 1568) (Rust_primitives.mk_usize 1536)
+    (Rust_primitives.mk_usize 1408) (Rust_primitives.mk_usize 160) (Rust_primitives.mk_usize 11)
+    (Rust_primitives.mk_usize 5) (Rust_primitives.mk_usize 352) (Rust_primitives.mk_usize 2)
+    (Rust_primitives.mk_usize 128) (Rust_primitives.mk_usize 2) (Rust_primitives.mk_usize 128)
+    public_key randomness
 
-let generate_key_pair (randomness: t_Array u8 (sz 64)) =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.generate_keypair (sz 4)
-    (sz 1536)
-    (sz 3168)
-    (sz 1568)
-    (sz 1536)
-    (sz 2)
-    (sz 128)
+let generate_key_pair (randomness: t_Array u8 (Rust_primitives.mk_usize 64)) =
+  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.generate_keypair (Rust_primitives.mk_usize 4)
+    (Rust_primitives.mk_usize 1536)
+    (Rust_primitives.mk_usize 3168)
+    (Rust_primitives.mk_usize 1568)
+    (Rust_primitives.mk_usize 1536)
+    (Rust_primitives.mk_usize 2)
+    (Rust_primitives.mk_usize 128)
     randomness
 
-let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568)) =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.validate_public_key (sz 4)
-    (sz 1536)
-    (sz 1568)
+let validate_public_key
+      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (Rust_primitives.mk_usize 1568))
+     =
+  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.validate_public_key (Rust_primitives.mk_usize 4)
+    (Rust_primitives.mk_usize 1536)
+    (Rust_primitives.mk_usize 1568)
     public_key.Libcrux_ml_kem.Types.f_value

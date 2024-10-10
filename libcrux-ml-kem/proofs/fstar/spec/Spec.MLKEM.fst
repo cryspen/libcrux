@@ -28,7 +28,10 @@ val v_ETA1 (r:rank) : u:usize{u == sz 3 \/ u == sz 2}
 let v_ETA1 (r:rank) : usize = 
   if r = sz 2 then sz 3 else
   if r = sz 3 then sz 2 else
-  if r = sz 4 then sz 2
+  if r = sz 4 then sz 2 else (
+  assert (false);
+  sz 0)
+  
 
 let v_ETA2 (r:rank) : usize = sz 2
 
@@ -36,13 +39,19 @@ val v_VECTOR_U_COMPRESSION_FACTOR (r:rank) : u:usize{u == sz 10 \/ u == sz 11}
 let v_VECTOR_U_COMPRESSION_FACTOR (r:rank) : usize = 
   if r = sz 2 then sz 10 else
   if r = sz 3 then sz 10 else
-  if r = sz 4 then sz 11
+  if r = sz 4 then sz 11 else (
+  assert (false);
+  sz 0)
+  
 
 val v_VECTOR_V_COMPRESSION_FACTOR (r:rank) : u:usize{u == sz 4 \/ u == sz 5}
 let v_VECTOR_V_COMPRESSION_FACTOR (r:rank) : usize = 
   if r = sz 2 then sz 4 else
   if r = sz 3 then sz 4 else
-  if r = sz 4 then sz 5
+  if r = sz 4 then sz 5 else (
+  assert (false);
+  sz 0)
+  
 
 val v_ETA1_RANDOMNESS_SIZE (r:rank) : u:usize{u == sz 128 \/ u == sz 192}
 let v_ETA1_RANDOMNESS_SIZE (r:rank) = v_ETA1 r *! sz 64
@@ -129,7 +138,7 @@ let sample_polynomial_ntt seed =
   if sampled < 256 then poly0, false else poly1, true
 
 let sample_polynomial_ntt_at_index (seed:t_Array u8 (sz 32)) (i j: (x:usize{v x <= 4})) : polynomial & bool =
-    let seed34 = Seq.append seed (Seq.create 2 0uy) in
+    let seed34 = Seq.append seed (Seq.create 2 (mk_u8 0)) in
     let seed34 = Rust_primitives.Hax.update_at seed34 (sz 32) (mk_int #u8_inttype (v i)) in
     let seed34 = Rust_primitives.Hax.update_at seed34 (sz 33) (mk_int #u8_inttype (v j)) in
     sample_polynomial_ntt seed34

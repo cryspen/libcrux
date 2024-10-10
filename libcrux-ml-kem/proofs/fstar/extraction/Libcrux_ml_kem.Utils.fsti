@@ -10,5 +10,5 @@ val into_padded_array (v_LEN: usize) (slice: t_Slice u8)
       (ensures
         fun result ->
           let result:t_Array u8 v_LEN = result in
-          result == Seq.append slice (Seq.create (v v_LEN - v (Core.Slice.impl__len #u8 slice)) 0uy)
-      )
+          result ==
+          Seq.append slice (Seq.create (v v_LEN - v (Core.Slice.impl__len #u8 slice)) (mk_u8 0)))

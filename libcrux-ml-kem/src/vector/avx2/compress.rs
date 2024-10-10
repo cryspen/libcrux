@@ -39,7 +39,7 @@ pub(crate) fn compress_message_coefficient(vector: Vec256) -> Vec256 {
 
 #[inline(always)]
 #[hax_lib::requires(fstar!("v $COEFFICIENT_BITS >= 0 /\\ v $COEFFICIENT_BITS < bits i32_inttype /\\
-    range (v (1l <<! $COEFFICIENT_BITS) - 1) i32_inttype"))]
+    range (v ((mk_i32 1) <<! $COEFFICIENT_BITS) - 1) i32_inttype"))]
 pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     vector: Vec256,
 ) -> Vec256 {

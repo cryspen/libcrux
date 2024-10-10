@@ -9,21 +9,53 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
+let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (Rust_primitives.mk_usize 128) =
   let _:Prims.unit = assert_norm (pow2 16 == 65536) in
   let list =
     [
-      (-1044s); (-758s); (-359s); (-1517s); 1493s; 1422s; 287s; 202s; (-171s); 622s; 1577s; 182s;
-      962s; (-1202s); (-1474s); 1468s; 573s; (-1325s); 264s; 383s; (-829s); 1458s; (-1602s); (-130s);
-      (-681s); 1017s; 732s; 608s; (-1542s); 411s; (-205s); (-1571s); 1223s; 652s; (-552s); 1015s;
-      (-1293s); 1491s; (-282s); (-1544s); 516s; (-8s); (-320s); (-666s); (-1618s); (-1162s); 126s;
-      1469s; (-853s); (-90s); (-271s); 830s; 107s; (-1421s); (-247s); (-951s); (-398s); 961s;
-      (-1508s); (-725s); 448s; (-1065s); 677s; (-1275s); (-1103s); 430s; 555s; 843s; (-1251s); 871s;
-      1550s; 105s; 422s; 587s; 177s; (-235s); (-291s); (-460s); 1574s; 1653s; (-246s); 778s; 1159s;
-      (-147s); (-777s); 1483s; (-602s); 1119s; (-1590s); 644s; (-872s); 349s; 418s; 329s; (-156s);
-      (-75s); 817s; 1097s; 603s; 610s; 1322s; (-1285s); (-1465s); 384s; (-1215s); (-136s); 1218s;
-      (-1335s); (-874s); 220s; (-1187s); (-1659s); (-1185s); (-1530s); (-1278s); 794s; (-1510s);
-      (-854s); (-870s); 478s; (-108s); (-308s); 996s; 991s; 958s; (-1460s); 1522s; 1628s
+      Rust_primitives.mk_i16 (-1044); Rust_primitives.mk_i16 (-758); Rust_primitives.mk_i16 (-359);
+      Rust_primitives.mk_i16 (-1517); Rust_primitives.mk_i16 1493; Rust_primitives.mk_i16 1422;
+      Rust_primitives.mk_i16 287; Rust_primitives.mk_i16 202; Rust_primitives.mk_i16 (-171);
+      Rust_primitives.mk_i16 622; Rust_primitives.mk_i16 1577; Rust_primitives.mk_i16 182;
+      Rust_primitives.mk_i16 962; Rust_primitives.mk_i16 (-1202); Rust_primitives.mk_i16 (-1474);
+      Rust_primitives.mk_i16 1468; Rust_primitives.mk_i16 573; Rust_primitives.mk_i16 (-1325);
+      Rust_primitives.mk_i16 264; Rust_primitives.mk_i16 383; Rust_primitives.mk_i16 (-829);
+      Rust_primitives.mk_i16 1458; Rust_primitives.mk_i16 (-1602); Rust_primitives.mk_i16 (-130);
+      Rust_primitives.mk_i16 (-681); Rust_primitives.mk_i16 1017; Rust_primitives.mk_i16 732;
+      Rust_primitives.mk_i16 608; Rust_primitives.mk_i16 (-1542); Rust_primitives.mk_i16 411;
+      Rust_primitives.mk_i16 (-205); Rust_primitives.mk_i16 (-1571); Rust_primitives.mk_i16 1223;
+      Rust_primitives.mk_i16 652; Rust_primitives.mk_i16 (-552); Rust_primitives.mk_i16 1015;
+      Rust_primitives.mk_i16 (-1293); Rust_primitives.mk_i16 1491; Rust_primitives.mk_i16 (-282);
+      Rust_primitives.mk_i16 (-1544); Rust_primitives.mk_i16 516; Rust_primitives.mk_i16 (-8);
+      Rust_primitives.mk_i16 (-320); Rust_primitives.mk_i16 (-666); Rust_primitives.mk_i16 (-1618);
+      Rust_primitives.mk_i16 (-1162); Rust_primitives.mk_i16 126; Rust_primitives.mk_i16 1469;
+      Rust_primitives.mk_i16 (-853); Rust_primitives.mk_i16 (-90); Rust_primitives.mk_i16 (-271);
+      Rust_primitives.mk_i16 830; Rust_primitives.mk_i16 107; Rust_primitives.mk_i16 (-1421);
+      Rust_primitives.mk_i16 (-247); Rust_primitives.mk_i16 (-951); Rust_primitives.mk_i16 (-398);
+      Rust_primitives.mk_i16 961; Rust_primitives.mk_i16 (-1508); Rust_primitives.mk_i16 (-725);
+      Rust_primitives.mk_i16 448; Rust_primitives.mk_i16 (-1065); Rust_primitives.mk_i16 677;
+      Rust_primitives.mk_i16 (-1275); Rust_primitives.mk_i16 (-1103); Rust_primitives.mk_i16 430;
+      Rust_primitives.mk_i16 555; Rust_primitives.mk_i16 843; Rust_primitives.mk_i16 (-1251);
+      Rust_primitives.mk_i16 871; Rust_primitives.mk_i16 1550; Rust_primitives.mk_i16 105;
+      Rust_primitives.mk_i16 422; Rust_primitives.mk_i16 587; Rust_primitives.mk_i16 177;
+      Rust_primitives.mk_i16 (-235); Rust_primitives.mk_i16 (-291); Rust_primitives.mk_i16 (-460);
+      Rust_primitives.mk_i16 1574; Rust_primitives.mk_i16 1653; Rust_primitives.mk_i16 (-246);
+      Rust_primitives.mk_i16 778; Rust_primitives.mk_i16 1159; Rust_primitives.mk_i16 (-147);
+      Rust_primitives.mk_i16 (-777); Rust_primitives.mk_i16 1483; Rust_primitives.mk_i16 (-602);
+      Rust_primitives.mk_i16 1119; Rust_primitives.mk_i16 (-1590); Rust_primitives.mk_i16 644;
+      Rust_primitives.mk_i16 (-872); Rust_primitives.mk_i16 349; Rust_primitives.mk_i16 418;
+      Rust_primitives.mk_i16 329; Rust_primitives.mk_i16 (-156); Rust_primitives.mk_i16 (-75);
+      Rust_primitives.mk_i16 817; Rust_primitives.mk_i16 1097; Rust_primitives.mk_i16 603;
+      Rust_primitives.mk_i16 610; Rust_primitives.mk_i16 1322; Rust_primitives.mk_i16 (-1285);
+      Rust_primitives.mk_i16 (-1465); Rust_primitives.mk_i16 384; Rust_primitives.mk_i16 (-1215);
+      Rust_primitives.mk_i16 (-136); Rust_primitives.mk_i16 1218; Rust_primitives.mk_i16 (-1335);
+      Rust_primitives.mk_i16 (-874); Rust_primitives.mk_i16 220; Rust_primitives.mk_i16 (-1187);
+      Rust_primitives.mk_i16 (-1659); Rust_primitives.mk_i16 (-1185); Rust_primitives.mk_i16 (-1530);
+      Rust_primitives.mk_i16 (-1278); Rust_primitives.mk_i16 794; Rust_primitives.mk_i16 (-1510);
+      Rust_primitives.mk_i16 (-854); Rust_primitives.mk_i16 (-870); Rust_primitives.mk_i16 478;
+      Rust_primitives.mk_i16 (-108); Rust_primitives.mk_i16 (-308); Rust_primitives.mk_i16 996;
+      Rust_primitives.mk_i16 991; Rust_primitives.mk_i16 958; Rust_primitives.mk_i16 (-1460);
+      Rust_primitives.mk_i16 1522; Rust_primitives.mk_i16 1628
     ]
   in
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
@@ -31,7 +63,7 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
 
 val get_zeta (i: usize)
     : Prims.Pure i16
-      (requires i <. sz 128)
+      (requires i <. Rust_primitives.mk_usize 128)
       (ensures
         fun result ->
           let result:i16 = result in
@@ -43,7 +75,7 @@ let v_VECTORS_IN_RING_ELEMENT: usize =
 
 type t_PolynomialRingElement
   (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-  = { f_coefficients:t_Array v_Vector (sz 16) }
+  = { f_coefficients:t_Array v_Vector (Rust_primitives.mk_usize 16) }
 
 let to_spec_poly_t (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -99,7 +131,8 @@ val impl_2__from_i16_array
       (a: t_Slice i16)
     : Prims.Pure (t_PolynomialRingElement v_Vector)
       (requires
-        (v_VECTORS_IN_RING_ELEMENT *! sz 16 <: usize) <=. (Core.Slice.impl__len #i16 a <: usize))
+        (v_VECTORS_IN_RING_ELEMENT *! Rust_primitives.mk_usize 16 <: usize) <=.
+        (Core.Slice.impl__len #i16 a <: usize))
       (fun _ -> Prims.l_True)
 
 /// Given two `KyberPolynomialRingElement`s in their NTT representations,

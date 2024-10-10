@@ -76,7 +76,8 @@ val mm256_mulhi_epi16 (lhs rhs: t_Vec256)
         fun result ->
           let result:t_Vec256 = result in
           vec256_as_i16x16 result ==
-          Spec.Utils.map2 (fun x y -> cast (((cast x <: i32) *. (cast y <: i32)) >>! 16l) <: i16)
+          Spec.Utils.map2 (fun x y ->
+                cast (((cast x <: i32) *. (cast y <: i32)) >>! (mk_i32 16)) <: i16)
             (vec256_as_i16x16 lhs)
             (vec256_as_i16x16 rhs))
 
@@ -126,7 +127,7 @@ include BitVec.Intrinsics {mm256_sllv_epi32}
 
 val mm256_srai_epi16 (v_SHIFT_BY: i32) (vector: t_Vec256)
     : Prims.Pure t_Vec256
-      (requires v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l)
+      (requires v_SHIFT_BY >=. Rust_primitives.mk_i32 0 && v_SHIFT_BY <. Rust_primitives.mk_i32 16)
       (ensures
         fun result ->
           let result:t_Vec256 = result in
@@ -204,7 +205,8 @@ val mm_mulhi_epi16 (lhs rhs: t_Vec128)
         fun result ->
           let result:t_Vec128 = result in
           vec128_as_i16x8 result ==
-          Spec.Utils.map2 (fun x y -> cast (((cast x <: i32) *. (cast y <: i32)) >>! 16l) <: i16)
+          Spec.Utils.map2 (fun x y ->
+                cast (((cast x <: i32) *. (cast y <: i32)) >>! (mk_i32 16)) <: i16)
             (vec128_as_i16x8 lhs)
             (vec128_as_i16x8 rhs))
 

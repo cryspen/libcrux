@@ -17,7 +17,7 @@ pub trait Repr: Copy + Clone {
 pub trait Operations: Copy + Clone + Repr {
     #[allow(non_snake_case)]
     #[requires(true)]
-    #[ensures(|result| fstar!("f_repr $result == Seq.create 16 0s"))]
+    #[ensures(|result| fstar!("f_repr $result == Seq.create 16 (mk_i16 0)"))]
     fn ZERO() -> Self;
   
     #[requires(array.len() == 16)]
@@ -56,13 +56,13 @@ pub trait Operations: Copy + Clone + Repr {
     fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
 
     #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    #[ensures(|result| fstar!("(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> f_repr $result == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (f_repr $v)"))]
+    #[ensures(|result| fstar!("(v_SHIFT_BY >=. (mk_i32 0) /\\ v_SHIFT_BY <. (mk_i32 16)) ==> f_repr $result == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (f_repr $v)"))]
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
     // fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
 
     // Modular operations
     #[requires(fstar!("Spec.Utils.is_i16b_array (pow2 12 - 1) (f_repr $v)"))]
-    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (f_repr $v)"))]
+    #[ensures(|result| fstar!("f_repr $result == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (f_repr $v)"))]
     fn cond_subtract_3329(v: Self) -> Self;
 
     #[requires(fstar!("Spec.Utils.is_i16b_array 28296 (f_repr $vector)"))]
@@ -237,10 +237,10 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
 
 #[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::requires(fstar!("forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
-                                      (x == 0s \\/ x == 1s)"))]
+                                      (x == (mk_i16 0) \\/ x == (mk_i16 1))"))]
 pub fn decompress_1<T: Operations>(vec: T) -> T {
     let z = T::ZERO();
-    hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${z}) i == 0s)");
+    hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${z}) i == (mk_i16 0))");
     hax_lib::fstar!("assert(forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
                                       ((0 - v x) == 0 \\/ (0 - v x) == -1))"); 
     hax_lib::fstar!("assert(forall i. i < 16 ==>
@@ -248,9 +248,9 @@ pub fn decompress_1<T: Operations>(vec: T) -> T {
                                         (0 - v (Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i)))");                               
     
     let s = T::sub(z, &vec);
-    hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == 0s \\/ 
-                                      Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == -1s)");
-    hax_lib::fstar!("assert (i1.f_bitwise_and_with_constant_pre ${s} 1665s)");
+    hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == (mk_i16 0) \\/ 
+                                      Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == (mk_i16 (-1)))");
+    hax_lib::fstar!("assert (i1.f_bitwise_and_with_constant_pre ${s} (mk_i16 1665))");
     let res = T::bitwise_and_with_constant(s, 1665);
     res
 }

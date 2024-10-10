@@ -26,7 +26,7 @@ impl crate::vector::traits::Repr for SIMD128Vector {
 #[hax_lib::attributes]
 impl Operations for SIMD128Vector {
     #[inline(always)]
-    #[ensures(|out| fstar!("impl.f_repr out == Seq.create 16 0s"))]
+    #[ensures(|out| fstar!("impl.f_repr out == Seq.create 16 (mk_i16 0)"))]
     fn ZERO() -> Self {
         ZERO()
     }

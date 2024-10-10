@@ -3,7 +3,7 @@ module Libcrux_ml_kem.Vector.Neon.Arithmetic
 open Core
 open FStar.Mul
 
-let v_BARRETT_MULTIPLIER: i16 = 20159s
+let v_BARRETT_MULTIPLIER: i16 = Rust_primitives.mk_i16 20159
 
 val barrett_reduce_int16x8_t (v: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 

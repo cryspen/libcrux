@@ -176,21 +176,21 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
 
             let even_bits = random_bits_as_u32 & 0x55555555;
             let odd_bits = (random_bits_as_u32 >> 1) & 0x55555555;
-            hax_lib::fstar!("logand_lemma $random_bits_as_u32 1431655765ul;
-                logand_lemma ($random_bits_as_u32 >>! 1l) 1431655765ul");
+            hax_lib::fstar!("logand_lemma $random_bits_as_u32 (mk_u32 1431655765);
+                logand_lemma ($random_bits_as_u32 >>! (mk_i32 1)) (mk_u32 1431655765)");
             let coin_toss_outcomes = even_bits + odd_bits;
 
             cloop! {
                 for outcome_set in (0..u32::BITS).step_by(4) {
                     let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as i16;
                     let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i16;
-                    hax_lib::fstar!("logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) 3ul;
-                        logand_lemma ($coin_toss_outcomes >>! ($outcome_set +! 2ul <: u32) <: u32) 3ul;
+                    hax_lib::fstar!("logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) (mk_u32 3);
+                        logand_lemma ($coin_toss_outcomes >>! ($outcome_set +! (mk_u32 2) <: u32) <: u32) (mk_u32 3);
                         assert (v $outcome_1 >= 0 /\\ v $outcome_1 <= 3);
                         assert (v $outcome_2 >= 0 /\\ v $outcome_2 <= 3);
                         assert (v $chunk_number <= 31);
                         assert (v (sz 8 *! $chunk_number <: usize) <= 248);
-                        assert (v (cast ($outcome_set >>! 2l <: u32) <: usize) <= 7)");
+                        assert (v (cast ($outcome_set >>! (mk_i32 2) <: u32) <: usize) <= 7)");
 
                     let offset = (outcome_set >> 2) as usize;
                     sampled_i16s[8 * chunk_number + offset] = outcome_1 - outcome_2;
@@ -224,9 +224,9 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
             let first_bits = random_bits_as_u24 & 0x00249249;
             let second_bits = (random_bits_as_u24 >> 1) & 0x00249249;
             let third_bits = (random_bits_as_u24 >> 2) & 0x00249249;
-            hax_lib::fstar!("logand_lemma $random_bits_as_u24 2396745ul;
-                logand_lemma ($random_bits_as_u24 >>! 1l <: u32) 2396745ul;
-                logand_lemma ($random_bits_as_u24 >>! 2l <: u32) 2396745ul");
+            hax_lib::fstar!("logand_lemma $random_bits_as_u24 (mk_u32 2396745);
+                logand_lemma ($random_bits_as_u24 >>! (mk_i32 1) <: u32) (mk_u32 2396745);
+                logand_lemma ($random_bits_as_u24 >>! (mk_i32 2) <: u32) (mk_u32 2396745)");
 
             let coin_toss_outcomes = first_bits + second_bits + third_bits;
 
@@ -234,13 +234,13 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
                 for outcome_set in (0..24).step_by(6) {
                     let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as i16;
                     let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as i16;
-                    hax_lib::fstar!("logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) 7ul;
-                        logand_lemma ($coin_toss_outcomes >>! ($outcome_set +! 3l <: i32) <: u32) 7ul;
+                    hax_lib::fstar!("logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) (mk_u32 7);
+                        logand_lemma ($coin_toss_outcomes >>! ($outcome_set +! (mk_i32 3) <: i32) <: u32) (mk_u32 7);
                         assert (v $outcome_1 >= 0 /\\ v $outcome_1 <= 7);
                         assert (v $outcome_2 >= 0 /\\ v $outcome_2 <= 7);
                         assert (v $chunk_number <= 63);
                         assert (v (sz 4 *! $chunk_number <: usize) <= 252);
-                        assert (v (cast ($outcome_set /! 6l <: i32) <: usize) <= 3)");
+                        assert (v (cast ($outcome_set /! (mk_i32 6) <: i32) <: usize) <= 3)");
 
                     let offset = (outcome_set / 6) as usize;
                     sampled_i16s[4 * chunk_number + offset] = outcome_1 - outcome_2;
