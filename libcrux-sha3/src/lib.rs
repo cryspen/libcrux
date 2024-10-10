@@ -5,6 +5,7 @@
 #![no_std]
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
+use hax_secret_integers::*;
 
 pub mod simd;
 
@@ -210,14 +211,14 @@ pub mod portable {
     /// The Keccak state for the incremental API.
     #[derive(Clone, Copy)]
     pub struct KeccakState {
-        state: GenericState<1, u64>,
+        state: GenericState<1, U64>,
     }
 
     #[inline(always)]
     fn keccakx1<const RATE: usize, const DELIM: u8>(data: [&[u8]; 1], out: [&mut [u8]; 1]) {
         // generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out);
         // or
-        generic_keccak::keccak::<1, u64, RATE, DELIM>(data, out);
+        generic_keccak::keccak::<1, U64, RATE, DELIM>(data, out);
     }
 
     /// A portable SHA3 224 implementation.

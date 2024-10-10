@@ -84,9 +84,9 @@ checksum = "7d5a26814d8dcb93b0e5a0ff3c6d80a8843bafb21b39e8e18a6f05471870e110"
 
 [[package]]
 name = "autocfg"
-version = "1.3.0"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c4b4d0bd25bd0b74681c0ad21497610ce1b7c91b1022cd21c80c6fbdd9476b0"
+checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
 name = "base16ct"
@@ -126,9 +126,9 @@ dependencies = [
 
 [[package]]
 name = "bindgen"
-version = "0.69.4"
+version = "0.69.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a00dc851838a2120612785d195287475a3ac45514741da670b735818822129a0"
+checksum = "271383c67ccabffb7381723dea0672a673f292304fcb45c01cc648c7a8d58088"
 dependencies = [
  "bitflags",
  "cexpr",
@@ -143,7 +143,7 @@ dependencies = [
  "regex",
  "rustc-hash",
  "shlex",
- "syn 2.0.77",
+ "syn 2.0.79",
  "which",
 ]
 
@@ -191,9 +191,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.1.21"
+version = "1.1.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07b1695e2c7e8fc85310cde85aeaab7e3097f593c91d209d3f9df76c928100f0"
+checksum = "2e80e3b6a3ab07840e1cae9b0666a63970dc28e8ed5ffbcdacbfc760c281bfc1"
 dependencies = [
  "jobserver",
  "libc",
@@ -290,9 +290,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.18"
+version = "4.5.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0956a43b323ac1afaffc053ed5c4b7c1f1800bacd1683c353aabbb752515dd3"
+checksum = "b97f376d85a664d5837dbae44bf546e6477a679ff6610010f17276f686d867e8"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -300,9 +300,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.18"
+version = "4.5.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d72166dd41634086d5803a47eb71ae740e61d84709c36f3c34110173db3961b"
+checksum = "19bc80abd44e4bed93ca373a0704ccbd1b710dc5749406201bb018272808dc54"
 dependencies = [
  "anstream",
  "anstyle",
@@ -319,7 +319,7 @@ dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn 2.0.77",
+ "syn 2.0.79",
 ]
 
 [[package]]
@@ -483,7 +483,7 @@ checksum = "f46882e17999c6cc590af592290432be3bce0428cb0d5f8b6715e4dc7b383eb3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.77",
+ "syn 2.0.79",
 ]
 
 [[package]]
@@ -701,10 +701,10 @@ dependencies = [
 
 [[package]]
 name = "hax-lib"
-version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#c2093b4963099522c65f5cd42b96d6433afb0617"
+version = "0.1.0-alpha.1"
+source = "git+https://github.com/hacspec/hax/#0fc089babac7c776a28386c4e952dd67cd94e066"
 dependencies = [
- "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
+ "hax-lib-macros 0.1.0-alpha.1 (git+https://github.com/hacspec/hax/)",
  "num-bigint",
  "num-traits",
 ]
@@ -712,43 +712,68 @@ dependencies = [
 [[package]]
 name = "hax-lib"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/#c2093b4963099522c65f5cd42b96d6433afb0617"
+source = "git+https://github.com/hacspec/hax/?branch=karthik/secret-integers#7b6d3eaee3085511688438722110b1e9c1cc575b"
 dependencies = [
- "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
+ "hax-lib-macros 0.1.0-pre.1",
  "num-bigint",
  "num-traits",
 ]
 
 [[package]]
 name = "hax-lib-macros"
-version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#c2093b4963099522c65f5cd42b96d6433afb0617"
+version = "0.1.0-alpha.1"
+source = "git+https://github.com/hacspec/hax?branch=main#0fc089babac7c776a28386c4e952dd67cd94e066"
 dependencies = [
- "hax-lib-macros-types 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
+ "hax-lib-macros-types 0.1.0-alpha.1 (git+https://github.com/hacspec/hax?branch=main)",
  "paste",
  "proc-macro-error",
  "proc-macro2",
  "quote",
- "syn 2.0.77",
+ "syn 2.0.79",
+]
+
+[[package]]
+name = "hax-lib-macros"
+version = "0.1.0-alpha.1"
+source = "git+https://github.com/hacspec/hax/#0fc089babac7c776a28386c4e952dd67cd94e066"
+dependencies = [
+ "hax-lib-macros-types 0.1.0-alpha.1 (git+https://github.com/hacspec/hax/)",
+ "paste",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.79",
 ]
 
 [[package]]
 name = "hax-lib-macros"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/#c2093b4963099522c65f5cd42b96d6433afb0617"
+source = "git+https://github.com/hacspec/hax/?branch=karthik/secret-integers#7b6d3eaee3085511688438722110b1e9c1cc575b"
 dependencies = [
- "hax-lib-macros-types 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
+ "hax-lib-macros-types 0.1.0-pre.1",
  "paste",
  "proc-macro-error",
  "proc-macro2",
  "quote",
- "syn 2.0.77",
+ "syn 2.0.79",
 ]
 
 [[package]]
 name = "hax-lib-macros-types"
-version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#c2093b4963099522c65f5cd42b96d6433afb0617"
+version = "0.1.0-alpha.1"
+source = "git+https://github.com/hacspec/hax?branch=main#0fc089babac7c776a28386c4e952dd67cd94e066"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
+name = "hax-lib-macros-types"
+version = "0.1.0-alpha.1"
+source = "git+https://github.com/hacspec/hax/#0fc089babac7c776a28386c4e952dd67cd94e066"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -760,13 +785,21 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros-types"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/#c2093b4963099522c65f5cd42b96d6433afb0617"
+source = "git+https://github.com/hacspec/hax/?branch=karthik/secret-integers#7b6d3eaee3085511688438722110b1e9c1cc575b"
 dependencies = [
  "proc-macro2",
  "quote",
  "serde",
  "serde_json",
  "uuid",
+]
+
+[[package]]
+name = "hax-secret-integers"
+version = "0.1.0-pre.1"
+source = "git+https://github.com/hacspec/hax/?branch=karthik/secret-integers#7b6d3eaee3085511688438722110b1e9c1cc575b"
+dependencies = [
+ "hax-lib 0.1.0-pre.1",
 ]
 
 [[package]]
@@ -884,9 +917,9 @@ dependencies = [
 
 [[package]]
 name = "js-sys"
-version = "0.3.70"
+version = "0.3.71"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1868808506b929d7b0cfa8f75951347aa71bb21144b7791bae35d9bccfcfe37a"
+checksum = "0cb94a0ffd3f3ee755c20f7d8752f45cac88605a4dcf808abcff72873296ec7b"
 dependencies = [
  "wasm-bindgen",
 ]
@@ -924,9 +957,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.158"
+version = "0.2.159"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8adc4bb1803a324070e64a98ae98f38934d91957a99cfb3a43dcbc01bc56439"
+checksum = "561d97a539a36e26a9a5fad1ea11a3039a67714694aaa379433e580854bc3dc5"
 
 [[package]]
 name = "libcrux"
@@ -934,8 +967,8 @@ version = "0.0.2-beta.2"
 dependencies = [
  "clap",
  "getrandom",
- "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
- "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
+ "hax-lib 0.1.0-pre.1",
+ "hax-lib-macros 0.1.0-alpha.1 (git+https://github.com/hacspec/hax?branch=main)",
  "hex",
  "libcrux",
  "libcrux-ecdh",
@@ -1041,7 +1074,7 @@ name = "libcrux-ml-kem"
 version = "0.0.2-beta.2"
 dependencies = [
  "criterion",
- "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
+ "hax-lib 0.1.0-alpha.1",
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",
@@ -1087,7 +1120,8 @@ version = "0.0.2-beta.2"
 dependencies = [
  "cavp",
  "criterion",
- "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
+ "hax-lib 0.1.0-alpha.1",
+ "hax-secret-integers",
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",
@@ -1200,9 +1234,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.19.0"
+version = "1.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
+checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
 
 [[package]]
 name = "oorandom"
@@ -1239,7 +1273,7 @@ checksum = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.77",
+ "syn 2.0.79",
 ]
 
 [[package]]
@@ -1406,7 +1440,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "479cf940fbbb3426c32c5d5176f62ad57549a0bb84773423ba8be9d089f5faba"
 dependencies = [
  "proc-macro2",
- "syn 2.0.77",
+ "syn 2.0.79",
 ]
 
 [[package]]
@@ -1444,9 +1478,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.86"
+version = "1.0.87"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e719e8df665df0d1c8fbfd238015744736151d4445ec0836b8e628aae103b77"
+checksum = "b3e4daa0dcf6feba26f985457cdf104d4b4256fc5a09547140f3631bb076b19a"
 dependencies = [
  "unicode-ident",
 ]
@@ -1534,9 +1568,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.10.6"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4219d74c6b67a3654a9fbebc4b419e22126d13d2f3c4a07ee0cb61ff79a79619"
+checksum = "38200e5ee88914975b69f657f0801b6f6dccafd44fd9326302a4aaeecfacb1d8"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -1546,9 +1580,9 @@ dependencies = [
 
 [[package]]
 name = "regex-automata"
-version = "0.4.7"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38caf58cc5ef2fed281f89292ef23f6365465ed9a41b7a7754eb4e26496c92df"
+checksum = "368758f23274712b504848e9d5a6f010445cc8b87a7cdb4d7cbee666c1288da3"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -1557,9 +1591,9 @@ dependencies = [
 
 [[package]]
 name = "regex-syntax"
-version = "0.8.4"
+version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a66a03ae7c801facd77a29370b4faec201768915ac14a721ba36f20bc9c209b"
+checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "rfc6979"
@@ -1672,7 +1706,7 @@ checksum = "243902eda00fad750862fc144cea25caca5e20d615af0a81bee94ca738f1df1f"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.77",
+ "syn 2.0.79",
 ]
 
 [[package]]
@@ -1771,9 +1805,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.77"
+version = "2.0.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f35bcdf61fd8e7be6caf75f429fdca8beb3ed76584befb503b1569faee373ed"
+checksum = "89132cd0bf050864e1d38dc3bbc07a0eb8e7530af26344d3d2bbbef83499f590"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1872,9 +1906,9 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "wasm-bindgen"
-version = "0.2.93"
+version = "0.2.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a82edfc16a6c469f5f44dc7b571814045d60404b55a0ee849f9bcfa2e63dd9b5"
+checksum = "ef073ced962d62984fb38a36e5fdc1a2b23c9e0e1fa0689bb97afa4202ef6887"
 dependencies = [
  "cfg-if",
  "once_cell",
@@ -1883,24 +1917,24 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-backend"
-version = "0.2.93"
+version = "0.2.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9de396da306523044d3302746f1208fa71d7532227f15e347e2d93e4145dd77b"
+checksum = "c4bfab14ef75323f4eb75fa52ee0a3fb59611977fd3240da19b2cf36ff85030e"
 dependencies = [
  "bumpalo",
  "log",
  "once_cell",
  "proc-macro2",
  "quote",
- "syn 2.0.77",
+ "syn 2.0.79",
  "wasm-bindgen-shared",
 ]
 
 [[package]]
 name = "wasm-bindgen-futures"
-version = "0.4.43"
+version = "0.4.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61e9300f63a621e96ed275155c108eb6f843b6a26d053f122ab69724559dc8ed"
+checksum = "65471f79c1022ffa5291d33520cbbb53b7687b01c2f8e83b57d102eed7ed479d"
 dependencies = [
  "cfg-if",
  "js-sys",
@@ -1910,9 +1944,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro"
-version = "0.2.93"
+version = "0.2.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "585c4c91a46b072c92e908d99cb1dcdf95c5218eeb6f3bf1efa991ee7a68cccf"
+checksum = "a7bec9830f60924d9ceb3ef99d55c155be8afa76954edffbb5936ff4509474e7"
 dependencies = [
  "quote",
  "wasm-bindgen-macro-support",
@@ -1920,28 +1954,28 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro-support"
-version = "0.2.93"
+version = "0.2.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "afc340c74d9005395cf9dd098506f7f44e38f2b4a21c6aaacf9a105ea5e1e836"
+checksum = "4c74f6e152a76a2ad448e223b0fc0b6b5747649c3d769cc6bf45737bf97d0ed6"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.77",
+ "syn 2.0.79",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
 
 [[package]]
 name = "wasm-bindgen-shared"
-version = "0.2.93"
+version = "0.2.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c62a0a307cb4a311d3a07867860911ca130c3494e8c2719593806c08bc5d0484"
+checksum = "a42f6c679374623f295a8623adfe63d9284091245c3504bde47c17a3ce2777d9"
 
 [[package]]
 name = "wasm-bindgen-test"
-version = "0.3.43"
+version = "0.3.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68497a05fb21143a08a7d24fc81763384a3072ee43c44e86aad1744d6adef9d9"
+checksum = "a93d2a9ae98f1af8953f6415397299d808cce0a24f6d7c613d27bd83edf98da8"
 dependencies = [
  "console_error_panic_hook",
  "js-sys",
@@ -1954,20 +1988,20 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-test-macro"
-version = "0.3.43"
+version = "0.3.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b8220be1fa9e4c889b30fd207d4906657e7e90b12e0e6b0c8b8d8709f5de021"
+checksum = "fb8b294691f640bad8f2bb35a11bb28272701b1d687bd5fd661a27684e894d4d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.77",
+ "syn 2.0.79",
 ]
 
 [[package]]
 name = "web-sys"
-version = "0.3.70"
+version = "0.3.71"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26fdeaafd9bd129f65e7c031593c24d62186301e0c72c8978fa1678be7d532c0"
+checksum = "44188d185b5bdcae1052d08bcbcf9091a5524038d4572cc4f4f2bb9d5554ddd9"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -2118,7 +2152,7 @@ checksum = "fa4f8080344d4671fb4e831a13ad1e68092748387dfc4f55e356242fae12ce3e"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.77",
+ "syn 2.0.79",
 ]
 
 [[package]]
@@ -2138,5 +2172,5 @@ checksum = "ce36e65b0d2999d2aafac989fb249189a141aee1f53c612c1f37d72631959f69"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.77",
+ "syn 2.0.79",
 ]

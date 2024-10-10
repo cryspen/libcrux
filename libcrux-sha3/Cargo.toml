@@ -16,11 +16,13 @@ bench = false # so libtest doesn't eat the arguments to criterion
 [dependencies]
 libcrux-platform = { version = "0.0.2-beta.2", path = "../sys/platform" }
 libcrux-intrinsics = { version = "0.0.2-beta.2", path = "../libcrux-intrinsics" }
+hax-secret-integers = { git = "https://github.com/hacspec/hax/", branch = "karthik/secret-integers"}
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
 [target.'cfg(hax)'.dependencies]
 hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
+
 
 [features]
 simd128 = []

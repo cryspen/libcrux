@@ -1,6 +1,7 @@
 use libcrux_intrinsics::arm64::*;
 
 use crate::traits::internal::KeccakItem;
+use hax_secret_integers::*;
 
 #[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;
@@ -63,7 +64,7 @@ fn _veorq_n_u64(a: uint64x2_t, c: u64) -> uint64x2_t {
 }
 
 #[inline(always)]
-pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks: [&[u8]; 2]) {
+pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks: [&[U8]; 2]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0);
     for i in 0..RATE / 16 {
         let v0 = _vld1q_bytes_u64(&blocks[0][16 * i..16 * (i + 1)]);
@@ -86,13 +87,13 @@ pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks
 #[inline(always)]
 pub(crate) fn load_block_full<const RATE: usize>(
     s: &mut [[uint64x2_t; 5]; 5],
-    blocks: [[u8; 200]; 2],
+    blocks: [[U8; 200]; 2],
 ) {
     load_block::<RATE>(s, [&blocks[0] as &[u8], &blocks[1] as &[u8]]);
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mut [u8]; 2]) {
+pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mut [U8]; 2]) {
     for i in 0..RATE / 16 {
         let v0 = _vtrn1q_u64(
             s[(2 * i) / 5][(2 * i) % 5],
@@ -117,7 +118,7 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mu
 }
 
 #[inline(always)]
-pub(crate) fn store_block_full<const RATE: usize>(s: &[[uint64x2_t; 5]; 5]) -> [[u8; 200]; 2] {
+pub(crate) fn store_block_full<const RATE: usize>(s: &[[uint64x2_t; 5]; 5]) -> [[U8; 200]; 2] {
     let mut out0 = [0u8; 200];
     let mut out1 = [0u8; 200];
     store_block::<RATE>(s, [&mut out0, &mut out1]);
@@ -125,12 +126,12 @@ pub(crate) fn store_block_full<const RATE: usize>(s: &[[uint64x2_t; 5]; 5]) -> [
 }
 
 #[inline(always)]
-fn slice_2(a: [&[u8]; 2], start: usize, len: usize) -> [&[u8]; 2] {
+fn slice_2(a: [&[U8]; 2], start: usize, len: usize) -> [&[U8]; 2] {
     [&a[0][start..start + len], &a[1][start..start + len]]
 }
 
 #[inline(always)]
-fn split_at_mut_2(out: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8]; 2]) {
+fn split_at_mut_2(out: [&mut [U8]; 2], mid: usize) -> ([&mut [U8]; 2], [&mut [U8]; 2]) {
     let [out0, out1] = out;
     let (out00, out01) = out0.split_at_mut(mid);
     let (out10, out11) = out1.split_at_mut(mid);
@@ -167,32 +168,32 @@ impl KeccakItem<2> for uint64x2_t {
         _veorq_u64(a, b)
     }
     #[inline(always)]
-    fn load_block<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; 2]) {
+    fn load_block<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [&[U8]; 2]) {
         load_block::<RATE>(a, b)
     }
     #[inline(always)]
-    fn store_block<const RATE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 2]) {
+    fn store_block<const RATE: usize>(a: &[[Self; 5]; 5], b: [&mut [U8]; 2]) {
         store_block::<RATE>(a, b)
     }
     #[inline(always)]
-    fn load_block_full<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; 2]) {
+    fn load_block_full<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [[U8; 200]; 2]) {
         load_block_full::<RATE>(a, b)
     }
     #[inline(always)]
-    fn store_block_full<const RATE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 2] {
+    fn store_block_full<const RATE: usize>(a: &[[Self; 5]; 5]) -> [[U8; 200]; 2] {
         store_block_full::<RATE>(a)
     }
     #[inline(always)]
-    fn slice_n(a: [&[u8]; 2], start: usize, len: usize) -> [&[u8]; 2] {
+    fn slice_n(a: [&[U8]; 2], start: usize, len: usize) -> [&[u8]; 2] {
         slice_2(a, start, len)
     }
     #[inline(always)]
-    fn split_at_mut_n(a: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8]; 2]) {
+    fn split_at_mut_n(a: [&mut [U8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8]; 2]) {
         split_at_mut_2(a, mid)
     }
 
     // TODO: Do we need this, or not? cf. https://github.com/cryspen/libcrux/issues/482
-    fn store<const RATE: usize>(_state: &[[Self; 5]; 5], _out: [&mut [u8]; 2]) {
+    fn store<const RATE: usize>(_state: &[[Self; 5]; 5], _out: [&mut [U8]; 2]) {
         todo!()
     }
 }
