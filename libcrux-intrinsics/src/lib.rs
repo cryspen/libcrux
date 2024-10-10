@@ -13,3 +13,8 @@ pub use arm64_extract as arm64;
 pub mod avx2_extract;
 #[cfg(all(feature = "simd256", hax))]
 pub use avx2_extract as avx2;
+
+#[cfg(feature = "simd128")]
+pub mod arm64_secret;
+#[cfg(feature = "simd256")]
+pub mod avx2_secret;

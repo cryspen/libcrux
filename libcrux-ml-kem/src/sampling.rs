@@ -1,3 +1,5 @@
+use libcrux_secret_independence::{ClassifyEach, DeclassifyEach};
+
 use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, hax_utils::hax_debug_assert,
     helper::cloop, polynomial::PolynomialRingElement, vector::Operations,
@@ -77,8 +79,8 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
     let mut sampled_coefficients: [usize; K] = [0; K];
     let mut out: [[i16; 272]; K] = [[0; 272]; K];
 
-    let mut xof_state = Hasher::shake128_init_absorb(seeds);
-    let randomness = xof_state.shake128_squeeze_three_blocks();
+    let mut xof_state = Hasher::shake128_init_absorb(seeds.map(|x| x.classify_each()));
+    let randomness = xof_state.shake128_squeeze_three_blocks().map(|x| x.declassify_each());
 
     let mut done = sample_from_uniform_distribution_next::<Vector, K, THREE_BLOCKS>(
         randomness,
@@ -92,7 +94,7 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
     // To avoid failing here, we squeeze more blocks out of the state until
     // we have enough.
     while !done {
-        let randomness = xof_state.shake128_squeeze_block();
+        let randomness = xof_state.shake128_squeeze_block().map(|x| x.declassify_each());
         done = sample_from_uniform_distribution_next::<Vector, K, BLOCK_SIZE>(
             randomness,
             &mut sampled_coefficients,

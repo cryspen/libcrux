@@ -11,6 +11,7 @@ description = "Libcrux intrinsics crate"
 exclude = ["/proofs"]
 
 [dependencies]
+libcrux-secret-independence = { version = "0.0.2-beta.2", path = "../libcrux-secret-independence" }
 
 [features]
 simd128 = []

@@ -1,7 +1,7 @@
 //! A portable SHA3 implementation using the generic implementation.
 
 use crate::traits::internal::*;
-use hax_secret_integers::*;
+use libcrux_secret_independence::*;
 
 #[inline(always)] 
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: U64) -> U64 {
@@ -98,8 +98,8 @@ impl KeccakItem<1> for U64 {
         _vbcaxq_u64(a, b, c)
     }
     #[inline(always)]
-    fn xor_constant(a: Self, c: u64) -> Self {
-        _veorq_n_u64(a, c.classify())
+    fn xor_constant(a: Self, c: U64) -> Self {
+        _veorq_n_u64(a, c)
     }
     #[inline(always)]
     fn xor(a: Self, b: Self) -> Self {

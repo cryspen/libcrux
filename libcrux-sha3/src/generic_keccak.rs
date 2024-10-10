@@ -4,7 +4,7 @@
 use core::ops::Index;
 
 use crate::traits::*;
-use hax_secret_integers::*;
+use libcrux_secret_independence::*;
 
 #[cfg_attr(hax, hax_lib::opaque_type)]
 #[derive(Clone, Copy)]
@@ -111,7 +111,8 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         let input_consumed = self.fill_buffer(inputs);
 
         if input_consumed > 0 {
-            let mut borrowed = [[secret(0u8); RATE].as_slice(); PARALLEL_LANES];
+            let s = [secret(0u8); RATE];
+            let mut borrowed = [s.as_slice(); PARALLEL_LANES];
             // We have a full block in the local buffer now.
             for i in 0..PARALLEL_LANES {
                 borrowed[i] = &self.buf[i];
@@ -364,7 +365,7 @@ const ROUNDCONSTANTS: [u64; 24] = [
 
 #[inline(always)]
 pub(crate) fn iota<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N, T>, i: usize) {
-    s.st[0][0] = T::xor_constant(s.st[0][0], ROUNDCONSTANTS[i]);
+    s.st[0][0] = T::xor_constant(s.st[0][0], ROUNDCONSTANTS[i].classify());
 }
 
 #[inline(always)]

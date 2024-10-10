@@ -1,6 +1,6 @@
 use cavp::*;
 use libcrux_sha3::*;
-
+use libcrux_secret_independence::*;
 macro_rules! sha3_test {
     ($file:ident, $digest:ty, $algorithm:expr) => {
         #[test]
@@ -14,8 +14,8 @@ macro_rules! sha3_test {
             for test in &tv.tests {
                 eprintln!("test {c}");
                 c += 1;
-                let my_digest: $digest = sha3($algorithm, &test.msg[0..test.msg_length / 8]);
-                assert_eq!(&my_digest, &test.digest[..]);
+                let my_digest: $digest = sha3($algorithm, &test.msg[0..test.msg_length / 8].to_vec().classify_each());
+                assert_eq!(&my_digest.declassify_each(), &test.digest[..].declassify_each());
             }
         }
     };

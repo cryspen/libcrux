@@ -10,6 +10,8 @@ use crate::{
     vector::Operations,
 };
 
+use libcrux_secret_independence::*;
+
 /// Seed size for key generation
 pub const KEY_GENERATION_SEED_SIZE: usize = CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
 
@@ -46,7 +48,7 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
     pointer += private_key.len();
     out[pointer..pointer + public_key.len()].copy_from_slice(public_key);
     pointer += public_key.len();
-    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&Hasher::H(public_key));
+    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&Hasher::H(public_key).declassify_each());
     pointer += H_DIGEST_SIZE;
     out[pointer..pointer + implicit_rejection_value.len()]
         .copy_from_slice(implicit_rejection_value);
@@ -97,7 +99,7 @@ fn validate_private_key<
     // Eurydice can't access values directly on the types. We need to go to the
     // `value` directly.
 
-    let t = Hasher::H(&private_key.value[384 * K..768 * K + 32]);
+    let t = Hasher::H(&private_key.value.classify_each()[384 * K..768 * K + 32]).declassify_each();
     let expected = &private_key.value[768 * K + 32..768 * K + 64];
     t == expected
 }
@@ -171,9 +173,9 @@ fn encapsulate<
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     let randomness = Scheme::entropy_preprocess::<K, Hasher>(&randomness);
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
-    to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()));
+    to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()).declassify_each());
 
-    let hashed = Hasher::G(&to_hash);
+    let hashed = Hasher::G(&to_hash.classify_each()).declassify_each();
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
     let ciphertext = crate::ind_cpa::encrypt::<
@@ -239,13 +241,13 @@ pub(crate) fn decapsulate<
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
 
-    let hashed = Hasher::G(&to_hash);
+    let hashed = Hasher::G(&to_hash.classify_each()).declassify_each();
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
     let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
         into_padded_array(implicit_rejection_value);
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
-    let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
+    let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash.classify_each()).declassify_each();
 
     let expected_ciphertext = crate::ind_cpa::encrypt::<
         K,
@@ -493,7 +495,7 @@ pub(crate) mod unpacked {
                 &out.public_key.ind_cpa_public_key.t_as_ntt,
                 &out.public_key.ind_cpa_public_key.seed_for_A,
             );
-        out.public_key.public_key_hash = Hasher::H(&pk_serialized);
+        out.public_key.public_key_hash = Hasher::H(&pk_serialized.classify_each()).declassify_each();
         out.private_key.implicit_rejection_value = implicit_rejection_value.try_into().unwrap();
     }
 
@@ -521,7 +523,7 @@ pub(crate) mod unpacked {
         let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
         to_hash[H_DIGEST_SIZE..].copy_from_slice(&public_key.public_key_hash);
 
-        let hashed = Hasher::G(&to_hash);
+        let hashed = Hasher::G(&to_hash.classify_each()).declassify_each();
         let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
         let ciphertext = crate::ind_cpa::encrypt_unpacked::<
@@ -581,13 +583,13 @@ pub(crate) mod unpacked {
         let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
         to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&key_pair.public_key.public_key_hash);
 
-        let hashed = Hasher::G(&to_hash);
+        let hashed = Hasher::G(&to_hash.classify_each()).declassify_each();
         let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
         let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
             into_padded_array(&key_pair.private_key.implicit_rejection_value);
         to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
-        let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
+        let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash.classify_each()).declassify_each();
 
         let expected_ciphertext = crate::ind_cpa::encrypt_unpacked::<
             K,

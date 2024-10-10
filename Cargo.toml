@@ -16,6 +16,7 @@ members = [
     "libcrux-hkdf",
     "libcrux-ecdh",
     "libcrux-psq",
+    "libcrux-secret-independence",
     "cavp",
 ]
 

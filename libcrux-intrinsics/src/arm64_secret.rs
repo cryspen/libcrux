@@ -2,54 +2,56 @@
 //! Replace with a hand-written file after extraction.
 
 #![allow(non_camel_case_types, unsafe_code, unused_variables)]
+use libcrux_secret_independence::*;
+use super::arm64;
 
-pub type _uint16x4_t = u8;
-pub type _int16x4_t = u8;
-pub type _int16x8_t = u8;
-pub type _uint8x16_t = u8;
-pub type _uint16x8_t = u8;
-pub type _uint32x4_t = u8;
-pub type _int32x4_t = u8;
-pub type _uint64x2_t = u8;
-pub type _int64x2_t = u8;
+pub type _uint16x4_t = Secret<arm64::_uint16x4_t>;
+pub type _int16x4_t = Secret<arm64::_int16x4_t>;
+pub type _int16x8_t = Secret<arm64::_int16x8_t>;
+pub type _uint8x16_t = Secret<arm64::_uint8x16_t>;
+pub type _uint16x8_t = Secret<arm64::_uint16x8_t>;
+pub type _uint32x4_t = Secret<arm64::_uint32x4_t>;
+pub type _int32x4_t = Secret<arm64::_int32x4_t>;
+pub type _uint64x2_t = Secret<arm64::_uint64x2_t>;
+pub type _int64x2_t = Secret<arm64::_int64x2_t>;
 
 #[inline(always)]
-pub fn _vdupq_n_s16(i: i16) -> _int16x8_t {
+pub fn _vdupq_n_s16(i: I16) -> _int16x8_t {
     unimplemented!()
 }
 
 #[inline(always)]
-pub fn _vdupq_n_u64(i: u64) -> _uint64x2_t {
+pub fn _vdupq_n_u64(i: U64) -> _uint64x2_t {
     unimplemented!()
 }
 
 #[inline(always)]
-pub fn _vst1q_s16(out: &mut [i16], v: _int16x8_t) {
+pub fn _vst1q_s16(out: &mut [I16], v: _int16x8_t) {
     unimplemented!()
 }
 
 #[inline(always)]
-pub fn _vld1q_s16(array: &[i16]) -> _int16x8_t {
+pub fn _vld1q_s16(array: &[I16]) -> _int16x8_t {
     unimplemented!()
 }
 
 #[inline(always)]
-pub fn _vld1q_bytes_u64(array: &[u8]) -> _uint64x2_t {
+pub fn _vld1q_bytes_u64(array: &[U8]) -> _uint64x2_t {
     unimplemented!()
 }
 
 #[inline(always)]
-pub fn _vld1q_u64(array: &[u64]) -> _uint64x2_t {
+pub fn _vld1q_u64(array: &[U64]) -> _uint64x2_t {
     unimplemented!()
 }
 
 #[inline(always)]
-pub fn _vst1q_u64(out: &mut [u64], v: _uint64x2_t) {
+pub fn _vst1q_u64(out: &mut [U64], v: _uint64x2_t) {
     unimplemented!()
 }
 
 #[inline(always)]
-pub fn _vst1q_bytes_u64(out: &mut [u8], v: _uint64x2_t) {
+pub fn _vst1q_bytes_u64(out: &mut [U8], v: _uint64x2_t) {
     unimplemented!()
 }
 
@@ -64,12 +66,12 @@ pub fn _vsubq_s16(lhs: _int16x8_t, rhs: _int16x8_t) -> _int16x8_t {
 }
 
 #[inline(always)]
-pub fn _vmulq_n_s16(v: _int16x8_t, c: i16) -> _int16x8_t {
+pub fn _vmulq_n_s16(v: _int16x8_t, c: I16) -> _int16x8_t {
     unimplemented!()
 }
 
 #[inline(always)]
-pub fn _vmulq_n_u16(v: _uint16x8_t, c: u16) -> _uint16x8_t {
+pub fn _vmulq_n_u16(v: _uint16x8_t, c: U16) -> _uint16x8_t {
     unimplemented!()
 }
 
@@ -103,7 +105,7 @@ pub fn _vshlq_n_u32<const SHIFT_BY: i32>(v: _uint32x4_t) -> _uint32x4_t {
     unimplemented!()
 }
 #[inline(always)]
-pub fn _vqdmulhq_n_s16(k: _int16x8_t, b: i16) -> _int16x8_t {
+pub fn _vqdmulhq_n_s16(k: _int16x8_t, b: I16) -> _int16x8_t {
     unimplemented!()
 }
 #[inline(always)]
@@ -148,7 +150,7 @@ pub fn _veorq_u64(mask: _uint64x2_t, shifted: _uint64x2_t) -> _uint64x2_t {
 }
 
 #[inline(always)]
-pub fn _vdupq_n_u32(value: u32) -> _uint32x4_t {
+pub fn _vdupq_n_u32(value: U32) -> _uint32x4_t {
     unimplemented!()
 }
 #[inline(always)]
@@ -160,7 +162,7 @@ pub fn _vreinterpretq_s32_u32(compressed: _uint32x4_t) -> _int32x4_t {
     unimplemented!()
 }
 #[inline(always)]
-pub fn _vqdmulhq_n_s32(a: _int32x4_t, b: i32) -> _int32x4_t {
+pub fn _vqdmulhq_n_s32(a: _int32x4_t, b: I32) -> _int32x4_t {
     unimplemented!()
 }
 
@@ -194,7 +196,7 @@ pub fn _vtrn2q_s16(a: _int16x8_t, b: _int16x8_t) -> _int16x8_t {
     unimplemented!()
 }
 #[inline(always)]
-pub fn _vmulq_n_u32(a: _uint32x4_t, b: u32) -> _uint32x4_t {
+pub fn _vmulq_n_u32(a: _uint32x4_t, b: U32) -> _uint32x4_t {
     unimplemented!()
 }
 
@@ -288,7 +290,7 @@ pub fn _vshlq_u16(a: _uint16x8_t, b: _int16x8_t) -> _uint16x8_t {
     unimplemented!()
 }
 #[inline(always)]
-pub fn _vaddv_u16(a: _uint16x4_t) -> u16 {
+pub fn _vaddv_u16(a: _uint16x4_t) -> U16 {
     unimplemented!()
 }
 #[inline(always)]
@@ -300,7 +302,7 @@ pub fn _vget_high_u16(a: _uint16x8_t) -> _uint16x4_t {
     unimplemented!()
 }
 #[inline(always)]
-pub fn _vaddvq_s16(a: _int16x8_t) -> i16 {
+pub fn _vaddvq_s16(a: _int16x8_t) -> I16 {
     unimplemented!()
 }
 
@@ -341,7 +343,7 @@ pub fn _vreinterpretq_u16_u8(a: _uint8x16_t) -> _uint16x8_t {
     unimplemented!()
 }
 #[inline(always)]
-pub fn _vld1q_u16(ptr: &[u16]) -> _uint16x8_t {
+pub fn _vld1q_u16(ptr: &[U16]) -> _uint16x8_t {
     unimplemented!()
 }
 #[inline(always)]
@@ -349,6 +351,6 @@ pub fn _vcleq_s16(a: _int16x8_t, b: _int16x8_t) -> _uint16x8_t {
     unimplemented!()
 }
 #[inline(always)]
-pub fn _vaddvq_u16(a: _uint16x8_t) -> u16 {
+pub fn _vaddvq_u16(a: _uint16x8_t) -> U16 {
     unimplemented!()
 }
