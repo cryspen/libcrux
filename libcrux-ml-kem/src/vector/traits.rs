@@ -19,11 +19,11 @@ pub trait Operations: Copy + Clone + Repr {
     #[requires(true)]
     #[ensures(|result| fstar!("f_repr $result == Seq.create 16 0s"))]
     fn ZERO() -> Self;
-  
+
     #[requires(array.len() == 16)]
     #[ensures(|result| fstar!("f_repr $result == $array"))]
     fn from_i16_array(array: &[i16]) -> Self;
-     
+
     #[requires(true)]
     #[ensures(|result| fstar!("f_repr $x == $result"))]
     fn to_i16_array(x: Self) -> [i16; 16];
@@ -214,7 +214,7 @@ pub trait Operations: Copy + Clone {
 }
 
 // hax does not support trait with default implementations, so we use the following pattern
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 $fer"))]
+#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 $fer")))]
 pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
     T::montgomery_multiply_by_constant(v, fer)
 }
@@ -223,33 +223,42 @@ pub fn to_standard_domain<T: Operations>(v: T) -> T {
     T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
 
-#[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 3328 (i1._super_8706949974463268012.f_repr a)"))]
-#[hax_lib::ensures(|result| fstar!("forall i.
+#[cfg_attr(hax, hax_lib::fstar::verification_status(lax))]
+#[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 3328 (i1._super_8706949974463268012.f_repr a)")))]
+#[cfg_attr(hax, hax_lib::ensures(|result| fstar!("forall i.
                                        (let x = Seq.index (i1._super_8706949974463268012.f_repr ${a}) i in
                                         let y = Seq.index (i1._super_8706949974463268012.f_repr ${result}) i in
-                                        (v y >= 0 /\\ v y <= 3328 /\\ (v y % 3329 == v x % 3329)))"))]
+                                        (v y >= 0 /\\ v y <= 3328 /\\ (v y % 3329 == v x % 3329)))")))]
 pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
     let t = T::shift_right::<15>(a);
     let fm = T::bitwise_and_with_constant(t, FIELD_MODULUS);
     T::add(a, &fm)
 }
 
-#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
-#[hax_lib::requires(fstar!("forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
-                                      (x == 0s \\/ x == 1s)"))]
+#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 200 --split_queries always"))]
+#[cfg_attr(hax, hax_lib::requires(fstar!("forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
+                                      (x == 0s \\/ x == 1s)")))]
 pub fn decompress_1<T: Operations>(vec: T) -> T {
     let z = T::ZERO();
-    hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${z}) i == 0s)");
-    hax_lib::fstar!("assert(forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
-                                      ((0 - v x) == 0 \\/ (0 - v x) == -1))"); 
+    #[cfg(hax)]
+    hax_lib::fstar!(
+        "assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${z}) i == 0s)"
+    );
+    #[cfg(hax)]
+    hax_lib::fstar!(
+        "assert(forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
+                                      ((0 - v x) == 0 \\/ (0 - v x) == -1))"
+    );
+    #[cfg(hax)]
     hax_lib::fstar!("assert(forall i. i < 16 ==>
                                       Spec.Utils.is_intb (pow2 15 - 1) 
-                                        (0 - v (Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i)))");                               
-    
+                                        (0 - v (Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i)))");
+
     let s = T::sub(z, &vec);
+    #[cfg(hax)]
     hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == 0s \\/ 
                                       Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == -1s)");
+    #[cfg(hax)]
     hax_lib::fstar!("assert (i1.f_bitwise_and_with_constant_pre ${s} 1665s)");
     let res = T::bitwise_and_with_constant(s, 1665);
     res

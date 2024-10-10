@@ -27,7 +27,8 @@ libcrux-platform = { version = "0.0.2-alpha.3", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2-alpha.3", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-alpha.3", path = "../libcrux-intrinsics" }
 
-hax-lib.workspace = true
+[target.'cfg(hax)'.dependencies]
+hax-lib = { git = "https://github.com/hacspec/hax/", branch = "main" }
 
 [features]
 # By default all variants and std are enabled.

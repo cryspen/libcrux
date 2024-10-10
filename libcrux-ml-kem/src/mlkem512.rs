@@ -389,11 +389,11 @@ pub fn validate_private_key(
 ///
 /// This function returns an [`MlKem512KeyPair`].
 #[cfg(not(eurydice))]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|res|
+#[cfg_attr(hax, hax_lib::fstar::verification_status(panic_free))]
+#[cfg_attr(hax, hax_lib::ensures(|res|
     fstar!("let ((secret_key, public_key), valid) = Spec.MLKEM.Instances.mlkem512_generate_keypair $randomness in
         valid ==> (${res}.f_sk.f_value == secret_key /\\ ${res}.f_pk.f_value == public_key)")
-)]
+))]
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512KeyPair {
     multiplexing::generate_keypair::<
         RANK_512,
@@ -412,12 +412,12 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512
 /// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
 /// bytes of `randomness`.
 #[cfg(not(eurydice))]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|res|
+#[cfg_attr(hax, hax_lib::fstar::verification_status(panic_free))]
+#[cfg_attr(hax, hax_lib::ensures(|res|
     fstar!("let ((ciphertext, shared_secret), valid) = Spec.MLKEM.Instances.mlkem512_encapsulate ${public_key}.f_value $randomness in
         let (res_ciphertext, res_shared_secret) = $res in
         valid ==> (res_ciphertext.f_value == ciphertext /\\ res_shared_secret == shared_secret)")
-)]
+))]
 pub fn encapsulate(
     public_key: &MlKem512PublicKey,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -444,11 +444,11 @@ pub fn encapsulate(
 /// Generates an [`MlKemSharedSecret`].
 /// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
 #[cfg(not(eurydice))]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|res|
+#[cfg_attr(hax, hax_lib::fstar::verification_status(panic_free))]
+#[cfg_attr(hax, hax_lib::ensures(|res|
     fstar!("let (shared_secret, valid) = Spec.MLKEM.Instances.mlkem512_decapsulate ${private_key}.f_value ${ciphertext}.f_value in
         valid ==> $res == shared_secret")
-)]
+))]
 pub fn decapsulate(
     private_key: &MlKem512PrivateKey,
     ciphertext: &MlKem512Ciphertext,
