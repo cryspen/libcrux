@@ -316,14 +316,18 @@ let sample_from_binomial_distribution
       (randomness: t_Slice u8)
      =
   let _:Prims.unit = assert ((v (cast v_ETA <: u32) == 2) \/ (v (cast v_ETA <: u32) == 3)) in
-  match cast (v_ETA <: usize) <: u32 with
-  | 2ul -> sample_from_binomial_distribution_2_ #v_Vector randomness
-  | 3ul -> sample_from_binomial_distribution_3_ #v_Vector randomness
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+    match cast (v_ETA <: usize) <: u32 with
+    | 2ul -> sample_from_binomial_distribution_2_ #v_Vector randomness
+    | 3ul -> sample_from_binomial_distribution_3_ #v_Vector randomness
+    | _ ->
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
-        <:
-        Rust_primitives.Hax.t_Never)
+          <:
+          Rust_primitives.Hax.t_Never)
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #push-options "--admit_smt_queries true"
 

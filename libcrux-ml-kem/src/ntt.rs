@@ -155,11 +155,11 @@ pub(crate) fn ntt_at_layer_3<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 $zeta_r /\\
     (let t = ${montgomery_multiply_fe::<Vector>} $b $zeta_r in
-    (forall i. i < 16 ==>
+    (forall (i:nat). i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) -
         v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))) /\\
-    (forall i. i < 16 ==>
+    (forall (i:nat). i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) +
         v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))))"))]
@@ -224,19 +224,19 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
    let ntt_layer_7_pre (#v_Vector: Type0)
         {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
         (re_0 re_1: v_Vector) =
-    (forall i. i < 16 ==>
+    (forall (i:nat). i < 16 ==>
       Spec.Utils.is_intb (pow2 15 - 1)
       (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_1) i) * v (-1600s))) /\\
     (let t = Libcrux_ml_kem.Vector.Traits.f_multiply_by_constant re_1 (-1600s) in
-    (forall i. i < 16 ==> 
+    (forall (i:nat). i < 16 ==> 
       Spec.Utils.is_intb (pow2 15 - 1) 
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_0) i) - 
           v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))) /\\
-    (forall i. i < 16 ==> 
+    (forall (i:nat). i < 16 ==> 
       Spec.Utils.is_intb (pow2 15 - 1) 
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_0) i) + 
           v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))))")]
-#[hax_lib::requires(fstar!("forall i. i < 8 ==> ntt_layer_7_pre (${re}.f_coefficients.[ sz i ])
+#[hax_lib::requires(fstar!("forall (i:nat). i < 8 ==> ntt_layer_7_pre (${re}.f_coefficients.[ sz i ])
     (${re}.f_coefficients.[ sz i +! sz 8 ])"))]
 pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<Vector>) {
     let step = VECTORS_IN_RING_ELEMENT / 2;
@@ -257,7 +257,7 @@ pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200")]
-#[hax_lib::requires(fstar!("forall i. i < 8 ==> ntt_layer_7_pre (${re}.f_coefficients.[ sz i ])
+#[hax_lib::requires(fstar!("forall (i:nat). i < 8 ==> ntt_layer_7_pre (${re}.f_coefficients.[ sz i ])
     (${re}.f_coefficients.[ sz i +! sz 8 ])"))]
 pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
