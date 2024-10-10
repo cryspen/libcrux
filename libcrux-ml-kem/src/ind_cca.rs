@@ -37,9 +37,9 @@ pub(crate) mod instantiations;
 
 /// Serialize the secret key.
 #[inline(always)]
-fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Hasher: Hash<K>>(
+fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, const PUBLIC_KEY_SIZE: usize, Hasher: Hash<K>>(
     private_key: &[u8],
-    public_key: &[u8],
+    public_key: &[u8; PUBLIC_KEY_SIZE],
     implicit_rejection_value: &[u8],
 ) -> [u8; SERIALIZED_KEY_LEN] {
     let mut out = [0u8; SERIALIZED_KEY_LEN];
@@ -48,7 +48,7 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
     pointer += private_key.len();
     out[pointer..pointer + public_key.len()].copy_from_slice(public_key);
     pointer += public_key.len();
-    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&Hasher::H(&public_key.map(secret)).declassify_each());
+    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&Hasher::H(&public_key.classify_each()).declassify_each());
     pointer += H_DIGEST_SIZE;
     out[pointer..pointer + implicit_rejection_value.len()]
         .copy_from_slice(implicit_rejection_value);
@@ -139,7 +139,7 @@ fn generate_keypair<
         Scheme,
     >(ind_cpa_keypair_randomness);
 
-    let secret_key_serialized = serialize_kem_secret_key::<K, PRIVATE_KEY_SIZE, Hasher>(
+    let secret_key_serialized = serialize_kem_secret_key::<K, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE, Hasher>(
         &ind_cpa_private_key,
         &public_key,
         implicit_rejection_value,
