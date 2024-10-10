@@ -45,18 +45,14 @@ macro_rules! impl_consistency_unpacked {
             let randomness = random_array();
 
             // Generate unpacked key
-            let mut key_pair_unpacked = Default::default();
-            p::unpacked::generate_key_pair(randomness, &mut key_pair_unpacked);
+            let key_pair_unpacked = p::unpacked::generate_key_pair(randomness);
 
             // Generate regular key
             let key_pair = p::generate_key_pair(randomness);
 
             // Ensure the two keys are the same
-            let mut serialized_public_key = Default::default();
-            p::unpacked::serialized_public_key(
-                key_pair_unpacked.public_key(),
-                &mut serialized_public_key,
-            );
+            let serialized_public_key =
+                p::unpacked::key_pair_serialized_public_key(&key_pair_unpacked);
             assert_eq!(
                 key_pair.public_key().as_slice(),
                 serialized_public_key.as_slice()
@@ -70,7 +66,7 @@ macro_rules! impl_consistency_unpacked {
                 key_pair.public_key().as_slice()
             );
             let mut serialized_private_key = Default::default();
-            p::unpacked::key_pair_serialized_private_key(
+            p::unpacked::key_pair_serialized_private_key_mut(
                 &key_pair_unpacked,
                 &mut serialized_private_key,
             );
@@ -78,6 +74,10 @@ macro_rules! impl_consistency_unpacked {
                 serialized_private_key.as_slice(),
                 key_pair.private_key().as_slice()
             );
+
+            // Unpacked key from the serialized private key
+            let mut new_kp = Default::default();
+            p::unpacked::key_pair_from_private_mut(&serialized_private_key, &mut new_kp);
 
             let randomness = random_array();
             let (ciphertext, shared_secret) = p::encapsulate(key_pair.public_key(), randomness);

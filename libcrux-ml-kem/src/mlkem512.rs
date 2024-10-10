@@ -270,6 +270,12 @@ macro_rules! instantiate {
                     key_pair.serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT_512, CPA_PKE_PUBLIC_KEY_SIZE_512>()
                 }
 
+                /// Get an unpacked key from a private key.
+                /// Note that this is missing the seed of A, which is unrecoverable.
+                pub fn key_pair_from_private_mut(private_key: &MlKem512PrivateKey, key_pair: &mut MlKem512KeyPairUnpacked) {
+                    *key_pair = MlKem512KeyPairUnpacked::from_private_key::<SECRET_KEY_SIZE_512, CPA_PKE_SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512, RANKED_BYTES_PER_RING_ELEMENT_512, T_AS_NTT_ENCODED_SIZE_512>(private_key);
+                }
+
                 /// Get the unpacked public key.
                 pub fn unpacked_public_key(
                     public_key: &MlKem512PublicKey,

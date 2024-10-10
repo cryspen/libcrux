@@ -266,6 +266,12 @@ macro_rules! instantiate {
                     key_pair.serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT_768, CPA_PKE_PUBLIC_KEY_SIZE_768>()
                 }
 
+                /// Get an unpacked key from a private key.
+                /// Note that this is missing the seed of A, which is unrecoverable.
+                pub fn key_pair_from_private_mut(private_key: &MlKem768PrivateKey, key_pair: &mut MlKem768KeyPairUnpacked) {
+                    *key_pair = MlKem768KeyPairUnpacked::from_private_key::<SECRET_KEY_SIZE_768, CPA_PKE_SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768, RANKED_BYTES_PER_RING_ELEMENT_768, T_AS_NTT_ENCODED_SIZE_768>(private_key);
+                }
+
                 /// Get the unpacked public key.
                 pub fn public_key(key_pair: &MlKem768KeyPairUnpacked, pk: &mut MlKem768PublicKeyUnpacked) {
                     *pk = (*key_pair.public_key()).clone();
