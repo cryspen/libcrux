@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Ml_dsa_generic
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -13,52 +13,13 @@ let _ =
   let open Libcrux_sha3.Portable.Incremental in
   ()
 
-type t_SigningError =
-  | SigningError_RejectionSamplingError : t_SigningError
-  | SigningError_ContextTooLongError : t_SigningError
-
-let t_SigningError_cast_to_repr (x: t_SigningError) : isize =
-  match x with
-  | SigningError_RejectionSamplingError  -> Rust_primitives.mk_isize 0
-  | SigningError_ContextTooLongError  -> Rust_primitives.mk_isize 1
-
-type t_VerificationError =
-  | VerificationError_MalformedHintError : t_VerificationError
-  | VerificationError_SignerResponseExceedsBoundError : t_VerificationError
-  | VerificationError_CommitmentHashesDontMatchError : t_VerificationError
-  | VerificationError_ContextTooLongError : t_VerificationError
-
-let t_VerificationError_cast_to_repr (x: t_VerificationError) : isize =
-  match x with
-  | VerificationError_MalformedHintError  -> Rust_primitives.mk_isize 0
-  | VerificationError_SignerResponseExceedsBoundError  -> Rust_primitives.mk_isize 1
-  | VerificationError_CommitmentHashesDontMatchError  -> Rust_primitives.mk_isize 3
-  | VerificationError_ContextTooLongError  -> Rust_primitives.mk_isize 6
-
-/// This corresponds to line 6 in algorithm 7 in FIPS 204 (line 7 in algorithm
-/// 8, resp.).
-/// If `domain_separation_context` is supplied, applies domain
-/// separation and length encoding to the context string,
-/// before appending the message (in the regular variant) or the
-/// pre-hash OID as well as the pre-hashed message digest. Otherwise,
-/// it is assumed that `message` already contains domain separation
-/// information.
-/// In FIPS 204 M' is the concatenation of the domain separated context, any
-/// potential pre-hash OID and the message (or the message pre-hash). We do not
-/// explicitely construct the concatenation in memory since it is of statically unknown
-/// length, but feed its components directly into the incremental XOF.
-/// Refer to line 10 of Algorithm 2 (and line 5 of Algorithm 3, resp.) in [FIPS
-/// 204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf#section.5)
-/// for details on the domain separation for regular ML-DSA. Line
-/// 23 of Algorithm 4 (and line 18 of Algorithm 5,resp.) describe domain separation for the HashMl-DSA
-/// variant.
 let derive_message_representative
       (verification_key_hash: t_Array u8 (Rust_primitives.mk_usize 64))
       (domain_separation_context:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
       (message: t_Slice u8)
       (message_representative: t_Array u8 (Rust_primitives.mk_usize 64))
-    : t_Array u8 (Rust_primitives.mk_usize 64) =
+     =
   let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
     Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
       #(Rust_primitives.mk_usize 136)
@@ -156,7 +117,6 @@ let derive_message_representative
   let _:Prims.unit = () in
   message_representative
 
-/// Generate a key pair.
 let generate_key_pair
       (#v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_VERIFICATION_KEY_SIZE:
@@ -174,7 +134,7 @@ let generate_key_pair
           i7:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
       (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
-    : (t_Array u8 v_SIGNING_KEY_SIZE & t_Array u8 v_VERIFICATION_KEY_SIZE) =
+     =
   let seed_expanded:t_Array u8 (Rust_primitives.mk_usize 128) =
     Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) (Rust_primitives.mk_usize 128)
   in
@@ -268,19 +228,6 @@ let generate_key_pair
   <:
   (t_Array u8 v_SIGNING_KEY_SIZE & t_Array u8 v_VERIFICATION_KEY_SIZE)
 
-type t_Signature
-  (v_SIMDUnit: Type0) (v_COMMITMENT_HASH_SIZE: usize) (v_COLUMNS_IN_A: usize) (v_ROWS_IN_A: usize)
-  {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-  = {
-  f_commitment_hash:t_Array u8 v_COMMITMENT_HASH_SIZE;
-  f_signer_response:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    v_COLUMNS_IN_A;
-  f_hint:t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A
-}
-
-/// The internal signing API.
-/// If no `domain_separation_context` is supplied, it is assumed that
-/// `message` already contains the domain separation.
 let sign_internal
       (#v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_GAMMA1_EXPONENT: usize)
@@ -304,7 +251,7 @@ let sign_internal
       (domain_separation_context:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
       (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
-    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError =
+     =
   let seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt:(t_Array
       u8 (Rust_primitives.mk_usize 32) &
     t_Array u8 (Rust_primitives.mk_usize 32) &
@@ -659,11 +606,14 @@ let sign_internal
     | Core.Option.Option_Some commitment_hash ->
       Core.Result.Result_Ok commitment_hash
       <:
-      Core.Result.t_Result (t_Array u8 v_COMMITMENT_HASH_SIZE) t_SigningError
+      Core.Result.t_Result (t_Array u8 v_COMMITMENT_HASH_SIZE) Libcrux_ml_dsa.Types.t_SigningError
     | Core.Option.Option_None  ->
-      Core.Result.Result_Err (SigningError_RejectionSamplingError <: t_SigningError)
+      Core.Result.Result_Err
+      (Libcrux_ml_dsa.Types.SigningError_RejectionSamplingError
+        <:
+        Libcrux_ml_dsa.Types.t_SigningError)
       <:
-      Core.Result.t_Result (t_Array u8 v_COMMITMENT_HASH_SIZE) t_SigningError
+      Core.Result.t_Result (t_Array u8 v_COMMITMENT_HASH_SIZE) Libcrux_ml_dsa.Types.t_SigningError
   with
   | Core.Result.Result_Ok commitment_hash ->
     (match
@@ -673,13 +623,16 @@ let sign_internal
           <:
           Core.Result.t_Result
             (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-            t_SigningError
+            Libcrux_ml_dsa.Types.t_SigningError
         | Core.Option.Option_None  ->
-          Core.Result.Result_Err (SigningError_RejectionSamplingError <: t_SigningError)
+          Core.Result.Result_Err
+          (Libcrux_ml_dsa.Types.SigningError_RejectionSamplingError
+            <:
+            Libcrux_ml_dsa.Types.t_SigningError)
           <:
           Core.Result.t_Result
             (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-            t_SigningError
+            Libcrux_ml_dsa.Types.t_SigningError
       with
       | Core.Result.Result_Ok signer_response ->
         (match
@@ -688,12 +641,17 @@ let sign_internal
               Core.Result.Result_Ok hint
               <:
               Core.Result.t_Result
-                (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) t_SigningError
+                (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A)
+                Libcrux_ml_dsa.Types.t_SigningError
             | Core.Option.Option_None  ->
-              Core.Result.Result_Err (SigningError_RejectionSamplingError <: t_SigningError)
+              Core.Result.Result_Err
+              (Libcrux_ml_dsa.Types.SigningError_RejectionSamplingError
+                <:
+                Libcrux_ml_dsa.Types.t_SigningError)
               <:
               Core.Result.t_Result
-                (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) t_SigningError
+                (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A)
+                Libcrux_ml_dsa.Types.t_SigningError
           with
           | Core.Result.Result_Ok hint ->
             let signature:t_Array u8 v_SIGNATURE_SIZE =
@@ -706,12 +664,15 @@ let sign_internal
                 v_MAX_ONES_IN_HINT
                 v_SIGNATURE_SIZE
                 ({
-                    f_commitment_hash = commitment_hash;
-                    f_signer_response = signer_response;
-                    f_hint = hint
+                    Libcrux_ml_dsa.Types.f_commitment_hash = commitment_hash;
+                    Libcrux_ml_dsa.Types.f_signer_response = signer_response;
+                    Libcrux_ml_dsa.Types.f_hint = hint
                   }
                   <:
-                  t_Signature v_SIMDUnit v_COMMITMENT_HASH_SIZE v_COLUMNS_IN_A v_ROWS_IN_A)
+                  Libcrux_ml_dsa.Types.t_Signature v_SIMDUnit
+                    v_COMMITMENT_HASH_SIZE
+                    v_COLUMNS_IN_A
+                    v_ROWS_IN_A)
             in
             Core.Result.Result_Ok
             (Libcrux_ml_dsa.Types.MLDSASignature signature
@@ -719,21 +680,22 @@ let sign_internal
               Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
             <:
             Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
-              t_SigningError
+              Libcrux_ml_dsa.Types.t_SigningError
           | Core.Result.Result_Err err ->
             Core.Result.Result_Err err
             <:
             Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
-              t_SigningError)
+              Libcrux_ml_dsa.Types.t_SigningError)
       | Core.Result.Result_Err err ->
         Core.Result.Result_Err err
         <:
-        Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError
-    )
+        Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
+          Libcrux_ml_dsa.Types.t_SigningError)
   | Core.Result.Result_Err err ->
     Core.Result.Result_Err err
     <:
-    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError
+    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
+      Libcrux_ml_dsa.Types.t_SigningError
 
 let sign
       (#v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4: Type0)
@@ -756,7 +718,7 @@ let sign
       (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
       (message context: t_Slice u8)
       (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
-    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError =
+     =
   match
     Libcrux_ml_dsa.Pre_hash.impl_1__new context
       (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (Rust_primitives.mk_usize 11)))
@@ -773,7 +735,8 @@ let sign
   | Core.Result.Result_Err err ->
     Core.Result.Result_Err (Core.Convert.f_from #FStar.Tactics.Typeclasses.solve err)
     <:
-    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError
+    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
+      Libcrux_ml_dsa.Types.t_SigningError
 
 let sign_pre_hashed
       (#v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4 #v_PH: Type0)
@@ -800,12 +763,14 @@ let sign_pre_hashed
       (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
       (message context: t_Slice u8)
       (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
-    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError =
+     =
   if (Core.Slice.impl__len #u8 context <: usize) >. Libcrux_ml_dsa.Constants.v_CONTEXT_MAX_LEN
   then
-    Core.Result.Result_Err (SigningError_ContextTooLongError <: t_SigningError)
+    Core.Result.Result_Err
+    (Libcrux_ml_dsa.Types.SigningError_ContextTooLongError <: Libcrux_ml_dsa.Types.t_SigningError)
     <:
-    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError
+    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
+      Libcrux_ml_dsa.Types.t_SigningError
   else
     let pre_hashed_message:t_Array u8 v_PH_DIGEST_LEN =
       Libcrux_ml_dsa.Pre_hash.f_hash #v_PH #v_PH_DIGEST_LEN #FStar.Tactics.Typeclasses.solve message
@@ -831,11 +796,9 @@ let sign_pre_hashed
     | Core.Result.Result_Err err ->
       Core.Result.Result_Err (Core.Convert.f_from #FStar.Tactics.Typeclasses.solve err)
       <:
-      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError
+      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
+        Libcrux_ml_dsa.Types.t_SigningError
 
-/// The internal verification API.
-/// If no `domain_separation_context` is supplied, it is assumed that
-/// `message` already contains the domain separation.
 let verify_internal
       (#v_SIMDUnit #v_Shake128X4 #v_Shake256: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A v_SIGNATURE_SIZE v_VERIFICATION_KEY_SIZE v_GAMMA1_EXPONENT v_GAMMA1_RING_ELEMENT_SIZE:
@@ -857,7 +820,7 @@ let verify_internal
       (domain_separation_context:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
       (signature_serialized: t_Array u8 v_SIGNATURE_SIZE)
-    : Core.Result.t_Result Prims.unit t_VerificationError =
+     =
   let seed_for_A, t1:(t_Array u8 (Rust_primitives.mk_usize 32) &
     t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A) =
     Libcrux_ml_dsa.Encoding.Verification_key.deserialize #v_SIMDUnit
@@ -880,7 +843,7 @@ let verify_internal
     if
       ~.(Libcrux_ml_dsa.Arithmetic.vector_infinity_norm_exceeds #v_SIMDUnit
           v_COLUMNS_IN_A
-          signature.f_signer_response
+          signature.Libcrux_ml_dsa.Types.f_signer_response
           ((Rust_primitives.mk_i32 2 <<! v_GAMMA1_EXPONENT <: i32) -! v_BETA <: i32)
         <:
         bool)
@@ -922,7 +885,7 @@ let verify_internal
               #v_Shake256
               v_ONES_IN_VERIFIER_CHALLENGE
               v_COMMITMENT_HASH_SIZE
-              signature.f_commitment_hash
+              signature.Libcrux_ml_dsa.Types.f_commitment_hash
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
@@ -932,7 +895,7 @@ let verify_internal
           v_ROWS_IN_A
           v_COLUMNS_IN_A
           v_A_as_ntt
-          signature.f_signer_response
+          signature.Libcrux_ml_dsa.Types.f_signer_response
           verifier_challenge_as_ntt
           t1
       in
@@ -944,7 +907,7 @@ let verify_internal
         Libcrux_ml_dsa.Arithmetic.use_hint #v_SIMDUnit
           v_ROWS_IN_A
           v_GAMMA2
-          signature.f_hint
+          signature.Libcrux_ml_dsa.Types.f_hint
           w_approx
       in
       let commitment_serialized:t_Array u8 v_COMMITMENT_VECTOR_SIZE =
@@ -986,23 +949,29 @@ let verify_internal
       let commitment_hash:t_Array u8 v_COMMITMENT_HASH_SIZE = tmp1 in
       let _:Prims.unit = () in
       let _:Prims.unit = () in
-      if signature.f_commitment_hash <>. commitment_hash
+      if signature.Libcrux_ml_dsa.Types.f_commitment_hash <>. commitment_hash
       then
         Core.Result.Result_Err
-        (VerificationError_CommitmentHashesDontMatchError <: t_VerificationError)
+        (Libcrux_ml_dsa.Types.VerificationError_CommitmentHashesDontMatchError
+          <:
+          Libcrux_ml_dsa.Types.t_VerificationError)
         <:
-        Core.Result.t_Result Prims.unit t_VerificationError
+        Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
       else
         Core.Result.Result_Ok (() <: Prims.unit)
         <:
-        Core.Result.t_Result Prims.unit t_VerificationError
+        Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
     else
       Core.Result.Result_Err
-      (VerificationError_SignerResponseExceedsBoundError <: t_VerificationError)
+      (Libcrux_ml_dsa.Types.VerificationError_SignerResponseExceedsBoundError
+        <:
+        Libcrux_ml_dsa.Types.t_VerificationError)
       <:
-      Core.Result.t_Result Prims.unit t_VerificationError
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
   | Core.Result.Result_Err err ->
-    Core.Result.Result_Err err <: Core.Result.t_Result Prims.unit t_VerificationError
+    Core.Result.Result_Err err
+    <:
+    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
 
 let verify
       (#v_SIMDUnit #v_Shake128X4 #v_Shake256: Type0)
@@ -1023,7 +992,7 @@ let verify
       (verification_key_serialized: t_Array u8 v_VERIFICATION_KEY_SIZE)
       (message context: t_Slice u8)
       (signature_serialized: t_Array u8 v_SIGNATURE_SIZE)
-    : Core.Result.t_Result Prims.unit t_VerificationError =
+     =
   match
     Libcrux_ml_dsa.Pre_hash.impl_1__new context
       (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (Rust_primitives.mk_usize 11)))
@@ -1039,7 +1008,7 @@ let verify
   | Core.Result.Result_Err err ->
     Core.Result.Result_Err (Core.Convert.f_from #FStar.Tactics.Typeclasses.solve err)
     <:
-    Core.Result.t_Result Prims.unit t_VerificationError
+    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
 
 let verify_pre_hashed
       (#v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_PH: Type0)
@@ -1063,7 +1032,7 @@ let verify_pre_hashed
       (verification_key_serialized: t_Array u8 v_VERIFICATION_KEY_SIZE)
       (message context: t_Slice u8)
       (signature_serialized: t_Array u8 v_SIGNATURE_SIZE)
-    : Core.Result.t_Result Prims.unit t_VerificationError =
+     =
   let pre_hashed_message:t_Array u8 v_PH_DIGEST_LEN =
     Libcrux_ml_dsa.Pre_hash.f_hash #v_PH #v_PH_DIGEST_LEN #FStar.Tactics.Typeclasses.solve message
   in
@@ -1088,4 +1057,4 @@ let verify_pre_hashed
   | Core.Result.Result_Err err ->
     Core.Result.Result_Err (Core.Convert.f_from #FStar.Tactics.Typeclasses.solve err)
     <:
-    Core.Result.t_Result Prims.unit t_VerificationError
+    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError

@@ -68,10 +68,10 @@ val inside_out_shuffle
 
 val sample_challenge_ring_element
       (#v_SIMDUnit #v_Shake256: Type0)
-      (v_NUMBER_OF_ONES: usize)
+      (v_NUMBER_OF_ONES v_SEED_SIZE: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256 |}
-      (seed: t_Array u8 (Rust_primitives.mk_usize 32))
+      (seed: t_Array u8 v_SEED_SIZE)
     : Prims.Pure (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       Prims.l_True
       (fun _ -> Prims.l_True)

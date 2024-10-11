@@ -9,10 +9,6 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let v_SIMD_UNITS_IN_RING_ELEMENT: usize =
-  Libcrux_ml_dsa.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!
-  Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
-
 type t_PolynomialRingElement
   (v_SIMDUnit: Type0) {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
   = { f_simd_units:t_Array v_SIMDUnit (Rust_primitives.mk_usize 32) }

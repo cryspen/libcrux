@@ -1,10 +1,9 @@
 module Libcrux_ml_dsa.Utils
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
-/// Pad the `slice` with `0`s at the end.
-let into_padded_array (v_LEN: usize) (slice: t_Slice u8) : t_Array u8 v_LEN =
+let into_padded_array (v_LEN: usize) (slice: t_Slice u8) =
   let _:Prims.unit =
     if true
     then

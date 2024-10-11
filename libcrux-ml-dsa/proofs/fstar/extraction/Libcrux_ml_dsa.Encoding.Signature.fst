@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Signature
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -17,11 +17,7 @@ let impl__deserialize
           i2:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (serialized: t_Array u8 v_SIGNATURE_SIZE)
-    : Core.Result.t_Result
-      (Libcrux_ml_dsa.Ml_dsa_generic.t_Signature v_SIMDUnit
-          v_COMMITMENT_HASH_SIZE
-          v_COLUMNS_IN_A
-          v_ROWS_IN_A) Libcrux_ml_dsa.Ml_dsa_generic.t_VerificationError =
+     =
   let commitment_hash, rest_of_serialized:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8 (serialized <: t_Slice u8) v_COMMITMENT_HASH_SIZE
   in
@@ -215,19 +211,17 @@ let impl__deserialize
   if malformed_hint
   then
     Core.Result.Result_Err
-    (Libcrux_ml_dsa.Ml_dsa_generic.VerificationError_MalformedHintError
+    (Libcrux_ml_dsa.Types.VerificationError_MalformedHintError
       <:
-      Libcrux_ml_dsa.Ml_dsa_generic.t_VerificationError)
+      Libcrux_ml_dsa.Types.t_VerificationError)
     <:
     Core.Result.t_Result
-      (Libcrux_ml_dsa.Ml_dsa_generic.t_Signature v_SIMDUnit
-          v_COMMITMENT_HASH_SIZE
-          v_COLUMNS_IN_A
-          v_ROWS_IN_A) Libcrux_ml_dsa.Ml_dsa_generic.t_VerificationError
+      (Libcrux_ml_dsa.Types.t_Signature v_SIMDUnit v_COMMITMENT_HASH_SIZE v_COLUMNS_IN_A v_ROWS_IN_A
+      ) Libcrux_ml_dsa.Types.t_VerificationError
   else
     Core.Result.Result_Ok
     ({
-        Libcrux_ml_dsa.Ml_dsa_generic.f_commitment_hash
+        Libcrux_ml_dsa.Types.f_commitment_hash
         =
         Core.Result.impl__unwrap #(t_Array u8 v_COMMITMENT_HASH_SIZE)
           #Core.Array.t_TryFromSliceError
@@ -237,20 +231,15 @@ let impl__deserialize
               commitment_hash
             <:
             Core.Result.t_Result (t_Array u8 v_COMMITMENT_HASH_SIZE) Core.Array.t_TryFromSliceError);
-        Libcrux_ml_dsa.Ml_dsa_generic.f_signer_response = signer_response;
-        Libcrux_ml_dsa.Ml_dsa_generic.f_hint = hint
+        Libcrux_ml_dsa.Types.f_signer_response = signer_response;
+        Libcrux_ml_dsa.Types.f_hint = hint
       }
       <:
-      Libcrux_ml_dsa.Ml_dsa_generic.t_Signature v_SIMDUnit
-        v_COMMITMENT_HASH_SIZE
-        v_COLUMNS_IN_A
-        v_ROWS_IN_A)
+      Libcrux_ml_dsa.Types.t_Signature v_SIMDUnit v_COMMITMENT_HASH_SIZE v_COLUMNS_IN_A v_ROWS_IN_A)
     <:
     Core.Result.t_Result
-      (Libcrux_ml_dsa.Ml_dsa_generic.t_Signature v_SIMDUnit
-          v_COMMITMENT_HASH_SIZE
-          v_COLUMNS_IN_A
-          v_ROWS_IN_A) Libcrux_ml_dsa.Ml_dsa_generic.t_VerificationError
+      (Libcrux_ml_dsa.Types.t_Signature v_SIMDUnit v_COMMITMENT_HASH_SIZE v_COLUMNS_IN_A v_ROWS_IN_A
+      ) Libcrux_ml_dsa.Types.t_VerificationError
 
 let impl__serialize
       (#v_SIMDUnit: Type0)
@@ -260,11 +249,11 @@ let impl__serialize
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self:
-          Libcrux_ml_dsa.Ml_dsa_generic.t_Signature v_SIMDUnit
+          Libcrux_ml_dsa.Types.t_Signature v_SIMDUnit
             v_COMMITMENT_HASH_SIZE
             v_COLUMNS_IN_A
             v_ROWS_IN_A)
-    : t_Array u8 v_SIGNATURE_SIZE =
+     =
   let signature:t_Array u8 v_SIGNATURE_SIZE =
     Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_SIGNATURE_SIZE
   in
@@ -286,7 +275,7 @@ let impl__serialize
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice u8)
-          (self.Libcrux_ml_dsa.Ml_dsa_generic.f_commitment_hash <: t_Slice u8)
+          (self.Libcrux_ml_dsa.Types.f_commitment_hash <: t_Slice u8)
         <:
         t_Slice u8)
   in
@@ -322,7 +311,7 @@ let impl__serialize
                   (Libcrux_ml_dsa.Encoding.Gamma1.serialize #v_SIMDUnit
                       v_GAMMA1_EXPONENT
                       v_GAMMA1_RING_ELEMENT_SIZE
-                      (self.Libcrux_ml_dsa.Ml_dsa_generic.f_signer_response.[ i ]
+                      (self.Libcrux_ml_dsa.Types.f_signer_response.[ i ]
                         <:
                         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                     <:
@@ -346,8 +335,7 @@ let impl__serialize
           let signature, true_hints_seen:(t_Array u8 v_SIGNATURE_SIZE & usize) = temp_0_ in
           let i:usize = i in
           let signature, true_hints_seen:(t_Array u8 v_SIGNATURE_SIZE & usize) =
-            Rust_primitives.Hax.Folds.fold_enumerated_slice (self
-                  .Libcrux_ml_dsa.Ml_dsa_generic.f_hint.[ i ]
+            Rust_primitives.Hax.Folds.fold_enumerated_slice (self.Libcrux_ml_dsa.Types.f_hint.[ i ]
                 <:
                 t_Array i32 (Rust_primitives.mk_usize 256))
               (fun temp_0_ temp_1_ ->

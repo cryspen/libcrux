@@ -5,7 +5,8 @@
 //!/perform the pre-hash of the message. This module implements the
 //! pre-hash trait for SHAKE-128, with a digest length of 256 bytes.
 use crate::{
-    constants::CONTEXT_MAX_LEN, hash_functions::shake128::Xof, SigningError, VerificationError,
+    constants::CONTEXT_MAX_LEN, hash_functions::shake128::Xof, 
+    types::{SigningError, VerificationError},
 };
 
 pub(crate) const PRE_HASH_OID_LEN: usize = 11;

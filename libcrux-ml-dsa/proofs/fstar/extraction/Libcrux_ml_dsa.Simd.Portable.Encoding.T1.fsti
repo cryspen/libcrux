@@ -10,10 +10,10 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-val serialize (simd_unit: Libcrux_ml_dsa.Simd.Portable.t_PortableSIMDUnit)
+val serialize (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
     : Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 10)) Prims.l_True (fun _ -> Prims.l_True)
 
 val deserialize (serialized: t_Slice u8)
-    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.t_PortableSIMDUnit
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
       Prims.l_True
       (fun _ -> Prims.l_True)

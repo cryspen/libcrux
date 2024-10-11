@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -7,10 +7,10 @@ let generate_key_pair
       (v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_VERIFICATION_KEY_SIZE:
           usize)
       (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
-    : (t_Array u8 v_SIGNING_KEY_SIZE & t_Array u8 v_VERIFICATION_KEY_SIZE) =
+     =
   if Libcrux_platform.Platform.simd256_support ()
   then
-    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.generate_key_pair v_ROWS_IN_A
+    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.generate_key_pair v_ROWS_IN_A
       v_COLUMNS_IN_A
       v_ETA
       v_ERROR_RING_ELEMENT_SIZE
@@ -44,11 +44,10 @@ let sign
       (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
       (message context: t_Slice u8)
       (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
-    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
-      Libcrux_ml_dsa.Ml_dsa_generic.t_SigningError =
+     =
   if Libcrux_platform.Platform.simd256_support ()
   then
-    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.sign v_ROWS_IN_A v_COLUMNS_IN_A v_ETA
+    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.sign v_ROWS_IN_A v_COLUMNS_IN_A v_ETA
       v_ERROR_RING_ELEMENT_SIZE v_GAMMA1_EXPONENT v_GAMMA2 v_COMMITMENT_RING_ELEMENT_SIZE
       v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE v_ONES_IN_VERIFIER_CHALLENGE
       v_MAX_ONES_IN_HINT v_GAMMA1_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_SIGNATURE_SIZE signing_key
@@ -76,11 +75,10 @@ let sign_pre_hashed_shake128
       (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
       (message context: t_Slice u8)
       (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
-    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
-      Libcrux_ml_dsa.Ml_dsa_generic.t_SigningError =
+     =
   if Libcrux_platform.Platform.simd256_support ()
   then
-    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.sign_pre_hashed_shake128 v_ROWS_IN_A
+    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.sign_pre_hashed_shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_GAMMA1_EXPONENT v_GAMMA2
       v_COMMITMENT_RING_ELEMENT_SIZE v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE
       v_ONES_IN_VERIFIER_CHALLENGE v_MAX_ONES_IN_HINT v_GAMMA1_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE
@@ -109,10 +107,10 @@ let verify
       (verification_key_serialized: t_Array u8 v_VERIFICATION_KEY_SIZE)
       (message context: t_Slice u8)
       (signature_serialized: t_Array u8 v_SIGNATURE_SIZE)
-    : Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Ml_dsa_generic.t_VerificationError =
+     =
   if Libcrux_platform.Platform.simd256_support ()
   then
-    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.verify v_ROWS_IN_A v_COLUMNS_IN_A
+    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.verify v_ROWS_IN_A v_COLUMNS_IN_A
       v_SIGNATURE_SIZE v_VERIFICATION_KEY_SIZE v_GAMMA1_EXPONENT v_GAMMA1_RING_ELEMENT_SIZE v_GAMMA2
       v_BETA v_COMMITMENT_RING_ELEMENT_SIZE v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE
       v_ONES_IN_VERIFIER_CHALLENGE v_MAX_ONES_IN_HINT verification_key_serialized message context
@@ -141,10 +139,10 @@ let verify_pre_hashed_shake128
       (verification_key_serialized: t_Array u8 v_VERIFICATION_KEY_SIZE)
       (message context: t_Slice u8)
       (signature_serialized: t_Array u8 v_SIGNATURE_SIZE)
-    : Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Ml_dsa_generic.t_VerificationError =
+     =
   if Libcrux_platform.Platform.simd256_support ()
   then
-    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.verify_pre_hashed_shake128 v_ROWS_IN_A
+    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.verify_pre_hashed_shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A v_SIGNATURE_SIZE v_VERIFICATION_KEY_SIZE v_GAMMA1_EXPONENT
       v_GAMMA1_RING_ELEMENT_SIZE v_GAMMA2 v_BETA v_COMMITMENT_RING_ELEMENT_SIZE
       v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE v_ONES_IN_VERIFIER_CHALLENGE

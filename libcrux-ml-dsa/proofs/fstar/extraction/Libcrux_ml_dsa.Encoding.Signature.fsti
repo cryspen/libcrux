@@ -17,10 +17,10 @@ val impl__deserialize
       (serialized: t_Array u8 v_SIGNATURE_SIZE)
     : Prims.Pure
       (Core.Result.t_Result
-          (Libcrux_ml_dsa.Ml_dsa_generic.t_Signature v_SIMDUnit
+          (Libcrux_ml_dsa.Types.t_Signature v_SIMDUnit
               v_COMMITMENT_HASH_SIZE
               v_COLUMNS_IN_A
-              v_ROWS_IN_A) Libcrux_ml_dsa.Ml_dsa_generic.t_VerificationError)
+              v_ROWS_IN_A) Libcrux_ml_dsa.Types.t_VerificationError)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
@@ -30,7 +30,7 @@ val impl__serialize
           usize)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (self:
-          Libcrux_ml_dsa.Ml_dsa_generic.t_Signature v_SIMDUnit
+          Libcrux_ml_dsa.Types.t_Signature v_SIMDUnit
             v_COMMITMENT_HASH_SIZE
             v_COLUMNS_IN_A
             v_ROWS_IN_A)

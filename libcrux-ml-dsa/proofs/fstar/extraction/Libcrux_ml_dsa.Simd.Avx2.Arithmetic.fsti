@@ -14,9 +14,6 @@ val compute_hint (v_GAMMA2: i32) (low high: Libcrux_intrinsics.Avx2_extract.t_Ve
 val infinity_norm_exceeds (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (bound: i32)
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
-val simd_multiply_i32_and_return_high (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
-
 val subtract (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
@@ -35,9 +32,7 @@ val power2round (r: Libcrux_intrinsics.Avx2_extract.t_Vec256)
 val montgomery_multiply (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val montgomery_multiply_by_constant
-      (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (constant: i32)
+val montgomery_multiply_by_constant (lhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i32)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
 val decompose (v_GAMMA2: i32) (r: Libcrux_intrinsics.Avx2_extract.t_Vec256)

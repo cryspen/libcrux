@@ -1,10 +1,12 @@
 module Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
-let serialize (v_OUTPUT_SIZE: usize) (simd_unit: Libcrux_ml_dsa.Simd.Portable.t_PortableSIMDUnit)
-    : t_Array u8 v_OUTPUT_SIZE =
+let serialize
+      (v_OUTPUT_SIZE: usize)
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
+     =
   let serialized:t_Array u8 v_OUTPUT_SIZE =
     Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_OUTPUT_SIZE
   in
@@ -12,7 +14,7 @@ let serialize (v_OUTPUT_SIZE: usize) (simd_unit: Libcrux_ml_dsa.Simd.Portable.t_
   | 4 ->
     let serialized:t_Array u8 v_OUTPUT_SIZE =
       Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (Rust_primitives.mk_usize 2)
-        (simd_unit.Libcrux_ml_dsa.Simd.Portable.f_coefficients <: t_Slice i32)
+        (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients <: t_Slice i32)
         (fun serialized temp_1_ ->
             let serialized:t_Array u8 v_OUTPUT_SIZE = serialized in
             let _:usize = temp_1_ in
@@ -34,7 +36,7 @@ let serialize (v_OUTPUT_SIZE: usize) (simd_unit: Libcrux_ml_dsa.Simd.Portable.t_
   | 6 ->
     let serialized:t_Array u8 v_OUTPUT_SIZE =
       Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (Rust_primitives.mk_usize 4)
-        (simd_unit.Libcrux_ml_dsa.Simd.Portable.f_coefficients <: t_Slice i32)
+        (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients <: t_Slice i32)
         (fun serialized temp_1_ ->
             let serialized:t_Array u8 v_OUTPUT_SIZE = serialized in
             let _:usize = temp_1_ in

@@ -12,7 +12,7 @@ use crate::{
         vector_times_ring_element,
     },
     ntt::ntt,
-    polynomial::PolynomialRingElement,
+    types::{SigningError, VerificationError, Signature},
     pre_hash::{DomainSeparationContext, PreHash},
     sample::{sample_challenge_ring_element, sample_mask_vector},
     samplex4,
@@ -24,16 +24,6 @@ use crate::{
 pub(crate) mod instantiations;
 pub(crate) mod multiplexing;
 
-pub(crate) struct Signature<
-    SIMDUnit: Operations,
-    const COMMITMENT_HASH_SIZE: usize,
-    const COLUMNS_IN_A: usize,
-    const ROWS_IN_A: usize,
-> {
-    pub commitment_hash: [u8; COMMITMENT_HASH_SIZE],
-    pub signer_response: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
-    pub hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
-}
 
 /// Generate a key pair.
 pub(crate) fn generate_key_pair<
@@ -97,20 +87,6 @@ pub(crate) fn generate_key_pair<
     );
 
     (signing_key_serialized, verification_key_serialized)
-}
-
-#[derive(Debug)]
-pub enum VerificationError {
-    MalformedHintError,
-    SignerResponseExceedsBoundError,
-    CommitmentHashesDontMatchError,
-    ContextTooLongError,
-}
-
-#[derive(Debug)]
-pub enum SigningError {
-    RejectionSamplingError,
-    ContextTooLongError,
 }
 
 #[allow(non_snake_case)]

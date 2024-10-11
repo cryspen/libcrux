@@ -1,10 +1,8 @@
 use super::arithmetic::{self, montgomery_multiply_fe_by_fer};
-use crate::simd::{
-    portable::PortableSIMDUnit,
-    traits::{
+use super::vector_type::PortableSIMDUnit;
+use crate::simd::traits::{
         montgomery_multiply_by_fer, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT,
         ZETAS_TIMES_MONTGOMERY_R,
-    },
 };
 
 #[inline(always)]

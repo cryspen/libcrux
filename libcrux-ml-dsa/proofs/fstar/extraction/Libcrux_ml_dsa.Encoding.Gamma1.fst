@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Gamma1
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -9,10 +9,6 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let serialize__OUTPUT_BYTES_PER_SIMD_UNIT: usize = Rust_primitives.mk_usize 18
-
-let serialize__OUTPUT_BYTES_PER_SIMD_UNIT_1: usize = Rust_primitives.mk_usize 20
-
 let serialize
       (#v_SIMDUnit: Type0)
       (v_GAMMA1_EXPONENT v_OUTPUT_BYTES: usize)
@@ -20,7 +16,7 @@ let serialize
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    : t_Array u8 v_OUTPUT_BYTES =
+     =
   let serialized:t_Array u8 v_OUTPUT_BYTES =
     Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_OUTPUT_BYTES
   in
@@ -142,7 +138,7 @@ let deserialize
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (serialized: t_Slice u8)
-    : Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
+     =
   let serialized_chunks:Core.Slice.Iter.t_Chunks u8 =
     match cast (v_GAMMA1_EXPONENT <: usize) <: u8 with
     | 17 -> Core.Slice.impl__chunks #u8 serialized (Rust_primitives.mk_usize 18)

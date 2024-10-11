@@ -32,28 +32,30 @@ let serialize_when_gamma1_is_2_pow_19___GAMMA1: i32 =
 
 val serialize_when_gamma1_is_2_pow_17_
       (v_OUTPUT_SIZE: usize)
-      (simd_unit: Libcrux_ml_dsa.Simd.Portable.t_PortableSIMDUnit)
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
     : Prims.Pure (t_Array u8 v_OUTPUT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
 val serialize_when_gamma1_is_2_pow_19_
       (v_OUTPUT_SIZE: usize)
-      (simd_unit: Libcrux_ml_dsa.Simd.Portable.t_PortableSIMDUnit)
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
     : Prims.Pure (t_Array u8 v_OUTPUT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize (v_OUTPUT_SIZE: usize) (simd_unit: Libcrux_ml_dsa.Simd.Portable.t_PortableSIMDUnit)
+val serialize
+      (v_OUTPUT_SIZE: usize)
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
     : Prims.Pure (t_Array u8 v_OUTPUT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
 val deserialize_when_gamma1_is_2_pow_17_ (serialized: t_Slice u8)
-    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.t_PortableSIMDUnit
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 val deserialize_when_gamma1_is_2_pow_19_ (serialized: t_Slice u8)
-    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.t_PortableSIMDUnit
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 val deserialize (v_GAMMA1_EXPONENT: usize) (serialized: t_Slice u8)
-    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.t_PortableSIMDUnit
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
       Prims.l_True
       (fun _ -> Prims.l_True)

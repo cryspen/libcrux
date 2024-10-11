@@ -59,29 +59,6 @@ let infinity_norm_exceeds (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) 
   in
   if result =. Rust_primitives.mk_i32 1 then false else true
 
-let simd_multiply_i32_and_return_high (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let prod02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 lhs rhs
-  in
-  let prod13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32
-          (Rust_primitives.mk_i32 245)
-          lhs
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (Rust_primitives.mk_i32 245) rhs
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 (Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi32
-        prod02
-        prod13
-      <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    (Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi32 prod02 prod13
-      <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
-
 let subtract (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 lhs rhs
 
@@ -159,26 +136,44 @@ let montgomery_multiply (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
         <:
         i32)
   in
-  let product_low:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 lhs rhs
+  let prod02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 lhs rhs
   in
-  let k:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 product_low
-      inverse_of_modulus_mod_montgomery_r
+  let prod13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32
+          (Rust_primitives.mk_i32 245)
+          lhs
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (Rust_primitives.mk_i32 245) rhs
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
-  let c:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    simd_multiply_i32_and_return_high k field_modulus
+  let k02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod02 inverse_of_modulus_mod_montgomery_r
   in
-  let product_high:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    simd_multiply_i32_and_return_high lhs rhs
+  let k13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod13 inverse_of_modulus_mod_montgomery_r
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 product_high c
+  let c02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k02 field_modulus
+  in
+  let c13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k13 field_modulus
+  in
+  let res02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod02 c02
+  in
+  let res13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod13 c13
+  in
+  let res02_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (Rust_primitives.mk_i32 245) res02
+  in
+  Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 (Rust_primitives.mk_i32 170) res02_shifted res13
 
-let montgomery_multiply_by_constant
-      (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (constant: i32)
-     =
-  let constant:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+let montgomery_multiply_by_constant (lhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i32) =
+  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 constant
   in
   let field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -191,20 +186,41 @@ let montgomery_multiply_by_constant
         <:
         i32)
   in
-  let product_low:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 simd_unit constant
+  let prod02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 lhs rhs
   in
-  let k:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 product_low
-      inverse_of_modulus_mod_montgomery_r
+  let prod13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32
+          (Rust_primitives.mk_i32 245)
+          lhs
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (Rust_primitives.mk_i32 245) rhs
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
-  let c:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    simd_multiply_i32_and_return_high k field_modulus
+  let k02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod02 inverse_of_modulus_mod_montgomery_r
   in
-  let product_high:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    simd_multiply_i32_and_return_high simd_unit constant
+  let k13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod13 inverse_of_modulus_mod_montgomery_r
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 product_high c
+  let c02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k02 field_modulus
+  in
+  let c13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k13 field_modulus
+  in
+  let res02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod02 c02
+  in
+  let res13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod13 c13
+  in
+  let res02_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (Rust_primitives.mk_i32 245) res02
+  in
+  Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 (Rust_primitives.mk_i32 170) res02_shifted res13
 
 let decompose (v_GAMMA2: i32) (r: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let r:Libcrux_intrinsics.Avx2_extract.t_Vec256 = to_unsigned_representatives r in

@@ -182,43 +182,6 @@ val invert_ntt_montgomery
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val ntt_at_layer_0_
-      (#v_SIMDUnit: Type0)
-      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (zeta_i: usize)
-      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    : Prims.Pure (usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val ntt_at_layer_1_
-      (#v_SIMDUnit: Type0)
-      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (zeta_i: usize)
-      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    : Prims.Pure (usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val ntt_at_layer_2_
-      (#v_SIMDUnit: Type0)
-      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (zeta_i: usize)
-      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    : Prims.Pure (usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val ntt_at_layer_3_plus
-      (#v_SIMDUnit: Type0)
-      (v_LAYER: usize)
-      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (zeta_i: usize)
-      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    : Prims.Pure (usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 val ntt
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}

@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Commitment
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -9,10 +9,6 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let serialize__OUTPUT_BYTES_PER_SIMD_UNIT: usize = Rust_primitives.mk_usize 4
-
-let serialize__OUTPUT_BYTES_PER_SIMD_UNIT_1: usize = Rust_primitives.mk_usize 6
-
 let serialize
       (#v_SIMDUnit: Type0)
       (v_OUTPUT_SIZE: usize)
@@ -20,7 +16,7 @@ let serialize
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    : t_Array u8 v_OUTPUT_SIZE =
+     =
   let serialized:t_Array u8 v_OUTPUT_SIZE =
     Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_OUTPUT_SIZE
   in
@@ -142,7 +138,7 @@ let serialize_vector
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (vector: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
-    : t_Array u8 v_OUTPUT_SIZE =
+     =
   let serialized:t_Array u8 v_OUTPUT_SIZE =
     Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_OUTPUT_SIZE
   in

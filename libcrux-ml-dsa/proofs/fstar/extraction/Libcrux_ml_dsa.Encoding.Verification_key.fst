@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Verification_key
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -17,7 +17,7 @@ let generate_serialized
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (seed_for_A: t_Slice u8)
       (t1: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
-    : t_Array u8 v_VERIFICATION_KEY_SIZE =
+     =
   let verification_key_serialized:t_Array u8 v_VERIFICATION_KEY_SIZE =
     Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_VERIFICATION_KEY_SIZE
   in
@@ -101,8 +101,7 @@ let deserialize
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (serialized: t_Array u8 v_VERIFICATION_KEY_SIZE)
-    : (t_Array u8 (Rust_primitives.mk_usize 32) &
-      t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A) =
+     =
   let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
         <:

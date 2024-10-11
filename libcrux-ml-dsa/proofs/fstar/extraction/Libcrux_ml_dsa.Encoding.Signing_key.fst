@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Signing_key
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -22,7 +22,7 @@ let generate_serialized
       (seed_for_A seed_for_signing verification_key: t_Slice u8)
       (s1: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       (s2 t0: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
-    : t_Array u8 v_SIGNING_KEY_SIZE =
+     =
   let signing_key_serialized:t_Array u8 v_SIGNING_KEY_SIZE =
     Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_SIGNING_KEY_SIZE
   in
@@ -252,11 +252,7 @@ let deserialize_then_ntt
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (serialized: t_Array u8 v_SIGNING_KEY_SIZE)
-    : (t_Array u8 (Rust_primitives.mk_usize 32) & t_Array u8 (Rust_primitives.mk_usize 32) &
-      t_Array u8 (Rust_primitives.mk_usize 64) &
-      t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A &
-      t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A &
-      t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A) =
+     =
   let seed_for_A, remaining_serialized:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
       (serialized <: t_Slice u8)

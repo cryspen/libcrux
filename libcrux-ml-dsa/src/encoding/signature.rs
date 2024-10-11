@@ -1,5 +1,5 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT, encoding, ml_dsa_generic::Signature,
+    constants::COEFFICIENTS_IN_RING_ELEMENT, encoding, types::Signature,
     polynomial::PolynomialRingElement, simd::traits::Operations, VerificationError,
 };
 

@@ -6,6 +6,31 @@ open FStar.Mul
 val init_absorb__init_absorb (input: t_Slice u8)
     : Prims.Pure Libcrux_sha3.Portable.t_KeccakState Prims.l_True (fun _ -> Prims.l_True)
 
+/// Portable SHAKE 128 state
+type t_Shake128 = | Shake128 : t_Shake128
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_1: Libcrux_ml_dsa.Hash_functions.Shake128.t_Xof t_Shake128 =
+  {
+    f_shake128_pre
+    =
+    (fun (v_OUTPUT_LENGTH: usize) (input: t_Slice u8) (out: t_Array u8 v_OUTPUT_LENGTH) -> true);
+    f_shake128_post
+    =
+    (fun
+        (v_OUTPUT_LENGTH: usize)
+        (input: t_Slice u8)
+        (out: t_Array u8 v_OUTPUT_LENGTH)
+        (out1: t_Array u8 v_OUTPUT_LENGTH)
+        ->
+        true);
+    f_shake128
+    =
+    fun (v_OUTPUT_LENGTH: usize) (input: t_Slice u8) (out: t_Array u8 v_OUTPUT_LENGTH) ->
+      let out:t_Array u8 v_OUTPUT_LENGTH = Libcrux_sha3.Portable.shake128 out input in
+      out
+  }
+
 /// Portable SHAKE 128 x4 state.
 /// We're using a portable implementation so this is actually sequential.
 type t_Shake128X4 = {
@@ -187,7 +212,7 @@ let impl: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128X4 =
 type t_Shake256 = { f_state:Libcrux_sha3.Portable.t_KeccakState }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof t_Shake256 =
+let impl_2: Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof t_Shake256 =
   {
     f_shake256_pre
     =
@@ -270,7 +295,7 @@ type t_Shake256X4 = {
 }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl_2: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256X4 =
+let impl_3: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256X4 =
   {
     f_init_absorb_pre
     =
