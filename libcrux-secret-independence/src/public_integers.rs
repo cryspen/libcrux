@@ -23,16 +23,16 @@ impl<T> Declassify for T{
     }
 }
 
-impl<T> ClassifyEach for T {
+impl<T: Clone+Copy> ClassifyEach for T {
     type ClassifiedEachOutput = T;
     fn classify_each(&self) -> T {
-        self
+        *self
     }
 }
 
 impl<T> DeclassifyEach for T {
     type DeclassifiedEachOutput = T;
-    fn declassify_each(&self) -> T {
+    fn declassify_each(self) -> T {
         self
     }
 }
