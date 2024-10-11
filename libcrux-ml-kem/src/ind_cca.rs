@@ -295,6 +295,7 @@ pub(crate) fn decapsulate<
     )
 }
 
+/// Unpack an incoming private key into it's different parts.
 fn unpack_private_key<
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
@@ -331,7 +332,6 @@ pub(crate) mod unpacked {
     };
 
     /// An unpacked ML-KEM IND-CCA Private Key
-    #[derive(Clone)]
     pub struct MlKemPrivateKeyUnpacked<const K: usize, Vector: Operations> {
         pub(crate) ind_cpa_private_key: IndCpaPrivateKeyUnpacked<K, Vector>,
         pub(crate) implicit_rejection_value: [u8; 32],
@@ -435,7 +435,7 @@ pub(crate) mod unpacked {
         ///
         /// Note that we can't restore the seed for A. But it's not needed.
         /// However, the unpacked public key in a key generated like this
-        /// is not fully usable.
+        /// is not fully usable (serializable).
         #[inline(always)]
         pub fn from_private_key<
             const SECRET_KEY_SIZE: usize,
@@ -466,14 +466,10 @@ pub(crate) mod unpacked {
             out.public_key
                 .public_key_hash
                 .copy_from_slice(ind_cpa_public_key_hash);
+            out.private_key
+                .implicit_rejection_value
+                .copy_from_slice(implicit_rejection_value);
 
-            build_unpacked_keys::<
-                K,
-                BYTES_PER_RING_ELEMENT,
-                PUBLIC_KEY_SIZE,
-                Vector,
-                PortableHash<K>,
-            >(&mut out, implicit_rejection_value);
             out
         }
 
@@ -598,22 +594,6 @@ pub(crate) mod unpacked {
             &mut out.public_key.ind_cpa_public_key,
         );
 
-        build_unpacked_keys::<K, BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector, Hasher>(
-            out,
-            implicit_rejection_value,
-        );
-    }
-
-    fn build_unpacked_keys<
-        const K: usize,
-        const BYTES_PER_RING_ELEMENT: usize,
-        const PUBLIC_KEY_SIZE: usize,
-        Vector: Operations,
-        Hasher: Hash<K>,
-    >(
-        out: &mut MlKemKeyPairUnpacked<K, Vector>,
-        implicit_rejection_value: &[u8],
-    ) {
         // We need to un-transpose the A_transpose matrix provided by IND-CPA
         //  We would like to write the following but it is not supported by Eurydice yet.
         //  https://github.com/AeneasVerif/eurydice/issues/39
@@ -630,6 +610,7 @@ pub(crate) mod unpacked {
             }
         }
         out.public_key.ind_cpa_public_key.A = A;
+        out.private_key.implicit_rejection_value = implicit_rejection_value.try_into().unwrap();
 
         let pk_serialized =
             serialize_public_key::<K, BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
@@ -637,7 +618,6 @@ pub(crate) mod unpacked {
                 &out.public_key.ind_cpa_public_key.seed_for_A,
             );
         out.public_key.public_key_hash = Hasher::H(&pk_serialized);
-        out.private_key.implicit_rejection_value = implicit_rejection_value.try_into().unwrap();
     }
 
     // Encapsulate with Unpacked Public Key

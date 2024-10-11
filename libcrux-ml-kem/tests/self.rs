@@ -92,6 +92,20 @@ macro_rules! impl_consistency_unpacked {
                 ciphertext_unpacked.as_slice(),
                 "lhs: ciphertext, rhs: ciphertext_unpacked"
             );
+
+            // Check with re-assembled new_kp
+            let (ciphertext_unpacked, shared_secret_unpacked) =
+                p::unpacked::encapsulate(&new_kp.public_key, randomness);
+            assert_eq!(
+                shared_secret, shared_secret_unpacked,
+                "lhs: shared_secret, rhs: shared_secret_unpacked"
+            );
+            assert_eq!(
+                ciphertext.as_slice(),
+                ciphertext_unpacked.as_slice(),
+                "lhs: ciphertext, rhs: ciphertext_unpacked"
+            );
+
             let shared_secret_decapsulated =
                 p::unpacked::decapsulate(&key_pair_unpacked, &ciphertext);
             let shared_secret = p::decapsulate(key_pair.private_key(), &ciphertext);
@@ -103,6 +117,14 @@ macro_rules! impl_consistency_unpacked {
                 shared_secret, shared_secret_decapsulated,
                 "lhs: shared_secret, rhs: shared_secret_decapsulated"
             );
+
+            // Check with re-assembled new_kp
+            let shared_secret_decapsulated = p::unpacked::decapsulate(&new_kp, &ciphertext);
+            assert_eq!(
+                shared_secret_unpacked, shared_secret_decapsulated,
+                "lhs: shared_secret_unpacked, rhs: shared_secret_decapsulated"
+            );
+
             // If the randomness was not enough for the rejection sampling step
             // in key-generation and encapsulation, simply return without
             // failing.
