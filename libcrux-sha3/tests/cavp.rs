@@ -1,6 +1,6 @@
 use cavp::*;
-use libcrux_sha3::*;
 use libcrux_secret_independence::*;
+use libcrux_sha3::*;
 macro_rules! sha3_test {
     ($file:ident, $digest:ty, $algorithm:expr) => {
         #[test]
@@ -14,7 +14,10 @@ macro_rules! sha3_test {
             for test in &tv.tests {
                 eprintln!("test {c}");
                 c += 1;
-                let my_digest: $digest = sha3($algorithm, &test.msg[0..test.msg_length / 8].to_vec().classify_each());
+                let my_digest: $digest = sha3(
+                    $algorithm,
+                    &test.msg[0..test.msg_length / 8].to_vec().classify_each(),
+                );
                 assert_eq!(&my_digest.declassify_each(), &test.digest[..]);
             }
         }
@@ -46,7 +49,10 @@ macro_rules! shake_test {
                 eprintln!("test {c}");
                 c += 1;
                 let mut my_digest = vec![0u8.classify(); test.digest.len()];
-                $shake(&mut my_digest, &test.msg[0..test.msg_length / 8].to_vec().classify_each());
+                $shake(
+                    &mut my_digest,
+                    &test.msg[0..test.msg_length / 8].to_vec().classify_each(),
+                );
                 assert_eq!(&my_digest.declassify_each(), &test.digest[..]);
             }
         }
@@ -74,7 +80,12 @@ macro_rules! shake_vo_test {
                 eprintln!("test {c}");
                 c += 1;
                 let mut my_digest = vec![0u8.classify(); test.digest.len()];
-                $shake(&mut my_digest, &test.msg[0..tv.header.input_length / 8].to_vec().classify_each());
+                $shake(
+                    &mut my_digest,
+                    &test.msg[0..tv.header.input_length / 8]
+                        .to_vec()
+                        .classify_each(),
+                );
                 assert_eq!(&my_digest.declassify_each(), &test.digest[..]);
             }
         }

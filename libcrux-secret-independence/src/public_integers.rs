@@ -13,17 +13,19 @@ pub type U128 = u128;
 
 impl<T> Classify for T {
     type ClassifiedOutput = T;
-    fn classify(self) -> Self {self}
+    fn classify(self) -> Self {
+        self
+    }
 }
 
-impl<T> Declassify for T{
+impl<T> Declassify for T {
     type DeclassifiedOutput = T;
     fn declassify(self) -> T {
         self
     }
 }
 
-impl<T: Clone+Copy> ClassifyEach for T {
+impl<T: Clone + Copy> ClassifyEach for T {
     type ClassifiedEachOutput = T;
     fn classify_each(&self) -> T {
         *self
@@ -37,31 +39,31 @@ impl<T> DeclassifyEach for T {
     }
 }
 
-impl EncodeOps<U8,4> for U32 {
-    fn to_le_bytes(&self) -> [U8;4] {
+impl EncodeOps<U8, 4> for U32 {
+    fn to_le_bytes(&self) -> [U8; 4] {
         (*self as u32).to_le_bytes()
     }
-    fn to_be_bytes(&self) -> [U8;4] {
+    fn to_be_bytes(&self) -> [U8; 4] {
         (*self as u32).to_be_bytes()
     }
-    fn from_le_bytes(x:&[U8;4]) -> Self {
+    fn from_le_bytes(x: &[U8; 4]) -> Self {
         u32::from_le_bytes(*x)
     }
-    fn from_be_bytes(x:&[U8;4]) -> Self {
+    fn from_be_bytes(x: &[U8; 4]) -> Self {
         u32::from_be_bytes(*x)
     }
 }
 
 #[hax_lib::attributes]
-impl<const N: usize, const B:usize> TryEncodeOps<U8, B> for [U32; N] {
+impl<const N: usize, const B: usize> TryEncodeOps<U8, B> for [U32; N] {
     #[requires(N < 65536 / 4)]
-    #[ensures(|result| N < 65536 / 4 && (if B == N * 4 {result.is_ok()} else {result.is_err()}))] 
-    fn try_to_le_bytes(&self) -> Result<[U8;B],()> {
+    #[ensures(|result| N < 65536 / 4 && (if B == N * 4 {result.is_ok()} else {result.is_err()}))]
+    fn try_to_le_bytes(&self) -> Result<[U8; B], ()> {
         try_to_le_bytes(self)
     }
     #[requires(N < 65536 / 4)]
-    #[ensures(|result| N < 65536 / 4 && (if B == N * 4 {result.is_ok()} else {result.is_err()}))] 
-    fn try_to_be_bytes(&self) -> Result<[U8;B],()> {
+    #[ensures(|result| N < 65536 / 4 && (if B == N * 4 {result.is_ok()} else {result.is_err()}))]
+    fn try_to_be_bytes(&self) -> Result<[U8; B], ()> {
         try_to_be_bytes(self)
     }
 }
@@ -69,13 +71,13 @@ impl<const N: usize, const B:usize> TryEncodeOps<U8, B> for [U32; N] {
 #[hax_lib::attributes]
 impl<const N: usize> TryDecodeOps<U8> for [U32; N] {
     #[requires(N < 65536 / 4)]
-    #[ensures(|result| N < 65536 / 4 && (if x.len() == N * 4 {result.is_ok()} else {result.is_err()}))] 
-    fn try_from_le_bytes(x:&[U8]) -> Result<[U32; N],()> {
+    #[ensures(|result| N < 65536 / 4 && (if x.len() == N * 4 {result.is_ok()} else {result.is_err()}))]
+    fn try_from_le_bytes(x: &[U8]) -> Result<[U32; N], ()> {
         try_from_le_bytes(x)
     }
     #[requires(N < 65536 / 4)]
-    #[ensures(|result| N < 65536 / 4 && (if x.len() == N * 4 {result.is_ok()} else {result.is_err()}))] 
-    fn try_from_be_bytes(x:&[U8]) -> Result<[U32; N],()> {
+    #[ensures(|result| N < 65536 / 4 && (if x.len() == N * 4 {result.is_ok()} else {result.is_err()}))]
+    fn try_from_be_bytes(x: &[U8]) -> Result<[U32; N], ()> {
         try_from_be_bytes(x)
     }
 }

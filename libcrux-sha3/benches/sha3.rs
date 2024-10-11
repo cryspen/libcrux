@@ -1,8 +1,8 @@
 #![allow(non_snake_case)]
 use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion, Throughput};
 
-use libcrux_sha3::*;
 use libcrux_secret_independence::*;
+use libcrux_sha3::*;
 
 pub fn randombytes(n: usize) -> Vec<u8> {
     use rand::rngs::OsRng;
@@ -37,7 +37,8 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || randombytes(*payload_size),
                             |payload| {
-                                let _d: [u8; digest_size($libcrux)] = hash($libcrux, &payload.classify_each()).declassify_each();
+                                let _d: [u8; digest_size($libcrux)] =
+                                    hash($libcrux, &payload.classify_each()).declassify_each();
                             },
                             BatchSize::SmallInput,
                         )

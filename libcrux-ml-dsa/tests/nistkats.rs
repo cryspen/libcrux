@@ -44,13 +44,16 @@ macro_rules! impl_nist_known_answer_tests {
             for kat in nist_kats {
                 let key_pair = $key_gen(kat.key_generation_seed);
 
-                let verification_key_hash = libcrux_sha3::sha256(&key_pair.verification_key.0.classify_each()).declassify_each();
+                let verification_key_hash =
+                    libcrux_sha3::sha256(&key_pair.verification_key.0.classify_each())
+                        .declassify_each();
                 assert_eq!(
                     verification_key_hash, kat.sha3_256_hash_of_verification_key,
                     "verification_key_hash != kat.sha3_256_hash_of_verification_key"
                 );
 
-                let signing_key_hash = libcrux_sha3::sha256(&key_pair.signing_key.0.classify_each()).declassify_each();
+                let signing_key_hash =
+                    libcrux_sha3::sha256(&key_pair.signing_key.0.classify_each()).declassify_each();
                 assert_eq!(
                     signing_key_hash, kat.sha3_256_hash_of_signing_key,
                     "signing_key_hash != kat.sha3_256_hash_of_signing_key"
@@ -61,7 +64,8 @@ macro_rules! impl_nist_known_answer_tests {
                 let signature = $sign(&key_pair.signing_key, &message, b"", kat.signing_randomness)
                     .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
-                let signature_hash = libcrux_sha3::sha256(&signature.0.classify_each()).declassify_each();
+                let signature_hash =
+                    libcrux_sha3::sha256(&signature.0.classify_each()).declassify_each();
                 assert_eq!(
                     signature_hash, kat.sha3_256_hash_of_signature,
                     "signature_hash != kat.sha3_256_hash_of_signature"
@@ -86,13 +90,16 @@ macro_rules! impl_nist_known_answer_tests {
             for kat in nist_kats {
                 let key_pair = $key_gen(kat.key_generation_seed);
 
-                let verification_key_hash = libcrux_sha3::sha256(&key_pair.verification_key.0.classify_each()).declassify_each();
+                let verification_key_hash =
+                    libcrux_sha3::sha256(&key_pair.verification_key.0.classify_each())
+                        .declassify_each();
                 assert_eq!(
                     verification_key_hash, kat.sha3_256_hash_of_verification_key,
                     "verification_key_hash != kat.sha3_256_hash_of_verification_key"
                 );
 
-                let signing_key_hash = libcrux_sha3::sha256(&key_pair.signing_key.0.classify_each()).declassify_each();
+                let signing_key_hash =
+                    libcrux_sha3::sha256(&key_pair.signing_key.0.classify_each()).declassify_each();
                 assert_eq!(
                     signing_key_hash, kat.sha3_256_hash_of_signing_key,
                     "signing_key_hash != kat.sha3_256_hash_of_signing_key"
@@ -104,7 +111,8 @@ macro_rules! impl_nist_known_answer_tests {
                     $sign_pre_hashed(&key_pair.signing_key, &message, b"", kat.signing_randomness)
                         .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
-                let signature_hash = libcrux_sha3::sha256(&signature.0.classify_each()).declassify_each();
+                let signature_hash =
+                    libcrux_sha3::sha256(&signature.0.classify_each()).declassify_each();
                 assert_eq!(
                     signature_hash, kat.sha3_256_hash_of_signature,
                     "signature_hash != kat.sha3_256_hash_of_signature"

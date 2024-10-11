@@ -3,7 +3,7 @@
 use crate::traits::internal::*;
 use libcrux_secret_independence::*;
 
-#[inline(always)] 
+#[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: U64) -> U64 {
     debug_assert!(LEFT + RIGHT == 64);
     (x << LEFT) | (x >> RIGHT)
@@ -42,7 +42,8 @@ fn _veorq_n_u64(a: U64, c: U64) -> U64 {
 pub(crate) fn load_block<const RATE: usize>(s: &mut [[U64; 5]; 5], blocks: [&[U8]; 1]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0);
     for i in 0..RATE / 8 {
-        s[i / 5][i % 5] = s[i / 5][i % 5] ^ U64::from_le_bytes(blocks[0][8 * i..8 * i + 8].try_into().unwrap());
+        s[i / 5][i % 5] =
+            s[i / 5][i % 5] ^ U64::from_le_bytes(blocks[0][8 * i..8 * i + 8].try_into().unwrap());
     }
 }
 

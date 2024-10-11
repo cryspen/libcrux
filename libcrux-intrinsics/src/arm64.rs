@@ -1,7 +1,6 @@
 #![allow(non_camel_case_types, unsafe_code)]
 use core::arch::aarch64::*;
 
-
 pub type _uint16x4_t = uint16x4_t;
 pub type _int16x4_t = int16x4_t;
 pub type _int16x8_t = int16x8_t;

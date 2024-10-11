@@ -62,8 +62,12 @@ pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations, Shake128: shake128
     seed3[32] = domain_separator3 as u8;
     seed3[33] = (domain_separator3 >> 8) as u8;
 
-    let mut state = Shake128::init_absorb(&seed0.classify_each(), &seed1.classify_each(), 
-                                          &seed2.classify_each(), &seed3.classify_each());
+    let mut state = Shake128::init_absorb(
+        &seed0.classify_each(),
+        &seed1.classify_each(),
+        &seed2.classify_each(),
+        &seed3.classify_each(),
+    );
 
     let mut randomness0 = [0u8.classify(); shake128::FIVE_BLOCKS_SIZE];
     let mut randomness1 = [0u8.classify(); shake128::FIVE_BLOCKS_SIZE];
@@ -258,8 +262,12 @@ pub(crate) fn sample_four_error_ring_elements<
     seed3[64] = domain_separator3 as u8;
     seed3[65] = (domain_separator3 >> 8) as u8;
 
-    let mut state = Shake256::init_absorb(&seed0.classify_each(), &seed1.classify_each(), 
-                                          &seed2.classify_each(), &seed3.classify_each());
+    let mut state = Shake256::init_absorb(
+        &seed0.classify_each(),
+        &seed1.classify_each(),
+        &seed2.classify_each(),
+        &seed3.classify_each(),
+    );
     let randomnesses = state.squeeze_first_block();
     let randomness0 = randomnesses.0.declassify_each();
     let randomness1 = randomnesses.1.declassify_each();
@@ -397,14 +405,23 @@ pub(crate) fn sample_mask_vector<
             let mut out2 = [0.classify(); 576];
             let mut out3 = [0.classify(); 576];
             Shake256X4::shake256(
-                &seed0.classify_each(), &seed1.classify_each(), 
-                &seed2.classify_each(), &seed3.classify_each(), 
-                &mut out0, &mut out1, &mut out2, &mut out3,
+                &seed0.classify_each(),
+                &seed1.classify_each(),
+                &seed2.classify_each(),
+                &seed3.classify_each(),
+                &mut out0,
+                &mut out1,
+                &mut out2,
+                &mut out3,
             );
-            mask[0] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0.declassify_each());
-            mask[1] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1.declassify_each());
-            mask[2] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2.declassify_each());
-            mask[3] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3.declassify_each());
+            mask[0] =
+                encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0.declassify_each());
+            mask[1] =
+                encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1.declassify_each());
+            mask[2] =
+                encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2.declassify_each());
+            mask[3] =
+                encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3.declassify_each());
         }
         19 => {
             let mut out0 = [0.classify(); 640];
@@ -412,14 +429,23 @@ pub(crate) fn sample_mask_vector<
             let mut out2 = [0.classify(); 640];
             let mut out3 = [0.classify(); 640];
             Shake256X4::shake256(
-                &seed0.classify_each(), &seed1.classify_each(), 
-                &seed2.classify_each(), &seed3.classify_each(), 
-                &mut out0, &mut out1, &mut out2, &mut out3,
+                &seed0.classify_each(),
+                &seed1.classify_each(),
+                &seed2.classify_each(),
+                &seed3.classify_each(),
+                &mut out0,
+                &mut out1,
+                &mut out2,
+                &mut out3,
             );
-            mask[0] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0.declassify_each());
-            mask[1] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1.declassify_each());
-            mask[2] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2.declassify_each());
-            mask[3] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3.declassify_each());
+            mask[0] =
+                encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0.declassify_each());
+            mask[1] =
+                encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1.declassify_each());
+            mask[2] =
+                encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2.declassify_each());
+            mask[3] =
+                encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3.declassify_each());
         }
         _ => unreachable!(),
     }
@@ -484,7 +510,12 @@ pub(crate) fn sample_challenge_ring_element<
 
     while !done {
         let randomness = state.squeeze_next_block();
-        done = inside_out_shuffle(&randomness.declassify_each(), &mut out_index, &mut signs, &mut result);
+        done = inside_out_shuffle(
+            &randomness.declassify_each(),
+            &mut out_index,
+            &mut signs,
+            &mut result,
+        );
     }
 
     PolynomialRingElement::<SIMDUnit>::from_i32_array(&result)

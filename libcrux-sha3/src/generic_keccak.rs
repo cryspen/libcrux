@@ -405,7 +405,7 @@ pub(crate) fn absorb_final<
             blocks[i][0..last_len].copy_from_slice(last[i]);
         }
         blocks[i][last_len] = DELIM.classify();
-        blocks[i][RATE - 1] |= 0x80.classify(); 
+        blocks[i][RATE - 1] |= 0x80.classify();
     }
     T::load_block_full::<RATE>(&mut s.st, blocks);
     keccakf1600(s)

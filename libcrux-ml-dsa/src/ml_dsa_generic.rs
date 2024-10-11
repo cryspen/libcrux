@@ -335,7 +335,6 @@ pub(crate) fn sign_internal<
             shake.squeeze(&mut commitment_hash_candidate);
         }
         let commitment_hash_candidate = commitment_hash_candidate.declassify_each();
-    
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
             SIMDUnit,

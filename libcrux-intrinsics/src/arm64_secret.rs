@@ -2,8 +2,8 @@
 //! Replace with a hand-written file after extraction.
 
 #![allow(non_camel_case_types, unsafe_code, unused_variables)]
-use libcrux_secret_independence::*;
 use super::arm64;
+use libcrux_secret_independence::*;
 
 pub type _uint16x4_t = Secret<arm64::_uint16x4_t>;
 pub type _int16x4_t = Secret<arm64::_int16x4_t>;

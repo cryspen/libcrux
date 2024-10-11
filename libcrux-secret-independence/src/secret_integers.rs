@@ -1,15 +1,21 @@
-use core::ops::*;
 use crate::traits::*;
+use core::ops::*;
 
 #[repr(transparent)]
 pub struct Secret<T>(T);
 
-pub const fn secret<T>(x:T) -> Secret<T> {Secret(x)}
-fn unwrap<T>(x:Secret<T>) -> T {x.0}
+pub const fn secret<T>(x: T) -> Secret<T> {
+    Secret(x)
+}
+fn unwrap<T>(x: Secret<T>) -> T {
+    x.0
+}
 
 impl<T> Classify for T {
     type ClassifiedOutput = Secret<T>;
-    fn classify(self) -> Secret<Self> {secret(self)}
+    fn classify(self) -> Secret<Self> {
+        secret(self)
+    }
 }
 
 impl<T> Declassify for Secret<T> {
@@ -20,7 +26,9 @@ impl<T> Declassify for Secret<T> {
 }
 
 impl<T> From<T> for Secret<T> {
-    fn from(x:T) -> Secret<T> {x.classify()}
+    fn from(x: T) -> Secret<T> {
+        x.classify()
+    }
 }
 
 impl<T: Clone> Clone for Secret<T> {
@@ -29,29 +37,28 @@ impl<T: Clone> Clone for Secret<T> {
     }
 }
 
-impl<T: Clone+Copy> Copy for Secret<T> {}
+impl<T: Clone + Copy> Copy for Secret<T> {}
 
-impl<T: Clone+Copy, const N: usize> ClassifyEach for [T; N] {
+impl<T: Clone + Copy, const N: usize> ClassifyEach for [T; N] {
     type ClassifiedEachOutput = [Secret<T>; N];
     fn classify_each(&self) -> [Secret<T>; N] {
         self.map(|x| x.into())
     }
 }
 
-impl<T: Clone+Copy> ClassifyEach for Vec<T> {
+impl<T: Clone + Copy> ClassifyEach for Vec<T> {
     type ClassifiedEachOutput = Vec<Secret<T>>;
     fn classify_each(&self) -> Vec<Secret<T>> {
         self.clone().into_iter().map(|x| x.classify()).collect()
     }
 }
 
-impl<T:Clone> ClassifyEach for [T] {
+impl<T: Clone> ClassifyEach for [T] {
     type ClassifiedEachOutput = Vec<Secret<T>>;
     fn classify_each(&self) -> Vec<Secret<T>> {
         self.to_vec().into_iter().map(|x| x.classify()).collect()
     }
 }
-
 
 impl<T, const N: usize> DeclassifyEach for [Secret<T>; N] {
     type DeclassifiedEachOutput = [T; N];
@@ -67,67 +74,72 @@ impl<T> DeclassifyEach for Vec<Secret<T>> {
     }
 }
 
-
-impl<T: Add,V:Into<Secret<T>>> Add<V> for Secret<T> {
+impl<T: Add, V: Into<Secret<T>>> Add<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn add(self, rhs: V) -> Self::Output {
         self.declassify().add(rhs.into().declassify()).classify()
     }
 }
 
-impl<T: Sub,V:Into<Secret<T>>> Sub<V> for Secret<T> {
+impl<T: Sub, V: Into<Secret<T>>> Sub<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn sub(self, rhs: V) -> Self::Output {
         self.declassify().sub(rhs.into().declassify()).into()
     }
 }
 
-impl<T:Mul,V:Into<Secret<T>>> Mul<V> for Secret<T> {
+impl<T: Mul, V: Into<Secret<T>>> Mul<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn mul(self, rhs: V) -> Self::Output {
         self.declassify().mul(rhs.into().declassify()).into()
     }
 }
 
-impl<T: BitXor,V:Into<Secret<T>>> BitXor<V> for Secret<T> {
+impl<T: BitXor, V: Into<Secret<T>>> BitXor<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn bitxor(self, rhs: V) -> Self::Output {
         self.declassify().bitxor(rhs.into().declassify()).into()
     }
 }
 
-impl<T: BitXor+Copy,V:Into<Secret<T>>> BitXorAssign<V> for Secret<T> 
-    where T::Output : Into<T> {
+impl<T: BitXor + Copy, V: Into<Secret<T>>> BitXorAssign<V> for Secret<T>
+where
+    T::Output: Into<T>,
+{
     fn bitxor_assign(&mut self, rhs: V) {
         let r = self.declassify().bitxor(rhs.into().declassify()).into();
         *self = r.classify();
     }
 }
 
-impl<T: BitOr,V:Into<Secret<T>>> BitOr<V> for Secret<T> {
+impl<T: BitOr, V: Into<Secret<T>>> BitOr<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn bitor(self, rhs: V) -> Self::Output {
         self.declassify().bitor(rhs.into().declassify()).into()
     }
 }
 
-impl<T: BitOr+Copy,V:Into<Secret<T>>> BitOrAssign<V> for Secret<T> 
-    where T::Output : Into<T> {
+impl<T: BitOr + Copy, V: Into<Secret<T>>> BitOrAssign<V> for Secret<T>
+where
+    T::Output: Into<T>,
+{
     fn bitor_assign(&mut self, rhs: V) {
         let r = self.declassify().bitor(rhs.into().declassify()).into();
         *self = r.classify();
     }
 }
 
-impl<T: BitAnd,V:Into<Secret<T>>> BitAnd<V> for Secret<T> {
+impl<T: BitAnd, V: Into<Secret<T>>> BitAnd<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn bitand(self, rhs: V) -> Self::Output {
         self.declassify().bitand(rhs.into().declassify()).into()
     }
 }
 
-impl<T: BitAnd+Copy,V:Into<Secret<T>>> BitAndAssign<V> for Secret<T> 
-    where T::Output : Into<T> {
+impl<T: BitAnd + Copy, V: Into<Secret<T>>> BitAndAssign<V> for Secret<T>
+where
+    T::Output: Into<T>,
+{
     fn bitand_assign(&mut self, rhs: V) {
         let r = self.declassify().bitand(rhs.into().declassify()).into();
         *self = r.classify();
@@ -167,103 +179,115 @@ pub type I128 = Secret<i128>;
 pub type U128 = Secret<u128>;
 
 impl IntOps for Secret<u32> {
-    fn wrapping_add<T:Into<Secret<u32>>>(self,rhs:T) -> Self {
-        self.declassify().wrapping_add(rhs.into().declassify()).classify()
+    fn wrapping_add<T: Into<Secret<u32>>>(self, rhs: T) -> Self {
+        self.declassify()
+            .wrapping_add(rhs.into().declassify())
+            .classify()
     }
-    fn wrapping_sub<T:Into<Secret<u32>>>(self,rhs:T) -> Self {
-        self.declassify().wrapping_sub(rhs.into().declassify()).classify()
+    fn wrapping_sub<T: Into<Secret<u32>>>(self, rhs: T) -> Self {
+        self.declassify()
+            .wrapping_sub(rhs.into().declassify())
+            .classify()
     }
-    fn wrapping_mul<T:Into<Secret<u32>>>(self,rhs:T) -> Self {
-        self.declassify().wrapping_mul(rhs.into().declassify()).classify()
+    fn wrapping_mul<T: Into<Secret<u32>>>(self, rhs: T) -> Self {
+        self.declassify()
+            .wrapping_mul(rhs.into().declassify())
+            .classify()
     }
-    fn rotate_left(self,rhs:u32) -> Self {
+    fn rotate_left(self, rhs: u32) -> Self {
         self.declassify().rotate_left(rhs).classify()
     }
-    fn rotate_right(self,rhs:u32) -> Self {
+    fn rotate_right(self, rhs: u32) -> Self {
         self.declassify().rotate_right(rhs).classify()
     }
 }
 
-impl EncodeOps<U8,4> for U32 {
-    fn to_le_bytes(&self) -> [U8;4] {
+impl EncodeOps<U8, 4> for U32 {
+    fn to_le_bytes(&self) -> [U8; 4] {
         self.declassify().to_le_bytes().classify_each()
     }
-    fn to_be_bytes(&self) -> [U8;4] {
+    fn to_be_bytes(&self) -> [U8; 4] {
         self.declassify().to_be_bytes().classify_each()
     }
-    fn from_le_bytes(x:&[U8;4]) -> Self {
+    fn from_le_bytes(x: &[U8; 4]) -> Self {
         u32::from_le_bytes(x.map(|i| i.declassify())).classify()
     }
-    fn from_be_bytes(x:&[U8;4]) -> Self {
+    fn from_be_bytes(x: &[U8; 4]) -> Self {
         u32::from_be_bytes(x.map(|i| i.declassify())).classify()
     }
 }
 
-impl<const N: usize, const B:usize> TryEncodeOps<U8, B> for [U32; N] {
-    fn try_to_le_bytes(&self) -> Result<[U8;B],()> {
+impl<const N: usize, const B: usize> TryEncodeOps<U8, B> for [U32; N] {
+    fn try_to_le_bytes(&self) -> Result<[U8; B], ()> {
         try_to_le_bytes(self)
     }
-    fn try_to_be_bytes(&self) -> Result<[U8;B],()> {
+    fn try_to_be_bytes(&self) -> Result<[U8; B], ()> {
         try_to_be_bytes(self)
     }
 }
 
 impl<const N: usize> TryDecodeOps<U8> for [U32; N] {
-    fn try_from_le_bytes(x:&[U8]) -> Result<Self,()> {
+    fn try_from_le_bytes(x: &[U8]) -> Result<Self, ()> {
         try_from_le_bytes(x)
     }
-    fn try_from_be_bytes(x:&[U8]) -> Result<Self,()> {
+    fn try_from_be_bytes(x: &[U8]) -> Result<Self, ()> {
         try_from_be_bytes(x)
     }
 }
 
 impl IntOps for Secret<u64> {
-    fn wrapping_add<T:Into<Secret<u64>>>(self,rhs:T) -> Self {
-        self.declassify().wrapping_add(rhs.into().declassify()).classify()
+    fn wrapping_add<T: Into<Secret<u64>>>(self, rhs: T) -> Self {
+        self.declassify()
+            .wrapping_add(rhs.into().declassify())
+            .classify()
     }
-    fn wrapping_sub<T:Into<Secret<u64>>>(self,rhs:T) -> Self {
-        self.declassify().wrapping_sub(rhs.into().declassify()).classify()
+    fn wrapping_sub<T: Into<Secret<u64>>>(self, rhs: T) -> Self {
+        self.declassify()
+            .wrapping_sub(rhs.into().declassify())
+            .classify()
     }
-    fn wrapping_mul<T:Into<Secret<u64>>>(self,rhs:T) -> Self {
-        self.declassify().wrapping_mul(rhs.into().declassify()).classify()
+    fn wrapping_mul<T: Into<Secret<u64>>>(self, rhs: T) -> Self {
+        self.declassify()
+            .wrapping_mul(rhs.into().declassify())
+            .classify()
     }
-    fn rotate_left(self,rhs:u32) -> Self {
+    fn rotate_left(self, rhs: u32) -> Self {
         self.declassify().rotate_left(rhs).classify()
     }
-    fn rotate_right(self,rhs:u32) -> Self {
+    fn rotate_right(self, rhs: u32) -> Self {
         self.declassify().rotate_right(rhs).classify()
     }
 }
 
-impl EncodeOps<U8,8> for U64 {
-    fn to_le_bytes(&self) -> [U8;8] {
+impl EncodeOps<U8, 8> for U64 {
+    fn to_le_bytes(&self) -> [U8; 8] {
         self.declassify().to_le_bytes().classify_each()
     }
-    fn to_be_bytes(&self) -> [U8;8] {
+    fn to_be_bytes(&self) -> [U8; 8] {
         self.declassify().to_be_bytes().classify_each()
     }
-    fn from_le_bytes(x:&[U8;8]) -> Self {
+    fn from_le_bytes(x: &[U8; 8]) -> Self {
         u64::from_le_bytes(x.map(|i| i.declassify())).classify()
     }
-    fn from_be_bytes(x:&[U8;8]) -> Self {
+    fn from_be_bytes(x: &[U8; 8]) -> Self {
         u64::from_be_bytes(x.map(|i| i.declassify())).classify()
     }
 }
 
-impl<const N: usize, const B:usize> TryEncodeOps<U8, B> for [U64; N] {
-    fn try_to_le_bytes(&self) -> Result<[U8;B],()> {
+impl<const N: usize, const B: usize> TryEncodeOps<U8, B> for [U64; N] {
+    fn try_to_le_bytes(&self) -> Result<[U8; B], ()> {
         try_to_le_bytes(self)
     }
-    fn try_to_be_bytes(&self) -> Result<[U8;B],()> {
+    fn try_to_be_bytes(&self) -> Result<[U8; B], ()> {
         try_to_be_bytes(self)
     }
 }
 
 impl<const N: usize> TryDecodeOps<U8> for [U64; N] {
-    fn try_from_le_bytes(x:&[U8]) -> Result<Self,()> {
+    fn try_from_le_bytes(x: &[U8]) -> Result<Self, ()> {
         try_from_le_bytes(x)
     }
-    fn try_from_be_bytes(x:&[U8]) -> Result<Self,()> {
+    fn try_from_be_bytes(x: &[U8]) -> Result<Self, ()> {
         try_from_be_bytes(x)
     }
 }

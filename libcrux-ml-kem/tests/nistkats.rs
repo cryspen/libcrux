@@ -2,8 +2,8 @@ use serde::Deserialize;
 use serde_json;
 use std::{fs::File, io::BufReader, path::Path};
 
-use libcrux_sha3::*;
 use libcrux_secret_independence::*;
+use libcrux_sha3::*;
 
 #[derive(Deserialize)]
 struct MlKemNISTKAT {
