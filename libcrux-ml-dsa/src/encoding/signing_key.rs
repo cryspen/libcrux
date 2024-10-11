@@ -1,3 +1,5 @@
+use libcrux_secret_independence::*;
+
 use crate::{
     constants::{
         BYTES_FOR_VERIFICATION_KEY_HASH, RING_ELEMENT_OF_T0S_SIZE, SEED_FOR_A_SIZE,
@@ -37,11 +39,13 @@ pub(crate) fn generate_serialized<
         .copy_from_slice(seed_for_signing);
     offset += SEED_FOR_SIGNING_SIZE;
 
-    let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
+    let mut verification_key_hash = [0.classify(); BYTES_FOR_VERIFICATION_KEY_HASH];
     Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
-        verification_key,
+        &verification_key.classify_each(),
         &mut verification_key_hash,
     );
+    let verification_key_hash = verification_key_hash.declassify_each();
+
     signing_key_serialized[offset..offset + BYTES_FOR_VERIFICATION_KEY_HASH]
         .copy_from_slice(&verification_key_hash);
     offset += BYTES_FOR_VERIFICATION_KEY_HASH;

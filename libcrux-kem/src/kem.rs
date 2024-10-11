@@ -32,6 +32,7 @@
 //! [FIPS 203]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.ipd.pdf
 
 use rand::{CryptoRng, Rng};
+use libcrux_secret_independence::*;
 
 use libcrux_ecdh;
 use libcrux_ecdh::{p256_derive, x25519_derive};
@@ -727,7 +728,7 @@ impl Ss {
                 input.extend_from_slice(ss_x.as_ref());
                 input.extend_from_slice(ct_x.0.as_ref());
                 input.extend_from_slice(pk_x.0.as_ref());
-                sha3::sha256(&input).to_vec()
+                sha3::sha256(&input.classify_each()).declassify_each().to_vec()
             }
             #[cfg(feature = "kyber")]
             Ss::X25519Kyber768Draft00(kk, xk) => {

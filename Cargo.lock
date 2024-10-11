@@ -1045,6 +1045,7 @@ dependencies = [
  "libcrux-ecdh",
  "libcrux-kem",
  "libcrux-ml-kem",
+ "libcrux-secret-independence",
  "libcrux-sha3",
  "rand",
 ]
@@ -1057,6 +1058,7 @@ dependencies = [
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",
+ "libcrux-secret-independence",
  "libcrux-sha3",
  "pqcrypto-dilithium",
  "rand",

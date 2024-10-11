@@ -10,7 +10,7 @@ pub trait Declassify {
 
 pub trait ClassifyEach {
     type ClassifiedEachOutput;
-    fn classify_each(self) -> Self::ClassifiedEachOutput;
+    fn classify_each(&self) -> Self::ClassifiedEachOutput;
 }
 
 pub trait DeclassifyEach {

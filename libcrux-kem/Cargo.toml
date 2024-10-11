@@ -17,6 +17,7 @@ path = "src/kem.rs"
 libcrux-ml-kem = { version = "0.0.2-beta.2", path = "../libcrux-ml-kem" }
 libcrux-sha3 = { version = "0.0.2-beta.2", path = "../libcrux-sha3" }
 libcrux-ecdh = { version = "0.0.2-beta.2", path = "../libcrux-ecdh" }
+libcrux-secret-independence = { version = "0.0.2-beta.2", path = "../libcrux-secret-independence" }
 rand = { version = "0.8" }
 
 [features]

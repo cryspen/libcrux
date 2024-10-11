@@ -1,3 +1,5 @@
+use libcrux_secret_independence::*;
+
 use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     encoding,
@@ -60,18 +62,23 @@ pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations, Shake128: shake128
     seed3[32] = domain_separator3 as u8;
     seed3[33] = (domain_separator3 >> 8) as u8;
 
-    let mut state = Shake128::init_absorb(&seed0, &seed1, &seed2, &seed3);
+    let mut state = Shake128::init_absorb(&seed0.classify_each(), &seed1.classify_each(), 
+                                          &seed2.classify_each(), &seed3.classify_each());
 
-    let mut randomness0 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-    let mut randomness1 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-    let mut randomness2 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-    let mut randomness3 = [0u8; shake128::FIVE_BLOCKS_SIZE];
+    let mut randomness0 = [0u8.classify(); shake128::FIVE_BLOCKS_SIZE];
+    let mut randomness1 = [0u8.classify(); shake128::FIVE_BLOCKS_SIZE];
+    let mut randomness2 = [0u8.classify(); shake128::FIVE_BLOCKS_SIZE];
+    let mut randomness3 = [0u8.classify(); shake128::FIVE_BLOCKS_SIZE];
     state.squeeze_first_five_blocks(
         &mut randomness0,
         &mut randomness1,
         &mut randomness2,
         &mut randomness3,
     );
+    let randomness0 = randomness0.declassify_each();
+    let randomness1 = randomness1.declassify_each();
+    let randomness2 = randomness2.declassify_each();
+    let randomness3 = randomness3.declassify_each();
 
     // Every call to |rejection_sample_less_than_field_modulus|
     // will result in a call to |PortableSIMDUnit::rejection_sample_less_than_field_modulus|;
@@ -116,28 +123,28 @@ pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations, Shake128: shake128
         let randomnesses = state.squeeze_next_block();
         if !done0 {
             done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-                &randomnesses.0,
+                &randomnesses.0.declassify_each(),
                 &mut sampled0,
                 &mut coefficients0,
             );
         }
         if !done1 {
             done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-                &randomnesses.1,
+                &randomnesses.1.declassify_each(),
                 &mut sampled1,
                 &mut coefficients1,
             );
         }
         if !done2 {
             done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-                &randomnesses.2,
+                &randomnesses.2.declassify_each(),
                 &mut sampled2,
                 &mut coefficients2,
             );
         }
         if !done3 {
             done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-                &randomnesses.3,
+                &randomnesses.3.declassify_each(),
                 &mut sampled3,
                 &mut coefficients3,
             );
@@ -251,8 +258,13 @@ pub(crate) fn sample_four_error_ring_elements<
     seed3[64] = domain_separator3 as u8;
     seed3[65] = (domain_separator3 >> 8) as u8;
 
-    let mut state = Shake256::init_absorb(&seed0, &seed1, &seed2, &seed3);
+    let mut state = Shake256::init_absorb(&seed0.classify_each(), &seed1.classify_each(), 
+                                          &seed2.classify_each(), &seed3.classify_each());
     let randomnesses = state.squeeze_first_block();
+    let randomness0 = randomnesses.0.declassify_each();
+    let randomness1 = randomnesses.1.declassify_each();
+    let randomness2 = randomnesses.2.declassify_each();
+    let randomness3 = randomnesses.3.declassify_each();
 
     // Every call to |rejection_sample_less_than_field_modulus|
     // will result in a call to |SIMDUnit::rejection_sample_less_than_field_modulus|;
@@ -273,41 +285,45 @@ pub(crate) fn sample_four_error_ring_elements<
     let mut sampled3 = 0;
 
     let mut done0 =
-        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomnesses.0, &mut sampled0, &mut out0);
+        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomness0, &mut sampled0, &mut out0);
     let mut done1 =
-        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomnesses.1, &mut sampled1, &mut out1);
+        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomness1, &mut sampled1, &mut out1);
     let mut done2 =
-        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomnesses.2, &mut sampled2, &mut out2);
+        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomness2, &mut sampled2, &mut out2);
     let mut done3 =
-        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomnesses.3, &mut sampled3, &mut out3);
+        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomness3, &mut sampled3, &mut out3);
 
     while !done0 || !done1 || !done2 || !done3 {
         // Always sample another 4, but we only use it if we actually need it.
         let randomnesses = state.squeeze_next_block();
+        let randomness0 = randomnesses.0.declassify_each();
+        let randomness1 = randomnesses.1.declassify_each();
+        let randomness2 = randomnesses.2.declassify_each();
+        let randomness3 = randomnesses.3.declassify_each();
         if !done0 {
             done0 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
-                &randomnesses.0,
+                &randomness0,
                 &mut sampled0,
                 &mut out0,
             );
         }
         if !done1 {
             done1 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
-                &randomnesses.1,
+                &randomness1,
                 &mut sampled1,
                 &mut out1,
             );
         }
         if !done2 {
             done2 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
-                &randomnesses.2,
+                &randomness2,
                 &mut sampled2,
                 &mut out2,
             );
         }
         if !done3 {
             done3 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
-                &randomnesses.3,
+                &randomness3,
                 &mut sampled3,
                 &mut out3,
             );
@@ -339,14 +355,14 @@ fn sample_mask_ring_element<
 ) -> PolynomialRingElement<SIMDUnit> {
     match GAMMA1_EXPONENT as u8 {
         17 => {
-            let mut out = [0u8; 576];
-            Shake256::shake256::<576>(&seed, &mut out);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out)
+            let mut out = [0u8.classify(); 576];
+            Shake256::shake256::<576>(&seed.classify_each(), &mut out);
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out.declassify_each())
         }
         19 => {
-            let mut out = [0u8; 640];
-            Shake256::shake256::<640>(&seed, &mut out);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out)
+            let mut out = [0u8.classify(); 640];
+            Shake256::shake256::<640>(&seed.classify_each(), &mut out);
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out.declassify_each())
         }
         _ => unreachable!(),
     }
@@ -376,30 +392,34 @@ pub(crate) fn sample_mask_vector<
 
     match GAMMA1_EXPONENT as u8 {
         17 => {
-            let mut out0 = [0; 576];
-            let mut out1 = [0; 576];
-            let mut out2 = [0; 576];
-            let mut out3 = [0; 576];
+            let mut out0 = [0.classify(); 576];
+            let mut out1 = [0.classify(); 576];
+            let mut out2 = [0.classify(); 576];
+            let mut out3 = [0.classify(); 576];
             Shake256X4::shake256(
-                &seed0, &seed1, &seed2, &seed3, &mut out0, &mut out1, &mut out2, &mut out3,
+                &seed0.classify_each(), &seed1.classify_each(), 
+                &seed2.classify_each(), &seed3.classify_each(), 
+                &mut out0, &mut out1, &mut out2, &mut out3,
             );
-            mask[0] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0);
-            mask[1] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1);
-            mask[2] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2);
-            mask[3] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3);
+            mask[0] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0.declassify_each());
+            mask[1] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1.declassify_each());
+            mask[2] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2.declassify_each());
+            mask[3] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3.declassify_each());
         }
         19 => {
-            let mut out0 = [0; 640];
-            let mut out1 = [0; 640];
-            let mut out2 = [0; 640];
-            let mut out3 = [0; 640];
+            let mut out0 = [0.classify(); 640];
+            let mut out1 = [0.classify(); 640];
+            let mut out2 = [0.classify(); 640];
+            let mut out3 = [0.classify(); 640];
             Shake256X4::shake256(
-                &seed0, &seed1, &seed2, &seed3, &mut out0, &mut out1, &mut out2, &mut out3,
+                &seed0.classify_each(), &seed1.classify_each(), 
+                &seed2.classify_each(), &seed3.classify_each(), 
+                &mut out0, &mut out1, &mut out2, &mut out3,
             );
-            mask[0] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0);
-            mask[1] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1);
-            mask[2] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2);
-            mask[3] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3);
+            mask[0] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0.declassify_each());
+            mask[1] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1.declassify_each());
+            mask[2] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2.declassify_each());
+            mask[3] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3.declassify_each());
         }
         _ => unreachable!(),
     }
@@ -452,8 +472,8 @@ pub(crate) fn sample_challenge_ring_element<
 >(
     seed: [u8; SEED_SIZE],
 ) -> PolynomialRingElement<SIMDUnit> {
-    let mut state = Shake256::init_absorb(&seed);
-    let randomness = state.squeeze_first_block();
+    let mut state = Shake256::init_absorb(&seed.classify_each());
+    let randomness = state.squeeze_first_block().declassify_each();
 
     let mut signs = u64::from_le_bytes(randomness[0..8].try_into().unwrap());
 
@@ -464,7 +484,7 @@ pub(crate) fn sample_challenge_ring_element<
 
     while !done {
         let randomness = state.squeeze_next_block();
-        done = inside_out_shuffle(&randomness, &mut out_index, &mut signs, &mut result);
+        done = inside_out_shuffle(&randomness.declassify_each(), &mut out_index, &mut signs, &mut result);
     }
 
     PolynomialRingElement::<SIMDUnit>::from_i32_array(&result)

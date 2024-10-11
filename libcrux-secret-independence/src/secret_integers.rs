@@ -31,17 +31,24 @@ impl<T: Clone> Clone for Secret<T> {
 
 impl<T: Clone+Copy> Copy for Secret<T> {}
 
-impl<T, const N: usize> ClassifyEach for [T; N] {
+impl<T: Clone+Copy, const N: usize> ClassifyEach for [T; N] {
     type ClassifiedEachOutput = [Secret<T>; N];
-    fn classify_each(self) -> [Secret<T>; N] {
+    fn classify_each(&self) -> [Secret<T>; N] {
         self.map(|x| x.into())
     }
 }
 
-impl<T> ClassifyEach for Vec<T> {
+impl<T: Clone+Copy> ClassifyEach for Vec<T> {
     type ClassifiedEachOutput = Vec<Secret<T>>;
-    fn classify_each(self) -> Vec<Secret<T>> {
-        self.into_iter().map(|x| x.classify()).collect()
+    fn classify_each(&self) -> Vec<Secret<T>> {
+        self.clone().into_iter().map(|x| x.classify()).collect()
+    }
+}
+
+impl<T:Clone> ClassifyEach for [T] {
+    type ClassifiedEachOutput = Vec<Secret<T>>;
+    fn classify_each(&self) -> Vec<Secret<T>> {
+        self.to_vec().into_iter().map(|x| x.classify()).collect()
     }
 }
 

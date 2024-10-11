@@ -1,3 +1,4 @@
+use libcrux_secret_independence::*;
 use libcrux_sha3::portable::incremental::{Shake256Absorb, XofAbsorb, XofSqueeze};
 
 use crate::{
@@ -5,7 +6,7 @@ use crate::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
     },
     constants::*,
-    encoding,
+    encoding::{self, verification_key},
     hash_functions::{shake128, shake256},
     matrix::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
@@ -51,11 +52,12 @@ pub(crate) fn generate_key_pair<
     randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
 ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
-    let mut seed_expanded = [0; 128];
+    let mut seed_expanded = [0.classify(); 128];
     let mut shake = Shake256Absorb::new();
-    shake.absorb(&randomness);
-    let mut shake = shake.absorb_final(&[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
+    shake.absorb(&randomness.classify_each());
+    let mut shake = shake.absorb_final(&[ROWS_IN_A as u8, COLUMNS_IN_A as u8].classify_each());
     shake.squeeze(&mut seed_expanded);
+    let seed_expanded = seed_expanded.declassify_each();
 
     let (seed_for_a, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
     let (seed_for_error_vectors, seed_for_signing) =
@@ -278,15 +280,16 @@ pub(crate) fn sign_internal<
         &mut message_representative,
     );
 
-    let mut mask_seed = [0; MASK_SEED_SIZE];
+    let mut mask_seed = [0.classify(); MASK_SEED_SIZE];
     {
         let mut shake = Shake256Absorb::new();
-        shake.absorb(&seed_for_signing);
-        shake.absorb(&randomness);
-        let mut shake = shake.absorb_final(&message_representative);
+        shake.absorb(&seed_for_signing.classify_each());
+        shake.absorb(&randomness.classify_each());
+        let mut shake = shake.absorb_final(&message_representative.classify_each());
 
         shake.squeeze(&mut mask_seed);
     }
+    let mask_seed = mask_seed.declassify_each();
 
     let mut domain_separator_for_mask: u16 = 0;
 
@@ -317,7 +320,7 @@ pub(crate) fn sign_internal<
 
         let (w0, commitment) = decompose_vector::<SIMDUnit, ROWS_IN_A, GAMMA2>(A_times_mask);
 
-        let mut commitment_hash_candidate = [0; COMMITMENT_HASH_SIZE];
+        let mut commitment_hash_candidate = [0.classify(); COMMITMENT_HASH_SIZE];
         {
             let commitment_serialized = encoding::commitment::serialize_vector::<
                 SIMDUnit,
@@ -327,11 +330,12 @@ pub(crate) fn sign_internal<
             >(commitment);
 
             let mut shake = Shake256Absorb::new();
-            shake.absorb(&message_representative);
-            let mut shake = shake.absorb_final(&commitment_serialized);
-
+            shake.absorb(&message_representative.classify_each());
+            let mut shake = shake.absorb_final(&commitment_serialized.classify_each());
             shake.squeeze(&mut commitment_hash_candidate);
         }
+        let commitment_hash_candidate = commitment_hash_candidate.declassify_each();
+    
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
             SIMDUnit,
@@ -444,18 +448,20 @@ fn derive_message_representative(
     message_representative: &mut [u8; 64],
 ) {
     let mut shake = Shake256Absorb::new();
-    shake.absorb(&verification_key_hash);
+    shake.absorb(&verification_key_hash.classify_each());
     if let Some(domain_separation_context) = domain_separation_context {
-        shake.absorb(&[domain_separation_context.pre_hash_oid().is_some() as u8]);
-        shake.absorb(&[domain_separation_context.context().len() as u8]);
-        shake.absorb(domain_separation_context.context());
+        shake.absorb(&[domain_separation_context.pre_hash_oid().is_some() as u8].classify_each());
+        shake.absorb(&[domain_separation_context.context().len() as u8].classify_each());
+        shake.absorb(&domain_separation_context.context().classify_each());
         if let Some(pre_hash_oid) = domain_separation_context.pre_hash_oid() {
-            shake.absorb(pre_hash_oid)
+            shake.absorb(&pre_hash_oid.classify_each())
         }
     }
 
-    let mut shake = shake.absorb_final(message);
-    shake.squeeze(message_representative);
+    let mut shake = shake.absorb_final(&message.classify_each());
+    let mut message_representative_secret = [0u8.classify(); 64];
+    shake.squeeze(&mut message_representative_secret);
+    message_representative.copy_from_slice(&message_representative_secret.declassify_each());
 }
 
 /// The internal verification API.
@@ -508,11 +514,13 @@ pub(crate) fn verify_internal<
             into_padded_array(&seed_for_A),
         );
 
-        let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
+        let mut verification_key_hash = [0.classify(); BYTES_FOR_VERIFICATION_KEY_HASH];
         Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
-            verification_key_serialized,
+            &verification_key_serialized.classify_each(),
             &mut verification_key_hash,
         );
+        let verification_key_hash = verification_key_hash.declassify_each();
+
         let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
         derive_message_representative(
             verification_key_hash,
@@ -535,7 +543,7 @@ pub(crate) fn verify_internal<
             t1,
         );
 
-        let mut commitment_hash = [0; COMMITMENT_HASH_SIZE];
+        let mut commitment_hash = [0.classify(); COMMITMENT_HASH_SIZE];
         {
             let commitment = use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
             let commitment_serialized = encoding::commitment::serialize_vector::<
@@ -546,11 +554,12 @@ pub(crate) fn verify_internal<
             >(commitment);
 
             let mut shake = Shake256Absorb::new();
-            shake.absorb(&message_representative);
-            let mut shake = shake.absorb_final(&commitment_serialized);
+            shake.absorb(&message_representative.classify_each());
+            let mut shake = shake.absorb_final(&commitment_serialized.classify_each());
 
             shake.squeeze(&mut commitment_hash);
         }
+        let commitment_hash = commitment_hash.declassify_each();
 
         if signature.commitment_hash != commitment_hash {
             Err(VerificationError::CommitmentHashesDontMatchError)
