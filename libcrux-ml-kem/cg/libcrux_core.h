@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * Eurydice: 809fdf7ceb408768cdd5daa922193446a5029701
+ * Karamel: b8f4b173b3114cd75be57bb93a8ecf165b8b5ec5
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 764d9d62e64cf9c9942b26057245b87e9e4b722d
+ * Libcrux: 2c499138797cf5252a22f3b7244fc663393f2083
  */
 
 #ifndef __libcrux_core_H
@@ -2895,6 +2895,50 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_24(
   memcpy(ret, out, (size_t)64U * sizeof(uint8_t));
 }
 
+typedef struct Eurydice_slice_uint8_t_x4_s {
+  Eurydice_slice fst;
+  Eurydice_slice snd;
+  Eurydice_slice thd;
+  Eurydice_slice f3;
+} Eurydice_slice_uint8_t_x4;
+
+typedef struct Eurydice_slice_uint8_t_x2_s {
+  Eurydice_slice fst;
+  Eurydice_slice snd;
+} Eurydice_slice_uint8_t_x2;
+
+/**
+ Unpack an incoming private key into it's different parts.
+
+ We have this here in types to extract into a common core for C.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.unpack_private_key
+with const generics
+- CPA_SECRET_KEY_SIZE= 1152
+- PUBLIC_KEY_SIZE= 1184
+*/
+static inline Eurydice_slice_uint8_t_x4
+libcrux_ml_kem_types_unpack_private_key_b4(Eurydice_slice private_key) {
+  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
+      private_key, (size_t)1152U, uint8_t, Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_secret_key = uu____0.fst;
+  Eurydice_slice secret_key0 = uu____0.snd;
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
+      secret_key0, (size_t)1184U, uint8_t, Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_public_key = uu____1.fst;
+  Eurydice_slice secret_key = uu____1.snd;
+  Eurydice_slice_uint8_t_x2 uu____2 = Eurydice_slice_split_at(
+      secret_key, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
+      Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
+  Eurydice_slice implicit_rejection_value = uu____2.snd;
+  return (CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
+                                              .snd = ind_cpa_public_key,
+                                              .thd = ind_cpa_public_key_hash,
+                                              .f3 = implicit_rejection_value});
+}
+
 /**
 A monomorphic instance of core.result.Result
 with types int16_t[16size_t], core_array_TryFromSliceError
@@ -2962,11 +3006,6 @@ static inline void unwrap_26_68(Result_15 self, uint8_t ret[8U]) {
     KRML_HOST_EXIT(255U);
   }
 }
-
-typedef struct Eurydice_slice_uint8_t_x2_s {
-  Eurydice_slice fst;
-  Eurydice_slice snd;
-} Eurydice_slice_uint8_t_x2;
 
 typedef struct Eurydice_slice_uint8_t_1size_t__x2_s {
   Eurydice_slice fst[1U];

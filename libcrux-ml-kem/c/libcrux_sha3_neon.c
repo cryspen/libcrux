@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * Eurydice: 809fdf7ceb408768cdd5daa922193446a5029701
+ * Karamel: b8f4b173b3114cd75be57bb93a8ecf165b8b5ec5
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 2e8f138dbcbfbfabf4bbd994c8587ec00d197102
+ * Libcrux: 2c499138797cf5252a22f3b7244fc663393f2083
  */
 
 #include "libcrux_sha3_neon.h"
@@ -62,7 +62,6 @@ KRML_MUSTINLINE void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0,
                                                    Eurydice_slice input1,
                                                    Eurydice_slice out0,
                                                    Eurydice_slice out1) {
-  /* TODO: make argument ordering consistent */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -73,9 +72,6 @@ KRML_MUSTINLINE void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0,
 */
 KRML_MUSTINLINE libcrux_sha3_neon_x2_incremental_KeccakState
 libcrux_sha3_neon_x2_incremental_init(void) {
-  /* XXX: These functions could alternatively implement the same with the
-   * portable implementation { let s0 = KeccakState::new(); let s1 =
-   * KeccakState::new(); [s0, s1] } */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -87,10 +83,6 @@ libcrux_sha3_neon_x2_incremental_init(void) {
 KRML_MUSTINLINE void libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice data0,
     Eurydice_slice data1) {
-  /* XXX: These functions could alternatively implement the same with the
-   * portable implementation { let [mut s0, mut s1] = s;
-   * shake128_absorb_final(&mut s0, data0); shake128_absorb_final(&mut s1,
-   * data1); } */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -104,10 +96,6 @@ KRML_MUSTINLINE void
 libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
     Eurydice_slice out1) {
-  /* XXX: These functions could alternatively implement the same with the
-   * portable implementation { let [mut s0, mut s1] = s;
-   * shake128_squeeze_first_three_blocks(&mut s0, out0);
-   * shake128_squeeze_first_three_blocks(&mut s1, out1); } */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -121,10 +109,6 @@ KRML_MUSTINLINE void
 libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
     Eurydice_slice out1) {
-  /* XXX: These functions could alternatively implement the same with the
-   * portable implementation { let [mut s0, mut s1] = s;
-   * shake128_squeeze_next_block(&mut s0, out0);
-   * shake128_squeeze_next_block(&mut s1, out1); } */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -148,10 +132,6 @@ libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_five_blocks(
 KRML_MUSTINLINE void libcrux_sha3_neon_x2_incremental_shake256_absorb_final(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice data0,
     Eurydice_slice data1) {
-  /* XXX: These functions could alternatively implement the same with the
-   * portable implementation { let [mut s0, mut s1] = s;
-   * shake128_absorb_final(&mut s0, data0); shake128_absorb_final(&mut s1,
-   * data1); } */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
