@@ -48,12 +48,14 @@ val validate_public_key
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
-val unpack_private_key
-      (v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
+/// Validate an ML-KEM private key.
+/// This implements the Hash check in 7.3 3.
+val validate_private_key_only
+      (v_K v_SECRET_KEY_SIZE: usize)
+      (#v_Hasher: Type0)
+      {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
-    : Prims.Pure (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 /// Validate an ML-KEM private key.
 /// This implements the Hash check in 7.3 3.

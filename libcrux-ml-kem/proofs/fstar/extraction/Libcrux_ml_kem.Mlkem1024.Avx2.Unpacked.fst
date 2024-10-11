@@ -130,14 +130,14 @@ let key_pair_from_private_mut
      =
   let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
     Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector =
-    Libcrux_ml_kem.Ind_cca.Unpacked.impl_2__from_private_key (sz 4)
-      #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
+    Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.Unpacked.keypair_from_private_key (sz 4)
       (sz 3168)
       (sz 1536)
       (sz 1568)
       (sz 1536)
       (sz 1536)
       private_key
+      key_pair
   in
   key_pair
 

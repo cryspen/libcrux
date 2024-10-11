@@ -362,268 +362,6 @@ let impl_2__new
      =
   Core.Default.f_default #(t_MlKemKeyPairUnpacked v_K v_Vector) #FStar.Tactics.Typeclasses.solve ()
 
-let build_unpacked_keys
-      (v_K v_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      (#v_Vector #v_Hasher: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-      (out: t_MlKemKeyPairUnpacked v_K v_Vector)
-      (implicit_rejection_value: t_Slice u8)
-     =
-  let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
-    Core.Array.from_fn #(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      v_K
-      (fun v__i ->
-          let v__i:usize = v__i in
-          Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-            v_K
-            (fun v__j ->
-                let v__j:usize = v__j in
-                Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
-                <:
-                Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-          <:
-          t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-  in
-  let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
-      v_K
-      (fun v_A temp_1_ ->
-          let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-            v_K =
-            v_A
-          in
-          let _:usize = temp_1_ in
-          true)
-      v_A
-      (fun v_A i ->
-          let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-            v_K =
-            v_A
-          in
-          let i:usize = i in
-          Rust_primitives.Hax.Folds.fold_range (sz 0)
-            v_K
-            (fun v_A temp_1_ ->
-                let v_A:t_Array
-                  (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
-                  v_A
-                in
-                let _:usize = temp_1_ in
-                true)
-            v_A
-            (fun v_A j ->
-                let v_A:t_Array
-                  (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
-                  v_A
-                in
-                let j:usize = j in
-                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-                  i
-                  (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ i ]
-                        <:
-                        t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-                      j
-                      (Core.Clone.f_clone #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
-                            v_Vector)
-                          #FStar.Tactics.Typeclasses.solve
-                          ((out.f_public_key.f_ind_cpa_public_key
-                                .Libcrux_ml_kem.Ind_cpa.Unpacked.f_A.[ j ]
-                              <:
-                              t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                                v_K).[ i ]
-                            <:
-                            Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                        <:
-                        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                    <:
-                    t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-                <:
-                t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-                  v_K)
-          <:
-          t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
-  in
-  let out:t_MlKemKeyPairUnpacked v_K v_Vector =
-    {
-      out with
-      f_public_key
-      =
-      {
-        out.f_public_key with
-        f_ind_cpa_public_key
-        =
-        { out.f_public_key.f_ind_cpa_public_key with Libcrux_ml_kem.Ind_cpa.Unpacked.f_A = v_A }
-        <:
-        Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector
-      }
-      <:
-      t_MlKemPublicKeyUnpacked v_K v_Vector
-    }
-    <:
-    t_MlKemKeyPairUnpacked v_K v_Vector
-  in
-  let pk_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
-    Libcrux_ml_kem.Ind_cpa.serialize_public_key v_K
-      v_BYTES_PER_RING_ELEMENT
-      v_PUBLIC_KEY_SIZE
-      #v_Vector
-      out.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
-      (out.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A
-        <:
-        t_Slice u8)
-  in
-  let out:t_MlKemKeyPairUnpacked v_K v_Vector =
-    {
-      out with
-      f_public_key
-      =
-      {
-        out.f_public_key with
-        f_public_key_hash
-        =
-        Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
-          #v_K
-          #FStar.Tactics.Typeclasses.solve
-          (pk_serialized <: t_Slice u8)
-      }
-      <:
-      t_MlKemPublicKeyUnpacked v_K v_Vector
-    }
-    <:
-    t_MlKemKeyPairUnpacked v_K v_Vector
-  in
-  let out:t_MlKemKeyPairUnpacked v_K v_Vector =
-    {
-      out with
-      f_private_key
-      =
-      {
-        out.f_private_key with
-        f_implicit_rejection_value
-        =
-        Core.Result.impl__unwrap #(t_Array u8 (sz 32))
-          #Core.Array.t_TryFromSliceError
-          (Core.Convert.f_try_into #(t_Slice u8)
-              #(t_Array u8 (sz 32))
-              #FStar.Tactics.Typeclasses.solve
-              implicit_rejection_value
-            <:
-            Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError)
-      }
-      <:
-      t_MlKemPrivateKeyUnpacked v_K v_Vector
-    }
-    <:
-    t_MlKemKeyPairUnpacked v_K v_Vector
-  in
-  out
-
-let impl_2__from_private_key
-      (v_K: usize)
-      (#v_Vector: Type0)
-      (v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
-          usize)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
-     =
-  let out:t_MlKemKeyPairUnpacked v_K v_Vector =
-    Core.Default.f_default #(t_MlKemKeyPairUnpacked v_K v_Vector)
-      #FStar.Tactics.Typeclasses.solve
-      ()
-  in
-  let ind_cpa_secret_key, ind_cpa_public_key, ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice
-    u8 &
-    t_Slice u8 &
-    t_Slice u8 &
-    t_Slice u8) =
-    Libcrux_ml_kem.Ind_cca.unpack_private_key v_SECRET_KEY_SIZE
-      v_CPA_SECRET_KEY_SIZE
-      v_PUBLIC_KEY_SIZE
-      private_key
-  in
-  let out:t_MlKemKeyPairUnpacked v_K v_Vector =
-    {
-      out with
-      f_private_key
-      =
-      {
-        out.f_private_key with
-        f_ind_cpa_private_key
-        =
-        {
-          out.f_private_key.f_ind_cpa_private_key with
-          Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
-          =
-          Libcrux_ml_kem.Ind_cpa.deserialize_secret_key v_K #v_Vector ind_cpa_secret_key
-        }
-        <:
-        Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector
-      }
-      <:
-      t_MlKemPrivateKeyUnpacked v_K v_Vector
-    }
-    <:
-    t_MlKemKeyPairUnpacked v_K v_Vector
-  in
-  let out:t_MlKemKeyPairUnpacked v_K v_Vector =
-    {
-      out with
-      f_public_key
-      =
-      {
-        out.f_public_key with
-        f_ind_cpa_public_key
-        =
-        Libcrux_ml_kem.Ind_cpa.build_unpacked_public_key_mut v_K
-          v_T_AS_NTT_ENCODED_SIZE
-          #v_Vector
-          #(Libcrux_ml_kem.Hash_functions.Portable.t_PortableHash v_K)
-          ind_cpa_public_key
-          out.f_public_key.f_ind_cpa_public_key
-      }
-      <:
-      t_MlKemPublicKeyUnpacked v_K v_Vector
-    }
-    <:
-    t_MlKemKeyPairUnpacked v_K v_Vector
-  in
-  let out:t_MlKemKeyPairUnpacked v_K v_Vector =
-    {
-      out with
-      f_public_key
-      =
-      {
-        out.f_public_key with
-        f_public_key_hash
-        =
-        Core.Slice.impl__copy_from_slice #u8
-          out.f_public_key.f_public_key_hash
-          ind_cpa_public_key_hash
-      }
-      <:
-      t_MlKemPublicKeyUnpacked v_K v_Vector
-    }
-    <:
-    t_MlKemKeyPairUnpacked v_K v_Vector
-  in
-  let out:t_MlKemKeyPairUnpacked v_K v_Vector =
-    build_unpacked_keys v_K
-      v_BYTES_PER_RING_ELEMENT
-      v_PUBLIC_KEY_SIZE
-      #v_Vector
-      #(Libcrux_ml_kem.Hash_functions.Portable.t_PortableHash v_K)
-      out
-      implicit_rejection_value
-  in
-  out
-
 let decapsulate
       (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
           usize)
@@ -792,13 +530,314 @@ let generate_keypair
     t_MlKemKeyPairUnpacked v_K v_Vector
   in
   let _:Prims.unit = () in
+  let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
+    Core.Array.from_fn #(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      v_K
+      (fun v__i ->
+          let v__i:usize = v__i in
+          Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+            v_K
+            (fun v__j ->
+                let v__j:usize = v__j in
+                Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+                <:
+                Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+          <:
+          t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+  in
+  let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      v_K
+      (fun v_A temp_1_ ->
+          let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+            v_K =
+            v_A
+          in
+          let _:usize = temp_1_ in
+          true)
+      v_A
+      (fun v_A i ->
+          let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+            v_K =
+            v_A
+          in
+          let i:usize = i in
+          Rust_primitives.Hax.Folds.fold_range (sz 0)
+            v_K
+            (fun v_A temp_1_ ->
+                let v_A:t_Array
+                  (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
+                  v_A
+                in
+                let _:usize = temp_1_ in
+                true)
+            v_A
+            (fun v_A j ->
+                let v_A:t_Array
+                  (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
+                  v_A
+                in
+                let j:usize = j in
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
+                  i
+                  (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ i ]
+                        <:
+                        t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+                      j
+                      (Core.Clone.f_clone #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+                            v_Vector)
+                          #FStar.Tactics.Typeclasses.solve
+                          ((out.f_public_key.f_ind_cpa_public_key
+                                .Libcrux_ml_kem.Ind_cpa.Unpacked.f_A.[ j ]
+                              <:
+                              t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                                v_K).[ i ]
+                            <:
+                            Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                        <:
+                        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                    <:
+                    t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+                <:
+                t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+                  v_K)
+          <:
+          t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
+  in
   let out:t_MlKemKeyPairUnpacked v_K v_Vector =
-    build_unpacked_keys v_K
+    {
+      out with
+      f_public_key
+      =
+      {
+        out.f_public_key with
+        f_ind_cpa_public_key
+        =
+        { out.f_public_key.f_ind_cpa_public_key with Libcrux_ml_kem.Ind_cpa.Unpacked.f_A = v_A }
+        <:
+        Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector
+      }
+      <:
+      t_MlKemPublicKeyUnpacked v_K v_Vector
+    }
+    <:
+    t_MlKemKeyPairUnpacked v_K v_Vector
+  in
+  let pk_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
+    Libcrux_ml_kem.Ind_cpa.serialize_public_key v_K
       v_BYTES_PER_RING_ELEMENT
       v_PUBLIC_KEY_SIZE
       #v_Vector
-      #v_Hasher
+      out.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+      (out.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A
+        <:
+        t_Slice u8)
+  in
+  let out:t_MlKemKeyPairUnpacked v_K v_Vector =
+    {
+      out with
+      f_public_key
+      =
+      {
+        out.f_public_key with
+        f_public_key_hash
+        =
+        Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
+          #v_K
+          #FStar.Tactics.Typeclasses.solve
+          (pk_serialized <: t_Slice u8)
+      }
+      <:
+      t_MlKemPublicKeyUnpacked v_K v_Vector
+    }
+    <:
+    t_MlKemKeyPairUnpacked v_K v_Vector
+  in
+  let out:t_MlKemKeyPairUnpacked v_K v_Vector =
+    {
+      out with
+      f_private_key
+      =
+      {
+        out.f_private_key with
+        f_implicit_rejection_value
+        =
+        Core.Result.impl__unwrap #(t_Array u8 (sz 32))
+          #Core.Array.t_TryFromSliceError
+          (Core.Convert.f_try_into #(t_Slice u8)
+              #(t_Array u8 (sz 32))
+              #FStar.Tactics.Typeclasses.solve
+              implicit_rejection_value
+            <:
+            Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError)
+      }
+      <:
+      t_MlKemPrivateKeyUnpacked v_K v_Vector
+    }
+    <:
+    t_MlKemKeyPairUnpacked v_K v_Vector
+  in
+  out
+
+let keys_from_private_key
+      (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
+          usize)
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (key_pair: t_MlKemKeyPairUnpacked v_K v_Vector)
+     =
+  let ind_cpa_secret_key, ind_cpa_public_key, ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice
+    u8 &
+    t_Slice u8 &
+    t_Slice u8 &
+    t_Slice u8) =
+    Libcrux_ml_kem.Types.unpack_private_key v_CPA_SECRET_KEY_SIZE
+      v_PUBLIC_KEY_SIZE
+      (private_key.Libcrux_ml_kem.Types.f_value <: t_Slice u8)
+  in
+  let key_pair:t_MlKemKeyPairUnpacked v_K v_Vector =
+    {
+      key_pair with
+      f_private_key
+      =
+      {
+        key_pair.f_private_key with
+        f_ind_cpa_private_key
+        =
+        {
+          key_pair.f_private_key.f_ind_cpa_private_key with
+          Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
+          =
+          Libcrux_ml_kem.Ind_cpa.deserialize_secret_key v_K #v_Vector ind_cpa_secret_key
+        }
+        <:
+        Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector
+      }
+      <:
+      t_MlKemPrivateKeyUnpacked v_K v_Vector
+    }
+    <:
+    t_MlKemKeyPairUnpacked v_K v_Vector
+  in
+  let key_pair:t_MlKemKeyPairUnpacked v_K v_Vector =
+    {
+      key_pair with
+      f_public_key
+      =
+      {
+        key_pair.f_public_key with
+        f_ind_cpa_public_key
+        =
+        Libcrux_ml_kem.Ind_cpa.build_unpacked_public_key_mut v_K
+          v_T_AS_NTT_ENCODED_SIZE
+          #v_Vector
+          #(Libcrux_ml_kem.Hash_functions.Portable.t_PortableHash v_K)
+          ind_cpa_public_key
+          key_pair.f_public_key.f_ind_cpa_public_key
+      }
+      <:
+      t_MlKemPublicKeyUnpacked v_K v_Vector
+    }
+    <:
+    t_MlKemKeyPairUnpacked v_K v_Vector
+  in
+  let key_pair:t_MlKemKeyPairUnpacked v_K v_Vector =
+    {
+      key_pair with
+      f_public_key
+      =
+      {
+        key_pair.f_public_key with
+        f_public_key_hash
+        =
+        Core.Slice.impl__copy_from_slice #u8
+          key_pair.f_public_key.f_public_key_hash
+          ind_cpa_public_key_hash
+      }
+      <:
+      t_MlKemPublicKeyUnpacked v_K v_Vector
+    }
+    <:
+    t_MlKemKeyPairUnpacked v_K v_Vector
+  in
+  let key_pair:t_MlKemKeyPairUnpacked v_K v_Vector =
+    {
+      key_pair with
+      f_private_key
+      =
+      {
+        key_pair.f_private_key with
+        f_implicit_rejection_value
+        =
+        Core.Slice.impl__copy_from_slice #u8
+          key_pair.f_private_key.f_implicit_rejection_value
+          implicit_rejection_value
+      }
+      <:
+      t_MlKemPrivateKeyUnpacked v_K v_Vector
+    }
+    <:
+    t_MlKemKeyPairUnpacked v_K v_Vector
+  in
+  let key_pair:t_MlKemKeyPairUnpacked v_K v_Vector =
+    {
+      key_pair with
+      f_public_key
+      =
+      {
+        key_pair.f_public_key with
+        f_ind_cpa_public_key
+        =
+        {
+          key_pair.f_public_key.f_ind_cpa_public_key with
+          Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A
+          =
+          Core.Slice.impl__copy_from_slice #u8
+            key_pair.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A
+            (ind_cpa_public_key.[ { Core.Ops.Range.f_start = v_T_AS_NTT_ENCODED_SIZE }
+                <:
+                Core.Ops.Range.t_RangeFrom usize ]
+              <:
+              t_Slice u8)
+        }
+        <:
+        Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector
+      }
+      <:
+      t_MlKemPublicKeyUnpacked v_K v_Vector
+    }
+    <:
+    t_MlKemKeyPairUnpacked v_K v_Vector
+  in
+  key_pair
+
+let impl_2__from_private_key
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
+          usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+     =
+  let out:t_MlKemKeyPairUnpacked v_K v_Vector =
+    Core.Default.f_default #(t_MlKemKeyPairUnpacked v_K v_Vector)
+      #FStar.Tactics.Typeclasses.solve
+      ()
+  in
+  let out:t_MlKemKeyPairUnpacked v_K v_Vector =
+    keys_from_private_key v_K
+      v_SECRET_KEY_SIZE
+      v_CPA_SECRET_KEY_SIZE
+      v_PUBLIC_KEY_SIZE
+      v_BYTES_PER_RING_ELEMENT
+      v_T_AS_NTT_ENCODED_SIZE
+      #v_Vector
+      private_key
       out
-      implicit_rejection_value
   in
   out

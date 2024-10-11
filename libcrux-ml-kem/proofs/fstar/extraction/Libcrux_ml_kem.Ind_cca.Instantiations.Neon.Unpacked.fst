@@ -91,3 +91,25 @@ let generate_keypair
         Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
   in
   out
+
+let keypair_from_private_key
+      (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
+          usize)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
+            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+     =
+  let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    Libcrux_ml_kem.Ind_cca.Unpacked.keys_from_private_key v_K
+      v_SECRET_KEY_SIZE
+      v_CPA_SECRET_KEY_SIZE
+      v_PUBLIC_KEY_SIZE
+      v_BYTES_PER_RING_ELEMENT
+      v_T_AS_NTT_ENCODED_SIZE
+      #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+      private_key
+      key_pair
+  in
+  key_pair

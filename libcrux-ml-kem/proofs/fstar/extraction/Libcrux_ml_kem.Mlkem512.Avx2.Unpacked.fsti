@@ -91,7 +91,6 @@ val init_key_pair: Prims.unit
           Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Get an unpacked key from a private key.
-/// Note that this is missing the seed of A, which is unrecoverable.
 val key_pair_from_private_mut
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
       (key_pair:

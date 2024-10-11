@@ -176,33 +176,13 @@ let validate_public_key
   in
   public_key =. public_key_serialized
 
-let unpack_private_key
-      (v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
-      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
-     =
-  let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8
-      (private_key.Libcrux_ml_kem.Types.f_value <: t_Slice u8)
-      v_CPA_SECRET_KEY_SIZE
-  in
-  let ind_cpa_public_key, secret_key:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8 secret_key v_PUBLIC_KEY_SIZE
-  in
-  let ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8 secret_key Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE
-  in
-  ind_cpa_secret_key, ind_cpa_public_key, ind_cpa_public_key_hash, implicit_rejection_value
-  <:
-  (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
-
-let validate_private_key
-      (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
+let validate_private_key_only
+      (v_K v_SECRET_KEY_SIZE: usize)
       (#v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
-      (v__ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
      =
   let t:t_Array u8 (sz 32) =
     Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
@@ -227,6 +207,16 @@ let validate_private_key
   in
   t =. expected
 
+let validate_private_key
+      (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
+      (#v_Hasher: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (v__ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+     = validate_private_key_only v_K v_SECRET_KEY_SIZE #v_Hasher private_key
+
 let decapsulate
       (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
           usize)
@@ -246,7 +236,9 @@ let decapsulate
     t_Slice u8 &
     t_Slice u8 &
     t_Slice u8) =
-    unpack_private_key v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE private_key
+    Libcrux_ml_kem.Types.unpack_private_key v_CPA_SECRET_KEY_SIZE
+      v_PUBLIC_KEY_SIZE
+      (private_key.Libcrux_ml_kem.Types.f_value <: t_Slice u8)
   in
   let decrypted:t_Array u8 (sz 32) =
     Libcrux_ml_kem.Ind_cpa.decrypt v_K

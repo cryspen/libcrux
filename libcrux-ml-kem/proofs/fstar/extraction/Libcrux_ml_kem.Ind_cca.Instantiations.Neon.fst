@@ -13,6 +13,15 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+let validate_private_key_only
+      (v_K v_SECRET_KEY_SIZE: usize)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+     =
+  Libcrux_ml_kem.Ind_cca.validate_private_key_only v_K
+    v_SECRET_KEY_SIZE
+    #Libcrux_ml_kem.Hash_functions.Neon.t_Simd128Hash
+    private_key
+
 let validate_private_key
       (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)

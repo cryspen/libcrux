@@ -125,14 +125,14 @@ let key_pair_from_private_mut
      =
   let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Libcrux_ml_kem.Ind_cca.Unpacked.impl_2__from_private_key (sz 3)
-      #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+    Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.keypair_from_private_key (sz 3)
       (sz 2400)
       (sz 1152)
       (sz 1184)
       (sz 1152)
       (sz 1152)
       private_key
+      key_pair
   in
   key_pair
 
