@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion, Throughput};
 
+use libcrux_secret_independence::*;
 use libcrux_sha3::*;
 
 pub fn randombytes(n: usize) -> Vec<u8> {
@@ -36,7 +37,8 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || randombytes(*payload_size),
                             |payload| {
-                                let _d: [u8; digest_size($libcrux)] = hash($libcrux, &payload);
+                                let _d: [u8; digest_size($libcrux)] =
+                                    hash($libcrux, &payload.classify_each()).declassify_each();
                             },
                             BatchSize::SmallInput,
                         )
@@ -51,8 +53,8 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || randombytes(*payload_size),
                             |payload| {
-                                let mut digest = [0u8; digest_size($libcrux)];
-                                neon::$neon_fun(&mut digest, &payload);
+                                let mut digest = [0u8.classify(); digest_size($libcrux)];
+                                neon::$neon_fun(&mut digest, &payload.classify_each());
                             },
                             BatchSize::SmallInput,
                         )

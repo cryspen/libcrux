@@ -2,6 +2,8 @@
 //! differences between the NIST standard FIPS 203 (ML-KEM) and the
 //! Round 3 CRYSTALS-Kyber submissions in the NIST PQ competition.
 
+use libcrux_secret_independence::{ClassifyEach, DeclassifyEach};
+
 use crate::{constants::CPA_PKE_KEY_GENERATION_SEED_SIZE, hash_functions::Hash, MlKemCiphertext};
 
 /// This trait collects differences in specification between ML-KEM
@@ -83,6 +85,6 @@ impl Variant for MlKem {
         let mut seed = [0u8; CPA_PKE_KEY_GENERATION_SEED_SIZE + 1];
         seed[0..CPA_PKE_KEY_GENERATION_SEED_SIZE].copy_from_slice(key_generation_seed);
         seed[CPA_PKE_KEY_GENERATION_SEED_SIZE] = K as u8;
-        Hasher::G(&seed)
+        Hasher::G(&seed.classify_each()).declassify_each()
     }
 }

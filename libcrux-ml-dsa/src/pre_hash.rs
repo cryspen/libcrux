@@ -7,6 +7,7 @@
 use crate::{
     constants::CONTEXT_MAX_LEN, hash_functions::shake128::Xof, SigningError, VerificationError,
 };
+use libcrux_secret_independence::*;
 
 pub(crate) const PRE_HASH_OID_LEN: usize = 11;
 pub(crate) type PreHashOID = [u8; PRE_HASH_OID_LEN];
@@ -33,10 +34,9 @@ impl PreHash<256> for SHAKE128_PH {
     }
 
     fn hash(message: &[u8]) -> [u8; 256] {
-        let mut output = [0u8; 256];
-        crate::hash_functions::portable::Shake128::shake128(message, &mut output);
-
-        output
+        let mut output = [0u8.classify(); 256];
+        crate::hash_functions::portable::Shake128::shake128(&message.classify_each(), &mut output);
+        output.declassify_each()
     }
 }
 

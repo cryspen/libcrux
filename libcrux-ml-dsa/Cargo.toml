@@ -19,6 +19,7 @@ bench = false # so libtest doesn't eat the arguments to criterion
 libcrux-sha3 = { version = "0.0.2-beta.2", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-beta.2", path = "../libcrux-intrinsics" }
 libcrux-platform = { version = "0.0.2-beta.2", path = "../sys/platform" }
+libcrux-secret-independence = { version = "0.0.2-beta.2", path = "../libcrux-secret-independence" }
 
 [dev-dependencies]
 rand = { version = "0.8" }

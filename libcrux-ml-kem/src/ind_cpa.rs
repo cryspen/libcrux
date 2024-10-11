@@ -1,5 +1,5 @@
 use core::array::from_fn;
-
+use libcrux_secret_independence::*;
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     hash_functions::Hash,
@@ -133,7 +133,7 @@ fn sample_ring_element_cbd<
         prf_inputs[i][32] = domain_separator;
         domain_separator += 1;
     }
-    let prf_outputs: [[u8; ETA2_RANDOMNESS_SIZE]; K] = Hasher::PRFxN(&prf_inputs);
+    let prf_outputs: [[u8; ETA2_RANDOMNESS_SIZE]; K] = Hasher::PRFxN(&(prf_inputs.map(|x| x.classify_each()))).map(|x| x.declassify_each());
     for i in 0..K {
         error_1[i] = sample_from_binomial_distribution::<ETA2, Vector>(&prf_outputs[i]);
     }
@@ -159,7 +159,7 @@ fn sample_vector_cbd_then_ntt<
         prf_inputs[i][32] = domain_separator;
         domain_separator += 1;
     }
-    let prf_outputs: [[u8; ETA_RANDOMNESS_SIZE]; K] = Hasher::PRFxN(&prf_inputs);
+    let prf_outputs: [[u8; ETA_RANDOMNESS_SIZE]; K] = Hasher::PRFxN(&prf_inputs.map(|x| x.classify_each())).map(|x| x.declassify_each());
     for i in 0..K {
         re_as_ntt[i] = sample_from_binomial_distribution::<ETA, Vector>(&prf_outputs[i]);
         ntt_binomially_sampled_ring_element(&mut re_as_ntt[i]);
@@ -414,7 +414,7 @@ pub(crate) fn encrypt_unpacked<
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
-    let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = Hasher::PRF(&prf_input);
+    let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = Hasher::PRF(&prf_input.classify_each()).declassify_each();
     let error_2 = sample_from_binomial_distribution::<ETA2, Vector>(&prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
