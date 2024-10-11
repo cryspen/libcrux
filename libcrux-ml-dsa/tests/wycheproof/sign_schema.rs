@@ -79,6 +79,9 @@ pub struct Test {
 
     msg: String,
 
+    #[serde(default)]
+    ctx: String,
+
     sig: String,
 
     result: Result,
@@ -97,6 +100,9 @@ pub enum Flag {
     #[serde(rename = "InvalidPrivateKey")]
     InvalidPrivateKey,
 
+    #[serde(rename = "InvalidContext")]
+    InvalidContext,
+    
     #[serde(rename = "ManySteps")]
     ManySteps,
 

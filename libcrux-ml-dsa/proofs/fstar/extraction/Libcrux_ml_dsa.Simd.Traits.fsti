@@ -16,9 +16,9 @@ class t_Operations (v_Self: Type0) = {
         (f_from_coefficient_array_pre x0)
         (fun result -> f_from_coefficient_array_post x0 result);
   f_to_coefficient_array_pre:v_Self -> Type0;
-  f_to_coefficient_array_post:v_Self -> t_Array i32 (sz 8) -> Type0;
+  f_to_coefficient_array_post:v_Self -> t_Array i32 (Rust_primitives.mk_usize 8) -> Type0;
   f_to_coefficient_array:x0: v_Self
-    -> Prims.Pure (t_Array i32 (sz 8))
+    -> Prims.Pure (t_Array i32 (Rust_primitives.mk_usize 8))
         (f_to_coefficient_array_pre x0)
         (fun result -> f_to_coefficient_array_post x0 result);
   f_add_pre:v_Self -> v_Self -> Type0;
@@ -129,9 +129,9 @@ class t_Operations (v_Self: Type0) = {
         (f_error_deserialize_pre v_ETA x0)
         (fun result -> f_error_deserialize_post v_ETA x0 result);
   f_t0_serialize_pre:v_Self -> Type0;
-  f_t0_serialize_post:v_Self -> t_Array u8 (sz 13) -> Type0;
+  f_t0_serialize_post:v_Self -> t_Array u8 (Rust_primitives.mk_usize 13) -> Type0;
   f_t0_serialize:x0: v_Self
-    -> Prims.Pure (t_Array u8 (sz 13))
+    -> Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 13))
         (f_t0_serialize_pre x0)
         (fun result -> f_t0_serialize_post x0 result);
   f_t0_deserialize_pre:t_Slice u8 -> Type0;
@@ -139,9 +139,9 @@ class t_Operations (v_Self: Type0) = {
   f_t0_deserialize:x0: t_Slice u8
     -> Prims.Pure v_Self (f_t0_deserialize_pre x0) (fun result -> f_t0_deserialize_post x0 result);
   f_t1_serialize_pre:v_Self -> Type0;
-  f_t1_serialize_post:v_Self -> t_Array u8 (sz 10) -> Type0;
+  f_t1_serialize_post:v_Self -> t_Array u8 (Rust_primitives.mk_usize 10) -> Type0;
   f_t1_serialize:x0: v_Self
-    -> Prims.Pure (t_Array u8 (sz 10))
+    -> Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 10))
         (f_t1_serialize_pre x0)
         (fun result -> f_t1_serialize_post x0 result);
   f_t1_deserialize_pre:t_Slice u8 -> Type0;
@@ -186,11 +186,11 @@ class t_Operations (v_Self: Type0) = {
         (fun result -> f_invert_ntt_at_layer_2_post x0 x1 result)
 }
 
-let v_COEFFICIENTS_IN_SIMD_UNIT: usize = sz 8
+let v_COEFFICIENTS_IN_SIMD_UNIT: usize = Rust_primitives.mk_usize 8
 
-let v_FIELD_MODULUS: i32 = 8380417l
+let v_FIELD_MODULUS: i32 = Rust_primitives.mk_i32 8380417
 
-let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58728449uL
+let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = Rust_primitives.mk_u64 58728449
 
 val montgomery_multiply_by_fer (#v_S: Type0) {| i1: t_Operations v_S |} (simd_unit: v_S) (fer: i32)
     : Prims.Pure v_S Prims.l_True (fun _ -> Prims.l_True)

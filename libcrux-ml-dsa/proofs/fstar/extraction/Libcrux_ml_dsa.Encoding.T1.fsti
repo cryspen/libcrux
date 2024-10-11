@@ -9,13 +9,13 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let serialize__OUTPUT_BYTES_PER_SIMD_UNIT: usize = sz 10
+let serialize__OUTPUT_BYTES_PER_SIMD_UNIT: usize = Rust_primitives.mk_usize 10
 
 val serialize
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    : Prims.Pure (t_Array u8 (sz 320)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 320)) Prims.l_True (fun _ -> Prims.l_True)
 
 val deserialize
       (#v_SIMDUnit: Type0)

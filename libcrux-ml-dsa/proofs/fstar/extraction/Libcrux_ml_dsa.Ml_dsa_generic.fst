@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Ml_dsa_generic
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -8,19 +8,155 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_dsa.Hash_functions.Shake128 in
   let open Libcrux_ml_dsa.Hash_functions.Shake256 in
+  let open Libcrux_ml_dsa.Pre_hash in
   let open Libcrux_ml_dsa.Simd.Traits in
   let open Libcrux_sha3.Portable.Incremental in
   ()
 
-let t_SigningError_cast_to_repr (x: t_SigningError) =
-  match x with | SigningError_RejectionSamplingError  -> isz 0
+type t_SigningError =
+  | SigningError_RejectionSamplingError : t_SigningError
+  | SigningError_ContextTooLongError : t_SigningError
 
-let t_VerificationError_cast_to_repr (x: t_VerificationError) =
+let t_SigningError_cast_to_repr (x: t_SigningError) : isize =
   match x with
-  | VerificationError_MalformedHintError  -> isz 0
-  | VerificationError_SignerResponseExceedsBoundError  -> isz 1
-  | VerificationError_CommitmentHashesDontMatchError  -> isz 3
+  | SigningError_RejectionSamplingError  -> Rust_primitives.mk_isize 0
+  | SigningError_ContextTooLongError  -> Rust_primitives.mk_isize 1
 
+type t_VerificationError =
+  | VerificationError_MalformedHintError : t_VerificationError
+  | VerificationError_SignerResponseExceedsBoundError : t_VerificationError
+  | VerificationError_CommitmentHashesDontMatchError : t_VerificationError
+  | VerificationError_ContextTooLongError : t_VerificationError
+
+let t_VerificationError_cast_to_repr (x: t_VerificationError) : isize =
+  match x with
+  | VerificationError_MalformedHintError  -> Rust_primitives.mk_isize 0
+  | VerificationError_SignerResponseExceedsBoundError  -> Rust_primitives.mk_isize 1
+  | VerificationError_CommitmentHashesDontMatchError  -> Rust_primitives.mk_isize 3
+  | VerificationError_ContextTooLongError  -> Rust_primitives.mk_isize 6
+
+/// This corresponds to line 6 in algorithm 7 in FIPS 204 (line 7 in algorithm
+/// 8, resp.).
+/// If `domain_separation_context` is supplied, applies domain
+/// separation and length encoding to the context string,
+/// before appending the message (in the regular variant) or the
+/// pre-hash OID as well as the pre-hashed message digest. Otherwise,
+/// it is assumed that `message` already contains domain separation
+/// information.
+/// In FIPS 204 M' is the concatenation of the domain separated context, any
+/// potential pre-hash OID and the message (or the message pre-hash). We do not
+/// explicitely construct the concatenation in memory since it is of statically unknown
+/// length, but feed its components directly into the incremental XOF.
+/// Refer to line 10 of Algorithm 2 (and line 5 of Algorithm 3, resp.) in [FIPS
+/// 204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf#section.5)
+/// for details on the domain separation for regular ML-DSA. Line
+/// 23 of Algorithm 4 (and line 18 of Algorithm 5,resp.) describe domain separation for the HashMl-DSA
+/// variant.
+let derive_message_representative
+      (verification_key_hash: t_Array u8 (Rust_primitives.mk_usize 64))
+      (domain_separation_context:
+          Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
+      (message: t_Slice u8)
+      (message_representative: t_Array u8 (Rust_primitives.mk_usize 64))
+    : t_Array u8 (Rust_primitives.mk_usize 64) =
+  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
+    Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
+      #(Rust_primitives.mk_usize 136)
+      #FStar.Tactics.Typeclasses.solve
+      ()
+  in
+  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
+    Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
+      #(Rust_primitives.mk_usize 136)
+      #FStar.Tactics.Typeclasses.solve
+      shake
+      (verification_key_hash <: t_Slice u8)
+  in
+  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
+    match domain_separation_context with
+    | Core.Option.Option_Some domain_separation_context ->
+      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
+        Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
+          #(Rust_primitives.mk_usize 136)
+          #FStar.Tactics.Typeclasses.solve
+          shake
+          ((let list =
+                [
+                  cast (Core.Option.impl__is_some #(t_Array u8 (Rust_primitives.mk_usize 11))
+                        (Libcrux_ml_dsa.Pre_hash.impl_1__pre_hash_oid domain_separation_context
+                          <:
+                          Core.Option.t_Option (t_Array u8 (Rust_primitives.mk_usize 11)))
+                      <:
+                      bool)
+                  <:
+                  u8
+                ]
+              in
+              FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+              Rust_primitives.Hax.array_of_list 1 list)
+            <:
+            t_Slice u8)
+      in
+      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
+        Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
+          #(Rust_primitives.mk_usize 136)
+          #FStar.Tactics.Typeclasses.solve
+          shake
+          ((let list =
+                [
+                  cast (Core.Slice.impl__len #u8
+                        (Libcrux_ml_dsa.Pre_hash.impl_1__context domain_separation_context
+                          <:
+                          t_Slice u8)
+                      <:
+                      usize)
+                  <:
+                  u8
+                ]
+              in
+              FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+              Rust_primitives.Hax.array_of_list 1 list)
+            <:
+            t_Slice u8)
+      in
+      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
+        Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
+          #(Rust_primitives.mk_usize 136)
+          #FStar.Tactics.Typeclasses.solve
+          shake
+          (Libcrux_ml_dsa.Pre_hash.impl_1__context domain_separation_context <: t_Slice u8)
+      in
+      (match Libcrux_ml_dsa.Pre_hash.impl_1__pre_hash_oid domain_separation_context with
+        | Core.Option.Option_Some pre_hash_oid ->
+          Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
+            #(Rust_primitives.mk_usize 136)
+            #FStar.Tactics.Typeclasses.solve
+            shake
+            (pre_hash_oid <: t_Slice u8)
+        | _ -> shake)
+    | _ -> shake
+  in
+  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze =
+    Libcrux_sha3.Portable.Incremental.f_absorb_final #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
+      #(Rust_primitives.mk_usize 136)
+      #FStar.Tactics.Typeclasses.solve
+      shake
+      message
+  in
+  let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze &
+    t_Array u8 (Rust_primitives.mk_usize 64)) =
+    Libcrux_sha3.Portable.Incremental.f_squeeze #Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze
+      #(Rust_primitives.mk_usize 136)
+      #FStar.Tactics.Typeclasses.solve
+      shake
+      message_representative
+  in
+  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze = tmp0 in
+  let message_representative:t_Array u8 (Rust_primitives.mk_usize 64) = tmp1 in
+  let _:Prims.unit = () in
+  message_representative
+
+/// Generate a key pair.
 let generate_key_pair
       (#v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_VERIFICATION_KEY_SIZE:
@@ -37,16 +173,46 @@ let generate_key_pair
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i7:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
-      (randomness: t_Array u8 (sz 32))
-     =
-  let seed_expanded:t_Array u8 (sz 128) = Rust_primitives.Hax.repeat 0uy (sz 128) in
-  let seed_expanded:t_Array u8 (sz 128) =
-    Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256 #v_Shake256
+      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+    : (t_Array u8 v_SIGNING_KEY_SIZE & t_Array u8 v_VERIFICATION_KEY_SIZE) =
+  let seed_expanded:t_Array u8 (Rust_primitives.mk_usize 128) =
+    Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) (Rust_primitives.mk_usize 128)
+  in
+  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
+    Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
+      #(Rust_primitives.mk_usize 136)
       #FStar.Tactics.Typeclasses.solve
-      (sz 128)
+      ()
+  in
+  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
+    Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
+      #(Rust_primitives.mk_usize 136)
+      #FStar.Tactics.Typeclasses.solve
+      shake
       (randomness <: t_Slice u8)
+  in
+  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze =
+    Libcrux_sha3.Portable.Incremental.f_absorb_final #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
+      #(Rust_primitives.mk_usize 136)
+      #FStar.Tactics.Typeclasses.solve
+      shake
+      ((let list = [cast (v_ROWS_IN_A <: usize) <: u8; cast (v_COLUMNS_IN_A <: usize) <: u8] in
+          FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
+          Rust_primitives.Hax.array_of_list 2 list)
+        <:
+        t_Slice u8)
+  in
+  let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze &
+    t_Array u8 (Rust_primitives.mk_usize 128)) =
+    Libcrux_sha3.Portable.Incremental.f_squeeze #Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze
+      #(Rust_primitives.mk_usize 136)
+      #FStar.Tactics.Typeclasses.solve
+      shake
       seed_expanded
   in
+  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze = tmp0 in
+  let seed_expanded:t_Array u8 (Rust_primitives.mk_usize 128) = tmp1 in
+  let _:Prims.unit = () in
   let seed_for_a, seed_expanded:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
       (seed_expanded <: t_Slice u8)
@@ -64,7 +230,9 @@ let generate_key_pair
       #v_Shake128X4
       v_ROWS_IN_A
       v_COLUMNS_IN_A
-      (Libcrux_ml_dsa.Utils.into_padded_array (sz 34) seed_for_a <: t_Array u8 (sz 34))
+      (Libcrux_ml_dsa.Utils.into_padded_array (Rust_primitives.mk_usize 34) seed_for_a
+        <:
+        t_Array u8 (Rust_primitives.mk_usize 34))
   in
   let s1, s2:(t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A &
     t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A) =
@@ -73,7 +241,9 @@ let generate_key_pair
       v_ETA
       v_COLUMNS_IN_A
       v_ROWS_IN_A
-      (Libcrux_ml_dsa.Utils.into_padded_array (sz 66) seed_for_error_vectors <: t_Array u8 (sz 66))
+      (Libcrux_ml_dsa.Utils.into_padded_array (Rust_primitives.mk_usize 66) seed_for_error_vectors
+        <:
+        t_Array u8 (Rust_primitives.mk_usize 66))
   in
   let t:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
     Libcrux_ml_dsa.Matrix.compute_As1_plus_s2 #v_SIMDUnit v_ROWS_IN_A v_COLUMNS_IN_A a_as_ntt s1 s2
@@ -98,7 +268,20 @@ let generate_key_pair
   <:
   (t_Array u8 v_SIGNING_KEY_SIZE & t_Array u8 v_VERIFICATION_KEY_SIZE)
 
-let sign
+type t_Signature
+  (v_SIMDUnit: Type0) (v_COMMITMENT_HASH_SIZE: usize) (v_COLUMNS_IN_A: usize) (v_ROWS_IN_A: usize)
+  {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+  = {
+  f_commitment_hash:t_Array u8 v_COMMITMENT_HASH_SIZE;
+  f_signer_response:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+    v_COLUMNS_IN_A;
+  f_hint:t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A
+}
+
+/// The internal signing API.
+/// If no `domain_separation_context` is supplied, it is assumed that
+/// `message` already contains the domain separation.
+let sign_internal
       (#v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_GAMMA1_EXPONENT: usize)
       (v_GAMMA2: i32)
@@ -118,12 +301,14 @@ let sign
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
       (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
       (message: t_Slice u8)
-      (randomness: t_Array u8 (sz 32))
-     =
+      (domain_separation_context:
+          Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
+      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError =
   let seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt:(t_Array
-      u8 (sz 32) &
-    t_Array u8 (sz 32) &
-    t_Array u8 (sz 64) &
+      u8 (Rust_primitives.mk_usize 32) &
+    t_Array u8 (Rust_primitives.mk_usize 32) &
+    t_Array u8 (Rust_primitives.mk_usize 64) &
     t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A &
     t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A &
     t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A) =
@@ -142,84 +327,65 @@ let sign
       #v_Shake128X4
       v_ROWS_IN_A
       v_COLUMNS_IN_A
-      (Libcrux_ml_dsa.Utils.into_padded_array (sz 34) (seed_for_A <: t_Slice u8)
+      (Libcrux_ml_dsa.Utils.into_padded_array (Rust_primitives.mk_usize 34)
+          (seed_for_A <: t_Slice u8)
         <:
-        t_Array u8 (sz 34))
+        t_Array u8 (Rust_primitives.mk_usize 34))
   in
-  let message_representative:t_Array u8 (sz 64) = Rust_primitives.Hax.repeat 0uy (sz 64) in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-    Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      ()
+  let message_representative:t_Array u8 (Rust_primitives.mk_usize 64) =
+    Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) (Rust_primitives.mk_usize 64)
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-    Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
-      (verification_key_hash <: t_Slice u8)
-  in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze =
-    Libcrux_sha3.Portable.Incremental.f_absorb_final #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
+  let message_representative:t_Array u8 (Rust_primitives.mk_usize 64) =
+    derive_message_representative verification_key_hash
+      domain_separation_context
       message
-  in
-  let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze & t_Array u8 (sz 64)) =
-    Libcrux_sha3.Portable.Incremental.f_squeeze #Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
       message_representative
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze = tmp0 in
-  let message_representative:t_Array u8 (sz 64) = tmp1 in
-  let _:Prims.unit = () in
-  let _:Prims.unit = () in
-  let mask_seed:t_Array u8 (sz 64) = Rust_primitives.Hax.repeat 0uy (sz 64) in
+  let mask_seed:t_Array u8 (Rust_primitives.mk_usize 64) =
+    Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) (Rust_primitives.mk_usize 64)
+  in
   let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
     Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
+      #(Rust_primitives.mk_usize 136)
       #FStar.Tactics.Typeclasses.solve
       ()
   in
   let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
     Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
+      #(Rust_primitives.mk_usize 136)
       #FStar.Tactics.Typeclasses.solve
       shake
       (seed_for_signing <: t_Slice u8)
   in
   let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
     Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
+      #(Rust_primitives.mk_usize 136)
       #FStar.Tactics.Typeclasses.solve
       shake
       (randomness <: t_Slice u8)
   in
   let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze =
     Libcrux_sha3.Portable.Incremental.f_absorb_final #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
+      #(Rust_primitives.mk_usize 136)
       #FStar.Tactics.Typeclasses.solve
       shake
       (message_representative <: t_Slice u8)
   in
-  let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze & t_Array u8 (sz 64)) =
+  let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze &
+    t_Array u8 (Rust_primitives.mk_usize 64)) =
     Libcrux_sha3.Portable.Incremental.f_squeeze #Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze
-      #(sz 136)
+      #(Rust_primitives.mk_usize 136)
       #FStar.Tactics.Typeclasses.solve
       shake
       mask_seed
   in
   let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze = tmp0 in
-  let mask_seed:t_Array u8 (sz 64) = tmp1 in
+  let mask_seed:t_Array u8 (Rust_primitives.mk_usize 64) = tmp1 in
   let _:Prims.unit = () in
   let _:Prims.unit = () in
-  let (domain_separator_for_mask: u16):u16 = 0us in
+  let (domain_separator_for_mask: u16):u16 = Rust_primitives.mk_u16 0 in
   let v_BETA:i32 = cast (v_ONES_IN_VERIFIER_CHALLENGE *! v_ETA <: usize) <: i32 in
-  let attempt:usize = sz 0 in
+  let attempt:usize = Rust_primitives.mk_usize 0 in
   let commitment_hash:Core.Option.t_Option (t_Array u8 v_COMMITMENT_HASH_SIZE) =
     Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 v_COMMITMENT_HASH_SIZE)
   in
@@ -230,43 +396,45 @@ let sign
     Core.Option.t_Option
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
   in
-  let hint:Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) =
-    Core.Option.Option_None <: Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A)
+  let hint:Core.Option.t_Option (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) =
+    Core.Option.Option_None
+    <:
+    Core.Option.t_Option (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A)
   in
   let attempt, commitment_hash, domain_separator_for_mask, hint, signer_response:(usize &
     Core.Option.t_Option (t_Array u8 v_COMMITMENT_HASH_SIZE) &
     u16 &
-    Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) &
+    Core.Option.t_Option (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) &
     Core.Option.t_Option
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)) =
     Rust_primitives.f_while_loop (fun temp_0_ ->
           let attempt, commitment_hash, domain_separator_for_mask, hint, signer_response:(usize &
             Core.Option.t_Option (t_Array u8 v_COMMITMENT_HASH_SIZE) &
             u16 &
-            Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) &
+            Core.Option.t_Option (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) &
             Core.Option.t_Option
             (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A))
           =
             temp_0_
           in
-          attempt <. Libcrux_ml_dsa.Constants.v_REJECTION_SAMPLE_BOUND <: bool)
+          attempt <. Libcrux_ml_dsa.Constants.v_REJECTION_SAMPLE_BOUND_SIGN <: bool)
       (attempt, commitment_hash, domain_separator_for_mask, hint, signer_response
         <:
         (usize & Core.Option.t_Option (t_Array u8 v_COMMITMENT_HASH_SIZE) & u16 &
-          Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) &
+          Core.Option.t_Option (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) &
           Core.Option.t_Option
           (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)))
       (fun temp_0_ ->
           let attempt, commitment_hash, domain_separator_for_mask, hint, signer_response:(usize &
             Core.Option.t_Option (t_Array u8 v_COMMITMENT_HASH_SIZE) &
             u16 &
-            Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) &
+            Core.Option.t_Option (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) &
             Core.Option.t_Option
             (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A))
           =
             temp_0_
           in
-          let attempt:usize = attempt +! sz 1 in
+          let attempt:usize = attempt +! Rust_primitives.mk_usize 1 in
           let tmp0, out:(u16 &
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A) =
             Libcrux_ml_dsa.Sample.sample_mask_vector #v_SIMDUnit
@@ -274,9 +442,10 @@ let sign
               #v_Shake256X4
               v_COLUMNS_IN_A
               v_GAMMA1_EXPONENT
-              (Libcrux_ml_dsa.Utils.into_padded_array (sz 66) (mask_seed <: t_Slice u8)
+              (Libcrux_ml_dsa.Utils.into_padded_array (Rust_primitives.mk_usize 66)
+                  (mask_seed <: t_Slice u8)
                 <:
-                t_Array u8 (sz 66))
+                t_Array u8 (Rust_primitives.mk_usize 66))
               domain_separator_for_mask
           in
           let domain_separator_for_mask:u16 = tmp0 in
@@ -301,7 +470,7 @@ let sign
               v_A_times_mask
           in
           let commitment_hash_candidate:t_Array u8 v_COMMITMENT_HASH_SIZE =
-            Rust_primitives.Hax.repeat 0uy v_COMMITMENT_HASH_SIZE
+            Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_COMMITMENT_HASH_SIZE
           in
           let commitment_serialized:t_Array u8 v_COMMITMENT_VECTOR_SIZE =
             Libcrux_ml_dsa.Encoding.Commitment.serialize_vector #v_SIMDUnit
@@ -312,20 +481,20 @@ let sign
           in
           let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
             Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-              #(sz 136)
+              #(Rust_primitives.mk_usize 136)
               #FStar.Tactics.Typeclasses.solve
               ()
           in
           let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
             Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-              #(sz 136)
+              #(Rust_primitives.mk_usize 136)
               #FStar.Tactics.Typeclasses.solve
               shake
               (message_representative <: t_Slice u8)
           in
           let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze =
             Libcrux_sha3.Portable.Incremental.f_absorb_final #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-              #(sz 136)
+              #(Rust_primitives.mk_usize 136)
               #FStar.Tactics.Typeclasses.solve
               shake
               (commitment_serialized <: t_Slice u8)
@@ -333,7 +502,7 @@ let sign
           let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze &
             t_Array u8 v_COMMITMENT_HASH_SIZE) =
             Libcrux_sha3.Portable.Incremental.f_squeeze #Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze
-              #(sz 136)
+              #(Rust_primitives.mk_usize 136)
               #FStar.Tactics.Typeclasses.solve
               shake
               commitment_hash_candidate
@@ -348,25 +517,8 @@ let sign
               (Libcrux_ml_dsa.Sample.sample_challenge_ring_element #v_SIMDUnit
                   #v_Shake256
                   v_ONES_IN_VERIFIER_CHALLENGE
-                  (Core.Result.impl__unwrap #(t_Array u8 (sz 32))
-                      #Core.Array.t_TryFromSliceError
-                      (Core.Convert.f_try_into #(t_Slice u8)
-                          #(t_Array u8 (sz 32))
-                          #FStar.Tactics.Typeclasses.solve
-                          (commitment_hash_candidate.[ {
-                                Core.Ops.Range.f_start = sz 0;
-                                Core.Ops.Range.f_end
-                                =
-                                Libcrux_ml_dsa.Constants.v_VERIFIER_CHALLENGE_SEED_SIZE
-                              }
-                              <:
-                              Core.Ops.Range.t_Range usize ]
-                            <:
-                            t_Slice u8)
-                        <:
-                        Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError)
-                    <:
-                    t_Array u8 (sz 32))
+                  v_COMMITMENT_HASH_SIZE
+                  commitment_hash_candidate
                 <:
                 Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
           in
@@ -396,12 +548,13 @@ let sign
             Libcrux_ml_dsa.Arithmetic.vector_infinity_norm_exceeds #v_SIMDUnit
               v_COLUMNS_IN_A
               signer_response_candidate
-              ((1l <<! v_GAMMA1_EXPONENT <: i32) -! v_BETA <: i32)
+              ((Rust_primitives.mk_i32 1 <<! v_GAMMA1_EXPONENT <: i32) -! v_BETA <: i32)
           then
             attempt, commitment_hash, domain_separator_for_mask, hint, signer_response
             <:
             (usize & Core.Option.t_Option (t_Array u8 v_COMMITMENT_HASH_SIZE) & u16 &
-              Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) &
+              Core.Option.t_Option
+              (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) &
               Core.Option.t_Option
               (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A
               ))
@@ -415,7 +568,8 @@ let sign
               attempt, commitment_hash, domain_separator_for_mask, hint, signer_response
               <:
               (usize & Core.Option.t_Option (t_Array u8 v_COMMITMENT_HASH_SIZE) & u16 &
-                Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) &
+                Core.Option.t_Option
+                (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) &
                 Core.Option.t_Option
                 (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                     v_COLUMNS_IN_A))
@@ -436,7 +590,8 @@ let sign
                 attempt, commitment_hash, domain_separator_for_mask, hint, signer_response
                 <:
                 (usize & Core.Option.t_Option (t_Array u8 v_COMMITMENT_HASH_SIZE) & u16 &
-                  Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) &
+                  Core.Option.t_Option
+                  (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) &
                   Core.Option.t_Option
                   (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                       v_COLUMNS_IN_A))
@@ -448,8 +603,9 @@ let sign
                     w0_minus_challenge_times_s2
                     challenge_times_t0
                 in
-                let hint_candidate, ones_in_hint:(t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A & usize
-                ) =
+                let hint_candidate, ones_in_hint:(t_Array
+                    (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A &
+                  usize) =
                   Libcrux_ml_dsa.Arithmetic.make_hint #v_SIMDUnit
                     v_ROWS_IN_A
                     v_GAMMA2
@@ -461,12 +617,13 @@ let sign
                   attempt, commitment_hash, domain_separator_for_mask, hint, signer_response
                   <:
                   (usize & Core.Option.t_Option (t_Array u8 v_COMMITMENT_HASH_SIZE) & u16 &
-                    Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) &
+                    Core.Option.t_Option
+                    (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) &
                     Core.Option.t_Option
                     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                         v_COLUMNS_IN_A))
                 else
-                  let attempt:usize = Libcrux_ml_dsa.Constants.v_REJECTION_SAMPLE_BOUND in
+                  let attempt:usize = Libcrux_ml_dsa.Constants.v_REJECTION_SAMPLE_BOUND_SIGN in
                   let commitment_hash:Core.Option.t_Option (t_Array u8 v_COMMITMENT_HASH_SIZE) =
                     Core.Option.Option_Some commitment_hash_candidate
                     <:
@@ -481,15 +638,18 @@ let sign
                     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                         v_COLUMNS_IN_A)
                   in
-                  let hint:Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) =
+                  let hint:Core.Option.t_Option
+                  (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) =
                     Core.Option.Option_Some hint_candidate
                     <:
-                    Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A)
+                    Core.Option.t_Option
+                    (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A)
                   in
                   attempt, commitment_hash, domain_separator_for_mask, hint, signer_response
                   <:
                   (usize & Core.Option.t_Option (t_Array u8 v_COMMITMENT_HASH_SIZE) & u16 &
-                    Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) &
+                    Core.Option.t_Option
+                    (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) &
                     Core.Option.t_Option
                     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                         v_COLUMNS_IN_A)))
@@ -527,11 +687,13 @@ let sign
             | Core.Option.Option_Some hint ->
               Core.Result.Result_Ok hint
               <:
-              Core.Result.t_Result (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) t_SigningError
+              Core.Result.t_Result
+                (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) t_SigningError
             | Core.Option.Option_None  ->
               Core.Result.Result_Err (SigningError_RejectionSamplingError <: t_SigningError)
               <:
-              Core.Result.t_Result (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A) t_SigningError
+              Core.Result.t_Result
+                (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A) t_SigningError
           with
           | Core.Result.Result_Ok hint ->
             let signature:t_Array u8 v_SIGNATURE_SIZE =
@@ -573,7 +735,108 @@ let sign
     <:
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError
 
-let verify
+let sign
+      (#v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4: Type0)
+      (v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_GAMMA1_EXPONENT: usize)
+      (v_GAMMA2: i32)
+      (v_COMMITMENT_RING_ELEMENT_SIZE v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE v_ONES_IN_VERIFIER_CHALLENGE v_MAX_ONES_IN_HINT v_GAMMA1_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_SIGNATURE_SIZE:
+          usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i4:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i5:
+          Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i6:
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i7:
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
+      (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
+      (message context: t_Slice u8)
+      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError =
+  match
+    Libcrux_ml_dsa.Pre_hash.impl_1__new context
+      (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (Rust_primitives.mk_usize 11)))
+  with
+  | Core.Result.Result_Ok hoist36 ->
+    sign_internal #v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4 v_ROWS_IN_A v_COLUMNS_IN_A
+      v_ETA v_ERROR_RING_ELEMENT_SIZE v_GAMMA1_EXPONENT v_GAMMA2 v_COMMITMENT_RING_ELEMENT_SIZE
+      v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE v_ONES_IN_VERIFIER_CHALLENGE
+      v_MAX_ONES_IN_HINT v_GAMMA1_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_SIGNATURE_SIZE signing_key
+      message
+      (Core.Option.Option_Some hoist36
+        <:
+        Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
+  | Core.Result.Result_Err err ->
+    Core.Result.Result_Err (Core.Convert.f_from #FStar.Tactics.Typeclasses.solve err)
+    <:
+    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError
+
+let sign_pre_hashed
+      (#v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4 #v_PH: Type0)
+      (v_PH_DIGEST_LEN v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_GAMMA1_EXPONENT:
+          usize)
+      (v_GAMMA2: i32)
+      (v_COMMITMENT_RING_ELEMENT_SIZE v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE v_ONES_IN_VERIFIER_CHALLENGE v_MAX_ONES_IN_HINT v_GAMMA1_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_SIGNATURE_SIZE:
+          usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i5:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i6:
+          Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i7:
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i8:
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i9:
+          Libcrux_ml_dsa.Pre_hash.t_PreHash v_PH v_PH_DIGEST_LEN)
+      (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
+      (message context: t_Slice u8)
+      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError =
+  if (Core.Slice.impl__len #u8 context <: usize) >. Libcrux_ml_dsa.Constants.v_CONTEXT_MAX_LEN
+  then
+    Core.Result.Result_Err (SigningError_ContextTooLongError <: t_SigningError)
+    <:
+    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError
+  else
+    let pre_hashed_message:t_Array u8 v_PH_DIGEST_LEN =
+      Libcrux_ml_dsa.Pre_hash.f_hash #v_PH #v_PH_DIGEST_LEN #FStar.Tactics.Typeclasses.solve message
+    in
+    match
+      Libcrux_ml_dsa.Pre_hash.impl_1__new context
+        (Core.Option.Option_Some
+          (Libcrux_ml_dsa.Pre_hash.f_oid #v_PH #v_PH_DIGEST_LEN #FStar.Tactics.Typeclasses.solve ()
+            <:
+            t_Array u8 (Rust_primitives.mk_usize 11))
+          <:
+          Core.Option.t_Option (t_Array u8 (Rust_primitives.mk_usize 11)))
+    with
+    | Core.Result.Result_Ok hoist39 ->
+      sign_internal #v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4 v_ROWS_IN_A v_COLUMNS_IN_A
+        v_ETA v_ERROR_RING_ELEMENT_SIZE v_GAMMA1_EXPONENT v_GAMMA2 v_COMMITMENT_RING_ELEMENT_SIZE
+        v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE v_ONES_IN_VERIFIER_CHALLENGE
+        v_MAX_ONES_IN_HINT v_GAMMA1_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_SIGNATURE_SIZE
+        signing_key (pre_hashed_message <: t_Slice u8)
+        (Core.Option.Option_Some hoist39
+          <:
+          Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
+    | Core.Result.Result_Err err ->
+      Core.Result.Result_Err (Core.Convert.f_from #FStar.Tactics.Typeclasses.solve err)
+      <:
+      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE) t_SigningError
+
+/// The internal verification API.
+/// If no `domain_separation_context` is supplied, it is assumed that
+/// `message` already contains the domain separation.
+let verify_internal
       (#v_SIMDUnit #v_Shake128X4 #v_Shake256: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A v_SIGNATURE_SIZE v_VERIFICATION_KEY_SIZE v_GAMMA1_EXPONENT v_GAMMA1_RING_ELEMENT_SIZE:
           usize)
@@ -591,9 +854,11 @@ let verify
           Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
       (verification_key_serialized: t_Array u8 v_VERIFICATION_KEY_SIZE)
       (message: t_Slice u8)
+      (domain_separation_context:
+          Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
       (signature_serialized: t_Array u8 v_SIGNATURE_SIZE)
-     =
-  let seed_for_A, t1:(t_Array u8 (sz 32) &
+    : Core.Result.t_Result Prims.unit t_VerificationError =
+  let seed_for_A, t1:(t_Array u8 (Rust_primitives.mk_usize 32) &
     t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A) =
     Libcrux_ml_dsa.Encoding.Verification_key.deserialize #v_SIMDUnit
       v_ROWS_IN_A
@@ -616,7 +881,7 @@ let verify
       ~.(Libcrux_ml_dsa.Arithmetic.vector_infinity_norm_exceeds #v_SIMDUnit
           v_COLUMNS_IN_A
           signature.f_signer_response
-          ((2l <<! v_GAMMA1_EXPONENT <: i32) -! v_BETA <: i32)
+          ((Rust_primitives.mk_i32 2 <<! v_GAMMA1_EXPONENT <: i32) -! v_BETA <: i32)
         <:
         bool)
     then
@@ -627,74 +892,37 @@ let verify
           #v_Shake128X4
           v_ROWS_IN_A
           v_COLUMNS_IN_A
-          (Libcrux_ml_dsa.Utils.into_padded_array (sz 34) (seed_for_A <: t_Slice u8)
+          (Libcrux_ml_dsa.Utils.into_padded_array (Rust_primitives.mk_usize 34)
+              (seed_for_A <: t_Slice u8)
             <:
-            t_Array u8 (sz 34))
+            t_Array u8 (Rust_primitives.mk_usize 34))
       in
-      let verification_key_hash:t_Array u8 (sz 64) = Rust_primitives.Hax.repeat 0uy (sz 64) in
-      let verification_key_hash:t_Array u8 (sz 64) =
+      let verification_key_hash:t_Array u8 (Rust_primitives.mk_usize 64) =
+        Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) (Rust_primitives.mk_usize 64)
+      in
+      let verification_key_hash:t_Array u8 (Rust_primitives.mk_usize 64) =
         Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256 #v_Shake256
           #FStar.Tactics.Typeclasses.solve
-          (sz 64)
+          (Rust_primitives.mk_usize 64)
           (verification_key_serialized <: t_Slice u8)
           verification_key_hash
       in
-      let message_representative:t_Array u8 (sz 64) = Rust_primitives.Hax.repeat 0uy (sz 64) in
-      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-        Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-          #(sz 136)
-          #FStar.Tactics.Typeclasses.solve
-          ()
+      let message_representative:t_Array u8 (Rust_primitives.mk_usize 64) =
+        Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) (Rust_primitives.mk_usize 64)
       in
-      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-        Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-          #(sz 136)
-          #FStar.Tactics.Typeclasses.solve
-          shake
-          (verification_key_hash <: t_Slice u8)
-      in
-      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze =
-        Libcrux_sha3.Portable.Incremental.f_absorb_final #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-          #(sz 136)
-          #FStar.Tactics.Typeclasses.solve
-          shake
+      let message_representative:t_Array u8 (Rust_primitives.mk_usize 64) =
+        derive_message_representative verification_key_hash
+          domain_separation_context
           message
-      in
-      let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze & t_Array u8 (sz 64)) =
-        Libcrux_sha3.Portable.Incremental.f_squeeze #Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze
-          #(sz 136)
-          #FStar.Tactics.Typeclasses.solve
-          shake
           message_representative
       in
-      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze = tmp0 in
-      let message_representative:t_Array u8 (sz 64) = tmp1 in
-      let _:Prims.unit = () in
-      let _:Prims.unit = () in
       let verifier_challenge_as_ntt:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
         Libcrux_ml_dsa.Ntt.ntt #v_SIMDUnit
           (Libcrux_ml_dsa.Sample.sample_challenge_ring_element #v_SIMDUnit
               #v_Shake256
               v_ONES_IN_VERIFIER_CHALLENGE
-              (Core.Result.impl__unwrap #(t_Array u8 (sz 32))
-                  #Core.Array.t_TryFromSliceError
-                  (Core.Convert.f_try_into #(t_Slice u8)
-                      #(t_Array u8 (sz 32))
-                      #FStar.Tactics.Typeclasses.solve
-                      (signature.f_commitment_hash.[ {
-                            Core.Ops.Range.f_start = sz 0;
-                            Core.Ops.Range.f_end
-                            =
-                            Libcrux_ml_dsa.Constants.v_VERIFIER_CHALLENGE_SEED_SIZE
-                          }
-                          <:
-                          Core.Ops.Range.t_Range usize ]
-                        <:
-                        t_Slice u8)
-                    <:
-                    Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError)
-                <:
-                t_Array u8 (sz 32))
+              v_COMMITMENT_HASH_SIZE
+              signature.f_commitment_hash
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
@@ -709,7 +937,7 @@ let verify
           t1
       in
       let commitment_hash:t_Array u8 v_COMMITMENT_HASH_SIZE =
-        Rust_primitives.Hax.repeat 0uy v_COMMITMENT_HASH_SIZE
+        Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_COMMITMENT_HASH_SIZE
       in
       let commitment:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
         v_ROWS_IN_A =
@@ -728,20 +956,20 @@ let verify
       in
       let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
         Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-          #(sz 136)
+          #(Rust_primitives.mk_usize 136)
           #FStar.Tactics.Typeclasses.solve
           ()
       in
       let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
         Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-          #(sz 136)
+          #(Rust_primitives.mk_usize 136)
           #FStar.Tactics.Typeclasses.solve
           shake
           (message_representative <: t_Slice u8)
       in
       let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze =
         Libcrux_sha3.Portable.Incremental.f_absorb_final #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-          #(sz 136)
+          #(Rust_primitives.mk_usize 136)
           #FStar.Tactics.Typeclasses.solve
           shake
           (commitment_serialized <: t_Slice u8)
@@ -749,7 +977,7 @@ let verify
       let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze &
         t_Array u8 v_COMMITMENT_HASH_SIZE) =
         Libcrux_sha3.Portable.Incremental.f_squeeze #Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze
-          #(sz 136)
+          #(Rust_primitives.mk_usize 136)
           #FStar.Tactics.Typeclasses.solve
           shake
           commitment_hash
@@ -775,3 +1003,89 @@ let verify
       Core.Result.t_Result Prims.unit t_VerificationError
   | Core.Result.Result_Err err ->
     Core.Result.Result_Err err <: Core.Result.t_Result Prims.unit t_VerificationError
+
+let verify
+      (#v_SIMDUnit #v_Shake128X4 #v_Shake256: Type0)
+      (v_ROWS_IN_A v_COLUMNS_IN_A v_SIGNATURE_SIZE v_VERIFICATION_KEY_SIZE v_GAMMA1_EXPONENT v_GAMMA1_RING_ELEMENT_SIZE:
+          usize)
+      (v_GAMMA2 v_BETA: i32)
+      (v_COMMITMENT_RING_ELEMENT_SIZE v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE v_ONES_IN_VERIFIER_CHALLENGE v_MAX_ONES_IN_HINT:
+          usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i3:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i4:
+          Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i5:
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
+      (verification_key_serialized: t_Array u8 v_VERIFICATION_KEY_SIZE)
+      (message context: t_Slice u8)
+      (signature_serialized: t_Array u8 v_SIGNATURE_SIZE)
+    : Core.Result.t_Result Prims.unit t_VerificationError =
+  match
+    Libcrux_ml_dsa.Pre_hash.impl_1__new context
+      (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (Rust_primitives.mk_usize 11)))
+  with
+  | Core.Result.Result_Ok hoist41 ->
+    verify_internal #v_SIMDUnit #v_Shake128X4 #v_Shake256 v_ROWS_IN_A v_COLUMNS_IN_A
+      v_SIGNATURE_SIZE v_VERIFICATION_KEY_SIZE v_GAMMA1_EXPONENT v_GAMMA1_RING_ELEMENT_SIZE v_GAMMA2
+      v_BETA v_COMMITMENT_RING_ELEMENT_SIZE v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE
+      v_ONES_IN_VERIFIER_CHALLENGE v_MAX_ONES_IN_HINT verification_key_serialized message
+      (Core.Option.Option_Some hoist41
+        <:
+        Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) signature_serialized
+  | Core.Result.Result_Err err ->
+    Core.Result.Result_Err (Core.Convert.f_from #FStar.Tactics.Typeclasses.solve err)
+    <:
+    Core.Result.t_Result Prims.unit t_VerificationError
+
+let verify_pre_hashed
+      (#v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_PH: Type0)
+      (v_PH_DIGEST_LEN v_ROWS_IN_A v_COLUMNS_IN_A v_SIGNATURE_SIZE v_VERIFICATION_KEY_SIZE v_GAMMA1_EXPONENT v_GAMMA1_RING_ELEMENT_SIZE:
+          usize)
+      (v_GAMMA2 v_BETA: i32)
+      (v_COMMITMENT_RING_ELEMENT_SIZE v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE v_ONES_IN_VERIFIER_CHALLENGE v_MAX_ONES_IN_HINT:
+          usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i4:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i5:
+          Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i6:
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i7:
+          Libcrux_ml_dsa.Pre_hash.t_PreHash v_PH v_PH_DIGEST_LEN)
+      (verification_key_serialized: t_Array u8 v_VERIFICATION_KEY_SIZE)
+      (message context: t_Slice u8)
+      (signature_serialized: t_Array u8 v_SIGNATURE_SIZE)
+    : Core.Result.t_Result Prims.unit t_VerificationError =
+  let pre_hashed_message:t_Array u8 v_PH_DIGEST_LEN =
+    Libcrux_ml_dsa.Pre_hash.f_hash #v_PH #v_PH_DIGEST_LEN #FStar.Tactics.Typeclasses.solve message
+  in
+  match
+    Libcrux_ml_dsa.Pre_hash.impl_1__new context
+      (Core.Option.Option_Some
+        (Libcrux_ml_dsa.Pre_hash.f_oid #v_PH #v_PH_DIGEST_LEN #FStar.Tactics.Typeclasses.solve ()
+          <:
+          t_Array u8 (Rust_primitives.mk_usize 11))
+        <:
+        Core.Option.t_Option (t_Array u8 (Rust_primitives.mk_usize 11)))
+  with
+  | Core.Result.Result_Ok hoist43 ->
+    verify_internal #v_SIMDUnit #v_Shake128X4 #v_Shake256 v_ROWS_IN_A v_COLUMNS_IN_A
+      v_SIGNATURE_SIZE v_VERIFICATION_KEY_SIZE v_GAMMA1_EXPONENT v_GAMMA1_RING_ELEMENT_SIZE v_GAMMA2
+      v_BETA v_COMMITMENT_RING_ELEMENT_SIZE v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE
+      v_ONES_IN_VERIFIER_CHALLENGE v_MAX_ONES_IN_HINT verification_key_serialized
+      (pre_hashed_message <: t_Slice u8)
+      (Core.Option.Option_Some hoist43
+        <:
+        Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) signature_serialized
+  | Core.Result.Result_Err err ->
+    Core.Result.Result_Err (Core.Convert.f_from #FStar.Tactics.Typeclasses.solve err)
+    <:
+    Core.Result.t_Result Prims.unit t_VerificationError

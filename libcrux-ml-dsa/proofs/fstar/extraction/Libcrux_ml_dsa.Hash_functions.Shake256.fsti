@@ -20,15 +20,15 @@ class t_Xof (v_Self: Type0) = {
   f_init_absorb:x0: t_Slice u8
     -> Prims.Pure v_Self (f_init_absorb_pre x0) (fun result -> f_init_absorb_post x0 result);
   f_squeeze_first_block_pre:v_Self -> Type0;
-  f_squeeze_first_block_post:v_Self -> (v_Self & t_Array u8 (sz 136)) -> Type0;
+  f_squeeze_first_block_post:v_Self -> (v_Self & t_Array u8 (Rust_primitives.mk_usize 136)) -> Type0;
   f_squeeze_first_block:x0: v_Self
-    -> Prims.Pure (v_Self & t_Array u8 (sz 136))
+    -> Prims.Pure (v_Self & t_Array u8 (Rust_primitives.mk_usize 136))
         (f_squeeze_first_block_pre x0)
         (fun result -> f_squeeze_first_block_post x0 result);
   f_squeeze_next_block_pre:v_Self -> Type0;
-  f_squeeze_next_block_post:v_Self -> (v_Self & t_Array u8 (sz 136)) -> Type0;
+  f_squeeze_next_block_post:v_Self -> (v_Self & t_Array u8 (Rust_primitives.mk_usize 136)) -> Type0;
   f_squeeze_next_block:x0: v_Self
-    -> Prims.Pure (v_Self & t_Array u8 (sz 136))
+    -> Prims.Pure (v_Self & t_Array u8 (Rust_primitives.mk_usize 136))
         (f_squeeze_next_block_pre x0)
         (fun result -> f_squeeze_next_block_post x0 result)
 }
@@ -81,24 +81,32 @@ class t_XofX4 (v_Self: Type0) = {
   f_squeeze_first_block_post:
       v_Self ->
       (v_Self &
-          (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
+          (t_Array u8 (Rust_primitives.mk_usize 136) & t_Array u8 (Rust_primitives.mk_usize 136) &
+            t_Array u8 (Rust_primitives.mk_usize 136) &
+            t_Array u8 (Rust_primitives.mk_usize 136)))
     -> Type0;
   f_squeeze_first_block:x0: v_Self
     -> Prims.Pure
         (v_Self &
-          (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
+          (t_Array u8 (Rust_primitives.mk_usize 136) & t_Array u8 (Rust_primitives.mk_usize 136) &
+            t_Array u8 (Rust_primitives.mk_usize 136) &
+            t_Array u8 (Rust_primitives.mk_usize 136)))
         (f_squeeze_first_block_pre x0)
         (fun result -> f_squeeze_first_block_post x0 result);
   f_squeeze_next_block_pre:v_Self -> Type0;
   f_squeeze_next_block_post:
       v_Self ->
       (v_Self &
-          (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
+          (t_Array u8 (Rust_primitives.mk_usize 136) & t_Array u8 (Rust_primitives.mk_usize 136) &
+            t_Array u8 (Rust_primitives.mk_usize 136) &
+            t_Array u8 (Rust_primitives.mk_usize 136)))
     -> Type0;
   f_squeeze_next_block:x0: v_Self
     -> Prims.Pure
         (v_Self &
-          (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
+          (t_Array u8 (Rust_primitives.mk_usize 136) & t_Array u8 (Rust_primitives.mk_usize 136) &
+            t_Array u8 (Rust_primitives.mk_usize 136) &
+            t_Array u8 (Rust_primitives.mk_usize 136)))
         (f_squeeze_next_block_pre x0)
         (fun result -> f_squeeze_next_block_post x0 result)
 }

@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Polynomial
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -9,13 +9,17 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
+type t_PolynomialRingElement
+  (v_SIMDUnit: Type0) {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+  = { f_simd_units:t_Array v_SIMDUnit (Rust_primitives.mk_usize 32) }
+
 let impl__ZERO
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (_: Prims.unit)
-     =
+    : t_PolynomialRingElement v_SIMDUnit =
   {
     f_simd_units
     =
@@ -24,7 +28,7 @@ let impl__ZERO
           ()
         <:
         v_SIMDUnit)
-      (sz 32)
+      (Rust_primitives.mk_usize 32)
   }
   <:
   t_PolynomialRingElement v_SIMDUnit
@@ -35,10 +39,10 @@ let impl__add
           i2:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self rhs: t_PolynomialRingElement v_SIMDUnit)
-     =
+    : t_PolynomialRingElement v_SIMDUnit =
   let sum:t_PolynomialRingElement v_SIMDUnit = impl__ZERO #v_SIMDUnit () in
   let sum:t_PolynomialRingElement v_SIMDUnit =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
       (Core.Slice.impl__len #v_SIMDUnit (sum.f_simd_units <: t_Slice v_SIMDUnit) <: usize)
       (fun sum temp_1_ ->
           let sum:t_PolynomialRingElement v_SIMDUnit = sum in
@@ -61,7 +65,7 @@ let impl__add
                 <:
                 v_SIMDUnit)
             <:
-            t_Array v_SIMDUnit (sz 32)
+            t_Array v_SIMDUnit (Rust_primitives.mk_usize 32)
           }
           <:
           t_PolynomialRingElement v_SIMDUnit)
@@ -74,12 +78,15 @@ let impl__from_i32_array
           i2:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (array: t_Slice i32)
-     =
+    : t_PolynomialRingElement v_SIMDUnit =
   let _:Prims.unit =
     if true
     then
       let _:Prims.unit =
-        Hax_lib.v_assert ((Core.Slice.impl__len #i32 array <: usize) >=. sz 256 <: bool)
+        Hax_lib.v_assert ((Core.Slice.impl__len #i32 array <: usize) >=.
+            Rust_primitives.mk_usize 256
+            <:
+            bool)
       in
       ()
   in
@@ -88,8 +95,8 @@ let impl__from_i32_array
   in
   let result:t_PolynomialRingElement v_SIMDUnit = impl__ZERO #v_SIMDUnit () in
   let array_chunks, result:(Core.Slice.Iter.t_Chunks i32 & t_PolynomialRingElement v_SIMDUnit) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
-      v_SIMD_UNITS_IN_RING_ELEMENT
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+      Libcrux_ml_dsa.Simd.Traits.v_SIMD_UNITS_IN_RING_ELEMENT
       (fun temp_0_ temp_1_ ->
           let array_chunks, result:(Core.Slice.Iter.t_Chunks i32 &
             t_PolynomialRingElement v_SIMDUnit) =
@@ -137,15 +144,15 @@ let impl__infinity_norm_exceeds
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self: t_PolynomialRingElement v_SIMDUnit)
       (bound: i32)
-     =
+    : bool =
   let exceeds:bool = false in
   let exceeds:bool =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(t_Array v_SIMDUnit
-              (sz 32))
+              (Rust_primitives.mk_usize 32))
           #FStar.Tactics.Typeclasses.solve
           self.f_simd_units
         <:
-        Core.Array.Iter.t_IntoIter v_SIMDUnit (sz 32))
+        Core.Array.Iter.t_IntoIter v_SIMDUnit (Rust_primitives.mk_usize 32))
       exceeds
       (fun exceeds simd_unit ->
           let exceeds:bool = exceeds in
@@ -168,10 +175,10 @@ let impl__subtract
           i2:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self rhs: t_PolynomialRingElement v_SIMDUnit)
-     =
+    : t_PolynomialRingElement v_SIMDUnit =
   let difference:t_PolynomialRingElement v_SIMDUnit = impl__ZERO #v_SIMDUnit () in
   let difference:t_PolynomialRingElement v_SIMDUnit =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
       (Core.Slice.impl__len #v_SIMDUnit (difference.f_simd_units <: t_Slice v_SIMDUnit) <: usize)
       (fun difference temp_1_ ->
           let difference:t_PolynomialRingElement v_SIMDUnit = difference in
@@ -194,7 +201,7 @@ let impl__subtract
                 <:
                 v_SIMDUnit)
             <:
-            t_Array v_SIMDUnit (sz 32)
+            t_Array v_SIMDUnit (Rust_primitives.mk_usize 32)
           }
           <:
           t_PolynomialRingElement v_SIMDUnit)
@@ -207,17 +214,19 @@ let impl__to_i32_array
           i2:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self: t_PolynomialRingElement v_SIMDUnit)
-     =
-  let result:t_Array i32 (sz 256) = Rust_primitives.Hax.repeat 0l (sz 256) in
-  let result:t_Array i32 (sz 256) =
+    : t_Array i32 (Rust_primitives.mk_usize 256) =
+  let result:t_Array i32 (Rust_primitives.mk_usize 256) =
+    Rust_primitives.Hax.repeat (Rust_primitives.mk_i32 0) (Rust_primitives.mk_usize 256)
+  in
+  let result:t_Array i32 (Rust_primitives.mk_usize 256) =
     Rust_primitives.Hax.Folds.fold_enumerated_slice (self.f_simd_units <: t_Slice v_SIMDUnit)
       (fun result temp_1_ ->
-          let result:t_Array i32 (sz 256) = result in
+          let result:t_Array i32 (Rust_primitives.mk_usize 256) = result in
           let _:usize = temp_1_ in
           true)
       result
       (fun result temp_1_ ->
-          let result:t_Array i32 (sz 256) = result in
+          let result:t_Array i32 (Rust_primitives.mk_usize 256) = result in
           let i, simd_unit:(usize & v_SIMDUnit) = temp_1_ in
           Rust_primitives.Hax.Monomorphized_update_at.update_at_range result
             ({
@@ -226,7 +235,8 @@ let impl__to_i32_array
                 i *! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: usize;
                 Core.Ops.Range.f_end
                 =
-                (i +! sz 1 <: usize) *! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+                (i +! Rust_primitives.mk_usize 1 <: usize) *!
+                Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
                 <:
                 usize
               }
@@ -239,7 +249,8 @@ let impl__to_i32_array
                       i *! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: usize;
                       Core.Ops.Range.f_end
                       =
-                      (i +! sz 1 <: usize) *! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+                      (i +! Rust_primitives.mk_usize 1 <: usize) *!
+                      Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
                       <:
                       usize
                     }
@@ -255,6 +266,6 @@ let impl__to_i32_array
               <:
               t_Slice i32)
           <:
-          t_Array i32 (sz 256))
+          t_Array i32 (Rust_primitives.mk_usize 256))
   in
   result

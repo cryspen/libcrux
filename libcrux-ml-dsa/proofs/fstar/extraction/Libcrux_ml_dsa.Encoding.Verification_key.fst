@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Verification_key
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -17,21 +17,21 @@ let generate_serialized
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (seed_for_A: t_Slice u8)
       (t1: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
-     =
+    : t_Array u8 v_VERIFICATION_KEY_SIZE =
   let verification_key_serialized:t_Array u8 v_VERIFICATION_KEY_SIZE =
-    Rust_primitives.Hax.repeat 0uy v_VERIFICATION_KEY_SIZE
+    Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_VERIFICATION_KEY_SIZE
   in
   let verification_key_serialized:t_Array u8 v_VERIFICATION_KEY_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range verification_key_serialized
       ({
-          Core.Ops.Range.f_start = sz 0;
+          Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
           Core.Ops.Range.f_end = Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE
         }
         <:
         Core.Ops.Range.t_Range usize)
       (Core.Slice.impl__copy_from_slice #u8
           (verification_key_serialized.[ {
-                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
                 Core.Ops.Range.f_end = Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE
               }
               <:
@@ -101,7 +101,8 @@ let deserialize
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (serialized: t_Array u8 v_VERIFICATION_KEY_SIZE)
-     =
+    : (t_Array u8 (Rust_primitives.mk_usize 32) &
+      t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A) =
   let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
         <:
@@ -114,7 +115,7 @@ let deserialize
       Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE
   in
   let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
       v_ROWS_IN_A
       (fun t1 temp_1_ ->
           let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A
@@ -139,7 +140,8 @@ let deserialize
                       i *! Libcrux_ml_dsa.Constants.v_RING_ELEMENT_OF_T1S_SIZE <: usize;
                       Core.Ops.Range.f_end
                       =
-                      (i +! sz 1 <: usize) *! Libcrux_ml_dsa.Constants.v_RING_ELEMENT_OF_T1S_SIZE
+                      (i +! Rust_primitives.mk_usize 1 <: usize) *!
+                      Libcrux_ml_dsa.Constants.v_RING_ELEMENT_OF_T1S_SIZE
                       <:
                       usize
                     }
@@ -152,15 +154,16 @@ let deserialize
           <:
           t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
   in
-  Core.Result.impl__unwrap #(t_Array u8 (sz 32))
+  Core.Result.impl__unwrap #(t_Array u8 (Rust_primitives.mk_usize 32))
     #Core.Array.t_TryFromSliceError
     (Core.Convert.f_try_into #(t_Slice u8)
-        #(t_Array u8 (sz 32))
+        #(t_Array u8 (Rust_primitives.mk_usize 32))
         #FStar.Tactics.Typeclasses.solve
         seed_for_A
       <:
-      Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError),
+      Core.Result.t_Result (t_Array u8 (Rust_primitives.mk_usize 32)) Core.Array.t_TryFromSliceError
+    ),
   t1
   <:
-  (t_Array u8 (sz 32) &
+  (t_Array u8 (Rust_primitives.mk_usize 32) &
     t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)

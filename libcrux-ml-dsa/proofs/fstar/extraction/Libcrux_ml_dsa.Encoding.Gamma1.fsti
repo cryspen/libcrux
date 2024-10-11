@@ -9,9 +9,9 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let serialize__OUTPUT_BYTES_PER_SIMD_UNIT: usize = sz 18
+let serialize__OUTPUT_BYTES_PER_SIMD_UNIT: usize = Rust_primitives.mk_usize 18
 
-let serialize__OUTPUT_BYTES_PER_SIMD_UNIT_1: usize = sz 20
+let serialize__OUTPUT_BYTES_PER_SIMD_UNIT_1: usize = Rust_primitives.mk_usize 20
 
 val serialize
       (#v_SIMDUnit: Type0)

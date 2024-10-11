@@ -48,6 +48,10 @@ pub(crate) mod shake128 {
     pub(crate) const BLOCK_SIZE: usize = 168;
     pub(crate) const FIVE_BLOCKS_SIZE: usize = BLOCK_SIZE * 5;
 
+    pub(crate) trait Xof {
+        fn shake128<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]);
+    }
+
     /// When sampling matrix A we always want to do 4 absorb/squeeze calls in
     /// parallel.
     pub(crate) trait XofX4 {
@@ -74,7 +78,7 @@ pub(crate) mod shake128 {
 pub(crate) mod portable {
     use libcrux_sha3::portable::{
         incremental::{self, shake128_absorb_final, shake128_init},
-        shake256, KeccakState,
+        shake128, shake256, KeccakState,
     };
 
     use super::{shake128, shake256};
@@ -146,13 +150,21 @@ pub(crate) mod portable {
         }
     }
 
+    /// Portable SHAKE 128 state
+    pub(crate) struct Shake128 {}
+
+    impl shake128::Xof for Shake128 {
+        fn shake128<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
+            shake128(out, input);
+        }
+    }
+
     /// Portable SHAKE 256 state
     pub(crate) struct Shake256 {
         state: KeccakState,
     }
 
-   // #[hax_lib::opaque]
-    pub(crate) type Shake256Absorb = libcrux_sha3::portable::incremental::Shake256Absorb;
+    //pub(crate) type Shake256Absorb = libcrux_sha3::portable::incremental::Shake256Absorb;
 
     impl shake256::Xof for Shake256 {
         fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
@@ -270,6 +282,7 @@ pub(crate) mod portable {
 }
 
 /// A SIMD256 implementation of [`shake128::XofX4`] and [`shake256::Xof`] for AVX2.
+#[cfg(feature = "simd256")]
 pub(crate) mod simd256 {
 
     use libcrux_sha3::{
@@ -441,6 +454,7 @@ pub(crate) mod simd256 {
 }
 
 /// A SIMD256 implementation of [`shake128::Xof`] and [`shake256::Xof`] for Neon.
+#[cfg(feature = "simd128")]
 pub(crate) mod neon {
 
     use libcrux_sha3::neon::x2::{self, incremental::KeccakState};

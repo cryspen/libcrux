@@ -7,21 +7,28 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_dsa.Simd.Portable in
+  let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let deserialize_when_gamma1_is_2_pow_17___GAMMA1: i32 = 1l <<! 17l
+let deserialize_when_gamma1_is_2_pow_17___GAMMA1: i32 =
+  Rust_primitives.mk_i32 1 <<! Rust_primitives.mk_i32 17
 
 let deserialize_when_gamma1_is_2_pow_17___GAMMA1_TIMES_2_BITMASK: i32 =
-  (deserialize_when_gamma1_is_2_pow_17___GAMMA1 <<! 1l <: i32) -! 1l
+  (deserialize_when_gamma1_is_2_pow_17___GAMMA1 <<! Rust_primitives.mk_i32 1 <: i32) -!
+  Rust_primitives.mk_i32 1
 
-let deserialize_when_gamma1_is_2_pow_19___GAMMA1: i32 = 1l <<! 19l
+let deserialize_when_gamma1_is_2_pow_19___GAMMA1: i32 =
+  Rust_primitives.mk_i32 1 <<! Rust_primitives.mk_i32 19
 
 let deserialize_when_gamma1_is_2_pow_19___GAMMA1_TIMES_2_BITMASK: i32 =
-  (deserialize_when_gamma1_is_2_pow_19___GAMMA1 <<! 1l <: i32) -! 1l
+  (deserialize_when_gamma1_is_2_pow_19___GAMMA1 <<! Rust_primitives.mk_i32 1 <: i32) -!
+  Rust_primitives.mk_i32 1
 
-let serialize_when_gamma1_is_2_pow_17___GAMMA1: i32 = 1l <<! 17l
+let serialize_when_gamma1_is_2_pow_17___GAMMA1: i32 =
+  Rust_primitives.mk_i32 1 <<! Rust_primitives.mk_i32 17
 
-let serialize_when_gamma1_is_2_pow_19___GAMMA1: i32 = 1l <<! 19l
+let serialize_when_gamma1_is_2_pow_19___GAMMA1: i32 =
+  Rust_primitives.mk_i32 1 <<! Rust_primitives.mk_i32 19
 
 val serialize_when_gamma1_is_2_pow_17_
       (v_OUTPUT_SIZE: usize)

@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Signing_key
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -22,11 +22,11 @@ let generate_serialized
       (seed_for_A seed_for_signing verification_key: t_Slice u8)
       (s1: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       (s2 t0: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
-     =
+    : t_Array u8 v_SIGNING_KEY_SIZE =
   let signing_key_serialized:t_Array u8 v_SIGNING_KEY_SIZE =
-    Rust_primitives.Hax.repeat 0uy v_SIGNING_KEY_SIZE
+    Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_SIGNING_KEY_SIZE
   in
-  let offset:usize = sz 0 in
+  let offset:usize = Rust_primitives.mk_usize 0 in
   let signing_key_serialized:t_Array u8 v_SIGNING_KEY_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range signing_key_serialized
       ({
@@ -73,11 +73,13 @@ let generate_serialized
         t_Slice u8)
   in
   let offset:usize = offset +! Libcrux_ml_dsa.Constants.v_SEED_FOR_SIGNING_SIZE in
-  let verification_key_hash:t_Array u8 (sz 64) = Rust_primitives.Hax.repeat 0uy (sz 64) in
-  let verification_key_hash:t_Array u8 (sz 64) =
+  let verification_key_hash:t_Array u8 (Rust_primitives.mk_usize 64) =
+    Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) (Rust_primitives.mk_usize 64)
+  in
+  let verification_key_hash:t_Array u8 (Rust_primitives.mk_usize 64) =
     Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256 #v_Shake256
       #FStar.Tactics.Typeclasses.solve
-      (sz 64)
+      (Rust_primitives.mk_usize 64)
       verification_key
       verification_key_hash
   in
@@ -250,7 +252,11 @@ let deserialize_then_ntt
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (serialized: t_Array u8 v_SIGNING_KEY_SIZE)
-     =
+    : (t_Array u8 (Rust_primitives.mk_usize 32) & t_Array u8 (Rust_primitives.mk_usize 32) &
+      t_Array u8 (Rust_primitives.mk_usize 64) &
+      t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A &
+      t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A &
+      t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A) =
   let seed_for_A, remaining_serialized:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
       (serialized <: t_Slice u8)
@@ -294,35 +300,39 @@ let deserialize_then_ntt
   let t0_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
     Libcrux_ml_dsa.Encoding.T0.deserialize_to_vector_then_ntt #v_SIMDUnit v_ROWS_IN_A t0_serialized
   in
-  Core.Result.impl__unwrap #(t_Array u8 (sz 32))
+  Core.Result.impl__unwrap #(t_Array u8 (Rust_primitives.mk_usize 32))
     #Core.Array.t_TryFromSliceError
     (Core.Convert.f_try_into #(t_Slice u8)
-        #(t_Array u8 (sz 32))
+        #(t_Array u8 (Rust_primitives.mk_usize 32))
         #FStar.Tactics.Typeclasses.solve
         seed_for_A
       <:
-      Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError),
-  Core.Result.impl__unwrap #(t_Array u8 (sz 32))
+      Core.Result.t_Result (t_Array u8 (Rust_primitives.mk_usize 32)) Core.Array.t_TryFromSliceError
+    ),
+  Core.Result.impl__unwrap #(t_Array u8 (Rust_primitives.mk_usize 32))
     #Core.Array.t_TryFromSliceError
     (Core.Convert.f_try_into #(t_Slice u8)
-        #(t_Array u8 (sz 32))
+        #(t_Array u8 (Rust_primitives.mk_usize 32))
         #FStar.Tactics.Typeclasses.solve
         seed_for_signing
       <:
-      Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError),
-  Core.Result.impl__unwrap #(t_Array u8 (sz 64))
+      Core.Result.t_Result (t_Array u8 (Rust_primitives.mk_usize 32)) Core.Array.t_TryFromSliceError
+    ),
+  Core.Result.impl__unwrap #(t_Array u8 (Rust_primitives.mk_usize 64))
     #Core.Array.t_TryFromSliceError
     (Core.Convert.f_try_into #(t_Slice u8)
-        #(t_Array u8 (sz 64))
+        #(t_Array u8 (Rust_primitives.mk_usize 64))
         #FStar.Tactics.Typeclasses.solve
         verification_key_hash
       <:
-      Core.Result.t_Result (t_Array u8 (sz 64)) Core.Array.t_TryFromSliceError),
+      Core.Result.t_Result (t_Array u8 (Rust_primitives.mk_usize 64)) Core.Array.t_TryFromSliceError
+    ),
   s1_as_ntt,
   s2_as_ntt,
   t0_as_ntt
   <:
-  (t_Array u8 (sz 32) & t_Array u8 (sz 32) & t_Array u8 (sz 64) &
+  (t_Array u8 (Rust_primitives.mk_usize 32) & t_Array u8 (Rust_primitives.mk_usize 32) &
+    t_Array u8 (Rust_primitives.mk_usize 64) &
     t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A &
     t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A &
     t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)

@@ -26,7 +26,8 @@ val deserialize_then_ntt
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (serialized: t_Array u8 v_SIGNING_KEY_SIZE)
     : Prims.Pure
-      (t_Array u8 (sz 32) & t_Array u8 (sz 32) & t_Array u8 (sz 64) &
+      (t_Array u8 (Rust_primitives.mk_usize 32) & t_Array u8 (Rust_primitives.mk_usize 32) &
+        t_Array u8 (Rust_primitives.mk_usize 64) &
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A &
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A &
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)

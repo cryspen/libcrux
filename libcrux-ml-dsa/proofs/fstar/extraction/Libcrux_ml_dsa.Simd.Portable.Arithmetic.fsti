@@ -7,9 +7,10 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_dsa.Simd.Portable in
+  let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let v_MONTGOMERY_SHIFT: u8 = 32uy
+let v_MONTGOMERY_SHIFT: u8 = Rust_primitives.mk_u8 32
 
 val compute_one_hint (v_GAMMA2 low high: i32) : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
 

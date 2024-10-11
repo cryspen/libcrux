@@ -7,15 +7,16 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_dsa.Simd.Portable in
+  let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let deserialize_when_eta_is_2___ETA: i32 = 2l
+let deserialize_when_eta_is_2___ETA: i32 = Rust_primitives.mk_i32 2
 
-let deserialize_when_eta_is_4___ETA: i32 = 4l
+let deserialize_when_eta_is_4___ETA: i32 = Rust_primitives.mk_i32 4
 
-let serialize_when_eta_is_2___ETA: i32 = 2l
+let serialize_when_eta_is_2___ETA: i32 = Rust_primitives.mk_i32 2
 
-let serialize_when_eta_is_4___ETA: i32 = 4l
+let serialize_when_eta_is_4___ETA: i32 = Rust_primitives.mk_i32 4
 
 val serialize_when_eta_is_2_
       (v_OUTPUT_SIZE: usize)

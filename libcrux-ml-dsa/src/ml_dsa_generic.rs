@@ -1,4 +1,4 @@
-//use libcrux_sha3::portable::incremental::{Shake256Absorb, XofAbsorb, XofSqueeze};
+use libcrux_sha3::portable::incremental::{Shake256Absorb, XofAbsorb, XofSqueeze};
 
 use crate::{
     arithmetic::{
@@ -6,13 +6,14 @@ use crate::{
     },
     constants::*,
     encoding,
-    hash_functions::{shake128, shake256, portable::Shake256Absorb},
+    hash_functions::{shake128, shake256},
     matrix::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
         vector_times_ring_element,
     },
     ntt::ntt,
     polynomial::PolynomialRingElement,
+    pre_hash::{DomainSeparationContext, PreHash},
     sample::{sample_challenge_ring_element, sample_mask_vector},
     samplex4,
     simd::traits::Operations,
@@ -51,7 +52,10 @@ pub(crate) fn generate_key_pair<
 ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
     let mut seed_expanded = [0; 128];
-    Shake256::shake256::<128>(&randomness, &mut seed_expanded);
+    let mut shake = Shake256Absorb::new();
+    shake.absorb(&randomness);
+    let mut shake = shake.absorb_final(&[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
+    shake.squeeze(&mut seed_expanded);
 
     let (seed_for_a, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
     let (seed_for_error_vectors, seed_for_signing) =
@@ -100,11 +104,73 @@ pub enum VerificationError {
     MalformedHintError,
     SignerResponseExceedsBoundError,
     CommitmentHashesDontMatchError,
+    ContextTooLongError,
 }
 
 #[derive(Debug)]
 pub enum SigningError {
     RejectionSamplingError,
+    ContextTooLongError,
+}
+
+#[allow(non_snake_case)]
+pub(crate) fn sign_pre_hashed<
+    SIMDUnit: Operations,
+    Shake128X4: shake128::XofX4,
+    Shake256: shake256::Xof,
+    Shake256X4: shake256::XofX4,
+    PH: PreHash<PH_DIGEST_LEN>,
+    const PH_DIGEST_LEN: usize,
+    const ROWS_IN_A: usize,
+    const COLUMNS_IN_A: usize,
+    const ETA: usize,
+    const ERROR_RING_ELEMENT_SIZE: usize,
+    const GAMMA1_EXPONENT: usize,
+    const GAMMA2: i32,
+    const COMMITMENT_RING_ELEMENT_SIZE: usize,
+    const COMMITMENT_VECTOR_SIZE: usize,
+    const COMMITMENT_HASH_SIZE: usize,
+    const ONES_IN_VERIFIER_CHALLENGE: usize,
+    const MAX_ONES_IN_HINT: usize,
+    const GAMMA1_RING_ELEMENT_SIZE: usize,
+    const SIGNING_KEY_SIZE: usize,
+    const SIGNATURE_SIZE: usize,
+>(
+    signing_key: &[u8; SIGNING_KEY_SIZE],
+    message: &[u8],
+    context: &[u8],
+    randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
+    if context.len() > CONTEXT_MAX_LEN {
+        return Err(SigningError::ContextTooLongError);
+    }
+    let pre_hashed_message = PH::hash(message);
+
+    sign_internal::<
+        SIMDUnit,
+        Shake128X4,
+        Shake256,
+        Shake256X4,
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        ETA,
+        ERROR_RING_ELEMENT_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA2,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        SIGNING_KEY_SIZE,
+        SIGNATURE_SIZE,
+    >(
+        &signing_key,
+        &pre_hashed_message,
+        Some(DomainSeparationContext::new(context, Some(&PH::oid()))?),
+        randomness,
+    )
 }
 
 #[allow(non_snake_case)]
@@ -130,6 +196,64 @@ pub(crate) fn sign<
 >(
     signing_key: &[u8; SIGNING_KEY_SIZE],
     message: &[u8],
+    context: &[u8],
+    randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
+    sign_internal::<
+        SIMDUnit,
+        Shake128X4,
+        Shake256,
+        Shake256X4,
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        ETA,
+        ERROR_RING_ELEMENT_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA2,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        SIGNING_KEY_SIZE,
+        SIGNATURE_SIZE,
+    >(
+        &signing_key,
+        message,
+        Some(DomainSeparationContext::new(context, None)?),
+        randomness,
+    )
+}
+
+/// The internal signing API.
+///
+/// If no `domain_separation_context` is supplied, it is assumed that
+/// `message` already contains the domain separation.
+#[allow(non_snake_case)]
+pub(crate) fn sign_internal<
+    SIMDUnit: Operations,
+    Shake128X4: shake128::XofX4,
+    Shake256: shake256::Xof,
+    Shake256X4: shake256::XofX4,
+    const ROWS_IN_A: usize,
+    const COLUMNS_IN_A: usize,
+    const ETA: usize,
+    const ERROR_RING_ELEMENT_SIZE: usize,
+    const GAMMA1_EXPONENT: usize,
+    const GAMMA2: i32,
+    const COMMITMENT_RING_ELEMENT_SIZE: usize,
+    const COMMITMENT_VECTOR_SIZE: usize,
+    const COMMITMENT_HASH_SIZE: usize,
+    const ONES_IN_VERIFIER_CHALLENGE: usize,
+    const MAX_ONES_IN_HINT: usize,
+    const GAMMA1_RING_ELEMENT_SIZE: usize,
+    const SIGNING_KEY_SIZE: usize,
+    const SIGNATURE_SIZE: usize,
+>(
+    signing_key: &[u8; SIGNING_KEY_SIZE],
+    message: &[u8],
+    domain_separation_context: Option<DomainSeparationContext>,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
@@ -147,13 +271,12 @@ pub(crate) fn sign<
     );
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
-    {
-        let mut shake = Shake256Absorb::new();
-        shake.absorb(&verification_key_hash);
-        let mut shake = shake.absorb_final(message);
-
-        shake.squeeze(&mut message_representative);
-    }
+    derive_message_representative(
+        verification_key_hash,
+        domain_separation_context,
+        message,
+        &mut message_representative,
+    );
 
     let mut mask_seed = [0; MASK_SEED_SIZE];
     {
@@ -175,13 +298,12 @@ pub(crate) fn sign<
     let mut signer_response = None;
     let mut hint = None;
 
-    // Depending on the mode, one try has a chance between 1/7 and 1/4
-    // of succeeding.  Thus it is safe to say that 576
-    // (REJECTION_SAMPLE_BOUND) iterations are enough as (6/7)⁵⁷⁶ <
-    // 2⁻¹²⁸[1].
+    // As specified in [FIPS 204, Appendix C], the minimum number of
+    // attempts in this rejection sampling loop is 814. This puts the
+    // probability of failure at 2⁻²⁵⁶ or less.
     //
-    // [1]: https://github.com/cloudflare/circl/blob/main/sign/dilithium/mode2/internal/dilithium.go#L341
-    while attempt < REJECTION_SAMPLE_BOUND {
+    // [FIPS 204, Appendix C]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf#appendix.C
+    while attempt < REJECTION_SAMPLE_BOUND_SIGN {
         attempt += 1;
 
         let mask =
@@ -215,11 +337,8 @@ pub(crate) fn sign<
             SIMDUnit,
             Shake256,
             ONES_IN_VERIFIER_CHALLENGE,
-        >(
-            commitment_hash_candidate[0..VERIFIER_CHALLENGE_SEED_SIZE]
-                .try_into()
-                .unwrap(),
-        ));
+            COMMITMENT_HASH_SIZE,
+        >(commitment_hash_candidate));
 
         let challenge_times_s1 = vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(
             &s1_as_ntt,
@@ -263,7 +382,7 @@ pub(crate) fn sign<
 
                     if ones_in_hint > MAX_ONES_IN_HINT {
                     } else {
-                        attempt = REJECTION_SAMPLE_BOUND; // exit loop now
+                        attempt = REJECTION_SAMPLE_BOUND_SIGN; // exit loop now
                         commitment_hash = Some(commitment_hash_candidate);
                         signer_response = Some(signer_response_candidate);
                         hint = Some(hint_candidate);
@@ -298,8 +417,53 @@ pub(crate) fn sign<
     Ok(MLDSASignature(signature))
 }
 
+/// This corresponds to line 6 in algorithm 7 in FIPS 204 (line 7 in algorithm
+/// 8, resp.).
+///
+/// If `domain_separation_context` is supplied, applies domain
+/// separation and length encoding to the context string,
+/// before appending the message (in the regular variant) or the
+/// pre-hash OID as well as the pre-hashed message digest. Otherwise,
+/// it is assumed that `message` already contains domain separation
+/// information.
+///
+/// In FIPS 204 M' is the concatenation of the domain separated context, any
+/// potential pre-hash OID and the message (or the message pre-hash). We do not
+/// explicitely construct the concatenation in memory since it is of statically unknown
+/// length, but feed its components directly into the incremental XOF.
+///
+/// Refer to line 10 of Algorithm 2 (and line 5 of Algorithm 3, resp.) in [FIPS
+/// 204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf#section.5)
+/// for details on the domain separation for regular ML-DSA. Line
+/// 23 of Algorithm 4 (and line 18 of Algorithm 5,resp.) describe domain separation for the HashMl-DSA
+/// variant.
+fn derive_message_representative(
+    verification_key_hash: [u8; 64],
+    domain_separation_context: Option<DomainSeparationContext>,
+    message: &[u8],
+    message_representative: &mut [u8; 64],
+) {
+    let mut shake = Shake256Absorb::new();
+    shake.absorb(&verification_key_hash);
+    if let Some(domain_separation_context) = domain_separation_context {
+        shake.absorb(&[domain_separation_context.pre_hash_oid().is_some() as u8]);
+        shake.absorb(&[domain_separation_context.context().len() as u8]);
+        shake.absorb(domain_separation_context.context());
+        if let Some(pre_hash_oid) = domain_separation_context.pre_hash_oid() {
+            shake.absorb(pre_hash_oid)
+        }
+    }
+
+    let mut shake = shake.absorb_final(message);
+    shake.squeeze(message_representative);
+}
+
+/// The internal verification API.
+///
+/// If no `domain_separation_context` is supplied, it is assumed that
+/// `message` already contains the domain separation.
 #[allow(non_snake_case)]
-pub(crate) fn verify<
+pub(crate) fn verify_internal<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::Xof,
@@ -319,6 +483,7 @@ pub(crate) fn verify<
 >(
     verification_key_serialized: &[u8; VERIFICATION_KEY_SIZE],
     message: &[u8],
+    domain_separation_context: Option<DomainSeparationContext>,
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
     let (seed_for_A, t1) =
@@ -349,23 +514,19 @@ pub(crate) fn verify<
             &mut verification_key_hash,
         );
         let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
-        {
-            let mut shake = Shake256Absorb::new();
-            shake.absorb(&verification_key_hash);
-            let mut shake = shake.absorb_final(&message);
-
-            shake.squeeze(&mut message_representative);
-        };
+        derive_message_representative(
+            verification_key_hash,
+            domain_separation_context,
+            message,
+            &mut message_representative,
+        );
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
             SIMDUnit,
             Shake256,
             ONES_IN_VERIFIER_CHALLENGE,
-        >(
-            signature.commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
-                .try_into()
-                .unwrap(),
-        ));
+            COMMITMENT_HASH_SIZE,
+        >(signature.commitment_hash));
 
         let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
             &A_as_ntt,
@@ -399,4 +560,106 @@ pub(crate) fn verify<
     } else {
         Err(VerificationError::SignerResponseExceedsBoundError)
     }
+}
+
+#[allow(non_snake_case)]
+pub(crate) fn verify<
+    SIMDUnit: Operations,
+    Shake128X4: shake128::XofX4,
+    Shake256: shake256::Xof,
+    const ROWS_IN_A: usize,
+    const COLUMNS_IN_A: usize,
+    const SIGNATURE_SIZE: usize,
+    const VERIFICATION_KEY_SIZE: usize,
+    const GAMMA1_EXPONENT: usize,
+    const GAMMA1_RING_ELEMENT_SIZE: usize,
+    const GAMMA2: i32,
+    const BETA: i32,
+    const COMMITMENT_RING_ELEMENT_SIZE: usize,
+    const COMMITMENT_VECTOR_SIZE: usize,
+    const COMMITMENT_HASH_SIZE: usize,
+    const ONES_IN_VERIFIER_CHALLENGE: usize,
+    const MAX_ONES_IN_HINT: usize,
+>(
+    verification_key_serialized: &[u8; VERIFICATION_KEY_SIZE],
+    message: &[u8],
+    context: &[u8],
+    signature_serialized: &[u8; SIGNATURE_SIZE],
+) -> Result<(), VerificationError> {
+    verify_internal::<
+        SIMDUnit,
+        Shake128X4,
+        Shake256,
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        SIGNATURE_SIZE,
+        VERIFICATION_KEY_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        GAMMA2,
+        BETA,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+    >(
+        &verification_key_serialized,
+        message,
+        Some(DomainSeparationContext::new(context, None)?),
+        &signature_serialized,
+    )
+}
+
+#[allow(non_snake_case)]
+pub(crate) fn verify_pre_hashed<
+    SIMDUnit: Operations,
+    Shake128X4: shake128::XofX4,
+    Shake256: shake256::Xof,
+    PH: PreHash<PH_DIGEST_LEN>,
+    const PH_DIGEST_LEN: usize,
+    const ROWS_IN_A: usize,
+    const COLUMNS_IN_A: usize,
+    const SIGNATURE_SIZE: usize,
+    const VERIFICATION_KEY_SIZE: usize,
+    const GAMMA1_EXPONENT: usize,
+    const GAMMA1_RING_ELEMENT_SIZE: usize,
+    const GAMMA2: i32,
+    const BETA: i32,
+    const COMMITMENT_RING_ELEMENT_SIZE: usize,
+    const COMMITMENT_VECTOR_SIZE: usize,
+    const COMMITMENT_HASH_SIZE: usize,
+    const ONES_IN_VERIFIER_CHALLENGE: usize,
+    const MAX_ONES_IN_HINT: usize,
+>(
+    verification_key_serialized: &[u8; VERIFICATION_KEY_SIZE],
+    message: &[u8],
+    context: &[u8],
+    signature_serialized: &[u8; SIGNATURE_SIZE],
+) -> Result<(), VerificationError> {
+    let pre_hashed_message = PH::hash(message);
+
+    verify_internal::<
+        SIMDUnit,
+        Shake128X4,
+        Shake256,
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        SIGNATURE_SIZE,
+        VERIFICATION_KEY_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        GAMMA2,
+        BETA,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+    >(
+        &verification_key_serialized,
+        &pre_hashed_message,
+        Some(DomainSeparationContext::new(context, Some(&PH::oid()))?),
+        &signature_serialized,
+    )
 }

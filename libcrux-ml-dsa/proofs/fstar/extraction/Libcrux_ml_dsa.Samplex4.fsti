@@ -18,7 +18,7 @@ val matrix_A_4_by_4_
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4 |}
-      (seed: t_Array u8 (sz 34))
+      (seed: t_Array u8 (Rust_primitives.mk_usize 34))
     : Prims.Pure
       (t_Array
           (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -29,7 +29,7 @@ val matrix_A_6_by_5_
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4 |}
-      (seed: t_Array u8 (sz 34))
+      (seed: t_Array u8 (Rust_primitives.mk_usize 34))
     : Prims.Pure
       (t_Array
           (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -40,7 +40,7 @@ val matrix_A_8_by_7_
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4 |}
-      (seed: t_Array u8 (sz 34))
+      (seed: t_Array u8 (Rust_primitives.mk_usize 34))
     : Prims.Pure
       (t_Array
           (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -51,7 +51,7 @@ val matrix_A
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4 |}
-      (seed: t_Array u8 (sz 34))
+      (seed: t_Array u8 (Rust_primitives.mk_usize 34))
     : Prims.Pure
       (t_Array
           (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -62,7 +62,7 @@ val sample_s1_and_s2_4_by_4_
       (v_ETA v_S1_DIMENSION v_S2_DIMENSION: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
-      (seed_base: t_Array u8 (sz 66))
+      (seed_base: t_Array u8 (Rust_primitives.mk_usize 66))
     : Prims.Pure
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION &
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION)
@@ -74,7 +74,7 @@ val sample_s1_and_s2_5_by_6_
       (v_ETA v_S1_DIMENSION v_S2_DIMENSION: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
-      (seed_base: t_Array u8 (sz 66))
+      (seed_base: t_Array u8 (Rust_primitives.mk_usize 66))
     : Prims.Pure
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION &
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION)
@@ -86,7 +86,7 @@ val sample_s1_and_s2_7_by_8_
       (v_ETA v_S1_DIMENSION v_S2_DIMENSION: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
-      (seed_base: t_Array u8 (sz 66))
+      (seed_base: t_Array u8 (Rust_primitives.mk_usize 66))
     : Prims.Pure
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION &
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION)
@@ -98,7 +98,7 @@ val sample_s1_and_s2
       (v_ETA v_S1_DIMENSION v_S2_DIMENSION: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
-      (seed: t_Array u8 (sz 66))
+      (seed: t_Array u8 (Rust_primitives.mk_usize 66))
     : Prims.Pure
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION &
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION)

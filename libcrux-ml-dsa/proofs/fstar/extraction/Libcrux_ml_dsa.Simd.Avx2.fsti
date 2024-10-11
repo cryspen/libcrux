@@ -48,12 +48,16 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations t_AVX2SIMDUnit =
             <:
             Libcrux_intrinsics.Avx2_extract.t_Vec256));
     f_to_coefficient_array_pre = (fun (self: t_AVX2SIMDUnit) -> true);
-    f_to_coefficient_array_post = (fun (self: t_AVX2SIMDUnit) (out: t_Array i32 (sz 8)) -> true);
+    f_to_coefficient_array_post
+    =
+    (fun (self: t_AVX2SIMDUnit) (out: t_Array i32 (Rust_primitives.mk_usize 8)) -> true);
     f_to_coefficient_array
     =
     (fun (self: t_AVX2SIMDUnit) ->
-        let coefficient_array:t_Array i32 (sz 8) = Rust_primitives.Hax.repeat 0l (sz 8) in
-        let coefficient_array:t_Array i32 (sz 8) =
+        let coefficient_array:t_Array i32 (Rust_primitives.mk_usize 8) =
+          Rust_primitives.Hax.repeat (Rust_primitives.mk_i32 0) (Rust_primitives.mk_usize 8)
+        in
+        let coefficient_array:t_Array i32 (Rust_primitives.mk_usize 8) =
           Libcrux_intrinsics.Avx2_extract.mm256_storeu_si256_i32 coefficient_array
             self.f_coefficients
         in
@@ -246,7 +250,10 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations t_AVX2SIMDUnit =
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) ->
         let tmp0, out1:(t_Slice i32 & usize) =
-          Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.sample (sz 2) randomness out
+          Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.sample (Rust_primitives.mk_usize 2
+            )
+            randomness
+            out
         in
         let out:t_Slice i32 = tmp0 in
         let hax_temp_output:usize = out1 in
@@ -261,7 +268,10 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations t_AVX2SIMDUnit =
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) ->
         let tmp0, out1:(t_Slice i32 & usize) =
-          Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.sample (sz 4) randomness out
+          Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.sample (Rust_primitives.mk_usize 4
+            )
+            randomness
+            out
         in
         let out:t_Slice i32 = tmp0 in
         let hax_temp_output:usize = out1 in
@@ -318,7 +328,9 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations t_AVX2SIMDUnit =
             <:
             Libcrux_intrinsics.Avx2_extract.t_Vec256));
     f_t0_serialize_pre = (fun (simd_unit: t_AVX2SIMDUnit) -> true);
-    f_t0_serialize_post = (fun (simd_unit: t_AVX2SIMDUnit) (out: t_Array u8 (sz 13)) -> true);
+    f_t0_serialize_post
+    =
+    (fun (simd_unit: t_AVX2SIMDUnit) (out: t_Array u8 (Rust_primitives.mk_usize 13)) -> true);
     f_t0_serialize
     =
     (fun (simd_unit: t_AVX2SIMDUnit) ->
@@ -335,7 +347,9 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations t_AVX2SIMDUnit =
             <:
             Libcrux_intrinsics.Avx2_extract.t_Vec256));
     f_t1_serialize_pre = (fun (simd_unit: t_AVX2SIMDUnit) -> true);
-    f_t1_serialize_post = (fun (simd_unit: t_AVX2SIMDUnit) (out: t_Array u8 (sz 10)) -> true);
+    f_t1_serialize_post
+    =
+    (fun (simd_unit: t_AVX2SIMDUnit) (out: t_Array u8 (Rust_primitives.mk_usize 10)) -> true);
     f_t1_serialize
     =
     (fun (simd_unit: t_AVX2SIMDUnit) ->

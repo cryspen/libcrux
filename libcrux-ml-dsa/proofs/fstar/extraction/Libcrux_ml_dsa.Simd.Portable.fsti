@@ -3,7 +3,7 @@ module Libcrux_ml_dsa.Simd.Portable
 open Core
 open FStar.Mul
 
-type t_PortableSIMDUnit = { f_coefficients:t_Array i32 (sz 8) }
+type t_PortableSIMDUnit = { f_coefficients:t_Array i32 (Rust_primitives.mk_usize 8) }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations t_PortableSIMDUnit =
@@ -15,7 +15,13 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations t_PortableSIMDUnit =
     f_ZERO
     =
     (fun (_: Prims.unit) ->
-        { f_coefficients = Rust_primitives.Hax.repeat 0l (sz 8) } <: t_PortableSIMDUnit);
+        {
+          f_coefficients
+          =
+          Rust_primitives.Hax.repeat (Rust_primitives.mk_i32 0) (Rust_primitives.mk_usize 8)
+        }
+        <:
+        t_PortableSIMDUnit);
     f_from_coefficient_array_pre = (fun (array: t_Slice i32) -> true);
     f_from_coefficient_array_post = (fun (array: t_Slice i32) (out: t_PortableSIMDUnit) -> true);
     f_from_coefficient_array
@@ -24,34 +30,41 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations t_PortableSIMDUnit =
         {
           f_coefficients
           =
-          Core.Result.impl__unwrap #(t_Array i32 (sz 8))
+          Core.Result.impl__unwrap #(t_Array i32 (Rust_primitives.mk_usize 8))
             #Core.Array.t_TryFromSliceError
             (Core.Convert.f_try_into #(t_Slice i32)
-                #(t_Array i32 (sz 8))
+                #(t_Array i32 (Rust_primitives.mk_usize 8))
                 #FStar.Tactics.Typeclasses.solve
-                (array.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
+                (array.[ {
+                      Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
+                      Core.Ops.Range.f_end = Rust_primitives.mk_usize 8
+                    }
                     <:
                     Core.Ops.Range.t_Range usize ]
                   <:
                   t_Slice i32)
               <:
-              Core.Result.t_Result (t_Array i32 (sz 8)) Core.Array.t_TryFromSliceError)
+              Core.Result.t_Result (t_Array i32 (Rust_primitives.mk_usize 8))
+                Core.Array.t_TryFromSliceError)
         }
         <:
         t_PortableSIMDUnit);
     f_to_coefficient_array_pre = (fun (self: t_PortableSIMDUnit) -> true);
-    f_to_coefficient_array_post = (fun (self: t_PortableSIMDUnit) (out: t_Array i32 (sz 8)) -> true);
+    f_to_coefficient_array_post
+    =
+    (fun (self: t_PortableSIMDUnit) (out: t_Array i32 (Rust_primitives.mk_usize 8)) -> true);
     f_to_coefficient_array
     =
     (fun (self: t_PortableSIMDUnit) ->
-        Core.Result.impl__unwrap #(t_Array i32 (sz 8))
+        Core.Result.impl__unwrap #(t_Array i32 (Rust_primitives.mk_usize 8))
           #Core.Convert.t_Infallible
-          (Core.Convert.f_try_into #(t_Array i32 (sz 8))
-              #(t_Array i32 (sz 8))
+          (Core.Convert.f_try_into #(t_Array i32 (Rust_primitives.mk_usize 8))
+              #(t_Array i32 (Rust_primitives.mk_usize 8))
               #FStar.Tactics.Typeclasses.solve
               self.f_coefficients
             <:
-            Core.Result.t_Result (t_Array i32 (sz 8)) Core.Convert.t_Infallible));
+            Core.Result.t_Result (t_Array i32 (Rust_primitives.mk_usize 8))
+              Core.Convert.t_Infallible));
     f_add_pre = (fun (lhs: t_PortableSIMDUnit) (rhs: t_PortableSIMDUnit) -> true);
     f_add_post
     =
@@ -247,7 +260,9 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations t_PortableSIMDUnit =
     (fun (v_ETA: usize) (serialized: t_Slice u8) ->
         Libcrux_ml_dsa.Simd.Portable.Encoding.Error.deserialize v_ETA serialized);
     f_t0_serialize_pre = (fun (simd_unit: t_PortableSIMDUnit) -> true);
-    f_t0_serialize_post = (fun (simd_unit: t_PortableSIMDUnit) (out: t_Array u8 (sz 13)) -> true);
+    f_t0_serialize_post
+    =
+    (fun (simd_unit: t_PortableSIMDUnit) (out: t_Array u8 (Rust_primitives.mk_usize 13)) -> true);
     f_t0_serialize
     =
     (fun (simd_unit: t_PortableSIMDUnit) ->
@@ -259,7 +274,9 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations t_PortableSIMDUnit =
     (fun (serialized: t_Slice u8) -> Libcrux_ml_dsa.Simd.Portable.Encoding.T0.deserialize serialized
     );
     f_t1_serialize_pre = (fun (simd_unit: t_PortableSIMDUnit) -> true);
-    f_t1_serialize_post = (fun (simd_unit: t_PortableSIMDUnit) (out: t_Array u8 (sz 10)) -> true);
+    f_t1_serialize_post
+    =
+    (fun (simd_unit: t_PortableSIMDUnit) (out: t_Array u8 (Rust_primitives.mk_usize 10)) -> true);
     f_t1_serialize
     =
     (fun (simd_unit: t_PortableSIMDUnit) ->

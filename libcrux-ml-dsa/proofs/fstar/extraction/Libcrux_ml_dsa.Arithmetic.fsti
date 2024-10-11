@@ -46,7 +46,7 @@ val use_hint
       (v_DIMENSION: usize)
       (v_GAMMA2: i32)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (hint: t_Array (t_Array i32 (sz 256)) v_DIMENSION)
+      (hint: t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_DIMENSION)
       (re_vector: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION
         )
     : Prims.Pure
@@ -68,6 +68,6 @@ val make_hint
       (v_GAMMA2: i32)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (low high: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
-    : Prims.Pure (t_Array (t_Array i32 (sz 256)) v_DIMENSION & usize)
+    : Prims.Pure (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_DIMENSION & usize)
       Prims.l_True
       (fun _ -> Prims.l_True)

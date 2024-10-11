@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Matrix
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -17,7 +17,7 @@ let vector_times_ring_element
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (vector: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
       (ring_element: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
+    : t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
         <:
@@ -67,7 +67,7 @@ let add_vectors
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (lhs rhs: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
-     =
+    : t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
         <:
@@ -75,7 +75,7 @@ let add_vectors
       v_DIMENSION
   in
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
       v_DIMENSION
       (fun result temp_1_ ->
           let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -103,6 +103,7 @@ let add_vectors
   in
   result
 
+/// Compute InvertNTT(Â ◦ ŷ)
 let compute_A_times_mask
       (#v_SIMDUnit: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
@@ -114,7 +115,7 @@ let compute_A_times_mask
             (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
             v_ROWS_IN_A)
       (mask: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-     =
+    : t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
         <:
@@ -202,6 +203,7 @@ let compute_A_times_mask
   in
   result
 
+/// Compute InvertNTT(Â ◦ ŝ₁) + s₂
 let compute_As1_plus_s2
       (#v_SIMDUnit: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
@@ -214,7 +216,7 @@ let compute_As1_plus_s2
             v_ROWS_IN_A)
       (s1: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       (s2: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
-     =
+    : t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
         <:
@@ -310,6 +312,7 @@ let compute_As1_plus_s2
   in
   result
 
+/// Compute InvertNTT(Â ◦ ẑ - ĉ ◦ NTT(t₁2ᵈ))
 let compute_w_approx
       (#v_SIMDUnit: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
@@ -324,7 +327,7 @@ let compute_w_approx
           t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       (verifier_challenge_as_ntt: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (t1: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
-     =
+    : t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
         <:
@@ -401,7 +404,7 @@ let compute_w_approx
           in
           let t1_shifted:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
             Libcrux_ml_dsa.Arithmetic.shift_left_then_reduce #v_SIMDUnit
-              13l
+              (Rust_primitives.mk_i32 13)
               (t1.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
           in
           let challenge_times_t1_shifted:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement
@@ -436,7 +439,7 @@ let subtract_vectors
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (lhs rhs: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
-     =
+    : t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
         <:
@@ -444,7 +447,7 @@ let subtract_vectors
       v_DIMENSION
   in
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
       v_DIMENSION
       (fun result temp_1_ ->
           let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)

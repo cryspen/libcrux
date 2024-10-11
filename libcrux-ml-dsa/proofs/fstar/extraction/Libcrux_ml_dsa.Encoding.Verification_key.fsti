@@ -23,7 +23,7 @@ val deserialize
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (serialized: t_Array u8 v_VERIFICATION_KEY_SIZE)
     : Prims.Pure
-      (t_Array u8 (sz 32) &
+      (t_Array u8 (Rust_primitives.mk_usize 32) &
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
       Prims.l_True
       (fun _ -> Prims.l_True)

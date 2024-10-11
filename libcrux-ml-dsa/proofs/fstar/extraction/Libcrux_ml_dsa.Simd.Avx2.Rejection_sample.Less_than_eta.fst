@@ -5,19 +5,19 @@ open FStar.Mul
 
 let shift_interval (v_ETA: usize) (coefficients: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   match cast (v_ETA <: usize) <: u8 with
-  | 2uy ->
+  | 2 ->
     let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
       Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 coefficients
-        (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 26l
+        (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (Rust_primitives.mk_i32 26)
           <:
           Libcrux_intrinsics.Avx2_extract.t_Vec256)
     in
     let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-      Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 7l quotient
+      Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 (Rust_primitives.mk_i32 7) quotient
     in
     let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
       Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 quotient
-        (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 5l
+        (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (Rust_primitives.mk_i32 5)
           <:
           Libcrux_intrinsics.Avx2_extract.t_Vec256)
     in
@@ -29,7 +29,7 @@ let shift_interval (v_ETA: usize) (coefficients: Libcrux_intrinsics.Avx2_extract
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
       coefficients_mod_5_
-  | 4uy ->
+  | 4 ->
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           (cast (v_ETA <: usize) <: i32)
         <:
@@ -43,12 +43,13 @@ let shift_interval (v_ETA: usize) (coefficients: Libcrux_intrinsics.Avx2_extract
 
 let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
   let potential_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.deserialize_to_unsigned (sz 4) input
+    Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.deserialize_to_unsigned (Rust_primitives.mk_usize 4)
+      input
   in
   let (interval_boundary: i32):i32 =
     match cast (v_ETA <: usize) <: u8 with
-    | 2uy -> 15l
-    | 4uy -> 9l
+    | 2 -> Rust_primitives.mk_i32 15
+    | 4 -> Rust_primitives.mk_i32 9
     | _ ->
       Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
@@ -68,12 +69,12 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
         <:
         u8)
   in
-  let good_lower_half:i32 = good &. 15l in
-  let good_upper_half:i32 = good >>! 4l in
+  let good_lower_half:i32 = good &. Rust_primitives.mk_i32 15 in
+  let good_upper_half:i32 = good >>! Rust_primitives.mk_i32 4 in
   let shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     shift_interval v_ETA potential_coefficients
   in
-  let lower_shuffles:t_Array u8 (sz 16) =
+  let lower_shuffles:t_Array u8 (Rust_primitives.mk_usize 16) =
     Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Shuffle_table.v_SHUFFLE_TABLE.[ cast (good_lower_half
           <:
           i32)
@@ -91,12 +92,15 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
   in
   let output:t_Slice i32 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range output
-      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 4 }
+      ({
+          Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
+          Core.Ops.Range.f_end = Rust_primitives.mk_usize 4
+        }
         <:
         Core.Ops.Range.t_Range usize)
       (Libcrux_intrinsics.Avx2_extract.mm_storeu_si128_i32 (output.[ {
-                Core.Ops.Range.f_start = sz 0;
-                Core.Ops.Range.f_end = sz 4
+                Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
+                Core.Ops.Range.f_end = Rust_primitives.mk_usize 4
               }
               <:
               Core.Ops.Range.t_Range usize ]
@@ -107,7 +111,7 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
         t_Slice i32)
   in
   let sampled_count:usize = cast (Core.Num.impl__i32__count_ones good_lower_half <: u32) <: usize in
-  let upper_shuffles:t_Array u8 (sz 16) =
+  let upper_shuffles:t_Array u8 (Rust_primitives.mk_usize 16) =
     Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Shuffle_table.v_SHUFFLE_TABLE.[ cast (good_upper_half
           <:
           i32)
@@ -118,7 +122,7 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (upper_shuffles <: t_Slice u8)
   in
   let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l shifted
+    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 (Rust_primitives.mk_i32 1) shifted
   in
   let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 upper_coefficients upper_shuffles
@@ -127,13 +131,13 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range output
       ({
           Core.Ops.Range.f_start = sampled_count;
-          Core.Ops.Range.f_end = sampled_count +! sz 4 <: usize
+          Core.Ops.Range.f_end = sampled_count +! Rust_primitives.mk_usize 4 <: usize
         }
         <:
         Core.Ops.Range.t_Range usize)
       (Libcrux_intrinsics.Avx2_extract.mm_storeu_si128_i32 (output.[ {
                 Core.Ops.Range.f_start = sampled_count;
-                Core.Ops.Range.f_end = sampled_count +! sz 4 <: usize
+                Core.Ops.Range.f_end = sampled_count +! Rust_primitives.mk_usize 4 <: usize
               }
               <:
               Core.Ops.Range.t_Range usize ]

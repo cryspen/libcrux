@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Samplex4
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -11,8 +11,8 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let generate_domain_separator (row column: u8) =
-  (cast (column <: u8) <: u16) |. ((cast (row <: u8) <: u16) <<! 8l <: u16)
+let generate_domain_separator (row column: u8) : u16 =
+  (cast (column <: u8) <: u16) |. ((cast (row <: u8) <: u16) <<! Rust_primitives.mk_i32 8 <: u16)
 
 let matrix_A_4_by_4_
       (#v_SIMDUnit #v_Shake128X4: Type0)
@@ -23,8 +23,10 @@ let matrix_A_4_by_4_
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
-      (seed: t_Array u8 (sz 34))
-     =
+      (seed: t_Array u8 (Rust_primitives.mk_usize 34))
+    : t_Array
+      (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+      v_ROWS_IN_A =
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
@@ -44,20 +46,21 @@ let matrix_A_4_by_4_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 0uy 0uy <: u16)
-      (generate_domain_separator 0uy 1uy <: u16)
-      (generate_domain_separator 0uy 2uy <: u16)
-      (generate_domain_separator 0uy 3uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 3) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -66,11 +69,12 @@ let matrix_A_4_by_4_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -79,11 +83,12 @@ let matrix_A_4_by_4_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -92,11 +97,12 @@ let matrix_A_4_by_4_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -108,20 +114,21 @@ let matrix_A_4_by_4_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 1uy 0uy <: u16)
-      (generate_domain_separator 1uy 1uy <: u16)
-      (generate_domain_separator 1uy 2uy <: u16)
-      (generate_domain_separator 1uy 3uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 3) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -130,11 +137,12 @@ let matrix_A_4_by_4_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -143,11 +151,12 @@ let matrix_A_4_by_4_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -156,11 +165,12 @@ let matrix_A_4_by_4_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -172,20 +182,21 @@ let matrix_A_4_by_4_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 2uy 0uy <: u16)
-      (generate_domain_separator 2uy 1uy <: u16)
-      (generate_domain_separator 2uy 2uy <: u16)
-      (generate_domain_separator 2uy 3uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 3) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -194,11 +205,12 @@ let matrix_A_4_by_4_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -207,11 +219,12 @@ let matrix_A_4_by_4_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -220,11 +233,12 @@ let matrix_A_4_by_4_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -236,20 +250,21 @@ let matrix_A_4_by_4_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 3uy 0uy <: u16)
-      (generate_domain_separator 3uy 1uy <: u16)
-      (generate_domain_separator 3uy 2uy <: u16)
-      (generate_domain_separator 3uy 3uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 3) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -258,11 +273,12 @@ let matrix_A_4_by_4_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -271,11 +287,12 @@ let matrix_A_4_by_4_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -284,11 +301,12 @@ let matrix_A_4_by_4_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -304,8 +322,10 @@ let matrix_A_6_by_5_
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
-      (seed: t_Array u8 (sz 34))
-     =
+      (seed: t_Array u8 (Rust_primitives.mk_usize 34))
+    : t_Array
+      (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+      v_ROWS_IN_A =
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
@@ -325,20 +345,21 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 0uy 0uy <: u16)
-      (generate_domain_separator 0uy 1uy <: u16)
-      (generate_domain_separator 0uy 2uy <: u16)
-      (generate_domain_separator 0uy 3uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 3) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -347,11 +368,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -360,11 +382,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -373,11 +396,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -389,20 +413,21 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 0uy 4uy <: u16)
-      (generate_domain_separator 1uy 0uy <: u16)
-      (generate_domain_separator 1uy 1uy <: u16)
-      (generate_domain_separator 1uy 2uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 4) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 2) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -411,11 +436,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -424,11 +450,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -437,11 +464,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -453,20 +481,21 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 1uy 3uy <: u16)
-      (generate_domain_separator 1uy 4uy <: u16)
-      (generate_domain_separator 2uy 0uy <: u16)
-      (generate_domain_separator 2uy 1uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 3) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 4) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 1) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -475,11 +504,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -488,11 +518,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -501,11 +532,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -517,20 +549,21 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 2uy 2uy <: u16)
-      (generate_domain_separator 2uy 3uy <: u16)
-      (generate_domain_separator 2uy 4uy <: u16)
-      (generate_domain_separator 3uy 0uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 3) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 4) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 0) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -539,11 +572,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -552,11 +586,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -565,11 +600,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -581,20 +617,21 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 3uy 1uy <: u16)
-      (generate_domain_separator 3uy 2uy <: u16)
-      (generate_domain_separator 3uy 3uy <: u16)
-      (generate_domain_separator 3uy 4uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 3) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 4) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -603,11 +640,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -616,11 +654,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -629,11 +668,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -645,20 +685,21 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 4uy 0uy <: u16)
-      (generate_domain_separator 4uy 1uy <: u16)
-      (generate_domain_separator 4uy 2uy <: u16)
-      (generate_domain_separator 4uy 3uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 3) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 4)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 4 ]
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 4
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -667,11 +708,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 4)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 4 ]
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 4
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -680,11 +722,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 4)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 4 ]
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 4
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -693,11 +736,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 4)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 4 ]
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 4
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -709,20 +753,21 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 4uy 4uy <: u16)
-      (generate_domain_separator 5uy 0uy <: u16)
-      (generate_domain_separator 5uy 1uy <: u16)
-      (generate_domain_separator 5uy 2uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 4) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 2) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 4)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 4 ]
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 4
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -731,11 +776,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 5)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 5 ]
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 5
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -744,11 +790,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 5)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 5 ]
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 5
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -757,11 +804,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 5)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 5 ]
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 5
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -773,20 +821,21 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 5uy 3uy <: u16)
-      (generate_domain_separator 5uy 4uy <: u16)
-      (generate_domain_separator 5uy 5uy <: u16)
-      (generate_domain_separator 5uy 6uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 3) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 4) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 5) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 6) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 5)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 5 ]
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 5
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -795,11 +844,12 @@ let matrix_A_6_by_5_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 5)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 5 ]
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 5
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -815,8 +865,10 @@ let matrix_A_8_by_7_
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
-      (seed: t_Array u8 (sz 34))
-     =
+      (seed: t_Array u8 (Rust_primitives.mk_usize 34))
+    : t_Array
+      (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+      v_ROWS_IN_A =
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
@@ -836,20 +888,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 0uy 0uy <: u16)
-      (generate_domain_separator 0uy 1uy <: u16)
-      (generate_domain_separator 0uy 2uy <: u16)
-      (generate_domain_separator 0uy 3uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 3) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -858,11 +911,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -871,11 +925,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -884,11 +939,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -900,20 +956,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 0uy 4uy <: u16)
-      (generate_domain_separator 0uy 5uy <: u16)
-      (generate_domain_separator 0uy 6uy <: u16)
-      (generate_domain_separator 1uy 0uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 4) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 5) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 0) (Rust_primitives.mk_u8 6) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 0) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -922,11 +979,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 5)
+          (Rust_primitives.mk_usize 5)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -935,11 +993,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 0)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 0 ]
+      (Rust_primitives.mk_usize 0)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 0
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 6)
+          (Rust_primitives.mk_usize 6)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -948,11 +1007,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -964,20 +1024,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 1uy 1uy <: u16)
-      (generate_domain_separator 1uy 2uy <: u16)
-      (generate_domain_separator 1uy 3uy <: u16)
-      (generate_domain_separator 1uy 4uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 3) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 4) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -986,11 +1047,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -999,11 +1061,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1012,11 +1075,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1028,20 +1092,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 1uy 5uy <: u16)
-      (generate_domain_separator 1uy 6uy <: u16)
-      (generate_domain_separator 2uy 0uy <: u16)
-      (generate_domain_separator 2uy 1uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 5) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 1) (Rust_primitives.mk_u8 6) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 1) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 5)
+          (Rust_primitives.mk_usize 5)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1050,11 +1115,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 1)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 1 ]
+      (Rust_primitives.mk_usize 1)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 1
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 6)
+          (Rust_primitives.mk_usize 6)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1063,11 +1129,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1076,11 +1143,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1092,20 +1160,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 2uy 2uy <: u16)
-      (generate_domain_separator 2uy 3uy <: u16)
-      (generate_domain_separator 2uy 4uy <: u16)
-      (generate_domain_separator 2uy 5uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 3) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 4) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 5) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1114,11 +1183,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1127,11 +1197,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1140,11 +1211,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 5)
+          (Rust_primitives.mk_usize 5)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1156,20 +1228,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 2uy 6uy <: u16)
-      (generate_domain_separator 3uy 0uy <: u16)
-      (generate_domain_separator 3uy 1uy <: u16)
-      (generate_domain_separator 3uy 2uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 2) (Rust_primitives.mk_u8 6) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 2) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 2)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 2 ]
+      (Rust_primitives.mk_usize 2)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 2
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 6)
+          (Rust_primitives.mk_usize 6)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1178,11 +1251,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1191,11 +1265,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1204,11 +1279,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1220,20 +1296,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 3uy 3uy <: u16)
-      (generate_domain_separator 3uy 4uy <: u16)
-      (generate_domain_separator 3uy 5uy <: u16)
-      (generate_domain_separator 3uy 6uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 3) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 4) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 5) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 3) (Rust_primitives.mk_u8 6) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1242,11 +1319,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1255,11 +1333,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 5)
+          (Rust_primitives.mk_usize 5)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1268,11 +1347,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 3)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 3 ]
+      (Rust_primitives.mk_usize 3)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 3
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 6)
+          (Rust_primitives.mk_usize 6)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1284,20 +1364,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 4uy 0uy <: u16)
-      (generate_domain_separator 4uy 1uy <: u16)
-      (generate_domain_separator 4uy 2uy <: u16)
-      (generate_domain_separator 4uy 3uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 3) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 4)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 4 ]
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 4
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1306,11 +1387,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 4)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 4 ]
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 4
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1319,11 +1401,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 4)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 4 ]
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 4
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1332,11 +1415,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 4)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 4 ]
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 4
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1348,20 +1432,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 4uy 4uy <: u16)
-      (generate_domain_separator 4uy 5uy <: u16)
-      (generate_domain_separator 4uy 6uy <: u16)
-      (generate_domain_separator 5uy 0uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 4) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 5) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 6) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 0) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 4)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 4 ]
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 4
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1370,11 +1455,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 4)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 4 ]
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 4
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 5)
+          (Rust_primitives.mk_usize 5)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1383,11 +1469,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 4)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 4 ]
+      (Rust_primitives.mk_usize 4)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 4
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 6)
+          (Rust_primitives.mk_usize 6)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1396,11 +1483,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 5)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 5 ]
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 5
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1412,20 +1500,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 5uy 1uy <: u16)
-      (generate_domain_separator 5uy 2uy <: u16)
-      (generate_domain_separator 5uy 3uy <: u16)
-      (generate_domain_separator 5uy 4uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 3) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 4) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 5)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 5 ]
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 5
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1434,11 +1523,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 5)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 5 ]
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 5
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1447,11 +1537,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 5)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 5 ]
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 5
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1460,11 +1551,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 5)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 5 ]
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 5
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1476,20 +1568,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 5uy 5uy <: u16)
-      (generate_domain_separator 5uy 6uy <: u16)
-      (generate_domain_separator 6uy 0uy <: u16)
-      (generate_domain_separator 6uy 1uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 5) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 5) (Rust_primitives.mk_u8 6) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 6) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 6) (Rust_primitives.mk_u8 1) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 5)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 5 ]
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 5
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 5)
+          (Rust_primitives.mk_usize 5)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1498,11 +1591,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 5)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 5 ]
+      (Rust_primitives.mk_usize 5)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 5
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 6)
+          (Rust_primitives.mk_usize 6)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1511,11 +1605,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 6)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 6 ]
+      (Rust_primitives.mk_usize 6)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 6
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1524,11 +1619,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 6)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 6 ]
+      (Rust_primitives.mk_usize 6)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 6
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1540,20 +1636,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 6uy 2uy <: u16)
-      (generate_domain_separator 6uy 3uy <: u16)
-      (generate_domain_separator 6uy 4uy <: u16)
-      (generate_domain_separator 6uy 5uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 6) (Rust_primitives.mk_u8 2) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 6) (Rust_primitives.mk_u8 3) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 6) (Rust_primitives.mk_u8 4) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 6) (Rust_primitives.mk_u8 5) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 6)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 6 ]
+      (Rust_primitives.mk_usize 6)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 6
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1562,11 +1659,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 6)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 6 ]
+      (Rust_primitives.mk_usize 6)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 6
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1575,11 +1673,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 6)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 6 ]
+      (Rust_primitives.mk_usize 6)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 6
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1588,11 +1687,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 6)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 6 ]
+      (Rust_primitives.mk_usize 6)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 6
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 5)
+          (Rust_primitives.mk_usize 5)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1604,20 +1704,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 6uy 6uy <: u16)
-      (generate_domain_separator 7uy 0uy <: u16)
-      (generate_domain_separator 7uy 1uy <: u16)
-      (generate_domain_separator 7uy 2uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 6) (Rust_primitives.mk_u8 6) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 7) (Rust_primitives.mk_u8 0) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 7) (Rust_primitives.mk_u8 1) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 7) (Rust_primitives.mk_u8 2) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 6)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 6 ]
+      (Rust_primitives.mk_usize 6)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 6
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 6)
+          (Rust_primitives.mk_usize 6)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1626,11 +1727,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 7)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 7 ]
+      (Rust_primitives.mk_usize 7)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 7
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 0)
+          (Rust_primitives.mk_usize 0)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1639,11 +1741,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 7)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 7 ]
+      (Rust_primitives.mk_usize 7)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 7
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 1)
+          (Rust_primitives.mk_usize 1)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1652,11 +1755,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 7)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 7 ]
+      (Rust_primitives.mk_usize 7)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 7
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 2)
+          (Rust_primitives.mk_usize 2)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1668,20 +1772,21 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
       #v_Shake128X4
       seed
-      (generate_domain_separator 7uy 3uy <: u16)
-      (generate_domain_separator 7uy 4uy <: u16)
-      (generate_domain_separator 7uy 5uy <: u16)
-      (generate_domain_separator 7uy 6uy <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 7) (Rust_primitives.mk_u8 3) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 7) (Rust_primitives.mk_u8 4) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 7) (Rust_primitives.mk_u8 5) <: u16)
+      (generate_domain_separator (Rust_primitives.mk_u8 7) (Rust_primitives.mk_u8 6) <: u16)
   in
   let v_A:t_Array
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 7)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 7 ]
+      (Rust_primitives.mk_usize 7)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 7
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 3)
+          (Rust_primitives.mk_usize 3)
           four_ring_elements._1
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1690,11 +1795,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 7)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 7 ]
+      (Rust_primitives.mk_usize 7)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 7
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 4)
+          (Rust_primitives.mk_usize 4)
           four_ring_elements._2
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1703,11 +1809,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 7)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 7 ]
+      (Rust_primitives.mk_usize 7)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 7
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 5)
+          (Rust_primitives.mk_usize 5)
           four_ring_elements._3
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1716,11 +1823,12 @@ let matrix_A_8_by_7_
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v_A
-      (sz 7)
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ sz 7 ]
+      (Rust_primitives.mk_usize 7)
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (v_A.[ Rust_primitives.mk_usize 7
+            ]
             <:
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          (sz 6)
+          (Rust_primitives.mk_usize 6)
           four_ring_elements._4
         <:
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
@@ -1736,14 +1844,16 @@ let matrix_A
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
-      (seed: t_Array u8 (sz 34))
-     =
+      (seed: t_Array u8 (Rust_primitives.mk_usize 34))
+    : t_Array
+      (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+      v_ROWS_IN_A =
   match
     (cast (v_ROWS_IN_A <: usize) <: u8), (cast (v_COLUMNS_IN_A <: usize) <: u8) <: (u8 & u8)
   with
-  | 4uy, 4uy -> matrix_A_4_by_4_ #v_SIMDUnit #v_Shake128X4 v_ROWS_IN_A v_COLUMNS_IN_A seed
-  | 6uy, 5uy -> matrix_A_6_by_5_ #v_SIMDUnit #v_Shake128X4 v_ROWS_IN_A v_COLUMNS_IN_A seed
-  | 8uy, 7uy -> matrix_A_8_by_7_ #v_SIMDUnit #v_Shake128X4 v_ROWS_IN_A v_COLUMNS_IN_A seed
+  | 4, 4 -> matrix_A_4_by_4_ #v_SIMDUnit #v_Shake128X4 v_ROWS_IN_A v_COLUMNS_IN_A seed
+  | 6, 5 -> matrix_A_6_by_5_ #v_SIMDUnit #v_Shake128X4 v_ROWS_IN_A v_COLUMNS_IN_A seed
+  | 8, 7 -> matrix_A_8_by_7_ #v_SIMDUnit #v_Shake128X4 v_ROWS_IN_A v_COLUMNS_IN_A seed
   | _ ->
     Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
@@ -1759,8 +1869,9 @@ let sample_s1_and_s2_4_by_4_
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
-      (seed_base: t_Array u8 (sz 66))
-     =
+      (seed_base: t_Array u8 (Rust_primitives.mk_usize 66))
+    : (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION &
+      t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION) =
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
         <:
@@ -1781,22 +1892,30 @@ let sample_s1_and_s2_4_by_4_
       #v_Shake256X4
       v_ETA
       seed_base
-      0us
-      1us
-      2us
-      3us
+      (Rust_primitives.mk_u16 0)
+      (Rust_primitives.mk_u16 1)
+      (Rust_primitives.mk_u16 2)
+      (Rust_primitives.mk_u16 3)
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 0) four._1
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 0)
+      four._1
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 1) four._2
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 1)
+      four._2
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 2) four._3
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 2)
+      four._3
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 3) four._4
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 3)
+      four._4
   in
   let four:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
@@ -1806,22 +1925,30 @@ let sample_s1_and_s2_4_by_4_
       #v_Shake256X4
       v_ETA
       seed_base
-      4us
-      5us
-      6us
-      7us
+      (Rust_primitives.mk_u16 4)
+      (Rust_primitives.mk_u16 5)
+      (Rust_primitives.mk_u16 6)
+      (Rust_primitives.mk_u16 7)
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 0) four._1
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 0)
+      four._1
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 1) four._2
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 1)
+      four._2
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 2) four._3
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 2)
+      four._3
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 3) four._4
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 3)
+      four._4
   in
   s1, s2
   <:
@@ -1837,8 +1964,9 @@ let sample_s1_and_s2_5_by_6_
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
-      (seed_base: t_Array u8 (sz 66))
-     =
+      (seed_base: t_Array u8 (Rust_primitives.mk_usize 66))
+    : (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION &
+      t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION) =
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
         <:
@@ -1859,22 +1987,30 @@ let sample_s1_and_s2_5_by_6_
       #v_Shake256X4
       v_ETA
       seed_base
-      0us
-      1us
-      2us
-      3us
+      (Rust_primitives.mk_u16 0)
+      (Rust_primitives.mk_u16 1)
+      (Rust_primitives.mk_u16 2)
+      (Rust_primitives.mk_u16 3)
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 0) four._1
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 0)
+      four._1
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 1) four._2
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 1)
+      four._2
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 2) four._3
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 2)
+      four._3
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 3) four._4
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 3)
+      four._4
   in
   let four:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
@@ -1884,22 +2020,30 @@ let sample_s1_and_s2_5_by_6_
       #v_Shake256X4
       v_ETA
       seed_base
-      4us
-      5us
-      6us
-      7us
+      (Rust_primitives.mk_u16 4)
+      (Rust_primitives.mk_u16 5)
+      (Rust_primitives.mk_u16 6)
+      (Rust_primitives.mk_u16 7)
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 4) four._1
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 4)
+      four._1
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 0) four._2
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 0)
+      four._2
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 1) four._3
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 1)
+      four._3
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 2) four._4
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 2)
+      four._4
   in
   let four:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
@@ -1909,19 +2053,25 @@ let sample_s1_and_s2_5_by_6_
       #v_Shake256X4
       v_ETA
       seed_base
-      8us
-      9us
-      10us
-      11us
+      (Rust_primitives.mk_u16 8)
+      (Rust_primitives.mk_u16 9)
+      (Rust_primitives.mk_u16 10)
+      (Rust_primitives.mk_u16 11)
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 3) four._1
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 3)
+      four._1
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 4) four._2
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 4)
+      four._2
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 5) four._3
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 5)
+      four._3
   in
   s1, s2
   <:
@@ -1937,8 +2087,9 @@ let sample_s1_and_s2_7_by_8_
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
-      (seed_base: t_Array u8 (sz 66))
-     =
+      (seed_base: t_Array u8 (Rust_primitives.mk_usize 66))
+    : (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION &
+      t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION) =
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
         <:
@@ -1959,22 +2110,30 @@ let sample_s1_and_s2_7_by_8_
       #v_Shake256X4
       v_ETA
       seed_base
-      0us
-      1us
-      2us
-      3us
+      (Rust_primitives.mk_u16 0)
+      (Rust_primitives.mk_u16 1)
+      (Rust_primitives.mk_u16 2)
+      (Rust_primitives.mk_u16 3)
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 0) four._1
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 0)
+      four._1
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 1) four._2
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 1)
+      four._2
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 2) four._3
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 2)
+      four._3
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 3) four._4
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 3)
+      four._4
   in
   let four:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
@@ -1984,22 +2143,30 @@ let sample_s1_and_s2_7_by_8_
       #v_Shake256X4
       v_ETA
       seed_base
-      4us
-      5us
-      6us
-      7us
+      (Rust_primitives.mk_u16 4)
+      (Rust_primitives.mk_u16 5)
+      (Rust_primitives.mk_u16 6)
+      (Rust_primitives.mk_u16 7)
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 4) four._1
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 4)
+      four._1
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 5) four._2
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 5)
+      four._2
   in
   let s1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (sz 6) four._3
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1
+      (Rust_primitives.mk_usize 6)
+      four._3
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 0) four._4
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 0)
+      four._4
   in
   let four:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
@@ -2009,22 +2176,30 @@ let sample_s1_and_s2_7_by_8_
       #v_Shake256X4
       v_ETA
       seed_base
-      8us
-      9us
-      10us
-      11us
+      (Rust_primitives.mk_u16 8)
+      (Rust_primitives.mk_u16 9)
+      (Rust_primitives.mk_u16 10)
+      (Rust_primitives.mk_u16 11)
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 1) four._1
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 1)
+      four._1
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 2) four._2
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 2)
+      four._2
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 3) four._3
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 3)
+      four._3
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 4) four._4
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 4)
+      four._4
   in
   let four:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
@@ -2034,19 +2209,25 @@ let sample_s1_and_s2_7_by_8_
       #v_Shake256X4
       v_ETA
       seed_base
-      12us
-      13us
-      14us
-      15us
+      (Rust_primitives.mk_u16 12)
+      (Rust_primitives.mk_u16 13)
+      (Rust_primitives.mk_u16 14)
+      (Rust_primitives.mk_u16 15)
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 5) four._1
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 5)
+      four._1
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 6) four._2
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 6)
+      four._2
   in
   let s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (sz 7) four._3
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
+      (Rust_primitives.mk_usize 7)
+      four._3
   in
   s1, s2
   <:
@@ -2062,16 +2243,17 @@ let sample_s1_and_s2
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
-      (seed: t_Array u8 (sz 66))
-     =
+      (seed: t_Array u8 (Rust_primitives.mk_usize 66))
+    : (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION &
+      t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION) =
   match
     (cast (v_S1_DIMENSION <: usize) <: u8), (cast (v_S2_DIMENSION <: usize) <: u8) <: (u8 & u8)
   with
-  | 4uy, 4uy ->
+  | 4, 4 ->
     sample_s1_and_s2_4_by_4_ #v_SIMDUnit #v_Shake256X4 v_ETA v_S1_DIMENSION v_S2_DIMENSION seed
-  | 5uy, 6uy ->
+  | 5, 6 ->
     sample_s1_and_s2_5_by_6_ #v_SIMDUnit #v_Shake256X4 v_ETA v_S1_DIMENSION v_S2_DIMENSION seed
-  | 7uy, 8uy ->
+  | 7, 8 ->
     sample_s1_and_s2_7_by_8_ #v_SIMDUnit #v_Shake256X4 v_ETA v_S1_DIMENSION v_S2_DIMENSION seed
   | _ ->
     Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
