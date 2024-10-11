@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
- * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
- * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
+ * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 65d06b7e81ff34bcc90ca741249b4545ebcec5b3
+ * Libcrux: 897008ee57eed9e4574222a5e96d306ce203ecee
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -170,11 +170,16 @@ libcrux_ml_kem_vector_avx2_arithmetic_cond_subtract_3329(__m256i vector) {
   __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi16(
       LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i v_minus_field_modulus =
-      libcrux_intrinsics_avx2_mm256_sub_epi16(vector, field_modulus);
+      libcrux_intrinsics_avx2_mm256_sub_epi16(/* Compute v_i - Q and crate a
+                                                 mask from the sign bit of each
+                                                 of these quantities. */
+                                              vector, field_modulus);
   __m256i sign_mask = libcrux_intrinsics_avx2_mm256_srai_epi16(
       (int32_t)15, v_minus_field_modulus, __m256i);
   __m256i conditional_add_field_modulus =
-      libcrux_intrinsics_avx2_mm256_and_si256(sign_mask, field_modulus);
+      libcrux_intrinsics_avx2_mm256_and_si256(/* If v_i - Q < 0 then add back Q
+                                                 to (v_i - Q). */
+                                              sign_mask, field_modulus);
   return libcrux_intrinsics_avx2_mm256_add_epi16(v_minus_field_modulus,
                                                  conditional_add_field_modulus);
 }
@@ -547,6 +552,7 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
     __m256i lhs, __m256i rhs, int16_t zeta0, int16_t zeta1, int16_t zeta2,
     int16_t zeta3) {
+  /* Compute the first term of the product */
   __m256i shuffle_with = libcrux_intrinsics_avx2_mm256_set_epi8(
       (int8_t)15, (int8_t)14, (int8_t)11, (int8_t)10, (int8_t)7, (int8_t)6,
       (int8_t)3, (int8_t)2, (int8_t)13, (int8_t)12, (int8_t)9, (int8_t)8,
@@ -554,8 +560,8 @@ static KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
       (int8_t)11, (int8_t)10, (int8_t)7, (int8_t)6, (int8_t)3, (int8_t)2,
       (int8_t)13, (int8_t)12, (int8_t)9, (int8_t)8, (int8_t)5, (int8_t)4,
       (int8_t)1, (int8_t)0);
-  __m256i lhs_shuffled =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi8(lhs, shuffle_with);
+  __m256i lhs_shuffled = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
+      /* Prepare the left hand side */ lhs, shuffle_with);
   __m256i lhs_shuffled0 = libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
       (int32_t)216, lhs_shuffled, __m256i);
   __m128i lhs_evens =
@@ -564,8 +570,8 @@ static KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
   __m128i lhs_odds = libcrux_intrinsics_avx2_mm256_extracti128_si256(
       (int32_t)1, lhs_shuffled0, __m128i);
   __m256i lhs_odds0 = libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(lhs_odds);
-  __m256i rhs_shuffled =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi8(rhs, shuffle_with);
+  __m256i rhs_shuffled = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
+      /* Prepare the right hand side */ rhs, shuffle_with);
   __m256i rhs_shuffled0 = libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
       (int32_t)216, rhs_shuffled, __m256i);
   __m128i rhs_evens =
@@ -574,8 +580,8 @@ static KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
   __m128i rhs_odds = libcrux_intrinsics_avx2_mm256_extracti128_si256(
       (int32_t)1, rhs_shuffled0, __m128i);
   __m256i rhs_odds0 = libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(rhs_odds);
-  __m256i left =
-      libcrux_intrinsics_avx2_mm256_mullo_epi32(lhs_evens0, rhs_evens0);
+  __m256i left = libcrux_intrinsics_avx2_mm256_mullo_epi32(
+      /* Start operating with them */ lhs_evens0, rhs_evens0);
   __m256i right =
       libcrux_intrinsics_avx2_mm256_mullo_epi32(lhs_odds0, rhs_odds0);
   __m256i right0 =
@@ -590,7 +596,7 @@ static KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
       libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(
           products_left);
   __m256i rhs_adjacent_swapped = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-      rhs,
+      /* Compute the second term of the product */ rhs,
       libcrux_intrinsics_avx2_mm256_set_epi8(
           (int8_t)13, (int8_t)12, (int8_t)15, (int8_t)14, (int8_t)9, (int8_t)8,
           (int8_t)11, (int8_t)10, (int8_t)5, (int8_t)4, (int8_t)7, (int8_t)6,
@@ -605,8 +611,10 @@ static KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
           products_right);
   __m256i products_right1 = libcrux_intrinsics_avx2_mm256_slli_epi32(
       (int32_t)16, products_right0, __m256i);
-  return libcrux_intrinsics_avx2_mm256_blend_epi16((int32_t)170, products_left0,
-                                                   products_right1, __m256i);
+  return libcrux_intrinsics_avx2_mm256_blend_epi16(
+      (int32_t)170,
+      /* Combine them into one vector */ products_left0, products_right1,
+      __m256i);
 }
 
 /**
@@ -624,13 +632,60 @@ static inline __m256i libcrux_ml_kem_vector_avx2_ntt_multiply_ea(
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_1(
     __m256i vector, uint8_t ret[2U]) {
-  __m256i lsb_to_msb =
-      libcrux_intrinsics_avx2_mm256_slli_epi16((int32_t)15, vector, __m256i);
-  __m128i low_msbs = libcrux_intrinsics_avx2_mm256_castsi256_si128(lsb_to_msb);
+  __m256i lsb_to_msb = libcrux_intrinsics_avx2_mm256_slli_epi16(
+      (int32_t)15,
+      /* Suppose |vector| is laid out as follows (superscript number indicates
+         the corresponding bit is duplicated that many times): 0¹⁵a₀ 0¹⁵b₀ 0¹⁵c₀
+         0¹⁵d₀ | 0¹⁵e₀ 0¹⁵f₀ 0¹⁵g₀ 0¹⁵h₀ | ... We care only about the least
+         significant bit in each lane, move it to the most significant position
+         to make it easier to work with. |vector| now becomes: a₀0¹⁵ b₀0¹⁵ c₀0¹⁵
+         d₀0¹⁵ | e₀0¹⁵ f₀0¹⁵ g₀0¹⁵ h₀0¹⁵ | ↩ i₀0¹⁵ j₀0¹⁵ k₀0¹⁵ l₀0¹⁵ | m₀0¹⁵
+         n₀0¹⁵ o₀0¹⁵ p₀0¹⁵ */
+      vector, __m256i);
+  __m128i low_msbs =
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(/* Get the first 8 16-bit
+                                                       elements ... */
+                                                    lsb_to_msb);
   __m128i high_msbs = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, lsb_to_msb, __m128i);
-  __m128i msbs = libcrux_intrinsics_avx2_mm_packs_epi16(low_msbs, high_msbs);
-  int32_t bits_packed = libcrux_intrinsics_avx2_mm_movemask_epi8(msbs);
+      (int32_t)1,
+      /* ... and the next 8 16-bit elements ... */ lsb_to_msb, __m128i);
+  __m128i msbs =
+      libcrux_intrinsics_avx2_mm_packs_epi16(/* ... and then pack them into
+                                                8-bit values using signed
+                                                saturation. This function packs
+                                                all the |low_msbs|, and then the
+                                                high ones. low_msbs = a₀0¹⁵
+                                                b₀0¹⁵ c₀0¹⁵ d₀0¹⁵ | e₀0¹⁵ f₀0¹⁵
+                                                g₀0¹⁵ h₀0¹⁵ high_msbs = i₀0¹⁵
+                                                j₀0¹⁵ k₀0¹⁵ l₀0¹⁵ | m₀0¹⁵ n₀0¹⁵
+                                                o₀0¹⁵ p₀0¹⁵ We shifted by 15
+                                                above to take advantage of the
+                                                signed saturation performed by
+                                                mm_packs_epi16: - if the sign
+                                                bit of the 16-bit element being
+                                                packed is 1, the corresponding
+                                                8-bit element in |msbs| will be
+                                                0xFF. - if the sign bit of the
+                                                16-bit element being packed is
+                                                0, the corresponding 8-bit
+                                                element in |msbs| will be 0.
+                                                Thus, if, for example, a₀ = 1,
+                                                e₀ = 1, and p₀ = 1, and every
+                                                other bit is 0, after packing
+                                                into 8 bit value, |msbs| will
+                                                look like: 0xFF 0x00 0x00 0x00 |
+                                                0xFF 0x00 0x00 0x00 | 0x00 0x00
+                                                0x00 0x00 | 0x00 0x00 0x00 0xFF
+                                              */
+                                             low_msbs, high_msbs);
+  int32_t bits_packed =
+      libcrux_intrinsics_avx2_mm_movemask_epi8(/* Now that every element is
+                                                  either 0xFF or 0x00, we just
+                                                  extract the most significant
+                                                  bit from each element and
+                                                  collate them into two bytes.
+                                                */
+                                               msbs);
   uint8_t serialized[2U] = {0U};
   serialized[0U] = (uint8_t)bits_packed;
   serialized[1U] = (uint8_t)(bits_packed >> 8U);
@@ -651,7 +706,19 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_1(Eurydice_slice bytes) {
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_set_epi16(
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
+      (int16_t)Eurydice_slice_index(
+          bytes,
+          /* We need to take each bit from the 2 bytes of input and put them
+             into their own 16-bit lane. Ideally, we'd load the two bytes into
+             the vector, duplicate them, and right-shift the 0th element by 0
+             bits, the first element by 1 bit, the second by 2 bits and so on
+             before AND-ing with 0x1 to leave only the least signifinicant bit.
+             But since |_mm256_srlv_epi16| does not exist, so we have to resort
+             to a workaround. Rather than shifting each element by a different
+             amount, we'll multiply each element by a value such that the bit
+             we're interested in becomes the most significant bit. The
+             coefficients are loaded as follows: */
+          (size_t)1U, uint8_t, uint8_t *),
       (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
       (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
       (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
@@ -674,8 +741,11 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_1(Eurydice_slice bytes) {
       (int16_t)1 << 12U, (int16_t)1 << 13U, (int16_t)1 << 14U, (int16_t)-32768);
   __m256i coefficients_in_msb =
       libcrux_intrinsics_avx2_mm256_mullo_epi16(coefficients, shift_lsb_to_msb);
-  return libcrux_intrinsics_avx2_mm256_srli_epi16((int32_t)15,
-                                                  coefficients_in_msb, __m256i);
+  return libcrux_intrinsics_avx2_mm256_srli_epi16(
+      (int32_t)15,
+      /* Now that they're all in the most significant bit position, shift them
+         down to the least significant bit. */
+      coefficients_in_msb, __m256i);
 }
 
 /**
@@ -692,35 +762,92 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_4(
     __m256i vector, uint8_t ret[8U]) {
   uint8_t serialized[16U] = {0U};
-  __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_madd_epi16(
-      vector, libcrux_intrinsics_avx2_mm256_set_epi16(
-                  (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1,
-                  (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1,
-                  (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1,
-                  (int16_t)1 << 4U, (int16_t)1, (int16_t)1 << 4U, (int16_t)1));
-  __m256i adjacent_8_combined = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-      adjacent_2_combined,
-      libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)12, (int8_t)8, (int8_t)4, (int8_t)0,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)12, (int8_t)8, (int8_t)4, (int8_t)0));
-  __m256i combined = libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(
-      adjacent_8_combined, libcrux_intrinsics_avx2_mm256_set_epi32(
-                               (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0,
-                               (int32_t)0, (int32_t)0, (int32_t)4, (int32_t)0));
+  __m256i adjacent_2_combined =
+      libcrux_intrinsics_avx2_mm256_madd_epi16(/* If |vector| is laid out as
+                                                  follows: 0x000A 0x000B 0x000C
+                                                  0x000D | 0x000E 0x000F 0x000G
+                                                  0x000H | ....
+                                                  |adjacent_2_combined| will be
+                                                  laid out as a series of 32-bit
+                                                  integeres, as follows:
+                                                  0x00_00_00_BA 0x00_00_00_DC |
+                                                  0x00_00_00_FE 0x00_00_00_HG |
+                                                  ... */
+                                               vector,
+                                               libcrux_intrinsics_avx2_mm256_set_epi16(
+                                                   (int16_t)1 << 4U, (int16_t)1,
+                                                   (int16_t)1 << 4U, (int16_t)1,
+                                                   (int16_t)1 << 4U, (int16_t)1,
+                                                   (int16_t)1 << 4U, (int16_t)1,
+                                                   (int16_t)1 << 4U, (int16_t)1,
+                                                   (int16_t)1 << 4U, (int16_t)1,
+                                                   (int16_t)1 << 4U, (int16_t)1,
+                                                   (int16_t)1 << 4U,
+                                                   (int16_t)1));
+  __m256i adjacent_8_combined =
+      libcrux_intrinsics_avx2_mm256_shuffle_epi8(/* Recall that
+                                                    |adjacent_2_combined| goes
+                                                    as follows: 0x00_00_00_BA
+                                                    0x00_00_00_DC |
+                                                    0x00_00_00_FE 0x00_00_00_HG
+                                                    | ... Out of this, we only
+                                                    need the first byte, the 4th
+                                                    byte, the 8th byte and so on
+                                                    from the bottom and the top
+                                                    128 bits. */
+                                                 adjacent_2_combined,
+                                                 libcrux_intrinsics_avx2_mm256_set_epi8(
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)12, (int8_t)8,
+                                                     (int8_t)4, (int8_t)0,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)12, (int8_t)8,
+                                                     (int8_t)4, (int8_t)0));
+  __m256i combined =
+      libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(/* |adjacent_8_combined|
+                                                            looks like this: 0:
+                                                            0xHG_FE_DC_BA 1:
+                                                            0x00_00_00_00 | 2:
+                                                            0x00_00_00_00 3:
+                                                            0x00_00_00_00 | 4:
+                                                            0xPO_NM_LK_JI ....
+                                                            We put the element
+                                                            at 4 after the
+                                                            element at 0 ... */
+                                                         adjacent_8_combined,
+                                                         libcrux_intrinsics_avx2_mm256_set_epi32(
+                                                             (int32_t)0,
+                                                             (int32_t)0,
+                                                             (int32_t)0,
+                                                             (int32_t)0,
+                                                             (int32_t)0,
+                                                             (int32_t)0,
+                                                             (int32_t)4,
+                                                             (int32_t)0));
   __m128i combined0 = libcrux_intrinsics_avx2_mm256_castsi256_si128(combined);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
-      Eurydice_array_to_slice((size_t)16U, serialized, uint8_t), combined0);
+      Eurydice_array_to_slice(
+          (size_t)16U,
+          /* ... so that we can read them out in one go. */ serialized,
+          uint8_t),
+      combined0);
   uint8_t ret0[8U];
-  Result_56 dst;
+  Result_15 dst;
   Eurydice_slice_to_array2(
       &dst,
       Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)8U, uint8_t),
       Eurydice_slice, uint8_t[8U]);
-  unwrap_26_0e(dst, ret0);
+  unwrap_26_68(dst, ret0);
   memcpy(ret, ret0, (size_t)8U * sizeof(uint8_t));
 }
 
@@ -738,9 +865,24 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_4(Eurydice_slice bytes) {
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_set_epi16(
-      (int16_t)Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *),
-      (int16_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *),
+      (int16_t)Eurydice_slice_index(
+          bytes,
+          /* Every 4 bits from each byte of input should be put into its own
+             16-bit lane. Since |_mm256_srlv_epi16| does not exist, we have to
+             resort to a workaround. Rather than shifting each element by a
+             different amount, we'll multiply each element by a value such that
+             the bits we're interested in become the most significant bits (of
+             an 8-bit value). In this lane, the 4 bits we need to put are
+             already the most significant bits of |bytes[7]|. */
+          (size_t)7U, uint8_t, uint8_t *),
+      (int16_t)Eurydice_slice_index(
+          bytes,
+          /* In this lane, the 4 bits we need to put are the least significant
+             bits, so we need to shift the 4 least-significant bits of
+             |bytes[7]| to the most significant bits (of an 8-bit value). */
+          (size_t)7U, uint8_t, uint8_t *),
+      (int16_t)Eurydice_slice_index(bytes, /* and so on ... */ (size_t)6U,
+                                    uint8_t, uint8_t *),
       (int16_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *),
       (int16_t)Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *),
       (int16_t)Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *),
@@ -762,10 +904,14 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_4(Eurydice_slice bytes) {
   __m256i coefficients_in_msb = libcrux_intrinsics_avx2_mm256_mullo_epi16(
       coefficients, shift_lsbs_to_msbs);
   __m256i coefficients_in_lsb = libcrux_intrinsics_avx2_mm256_srli_epi16(
-      (int32_t)4, coefficients_in_msb, __m256i);
+      (int32_t)4,
+      /* Once the 4-bit coefficients are in the most significant positions (of
+         an 8-bit value), shift them all down by 4. */
+      coefficients_in_msb, __m256i);
   return libcrux_intrinsics_avx2_mm256_and_si256(
-      coefficients_in_lsb, libcrux_intrinsics_avx2_mm256_set1_epi16(
-                               ((int16_t)1 << 4U) - (int16_t)1));
+      /* Zero the remaining bits. */ coefficients_in_lsb,
+      libcrux_intrinsics_avx2_mm256_set1_epi16(((int16_t)1 << 4U) -
+                                               (int16_t)1));
 }
 
 /**
@@ -782,45 +928,116 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_5(
     __m256i vector, uint8_t ret[10U]) {
   uint8_t serialized[32U] = {0U};
-  __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_madd_epi16(
-      vector, libcrux_intrinsics_avx2_mm256_set_epi16(
-                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
-                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
-                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
-                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1));
-  __m256i adjacent_4_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      adjacent_2_combined,
-      libcrux_intrinsics_avx2_mm256_set_epi32(
-          (int32_t)0, (int32_t)22, (int32_t)0, (int32_t)22, (int32_t)0,
-          (int32_t)22, (int32_t)0, (int32_t)22));
+  __m256i adjacent_2_combined =
+      libcrux_intrinsics_avx2_mm256_madd_epi16(/* If |vector| is laid out as
+                                                  follows (superscript number
+                                                  indicates the corresponding
+                                                  bit is duplicated that many
+                                                  times): 0¹¹a₄a₃a₂a₁a₀
+                                                  0¹¹b₄b₃b₂b₁b₀ 0¹¹c₄c₃c₂c₁c₀
+                                                  0¹¹d₄d₃d₂d₁d₀ | ↩
+                                                  0¹¹e₄e₃e₂e₁e₀ 0¹¹f₄f₃f₂f₁f₀
+                                                  0¹¹g₄g₃g₂g₁g₀ 0¹¹h₄h₃h₂h₁h₀ |
+                                                  ↩ |adjacent_2_combined| will
+                                                  be laid out as a series of
+                                                  32-bit integers, as follows:
+                                                  0²²b₄b₃b₂b₁b₀a₄a₃a₂a₁a₀
+                                                  0²²d₄d₃d₂d₁d₀c₄c₃c₂c₁c₀ | ↩
+                                                  0²²f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀
+                                                  0²²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀ | ↩
+                                                  .... */
+                                               vector,
+                                               libcrux_intrinsics_avx2_mm256_set_epi16(
+                                                   (int16_t)1 << 5U, (int16_t)1,
+                                                   (int16_t)1 << 5U, (int16_t)1,
+                                                   (int16_t)1 << 5U, (int16_t)1,
+                                                   (int16_t)1 << 5U, (int16_t)1,
+                                                   (int16_t)1 << 5U, (int16_t)1,
+                                                   (int16_t)1 << 5U, (int16_t)1,
+                                                   (int16_t)1 << 5U, (int16_t)1,
+                                                   (int16_t)1 << 5U,
+                                                   (int16_t)1));
+  __m256i adjacent_4_combined =
+      libcrux_intrinsics_avx2_mm256_sllv_epi32(/* Recall that
+                                                  |adjacent_2_combined| is laid
+                                                  out as follows:
+                                                  0²²b₄b₃b₂b₁b₀a₄a₃a₂a₁a₀
+                                                  0²²d₄d₃d₂d₁d₀c₄c₃c₂c₁c₀ | ↩
+                                                  0²²f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀
+                                                  0²²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀ | ↩
+                                                  .... This shift results in:
+                                                  b₄b₃b₂b₁b₀a₄a₃a₂a₁a₀0²²
+                                                  0²²d₄d₃d₂d₁d₀c₄c₃c₂c₁c₀ | ↩
+                                                  f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀0²²
+                                                  0²²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀ | ↩
+                                                  .... */
+                                               adjacent_2_combined,
+                                               libcrux_intrinsics_avx2_mm256_set_epi32(
+                                                   (int32_t)0, (int32_t)22,
+                                                   (int32_t)0, (int32_t)22,
+                                                   (int32_t)0, (int32_t)22,
+                                                   (int32_t)0, (int32_t)22));
   __m256i adjacent_4_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)22, adjacent_4_combined, __m256i);
+      (int32_t)22,
+      /* |adjacent_4_combined|, when viewed as 64-bit lanes, is:
+         0²²d₄d₃d₂d₁d₀c₄c₃c₂c₁c₀b₄b₃b₂b₁b₀a₄a₃a₂a₁a₀0²² | ↩
+         0²²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀0²² | ↩ ... so we just shift
+         down by 22 bits to remove the least significant 0 bits that aren't part
+         of the bits we need. */
+      adjacent_4_combined, __m256i);
   __m256i adjacent_8_combined = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-      (int32_t)8, adjacent_4_combined0, __m256i);
-  __m256i adjacent_8_combined0 = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      adjacent_8_combined,
-      libcrux_intrinsics_avx2_mm256_set_epi32(
-          (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)12, (int32_t)0,
-          (int32_t)0, (int32_t)0, (int32_t)12));
+      (int32_t)8,
+      /* |adjacent_4_combined|, when viewed as a set of 32-bit values, looks
+         like: 0:0¹²d₄d₃d₂d₁d₀c₄c₃c₂c₁c₀b₄b₃b₂b₁b₀a₄a₃a₂a₁a₀ 1:0³²
+         2:0¹²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀ 3:0³² | ↩ To be able to
+         read out the bytes in one go, we need to shifts the bits in position 2
+         to position 1 in each 128-bit lane. */
+      adjacent_4_combined0, __m256i);
+  __m256i adjacent_8_combined0 =
+      libcrux_intrinsics_avx2_mm256_sllv_epi32(/* |adjacent_8_combined|, when
+                                                  viewed as a set of 32-bit
+                                                  values, now looks like:
+                                                  0¹²d₄d₃d₂d₁d₀c₄c₃c₂c₁c₀b₄b₃b₂b₁b₀a₄a₃a₂a₁a₀
+                                                  0¹²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀
+                                                  0³² 0³² | ↩ Once again, we
+                                                  line these bits up by shifting
+                                                  the up values at indices 0 and
+                                                  5 by 12, viewing the resulting
+                                                  register as a set of 64-bit
+                                                  values, and then shifting down
+                                                  the 64-bit values by 12 bits.
+                                                */
+                                               adjacent_8_combined,
+                                               libcrux_intrinsics_avx2_mm256_set_epi32(
+                                                   (int32_t)0, (int32_t)0,
+                                                   (int32_t)0, (int32_t)12,
+                                                   (int32_t)0, (int32_t)0,
+                                                   (int32_t)0, (int32_t)12));
   __m256i adjacent_8_combined1 = libcrux_intrinsics_avx2_mm256_srli_epi64(
       (int32_t)12, adjacent_8_combined0, __m256i);
   __m128i lower_8 =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_8_combined1);
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(/* We now have 40 bits
+                                                       starting at position 0 in
+                                                       the lower 128-bit lane,
+                                                       ... */
+                                                    adjacent_8_combined1);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t),
       lower_8);
   __m128i upper_8 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, adjacent_8_combined1, __m128i);
+      (int32_t)1,
+      /* ... and the second 40 bits at position 0 in the upper 128-bit lane */
+      adjacent_8_combined1, __m128i);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)5U, (size_t)21U, uint8_t),
       upper_8);
   uint8_t ret0[10U];
-  Result_cd dst;
+  Result_9d dst;
   Eurydice_slice_to_array2(
       &dst,
       Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)10U, uint8_t),
       Eurydice_slice, uint8_t[10U]);
-  unwrap_26_07(dst, ret0);
+  unwrap_26_ce(dst, ret0);
   memcpy(ret, ret0, (size_t)10U * sizeof(uint8_t));
 }
 
@@ -893,47 +1110,127 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_10(
     __m256i vector, uint8_t ret[20U]) {
   uint8_t serialized[32U] = {0U};
-  __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_madd_epi16(
-      vector,
-      libcrux_intrinsics_avx2_mm256_set_epi16(
-          (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U, (int16_t)1,
-          (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U, (int16_t)1,
-          (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U, (int16_t)1,
-          (int16_t)1 << 10U, (int16_t)1, (int16_t)1 << 10U, (int16_t)1));
-  __m256i adjacent_4_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      adjacent_2_combined,
-      libcrux_intrinsics_avx2_mm256_set_epi32(
-          (int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12, (int32_t)0,
-          (int32_t)12, (int32_t)0, (int32_t)12));
+  __m256i adjacent_2_combined =
+      libcrux_intrinsics_avx2_mm256_madd_epi16(/* If |vector| is laid out as
+                                                  follows (superscript number
+                                                  indicates the corresponding
+                                                  bit is duplicated that many
+                                                  times): 0⁶a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀
+                                                  0⁶b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀
+                                                  0⁶c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀
+                                                  0⁶d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀ | ↩
+                                                  0⁶e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀
+                                                  0⁶f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀
+                                                  0⁶g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀
+                                                  0⁶h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀ | ↩ ...
+                                                  |adjacent_2_combined| will be
+                                                  laid out as a series of 32-bit
+                                                  integers, as follows:
+                                                  0¹²b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀
+                                                  0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀
+                                                  | ↩
+                                                  0¹²f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀
+                                                  0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀
+                                                  | ↩ .... */
+                                               vector,
+                                               libcrux_intrinsics_avx2_mm256_set_epi16(
+                                                   (int16_t)1 << 10U,
+                                                   (int16_t)1,
+                                                   (int16_t)1 << 10U,
+                                                   (int16_t)1,
+                                                   (int16_t)1 << 10U,
+                                                   (int16_t)1,
+                                                   (int16_t)1 << 10U,
+                                                   (int16_t)1,
+                                                   (int16_t)1 << 10U,
+                                                   (int16_t)1,
+                                                   (int16_t)1 << 10U,
+                                                   (int16_t)1,
+                                                   (int16_t)1 << 10U,
+                                                   (int16_t)1,
+                                                   (int16_t)1 << 10U,
+                                                   (int16_t)1));
+  __m256i adjacent_4_combined =
+      libcrux_intrinsics_avx2_mm256_sllv_epi32(/* Shifting up the values at the
+                                                  even indices by 12, we get:
+                                                  b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀0¹²
+                                                  0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀
+                                                  | ↩
+                                                  f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀0¹²
+                                                  0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀
+                                                  | ↩ ... */
+                                               adjacent_2_combined,
+                                               libcrux_intrinsics_avx2_mm256_set_epi32(
+                                                   (int32_t)0, (int32_t)12,
+                                                   (int32_t)0, (int32_t)12,
+                                                   (int32_t)0, (int32_t)12,
+                                                   (int32_t)0, (int32_t)12));
   __m256i adjacent_4_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)12, adjacent_4_combined, __m256i);
-  __m256i adjacent_8_combined = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-      adjacent_4_combined0,
-      libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8,
-          (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)4,
-          (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0));
+      (int32_t)12,
+      /* Viewing this as a set of 64-bit integers we get:
+         0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀0¹²
+         | ↩
+         0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀0¹²
+         | ↩ ... Shifting down by 12 gives us:
+         0²⁴d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀
+         | ↩
+         0²⁴h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀
+         | ↩ ... */
+      adjacent_4_combined, __m256i);
+  __m256i adjacent_8_combined =
+      libcrux_intrinsics_avx2_mm256_shuffle_epi8(/* |adjacent_4_combined|, when
+                                                    the bottom and top 128
+                                                    bit-lanes are grouped into
+                                                    bytes, looks like:
+                                                    0₇0₆0₅B₄B₃B₂B₁B₀ | ↩
+                                                    0₁₅0₁₄0₁₃B₁₂B₁₁B₁₀B₉B₈ | ↩
+                                                    In each 128-bit lane, we
+                                                    want to put bytes 8, 9, 10,
+                                                    11, 12 after bytes 0, 1, 2,
+                                                    3 to allow for sequential
+                                                    reading. */
+                                                 adjacent_4_combined0,
+                                                 libcrux_intrinsics_avx2_mm256_set_epi8(
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)12, (int8_t)11,
+                                                     (int8_t)10, (int8_t)9,
+                                                     (int8_t)8, (int8_t)4,
+                                                     (int8_t)3, (int8_t)2,
+                                                     (int8_t)1, (int8_t)0,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)-1, (int8_t)-1,
+                                                     (int8_t)12, (int8_t)11,
+                                                     (int8_t)10, (int8_t)9,
+                                                     (int8_t)8, (int8_t)4,
+                                                     (int8_t)3, (int8_t)2,
+                                                     (int8_t)1, (int8_t)0));
   __m128i lower_8 =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_8_combined);
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(/* We now have 64 bits
+                                                       starting at position 0 in
+                                                       the lower 128-bit lane,
+                                                       ... */
+                                                    adjacent_8_combined);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t),
       lower_8);
   __m128i upper_8 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, adjacent_8_combined, __m128i);
+      (int32_t)1,
+      /* and 64 bits starting at position 0 in the upper 128-bit lane. */
+      adjacent_8_combined, __m128i);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)10U, (size_t)26U,
                                   uint8_t),
       upper_8);
   uint8_t ret0[20U];
-  Result_7a dst;
+  Result_e1 dst;
   Eurydice_slice_to_array2(
       &dst,
       Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)20U, uint8_t),
       Eurydice_slice, uint8_t[20U]);
-  unwrap_26_ea(dst, ret0);
+  unwrap_26_20(dst, ret0);
   memcpy(ret, ret0, (size_t)20U * sizeof(uint8_t));
 }
 
@@ -1073,12 +1370,12 @@ static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_12(
                                   uint8_t),
       upper_8);
   uint8_t ret0[24U];
-  Result_6f dst;
+  Result_b2 dst;
   Eurydice_slice_to_array2(
       &dst,
       Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)24U, uint8_t),
       Eurydice_slice, uint8_t[24U]);
-  unwrap_26_76(dst, ret0);
+  unwrap_26_70(dst, ret0);
   memcpy(ret, ret0, (size_t)24U * sizeof(uint8_t));
 }
 
@@ -1142,28 +1439,70 @@ libcrux_ml_kem_vector_avx2_sampling_rejection_sample(Eurydice_slice input,
   __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi16(
       LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i potential_coefficients =
-      libcrux_ml_kem_vector_avx2_serialize_deserialize_12(input);
+      libcrux_ml_kem_vector_avx2_serialize_deserialize_12(/* The input bytes can
+                                                             be interpreted as a
+                                                             sequence of
+                                                             serialized 12-bit
+                                                             (i.e. uncompressed)
+                                                             coefficients. Not
+                                                             all coefficients
+                                                             may be less than
+                                                             FIELD_MODULUS
+                                                             though. */
+                                                          input);
   __m256i compare_with_field_modulus =
-      libcrux_intrinsics_avx2_mm256_cmpgt_epi16(field_modulus,
+      libcrux_intrinsics_avx2_mm256_cmpgt_epi16(/* Suppose we view
+                                                   |potential_coefficients| as
+                                                   follows (grouping 64-bit
+                                                   elements): A B C D | E F G H
+                                                   | .... and A < 3329, D < 3329
+                                                   and H < 3329,
+                                                   |compare_with_field_modulus|
+                                                   will look like: 0xFF 0 0 0xFF
+                                                   | 0 0 0 0xFF | ... */
+                                                field_modulus,
                                                 potential_coefficients);
   uint8_t good[2U];
-  libcrux_ml_kem_vector_avx2_serialize_serialize_1(compare_with_field_modulus,
+  libcrux_ml_kem_vector_avx2_serialize_serialize_1(/* Since every bit in each
+                                                      lane is either 0 or 1, we
+                                                      only need one bit from
+                                                      each lane in the register
+                                                      to tell us what
+                                                      coefficients to keep and
+                                                      what to throw-away.
+                                                      Combine all the bits
+                                                      (there are 16) into two
+                                                      bytes. */
+                                                   compare_with_field_modulus,
                                                    good);
   uint8_t lower_shuffles[16U];
   memcpy(lower_shuffles,
+         /* Each bit (and its corresponding position) represents an element we
+            want to sample. We'd like all such elements to be next to each other
+            starting at index 0, so that they can be read from the vector
+            easily. |REJECTION_SAMPLE_SHUFFLE_TABLE| encodes the byte-level
+            shuffling indices needed to make this happen. For e.g. if good[0] =
+            0b0_0_0_0_0_0_1_0, we need to move the element in the 2-nd 16-bit
+            lane to the first. To do this, we need the byte-level shuffle
+            indices to be 2 3 X X X X ... */
          libcrux_ml_kem_vector_rej_sample_table_REJECTION_SAMPLE_SHUFFLE_TABLE[(
              size_t)good[0U]],
          (size_t)16U * sizeof(uint8_t));
-  __m128i lower_shuffles0 = libcrux_intrinsics_avx2_mm_loadu_si128(
-      Eurydice_array_to_slice((size_t)16U, lower_shuffles, uint8_t));
+  __m128i lower_shuffles0 =
+      libcrux_intrinsics_avx2_mm_loadu_si128(Eurydice_array_to_slice(
+          (size_t)16U,
+          /* Shuffle the lower 8 16-bits accordingly ... */ lower_shuffles,
+          uint8_t));
   __m128i lower_coefficients =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(potential_coefficients);
   __m128i lower_coefficients0 = libcrux_intrinsics_avx2_mm_shuffle_epi8(
       lower_coefficients, lower_shuffles0);
-  libcrux_intrinsics_avx2_mm_storeu_si128(output, lower_coefficients0);
+  libcrux_intrinsics_avx2_mm_storeu_si128(
+      /* ... then write them out ... */ output, lower_coefficients0);
   size_t sampled_count = (size_t)core_num__u8_6__count_ones(good[0U]);
   uint8_t upper_shuffles[16U];
   memcpy(upper_shuffles,
+         /* Do the same for |goood[1]| */
          libcrux_ml_kem_vector_rej_sample_table_REJECTION_SAMPLE_SHUFFLE_TABLE[(
              size_t)good[1U]],
          (size_t)16U * sizeof(uint8_t));
@@ -1203,9 +1542,9 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_polynomial_ZERO_d6_7d(void) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 lit;
+static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_polynomial_ZERO_d6_79(void) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 lit;
   lit.coefficients[0U] = libcrux_ml_kem_vector_avx2_ZERO_ea();
   lit.coefficients[1U] = libcrux_ml_kem_vector_avx2_ZERO_ea();
   lit.coefficients[2U] = libcrux_ml_kem_vector_avx2_ZERO_ea();
@@ -1232,9 +1571,9 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_ind_cpa_deserialize_secret_key_closure_03(size_t _) {
-  return libcrux_ml_kem_polynomial_ZERO_d6_7d();
+static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_ind_cpa_deserialize_secret_key_closure_ab(size_t _) {
+  return libcrux_ml_kem_polynomial_ZERO_d6_79();
 }
 
 /**
@@ -1244,11 +1583,11 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_serialize_deserialize_to_uncompressed_ring_element_31(
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_serialize_deserialize_to_uncompressed_ring_element_79(
     Eurydice_slice serialized) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re =
-      libcrux_ml_kem_polynomial_ZERO_d6_7d();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re =
+      libcrux_ml_kem_polynomial_ZERO_d6_79();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(serialized, uint8_t) / (size_t)24U; i++) {
     size_t i0 = i;
@@ -1269,12 +1608,12 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_deserialize_secret_key_14(
+static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_deserialize_secret_key_ab(
     Eurydice_slice secret_key,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 ret[3U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 secret_as_ntt[3U];
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 ret[3U]) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 secret_as_ntt[3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    secret_as_ntt[i] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
+    secret_as_ntt[i] = libcrux_ml_kem_polynomial_ZERO_d6_79();
   }
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(secret_key, uint8_t) /
@@ -1286,14 +1625,14 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_deserialize_secret_key_14(
         i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
             LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t);
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____0 =
-        libcrux_ml_kem_serialize_deserialize_to_uncompressed_ring_element_31(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____0 =
+        libcrux_ml_kem_serialize_deserialize_to_uncompressed_ring_element_79(
             secret_bytes);
     secret_as_ntt[i0] = uu____0;
   }
   memcpy(
       ret, secret_as_ntt,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
 }
 
 /**
@@ -1305,9 +1644,9 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 - U_COMPRESSION_FACTOR= 10
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_ind_cpa_deserialize_then_decompress_u_closure_85(size_t _) {
-  return libcrux_ml_kem_polynomial_ZERO_d6_7d();
+static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_ind_cpa_deserialize_then_decompress_u_closure_ed(size_t _) {
+  return libcrux_ml_kem_polynomial_ZERO_d6_79();
 }
 
 /**
@@ -1318,14 +1657,16 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b0(
+libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_ef(
     __m256i vector) {
   __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi32(
       (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i two_pow_coefficient_bits = libcrux_intrinsics_avx2_mm256_set1_epi32(
       (int32_t)1 << (uint32_t)(int32_t)10);
   __m128i coefficients_low =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(/* ---- Compress the first 8
+                                                       coefficients ---- */
+                                                    vector);
   __m256i coefficients_low0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
   __m256i decompressed_low = libcrux_intrinsics_avx2_mm256_mullo_epi32(
@@ -1335,11 +1676,15 @@ libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b0(
   __m256i decompressed_low1 = libcrux_intrinsics_avx2_mm256_add_epi32(
       decompressed_low0, two_pow_coefficient_bits);
   __m256i decompressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)10, decompressed_low1, __m256i);
+      (int32_t)10,
+      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
+         support for const generic expressions. */
+      decompressed_low1, __m256i);
   __m256i decompressed_low3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
       (int32_t)1, decompressed_low2, __m256i);
   __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, vector, __m128i);
+      (int32_t)1,
+      /* ---- Compress the next 8 coefficients ---- */ vector, __m128i);
   __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
   __m256i decompressed_high = libcrux_intrinsics_avx2_mm256_mullo_epi32(
@@ -1349,13 +1694,29 @@ libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b0(
   __m256i decompressed_high1 = libcrux_intrinsics_avx2_mm256_add_epi32(
       decompressed_high0, two_pow_coefficient_bits);
   __m256i decompressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)10, decompressed_high1, __m256i);
+      (int32_t)10,
+      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
+         support for const generic expressions. */
+      decompressed_high1, __m256i);
   __m256i decompressed_high3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
       (int32_t)1, decompressed_high2, __m256i);
-  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
-      decompressed_low3, decompressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
-                                                         compressed, __m256i);
+  __m256i compressed =
+      libcrux_intrinsics_avx2_mm256_packs_epi32(/* Combining them, and grouping
+                                                   each set of 64-bits, this
+                                                   function results in: 0: low
+                                                   low low low | 1: high high
+                                                   high high | 2: low low low
+                                                   low | 3: high high high high
+                                                   where each |low| and |high|
+                                                   is a 16-bit element */
+                                                decompressed_low3,
+                                                decompressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
+      (int32_t)216,
+      /* To be in the right order, we need to move the |low|s above in position
+         2 to position 1 and the |high|s in position 1 to position 2, and leave
+         the rest unchanged. */
+      compressed, __m256i);
 }
 
 /**
@@ -1370,9 +1731,9 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline __m256i
-libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_61(
+libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_ef(
     __m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b0(
+  return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_ef(
       vector);
 }
 
@@ -1383,11 +1744,11 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_serialize_deserialize_then_decompress_10_08(
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_serialize_deserialize_then_decompress_10_79(
     Eurydice_slice serialized) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re =
-      libcrux_ml_kem_polynomial_ZERO_d6_7d();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re =
+      libcrux_ml_kem_polynomial_ZERO_d6_79();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(serialized, uint8_t) / (size_t)20U; i++) {
     size_t i0 = i;
@@ -1395,7 +1756,7 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_10_08(
         serialized, i0 * (size_t)20U, i0 * (size_t)20U + (size_t)20U, uint8_t);
     __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_10_ea(bytes);
     re.coefficients[i0] =
-        libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_61(
+        libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_ef(
             coefficient);
   }
   return re;
@@ -1409,14 +1770,16 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b00(
+libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_c4(
     __m256i vector) {
   __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi32(
       (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i two_pow_coefficient_bits = libcrux_intrinsics_avx2_mm256_set1_epi32(
       (int32_t)1 << (uint32_t)(int32_t)11);
   __m128i coefficients_low =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(/* ---- Compress the first 8
+                                                       coefficients ---- */
+                                                    vector);
   __m256i coefficients_low0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
   __m256i decompressed_low = libcrux_intrinsics_avx2_mm256_mullo_epi32(
@@ -1426,11 +1789,15 @@ libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b00(
   __m256i decompressed_low1 = libcrux_intrinsics_avx2_mm256_add_epi32(
       decompressed_low0, two_pow_coefficient_bits);
   __m256i decompressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)11, decompressed_low1, __m256i);
+      (int32_t)11,
+      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
+         support for const generic expressions. */
+      decompressed_low1, __m256i);
   __m256i decompressed_low3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
       (int32_t)1, decompressed_low2, __m256i);
   __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, vector, __m128i);
+      (int32_t)1,
+      /* ---- Compress the next 8 coefficients ---- */ vector, __m128i);
   __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
   __m256i decompressed_high = libcrux_intrinsics_avx2_mm256_mullo_epi32(
@@ -1440,13 +1807,29 @@ libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b00(
   __m256i decompressed_high1 = libcrux_intrinsics_avx2_mm256_add_epi32(
       decompressed_high0, two_pow_coefficient_bits);
   __m256i decompressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)11, decompressed_high1, __m256i);
+      (int32_t)11,
+      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
+         support for const generic expressions. */
+      decompressed_high1, __m256i);
   __m256i decompressed_high3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
       (int32_t)1, decompressed_high2, __m256i);
-  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
-      decompressed_low3, decompressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
-                                                         compressed, __m256i);
+  __m256i compressed =
+      libcrux_intrinsics_avx2_mm256_packs_epi32(/* Combining them, and grouping
+                                                   each set of 64-bits, this
+                                                   function results in: 0: low
+                                                   low low low | 1: high high
+                                                   high high | 2: low low low
+                                                   low | 3: high high high high
+                                                   where each |low| and |high|
+                                                   is a 16-bit element */
+                                                decompressed_low3,
+                                                decompressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
+      (int32_t)216,
+      /* To be in the right order, we need to move the |low|s above in position
+         2 to position 1 and the |high|s in position 1 to position 2, and leave
+         the rest unchanged. */
+      compressed, __m256i);
 }
 
 /**
@@ -1461,9 +1844,9 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline __m256i
-libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_610(
+libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_c4(
     __m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b00(
+  return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_c4(
       vector);
 }
 
@@ -1474,11 +1857,11 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_serialize_deserialize_then_decompress_11_0e(
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_serialize_deserialize_then_decompress_11_79(
     Eurydice_slice serialized) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re =
-      libcrux_ml_kem_polynomial_ZERO_d6_7d();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re =
+      libcrux_ml_kem_polynomial_ZERO_d6_79();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(serialized, uint8_t) / (size_t)22U; i++) {
     size_t i0 = i;
@@ -1486,7 +1869,7 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_11_0e(
         serialized, i0 * (size_t)22U, i0 * (size_t)22U + (size_t)22U, uint8_t);
     __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_11_ea(bytes);
     re.coefficients[i0] =
-        libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_610(
+        libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_c4(
             coefficient);
   }
   return re;
@@ -1499,10 +1882,10 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 - COMPRESSION_FACTOR= 10
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_serialize_deserialize_then_decompress_ring_element_u_62(
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_serialize_deserialize_then_decompress_ring_element_u_ee(
     Eurydice_slice serialized) {
-  return libcrux_ml_kem_serialize_deserialize_then_decompress_10_08(serialized);
+  return libcrux_ml_kem_serialize_deserialize_then_decompress_10_79(serialized);
 }
 
 typedef struct libcrux_ml_kem_vector_avx2_SIMD256Vector_x2_s {
@@ -1517,7 +1900,7 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline __m256i libcrux_ml_kem_vector_traits_montgomery_multiply_fe_aa(
+static inline __m256i libcrux_ml_kem_vector_traits_montgomery_multiply_fe_79(
     __m256i v, int16_t fer) {
   return libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_ea(v, fer);
 }
@@ -1530,9 +1913,9 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE libcrux_ml_kem_vector_avx2_SIMD256Vector_x2
-libcrux_ml_kem_ntt_ntt_layer_int_vec_step_c2(__m256i a, __m256i b,
+libcrux_ml_kem_ntt_ntt_layer_int_vec_step_79(__m256i a, __m256i b,
                                              int16_t zeta_r) {
-  __m256i t = libcrux_ml_kem_vector_traits_montgomery_multiply_fe_aa(b, zeta_r);
+  __m256i t = libcrux_ml_kem_vector_traits_montgomery_multiply_fe_79(b, zeta_r);
   b = libcrux_ml_kem_vector_avx2_sub_ea(a, &t);
   a = libcrux_ml_kem_vector_avx2_add_ea(a, &t);
   return (CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2){.fst = a,
@@ -1546,8 +1929,8 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_4_plus_b8(
-    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re,
+static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_4_plus_79(
+    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
     size_t layer, size_t _initial_coefficient_bound) {
   size_t step = (size_t)1U << (uint32_t)layer;
   for (size_t i0 = (size_t)0U; i0 < (size_t)128U >> (uint32_t)layer; i0++) {
@@ -1559,7 +1942,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_4_plus_b8(
     for (size_t i = offset_vec; i < offset_vec + step_vec; i++) {
       size_t j = i;
       libcrux_ml_kem_vector_avx2_SIMD256Vector_x2 uu____0 =
-          libcrux_ml_kem_ntt_ntt_layer_int_vec_step_c2(
+          libcrux_ml_kem_ntt_ntt_layer_int_vec_step_79(
               re->coefficients[j], re->coefficients[j + step_vec],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
       __m256i x = uu____0.fst;
@@ -1577,8 +1960,8 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_3_5f(
-    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re,
+static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_3_79(
+    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
     size_t _layer, size_t _initial_coefficient_bound) {
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t round = i;
@@ -1596,8 +1979,8 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_2_c2(
-    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re,
+static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_2_79(
+    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
     size_t _layer, size_t _initial_coefficient_bound) {
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t round = i;
@@ -1618,8 +2001,8 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_1_60(
-    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re,
+static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_1_79(
+    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
     size_t _layer, size_t _initial_coefficient_bound) {
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t round = i;
@@ -1649,10 +2032,14 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_poly_barrett_reduce_d6_2b(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *self) {
+static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_poly_barrett_reduce_d6_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self) {
   for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
+       i <
+       /* The semicolon and parentheses at the end of loop are a workaround for
+          the following bug https://github.com/hacspec/hax/issues/720 */
+       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
+       i++) {
     size_t i0 = i;
     self->coefficients[i0] =
         libcrux_ml_kem_vector_avx2_barrett_reduce_ea(self->coefficients[i0]);
@@ -1666,21 +2053,21 @@ with const generics
 - VECTOR_U_COMPRESSION_FACTOR= 10
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_vector_u_72(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re) {
+static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_vector_u_ee(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
   size_t zeta_i = (size_t)0U;
-  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_b8(&zeta_i, re, (size_t)7U,
+  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_79(&zeta_i, re, (size_t)7U,
                                             (size_t)3328U);
-  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_b8(&zeta_i, re, (size_t)6U,
+  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_79(&zeta_i, re, (size_t)6U,
                                             (size_t)3328U);
-  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_b8(&zeta_i, re, (size_t)5U,
+  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_79(&zeta_i, re, (size_t)5U,
                                             (size_t)3328U);
-  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_b8(&zeta_i, re, (size_t)4U,
+  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_79(&zeta_i, re, (size_t)4U,
                                             (size_t)3328U);
-  libcrux_ml_kem_ntt_ntt_at_layer_3_5f(&zeta_i, re, (size_t)3U, (size_t)3328U);
-  libcrux_ml_kem_ntt_ntt_at_layer_2_c2(&zeta_i, re, (size_t)2U, (size_t)3328U);
-  libcrux_ml_kem_ntt_ntt_at_layer_1_60(&zeta_i, re, (size_t)1U, (size_t)3328U);
-  libcrux_ml_kem_polynomial_poly_barrett_reduce_d6_2b(re);
+  libcrux_ml_kem_ntt_ntt_at_layer_3_79(&zeta_i, re, (size_t)3U, (size_t)3328U);
+  libcrux_ml_kem_ntt_ntt_at_layer_2_79(&zeta_i, re, (size_t)2U, (size_t)3328U);
+  libcrux_ml_kem_ntt_ntt_at_layer_1_79(&zeta_i, re, (size_t)1U, (size_t)3328U);
+  libcrux_ml_kem_polynomial_poly_barrett_reduce_d6_79(re);
 }
 
 /**
@@ -1697,12 +2084,12 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_ind_cpa_deserialize_then_decompress_u_6c(
+libcrux_ml_kem_ind_cpa_deserialize_then_decompress_u_ed(
     uint8_t *ciphertext,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 ret[3U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 u_as_ntt[3U];
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 ret[3U]) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 u_as_ntt[3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    u_as_ntt[i] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
+    u_as_ntt[i] = libcrux_ml_kem_polynomial_ZERO_d6_79();
   }
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(
@@ -1722,13 +2109,13 @@ libcrux_ml_kem_ind_cpa_deserialize_then_decompress_u_6c(
                 (size_t)10U / (size_t)8U,
         uint8_t);
     u_as_ntt[i0] =
-        libcrux_ml_kem_serialize_deserialize_then_decompress_ring_element_u_62(
+        libcrux_ml_kem_serialize_deserialize_then_decompress_ring_element_u_ee(
             u_bytes);
-    libcrux_ml_kem_ntt_ntt_vector_u_72(&u_as_ntt[i0]);
+    libcrux_ml_kem_ntt_ntt_vector_u_ee(&u_as_ntt[i0]);
   }
   memcpy(
       ret, u_as_ntt,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
 }
 
 /**
@@ -1739,14 +2126,16 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b01(
+libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_d1(
     __m256i vector) {
   __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi32(
       (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i two_pow_coefficient_bits = libcrux_intrinsics_avx2_mm256_set1_epi32(
       (int32_t)1 << (uint32_t)(int32_t)4);
   __m128i coefficients_low =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(/* ---- Compress the first 8
+                                                       coefficients ---- */
+                                                    vector);
   __m256i coefficients_low0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
   __m256i decompressed_low = libcrux_intrinsics_avx2_mm256_mullo_epi32(
@@ -1756,11 +2145,15 @@ libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b01(
   __m256i decompressed_low1 = libcrux_intrinsics_avx2_mm256_add_epi32(
       decompressed_low0, two_pow_coefficient_bits);
   __m256i decompressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)4, decompressed_low1, __m256i);
+      (int32_t)4,
+      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
+         support for const generic expressions. */
+      decompressed_low1, __m256i);
   __m256i decompressed_low3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
       (int32_t)1, decompressed_low2, __m256i);
   __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, vector, __m128i);
+      (int32_t)1,
+      /* ---- Compress the next 8 coefficients ---- */ vector, __m128i);
   __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
   __m256i decompressed_high = libcrux_intrinsics_avx2_mm256_mullo_epi32(
@@ -1770,13 +2163,29 @@ libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b01(
   __m256i decompressed_high1 = libcrux_intrinsics_avx2_mm256_add_epi32(
       decompressed_high0, two_pow_coefficient_bits);
   __m256i decompressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)4, decompressed_high1, __m256i);
+      (int32_t)4,
+      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
+         support for const generic expressions. */
+      decompressed_high1, __m256i);
   __m256i decompressed_high3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
       (int32_t)1, decompressed_high2, __m256i);
-  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
-      decompressed_low3, decompressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
-                                                         compressed, __m256i);
+  __m256i compressed =
+      libcrux_intrinsics_avx2_mm256_packs_epi32(/* Combining them, and grouping
+                                                   each set of 64-bits, this
+                                                   function results in: 0: low
+                                                   low low low | 1: high high
+                                                   high high | 2: low low low
+                                                   low | 3: high high high high
+                                                   where each |low| and |high|
+                                                   is a 16-bit element */
+                                                decompressed_low3,
+                                                decompressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
+      (int32_t)216,
+      /* To be in the right order, we need to move the |low|s above in position
+         2 to position 1 and the |high|s in position 1 to position 2, and leave
+         the rest unchanged. */
+      compressed, __m256i);
 }
 
 /**
@@ -1791,9 +2200,9 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline __m256i
-libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_611(
+libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_d1(
     __m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b01(
+  return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_d1(
       vector);
 }
 
@@ -1804,11 +2213,11 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_serialize_deserialize_then_decompress_4_e1(
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_serialize_deserialize_then_decompress_4_79(
     Eurydice_slice serialized) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re =
-      libcrux_ml_kem_polynomial_ZERO_d6_7d();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re =
+      libcrux_ml_kem_polynomial_ZERO_d6_79();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(serialized, uint8_t) / (size_t)8U; i++) {
     size_t i0 = i;
@@ -1816,7 +2225,7 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_4_e1(
         serialized, i0 * (size_t)8U, i0 * (size_t)8U + (size_t)8U, uint8_t);
     __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_4_ea(bytes);
     re.coefficients[i0] =
-        libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_611(
+        libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_d1(
             coefficient);
   }
   return re;
@@ -1830,14 +2239,16 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b02(
+libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_f4(
     __m256i vector) {
   __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi32(
       (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i two_pow_coefficient_bits = libcrux_intrinsics_avx2_mm256_set1_epi32(
       (int32_t)1 << (uint32_t)(int32_t)5);
   __m128i coefficients_low =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(/* ---- Compress the first 8
+                                                       coefficients ---- */
+                                                    vector);
   __m256i coefficients_low0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
   __m256i decompressed_low = libcrux_intrinsics_avx2_mm256_mullo_epi32(
@@ -1847,11 +2258,15 @@ libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b02(
   __m256i decompressed_low1 = libcrux_intrinsics_avx2_mm256_add_epi32(
       decompressed_low0, two_pow_coefficient_bits);
   __m256i decompressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)5, decompressed_low1, __m256i);
+      (int32_t)5,
+      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
+         support for const generic expressions. */
+      decompressed_low1, __m256i);
   __m256i decompressed_low3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
       (int32_t)1, decompressed_low2, __m256i);
   __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, vector, __m128i);
+      (int32_t)1,
+      /* ---- Compress the next 8 coefficients ---- */ vector, __m128i);
   __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
   __m256i decompressed_high = libcrux_intrinsics_avx2_mm256_mullo_epi32(
@@ -1861,13 +2276,29 @@ libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b02(
   __m256i decompressed_high1 = libcrux_intrinsics_avx2_mm256_add_epi32(
       decompressed_high0, two_pow_coefficient_bits);
   __m256i decompressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)5, decompressed_high1, __m256i);
+      (int32_t)5,
+      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
+         support for const generic expressions. */
+      decompressed_high1, __m256i);
   __m256i decompressed_high3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
       (int32_t)1, decompressed_high2, __m256i);
-  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
-      decompressed_low3, decompressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
-                                                         compressed, __m256i);
+  __m256i compressed =
+      libcrux_intrinsics_avx2_mm256_packs_epi32(/* Combining them, and grouping
+                                                   each set of 64-bits, this
+                                                   function results in: 0: low
+                                                   low low low | 1: high high
+                                                   high high | 2: low low low
+                                                   low | 3: high high high high
+                                                   where each |low| and |high|
+                                                   is a 16-bit element */
+                                                decompressed_low3,
+                                                decompressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
+      (int32_t)216,
+      /* To be in the right order, we need to move the |low|s above in position
+         2 to position 1 and the |high|s in position 1 to position 2, and leave
+         the rest unchanged. */
+      compressed, __m256i);
 }
 
 /**
@@ -1882,9 +2313,9 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline __m256i
-libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_612(
+libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_f4(
     __m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_b02(
+  return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_f4(
       vector);
 }
 
@@ -1895,11 +2326,11 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_serialize_deserialize_then_decompress_5_4e(
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_serialize_deserialize_then_decompress_5_79(
     Eurydice_slice serialized) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re =
-      libcrux_ml_kem_polynomial_ZERO_d6_7d();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re =
+      libcrux_ml_kem_polynomial_ZERO_d6_79();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(serialized, uint8_t) / (size_t)10U; i++) {
     size_t i0 = i;
@@ -1907,7 +2338,7 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_5_4e(
         serialized, i0 * (size_t)10U, i0 * (size_t)10U + (size_t)10U, uint8_t);
     re.coefficients[i0] = libcrux_ml_kem_vector_avx2_deserialize_5_ea(bytes);
     re.coefficients[i0] =
-        libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_612(
+        libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_ea_f4(
             re.coefficients[i0]);
   }
   return re;
@@ -1920,10 +2351,10 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 - COMPRESSION_FACTOR= 4
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_serialize_deserialize_then_decompress_ring_element_v_86(
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_serialize_deserialize_then_decompress_ring_element_v_42(
     Eurydice_slice serialized) {
-  return libcrux_ml_kem_serialize_deserialize_then_decompress_4_e1(serialized);
+  return libcrux_ml_kem_serialize_deserialize_then_decompress_4_79(serialized);
 }
 
 /**
@@ -1965,12 +2396,14 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_polynomial_ntt_multiply_d6_f1(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *self,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *rhs) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 out =
-      libcrux_ml_kem_polynomial_ZERO_d6_7d();
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_polynomial_ntt_multiply_d6_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *rhs) {
+  /* hax_debug_debug_assert!(lhs .coefficients .into_iter() .all(|coefficient|
+   * coefficient >= 0 && coefficient < 4096)); */
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 out =
+      libcrux_ml_kem_polynomial_ZERO_d6_79();
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
@@ -2007,13 +2440,18 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_to_ring_element_d6_b8(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *self,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *rhs) {
+static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_to_ring_element_d6_ab(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *rhs) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(Eurydice_array_to_slice(
-                                  (size_t)16U, self->coefficients, __m256i),
-                              __m256i);
+       i <
+       Eurydice_slice_len(Eurydice_array_to_slice(
+                              (size_t)16U,
+                              /* The semicolon and parentheses at the end of
+                                 loop are a workaround for the following bug
+                                 https://github.com/hacspec/hax/issues/720 */
+                              self->coefficients, __m256i),
+                          __m256i);
        i++) {
     size_t i0 = i;
     self->coefficients[i0] = libcrux_ml_kem_vector_avx2_add_ea(
@@ -2028,8 +2466,8 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_1_f2(
-    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re,
+static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_1_79(
+    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
     size_t _layer) {
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t round = i;
@@ -2055,8 +2493,8 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_2_96(
-    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re,
+static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_2_79(
+    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
     size_t _layer) {
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t round = i;
@@ -2078,8 +2516,8 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_3_26(
-    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re,
+static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_3_79(
+    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
     size_t _layer) {
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t round = i;
@@ -2099,13 +2537,13 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE libcrux_ml_kem_vector_avx2_SIMD256Vector_x2
-libcrux_ml_kem_invert_ntt_inv_ntt_layer_int_vec_step_reduce_f1(__m256i a,
+libcrux_ml_kem_invert_ntt_inv_ntt_layer_int_vec_step_reduce_79(__m256i a,
                                                                __m256i b,
                                                                int16_t zeta_r) {
   __m256i a_minus_b = libcrux_ml_kem_vector_avx2_sub_ea(b, &a);
   a = libcrux_ml_kem_vector_avx2_barrett_reduce_ea(
       libcrux_ml_kem_vector_avx2_add_ea(a, &b));
-  b = libcrux_ml_kem_vector_traits_montgomery_multiply_fe_aa(a_minus_b, zeta_r);
+  b = libcrux_ml_kem_vector_traits_montgomery_multiply_fe_79(a_minus_b, zeta_r);
   return (CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2){.fst = a,
                                                                 .snd = b});
 }
@@ -2118,11 +2556,17 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_bb(
-    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re,
+libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_79(
+    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
     size_t layer) {
   size_t step = (size_t)1U << (uint32_t)layer;
-  for (size_t i0 = (size_t)0U; i0 < (size_t)128U >> (uint32_t)layer; i0++) {
+  for (size_t i0 = (size_t)0U;
+       i0 < (size_t)128U >>
+       (uint32_t) /* The semicolon and parentheses at the end of loop are a
+                     workaround for the following bug
+                     https://github.com/hacspec/hax/issues/720 */
+       layer;
+       i0++) {
     size_t round = i0;
     zeta_i[0U] = zeta_i[0U] - (size_t)1U;
     size_t offset = round * step * (size_t)2U;
@@ -2133,7 +2577,7 @@ libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_bb(
     for (size_t i = offset_vec; i < offset_vec + step_vec; i++) {
       size_t j = i;
       libcrux_ml_kem_vector_avx2_SIMD256Vector_x2 uu____0 =
-          libcrux_ml_kem_invert_ntt_inv_ntt_layer_int_vec_step_reduce_f1(
+          libcrux_ml_kem_invert_ntt_inv_ntt_layer_int_vec_step_reduce_79(
               re->coefficients[j], re->coefficients[j + step_vec],
               libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
       __m256i x = uu____0.fst;
@@ -2151,22 +2595,25 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_montgomery_44(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re) {
+static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_montgomery_ab(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
   size_t zeta_i =
-      LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT / (size_t)2U;
-  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_1_f2(&zeta_i, re, (size_t)1U);
-  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_2_96(&zeta_i, re, (size_t)2U);
-  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_3_26(&zeta_i, re, (size_t)3U);
-  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_bb(&zeta_i, re,
+      /* We only ever call this function after matrix/vector multiplication */
+      LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT
+
+      / (size_t)2U;
+  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_1_79(&zeta_i, re, (size_t)1U);
+  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_2_79(&zeta_i, re, (size_t)2U);
+  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_3_79(&zeta_i, re, (size_t)3U);
+  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_79(&zeta_i, re,
                                                           (size_t)4U);
-  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_bb(&zeta_i, re,
+  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_79(&zeta_i, re,
                                                           (size_t)5U);
-  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_bb(&zeta_i, re,
+  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_79(&zeta_i, re,
                                                           (size_t)6U);
-  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_bb(&zeta_i, re,
+  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_79(&zeta_i, re,
                                                           (size_t)7U);
-  libcrux_ml_kem_polynomial_poly_barrett_reduce_d6_2b(re);
+  libcrux_ml_kem_polynomial_poly_barrett_reduce_d6_79(re);
 }
 
 /**
@@ -2181,10 +2628,10 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_polynomial_subtract_reduce_d6_c9(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *self,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 b) {
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_polynomial_subtract_reduce_d6_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 b) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
@@ -2211,22 +2658,22 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_matrix_compute_message_4a(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *v,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *secret_as_ntt,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *u_as_ntt) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 result =
-      libcrux_ml_kem_polynomial_ZERO_d6_7d();
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_matrix_compute_message_ab(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *v,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *secret_as_ntt,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *u_as_ntt) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 result =
+      libcrux_ml_kem_polynomial_ZERO_d6_79();
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
     size_t i0 = i;
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 product =
-        libcrux_ml_kem_polynomial_ntt_multiply_d6_f1(&secret_as_ntt[i0],
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 product =
+        libcrux_ml_kem_polynomial_ntt_multiply_d6_79(&secret_as_ntt[i0],
                                                      &u_as_ntt[i0]);
-    libcrux_ml_kem_polynomial_add_to_ring_element_d6_b8(&result, &product);
+    libcrux_ml_kem_polynomial_add_to_ring_element_d6_ab(&result, &product);
   }
-  libcrux_ml_kem_invert_ntt_invert_ntt_montgomery_44(&result);
-  result = libcrux_ml_kem_polynomial_subtract_reduce_d6_c9(v, result);
+  libcrux_ml_kem_invert_ntt_invert_ntt_montgomery_ab(&result);
+  result = libcrux_ml_kem_polynomial_subtract_reduce_d6_79(v, result);
   return result;
 }
 
@@ -2237,7 +2684,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_arithmetic_shift_right_7f(__m256i vector) {
+libcrux_ml_kem_vector_avx2_arithmetic_shift_right_ef(__m256i vector) {
   return libcrux_intrinsics_avx2_mm256_srai_epi16((int32_t)15, vector, __m256i);
 }
 
@@ -2251,9 +2698,9 @@ with const generics
 - SHIFT_BY= 15
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline __m256i libcrux_ml_kem_vector_avx2_shift_right_ea_cf(
+static inline __m256i libcrux_ml_kem_vector_avx2_shift_right_ea_ef(
     __m256i vector) {
-  return libcrux_ml_kem_vector_avx2_arithmetic_shift_right_7f(vector);
+  return libcrux_ml_kem_vector_avx2_arithmetic_shift_right_ef(vector);
 }
 
 /**
@@ -2264,8 +2711,8 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline __m256i
-libcrux_ml_kem_vector_traits_to_unsigned_representative_c0(__m256i a) {
-  __m256i t = libcrux_ml_kem_vector_avx2_shift_right_ea_cf(a);
+libcrux_ml_kem_vector_traits_to_unsigned_representative_79(__m256i a) {
+  __m256i t = libcrux_ml_kem_vector_avx2_shift_right_ea_ef(a);
   __m256i fm = libcrux_ml_kem_vector_avx2_bitwise_and_with_constant_ea(
       t, LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   return libcrux_ml_kem_vector_avx2_add_ea(a, &fm);
@@ -2279,13 +2726,13 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_compress_then_serialize_message_a4(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re, uint8_t ret[32U]) {
+libcrux_ml_kem_serialize_compress_then_serialize_message_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re, uint8_t ret[32U]) {
   uint8_t serialized[32U] = {0U};
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t i0 = i;
     __m256i coefficient =
-        libcrux_ml_kem_vector_traits_to_unsigned_representative_c0(
+        libcrux_ml_kem_vector_traits_to_unsigned_representative_79(
             re.coefficients[i0]);
     __m256i coefficient_compressed =
         libcrux_ml_kem_vector_avx2_compress_1_ea(coefficient);
@@ -2334,20 +2781,25 @@ with const generics
 - V_COMPRESSION_FACTOR= 4
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cpa_decrypt_unpacked_40(
-    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0 *secret_key,
+static inline void libcrux_ml_kem_ind_cpa_decrypt_unpacked_2f(
+    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63 *secret_key,
     uint8_t *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 u_as_ntt[3U];
-  libcrux_ml_kem_ind_cpa_deserialize_then_decompress_u_6c(ciphertext, u_as_ntt);
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 v =
-      libcrux_ml_kem_serialize_deserialize_then_decompress_ring_element_v_86(
-          Eurydice_array_to_subslice_from((size_t)1088U, ciphertext,
-                                          (size_t)960U, uint8_t, size_t));
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 message =
-      libcrux_ml_kem_matrix_compute_message_4a(&v, secret_key->secret_as_ntt,
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 u_as_ntt[3U];
+  libcrux_ml_kem_ind_cpa_deserialize_then_decompress_u_ed(/* u :=
+                                                             Decompress_q(Decode_{d_u}(c),
+                                                             d_u) */
+                                                          ciphertext, u_as_ntt);
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 v =
+      libcrux_ml_kem_serialize_deserialize_then_decompress_ring_element_v_42(
+          Eurydice_array_to_subslice_from(
+              (size_t)1088U,
+              /* v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v) */
+              ciphertext, (size_t)960U, uint8_t, size_t));
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 message =
+      libcrux_ml_kem_matrix_compute_message_ab(&v, secret_key->secret_as_ntt,
                                                u_as_ntt);
   uint8_t ret0[32U];
-  libcrux_ml_kem_serialize_compress_then_serialize_message_a4(message, ret0);
+  libcrux_ml_kem_serialize_compress_then_serialize_message_79(message, ret0);
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
 
@@ -2362,23 +2814,24 @@ with const generics
 - V_COMPRESSION_FACTOR= 4
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cpa_decrypt_5e(Eurydice_slice secret_key,
+static inline void libcrux_ml_kem_ind_cpa_decrypt_2f(Eurydice_slice secret_key,
                                                      uint8_t *ciphertext,
                                                      uint8_t ret[32U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 secret_as_ntt[3U];
-  libcrux_ml_kem_ind_cpa_deserialize_secret_key_14(secret_key, secret_as_ntt);
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 secret_as_ntt[3U];
+  libcrux_ml_kem_ind_cpa_deserialize_secret_key_ab(
+      /* sˆ := Decode_12(sk) */ secret_key, secret_as_ntt);
   /* Passing arrays by value in Rust generates a copy in C */
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 copy_of_secret_as_ntt[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 copy_of_secret_as_ntt[3U];
   memcpy(
       copy_of_secret_as_ntt, secret_as_ntt,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63
       secret_key_unpacked;
   memcpy(
       secret_key_unpacked.secret_as_ntt, copy_of_secret_as_ntt,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   uint8_t ret0[32U];
-  libcrux_ml_kem_ind_cpa_decrypt_unpacked_40(&secret_key_unpacked, ciphertext,
+  libcrux_ml_kem_ind_cpa_decrypt_unpacked_2f(&secret_key_unpacked, ciphertext,
                                              ret0);
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
@@ -2393,7 +2846,7 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_G_a9_67(
+static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_G_a9_e0(
     Eurydice_slice input, uint8_t ret[64U]) {
   libcrux_ml_kem_hash_functions_avx2_G(input, ret);
 }
@@ -2404,7 +2857,7 @@ with const generics
 - LEN= 32
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRF_d1(
+static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRF_9e(
     Eurydice_slice input, uint8_t ret[32U]) {
   uint8_t digest[32U] = {0U};
   libcrux_sha3_portable_shake256(
@@ -2423,9 +2876,9 @@ with const generics
 - LEN= 32
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRF_a9_42(
+static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRF_a9_41(
     Eurydice_slice input, uint8_t ret[32U]) {
-  libcrux_ml_kem_hash_functions_avx2_PRF_d1(input, ret);
+  libcrux_ml_kem_hash_functions_avx2_PRF_9e(input, ret);
 }
 
 /**
@@ -2440,27 +2893,27 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0
-libcrux_ml_kem_ind_cpa_unpacked_default_8d_80(void) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____0[3U];
+static inline libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63
+libcrux_ml_kem_ind_cpa_unpacked_default_8d_ab(void) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____0[3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    uu____0[i] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
+    uu____0[i] = libcrux_ml_kem_polynomial_ZERO_d6_79();
   }
   uint8_t uu____1[32U] = {0U};
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 lit;
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 lit;
   memcpy(
       lit.t_as_ntt, uu____0,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   memcpy(lit.seed_for_A, uu____1, (size_t)32U * sizeof(uint8_t));
-  lit.A[0U][0U] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
-  lit.A[0U][1U] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
-  lit.A[0U][2U] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
-  lit.A[1U][0U] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
-  lit.A[1U][1U] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
-  lit.A[1U][2U] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
-  lit.A[2U][0U] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
-  lit.A[2U][1U] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
-  lit.A[2U][2U] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
+  lit.A[0U][0U] = libcrux_ml_kem_polynomial_ZERO_d6_79();
+  lit.A[0U][1U] = libcrux_ml_kem_polynomial_ZERO_d6_79();
+  lit.A[0U][2U] = libcrux_ml_kem_polynomial_ZERO_d6_79();
+  lit.A[1U][0U] = libcrux_ml_kem_polynomial_ZERO_d6_79();
+  lit.A[1U][1U] = libcrux_ml_kem_polynomial_ZERO_d6_79();
+  lit.A[1U][2U] = libcrux_ml_kem_polynomial_ZERO_d6_79();
+  lit.A[2U][0U] = libcrux_ml_kem_polynomial_ZERO_d6_79();
+  lit.A[2U][1U] = libcrux_ml_kem_polynomial_ZERO_d6_79();
+  lit.A[2U][2U] = libcrux_ml_kem_polynomial_ZERO_d6_79();
   return lit;
 }
 
@@ -2477,11 +2930,11 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_serialize_deserialize_to_reduced_ring_element_49(
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_serialize_deserialize_to_reduced_ring_element_79(
     Eurydice_slice serialized) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re =
-      libcrux_ml_kem_polynomial_ZERO_d6_7d();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re =
+      libcrux_ml_kem_polynomial_ZERO_d6_79();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(serialized, uint8_t) / (size_t)24U; i++) {
     size_t i0 = i;
@@ -2506,9 +2959,9 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_75(
+libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_98(
     Eurydice_slice public_key,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *deserialized_pk) {
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *deserialized_pk) {
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(public_key, uint8_t) /
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
@@ -2519,8 +2972,8 @@ libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_75(
         i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
             LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t);
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____0 =
-        libcrux_ml_kem_serialize_deserialize_to_reduced_ring_element_49(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____0 =
+        libcrux_ml_kem_serialize_deserialize_to_reduced_ring_element_79(
             ring_element);
     deserialized_pk[i0] = uu____0;
   }
@@ -2536,9 +2989,9 @@ libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
-libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_2a(
+libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_e0(
     uint8_t input[3U][34U]) {
-  libcrux_sha3_generic_keccak_KeccakState_29 state =
+  libcrux_sha3_generic_keccak_KeccakState_55 state =
       libcrux_sha3_avx2_x4_incremental_init();
   libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
       &state, Eurydice_array_to_slice((size_t)34U, input[0U], uint8_t),
@@ -2559,12 +3012,12 @@ libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_a9 with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
-libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_a9_1c(
+libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_a9_e0(
     uint8_t input[3U][34U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_input[3U][34U];
   memcpy(copy_of_input, input, (size_t)3U * sizeof(uint8_t[34U]));
-  return libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_2a(
+  return libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_e0(
       copy_of_input);
 }
 
@@ -2576,7 +3029,7 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_0c(
+libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_e0(
     libcrux_sha3_avx2_x4_incremental_KeccakState *st, uint8_t ret[3U][504U]) {
   uint8_t out[3U][504U] = {{0U}};
   uint8_t out0[504U] = {0U};
@@ -2612,9 +3065,9 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_a9_2e(
+libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_a9_e0(
     libcrux_sha3_avx2_x4_incremental_KeccakState *self, uint8_t ret[3U][504U]) {
-  libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_0c(self,
+  libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_e0(self,
                                                                       ret);
 }
 
@@ -2668,7 +3121,7 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE bool
-libcrux_ml_kem_sampling_sample_from_uniform_distribution_next_74(
+libcrux_ml_kem_sampling_sample_from_uniform_distribution_next_ed(
     uint8_t randomness[3U][504U], size_t *sampled_coefficients,
     int16_t (*out)[272U]) {
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++) {
@@ -2710,7 +3163,7 @@ libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_block with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_4a(
+libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_e0(
     libcrux_sha3_avx2_x4_incremental_KeccakState *st, uint8_t ret[3U][168U]) {
   uint8_t out[3U][168U] = {{0U}};
   uint8_t out0[168U] = {0U};
@@ -2745,9 +3198,9 @@ libcrux_ml_kem.hash_functions.avx2.shake128_squeeze_block_a9 with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_a9_1d(
+libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_a9_e0(
     libcrux_sha3_avx2_x4_incremental_KeccakState *self, uint8_t ret[3U][168U]) {
-  libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_4a(self, ret);
+  libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_e0(self, ret);
 }
 
 /**
@@ -2800,7 +3253,7 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE bool
-libcrux_ml_kem_sampling_sample_from_uniform_distribution_next_740(
+libcrux_ml_kem_sampling_sample_from_uniform_distribution_next_ed0(
     uint8_t randomness[3U][168U], size_t *sampled_coefficients,
     int16_t (*out)[272U]) {
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++) {
@@ -2847,10 +3300,10 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_polynomial_from_i16_array_d6_14(Eurydice_slice a) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 result =
-      libcrux_ml_kem_polynomial_ZERO_d6_7d();
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_polynomial_from_i16_array_d6_79(Eurydice_slice a) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 result =
+      libcrux_ml_kem_polynomial_ZERO_d6_79();
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
@@ -2868,9 +3321,9 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_sampling_sample_from_xof_closure_e4(int16_t s[272U]) {
-  return libcrux_ml_kem_polynomial_from_i16_array_d6_14(
+static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_sampling_sample_from_xof_closure_6c(int16_t s[272U]) {
+  return libcrux_ml_kem_polynomial_from_i16_array_d6_79(
       Eurydice_array_to_subslice2(s, (size_t)0U, (size_t)256U, int16_t));
 }
 
@@ -2881,51 +3334,55 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_sampling_sample_from_xof_67(
+static KRML_MUSTINLINE void libcrux_ml_kem_sampling_sample_from_xof_6c(
     uint8_t seeds[3U][34U],
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 ret[3U]) {
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 ret[3U]) {
   size_t sampled_coefficients[3U] = {0U};
   int16_t out[3U][272U] = {{0U}};
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_seeds[3U][34U];
   memcpy(copy_of_seeds, seeds, (size_t)3U * sizeof(uint8_t[34U]));
   libcrux_sha3_avx2_x4_incremental_KeccakState xof_state =
-      libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_a9_1c(
+      libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_a9_e0(
           copy_of_seeds);
   uint8_t randomness0[3U][504U];
-  libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_a9_2e(
+  libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_three_blocks_a9_e0(
       &xof_state, randomness0);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness0[3U][504U];
   memcpy(copy_of_randomness0, randomness0, (size_t)3U * sizeof(uint8_t[504U]));
-  bool done = libcrux_ml_kem_sampling_sample_from_uniform_distribution_next_74(
+  bool done = libcrux_ml_kem_sampling_sample_from_uniform_distribution_next_ed(
       copy_of_randomness0, sampled_coefficients, out);
+  /* Requiring more than 5 blocks to sample a ring element should be very
+   * unlikely according to: https://eprint.iacr.org/2023/708.pdf To avoid
+   * failing here, we squeeze more blocks out of the state until we have enough.
+   */
   while (true) {
     if (done) {
       break;
     } else {
       uint8_t randomness[3U][168U];
-      libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_a9_1d(
+      libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_block_a9_e0(
           &xof_state, randomness);
       /* Passing arrays by value in Rust generates a copy in C */
       uint8_t copy_of_randomness[3U][168U];
       memcpy(copy_of_randomness, randomness,
              (size_t)3U * sizeof(uint8_t[168U]));
-      done = libcrux_ml_kem_sampling_sample_from_uniform_distribution_next_740(
+      done = libcrux_ml_kem_sampling_sample_from_uniform_distribution_next_ed0(
           copy_of_randomness, sampled_coefficients, out);
     }
   }
   /* Passing arrays by value in Rust generates a copy in C */
   int16_t copy_of_out[3U][272U];
   memcpy(copy_of_out, out, (size_t)3U * sizeof(int16_t[272U]));
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 ret0[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 ret0[3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
     ret0[i] =
-        libcrux_ml_kem_sampling_sample_from_xof_closure_e4(copy_of_out[i]);
+        libcrux_ml_kem_sampling_sample_from_xof_closure_6c(copy_of_out[i]);
   }
   memcpy(
       ret, ret0,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
 }
 
 /**
@@ -2935,8 +3392,8 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_matrix_sample_matrix_A_34(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 (*A_transpose)[3U],
+static KRML_MUSTINLINE void libcrux_ml_kem_matrix_sample_matrix_A_6c(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 (*A_transpose)[3U],
     uint8_t seed[34U], bool transpose) {
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++) {
     size_t i1 = i0;
@@ -2955,17 +3412,18 @@ static KRML_MUSTINLINE void libcrux_ml_kem_matrix_sample_matrix_A_34(
     /* Passing arrays by value in Rust generates a copy in C */
     uint8_t copy_of_seeds[3U][34U];
     memcpy(copy_of_seeds, seeds, (size_t)3U * sizeof(uint8_t[34U]));
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 sampled[3U];
-    libcrux_ml_kem_sampling_sample_from_xof_67(copy_of_seeds, sampled);
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 sampled[3U];
+    libcrux_ml_kem_sampling_sample_from_xof_6c(copy_of_seeds, sampled);
     for (size_t i = (size_t)0U;
          i < Eurydice_slice_len(
                  Eurydice_array_to_slice(
-                     (size_t)3U, sampled,
-                     libcrux_ml_kem_polynomial_PolynomialRingElement_d2),
-                 libcrux_ml_kem_polynomial_PolynomialRingElement_d2);
+                     (size_t)3U,
+                     /* A[i][j] = A_transpose[j][i] */ sampled,
+                     libcrux_ml_kem_polynomial_PolynomialRingElement_f6),
+                 libcrux_ml_kem_polynomial_PolynomialRingElement_f6);
          i++) {
       size_t j = i;
-      libcrux_ml_kem_polynomial_PolynomialRingElement_d2 sample = sampled[j];
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f6 sample = sampled[j];
       if (transpose) {
         A_transpose[j][i1] = sample;
       } else {
@@ -2981,10 +3439,10 @@ with types libcrux_ml_kem_polynomial_PolynomialRingElement
 libcrux_ml_kem_vector_avx2_SIMD256Vector[3size_t], uint8_t
 
 */
-typedef struct tuple_b00_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 fst[3U];
+typedef struct tuple_230_s {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 fst[3U];
   uint8_t snd;
-} tuple_b00;
+} tuple_230;
 
 /**
 A monomorphic instance of
@@ -2996,9 +3454,9 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_out_closure_61(size_t _i) {
-  return libcrux_ml_kem_polynomial_ZERO_d6_7d();
+static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_out_closure_b4(size_t _i) {
+  return libcrux_ml_kem_polynomial_ZERO_d6_79();
 }
 
 /**
@@ -3008,7 +3466,7 @@ with const generics
 - LEN= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRFxN_08(
+static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRFxN_41(
     uint8_t (*input)[33U], uint8_t ret[3U][128U]) {
   uint8_t out[3U][128U] = {{0U}};
   uint8_t out0[128U] = {0U};
@@ -3047,9 +3505,9 @@ with const generics
 - LEN= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRFxN_a9_16(
+static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRFxN_a9_41(
     uint8_t (*input)[33U], uint8_t ret[3U][128U]) {
-  libcrux_ml_kem_hash_functions_avx2_PRFxN_08(input, ret);
+  libcrux_ml_kem_hash_functions_avx2_PRFxN_41(input, ret);
 }
 
 /**
@@ -3108,8 +3566,8 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_sampling_sample_from_binomial_distribution_2_ea(
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_sampling_sample_from_binomial_distribution_2_79(
     Eurydice_slice randomness) {
   int16_t sampled_i16s[256U] = {0U};
   for (size_t i0 = (size_t)0U;
@@ -3144,7 +3602,7 @@ libcrux_ml_kem_sampling_sample_from_binomial_distribution_2_ea(
       sampled_i16s[(size_t)8U * chunk_number + offset] = outcome_1 - outcome_2;
     }
   }
-  return libcrux_ml_kem_polynomial_from_i16_array_d6_14(
+  return libcrux_ml_kem_polynomial_from_i16_array_d6_79(
       Eurydice_array_to_slice((size_t)256U, sampled_i16s, int16_t));
 }
 
@@ -3155,8 +3613,8 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_sampling_sample_from_binomial_distribution_3_3c(
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_sampling_sample_from_binomial_distribution_3_79(
     Eurydice_slice randomness) {
   int16_t sampled_i16s[256U] = {0U};
   for (size_t i0 = (size_t)0U;
@@ -3190,7 +3648,7 @@ libcrux_ml_kem_sampling_sample_from_binomial_distribution_3_3c(
       sampled_i16s[(size_t)4U * chunk_number + offset] = outcome_1 - outcome_2;
     }
   }
-  return libcrux_ml_kem_polynomial_from_i16_array_d6_14(
+  return libcrux_ml_kem_polynomial_from_i16_array_d6_79(
       Eurydice_array_to_slice((size_t)256U, sampled_i16s, int16_t));
 }
 
@@ -3201,10 +3659,10 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 - ETA= 2
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_sampling_sample_from_binomial_distribution_af(
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_sampling_sample_from_binomial_distribution_89(
     Eurydice_slice randomness) {
-  return libcrux_ml_kem_sampling_sample_from_binomial_distribution_2_ea(
+  return libcrux_ml_kem_sampling_sample_from_binomial_distribution_2_79(
       randomness);
 }
 
@@ -3215,10 +3673,15 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_7_ab(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re) {
+static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_7_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
   size_t step = LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT / (size_t)2U;
-  for (size_t i = (size_t)0U; i < step; i++) {
+  for (size_t i = (size_t)0U;
+       i <
+       /* The semicolon and parentheses at the end of loop are a workaround for
+          the following bug https://github.com/hacspec/hax/issues/720 */
+       step;
+       i++) {
     size_t j = i;
     __m256i t = libcrux_ml_kem_vector_avx2_multiply_by_constant_ea(
         re->coefficients[j + step], (int16_t)-1600);
@@ -3237,20 +3700,23 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_ntt_ntt_binomially_sampled_ring_element_d5(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re) {
-  libcrux_ml_kem_ntt_ntt_at_layer_7_ab(re);
+libcrux_ml_kem_ntt_ntt_binomially_sampled_ring_element_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
+  libcrux_ml_kem_ntt_ntt_at_layer_7_79(/* Due to the small coefficient bound, we
+                                          can skip the first round of Montgomery
+                                          reductions. */
+                                       re);
   size_t zeta_i = (size_t)1U;
-  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_b8(&zeta_i, re, (size_t)6U,
+  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_79(&zeta_i, re, (size_t)6U,
                                             (size_t)3U);
-  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_b8(&zeta_i, re, (size_t)5U,
+  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_79(&zeta_i, re, (size_t)5U,
                                             (size_t)3U);
-  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_b8(&zeta_i, re, (size_t)4U,
+  libcrux_ml_kem_ntt_ntt_at_layer_4_plus_79(&zeta_i, re, (size_t)4U,
                                             (size_t)3U);
-  libcrux_ml_kem_ntt_ntt_at_layer_3_5f(&zeta_i, re, (size_t)3U, (size_t)3U);
-  libcrux_ml_kem_ntt_ntt_at_layer_2_c2(&zeta_i, re, (size_t)2U, (size_t)3U);
-  libcrux_ml_kem_ntt_ntt_at_layer_1_60(&zeta_i, re, (size_t)1U, (size_t)3U);
-  libcrux_ml_kem_polynomial_poly_barrett_reduce_d6_2b(re);
+  libcrux_ml_kem_ntt_ntt_at_layer_3_79(&zeta_i, re, (size_t)3U, (size_t)3U);
+  libcrux_ml_kem_ntt_ntt_at_layer_2_79(&zeta_i, re, (size_t)2U, (size_t)3U);
+  libcrux_ml_kem_ntt_ntt_at_layer_1_79(&zeta_i, re, (size_t)1U, (size_t)3U);
+  libcrux_ml_kem_polynomial_poly_barrett_reduce_d6_79(re);
 }
 
 /**
@@ -3267,8 +3733,8 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE uint8_t
-libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_ee(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re_as_ntt,
+libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_b4(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re_as_ntt,
     uint8_t prf_input[33U], uint8_t domain_separator) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input[33U];
@@ -3283,13 +3749,13 @@ libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_ee(
     domain_separator = (uint32_t)domain_separator + 1U;
   }
   uint8_t prf_outputs[3U][128U];
-  libcrux_ml_kem_hash_functions_avx2_PRFxN_a9_16(prf_inputs, prf_outputs);
+  libcrux_ml_kem_hash_functions_avx2_PRFxN_a9_41(prf_inputs, prf_outputs);
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
     size_t i0 = i;
     re_as_ntt[i0] =
-        libcrux_ml_kem_sampling_sample_from_binomial_distribution_af(
+        libcrux_ml_kem_sampling_sample_from_binomial_distribution_89(
             Eurydice_array_to_slice((size_t)128U, prf_outputs[i0], uint8_t));
-    libcrux_ml_kem_ntt_ntt_binomially_sampled_ring_element_d5(&re_as_ntt[i0]);
+    libcrux_ml_kem_ntt_ntt_binomially_sampled_ring_element_79(&re_as_ntt[i0]);
   }
   return domain_separator;
 }
@@ -3303,27 +3769,27 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE tuple_b00
-libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_out_7f(
+static KRML_MUSTINLINE tuple_230
+libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_out_b4(
     uint8_t prf_input[33U], uint8_t domain_separator) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re_as_ntt[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re_as_ntt[3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    re_as_ntt[i] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
+    re_as_ntt[i] = libcrux_ml_kem_polynomial_ZERO_d6_79();
   }
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *uu____0 = re_as_ntt;
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *uu____0 = re_as_ntt;
   uint8_t uu____1[33U];
   memcpy(uu____1, prf_input, (size_t)33U * sizeof(uint8_t));
-  domain_separator = libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_ee(
+  domain_separator = libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_b4(
       uu____0, uu____1, domain_separator);
   /* Passing arrays by value in Rust generates a copy in C */
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 copy_of_re_as_ntt[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 copy_of_re_as_ntt[3U];
   memcpy(
       copy_of_re_as_ntt, re_as_ntt,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
-  tuple_b00 lit;
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
+  tuple_230 lit;
   memcpy(
       lit.fst, copy_of_re_as_ntt,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   lit.snd = domain_separator;
   return lit;
 }
@@ -3337,9 +3803,9 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA2= 2
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_ind_cpa_sample_ring_element_cbd_closure_a1(size_t _i) {
-  return libcrux_ml_kem_polynomial_ZERO_d6_7d();
+static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_ind_cpa_sample_ring_element_cbd_closure_b4(size_t _i) {
+  return libcrux_ml_kem_polynomial_ZERO_d6_79();
 }
 
 /**
@@ -3354,12 +3820,12 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA2= 2
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE tuple_b00
-libcrux_ml_kem_ind_cpa_sample_ring_element_cbd_61(uint8_t prf_input[33U],
+static KRML_MUSTINLINE tuple_230
+libcrux_ml_kem_ind_cpa_sample_ring_element_cbd_b4(uint8_t prf_input[33U],
                                                   uint8_t domain_separator) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 error_1[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 error_1[3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    error_1[i] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
+    error_1[i] = libcrux_ml_kem_polynomial_ZERO_d6_79();
   }
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input[33U];
@@ -3374,23 +3840,23 @@ libcrux_ml_kem_ind_cpa_sample_ring_element_cbd_61(uint8_t prf_input[33U],
     domain_separator = (uint32_t)domain_separator + 1U;
   }
   uint8_t prf_outputs[3U][128U];
-  libcrux_ml_kem_hash_functions_avx2_PRFxN_a9_16(prf_inputs, prf_outputs);
+  libcrux_ml_kem_hash_functions_avx2_PRFxN_a9_41(prf_inputs, prf_outputs);
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
     size_t i0 = i;
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____1 =
-        libcrux_ml_kem_sampling_sample_from_binomial_distribution_af(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____1 =
+        libcrux_ml_kem_sampling_sample_from_binomial_distribution_89(
             Eurydice_array_to_slice((size_t)128U, prf_outputs[i0], uint8_t));
     error_1[i0] = uu____1;
   }
   /* Passing arrays by value in Rust generates a copy in C */
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 copy_of_error_1[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 copy_of_error_1[3U];
   memcpy(
       copy_of_error_1, error_1,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
-  tuple_b00 lit;
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
+  tuple_230 lit;
   memcpy(
       lit.fst, copy_of_error_1,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   lit.snd = domain_separator;
   return lit;
 }
@@ -3401,7 +3867,7 @@ with const generics
 - LEN= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRF_d10(
+static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRF_a6(
     Eurydice_slice input, uint8_t ret[128U]) {
   uint8_t digest[128U] = {0U};
   libcrux_sha3_portable_shake256(
@@ -3420,9 +3886,9 @@ with const generics
 - LEN= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRF_a9_420(
+static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRF_a9_410(
     Eurydice_slice input, uint8_t ret[128U]) {
-  libcrux_ml_kem_hash_functions_avx2_PRF_d10(input, ret);
+  libcrux_ml_kem_hash_functions_avx2_PRF_a6(input, ret);
 }
 
 /**
@@ -3432,9 +3898,9 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_matrix_compute_vector_u_closure_02(size_t _i) {
-  return libcrux_ml_kem_polynomial_ZERO_d6_7d();
+static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_matrix_compute_vector_u_closure_ab(size_t _i) {
+  return libcrux_ml_kem_polynomial_ZERO_d6_79();
 }
 
 /**
@@ -3449,11 +3915,15 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_error_reduce_d6_b5(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *self,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *error) {
+static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_error_reduce_d6_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *error) {
   for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
+       i <
+       /* The semicolon and parentheses at the end of loop are a workaround for
+          the following bug https://github.com/hacspec/hax/issues/720 */
+       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
+       i++) {
     size_t j = i;
     __m256i coefficient_normal_form =
         libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_ea(
@@ -3474,44 +3944,44 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_matrix_compute_vector_u_fe(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 (*a_as_ntt)[3U],
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *r_as_ntt,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *error_1,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 ret[3U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 result[3U];
+static KRML_MUSTINLINE void libcrux_ml_kem_matrix_compute_vector_u_ab(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 (*a_as_ntt)[3U],
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *r_as_ntt,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *error_1,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 ret[3U]) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 result[3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    result[i] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
+    result[i] = libcrux_ml_kem_polynomial_ZERO_d6_79();
   }
   for (size_t i0 = (size_t)0U;
        i0 < Eurydice_slice_len(
                 Eurydice_array_to_slice(
                     (size_t)3U, a_as_ntt,
-                    libcrux_ml_kem_polynomial_PolynomialRingElement_d2[3U]),
-                libcrux_ml_kem_polynomial_PolynomialRingElement_d2[3U]);
+                    libcrux_ml_kem_polynomial_PolynomialRingElement_f6[3U]),
+                libcrux_ml_kem_polynomial_PolynomialRingElement_f6[3U]);
        i0++) {
     size_t i1 = i0;
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *row = a_as_ntt[i1];
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *row = a_as_ntt[i1];
     for (size_t i = (size_t)0U;
          i < Eurydice_slice_len(
                  Eurydice_array_to_slice(
                      (size_t)3U, row,
-                     libcrux_ml_kem_polynomial_PolynomialRingElement_d2),
-                 libcrux_ml_kem_polynomial_PolynomialRingElement_d2);
+                     libcrux_ml_kem_polynomial_PolynomialRingElement_f6),
+                 libcrux_ml_kem_polynomial_PolynomialRingElement_f6);
          i++) {
       size_t j = i;
-      libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *a_element = &row[j];
-      libcrux_ml_kem_polynomial_PolynomialRingElement_d2 product =
-          libcrux_ml_kem_polynomial_ntt_multiply_d6_f1(a_element, &r_as_ntt[j]);
-      libcrux_ml_kem_polynomial_add_to_ring_element_d6_b8(&result[i1],
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *a_element = &row[j];
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f6 product =
+          libcrux_ml_kem_polynomial_ntt_multiply_d6_79(a_element, &r_as_ntt[j]);
+      libcrux_ml_kem_polynomial_add_to_ring_element_d6_ab(&result[i1],
                                                           &product);
     }
-    libcrux_ml_kem_invert_ntt_invert_ntt_montgomery_44(&result[i1]);
-    libcrux_ml_kem_polynomial_add_error_reduce_d6_b5(&result[i1], &error_1[i1]);
+    libcrux_ml_kem_invert_ntt_invert_ntt_montgomery_ab(&result[i1]);
+    libcrux_ml_kem_polynomial_add_error_reduce_d6_79(&result[i1], &error_1[i1]);
   }
   memcpy(
       ret, result,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
 }
 
 /**
@@ -3521,7 +3991,7 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline __m256i libcrux_ml_kem_vector_traits_decompress_1_17(__m256i v) {
+static inline __m256i libcrux_ml_kem_vector_traits_decompress_1_79(__m256i v) {
   return libcrux_ml_kem_vector_avx2_bitwise_and_with_constant_ea(
       libcrux_ml_kem_vector_avx2_sub_ea(libcrux_ml_kem_vector_avx2_ZERO_ea(),
                                         &v),
@@ -3535,11 +4005,11 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_serialize_deserialize_then_decompress_message_df(
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_serialize_deserialize_then_decompress_message_79(
     uint8_t serialized[32U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re =
-      libcrux_ml_kem_polynomial_ZERO_d6_7d();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re =
+      libcrux_ml_kem_polynomial_ZERO_d6_79();
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t i0 = i;
     __m256i coefficient_compressed =
@@ -3547,7 +4017,7 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_message_df(
             Eurydice_array_to_subslice2(serialized, (size_t)2U * i0,
                                         (size_t)2U * i0 + (size_t)2U, uint8_t));
     re.coefficients[i0] =
-        libcrux_ml_kem_vector_traits_decompress_1_17(coefficient_compressed);
+        libcrux_ml_kem_vector_traits_decompress_1_79(coefficient_compressed);
   }
   return re;
 }
@@ -3564,19 +4034,37 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_polynomial_add_message_error_reduce_d6_77(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *self,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *message,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 result) {
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_polynomial_add_message_error_reduce_d6_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *message,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 result) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     __m256i coefficient_normal_form =
         libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_ea(
             result.coefficients[i0], (int16_t)1441);
-    __m256i tmp = libcrux_ml_kem_vector_avx2_add_ea(self->coefficients[i0],
-                                                    &message->coefficients[i0]);
+    __m256i tmp = libcrux_ml_kem_vector_avx2_add_ea(
+        self->coefficients
+            [/* FIXME: Eurydice crashes with: Warning 11: in top-level
+                declaration
+                libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.add_message_error_reduce__libcrux_ml_kem_libcrux_polynomials_PortableVector:
+                this expression is not Low*; the enclosing function cannot be
+                translated into C*: let mutable ret(Mark.Present,(Mark.AtMost
+                2), ): int16_t[16size_t] = $any in
+                libcrux_ml_kem.libcrux_polynomials.{(libcrux_ml_kem::libcrux_polynomials::libcrux_traits::Operations␣for␣libcrux_ml_kem::libcrux_polynomials::PortableVector)}.add
+                ((@9:
+                libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t]*)[0uint32_t]:int16_t[16size_t][16size_t])[@4]
+                &(((@8:
+                libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t]*)[0uint32_t]:libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t])[@4])
+                @0; @0 Warning 11 is fatal, exiting. On the following code:
+                ```rust result.coefficients[i] =
+                Vector::barrett_reduce(Vector::add( coefficient_normal_form,
+                &Vector::add(self.coefficients[i], &message.coefficients[i]),
+                )); ``` */
+             i0],
+        &message->coefficients[i0]);
     __m256i tmp0 =
         libcrux_ml_kem_vector_avx2_add_ea(coefficient_normal_form, &tmp);
     result.coefficients[i0] =
@@ -3595,23 +4083,23 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_matrix_compute_ring_element_v_c1(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *t_as_ntt,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *r_as_ntt,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *error_2,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *message) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 result =
-      libcrux_ml_kem_polynomial_ZERO_d6_7d();
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_matrix_compute_ring_element_v_ab(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *t_as_ntt,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *r_as_ntt,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *error_2,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *message) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 result =
+      libcrux_ml_kem_polynomial_ZERO_d6_79();
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
     size_t i0 = i;
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 product =
-        libcrux_ml_kem_polynomial_ntt_multiply_d6_f1(&t_as_ntt[i0],
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 product =
+        libcrux_ml_kem_polynomial_ntt_multiply_d6_79(&t_as_ntt[i0],
                                                      &r_as_ntt[i0]);
-    libcrux_ml_kem_polynomial_add_to_ring_element_d6_b8(&result, &product);
+    libcrux_ml_kem_polynomial_add_to_ring_element_d6_ab(&result, &product);
   }
-  libcrux_ml_kem_invert_ntt_invert_ntt_montgomery_44(&result);
-  result = libcrux_ml_kem_polynomial_add_message_error_reduce_d6_77(
+  libcrux_ml_kem_invert_ntt_invert_ntt_montgomery_ab(&result);
+  result = libcrux_ml_kem_polynomial_add_message_error_reduce_d6_79(
       error_2, message, result);
   return result;
 }
@@ -3624,7 +4112,7 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc(
+libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_ef(
     __m256i vector) {
   __m256i field_modulus_halved = libcrux_intrinsics_avx2_mm256_set1_epi32(
       ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
@@ -3634,9 +4122,23 @@ libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc(
   __m256i coefficient_bits_mask = libcrux_intrinsics_avx2_mm256_set1_epi32(
       ((int32_t)1 << (uint32_t)(int32_t)10) - (int32_t)1);
   __m128i coefficients_low =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(/* ---- Compress the first 8
+                                                       coefficients ---- Take
+                                                       the bottom 128 bits, i.e.
+                                                       the first 8 16-bit
+                                                       coefficients */
+                                                    vector);
   __m256i coefficients_low0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
+      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(/* If: coefficients_low[0:15]
+                                                      = A
+                                                      coefficients_low[16:31] =
+                                                      B coefficients_low[32:63]
+                                                      = C and so on ... after
+                                                      this step:
+                                                      coefficients_low[0:31] = A
+                                                      coefficients_low[32:63] =
+                                                      B and so on ... */
+                                                   coefficients_low);
   __m256i compressed_low = libcrux_intrinsics_avx2_mm256_slli_epi32(
       (int32_t)10, coefficients_low0, __m256i);
   __m256i compressed_low0 = libcrux_intrinsics_avx2_mm256_add_epi32(
@@ -3645,11 +4147,17 @@ libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc(
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
                                                             compression_factor);
   __m256i compressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)3, compressed_low1, __m256i);
+      (int32_t)3,
+      /* Due to the mulhi_mm256_epi32 we've already shifted right by 32 bits, we
+         just need to shift right by 35 - 32 = 3 more. */
+      compressed_low1, __m256i);
   __m256i compressed_low3 = libcrux_intrinsics_avx2_mm256_and_si256(
       compressed_low2, coefficient_bits_mask);
   __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, vector, __m128i);
+      (int32_t)1,
+      /* ---- Compress the next 8 coefficients ---- Take the upper 128 bits,
+         i.e. the next 8 16-bit coefficients */
+      vector, __m128i);
   __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
   __m256i compressed_high = libcrux_intrinsics_avx2_mm256_slli_epi32(
@@ -3663,10 +4171,23 @@ libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc(
       (int32_t)3, compressed_high1, __m256i);
   __m256i compressed_high3 = libcrux_intrinsics_avx2_mm256_and_si256(
       compressed_high2, coefficient_bits_mask);
-  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
-      compressed_low3, compressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
-                                                         compressed, __m256i);
+  __m256i compressed =
+      libcrux_intrinsics_avx2_mm256_packs_epi32(/* Combining them, and grouping
+                                                   each set of 64-bits, this
+                                                   function results in: 0: low
+                                                   low low low | 1: high high
+                                                   high high | 2: low low low
+                                                   low | 3: high high high high
+                                                   where each |low| and |high|
+                                                   is a 16-bit element */
+                                                compressed_low3,
+                                                compressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
+      (int32_t)216,
+      /* To be in the right order, we need to move the |low|s above in position
+         2 to position 1 and the |high|s in position 1 to position 2, and leave
+         the rest unchanged. */
+      compressed, __m256i);
 }
 
 /**
@@ -3679,9 +4200,9 @@ with const generics
 - COEFFICIENT_BITS= 10
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline __m256i libcrux_ml_kem_vector_avx2_compress_ea_66(
+static inline __m256i libcrux_ml_kem_vector_avx2_compress_ea_ef(
     __m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc(
+  return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_ef(
       vector);
 }
 
@@ -3693,14 +4214,14 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_compress_then_serialize_10_ba(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re, uint8_t ret[320U]) {
+libcrux_ml_kem_serialize_compress_then_serialize_10_0e(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re, uint8_t ret[320U]) {
   uint8_t serialized[320U] = {0U};
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
-    __m256i coefficient = libcrux_ml_kem_vector_avx2_compress_ea_66(
-        libcrux_ml_kem_vector_traits_to_unsigned_representative_c0(
+    __m256i coefficient = libcrux_ml_kem_vector_avx2_compress_ea_ef(
+        libcrux_ml_kem_vector_traits_to_unsigned_representative_79(
             re->coefficients[i0]));
     uint8_t bytes[20U];
     libcrux_ml_kem_vector_avx2_serialize_10_ea(coefficient, bytes);
@@ -3720,7 +4241,7 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc0(
+libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_c4(
     __m256i vector) {
   __m256i field_modulus_halved = libcrux_intrinsics_avx2_mm256_set1_epi32(
       ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
@@ -3730,9 +4251,23 @@ libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc0(
   __m256i coefficient_bits_mask = libcrux_intrinsics_avx2_mm256_set1_epi32(
       ((int32_t)1 << (uint32_t)(int32_t)11) - (int32_t)1);
   __m128i coefficients_low =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(/* ---- Compress the first 8
+                                                       coefficients ---- Take
+                                                       the bottom 128 bits, i.e.
+                                                       the first 8 16-bit
+                                                       coefficients */
+                                                    vector);
   __m256i coefficients_low0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
+      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(/* If: coefficients_low[0:15]
+                                                      = A
+                                                      coefficients_low[16:31] =
+                                                      B coefficients_low[32:63]
+                                                      = C and so on ... after
+                                                      this step:
+                                                      coefficients_low[0:31] = A
+                                                      coefficients_low[32:63] =
+                                                      B and so on ... */
+                                                   coefficients_low);
   __m256i compressed_low = libcrux_intrinsics_avx2_mm256_slli_epi32(
       (int32_t)11, coefficients_low0, __m256i);
   __m256i compressed_low0 = libcrux_intrinsics_avx2_mm256_add_epi32(
@@ -3741,11 +4276,17 @@ libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc0(
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
                                                             compression_factor);
   __m256i compressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)3, compressed_low1, __m256i);
+      (int32_t)3,
+      /* Due to the mulhi_mm256_epi32 we've already shifted right by 32 bits, we
+         just need to shift right by 35 - 32 = 3 more. */
+      compressed_low1, __m256i);
   __m256i compressed_low3 = libcrux_intrinsics_avx2_mm256_and_si256(
       compressed_low2, coefficient_bits_mask);
   __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, vector, __m128i);
+      (int32_t)1,
+      /* ---- Compress the next 8 coefficients ---- Take the upper 128 bits,
+         i.e. the next 8 16-bit coefficients */
+      vector, __m128i);
   __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
   __m256i compressed_high = libcrux_intrinsics_avx2_mm256_slli_epi32(
@@ -3759,10 +4300,23 @@ libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc0(
       (int32_t)3, compressed_high1, __m256i);
   __m256i compressed_high3 = libcrux_intrinsics_avx2_mm256_and_si256(
       compressed_high2, coefficient_bits_mask);
-  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
-      compressed_low3, compressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
-                                                         compressed, __m256i);
+  __m256i compressed =
+      libcrux_intrinsics_avx2_mm256_packs_epi32(/* Combining them, and grouping
+                                                   each set of 64-bits, this
+                                                   function results in: 0: low
+                                                   low low low | 1: high high
+                                                   high high | 2: low low low
+                                                   low | 3: high high high high
+                                                   where each |low| and |high|
+                                                   is a 16-bit element */
+                                                compressed_low3,
+                                                compressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
+      (int32_t)216,
+      /* To be in the right order, we need to move the |low|s above in position
+         2 to position 1 and the |high|s in position 1 to position 2, and leave
+         the rest unchanged. */
+      compressed, __m256i);
 }
 
 /**
@@ -3775,9 +4329,9 @@ with const generics
 - COEFFICIENT_BITS= 11
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline __m256i libcrux_ml_kem_vector_avx2_compress_ea_660(
+static inline __m256i libcrux_ml_kem_vector_avx2_compress_ea_c4(
     __m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc0(
+  return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_c4(
       vector);
 }
 
@@ -3789,14 +4343,14 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_compress_then_serialize_11_ce(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re, uint8_t ret[320U]) {
+libcrux_ml_kem_serialize_compress_then_serialize_11_0e(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re, uint8_t ret[320U]) {
   uint8_t serialized[320U] = {0U};
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
-    __m256i coefficient = libcrux_ml_kem_vector_avx2_compress_ea_660(
-        libcrux_ml_kem_vector_traits_to_unsigned_representative_c0(
+    __m256i coefficient = libcrux_ml_kem_vector_avx2_compress_ea_c4(
+        libcrux_ml_kem_vector_traits_to_unsigned_representative_79(
             re->coefficients[i0]));
     uint8_t bytes[22U];
     libcrux_ml_kem_vector_avx2_serialize_11_ea(coefficient, bytes);
@@ -3817,10 +4371,10 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_compress_then_serialize_ring_element_u_89(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re, uint8_t ret[320U]) {
+libcrux_ml_kem_serialize_compress_then_serialize_ring_element_u_a4(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re, uint8_t ret[320U]) {
   uint8_t uu____0[320U];
-  libcrux_ml_kem_serialize_compress_then_serialize_10_ba(re, uu____0);
+  libcrux_ml_kem_serialize_compress_then_serialize_10_0e(re, uu____0);
   memcpy(ret, uu____0, (size_t)320U * sizeof(uint8_t));
 }
 
@@ -3837,23 +4391,28 @@ with const generics
 - BLOCK_LEN= 320
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cpa_compress_then_serialize_u_e1(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 input[3U],
+static inline void libcrux_ml_kem_ind_cpa_compress_then_serialize_u_8c(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 input[3U],
     Eurydice_slice out) {
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(
                Eurydice_array_to_slice(
                    (size_t)3U, input,
-                   libcrux_ml_kem_polynomial_PolynomialRingElement_d2),
-               libcrux_ml_kem_polynomial_PolynomialRingElement_d2);
+                   libcrux_ml_kem_polynomial_PolynomialRingElement_f6),
+               libcrux_ml_kem_polynomial_PolynomialRingElement_f6);
        i++) {
     size_t i0 = i;
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re = input[i0];
-    Eurydice_slice uu____0 = Eurydice_slice_subslice2(
-        out, i0 * ((size_t)960U / (size_t)3U),
-        (i0 + (size_t)1U) * ((size_t)960U / (size_t)3U), uint8_t);
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re = input[i0];
+    Eurydice_slice uu____0 =
+        Eurydice_slice_subslice2(/* The semicolon and parentheses at the end of
+                                    loop are a workaround for the following bug
+                                    https://github.com/hacspec/hax/issues/720 */
+                                 out, i0 * ((size_t)960U / (size_t)3U),
+                                 (i0 + (size_t)1U) *
+                                     ((size_t)960U / (size_t)3U),
+                                 uint8_t);
     uint8_t ret[320U];
-    libcrux_ml_kem_serialize_compress_then_serialize_ring_element_u_89(&re,
+    libcrux_ml_kem_serialize_compress_then_serialize_ring_element_u_a4(&re,
                                                                        ret);
     Eurydice_slice_copy(
         uu____0, Eurydice_array_to_slice((size_t)320U, ret, uint8_t), uint8_t);
@@ -3868,7 +4427,7 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc1(
+libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_d1(
     __m256i vector) {
   __m256i field_modulus_halved = libcrux_intrinsics_avx2_mm256_set1_epi32(
       ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
@@ -3878,9 +4437,23 @@ libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc1(
   __m256i coefficient_bits_mask = libcrux_intrinsics_avx2_mm256_set1_epi32(
       ((int32_t)1 << (uint32_t)(int32_t)4) - (int32_t)1);
   __m128i coefficients_low =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(/* ---- Compress the first 8
+                                                       coefficients ---- Take
+                                                       the bottom 128 bits, i.e.
+                                                       the first 8 16-bit
+                                                       coefficients */
+                                                    vector);
   __m256i coefficients_low0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
+      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(/* If: coefficients_low[0:15]
+                                                      = A
+                                                      coefficients_low[16:31] =
+                                                      B coefficients_low[32:63]
+                                                      = C and so on ... after
+                                                      this step:
+                                                      coefficients_low[0:31] = A
+                                                      coefficients_low[32:63] =
+                                                      B and so on ... */
+                                                   coefficients_low);
   __m256i compressed_low = libcrux_intrinsics_avx2_mm256_slli_epi32(
       (int32_t)4, coefficients_low0, __m256i);
   __m256i compressed_low0 = libcrux_intrinsics_avx2_mm256_add_epi32(
@@ -3889,11 +4462,17 @@ libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc1(
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
                                                             compression_factor);
   __m256i compressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)3, compressed_low1, __m256i);
+      (int32_t)3,
+      /* Due to the mulhi_mm256_epi32 we've already shifted right by 32 bits, we
+         just need to shift right by 35 - 32 = 3 more. */
+      compressed_low1, __m256i);
   __m256i compressed_low3 = libcrux_intrinsics_avx2_mm256_and_si256(
       compressed_low2, coefficient_bits_mask);
   __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, vector, __m128i);
+      (int32_t)1,
+      /* ---- Compress the next 8 coefficients ---- Take the upper 128 bits,
+         i.e. the next 8 16-bit coefficients */
+      vector, __m128i);
   __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
   __m256i compressed_high = libcrux_intrinsics_avx2_mm256_slli_epi32(
@@ -3907,10 +4486,23 @@ libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc1(
       (int32_t)3, compressed_high1, __m256i);
   __m256i compressed_high3 = libcrux_intrinsics_avx2_mm256_and_si256(
       compressed_high2, coefficient_bits_mask);
-  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
-      compressed_low3, compressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
-                                                         compressed, __m256i);
+  __m256i compressed =
+      libcrux_intrinsics_avx2_mm256_packs_epi32(/* Combining them, and grouping
+                                                   each set of 64-bits, this
+                                                   function results in: 0: low
+                                                   low low low | 1: high high
+                                                   high high | 2: low low low
+                                                   low | 3: high high high high
+                                                   where each |low| and |high|
+                                                   is a 16-bit element */
+                                                compressed_low3,
+                                                compressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
+      (int32_t)216,
+      /* To be in the right order, we need to move the |low|s above in position
+         2 to position 1 and the |high|s in position 1 to position 2, and leave
+         the rest unchanged. */
+      compressed, __m256i);
 }
 
 /**
@@ -3923,9 +4515,9 @@ with const generics
 - COEFFICIENT_BITS= 4
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline __m256i libcrux_ml_kem_vector_avx2_compress_ea_661(
+static inline __m256i libcrux_ml_kem_vector_avx2_compress_ea_d1(
     __m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc1(
+  return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_d1(
       vector);
 }
 
@@ -3937,14 +4529,18 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_compress_then_serialize_4_1e(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re,
+libcrux_ml_kem_serialize_compress_then_serialize_4_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re,
     Eurydice_slice serialized) {
   for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
+       i <
+       /* The semicolon and parentheses at the end of loop are a workaround for
+          the following bug https://github.com/hacspec/hax/issues/720 */
+       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
+       i++) {
     size_t i0 = i;
-    __m256i coefficient = libcrux_ml_kem_vector_avx2_compress_ea_661(
-        libcrux_ml_kem_vector_traits_to_unsigned_representative_c0(
+    __m256i coefficient = libcrux_ml_kem_vector_avx2_compress_ea_d1(
+        libcrux_ml_kem_vector_traits_to_unsigned_representative_79(
             re.coefficients[i0]));
     uint8_t bytes[8U];
     libcrux_ml_kem_vector_avx2_serialize_4_ea(coefficient, bytes);
@@ -3963,7 +4559,7 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc2(
+libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_f4(
     __m256i vector) {
   __m256i field_modulus_halved = libcrux_intrinsics_avx2_mm256_set1_epi32(
       ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
@@ -3973,9 +4569,23 @@ libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc2(
   __m256i coefficient_bits_mask = libcrux_intrinsics_avx2_mm256_set1_epi32(
       ((int32_t)1 << (uint32_t)(int32_t)5) - (int32_t)1);
   __m128i coefficients_low =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(/* ---- Compress the first 8
+                                                       coefficients ---- Take
+                                                       the bottom 128 bits, i.e.
+                                                       the first 8 16-bit
+                                                       coefficients */
+                                                    vector);
   __m256i coefficients_low0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
+      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(/* If: coefficients_low[0:15]
+                                                      = A
+                                                      coefficients_low[16:31] =
+                                                      B coefficients_low[32:63]
+                                                      = C and so on ... after
+                                                      this step:
+                                                      coefficients_low[0:31] = A
+                                                      coefficients_low[32:63] =
+                                                      B and so on ... */
+                                                   coefficients_low);
   __m256i compressed_low = libcrux_intrinsics_avx2_mm256_slli_epi32(
       (int32_t)5, coefficients_low0, __m256i);
   __m256i compressed_low0 = libcrux_intrinsics_avx2_mm256_add_epi32(
@@ -3984,11 +4594,17 @@ libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc2(
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
                                                             compression_factor);
   __m256i compressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)3, compressed_low1, __m256i);
+      (int32_t)3,
+      /* Due to the mulhi_mm256_epi32 we've already shifted right by 32 bits, we
+         just need to shift right by 35 - 32 = 3 more. */
+      compressed_low1, __m256i);
   __m256i compressed_low3 = libcrux_intrinsics_avx2_mm256_and_si256(
       compressed_low2, coefficient_bits_mask);
   __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, vector, __m128i);
+      (int32_t)1,
+      /* ---- Compress the next 8 coefficients ---- Take the upper 128 bits,
+         i.e. the next 8 16-bit coefficients */
+      vector, __m128i);
   __m256i coefficients_high0 =
       libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
   __m256i compressed_high = libcrux_intrinsics_avx2_mm256_slli_epi32(
@@ -4002,10 +4618,23 @@ libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc2(
       (int32_t)3, compressed_high1, __m256i);
   __m256i compressed_high3 = libcrux_intrinsics_avx2_mm256_and_si256(
       compressed_high2, coefficient_bits_mask);
-  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
-      compressed_low3, compressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
-                                                         compressed, __m256i);
+  __m256i compressed =
+      libcrux_intrinsics_avx2_mm256_packs_epi32(/* Combining them, and grouping
+                                                   each set of 64-bits, this
+                                                   function results in: 0: low
+                                                   low low low | 1: high high
+                                                   high high | 2: low low low
+                                                   low | 3: high high high high
+                                                   where each |low| and |high|
+                                                   is a 16-bit element */
+                                                compressed_low3,
+                                                compressed_high3);
+  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64(
+      (int32_t)216,
+      /* To be in the right order, we need to move the |low|s above in position
+         2 to position 1 and the |high|s in position 1 to position 2, and leave
+         the rest unchanged. */
+      compressed, __m256i);
 }
 
 /**
@@ -4018,9 +4647,9 @@ with const generics
 - COEFFICIENT_BITS= 5
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline __m256i libcrux_ml_kem_vector_avx2_compress_ea_662(
+static inline __m256i libcrux_ml_kem_vector_avx2_compress_ea_f4(
     __m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_cc2(
+  return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_f4(
       vector);
 }
 
@@ -4032,14 +4661,18 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_compress_then_serialize_5_65(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re,
+libcrux_ml_kem_serialize_compress_then_serialize_5_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re,
     Eurydice_slice serialized) {
   for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
+       i <
+       /* The semicolon and parentheses at the end of loop are a workaround for
+          the following bug https://github.com/hacspec/hax/issues/720 */
+       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
+       i++) {
     size_t i0 = i;
-    __m256i coefficients = libcrux_ml_kem_vector_avx2_compress_ea_662(
-        libcrux_ml_kem_vector_traits_to_unsigned_representative_c0(
+    __m256i coefficients = libcrux_ml_kem_vector_avx2_compress_ea_f4(
+        libcrux_ml_kem_vector_traits_to_unsigned_representative_79(
             re.coefficients[i0]));
     uint8_t bytes[10U];
     libcrux_ml_kem_vector_avx2_serialize_5_ea(coefficients, bytes);
@@ -4059,9 +4692,9 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_compress_then_serialize_ring_element_v_e0(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re, Eurydice_slice out) {
-  libcrux_ml_kem_serialize_compress_then_serialize_4_1e(re, out);
+libcrux_ml_kem_serialize_compress_then_serialize_ring_element_v_78(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re, Eurydice_slice out) {
+  libcrux_ml_kem_serialize_compress_then_serialize_4_79(re, out);
 }
 
 /**
@@ -4123,60 +4756,68 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cpa_encrypt_unpacked_e3(
-    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 *public_key,
+static inline void libcrux_ml_kem_ind_cpa_encrypt_unpacked_74(
+    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 *public_key,
     uint8_t message[32U], Eurydice_slice randomness, uint8_t ret[1088U]) {
   uint8_t prf_input[33U];
-  libcrux_ml_kem_utils_into_padded_array_422(randomness, prf_input);
+  libcrux_ml_kem_utils_into_padded_array_c8(/* for i from 0 to k−1 do r[i] :=
+                                               CBD{η1}(PRF(r, N)) N := N + 1 end
+                                               for rˆ := NTT(r) */
+                                            randomness, prf_input);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input0[33U];
   memcpy(copy_of_prf_input0, prf_input, (size_t)33U * sizeof(uint8_t));
-  tuple_b00 uu____1 = libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_out_7f(
+  tuple_230 uu____1 = libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_out_b4(
       copy_of_prf_input0, 0U);
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 r_as_ntt[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 r_as_ntt[3U];
   memcpy(
       r_as_ntt, uu____1.fst,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   uint8_t domain_separator0 = uu____1.snd;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input[33U];
+  /* for i from 0 to k−1 do e1[i] := CBD_{η2}(PRF(r,N)) N := N + 1 end for */
   memcpy(copy_of_prf_input, prf_input, (size_t)33U * sizeof(uint8_t));
-  tuple_b00 uu____3 = libcrux_ml_kem_ind_cpa_sample_ring_element_cbd_61(
+  tuple_230 uu____3 = libcrux_ml_kem_ind_cpa_sample_ring_element_cbd_b4(
       copy_of_prf_input, domain_separator0);
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 error_1[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 error_1[3U];
   memcpy(
       error_1, uu____3.fst,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   uint8_t domain_separator = uu____3.snd;
-  prf_input[32U] = domain_separator;
+  prf_input[32U] = /* e_2 := CBD{η2}(PRF(r, N)) */ domain_separator;
   uint8_t prf_output[128U];
-  libcrux_ml_kem_hash_functions_avx2_PRF_a9_420(
+  libcrux_ml_kem_hash_functions_avx2_PRF_a9_410(
       Eurydice_array_to_slice((size_t)33U, prf_input, uint8_t), prf_output);
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 error_2 =
-      libcrux_ml_kem_sampling_sample_from_binomial_distribution_af(
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 error_2 =
+      libcrux_ml_kem_sampling_sample_from_binomial_distribution_89(
           Eurydice_array_to_slice((size_t)128U, prf_output, uint8_t));
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 u[3U];
-  libcrux_ml_kem_matrix_compute_vector_u_fe(public_key->A, r_as_ntt, error_1,
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 u[3U];
+  libcrux_ml_kem_matrix_compute_vector_u_ab(/* u := NTT^{-1}(AˆT ◦ rˆ) + e_1 */
+                                            public_key->A, r_as_ntt, error_1,
                                             u);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_message[32U];
+  /* v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1) */
   memcpy(copy_of_message, message, (size_t)32U * sizeof(uint8_t));
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 message_as_ring_element =
-      libcrux_ml_kem_serialize_deserialize_then_decompress_message_df(
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 message_as_ring_element =
+      libcrux_ml_kem_serialize_deserialize_then_decompress_message_79(
           copy_of_message);
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 v =
-      libcrux_ml_kem_matrix_compute_ring_element_v_c1(
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 v =
+      libcrux_ml_kem_matrix_compute_ring_element_v_ab(
           public_key->t_as_ntt, r_as_ntt, &error_2, &message_as_ring_element);
   uint8_t ciphertext[1088U] = {0U};
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____5[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____5[3U];
+  /* c_1 := Encode_{du}(Compress_q(u,d_u)) */
   memcpy(
       uu____5, u,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
-  libcrux_ml_kem_ind_cpa_compress_then_serialize_u_e1(
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
+  libcrux_ml_kem_ind_cpa_compress_then_serialize_u_8c(
       uu____5, Eurydice_array_to_subslice2(ciphertext, (size_t)0U, (size_t)960U,
                                            uint8_t));
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____6 = v;
-  libcrux_ml_kem_serialize_compress_then_serialize_ring_element_v_e0(
+  /* c_2 := Encode_{dv}(Compress_q(v,d_v)) */
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____6 = v;
+  libcrux_ml_kem_serialize_compress_then_serialize_ring_element_v_78(
       uu____6, Eurydice_array_to_subslice_from((size_t)1088U, ciphertext,
                                                (size_t)960U, uint8_t, size_t));
   memcpy(ret, ciphertext, (size_t)1088U * sizeof(uint8_t));
@@ -4200,29 +4841,33 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cpa_encrypt_3b(Eurydice_slice public_key,
+static inline void libcrux_ml_kem_ind_cpa_encrypt_74(Eurydice_slice public_key,
                                                      uint8_t message[32U],
                                                      Eurydice_slice randomness,
                                                      uint8_t ret[1088U]) {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0
-      unpacked_public_key = libcrux_ml_kem_ind_cpa_unpacked_default_8d_80();
-  libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_75(
-      Eurydice_slice_subslice_to(public_key, (size_t)1152U, uint8_t, size_t),
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63
+      unpacked_public_key = libcrux_ml_kem_ind_cpa_unpacked_default_8d_ab();
+  libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_98(
+      Eurydice_slice_subslice_to(/* tˆ := Decode_12(pk) */
+                                 public_key, (size_t)1152U, uint8_t, size_t),
       unpacked_public_key.t_as_ntt);
   Eurydice_slice seed =
-      Eurydice_slice_subslice_from(public_key, (size_t)1152U, uint8_t, size_t);
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2(*uu____0)[3U] =
+      Eurydice_slice_subslice_from(/* ρ := pk + 12·k·n / 8 for i from 0 to k−1
+                                      do for j from 0 to k − 1 do AˆT[i][j] :=
+                                      Parse(XOF(ρ, i, j)) end for end for */
+                                   public_key, (size_t)1152U, uint8_t, size_t);
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6(*uu____0)[3U] =
       unpacked_public_key.A;
   uint8_t ret0[34U];
-  libcrux_ml_kem_utils_into_padded_array_421(seed, ret0);
-  libcrux_ml_kem_matrix_sample_matrix_A_34(uu____0, ret0, false);
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 *uu____1 =
+  libcrux_ml_kem_utils_into_padded_array_b6(seed, ret0);
+  libcrux_ml_kem_matrix_sample_matrix_A_6c(uu____0, ret0, false);
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 *uu____1 =
       &unpacked_public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_message[32U];
   memcpy(copy_of_message, message, (size_t)32U * sizeof(uint8_t));
   uint8_t ret1[1088U];
-  libcrux_ml_kem_ind_cpa_encrypt_unpacked_e3(uu____1, copy_of_message,
+  libcrux_ml_kem_ind_cpa_encrypt_unpacked_74(uu____1, copy_of_message,
                                              randomness, ret1);
   memcpy(ret, ret1, (size_t)1088U * sizeof(uint8_t));
 }
@@ -4239,7 +4884,7 @@ with const generics
 - CIPHERTEXT_SIZE= 1088
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_variant_kdf_d8_e9(
+static KRML_MUSTINLINE void libcrux_ml_kem_variant_kdf_d8_ae(
     Eurydice_slice shared_secret, libcrux_ml_kem_mlkem768_MlKem768Ciphertext *_,
     uint8_t ret[32U]) {
   uint8_t out[32U] = {0U};
@@ -4271,8 +4916,8 @@ with const generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cca_decapsulate_a6(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+static inline void libcrux_ml_kem_ind_cca_decapsulate_a1(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
   Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)2400U, private_key->value, uint8_t),
@@ -4289,10 +4934,10 @@ static inline void libcrux_ml_kem_ind_cca_decapsulate_a6(
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
   Eurydice_slice implicit_rejection_value = uu____2.snd;
   uint8_t decrypted[32U];
-  libcrux_ml_kem_ind_cpa_decrypt_5e(ind_cpa_secret_key, ciphertext->value,
+  libcrux_ml_kem_ind_cpa_decrypt_2f(ind_cpa_secret_key, ciphertext->value,
                                     decrypted);
   uint8_t to_hash0[64U];
-  libcrux_ml_kem_utils_into_padded_array_42(
+  libcrux_ml_kem_utils_into_padded_array_24(
       Eurydice_array_to_slice((size_t)32U, decrypted, uint8_t), to_hash0);
   Eurydice_slice_copy(
       Eurydice_array_to_subslice_from(
@@ -4300,7 +4945,7 @@ static inline void libcrux_ml_kem_ind_cca_decapsulate_a6(
           uint8_t, size_t),
       ind_cpa_public_key_hash, uint8_t);
   uint8_t hashed[64U];
-  libcrux_ml_kem_hash_functions_avx2_G_a9_67(
+  libcrux_ml_kem_hash_functions_avx2_G_a9_e0(
       Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t), hashed);
   Eurydice_slice_uint8_t_x2 uu____3 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t),
@@ -4309,14 +4954,14 @@ static inline void libcrux_ml_kem_ind_cca_decapsulate_a6(
   Eurydice_slice shared_secret0 = uu____3.fst;
   Eurydice_slice pseudorandomness = uu____3.snd;
   uint8_t to_hash[1120U];
-  libcrux_ml_kem_utils_into_padded_array_420(implicit_rejection_value, to_hash);
+  libcrux_ml_kem_utils_into_padded_array_15(implicit_rejection_value, to_hash);
   Eurydice_slice uu____4 = Eurydice_array_to_subslice_from(
       (size_t)1120U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE,
       uint8_t, size_t);
-  Eurydice_slice_copy(uu____4, libcrux_ml_kem_types_as_ref_fd_7b(ciphertext),
+  Eurydice_slice_copy(uu____4, libcrux_ml_kem_types_as_ref_fd_80(ciphertext),
                       uint8_t);
   uint8_t implicit_rejection_shared_secret0[32U];
-  libcrux_ml_kem_hash_functions_avx2_PRF_a9_42(
+  libcrux_ml_kem_hash_functions_avx2_PRF_a9_41(
       Eurydice_array_to_slice((size_t)1120U, to_hash, uint8_t),
       implicit_rejection_shared_secret0);
   Eurydice_slice uu____5 = ind_cpa_public_key;
@@ -4324,18 +4969,18 @@ static inline void libcrux_ml_kem_ind_cca_decapsulate_a6(
   uint8_t copy_of_decrypted[32U];
   memcpy(copy_of_decrypted, decrypted, (size_t)32U * sizeof(uint8_t));
   uint8_t expected_ciphertext[1088U];
-  libcrux_ml_kem_ind_cpa_encrypt_3b(uu____5, copy_of_decrypted,
+  libcrux_ml_kem_ind_cpa_encrypt_74(uu____5, copy_of_decrypted,
                                     pseudorandomness, expected_ciphertext);
   uint8_t implicit_rejection_shared_secret[32U];
-  libcrux_ml_kem_variant_kdf_d8_e9(
+  libcrux_ml_kem_variant_kdf_d8_ae(
       Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret0,
                               uint8_t),
       ciphertext, implicit_rejection_shared_secret);
   uint8_t shared_secret[32U];
-  libcrux_ml_kem_variant_kdf_d8_e9(shared_secret0, ciphertext, shared_secret);
+  libcrux_ml_kem_variant_kdf_d8_ae(shared_secret0, ciphertext, shared_secret);
   uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
-      libcrux_ml_kem_types_as_ref_fd_7b(ciphertext),
+      libcrux_ml_kem_types_as_ref_fd_80(ciphertext),
       Eurydice_array_to_slice((size_t)1088U, expected_ciphertext, uint8_t),
       Eurydice_array_to_slice((size_t)32U, shared_secret, uint8_t),
       Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret,
@@ -4368,10 +5013,10 @@ with const generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cca_instantiations_avx2_decapsulate_99(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+static inline void libcrux_ml_kem_ind_cca_instantiations_avx2_decapsulate_35(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_decapsulate_a6(private_key, ciphertext, ret);
+  libcrux_ml_kem_ind_cca_decapsulate_a1(private_key, ciphertext, ret);
 }
 
 /**
@@ -4383,9 +5028,9 @@ static inline void libcrux_ml_kem_ind_cca_instantiations_avx2_decapsulate_99(
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_mlkem768_avx2_decapsulate(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_instantiations_avx2_decapsulate_99(private_key,
+  libcrux_ml_kem_ind_cca_instantiations_avx2_decapsulate_35(private_key,
                                                             ciphertext, ret);
 }
 
@@ -4400,7 +5045,7 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_variant_entropy_preprocess_d8_96(
+static KRML_MUSTINLINE void libcrux_ml_kem_variant_entropy_preprocess_d8_be(
     Eurydice_slice randomness, uint8_t ret[32U]) {
   uint8_t out[32U] = {0U};
   Eurydice_slice_copy(Eurydice_array_to_slice((size_t)32U, out, uint8_t),
@@ -4418,7 +5063,7 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_H_a9_16(
+static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_H_a9_e0(
     Eurydice_slice input, uint8_t ret[32U]) {
   libcrux_ml_kem_hash_functions_avx2_H(input, ret);
 }
@@ -4443,28 +5088,28 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline tuple_3c libcrux_ml_kem_ind_cca_encapsulate_01(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
+static inline tuple_c2 libcrux_ml_kem_ind_cca_encapsulate_70(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]) {
   uint8_t randomness0[32U];
-  libcrux_ml_kem_variant_entropy_preprocess_d8_96(
+  libcrux_ml_kem_variant_entropy_preprocess_d8_be(
       Eurydice_array_to_slice((size_t)32U, randomness, uint8_t), randomness0);
   uint8_t to_hash[64U];
-  libcrux_ml_kem_utils_into_padded_array_42(
+  libcrux_ml_kem_utils_into_padded_array_24(
       Eurydice_array_to_slice((size_t)32U, randomness0, uint8_t), to_hash);
   Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
       (size_t)64U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
       size_t);
   uint8_t ret[32U];
-  libcrux_ml_kem_hash_functions_avx2_H_a9_16(
+  libcrux_ml_kem_hash_functions_avx2_H_a9_e0(
       Eurydice_array_to_slice((size_t)1184U,
-                              libcrux_ml_kem_types_as_slice_ba_91(public_key),
+                              libcrux_ml_kem_types_as_slice_ba_d0(public_key),
                               uint8_t),
       ret);
   Eurydice_slice_copy(
       uu____0, Eurydice_array_to_slice((size_t)32U, ret, uint8_t), uint8_t);
   uint8_t hashed[64U];
-  libcrux_ml_kem_hash_functions_avx2_G_a9_67(
+  libcrux_ml_kem_hash_functions_avx2_G_a9_e0(
       Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t), hashed);
   Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t),
@@ -4473,27 +5118,27 @@ static inline tuple_3c libcrux_ml_kem_ind_cca_encapsulate_01(
   Eurydice_slice shared_secret = uu____1.fst;
   Eurydice_slice pseudorandomness = uu____1.snd;
   Eurydice_slice uu____2 = Eurydice_array_to_slice(
-      (size_t)1184U, libcrux_ml_kem_types_as_slice_ba_91(public_key), uint8_t);
+      (size_t)1184U, libcrux_ml_kem_types_as_slice_ba_d0(public_key), uint8_t);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness0, (size_t)32U * sizeof(uint8_t));
   uint8_t ciphertext[1088U];
-  libcrux_ml_kem_ind_cpa_encrypt_3b(uu____2, copy_of_randomness,
+  libcrux_ml_kem_ind_cpa_encrypt_74(uu____2, copy_of_randomness,
                                     pseudorandomness, ciphertext);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_ciphertext[1088U];
   memcpy(copy_of_ciphertext, ciphertext, (size_t)1088U * sizeof(uint8_t));
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext ciphertext0 =
-      libcrux_ml_kem_types_from_fc_cd(copy_of_ciphertext);
+      libcrux_ml_kem_types_from_fc_80(copy_of_ciphertext);
   uint8_t shared_secret_array[32U];
-  libcrux_ml_kem_variant_kdf_d8_e9(shared_secret, &ciphertext0,
+  libcrux_ml_kem_variant_kdf_d8_ae(shared_secret, &ciphertext0,
                                    shared_secret_array);
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext uu____5 = ciphertext0;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_shared_secret_array[32U];
   memcpy(copy_of_shared_secret_array, shared_secret_array,
          (size_t)32U * sizeof(uint8_t));
-  tuple_3c lit;
+  tuple_c2 lit;
   lit.fst = uu____5;
   memcpy(lit.snd, copy_of_shared_secret_array, (size_t)32U * sizeof(uint8_t));
   return lit;
@@ -4517,15 +5162,15 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline tuple_3c
-libcrux_ml_kem_ind_cca_instantiations_avx2_encapsulate_57(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
+static inline tuple_c2
+libcrux_ml_kem_ind_cca_instantiations_avx2_encapsulate_cd(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]) {
-  libcrux_ml_kem_types_MlKemPublicKey_15 *uu____0 = public_key;
+  libcrux_ml_kem_types_MlKemPublicKey_30 *uu____0 = public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_encapsulate_01(uu____0, copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_encapsulate_70(uu____0, copy_of_randomness);
 }
 
 /**
@@ -4536,14 +5181,14 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_encapsulate_57(
  bytes of `randomness`.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline tuple_3c libcrux_ml_kem_mlkem768_avx2_encapsulate(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
+static inline tuple_c2 libcrux_ml_kem_mlkem768_avx2_encapsulate(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]) {
-  libcrux_ml_kem_types_MlKemPublicKey_15 *uu____0 = public_key;
+  libcrux_ml_kem_types_MlKemPublicKey_30 *uu____0 = public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_instantiations_avx2_encapsulate_57(
+  return libcrux_ml_kem_ind_cca_instantiations_avx2_encapsulate_cd(
       uu____0, copy_of_randomness);
 }
 
@@ -4559,12 +5204,12 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0
-libcrux_ml_kem_ind_cpa_unpacked_default_1a_19(void) {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0 lit;
-  lit.secret_as_ntt[0U] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
-  lit.secret_as_ntt[1U] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
-  lit.secret_as_ntt[2U] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
+static inline libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63
+libcrux_ml_kem_ind_cpa_unpacked_default_1a_ab(void) {
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63 lit;
+  lit.secret_as_ntt[0U] = libcrux_ml_kem_polynomial_ZERO_d6_79();
+  lit.secret_as_ntt[1U] = libcrux_ml_kem_polynomial_ZERO_d6_79();
+  lit.secret_as_ntt[2U] = libcrux_ml_kem_polynomial_ZERO_d6_79();
   return lit;
 }
 
@@ -4579,7 +5224,7 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_variant_cpa_keygen_seed_d8_e1(
+static KRML_MUSTINLINE void libcrux_ml_kem_variant_cpa_keygen_seed_d8_be(
     Eurydice_slice key_generation_seed, uint8_t ret[64U]) {
   uint8_t seed[33U] = {0U};
   Eurydice_slice_copy(
@@ -4590,7 +5235,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_variant_cpa_keygen_seed_d8_e1(
   seed[LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE] =
       (uint8_t)(size_t)3U;
   uint8_t ret0[64U];
-  libcrux_ml_kem_hash_functions_avx2_G_a9_67(
+  libcrux_ml_kem_hash_functions_avx2_G_a9_e0(
       Eurydice_array_to_slice((size_t)33U, seed, uint8_t), ret0);
   memcpy(ret, ret0, (size_t)64U * sizeof(uint8_t));
 }
@@ -4602,7 +5247,7 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline __m256i libcrux_ml_kem_vector_traits_to_standard_domain_bd0(
+static inline __m256i libcrux_ml_kem_vector_traits_to_standard_domain_79(
     __m256i v) {
   return libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_ea(
       v, LIBCRUX_ML_KEM_VECTOR_TRAITS_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS);
@@ -4621,15 +5266,22 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_polynomial_add_standard_error_reduce_d6_a7(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *self,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *error) {
+libcrux_ml_kem_polynomial_add_standard_error_reduce_d6_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *error) {
   for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
+       i <
+       /* The semicolon and parentheses at the end of loop are a workaround for
+          the following bug https://github.com/hacspec/hax/issues/720 */
+       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
+       i++) {
     size_t j = i;
     __m256i coefficient_normal_form =
-        libcrux_ml_kem_vector_traits_to_standard_domain_bd0(
-            self->coefficients[j]);
+        libcrux_ml_kem_vector_traits_to_standard_domain_79(
+            self->coefficients[/* The coefficients are of the form aR^{-1} mod
+                                  q, which means calling to_montgomery_domain()
+                                  on them should return a mod q. */
+                               j]);
     self->coefficients[j] = libcrux_ml_kem_vector_avx2_barrett_reduce_ea(
         libcrux_ml_kem_vector_avx2_add_ea(coefficient_normal_form,
                                           &error->coefficients[j]));
@@ -4646,40 +5298,42 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_matrix_compute_As_plus_e_a2(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *t_as_ntt,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 (*matrix_A)[3U],
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *s_as_ntt,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *error_as_ntt) {
+static KRML_MUSTINLINE void libcrux_ml_kem_matrix_compute_As_plus_e_ab(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *t_as_ntt,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 (*matrix_A)[3U],
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *s_as_ntt,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *error_as_ntt) {
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(
                Eurydice_array_to_slice(
                    (size_t)3U, matrix_A,
-                   libcrux_ml_kem_polynomial_PolynomialRingElement_d2[3U]),
-               libcrux_ml_kem_polynomial_PolynomialRingElement_d2[3U]);
+                   libcrux_ml_kem_polynomial_PolynomialRingElement_f6[3U]),
+               libcrux_ml_kem_polynomial_PolynomialRingElement_f6[3U]);
        i++) {
     size_t i0 = i;
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *row = matrix_A[i0];
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____0 =
-        libcrux_ml_kem_polynomial_ZERO_d6_7d();
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *row = matrix_A[i0];
+    /* This may be externally provided memory. Ensure that `t_as_ntt` is all 0.
+     */
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____0 =
+        libcrux_ml_kem_polynomial_ZERO_d6_79();
     t_as_ntt[i0] = uu____0;
     for (size_t i1 = (size_t)0U;
          i1 < Eurydice_slice_len(
                   Eurydice_array_to_slice(
                       (size_t)3U, row,
-                      libcrux_ml_kem_polynomial_PolynomialRingElement_d2),
-                  libcrux_ml_kem_polynomial_PolynomialRingElement_d2);
+                      libcrux_ml_kem_polynomial_PolynomialRingElement_f6),
+                  libcrux_ml_kem_polynomial_PolynomialRingElement_f6);
          i1++) {
       size_t j = i1;
-      libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *matrix_element =
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *matrix_element =
           &row[j];
-      libcrux_ml_kem_polynomial_PolynomialRingElement_d2 product =
-          libcrux_ml_kem_polynomial_ntt_multiply_d6_f1(matrix_element,
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f6 product =
+          libcrux_ml_kem_polynomial_ntt_multiply_d6_79(matrix_element,
                                                        &s_as_ntt[j]);
-      libcrux_ml_kem_polynomial_add_to_ring_element_d6_b8(&t_as_ntt[i0],
+      libcrux_ml_kem_polynomial_add_to_ring_element_d6_ab(&t_as_ntt[i0],
                                                           &product);
     }
-    libcrux_ml_kem_polynomial_add_standard_error_reduce_d6_a7(
+    libcrux_ml_kem_polynomial_add_standard_error_reduce_d6_79(
         &t_as_ntt[i0], &error_as_ntt[i0]);
   }
 }
@@ -4735,50 +5389,52 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_81(
+static inline void libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_22(
     Eurydice_slice key_generation_seed,
-    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0 *private_key,
-    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 *public_key) {
+    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63 *private_key,
+    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 *public_key) {
   uint8_t hashed[64U];
-  libcrux_ml_kem_variant_cpa_keygen_seed_d8_e1(key_generation_seed, hashed);
+  libcrux_ml_kem_variant_cpa_keygen_seed_d8_be(/* (ρ,σ) := G(d) for Kyber, (ρ,σ)
+                                                  := G(d || K) for ML-KEM */
+                                               key_generation_seed, hashed);
   Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t), (size_t)32U,
       uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice seed_for_A = uu____0.fst;
   Eurydice_slice seed_for_secret_and_error = uu____0.snd;
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2(*uu____1)[3U] =
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6(*uu____1)[3U] =
       public_key->A;
   uint8_t ret[34U];
-  libcrux_ml_kem_utils_into_padded_array_421(seed_for_A, ret);
-  libcrux_ml_kem_matrix_sample_matrix_A_34(uu____1, ret, true);
+  libcrux_ml_kem_utils_into_padded_array_b6(seed_for_A, ret);
+  libcrux_ml_kem_matrix_sample_matrix_A_6c(uu____1, ret, true);
   uint8_t prf_input[33U];
-  libcrux_ml_kem_utils_into_padded_array_422(seed_for_secret_and_error,
-                                             prf_input);
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *uu____2 =
+  libcrux_ml_kem_utils_into_padded_array_c8(seed_for_secret_and_error,
+                                            prf_input);
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *uu____2 =
       private_key->secret_as_ntt;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input0[33U];
   memcpy(copy_of_prf_input0, prf_input, (size_t)33U * sizeof(uint8_t));
   uint8_t domain_separator =
-      libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_ee(
+      libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_b4(
           uu____2, copy_of_prf_input0, 0U);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input[33U];
   memcpy(copy_of_prf_input, prf_input, (size_t)33U * sizeof(uint8_t));
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 error_as_ntt[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 error_as_ntt[3U];
   memcpy(
       error_as_ntt,
-      libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_out_7f(
+      libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_out_b4(
           copy_of_prf_input, domain_separator)
           .fst,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
-  libcrux_ml_kem_matrix_compute_As_plus_e_a2(
-      public_key->t_as_ntt, public_key->A, private_key->secret_as_ntt,
-      error_as_ntt);
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
+  libcrux_ml_kem_matrix_compute_As_plus_e_ab(
+      /* tˆ := Aˆ ◦ sˆ + eˆ */ public_key->t_as_ntt, public_key->A,
+      private_key->secret_as_ntt, error_as_ntt);
   uint8_t uu____5[32U];
-  Result_00 dst;
+  Result_fb dst;
   Eurydice_slice_to_array2(&dst, seed_for_A, Eurydice_slice, uint8_t[32U]);
-  unwrap_26_33(dst, uu____5);
+  unwrap_26_b3(dst, uu____5);
   memcpy(public_key->seed_for_A, uu____5, (size_t)32U * sizeof(uint8_t));
 }
 
@@ -4790,14 +5446,14 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_serialize_uncompressed_ring_element_53(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *re, uint8_t ret[384U]) {
+libcrux_ml_kem_serialize_serialize_uncompressed_ring_element_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re, uint8_t ret[384U]) {
   uint8_t serialized[384U] = {0U};
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     __m256i coefficient =
-        libcrux_ml_kem_vector_traits_to_unsigned_representative_c0(
+        libcrux_ml_kem_vector_traits_to_unsigned_representative_79(
             re->coefficients[i0]);
     uint8_t bytes[24U];
     libcrux_ml_kem_vector_avx2_serialize_12_ea(coefficient, bytes);
@@ -4820,25 +5476,25 @@ with const generics
 - OUT_LEN= 1152
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_serialize_secret_key_5f(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *key,
+static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_serialize_secret_key_ed(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *key,
     uint8_t ret[1152U]) {
   uint8_t out[1152U] = {0U};
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(
                Eurydice_array_to_slice(
                    (size_t)3U, key,
-                   libcrux_ml_kem_polynomial_PolynomialRingElement_d2),
-               libcrux_ml_kem_polynomial_PolynomialRingElement_d2);
+                   libcrux_ml_kem_polynomial_PolynomialRingElement_f6),
+               libcrux_ml_kem_polynomial_PolynomialRingElement_f6);
        i++) {
     size_t i0 = i;
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 re = key[i0];
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re = key[i0];
     Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
         out, i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t);
     uint8_t ret0[384U];
-    libcrux_ml_kem_serialize_serialize_uncompressed_ring_element_53(&re, ret0);
+    libcrux_ml_kem_serialize_serialize_uncompressed_ring_element_79(&re, ret0);
     Eurydice_slice_copy(
         uu____0, Eurydice_array_to_slice((size_t)384U, ret0, uint8_t), uint8_t);
   }
@@ -4857,13 +5513,13 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_serialize_public_key_mut_c2(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *t_as_ntt,
+static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_serialize_public_key_mut_ed(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *t_as_ntt,
     Eurydice_slice seed_for_a, uint8_t *serialized) {
   Eurydice_slice uu____0 = Eurydice_array_to_subslice2(serialized, (size_t)0U,
                                                        (size_t)1152U, uint8_t);
   uint8_t ret[1152U];
-  libcrux_ml_kem_ind_cpa_serialize_secret_key_5f(t_as_ntt, ret);
+  libcrux_ml_kem_ind_cpa_serialize_secret_key_ed(t_as_ntt, ret);
   Eurydice_slice_copy(
       uu____0, Eurydice_array_to_slice((size_t)1152U, ret, uint8_t), uint8_t);
   Eurydice_slice_copy(
@@ -4884,11 +5540,11 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_serialize_public_key_02(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *t_as_ntt,
+static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_serialize_public_key_ed(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *t_as_ntt,
     Eurydice_slice seed_for_a, uint8_t ret[1184U]) {
   uint8_t public_key_serialized[1184U] = {0U};
-  libcrux_ml_kem_ind_cpa_serialize_public_key_mut_c2(t_as_ntt, seed_for_a,
+  libcrux_ml_kem_ind_cpa_serialize_public_key_mut_ed(t_as_ntt, seed_for_a,
                                                      public_key_serialized);
   memcpy(ret, public_key_serialized, (size_t)1184U * sizeof(uint8_t));
 }
@@ -4907,20 +5563,26 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_utils_extraction_helper_Keypair768
-libcrux_ml_kem_ind_cpa_generate_keypair_2f(Eurydice_slice key_generation_seed) {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0 private_key =
-      libcrux_ml_kem_ind_cpa_unpacked_default_1a_19();
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 public_key =
-      libcrux_ml_kem_ind_cpa_unpacked_default_8d_80();
-  libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_81(
+libcrux_ml_kem_ind_cpa_generate_keypair_bb(Eurydice_slice key_generation_seed) {
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63 private_key =
+      libcrux_ml_kem_ind_cpa_unpacked_default_1a_ab();
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 public_key =
+      libcrux_ml_kem_ind_cpa_unpacked_default_8d_ab();
+  libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_22(
       key_generation_seed, &private_key, &public_key);
   uint8_t public_key_serialized[1184U];
-  libcrux_ml_kem_ind_cpa_serialize_public_key_02(
-      public_key.t_as_ntt,
-      Eurydice_array_to_slice((size_t)32U, public_key.seed_for_A, uint8_t),
-      public_key_serialized);
+  libcrux_ml_kem_ind_cpa_serialize_public_key_ed(/* pk := (Encode_12(tˆ
+                                                    mod^{+}q) || ρ) */
+                                                 public_key.t_as_ntt,
+                                                 Eurydice_array_to_slice(
+                                                     (size_t)32U,
+                                                     public_key.seed_for_A,
+                                                     uint8_t),
+                                                 public_key_serialized);
   uint8_t secret_key_serialized[1152U];
-  libcrux_ml_kem_ind_cpa_serialize_secret_key_5f(private_key.secret_as_ntt,
+  libcrux_ml_kem_ind_cpa_serialize_secret_key_ed(/* sk := Encode_12(sˆ mod^{+}q)
+                                                  */
+                                                 private_key.secret_as_ntt,
                                                  secret_key_serialized);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_secret_key_serialized[1152U];
@@ -4949,7 +5611,7 @@ with const generics
 - SERIALIZED_KEY_LEN= 2400
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_serialize_kem_secret_key_0a(
+static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_serialize_kem_secret_key_ae(
     Eurydice_slice private_key, Eurydice_slice public_key,
     Eurydice_slice implicit_rejection_value, uint8_t ret[2400U]) {
   uint8_t out[2400U] = {0U};
@@ -4975,7 +5637,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_serialize_kem_secret_key_0a(
   Eurydice_slice uu____6 = Eurydice_array_to_subslice2(
       out, pointer, pointer + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t);
   uint8_t ret0[32U];
-  libcrux_ml_kem_hash_functions_avx2_H_a9_16(public_key, ret0);
+  libcrux_ml_kem_hash_functions_avx2_H_a9_e0(public_key, ret0);
   Eurydice_slice_copy(
       uu____6, Eurydice_array_to_slice((size_t)32U, ret0, uint8_t), uint8_t);
   pointer = pointer + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE;
@@ -5014,7 +5676,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_51(uint8_t randomness[64U]) {
+libcrux_ml_kem_ind_cca_generate_keypair_d6(uint8_t randomness[64U]) {
   Eurydice_slice ind_cpa_keypair_randomness = Eurydice_array_to_subslice2(
       randomness, (size_t)0U,
       LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE, uint8_t);
@@ -5023,13 +5685,13 @@ libcrux_ml_kem_ind_cca_generate_keypair_51(uint8_t randomness[64U]) {
       LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE, uint8_t,
       size_t);
   libcrux_ml_kem_utils_extraction_helper_Keypair768 uu____0 =
-      libcrux_ml_kem_ind_cpa_generate_keypair_2f(ind_cpa_keypair_randomness);
+      libcrux_ml_kem_ind_cpa_generate_keypair_bb(ind_cpa_keypair_randomness);
   uint8_t ind_cpa_private_key[1152U];
   memcpy(ind_cpa_private_key, uu____0.fst, (size_t)1152U * sizeof(uint8_t));
   uint8_t public_key[1184U];
   memcpy(public_key, uu____0.snd, (size_t)1184U * sizeof(uint8_t));
   uint8_t secret_key_serialized[2400U];
-  libcrux_ml_kem_ind_cca_serialize_kem_secret_key_0a(
+  libcrux_ml_kem_ind_cca_serialize_kem_secret_key_ae(
       Eurydice_array_to_slice((size_t)1152U, ind_cpa_private_key, uint8_t),
       Eurydice_array_to_slice((size_t)1184U, public_key, uint8_t),
       implicit_rejection_value, secret_key_serialized);
@@ -5037,14 +5699,14 @@ libcrux_ml_kem_ind_cca_generate_keypair_51(uint8_t randomness[64U]) {
   uint8_t copy_of_secret_key_serialized[2400U];
   memcpy(copy_of_secret_key_serialized, secret_key_serialized,
          (size_t)2400U * sizeof(uint8_t));
-  libcrux_ml_kem_types_MlKemPrivateKey_55 private_key =
-      libcrux_ml_kem_types_from_88_2d(copy_of_secret_key_serialized);
-  libcrux_ml_kem_types_MlKemPrivateKey_55 uu____2 = private_key;
+  libcrux_ml_kem_types_MlKemPrivateKey_d9 private_key =
+      libcrux_ml_kem_types_from_88_28(copy_of_secret_key_serialized);
+  libcrux_ml_kem_types_MlKemPrivateKey_d9 uu____2 = private_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_public_key[1184U];
   memcpy(copy_of_public_key, public_key, (size_t)1184U * sizeof(uint8_t));
-  return libcrux_ml_kem_types_from_17_8b(
-      uu____2, libcrux_ml_kem_types_from_40_60(copy_of_public_key));
+  return libcrux_ml_kem_types_from_17_74(
+      uu____2, libcrux_ml_kem_types_from_40_d0(copy_of_public_key));
 }
 
 /**
@@ -5063,12 +5725,12 @@ libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_instantiations_avx2_generate_keypair_3f(
+libcrux_ml_kem_ind_cca_instantiations_avx2_generate_keypair_c6(
     uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_51(copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_generate_keypair_d6(copy_of_randomness);
 }
 
 /**
@@ -5080,7 +5742,7 @@ libcrux_ml_kem_mlkem768_avx2_generate_key_pair(uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_instantiations_avx2_generate_keypair_3f(
+  return libcrux_ml_kem_ind_cca_instantiations_avx2_generate_keypair_c6(
       copy_of_randomness);
 }
 
@@ -5096,24 +5758,24 @@ with const generics
 - CIPHERTEXT_SIZE= 1088
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_variant_kdf_33_1d(
+static KRML_MUSTINLINE void libcrux_ml_kem_variant_kdf_33_ae(
     Eurydice_slice shared_secret,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
   uint8_t kdf_input[64U];
-  libcrux_ml_kem_utils_into_padded_array_42(shared_secret, kdf_input);
+  libcrux_ml_kem_utils_into_padded_array_24(shared_secret, kdf_input);
   Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
       (size_t)64U, kdf_input, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
       size_t);
   uint8_t ret0[32U];
-  libcrux_ml_kem_hash_functions_avx2_H_a9_16(
+  libcrux_ml_kem_hash_functions_avx2_H_a9_e0(
       Eurydice_array_to_slice((size_t)1088U,
-                              libcrux_ml_kem_types_as_slice_07_4f(ciphertext),
+                              libcrux_ml_kem_types_as_slice_07_80(ciphertext),
                               uint8_t),
       ret0);
   Eurydice_slice_copy(
       uu____0, Eurydice_array_to_slice((size_t)32U, ret0, uint8_t), uint8_t);
   uint8_t ret1[32U];
-  libcrux_ml_kem_hash_functions_avx2_PRF_a9_42(
+  libcrux_ml_kem_hash_functions_avx2_PRF_a9_41(
       Eurydice_array_to_slice((size_t)64U, kdf_input, uint8_t), ret1);
   memcpy(ret, ret1, (size_t)32U * sizeof(uint8_t));
 }
@@ -5141,8 +5803,8 @@ with const generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cca_decapsulate_a60(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+static inline void libcrux_ml_kem_ind_cca_decapsulate_a10(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
   Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)2400U, private_key->value, uint8_t),
@@ -5159,10 +5821,10 @@ static inline void libcrux_ml_kem_ind_cca_decapsulate_a60(
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
   Eurydice_slice implicit_rejection_value = uu____2.snd;
   uint8_t decrypted[32U];
-  libcrux_ml_kem_ind_cpa_decrypt_5e(ind_cpa_secret_key, ciphertext->value,
+  libcrux_ml_kem_ind_cpa_decrypt_2f(ind_cpa_secret_key, ciphertext->value,
                                     decrypted);
   uint8_t to_hash0[64U];
-  libcrux_ml_kem_utils_into_padded_array_42(
+  libcrux_ml_kem_utils_into_padded_array_24(
       Eurydice_array_to_slice((size_t)32U, decrypted, uint8_t), to_hash0);
   Eurydice_slice_copy(
       Eurydice_array_to_subslice_from(
@@ -5170,7 +5832,7 @@ static inline void libcrux_ml_kem_ind_cca_decapsulate_a60(
           uint8_t, size_t),
       ind_cpa_public_key_hash, uint8_t);
   uint8_t hashed[64U];
-  libcrux_ml_kem_hash_functions_avx2_G_a9_67(
+  libcrux_ml_kem_hash_functions_avx2_G_a9_e0(
       Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t), hashed);
   Eurydice_slice_uint8_t_x2 uu____3 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t),
@@ -5179,14 +5841,14 @@ static inline void libcrux_ml_kem_ind_cca_decapsulate_a60(
   Eurydice_slice shared_secret0 = uu____3.fst;
   Eurydice_slice pseudorandomness = uu____3.snd;
   uint8_t to_hash[1120U];
-  libcrux_ml_kem_utils_into_padded_array_420(implicit_rejection_value, to_hash);
+  libcrux_ml_kem_utils_into_padded_array_15(implicit_rejection_value, to_hash);
   Eurydice_slice uu____4 = Eurydice_array_to_subslice_from(
       (size_t)1120U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE,
       uint8_t, size_t);
-  Eurydice_slice_copy(uu____4, libcrux_ml_kem_types_as_ref_fd_7b(ciphertext),
+  Eurydice_slice_copy(uu____4, libcrux_ml_kem_types_as_ref_fd_80(ciphertext),
                       uint8_t);
   uint8_t implicit_rejection_shared_secret0[32U];
-  libcrux_ml_kem_hash_functions_avx2_PRF_a9_42(
+  libcrux_ml_kem_hash_functions_avx2_PRF_a9_41(
       Eurydice_array_to_slice((size_t)1120U, to_hash, uint8_t),
       implicit_rejection_shared_secret0);
   Eurydice_slice uu____5 = ind_cpa_public_key;
@@ -5194,18 +5856,18 @@ static inline void libcrux_ml_kem_ind_cca_decapsulate_a60(
   uint8_t copy_of_decrypted[32U];
   memcpy(copy_of_decrypted, decrypted, (size_t)32U * sizeof(uint8_t));
   uint8_t expected_ciphertext[1088U];
-  libcrux_ml_kem_ind_cpa_encrypt_3b(uu____5, copy_of_decrypted,
+  libcrux_ml_kem_ind_cpa_encrypt_74(uu____5, copy_of_decrypted,
                                     pseudorandomness, expected_ciphertext);
   uint8_t implicit_rejection_shared_secret[32U];
-  libcrux_ml_kem_variant_kdf_33_1d(
+  libcrux_ml_kem_variant_kdf_33_ae(
       Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret0,
                               uint8_t),
       ciphertext, implicit_rejection_shared_secret);
   uint8_t shared_secret[32U];
-  libcrux_ml_kem_variant_kdf_33_1d(shared_secret0, ciphertext, shared_secret);
+  libcrux_ml_kem_variant_kdf_33_ae(shared_secret0, ciphertext, shared_secret);
   uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
-      libcrux_ml_kem_types_as_ref_fd_7b(ciphertext),
+      libcrux_ml_kem_types_as_ref_fd_80(ciphertext),
       Eurydice_array_to_slice((size_t)1088U, expected_ciphertext, uint8_t),
       Eurydice_array_to_slice((size_t)32U, shared_secret, uint8_t),
       Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret,
@@ -5239,10 +5901,10 @@ libcrux_ml_kem.ind_cca.instantiations.avx2.kyber_decapsulate with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void
-libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_decapsulate_29(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_decapsulate_35(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_decapsulate_a60(private_key, ciphertext, ret);
+  libcrux_ml_kem_ind_cca_decapsulate_a10(private_key, ciphertext, ret);
 }
 
 /**
@@ -5254,9 +5916,9 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_decapsulate_29(
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_mlkem768_avx2_kyber_decapsulate(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_decapsulate_29(
+  libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_decapsulate_35(
       private_key, ciphertext, ret);
 }
 
@@ -5271,9 +5933,9 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_variant_entropy_preprocess_33_52(
+static KRML_MUSTINLINE void libcrux_ml_kem_variant_entropy_preprocess_33_be(
     Eurydice_slice randomness, uint8_t ret[32U]) {
-  libcrux_ml_kem_hash_functions_avx2_H_a9_16(randomness, ret);
+  libcrux_ml_kem_hash_functions_avx2_H_a9_e0(randomness, ret);
 }
 
 /**
@@ -5296,28 +5958,28 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline tuple_3c libcrux_ml_kem_ind_cca_encapsulate_010(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
+static inline tuple_c2 libcrux_ml_kem_ind_cca_encapsulate_700(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]) {
   uint8_t randomness0[32U];
-  libcrux_ml_kem_variant_entropy_preprocess_33_52(
+  libcrux_ml_kem_variant_entropy_preprocess_33_be(
       Eurydice_array_to_slice((size_t)32U, randomness, uint8_t), randomness0);
   uint8_t to_hash[64U];
-  libcrux_ml_kem_utils_into_padded_array_42(
+  libcrux_ml_kem_utils_into_padded_array_24(
       Eurydice_array_to_slice((size_t)32U, randomness0, uint8_t), to_hash);
   Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
       (size_t)64U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
       size_t);
   uint8_t ret[32U];
-  libcrux_ml_kem_hash_functions_avx2_H_a9_16(
+  libcrux_ml_kem_hash_functions_avx2_H_a9_e0(
       Eurydice_array_to_slice((size_t)1184U,
-                              libcrux_ml_kem_types_as_slice_ba_91(public_key),
+                              libcrux_ml_kem_types_as_slice_ba_d0(public_key),
                               uint8_t),
       ret);
   Eurydice_slice_copy(
       uu____0, Eurydice_array_to_slice((size_t)32U, ret, uint8_t), uint8_t);
   uint8_t hashed[64U];
-  libcrux_ml_kem_hash_functions_avx2_G_a9_67(
+  libcrux_ml_kem_hash_functions_avx2_G_a9_e0(
       Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t), hashed);
   Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t),
@@ -5326,27 +5988,27 @@ static inline tuple_3c libcrux_ml_kem_ind_cca_encapsulate_010(
   Eurydice_slice shared_secret = uu____1.fst;
   Eurydice_slice pseudorandomness = uu____1.snd;
   Eurydice_slice uu____2 = Eurydice_array_to_slice(
-      (size_t)1184U, libcrux_ml_kem_types_as_slice_ba_91(public_key), uint8_t);
+      (size_t)1184U, libcrux_ml_kem_types_as_slice_ba_d0(public_key), uint8_t);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness0, (size_t)32U * sizeof(uint8_t));
   uint8_t ciphertext[1088U];
-  libcrux_ml_kem_ind_cpa_encrypt_3b(uu____2, copy_of_randomness,
+  libcrux_ml_kem_ind_cpa_encrypt_74(uu____2, copy_of_randomness,
                                     pseudorandomness, ciphertext);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_ciphertext[1088U];
   memcpy(copy_of_ciphertext, ciphertext, (size_t)1088U * sizeof(uint8_t));
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext ciphertext0 =
-      libcrux_ml_kem_types_from_fc_cd(copy_of_ciphertext);
+      libcrux_ml_kem_types_from_fc_80(copy_of_ciphertext);
   uint8_t shared_secret_array[32U];
-  libcrux_ml_kem_variant_kdf_33_1d(shared_secret, &ciphertext0,
+  libcrux_ml_kem_variant_kdf_33_ae(shared_secret, &ciphertext0,
                                    shared_secret_array);
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext uu____5 = ciphertext0;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_shared_secret_array[32U];
   memcpy(copy_of_shared_secret_array, shared_secret_array,
          (size_t)32U * sizeof(uint8_t));
-  tuple_3c lit;
+  tuple_c2 lit;
   lit.fst = uu____5;
   memcpy(lit.snd, copy_of_shared_secret_array, (size_t)32U * sizeof(uint8_t));
   return lit;
@@ -5373,15 +6035,15 @@ libcrux_ml_kem.ind_cca.instantiations.avx2.kyber_encapsulate with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline tuple_3c
-libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_encapsulate_ce(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
+static inline tuple_c2
+libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_encapsulate_cd(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]) {
-  libcrux_ml_kem_types_MlKemPublicKey_15 *uu____0 = public_key;
+  libcrux_ml_kem_types_MlKemPublicKey_30 *uu____0 = public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_encapsulate_010(uu____0, copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_encapsulate_700(uu____0, copy_of_randomness);
 }
 
 /**
@@ -5392,14 +6054,14 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_encapsulate_ce(
  bytes of `randomness`.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline tuple_3c libcrux_ml_kem_mlkem768_avx2_kyber_encapsulate(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
+static inline tuple_c2 libcrux_ml_kem_mlkem768_avx2_kyber_encapsulate(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]) {
-  libcrux_ml_kem_types_MlKemPublicKey_15 *uu____0 = public_key;
+  libcrux_ml_kem_types_MlKemPublicKey_30 *uu____0 = public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_encapsulate_ce(
+  return libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_encapsulate_cd(
       uu____0, copy_of_randomness);
 }
 
@@ -5414,9 +6076,9 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_variant_cpa_keygen_seed_33_47(
+static KRML_MUSTINLINE void libcrux_ml_kem_variant_cpa_keygen_seed_33_be(
     Eurydice_slice key_generation_seed, uint8_t ret[64U]) {
-  libcrux_ml_kem_hash_functions_avx2_G_a9_67(key_generation_seed, ret);
+  libcrux_ml_kem_hash_functions_avx2_G_a9_e0(key_generation_seed, ret);
 }
 
 /**
@@ -5470,50 +6132,52 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_810(
+static inline void libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_220(
     Eurydice_slice key_generation_seed,
-    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0 *private_key,
-    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 *public_key) {
+    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63 *private_key,
+    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 *public_key) {
   uint8_t hashed[64U];
-  libcrux_ml_kem_variant_cpa_keygen_seed_33_47(key_generation_seed, hashed);
+  libcrux_ml_kem_variant_cpa_keygen_seed_33_be(/* (ρ,σ) := G(d) for Kyber, (ρ,σ)
+                                                  := G(d || K) for ML-KEM */
+                                               key_generation_seed, hashed);
   Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t), (size_t)32U,
       uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice seed_for_A = uu____0.fst;
   Eurydice_slice seed_for_secret_and_error = uu____0.snd;
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2(*uu____1)[3U] =
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6(*uu____1)[3U] =
       public_key->A;
   uint8_t ret[34U];
-  libcrux_ml_kem_utils_into_padded_array_421(seed_for_A, ret);
-  libcrux_ml_kem_matrix_sample_matrix_A_34(uu____1, ret, true);
+  libcrux_ml_kem_utils_into_padded_array_b6(seed_for_A, ret);
+  libcrux_ml_kem_matrix_sample_matrix_A_6c(uu____1, ret, true);
   uint8_t prf_input[33U];
-  libcrux_ml_kem_utils_into_padded_array_422(seed_for_secret_and_error,
-                                             prf_input);
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *uu____2 =
+  libcrux_ml_kem_utils_into_padded_array_c8(seed_for_secret_and_error,
+                                            prf_input);
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *uu____2 =
       private_key->secret_as_ntt;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input0[33U];
   memcpy(copy_of_prf_input0, prf_input, (size_t)33U * sizeof(uint8_t));
   uint8_t domain_separator =
-      libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_ee(
+      libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_b4(
           uu____2, copy_of_prf_input0, 0U);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input[33U];
   memcpy(copy_of_prf_input, prf_input, (size_t)33U * sizeof(uint8_t));
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 error_as_ntt[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 error_as_ntt[3U];
   memcpy(
       error_as_ntt,
-      libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_out_7f(
+      libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_out_b4(
           copy_of_prf_input, domain_separator)
           .fst,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
-  libcrux_ml_kem_matrix_compute_As_plus_e_a2(
-      public_key->t_as_ntt, public_key->A, private_key->secret_as_ntt,
-      error_as_ntt);
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
+  libcrux_ml_kem_matrix_compute_As_plus_e_ab(
+      /* tˆ := Aˆ ◦ sˆ + eˆ */ public_key->t_as_ntt, public_key->A,
+      private_key->secret_as_ntt, error_as_ntt);
   uint8_t uu____5[32U];
-  Result_00 dst;
+  Result_fb dst;
   Eurydice_slice_to_array2(&dst, seed_for_A, Eurydice_slice, uint8_t[32U]);
-  unwrap_26_33(dst, uu____5);
+  unwrap_26_b3(dst, uu____5);
   memcpy(public_key->seed_for_A, uu____5, (size_t)32U * sizeof(uint8_t));
 }
 
@@ -5531,21 +6195,27 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_utils_extraction_helper_Keypair768
-libcrux_ml_kem_ind_cpa_generate_keypair_2f0(
+libcrux_ml_kem_ind_cpa_generate_keypair_bb0(
     Eurydice_slice key_generation_seed) {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0 private_key =
-      libcrux_ml_kem_ind_cpa_unpacked_default_1a_19();
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 public_key =
-      libcrux_ml_kem_ind_cpa_unpacked_default_8d_80();
-  libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_810(
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63 private_key =
+      libcrux_ml_kem_ind_cpa_unpacked_default_1a_ab();
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 public_key =
+      libcrux_ml_kem_ind_cpa_unpacked_default_8d_ab();
+  libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_220(
       key_generation_seed, &private_key, &public_key);
   uint8_t public_key_serialized[1184U];
-  libcrux_ml_kem_ind_cpa_serialize_public_key_02(
-      public_key.t_as_ntt,
-      Eurydice_array_to_slice((size_t)32U, public_key.seed_for_A, uint8_t),
-      public_key_serialized);
+  libcrux_ml_kem_ind_cpa_serialize_public_key_ed(/* pk := (Encode_12(tˆ
+                                                    mod^{+}q) || ρ) */
+                                                 public_key.t_as_ntt,
+                                                 Eurydice_array_to_slice(
+                                                     (size_t)32U,
+                                                     public_key.seed_for_A,
+                                                     uint8_t),
+                                                 public_key_serialized);
   uint8_t secret_key_serialized[1152U];
-  libcrux_ml_kem_ind_cpa_serialize_secret_key_5f(private_key.secret_as_ntt,
+  libcrux_ml_kem_ind_cpa_serialize_secret_key_ed(/* sk := Encode_12(sˆ mod^{+}q)
+                                                  */
+                                                 private_key.secret_as_ntt,
                                                  secret_key_serialized);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_secret_key_serialized[1152U];
@@ -5586,7 +6256,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_510(uint8_t randomness[64U]) {
+libcrux_ml_kem_ind_cca_generate_keypair_d60(uint8_t randomness[64U]) {
   Eurydice_slice ind_cpa_keypair_randomness = Eurydice_array_to_subslice2(
       randomness, (size_t)0U,
       LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE, uint8_t);
@@ -5595,13 +6265,13 @@ libcrux_ml_kem_ind_cca_generate_keypair_510(uint8_t randomness[64U]) {
       LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE, uint8_t,
       size_t);
   libcrux_ml_kem_utils_extraction_helper_Keypair768 uu____0 =
-      libcrux_ml_kem_ind_cpa_generate_keypair_2f0(ind_cpa_keypair_randomness);
+      libcrux_ml_kem_ind_cpa_generate_keypair_bb0(ind_cpa_keypair_randomness);
   uint8_t ind_cpa_private_key[1152U];
   memcpy(ind_cpa_private_key, uu____0.fst, (size_t)1152U * sizeof(uint8_t));
   uint8_t public_key[1184U];
   memcpy(public_key, uu____0.snd, (size_t)1184U * sizeof(uint8_t));
   uint8_t secret_key_serialized[2400U];
-  libcrux_ml_kem_ind_cca_serialize_kem_secret_key_0a(
+  libcrux_ml_kem_ind_cca_serialize_kem_secret_key_ae(
       Eurydice_array_to_slice((size_t)1152U, ind_cpa_private_key, uint8_t),
       Eurydice_array_to_slice((size_t)1184U, public_key, uint8_t),
       implicit_rejection_value, secret_key_serialized);
@@ -5609,14 +6279,14 @@ libcrux_ml_kem_ind_cca_generate_keypair_510(uint8_t randomness[64U]) {
   uint8_t copy_of_secret_key_serialized[2400U];
   memcpy(copy_of_secret_key_serialized, secret_key_serialized,
          (size_t)2400U * sizeof(uint8_t));
-  libcrux_ml_kem_types_MlKemPrivateKey_55 private_key =
-      libcrux_ml_kem_types_from_88_2d(copy_of_secret_key_serialized);
-  libcrux_ml_kem_types_MlKemPrivateKey_55 uu____2 = private_key;
+  libcrux_ml_kem_types_MlKemPrivateKey_d9 private_key =
+      libcrux_ml_kem_types_from_88_28(copy_of_secret_key_serialized);
+  libcrux_ml_kem_types_MlKemPrivateKey_d9 uu____2 = private_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_public_key[1184U];
   memcpy(copy_of_public_key, public_key, (size_t)1184U * sizeof(uint8_t));
-  return libcrux_ml_kem_types_from_17_8b(
-      uu____2, libcrux_ml_kem_types_from_40_60(copy_of_public_key));
+  return libcrux_ml_kem_types_from_17_74(
+      uu____2, libcrux_ml_kem_types_from_40_d0(copy_of_public_key));
 }
 
 /**
@@ -5633,12 +6303,12 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_generate_keypair_2d(
+libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_generate_keypair_c6(
     uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_510(copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_generate_keypair_d60(copy_of_randomness);
 }
 
 /**
@@ -5650,7 +6320,7 @@ libcrux_ml_kem_mlkem768_avx2_kyber_generate_key_pair(uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_generate_keypair_2d(
+  return libcrux_ml_kem_ind_cca_instantiations_avx2_kyber_generate_keypair_c6(
       copy_of_randomness);
 }
 
@@ -5670,12 +6340,15 @@ with const generics
 - CIPHERTEXT_SIZE= 1088
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE bool libcrux_ml_kem_ind_cca_validate_private_key_ea(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+static KRML_MUSTINLINE bool libcrux_ml_kem_ind_cca_validate_private_key_12(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *_ciphertext) {
   uint8_t t[32U];
-  libcrux_ml_kem_hash_functions_avx2_H_a9_16(
-      Eurydice_array_to_subslice2(private_key->value, (size_t)384U * (size_t)3U,
+  libcrux_ml_kem_hash_functions_avx2_H_a9_e0(
+      Eurydice_array_to_subslice2(/* Eurydice can't access values directly on
+                                     the types. We need to go to the `value`
+                                     directly. */
+                                  private_key->value, (size_t)384U * (size_t)3U,
                                   (size_t)768U * (size_t)3U + (size_t)32U,
                                   uint8_t),
       t);
@@ -5699,10 +6372,10 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE bool
-libcrux_ml_kem_ind_cca_instantiations_avx2_validate_private_key_dc(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+libcrux_ml_kem_ind_cca_instantiations_avx2_validate_private_key_31(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext) {
-  return libcrux_ml_kem_ind_cca_validate_private_key_ea(private_key,
+  return libcrux_ml_kem_ind_cca_validate_private_key_12(private_key,
                                                         ciphertext);
 }
 
@@ -5713,9 +6386,9 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_validate_private_key_dc(
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline bool libcrux_ml_kem_mlkem768_avx2_validate_private_key(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext) {
-  return libcrux_ml_kem_ind_cca_instantiations_avx2_validate_private_key_dc(
+  return libcrux_ml_kem_ind_cca_instantiations_avx2_validate_private_key_31(
       private_key, ciphertext);
 }
 
@@ -5727,10 +6400,10 @@ types libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_out_closure_ea(
+static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_out_closure_b1(
     size_t _i) {
-  return libcrux_ml_kem_polynomial_ZERO_d6_7d();
+  return libcrux_ml_kem_polynomial_ZERO_d6_79();
 }
 
 /**
@@ -5745,9 +6418,9 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_750(
+libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_b1(
     Eurydice_slice public_key,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *deserialized_pk) {
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *deserialized_pk) {
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(public_key, uint8_t) /
                LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT;
@@ -5758,8 +6431,8 @@ libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_750(
         i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
             LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
         uint8_t);
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____0 =
-        libcrux_ml_kem_serialize_deserialize_to_reduced_ring_element_49(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____0 =
+        libcrux_ml_kem_serialize_deserialize_to_reduced_ring_element_79(
             ring_element);
     deserialized_pk[i0] = uu____0;
   }
@@ -5780,18 +6453,18 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_out_a5(
+libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_out_b1(
     Eurydice_slice public_key,
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 ret[3U]) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 deserialized_pk[3U];
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 ret[3U]) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 deserialized_pk[3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    deserialized_pk[i] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
+    deserialized_pk[i] = libcrux_ml_kem_polynomial_ZERO_d6_79();
   }
-  libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_750(
+  libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_b1(
       public_key, deserialized_pk);
   memcpy(
       ret, deserialized_pk,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
 }
 
 /**
@@ -5810,16 +6483,16 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE bool libcrux_ml_kem_ind_cca_validate_public_key_19(
+static KRML_MUSTINLINE bool libcrux_ml_kem_ind_cca_validate_public_key_ed(
     uint8_t *public_key) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 deserialized_pk[3U];
-  libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_out_a5(
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 deserialized_pk[3U];
+  libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_out_b1(
       Eurydice_array_to_subslice_to((size_t)1184U, public_key, (size_t)1152U,
                                     uint8_t, size_t),
       deserialized_pk);
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *uu____0 = deserialized_pk;
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *uu____0 = deserialized_pk;
   uint8_t public_key_serialized[1184U];
-  libcrux_ml_kem_ind_cpa_serialize_public_key_02(
+  libcrux_ml_kem_ind_cpa_serialize_public_key_ed(
       uu____0,
       Eurydice_array_to_subslice_from((size_t)1184U, public_key, (size_t)1152U,
                                       uint8_t, size_t),
@@ -5841,9 +6514,9 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE bool
-libcrux_ml_kem_ind_cca_instantiations_avx2_validate_public_key_8d(
+libcrux_ml_kem_ind_cca_instantiations_avx2_validate_public_key_31(
     uint8_t *public_key) {
-  return libcrux_ml_kem_ind_cca_validate_public_key_19(public_key);
+  return libcrux_ml_kem_ind_cca_validate_public_key_ed(public_key);
 }
 
 /**
@@ -5853,8 +6526,8 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_validate_public_key_8d(
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline bool libcrux_ml_kem_mlkem768_avx2_validate_public_key(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key) {
-  return libcrux_ml_kem_ind_cca_instantiations_avx2_validate_public_key_8d(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key) {
+  return libcrux_ml_kem_ind_cca_instantiations_avx2_validate_public_key_31(
       public_key->value);
 }
 
@@ -5880,14 +6553,14 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cca_unpacked_decapsulate_5c(
+static inline void libcrux_ml_kem_ind_cca_unpacked_decapsulate_12(
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
   uint8_t decrypted[32U];
-  libcrux_ml_kem_ind_cpa_decrypt_unpacked_40(
+  libcrux_ml_kem_ind_cpa_decrypt_unpacked_2f(
       &key_pair->private_key.ind_cpa_private_key, ciphertext->value, decrypted);
   uint8_t to_hash0[64U];
-  libcrux_ml_kem_utils_into_padded_array_42(
+  libcrux_ml_kem_utils_into_padded_array_24(
       Eurydice_array_to_slice((size_t)32U, decrypted, uint8_t), to_hash0);
   Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
       (size_t)64U, to_hash0, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE,
@@ -5898,7 +6571,7 @@ static inline void libcrux_ml_kem_ind_cca_unpacked_decapsulate_5c(
                               uint8_t),
       uint8_t);
   uint8_t hashed[64U];
-  libcrux_ml_kem_hash_functions_avx2_G_a9_67(
+  libcrux_ml_kem_hash_functions_avx2_G_a9_e0(
       Eurydice_array_to_slice((size_t)64U, to_hash0, uint8_t), hashed);
   Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t),
@@ -5907,30 +6580,30 @@ static inline void libcrux_ml_kem_ind_cca_unpacked_decapsulate_5c(
   Eurydice_slice shared_secret = uu____1.fst;
   Eurydice_slice pseudorandomness = uu____1.snd;
   uint8_t to_hash[1120U];
-  libcrux_ml_kem_utils_into_padded_array_420(
+  libcrux_ml_kem_utils_into_padded_array_15(
       Eurydice_array_to_slice(
           (size_t)32U, key_pair->private_key.implicit_rejection_value, uint8_t),
       to_hash);
   Eurydice_slice uu____2 = Eurydice_array_to_subslice_from(
       (size_t)1120U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE,
       uint8_t, size_t);
-  Eurydice_slice_copy(uu____2, libcrux_ml_kem_types_as_ref_fd_7b(ciphertext),
+  Eurydice_slice_copy(uu____2, libcrux_ml_kem_types_as_ref_fd_80(ciphertext),
                       uint8_t);
   uint8_t implicit_rejection_shared_secret[32U];
-  libcrux_ml_kem_hash_functions_avx2_PRF_a9_42(
+  libcrux_ml_kem_hash_functions_avx2_PRF_a9_41(
       Eurydice_array_to_slice((size_t)1120U, to_hash, uint8_t),
       implicit_rejection_shared_secret);
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 *uu____3 =
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 *uu____3 =
       &key_pair->public_key.ind_cpa_public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_decrypted[32U];
   memcpy(copy_of_decrypted, decrypted, (size_t)32U * sizeof(uint8_t));
   uint8_t expected_ciphertext[1088U];
-  libcrux_ml_kem_ind_cpa_encrypt_unpacked_e3(
+  libcrux_ml_kem_ind_cpa_encrypt_unpacked_74(
       uu____3, copy_of_decrypted, pseudorandomness, expected_ciphertext);
   uint8_t selector =
       libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
-          libcrux_ml_kem_types_as_ref_fd_7b(ciphertext),
+          libcrux_ml_kem_types_as_ref_fd_80(ciphertext),
           Eurydice_array_to_slice((size_t)1088U, expected_ciphertext, uint8_t));
   uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
@@ -5967,10 +6640,10 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void
-libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_decapsulate_ed(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_decapsulate_35(
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_unpacked_decapsulate_5c(key_pair, ciphertext, ret);
+  libcrux_ml_kem_ind_cca_unpacked_decapsulate_12(key_pair, ciphertext, ret);
 }
 
 /**
@@ -5984,7 +6657,7 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_decapsulate(
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_decapsulate_ed(
+  libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_decapsulate_35(
       private_key, ciphertext, ret);
 }
 
@@ -6007,11 +6680,11 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline tuple_3c libcrux_ml_kem_ind_cca_unpacked_encapsulate_d6(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
+static inline tuple_c2 libcrux_ml_kem_ind_cca_unpacked_encapsulate_70(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *public_key,
     uint8_t randomness[32U]) {
   uint8_t to_hash[64U];
-  libcrux_ml_kem_utils_into_padded_array_42(
+  libcrux_ml_kem_utils_into_padded_array_24(
       Eurydice_array_to_slice((size_t)32U, randomness, uint8_t), to_hash);
   Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
       (size_t)64U, to_hash, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
@@ -6021,7 +6694,7 @@ static inline tuple_3c libcrux_ml_kem_ind_cca_unpacked_encapsulate_d6(
                           (size_t)32U, public_key->public_key_hash, uint8_t),
                       uint8_t);
   uint8_t hashed[64U];
-  libcrux_ml_kem_hash_functions_avx2_G_a9_67(
+  libcrux_ml_kem_hash_functions_avx2_G_a9_e0(
       Eurydice_array_to_slice((size_t)64U, to_hash, uint8_t), hashed);
   Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t),
@@ -6029,13 +6702,13 @@ static inline tuple_3c libcrux_ml_kem_ind_cca_unpacked_encapsulate_d6(
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice shared_secret = uu____1.fst;
   Eurydice_slice pseudorandomness = uu____1.snd;
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 *uu____2 =
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 *uu____2 =
       &public_key->ind_cpa_public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
   uint8_t ciphertext[1088U];
-  libcrux_ml_kem_ind_cpa_encrypt_unpacked_e3(uu____2, copy_of_randomness,
+  libcrux_ml_kem_ind_cpa_encrypt_unpacked_74(uu____2, copy_of_randomness,
                                              pseudorandomness, ciphertext);
   uint8_t shared_secret_array[32U] = {0U};
   Eurydice_slice_copy(
@@ -6045,12 +6718,12 @@ static inline tuple_3c libcrux_ml_kem_ind_cca_unpacked_encapsulate_d6(
   uint8_t copy_of_ciphertext[1088U];
   memcpy(copy_of_ciphertext, ciphertext, (size_t)1088U * sizeof(uint8_t));
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext uu____5 =
-      libcrux_ml_kem_types_from_fc_cd(copy_of_ciphertext);
+      libcrux_ml_kem_types_from_fc_80(copy_of_ciphertext);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_shared_secret_array[32U];
   memcpy(copy_of_shared_secret_array, shared_secret_array,
          (size_t)32U * sizeof(uint8_t));
-  tuple_3c lit;
+  tuple_c2 lit;
   lit.fst = uu____5;
   memcpy(lit.snd, copy_of_shared_secret_array, (size_t)32U * sizeof(uint8_t));
   return lit;
@@ -6078,16 +6751,16 @@ generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline tuple_3c
-libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_encapsulate_ad(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
+static inline tuple_c2
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_encapsulate_cd(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *public_key,
     uint8_t randomness[32U]) {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *uu____0 =
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *uu____0 =
       public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_unpacked_encapsulate_d6(uu____0,
+  return libcrux_ml_kem_ind_cca_unpacked_encapsulate_70(uu____0,
                                                         copy_of_randomness);
 }
 
@@ -6100,15 +6773,15 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_encapsulate_ad(
  [`SHARED_SECRET_SIZE`] bytes of `randomness`.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline tuple_3c libcrux_ml_kem_mlkem768_avx2_unpacked_encapsulate(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
+static inline tuple_c2 libcrux_ml_kem_mlkem768_avx2_unpacked_encapsulate(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *public_key,
     uint8_t randomness[32U]) {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *uu____0 =
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *uu____0 =
       public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_encapsulate_ad(
+  return libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_encapsulate_cd(
       uu____0, copy_of_randomness);
 }
 
@@ -6127,9 +6800,9 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_closure_58(size_t _j) {
-  return libcrux_ml_kem_polynomial_ZERO_d6_7d();
+static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_closure_d6(size_t _j) {
+  return libcrux_ml_kem_polynomial_ZERO_d6_79();
 }
 
 /**
@@ -6147,10 +6820,10 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_00(
-    size_t _i, libcrux_ml_kem_polynomial_PolynomialRingElement_d2 ret[3U]) {
+static inline void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_d6(
+    size_t _i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 ret[3U]) {
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    ret[i] = libcrux_ml_kem_polynomial_ZERO_d6_7d();
+    ret[i] = libcrux_ml_kem_polynomial_ZERO_d6_79();
   }
 }
 
@@ -6166,10 +6839,10 @@ with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_d2
-libcrux_ml_kem_polynomial_clone_17_8c(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_d2 *self) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 lit;
+static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+libcrux_ml_kem_polynomial_clone_17_79(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 lit;
   __m256i ret[16U];
   core_array___core__clone__Clone_for__Array_T__N___20__clone(
       (size_t)16U, self->coefficients, ret, __m256i, void *);
@@ -6194,7 +6867,7 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_05(
+static inline void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_d6(
     uint8_t randomness[64U],
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *out) {
   Eurydice_slice ind_cpa_keypair_randomness = Eurydice_array_to_subslice2(
@@ -6204,46 +6877,46 @@ static inline void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_05(
       (size_t)64U, randomness,
       LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE, uint8_t,
       size_t);
-  libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_81(
+  libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_22(
       ind_cpa_keypair_randomness, &out->private_key.ind_cpa_private_key,
       &out->public_key.ind_cpa_public_key);
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 A[3U][3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 A[3U][3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_00(i, A[i]);
+    libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_d6(i, A[i]);
   }
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++) {
     size_t i1 = i0;
     for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
       size_t j = i;
-      libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____0 =
-          libcrux_ml_kem_polynomial_clone_17_8c(
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____0 =
+          libcrux_ml_kem_polynomial_clone_17_79(
               &out->public_key.ind_cpa_public_key.A[j][i1]);
       A[i1][j] = uu____0;
     }
   }
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____1[3U][3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____1[3U][3U];
   memcpy(uu____1, A,
          (size_t)3U *
-             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2[3U]));
+             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6[3U]));
   memcpy(out->public_key.ind_cpa_public_key.A, uu____1,
          (size_t)3U *
-             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2[3U]));
+             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6[3U]));
   uint8_t pk_serialized[1184U];
-  libcrux_ml_kem_ind_cpa_serialize_public_key_02(
+  libcrux_ml_kem_ind_cpa_serialize_public_key_ed(
       out->public_key.ind_cpa_public_key.t_as_ntt,
       Eurydice_array_to_slice(
           (size_t)32U, out->public_key.ind_cpa_public_key.seed_for_A, uint8_t),
       pk_serialized);
   uint8_t uu____2[32U];
-  libcrux_ml_kem_hash_functions_avx2_H_a9_16(
+  libcrux_ml_kem_hash_functions_avx2_H_a9_e0(
       Eurydice_array_to_slice((size_t)1184U, pk_serialized, uint8_t), uu____2);
   memcpy(out->public_key.public_key_hash, uu____2,
          (size_t)32U * sizeof(uint8_t));
   uint8_t uu____3[32U];
-  Result_00 dst;
+  Result_fb dst;
   Eurydice_slice_to_array2(&dst, implicit_rejection_value, Eurydice_slice,
                            uint8_t[32U]);
-  unwrap_26_33(dst, uu____3);
+  unwrap_26_b3(dst, uu____3);
   memcpy(out->private_key.implicit_rejection_value, uu____3,
          (size_t)32U * sizeof(uint8_t));
 }
@@ -6265,13 +6938,13 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void
-libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_generate_keypair_25(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_generate_keypair_c6(
     uint8_t randomness[64U],
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *out) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  libcrux_ml_kem_ind_cca_unpacked_generate_keypair_05(copy_of_randomness, out);
+  libcrux_ml_kem_ind_cca_unpacked_generate_keypair_d6(copy_of_randomness, out);
 }
 
 /**
@@ -6284,7 +6957,7 @@ static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_generate_key_pair(
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_generate_keypair_25(
+  libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_generate_keypair_c6(
       copy_of_randomness, key_pair);
 }
 
@@ -6300,10 +6973,10 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
-libcrux_ml_kem_ind_cca_unpacked_default_1c_5d(void) {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 lit;
-  lit.ind_cpa_public_key = libcrux_ml_kem_ind_cpa_unpacked_default_8d_80();
+static KRML_MUSTINLINE libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63
+libcrux_ml_kem_ind_cca_unpacked_default_1c_ab(void) {
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 lit;
+  lit.ind_cpa_public_key = libcrux_ml_kem_ind_cpa_unpacked_default_8d_ab();
   lit.public_key_hash[0U] = 0U;
   lit.public_key_hash[1U] = 0U;
   lit.public_key_hash[2U] = 0U;
@@ -6353,9 +7026,9 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked
-    libcrux_ml_kem_ind_cca_unpacked_default_07_c1(void) {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0 uu____0;
-  uu____0.ind_cpa_private_key = libcrux_ml_kem_ind_cpa_unpacked_default_1a_19();
+    libcrux_ml_kem_ind_cca_unpacked_default_07_ab(void) {
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_63 uu____0;
+  uu____0.ind_cpa_private_key = libcrux_ml_kem_ind_cpa_unpacked_default_1a_ab();
   uu____0.implicit_rejection_value[0U] = 0U;
   uu____0.implicit_rejection_value[1U] = 0U;
   uu____0.implicit_rejection_value[2U] = 0U;
@@ -6391,7 +7064,7 @@ static KRML_MUSTINLINE
   return (
       CLITERAL(libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked){
           .private_key = uu____0,
-          .public_key = libcrux_ml_kem_ind_cca_unpacked_default_1c_5d()});
+          .public_key = libcrux_ml_kem_ind_cca_unpacked_default_1c_ab()});
 }
 
 /**
@@ -6400,16 +7073,16 @@ static KRML_MUSTINLINE
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_mlkem768_avx2_unpacked_init_key_pair(void) {
-  return libcrux_ml_kem_ind_cca_unpacked_default_07_c1();
+  return libcrux_ml_kem_ind_cca_unpacked_default_07_ab();
 }
 
 /**
  Create a new, empty unpacked public key.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
+static inline libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63
 libcrux_ml_kem_mlkem768_avx2_unpacked_init_public_key(void) {
-  return libcrux_ml_kem_ind_cca_unpacked_default_1c_5d();
+  return libcrux_ml_kem_ind_cca_unpacked_default_1c_ab();
 }
 
 /**
@@ -6430,10 +7103,10 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_dd_68(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *self,
-    libcrux_ml_kem_types_MlKemPublicKey_15 *serialized) {
-  libcrux_ml_kem_ind_cpa_serialize_public_key_mut_c2(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_dd_ed(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *self,
+    libcrux_ml_kem_types_MlKemPublicKey_30 *serialized) {
+  libcrux_ml_kem_ind_cpa_serialize_public_key_mut_ed(
       self->ind_cpa_public_key.t_as_ntt,
       Eurydice_array_to_slice((size_t)32U, self->ind_cpa_public_key.seed_for_A,
                               uint8_t),
@@ -6458,10 +7131,10 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_de_c0(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_de_ed(
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *self,
-    libcrux_ml_kem_types_MlKemPublicKey_15 *serialized) {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_dd_68(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *serialized) {
+  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_dd_ed(
       &self->public_key, serialized);
 }
 
@@ -6472,8 +7145,8 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline void
 libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_public_key(
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair,
-    libcrux_ml_kem_types_MlKemPublicKey_15 *serialized) {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_de_c0(key_pair,
+    libcrux_ml_kem_types_MlKemPublicKey_30 *serialized) {
+  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_de_ed(key_pair,
                                                                   serialized);
 }
 
@@ -6489,28 +7162,28 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0
-libcrux_ml_kem_ind_cpa_unpacked_clone_ef_6f(
-    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 *self) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 uu____0[3U];
+static inline libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63
+libcrux_ml_kem_ind_cpa_unpacked_clone_ef_ab(
+    libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 *self) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____0[3U];
   core_array___core__clone__Clone_for__Array_T__N___20__clone(
       (size_t)3U, self->t_as_ntt, uu____0,
-      libcrux_ml_kem_polynomial_PolynomialRingElement_d2, void *);
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f6, void *);
   uint8_t uu____1[32U];
   core_array___core__clone__Clone_for__Array_T__N___20__clone(
       (size_t)32U, self->seed_for_A, uu____1, uint8_t, void *);
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 lit;
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 lit;
   memcpy(
       lit.t_as_ntt, uu____0,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2));
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   memcpy(lit.seed_for_A, uu____1, (size_t)32U * sizeof(uint8_t));
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 ret[3U][3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 ret[3U][3U];
   core_array___core__clone__Clone_for__Array_T__N___20__clone(
       (size_t)3U, self->A, ret,
-      libcrux_ml_kem_polynomial_PolynomialRingElement_d2[3U], void *);
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f6[3U], void *);
   memcpy(lit.A, ret,
          (size_t)3U *
-             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_d2[3U]));
+             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6[3U]));
   return lit;
 }
 
@@ -6526,12 +7199,12 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
-libcrux_ml_kem_ind_cca_unpacked_clone_28_d0(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *self) {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 lit;
+static inline libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63
+libcrux_ml_kem_ind_cca_unpacked_clone_28_ab(
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *self) {
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 lit;
   lit.ind_cpa_public_key =
-      libcrux_ml_kem_ind_cpa_unpacked_clone_ef_6f(&self->ind_cpa_public_key);
+      libcrux_ml_kem_ind_cpa_unpacked_clone_ef_ab(&self->ind_cpa_public_key);
   uint8_t ret[32U];
   core_array___core__clone__Clone_for__Array_T__N___20__clone(
       (size_t)32U, self->public_key_hash, ret, uint8_t, void *);
@@ -6554,8 +7227,8 @@ with const generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *
-libcrux_ml_kem_ind_cca_unpacked_public_key_de_42(
+static KRML_MUSTINLINE libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *
+libcrux_ml_kem_ind_cca_unpacked_public_key_de_ab(
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *self) {
   return &self->public_key;
 }
@@ -6566,10 +7239,10 @@ libcrux_ml_kem_ind_cca_unpacked_public_key_de_42(
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_public_key(
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair,
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *pk) {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 uu____0 =
-      libcrux_ml_kem_ind_cca_unpacked_clone_28_d0(
-          libcrux_ml_kem_ind_cca_unpacked_public_key_de_42(key_pair));
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *pk) {
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 uu____0 =
+      libcrux_ml_kem_ind_cca_unpacked_clone_28_ab(
+          libcrux_ml_kem_ind_cca_unpacked_public_key_de_ab(key_pair));
   pk[0U] = uu____0;
 }
 
@@ -6578,9 +7251,9 @@ static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_public_key(
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_serialized_public_key(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
-    libcrux_ml_kem_types_MlKemPublicKey_15 *serialized) {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_dd_68(public_key,
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *public_key,
+    libcrux_ml_kem_types_MlKemPublicKey_30 *serialized) {
+  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_dd_ed(public_key,
                                                                   serialized);
 }
 
@@ -6598,33 +7271,33 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_4c(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
+libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_6d(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63
         *unpacked_public_key) {
   Eurydice_slice uu____0 = Eurydice_array_to_subslice_to(
       (size_t)1184U, public_key->value, (size_t)1152U, uint8_t, size_t);
-  libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_75(
+  libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_98(
       uu____0, unpacked_public_key->ind_cpa_public_key.t_as_ntt);
   uint8_t uu____1[32U];
-  libcrux_ml_kem_utils_into_padded_array_423(
+  libcrux_ml_kem_utils_into_padded_array_9e(
       Eurydice_array_to_subslice_from((size_t)1184U, public_key->value,
                                       (size_t)1152U, uint8_t, size_t),
       uu____1);
   memcpy(unpacked_public_key->ind_cpa_public_key.seed_for_A, uu____1,
          (size_t)32U * sizeof(uint8_t));
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2(*uu____2)[3U] =
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6(*uu____2)[3U] =
       unpacked_public_key->ind_cpa_public_key.A;
   uint8_t ret[34U];
-  libcrux_ml_kem_utils_into_padded_array_421(
+  libcrux_ml_kem_utils_into_padded_array_b6(
       Eurydice_array_to_subslice_from((size_t)1184U, public_key->value,
                                       (size_t)1152U, uint8_t, size_t),
       ret);
-  libcrux_ml_kem_matrix_sample_matrix_A_34(uu____2, ret, false);
+  libcrux_ml_kem_matrix_sample_matrix_A_6c(uu____2, ret, false);
   uint8_t uu____3[32U];
-  libcrux_ml_kem_hash_functions_avx2_H_a9_16(
+  libcrux_ml_kem_hash_functions_avx2_H_a9_e0(
       Eurydice_array_to_slice((size_t)1184U,
-                              libcrux_ml_kem_types_as_slice_ba_91(public_key),
+                              libcrux_ml_kem_types_as_slice_ba_d0(public_key),
                               uint8_t),
       uu____3);
   memcpy(unpacked_public_key->public_key_hash, uu____3,
@@ -6645,11 +7318,11 @@ generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void
-libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_unpack_public_key_f9(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_unpack_public_key_a5(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63
         *unpacked_public_key) {
-  libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_4c(public_key,
+  libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_6d(public_key,
                                                        unpacked_public_key);
 }
 
@@ -6658,10 +7331,10 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_unpack_public_key_f9(
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_unpacked_public_key(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
+    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63
         *unpacked_public_key) {
-  libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_unpack_public_key_f9(
+  libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_unpack_public_key_a5(
       public_key, unpacked_public_key);
 }
 
