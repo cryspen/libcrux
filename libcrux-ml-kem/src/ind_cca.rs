@@ -114,6 +114,16 @@ fn validate_private_key<
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     _ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> bool {
+    validate_private_key_only::<K, SECRET_KEY_SIZE, Hasher>(private_key)
+}
+
+/// Validate an ML-KEM private key.
+///
+/// This implements the Hash check in 7.3 3.
+#[inline(always)]
+fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize, Hasher: Hash<K>>(
+    private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+) -> bool {
     // Eurydice can't access values directly on the types. We need to go to the
     // `value` directly.
 
@@ -244,7 +254,7 @@ pub(crate) fn decapsulate<
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
     let (ind_cpa_secret_key, ind_cpa_public_key, ind_cpa_public_key_hash, implicit_rejection_value) =
-        unpack_private_key::<SECRET_KEY_SIZE, CPA_SECRET_KEY_SIZE, PUBLIC_KEY_SIZE>(private_key);
+        unpack_private_key::<CPA_SECRET_KEY_SIZE, PUBLIC_KEY_SIZE>(&private_key.value);
 
     let decrypted = crate::ind_cpa::decrypt::<
         K,
@@ -292,25 +302,6 @@ pub(crate) fn decapsulate<
         &expected_ciphertext,
         &shared_secret,
         &implicit_rejection_shared_secret,
-    )
-}
-
-/// Unpack an incoming private key into it's different parts.
-fn unpack_private_key<
-    const SECRET_KEY_SIZE: usize,
-    const CPA_SECRET_KEY_SIZE: usize,
-    const PUBLIC_KEY_SIZE: usize,
->(
-    private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
-) -> (&[u8], &[u8], &[u8], &[u8]) {
-    let (ind_cpa_secret_key, secret_key) = private_key.value.split_at(CPA_SECRET_KEY_SIZE);
-    let (ind_cpa_public_key, secret_key) = secret_key.split_at(PUBLIC_KEY_SIZE);
-    let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
-    (
-        ind_cpa_secret_key,
-        ind_cpa_public_key,
-        ind_cpa_public_key_hash,
-        implicit_rejection_value,
     )
 }
 
@@ -424,6 +415,55 @@ pub(crate) mod unpacked {
         }
     }
 
+    /// Take a serialized private key and generate an unpacked key pair from it.
+    #[inline(always)]
+    pub fn keys_from_private_key<
+        const K: usize,
+        const SECRET_KEY_SIZE: usize,
+        const CPA_SECRET_KEY_SIZE: usize,
+        const PUBLIC_KEY_SIZE: usize,
+        const BYTES_PER_RING_ELEMENT: usize,
+        const T_AS_NTT_ENCODED_SIZE: usize,
+        Vector: Operations,
+    >(
+        private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+        key_pair: &mut MlKemKeyPairUnpacked<K, Vector>,
+    ) {
+        let (
+            ind_cpa_secret_key,
+            ind_cpa_public_key,
+            ind_cpa_public_key_hash,
+            implicit_rejection_value,
+        ) = unpack_private_key::<CPA_SECRET_KEY_SIZE, PUBLIC_KEY_SIZE>(&private_key.value);
+        // // XXX: We need to copy_from_slice here because eurydice fails with
+        // //      the assignment
+        // out.private_key
+        //     .ind_cpa_private_key
+        //     .secret_as_ntt
+        //     .copy_from_slice(&ind_cpa::deserialize_secret_key::<K, Vector>(
+        //         ind_cpa_secret_key,
+        //     ));
+        key_pair.private_key.ind_cpa_private_key.secret_as_ntt =
+            ind_cpa::deserialize_secret_key::<K, Vector>(ind_cpa_secret_key);
+        ind_cpa::build_unpacked_public_key_mut::<K, T_AS_NTT_ENCODED_SIZE, Vector, PortableHash<K>>(
+            ind_cpa_public_key,
+            &mut key_pair.public_key.ind_cpa_public_key,
+        );
+        key_pair
+            .public_key
+            .public_key_hash
+            .copy_from_slice(ind_cpa_public_key_hash);
+        key_pair
+            .private_key
+            .implicit_rejection_value
+            .copy_from_slice(implicit_rejection_value);
+        key_pair
+            .public_key
+            .ind_cpa_public_key
+            .seed_for_A
+            .copy_from_slice(&ind_cpa_public_key[T_AS_NTT_ENCODED_SIZE..]);
+    }
+
     impl<const K: usize, Vector: Operations> MlKemKeyPairUnpacked<K, Vector> {
         /// Create a new empty unpacked key pair.
         #[inline(always)]
@@ -432,10 +472,6 @@ pub(crate) mod unpacked {
         }
 
         /// Take a serialized private key and generate an unpacked key pair from it.
-        ///
-        /// Note that we can't restore the seed for A. But it's not needed.
-        /// However, the unpacked public key in a key generated like this
-        /// is not fully usable (serializable).
         #[inline(always)]
         pub fn from_private_key<
             const SECRET_KEY_SIZE: usize,
@@ -447,29 +483,15 @@ pub(crate) mod unpacked {
             private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
         ) -> Self {
             let mut out = Self::default();
-            let (
-                ind_cpa_secret_key,
-                ind_cpa_public_key,
-                ind_cpa_public_key_hash,
-                implicit_rejection_value,
-            ) = unpack_private_key::<SECRET_KEY_SIZE, CPA_SECRET_KEY_SIZE, PUBLIC_KEY_SIZE>(
-                private_key,
-            );
-            out.private_key.ind_cpa_private_key.secret_as_ntt =
-                ind_cpa::deserialize_secret_key::<K, Vector>(ind_cpa_secret_key);
-            ind_cpa::build_unpacked_public_key_mut::<
+            keys_from_private_key::<
                 K,
+                SECRET_KEY_SIZE,
+                CPA_SECRET_KEY_SIZE,
+                PUBLIC_KEY_SIZE,
+                BYTES_PER_RING_ELEMENT,
                 T_AS_NTT_ENCODED_SIZE,
                 Vector,
-                PortableHash<K>,
-            >(ind_cpa_public_key, &mut out.public_key.ind_cpa_public_key);
-            out.public_key
-                .public_key_hash
-                .copy_from_slice(ind_cpa_public_key_hash);
-            out.private_key
-                .implicit_rejection_value
-                .copy_from_slice(implicit_rejection_value);
-
+            >(private_key, &mut out);
             out
         }
 
@@ -610,7 +632,6 @@ pub(crate) mod unpacked {
             }
         }
         out.public_key.ind_cpa_public_key.A = A;
-        out.private_key.implicit_rejection_value = implicit_rejection_value.try_into().unwrap();
 
         let pk_serialized =
             serialize_public_key::<K, BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
@@ -618,6 +639,7 @@ pub(crate) mod unpacked {
                 &out.public_key.ind_cpa_public_key.seed_for_A,
             );
         out.public_key.public_key_hash = Hasher::H(&pk_serialized);
+        out.private_key.implicit_rejection_value = implicit_rejection_value.try_into().unwrap();
     }
 
     // Encapsulate with Unpacked Public Key

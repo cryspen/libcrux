@@ -75,6 +75,18 @@ macro_rules! instantiate {
                 >(private_key, ciphertext)
             }
 
+            /// Validate the private key only.
+            ///
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_private_key_only(
+                private_key: &MlKem512PrivateKey,
+            ) -> bool {
+                p::validate_private_key_only::<
+                    RANK_512,
+                    SECRET_KEY_SIZE_512,
+                >(private_key)
+            }
+
             /// Generate ML-KEM 512 Key Pair
             pub fn generate_key_pair(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
@@ -271,9 +283,8 @@ macro_rules! instantiate {
                 }
 
                 /// Get an unpacked key from a private key.
-                /// Note that this is missing the seed of A, which is unrecoverable.
                 pub fn key_pair_from_private_mut(private_key: &MlKem512PrivateKey, key_pair: &mut MlKem512KeyPairUnpacked) {
-                    *key_pair = MlKem512KeyPairUnpacked::from_private_key::<SECRET_KEY_SIZE_512, CPA_PKE_SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512, RANKED_BYTES_PER_RING_ELEMENT_512, T_AS_NTT_ENCODED_SIZE_512>(private_key);
+                    p::unpacked::keypair_from_private_key::<RANK_512, SECRET_KEY_SIZE_512, CPA_PKE_SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512, RANKED_BYTES_PER_RING_ELEMENT_512, T_AS_NTT_ENCODED_SIZE_512>(private_key, key_pair);
                 }
 
                 /// Get the unpacked public key.

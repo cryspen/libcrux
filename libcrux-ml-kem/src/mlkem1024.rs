@@ -77,6 +77,18 @@ macro_rules! instantiate {
                 >(private_key, ciphertext)
             }
 
+            /// Validate the private key only.
+            ///
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_private_key_only(
+                private_key: &MlKem1024PrivateKey,
+            ) -> bool {
+                p::validate_private_key_only::<
+                    RANK_1024,
+                    SECRET_KEY_SIZE_1024,
+                >(private_key)
+            }
+
             /// Generate Kyber 1024 Key Pair
             #[cfg(feature = "kyber")]
             #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
@@ -274,9 +286,8 @@ macro_rules! instantiate {
                 }
 
                 /// Get an unpacked key from a private key.
-                /// Note that this is missing the seed of A, which is unrecoverable.
                 pub fn key_pair_from_private_mut(private_key: &MlKem1024PrivateKey, key_pair: &mut MlKem1024KeyPairUnpacked) {
-                    *key_pair = MlKem1024KeyPairUnpacked::from_private_key::<SECRET_KEY_SIZE_1024, CPA_PKE_SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024, RANKED_BYTES_PER_RING_ELEMENT_1024, T_AS_NTT_ENCODED_SIZE_1024>(private_key);
+                    p::unpacked::keypair_from_private_key::<RANK_1024, SECRET_KEY_SIZE_1024, CPA_PKE_SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024, RANKED_BYTES_PER_RING_ELEMENT_1024, T_AS_NTT_ENCODED_SIZE_1024>(private_key, key_pair);
                 }
 
                 /// Get the unpacked public key.
