@@ -9,7 +9,7 @@
 //!
 //! FIXME: This is kyber specific for now.
 
-pub(crate) mod traits;
+pub mod traits;
 use traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
 
 pub(crate) use traits::{

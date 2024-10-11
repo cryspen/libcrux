@@ -14,7 +14,7 @@ use sampling::*;
 use serialize::*;
 use vector_type::*;
 
-pub(crate) use vector_type::PortableVector;
+pub use vector_type::PortableVector;
 
 impl Operations for PortableVector {
     fn ZERO() -> Self {

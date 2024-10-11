@@ -16,8 +16,8 @@ pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
 
 // XXX: We don't want to copy this. But for eurydice we have to have this.
 #[derive(Clone, Copy)]
-pub(crate) struct PolynomialRingElement<Vector: Operations> {
-    pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
+pub struct PolynomialRingElement<Vector: Operations> {
+    pub coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
 
 impl<Vector: Operations> PolynomialRingElement<Vector> {

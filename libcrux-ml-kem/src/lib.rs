@@ -118,7 +118,7 @@ cfg_pre_verification! {
     mod sampling;
     mod serialize;
     mod types;
-    mod vector;
+    pub mod vector;
 
     #[cfg(feature = "mlkem512")]
     #[cfg_attr(docsrs, doc(cfg(feature = "mlkem512")))]

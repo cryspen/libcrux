@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::{
     fs::File,
     io::{Read, Write},
@@ -10,8 +12,19 @@ use libcrux_ml_kem::{
         self, MlKem1024Ciphertext, MlKem1024KeyPair, MlKem1024PrivateKey, MlKem1024PublicKey,
     },
     mlkem512::{self, MlKem512Ciphertext, MlKem512KeyPair, MlKem512PrivateKey, MlKem512PublicKey},
-    mlkem768::{self, MlKem768Ciphertext, MlKem768KeyPair, MlKem768PrivateKey, MlKem768PublicKey},
+    mlkem768::{
+        self,
+        portable::unpacked::{
+            key_pair_serialized_public_key, MlKem768KeyPairUnpacked, MlKem768PublicKeyUnpacked,
+        },
+        MlKem768Ciphertext, MlKem768KeyPair, MlKem768PrivateKey, MlKem768PublicKey,
+    },
+    vector::portable::PortableVector,
     MlKemSharedSecret,
+};
+use libcrux_ml_kem::{
+    mlkem768::portable::unpacked::{public_key, serialized_public_key},
+    vector::traits::Operations,
 };
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
@@ -35,9 +48,9 @@ struct LintResult {
     result: String,
 }
 
-enum LintType {
-    PublicKey,
-}
+// enum LintType {
+//     PublicKey,
+// }
 
 impl Lint {
     // XXX: Only kem for now. Needs updating for ml-dsa
@@ -61,12 +74,12 @@ impl Lint {
         }
     }
 
-    fn input_type(&self) -> Option<LintType> {
-        match self.publicKey.as_str() {
-            "PublicKey" => Some(LintType::PublicKey),
-            _ => None,
-        }
-    }
+    // fn input_type(&self) -> Option<LintType> {
+    //     match self.publicKey.as_str() {
+    //         "PublicKey" => Some(LintType::PublicKey),
+    //         _ => None,
+    //     }
+    // }
 
     fn id(&self) -> &str {
         &self.id
@@ -138,9 +151,13 @@ enum Cmd {
         #[arg(short, long)]
         name: Option<String>,
 
-        /// A raw, invalid, hex public key.
+        /// A raw, hex public key.
         #[arg(short, long)]
-        invalid: Option<String>,
+        key: Option<String>,
+
+        /// A raw, binary public key file.
+        #[arg(long)]
+        key_file: Option<String>,
 
         /// Optionally, a file name to store the lint result.
         /// Defaults to `lint_result.json`.
@@ -209,13 +226,129 @@ impl UnpackedKeyPair {
         match self {
             UnpackedKeyPair::MlKem1024(_) => todo!(),
             UnpackedKeyPair::MlKem768(kp) => {
-                todo!()
-                // let mut bytes = [0u8; 32 + 3 * 16 * 32 + 32 + 3 * 3 * 16 * 32 + 3 * 16 * 32 + 32];
-                // kp.to_bytes(&mut bytes);
-                // write_to_file(sk_name + "_" + &pk_name, &bytes);
+                let mut bytes = [0u8; 32 + 3 * 16 * 32 + 32 + 3 * 3 * 16 * 32 + 3 * 16 * 32 + 32];
+
+                #[inline(always)]
+                fn i16_to_be_bytes(x: i16) -> [u8; 2] {
+                    [(x >> 8) as u8, (x & 0xFF) as u8]
+                }
+
+                fn to_bytes(x: PortableVector, out: &mut [u8]) {
+                    let mut p = 0;
+                    for i in 0..x.elements.len() {
+                        out[p..p + 2].copy_from_slice(&i16_to_be_bytes(x.elements[i]));
+                        p += 2;
+                    }
+                }
+
+                let mut p = 0;
+
+                // Private key
+                for i in 0..kp.private_key.ind_cpa_private_key.secret_as_ntt.len() {
+                    let s = &kp.private_key.ind_cpa_private_key.secret_as_ntt[i];
+                    for j in 0..s.coefficients.len() {
+                        to_bytes(s.coefficients[j], &mut bytes[p..p + 32]);
+                        p += 32;
+                    }
+                }
+                bytes[p..p + 32].copy_from_slice(&kp.private_key.implicit_rejection_value);
+                p += 32;
+
+                // Public key
+                for i in 0..kp.public_key.ind_cpa_public_key.t_as_ntt.len() {
+                    let t = &kp.public_key.ind_cpa_public_key.t_as_ntt[i];
+                    for j in 0..t.coefficients.len() {
+                        to_bytes(t.coefficients[j], &mut bytes[p..p + 32]);
+                        p += 32;
+                    }
+                }
+                bytes[p..p + 32].copy_from_slice(&kp.public_key.ind_cpa_public_key.seed_for_A);
+                p += 32;
+                for i in 0..kp.public_key.ind_cpa_public_key.A.len() {
+                    let a1 = &kp.public_key.ind_cpa_public_key.A[i];
+                    for j in 0..a1.len() {
+                        let a = a1[j];
+                        for k in 0..a.coefficients.len() {
+                            to_bytes(a.coefficients[k], &mut bytes[p..p + 32]);
+                            p += 32;
+                        }
+                    }
+                }
+                bytes[p..p + 32].copy_from_slice(&kp.public_key.public_key_hash);
+
+                write_to_file(sk_name + "_" + &pk_name, &bytes);
             }
             UnpackedKeyPair::MlKem512(_) => todo!(),
         }
+    }
+
+    fn read_from_file(key_file: String) -> MlKem768KeyPairUnpacked {
+        let bytes = bytes_from_file(key_file);
+        let mut out = MlKem768KeyPairUnpacked::default();
+
+        #[inline(always)]
+        fn bytes_to_i16(bytes: &[u8]) -> i16 {
+            (bytes[0] as i16) << 8 | bytes[1] as i16
+        }
+
+        fn from_bytes(bytes: &[u8]) -> PortableVector {
+            let mut out = PortableVector::ZERO();
+
+            for i in 0..bytes.len() / 2 {
+                let chunk = &bytes[i * 2..i * 2 + 2];
+                out.elements[i] = bytes_to_i16(chunk);
+            }
+
+            out
+        }
+
+        let mut p = 0;
+
+        // Read private key
+        for i in 0..out.private_key.ind_cpa_private_key.secret_as_ntt.len() {
+            for j in 0..out.private_key.ind_cpa_private_key.secret_as_ntt[i]
+                .coefficients
+                .len()
+            {
+                out.private_key.ind_cpa_private_key.secret_as_ntt[i].coefficients[j] =
+                    from_bytes(&bytes[p..p + 32]);
+                p += 32;
+            }
+        }
+        let mut implicit_rejection_value = [0u8; 32];
+        implicit_rejection_value.copy_from_slice(&bytes[p..p + 32]);
+        p += 32;
+
+        // Read public key
+        // let public_key = MlKem768PublicKeyUnpacked::from_bytes(&bytes[p..]);
+        for i in 0..out.public_key.ind_cpa_public_key.t_as_ntt.len() {
+            for j in 0..out.public_key.ind_cpa_public_key.t_as_ntt[i]
+                .coefficients
+                .len()
+            {
+                out.public_key.ind_cpa_public_key.t_as_ntt[i].coefficients[j] =
+                    from_bytes(&bytes[p..p + 32]);
+                p += 32;
+            }
+        }
+        out.public_key
+            .ind_cpa_public_key
+            .seed_for_A
+            .copy_from_slice(&bytes[p..p + 32]);
+        p += 32;
+        for i in 0..out.public_key.ind_cpa_public_key.A.len() {
+            for j in 0..out.public_key.ind_cpa_public_key.A[i].len() {
+                for k in 0..out.public_key.ind_cpa_public_key.A[i][j].coefficients.len() {
+                    out.public_key.ind_cpa_public_key.A[i][j].coefficients[k] =
+                        from_bytes(&bytes[p..p + 32]);
+                    p += 32;
+                }
+            }
+        }
+        let mut public_key_hash = [0u8; 32];
+        public_key_hash.copy_from_slice(&bytes[p..p + 32]);
+
+        out
     }
 }
 
@@ -459,7 +592,8 @@ fn main() {
             file,
             name,
             result,
-            invalid,
+            key,
+            key_file,
         } => {
             let file = match file {
                 Some(n) => n,
@@ -470,14 +604,19 @@ fn main() {
                 // Generate for the given lint.
 
                 // There's a hex public key.
-                let (public_key, validity) = if let Some(pk) = invalid {
+                let public_key = if let Some(pk) = key {
                     let pk_bytes = hex::decode(&pk)
                         .expect(&format!("Error reading hex pk from command line\n\t{}", pk));
-                    (pk_bytes, false)
+                    pk_bytes
+                } else if let Some(key_file) = key_file {
+                    let key_pair = UnpackedKeyPair::read_from_file(key_file);
+                    let mut pk = MlKem768PublicKey::default();
+                    key_pair_serialized_public_key(&key_pair, &mut pk);
+                    pk.as_slice().to_vec()
                 } else {
                     // Generates a key pair.
                     let key_pair = KeyPair::generate(alg, &mut rng);
-                    (key_pair.public_key_slice().to_vec(), true)
+                    key_pair.public_key_slice().to_vec()
                 };
 
                 let mut payload = lint_name.as_bytes().to_vec();
@@ -520,17 +659,13 @@ fn main() {
                 // We expect this one to pass.
                 if result_key.is_err() {
                     lint_result.result = "Error".to_owned();
-                    print_status("Error: valid lint lead to error.", &pk_bytes, &lint);
+                    print_status("Error: Invalid public key.", &pk_bytes, &lint);
                 }
 
                 // This pk should not have passed.
                 if result_key.is_ok() {
                     lint_result.result = "Pass".to_owned();
-                    print_status(
-                        "This is a valid public key",
-                        &pk_bytes,
-                        &lint,
-                    );
+                    print_status("Pass: Valid public key", &pk_bytes, &lint);
                 }
 
                 // // Passed. Valid.

@@ -36,7 +36,7 @@ Lining pqc public keys.
 |                          | ML_KEM_DIS_06   | e_ml_kem_ek_matrix_sl_entries      |     | Rust                                | The matrix expanded from the seed, that is contained in the ML-KEM encapsulation key must not have too small or too large entries.           |
 |                          | ML_KEM_DIS_07   | e_ml_kem_ek_vector_distribution    |     |                                     | Given a large number of public keys, the vectors contained in the extracted ML-KEM public keys must follow a centered binomial distribution. |
 | Known encoded public key | ML_KEM_GEN_01   | e_known_encoded_key                |     | In Java                             | A public key whose corresponding private key is known to be compromised, is weak, or is leaked must not be placed in a certificate.          |
-|                          | ML_KEM_GEN_02   | e_ml_kem_ek_encoding               |     |                                     | An ML-KEM encryption key must be correctly encoded.                                                                                          |
+|                          | ML_KEM_GEN_02   | e_ml_kem_ek_encoding               |     | Rust `gen_02.json`                  | An ML-KEM encryption key must be correctly encoded.                                                                                          |
 
 ## Usage
 

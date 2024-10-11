@@ -5,11 +5,13 @@ use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.
-pub(crate) type FieldElement = i16;
+pub type FieldElement = i16;
 
+/// Portable vector
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct PortableVector {
-    pub(crate) elements: [FieldElement; FIELD_ELEMENTS_IN_VECTOR],
+    /// The elements
+    pub elements: [FieldElement; FIELD_ELEMENTS_IN_VECTOR],
 }
 
 impl std::fmt::Debug for PortableVector {

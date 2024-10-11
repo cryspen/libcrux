@@ -81,6 +81,7 @@ fn validate_public_key<
             &public_key[RANKED_BYTES_PER_RING_ELEMENT..],
         );
 
+    // ML_KEM_GEN_02: Domain check really (part of the standard)
     let mut valid = *public_key == public_key_serialized;
 
     #[cfg(all(feature = "std"))]
@@ -106,13 +107,13 @@ fn validate_public_key<
             std::eprintln!("too many zeroes in public key");
         }
 
-        // ML_KEM_DIS_02: not more than 2 sequential elements are the same
+        // ML_KEM_DIS_02: not more than 3 sequential elements are the same
         valid &= no_sequential_elements(seed);
 
-        // ML_KEM_DIS_03: not more than 27 values over or under 128
+        // ML_KEM_DIS_03: not more than 29 values over or under 128
         let over_128 = seed.iter().filter(|&b| *b > 128).count();
         let under_128 = seed.iter().filter(|&b| *b < 128).count();
-        let balanced = over_128 <= 27 && under_128 <= 27;
+        let balanced = over_128 <= 29 && under_128 <= 29;
         #[cfg(all(feature = "std"))]
         if !balanced {
             std::eprintln!("too large or small values in public key");
@@ -134,12 +135,12 @@ fn validate_public_key<
             &mut unpacked,
         );
 
-        // ML_KEM_DIS_04: not more than 14, 18, 21 same elements in A'
+        // ML_KEM_DIS_04: not more than 12, 16, 19 same elements in A'
         let counts = count_elements(&unpacked.ind_cpa_public_key.A);
         let max = match K {
-            2 => 14,
-            3 => 18,
-            4 => 21,
+            2 => 12,
+            3 => 16,
+            4 => 19,
             _ => unreachable!(),
         };
         let too_many: Vec<_> = counts.values().into_iter().filter(|&&x| x > max).collect();
@@ -153,12 +154,12 @@ fn validate_public_key<
         // ML_KEM_DIS_05: no more than 3 sequential elements in A
         valid &= long_sequence_in_a(&unpacked.ind_cpa_public_key.A);
 
-        // ML_KEM_DIS_06: no more than 656, 1369, 2338 over or under 1664 in Z_q
+        // ML_KEM_DIS_06: no more than 641, 1367, 2315 over or under 1664 in Z_q
         let (small, large) = count_elements_zq(&unpacked.ind_cpa_public_key.A);
         let max = match K {
-            2 => 656,
-            3 => 1369,
-            4 => 2338,
+            2 => 641,
+            3 => 1367,
+            4 => 2315,
             _ => unreachable!(),
         };
         let too_many = small > max || large > max;
@@ -297,7 +298,7 @@ fn no_sequential_elements(seed: &[u8]) -> bool {
         }
     }
 
-    if longest_len > 2 {
+    if longest_len > 3 {
         #[cfg(all(feature = "std"))]
         std::eprintln!(
             "too many sequential values in public key ({_longest_value} {longest_len}x)"
@@ -558,15 +559,15 @@ pub(crate) mod unpacked {
 
     /// An unpacked ML-KEM IND-CCA Private Key
     pub struct MlKemPrivateKeyUnpacked<const K: usize, Vector: Operations> {
-        pub(crate) ind_cpa_private_key: IndCpaPrivateKeyUnpacked<K, Vector>,
-        pub(crate) implicit_rejection_value: [u8; 32],
+        pub ind_cpa_private_key: IndCpaPrivateKeyUnpacked<K, Vector>,
+        pub implicit_rejection_value: [u8; 32],
     }
 
     /// An unpacked ML-KEM IND-CCA Private Key
     #[derive(Clone)]
     pub struct MlKemPublicKeyUnpacked<const K: usize, Vector: Operations> {
-        pub(crate) ind_cpa_public_key: IndCpaPublicKeyUnpacked<K, Vector>,
-        pub(crate) public_key_hash: [u8; 32],
+        pub ind_cpa_public_key: IndCpaPublicKeyUnpacked<K, Vector>,
+        pub public_key_hash: [u8; 32],
     }
 
     /// An unpacked ML-KEM KeyPair
