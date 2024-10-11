@@ -3,7 +3,7 @@ module Libcrux_ml_kem.Vector.Traits
 open Core
 open FStar.Mul
 
-#push-options "--z3rlimit 100"
+#push-options "--z3rlimit 200 --split_queries always"
 
 let decompress_1_
       (#v_T: Type0)
@@ -53,8 +53,6 @@ let to_standard_domain
     v
     v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS
 
-#push-options "--z3rlimit 100"
-
 #push-options "--admit_smt_queries true"
 
 let to_unsigned_representative
@@ -67,7 +65,5 @@ let to_unsigned_representative
     f_bitwise_and_with_constant #v_T #FStar.Tactics.Typeclasses.solve t v_FIELD_MODULUS
   in
   f_add #v_T #FStar.Tactics.Typeclasses.solve a fm
-
-#pop-options
 
 #pop-options

@@ -101,6 +101,8 @@ let sample_ring_element_cbd
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+#push-options "--admit_smt_queries true"
+
 let sample_vector_cbd_then_ntt
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
       (#v_Vector #v_Hasher: Type0)
@@ -183,12 +185,12 @@ let sample_vector_cbd_then_ntt
           in
           re_as_ntt)
   in
-  let result:u8 = domain_separator in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  let hax_temp_output:u8 = result in
+  let hax_temp_output:u8 = domain_separator in
   re_as_ntt, hax_temp_output
   <:
   (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
+
+#pop-options
 
 let sample_vector_cbd_then_ntt_out
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
@@ -231,8 +233,6 @@ let sample_vector_cbd_then_ntt_out
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
-#push-options "--z3rlimit 200"
-
 let compress_then_serialize_u
       (v_K v_OUT_LEN v_COMPRESSION_FACTOR v_BLOCK_LEN: usize)
       (#v_Vector: Type0)
@@ -253,7 +253,9 @@ let compress_then_serialize_u
       (fun out i ->
           let out:t_Slice u8 = out in
           let i:usize = i in
-          (Core.Slice.impl__len #u8 out <: usize) =. v_OUT_LEN <: bool)
+          v i < v v_K ==>
+          (Seq.length out == v v_OUT_LEN /\
+            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index input (v i))))
       out
       (fun out temp_1_ ->
           let out:t_Slice u8 = out in
@@ -296,10 +298,6 @@ let compress_then_serialize_u
   let _:Prims.unit = admit () (* Panic freedom *) in
   let hax_temp_output:Prims.unit = result in
   out
-
-#pop-options
-
-#push-options "--admit_smt_queries true"
 
 let deserialize_then_decompress_u
       (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
@@ -359,9 +357,9 @@ let deserialize_then_decompress_u
           in
           u_as_ntt)
   in
-  u_as_ntt
-
-#pop-options
+  let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = u_as_ntt in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let deserialize_secret_key
       (v_K: usize)
@@ -412,7 +410,7 @@ let deserialize_secret_key
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
-#push-options "--admit_smt_queries true"
+#push-options "--z3rlimit 200"
 
 let serialize_secret_key
       (v_K v_OUT_LEN: usize)
@@ -425,51 +423,55 @@ let serialize_secret_key
   let out:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let out:t_Array u8 v_OUT_LEN =
     Rust_primitives.Hax.Folds.fold_enumerated_slice key
-      (fun out temp_1_ ->
+      (fun out i ->
           let out:t_Array u8 v_OUT_LEN = out in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          v i < v v_K ==>
+          Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key (v i)))
       out
       (fun out temp_1_ ->
           let out:t_Array u8 v_OUT_LEN = out in
           let i, re:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
             temp_1_
           in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
-            ({
-                Core.Ops.Range.f_start
-                =
-                i *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
-                Core.Ops.Range.f_end
-                =
-                (i +! sz 1 <: usize) *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize)
-            (Core.Slice.impl__copy_from_slice #u8
-                (out.[ {
-                      Core.Ops.Range.f_start
-                      =
-                      i *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
-                      Core.Ops.Range.f_end
-                      =
-                      (i +! sz 1 <: usize) *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT
+          let out:t_Array u8 v_OUT_LEN =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+              ({
+                  Core.Ops.Range.f_start
+                  =
+                  i *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
+                  Core.Ops.Range.f_end
+                  =
+                  (i +! sz 1 <: usize) *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize
+                }
+                <:
+                Core.Ops.Range.t_Range usize)
+              (Core.Slice.impl__copy_from_slice #u8
+                  (out.[ {
+                        Core.Ops.Range.f_start
+                        =
+                        i *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
+                        Core.Ops.Range.f_end
+                        =
+                        (i +! sz 1 <: usize) *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT
+                        <:
+                        usize
+                      }
                       <:
-                      usize
-                    }
+                      Core.Ops.Range.t_Range usize ]
                     <:
-                    Core.Ops.Range.t_Range usize ]
-                  <:
-                  t_Slice u8)
-                (Libcrux_ml_kem.Serialize.serialize_uncompressed_ring_element #v_Vector re
-                  <:
-                  t_Slice u8)
-              <:
-              t_Slice u8)
-          <:
-          t_Array u8 v_OUT_LEN)
+                    t_Slice u8)
+                  (Libcrux_ml_kem.Serialize.serialize_uncompressed_ring_element #v_Vector re
+                    <:
+                    t_Slice u8)
+                <:
+                t_Slice u8)
+          in
+          out)
   in
-  out
+  let result:t_Array u8 v_OUT_LEN = out in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #pop-options
 
@@ -546,8 +548,6 @@ let serialize_public_key
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
-#push-options "--admit_smt_queries true"
-
 let decrypt_unpacked
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
           usize)
@@ -578,8 +578,6 @@ let decrypt_unpacked
       u_as_ntt
   in
   Libcrux_ml_kem.Serialize.compress_then_serialize_message #v_Vector message
-
-#pop-options
 
 let decrypt
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
@@ -612,7 +610,7 @@ let decrypt
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
-#push-options "--admit_smt_queries true"
+#push-options "--z3rlimit 200"
 
 let encrypt_unpacked
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:

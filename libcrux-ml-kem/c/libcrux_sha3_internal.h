@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
- * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
- * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
- * F*: 650b216aeb5901ec6f1c44ff275acd924e54bdbd
- * Libcrux: 0f5121e9c3b5f9c1097bb312d02ecc880162ce9b
+ * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
+ * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
+ * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
+ * F*: 3063d19312f8ec3af5945f24ed3ebbb6b6cd9678
+ * Libcrux: 098de7d283a7867de9c3e5672d7b3c915ef9b2f1
  */
 
 #ifndef __libcrux_sha3_internal_H
@@ -192,16 +192,16 @@ typedef struct libcrux_sha3_generic_keccak_KeccakState_48_s {
 */
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
-N>[TraitClause@0]#1}
+N>[TraitClause@0, TraitClause@1]#1}
 */
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.new_1e
+A monomorphic instance of libcrux_sha3.generic_keccak.new_89
 with types uint64_t
 with const generics
 - N= 1
 */
 static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_48
-libcrux_sha3_generic_keccak_new_1e_cf(void) {
+libcrux_sha3_generic_keccak_new_89_cf(void) {
   libcrux_sha3_generic_keccak_KeccakState_48 lit;
   lit.st[0U][0U] = libcrux_sha3_portable_keccak_zero_5a();
   lit.st[0U][1U] = libcrux_sha3_portable_keccak_zero_5a();
@@ -247,7 +247,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_65(
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_0e(dst, uu____0);
+    core_result_unwrap_26_0e(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -1465,7 +1465,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_650(
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_0e(dst, uu____0);
+    core_result_unwrap_26_0e(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -1740,7 +1740,7 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_064(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 s =
-      libcrux_sha3_generic_keccak_new_1e_cf();
+      libcrux_sha3_generic_keccak_new_89_cf();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)168U; i++) {
     size_t i0 = i;
@@ -1781,7 +1781,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_064(
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;
@@ -1832,7 +1832,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_653(
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_0e(dst, uu____0);
+    core_result_unwrap_26_0e(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -2089,7 +2089,7 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_063(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 s =
-      libcrux_sha3_generic_keccak_new_1e_cf();
+      libcrux_sha3_generic_keccak_new_89_cf();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)104U; i++) {
     size_t i0 = i;
@@ -2130,7 +2130,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_063(
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;
@@ -2181,7 +2181,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_652(
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_0e(dst, uu____0);
+    core_result_unwrap_26_0e(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -2438,7 +2438,7 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_062(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 s =
-      libcrux_sha3_generic_keccak_new_1e_cf();
+      libcrux_sha3_generic_keccak_new_89_cf();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)144U; i++) {
     size_t i0 = i;
@@ -2479,7 +2479,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_062(
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;
@@ -2627,7 +2627,7 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_061(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 s =
-      libcrux_sha3_generic_keccak_new_1e_cf();
+      libcrux_sha3_generic_keccak_new_89_cf();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)136U; i++) {
     size_t i0 = i;
@@ -2668,7 +2668,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_061(
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;
@@ -2745,7 +2745,7 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_060(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 s =
-      libcrux_sha3_generic_keccak_new_1e_cf();
+      libcrux_sha3_generic_keccak_new_89_cf();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)136U; i++) {
     size_t i0 = i;
@@ -2786,7 +2786,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_060(
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;
@@ -2837,7 +2837,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccak_load_block_651(
         Eurydice_slice_subslice2(blocks[0U], (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_slice, uint8_t[8U]);
-    core_result_unwrap_41_0e(dst, uu____0);
+    core_result_unwrap_26_0e(dst, uu____0);
     size_t uu____1 = i0 / (size_t)5U;
     size_t uu____2 = i0 % (size_t)5U;
     s[uu____1][uu____2] =
@@ -3093,7 +3093,7 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_06(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   libcrux_sha3_generic_keccak_KeccakState_48 s =
-      libcrux_sha3_generic_keccak_new_1e_cf();
+      libcrux_sha3_generic_keccak_new_89_cf();
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(data[0U], uint8_t) / (size_t)72U; i++) {
     size_t i0 = i;
@@ -3134,7 +3134,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_06(
                                                .end = blocks}),
             core_ops_range_Range_b3, core_ops_range_Range_b3);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, core_option_Option_b3)
               .tag == core_option_None) {
         break;

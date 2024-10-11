@@ -72,11 +72,22 @@ pub trait Operations: Copy + Clone + Repr {
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
 
     // Compression
-    #[requires(true)]
-    fn compress_1(v: Self) -> Self;
-    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
-               COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
-    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
+    #[requires(fstar!("forall (i:nat). i < 16 ==> v (Seq.index (f_repr $a) i) >= 0 /\\
+        v (Seq.index (f_repr $a) i) < 3329"))]
+    #[ensures(|result| fstar!("forall (i:nat). i < 16 ==> bounded (Seq.index (f_repr $result) i) 1"))]
+    fn compress_1(a: Self) -> Self;
+    #[requires(fstar!("(v $COEFFICIENT_BITS == 4 \\/
+            v $COEFFICIENT_BITS == 5 \\/
+            v $COEFFICIENT_BITS == 10 \\/
+            v $COEFFICIENT_BITS == 11) /\\
+        (forall (i:nat). i < 16 ==> v (Seq.index (f_repr $a) i) >= 0 /\\
+            v (Seq.index (f_repr $a) i) < 3329)"))]
+    #[ensures(|result| fstar!("(v $COEFFICIENT_BITS == 4 \\/
+            v $COEFFICIENT_BITS == 5 \\/
+            v $COEFFICIENT_BITS == 10 \\/
+            v $COEFFICIENT_BITS == 11) ==>
+                (forall (i:nat). i < 16 ==> bounded (Seq.index (f_repr $result) i) (v $COEFFICIENT_BITS))"))]
+    fn compress<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
     #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
         COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
@@ -112,8 +123,8 @@ pub trait Operations: Copy + Clone + Repr {
 
     #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
                        Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
-                       Spec.Utils.is_i16b_array 3228 (f_repr ${lhs}) /\\
-                       Spec.Utils.is_i16b_array 3228 (f_repr ${rhs}) "))]
+                       Spec.Utils.is_i16b_array 3328 (f_repr ${lhs}) /\\
+                       Spec.Utils.is_i16b_array 3328 (f_repr ${rhs}) "))]
     #[ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (f_repr $out)"))]
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
         -> Self;
@@ -213,7 +224,6 @@ pub fn to_standard_domain<T: Operations>(v: T) -> T {
 }
 
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::fstar::options("--z3rlimit 100")]
 #[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array 3328 (i1._super_8706949974463268012.f_repr a)"))]
 #[hax_lib::ensures(|result| fstar!("forall i.
                                        (let x = Seq.index (i1._super_8706949974463268012.f_repr ${a}) i in
@@ -225,7 +235,7 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
     T::add(a, &fm)
 }
 
-#[hax_lib::fstar::options("--z3rlimit 100")]
+#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::requires(fstar!("forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
                                       (x == 0s \\/ x == 1s)"))]
 pub fn decompress_1<T: Operations>(vec: T) -> T {

@@ -123,6 +123,7 @@ let poly_inv_ntt_step (a:field_element) (b:field_element) (i:nat{i < 128}) =
   let b = field_mul b_minus_a zetas.[sz i] in
   (a,b)
 
+#push-options "--z3rlimit 150"
 let poly_inv_ntt_layer (p:polynomial) (l:nat{l > 0 /\ l < 8}) : polynomial =
   let len = pow2 l in
   let k = (256 / len) - 1 in
@@ -132,6 +133,7 @@ let poly_inv_ntt_layer (p:polynomial) (l:nat{l > 0 /\ l < 8}) : polynomial =
     let (idx0, idx1) = if idx < len then (idx, idx+len) else (idx-len,idx) in
     let (a_ntt, b_ntt) = poly_inv_ntt_step p.[sz idx0] p.[sz idx1] (k - round) in
     if idx < len then a_ntt else b_ntt)
+#pop-options
 
 val poly_inv_ntt: polynomial -> polynomial
 let poly_inv_ntt p =
@@ -277,7 +279,7 @@ let serialize_post
   (coefficients: t_Array i16 (sz 16) { serialize_pre d1 coefficients })
   (output: t_Array u8 (sz (d1 * 2)))
   = BitVecEq.int_t_array_bitwise_eq coefficients d1
-                                    output       8
+                                   output       8
 
 // TODO: this is an alternative version of byte_decode
 //   rename to decoded bytes
@@ -286,5 +288,6 @@ let deserialize_post
   (bytes: t_Array u8 (sz (d1 * 2)))
   (output: t_Array i16 (sz 16))
   = BitVecEq.int_t_array_bitwise_eq bytes  8
-                                    output d1
+                                   output d1 /\
+  forall (i:nat). i < 16 ==> bounded (Seq.index output i) d1
 #pop-options

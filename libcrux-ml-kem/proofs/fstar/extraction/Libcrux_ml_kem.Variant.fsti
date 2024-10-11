@@ -59,9 +59,9 @@ class t_Variant (v_Self: Type0) = {
       v_K: usize ->
       #v_Hasher: Type0 ->
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      t_Slice u8 ->
-      t_Array u8 (sz 32)
-    -> Type0;
+      randomness: t_Slice u8 ->
+      res: t_Array u8 (sz 32)
+    -> pred: Type0{pred ==> res == randomness};
   f_entropy_preprocess:
       v_K: usize ->
       #v_Hasher: Type0 ->
@@ -158,9 +158,9 @@ let impl: t_Variant t_MlKem =
           i3:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (randomness: t_Slice u8)
-        (out1: t_Array u8 (sz 32))
+        (res: t_Array u8 (sz 32))
         ->
-        true);
+        res == randomness);
     f_entropy_preprocess
     =
     (fun

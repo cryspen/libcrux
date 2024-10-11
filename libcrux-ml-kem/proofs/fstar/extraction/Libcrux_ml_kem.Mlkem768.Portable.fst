@@ -13,12 +13,6 @@ let validate_private_key
     private_key
     ciphertext
 
-let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)) =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Portable.validate_public_key (sz 3)
-    (sz 1152)
-    (sz 1184)
-    public_key.Libcrux_ml_kem.Types.f_value
-
 let decapsulate
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
@@ -43,3 +37,9 @@ let generate_key_pair (randomness: t_Array u8 (sz 64)) =
     (sz 2)
     (sz 128)
     randomness
+
+let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)) =
+  Libcrux_ml_kem.Ind_cca.Instantiations.Portable.validate_public_key (sz 3)
+    (sz 1152)
+    (sz 1184)
+    public_key.Libcrux_ml_kem.Types.f_value

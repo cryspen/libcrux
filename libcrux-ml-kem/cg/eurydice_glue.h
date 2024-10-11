@@ -19,6 +19,8 @@ extern "C" {
 
 #include "karamel/target.h"
 
+#define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
+
 // SLICES, ARRAYS, ETC.
 
 // The MSVC C++ compiler does not support compound literals.
