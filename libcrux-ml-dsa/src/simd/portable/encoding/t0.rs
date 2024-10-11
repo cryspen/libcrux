@@ -1,7 +1,9 @@
 use crate::{
     constants::BITS_IN_LOWER_PART_OF_T,
-    simd::{portable::PortableSIMDUnit, traits::Operations},
+    simd::traits::Operations,
 };
+
+use super::super::vector_type::PortableSIMDUnit;
 
 // If t0 is a signed representative, change it to an unsigned one and
 // vice versa.

@@ -102,7 +102,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 
 [[package]]
 name = "benchmarks"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "chacha20poly1305",
  "criterion",
@@ -182,7 +182,7 @@ checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
 
 [[package]]
 name = "cavp"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "hex",
  "log",
@@ -702,7 +702,7 @@ dependencies = [
 [[package]]
 name = "hax-lib"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#a3875a77e66411d3e4837851938a76819d78da72"
+source = "git+https://github.com/hacspec/hax/?branch=main#c2093b4963099522c65f5cd42b96d6433afb0617"
 dependencies = [
  "hax-lib-macros",
  "num-bigint",
@@ -712,7 +712,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#a3875a77e66411d3e4837851938a76819d78da72"
+source = "git+https://github.com/hacspec/hax/?branch=main#c2093b4963099522c65f5cd42b96d6433afb0617"
 dependencies = [
  "hax-lib-macros-types",
  "paste",
@@ -725,7 +725,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros-types"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#a3875a77e66411d3e4837851938a76819d78da72"
+source = "git+https://github.com/hacspec/hax/?branch=main#c2093b4963099522c65f5cd42b96d6433afb0617"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -879,7 +879,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "lib25519"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "bindgen",
  "cc",
@@ -889,13 +889,13 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.159"
+version = "0.2.158"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "561d97a539a36e26a9a5fad1ea11a3039a67714694aaa379433e580854bc3dc5"
+checksum = "d8adc4bb1803a324070e64a98ae98f38934d91957a99cfb3a43dcbc01bc56439"
 
 [[package]]
 name = "libcrux"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "clap",
  "getrandom",
@@ -922,7 +922,7 @@ dependencies = [
 
 [[package]]
 name = "libcrux-ecdh"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "hex",
  "libcrux-hacl",
@@ -944,7 +944,7 @@ dependencies = [
 
 [[package]]
 name = "libcrux-hacl"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "bindgen",
  "cc",
@@ -955,14 +955,14 @@ dependencies = [
 
 [[package]]
 name = "libcrux-hkdf"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "libcrux-hacl",
 ]
 
 [[package]]
 name = "libcrux-hmac"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "libcrux-hacl",
  "libcrux-hkdf",
@@ -970,14 +970,14 @@ dependencies = [
 
 [[package]]
 name = "libcrux-intrinsics"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "hax-lib",
 ]
 
 [[package]]
 name = "libcrux-kem"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "hex",
  "libcrux-ecdh",
@@ -989,7 +989,7 @@ dependencies = [
 
 [[package]]
 name = "libcrux-ml-dsa"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "criterion",
  "hex",
@@ -1004,7 +1004,7 @@ dependencies = [
 
 [[package]]
 name = "libcrux-ml-kem"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "criterion",
  "hax-lib",
@@ -1019,14 +1019,14 @@ dependencies = [
 
 [[package]]
 name = "libcrux-platform"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "libc",
 ]
 
 [[package]]
 name = "libcrux-pqclean"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "bindgen",
  "cc",
@@ -1035,7 +1035,7 @@ dependencies = [
 
 [[package]]
 name = "libcrux-psq"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "classic-mceliece-rust",
  "criterion",
@@ -1049,7 +1049,7 @@ dependencies = [
 
 [[package]]
 name = "libcrux-sha3"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "cavp",
  "criterion",
@@ -1074,7 +1074,7 @@ dependencies = [
 
 [[package]]
 name = "libjade-sys"
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 dependencies = [
  "bindgen",
  "cc",

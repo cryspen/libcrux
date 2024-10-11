@@ -448,8 +448,9 @@ pub(crate) fn sample_challenge_ring_element<
     SIMDUnit: Operations,
     Shake256: shake256::Xof,
     const NUMBER_OF_ONES: usize,
+    const SEED_SIZE: usize,
 >(
-    seed: [u8; 32],
+    seed: [u8; SEED_SIZE],
 ) -> PolynomialRingElement<SIMDUnit> {
     let mut state = Shake256::init_absorb(&seed);
     let randomness = state.squeeze_first_block();
@@ -683,7 +684,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_challenge_ring_element::<SIMDUnit, Shake256, 39>(seed).to_i32_array(),
+            sample_challenge_ring_element::<SIMDUnit, Shake256, 39, 32>(seed).to_i32_array(),
             expected_coefficients
         );
 
@@ -707,7 +708,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_challenge_ring_element::<SIMDUnit, Shake256, 49>(seed).to_i32_array(),
+            sample_challenge_ring_element::<SIMDUnit, Shake256, 49, 32>(seed).to_i32_array(),
             expected_coefficients
         );
 
@@ -731,7 +732,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_challenge_ring_element::<SIMDUnit, Shake256, 60>(seed).to_i32_array(),
+            sample_challenge_ring_element::<SIMDUnit, Shake256, 60, 32>(seed).to_i32_array(),
             expected_coefficients
         );
     }

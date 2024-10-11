@@ -1,4 +1,5 @@
-use crate::simd::{portable::PortableSIMDUnit, traits::Operations};
+use crate::simd::traits::Operations;
+use super::super::vector_type::PortableSIMDUnit;
 
 #[inline(always)]
 fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(

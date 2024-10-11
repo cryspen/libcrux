@@ -59,10 +59,10 @@ macro_rules! impl_consistency_test {
 
             let key_pair = $key_gen(key_generation_seed);
 
-            let signature = $sign(&key_pair.signing_key, &message, signing_randomness)
+            let signature = $sign(&key_pair.signing_key, &message, b"", signing_randomness)
                 .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
-            $verify(&key_pair.verification_key, &message, &signature)
+            $verify(&key_pair.verification_key, &message, b"", &signature)
                 .expect("Verification should pass since the signature was honestly generated");
         }
     };
@@ -81,10 +81,10 @@ macro_rules! impl_modified_signing_key_test {
 
             modify_signing_key::<{ $signing_key_size }>(&mut key_pair.signing_key.0);
 
-            let signature = $sign(&key_pair.signing_key, &message, signing_randomness)
+            let signature = $sign(&key_pair.signing_key, &message, b"", signing_randomness)
                 .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
-            assert!($verify(&key_pair.verification_key, &message, &signature).is_err());
+            assert!($verify(&key_pair.verification_key, &message, b"", &signature).is_err());
         }
     };
 }

@@ -1,5 +1,5 @@
-use crate::simd::{portable::PortableSIMDUnit, traits::Operations};
-
+use crate::simd::traits::Operations;
+use super::super::vector_type::PortableSIMDUnit;
 // This function is marked public since it is called in the corresponding AVX2 code.
 #[inline(always)]
 pub fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(

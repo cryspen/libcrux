@@ -93,9 +93,14 @@ macro_rules! instantiate {
             }
 
             /// Generate an ML-DSA-44 Signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn sign(
                 signing_key: &MLDSA44SigningKey,
                 message: &[u8],
+                context: &[u8],
                 randomness: [u8; SIGNING_RANDOMNESS_SIZE],
             ) -> Result<MLDSA44Signature, SigningError> {
                 p::sign::<
@@ -113,13 +118,100 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
+                >(&signing_key.0, message, context, randomness)
+            }
+
+            /// Generate an ML-DSA-44 Signature (Algorithm 7 in FIPS204)
+            ///
+            /// The message is assumed to be domain-separated.
+            #[cfg(feature = "acvp")]
+            pub fn sign_internal(
+                signing_key: &MLDSA44SigningKey,
+                message: &[u8],
+                randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+            ) -> Result<MLDSA44Signature, SigningError> {
+                p::sign_internal::<
+                    ROWS_IN_A,
+                    COLUMNS_IN_A,
+                    ETA,
+                    ERROR_RING_ELEMENT_SIZE,
+                    GAMMA1_EXPONENT,
+                    GAMMA2,
+                    COMMITMENT_RING_ELEMENT_SIZE,
+                    COMMITMENT_VECTOR_SIZE,
+                    COMMITMENT_HASH_SIZE,
+                    ONES_IN_VERIFIER_CHALLENGE,
+                    MAX_ONES_IN_HINT,
+                    GAMMA1_RING_ELEMENT_SIZE,
+                    SIGNING_KEY_SIZE,
+                    SIGNATURE_SIZE,
                 >(&signing_key.0, message, randomness)
             }
 
+            /// Verify an ML-DSA-44 Signature (Algorithm 8 in FIPS204)
+            ///
+            /// The message is assumed to be domain-separated.
+            #[cfg(feature = "acvp")]
+            pub fn verify_internal(
+                verification_key: &MLDSA44VerificationKey,
+                message: &[u8],
+                signature: &MLDSA44Signature,
+            ) -> Result<(), VerificationError> {
+                p::verify_internal::<
+                    ROWS_IN_A,
+                    COLUMNS_IN_A,
+                    SIGNATURE_SIZE,
+                    VERIFICATION_KEY_SIZE,
+                    GAMMA1_EXPONENT,
+                    GAMMA1_RING_ELEMENT_SIZE,
+                    GAMMA2,
+                    BETA,
+                    COMMITMENT_RING_ELEMENT_SIZE,
+                    COMMITMENT_VECTOR_SIZE,
+                    COMMITMENT_HASH_SIZE,
+                    ONES_IN_VERIFIER_CHALLENGE,
+                    MAX_ONES_IN_HINT,
+                >(&verification_key.0, message, &signature.0)
+            }
+
+            /// Generate a HashML-DSA-44 Signature, with a SHAKE128 pre-hashing
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
+            pub fn sign_pre_hashed_shake128(
+                signing_key: &MLDSA44SigningKey,
+                message: &[u8],
+                context: &[u8],
+                randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+            ) -> Result<MLDSA44Signature, SigningError> {
+                p::sign_pre_hashed_shake128::<
+                    ROWS_IN_A,
+                    COLUMNS_IN_A,
+                    ETA,
+                    ERROR_RING_ELEMENT_SIZE,
+                    GAMMA1_EXPONENT,
+                    GAMMA2,
+                    COMMITMENT_RING_ELEMENT_SIZE,
+                    COMMITMENT_VECTOR_SIZE,
+                    COMMITMENT_HASH_SIZE,
+                    ONES_IN_VERIFIER_CHALLENGE,
+                    MAX_ONES_IN_HINT,
+                    GAMMA1_RING_ELEMENT_SIZE,
+                    SIGNING_KEY_SIZE,
+                    SIGNATURE_SIZE,
+                >(&signing_key.0, message, context, randomness)
+            }
+
             /// Verify an ML-DSA-44 Signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn verify(
                 verification_key: &MLDSA44VerificationKey,
                 message: &[u8],
+                context: &[u8],
                 signature: &MLDSA44Signature,
             ) -> Result<(), VerificationError> {
                 p::verify::<
@@ -136,7 +228,35 @@ macro_rules! instantiate {
                     COMMITMENT_HASH_SIZE,
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
-                >(&verification_key.0, message, &signature.0)
+                >(&verification_key.0, message, context, &signature.0)
+            }
+
+            /// Verify a HashML-DSA-44 Signature, with a SHAKE128 pre-hashing
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
+            pub fn verify_pre_hashed_shake128(
+                verification_key: &MLDSA44VerificationKey,
+                message: &[u8],
+                context: &[u8],
+                signature: &MLDSA44Signature,
+            ) -> Result<(), VerificationError> {
+                p::verify_pre_hashed_shake128::<
+                    ROWS_IN_A,
+                    COLUMNS_IN_A,
+                    SIGNATURE_SIZE,
+                    VERIFICATION_KEY_SIZE,
+                    GAMMA1_EXPONENT,
+                    GAMMA1_RING_ELEMENT_SIZE,
+                    GAMMA2,
+                    BETA,
+                    COMMITMENT_RING_ELEMENT_SIZE,
+                    COMMITMENT_VECTOR_SIZE,
+                    COMMITMENT_HASH_SIZE,
+                    ONES_IN_VERIFIER_CHALLENGE,
+                    MAX_ONES_IN_HINT,
+                >(&verification_key.0, message, context, &signature.0)
             }
         }
     };
@@ -177,11 +297,16 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> ML
 ///
 /// Sign a `message` with the ML-DSA `signing_key`.
 ///
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
+///
 /// This function returns an [`MLDSA44Signature`].
 #[cfg(not(eurydice))]
 pub fn sign(
     signing_key: &MLDSA44SigningKey,
     message: &[u8],
+    context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSA44Signature, SigningError> {
     multiplexing::sign::<
@@ -199,10 +324,70 @@ pub fn sign(
         GAMMA1_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
         SIGNATURE_SIZE,
+    >(&signing_key.0, message, context, randomness)
+}
+
+/// Sign with ML-DSA 44 (Algorithm 7 in FIPS204)
+///
+/// Sign a `message` (assumed to be domain-separated) with the ML-DSA `signing_key`.
+///
+/// This function returns an [`MLDSA44Signature`].
+#[cfg(all(not(eurydice), feature = "acvp"))]
+pub fn sign_internal(
+    signing_key: &MLDSA44SigningKey,
+    message: &[u8],
+    randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+) -> Result<MLDSA44Signature, SigningError> {
+    multiplexing::sign_internal::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        ETA,
+        ERROR_RING_ELEMENT_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA2,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        SIGNING_KEY_SIZE,
+        SIGNATURE_SIZE,
     >(&signing_key.0, message, randomness)
 }
 
+/// Verify an ML-DSA-44 Signature (Algorithm 8 in FIPS204)
+///
+/// Returns `Ok` when the `signature` is valid for the `message` (assumed to be domain-separated) and
+/// `verification_key`, and a [`VerificationError`] otherwise.
+#[cfg(all(not(eurydice), feature = "acvp"))]
+pub fn verify_internal(
+    verification_key: &MLDSA44VerificationKey,
+    message: &[u8],
+    signature: &MLDSA44Signature,
+) -> Result<(), VerificationError> {
+    multiplexing::verify_internal::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        SIGNATURE_SIZE,
+        VERIFICATION_KEY_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        GAMMA2,
+        BETA,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+    >(&verification_key.0, message, &signature.0)
+}
+
 /// Verify an ML-DSA-44 Signature
+///
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
 ///
 /// Returns `Ok` when the `signature` is valid for the `message` and
 /// `verification_key`, and a [`VerificationError`] otherwise.
@@ -210,6 +395,7 @@ pub fn sign(
 pub fn verify(
     verification_key: &MLDSA44VerificationKey,
     message: &[u8],
+    context: &[u8],
     signature: &MLDSA44Signature,
 ) -> Result<(), VerificationError> {
     multiplexing::verify::<
@@ -226,5 +412,72 @@ pub fn verify(
         COMMITMENT_HASH_SIZE,
         ONES_IN_VERIFIER_CHALLENGE,
         MAX_ONES_IN_HINT,
-    >(&verification_key.0, message, &signature.0)
+    >(&verification_key.0, message, context, &signature.0)
+}
+
+/// Sign with HashML-DSA 44, with a SHAKE128 pre-hashing
+///
+/// Sign a digest of `message` derived using `pre_hash` with the
+/// ML-DSA `signing_key`.
+///
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
+///
+/// This function returns an [`MLDSA44Signature`].
+#[cfg(not(eurydice))]
+pub fn sign_pre_hashed_shake128(
+    signing_key: &MLDSA44SigningKey,
+    message: &[u8],
+    context: &[u8],
+    randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+) -> Result<MLDSA44Signature, SigningError> {
+    multiplexing::sign_pre_hashed_shake128::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        ETA,
+        ERROR_RING_ELEMENT_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA2,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        SIGNING_KEY_SIZE,
+        SIGNATURE_SIZE,
+    >(&signing_key.0, message, context, randomness)
+}
+
+/// Verify a HashML-DSA-44 Signature, with a SHAKE128 pre-hashing
+///
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
+///
+/// Returns `Ok` when the `signature` is valid for the `message` and
+/// `verification_key`, and a [`VerificationError`] otherwise.
+#[cfg(not(eurydice))]
+pub fn verify_pre_hashed_shake128(
+    verification_key: &MLDSA44VerificationKey,
+    message: &[u8],
+    context: &[u8],
+    signature: &MLDSA44Signature,
+) -> Result<(), VerificationError> {
+    multiplexing::verify_pre_hashed_shake128::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        SIGNATURE_SIZE,
+        VERIFICATION_KEY_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        GAMMA2,
+        BETA,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+    >(&verification_key.0, message, context, &signature.0)
 }

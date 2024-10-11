@@ -12,12 +12,13 @@ fn main() {
     let key_generation_seed = random_array();
     let signing_randomness = random_array();
     let message = random_array::<1023>();
+    let context = b"";
 
     let keypair = ml_dsa_65::generate_key_pair(key_generation_seed);
-    let signature = ml_dsa_65::sign(&keypair.signing_key, &message, signing_randomness)
+    let signature = ml_dsa_65::sign(&keypair.signing_key, &message, context, signing_randomness)
         .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
     for _i in 0..100_000 {
-        let _ = ml_dsa_65::verify(&keypair.verification_key, &message, &signature);
+        let _ = ml_dsa_65::verify(&keypair.verification_key, &message, context, &signature);
     }
 }

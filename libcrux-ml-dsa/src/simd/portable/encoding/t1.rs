@@ -1,7 +1,9 @@
 use crate::{
     constants::BITS_IN_UPPER_PART_OF_T,
-    simd::{portable::PortableSIMDUnit, traits::Operations},
+    simd::traits::Operations,
 };
+
+use super::super::vector_type::PortableSIMDUnit;
 
 #[inline(always)]
 pub fn serialize(simd_unit: PortableSIMDUnit) -> [u8; 10] {
