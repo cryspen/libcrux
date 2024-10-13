@@ -135,7 +135,7 @@ fn validate_public_key<
             &mut unpacked,
         );
 
-        // ML_KEM_DIS_04: not more than 12, 16, 19 same elements in A'
+        // ML_KEM_DIS_04: not more than 12, 16, 19 same elements in Zq in A'
         let counts = count_elements(&unpacked.ind_cpa_public_key.A);
         let max = match K {
             2 => 12,
@@ -143,8 +143,8 @@ fn validate_public_key<
             4 => 19,
             _ => unreachable!(),
         };
-        let too_many: Vec<_> = counts.values().into_iter().filter(|&&x| x > max).collect();
-        if !too_many.is_empty() {
+        let too_many = counts.values().any(|&x| x > max);
+        if too_many {
             #[cfg(all(feature = "std"))]
             std::eprintln!("too many entries in A with the same value");
 
@@ -200,23 +200,21 @@ fn count_elements_zq<const K: usize>(
 
 fn count_elements<const K: usize>(
     matrix: &[[crate::polynomial::PolynomialRingElement<PortableVector>; K]; K],
-) -> std::collections::HashMap<Vec<u64>, u64> {
+) -> std::collections::HashMap<i16, u64> {
     let mut counts = std::collections::HashMap::new();
 
     for row in matrix {
         for element in row {
-            let e: Vec<u64> = element
-                .coefficients
-                .iter()
-                .map(|v| {
-                    let mut hasher = DefaultHasher::new();
-                    v.hash(&mut hasher);
-                    hasher.finish()
-                })
-                .collect();
-            *counts.entry(e).or_insert(0u64) += 1;
+            for v in element.coefficients {
+                eprintln!("A[][]: {:x?}", v.elements);
+                for p in v.elements {
+                    *counts.entry(p).or_insert(0u64) += 1;
+                }
+            }
         }
     }
+
+    // eprintln!("counts: {:?}", counts);
 
     counts
 }

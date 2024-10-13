@@ -264,6 +264,7 @@ impl UnpackedKeyPair {
                 }
                 bytes[p..p + 32].copy_from_slice(&kp.public_key.ind_cpa_public_key.seed_for_A);
                 p += 32;
+                // eprintln!("A start: {p:}");
                 for i in 0..kp.public_key.ind_cpa_public_key.A.len() {
                     let a1 = &kp.public_key.ind_cpa_public_key.A[i];
                     for j in 0..a1.len() {
@@ -274,6 +275,7 @@ impl UnpackedKeyPair {
                         }
                     }
                 }
+                // eprintln!("A end: {p:}");
                 bytes[p..p + 32].copy_from_slice(&kp.public_key.public_key_hash);
 
                 write_to_file(sk_name + "_" + &pk_name, &bytes);
@@ -339,6 +341,7 @@ impl UnpackedKeyPair {
         for i in 0..out.public_key.ind_cpa_public_key.A.len() {
             for j in 0..out.public_key.ind_cpa_public_key.A[i].len() {
                 for k in 0..out.public_key.ind_cpa_public_key.A[i][j].coefficients.len() {
+                    // eprintln!("A[{}][{}]: {:x?}", i, j, from_bytes(&bytes[p..p + 32]));
                     out.public_key.ind_cpa_public_key.A[i][j].coefficients[k] =
                         from_bytes(&bytes[p..p + 32]);
                     p += 32;
