@@ -168,17 +168,27 @@ let sample_poly_cbd2 #r seed domain_sep =
   let prf_output = v_PRF (v_ETA2_RANDOMNESS_SIZE r) prf_input in
   sample_poly_cbd (v_ETA2 r) prf_output
 
-val sample_poly_cbd1: #r:rank -> seed:t_Array u8 (sz 32) -> domain_sep:usize{v domain_sep < 256} -> polynomial
-let sample_poly_cbd1 #r seed domain_sep =
-  let prf_input = Seq.append seed (Seq.create 1 (mk_int #u8_inttype (v domain_sep))) in
-  let prf_output = v_PRF (v_ETA1_RANDOMNESS_SIZE r) prf_input in
-  sample_poly_cbd (v_ETA1 r) prf_output
+let sample_vector_cbd1_prf_input (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) (i:usize{i <. r}) : t_Array u8 (sz 33) =
+  Seq.append seed (Seq.create 1 (mk_int #u8_inttype (v domain_sep + v i)))
+
+let sample_vector_cbd1_prf_output (#r:rank) (prf_output:t_Array (t_Array u8 (v_ETA1_RANDOMNESS_SIZE r)) r) (i:usize{i <. r}) : polynomial =
+  sample_poly_cbd (v_ETA1 r) prf_output.[i]
 
 let sample_vector_cbd1 (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r =
-    createi r (fun i ->  sample_poly_cbd1 #r seed (domain_sep +! i))
+    let prf_input = createi r (sample_vector_cbd1_prf_input #r seed domain_sep) in
+    let prf_output = v_PRFxN r (v_ETA1_RANDOMNESS_SIZE r) prf_input in
+    createi r (sample_vector_cbd1_prf_output #r prf_output)
+
+let sample_vector_cbd2_prf_input (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) (i:usize{i <. r}) : t_Array u8 (sz 33) =
+  Seq.append seed (Seq.create 1 (mk_int #u8_inttype (v domain_sep + v i)))
+
+let sample_vector_cbd2_prf_output (#r:rank) (prf_output:t_Array (t_Array u8 (v_ETA2_RANDOMNESS_SIZE r)) r) (i:usize{i <. r}) : polynomial =
+  sample_poly_cbd (v_ETA2 r) prf_output.[i]
 
 let sample_vector_cbd2 (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r =
-    createi r (fun i ->  sample_poly_cbd2 #r seed (domain_sep +! i))
+    let prf_input = createi r (sample_vector_cbd2_prf_input #r seed domain_sep) in
+    let prf_output = v_PRFxN r (v_ETA2_RANDOMNESS_SIZE r) prf_input in
+    createi r (sample_vector_cbd2_prf_output #r prf_output)
 
 let sample_vector_cbd_then_ntt (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r =
     vector_ntt (sample_vector_cbd1 #r seed domain_sep)
@@ -214,13 +224,24 @@ let decode_then_decompress_u (#r:rank) (arr: t_Array u8 (v_C1_SIZE r)): vector r
       byte_decode_then_decompress (v d) slice
     )
 
-let compress_then_encode_v (#r:rank): polynomial -> t_Array u8 (v_C2_SIZE r)
-  = compress_then_byte_encode (v (v_VECTOR_V_COMPRESSION_FACTOR r))
+let compress_then_encode_v (u:usize{u == sz 4 \/ u == sz 5}): polynomial -> t_Array u8 (sz 32 *! u)
+  = compress_then_byte_encode (v u)
 
-let decode_then_decompress_v (#r:rank): t_Array u8 (v_C2_SIZE r) -> polynomial
-  = byte_decode_then_decompress (v (v_VECTOR_V_COMPRESSION_FACTOR r)) 
+let decode_then_decompress_v (u:usize{u == sz 4 \/ u == sz 5}): t_Array u8 (sz 32 *! u) -> polynomial
+  = byte_decode_then_decompress (v u)
 
 (** IND-CPA Functions *)
+
+val ind_cpa_generate_keypair_unpacked (r:rank) (randomness:t_Array u8 v_CPA_KEY_GENERATION_SEED_SIZE) :
+                             ((((vector r) & (t_Array u8 (sz 32))) & (vector r)) & bool)
+let ind_cpa_generate_keypair_unpacked r randomness =
+    let hashed = v_G (Seq.append randomness (Seq.create 1 (cast r <: u8))) in
+    let (seed_for_A, seed_for_secret_and_error) = split hashed (sz 32) in
+    let (matrix_A_as_ntt, sufficient_randomness) = sample_matrix_A_ntt #r seed_for_A in
+    let secret_as_ntt = sample_vector_cbd_then_ntt #r seed_for_secret_and_error (sz 0) in
+    let error_as_ntt = sample_vector_cbd_then_ntt #r seed_for_secret_and_error r in
+    let t_as_ntt = compute_As_plus_e_ntt #r matrix_A_as_ntt secret_as_ntt error_as_ntt in
+    (((t_as_ntt,seed_for_A), secret_as_ntt), sufficient_randomness)
 
 /// This function implements most of <strong>Algorithm 12</strong> of the
 /// NIST FIPS 203 specification; this is the MLKEM CPA-PKE key generation algorithm.
@@ -232,15 +253,29 @@ let decode_then_decompress_v (#r:rank): t_Array u8 (v_C2_SIZE r) -> polynomial
 val ind_cpa_generate_keypair (r:rank) (randomness:t_Array u8 v_CPA_KEY_GENERATION_SEED_SIZE) :
                              (t_MLKEMCPAKeyPair r & bool)
 let ind_cpa_generate_keypair r randomness =
-    let hashed = v_G randomness in
-    let (seed_for_A, seed_for_secret_and_error) = split hashed (sz 32) in
-    let (matrix_A_as_ntt, sufficient_randomness) = sample_matrix_A_ntt #r seed_for_A in
-    let secret_as_ntt = sample_vector_cbd_then_ntt #r seed_for_secret_and_error (sz 0) in
-    let error_as_ntt = sample_vector_cbd_then_ntt #r seed_for_secret_and_error r in
-    let t_as_ntt = compute_As_plus_e_ntt #r matrix_A_as_ntt secret_as_ntt error_as_ntt in
+    let (((t_as_ntt,seed_for_A), secret_as_ntt), sufficient_randomness) =
+      ind_cpa_generate_keypair_unpacked r randomness in
     let public_key_serialized = Seq.append (vector_encode_12 #r t_as_ntt) seed_for_A in
     let secret_key_serialized = vector_encode_12 #r secret_as_ntt in
     ((secret_key_serialized,public_key_serialized), sufficient_randomness)
+
+val ind_cpa_encrypt_unpacked (r:rank)
+                    (message: t_Array u8 v_SHARED_SECRET_SIZE)
+                    (randomness:t_Array u8 v_SHARED_SECRET_SIZE)
+                    (t_as_ntt:vector r)
+                    (matrix_A_as_ntt:matrix r) :
+                    t_MLKEMCiphertext r
+
+let ind_cpa_encrypt_unpacked r message randomness t_as_ntt matrix_A_as_ntt =
+    let r_as_ntt = sample_vector_cbd_then_ntt #r randomness (sz 0) in
+    let error_1 = sample_vector_cbd2 #r randomness r in
+    let error_2 = sample_poly_cbd2 #r randomness (r +! r) in
+    let u = vector_add (vector_inv_ntt (matrix_vector_mul_ntt matrix_A_as_ntt r_as_ntt)) error_1 in
+    let mu = decode_then_decompress_message message in
+    let v = poly_add (poly_add (vector_dot_product_ntt t_as_ntt r_as_ntt) error_2) mu in  
+    let c1 = compress_then_encode_u #r u in
+    let c2 = compress_then_encode_v (v_VECTOR_V_COMPRESSION_FACTOR r) v in
+    concat c1 c2
 
 /// This function implements <strong>Algorithm 13</strong> of the
 /// NIST FIPS 203 specification; this is the MLKEM CPA-PKE encryption algorithm.
@@ -255,15 +290,19 @@ let ind_cpa_encrypt r public_key message randomness =
     let (t_as_ntt_bytes, seed_for_A) = split public_key (v_T_AS_NTT_ENCODED_SIZE r) in
     let t_as_ntt = vector_decode_12 #r t_as_ntt_bytes in 
     let matrix_A_as_ntt, sufficient_randomness = sample_matrix_A_ntt #r seed_for_A in
-    let r_as_ntt = sample_vector_cbd_then_ntt #r randomness (sz 0) in
-    let error_1 = sample_vector_cbd2 #r randomness r in
-    let error_2 = sample_poly_cbd2 #r randomness (r +! r) in
-    let u = vector_add (vector_inv_ntt (matrix_vector_mul_ntt (matrix_transpose matrix_A_as_ntt) r_as_ntt)) error_1 in
-    let mu = decode_then_decompress_message message in
-    let v = poly_add (poly_add (vector_dot_product_ntt t_as_ntt r_as_ntt) error_2) mu in  
-    let c1 = compress_then_encode_u #r u in
-    let c2 = compress_then_encode_v #r v in
-    (concat c1 c2, sufficient_randomness)
+    let c = ind_cpa_encrypt_unpacked r message randomness t_as_ntt (matrix_transpose matrix_A_as_ntt) in
+    (c, sufficient_randomness)
+
+val ind_cpa_decrypt_unpacked (r:rank)
+                    (ciphertext: t_MLKEMCiphertext r) (secret_as_ntt:vector r): 
+                    t_MLKEMSharedSecret
+
+let ind_cpa_decrypt_unpacked r ciphertext secret_as_ntt =
+    let (c1,c2) = split ciphertext (v_C1_SIZE r) in
+    let u = decode_then_decompress_u #r c1 in
+    let v = decode_then_decompress_v (v_VECTOR_V_COMPRESSION_FACTOR r) c2 in
+    let w = poly_sub v (poly_inv_ntt (vector_dot_product_ntt secret_as_ntt (vector_ntt u))) in
+    compress_then_encode_message w
 
 /// This function implements <strong>Algorithm 14</strong> of the
 /// NIST FIPS 203 specification; this is the MLKEM CPA-PKE decryption algorithm.
@@ -274,12 +313,8 @@ val ind_cpa_decrypt (r:rank) (secret_key: t_MLKEMCPAPrivateKey r)
 
 [@ "opaque_to_smt"]
 let ind_cpa_decrypt r secret_key ciphertext =
-    let (c1,c2) = split ciphertext (v_C1_SIZE r) in
-    let u = decode_then_decompress_u #r c1 in
-    let v = decode_then_decompress_v #r c2 in
     let secret_as_ntt = vector_decode_12 #r secret_key in
-    let w = poly_sub v (poly_inv_ntt (vector_dot_product_ntt secret_as_ntt (vector_ntt u))) in
-    compress_then_encode_message w
+    ind_cpa_decrypt_unpacked r ciphertext secret_as_ntt
 
 (** IND-CCA Functions *)
 

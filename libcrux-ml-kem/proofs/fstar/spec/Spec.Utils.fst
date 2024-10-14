@@ -129,6 +129,9 @@ let v_PRF v_LEN input = map_slice
             (map_slice (fun x -> Lib.IntTypes.secret #Lib.IntTypes.U8 (to_uint8 x)) input) 
             (v v_LEN))
 
+assume val v_PRFxN (r:usize{v r == 2 \/ v r == 3 \/ v r == 4}) (v_LEN: usize{v v_LEN < pow2 32})
+  (input: t_Array (t_Array u8 (sz 33)) r) : t_Array (t_Array u8 v_LEN) r
+
 let v_J (input: t_Slice u8) : t_Array u8 (sz 32) = v_PRF (sz 32) input
 
 val v_XOF (v_LEN: usize{v v_LEN < pow2 32}) (input: t_Slice u8) : t_Array u8 v_LEN

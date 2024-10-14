@@ -107,6 +107,7 @@ let poly_ntt_layer (p:polynomial) (l:nat{l > 0 /\ l < 8}) : polynomial =
 #pop-options
 
 val poly_ntt: polynomial -> polynomial
+[@ "opaque_to_smt"]
 let poly_ntt p =
   let p = poly_ntt_layer p 7 in
   let p = poly_ntt_layer p 6 in
@@ -235,12 +236,13 @@ let decompress_d (d: dT {d <> 12}) (x: field_element_d d): field_element
   = let r = (x * v v_FIELD_MODULUS + 1664) / pow2 d in
     r
     
-
+[@ "opaque_to_smt"]
 let byte_encode (d: dT) (coefficients: polynomial_d d): t_Array u8 (sz (32 * d))
   =  let coefficients' : t_Array nat (sz 256) = map_array #(field_element_d d) (fun x -> x <: nat) coefficients in
      bits_to_bytes #(sz (32 * d))
        (retype_bit_vector (bit_vec_of_nat_array coefficients' d))
 
+[@ "opaque_to_smt"]
 let byte_decode (d: dT) (coefficients: t_Array u8 (sz (32 * d))): polynomial_d d
   = let bv = bytes_to_bits coefficients in
     let arr: t_Array nat (sz 256) = bit_vec_to_nat_array d (retype_bit_vector bv) in
@@ -256,11 +258,13 @@ let byte_decode (d: dT) (coefficients: t_Array u8 (sz (32 * d))): polynomial_d d
 let coerce_polynomial_12 (p:polynomial): polynomial_d 12 = p
 let coerce_vector_12 (#r:rank) (v:vector r): vector_d r 12 = v
 
+[@ "opaque_to_smt"]
 let compress_then_byte_encode (d: dT {d <> 12}) (coefficients: polynomial): t_Array u8 (sz (32 * d))
   = let coefs: t_Array (field_element_d d) (sz 256) = map_array (compress_d d) coefficients
     in
     byte_encode d coefs
 
+[@ "opaque_to_smt"]
 let byte_decode_then_decompress (d: dT {d <> 12}) (b:t_Array u8 (sz (32 * d))): polynomial
   = map_array (decompress_d d) (byte_decode d b)
 

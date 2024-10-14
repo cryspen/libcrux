@@ -401,14 +401,18 @@ let compress_then_serialize_ring_element_u
     assert ((v (cast v_COMPRESSION_FACTOR <: u32) == 10) \/
         (v (cast v_COMPRESSION_FACTOR <: u32) == 11))
   in
-  match v_COMPRESSION_FACTOR with
-  | 10 -> compress_then_serialize_10_ v_OUT_LEN #v_Vector re
-  | 11 -> compress_then_serialize_11_ v_OUT_LEN #v_Vector re
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+  let result:t_Array u8 v_OUT_LEN =
+    match v_COMPRESSION_FACTOR with
+    | 10 -> compress_then_serialize_10_ v_OUT_LEN #v_Vector re
+    | 11 -> compress_then_serialize_11_ v_OUT_LEN #v_Vector re
+    | _ ->
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
-        <:
-        Rust_primitives.Hax.t_Never)
+          <:
+          Rust_primitives.Hax.t_Never)
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let compress_then_serialize_ring_element_v
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
@@ -423,7 +427,7 @@ let compress_then_serialize_ring_element_v
     assert ((v (cast v_COMPRESSION_FACTOR <: u32) == 4) \/
         (v (cast v_COMPRESSION_FACTOR <: u32) == 5))
   in
-  let out, hax_temp_output:(t_Slice u8 & Prims.unit) =
+  let out, result:(t_Slice u8 & Prims.unit) =
     match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
     | 4 -> compress_then_serialize_4_ #v_Vector re out, () <: (t_Slice u8 & Prims.unit)
     | 5 -> compress_then_serialize_5_ #v_Vector re out, () <: (t_Slice u8 & Prims.unit)
@@ -436,6 +440,8 @@ let compress_then_serialize_ring_element_v
       <:
       (t_Slice u8 & Prims.unit)
   in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  let hax_temp_output:Prims.unit = result in
   out
 
 let deserialize_then_decompress_10_
@@ -727,14 +733,18 @@ let deserialize_then_decompress_ring_element_u
     assert ((v (cast v_COMPRESSION_FACTOR <: u32) == 10) \/
         (v (cast v_COMPRESSION_FACTOR <: u32) == 11))
   in
-  match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
-  | 10 -> deserialize_then_decompress_10_ #v_Vector serialized
-  | 11 -> deserialize_then_decompress_11_ #v_Vector serialized
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+    match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
+    | 10 -> deserialize_then_decompress_10_ #v_Vector serialized
+    | 11 -> deserialize_then_decompress_11_ #v_Vector serialized
+    | _ ->
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
-        <:
-        Rust_primitives.Hax.t_Never)
+          <:
+          Rust_primitives.Hax.t_Never)
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let deserialize_then_decompress_ring_element_v
       (v_COMPRESSION_FACTOR: usize)
@@ -748,14 +758,18 @@ let deserialize_then_decompress_ring_element_v
     assert ((v (cast v_COMPRESSION_FACTOR <: u32) == 4) \/
         (v (cast v_COMPRESSION_FACTOR <: u32) == 5))
   in
-  match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
-  | 4 -> deserialize_then_decompress_4_ #v_Vector serialized
-  | 5 -> deserialize_then_decompress_5_ #v_Vector serialized
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+    match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
+    | 4 -> deserialize_then_decompress_4_ #v_Vector serialized
+    | 5 -> deserialize_then_decompress_5_ #v_Vector serialized
+    | _ ->
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
-        <:
-        Rust_primitives.Hax.t_Never)
+          <:
+          Rust_primitives.Hax.t_Never)
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let deserialize_to_reduced_ring_element
       (#v_Vector: Type0)
@@ -841,7 +855,9 @@ let deserialize_ring_elements_reduced
           <:
           t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
+  let result:Prims.unit = () <: Prims.unit in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  let hax_temp_output:Prims.unit = result in
   deserialized_pk
 
 let deserialize_ring_elements_reduced_out
@@ -910,7 +926,9 @@ let deserialize_to_uncompressed_ring_element
           <:
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in
-  re
+  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let serialize_uncompressed_ring_element
       (#v_Vector: Type0)
