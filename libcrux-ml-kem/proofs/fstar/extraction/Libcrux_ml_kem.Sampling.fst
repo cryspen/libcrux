@@ -214,8 +214,8 @@ let sample_from_binomial_distribution_2_
             Rust_primitives.mk_u32 1431655765
           in
           let _:Prims.unit =
-            logand_lemma random_bits_as_u32 (mk_u32 1431655765);
-            logand_lemma (random_bits_as_u32 >>! (mk_i32 1)) (mk_u32 1431655765)
+            logand_lemma random_bits_as_u32 1431655765ul;
+            logand_lemma (random_bits_as_u32 >>! 1l) 1431655765ul
           in
           let coin_toss_outcomes:u32 = even_bits +! odd_bits in
           Rust_primitives.Hax.Folds.fold_range_step_by (Rust_primitives.mk_u32 0)
@@ -247,14 +247,13 @@ let sample_from_binomial_distribution_2_
                   i16
                 in
                 let _:Prims.unit =
-                  logand_lemma (coin_toss_outcomes >>! outcome_set <: u32) (mk_u32 3);
-                  logand_lemma (coin_toss_outcomes >>! (outcome_set +! (mk_u32 2) <: u32) <: u32)
-                    (mk_u32 3);
+                  logand_lemma (coin_toss_outcomes >>! outcome_set <: u32) 3ul;
+                  logand_lemma (coin_toss_outcomes >>! (outcome_set +! 2ul <: u32) <: u32) 3ul;
                   assert (v outcome_1_ >= 0 /\ v outcome_1_ <= 3);
                   assert (v outcome_2_ >= 0 /\ v outcome_2_ <= 3);
                   assert (v chunk_number <= 31);
                   assert (v (sz 8 *! chunk_number <: usize) <= 248);
-                  assert (v (cast (outcome_set >>! (mk_i32 2) <: u32) <: usize) <= 7)
+                  assert (v (cast (outcome_set >>! 2l <: u32) <: usize) <= 7)
                 in
                 let offset:usize =
                   cast (outcome_set >>! Rust_primitives.mk_i32 2 <: u32) <: usize
@@ -320,9 +319,9 @@ let sample_from_binomial_distribution_3_
             Rust_primitives.mk_u32 2396745
           in
           let _:Prims.unit =
-            logand_lemma random_bits_as_u24 (mk_u32 2396745);
-            logand_lemma (random_bits_as_u24 >>! (mk_i32 1) <: u32) (mk_u32 2396745);
-            logand_lemma (random_bits_as_u24 >>! (mk_i32 2) <: u32) (mk_u32 2396745)
+            logand_lemma random_bits_as_u24 2396745ul;
+            logand_lemma (random_bits_as_u24 >>! 1l <: u32) 2396745ul;
+            logand_lemma (random_bits_as_u24 >>! 2l <: u32) 2396745ul
           in
           let coin_toss_outcomes:u32 = (first_bits +! second_bits <: u32) +! third_bits in
           Rust_primitives.Hax.Folds.fold_range_step_by (Rust_primitives.mk_i32 0)
@@ -354,14 +353,13 @@ let sample_from_binomial_distribution_3_
                   i16
                 in
                 let _:Prims.unit =
-                  logand_lemma (coin_toss_outcomes >>! outcome_set <: u32) (mk_u32 7);
-                  logand_lemma (coin_toss_outcomes >>! (outcome_set +! (mk_i32 3) <: i32) <: u32)
-                    (mk_u32 7);
+                  logand_lemma (coin_toss_outcomes >>! outcome_set <: u32) 7ul;
+                  logand_lemma (coin_toss_outcomes >>! (outcome_set +! 3l <: i32) <: u32) 7ul;
                   assert (v outcome_1_ >= 0 /\ v outcome_1_ <= 7);
                   assert (v outcome_2_ >= 0 /\ v outcome_2_ <= 7);
                   assert (v chunk_number <= 63);
                   assert (v (sz 4 *! chunk_number <: usize) <= 252);
-                  assert (v (cast (outcome_set /! (mk_i32 6) <: i32) <: usize) <= 3)
+                  assert (v (cast (outcome_set /! 6l <: i32) <: usize) <= 3)
                 in
                 let offset:usize = cast (outcome_set /! Rust_primitives.mk_i32 6 <: i32) <: usize in
                 let sampled_i16s:t_Array i16 (Rust_primitives.mk_usize 256) =
@@ -384,14 +382,18 @@ let sample_from_binomial_distribution
       (randomness: t_Slice u8)
      =
   let _:Prims.unit = assert ((v (cast v_ETA <: u32) == 2) \/ (v (cast v_ETA <: u32) == 3)) in
-  match cast (v_ETA <: usize) <: u32 with
-  | 2 -> sample_from_binomial_distribution_2_ #v_Vector randomness
-  | 3 -> sample_from_binomial_distribution_3_ #v_Vector randomness
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+    match cast (v_ETA <: usize) <: u32 with
+    | 2 -> sample_from_binomial_distribution_2_ #v_Vector randomness
+    | 3 -> sample_from_binomial_distribution_3_ #v_Vector randomness
+    | _ ->
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
-        <:
-        Rust_primitives.Hax.t_Never)
+          <:
+          Rust_primitives.Hax.t_Never)
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #push-options "--admit_smt_queries true"
 

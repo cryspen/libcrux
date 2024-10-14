@@ -21,6 +21,9 @@ pub(crate) trait Variant {
     #[ensures(|res| fstar!("$res == $randomness"))] // We only have post-conditions for ML-KEM, not Kyber
     fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32];
     #[requires(seed.len() == 32)]
+    #[ensures(|res| fstar!("Seq.length $seed == 32 ==> $res == Spec.Utils.v_G
+        (Seq.append $seed (Seq.create 1 (cast $K <: u8)))")
+    )]
     fn cpa_keygen_seed<const K: usize, Hasher: Hash<K>>(seed: &[u8]) -> [u8; 64];
 }
 
@@ -91,10 +94,15 @@ impl Variant for MlKem {
 
     #[inline(always)]
     #[requires(key_generation_seed.len() == 32)]
+    #[ensures(|res| fstar!("Seq.length $key_generation_seed == 32 ==> $res == Spec.Utils.v_G
+        (Seq.append $key_generation_seed (Seq.create 1 (cast $K <: u8)))")
+    )]
     fn cpa_keygen_seed<const K: usize, Hasher: Hash<K>>(key_generation_seed: &[u8]) -> [u8; 64] {
         let mut seed = [0u8; CPA_PKE_KEY_GENERATION_SEED_SIZE + 1];
         seed[0..CPA_PKE_KEY_GENERATION_SEED_SIZE].copy_from_slice(key_generation_seed);
         seed[CPA_PKE_KEY_GENERATION_SEED_SIZE] = K as u8;
+        hax_lib::fstar!("Lib.Sequence.eq_intro #u8 #33 $seed
+            (Seq.append $key_generation_seed (Seq.create 1 (cast $K <: u8)))");
         Hasher::G(&seed)
     }
 }

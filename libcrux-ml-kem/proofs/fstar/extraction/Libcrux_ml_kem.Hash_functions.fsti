@@ -30,12 +30,16 @@ class t_Hash (v_Self: Type0) (v_K: usize) = {
   f_PRF:v_LEN: usize -> x0: t_Slice u8
     -> Prims.Pure (t_Array u8 v_LEN) (f_PRF_pre v_LEN x0) (fun result -> f_PRF_post v_LEN x0 result);
   f_PRFxN_pre:v_LEN: usize -> input: t_Array (t_Array u8 (Rust_primitives.mk_usize 33)) v_K
-    -> pred: Type0{true ==> pred};
+    -> pred: Type0{v v_LEN < pow2 32 /\ (v v_K == 2 \/ v v_K == 3 \/ v v_K == 4) ==> pred};
   f_PRFxN_post:
       v_LEN: usize ->
-      t_Array (t_Array u8 (Rust_primitives.mk_usize 33)) v_K ->
-      t_Array (t_Array u8 v_LEN) v_K
-    -> Type0;
+      input: t_Array (t_Array u8 (Rust_primitives.mk_usize 33)) v_K ->
+      result: t_Array (t_Array u8 v_LEN) v_K
+    -> pred:
+      Type0
+        { pred ==>
+          (v v_LEN < pow2 32 /\ (v v_K == 2 \/ v v_K == 3 \/ v v_K == 4)) ==>
+          result == Spec.Utils.v_PRFxN v_K v_LEN input };
   f_PRFxN:v_LEN: usize -> x0: t_Array (t_Array u8 (Rust_primitives.mk_usize 33)) v_K
     -> Prims.Pure (t_Array (t_Array u8 v_LEN) v_K)
         (f_PRFxN_pre v_LEN x0)
