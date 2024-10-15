@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 2e8f138dbcbfbfabf4bbd994c8587ec00d197102
+ * Libcrux: 76be5813ea48977a7e122f6af350f1a5324b2cb6
  */
 
 #include "libcrux_mlkem1024_avx2.h"
@@ -135,7 +135,7 @@ libcrux_ml_kem_mlkem1024_avx2_generate_key_pair(uint8_t randomness[64U]) {
 }
 
 /**
- Portable private key validation
+ Private key validation
 */
 /**
 A monomorphic instance of
@@ -164,7 +164,32 @@ bool libcrux_ml_kem_mlkem1024_avx2_validate_private_key(
 }
 
 /**
- Portable public key validation
+ Private key validation
+*/
+/**
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key_only with const
+generics
+- K= 4
+- SECRET_KEY_SIZE= 3168
+*/
+static KRML_MUSTINLINE bool validate_private_key_only_44(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key) {
+  return libcrux_ml_kem_ind_cca_validate_private_key_only_5e(private_key);
+}
+
+/**
+ Validate the private key only.
+
+ Returns `true` if valid, and `false` otherwise.
+*/
+bool libcrux_ml_kem_mlkem1024_avx2_validate_private_key_only(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key) {
+  return validate_private_key_only_44(private_key);
+}
+
+/**
+ Public key validation
 */
 /**
 A monomorphic instance of

@@ -6,8 +6,11 @@ open FStar.Mul
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_kem.Hash_functions in
   let open Libcrux_ml_kem.Hash_functions.Neon in
+  let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Neon in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 let encapsulate
@@ -80,10 +83,33 @@ let generate_keypair
     Libcrux_ml_kem.Ind_cca.Unpacked.generate_keypair v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE
       v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE
       #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-      #Libcrux_ml_kem.Hash_functions.Neon.t_Simd128Hash randomness out
+      #Libcrux_ml_kem.Hash_functions.Neon.t_Simd128Hash #Libcrux_ml_kem.Variant.t_MlKem randomness
+      out
     <:
     (Prims.unit &
       Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
         Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
   in
   out
+
+let keypair_from_private_key
+      (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
+          usize)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
+            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+     =
+  let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    Libcrux_ml_kem.Ind_cca.Unpacked.keys_from_private_key v_K
+      v_SECRET_KEY_SIZE
+      v_CPA_SECRET_KEY_SIZE
+      v_PUBLIC_KEY_SIZE
+      v_BYTES_PER_RING_ELEMENT
+      v_T_AS_NTT_ENCODED_SIZE
+      #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+      private_key
+      key_pair
+  in
+  key_pair

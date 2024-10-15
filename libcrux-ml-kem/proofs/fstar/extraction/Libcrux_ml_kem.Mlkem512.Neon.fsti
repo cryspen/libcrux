@@ -10,6 +10,11 @@ val validate_private_key
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 768))
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
+/// Validate the private key only.
+/// Returns `true` if valid, and `false` otherwise.
+val validate_private_key_only (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
 /// Validate a public key.
 /// Returns `true` if valid, and `false` otherwise.
 val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))

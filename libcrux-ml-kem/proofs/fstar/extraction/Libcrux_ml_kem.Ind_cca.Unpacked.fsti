@@ -7,9 +7,11 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Hash_functions in
+  let open Libcrux_ml_kem.Hash_functions.Portable in
   let open Libcrux_ml_kem.Ind_cpa.Unpacked in
   let open Libcrux_ml_kem.Polynomial in
   let open Libcrux_ml_kem.Types in
+  let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
@@ -30,7 +32,7 @@ type t_MlKemPublicKeyUnpacked
 }
 
 /// Get the serialized public key.
-val impl__serialized_public_key
+val impl__serialized
       (v_K: usize)
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
@@ -41,7 +43,7 @@ val impl__serialized_public_key
       (fun _ -> Prims.l_True)
 
 /// Get the serialized public key.
-val impl__serialized_public_key_mut
+val impl__serialized_mut
       (v_K: usize)
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
@@ -126,12 +128,29 @@ val impl_2__public_key
     : Prims.Pure (t_MlKemPublicKeyUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Get the serialized private key.
+val impl_2__serialized_private_key_mut
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT:
+          usize)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self: t_MlKemKeyPairUnpacked v_K v_Vector)
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Get the serialized private key.
 val impl_2__serialized_private_key
       (v_K: usize)
       (#v_Vector: Type0)
+      (v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT:
+          usize)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey v_K) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 /// Get the serialized public key.
 val impl_2__serialized_public_key
@@ -216,9 +235,30 @@ val decapsulate
 val generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
+      {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      {| i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme |}
       (randomness: t_Array u8 (sz 64))
       (out: t_MlKemKeyPairUnpacked v_K v_Vector)
+    : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Take a serialized private key and generate an unpacked key pair from it.
+val keys_from_private_key
+      (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
+          usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (key_pair: t_MlKemKeyPairUnpacked v_K v_Vector)
+    : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Take a serialized private key and generate an unpacked key pair from it.
+val impl_2__from_private_key
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
+          usize)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
     : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)

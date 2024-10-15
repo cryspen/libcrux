@@ -15,6 +15,14 @@ val impl_14__len: v_SIZE: usize -> Prims.unit
 val impl_21__len: v_SIZE: usize -> Prims.unit
   -> Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
 
+/// Unpack an incoming private key into it's different parts.
+///
+/// We have this here in types to extract into a common core for C.
+val unpack_private_key (v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE: usize) (private_key: t_Slice u8)
+    : Prims.Pure (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 ///An ML-KEM Ciphertext
 type t_MlKemCiphertext (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 

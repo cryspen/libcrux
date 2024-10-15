@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 2e8f138dbcbfbfabf4bbd994c8587ec00d197102
+ * Libcrux: 76be5813ea48977a7e122f6af350f1a5324b2cb6
  */
 
 #ifndef __internal_libcrux_mlkem_avx2_H
@@ -49,6 +49,21 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_ed(uint8_t *public_key);
+
+/**
+ Validate an ML-KEM private key.
+
+ This implements the Hash check in 7.3 3.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
+with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+with const generics
+- K= 3
+- SECRET_KEY_SIZE= 2400
+*/
+bool libcrux_ml_kem_ind_cca_validate_private_key_only_ae(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key);
 
 /**
  Validate an ML-KEM private key.
@@ -163,6 +178,21 @@ bool libcrux_ml_kem_ind_cca_validate_public_key_1e(uint8_t *public_key);
  Validate an ML-KEM private key.
 
  This implements the Hash check in 7.3 3.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
+with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+with const generics
+- K= 4
+- SECRET_KEY_SIZE= 3168
+*/
+bool libcrux_ml_kem_ind_cca_validate_private_key_only_5e(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key);
+
+/**
+ Validate an ML-KEM private key.
+
+ This implements the Hash check in 7.3 3.
  Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
  and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
 */
@@ -267,6 +297,21 @@ with const generics
 - PUBLIC_KEY_SIZE= 800
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_ba(uint8_t *public_key);
+
+/**
+ Validate an ML-KEM private key.
+
+ This implements the Hash check in 7.3 3.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
+with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+with const generics
+- K= 2
+- SECRET_KEY_SIZE= 1632
+*/
+bool libcrux_ml_kem_ind_cca_validate_private_key_only_4d(
+    libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key);
 
 /**
  Validate an ML-KEM private key.
