@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: 809fdf7ceb408768cdd5daa922193446a5029701
- * Karamel: b8f4b173b3114cd75be57bb93a8ecf165b8b5ec5
+ * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 2c499138797cf5252a22f3b7244fc663393f2083
+ * Libcrux: 76be5813ea48977a7e122f6af350f1a5324b2cb6
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -6743,11 +6743,16 @@ libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_e2(
   Eurydice_slice ind_cpa_public_key = uu____0.snd;
   Eurydice_slice ind_cpa_public_key_hash = uu____0.thd;
   Eurydice_slice implicit_rejection_value = uu____0.f3;
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____1[3U];
-  libcrux_ml_kem_ind_cpa_deserialize_secret_key_ab(ind_cpa_secret_key, uu____1);
-  memcpy(
-      key_pair->private_key.ind_cpa_private_key.secret_as_ntt, uu____1,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
+  Eurydice_slice uu____1 = Eurydice_array_to_slice(
+      (size_t)3U, key_pair->private_key.ind_cpa_private_key.secret_as_ntt,
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f6);
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 ret[3U];
+  libcrux_ml_kem_ind_cpa_deserialize_secret_key_ab(ind_cpa_secret_key, ret);
+  Eurydice_slice_copy(
+      uu____1,
+      Eurydice_array_to_slice(
+          (size_t)3U, ret, libcrux_ml_kem_polynomial_PolynomialRingElement_f6),
+      libcrux_ml_kem_polynomial_PolynomialRingElement_f6);
   libcrux_ml_kem_ind_cpa_build_unpacked_public_key_mut_bf(
       ind_cpa_public_key, &key_pair->public_key.ind_cpa_public_key);
   Eurydice_slice_copy(
