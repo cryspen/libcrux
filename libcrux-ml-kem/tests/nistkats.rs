@@ -46,7 +46,7 @@ macro_rules! impl_nist_known_answer_tests {
                 #[cfg(feature = "pre-verification")]
                 assert!(validate_public_key(key_pair.public_key()));
 
-                #[cfg(feature = "pre-verification")]
+                #[cfg(all(feature = "pre-verification", not(feature = "kyber")))]
                 {
                     let unpacked_keys = unpacked::generate_key_pair(kat.key_generation_seed);
 

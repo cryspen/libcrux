@@ -435,16 +435,17 @@ pub(crate) mod unpacked {
             ind_cpa_public_key_hash,
             implicit_rejection_value,
         ) = unpack_private_key::<CPA_SECRET_KEY_SIZE, PUBLIC_KEY_SIZE>(&private_key.value);
-        // // XXX: We need to copy_from_slice here because eurydice fails with
-        // //      the assignment
-        // out.private_key
-        //     .ind_cpa_private_key
-        //     .secret_as_ntt
-        //     .copy_from_slice(&ind_cpa::deserialize_secret_key::<K, Vector>(
-        //         ind_cpa_secret_key,
-        //     ));
-        key_pair.private_key.ind_cpa_private_key.secret_as_ntt =
-            ind_cpa::deserialize_secret_key::<K, Vector>(ind_cpa_secret_key);
+
+        // XXX: We need to copy_from_slice here because karamel can't handle
+        //      the assignment cf. https://github.com/FStarLang/karamel/pull/491
+
+        key_pair
+            .private_key
+            .ind_cpa_private_key
+            .secret_as_ntt
+            .copy_from_slice(&ind_cpa::deserialize_secret_key::<K, Vector>(
+                ind_cpa_secret_key,
+            ));
         ind_cpa::build_unpacked_public_key_mut::<K, T_AS_NTT_ENCODED_SIZE, Vector, PortableHash<K>>(
             ind_cpa_public_key,
             &mut key_pair.public_key.ind_cpa_public_key,
