@@ -1,4 +1,4 @@
-use crate::vector::FIELD_MODULUS;
+use super::arithmetic::FIELD_MODULUS;
 
 use super::*;
 

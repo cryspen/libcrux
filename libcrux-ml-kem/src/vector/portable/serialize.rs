@@ -12,8 +12,7 @@
 // we separate out the code that does the computation (in _int functions)
 // and code that updates arrays (in the outer functions).
 
-use super::vector_type::*;
-use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
+use super::{vector_type::*, FIELD_ELEMENTS_IN_VECTOR};
 
 #[inline(always)]
 pub(crate) fn serialize_1(v: PortableVector) -> [u8; 2] {

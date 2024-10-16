@@ -1,4 +1,4 @@
-use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
+use super::FIELD_ELEMENTS_IN_VECTOR;
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.

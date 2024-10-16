@@ -217,10 +217,10 @@ pub fn decapsulation(c: &mut Criterion) {
 }
 
 pub fn comparisons(c: &mut Criterion) {
-    pk_validation(c);
-    key_generation(c);
+    // key_generation(c);
     encapsulation(c);
     decapsulation(c);
+    // pk_validation(c);
 }
 
 criterion_group!(benches, comparisons);

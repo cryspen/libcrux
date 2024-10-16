@@ -7,5 +7,3 @@
 
 #[cfg(feature = "simd128")]
 pub(crate) mod arm64;
-#[cfg(feature = "simd256")]
-pub(crate) mod avx2;

@@ -3,7 +3,7 @@
 
 use core::ops::Index;
 
-use crate::traits::*;
+use libcrux_traits::sha3::KeccakStateItem;
 
 #[cfg_attr(hax, hax_lib::opaque_type)]
 #[derive(Clone, Copy)]

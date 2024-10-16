@@ -17,6 +17,9 @@ members = [
     "libcrux-ecdh",
     "libcrux-psq",
     "cavp",
+    "avx2",
+    "neon",
+    "traits",
 ]
 
 [workspace.package]

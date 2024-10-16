@@ -16,6 +16,11 @@ use vector_type::*;
 
 pub(crate) use vector_type::PortableVector;
 
+pub(crate) const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353;
+pub(crate) const FIELD_MODULUS: i16 = 3329;
+pub(crate) const FIELD_ELEMENTS_IN_VECTOR: usize = 16;
+pub(crate) const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
+
 impl Operations for PortableVector {
     fn ZERO() -> Self {
         zero()

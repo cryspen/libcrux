@@ -1,7 +1,4 @@
-use super::arithmetic::*;
-use super::vector_type::*;
-use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
-use crate::vector::FIELD_MODULUS;
+use super::{arithmetic::*, vector_type::*, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS};
 
 /// The `compress_*` functions implement the `Compress` function specified in the NIST FIPS
 /// 203 standard (Page 18, Expression 4.5), which is defined as:

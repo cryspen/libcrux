@@ -1,6 +1,7 @@
-use crate::vector::{traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, FIELD_MODULUS};
-
 use super::*;
+
+pub(crate) const FIELD_MODULUS: i16 = 3329;
+pub(crate) const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
 #[inline(always)]
 pub(crate) fn add(lhs: Vec256, rhs: Vec256) -> Vec256 {

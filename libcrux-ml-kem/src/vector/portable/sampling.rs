@@ -1,4 +1,4 @@
-use crate::vector::FIELD_MODULUS;
+use super::FIELD_MODULUS;
 
 #[inline(always)]
 pub(crate) fn rej_sample(a: &[u8], result: &mut [i16]) -> usize {

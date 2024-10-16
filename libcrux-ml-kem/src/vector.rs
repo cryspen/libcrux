@@ -6,20 +6,8 @@
 //! The crate only defines a common API.
 //! The actual implementations are in separate crates for different platforms for
 //! performance reasons.
-//!
-//! FIXME: This is kyber specific for now.
 
-pub(crate) mod traits;
-use traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-
-pub(crate) use traits::{
-    decompress_1, montgomery_multiply_fe, to_standard_domain, to_unsigned_representative,
-    Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS,
-};
-
-// XXX: This is not used on neon right now
-#[cfg(feature = "simd256")]
-pub(crate) mod rej_sample_table;
+pub(crate) use libcrux_traits::Operations;
 
 // There's no runtime detection here. This either exposes the real SIMD vector,
 // or the portable when the feature is not set.
@@ -28,11 +16,26 @@ pub(crate) mod rej_sample_table;
 // in each case.
 #[cfg(feature = "simd128")]
 mod neon;
+#[cfg(feature = "simd256")]
+pub(crate) use libcrux_avx2::SIMD256Vector;
 #[cfg(feature = "simd128")]
 pub(crate) use neon::SIMD128Vector;
-#[cfg(feature = "simd256")]
-mod avx2;
-#[cfg(feature = "simd256")]
-pub(crate) use avx2::SIMD256Vector;
 
-pub mod portable;
+pub(crate) mod portable;
+
+pub(crate) fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
+    T::montgomery_multiply_by_constant(v, fer)
+}
+pub(crate) fn to_standard_domain<T: Operations>(v: T) -> T {
+    T::montgomery_multiply_by_constant(v, portable::MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
+}
+
+pub(crate) fn to_unsigned_representative<T: Operations>(a: T) -> T {
+    let t = T::shift_right::<15>(a);
+    let fm = T::bitwise_and_with_constant(t, portable::FIELD_MODULUS);
+    T::add(a, &fm)
+}
+
+pub(crate) fn decompress_1<T: Operations>(v: T) -> T {
+    T::bitwise_and_with_constant(T::sub(T::ZERO(), &v), 1665)
+}

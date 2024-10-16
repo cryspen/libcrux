@@ -23,7 +23,7 @@ use crate::{
 /// Types for the unpacked API.
 #[allow(non_snake_case)]
 pub mod unpacked {
-    use crate::{polynomial::PolynomialRingElement, vector::traits::Operations};
+    use crate::{polynomial::PolynomialRingElement, vector::Operations};
 
     /// An unpacked ML-KEM IND-CPA Private Key
     pub(crate) struct IndCpaPrivateKeyUnpacked<const K: usize, Vector: Operations> {

@@ -1,8 +1,6 @@
-pub const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353;
-pub const FIELD_MODULUS: i16 = 3329;
-pub const FIELD_ELEMENTS_IN_VECTOR: usize = 16;
-pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
+// XXX: rename to vector operations
 
+/// Vector operations for ML-KEM
 pub trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
@@ -64,20 +62,30 @@ pub trait Operations: Copy + Clone {
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }
 
-// hax does not support trait with default implementations, so we use the following pattern
-pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
-    T::montgomery_multiply_by_constant(v, fer)
-}
-pub fn to_standard_domain<T: Operations>(v: T) -> T {
-    T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
-}
+/// Traits for avx2.
+pub mod sha3 {
+    /// A Keccak Item
+    /// This holds the internal state and depends on the architecture.
+    pub trait KeccakStateItem<const N: usize>: KeccakItem<N> {}
 
-pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
-    let t = T::shift_right::<15>(a);
-    let fm = T::bitwise_and_with_constant(t, FIELD_MODULUS);
-    T::add(a, &fm)
-}
+    // Implement the public trait for all items.
+    impl<const N: usize, T: KeccakItem<N>> KeccakStateItem<N> for T {}
 
-pub fn decompress_1<T: Operations>(v: T) -> T {
-    T::bitwise_and_with_constant(T::sub(T::ZERO(), &v), 1665)
+    /// A trait for multiplexing implementations.
+    pub trait KeccakItem<const N: usize>: Clone + Copy {
+        fn zero() -> Self;
+        fn xor5(a: Self, b: Self, c: Self, d: Self, e: Self) -> Self;
+        fn rotate_left1_and_xor(a: Self, b: Self) -> Self;
+        fn xor_and_rotate<const LEFT: i32, const RIGHT: i32>(a: Self, b: Self) -> Self;
+        fn and_not_xor(a: Self, b: Self, c: Self) -> Self;
+        fn xor_constant(a: Self, c: u64) -> Self;
+        fn xor(a: Self, b: Self) -> Self;
+        fn load_block<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; N]);
+        fn store_block<const RATE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; N]);
+        fn load_block_full<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; N]);
+        fn store_block_full<const RATE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; N];
+        fn slice_n(a: [&[u8]; N], start: usize, len: usize) -> [&[u8]; N];
+        fn split_at_mut_n(a: [&mut [u8]; N], mid: usize) -> ([&mut [u8]; N], [&mut [u8]; N]);
+        fn store<const RATE: usize>(state: &[[Self; 5]; 5], out: [&mut [u8]; N]);
+    }
 }

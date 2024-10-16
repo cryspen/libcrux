@@ -958,6 +958,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "libcrux-avx2"
+version = "0.0.2-beta.2"
+dependencies = [
+ "libcrux-traits",
+]
+
+[[package]]
 name = "libcrux-ecdh"
 version = "0.0.2-beta.2"
 dependencies = [
@@ -1043,13 +1050,19 @@ dependencies = [
  "criterion",
  "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
  "hex",
+ "libcrux-avx2",
  "libcrux-intrinsics",
  "libcrux-platform",
  "libcrux-sha3",
+ "libcrux-traits",
  "rand",
  "serde",
  "serde_json",
 ]
+
+[[package]]
+name = "libcrux-neon"
+version = "0.0.2-beta.2"
 
 [[package]]
 name = "libcrux-platform"
@@ -1089,11 +1102,17 @@ dependencies = [
  "criterion",
  "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
  "hex",
+ "libcrux-avx2",
  "libcrux-intrinsics",
  "libcrux-platform",
+ "libcrux-traits",
  "pretty_env_logger",
  "rand",
 ]
+
+[[package]]
+name = "libcrux-traits"
+version = "0.0.2-beta.2"
 
 [[package]]
 name = "libfuzzer-sys"

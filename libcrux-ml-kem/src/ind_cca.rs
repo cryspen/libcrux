@@ -289,7 +289,7 @@ pub(crate) mod unpacked {
         matrix::sample_matrix_A,
         polynomial::PolynomialRingElement,
         serialize::deserialize_ring_elements_reduced,
-        vector::traits::Operations,
+        vector::Operations,
     };
 
     /// An unpacked ML-KEM IND-CCA Private Key

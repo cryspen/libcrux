@@ -1,5 +1,6 @@
 use super::{
-    super::{rej_sample_table::REJECTION_SAMPLE_SHUFFLE_TABLE, traits::FIELD_MODULUS},
+    arithmetic::FIELD_MODULUS,
+    rej_sample_table::REJECTION_SAMPLE_SHUFFLE_TABLE,
     serialize::{deserialize_12, serialize_1},
     *,
 };
