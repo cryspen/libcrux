@@ -215,7 +215,6 @@ unsafe fn kyber_encapsulate_avx2<
 
 #[allow(unsafe_code)]
 #[cfg(feature = "kyber")]
-#[target_feature(enable = "avx2")]
 pub(crate) fn kyber_encapsulate<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
