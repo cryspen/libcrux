@@ -213,48 +213,44 @@ pub(crate) mod avx2 {
 
     #[inline(always)]
     fn PRFxN<const K: usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-        #[target_feature(enable = "avx2")]
-        unsafe fn PRFxN<const K: usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-            debug_assert!(K == 2 || K == 3 || K == 4);
-            let mut out = [[0u8; LEN]; K];
-            let mut out0 = [0u8; LEN];
-            let mut out1 = [0u8; LEN];
-            let mut out2 = [0u8; LEN];
-            let mut out3 = [0u8; LEN];
+        debug_assert!(K == 2 || K == 3 || K == 4);
+        let mut out = [[0u8; LEN]; K];
+        let mut out0 = [0u8; LEN];
+        let mut out1 = [0u8; LEN];
+        let mut out2 = [0u8; LEN];
+        let mut out3 = [0u8; LEN];
 
-            match K as u8 {
-                2 => {
-                    x4::shake256(
-                        &input[0], &input[1], &input[0], &input[0], &mut out0, &mut out1,
-                        &mut out2, &mut out3,
-                    );
-                    out[0] = out0;
-                    out[1] = out1;
-                }
-                3 => {
-                    x4::shake256(
-                        &input[0], &input[1], &input[2], &input[0], &mut out0, &mut out1,
-                        &mut out2, &mut out3,
-                    );
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
-                }
-                4 => {
-                    x4::shake256(
-                        &input[0], &input[1], &input[2], &input[3], &mut out0, &mut out1,
-                        &mut out2, &mut out3,
-                    );
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
-                    out[3] = out3;
-                }
-                _ => unreachable!("This function must only be called with N = 2, 3, 4"),
+        match K as u8 {
+            2 => {
+                x4::shake256(
+                    &input[0], &input[1], &input[0], &input[0], &mut out0, &mut out1, &mut out2,
+                    &mut out3,
+                );
+                out[0] = out0;
+                out[1] = out1;
             }
-            out
+            3 => {
+                x4::shake256(
+                    &input[0], &input[1], &input[2], &input[0], &mut out0, &mut out1, &mut out2,
+                    &mut out3,
+                );
+                out[0] = out0;
+                out[1] = out1;
+                out[2] = out2;
+            }
+            4 => {
+                x4::shake256(
+                    &input[0], &input[1], &input[2], &input[3], &mut out0, &mut out1, &mut out2,
+                    &mut out3,
+                );
+                out[0] = out0;
+                out[1] = out1;
+                out[2] = out2;
+                out[3] = out3;
+            }
+            _ => unreachable!("This function must only be called with N = 2, 3, 4"),
         }
-        unsafe { PRFxN(input) }
+        out
     }
 
     #[inline(always)]

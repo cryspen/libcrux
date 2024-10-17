@@ -68,7 +68,7 @@ analogously for encapsulation and decapsulation."##
 
 #![no_std]
 #![deny(missing_docs)]
-// #![forbid(unsafe_code)]
+#![warn(unsafe_code)]
 #![warn(rust_2018_idioms, unused_lifetimes, unused_qualifications)]
 #![allow(clippy::needless_range_loop)]
 #![warn(missing_docs)]

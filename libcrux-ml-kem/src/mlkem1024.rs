@@ -56,14 +56,12 @@ macro_rules! instantiate {
             ///
             /// Returns `true` if valid, and `false` otherwise.
             pub fn validate_public_key(public_key: &MlKem1024PublicKey) -> bool {
-                #[allow(unused_unsafe)]
-                unsafe {
                     p::validate_public_key::<
                         RANK_1024,
                         RANKED_BYTES_PER_RING_ELEMENT_1024,
                         CPA_PKE_PUBLIC_KEY_SIZE_1024,
                     >(&public_key.value)
-                }
+                
             }
 
             /// Validate a private key.
@@ -73,14 +71,12 @@ macro_rules! instantiate {
                 private_key: &MlKem1024PrivateKey,
                 ciphertext: &MlKem1024Ciphertext,
             ) -> bool {
-                #[allow(unused_unsafe)]
-                unsafe {
                     p::validate_private_key::<
                         RANK_1024,
                         SECRET_KEY_SIZE_1024,
                         CPA_PKE_CIPHERTEXT_SIZE_1024,
                     >(private_key, ciphertext)
-                }
+                
             }
 
             /// Generate Kyber 1024 Key Pair
@@ -89,8 +85,6 @@ macro_rules! instantiate {
             pub fn kyber_generate_key_pair(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem1024KeyPair {
-                #[allow(unused_unsafe)]
-                unsafe {
                     p::kyber_generate_keypair::<
                         RANK_1024,
                         CPA_PKE_SECRET_KEY_SIZE_1024,
@@ -100,15 +94,13 @@ macro_rules! instantiate {
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
                     >(randomness)
-                }
+                
             }
 
             /// Generate ML-KEM 1024 Key Pair
             pub fn generate_key_pair(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem1024KeyPair {
-                #[allow(unused_unsafe)]
-                unsafe {
                     p::generate_keypair::<
                         RANK_1024,
                         CPA_PKE_SECRET_KEY_SIZE_1024,
@@ -118,7 +110,7 @@ macro_rules! instantiate {
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
                     >(randomness)
-                }
+                
             }
 
             /// Encapsulate ML-KEM 1024
@@ -130,8 +122,6 @@ macro_rules! instantiate {
                 public_key: &MlKem1024PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
-                #[allow(unused_unsafe)]
-                unsafe {
                     p::encapsulate::<
                         RANK_1024,
                         CPA_PKE_CIPHERTEXT_SIZE_1024,
@@ -147,7 +137,7 @@ macro_rules! instantiate {
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
                     >(public_key, randomness)
-                }
+                
             }
 
             /// Encapsulate Kyber 1024
@@ -161,8 +151,6 @@ macro_rules! instantiate {
                 public_key: &MlKem1024PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
-                #[allow(unused_unsafe)]
-                unsafe {
                     p::kyber_encapsulate::<
                         RANK_1024,
                         CPA_PKE_CIPHERTEXT_SIZE_1024,
@@ -178,7 +166,7 @@ macro_rules! instantiate {
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
                     >(public_key, randomness)
-                }
+                
             }
 
             /// Decapsulate ML-KEM 1024
@@ -189,8 +177,6 @@ macro_rules! instantiate {
                 private_key: &MlKem1024PrivateKey,
                 ciphertext: &MlKem1024Ciphertext,
             ) -> MlKemSharedSecret {
-                #[allow(unused_unsafe)]
-                unsafe {
                     p::decapsulate::<
                         RANK_1024,
                         SECRET_KEY_SIZE_1024,
@@ -209,7 +195,7 @@ macro_rules! instantiate {
                         ETA2_RANDOMNESS_SIZE,
                         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     >(private_key, ciphertext)
-                }
+                
             }
 
             /// Decapsulate Kyber 1024
@@ -222,8 +208,6 @@ macro_rules! instantiate {
                 private_key: &MlKem1024PrivateKey,
                 ciphertext: &MlKem1024Ciphertext,
             ) -> MlKemSharedSecret {
-                #[allow(unused_unsafe)]
-                unsafe {
                     p::kyber_decapsulate::<
                         RANK_1024,
                         SECRET_KEY_SIZE_1024,
@@ -242,7 +226,7 @@ macro_rules! instantiate {
                         ETA2_RANDOMNESS_SIZE,
                         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     >(private_key, ciphertext)
-                }
+                
             }
 
             /// Unpacked APIs that don't use serialized keys.
@@ -282,15 +266,13 @@ macro_rules! instantiate {
                     public_key: &MlKem1024PublicKey,
                     unpacked_public_key: &mut MlKem1024PublicKeyUnpacked,
                 ) {
-                    #[allow(unused_unsafe)]
-                    unsafe {
                         p::unpacked::unpack_public_key::<
                             RANK_1024,
                             T_AS_NTT_ENCODED_SIZE_1024,
                             RANKED_BYTES_PER_RING_ELEMENT_1024,
                             CPA_PKE_PUBLIC_KEY_SIZE_1024,
                         >(public_key, unpacked_public_key)
-                    }
+                    
                 }
 
                 /// Generate ML-KEM 1024 Key Pair in "unpacked" form
@@ -298,8 +280,6 @@ macro_rules! instantiate {
                     randomness: [u8; KEY_GENERATION_SEED_SIZE],
                     key_pair: &mut MlKem1024KeyPairUnpacked,
                 ) {
-                    #[allow(unused_unsafe)]
-                    unsafe {
                         p::unpacked::generate_keypair::<
                             RANK_1024,
                             CPA_PKE_SECRET_KEY_SIZE_1024,
@@ -309,7 +289,7 @@ macro_rules! instantiate {
                             ETA1,
                             ETA1_RANDOMNESS_SIZE,
                         >(randomness, key_pair)
-                    }
+                    
                 }
 
                 /// Encapsulate ML-KEM 1024 (unpacked)
@@ -336,8 +316,6 @@ macro_rules! instantiate {
                     public_key: &MlKem1024PublicKeyUnpacked,
                     randomness: [u8; SHARED_SECRET_SIZE],
                 ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
-                    #[allow(unused_unsafe)]
-                    unsafe {
                         p::unpacked::encapsulate::<
                             RANK_1024,
                             CPA_PKE_CIPHERTEXT_SIZE_1024,
@@ -353,7 +331,7 @@ macro_rules! instantiate {
                             ETA2,
                             ETA2_RANDOMNESS_SIZE,
                         >(public_key, randomness)
-                    }
+                    
                 }
 
                 /// Decapsulate ML-KEM 1024 (unpacked)
@@ -365,8 +343,6 @@ macro_rules! instantiate {
                     private_key: &MlKem1024KeyPairUnpacked,
                     ciphertext: &MlKem1024Ciphertext,
                 ) -> MlKemSharedSecret {
-                    #[allow(unused_unsafe)]
-                    unsafe {
                         p::unpacked::decapsulate::<
                             RANK_1024,
                             SECRET_KEY_SIZE_1024,
@@ -385,7 +361,7 @@ macro_rules! instantiate {
                             ETA2_RANDOMNESS_SIZE,
                             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                         >(private_key, ciphertext)
-                    }
+                    
                 }
             }
         }
