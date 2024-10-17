@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
+ * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
- * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 2e8f138dbcbfbfabf4bbd994c8587ec00d197102
+ * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
+ * F*: 58c915a86a2c07c8eca8d9deafd76cb7a91f0eb7
+ * Libcrux: de5cf36eb9ea4853d387d80f6b4385ce5275511b
  */
 
 #include "libcrux_mlkem512_portable.h"
@@ -38,9 +38,9 @@ libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
-static void decapsulate_69(libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key,
-                           libcrux_ml_kem_types_MlKemCiphertext_1a *ciphertext,
-                           uint8_t ret[32U]) {
+static KRML_MUSTINLINE void decapsulate_69(
+    libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_1a *ciphertext, uint8_t ret[32U]) {
   libcrux_ml_kem_ind_cca_decapsulate_620(private_key, ciphertext, ret);
 }
 
@@ -74,9 +74,9 @@ libcrux_ml_kem.ind_cca.instantiations.portable.encapsulate with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_41 encapsulate_35(
-    libcrux_ml_kem_types_MlKemPublicKey_52 *public_key,
-    uint8_t randomness[32U]) {
+static KRML_MUSTINLINE tuple_41
+encapsulate_35(libcrux_ml_kem_types_MlKemPublicKey_52 *public_key,
+               uint8_t randomness[32U]) {
   libcrux_ml_kem_types_MlKemPublicKey_52 *uu____0 = public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
@@ -116,8 +116,8 @@ generics
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
-static libcrux_ml_kem_types_MlKemKeyPair_3e generate_keypair_a8(
-    uint8_t randomness[64U]) {
+static KRML_MUSTINLINE libcrux_ml_kem_types_MlKemKeyPair_3e
+generate_keypair_a8(uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
