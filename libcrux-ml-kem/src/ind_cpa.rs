@@ -571,6 +571,7 @@ fn deserialize_secret_key<const K: usize, Vector: Operations>(
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn decrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -598,6 +599,7 @@ pub(crate) fn decrypt_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn decrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
