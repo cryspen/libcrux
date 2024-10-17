@@ -139,15 +139,17 @@ pub(crate) fn generate_keypair<
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     // Runtime feature detection.
     if libcrux_platform::simd256_support() {
-        generate_keypair_avx2::<
-            K,
-            CPA_PRIVATE_KEY_SIZE,
-            PRIVATE_KEY_SIZE,
-            PUBLIC_KEY_SIZE,
-            BYTES_PER_RING_ELEMENT,
-            ETA1,
-            ETA1_RANDOMNESS_SIZE,
-        >(randomness)
+        unsafe {
+            generate_keypair_avx2::<
+                K,
+                CPA_PRIVATE_KEY_SIZE,
+                PRIVATE_KEY_SIZE,
+                PUBLIC_KEY_SIZE,
+                BYTES_PER_RING_ELEMENT,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+            >(randomness)
+        }
     } else if libcrux_platform::simd128_support() {
         generate_keypair_neon::<
             K,
@@ -260,21 +262,23 @@ pub(crate) fn encapsulate<
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     if libcrux_platform::simd256_support() {
-        encapsulate_avx2::<
-            K,
-            CIPHERTEXT_SIZE,
-            PUBLIC_KEY_SIZE,
-            T_AS_NTT_ENCODED_SIZE,
-            C1_SIZE,
-            C2_SIZE,
-            VECTOR_U_COMPRESSION_FACTOR,
-            VECTOR_V_COMPRESSION_FACTOR,
-            VECTOR_U_BLOCK_LEN,
-            ETA1,
-            ETA1_RANDOMNESS_SIZE,
-            ETA2,
-            ETA2_RANDOMNESS_SIZE,
-        >(public_key, randomness)
+        unsafe {
+            encapsulate_avx2::<
+                K,
+                CIPHERTEXT_SIZE,
+                PUBLIC_KEY_SIZE,
+                T_AS_NTT_ENCODED_SIZE,
+                C1_SIZE,
+                C2_SIZE,
+                VECTOR_U_COMPRESSION_FACTOR,
+                VECTOR_V_COMPRESSION_FACTOR,
+                VECTOR_U_BLOCK_LEN,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                ETA2,
+                ETA2_RANDOMNESS_SIZE,
+            >(public_key, randomness)
+        }
     } else if libcrux_platform::simd128_support() {
         encapsulate_neon::<
             K,
@@ -414,24 +418,26 @@ pub(crate) fn decapsulate<
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
     if libcrux_platform::simd256_support() {
-        decapsulate_avx2::<
-            K,
-            SECRET_KEY_SIZE,
-            CPA_SECRET_KEY_SIZE,
-            PUBLIC_KEY_SIZE,
-            CIPHERTEXT_SIZE,
-            T_AS_NTT_ENCODED_SIZE,
-            C1_SIZE,
-            C2_SIZE,
-            VECTOR_U_COMPRESSION_FACTOR,
-            VECTOR_V_COMPRESSION_FACTOR,
-            C1_BLOCK_SIZE,
-            ETA1,
-            ETA1_RANDOMNESS_SIZE,
-            ETA2,
-            ETA2_RANDOMNESS_SIZE,
-            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-        >(private_key, ciphertext)
+        unsafe {
+            decapsulate_avx2::<
+                K,
+                SECRET_KEY_SIZE,
+                CPA_SECRET_KEY_SIZE,
+                PUBLIC_KEY_SIZE,
+                CIPHERTEXT_SIZE,
+                T_AS_NTT_ENCODED_SIZE,
+                C1_SIZE,
+                C2_SIZE,
+                VECTOR_U_COMPRESSION_FACTOR,
+                VECTOR_V_COMPRESSION_FACTOR,
+                C1_BLOCK_SIZE,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                ETA2,
+                ETA2_RANDOMNESS_SIZE,
+                IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+            >(private_key, ciphertext)
+        }
     } else if libcrux_platform::simd128_support() {
         decapsulate_neon::<
             K,

@@ -107,7 +107,8 @@ pub fn pk_validation(c: &mut Criterion) {
     init!(mlkem1024, "PK Validation", c);
 }
 
-pub fn encapsulation(c: &mut Criterion) {
+#[target_feature(enable = "avx2")]
+pub unsafe fn encapsulation(c: &mut Criterion) {
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
             $group.bench_function(format!("libcrux {} (external random)", $name), |b| {
@@ -160,7 +161,8 @@ pub fn encapsulation(c: &mut Criterion) {
     init!(mlkem1024, "Encapsulation", c);
 }
 
-pub fn decapsulation(c: &mut Criterion) {
+#[target_feature(enable = "avx2")]
+pub unsafe fn decapsulation(c: &mut Criterion) {
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
             $group.bench_function(format!("libcrux {}", $name), |b| {
@@ -219,8 +221,8 @@ pub fn decapsulation(c: &mut Criterion) {
 pub fn comparisons(c: &mut Criterion) {
     pk_validation(c);
     key_generation(c);
-    encapsulation(c);
-    decapsulation(c);
+    unsafe{encapsulation(c)};
+    unsafe{decapsulation(c)};
 }
 
 criterion_group!(benches, comparisons);

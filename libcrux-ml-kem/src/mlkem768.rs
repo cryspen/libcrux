@@ -46,7 +46,7 @@ pub type MlKem768KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_
 
 // Instantiate the different functions.
 macro_rules! instantiate {
-    ($modp:ident, $p:path, $vec:path, $doc:expr) => {
+    ($modp:ident, $p:path, $doc:expr) => {
         #[doc = $doc]
         pub mod $modp {
             use super::*;
@@ -56,11 +56,13 @@ macro_rules! instantiate {
             ///
             /// Returns `true` if valid, and `false` otherwise.
             pub fn validate_public_key(public_key: &MlKem768PublicKey) -> bool {
+                #[allow(unused_unsafe)]
+                unsafe {
                 p::validate_public_key::<
                     RANK_768,
                     RANKED_BYTES_PER_RING_ELEMENT_768,
                     CPA_PKE_PUBLIC_KEY_SIZE_768,
-                >(&public_key.value)
+                >(&public_key.value)}
             }
 
             /// Validate a private key.
@@ -70,17 +72,21 @@ macro_rules! instantiate {
                 private_key: &MlKem768PrivateKey,
                 ciphertext: &MlKem768Ciphertext,
             ) -> bool {
+                #[allow(unused_unsafe)]
+                unsafe {
                 p::validate_private_key::<
                     RANK_768,
                     SECRET_KEY_SIZE_768,
                     CPA_PKE_CIPHERTEXT_SIZE_768,
-                >(private_key, ciphertext)
+                >(private_key, ciphertext)}
             }
 
             /// Generate ML-KEM 768 Key Pair
             pub fn generate_key_pair(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem768KeyPair {
+                #[allow(unused_unsafe)]
+                unsafe {
                 p::generate_keypair::<
                     RANK_768,
                     CPA_PKE_SECRET_KEY_SIZE_768,
@@ -89,7 +95,7 @@ macro_rules! instantiate {
                     RANKED_BYTES_PER_RING_ELEMENT_768,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
-                >(randomness)
+                >(randomness)}
             }
 
             /// Generate Kyber 768 Key Pair
@@ -98,6 +104,8 @@ macro_rules! instantiate {
             pub fn kyber_generate_key_pair(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem768KeyPair {
+                #[allow(unused_unsafe)]
+                unsafe {
                 p::kyber_generate_keypair::<
                     RANK_768,
                     CPA_PKE_SECRET_KEY_SIZE_768,
@@ -106,7 +114,7 @@ macro_rules! instantiate {
                     RANKED_BYTES_PER_RING_ELEMENT_768,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
-                >(randomness)
+                >(randomness)}
             }
 
             /// Encapsulate ML-KEM 768
@@ -118,6 +126,8 @@ macro_rules! instantiate {
                 public_key: &MlKem768PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+                #[allow(unused_unsafe)]
+                unsafe {
                 p::encapsulate::<
                     RANK_768,
                     CPA_PKE_CIPHERTEXT_SIZE_768,
@@ -132,7 +142,7 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
-                >(public_key, randomness)
+                >(public_key, randomness)}
             }
 
             /// Encapsulate Kyber 768
@@ -146,6 +156,8 @@ macro_rules! instantiate {
                 public_key: &MlKem768PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+                #[allow(unused_unsafe)]
+                unsafe {
                 p::kyber_encapsulate::<
                     RANK_768,
                     CPA_PKE_CIPHERTEXT_SIZE_768,
@@ -160,7 +172,7 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
-                >(public_key, randomness)
+                >(public_key, randomness)}
             }
 
             /// Decapsulate ML-KEM 768
@@ -171,6 +183,8 @@ macro_rules! instantiate {
                 private_key: &MlKem768PrivateKey,
                 ciphertext: &MlKem768Ciphertext,
             ) -> MlKemSharedSecret {
+                #[allow(unused_unsafe)]
+                unsafe {
                 p::decapsulate::<
                     RANK_768,
                     SECRET_KEY_SIZE_768,
@@ -188,7 +202,7 @@ macro_rules! instantiate {
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-                >(private_key, ciphertext)
+                >(private_key, ciphertext)}
             }
 
             /// Decapsulate Kyber 768
@@ -201,6 +215,8 @@ macro_rules! instantiate {
                 private_key: &MlKem768PrivateKey,
                 ciphertext: &MlKem768Ciphertext,
             ) -> MlKemSharedSecret {
+                #[allow(unused_unsafe)]
+                unsafe {
                 p::kyber_decapsulate::<
                     RANK_768,
                     SECRET_KEY_SIZE_768,
@@ -218,7 +234,7 @@ macro_rules! instantiate {
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-                >(private_key, ciphertext)
+                >(private_key, ciphertext)}
             }
 
             /// Unpacked APIs that don't use serialized keys.
@@ -261,12 +277,14 @@ macro_rules! instantiate {
                     public_key: &MlKem768PublicKey,
                     unpacked_public_key: &mut MlKem768PublicKeyUnpacked
                 ) {
+                    #[allow(unused_unsafe)]
+                    unsafe {
                     p::unpacked::unpack_public_key::<
                         RANK_768,
                         T_AS_NTT_ENCODED_SIZE_768,
                         RANKED_BYTES_PER_RING_ELEMENT_768,
                         CPA_PKE_PUBLIC_KEY_SIZE_768,
-                    >(public_key, unpacked_public_key)
+                    >(public_key, unpacked_public_key)}
                 }
 
                 /// Generate ML-KEM 768 Key Pair in "unpacked" form.
@@ -274,6 +292,8 @@ macro_rules! instantiate {
                     randomness: [u8; KEY_GENERATION_SEED_SIZE],
                     key_pair: &mut MlKem768KeyPairUnpacked,
                 ) {
+                    #[allow(unused_unsafe)]
+                    unsafe {
                     p::unpacked::generate_keypair::<
                         RANK_768,
                         CPA_PKE_SECRET_KEY_SIZE_768,
@@ -282,7 +302,7 @@ macro_rules! instantiate {
                         RANKED_BYTES_PER_RING_ELEMENT_768,
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
-                    >(randomness, key_pair);
+                    >(randomness, key_pair);}
                 }
 
                 /// Encapsulate ML-KEM 768 (unpacked)
@@ -307,6 +327,8 @@ macro_rules! instantiate {
                     public_key: &MlKem768PublicKeyUnpacked,
                     randomness: [u8; SHARED_SECRET_SIZE],
                 ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+                    #[allow(unused_unsafe)]
+                    unsafe {
                     p::unpacked::encapsulate::<
                         RANK_768,
                         CPA_PKE_CIPHERTEXT_SIZE_768,
@@ -321,7 +343,7 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
-                    >(public_key, randomness)
+                    >(public_key, randomness)}
                 }
 
                 /// Decapsulate ML-KEM 768 (unpacked)
@@ -333,6 +355,8 @@ macro_rules! instantiate {
                     private_key: &MlKem768KeyPairUnpacked,
                     ciphertext: &MlKem768Ciphertext,
                 ) -> MlKemSharedSecret {
+                    #[allow(unused_unsafe)]
+                    unsafe {
                     p::unpacked::decapsulate::<
                         RANK_768,
                         SECRET_KEY_SIZE_768,
@@ -350,7 +374,7 @@ macro_rules! instantiate {
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
                         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-                    >(private_key, ciphertext)
+                    >(private_key, ciphertext)}
                 }
             }
         }
@@ -359,11 +383,11 @@ macro_rules! instantiate {
 
 // Instantiations
 
-instantiate! {portable, ind_cca::instantiations::portable, vector::portable::PortableVector, "Portable ML-KEM 768"}
+instantiate! {portable, ind_cca::instantiations::portable, "Portable ML-KEM 768"}
 #[cfg(feature = "simd256")]
-instantiate! {avx2, ind_cca::instantiations::avx2, vector::SIMD256Vector, "AVX2 Optimised ML-KEM 768"}
+instantiate! {avx2, ind_cca::instantiations::avx2, "AVX2 Optimised ML-KEM 768"}
 #[cfg(feature = "simd128")]
-instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon Optimised ML-KEM 768"}
+instantiate! {neon, ind_cca::instantiations::neon, "Neon Optimised ML-KEM 768"}
 
 /// Validate a public key.
 ///

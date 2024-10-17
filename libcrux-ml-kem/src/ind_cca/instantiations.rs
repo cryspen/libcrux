@@ -405,9 +405,10 @@ macro_rules! instantiate {
 // Portable generic implementations.
 instantiate! {portable, crate::vector::portable::PortableVector, crate::hash_functions::portable::PortableHash<K>}
 
-// AVX2 generic implementation.
+// // AVX2 generic implementation.
+// instantiate! {avx2, crate::vector::SIMD256Vector, crate::hash_functions::avx2::Simd256Hash}
 #[cfg(feature = "simd256")]
-instantiate! {avx2, crate::vector::SIMD256Vector, crate::hash_functions::avx2::Simd256Hash}
+pub mod avx2;
 
 // NEON generic implementation.
 #[cfg(feature = "simd128")]
