@@ -3,24 +3,28 @@
 /// It might make sense to require that the type inside the array is a Scalar. If we do that we can
 /// also ask that Scalar implements Clone + Default, which would make the type bounds a bit simpler
 pub mod array {
-    use std::ops::{Index, IndexMut, Range};
+    use std::ops::Index;
 
-    use super::{arrayref::SecretArrayRef, slice::SecretSlice};
+    use super::arrayref::SecretArrayRef;
     use crate::{
         traits::{Classify, Declassify, Zeroize},
-        ClassifyRef, ClassifyRefMut,
+        ClassifyRef, Scalar, Secret,
     };
 
     #[derive(Debug, Clone)]
     pub struct SecretArray<T: Default + Clone, const N: usize>(pub(super) [T; N]);
 
-    impl<T: Default + Clone, const N: usize> SecretArray<T, N> {
+    impl<T: Default + Clone + Classify, const N: usize> SecretArray<T, N> {
         pub const fn secret(array: [T; N]) -> Self {
             Self(array)
         }
 
-        pub fn as_slice(&self) -> SecretSlice<'_, T> {
-            SecretSlice(self.0.as_slice())
+        pub fn as_slice(&self) -> &[T::Classified] {
+            unsafe { core::mem::transmute(self.0.as_slice()) }
+        }
+
+        pub fn as_mut_slice(&mut self) -> &mut [T::Classified] {
+            unsafe { core::mem::transmute(self.0.as_mut_slice()) }
         }
 
         pub fn as_ref(&self) -> SecretArrayRef<'_, T, N> {
@@ -53,6 +57,18 @@ pub mod array {
     impl<T: Default + Clone, const N: usize> Drop for SecretArray<T, N> {
         fn drop(&mut self) {
             self.zeroize()
+        }
+    }
+    impl<T: Default + Clone + Classify + Copy + Scalar, const N: usize> TryFrom<&[Secret<T>]>
+        for SecretArray<T, N>
+    {
+        type Error = core::array::TryFromSliceError;
+
+        fn try_from(value: &[Secret<T>]) -> Result<Self, Self::Error> {
+            let x: [Secret<T>; N] = value.try_into()?;
+            let x: [T; N] = x.map(|x| x.declassify());
+
+            Ok(Self(x))
         }
     }
 
@@ -99,23 +115,23 @@ pub mod array {
 
 /// Contains classified array references, i.e. &[T; N]
 pub mod arrayref {
-    use super::{array::SecretArray, slice::SecretSlice};
-    use crate::traits::Declassify;
+    use super::array::SecretArray;
+    use crate::{traits::Declassify, Classify};
 
     #[derive(Debug, Clone, Copy)]
     pub struct SecretArrayRef<'a, T, const N: usize>(pub(super) &'a [T; N]);
 
-    impl<'a, T, const N: usize> SecretArrayRef<'a, T, N> {
+    impl<'a, T: Classify, const N: usize> SecretArrayRef<'a, T, N> {
         pub(super) fn unwrap_ref(&self) -> &'a [T; N] {
             self.0
         }
 
-        pub fn as_slice(&self) -> SecretSlice<'a, T> {
-            SecretSlice(self.0.as_slice())
+        pub fn as_slice(&self) -> &[T::Classified] {
+            unsafe { core::mem::transmute(&self.0[..]) }
         }
     }
 
-    impl<'a, T: Default + Clone, const N: usize> From<&'a SecretArray<T, N>>
+    impl<'a, T: Default + Clone + Classify, const N: usize> From<&'a SecretArray<T, N>>
         for SecretArrayRef<'a, T, N>
     {
         fn from(value: &'a SecretArray<T, N>) -> Self {
@@ -123,7 +139,7 @@ pub mod arrayref {
         }
     }
 
-    impl<'a, T, const N: usize> Declassify for SecretArrayRef<'a, T, N> {
+    impl<'a, T: Classify, const N: usize> Declassify for SecretArrayRef<'a, T, N> {
         type Declassified = &'a [T; N];
 
         fn declassify(self) -> Self::Declassified {
@@ -132,6 +148,7 @@ pub mod arrayref {
     }
 }
 
+/*
 /// Contains classified slices, i.e. &[T]
 pub mod slice {
     use std::ops::{Index, IndexMut, Range};
@@ -220,4 +237,13 @@ pub mod iter {
             }
         }
     }
+}
+*/
+
+// TODO: #[cfg(feature = "simd256")]
+mod avx2 {
+    use crate::Scalar;
+
+    impl Scalar for core::arch::x86_64::__m256i {}
+    impl Scalar for core::arch::x86_64::__m128i {}
 }

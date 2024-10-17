@@ -1,7 +1,7 @@
 mod traits;
 pub use traits::*;
 
-mod secret_integers_jan;
+//mod secret_integers_jan;
 pub mod secret_sequences;
 
 /**
@@ -25,7 +25,7 @@ pub use public_integers::*;
 #[cfg(test)]
 mod tests {
     use super::{
-        secret_sequences::{arrayref::SecretArrayRef, slice::SecretSlice},
+        secret_sequences::arrayref::SecretArrayRef,
         traits::{Classify, Declassify},
     };
 
@@ -44,6 +44,7 @@ mod tests {
         assert_eq!(masked_secret_answer.declassify(), 42 + MASK);
     }
 
+    /*
     #[test]
     fn array_examples() {
         let secret_array = b"squeamish".classify();
@@ -60,4 +61,5 @@ mod tests {
         let secret_slice: SecretSlice<_> = secret_array_ref.as_slice();
         let _: &[u8] = secret_slice.declassify();
     }
+    */
 }

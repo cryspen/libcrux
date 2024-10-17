@@ -5,6 +5,7 @@ use core::ops::Index;
 
 use crate::traits::*;
 use libcrux_secret_independence::*;
+use secret_sequences::array::SecretArray;
 
 #[cfg_attr(hax, hax_lib::opaque_type)]
 #[derive(Clone, Copy)]
@@ -41,7 +42,7 @@ pub(crate) struct KeccakXofState<
     inner: KeccakState<PARALLEL_LANES, STATE>,
 
     // Buffer inputs on absorb.
-    buf: [[U8; RATE]; PARALLEL_LANES],
+    buf: [SecretArray<u8, RATE>; PARALLEL_LANES],
 
     // Buffered length.
     buf_len: usize,
@@ -54,15 +55,15 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     KeccakXofState<PARALLEL_LANES, RATE, STATE>
 {
     /// An all zero block
-    pub(crate) const fn zero_block() -> [U8; RATE] {
-        [secret(0u8); RATE]
+    pub(crate) const fn zero_block() -> SecretArray<u8, RATE> {
+        SecretArray::secret([0u8; RATE])
     }
 
     /// Generate a new keccak xof state.
     pub(crate) fn new() -> Self {
         Self {
             inner: KeccakState::new(),
-            buf: [Self::zero_block(); PARALLEL_LANES],
+            buf: core::array::from_fn(|_| Self::zero_block()),
             buf_len: 0,
             sponge: false,
         }
@@ -90,7 +91,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
 
             let input_len = inputs[0].len();
             for i in 0..PARALLEL_LANES {
-                self.buf[i][self.buf_len..self.buf_len + input_remainder_len]
+                self.buf[i].as_mut_slice()[self.buf_len..self.buf_len + input_remainder_len]
                     .copy_from_slice(&inputs[i][input_len - input_remainder_len..]);
             }
             self.buf_len += input_remainder_len;
@@ -115,7 +116,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
             let mut borrowed = [s.as_slice(); PARALLEL_LANES];
             // We have a full block in the local buffer now.
             for i in 0..PARALLEL_LANES {
-                borrowed[i] = &self.buf[i];
+                borrowed[i] = self.buf[i].as_slice();
             }
             STATE::load_block::<RATE>(&mut self.inner.st, borrowed);
             keccakf1600(&mut self.inner);
@@ -159,7 +160,8 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
                 // the input.
                 consumed = RATE - self.buf_len;
                 for i in 0..PARALLEL_LANES {
-                    self.buf[i][self.buf_len..].copy_from_slice(&inputs[i][..consumed]);
+                    self.buf[i].as_mut_slice()[self.buf_len..]
+                        .copy_from_slice(&inputs[i][..consumed]);
                 }
                 self.buf_len += consumed;
             }
@@ -181,7 +183,8 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         let mut blocks = [[secret(0u8); 200]; PARALLEL_LANES];
         for i in 0..PARALLEL_LANES {
             if self.buf_len > 0 {
-                blocks[i][0..self.buf_len].copy_from_slice(&self.buf[i][0..self.buf_len]);
+                blocks[i].as_mut_slice()[0..self.buf_len]
+                    .copy_from_slice(&self.buf[i].as_mut_slice()[0..self.buf_len]);
             }
             if input_remainder_len > 0 {
                 blocks[i][self.buf_len..self.buf_len + input_remainder_len]

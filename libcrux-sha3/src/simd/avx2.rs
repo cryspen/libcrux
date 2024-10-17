@@ -6,7 +6,10 @@ use libcrux_secret_independence::*;
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: Vec256) -> Vec256 {
     debug_assert!(LEFT + RIGHT == 64);
     // XXX: This could be done more efficiently, if the shift values are multiples of 8.
-    mm256_xor_si256(mm256_slli_epi64::<LEFT>(x), mm256_srli_epi64::<RIGHT>(x))
+    mm256_xor_si256(
+        mm256_slli_epi64::<LEFT>(x.clone()),
+        mm256_srli_epi64::<RIGHT>(x),
+    )
 }
 
 #[inline(always)]

@@ -55,7 +55,7 @@ pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[U64; 5]; 5], blocks: 
 #[inline(always)]
 pub(crate) fn store_block<const RATE: usize>(s: &[[U64; 5]; 5], out: [&mut [U8]; 1]) {
     for i in 0..RATE / 8 {
-        out[0][8 * i..8 * i + 8].copy_from_slice(&s[i / 5][i % 5].to_le_bytes());
+        out[0][8 * i..8 * i + 8].copy_from_slice(&s[i / 5][i % 5].to_le_bytes().as_slice());
     }
 }
 
@@ -140,11 +140,13 @@ impl KeccakItem<1> for U64 {
         let last_block_len = out[0].len() % 8;
 
         for i in 0..num_full_blocks {
-            out[0][i * 8..i * 8 + 8].copy_from_slice(&state[i / 5][i % 5].to_le_bytes());
+            out[0][i * 8..i * 8 + 8].copy_from_slice(&state[i / 5][i % 5].to_le_bytes().as_slice());
         }
         if last_block_len != 0 {
             out[0][num_full_blocks * 8..num_full_blocks * 8 + last_block_len].copy_from_slice(
-                &state[num_full_blocks / 5][num_full_blocks % 5].to_le_bytes()[0..last_block_len],
+                &state[num_full_blocks / 5][num_full_blocks % 5]
+                    .to_le_bytes()
+                    .as_slice()[0..last_block_len],
             );
         }
     }
