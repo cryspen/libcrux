@@ -468,10 +468,7 @@ pub(crate) mod neon {
     #[inline(always)]
     fn shake128_init_absorb<const K: usize>(input: [[u8; 34]; K]) -> Simd128Hash {
         debug_assert!(K == 2 || K == 3 || K == 4);
-        let mut state = [
-            x2::incremental::init(),
-            x2::incremental::init(),
-        ];
+        let mut state = [x2::incremental::init(), x2::incremental::init()];
         match K as u8 {
             2 => {
                 x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
