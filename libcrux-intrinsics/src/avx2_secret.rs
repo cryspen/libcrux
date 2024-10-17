@@ -439,7 +439,7 @@ pub fn mm256_andnot_si256(a: Vec256, b: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-pub fn mm256_set1_epi64x(a: i64) -> Vec256 {
+pub fn mm256_set1_epi64x(a: I64) -> Vec256 {
     unimplemented!()
 }
 #[inline(always)]

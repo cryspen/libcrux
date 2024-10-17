@@ -14,11 +14,9 @@ macro_rules! sha3_test {
             for test in &tv.tests {
                 eprintln!("test {c}");
                 c += 1;
-                let my_digest: $digest = sha3(
-                    $algorithm,
-                    &test.msg[0..test.msg_length / 8].to_vec().classify_each(),
-                );
-                assert_eq!(&my_digest.declassify_each(), &test.digest[..]);
+                let my_digest: $digest =
+                    sha3($algorithm, (&test.msg[0..test.msg_length / 8]).as_secret());
+                assert_eq!(my_digest.declassify(), &test.digest[..]);
             }
         }
     };
@@ -51,9 +49,9 @@ macro_rules! shake_test {
                 let mut my_digest = vec![0u8.classify(); test.digest.len()];
                 $shake(
                     &mut my_digest,
-                    &test.msg[0..test.msg_length / 8].to_vec().classify_each(),
+                    (&test.msg[0..test.msg_length / 8]).as_secret(),
                 );
-                assert_eq!(&my_digest.declassify_each(), &test.digest[..]);
+                assert_eq!(my_digest.declassify(), &test.digest[..]);
             }
         }
     };
@@ -82,11 +80,9 @@ macro_rules! shake_vo_test {
                 let mut my_digest = vec![0u8.classify(); test.digest.len()];
                 $shake(
                     &mut my_digest,
-                    &test.msg[0..tv.header.input_length / 8]
-                        .to_vec()
-                        .classify_each(),
+                    (&test.msg[0..tv.header.input_length / 8]).as_secret(),
                 );
-                assert_eq!(&my_digest.declassify_each(), &test.digest[..]);
+                assert_eq!(my_digest.declassify(), &test.digest[..]);
             }
         }
     };

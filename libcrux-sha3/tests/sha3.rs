@@ -1,27 +1,26 @@
-use libcrux_secret_independence::{ClassifyEach, DeclassifyEach};
+use libcrux_secret_independence::{Classify, Declassify as _};
 
 #[test]
 fn sha3_kat_oneshot() {
-    let d256 = libcrux_sha3::sha256(&b"Hello, World!".to_vec().classify_each()).declassify_each();
+    let hello_world = b"Hello, World!".classify();
+    let d256 = libcrux_sha3::sha256(hello_world.as_slice()).declassify();
     let expected256 = "1af17a664e3fa8e419b8ba05c2a173169df76162a5a286e0c405b460d478f7ef";
-    assert_eq!(hex::encode(&d256), expected256);
+    assert_eq!(hex::encode(d256), expected256);
 
-    let dshake =
-        libcrux_sha3::shake128::<42>(&b"Hello, World!".to_vec().classify_each()).declassify_each();
+    let dshake = libcrux_sha3::shake128::<42>(b"Hello, World!".classify().as_slice()).declassify();
     let expectedshake =
         "2bf5e6dee6079fad604f573194ba8426bd4d30eb13e8ba2edae70e529b570cbdd588f2c5dd4e465dfbaf";
-    assert_eq!(hex::encode(&dshake), expectedshake);
+    assert_eq!(hex::encode(dshake), expectedshake);
 }
 
 #[test]
 fn sha3_simd_kat_oneshot() {
-    let d256 = libcrux_sha3::sha256(&b"Hello, World!".to_vec().classify_each()).declassify_each();
+    let d256 = libcrux_sha3::sha256(b"Hello, World!".classify().as_slice()).declassify();
     let expected256 = "1af17a664e3fa8e419b8ba05c2a173169df76162a5a286e0c405b460d478f7ef";
-    assert_eq!(hex::encode(&d256), expected256);
+    assert_eq!(hex::encode(d256), expected256);
 
-    let dshake =
-        libcrux_sha3::shake128::<42>(&b"Hello, World!".to_vec().classify_each()).declassify_each();
+    let dshake = libcrux_sha3::shake128::<42>(b"Hello, World!".classify().as_slice()).declassify();
     let expectedshake =
         "2bf5e6dee6079fad604f573194ba8426bd4d30eb13e8ba2edae70e529b570cbdd588f2c5dd4e465dfbaf";
-    assert_eq!(hex::encode(&dshake), expectedshake);
+    assert_eq!(hex::encode(dshake), expectedshake);
 }

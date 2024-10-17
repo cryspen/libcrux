@@ -1,3 +1,6 @@
+pub use array::*;
+pub use slice::*;
+
 /// Used to classify arrays, usually of scalars.
 ///
 /// It might make sense to require that the type inside the array is a Scalar. If we do that we can
@@ -148,9 +151,32 @@ pub mod arrayref {
     }
 }
 
-/*
 /// Contains classified slices, i.e. &[T]
 pub mod slice {
+    use crate::{Declassify, Scalar, Secret};
+
+    pub trait AsSecret {
+        type Item: Declassify;
+
+        fn as_secret(&self) -> &[Self::Item];
+    }
+
+    impl<T: Scalar> AsSecret for &[T] {
+        type Item = Secret<T>;
+
+        fn as_secret(&self) -> &[Self::Item] {
+            unsafe { core::mem::transmute(*self) }
+        }
+    }
+
+    impl<'a, T: Scalar> Declassify for &'a [Secret<T>] {
+        type Declassified = &'a [T];
+
+        fn declassify(self) -> Self::Declassified {
+            unsafe { core::mem::transmute(self) }
+        }
+    }
+    /*
     use std::ops::{Index, IndexMut, Range};
 
     use super::{array::SecretArray, arrayref::SecretArrayRef, iter::SecretIter};
@@ -215,8 +241,10 @@ pub mod slice {
             self.0[index].classify_mut()
         }
     }
+    */
 }
 
+/*
 pub mod iter {
     use crate::Classify;
 

@@ -14,16 +14,16 @@ mod portable_keccak;
 mod traits;
 
 /// A SHA3 224 Digest
-pub type Sha3_224Digest = [U8; 28];
+pub type Sha3_224Digest = SecretArray<u8, 28>;
 
 /// A SHA3 256 Digest
-pub type Sha3_256Digest = [U8; 32];
+pub type Sha3_256Digest = SecretArray<u8, 32>;
 
 /// A SHA3 384 Digest
-pub type Sha3_384Digest = [U8; 48];
+pub type Sha3_384Digest = SecretArray<u8, 48>;
 
 /// A SHA3 512 Digest
-pub type Sha3_512Digest = [U8; 64];
+pub type Sha3_512Digest = SecretArray<u8, 64>;
 
 /// The Digest Algorithm.
 #[cfg_attr(not(eurydice), derive(Copy, Clone, Debug, PartialEq))]
@@ -76,27 +76,28 @@ pub const fn digest_size(mode: Algorithm) -> usize {
 }
 
 /// SHA3
-pub fn hash<const LEN: usize>(algorithm: Algorithm, payload: &[U8]) -> [U8; LEN] {
+pub fn hash<const LEN: usize>(algorithm: Algorithm, payload: &[U8]) -> SecretArray<u8, LEN> {
     debug_assert!(payload.len() <= u32::MAX as usize);
 
-    let mut out = [0u8.classify(); LEN];
+    let mut out = SecretArray::secret([0u8; LEN]);
     match algorithm {
-        Algorithm::Sha224 => portable::sha224(&mut out, payload),
-        Algorithm::Sha256 => portable::sha256(&mut out, payload),
-        Algorithm::Sha384 => portable::sha384(&mut out, payload),
-        Algorithm::Sha512 => portable::sha512(&mut out, payload),
+        Algorithm::Sha224 => portable::sha224(out.as_mut_slice(), payload),
+        Algorithm::Sha256 => portable::sha256(out.as_mut_slice(), payload),
+        Algorithm::Sha384 => portable::sha384(out.as_mut_slice(), payload),
+        Algorithm::Sha512 => portable::sha512(out.as_mut_slice(), payload),
     }
     out
 }
 
 /// SHA3
 pub use hash as sha3;
+use secret_sequences::array::SecretArray;
 
 /// SHA3 224
 #[inline(always)]
 pub fn sha224(data: &[U8]) -> Sha3_224Digest {
-    let mut out = [0u8.classify(); 28];
-    sha224_ema(&mut out, data);
+    let mut out = [0u8; 28].classify();
+    sha224_ema(out.as_mut_slice(), data);
     out
 }
 
@@ -115,8 +116,8 @@ pub fn sha224_ema(digest: &mut [U8], payload: &[U8]) {
 /// SHA3 256
 #[inline(always)]
 pub fn sha256(data: &[U8]) -> Sha3_256Digest {
-    let mut out = [0u8.classify(); 32];
-    sha256_ema(&mut out, data);
+    let mut out = [0u8; 32].classify();
+    sha256_ema(out.as_mut_slice(), data);
     out
 }
 
@@ -132,8 +133,8 @@ pub fn sha256_ema(digest: &mut [U8], payload: &[U8]) {
 /// SHA3 384
 #[inline(always)]
 pub fn sha384(data: &[U8]) -> Sha3_384Digest {
-    let mut out = [0u8.classify(); 48];
-    sha384_ema(&mut out, data);
+    let mut out = [0u8; 48].classify();
+    sha384_ema(out.as_mut_slice(), data);
     out
 }
 
@@ -149,8 +150,8 @@ pub fn sha384_ema(digest: &mut [U8], payload: &[U8]) {
 /// SHA3 512
 #[inline(always)]
 pub fn sha512(data: &[U8]) -> Sha3_512Digest {
-    let mut out = [0u8.classify(); 64];
-    sha512_ema(&mut out, data);
+    let mut out = [0u8; 64].classify();
+    sha512_ema(out.as_mut_slice(), data);
     out
 }
 
@@ -168,9 +169,9 @@ pub fn sha512_ema(digest: &mut [U8], payload: &[U8]) {
 /// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
 /// the output will only return `u32::MAX` bytes.
 #[inline(always)]
-pub fn shake128<const BYTES: usize>(data: &[U8]) -> [U8; BYTES] {
-    let mut out = [0u8.classify(); BYTES];
-    portable::shake128(&mut out, data);
+pub fn shake128<const BYTES: usize>(data: &[U8]) -> SecretArray<u8, BYTES> {
+    let mut out = [0u8; BYTES].classify();
+    portable::shake128(out.as_mut_slice(), data);
     out
 }
 

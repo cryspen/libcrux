@@ -4,11 +4,30 @@ use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criteri
 use libcrux_secret_independence::*;
 use libcrux_sha3::*;
 
-pub fn randombytes(n: usize) -> Vec<u8> {
+pub fn randombytes_vec(n: usize) -> Vec<u8> {
     use rand::rngs::OsRng;
     use rand::RngCore;
 
     let mut bytes = vec![0u8; n];
+    OsRng.fill_bytes(&mut bytes);
+    bytes
+}
+
+pub fn randomsecretbytes_vec(n: usize) -> Vec<U8> {
+    use rand::rngs::OsRng;
+    use rand::RngCore;
+
+    let mut bytes = vec![0u8; n];
+    OsRng.fill_bytes(&mut bytes);
+
+    bytes.into_iter().map(|x| x.classify()).collect()
+}
+
+pub fn randombytes<const N: usize>() -> [u8; N] {
+    use rand::rngs::OsRng;
+    use rand::RngCore;
+
+    let mut bytes = [0u8; N];
     OsRng.fill_bytes(&mut bytes);
     bytes
 }
@@ -35,10 +54,10 @@ macro_rules! impl_comp {
                     payload_size,
                     |b, payload_size| {
                         b.iter_batched(
-                            || randombytes(*payload_size),
+                            || randomsecretbytes_vec(*payload_size),
                             |payload| {
-                                let _d: [u8; digest_size($libcrux)] =
-                                    hash($libcrux, &payload.classify_each()).declassify_each();
+                                const LEN: usize = digest_size($libcrux);
+                                let _d: SecretArray<u8, LEN> = hash($libcrux, &payload);
                             },
                             BatchSize::SmallInput,
                         )
@@ -77,22 +96,22 @@ fn shake256(c: &mut Criterion) {
         b.iter_batched(
             || {
                 (
-                    randombytes(33),
-                    randombytes(33),
-                    randombytes(33),
-                    randombytes(33),
+                    randombytes::<33>().classify(),
+                    randombytes::<33>().classify(),
+                    randombytes::<33>().classify(),
+                    randombytes::<33>().classify(),
                 )
             },
             |(payload0, payload1, payload2, payload3)| {
-                let mut digest0 = [0u8; 128];
-                let mut digest1 = [0u8; 128];
-                let mut digest2 = [0u8; 128];
-                let mut digest3 = [0u8; 128];
+                let mut digest0 = [0u8.classify(); 128];
+                let mut digest1 = [0u8.classify(); 128];
+                let mut digest2 = [0u8.classify(); 128];
+                let mut digest3 = [0u8.classify(); 128];
                 avx2::x4::shake256(
-                    &payload0,
-                    &payload1,
-                    &payload2,
-                    &payload3,
+                    payload0.as_slice(),
+                    payload1.as_slice(),
+                    payload2.as_slice(),
+                    payload3.as_slice(),
                     &mut digest0,
                     &mut digest1,
                     &mut digest2,

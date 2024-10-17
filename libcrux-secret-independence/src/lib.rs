@@ -3,6 +3,7 @@ pub use traits::*;
 
 //mod secret_integers_jan;
 pub mod secret_sequences;
+pub use secret_sequences::*;
 
 /**
 * TODO:
