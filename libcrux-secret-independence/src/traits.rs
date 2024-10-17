@@ -1,22 +1,42 @@
+use crate::secret_sequences::array::SecretArray;
+
 pub trait Classify {
-    type ClassifiedOutput;
-    fn classify(self) -> Self::ClassifiedOutput;
+    type Classified;
+    fn classify(self) -> Self::Classified;
+}
+
+pub trait ClassifyRef {
+    type Classified;
+    fn classify_ref(&self) -> &Self::Classified;
+}
+
+pub trait ClassifyRefMut: ClassifyRef {
+    fn classify_mut(&mut self) -> &mut Self::Classified;
 }
 
 pub trait Declassify {
-    type DeclassifiedOutput;
-    fn declassify(self) -> Self::DeclassifiedOutput;
+    type Declassified;
+    fn declassify(self) -> Self::Declassified;
 }
 
-pub trait ClassifyEach {
-    type ClassifiedEachOutput;
-    fn classify_each(&self) -> Self::ClassifiedEachOutput;
+pub trait Zeroize {
+    fn zeroize(&mut self);
 }
 
-pub trait DeclassifyEach {
-    type DeclassifiedEachOutput;
-    fn declassify_each(self) -> Self::DeclassifiedEachOutput;
-}
+/// Marker trait to constrain the types for which we use SecretScalar
+pub trait Scalar {}
+
+impl Scalar for u8 {}
+impl Scalar for u16 {}
+impl Scalar for u32 {}
+impl Scalar for u64 {}
+impl Scalar for u128 {}
+
+impl Scalar for i8 {}
+impl Scalar for i16 {}
+impl Scalar for i32 {}
+impl Scalar for i64 {}
+impl Scalar for i128 {}
 
 pub trait IntOps
 where
@@ -30,12 +50,13 @@ where
 }
 
 pub trait EncodeOps<T, const N: usize> {
-    fn to_le_bytes(&self) -> [T; N];
-    fn to_be_bytes(&self) -> [T; N];
-    fn from_le_bytes(x: &[T; N]) -> Self;
-    fn from_be_bytes(x: &[T; N]) -> Self;
+    fn to_le_bytes(&self) -> SecretArray<u8, N>;
+    fn to_be_bytes(&self) -> SecretArray<u8, N>;
+    fn from_le_bytes(x: SecretArray<u8, N>) -> Self;
+    fn from_be_bytes(x: SecretArray<u8, N>) -> Self;
 }
 
+/*
 #[inline(always)]
 #[hax_lib::requires(C > 0 && C <= 16 && N <= 65536 / C)]
 #[hax_lib::ensures(|result| if B == N * C {result.is_ok()} else {result.is_err()} )]
@@ -50,7 +71,7 @@ pub(crate) fn try_to_le_bytes<
 ) -> Result<[U; B], ()> {
     let mut v = Vec::new();
     for i in 0..N {
-        v.extend_from_slice(&x[i].to_le_bytes())
+        v.extend(x[i].to_le_bytes().as_slice().iter())
     }
     v.try_into().map_err(|_| ())
 }
@@ -109,3 +130,4 @@ pub trait TryDecodeOps<T>: Sized {
     fn try_from_le_bytes(x: &[T]) -> Result<Self, ()>;
     fn try_from_be_bytes(x: &[T]) -> Result<Self, ()>;
 }
+*/

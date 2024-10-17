@@ -1,4 +1,4 @@
-use crate::traits::*;
+use crate::{secret_sequences::array::SecretArray, traits::*};
 use core::ops::*;
 
 #[repr(transparent)]
@@ -11,99 +11,85 @@ fn unwrap<T>(x: Secret<T>) -> T {
     x.0
 }
 
-impl<T> Classify for T {
-    type ClassifiedOutput = Secret<T>;
+impl<T: Scalar> Classify for T {
+    type Classified = Secret<T>;
     fn classify(self) -> Secret<Self> {
         secret(self)
     }
 }
 
-impl<T> Declassify for Secret<T> {
-    type DeclassifiedOutput = T;
+impl<T: Scalar> ClassifyRef for T {
+    type Classified = Secret<T>;
+
+    fn classify_ref(&self) -> &Self::Classified {
+        unsafe { core::mem::transmute(self) }
+    }
+}
+
+impl<T: Scalar> Declassify for Secret<T> {
+    type Declassified = T;
     fn declassify(self) -> T {
         unwrap(self)
     }
 }
 
-impl<T> From<T> for Secret<T> {
+impl<T: Scalar> From<T> for Secret<T> {
     fn from(x: T) -> Secret<T> {
         x.classify()
     }
 }
 
-impl<T: Clone> Clone for Secret<T> {
+impl<T: Scalar + Clone> Clone for Secret<T> {
     fn clone(&self) -> Self {
         Secret(self.0.clone())
     }
 }
 
-impl<T: Clone + Copy> Copy for Secret<T> {}
+impl<T: Clone + Copy + Scalar> Copy for Secret<T> {}
 
-impl<T: Clone + Copy, const N: usize> ClassifyEach for [T; N] {
-    type ClassifiedEachOutput = [Secret<T>; N];
-    fn classify_each(&self) -> [Secret<T>; N] {
-        self.map(|x| x.into())
-    }
-}
-
-impl<T: Clone + Copy> ClassifyEach for Vec<T> {
-    type ClassifiedEachOutput = Vec<Secret<T>>;
-    fn classify_each(&self) -> Vec<Secret<T>> {
-        self.clone().into_iter().map(|x| x.classify()).collect()
-    }
-}
-
-impl<T: Clone> ClassifyEach for [T] {
-    type ClassifiedEachOutput = Vec<Secret<T>>;
-    fn classify_each(&self) -> Vec<Secret<T>> {
-        self.to_vec().into_iter().map(|x| x.classify()).collect()
-    }
-}
-
-impl<T, const N: usize> DeclassifyEach for [Secret<T>; N] {
-    type DeclassifiedEachOutput = [T; N];
-    fn declassify_each(self) -> [T; N] {
-        self.map(|x| x.declassify())
-    }
-}
-
-impl<T> DeclassifyEach for Vec<Secret<T>> {
-    type DeclassifiedEachOutput = Vec<T>;
-    fn declassify_each(self) -> Vec<T> {
-        self.into_iter().map(|x| x.declassify()).collect()
-    }
-}
-
-impl<T: Add, V: Into<Secret<T>>> Add<V> for Secret<T> {
+impl<T: Add + Scalar, V: Into<Secret<T>>> Add<V> for Secret<T>
+where
+    T::Output: Scalar,
+{
     type Output = Secret<T::Output>;
     fn add(self, rhs: V) -> Self::Output {
         self.declassify().add(rhs.into().declassify()).classify()
     }
 }
 
-impl<T: Sub, V: Into<Secret<T>>> Sub<V> for Secret<T> {
+impl<T: Sub + Scalar, V: Into<Secret<T>>> Sub<V> for Secret<T>
+where
+    T::Output: Scalar,
+{
     type Output = Secret<T::Output>;
     fn sub(self, rhs: V) -> Self::Output {
         self.declassify().sub(rhs.into().declassify()).into()
     }
 }
 
-impl<T: Mul, V: Into<Secret<T>>> Mul<V> for Secret<T> {
+impl<T: Mul + Scalar, V: Into<Secret<T>>> Mul<V> for Secret<T>
+where
+    T::Output: Scalar,
+{
     type Output = Secret<T::Output>;
     fn mul(self, rhs: V) -> Self::Output {
         self.declassify().mul(rhs.into().declassify()).into()
     }
 }
 
-impl<T: BitXor, V: Into<Secret<T>>> BitXor<V> for Secret<T> {
+impl<T: BitXor + Scalar, V: Into<Secret<T>>> BitXor<V> for Secret<T>
+where
+    T::Output: Scalar,
+{
     type Output = Secret<T::Output>;
     fn bitxor(self, rhs: V) -> Self::Output {
         self.declassify().bitxor(rhs.into().declassify()).into()
     }
 }
 
-impl<T: BitXor + Copy, V: Into<Secret<T>>> BitXorAssign<V> for Secret<T>
+impl<T: BitXor + Copy + Scalar, V: Into<Secret<T>>> BitXorAssign<V> for Secret<T>
 where
+    T::Output: Scalar,
     T::Output: Into<T>,
 {
     fn bitxor_assign(&mut self, rhs: V) {
@@ -112,14 +98,17 @@ where
     }
 }
 
-impl<T: BitOr, V: Into<Secret<T>>> BitOr<V> for Secret<T> {
+impl<T: BitOr + Scalar, V: Into<Secret<T>>> BitOr<V> for Secret<T>
+where
+    T::Output: Scalar,
+{
     type Output = Secret<T::Output>;
     fn bitor(self, rhs: V) -> Self::Output {
         self.declassify().bitor(rhs.into().declassify()).into()
     }
 }
 
-impl<T: BitOr + Copy, V: Into<Secret<T>>> BitOrAssign<V> for Secret<T>
+impl<T: BitOr + Copy + Scalar, V: Into<Secret<T>>> BitOrAssign<V> for Secret<T>
 where
     T::Output: Into<T>,
 {
@@ -129,14 +118,17 @@ where
     }
 }
 
-impl<T: BitAnd, V: Into<Secret<T>>> BitAnd<V> for Secret<T> {
+impl<T: BitAnd + Scalar, V: Into<Secret<T>>> BitAnd<V> for Secret<T>
+where
+    T::Output: Scalar,
+{
     type Output = Secret<T::Output>;
     fn bitand(self, rhs: V) -> Self::Output {
         self.declassify().bitand(rhs.into().declassify()).into()
     }
 }
 
-impl<T: BitAnd + Copy, V: Into<Secret<T>>> BitAndAssign<V> for Secret<T>
+impl<T: BitAnd + Copy + Scalar, V: Into<Secret<T>>> BitAndAssign<V> for Secret<T>
 where
     T::Output: Into<T>,
 {
@@ -146,21 +138,30 @@ where
     }
 }
 
-impl<T: Not> Not for Secret<T> {
+impl<T: Not + Scalar> Not for Secret<T>
+where
+    T::Output: Scalar,
+{
     type Output = Secret<T::Output>;
     fn not(self) -> Self::Output {
         self.declassify().not().into()
     }
 }
 
-impl<U, T: Shl<U>> Shl<U> for Secret<T> {
+impl<U, T: Shl<U> + Scalar> Shl<U> for Secret<T>
+where
+    T::Output: Scalar,
+{
     type Output = Secret<T::Output>;
     fn shl(self, rhs: U) -> Self::Output {
         (self.declassify().shl(rhs)).into()
     }
 }
 
-impl<U, T: Shr<U>> Shr<U> for Secret<T> {
+impl<U, T: Shr<U> + Scalar> Shr<U> for Secret<T>
+where
+    T::Output: Scalar,
+{
     type Output = Secret<T::Output>;
     fn shr(self, rhs: U) -> Self::Output {
         (self.declassify().shr(rhs)).into()
@@ -203,20 +204,21 @@ impl IntOps for Secret<u32> {
 }
 
 impl EncodeOps<U8, 4> for U32 {
-    fn to_le_bytes(&self) -> [U8; 4] {
-        self.declassify().to_le_bytes().classify_each()
+    fn to_le_bytes(&self) -> SecretArray<u8, 4> {
+        self.declassify().to_le_bytes().classify()
     }
-    fn to_be_bytes(&self) -> [U8; 4] {
-        self.declassify().to_be_bytes().classify_each()
+    fn to_be_bytes(&self) -> SecretArray<u8, 4> {
+        self.declassify().to_be_bytes().classify()
     }
-    fn from_le_bytes(x: &[U8; 4]) -> Self {
-        u32::from_le_bytes(x.map(|i| i.declassify())).classify()
+    fn from_le_bytes(x: SecretArray<u8, 4>) -> Self {
+        u32::from_le_bytes(x.declassify()).classify()
     }
-    fn from_be_bytes(x: &[U8; 4]) -> Self {
-        u32::from_be_bytes(x.map(|i| i.declassify())).classify()
+    fn from_be_bytes(x: SecretArray<u8, 4>) -> Self {
+        u32::from_be_bytes(x.declassify()).classify()
     }
 }
 
+/*
 impl<const N: usize, const B: usize> TryEncodeOps<U8, B> for [U32; N] {
     fn try_to_le_bytes(&self) -> Result<[U8; B], ()> {
         try_to_le_bytes(self)
@@ -234,6 +236,7 @@ impl<const N: usize> TryDecodeOps<U8> for [U32; N] {
         try_from_be_bytes(x)
     }
 }
+*/
 
 impl IntOps for Secret<u64> {
     fn wrapping_add<T: Into<Secret<u64>>>(self, rhs: T) -> Self {
@@ -260,20 +263,21 @@ impl IntOps for Secret<u64> {
 }
 
 impl EncodeOps<U8, 8> for U64 {
-    fn to_le_bytes(&self) -> [U8; 8] {
-        self.declassify().to_le_bytes().classify_each()
+    fn to_le_bytes(&self) -> SecretArray<u8, 8> {
+        self.declassify().to_le_bytes().classify()
     }
-    fn to_be_bytes(&self) -> [U8; 8] {
-        self.declassify().to_be_bytes().classify_each()
+    fn to_be_bytes(&self) -> SecretArray<u8, 8> {
+        self.declassify().to_be_bytes().classify()
     }
-    fn from_le_bytes(x: &[U8; 8]) -> Self {
-        u64::from_le_bytes(x.map(|i| i.declassify())).classify()
+    fn from_le_bytes(x: SecretArray<u8, 8>) -> Self {
+        u64::from_le_bytes(x.declassify()).classify()
     }
-    fn from_be_bytes(x: &[U8; 8]) -> Self {
-        u64::from_be_bytes(x.map(|i| i.declassify())).classify()
+    fn from_be_bytes(x: SecretArray<u8, 8>) -> Self {
+        u64::from_be_bytes(x.declassify()).classify()
     }
 }
 
+/*
 impl<const N: usize, const B: usize> TryEncodeOps<U8, B> for [U64; N] {
     fn try_to_le_bytes(&self) -> Result<[U8; B], ()> {
         try_to_le_bytes(self)
@@ -291,3 +295,4 @@ impl<const N: usize> TryDecodeOps<U8> for [U64; N] {
         try_from_be_bytes(x)
     }
 }
+*/
