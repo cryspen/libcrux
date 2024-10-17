@@ -98,7 +98,7 @@ pub(crate) fn kyber_generate_keypair<
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     unsafe {
-        kyber_generate_keypair::<
+        kyber_generate_keypair_avx2::<
             K,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
