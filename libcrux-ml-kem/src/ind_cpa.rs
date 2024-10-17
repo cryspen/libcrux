@@ -226,6 +226,7 @@ fn sample_vector_cbd_then_ntt_out<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
     const ETA1: usize,
@@ -273,6 +274,7 @@ pub(crate) fn generate_keypair_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn generate_keypair<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
