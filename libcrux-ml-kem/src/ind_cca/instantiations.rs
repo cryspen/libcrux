@@ -416,7 +416,6 @@ macro_rules! instantiate {
 instantiate! {portable, crate::vector::portable::PortableVector, crate::hash_functions::portable::PortableHash<K>}
 
 // // AVX2 generic implementation.
-// instantiate! {avx2, crate::vector::SIMD256Vector, crate::hash_functions::avx2::Simd256Hash}
 #[cfg(feature = "simd256")]
 pub mod avx2;
 
