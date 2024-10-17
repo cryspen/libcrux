@@ -309,6 +309,7 @@ pub(crate) fn generate_keypair<
 }
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
+#[inline(always)]
 fn compress_then_serialize_u<
     const K: usize,
     const OUT_LEN: usize,
@@ -371,6 +372,7 @@ fn compress_then_serialize_u<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn encrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -447,6 +449,7 @@ pub(crate) fn encrypt_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn encrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
