@@ -38,15 +38,21 @@ analogously for encapsulation and decapsulation."##
  // This example uses ML-KEM 768. The other variants can be used the same way.
 
  // Generate a key pair.
- let randomness = random_array();
- let key_pair = mlkem768::generate_key_pair(randomness);
+ let key_pair = {
+    let randomness = random_array();
+    mlkem768::generate_key_pair(randomness)
+ };
 
  // Encapsulating a shared secret to a public key.
- let randomness = random_array();
- let (ciphertext, shared_secret) = mlkem768::encapsulate(key_pair.public_key(), randomness);
+ let (ciphertext, shared_secret) = {
+    let randomness = random_array();
+    mlkem768::encapsulate(key_pair.public_key(), randomness)
+ };
 
  // Decapsulating a shared secret with a private key.
  let shared_secret_decapsulated = mlkem768::decapsulate(key_pair.private_key(), &ciphertext);
+
+ assert_eq!(shared_secret_decapsulated, shared_secret);
 ```"##
 )]
 //!
@@ -68,7 +74,7 @@ analogously for encapsulation and decapsulation."##
 
 #![no_std]
 #![deny(missing_docs)]
-#![warn(unsafe_code)]
+#![deny(unsafe_code)]
 #![warn(rust_2018_idioms, unused_lifetimes, unused_qualifications)]
 #![allow(clippy::needless_range_loop)]
 #![warn(missing_docs)]
