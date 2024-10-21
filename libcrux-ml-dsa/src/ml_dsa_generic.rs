@@ -26,6 +26,7 @@ pub(crate) mod instantiations;
 pub(crate) mod multiplexing;
 
 /// Generate a key pair.
+#[inline(always)]
 pub(crate) fn generate_key_pair<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
@@ -90,6 +91,7 @@ pub(crate) fn generate_key_pair<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn sign_pre_hashed<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
@@ -149,6 +151,7 @@ pub(crate) fn sign_pre_hashed<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn sign<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
@@ -207,6 +210,7 @@ pub(crate) fn sign<
 /// If no `domain_separation_context` is supplied, it is assumed that
 /// `message` already contains the domain separation.
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn sign_internal<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
@@ -413,6 +417,7 @@ pub(crate) fn sign_internal<
 /// for details on the domain separation for regular ML-DSA. Line
 /// 23 of Algorithm 4 (and line 18 of Algorithm 5,resp.) describe domain separation for the HashMl-DSA
 /// variant.
+#[inline(always)]
 fn derive_message_representative(
     verification_key_hash: [u8; 64],
     domain_separation_context: Option<DomainSeparationContext>,
@@ -445,6 +450,7 @@ fn derive_message_representative(
 /// If no `domain_separation_context` is supplied, it is assumed that
 /// `message` already contains the domain separation.
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn verify_internal<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
@@ -545,6 +551,7 @@ pub(crate) fn verify_internal<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn verify<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
@@ -595,6 +602,7 @@ pub(crate) fn verify<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn verify_pre_hashed<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
