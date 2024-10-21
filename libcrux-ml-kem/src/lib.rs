@@ -10,14 +10,14 @@
 Functions in this crate use CPU feature detection to pick the most efficient version
 on each platform. To use a specific version with your own feature detection
 use e.g. one of the following
-- `mlkem512::avx2::generate_key_pair`,
-- `mlkem512::neon::generate_key_pair`,
-- `mlkem512::portable::generate_key_pair`,
+- `mlkem768::avx2::generate_key_pair`,
+- `mlkem768::neon::generate_key_pair`,
+- `mlkem768::portable::generate_key_pair`,
 
 analogously for encapsulation and decapsulation."##
 )]
 #![cfg_attr(
-    feature = "mlkem512",
+    feature = "mlkem768",
     doc = r##"
 ```
  use rand::{rngs::OsRng, RngCore};
@@ -35,22 +35,22 @@ analogously for encapsulation and decapsulation."##
 
  use libcrux_ml_kem::*;
 
- // This example uses ML-KEM 512. The other variants can be used the same way.
+ // This example uses ML-KEM 768. The other variants can be used the same way.
 
  // Generate a key pair.
  let key_pair = {
     let randomness = random_array();
-    mlkem512::generate_key_pair(randomness)
+    mlkem768::generate_key_pair(randomness)
  };
 
  // Encapsulating a shared secret to a public key.
  let (ciphertext, shared_secret) = {
     let randomness = random_array();
-    mlkem512::encapsulate(key_pair.public_key(), randomness)
+    mlkem768::encapsulate(key_pair.public_key(), randomness)
  };
 
  // Decapsulating a shared secret with a private key.
- let shared_secret_decapsulated = mlkem512::decapsulate(key_pair.private_key(), &ciphertext);
+ let shared_secret_decapsulated = mlkem768::decapsulate(key_pair.private_key(), &ciphertext);
 
  assert_eq!(shared_secret_decapsulated, shared_secret);
 ```"##
