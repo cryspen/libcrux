@@ -8,7 +8,7 @@
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
  * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
  * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 905a91e1fa80823be8a3ae493778a59dbc0aa911
+ * Libcrux: 99b4e0ae6147eb731652e0ee355fc77d2c160664
  */
 
 #include "libcrux_mlkem1024_portable.h"
@@ -38,9 +38,9 @@ libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-static KRML_MUSTINLINE void decapsulate_e0(
-    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext, uint8_t ret[32U]) {
+static void decapsulate_e0(libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
+                           libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext,
+                           uint8_t ret[32U]) {
   libcrux_ml_kem_ind_cca_decapsulate_621(private_key, ciphertext, ret);
 }
 
@@ -74,9 +74,9 @@ libcrux_ml_kem.ind_cca.instantiations.portable.encapsulate with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE tuple_fa
-encapsulate_8f(libcrux_ml_kem_types_MlKemPublicKey_64 *public_key,
-               uint8_t randomness[32U]) {
+static tuple_fa encapsulate_8f(
+    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key,
+    uint8_t randomness[32U]) {
   libcrux_ml_kem_types_MlKemPublicKey_64 *uu____0 = public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
@@ -116,8 +116,8 @@ generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-generate_keypair_c9(uint8_t randomness[64U]) {
+static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_c9(
+    uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
@@ -146,7 +146,7 @@ generics
 - SECRET_KEY_SIZE= 3168
 - CIPHERTEXT_SIZE= 1568
 */
-static KRML_MUSTINLINE bool validate_private_key_6b(
+static bool validate_private_key_6b(
     libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext) {
   return libcrux_ml_kem_ind_cca_validate_private_key_b5(private_key,
@@ -175,7 +175,7 @@ generics
 - RANKED_BYTES_PER_RING_ELEMENT= 1536
 - PUBLIC_KEY_SIZE= 1568
 */
-static KRML_MUSTINLINE bool validate_public_key_6b(uint8_t *public_key) {
+static bool validate_public_key_6b(uint8_t *public_key) {
   return libcrux_ml_kem_ind_cca_validate_public_key_00(public_key);
 }
 

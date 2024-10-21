@@ -8,7 +8,7 @@
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
  * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
  * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 905a91e1fa80823be8a3ae493778a59dbc0aa911
+ * Libcrux: 99b4e0ae6147eb731652e0ee355fc77d2c160664
  */
 
 #ifndef __libcrux_mlkem768_portable_H
@@ -5451,7 +5451,7 @@ libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-static KRML_MUSTINLINE void
+static inline void
 libcrux_ml_kem_ind_cca_instantiations_portable_decapsulate_35(
     libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
@@ -5596,7 +5596,7 @@ libcrux_ml_kem.ind_cca.instantiations.portable.encapsulate with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE tuple_c2
+static inline tuple_c2
 libcrux_ml_kem_ind_cca_instantiations_portable_encapsulate_cd(
     libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]) {
@@ -6149,7 +6149,7 @@ generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE libcrux_ml_kem_mlkem768_MlKem768KeyPair
+static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_ind_cca_instantiations_portable_generate_keypair_c6(
     uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
@@ -6322,7 +6322,7 @@ generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-static KRML_MUSTINLINE void
+static inline void
 libcrux_ml_kem_ind_cca_instantiations_portable_kyber_decapsulate_35(
     libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
@@ -6454,7 +6454,7 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE tuple_c2
+static inline tuple_c2
 libcrux_ml_kem_ind_cca_instantiations_portable_kyber_encapsulate_cd(
     libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]) {
@@ -6716,7 +6716,7 @@ generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE libcrux_ml_kem_mlkem768_MlKem768KeyPair
+static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_ind_cca_instantiations_portable_kyber_generate_keypair_c6(
     uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
@@ -6783,7 +6783,7 @@ generics
 - SECRET_KEY_SIZE= 2400
 - CIPHERTEXT_SIZE= 1088
 */
-static KRML_MUSTINLINE bool
+static inline bool
 libcrux_ml_kem_ind_cca_instantiations_portable_validate_private_key_31(
     libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext) {
@@ -6920,7 +6920,7 @@ generics
 - RANKED_BYTES_PER_RING_ELEMENT= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
-static KRML_MUSTINLINE bool
+static inline bool
 libcrux_ml_kem_ind_cca_instantiations_portable_validate_public_key_31(
     uint8_t *public_key) {
   return libcrux_ml_kem_ind_cca_validate_public_key_6c(public_key);
@@ -7044,7 +7044,7 @@ generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-static KRML_MUSTINLINE void
+static inline void
 libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_decapsulate_35(
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
@@ -7155,7 +7155,7 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE tuple_c2
+static inline tuple_c2
 libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_encapsulate_cd(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
     uint8_t randomness[32U]) {
@@ -7338,7 +7338,7 @@ const generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE void
+static inline void
 libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_generate_keypair_c6(
     uint8_t randomness[64U],
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *out) {
@@ -7705,7 +7705,7 @@ const generics
 - RANKED_BYTES_PER_RING_ELEMENT= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
-static KRML_MUSTINLINE void
+static inline void
 libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_unpack_public_key_a5(
     libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
