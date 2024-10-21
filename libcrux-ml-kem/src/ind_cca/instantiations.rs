@@ -7,7 +7,6 @@ macro_rules! instantiate {
             };
 
             /// Portable generate key pair.
-            #[inline(always)]
             pub(crate) fn generate_keypair<
                 const K: usize,
                 const CPA_PRIVATE_KEY_SIZE: usize,
@@ -34,7 +33,6 @@ macro_rules! instantiate {
             }
 
             #[cfg(feature = "kyber")]
-            #[inline(always)]
             pub(crate) fn kyber_generate_keypair<
                 const K: usize,
                 const CPA_PRIVATE_KEY_SIZE: usize,
@@ -61,7 +59,6 @@ macro_rules! instantiate {
             }
 
             /// Portable public key validation
-            #[inline(always)]
             pub(crate) fn validate_public_key<
                 const K: usize,
                 const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -78,7 +75,6 @@ macro_rules! instantiate {
             }
 
             /// Portable private key validation
-            #[inline(always)]
             pub(crate) fn validate_private_key<
                 const K: usize,
                 const SECRET_KEY_SIZE: usize,
@@ -95,7 +91,6 @@ macro_rules! instantiate {
 
             /// Portable encapsulate
             #[cfg(feature = "kyber")]
-            #[inline(always)]
             pub(crate) fn kyber_encapsulate<
                 const K: usize,
                 const CIPHERTEXT_SIZE: usize,
@@ -134,7 +129,6 @@ macro_rules! instantiate {
                 >(public_key, randomness)
             }
 
-            #[inline(always)]
             pub(crate) fn encapsulate<
                 const K: usize,
                 const CIPHERTEXT_SIZE: usize,
@@ -175,7 +169,6 @@ macro_rules! instantiate {
 
             /// Portable decapsulate
             #[cfg(feature = "kyber")]
-            #[inline(always)]
             pub fn kyber_decapsulate<
                 const K: usize,
                 const SECRET_KEY_SIZE: usize,
@@ -221,7 +214,6 @@ macro_rules! instantiate {
             }
 
             /// Portable decapsulate
-            #[inline(always)]
             pub fn decapsulate<
                 const K: usize,
                 const SECRET_KEY_SIZE: usize,
@@ -276,7 +268,6 @@ macro_rules! instantiate {
                     crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
 
                 /// Get the unpacked public key.
-                #[inline(always)]
                 pub(crate) fn unpack_public_key<
                     const K: usize,
                     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -297,7 +288,6 @@ macro_rules! instantiate {
                 }
 
                 /// Generate a key pair
-                #[inline(always)]
                 pub(crate) fn generate_keypair<
                     const K: usize,
                     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -325,7 +315,6 @@ macro_rules! instantiate {
                 }
 
                 /// Unpacked encapsulate
-                #[inline(always)]
                 pub(crate) fn encapsulate<
                     const K: usize,
                     const CIPHERTEXT_SIZE: usize,
@@ -364,7 +353,6 @@ macro_rules! instantiate {
                 }
 
                 /// Unpacked decapsulate
-                #[inline(always)]
                 pub(crate) fn decapsulate<
                     const K: usize,
                     const SECRET_KEY_SIZE: usize,
