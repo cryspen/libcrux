@@ -59,7 +59,6 @@ macro_rules! instantiate {
             }
 
             /// Portable public key validation
-            #[inline(always)]
             pub(crate) fn validate_public_key<
                 const K: usize,
                 const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -76,7 +75,6 @@ macro_rules! instantiate {
             }
 
             /// Portable private key validation
-            #[inline(always)]
             pub(crate) fn validate_private_key<
                 const K: usize,
                 const SECRET_KEY_SIZE: usize,
@@ -407,7 +405,7 @@ instantiate! {portable, crate::vector::portable::PortableVector, crate::hash_fun
 
 // AVX2 generic implementation.
 #[cfg(feature = "simd256")]
-instantiate! {avx2, crate::vector::SIMD256Vector, crate::hash_functions::avx2::Simd256Hash}
+pub mod avx2;
 
 // NEON generic implementation.
 #[cfg(feature = "simd128")]
