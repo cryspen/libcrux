@@ -23,8 +23,17 @@ val sample_ring_element_cbd
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
       (requires
         Spec.MLKEM.is_rank v_K /\ v_ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE v_K /\
-        v_ETA2 == Spec.MLKEM.v_ETA2 v_K /\ range (v domain_separator + v v_K) u8_inttype)
-      (fun _ -> Prims.l_True)
+        v_ETA2 == Spec.MLKEM.v_ETA2 v_K /\ v domain_separator < 2 * v v_K /\
+        range (v domain_separator + v v_K) u8_inttype)
+      (ensures
+        fun temp_0_ ->
+          let err1, ds:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
+            u8) =
+            temp_0_
+          in
+          v ds == v domain_separator + v v_K /\
+          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector err1 ==
+          Spec.MLKEM.sample_vector_cbd2 #v_K (Seq.slice prf_input 0 32) (sz (v domain_separator)))
 
 /// Sample a vector of ring elements from a centered binomial distribution and
 /// convert them into their NTT representations.
@@ -233,7 +242,13 @@ val decrypt_unpacked
         v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
         v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
         v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:t_Array u8 (Rust_primitives.mk_usize 32) = result in
+          result ==
+          Spec.MLKEM.ind_cpa_decrypt_unpacked v_K
+            ciphertext
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector secret_key.f_secret_as_ntt))
 
 val decrypt
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
@@ -310,7 +325,15 @@ val encrypt_unpacked
         v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\
         v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
         length randomness == Spec.MLKEM.v_SHARED_SECRET_SIZE)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:t_Array u8 v_CIPHERTEXT_SIZE = result in
+          result ==
+          Spec.MLKEM.ind_cpa_encrypt_unpacked v_K
+            message
+            randomness
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector public_key.f_t_as_ntt)
+            (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector public_key.f_A))
 
 val encrypt
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
@@ -396,6 +419,14 @@ val generate_keypair_unpacked
             Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector) =
             temp_0_
           in
+          let ((t_as_ntt, seed_for_A), secret_as_ntt), valid =
+            Spec.MLKEM.ind_cpa_generate_keypair_unpacked v_K key_generation_seed
+          in
+          (valid ==>
+            ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector public_key.f_t_as_ntt) ==
+              t_as_ntt) /\ (public_key.f_seed_for_A == seed_for_A) /\
+            ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector private_key.f_secret_as_ntt) ==
+              secret_as_ntt)) /\
           (forall (i: nat).
               i < v v_K ==>
               Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index private_key_future
