@@ -67,6 +67,6 @@ class t_XofX4 (v_Self: Type0) = {
         (fun result -> f_squeeze_next_block_post x0 result)
 }
 
-let v_BLOCK_SIZE: usize = Rust_primitives.Hax.dropped_body
+let v_BLOCK_SIZE: usize = sz 168
 
-let v_FIVE_BLOCKS_SIZE: usize = Rust_primitives.Hax.dropped_body
+let v_FIVE_BLOCKS_SIZE: usize = v_BLOCK_SIZE *! sz 5

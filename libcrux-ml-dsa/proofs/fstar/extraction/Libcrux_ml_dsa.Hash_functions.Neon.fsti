@@ -211,11 +211,11 @@ let impl: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128x4 =
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
   {
-    f_init_absorb_pre
+    f_init_absorb_x4_pre
     =
     (fun (input0: t_Slice u8) (input1: t_Slice u8) (input2: t_Slice u8) (input3: t_Slice u8) -> true
     );
-    f_init_absorb_post
+    f_init_absorb_x4_post
     =
     (fun
         (input0: t_Slice u8)
@@ -225,7 +225,7 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
         (out: t_Shake256x4)
         ->
         true);
-    f_init_absorb
+    f_init_absorb_x4
     =
     (fun (input0: t_Slice u8) (input1: t_Slice u8) (input2: t_Slice u8) (input3: t_Slice u8) ->
         let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
@@ -258,8 +258,8 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
               Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
         in
         { f_state = state } <: t_Shake256x4);
-    f_squeeze_first_block_pre = (fun (self: t_Shake256x4) -> true);
-    f_squeeze_first_block_post
+    f_squeeze_first_block_x4_pre = (fun (self: t_Shake256x4) -> true);
+    f_squeeze_first_block_x4_post
     =
     (fun
         (self: t_Shake256x4)
@@ -269,7 +269,7 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
         )
         ->
         true);
-    f_squeeze_first_block
+    f_squeeze_first_block_x4
     =
     (fun (self: t_Shake256x4) ->
         let out0:t_Array u8 (sz 136) = Rust_primitives.Hax.repeat 0uy (sz 136) in
@@ -328,8 +328,8 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
         <:
         (t_Shake256x4 &
           (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136))));
-    f_squeeze_next_block_pre = (fun (self: t_Shake256x4) -> true);
-    f_squeeze_next_block_post
+    f_squeeze_next_block_x4_pre = (fun (self: t_Shake256x4) -> true);
+    f_squeeze_next_block_x4_post
     =
     (fun
         (self: t_Shake256x4)
@@ -339,7 +339,7 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
         )
         ->
         true);
-    f_squeeze_next_block
+    f_squeeze_next_block_x4
     =
     (fun (self: t_Shake256x4) ->
         let out0:t_Array u8 (sz 136) = Rust_primitives.Hax.repeat 0uy (sz 136) in
@@ -398,7 +398,7 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
         <:
         (t_Shake256x4 &
           (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136))));
-    f_shake256_pre
+    f_shake256_x4_pre
     =
     (fun
         (v_OUT_LEN: usize)
@@ -412,7 +412,7 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
         (out3: t_Array u8 v_OUT_LEN)
         ->
         true);
-    f_shake256_post
+    f_shake256_x4_post
     =
     (fun
         (v_OUT_LEN: usize)
@@ -429,7 +429,7 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
           ))
         ->
         true);
-    f_shake256
+    f_shake256_x4
     =
     fun
       (v_OUT_LEN: usize)

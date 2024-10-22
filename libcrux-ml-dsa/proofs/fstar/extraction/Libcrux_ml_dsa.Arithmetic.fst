@@ -441,12 +441,10 @@ let vector_infinity_norm_exceeds
           let ring_element:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
             ring_element
           in
-          exceeds |.
+          exceeds ||
           (Libcrux_ml_dsa.Polynomial.impl__infinity_norm_exceeds #v_SIMDUnit ring_element bound
             <:
-            bool)
-          <:
-          bool)
+            bool))
   in
   exceeds
 

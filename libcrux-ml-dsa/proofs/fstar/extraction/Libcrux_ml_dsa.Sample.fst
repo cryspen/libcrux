@@ -422,7 +422,7 @@ let sample_four_error_ring_elements
       (cast (domain_separator3 >>! 8l <: u16) <: u8)
   in
   let state:v_Shake256 =
-    Libcrux_ml_dsa.Hash_functions.Shake256.f_init_absorb #v_Shake256
+    Libcrux_ml_dsa.Hash_functions.Shake256.f_init_absorb_x4 #v_Shake256
       #FStar.Tactics.Typeclasses.solve
       (seed0 <: t_Slice u8)
       (seed1 <: t_Slice u8)
@@ -431,7 +431,7 @@ let sample_four_error_ring_elements
   in
   let tmp0, out4:(v_Shake256 &
     (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136))) =
-    Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze_first_block #v_Shake256
+    Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze_first_block_x4 #v_Shake256
       #FStar.Tactics.Typeclasses.solve
       state
   in
@@ -555,7 +555,7 @@ let sample_four_error_ring_elements
           let tmp0, out4:(v_Shake256 &
             (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
           =
-            Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze_next_block #v_Shake256
+            Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze_next_block_x4 #v_Shake256
               #FStar.Tactics.Typeclasses.solve
               state
           in
@@ -1128,7 +1128,7 @@ let sample_mask_vector
       let out3:t_Array u8 (sz 576) = Rust_primitives.Hax.repeat 0uy (sz 576) in
       let tmp0, tmp1, tmp2, tmp3:(t_Array u8 (sz 576) & t_Array u8 (sz 576) & t_Array u8 (sz 576) &
         t_Array u8 (sz 576)) =
-        Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256 #v_Shake256X4
+        Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256_x4 #v_Shake256X4
           #FStar.Tactics.Typeclasses.solve (sz 576) (seed0 <: t_Slice u8) (seed1 <: t_Slice u8)
           (seed2 <: t_Slice u8) (seed3 <: t_Slice u8) out0 out1 out2 out3
       in
@@ -1181,7 +1181,7 @@ let sample_mask_vector
       let out3:t_Array u8 (sz 640) = Rust_primitives.Hax.repeat 0uy (sz 640) in
       let tmp0, tmp1, tmp2, tmp3:(t_Array u8 (sz 640) & t_Array u8 (sz 640) & t_Array u8 (sz 640) &
         t_Array u8 (sz 640)) =
-        Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256 #v_Shake256X4
+        Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256_x4 #v_Shake256X4
           #FStar.Tactics.Typeclasses.solve (sz 640) (seed0 <: t_Slice u8) (seed1 <: t_Slice u8)
           (seed2 <: t_Slice u8) (seed3 <: t_Slice u8) out0 out1 out2 out3
       in
