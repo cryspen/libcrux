@@ -20,10 +20,8 @@ let from_coefficient_array (coefficient_array: t_Slice i32) =
       Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
 let to_coefficient_array (x: t_AVX2SIMDUnit) =
-  let coefficient_array:t_Array i32 (Rust_primitives.mk_usize 8) =
-    Rust_primitives.Hax.repeat (Rust_primitives.mk_i32 0) (Rust_primitives.mk_usize 8)
-  in
-  let coefficient_array:t_Array i32 (Rust_primitives.mk_usize 8) =
+  let coefficient_array:t_Array i32 (sz 8) = Rust_primitives.Hax.repeat 0l (sz 8) in
+  let coefficient_array:t_Array i32 (sz 8) =
     Libcrux_intrinsics.Avx2_extract.mm256_storeu_si256_i32 coefficient_array x.f_coefficients
   in
   coefficient_array

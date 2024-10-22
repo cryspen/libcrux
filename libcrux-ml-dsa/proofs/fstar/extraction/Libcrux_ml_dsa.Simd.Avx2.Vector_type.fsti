@@ -24,4 +24,4 @@ val from_coefficient_array (coefficient_array: t_Slice i32)
     : Prims.Pure t_AVX2SIMDUnit Prims.l_True (fun _ -> Prims.l_True)
 
 val to_coefficient_array (x: t_AVX2SIMDUnit)
-    : Prims.Pure (t_Array i32 (Rust_primitives.mk_usize 8)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)

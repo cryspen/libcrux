@@ -10,15 +10,11 @@ let _ =
   let open Libcrux_ml_dsa.Hash_functions.Shake128 in
   ()
 
-let t_DomainSeparationError_cast_to_repr (x: t_DomainSeparationError) =
-  match x with | DomainSeparationError_ContextTooLongError  -> Rust_primitives.mk_isize 0
-
 let impl_1__context (self: t_DomainSeparationContext) = self.f_context
 
-let impl_1__new
-      (context: t_Slice u8)
-      (pre_hash_oid: Core.Option.t_Option (t_Array u8 (Rust_primitives.mk_usize 11)))
-     =
+let impl_1__pre_hash_oid (self: t_DomainSeparationContext) = self.f_pre_hash_oid
+
+let impl_1__new (context: t_Slice u8) (pre_hash_oid: Core.Option.t_Option (t_Array u8 (sz 11))) =
   if (Core.Slice.impl__len #u8 context <: usize) >. Libcrux_ml_dsa.Constants.v_CONTEXT_MAX_LEN
   then
     Core.Result.Result_Err (DomainSeparationError_ContextTooLongError <: t_DomainSeparationError)
@@ -30,4 +26,5 @@ let impl_1__new
     <:
     Core.Result.t_Result t_DomainSeparationContext t_DomainSeparationError
 
-let impl_1__pre_hash_oid (self: t_DomainSeparationContext) = self.f_pre_hash_oid
+let t_DomainSeparationError_cast_to_repr (x: t_DomainSeparationError) =
+  match x with | DomainSeparationError_ContextTooLongError  -> isz 0

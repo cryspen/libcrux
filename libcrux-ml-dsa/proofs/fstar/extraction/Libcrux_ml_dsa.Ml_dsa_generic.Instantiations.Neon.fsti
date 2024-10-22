@@ -19,7 +19,7 @@ let _ =
 val generate_key_pair
       (v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_VERIFICATION_KEY_SIZE:
           usize)
-      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+      (randomness: t_Array u8 (sz 32))
     : Prims.Pure (t_Array u8 v_SIGNING_KEY_SIZE & t_Array u8 v_VERIFICATION_KEY_SIZE)
       Prims.l_True
       (fun _ -> Prims.l_True)
@@ -32,7 +32,7 @@ val sign
           usize)
       (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
       (message context: t_Slice u8)
-      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+      (randomness: t_Array u8 (sz 32))
     : Prims.Pure
       (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
@@ -45,7 +45,7 @@ val sign_pre_hashed_shake128
           usize)
       (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
       (message context: t_Slice u8)
-      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+      (randomness: t_Array u8 (sz 32))
     : Prims.Pure
       (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)

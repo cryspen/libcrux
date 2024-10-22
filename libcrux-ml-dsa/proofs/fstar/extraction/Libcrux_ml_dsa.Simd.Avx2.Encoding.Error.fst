@@ -8,46 +8,27 @@ let deserialize_to_unsigned_when_eta_is_2_ (bytes: t_Slice u8) =
     if true
     then
       let _:Prims.unit =
-        Hax_lib.v_assert ((Core.Slice.impl__len #u8 bytes <: usize) =. Rust_primitives.mk_usize 3
-            <:
-            bool)
+        Hax_lib.v_assert ((Core.Slice.impl__len #u8 bytes <: usize) =. sz 3 <: bool)
       in
       ()
   in
   let bytes_in_simd_unit:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (cast (bytes.[ Rust_primitives.mk_usize 2 ]
-            <:
-            u8)
+    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (cast (bytes.[ sz 2 ] <: u8) <: i32)
+      (cast (bytes.[ sz 2 ] <: u8) <: i32)
+      (((cast (bytes.[ sz 2 ] <: u8) <: i32) <<! 8l <: i32) |. (cast (bytes.[ sz 1 ] <: u8) <: i32)
         <:
         i32)
-      (cast (bytes.[ Rust_primitives.mk_usize 2 ] <: u8) <: i32)
-      (((cast (bytes.[ Rust_primitives.mk_usize 2 ] <: u8) <: i32) <<! Rust_primitives.mk_i32 8
-          <:
-          i32) |.
-        (cast (bytes.[ Rust_primitives.mk_usize 1 ] <: u8) <: i32)
+      (cast (bytes.[ sz 1 ] <: u8) <: i32)
+      (cast (bytes.[ sz 1 ] <: u8) <: i32)
+      (((cast (bytes.[ sz 1 ] <: u8) <: i32) <<! 8l <: i32) |. (cast (bytes.[ sz 0 ] <: u8) <: i32)
         <:
         i32)
-      (cast (bytes.[ Rust_primitives.mk_usize 1 ] <: u8) <: i32)
-      (cast (bytes.[ Rust_primitives.mk_usize 1 ] <: u8) <: i32)
-      (((cast (bytes.[ Rust_primitives.mk_usize 1 ] <: u8) <: i32) <<! Rust_primitives.mk_i32 8
-          <:
-          i32) |.
-        (cast (bytes.[ Rust_primitives.mk_usize 0 ] <: u8) <: i32)
-        <:
-        i32)
-      (cast (bytes.[ Rust_primitives.mk_usize 0 ] <: u8) <: i32)
-      (cast (bytes.[ Rust_primitives.mk_usize 0 ] <: u8) <: i32)
+      (cast (bytes.[ sz 0 ] <: u8) <: i32)
+      (cast (bytes.[ sz 0 ] <: u8) <: i32)
   in
   let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 bytes_in_simd_unit
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (Rust_primitives.mk_i32 5)
-          (Rust_primitives.mk_i32 2)
-          (Rust_primitives.mk_i32 7)
-          (Rust_primitives.mk_i32 4)
-          (Rust_primitives.mk_i32 1)
-          (Rust_primitives.mk_i32 6)
-          (Rust_primitives.mk_i32 3)
-          (Rust_primitives.mk_i32 0)
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 5l 2l 7l 4l 1l 6l 3l 0l
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
@@ -62,36 +43,23 @@ let deserialize_to_unsigned_when_eta_is_4_ (bytes: t_Slice u8) =
     if true
     then
       let _:Prims.unit =
-        Hax_lib.v_assert ((Core.Slice.impl__len #u8 bytes <: usize) =. Rust_primitives.mk_usize 4
-            <:
-            bool)
+        Hax_lib.v_assert ((Core.Slice.impl__len #u8 bytes <: usize) =. sz 4 <: bool)
       in
       ()
   in
   let bytes_in_simd_unit:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (cast (bytes.[ Rust_primitives.mk_usize 3 ]
-            <:
-            u8)
-        <:
-        i32)
-      (cast (bytes.[ Rust_primitives.mk_usize 3 ] <: u8) <: i32)
-      (cast (bytes.[ Rust_primitives.mk_usize 2 ] <: u8) <: i32)
-      (cast (bytes.[ Rust_primitives.mk_usize 2 ] <: u8) <: i32)
-      (cast (bytes.[ Rust_primitives.mk_usize 1 ] <: u8) <: i32)
-      (cast (bytes.[ Rust_primitives.mk_usize 1 ] <: u8) <: i32)
-      (cast (bytes.[ Rust_primitives.mk_usize 0 ] <: u8) <: i32)
-      (cast (bytes.[ Rust_primitives.mk_usize 0 ] <: u8) <: i32)
+    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (cast (bytes.[ sz 3 ] <: u8) <: i32)
+      (cast (bytes.[ sz 3 ] <: u8) <: i32)
+      (cast (bytes.[ sz 2 ] <: u8) <: i32)
+      (cast (bytes.[ sz 2 ] <: u8) <: i32)
+      (cast (bytes.[ sz 1 ] <: u8) <: i32)
+      (cast (bytes.[ sz 1 ] <: u8) <: i32)
+      (cast (bytes.[ sz 0 ] <: u8) <: i32)
+      (cast (bytes.[ sz 0 ] <: u8) <: i32)
   in
   let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 bytes_in_simd_unit
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (Rust_primitives.mk_i32 4)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 4)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 4)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 4)
-          (Rust_primitives.mk_i32 0)
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 4l 0l 4l 0l 4l 0l 4l 0l
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
@@ -103,8 +71,8 @@ let deserialize_to_unsigned_when_eta_is_4_ (bytes: t_Slice u8) =
 
 let deserialize_to_unsigned (v_ETA: usize) (serialized: t_Slice u8) =
   match cast (v_ETA <: usize) <: u8 with
-  | 2 -> deserialize_to_unsigned_when_eta_is_2_ serialized
-  | 4 -> deserialize_to_unsigned_when_eta_is_4_ serialized
+  | 2uy -> deserialize_to_unsigned_when_eta_is_2_ serialized
+  | 4uy -> deserialize_to_unsigned_when_eta_is_4_ serialized
   | _ ->
     Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
@@ -125,9 +93,7 @@ let serialize_when_eta_is_2_
       (v_OUTPUT_SIZE: usize)
       (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
      =
-  let serialized:t_Array u8 (Rust_primitives.mk_usize 16) =
-    Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) (Rust_primitives.mk_usize 16)
-  in
+  let serialized:t_Array u8 (sz 16) = Rust_primitives.Hax.repeat 0uy (sz 16) in
   let simd_unit_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           serialize_when_eta_is_2___ETA
@@ -137,59 +103,31 @@ let serialize_when_eta_is_2_
   in
   let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 simd_unit_shifted
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 29)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 29)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 29)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 29)
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 29l 0l 29l 0l 29l 0l 29l
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 (Rust_primitives.mk_i32 29) adjacent_2_combined
+    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 29l adjacent_2_combined
   in
   let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 adjacent_2_combined
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (Rust_primitives.mk_i8 (-1))
-          (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1))
-          (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1))
-          (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1))
-          (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1))
-          (Rust_primitives.mk_i8 8) (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 0)
-          (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1))
-          (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1))
-          (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1))
-          (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 (-1))
-          (Rust_primitives.mk_i8 (-1)) (Rust_primitives.mk_i8 8) (Rust_primitives.mk_i8 (-1))
-          (Rust_primitives.mk_i8 0)
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (-1y) (-1y) (-1y) (-1y) (-1y) (-1y) (-1y)
+          (-1y) (-1y) (-1y) (-1y) (-1y) (-1y) 8y (-1y) 0y (-1y) (-1y) (-1y) (-1y) (-1y) (-1y) (-1y)
+          (-1y) (-1y) (-1y) (-1y) (-1y) (-1y) 8y (-1y) 0y
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_madd_epi16 adjacent_4_combined
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (Rust_primitives.mk_i16 0)
-          (Rust_primitives.mk_i16 0) (Rust_primitives.mk_i16 0) (Rust_primitives.mk_i16 0)
-          (Rust_primitives.mk_i16 0) (Rust_primitives.mk_i16 0)
-          (Rust_primitives.mk_i16 1 <<! Rust_primitives.mk_i32 6 <: i16) (Rust_primitives.mk_i16 1)
-          (Rust_primitives.mk_i16 0) (Rust_primitives.mk_i16 0) (Rust_primitives.mk_i16 0)
-          (Rust_primitives.mk_i16 0) (Rust_primitives.mk_i16 0) (Rust_primitives.mk_i16 0)
-          (Rust_primitives.mk_i16 1 <<! Rust_primitives.mk_i32 6 <: i16) (Rust_primitives.mk_i16 1)
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 0s 0s 0s 0s 0s 0s (1s <<! 6l <: i16) 1s 0s 0s
+          0s 0s 0s 0s (1s <<! 6l <: i16) 1s
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   let adjacent_6_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_permutevar8x32_epi32 adjacent_4_combined
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 4)
-          (Rust_primitives.mk_i32 0)
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 0l 0l 0l 0l 0l 4l 0l
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
@@ -198,27 +136,21 @@ let serialize_when_eta_is_2_
   in
   let adjacent_6_combined:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_sllv_epi32 adjacent_6_combined
-      (Libcrux_intrinsics.Avx2_extract.mm_set_epi32 (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 20)
+      (Libcrux_intrinsics.Avx2_extract.mm_set_epi32 0l 0l 0l 20l
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec128)
   in
   let adjacent_6_combined:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm_srli_epi64 (Rust_primitives.mk_i32 20) adjacent_6_combined
+    Libcrux_intrinsics.Avx2_extract.mm_srli_epi64 20l adjacent_6_combined
   in
-  let serialized:t_Array u8 (Rust_primitives.mk_usize 16) =
+  let serialized:t_Array u8 (sz 16) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
-      ({
-          Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
-          Core.Ops.Range.f_end = Rust_primitives.mk_usize 16
-        }
+      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
         <:
         Core.Ops.Range.t_Range usize)
       (Libcrux_intrinsics.Avx2_extract.mm_storeu_bytes_si128 (serialized.[ {
-                Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
-                Core.Ops.Range.f_end = Rust_primitives.mk_usize 16
+                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_end = sz 16
               }
               <:
               Core.Ops.Range.t_Range usize ]
@@ -233,10 +165,7 @@ let serialize_when_eta_is_2_
     (Core.Convert.f_try_into #(t_Slice u8)
         #(t_Array u8 v_OUTPUT_SIZE)
         #FStar.Tactics.Typeclasses.solve
-        (serialized.[ {
-              Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
-              Core.Ops.Range.f_end = Rust_primitives.mk_usize 3
-            }
+        (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 3 }
             <:
             Core.Ops.Range.t_Range usize ]
           <:
@@ -248,9 +177,7 @@ let serialize_when_eta_is_4_
       (v_OUTPUT_SIZE: usize)
       (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
      =
-  let serialized:t_Array u8 (Rust_primitives.mk_usize 16) =
-    Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) (Rust_primitives.mk_usize 16)
-  in
+  let serialized:t_Array u8 (sz 16) = Rust_primitives.Hax.repeat 0uy (sz 16) in
   let simd_unit_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           serialize_when_eta_is_4___ETA
@@ -260,30 +187,16 @@ let serialize_when_eta_is_4_
   in
   let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 simd_unit_shifted
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 28)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 28)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 28)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 28)
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 28l 0l 28l 0l 28l 0l 28l
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 (Rust_primitives.mk_i32 28) adjacent_2_combined
+    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 28l adjacent_2_combined
   in
   let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_permutevar8x32_epi32 adjacent_2_combined
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_i32 6)
-          (Rust_primitives.mk_i32 2)
-          (Rust_primitives.mk_i32 4)
-          (Rust_primitives.mk_i32 0)
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 0l 0l 0l 6l 2l 4l 0l
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
@@ -292,26 +205,19 @@ let serialize_when_eta_is_4_
   in
   let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 adjacent_4_combined
-      (Libcrux_intrinsics.Avx2_extract.mm_set_epi8 (Rust_primitives.mk_u8 240)
-          (Rust_primitives.mk_u8 240) (Rust_primitives.mk_u8 240) (Rust_primitives.mk_u8 240)
-          (Rust_primitives.mk_u8 240) (Rust_primitives.mk_u8 240) (Rust_primitives.mk_u8 240)
-          (Rust_primitives.mk_u8 240) (Rust_primitives.mk_u8 240) (Rust_primitives.mk_u8 240)
-          (Rust_primitives.mk_u8 240) (Rust_primitives.mk_u8 240) (Rust_primitives.mk_u8 12)
-          (Rust_primitives.mk_u8 4) (Rust_primitives.mk_u8 8) (Rust_primitives.mk_u8 0)
+      (Libcrux_intrinsics.Avx2_extract.mm_set_epi8 240uy 240uy 240uy 240uy 240uy 240uy 240uy 240uy
+          240uy 240uy 240uy 240uy 12uy 4uy 8uy 0uy
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec128)
   in
-  let serialized:t_Array u8 (Rust_primitives.mk_usize 16) =
+  let serialized:t_Array u8 (sz 16) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
-      ({
-          Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
-          Core.Ops.Range.f_end = Rust_primitives.mk_usize 16
-        }
+      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
         <:
         Core.Ops.Range.t_Range usize)
       (Libcrux_intrinsics.Avx2_extract.mm_storeu_bytes_si128 (serialized.[ {
-                Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
-                Core.Ops.Range.f_end = Rust_primitives.mk_usize 16
+                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_end = sz 16
               }
               <:
               Core.Ops.Range.t_Range usize ]
@@ -326,10 +232,7 @@ let serialize_when_eta_is_4_
     (Core.Convert.f_try_into #(t_Slice u8)
         #(t_Array u8 v_OUTPUT_SIZE)
         #FStar.Tactics.Typeclasses.solve
-        (serialized.[ {
-              Core.Ops.Range.f_start = Rust_primitives.mk_usize 0;
-              Core.Ops.Range.f_end = Rust_primitives.mk_usize 4
-            }
+        (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 4 }
             <:
             Core.Ops.Range.t_Range usize ]
           <:
@@ -339,8 +242,8 @@ let serialize_when_eta_is_4_
 
 let serialize (v_OUTPUT_SIZE: usize) (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   match cast (v_OUTPUT_SIZE <: usize) <: u8 with
-  | 3 -> serialize_when_eta_is_2_ v_OUTPUT_SIZE simd_unit
-  | 4 -> serialize_when_eta_is_4_ v_OUTPUT_SIZE simd_unit
+  | 3uy -> serialize_when_eta_is_2_ v_OUTPUT_SIZE simd_unit
+  | 4uy -> serialize_when_eta_is_4_ v_OUTPUT_SIZE simd_unit
   | _ ->
     Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 

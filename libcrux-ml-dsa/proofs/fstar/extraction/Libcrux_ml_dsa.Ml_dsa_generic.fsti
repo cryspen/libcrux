@@ -31,26 +31,12 @@ let _ =
 /// 23 of Algorithm 4 (and line 18 of Algorithm 5,resp.) describe domain separation for the HashMl-DSA
 /// variant.
 val derive_message_representative
-      (verification_key_hash: t_Array u8 (Rust_primitives.mk_usize 64))
+      (verification_key_hash: t_Array u8 (sz 64))
       (domain_separation_context:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
       (message: t_Slice u8)
-      (message_representative: t_Array u8 (Rust_primitives.mk_usize 64))
-    : Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 64)) Prims.l_True (fun _ -> Prims.l_True)
-
-/// Generate a key pair.
-val generate_key_pair
-      (#v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4: Type0)
-      (v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_VERIFICATION_KEY_SIZE:
-          usize)
-      {| i4: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i5: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4 |}
-      {| i6: Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256 |}
-      {| i7: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
-      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
-    : Prims.Pure (t_Array u8 v_SIGNING_KEY_SIZE & t_Array u8 v_VERIFICATION_KEY_SIZE)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (message_representative: t_Array u8 (sz 64))
+    : Prims.Pure (t_Array u8 (sz 64)) Prims.l_True (fun _ -> Prims.l_True)
 
 /// The internal signing API.
 /// If no `domain_separation_context` is supplied, it is assumed that
@@ -69,7 +55,7 @@ val sign_internal
       (message: t_Slice u8)
       (domain_separation_context:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
-      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+      (randomness: t_Array u8 (sz 32))
     : Prims.Pure
       (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
@@ -86,7 +72,7 @@ val sign
       {| i7: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
       (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
       (message context: t_Slice u8)
-      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+      (randomness: t_Array u8 (sz 32))
     : Prims.Pure
       (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
@@ -105,7 +91,7 @@ val sign_pre_hashed
       {| i9: Libcrux_ml_dsa.Pre_hash.t_PreHash v_PH v_PH_DIGEST_LEN |}
       (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
       (message context: t_Slice u8)
-      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+      (randomness: t_Array u8 (sz 32))
     : Prims.Pure
       (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
@@ -164,5 +150,19 @@ val verify_pre_hashed
       (message context: t_Slice u8)
       (signature_serialized: t_Array u8 v_SIGNATURE_SIZE)
     : Prims.Pure (Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Generate a key pair.
+val generate_key_pair
+      (#v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4: Type0)
+      (v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_VERIFICATION_KEY_SIZE:
+          usize)
+      {| i4: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      {| i5: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4 |}
+      {| i6: Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256 |}
+      {| i7: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
+      (randomness: t_Array u8 (sz 32))
+    : Prims.Pure (t_Array u8 v_SIGNING_KEY_SIZE & t_Array u8 v_VERIFICATION_KEY_SIZE)
       Prims.l_True
       (fun _ -> Prims.l_True)

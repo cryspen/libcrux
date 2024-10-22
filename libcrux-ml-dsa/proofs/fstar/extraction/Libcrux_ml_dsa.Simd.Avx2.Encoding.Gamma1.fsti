@@ -3,25 +3,19 @@ module Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1
 open Core
 open FStar.Mul
 
-let deserialize_when_gamma1_is_2_pow_17___GAMMA1: i32 =
-  Rust_primitives.mk_i32 1 <<! Rust_primitives.mk_i32 17
+let deserialize_when_gamma1_is_2_pow_17___GAMMA1: i32 = 1l <<! 17l
 
 let deserialize_when_gamma1_is_2_pow_17___GAMMA1_TIMES_2_MASK: i32 =
-  (deserialize_when_gamma1_is_2_pow_17___GAMMA1 <<! Rust_primitives.mk_i32 1 <: i32) -!
-  Rust_primitives.mk_i32 1
+  (deserialize_when_gamma1_is_2_pow_17___GAMMA1 <<! 1l <: i32) -! 1l
 
-let deserialize_when_gamma1_is_2_pow_19___GAMMA1: i32 =
-  Rust_primitives.mk_i32 1 <<! Rust_primitives.mk_i32 19
+let deserialize_when_gamma1_is_2_pow_19___GAMMA1: i32 = 1l <<! 19l
 
 let deserialize_when_gamma1_is_2_pow_19___GAMMA1_TIMES_2_MASK: i32 =
-  (deserialize_when_gamma1_is_2_pow_19___GAMMA1 <<! Rust_primitives.mk_i32 1 <: i32) -!
-  Rust_primitives.mk_i32 1
+  (deserialize_when_gamma1_is_2_pow_19___GAMMA1 <<! 1l <: i32) -! 1l
 
-let serialize_when_gamma1_is_2_pow_17___GAMMA1: i32 =
-  Rust_primitives.mk_i32 1 <<! Rust_primitives.mk_i32 17
+let serialize_when_gamma1_is_2_pow_17___GAMMA1: i32 = 1l <<! 17l
 
-let serialize_when_gamma1_is_2_pow_19___GAMMA1: i32 =
-  Rust_primitives.mk_i32 1 <<! Rust_primitives.mk_i32 19
+let serialize_when_gamma1_is_2_pow_19___GAMMA1: i32 = 1l <<! 19l
 
 val deserialize_when_gamma1_is_2_pow_17_ (serialized: t_Slice u8)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)

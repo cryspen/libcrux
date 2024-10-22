@@ -35,7 +35,7 @@ let decompose_vector
   let vector_high, vector_low:(t_Array
       (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION &
     t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION) =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       v_DIMENSION
       (fun temp_0_ temp_1_ ->
           let vector_high, vector_low:(t_Array
@@ -56,11 +56,9 @@ let decompose_vector
             temp_0_
           in
           let i:usize = i in
-          Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+          Rust_primitives.Hax.Folds.fold_range (sz 0)
             (Core.Slice.impl__len #v_SIMDUnit
-                ((vector_low.[ Rust_primitives.mk_usize 0 ]).Libcrux_ml_dsa.Polynomial.f_simd_units
-                  <:
-                  t_Slice v_SIMDUnit)
+                ((vector_low.[ sz 0 ]).Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
               <:
               usize)
             (fun temp_0_ temp_1_ ->
@@ -111,7 +109,7 @@ let decompose_vector
                           j
                           low
                         <:
-                        t_Array v_SIMDUnit (Rust_primitives.mk_usize 32)
+                        t_Array v_SIMDUnit (sz 32)
                       }
                       <:
                       Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -134,7 +132,7 @@ let decompose_vector
                           j
                           high
                         <:
-                        t_Array v_SIMDUnit (Rust_primitives.mk_usize 32)
+                        t_Array v_SIMDUnit (sz 32)
                       }
                       <:
                       Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -245,7 +243,7 @@ let power2round_vector
                           j
                           t0_unit
                         <:
-                        t_Array v_SIMDUnit (Rust_primitives.mk_usize 32)
+                        t_Array v_SIMDUnit (sz 32)
                       }
                       <:
                       Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -265,7 +263,7 @@ let power2round_vector
                           j
                           t1_unit
                         <:
-                        t_Array v_SIMDUnit (Rust_primitives.mk_usize 32)
+                        t_Array v_SIMDUnit (sz 32)
                       }
                       <:
                       Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -321,7 +319,7 @@ let shift_left_then_reduce
                 <:
                 v_SIMDUnit)
             <:
-            t_Array v_SIMDUnit (Rust_primitives.mk_usize 32)
+            t_Array v_SIMDUnit (sz 32)
           }
           <:
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -335,7 +333,7 @@ let use_hint
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (hint: t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_DIMENSION)
+      (hint: t_Array (t_Array i32 (sz 256)) v_DIMENSION)
       (re_vector:
           t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
      =
@@ -346,7 +344,7 @@ let use_hint
       v_DIMENSION
   in
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       v_DIMENSION
       (fun result temp_1_ ->
           let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -365,11 +363,9 @@ let use_hint
           let hint_simd:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
             Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (hint.[ i ] <: t_Slice i32)
           in
-          Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+          Rust_primitives.Hax.Folds.fold_range (sz 0)
             (Core.Slice.impl__len #v_SIMDUnit
-                ((result.[ Rust_primitives.mk_usize 0 ]).Libcrux_ml_dsa.Polynomial.f_simd_units
-                  <:
-                  t_Slice v_SIMDUnit)
+                ((result.[ sz 0 ]).Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
               <:
               usize)
             (fun result temp_1_ ->
@@ -410,7 +406,7 @@ let use_hint
                           <:
                           v_SIMDUnit)
                       <:
-                      t_Array v_SIMDUnit (Rust_primitives.mk_usize 32)
+                      t_Array v_SIMDUnit (sz 32)
                     }
                     <:
                     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -463,39 +459,28 @@ let make_hint
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (low high: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
      =
-  let hint:t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_DIMENSION =
-    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_usize 256)
-        <:
-        t_Array i32 (Rust_primitives.mk_usize 256))
+  let hint:t_Array (t_Array i32 (sz 256)) v_DIMENSION =
+    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0l (sz 256) <: t_Array i32 (sz 256))
       v_DIMENSION
   in
-  let true_hints:usize = Rust_primitives.mk_usize 0 in
-  let hint, true_hints:(t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_DIMENSION & usize) =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+  let true_hints:usize = sz 0 in
+  let hint, true_hints:(t_Array (t_Array i32 (sz 256)) v_DIMENSION & usize) =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       v_DIMENSION
       (fun temp_0_ temp_1_ ->
-          let hint, true_hints:(t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_DIMENSION &
-            usize) =
-            temp_0_
-          in
+          let hint, true_hints:(t_Array (t_Array i32 (sz 256)) v_DIMENSION & usize) = temp_0_ in
           let _:usize = temp_1_ in
           true)
-      (hint, true_hints
-        <:
-        (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_DIMENSION & usize))
+      (hint, true_hints <: (t_Array (t_Array i32 (sz 256)) v_DIMENSION & usize))
       (fun temp_0_ i ->
-          let hint, true_hints:(t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_DIMENSION &
-            usize) =
-            temp_0_
-          in
+          let hint, true_hints:(t_Array (t_Array i32 (sz 256)) v_DIMENSION & usize) = temp_0_ in
           let i:usize = i in
           let hint_simd:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
             Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
           in
           let hint_simd, true_hints:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
             usize) =
-            Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+            Rust_primitives.Hax.Folds.fold_range (sz 0)
               (Core.Slice.impl__len #v_SIMDUnit
                   (hint_simd.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
                 <:
@@ -549,15 +534,13 @@ let make_hint
                   <:
                   (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize))
           in
-          let hint:t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_DIMENSION =
+          let hint:t_Array (t_Array i32 (sz 256)) v_DIMENSION =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize hint
               i
               (Libcrux_ml_dsa.Polynomial.impl__to_i32_array #v_SIMDUnit hint_simd
                 <:
-                t_Array i32 (Rust_primitives.mk_usize 256))
+                t_Array i32 (sz 256))
           in
-          hint, true_hints
-          <:
-          (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_DIMENSION & usize))
+          hint, true_hints <: (t_Array (t_Array i32 (sz 256)) v_DIMENSION & usize))
   in
-  hint, true_hints <: (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_DIMENSION & usize)
+  hint, true_hints <: (t_Array (t_Array i32 (sz 256)) v_DIMENSION & usize)

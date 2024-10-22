@@ -35,7 +35,7 @@ let impl__deserialize
   in
   let signer_response:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
     v_COLUMNS_IN_A =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       v_COLUMNS_IN_A
       (fun signer_response temp_1_ ->
           let signer_response:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -59,9 +59,7 @@ let impl__deserialize
                       Core.Ops.Range.f_start = i *! v_GAMMA1_RING_ELEMENT_SIZE <: usize;
                       Core.Ops.Range.f_end
                       =
-                      (i +! Rust_primitives.mk_usize 1 <: usize) *! v_GAMMA1_RING_ELEMENT_SIZE
-                      <:
-                      usize
+                      (i +! sz 1 <: usize) *! v_GAMMA1_RING_ELEMENT_SIZE <: usize
                     }
                     <:
                     Core.Ops.Range.t_Range usize ]
@@ -72,24 +70,20 @@ let impl__deserialize
           <:
           t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
   in
-  let hint:t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A =
-    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat (Rust_primitives.mk_i32 0)
-          (Rust_primitives.mk_usize 256)
-        <:
-        t_Array i32 (Rust_primitives.mk_usize 256))
+  let hint:t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A =
+    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0l (sz 256) <: t_Array i32 (sz 256))
       v_ROWS_IN_A
   in
-  let previous_true_hints_seen:usize = Rust_primitives.mk_usize 0 in
-  let i:usize = Rust_primitives.mk_usize 0 in
+  let previous_true_hints_seen:usize = sz 0 in
+  let i:usize = sz 0 in
   let malformed_hint:bool = false in
-  let hint, i, malformed_hint, previous_true_hints_seen:(t_Array
-      (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A &
+  let hint, i, malformed_hint, previous_true_hints_seen:(t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A &
     usize &
     bool &
     usize) =
     Rust_primitives.f_while_loop (fun temp_0_ ->
-          let hint, i, malformed_hint, previous_true_hints_seen:(t_Array
-              (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A &
+          let hint, i, malformed_hint, previous_true_hints_seen:(t_Array (t_Array i32 (sz 256))
+              v_ROWS_IN_A &
             usize &
             bool &
             usize) =
@@ -98,10 +92,10 @@ let impl__deserialize
           (i <. v_ROWS_IN_A <: bool) && (~.malformed_hint <: bool))
       (hint, i, malformed_hint, previous_true_hints_seen
         <:
-        (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A & usize & bool & usize))
+        (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A & usize & bool & usize))
       (fun temp_0_ ->
-          let hint, i, malformed_hint, previous_true_hints_seen:(t_Array
-              (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A &
+          let hint, i, malformed_hint, previous_true_hints_seen:(t_Array (t_Array i32 (sz 256))
+              v_ROWS_IN_A &
             usize &
             bool &
             usize) =
@@ -120,25 +114,18 @@ let impl__deserialize
             else malformed_hint
           in
           let j:usize = previous_true_hints_seen in
-          let hint, j, malformed_hint:(t_Array (t_Array i32 (Rust_primitives.mk_usize 256))
-              v_ROWS_IN_A &
-            usize &
-            bool) =
+          let hint, j, malformed_hint:(t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A & usize & bool) =
             Rust_primitives.f_while_loop (fun temp_0_ ->
-                  let hint, j, malformed_hint:(t_Array (t_Array i32 (Rust_primitives.mk_usize 256))
-                      v_ROWS_IN_A &
-                    usize &
+                  let hint, j, malformed_hint:(t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A & usize &
                     bool) =
                     temp_0_
                   in
                   (~.malformed_hint <: bool) && (j <. current_true_hints_seen <: bool))
               (hint, j, malformed_hint
                 <:
-                (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A & usize & bool))
+                (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A & usize & bool))
               (fun temp_0_ ->
-                  let hint, j, malformed_hint:(t_Array (t_Array i32 (Rust_primitives.mk_usize 256))
-                      v_ROWS_IN_A &
-                    usize &
+                  let hint, j, malformed_hint:(t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A & usize &
                     bool) =
                     temp_0_
                   in
@@ -146,7 +133,7 @@ let impl__deserialize
                     if
                       j >. previous_true_hints_seen &&
                       (hint_serialized.[ j ] <: u8) <=.
-                      (hint_serialized.[ j -! Rust_primitives.mk_usize 1 <: usize ] <: u8)
+                      (hint_serialized.[ j -! sz 1 <: usize ] <: u8)
                     then
                       let malformed_hint:bool = true in
                       malformed_hint
@@ -154,41 +141,37 @@ let impl__deserialize
                   in
                   if ~.malformed_hint
                   then
-                    let hint:t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A =
+                    let hint:t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A =
                       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize hint
                         i
                         (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (hint.[ i ]
                               <:
-                              t_Array i32 (Rust_primitives.mk_usize 256))
+                              t_Array i32 (sz 256))
                             (cast (hint_serialized.[ j ] <: u8) <: usize)
-                            (Rust_primitives.mk_i32 1)
+                            1l
                           <:
-                          t_Array i32 (Rust_primitives.mk_usize 256))
+                          t_Array i32 (sz 256))
                     in
-                    let j:usize = j +! Rust_primitives.mk_usize 1 in
+                    let j:usize = j +! sz 1 in
                     hint, j, malformed_hint
                     <:
-                    (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A & usize & bool
-                    )
+                    (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A & usize & bool)
                   else
                     hint, j, malformed_hint
                     <:
-                    (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A & usize & bool
-                    ))
+                    (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A & usize & bool))
           in
           if ~.malformed_hint
           then
             let previous_true_hints_seen:usize = current_true_hints_seen in
-            let i:usize = i +! Rust_primitives.mk_usize 1 in
+            let i:usize = i +! sz 1 in
             hint, i, malformed_hint, previous_true_hints_seen
             <:
-            (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A & usize & bool & usize
-            )
+            (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A & usize & bool & usize)
           else
             hint, i, malformed_hint, previous_true_hints_seen
             <:
-            (t_Array (t_Array i32 (Rust_primitives.mk_usize 256)) v_ROWS_IN_A & usize & bool & usize
-            ))
+            (t_Array (t_Array i32 (sz 256)) v_ROWS_IN_A & usize & bool & usize))
   in
   let i:usize = previous_true_hints_seen in
   let i, malformed_hint:(usize & bool) =
@@ -199,13 +182,13 @@ let impl__deserialize
       (fun temp_0_ ->
           let i, malformed_hint:(usize & bool) = temp_0_ in
           let malformed_hint:bool =
-            if (hint_serialized.[ i ] <: u8) <>. Rust_primitives.mk_u8 0
+            if (hint_serialized.[ i ] <: u8) <>. 0uy
             then
               let malformed_hint:bool = true in
               malformed_hint
             else malformed_hint
           in
-          let i:usize = i +! Rust_primitives.mk_usize 1 in
+          let i:usize = i +! sz 1 in
           i, malformed_hint <: (usize & bool))
   in
   if malformed_hint
@@ -254,10 +237,8 @@ let impl__serialize
             v_COLUMNS_IN_A
             v_ROWS_IN_A)
      =
-  let signature:t_Array u8 v_SIGNATURE_SIZE =
-    Rust_primitives.Hax.repeat (Rust_primitives.mk_u8 0) v_SIGNATURE_SIZE
-  in
-  let offset:usize = Rust_primitives.mk_usize 0 in
+  let signature:t_Array u8 v_SIGNATURE_SIZE = Rust_primitives.Hax.repeat 0uy v_SIGNATURE_SIZE in
+  let offset:usize = sz 0 in
   let signature:t_Array u8 v_SIGNATURE_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range signature
       ({
@@ -281,7 +262,7 @@ let impl__serialize
   in
   let offset:usize = offset +! v_COMMITMENT_HASH_SIZE in
   let offset, signature:(usize & t_Array u8 v_SIGNATURE_SIZE) =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       v_COLUMNS_IN_A
       (fun temp_0_ temp_1_ ->
           let offset, signature:(usize & t_Array u8 v_SIGNATURE_SIZE) = temp_0_ in
@@ -322,9 +303,9 @@ let impl__serialize
           let offset:usize = offset +! v_GAMMA1_RING_ELEMENT_SIZE in
           offset, signature <: (usize & t_Array u8 v_SIGNATURE_SIZE))
   in
-  let true_hints_seen:usize = Rust_primitives.mk_usize 0 in
+  let true_hints_seen:usize = sz 0 in
   let signature, true_hints_seen:(t_Array u8 v_SIGNATURE_SIZE & usize) =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       v_ROWS_IN_A
       (fun temp_0_ temp_1_ ->
           let signature, true_hints_seen:(t_Array u8 v_SIGNATURE_SIZE & usize) = temp_0_ in
@@ -337,7 +318,7 @@ let impl__serialize
           let signature, true_hints_seen:(t_Array u8 v_SIGNATURE_SIZE & usize) =
             Rust_primitives.Hax.Folds.fold_enumerated_slice (self.Libcrux_ml_dsa.Types.f_hint.[ i ]
                 <:
-                t_Array i32 (Rust_primitives.mk_usize 256))
+                t_Array i32 (sz 256))
               (fun temp_0_ temp_1_ ->
                   let signature, true_hints_seen:(t_Array u8 v_SIGNATURE_SIZE & usize) = temp_0_ in
                   let _:usize = temp_1_ in
@@ -346,14 +327,14 @@ let impl__serialize
               (fun temp_0_ temp_1_ ->
                   let signature, true_hints_seen:(t_Array u8 v_SIGNATURE_SIZE & usize) = temp_0_ in
                   let j, hint:(usize & i32) = temp_1_ in
-                  if hint =. Rust_primitives.mk_i32 1 <: bool
+                  if hint =. 1l <: bool
                   then
                     let signature:t_Array u8 v_SIGNATURE_SIZE =
                       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize signature
                         (offset +! true_hints_seen <: usize)
                         (cast (j <: usize) <: u8)
                     in
-                    let true_hints_seen:usize = true_hints_seen +! Rust_primitives.mk_usize 1 in
+                    let true_hints_seen:usize = true_hints_seen +! sz 1 in
                     signature, true_hints_seen <: (t_Array u8 v_SIGNATURE_SIZE & usize)
                   else signature, true_hints_seen <: (t_Array u8 v_SIGNATURE_SIZE & usize))
           in

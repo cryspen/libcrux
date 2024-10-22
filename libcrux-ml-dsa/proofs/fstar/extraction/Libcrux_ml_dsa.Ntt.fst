@@ -9,65 +9,22 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let invert_ntt_at_layer_0_
+let ntt
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (zeta_i: usize)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
-  let zeta_i:usize = zeta_i -! Rust_primitives.mk_usize 1 in
-  let re, zeta_i:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize) =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
-      (Core.Slice.impl__len #v_SIMDUnit
-          (re.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
-        <:
-        usize)
-      (fun temp_0_ temp_1_ ->
-          let re, zeta_i:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize) =
-            temp_0_
-          in
-          let _:usize = temp_1_ in
-          true)
-      (re, zeta_i <: (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize))
-      (fun temp_0_ round ->
-          let re, zeta_i:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize) =
-            temp_0_
-          in
-          let round:usize = round in
-          let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-            {
-              re with
-              Libcrux_ml_dsa.Polynomial.f_simd_units
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
-                  .Libcrux_ml_dsa.Polynomial.f_simd_units
-                round
-                (Libcrux_ml_dsa.Simd.Traits.f_invert_ntt_at_layer_0_ #v_SIMDUnit
-                    #FStar.Tactics.Typeclasses.solve
-                    (re.Libcrux_ml_dsa.Polynomial.f_simd_units.[ round ] <: v_SIMDUnit)
-                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
-                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! Rust_primitives.mk_usize 1 <: usize ]
-                      <:
-                      i32)
-                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! Rust_primitives.mk_usize 2 <: usize ]
-                      <:
-                      i32)
-                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! Rust_primitives.mk_usize 3 <: usize ]
-                      <:
-                      i32)
-                  <:
-                  v_SIMDUnit)
-            }
-            <:
-            Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit
-          in
-          let zeta_i:usize = zeta_i -! Rust_primitives.mk_usize 4 in
-          re, zeta_i <: (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize))
-  in
-  let zeta_i:usize = zeta_i +! Rust_primitives.mk_usize 1 in
-  zeta_i, re <: (usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+  {
+    Libcrux_ml_dsa.Polynomial.f_simd_units
+    =
+    Libcrux_ml_dsa.Simd.Traits.f_ntt #v_SIMDUnit
+      #FStar.Tactics.Typeclasses.solve
+      re.Libcrux_ml_dsa.Polynomial.f_simd_units
+  }
+  <:
+  Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit
 
 let invert_ntt_at_layer_1_
       (#v_SIMDUnit: Type0)
@@ -77,12 +34,10 @@ let invert_ntt_at_layer_1_
       (zeta_i: usize)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
-  let zeta_i:usize = zeta_i -! Rust_primitives.mk_usize 1 in
+  let zeta_i:usize = zeta_i -! sz 1 in
   let re, zeta_i:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize) =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
-      (Rust_primitives.mk_usize 256 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
-        <:
-        usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (sz 256 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: usize)
       (fun temp_0_ temp_1_ ->
           let re, zeta_i:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize) =
             temp_0_
@@ -107,19 +62,17 @@ let invert_ntt_at_layer_1_
                     #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_dsa.Polynomial.f_simd_units.[ round ] <: v_SIMDUnit)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
-                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! Rust_primitives.mk_usize 1 <: usize ]
-                      <:
-                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! sz 1 <: usize ] <: i32)
                   <:
                   v_SIMDUnit)
             }
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit
           in
-          let zeta_i:usize = zeta_i -! Rust_primitives.mk_usize 2 in
+          let zeta_i:usize = zeta_i -! sz 2 in
           re, zeta_i <: (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize))
   in
-  let zeta_i:usize = zeta_i +! Rust_primitives.mk_usize 1 in
+  let zeta_i:usize = zeta_i +! sz 1 in
   zeta_i, re <: (usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
 
 let invert_ntt_at_layer_2_
@@ -132,10 +85,8 @@ let invert_ntt_at_layer_2_
      =
   let (re, zeta_i), hax_temp_output:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     usize) =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
-      (Rust_primitives.mk_usize 256 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
-        <:
-        usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (sz 256 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: usize)
       (fun temp_0_ temp_1_ ->
           let re, zeta_i:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize) =
             temp_0_
@@ -148,7 +99,7 @@ let invert_ntt_at_layer_2_
             temp_0_
           in
           let round:usize = round in
-          let zeta_i:usize = zeta_i -! Rust_primitives.mk_usize 1 in
+          let zeta_i:usize = zeta_i -! sz 1 in
           let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
             {
               re with
@@ -180,11 +131,11 @@ let invert_ntt_at_layer_3_plus
       (zeta_i: usize)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
-  let step:usize = Rust_primitives.mk_usize 1 <<! v_LAYER in
+  let step:usize = sz 1 <<! v_LAYER in
   let (re, zeta_i), hax_temp_output:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     usize) =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
-      (Rust_primitives.mk_usize 128 >>! v_LAYER <: usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (sz 128 >>! v_LAYER <: usize)
       (fun temp_0_ temp_1_ ->
           let re, zeta_i:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize) =
             temp_0_
@@ -197,9 +148,9 @@ let invert_ntt_at_layer_3_plus
             temp_0_
           in
           let round:usize = round in
-          let zeta_i:usize = zeta_i -! Rust_primitives.mk_usize 1 in
+          let zeta_i:usize = zeta_i -! sz 1 in
           let offset:usize =
-            ((round *! step <: usize) *! Rust_primitives.mk_usize 2 <: usize) /!
+            ((round *! step <: usize) *! sz 2 <: usize) /!
             Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
           in
           let step_by:usize = step /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT in
@@ -265,6 +216,60 @@ let invert_ntt_at_layer_3_plus
   in
   zeta_i, re <: (usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
 
+let invert_ntt_at_layer_0_
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (zeta_i: usize)
+      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+     =
+  let zeta_i:usize = zeta_i -! sz 1 in
+  let re, zeta_i:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize) =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (Core.Slice.impl__len #v_SIMDUnit
+          (re.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
+        <:
+        usize)
+      (fun temp_0_ temp_1_ ->
+          let re, zeta_i:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize) =
+            temp_0_
+          in
+          let _:usize = temp_1_ in
+          true)
+      (re, zeta_i <: (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize) =
+            temp_0_
+          in
+          let round:usize = round in
+          let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
+            {
+              re with
+              Libcrux_ml_dsa.Polynomial.f_simd_units
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux_ml_dsa.Polynomial.f_simd_units
+                round
+                (Libcrux_ml_dsa.Simd.Traits.f_invert_ntt_at_layer_0_ #v_SIMDUnit
+                    #FStar.Tactics.Typeclasses.solve
+                    (re.Libcrux_ml_dsa.Polynomial.f_simd_units.[ round ] <: v_SIMDUnit)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! sz 1 <: usize ] <: i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! sz 2 <: usize ] <: i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! sz 3 <: usize ] <: i32)
+                  <:
+                  v_SIMDUnit)
+            }
+            <:
+            Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit
+          in
+          let zeta_i:usize = zeta_i -! sz 4 in
+          re, zeta_i <: (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize))
+  in
+  let zeta_i:usize = zeta_i +! sz 1 in
+  zeta_i, re <: (usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+
 let invert_ntt_montgomery
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -292,37 +297,37 @@ let invert_ntt_montgomery
   let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    invert_ntt_at_layer_3_plus #v_SIMDUnit (Rust_primitives.mk_usize 3) zeta_i re
+    invert_ntt_at_layer_3_plus #v_SIMDUnit (sz 3) zeta_i re
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    invert_ntt_at_layer_3_plus #v_SIMDUnit (Rust_primitives.mk_usize 4) zeta_i re
+    invert_ntt_at_layer_3_plus #v_SIMDUnit (sz 4) zeta_i re
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    invert_ntt_at_layer_3_plus #v_SIMDUnit (Rust_primitives.mk_usize 5) zeta_i re
+    invert_ntt_at_layer_3_plus #v_SIMDUnit (sz 5) zeta_i re
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    invert_ntt_at_layer_3_plus #v_SIMDUnit (Rust_primitives.mk_usize 6) zeta_i re
+    invert_ntt_at_layer_3_plus #v_SIMDUnit (sz 6) zeta_i re
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    invert_ntt_at_layer_3_plus #v_SIMDUnit (Rust_primitives.mk_usize 7) zeta_i re
+    invert_ntt_at_layer_3_plus #v_SIMDUnit (sz 7) zeta_i re
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = tmp1 in
   let _:Prims.unit = () in
   let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       (Core.Slice.impl__len #v_SIMDUnit
           (re.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
         <:
@@ -345,33 +350,16 @@ let invert_ntt_montgomery
               (Libcrux_ml_dsa.Simd.Traits.f_montgomery_multiply_by_constant #v_SIMDUnit
                   #FStar.Tactics.Typeclasses.solve
                   (re.Libcrux_ml_dsa.Polynomial.f_simd_units.[ i ] <: v_SIMDUnit)
-                  (Rust_primitives.mk_i32 41978)
+                  41978l
                 <:
                 v_SIMDUnit)
             <:
-            t_Array v_SIMDUnit (Rust_primitives.mk_usize 32)
+            t_Array v_SIMDUnit (sz 32)
           }
           <:
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
   in
   re
-
-let ntt
-      (#v_SIMDUnit: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
-  {
-    Libcrux_ml_dsa.Polynomial.f_simd_units
-    =
-    Libcrux_ml_dsa.Simd.Traits.f_ntt #v_SIMDUnit
-      #FStar.Tactics.Typeclasses.solve
-      re.Libcrux_ml_dsa.Polynomial.f_simd_units
-  }
-  <:
-  Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit
 
 let ntt_multiply_montgomery
       (#v_SIMDUnit: Type0)
@@ -384,7 +372,7 @@ let ntt_multiply_montgomery
     Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
   in
   let out:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       (Core.Slice.impl__len #v_SIMDUnit
           (out.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
         <:
@@ -411,7 +399,7 @@ let ntt_multiply_montgomery
                 <:
                 v_SIMDUnit)
             <:
-            t_Array v_SIMDUnit (Rust_primitives.mk_usize 32)
+            t_Array v_SIMDUnit (sz 32)
           }
           <:
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)

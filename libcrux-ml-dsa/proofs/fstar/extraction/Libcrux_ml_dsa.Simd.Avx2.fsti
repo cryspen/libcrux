@@ -37,10 +37,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     (fun (self: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) -> true);
     f_to_coefficient_array_post
     =
-    (fun
-        (self: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (out: t_Array i32 (Rust_primitives.mk_usize 8))
-        ->
+    (fun (self: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) (out: t_Array i32 (sz 8)) ->
         true);
     f_to_coefficient_array
     =
@@ -349,10 +346,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) ->
         let tmp0, out1:(t_Slice i32 & usize) =
-          Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.sample (Rust_primitives.mk_usize 2
-            )
-            randomness
-            out
+          Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.sample (sz 2) randomness out
         in
         let out:t_Slice i32 = tmp0 in
         let hax_temp_output:usize = out1 in
@@ -367,10 +361,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) ->
         let tmp0, out1:(t_Slice i32 & usize) =
-          Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.sample (Rust_primitives.mk_usize 4
-            )
-            randomness
-            out
+          Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.sample (sz 4) randomness out
         in
         let out:t_Slice i32 = tmp0 in
         let hax_temp_output:usize = out1 in
@@ -469,7 +460,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     =
     (fun
         (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (out: t_Array u8 (Rust_primitives.mk_usize 13))
+        (out: t_Array u8 (sz 13))
         ->
         true);
     f_t0_serialize
@@ -498,7 +489,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     =
     (fun
         (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (out: t_Array u8 (Rust_primitives.mk_usize 10))
+        (out: t_Array u8 (sz 10))
         ->
         true);
     f_t1_serialize
@@ -522,39 +513,30 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
             Libcrux_intrinsics.Avx2_extract.t_Vec256));
     f_ntt_pre
     =
-    (fun
-        (simd_units:
-          t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (Rust_primitives.mk_usize 32))
-        ->
-        true);
+    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32)) -> true);
     f_ntt_post
     =
     (fun
-        (simd_units:
-          t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (Rust_primitives.mk_usize 32))
-        (out:
-          t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (Rust_primitives.mk_usize 32))
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32))
+        (out: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32))
         ->
         true);
     f_ntt
     =
-    (fun
-        (simd_units:
-          t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (Rust_primitives.mk_usize 32))
-        ->
-        let result:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (Rust_primitives.mk_usize 32) =
+    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32)) ->
+        let result:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) =
           Libcrux_ml_dsa.Simd.Avx2.Ntt.ntt (Core.Array.impl_23__map #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-                (Rust_primitives.mk_usize 32)
+                (sz 32)
                 #Libcrux_intrinsics.Avx2_extract.t_Vec256
                 simd_units
                 (fun x ->
                     let x:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit = x in
                     x.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients)
               <:
-              t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (Rust_primitives.mk_usize 32))
+              t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
         in
         Core.Array.impl_23__map #Libcrux_intrinsics.Avx2_extract.t_Vec256
-          (Rust_primitives.mk_usize 32)
+          (sz 32)
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           result
           (fun x ->

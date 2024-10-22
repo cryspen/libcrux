@@ -3,7 +3,7 @@ module Libcrux_ml_dsa.Simd.Avx2.Ntt
 open Core
 open FStar.Mul
 
-let butterfly_2___SHUFFLE: i32 = Rust_primitives.mk_i32 216
+let butterfly_2___SHUFFLE: i32 = 216l
 
 val butterfly_2_
       (a b: Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -40,37 +40,27 @@ val invert_ntt_at_layer_2_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
 val ntt_at_layer_3_plus
       (v_LAYER zeta_i: usize)
-      (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (Rust_primitives.mk_usize 32))
-    : Prims.Pure
-      (usize & t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (Rust_primitives.mk_usize 32))
+      (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
+    : Prims.Pure (usize & t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val ntt_at_layer_0_
-      (zeta_i: usize)
-      (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (Rust_primitives.mk_usize 32))
-    : Prims.Pure
-      (usize & t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (Rust_primitives.mk_usize 32))
+val ntt_at_layer_0_ (zeta_i: usize) (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
+    : Prims.Pure (usize & t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val ntt_at_layer_1_
-      (zeta_i: usize)
-      (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (Rust_primitives.mk_usize 32))
-    : Prims.Pure
-      (usize & t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (Rust_primitives.mk_usize 32))
+val ntt_at_layer_1_ (zeta_i: usize) (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
+    : Prims.Pure (usize & t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val ntt_at_layer_2_
-      (zeta_i: usize)
-      (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (Rust_primitives.mk_usize 32))
-    : Prims.Pure
-      (usize & t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (Rust_primitives.mk_usize 32))
+val ntt_at_layer_2_ (zeta_i: usize) (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
+    : Prims.Pure (usize & t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val ntt (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (Rust_primitives.mk_usize 32))
-    : Prims.Pure (t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (Rust_primitives.mk_usize 32))
+val ntt (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
+    : Prims.Pure (t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)

@@ -75,7 +75,7 @@ let add_vectors
       v_DIMENSION
   in
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       v_DIMENSION
       (fun result temp_1_ ->
           let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -401,7 +401,7 @@ let compute_w_approx
           in
           let t1_shifted:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
             Libcrux_ml_dsa.Arithmetic.shift_left_then_reduce #v_SIMDUnit
-              (Rust_primitives.mk_i32 13)
+              13l
               (t1.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
           in
           let challenge_times_t1_shifted:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement
@@ -444,7 +444,7 @@ let subtract_vectors
       v_DIMENSION
   in
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       v_DIMENSION
       (fun result temp_1_ ->
           let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)

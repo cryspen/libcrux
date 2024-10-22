@@ -6,7 +6,7 @@ open FStar.Mul
 let generate_key_pair
       (v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_VERIFICATION_KEY_SIZE:
           usize)
-      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+      (randomness: t_Array u8 (sz 32))
      =
   if Libcrux_platform.Platform.simd256_support ()
   then
@@ -43,7 +43,7 @@ let sign
           usize)
       (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
       (message context: t_Slice u8)
-      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+      (randomness: t_Array u8 (sz 32))
      =
   if Libcrux_platform.Platform.simd256_support ()
   then
@@ -74,7 +74,7 @@ let sign_pre_hashed_shake128
           usize)
       (signing_key: t_Array u8 v_SIGNING_KEY_SIZE)
       (message context: t_Slice u8)
-      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+      (randomness: t_Array u8 (sz 32))
      =
   if Libcrux_platform.Platform.simd256_support ()
   then

@@ -16,9 +16,9 @@ class t_Operations (v_Self: Type0) = {
         (f_from_coefficient_array_pre x0)
         (fun result -> f_from_coefficient_array_post x0 result);
   f_to_coefficient_array_pre:v_Self -> Type0;
-  f_to_coefficient_array_post:v_Self -> t_Array i32 (Rust_primitives.mk_usize 8) -> Type0;
+  f_to_coefficient_array_post:v_Self -> t_Array i32 (sz 8) -> Type0;
   f_to_coefficient_array:x0: v_Self
-    -> Prims.Pure (t_Array i32 (Rust_primitives.mk_usize 8))
+    -> Prims.Pure (t_Array i32 (sz 8))
         (f_to_coefficient_array_pre x0)
         (fun result -> f_to_coefficient_array_post x0 result);
   f_add_pre:v_Self -> v_Self -> Type0;
@@ -129,9 +129,9 @@ class t_Operations (v_Self: Type0) = {
         (f_error_deserialize_pre v_ETA x0)
         (fun result -> f_error_deserialize_post v_ETA x0 result);
   f_t0_serialize_pre:v_Self -> Type0;
-  f_t0_serialize_post:v_Self -> t_Array u8 (Rust_primitives.mk_usize 13) -> Type0;
+  f_t0_serialize_post:v_Self -> t_Array u8 (sz 13) -> Type0;
   f_t0_serialize:x0: v_Self
-    -> Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 13))
+    -> Prims.Pure (t_Array u8 (sz 13))
         (f_t0_serialize_pre x0)
         (fun result -> f_t0_serialize_post x0 result);
   f_t0_deserialize_pre:t_Slice u8 -> Type0;
@@ -139,24 +139,19 @@ class t_Operations (v_Self: Type0) = {
   f_t0_deserialize:x0: t_Slice u8
     -> Prims.Pure v_Self (f_t0_deserialize_pre x0) (fun result -> f_t0_deserialize_post x0 result);
   f_t1_serialize_pre:v_Self -> Type0;
-  f_t1_serialize_post:v_Self -> t_Array u8 (Rust_primitives.mk_usize 10) -> Type0;
+  f_t1_serialize_post:v_Self -> t_Array u8 (sz 10) -> Type0;
   f_t1_serialize:x0: v_Self
-    -> Prims.Pure (t_Array u8 (Rust_primitives.mk_usize 10))
+    -> Prims.Pure (t_Array u8 (sz 10))
         (f_t1_serialize_pre x0)
         (fun result -> f_t1_serialize_post x0 result);
   f_t1_deserialize_pre:t_Slice u8 -> Type0;
   f_t1_deserialize_post:t_Slice u8 -> v_Self -> Type0;
   f_t1_deserialize:x0: t_Slice u8
     -> Prims.Pure v_Self (f_t1_deserialize_pre x0) (fun result -> f_t1_deserialize_post x0 result);
-  f_ntt_pre:t_Array v_Self (Rust_primitives.mk_usize 32) -> Type0;
-  f_ntt_post:
-      t_Array v_Self (Rust_primitives.mk_usize 32) ->
-      t_Array v_Self (Rust_primitives.mk_usize 32)
-    -> Type0;
-  f_ntt:x0: t_Array v_Self (Rust_primitives.mk_usize 32)
-    -> Prims.Pure (t_Array v_Self (Rust_primitives.mk_usize 32))
-        (f_ntt_pre x0)
-        (fun result -> f_ntt_post x0 result);
+  f_ntt_pre:t_Array v_Self (sz 32) -> Type0;
+  f_ntt_post:t_Array v_Self (sz 32) -> t_Array v_Self (sz 32) -> Type0;
+  f_ntt:x0: t_Array v_Self (sz 32)
+    -> Prims.Pure (t_Array v_Self (sz 32)) (f_ntt_pre x0) (fun result -> f_ntt_post x0 result);
   f_invert_ntt_at_layer_0_pre:v_Self -> i32 -> i32 -> i32 -> i32 -> Type0;
   f_invert_ntt_at_layer_0_post:v_Self -> i32 -> i32 -> i32 -> i32 -> v_Self -> Type0;
   f_invert_ntt_at_layer_0_:x0: v_Self -> x1: i32 -> x2: i32 -> x3: i32 -> x4: i32
@@ -177,138 +172,50 @@ class t_Operations (v_Self: Type0) = {
         (fun result -> f_invert_ntt_at_layer_2_post x0 x1 result)
 }
 
-let v_COEFFICIENTS_IN_SIMD_UNIT: usize = Rust_primitives.mk_usize 8
+let v_COEFFICIENTS_IN_SIMD_UNIT: usize = sz 8
 
-let v_FIELD_MODULUS: i32 = Rust_primitives.mk_i32 8380417
+let v_FIELD_MODULUS: i32 = 8380417l
 
-let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = Rust_primitives.mk_u64 58728449
+let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58728449uL
 
 let v_SIMD_UNITS_IN_RING_ELEMENT: usize =
   Libcrux_ml_dsa.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! v_COEFFICIENTS_IN_SIMD_UNIT
 
-let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (Rust_primitives.mk_usize 256) =
+let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (sz 256) =
   let list =
     [
-      Rust_primitives.mk_i32 0; Rust_primitives.mk_i32 25847; Rust_primitives.mk_i32 (-2608894);
-      Rust_primitives.mk_i32 (-518909); Rust_primitives.mk_i32 237124;
-      Rust_primitives.mk_i32 (-777960); Rust_primitives.mk_i32 (-876248);
-      Rust_primitives.mk_i32 466468; Rust_primitives.mk_i32 1826347; Rust_primitives.mk_i32 2353451;
-      Rust_primitives.mk_i32 (-359251); Rust_primitives.mk_i32 (-2091905);
-      Rust_primitives.mk_i32 3119733; Rust_primitives.mk_i32 (-2884855);
-      Rust_primitives.mk_i32 3111497; Rust_primitives.mk_i32 2680103; Rust_primitives.mk_i32 2725464;
-      Rust_primitives.mk_i32 1024112; Rust_primitives.mk_i32 (-1079900);
-      Rust_primitives.mk_i32 3585928; Rust_primitives.mk_i32 (-549488);
-      Rust_primitives.mk_i32 (-1119584); Rust_primitives.mk_i32 2619752;
-      Rust_primitives.mk_i32 (-2108549); Rust_primitives.mk_i32 (-2118186);
-      Rust_primitives.mk_i32 (-3859737); Rust_primitives.mk_i32 (-1399561);
-      Rust_primitives.mk_i32 (-3277672); Rust_primitives.mk_i32 1757237;
-      Rust_primitives.mk_i32 (-19422); Rust_primitives.mk_i32 4010497; Rust_primitives.mk_i32 280005;
-      Rust_primitives.mk_i32 2706023; Rust_primitives.mk_i32 95776; Rust_primitives.mk_i32 3077325;
-      Rust_primitives.mk_i32 3530437; Rust_primitives.mk_i32 (-1661693);
-      Rust_primitives.mk_i32 (-3592148); Rust_primitives.mk_i32 (-2537516);
-      Rust_primitives.mk_i32 3915439; Rust_primitives.mk_i32 (-3861115);
-      Rust_primitives.mk_i32 (-3043716); Rust_primitives.mk_i32 3574422;
-      Rust_primitives.mk_i32 (-2867647); Rust_primitives.mk_i32 3539968;
-      Rust_primitives.mk_i32 (-300467); Rust_primitives.mk_i32 2348700;
-      Rust_primitives.mk_i32 (-539299); Rust_primitives.mk_i32 (-1699267);
-      Rust_primitives.mk_i32 (-1643818); Rust_primitives.mk_i32 3505694;
-      Rust_primitives.mk_i32 (-3821735); Rust_primitives.mk_i32 3507263;
-      Rust_primitives.mk_i32 (-2140649); Rust_primitives.mk_i32 (-1600420);
-      Rust_primitives.mk_i32 3699596; Rust_primitives.mk_i32 811944; Rust_primitives.mk_i32 531354;
-      Rust_primitives.mk_i32 954230; Rust_primitives.mk_i32 3881043; Rust_primitives.mk_i32 3900724;
-      Rust_primitives.mk_i32 (-2556880); Rust_primitives.mk_i32 2071892;
-      Rust_primitives.mk_i32 (-2797779); Rust_primitives.mk_i32 (-3930395);
-      Rust_primitives.mk_i32 (-1528703); Rust_primitives.mk_i32 (-3677745);
-      Rust_primitives.mk_i32 (-3041255); Rust_primitives.mk_i32 (-1452451);
-      Rust_primitives.mk_i32 3475950; Rust_primitives.mk_i32 2176455;
-      Rust_primitives.mk_i32 (-1585221); Rust_primitives.mk_i32 (-1257611);
-      Rust_primitives.mk_i32 1939314; Rust_primitives.mk_i32 (-4083598);
-      Rust_primitives.mk_i32 (-1000202); Rust_primitives.mk_i32 (-3190144);
-      Rust_primitives.mk_i32 (-3157330); Rust_primitives.mk_i32 (-3632928);
-      Rust_primitives.mk_i32 126922; Rust_primitives.mk_i32 3412210;
-      Rust_primitives.mk_i32 (-983419); Rust_primitives.mk_i32 2147896;
-      Rust_primitives.mk_i32 2715295; Rust_primitives.mk_i32 (-2967645);
-      Rust_primitives.mk_i32 (-3693493); Rust_primitives.mk_i32 (-411027);
-      Rust_primitives.mk_i32 (-2477047); Rust_primitives.mk_i32 (-671102);
-      Rust_primitives.mk_i32 (-1228525); Rust_primitives.mk_i32 (-22981);
-      Rust_primitives.mk_i32 (-1308169); Rust_primitives.mk_i32 (-381987);
-      Rust_primitives.mk_i32 1349076; Rust_primitives.mk_i32 1852771;
-      Rust_primitives.mk_i32 (-1430430); Rust_primitives.mk_i32 (-3343383);
-      Rust_primitives.mk_i32 264944; Rust_primitives.mk_i32 508951; Rust_primitives.mk_i32 3097992;
-      Rust_primitives.mk_i32 44288; Rust_primitives.mk_i32 (-1100098); Rust_primitives.mk_i32 904516;
-      Rust_primitives.mk_i32 3958618; Rust_primitives.mk_i32 (-3724342);
-      Rust_primitives.mk_i32 (-8578); Rust_primitives.mk_i32 1653064;
-      Rust_primitives.mk_i32 (-3249728); Rust_primitives.mk_i32 2389356;
-      Rust_primitives.mk_i32 (-210977); Rust_primitives.mk_i32 759969;
-      Rust_primitives.mk_i32 (-1316856); Rust_primitives.mk_i32 189548;
-      Rust_primitives.mk_i32 (-3553272); Rust_primitives.mk_i32 3159746;
-      Rust_primitives.mk_i32 (-1851402); Rust_primitives.mk_i32 (-2409325);
-      Rust_primitives.mk_i32 (-177440); Rust_primitives.mk_i32 1315589;
-      Rust_primitives.mk_i32 1341330; Rust_primitives.mk_i32 1285669;
-      Rust_primitives.mk_i32 (-1584928); Rust_primitives.mk_i32 (-812732);
-      Rust_primitives.mk_i32 (-1439742); Rust_primitives.mk_i32 (-3019102);
-      Rust_primitives.mk_i32 (-3881060); Rust_primitives.mk_i32 (-3628969);
-      Rust_primitives.mk_i32 3839961; Rust_primitives.mk_i32 2091667; Rust_primitives.mk_i32 3407706;
-      Rust_primitives.mk_i32 2316500; Rust_primitives.mk_i32 3817976;
-      Rust_primitives.mk_i32 (-3342478); Rust_primitives.mk_i32 2244091;
-      Rust_primitives.mk_i32 (-2446433); Rust_primitives.mk_i32 (-3562462);
-      Rust_primitives.mk_i32 266997; Rust_primitives.mk_i32 2434439;
-      Rust_primitives.mk_i32 (-1235728); Rust_primitives.mk_i32 3513181;
-      Rust_primitives.mk_i32 (-3520352); Rust_primitives.mk_i32 (-3759364);
-      Rust_primitives.mk_i32 (-1197226); Rust_primitives.mk_i32 (-3193378);
-      Rust_primitives.mk_i32 900702; Rust_primitives.mk_i32 1859098; Rust_primitives.mk_i32 909542;
-      Rust_primitives.mk_i32 819034; Rust_primitives.mk_i32 495491;
-      Rust_primitives.mk_i32 (-1613174); Rust_primitives.mk_i32 (-43260);
-      Rust_primitives.mk_i32 (-522500); Rust_primitives.mk_i32 (-655327);
-      Rust_primitives.mk_i32 (-3122442); Rust_primitives.mk_i32 2031748;
-      Rust_primitives.mk_i32 3207046; Rust_primitives.mk_i32 (-3556995);
-      Rust_primitives.mk_i32 (-525098); Rust_primitives.mk_i32 (-768622);
-      Rust_primitives.mk_i32 (-3595838); Rust_primitives.mk_i32 342297;
-      Rust_primitives.mk_i32 286988; Rust_primitives.mk_i32 (-2437823);
-      Rust_primitives.mk_i32 4108315; Rust_primitives.mk_i32 3437287;
-      Rust_primitives.mk_i32 (-3342277); Rust_primitives.mk_i32 1735879;
-      Rust_primitives.mk_i32 203044; Rust_primitives.mk_i32 2842341; Rust_primitives.mk_i32 2691481;
-      Rust_primitives.mk_i32 (-2590150); Rust_primitives.mk_i32 1265009;
-      Rust_primitives.mk_i32 4055324; Rust_primitives.mk_i32 1247620; Rust_primitives.mk_i32 2486353;
-      Rust_primitives.mk_i32 1595974; Rust_primitives.mk_i32 (-3767016);
-      Rust_primitives.mk_i32 1250494; Rust_primitives.mk_i32 2635921;
-      Rust_primitives.mk_i32 (-3548272); Rust_primitives.mk_i32 (-2994039);
-      Rust_primitives.mk_i32 1869119; Rust_primitives.mk_i32 1903435;
-      Rust_primitives.mk_i32 (-1050970); Rust_primitives.mk_i32 (-1333058);
-      Rust_primitives.mk_i32 1237275; Rust_primitives.mk_i32 (-3318210);
-      Rust_primitives.mk_i32 (-1430225); Rust_primitives.mk_i32 (-451100);
-      Rust_primitives.mk_i32 1312455; Rust_primitives.mk_i32 3306115;
-      Rust_primitives.mk_i32 (-1962642); Rust_primitives.mk_i32 (-1279661);
-      Rust_primitives.mk_i32 1917081; Rust_primitives.mk_i32 (-2546312);
-      Rust_primitives.mk_i32 (-1374803); Rust_primitives.mk_i32 1500165;
-      Rust_primitives.mk_i32 777191; Rust_primitives.mk_i32 2235880; Rust_primitives.mk_i32 3406031;
-      Rust_primitives.mk_i32 (-542412); Rust_primitives.mk_i32 (-2831860);
-      Rust_primitives.mk_i32 (-1671176); Rust_primitives.mk_i32 (-1846953);
-      Rust_primitives.mk_i32 (-2584293); Rust_primitives.mk_i32 (-3724270);
-      Rust_primitives.mk_i32 594136; Rust_primitives.mk_i32 (-3776993);
-      Rust_primitives.mk_i32 (-2013608); Rust_primitives.mk_i32 2432395;
-      Rust_primitives.mk_i32 2454455; Rust_primitives.mk_i32 (-164721);
-      Rust_primitives.mk_i32 1957272; Rust_primitives.mk_i32 3369112; Rust_primitives.mk_i32 185531;
-      Rust_primitives.mk_i32 (-1207385); Rust_primitives.mk_i32 (-3183426);
-      Rust_primitives.mk_i32 162844; Rust_primitives.mk_i32 1616392; Rust_primitives.mk_i32 3014001;
-      Rust_primitives.mk_i32 810149; Rust_primitives.mk_i32 1652634;
-      Rust_primitives.mk_i32 (-3694233); Rust_primitives.mk_i32 (-1799107);
-      Rust_primitives.mk_i32 (-3038916); Rust_primitives.mk_i32 3523897;
-      Rust_primitives.mk_i32 3866901; Rust_primitives.mk_i32 269760; Rust_primitives.mk_i32 2213111;
-      Rust_primitives.mk_i32 (-975884); Rust_primitives.mk_i32 1717735;
-      Rust_primitives.mk_i32 472078; Rust_primitives.mk_i32 (-426683);
-      Rust_primitives.mk_i32 1723600; Rust_primitives.mk_i32 (-1803090);
-      Rust_primitives.mk_i32 1910376; Rust_primitives.mk_i32 (-1667432);
-      Rust_primitives.mk_i32 (-1104333); Rust_primitives.mk_i32 (-260646);
-      Rust_primitives.mk_i32 (-3833893); Rust_primitives.mk_i32 (-2939036);
-      Rust_primitives.mk_i32 (-2235985); Rust_primitives.mk_i32 (-420899);
-      Rust_primitives.mk_i32 (-2286327); Rust_primitives.mk_i32 183443;
-      Rust_primitives.mk_i32 (-976891); Rust_primitives.mk_i32 1612842;
-      Rust_primitives.mk_i32 (-3545687); Rust_primitives.mk_i32 (-554416);
-      Rust_primitives.mk_i32 3919660; Rust_primitives.mk_i32 (-48306);
-      Rust_primitives.mk_i32 (-1362209); Rust_primitives.mk_i32 3937738;
-      Rust_primitives.mk_i32 1400424; Rust_primitives.mk_i32 (-846154);
-      Rust_primitives.mk_i32 1976782
+      0l; 25847l; (-2608894l); (-518909l); 237124l; (-777960l); (-876248l); 466468l; 1826347l;
+      2353451l; (-359251l); (-2091905l); 3119733l; (-2884855l); 3111497l; 2680103l; 2725464l;
+      1024112l; (-1079900l); 3585928l; (-549488l); (-1119584l); 2619752l; (-2108549l); (-2118186l);
+      (-3859737l); (-1399561l); (-3277672l); 1757237l; (-19422l); 4010497l; 280005l; 2706023l;
+      95776l; 3077325l; 3530437l; (-1661693l); (-3592148l); (-2537516l); 3915439l; (-3861115l);
+      (-3043716l); 3574422l; (-2867647l); 3539968l; (-300467l); 2348700l; (-539299l); (-1699267l);
+      (-1643818l); 3505694l; (-3821735l); 3507263l; (-2140649l); (-1600420l); 3699596l; 811944l;
+      531354l; 954230l; 3881043l; 3900724l; (-2556880l); 2071892l; (-2797779l); (-3930395l);
+      (-1528703l); (-3677745l); (-3041255l); (-1452451l); 3475950l; 2176455l; (-1585221l);
+      (-1257611l); 1939314l; (-4083598l); (-1000202l); (-3190144l); (-3157330l); (-3632928l);
+      126922l; 3412210l; (-983419l); 2147896l; 2715295l; (-2967645l); (-3693493l); (-411027l);
+      (-2477047l); (-671102l); (-1228525l); (-22981l); (-1308169l); (-381987l); 1349076l; 1852771l;
+      (-1430430l); (-3343383l); 264944l; 508951l; 3097992l; 44288l; (-1100098l); 904516l; 3958618l;
+      (-3724342l); (-8578l); 1653064l; (-3249728l); 2389356l; (-210977l); 759969l; (-1316856l);
+      189548l; (-3553272l); 3159746l; (-1851402l); (-2409325l); (-177440l); 1315589l; 1341330l;
+      1285669l; (-1584928l); (-812732l); (-1439742l); (-3019102l); (-3881060l); (-3628969l);
+      3839961l; 2091667l; 3407706l; 2316500l; 3817976l; (-3342478l); 2244091l; (-2446433l);
+      (-3562462l); 266997l; 2434439l; (-1235728l); 3513181l; (-3520352l); (-3759364l); (-1197226l);
+      (-3193378l); 900702l; 1859098l; 909542l; 819034l; 495491l; (-1613174l); (-43260l); (-522500l);
+      (-655327l); (-3122442l); 2031748l; 3207046l; (-3556995l); (-525098l); (-768622l); (-3595838l);
+      342297l; 286988l; (-2437823l); 4108315l; 3437287l; (-3342277l); 1735879l; 203044l; 2842341l;
+      2691481l; (-2590150l); 1265009l; 4055324l; 1247620l; 2486353l; 1595974l; (-3767016l); 1250494l;
+      2635921l; (-3548272l); (-2994039l); 1869119l; 1903435l; (-1050970l); (-1333058l); 1237275l;
+      (-3318210l); (-1430225l); (-451100l); 1312455l; 3306115l; (-1962642l); (-1279661l); 1917081l;
+      (-2546312l); (-1374803l); 1500165l; 777191l; 2235880l; 3406031l; (-542412l); (-2831860l);
+      (-1671176l); (-1846953l); (-2584293l); (-3724270l); 594136l; (-3776993l); (-2013608l);
+      2432395l; 2454455l; (-164721l); 1957272l; 3369112l; 185531l; (-1207385l); (-3183426l); 162844l;
+      1616392l; 3014001l; 810149l; 1652634l; (-3694233l); (-1799107l); (-3038916l); 3523897l;
+      3866901l; 269760l; 2213111l; (-975884l); 1717735l; 472078l; (-426683l); 1723600l; (-1803090l);
+      1910376l; (-1667432l); (-1104333l); (-260646l); (-3833893l); (-2939036l); (-2235985l);
+      (-420899l); (-2286327l); 183443l; (-976891l); 1612842l; (-3545687l); (-554416l); 3919660l;
+      (-48306l); (-1362209l); 3937738l; 1400424l; (-846154l); 1976782l
     ]
   in
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 256);

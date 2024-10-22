@@ -3,46 +3,44 @@ module Libcrux_ml_dsa.Ml_dsa_44_
 open Core
 open FStar.Mul
 
-let v_BITS_PER_COMMITMENT_COEFFICIENT: usize = Rust_primitives.mk_usize 6
+let v_BITS_PER_COMMITMENT_COEFFICIENT: usize = sz 6
 
-let v_BITS_PER_ERROR_COEFFICIENT: usize = Rust_primitives.mk_usize 3
+let v_BITS_PER_ERROR_COEFFICIENT: usize = sz 3
 
-let v_BITS_PER_GAMMA1_COEFFICIENT: usize = Rust_primitives.mk_usize 18
+let v_BITS_PER_GAMMA1_COEFFICIENT: usize = sz 18
 
-let v_COLUMNS_IN_A: usize = Rust_primitives.mk_usize 4
+let v_COLUMNS_IN_A: usize = sz 4
 
-let v_COMMITMENT_HASH_SIZE: usize = Rust_primitives.mk_usize 32
+let v_COMMITMENT_HASH_SIZE: usize = sz 32
 
 let v_COMMITMENT_RING_ELEMENT_SIZE: usize =
   (v_BITS_PER_COMMITMENT_COEFFICIENT *! Libcrux_ml_dsa.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
     <:
     usize) /!
-  Rust_primitives.mk_usize 8
+  sz 8
 
 let v_ERROR_RING_ELEMENT_SIZE: usize =
   (v_BITS_PER_ERROR_COEFFICIENT *! Libcrux_ml_dsa.Constants.v_COEFFICIENTS_IN_RING_ELEMENT <: usize) /!
-  Rust_primitives.mk_usize 8
+  sz 8
 
-let v_ETA: usize = Rust_primitives.mk_usize 2
+let v_ETA: usize = sz 2
 
-let v_GAMMA1_EXPONENT: usize = Rust_primitives.mk_usize 17
+let v_GAMMA1_EXPONENT: usize = sz 17
 
 let v_GAMMA1_RING_ELEMENT_SIZE: usize =
   (v_BITS_PER_GAMMA1_COEFFICIENT *! Libcrux_ml_dsa.Constants.v_COEFFICIENTS_IN_RING_ELEMENT <: usize
   ) /!
-  Rust_primitives.mk_usize 8
+  sz 8
 
-let v_GAMMA2: i32 =
-  (Libcrux_ml_dsa.Constants.v_FIELD_MODULUS -! Rust_primitives.mk_i32 1 <: i32) /!
-  Rust_primitives.mk_i32 88
+let v_GAMMA2: i32 = (Libcrux_ml_dsa.Constants.v_FIELD_MODULUS -! 1l <: i32) /! 88l
 
-let v_MAX_ONES_IN_HINT: usize = Rust_primitives.mk_usize 80
+let v_MAX_ONES_IN_HINT: usize = sz 80
 
-let v_ONES_IN_VERIFIER_CHALLENGE: usize = Rust_primitives.mk_usize 39
+let v_ONES_IN_VERIFIER_CHALLENGE: usize = sz 39
 
 let v_BETA: i32 = cast (v_ONES_IN_VERIFIER_CHALLENGE *! v_ETA <: usize) <: i32
 
-let v_ROWS_IN_A: usize = Rust_primitives.mk_usize 4
+let v_ROWS_IN_A: usize = sz 4
 
 let v_COMMITMENT_VECTOR_SIZE: usize = v_COMMITMENT_RING_ELEMENT_SIZE *! v_ROWS_IN_A
 
@@ -74,7 +72,7 @@ let v_VERIFICATION_KEY_SIZE: usize =
         usize)
       <:
       usize) /!
-    Rust_primitives.mk_usize 8
+    sz 8
     <:
     usize)
 
@@ -82,10 +80,10 @@ let v_VERIFICATION_KEY_SIZE: usize =
 /// Generate an ML-DSA key pair. The input is a byte array of size
 /// [`KEY_GENERATION_RANDOMNESS_SIZE`].
 /// This function returns an [`MLDSA44KeyPair`].
-val generate_key_pair (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
-    : Prims.Pure
-      (Libcrux_ml_dsa.Types.t_MLDSAKeyPair (Rust_primitives.mk_usize 1312)
-          (Rust_primitives.mk_usize 2560)) Prims.l_True (fun _ -> Prims.l_True)
+val generate_key_pair (randomness: t_Array u8 (sz 32))
+    : Prims.Pure (Libcrux_ml_dsa.Types.t_MLDSAKeyPair (sz 1312) (sz 2560))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 /// Sign with ML-DSA 44
 /// Sign a `message` with the ML-DSA `signing_key`.
@@ -94,11 +92,11 @@ val generate_key_pair (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
 /// may also be empty.
 /// This function returns an [`MLDSA44Signature`].
 val sign
-      (signing_key: Libcrux_ml_dsa.Types.t_MLDSASigningKey (Rust_primitives.mk_usize 2560))
+      (signing_key: Libcrux_ml_dsa.Types.t_MLDSASigningKey (sz 2560))
       (message context: t_Slice u8)
-      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+      (randomness: t_Array u8 (sz 32))
     : Prims.Pure
-      (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (Rust_primitives.mk_usize 2420))
+      (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420))
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Sign with HashML-DSA 44, with a SHAKE128 pre-hashing
@@ -109,11 +107,11 @@ val sign
 /// may also be empty.
 /// This function returns an [`MLDSA44Signature`].
 val sign_pre_hashed_shake128
-      (signing_key: Libcrux_ml_dsa.Types.t_MLDSASigningKey (Rust_primitives.mk_usize 2560))
+      (signing_key: Libcrux_ml_dsa.Types.t_MLDSASigningKey (sz 2560))
       (message context: t_Slice u8)
-      (randomness: t_Array u8 (Rust_primitives.mk_usize 32))
+      (randomness: t_Array u8 (sz 32))
     : Prims.Pure
-      (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (Rust_primitives.mk_usize 2420))
+      (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420))
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Verify an ML-DSA-44 Signature
@@ -123,10 +121,9 @@ val sign_pre_hashed_shake128
 /// Returns `Ok` when the `signature` is valid for the `message` and
 /// `verification_key`, and a [`VerificationError`] otherwise.
 val verify
-      (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (Rust_primitives.mk_usize 1312)
-        )
+      (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (sz 1312))
       (message context: t_Slice u8)
-      (signature: Libcrux_ml_dsa.Types.t_MLDSASignature (Rust_primitives.mk_usize 2420))
+      (signature: Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420))
     : Prims.Pure (Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
       Prims.l_True
       (fun _ -> Prims.l_True)
@@ -138,10 +135,9 @@ val verify
 /// Returns `Ok` when the `signature` is valid for the `message` and
 /// `verification_key`, and a [`VerificationError`] otherwise.
 val verify_pre_hashed_shake128
-      (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (Rust_primitives.mk_usize 1312)
-        )
+      (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (sz 1312))
       (message context: t_Slice u8)
-      (signature: Libcrux_ml_dsa.Types.t_MLDSASignature (Rust_primitives.mk_usize 2420))
+      (signature: Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420))
     : Prims.Pure (Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
       Prims.l_True
       (fun _ -> Prims.l_True)
