@@ -1,6 +1,5 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
-    polynomial::{PolynomialRingElement, SIMD_UNITS_IN_RING_ELEMENT},
+    constants::COEFFICIENTS_IN_RING_ELEMENT, polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
@@ -15,7 +14,7 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations, const DIMENSION
     // straightforward way to do so (returning false) will not go through hax;
     // revisit if performance is impacted.
     for ring_element in vector.iter() {
-        exceeds |= ring_element.infinity_norm_exceeds(bound);
+        exceeds = exceeds || ring_element.infinity_norm_exceeds(bound);
     }
 
     exceeds
@@ -72,7 +71,7 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations, const DIMENSION: usize, con
     let mut vector_high = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for i in 0..DIMENSION {
-        for j in 0..SIMD_UNITS_IN_RING_ELEMENT {
+        for j in 0..vector_low[0].simd_units.len() {
             let (low, high) = SIMDUnit::decompose::<GAMMA2>(t[i].simd_units[j]);
 
             vector_low[i].simd_units[j] = low;
@@ -118,7 +117,7 @@ pub(crate) fn use_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA
     for i in 0..DIMENSION {
         let hint_simd = PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i]);
 
-        for j in 0..SIMD_UNITS_IN_RING_ELEMENT {
+        for j in 0..result[0].simd_units.len() {
             result[i].simd_units[j] =
                 SIMDUnit::use_hint::<GAMMA2>(re_vector[i].simd_units[j], hint_simd.simd_units[j]);
         }

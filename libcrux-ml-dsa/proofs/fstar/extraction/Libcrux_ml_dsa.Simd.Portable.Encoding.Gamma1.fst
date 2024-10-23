@@ -1,0 +1,32 @@
+module Libcrux_ml_dsa.Simd.Portable.Encoding.Gamma1
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+open Core
+open FStar.Mul
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {v_DUMMY771885219 as v_DUMMY}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {v_DUMMY1067577027 as v_DUMMY}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {v_GAMMA1183990813 as deserialize_when_gamma1_is_2_pow_17___GAMMA1}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {v_GAMMA1_TIMES_2_BITMASK305664693 as deserialize_when_gamma1_is_2_pow_17___GAMMA1_TIMES_2_BITMASK}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {v_GAMMA1465203885 as deserialize_when_gamma1_is_2_pow_19___GAMMA1}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {v_GAMMA1_TIMES_2_BITMASK614047129 as deserialize_when_gamma1_is_2_pow_19___GAMMA1_TIMES_2_BITMASK}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {v_GAMMA1331343739 as serialize_when_gamma1_is_2_pow_17___GAMMA1}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {v_GAMMA1658756807 as serialize_when_gamma1_is_2_pow_19___GAMMA1}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {serialize_when_gamma1_is_2_pow_17_ as serialize_when_gamma1_is_2_pow_17_}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {serialize_when_gamma1_is_2_pow_19_ as serialize_when_gamma1_is_2_pow_19_}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {serialize526929060 as serialize}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {deserialize_when_gamma1_is_2_pow_17_ as deserialize_when_gamma1_is_2_pow_17_}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {deserialize_when_gamma1_is_2_pow_19_ as deserialize_when_gamma1_is_2_pow_19_}
+
+include Libcrux_ml_dsa.Simd.Portable.Rec_bundle_437004224 {deserialize244287932 as deserialize}

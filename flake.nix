@@ -43,10 +43,27 @@
           rev = "v3.10.3";
           sha256 = "EBzwaHyDWF8h/z3Zfq4p/n5Vpz7Ozlc3eoWDKXWv2YY=";
         };
+
+        tools-environment = {
+          CHARON_HOME = inputs.charon.packages.${system}.default;
+          EURYDICE_HOME = pkgs.runCommand "eurydice-home" { } ''
+            mkdir -p $out
+            cp -r ${inputs.eurydice.packages.${system}.default}/bin/eurydice $out
+            cp -r ${inputs.eurydice}/include $out
+          '';
+          FSTAR_HOME = inputs.fstar.packages.${system}.default;
+          KRML_HOME = inputs.karamel.packages.${system}.default.home;
+
+          CHARON_REV = inputs.charon.rev;
+          EURYDICE_REV = inputs.eurydice.rev;
+          KRML_REV = inputs.karamel.rev;
+          FSTAR_REV = inputs.fstar.rev;
+        };
+
         craneLib = inputs.crane.mkLib pkgs;
         src = ./.;
         cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
-        ml-kem = craneLib.buildPackage {
+        ml-kem = craneLib.buildPackage (tools-environment // {
           name = "ml-kem";
           inherit src cargoArtifacts;
 
@@ -80,26 +97,22 @@
             cd ./..
             cp -r . $out
           '';
-
-          CHARON_HOME = inputs.charon.packages.${system}.default;
-          EURYDICE_HOME = pkgs.runCommand "eurydice-home" { } ''
-            mkdir -p $out
-            cp -r ${inputs.eurydice.packages.${system}.default}/bin/eurydice $out
-            cp -r ${inputs.eurydice}/include $out
-          '';
-          FSTAR_HOME = inputs.fstar.packages.${system}.default;
-          KRML_HOME = inputs.karamel.packages.${system}.default.home;
-
-          CHARON_REV = inputs.charon.rev;
-          EURYDICE_REV = inputs.eurydice.rev;
-          KRML_REV = inputs.karamel.rev;
-          FSTAR_REV = inputs.fstar.rev;
-        };
+        });
       in
-      {
+      rec {
         packages = {
           inherit ml-kem;
         };
+        devShells.default = pkgs.mkShell (tools-environment // {
+          packages = [
+            pkgs.clang
+            inputs.fstar.packages.${system}.default
+          ];
+
+          inputsFrom = [
+            packages.ml-kem
+          ];
+        });
       }
     );
 }

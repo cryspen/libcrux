@@ -80,7 +80,7 @@ pub fn comparisons_pk_validation(c: &mut Criterion) {
         b.iter_batched(
             || libcrux_kem::deterministic::mlkem768_generate_keypair_derand(seed),
             |key_pair| {
-                let _valid = libcrux_kem::ml_kem768_validate_public_key(key_pair.into_parts().1);
+                let _valid = libcrux_kem::ml_kem768_validate_public_key(&key_pair.into_parts().1);
             },
             BatchSize::SmallInput,
         )
