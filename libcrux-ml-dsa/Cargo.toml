@@ -20,6 +20,8 @@ libcrux-sha3 = { version = "0.0.2-beta.2", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-beta.2", path = "../libcrux-intrinsics" }
 libcrux-platform = { version = "0.0.2-beta.2", path = "../sys/platform" }
 
+hax-lib.workspace = true
+
 [dev-dependencies]
 rand = { version = "0.8" }
 hex = { version = "0.4.3", features = ["serde"] }

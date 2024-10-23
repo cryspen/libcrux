@@ -3,10 +3,45 @@ module Libcrux_ml_dsa.Hash_functions.Neon
 open Core
 open FStar.Mul
 
-type t_Shake128x4 = { f_state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) }
+val t_Shake128x4:Type0
 
 /// Neon SHAKE 256 x4 state
-type t_Shake256x4 = { f_state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) }
+val t_Shake256x4:Type0
+
+/// Init the state and absorb 4 blocks in parallel.
+val init_absorb (input0 input1 input2 input3: t_Slice u8)
+    : Prims.Pure t_Shake128x4 Prims.l_True (fun _ -> Prims.l_True)
+
+val init_absorb_x4 (input0 input1 input2 input3: t_Slice u8)
+    : Prims.Pure t_Shake256x4 Prims.l_True (fun _ -> Prims.l_True)
+
+val shake256_x4
+      (v_OUT_LEN: usize)
+      (input0 input1 input2 input3: t_Slice u8)
+      (out0 out1 out2 out3: t_Array u8 v_OUT_LEN)
+    : Prims.Pure
+      (t_Array u8 v_OUT_LEN & t_Array u8 v_OUT_LEN & t_Array u8 v_OUT_LEN & t_Array u8 v_OUT_LEN)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val squeeze_first_block_x4 (x: t_Shake256x4)
+    : Prims.Pure
+      (t_Shake256x4 &
+        (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val squeeze_first_five_blocks (x: t_Shake128x4) (out0 out1 out2 out3: t_Array u8 (sz 840))
+    : Prims.Pure
+      (t_Shake128x4 & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
+        t_Array u8 (sz 840)) Prims.l_True (fun _ -> Prims.l_True)
+
+val squeeze_next_block (x: t_Shake128x4)
+    : Prims.Pure
+      (t_Shake128x4 &
+        (t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168)))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128x4 =
@@ -28,36 +63,7 @@ let impl: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128x4 =
     f_init_absorb
     =
     (fun (input0: t_Slice u8) (input1: t_Slice u8) (input2: t_Slice u8) (input3: t_Slice u8) ->
-        let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
-          let list =
-            [Libcrux_sha3.Neon.X2.Incremental.init (); Libcrux_sha3.Neon.X2.Incremental.init ()]
-          in
-          FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
-          Rust_primitives.Hax.array_of_list 2 list
-        in
-        let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize state
-            (sz 0)
-            (Libcrux_sha3.Neon.X2.Incremental.shake128_absorb_final (state.[ sz 0 ]
-                  <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-                input0
-                input1
-              <:
-              Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-        in
-        let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize state
-            (sz 1)
-            (Libcrux_sha3.Neon.X2.Incremental.shake128_absorb_final (state.[ sz 1 ]
-                  <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-                input2
-                input3
-              <:
-              Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-        in
-        { f_state = state } <: t_Shake128x4);
+        init_absorb input0 input1 input2 input3);
     f_squeeze_first_five_blocks_pre
     =
     (fun
@@ -90,47 +96,16 @@ let impl: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128x4 =
         (out2: t_Array u8 (sz 840))
         (out3: t_Array u8 (sz 840))
         ->
-        let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 840) &
+        let tmp0, tmp1, tmp2, tmp3, tmp4:(t_Shake128x4 & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
+          t_Array u8 (sz 840) &
           t_Array u8 (sz 840)) =
-          Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_first_five_blocks (self.f_state.[ sz 0 ]
-              <:
-              Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-            out0
-            out1
+          squeeze_first_five_blocks self out0 out1 out2 out3
         in
-        let self:t_Shake128x4 =
-          {
-            self with
-            f_state
-            =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize self.f_state (sz 0) tmp0
-          }
-          <:
-          t_Shake128x4
-        in
+        let self:t_Shake128x4 = tmp0 in
         let out0:t_Array u8 (sz 840) = tmp1 in
         let out1:t_Array u8 (sz 840) = tmp2 in
-        let _:Prims.unit = () in
-        let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 840) &
-          t_Array u8 (sz 840)) =
-          Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_first_five_blocks (self.f_state.[ sz 1 ]
-              <:
-              Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-            out2
-            out3
-        in
-        let self:t_Shake128x4 =
-          {
-            self with
-            f_state
-            =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize self.f_state (sz 1) tmp0
-          }
-          <:
-          t_Shake128x4
-        in
-        let out2:t_Array u8 (sz 840) = tmp1 in
-        let out3:t_Array u8 (sz 840) = tmp2 in
+        let out2:t_Array u8 (sz 840) = tmp3 in
+        let out3:t_Array u8 (sz 840) = tmp4 in
         let _:Prims.unit = () in
         self, out0, out1, out2, out3
         <:
@@ -141,7 +116,7 @@ let impl: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128x4 =
     =
     (fun
         (self: t_Shake128x4)
-        (out4:
+        (out5:
           (t_Shake128x4 &
             (t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168)))
         )
@@ -150,63 +125,27 @@ let impl: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128x4 =
     f_squeeze_next_block
     =
     fun (self: t_Shake128x4) ->
-      let out0:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
-      let out1:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
-      let out2:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
-      let out3:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
-      let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 168) &
-        t_Array u8 (sz 168)) =
-        Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_next_block (self.f_state.[ sz 0 ]
-            <:
-            Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-          out0
-          out1
+      let tmp0, out4:(t_Shake128x4 &
+        (t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168))) =
+        squeeze_next_block self
       in
-      let self:t_Shake128x4 =
-        {
-          self with
-          f_state
-          =
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize self.f_state (sz 0) tmp0
-        }
-        <:
-        t_Shake128x4
-      in
-      let out0:t_Array u8 (sz 168) = tmp1 in
-      let out1:t_Array u8 (sz 168) = tmp2 in
-      let _:Prims.unit = () in
-      let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 168) &
-        t_Array u8 (sz 168)) =
-        Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_next_block (self.f_state.[ sz 1 ]
-            <:
-            Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-          out2
-          out3
-      in
-      let self:t_Shake128x4 =
-        {
-          self with
-          f_state
-          =
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize self.f_state (sz 1) tmp0
-        }
-        <:
-        t_Shake128x4
-      in
-      let out2:t_Array u8 (sz 168) = tmp1 in
-      let out3:t_Array u8 (sz 168) = tmp2 in
-      let _:Prims.unit = () in
+      let self:t_Shake128x4 = tmp0 in
       let hax_temp_output:(t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) &
         t_Array u8 (sz 168)) =
-        out0, out1, out2, out3
-        <:
-        (t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168))
+        out4
       in
       self, hax_temp_output
       <:
       (t_Shake128x4 &
         (t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168)))
   }
+
+val squeeze_next_block_x4 (x: t_Shake256x4)
+    : Prims.Pure
+      (t_Shake256x4 &
+        (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
@@ -228,42 +167,13 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
     f_init_absorb_x4
     =
     (fun (input0: t_Slice u8) (input1: t_Slice u8) (input2: t_Slice u8) (input3: t_Slice u8) ->
-        let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
-          let list =
-            [Libcrux_sha3.Neon.X2.Incremental.init (); Libcrux_sha3.Neon.X2.Incremental.init ()]
-          in
-          FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
-          Rust_primitives.Hax.array_of_list 2 list
-        in
-        let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize state
-            (sz 0)
-            (Libcrux_sha3.Neon.X2.Incremental.shake256_absorb_final (state.[ sz 0 ]
-                  <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-                input0
-                input1
-              <:
-              Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-        in
-        let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize state
-            (sz 1)
-            (Libcrux_sha3.Neon.X2.Incremental.shake256_absorb_final (state.[ sz 1 ]
-                  <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-                input2
-                input3
-              <:
-              Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-        in
-        { f_state = state } <: t_Shake256x4);
+        init_absorb_x4 input0 input1 input2 input3);
     f_squeeze_first_block_x4_pre = (fun (self: t_Shake256x4) -> true);
     f_squeeze_first_block_x4_post
     =
     (fun
         (self: t_Shake256x4)
-        (out4:
+        (out5:
           (t_Shake256x4 &
             (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
         )
@@ -272,57 +182,14 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
     f_squeeze_first_block_x4
     =
     (fun (self: t_Shake256x4) ->
-        let out0:t_Array u8 (sz 136) = Rust_primitives.Hax.repeat 0uy (sz 136) in
-        let out1:t_Array u8 (sz 136) = Rust_primitives.Hax.repeat 0uy (sz 136) in
-        let out2:t_Array u8 (sz 136) = Rust_primitives.Hax.repeat 0uy (sz 136) in
-        let out3:t_Array u8 (sz 136) = Rust_primitives.Hax.repeat 0uy (sz 136) in
-        let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 136) &
-          t_Array u8 (sz 136)) =
-          Libcrux_sha3.Neon.X2.Incremental.shake256_squeeze_first_block (self.f_state.[ sz 0 ]
-              <:
-              Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-            out0
-            out1
+        let tmp0, out4:(t_Shake256x4 &
+          (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136))) =
+          squeeze_first_block_x4 self
         in
-        let self:t_Shake256x4 =
-          {
-            self with
-            f_state
-            =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize self.f_state (sz 0) tmp0
-          }
-          <:
-          t_Shake256x4
-        in
-        let out0:t_Array u8 (sz 136) = tmp1 in
-        let out1:t_Array u8 (sz 136) = tmp2 in
-        let _:Prims.unit = () in
-        let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 136) &
-          t_Array u8 (sz 136)) =
-          Libcrux_sha3.Neon.X2.Incremental.shake256_squeeze_first_block (self.f_state.[ sz 1 ]
-              <:
-              Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-            out2
-            out3
-        in
-        let self:t_Shake256x4 =
-          {
-            self with
-            f_state
-            =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize self.f_state (sz 1) tmp0
-          }
-          <:
-          t_Shake256x4
-        in
-        let out2:t_Array u8 (sz 136) = tmp1 in
-        let out3:t_Array u8 (sz 136) = tmp2 in
-        let _:Prims.unit = () in
+        let self:t_Shake256x4 = tmp0 in
         let hax_temp_output:(t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) &
           t_Array u8 (sz 136)) =
-          out0, out1, out2, out3
-          <:
-          (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136))
+          out4
         in
         self, hax_temp_output
         <:
@@ -333,7 +200,7 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
     =
     (fun
         (self: t_Shake256x4)
-        (out4:
+        (out5:
           (t_Shake256x4 &
             (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
         )
@@ -342,57 +209,14 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
     f_squeeze_next_block_x4
     =
     (fun (self: t_Shake256x4) ->
-        let out0:t_Array u8 (sz 136) = Rust_primitives.Hax.repeat 0uy (sz 136) in
-        let out1:t_Array u8 (sz 136) = Rust_primitives.Hax.repeat 0uy (sz 136) in
-        let out2:t_Array u8 (sz 136) = Rust_primitives.Hax.repeat 0uy (sz 136) in
-        let out3:t_Array u8 (sz 136) = Rust_primitives.Hax.repeat 0uy (sz 136) in
-        let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 136) &
-          t_Array u8 (sz 136)) =
-          Libcrux_sha3.Neon.X2.Incremental.shake256_squeeze_next_block (self.f_state.[ sz 0 ]
-              <:
-              Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-            out0
-            out1
+        let tmp0, out4:(t_Shake256x4 &
+          (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136))) =
+          squeeze_next_block_x4 self
         in
-        let self:t_Shake256x4 =
-          {
-            self with
-            f_state
-            =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize self.f_state (sz 0) tmp0
-          }
-          <:
-          t_Shake256x4
-        in
-        let out0:t_Array u8 (sz 136) = tmp1 in
-        let out1:t_Array u8 (sz 136) = tmp2 in
-        let _:Prims.unit = () in
-        let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 136) &
-          t_Array u8 (sz 136)) =
-          Libcrux_sha3.Neon.X2.Incremental.shake256_squeeze_next_block (self.f_state.[ sz 1 ]
-              <:
-              Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
-            out2
-            out3
-        in
-        let self:t_Shake256x4 =
-          {
-            self with
-            f_state
-            =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize self.f_state (sz 1) tmp0
-          }
-          <:
-          t_Shake256x4
-        in
-        let out2:t_Array u8 (sz 136) = tmp1 in
-        let out3:t_Array u8 (sz 136) = tmp2 in
-        let _:Prims.unit = () in
+        let self:t_Shake256x4 = tmp0 in
         let hax_temp_output:(t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) &
           t_Array u8 (sz 136)) =
-          out0, out1, out2, out3
-          <:
-          (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136))
+          out4
         in
         self, hax_temp_output
         <:
@@ -442,17 +266,14 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
       (out2: t_Array u8 v_OUT_LEN)
       (out3: t_Array u8 v_OUT_LEN)
       ->
-      let tmp0, tmp1:(t_Array u8 v_OUT_LEN & t_Array u8 v_OUT_LEN) =
-        Libcrux_sha3.Neon.X2.shake256 input0 input1 out0 out1
+      let tmp0, tmp1, tmp2, tmp3:(t_Array u8 v_OUT_LEN & t_Array u8 v_OUT_LEN & t_Array u8 v_OUT_LEN &
+        t_Array u8 v_OUT_LEN) =
+        shake256_x4 v_OUT_LEN input0 input1 input2 input3 out0 out1 out2 out3
       in
       let out0:t_Array u8 v_OUT_LEN = tmp0 in
       let out1:t_Array u8 v_OUT_LEN = tmp1 in
-      let _:Prims.unit = () in
-      let tmp0, tmp1:(t_Array u8 v_OUT_LEN & t_Array u8 v_OUT_LEN) =
-        Libcrux_sha3.Neon.X2.shake256 input2 input3 out2 out3
-      in
-      let out2:t_Array u8 v_OUT_LEN = tmp0 in
-      let out3:t_Array u8 v_OUT_LEN = tmp1 in
+      let out2:t_Array u8 v_OUT_LEN = tmp2 in
+      let out3:t_Array u8 v_OUT_LEN = tmp3 in
       let _:Prims.unit = () in
       out0, out1, out2, out3
       <:

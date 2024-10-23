@@ -1,12 +1,11 @@
-use libcrux_sha3::portable::incremental::{Shake256Absorb, XofAbsorb, XofSqueeze};
-
 use crate::{
     arithmetic::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
     },
     constants::*,
     encoding,
-    hash_functions::{shake128, shake256},
+    hash_functions::{shake128, shake256,
+                     portable::{shake256_init, shake256_absorb, shake256_absorb_final, shake256_squeeze}},
     matrix::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
         vector_times_ring_element,
@@ -42,10 +41,10 @@ pub(crate) fn generate_key_pair<
 ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
     let mut seed_expanded = [0; 128];
-    let mut shake = Shake256Absorb::new();
-    shake.absorb(&randomness);
-    let mut shake = shake.absorb_final(&[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
-    shake.squeeze(&mut seed_expanded);
+    let mut shake = shake256_init();
+    shake256_absorb(&mut shake, &randomness);
+    let mut shake = shake256_absorb_final(shake, &[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
+    shake256_squeeze(&mut shake, &mut seed_expanded);
 
     let (seed_for_a, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
     let (seed_for_error_vectors, seed_for_signing) =
@@ -256,12 +255,12 @@ pub(crate) fn sign_internal<
 
     let mut mask_seed = [0; MASK_SEED_SIZE];
     {
-        let mut shake = Shake256Absorb::new();
-        shake.absorb(&seed_for_signing);
-        shake.absorb(&randomness);
-        let mut shake = shake.absorb_final(&message_representative);
+        let mut shake = shake256_init();
+        shake256_absorb(&mut shake, &seed_for_signing);
+        shake256_absorb(&mut shake, &randomness);
+        let mut shake = shake256_absorb_final(shake, &message_representative);
 
-        shake.squeeze(&mut mask_seed);
+        shake256_squeeze(&mut shake, &mut mask_seed);
     }
 
     let mut domain_separator_for_mask: u16 = 0;
@@ -302,11 +301,11 @@ pub(crate) fn sign_internal<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut shake = Shake256Absorb::new();
-            shake.absorb(&message_representative);
-            let mut shake = shake.absorb_final(&commitment_serialized);
+            let mut shake = shake256_init();
+            shake256_absorb(&mut shake, &message_representative);
+            let mut shake = shake256_absorb_final(shake, &commitment_serialized);
 
-            shake.squeeze(&mut commitment_hash_candidate);
+            shake256_squeeze(&mut shake, &mut commitment_hash_candidate);
         }
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
@@ -419,19 +418,19 @@ fn derive_message_representative(
     message: &[u8],
     message_representative: &mut [u8; 64],
 ) {
-    let mut shake = Shake256Absorb::new();
-    shake.absorb(&verification_key_hash);
+    let mut shake = shake256_init();
+    shake256_absorb(&mut shake, &verification_key_hash);
     if let Some(domain_separation_context) = domain_separation_context {
-        shake.absorb(&[domain_separation_context.pre_hash_oid().is_some() as u8]);
-        shake.absorb(&[domain_separation_context.context().len() as u8]);
-        shake.absorb(domain_separation_context.context());
+        shake256_absorb(&mut shake, &[domain_separation_context.pre_hash_oid().is_some() as u8]);
+        shake256_absorb(&mut shake, &[domain_separation_context.context().len() as u8]);
+        shake256_absorb(&mut shake, domain_separation_context.context());
         if let Some(pre_hash_oid) = domain_separation_context.pre_hash_oid() {
-            shake.absorb(pre_hash_oid)
+            shake256_absorb(&mut shake, pre_hash_oid)
         }
     }
 
-    let mut shake = shake.absorb_final(message);
-    shake.squeeze(message_representative);
+    let mut shake = shake256_absorb_final(shake, message);
+    shake256_squeeze(&mut shake, message_representative);
 }
 
 /// The internal verification API.
@@ -521,11 +520,11 @@ pub(crate) fn verify_internal<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut shake = Shake256Absorb::new();
-            shake.absorb(&message_representative);
-            let mut shake = shake.absorb_final(&commitment_serialized);
+            let mut shake = shake256_init();
+            shake256_absorb(&mut shake, &message_representative);
+            let mut shake = shake256_absorb_final(shake, &commitment_serialized);
 
-            shake.squeeze(&mut commitment_hash);
+            shake256_squeeze(&mut shake, &mut commitment_hash);
         }
 
         if signature.commitment_hash != commitment_hash {

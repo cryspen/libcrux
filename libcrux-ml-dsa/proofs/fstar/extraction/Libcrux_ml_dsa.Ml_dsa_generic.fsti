@@ -10,7 +10,6 @@ let _ =
   let open Libcrux_ml_dsa.Hash_functions.Shake256 in
   let open Libcrux_ml_dsa.Pre_hash in
   let open Libcrux_ml_dsa.Simd.Traits in
-  let open Libcrux_sha3.Portable.Incremental in
   ()
 
 /// This corresponds to line 6 in algorithm 7 in FIPS 204 (line 7 in algorithm

@@ -10,7 +10,6 @@ let _ =
   let open Libcrux_ml_dsa.Hash_functions.Shake256 in
   let open Libcrux_ml_dsa.Pre_hash in
   let open Libcrux_ml_dsa.Simd.Traits in
-  let open Libcrux_sha3.Portable.Incremental in
   ()
 
 let derive_message_representative
@@ -20,27 +19,18 @@ let derive_message_representative
       (message: t_Slice u8)
       (message_representative: t_Array u8 (sz 64))
      =
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-    Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      ()
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_init ()
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-    Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb shake
       (verification_key_hash <: t_Slice u8)
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
     match domain_separation_context with
     | Core.Option.Option_Some domain_separation_context ->
-      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-        Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-          #(sz 136)
-          #FStar.Tactics.Typeclasses.solve
-          shake
+      let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+        Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb shake
           ((let list =
                 [
                   cast (Core.Option.impl__is_some #(t_Array u8 (sz 11))
@@ -58,11 +48,8 @@ let derive_message_representative
             <:
             t_Slice u8)
       in
-      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-        Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-          #(sz 136)
-          #FStar.Tactics.Typeclasses.solve
-          shake
+      let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+        Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb shake
           ((let list =
                 [
                   cast (Core.Slice.impl__len #u8
@@ -80,38 +67,23 @@ let derive_message_representative
             <:
             t_Slice u8)
       in
-      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-        Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-          #(sz 136)
-          #FStar.Tactics.Typeclasses.solve
-          shake
+      let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+        Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb shake
           (Libcrux_ml_dsa.Pre_hash.impl_1__context domain_separation_context <: t_Slice u8)
       in
       (match Libcrux_ml_dsa.Pre_hash.impl_1__pre_hash_oid domain_separation_context with
         | Core.Option.Option_Some pre_hash_oid ->
-          Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-            #(sz 136)
-            #FStar.Tactics.Typeclasses.solve
-            shake
-            (pre_hash_oid <: t_Slice u8)
+          Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb shake (pre_hash_oid <: t_Slice u8)
         | _ -> shake)
     | _ -> shake
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze =
-    Libcrux_sha3.Portable.Incremental.f_absorb_final #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
-      message
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb_final shake message
   in
-  let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze & t_Array u8 (sz 64)) =
-    Libcrux_sha3.Portable.Incremental.f_squeeze #Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
-      message_representative
+  let tmp0, tmp1:(Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze & t_Array u8 (sz 64)) =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_squeeze shake message_representative
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze = tmp0 in
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze = tmp0 in
   let message_representative:t_Array u8 (sz 64) = tmp1 in
   let _:Prims.unit = () in
   message_representative
@@ -174,41 +146,23 @@ let sign_internal
       message_representative
   in
   let mask_seed:t_Array u8 (sz 64) = Rust_primitives.Hax.repeat 0uy (sz 64) in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-    Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      ()
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_init ()
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-    Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
-      (seed_for_signing <: t_Slice u8)
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb shake (seed_for_signing <: t_Slice u8)
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-    Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
-      (randomness <: t_Slice u8)
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb shake (randomness <: t_Slice u8)
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze =
-    Libcrux_sha3.Portable.Incremental.f_absorb_final #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb_final shake
       (message_representative <: t_Slice u8)
   in
-  let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze & t_Array u8 (sz 64)) =
-    Libcrux_sha3.Portable.Incremental.f_squeeze #Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
-      mask_seed
+  let tmp0, tmp1:(Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze & t_Array u8 (sz 64)) =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_squeeze shake mask_seed
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze = tmp0 in
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze = tmp0 in
   let mask_seed:t_Array u8 (sz 64) = tmp1 in
   let _:Prims.unit = () in
   let _:Prims.unit = () in
@@ -305,35 +259,22 @@ let sign_internal
               v_COMMITMENT_VECTOR_SIZE
               commitment
           in
-          let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-            Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-              #(sz 136)
-              #FStar.Tactics.Typeclasses.solve
-              ()
+          let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+            Libcrux_ml_dsa.Hash_functions.Portable.shake256_init ()
           in
-          let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-            Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-              #(sz 136)
-              #FStar.Tactics.Typeclasses.solve
-              shake
+          let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+            Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb shake
               (message_representative <: t_Slice u8)
           in
-          let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze =
-            Libcrux_sha3.Portable.Incremental.f_absorb_final #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-              #(sz 136)
-              #FStar.Tactics.Typeclasses.solve
-              shake
+          let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze =
+            Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb_final shake
               (commitment_serialized <: t_Slice u8)
           in
-          let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze &
+          let tmp0, tmp1:(Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze &
             t_Array u8 v_COMMITMENT_HASH_SIZE) =
-            Libcrux_sha3.Portable.Incremental.f_squeeze #Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze
-              #(sz 136)
-              #FStar.Tactics.Typeclasses.solve
-              shake
-              commitment_hash_candidate
+            Libcrux_ml_dsa.Hash_functions.Portable.shake256_squeeze shake commitment_hash_candidate
           in
-          let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze = tmp0 in
+          let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze = tmp0 in
           let commitment_hash_candidate:t_Array u8 v_COMMITMENT_HASH_SIZE = tmp1 in
           let _:Prims.unit = () in
           let _:Prims.unit = () in
@@ -781,35 +722,22 @@ let verify_internal
           v_COMMITMENT_VECTOR_SIZE
           commitment
       in
-      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-        Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-          #(sz 136)
-          #FStar.Tactics.Typeclasses.solve
-          ()
+      let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+        Libcrux_ml_dsa.Hash_functions.Portable.shake256_init ()
       in
-      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-        Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-          #(sz 136)
-          #FStar.Tactics.Typeclasses.solve
-          shake
+      let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+        Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb shake
           (message_representative <: t_Slice u8)
       in
-      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze =
-        Libcrux_sha3.Portable.Incremental.f_absorb_final #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-          #(sz 136)
-          #FStar.Tactics.Typeclasses.solve
-          shake
+      let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze =
+        Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb_final shake
           (commitment_serialized <: t_Slice u8)
       in
-      let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze &
+      let tmp0, tmp1:(Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze &
         t_Array u8 v_COMMITMENT_HASH_SIZE) =
-        Libcrux_sha3.Portable.Incremental.f_squeeze #Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze
-          #(sz 136)
-          #FStar.Tactics.Typeclasses.solve
-          shake
-          commitment_hash
+        Libcrux_ml_dsa.Hash_functions.Portable.shake256_squeeze shake commitment_hash
       in
-      let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze = tmp0 in
+      let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze = tmp0 in
       let commitment_hash:t_Array u8 v_COMMITMENT_HASH_SIZE = tmp1 in
       let _:Prims.unit = () in
       let _:Prims.unit = () in
@@ -942,38 +870,24 @@ let generate_key_pair
       (randomness: t_Array u8 (sz 32))
      =
   let seed_expanded:t_Array u8 (sz 128) = Rust_primitives.Hax.repeat 0uy (sz 128) in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-    Libcrux_sha3.Portable.Incremental.f_new #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      ()
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_init ()
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Absorb =
-    Libcrux_sha3.Portable.Incremental.f_absorb #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
-      (randomness <: t_Slice u8)
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Absorb =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb shake (randomness <: t_Slice u8)
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze =
-    Libcrux_sha3.Portable.Incremental.f_absorb_final #Libcrux_sha3.Portable.Incremental.t_Shake256Absorb
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb_final shake
       ((let list = [cast (v_ROWS_IN_A <: usize) <: u8; cast (v_COLUMNS_IN_A <: usize) <: u8] in
           FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
           Rust_primitives.Hax.array_of_list 2 list)
         <:
         t_Slice u8)
   in
-  let tmp0, tmp1:(Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze & t_Array u8 (sz 128)) =
-    Libcrux_sha3.Portable.Incremental.f_squeeze #Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze
-      #(sz 136)
-      #FStar.Tactics.Typeclasses.solve
-      shake
-      seed_expanded
+  let tmp0, tmp1:(Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze & t_Array u8 (sz 128)) =
+    Libcrux_ml_dsa.Hash_functions.Portable.shake256_squeeze shake seed_expanded
   in
-  let shake:Libcrux_sha3.Portable.Incremental.t_Shake256Squeeze = tmp0 in
+  let shake:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Squeeze = tmp0 in
   let seed_expanded:t_Array u8 (sz 128) = tmp1 in
   let _:Prims.unit = () in
   let seed_for_a, seed_expanded:(t_Slice u8 & t_Slice u8) =

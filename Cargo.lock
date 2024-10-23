@@ -992,6 +992,7 @@ name = "libcrux-ml-dsa"
 version = "0.0.2-beta.2"
 dependencies = [
  "criterion",
+ "hax-lib",
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",

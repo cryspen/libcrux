@@ -82,7 +82,7 @@ class extractAction(argparse.Action):
         includes = [
             "+**",
             "-libcrux_ml_dsa::hash_functions::portable::*",
-            "-libcrux_ml_dsa::hash_functions::avx2::*",
+            "-libcrux_ml_dsa::hash_functions::simd256::*",
             "-libcrux_ml_dsa::hash_functions::neon::*",
             "+:libcrux_ml_dsa::hash_functions::*::*",
         ]
