@@ -241,8 +241,9 @@ fn ntt_at_layer_3_plus<const LAYER: usize>(
     }
 }
 
-#[inline(always)]
-pub(crate) fn ntt(
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn ntt(
     mut re: [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
 ) -> [Vec256; SIMD_UNITS_IN_RING_ELEMENT] {
     let mut zeta_i = 0;
