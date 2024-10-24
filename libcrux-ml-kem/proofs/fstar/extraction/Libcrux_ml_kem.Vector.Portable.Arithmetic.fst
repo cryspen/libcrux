@@ -6,9 +6,7 @@ open FStar.Mul
 #push-options "--z3rlimit 150 --split_queries always"
 
 let get_n_least_significant_bits (n: u8) (value: u32) =
-  let res:u32 =
-    value &. ((Rust_primitives.mk_u32 1 <<! n <: u32) -! Rust_primitives.mk_u32 1 <: u32)
-  in
+  let res:u32 = value &. ((1ul <<! n <: u32) -! 1ul <: u32) in
   let _:Prims.unit =
     calc ( == ) {
       v res;
@@ -36,7 +34,7 @@ let barrett_reduce_element (value: i16) =
       v_BARRETT_MULTIPLIER
       <:
       i32) +!
-    (Libcrux_ml_kem.Vector.Traits.v_BARRETT_R >>! Rust_primitives.mk_i32 1 <: i32)
+    (Libcrux_ml_kem.Vector.Traits.v_BARRETT_R >>! 1l <: i32)
   in
   let _:Prims.unit =
     assert_norm (v v_BARRETT_MULTIPLIER == (pow2 27 + 3329) / (2 * 3329));
@@ -175,7 +173,7 @@ let montgomery_multiply_fe_by_fer (fe fer: i16) =
 let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v__lhs0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
   let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun lhs i ->
           let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
@@ -221,7 +219,7 @@ let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
 let barrett_reduce (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun vec i ->
           let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
@@ -276,7 +274,7 @@ let bitwise_and_with_constant
      =
   let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun vec i ->
           let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
@@ -313,7 +311,7 @@ let bitwise_and_with_constant
 let cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun vec i ->
           let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
@@ -329,8 +327,7 @@ let cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Porta
           let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
           let i:usize = i in
           if
-            (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) >=.
-            Rust_primitives.mk_i16 3329
+            (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) >=. 3329s
             <:
             bool
           then
@@ -341,12 +338,11 @@ let cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Porta
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
                   .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
                 i
-                ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) -!
-                  Rust_primitives.mk_i16 3329
+                ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) -! 3329s
                   <:
                   i16)
               <:
-              t_Array i16 (Rust_primitives.mk_usize 16)
+              t_Array i16 (sz 16)
             }
             <:
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -367,7 +363,7 @@ let montgomery_multiply_by_constant
      =
   let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun vec i ->
           let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
@@ -397,7 +393,7 @@ let montgomery_multiply_by_constant
                 <:
                 i16)
             <:
-            t_Array i16 (Rust_primitives.mk_usize 16)
+            t_Array i16 (sz 16)
           }
           <:
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -409,7 +405,7 @@ let montgomery_multiply_by_constant
 let multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) =
   let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun vec i ->
           let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
@@ -446,7 +442,7 @@ let multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Port
 let shift_right (v_SHIFT_BY: i32) (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun vec i ->
           let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
@@ -486,7 +482,7 @@ let shift_right (v_SHIFT_BY: i32) (vec: Libcrux_ml_kem.Vector.Portable.Vector_ty
 let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v__lhs0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
   let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun lhs i ->
           let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in

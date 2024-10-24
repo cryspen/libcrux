@@ -3,11 +3,69 @@ module Libcrux_ml_kem.Vector.Neon.Ntt
 open Core
 open FStar.Mul
 
+let inv_ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (zeta: i16) =
+  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 zeta in
+  let b_minus_a:u8 =
+    Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+      v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+  in
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vaddq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+        v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+      =
+      Libcrux_ml_kem.Vector.Neon.Arithmetic.montgomery_multiply_int16x8_t b_minus_a zeta
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  v
+
+let ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (zeta: i16) =
+  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 zeta in
+  let t:u8 =
+    Libcrux_ml_kem.Vector.Neon.Arithmetic.montgomery_multiply_int16x8_t v
+        .Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+      zeta
+  in
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low t
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vaddq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low t
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  v
+
 let inv_ntt_layer_1_step
       (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (zeta1 zeta2 zeta3 zeta4: i16)
      =
-  let zetas:t_Array i16 (Rust_primitives.mk_usize 8) =
+  let zetas:t_Array i16 (sz 8) =
     let list = [zeta1; zeta1; zeta3; zeta3; zeta2; zeta2; zeta4; zeta4] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
@@ -77,7 +135,7 @@ let inv_ntt_layer_2_step
       (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (zeta1 zeta2: i16)
      =
-  let zetas:t_Array i16 (Rust_primitives.mk_usize 8) =
+  let zetas:t_Array i16 (sz 8) =
     let list = [zeta1; zeta1; zeta1; zeta1; zeta2; zeta2; zeta2; zeta2] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
@@ -142,40 +200,11 @@ let inv_ntt_layer_2_step
   in
   v
 
-let inv_ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (zeta: i16) =
-  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 zeta in
-  let b_minus_a:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-      v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-  in
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vaddq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-        v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-      =
-      Libcrux_ml_kem.Vector.Neon.Arithmetic.montgomery_multiply_int16x8_t b_minus_a zeta
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  v
-
 let ntt_layer_1_step
       (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (zeta1 zeta2 zeta3 zeta4: i16)
      =
-  let zetas:t_Array i16 (Rust_primitives.mk_usize 8) =
+  let zetas:t_Array i16 (sz 8) =
     let list = [zeta1; zeta1; zeta3; zeta3; zeta2; zeta2; zeta4; zeta4] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
@@ -241,7 +270,7 @@ let ntt_layer_1_step
   v
 
 let ntt_layer_2_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (zeta1 zeta2: i16) =
-  let zetas:t_Array i16 (Rust_primitives.mk_usize 8) =
+  let zetas:t_Array i16 (sz 8) =
     let list = [zeta1; zeta1; zeta1; zeta1; zeta2; zeta2; zeta2; zeta2] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
@@ -306,40 +335,11 @@ let ntt_layer_2_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
   in
   v
 
-let ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (zeta: i16) =
-  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 zeta in
-  let t:u8 =
-    Libcrux_ml_kem.Vector.Neon.Arithmetic.montgomery_multiply_int16x8_t v
-        .Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-      zeta
-  in
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low t
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vaddq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low t
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  v
-
 let ntt_multiply
       (lhs rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (zeta1 zeta2 zeta3 zeta4: i16)
      =
-  let (zetas: t_Array i16 (Rust_primitives.mk_usize 8)):t_Array i16 (Rust_primitives.mk_usize 8) =
+  let (zetas: t_Array i16 (sz 8)):t_Array i16 (sz 8) =
     let list =
       [
         zeta1;
@@ -459,16 +459,9 @@ let ntt_multiply
         <:
         u8)
   in
-  let (indexes: t_Array u8 (Rust_primitives.mk_usize 16)):t_Array u8 (Rust_primitives.mk_usize 16) =
+  let (indexes: t_Array u8 (sz 16)):t_Array u8 (sz 16) =
     let list =
-      [
-        Rust_primitives.mk_u8 0; Rust_primitives.mk_u8 1; Rust_primitives.mk_u8 2;
-        Rust_primitives.mk_u8 3; Rust_primitives.mk_u8 8; Rust_primitives.mk_u8 9;
-        Rust_primitives.mk_u8 10; Rust_primitives.mk_u8 11; Rust_primitives.mk_u8 4;
-        Rust_primitives.mk_u8 5; Rust_primitives.mk_u8 6; Rust_primitives.mk_u8 7;
-        Rust_primitives.mk_u8 12; Rust_primitives.mk_u8 13; Rust_primitives.mk_u8 14;
-        Rust_primitives.mk_u8 15
-      ]
+      [0uy; 1uy; 2uy; 3uy; 8uy; 9uy; 10uy; 11uy; 4uy; 5uy; 6uy; 7uy; 12uy; 13uy; 14uy; 15uy]
     in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
     Rust_primitives.Hax.array_of_list 16 list

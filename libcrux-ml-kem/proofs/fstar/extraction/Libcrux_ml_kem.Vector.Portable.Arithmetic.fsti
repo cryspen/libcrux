@@ -4,15 +4,15 @@ open Core
 open FStar.Mul
 
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
-let v_BARRETT_MULTIPLIER: i32 = Rust_primitives.mk_i32 20159
+let v_BARRETT_MULTIPLIER: i32 = 20159l
 
-let v_MONTGOMERY_SHIFT: u8 = Rust_primitives.mk_u8 16
+let v_MONTGOMERY_SHIFT: u8 = 16uy
 
-let v_MONTGOMERY_R: i32 = Rust_primitives.mk_i32 1 <<! v_MONTGOMERY_SHIFT
+let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
 val get_n_least_significant_bits (n: u8) (value: u32)
     : Prims.Pure u32
-      (requires n <=. Rust_primitives.mk_u8 16)
+      (requires n <=. 16uy)
       (ensures
         fun result ->
           let result:u32 = result in
@@ -143,7 +143,7 @@ val multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Port
 
 val shift_right (v_SHIFT_BY: i32) (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires v_SHIFT_BY >=. Rust_primitives.mk_i32 0 && v_SHIFT_BY <. Rust_primitives.mk_i32 16)
+      (requires v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l)
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in

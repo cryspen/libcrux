@@ -5,9 +5,9 @@ open FStar.Mul
 
 let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) =
   let compressed:u64 = (cast (fe <: u16) <: u64) <<! coefficient_bits in
-  let compressed:u64 = compressed +! Rust_primitives.mk_u64 1664 in
-  let compressed:u64 = compressed *! Rust_primitives.mk_u64 10321340 in
-  let compressed:u64 = compressed >>! Rust_primitives.mk_i32 35 in
+  let compressed:u64 = compressed +! 1664uL in
+  let compressed:u64 = compressed *! 10321340uL in
+  let compressed:u64 = compressed >>! 35l in
   cast (Libcrux_ml_kem.Vector.Portable.Arithmetic.get_n_least_significant_bits coefficient_bits
         (cast (compressed <: u64) <: u32)
       <:
@@ -16,15 +16,11 @@ let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) =
   i16
 
 let compress_message_coefficient (fe: u16) =
-  let (shifted: i16):i16 = Rust_primitives.mk_i16 1664 -! (cast (fe <: u16) <: i16) in
-  let mask:i16 = shifted >>! Rust_primitives.mk_i32 15 in
+  let (shifted: i16):i16 = 1664s -! (cast (fe <: u16) <: i16) in
+  let mask:i16 = shifted >>! 15l in
   let shifted_to_positive:i16 = mask ^. shifted in
-  let shifted_positive_in_range:i16 = shifted_to_positive -! Rust_primitives.mk_i16 832 in
-  cast ((shifted_positive_in_range >>! Rust_primitives.mk_i32 15 <: i16) &. Rust_primitives.mk_i16 1
-      <:
-      i16)
-  <:
-  u8
+  let shifted_positive_in_range:i16 = shifted_to_positive -! 832s in
+  cast ((shifted_positive_in_range >>! 15l <: i16) &. 1s <: i16) <: u8
 
 #push-options "--fuel 0 --ifuel 0 --z3rlimit 2000"
 
@@ -43,7 +39,7 @@ let compress
           (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) <: u16))
   in
   let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun a i ->
           let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = a in
@@ -112,7 +108,7 @@ let compress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
           (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) <: u16))
   in
   let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun a i ->
           let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = a in
@@ -172,7 +168,7 @@ let decompress_ciphertext_coefficient
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (Rust_primitives.mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun v temp_1_ ->
           let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
@@ -187,12 +183,9 @@ let decompress_ciphertext_coefficient
             (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: i32)
           in
           let decompressed:i32 =
-            (decompressed <<! Rust_primitives.mk_i32 1 <: i32) +!
-            (Rust_primitives.mk_i32 1 <<! v_COEFFICIENT_BITS <: i32)
+            (decompressed <<! 1l <: i32) +! (1l <<! v_COEFFICIENT_BITS <: i32)
           in
-          let decompressed:i32 =
-            decompressed >>! (v_COEFFICIENT_BITS +! Rust_primitives.mk_i32 1 <: i32)
-          in
+          let decompressed:i32 = decompressed >>! (v_COEFFICIENT_BITS +! 1l <: i32) in
           let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
             {
               v with

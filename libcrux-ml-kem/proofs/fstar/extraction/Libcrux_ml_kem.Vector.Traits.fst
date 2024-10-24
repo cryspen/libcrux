@@ -32,7 +32,7 @@ let decompress_1_
           Seq.index (i1._super_8706949974463268012.f_repr s) i == (mk_i16 (- 1)))
   in
   let _:Prims.unit = assert (i1.f_bitwise_and_with_constant_pre s (mk_i16 1665)) in
-  f_bitwise_and_with_constant #v_T #FStar.Tactics.Typeclasses.solve s (Rust_primitives.mk_i16 1665)
+  f_bitwise_and_with_constant #v_T #FStar.Tactics.Typeclasses.solve s 1665s
 
 #pop-options
 
@@ -60,7 +60,7 @@ let to_unsigned_representative
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: t_Operations v_T)
       (a: v_T)
      =
-  let t:v_T = f_shift_right #v_T #FStar.Tactics.Typeclasses.solve (Rust_primitives.mk_i32 15) a in
+  let t:v_T = f_shift_right #v_T #FStar.Tactics.Typeclasses.solve 15l a in
   let fm:v_T =
     f_bitwise_and_with_constant #v_T #FStar.Tactics.Typeclasses.solve t v_FIELD_MODULUS
   in

@@ -4,39 +4,25 @@ open Core
 open FStar.Mul
 
 let compress_int32x4_t (v_COEFFICIENT_BITS: i32) (v: u8) =
-  let half:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u32 (Rust_primitives.mk_u32 1664) in
+  let half:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u32 1664ul in
   let compressed:u8 = Libcrux_intrinsics.Arm64_extract.v__vshlq_n_u32 v_COEFFICIENT_BITS v in
   let compressed:u8 = Libcrux_intrinsics.Arm64_extract.v__vaddq_u32 compressed half in
   let compressed:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u32_s32 (Libcrux_intrinsics.Arm64_extract.v__vqdmulhq_n_s32
           (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s32_u32 compressed <: u8)
-          (Rust_primitives.mk_i32 10321340)
+          10321340l
         <:
         u8)
   in
-  Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 (Rust_primitives.mk_i32 4) compressed
+  Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 4l compressed
 
 let mask_n_least_significant_bits (coefficient_bits: i16) =
   match coefficient_bits with
-  | 4 -> Rust_primitives.mk_i16 15
-  | 5 -> Rust_primitives.mk_i16 31
-  | 10 -> Rust_primitives.mk_i16 1023
-  | 11 -> Rust_primitives.mk_i16 2047
-  | _ -> (Rust_primitives.mk_i16 1 <<! coefficient_bits <: i16) -! Rust_primitives.mk_i16 1
-
-let decompress_uint32x4_t (v_COEFFICIENT_BITS: i32) (v: u8) =
-  let coeff:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u32 (Rust_primitives.mk_u32 1 <<!
-        (v_COEFFICIENT_BITS -! Rust_primitives.mk_i32 1 <: i32)
-        <:
-        u32)
-  in
-  let decompressed:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vmulq_n_u32 v
-      (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: u32)
-  in
-  let decompressed:u8 = Libcrux_intrinsics.Arm64_extract.v__vaddq_u32 decompressed coeff in
-  Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 v_COEFFICIENT_BITS decompressed
+  | 4s -> 15s
+  | 5s -> 31s
+  | 10s -> 1023s
+  | 11s -> 2047s
+  | _ -> (1s <<! coefficient_bits <: i16) -! 1s
 
 let compress (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
   let mask:u8 =
@@ -48,7 +34,7 @@ let compress (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_typ
         <:
         i16)
   in
-  let mask16:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u32 (Rust_primitives.mk_u32 65535) in
+  let mask16:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u32 65535ul in
   let low0:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vandq_u32 (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u32_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
@@ -57,7 +43,7 @@ let compress (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_typ
       mask16
   in
   let low1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 (Rust_primitives.mk_i32 16)
+    Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 16l
       (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u32_s16 v
             .Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
         <:
@@ -71,7 +57,7 @@ let compress (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_typ
       mask16
   in
   let high1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 (Rust_primitives.mk_i32 16)
+    Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 16l
       (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u32_s16 v
             .Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
         <:
@@ -118,15 +104,13 @@ let compress (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_typ
   v
 
 let compress_1_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
-  let half:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 (Rust_primitives.mk_i16 1664) in
-  let quarter:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 (Rust_primitives.mk_i16 832) in
+  let half:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 1664s in
+  let quarter:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 832s in
   let shifted:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 half
       v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
   in
-  let mask:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 (Rust_primitives.mk_i32 15) shifted
-  in
+  let mask:u8 = Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 15l shifted in
   let shifted_to_positive:u8 = Libcrux_intrinsics.Arm64_extract.v__veorq_s16 mask shifted in
   let shifted_positive_in_range:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 shifted_to_positive quarter
@@ -137,7 +121,7 @@ let compress_1_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
       Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
       =
       Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_u16 (Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u16
-            (Rust_primitives.mk_i32 15)
+            15l
             (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u16_s16 shifted_positive_in_range
               <:
               u8)
@@ -151,9 +135,7 @@ let compress_1_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
     Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 half
       v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
   in
-  let mask:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 (Rust_primitives.mk_i32 15) shifted
-  in
+  let mask:u8 = Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 15l shifted in
   let shifted_to_positive:u8 = Libcrux_intrinsics.Arm64_extract.v__veorq_s16 mask shifted in
   let shifted_positive_in_range:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 shifted_to_positive quarter
@@ -164,7 +146,7 @@ let compress_1_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
       Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
       =
       Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_u16 (Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u16
-            (Rust_primitives.mk_i32 15)
+            15l
             (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u16_s16 shifted_positive_in_range
               <:
               u8)
@@ -176,11 +158,24 @@ let compress_1_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
   in
   v
 
+let decompress_uint32x4_t (v_COEFFICIENT_BITS: i32) (v: u8) =
+  let coeff:u8 =
+    Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u32 (1ul <<! (v_COEFFICIENT_BITS -! 1l <: i32)
+        <:
+        u32)
+  in
+  let decompressed:u8 =
+    Libcrux_intrinsics.Arm64_extract.v__vmulq_n_u32 v
+      (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: u32)
+  in
+  let decompressed:u8 = Libcrux_intrinsics.Arm64_extract.v__vaddq_u32 decompressed coeff in
+  Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 v_COEFFICIENT_BITS decompressed
+
 let decompress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)
       (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
      =
-  let mask16:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u32 (Rust_primitives.mk_u32 65535) in
+  let mask16:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u32 65535ul in
   let low0:u8 =
     Libcrux_intrinsics.Arm64_extract.v__vandq_u32 (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u32_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
@@ -189,7 +184,7 @@ let decompress_ciphertext_coefficient
       mask16
   in
   let low1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 (Rust_primitives.mk_i32 16)
+    Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 16l
       (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u32_s16 v
             .Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
         <:
@@ -203,7 +198,7 @@ let decompress_ciphertext_coefficient
       mask16
   in
   let high1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 (Rust_primitives.mk_i32 16)
+    Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 16l
       (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u32_s16 v
             .Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
         <:

@@ -3,7 +3,7 @@ module Libcrux_ml_kem.Vector.Avx2.Arithmetic
 open Core
 open FStar.Mul
 
-let v_BARRETT_MULTIPLIER: i16 = Rust_primitives.mk_i16 20159
+let v_BARRETT_MULTIPLIER: i16 = 20159s
 
 open Libcrux_intrinsics.Avx2_extract
 
@@ -38,7 +38,7 @@ val multiply_by_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (con
 
 val shift_right (v_SHIFT_BY: i32) (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
-      (requires v_SHIFT_BY >=. Rust_primitives.mk_i32 0 && v_SHIFT_BY <. Rust_primitives.mk_i32 16)
+      (requires v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l)
       (ensures
         fun result ->
           let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in

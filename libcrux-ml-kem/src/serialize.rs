@@ -261,7 +261,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
     hax_lib::fstar!("assert (
         (v (cast $COMPRESSION_FACTOR <: u32) == 10) \\/
         (v (cast $COMPRESSION_FACTOR <: u32) == 11))");
-    match COMPRESSION_FACTOR {
+    match COMPRESSION_FACTOR as u32 {
         10 => compress_then_serialize_10(re),
         11 => compress_then_serialize_11(re),
         _ => unreachable!(),

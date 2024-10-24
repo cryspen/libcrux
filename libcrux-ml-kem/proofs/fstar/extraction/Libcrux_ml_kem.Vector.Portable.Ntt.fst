@@ -80,28 +80,28 @@ let inv_ntt_layer_1_step
       (zeta0 zeta1 zeta2 zeta3: i16)
      =
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta0 (Rust_primitives.mk_usize 0) (Rust_primitives.mk_usize 2)
+    inv_ntt_step vec zeta0 (sz 0) (sz 2)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta0 (Rust_primitives.mk_usize 1) (Rust_primitives.mk_usize 3)
+    inv_ntt_step vec zeta0 (sz 1) (sz 3)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta1 (Rust_primitives.mk_usize 4) (Rust_primitives.mk_usize 6)
+    inv_ntt_step vec zeta1 (sz 4) (sz 6)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta1 (Rust_primitives.mk_usize 5) (Rust_primitives.mk_usize 7)
+    inv_ntt_step vec zeta1 (sz 5) (sz 7)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta2 (Rust_primitives.mk_usize 8) (Rust_primitives.mk_usize 10)
+    inv_ntt_step vec zeta2 (sz 8) (sz 10)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta2 (Rust_primitives.mk_usize 9) (Rust_primitives.mk_usize 11)
+    inv_ntt_step vec zeta2 (sz 9) (sz 11)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta3 (Rust_primitives.mk_usize 12) (Rust_primitives.mk_usize 14)
+    inv_ntt_step vec zeta3 (sz 12) (sz 14)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta3 (Rust_primitives.mk_usize 13) (Rust_primitives.mk_usize 15)
+    inv_ntt_step vec zeta3 (sz 13) (sz 15)
   in
   let _:Prims.unit =
     assert (Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements 13));
@@ -133,28 +133,28 @@ let inv_ntt_layer_2_step
       (zeta0 zeta1: i16)
      =
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta0 (Rust_primitives.mk_usize 0) (Rust_primitives.mk_usize 4)
+    inv_ntt_step vec zeta0 (sz 0) (sz 4)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta0 (Rust_primitives.mk_usize 1) (Rust_primitives.mk_usize 5)
+    inv_ntt_step vec zeta0 (sz 1) (sz 5)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta0 (Rust_primitives.mk_usize 2) (Rust_primitives.mk_usize 6)
+    inv_ntt_step vec zeta0 (sz 2) (sz 6)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta0 (Rust_primitives.mk_usize 3) (Rust_primitives.mk_usize 7)
+    inv_ntt_step vec zeta0 (sz 3) (sz 7)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta1 (Rust_primitives.mk_usize 8) (Rust_primitives.mk_usize 12)
+    inv_ntt_step vec zeta1 (sz 8) (sz 12)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta1 (Rust_primitives.mk_usize 9) (Rust_primitives.mk_usize 13)
+    inv_ntt_step vec zeta1 (sz 9) (sz 13)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta1 (Rust_primitives.mk_usize 10) (Rust_primitives.mk_usize 14)
+    inv_ntt_step vec zeta1 (sz 10) (sz 14)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta1 (Rust_primitives.mk_usize 11) (Rust_primitives.mk_usize 15)
+    inv_ntt_step vec zeta1 (sz 11) (sz 15)
   in
   vec
 
@@ -167,28 +167,28 @@ let inv_ntt_layer_3_step
       (zeta: i16)
      =
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta (Rust_primitives.mk_usize 0) (Rust_primitives.mk_usize 8)
+    inv_ntt_step vec zeta (sz 0) (sz 8)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta (Rust_primitives.mk_usize 1) (Rust_primitives.mk_usize 9)
+    inv_ntt_step vec zeta (sz 1) (sz 9)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta (Rust_primitives.mk_usize 2) (Rust_primitives.mk_usize 10)
+    inv_ntt_step vec zeta (sz 2) (sz 10)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta (Rust_primitives.mk_usize 3) (Rust_primitives.mk_usize 11)
+    inv_ntt_step vec zeta (sz 3) (sz 11)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta (Rust_primitives.mk_usize 4) (Rust_primitives.mk_usize 12)
+    inv_ntt_step vec zeta (sz 4) (sz 12)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta (Rust_primitives.mk_usize 5) (Rust_primitives.mk_usize 13)
+    inv_ntt_step vec zeta (sz 5) (sz 13)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta (Rust_primitives.mk_usize 6) (Rust_primitives.mk_usize 14)
+    inv_ntt_step vec zeta (sz 6) (sz 14)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    inv_ntt_step vec zeta (Rust_primitives.mk_usize 7) (Rust_primitives.mk_usize 15)
+    inv_ntt_step vec zeta (sz 7) (sz 15)
   in
   vec
 
@@ -202,31 +202,15 @@ let ntt_multiply_binomials
       (i: usize)
       (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
-  let ai:i16 =
-    a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ Rust_primitives.mk_usize 2 *! i
-      <:
-      usize ]
-  in
-  let bi:i16 =
-    b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ Rust_primitives.mk_usize 2 *! i
-      <:
-      usize ]
-  in
+  let ai:i16 = a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 2 *! i <: usize ] in
+  let bi:i16 = b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 2 *! i <: usize ] in
   let aj:i16 =
-    a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ (Rust_primitives.mk_usize 2 *! i
-        <:
-        usize) +!
-      Rust_primitives.mk_usize 1
-      <:
-      usize ]
+    a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ (sz 2 *! i <: usize) +! sz 1 <: usize
+    ]
   in
   let bj:i16 =
-    b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ (Rust_primitives.mk_usize 2 *! i
-        <:
-        usize) +!
-      Rust_primitives.mk_usize 1
-      <:
-      usize ]
+    b.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ (sz 2 *! i <: usize) +! sz 1 <: usize
+    ]
   in
   let _:Prims.unit =
     assert (Spec.Utils.is_i16b 3328 ai);
@@ -299,9 +283,7 @@ let ntt_multiply_binomials
       ((v ai * v bj + v aj * v bi) * 169) % 3329;
     }
   in
-  let v__out0:t_Array i16 (Rust_primitives.mk_usize 16) =
-    out.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-  in
+  let v__out0:t_Array i16 (sz 16) = out.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     {
       out with
@@ -309,7 +291,7 @@ let ntt_multiply_binomials
       =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-        (Rust_primitives.mk_usize 2 *! i <: usize)
+        (sz 2 *! i <: usize)
         o0
     }
     <:
@@ -322,7 +304,7 @@ let ntt_multiply_binomials
       =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-        ((Rust_primitives.mk_usize 2 *! i <: usize) +! Rust_primitives.mk_usize 1 <: usize)
+        ((sz 2 *! i <: usize) +! sz 1 <: usize)
         o1
     }
     <:
@@ -436,28 +418,28 @@ let ntt_layer_1_step
       (zeta0 zeta1 zeta2 zeta3: i16)
      =
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta0 (Rust_primitives.mk_usize 0) (Rust_primitives.mk_usize 2)
+    ntt_step vec zeta0 (sz 0) (sz 2)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta0 (Rust_primitives.mk_usize 1) (Rust_primitives.mk_usize 3)
+    ntt_step vec zeta0 (sz 1) (sz 3)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta1 (Rust_primitives.mk_usize 4) (Rust_primitives.mk_usize 6)
+    ntt_step vec zeta1 (sz 4) (sz 6)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta1 (Rust_primitives.mk_usize 5) (Rust_primitives.mk_usize 7)
+    ntt_step vec zeta1 (sz 5) (sz 7)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta2 (Rust_primitives.mk_usize 8) (Rust_primitives.mk_usize 10)
+    ntt_step vec zeta2 (sz 8) (sz 10)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta2 (Rust_primitives.mk_usize 9) (Rust_primitives.mk_usize 11)
+    ntt_step vec zeta2 (sz 9) (sz 11)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta3 (Rust_primitives.mk_usize 12) (Rust_primitives.mk_usize 14)
+    ntt_step vec zeta3 (sz 12) (sz 14)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta3 (Rust_primitives.mk_usize 13) (Rust_primitives.mk_usize 15)
+    ntt_step vec zeta3 (sz 13) (sz 15)
   in
   vec
 
@@ -470,28 +452,28 @@ let ntt_layer_2_step
       (zeta0 zeta1: i16)
      =
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta0 (Rust_primitives.mk_usize 0) (Rust_primitives.mk_usize 4)
+    ntt_step vec zeta0 (sz 0) (sz 4)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta0 (Rust_primitives.mk_usize 1) (Rust_primitives.mk_usize 5)
+    ntt_step vec zeta0 (sz 1) (sz 5)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta0 (Rust_primitives.mk_usize 2) (Rust_primitives.mk_usize 6)
+    ntt_step vec zeta0 (sz 2) (sz 6)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta0 (Rust_primitives.mk_usize 3) (Rust_primitives.mk_usize 7)
+    ntt_step vec zeta0 (sz 3) (sz 7)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta1 (Rust_primitives.mk_usize 8) (Rust_primitives.mk_usize 12)
+    ntt_step vec zeta1 (sz 8) (sz 12)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta1 (Rust_primitives.mk_usize 9) (Rust_primitives.mk_usize 13)
+    ntt_step vec zeta1 (sz 9) (sz 13)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta1 (Rust_primitives.mk_usize 10) (Rust_primitives.mk_usize 14)
+    ntt_step vec zeta1 (sz 10) (sz 14)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta1 (Rust_primitives.mk_usize 11) (Rust_primitives.mk_usize 15)
+    ntt_step vec zeta1 (sz 11) (sz 15)
   in
   vec
 
@@ -501,28 +483,28 @@ let ntt_layer_2_step
 
 let ntt_layer_3_step (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16) =
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (Rust_primitives.mk_usize 0) (Rust_primitives.mk_usize 8)
+    ntt_step vec zeta (sz 0) (sz 8)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (Rust_primitives.mk_usize 1) (Rust_primitives.mk_usize 9)
+    ntt_step vec zeta (sz 1) (sz 9)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (Rust_primitives.mk_usize 2) (Rust_primitives.mk_usize 10)
+    ntt_step vec zeta (sz 2) (sz 10)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (Rust_primitives.mk_usize 3) (Rust_primitives.mk_usize 11)
+    ntt_step vec zeta (sz 3) (sz 11)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (Rust_primitives.mk_usize 4) (Rust_primitives.mk_usize 12)
+    ntt_step vec zeta (sz 4) (sz 12)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (Rust_primitives.mk_usize 5) (Rust_primitives.mk_usize 13)
+    ntt_step vec zeta (sz 5) (sz 13)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (Rust_primitives.mk_usize 6) (Rust_primitives.mk_usize 14)
+    ntt_step vec zeta (sz 6) (sz 14)
   in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (Rust_primitives.mk_usize 7) (Rust_primitives.mk_usize 15)
+    ntt_step vec zeta (sz 7) (sz 15)
   in
   vec
 
@@ -547,35 +529,35 @@ let ntt_multiply
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs zeta0 (Rust_primitives.mk_usize 0) out
+    ntt_multiply_binomials lhs rhs zeta0 (sz 0) out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs nzeta0 (Rust_primitives.mk_usize 1) out
+    ntt_multiply_binomials lhs rhs nzeta0 (sz 1) out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs zeta1 (Rust_primitives.mk_usize 2) out
+    ntt_multiply_binomials lhs rhs zeta1 (sz 2) out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs nzeta1 (Rust_primitives.mk_usize 3) out
+    ntt_multiply_binomials lhs rhs nzeta1 (sz 3) out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs zeta2 (Rust_primitives.mk_usize 4) out
+    ntt_multiply_binomials lhs rhs zeta2 (sz 4) out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs nzeta2 (Rust_primitives.mk_usize 5) out
+    ntt_multiply_binomials lhs rhs nzeta2 (sz 5) out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs zeta3 (Rust_primitives.mk_usize 6) out
+    ntt_multiply_binomials lhs rhs zeta3 (sz 6) out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs nzeta3 (Rust_primitives.mk_usize 7) out
+    ntt_multiply_binomials lhs rhs nzeta3 (sz 7) out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = out in
