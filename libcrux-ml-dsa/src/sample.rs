@@ -322,6 +322,7 @@ pub(crate) fn sample_four_error_ring_elements<
     )
 }
 
+#[inline(always)]
 fn update_seed(mut seed: [u8; 66], domain_separator: &mut u16) -> [u8; 66] {
     seed[64] = *domain_separator as u8;
     seed[65] = (*domain_separator >> 8) as u8;
