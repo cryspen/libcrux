@@ -118,32 +118,11 @@ let infinity_norm_exceeds
             if true
             then
               let _:Prims.unit =
-                if
-                  ~.((coefficient >.
+                Hax_lib.v_assert ((coefficient >.
                       (Core.Ops.Arith.Neg.neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
                       <:
                       bool) &&
                     (coefficient <. Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: bool))
-                then
-                  Rust_primitives.Hax.never_to_any (Core.Panicking.panic_fmt (Core.Fmt.impl_2__new_v1
-                            (sz 1)
-                            (sz 1)
-                            (let list = ["coefficient is "] in
-                              FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                              Rust_primitives.Hax.array_of_list 1 list)
-                            (let list =
-                                [
-                                  Core.Fmt.Rt.impl_1__new_display #i32 coefficient
-                                  <:
-                                  Core.Fmt.Rt.t_Argument
-                                ]
-                              in
-                              FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                              Rust_primitives.Hax.array_of_list 1 list)
-                          <:
-                          Core.Fmt.t_Arguments)
-                      <:
-                      Rust_primitives.Hax.t_Never)
               in
               ()
           in

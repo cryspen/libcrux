@@ -22,5 +22,5 @@ pub(crate) fn from_coefficient_array(array: &[i32]) -> PortableSIMDUnit {
 }
 
 pub(crate) fn to_coefficient_array(x:&PortableSIMDUnit) -> [i32; 8] {
-    x.coefficients.try_into().unwrap()
+    x.coefficients
 }

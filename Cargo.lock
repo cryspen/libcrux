@@ -702,7 +702,7 @@ dependencies = [
 [[package]]
 name = "hax-lib"
 version = "0.1.0-alpha.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#24979addf0edca995599fddff6c5cf2720873506"
+source = "git+https://github.com/hacspec/hax/?branch=fstar-proof-lib-small-additions#cb6661c67a922e402efd35efe2f8a005ac25a167"
 dependencies = [
  "hax-lib-macros",
  "num-bigint",
@@ -712,7 +712,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros"
 version = "0.1.0-alpha.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#24979addf0edca995599fddff6c5cf2720873506"
+source = "git+https://github.com/hacspec/hax/?branch=fstar-proof-lib-small-additions#cb6661c67a922e402efd35efe2f8a005ac25a167"
 dependencies = [
  "hax-lib-macros-types",
  "paste",
@@ -725,7 +725,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros-types"
 version = "0.1.0-alpha.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#24979addf0edca995599fddff6c5cf2720873506"
+source = "git+https://github.com/hacspec/hax/?branch=fstar-proof-lib-small-additions#cb6661c67a922e402efd35efe2f8a005ac25a167"
 dependencies = [
  "proc-macro2",
  "quote",

@@ -146,9 +146,7 @@ pub fn infinity_norm_exceeds(simd_unit: PortableSIMDUnit, bound: i32) -> bool {
     // revisit if performance is impacted.
     for coefficient in simd_unit.coefficients.into_iter() {
         debug_assert!(
-            coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS,
-            "coefficient is {}",
-            coefficient
+            coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS
         );
         // This norm is calculated using the absolute value of the
         // signed representative in the range:
