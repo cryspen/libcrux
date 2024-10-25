@@ -215,10 +215,12 @@ pub trait Operations: Copy + Clone {
 
 // hax does not support trait with default implementations, so we use the following pattern
 #[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 $fer"))]
+#[inline(always)]
 pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
     T::montgomery_multiply_by_constant(v, fer)
 }
 
+#[inline(always)]
 pub fn to_standard_domain<T: Operations>(v: T) -> T {
     T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
@@ -229,6 +231,7 @@ pub fn to_standard_domain<T: Operations>(v: T) -> T {
                                        (let x = Seq.index (i1._super_8706949974463268012.f_repr ${a}) i in
                                         let y = Seq.index (i1._super_8706949974463268012.f_repr ${result}) i in
                                         (v y >= 0 /\\ v y <= 3328 /\\ (v y % 3329 == v x % 3329)))"))]
+#[inline(always)]
 pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
     let t = T::shift_right::<15>(a);
     let fm = T::bitwise_and_with_constant(t, FIELD_MODULUS);
@@ -238,6 +241,7 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
 #[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::requires(fstar!("forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
                                       (x == 0s \\/ x == 1s)"))]
+#[inline(always)]
 pub fn decompress_1<T: Operations>(vec: T) -> T {
     let z = T::ZERO();
     hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${z}) i == 0s)");

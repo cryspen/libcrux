@@ -152,6 +152,7 @@ fn validate_private_key<
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"))]
 #[hax_lib::ensures(|result| fstar!("let (expected, valid) = Spec.MLKEM.ind_cca_generate_keypair $K $randomness in
                                     valid ==> (${result}.f_sk.f_value, ${result}.f_pk.f_value) == expected"))] 
+#[inline(always)]
 fn generate_keypair<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -208,6 +209,7 @@ fn generate_keypair<
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K"))]
 #[hax_lib::ensures(|result| fstar!("let (expected, valid) = Spec.MLKEM.ind_cca_encapsulate $K ${public_key}.f_value $randomness in
                                     valid ==> (${result}._1.f_value, ${result}._2) == expected"))] 
+#[inline(always)]
 fn encapsulate<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -281,6 +283,7 @@ fn encapsulate<
     $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"))]
 #[hax_lib::ensures(|result| fstar!("let (expected, valid) = Spec.MLKEM.ind_cca_decapsulate $K ${private_key}.f_value ${ciphertext}.f_value in
                                     valid ==> $result == expected"))] 
+#[inline(always)]
 pub(crate) fn decapsulate<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -552,6 +555,7 @@ pub(crate) mod unpacked {
     }
 
     /// Generate Unpacked Keys
+    #[inline(always)]
     pub(crate) fn generate_keypair<
         const K: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
@@ -603,6 +607,7 @@ pub(crate) mod unpacked {
     }
 
     // Encapsulate with Unpacked Public Key
+    #[inline(always)]
     pub(crate) fn encapsulate<
         const K: usize,
         const CIPHERTEXT_SIZE: usize,
@@ -651,6 +656,7 @@ pub(crate) mod unpacked {
     }
 
     // Decapsulate with Unpacked Private Key
+    #[inline(always)]
     pub(crate) fn decapsulate<
         const K: usize,
         const SECRET_KEY_SIZE: usize,
