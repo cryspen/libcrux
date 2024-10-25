@@ -57,7 +57,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         [0u8; RATE]
     }
 
-    /// Generate a new keccak xof state.
+    /// Gen∂erate a new keccak xof state.
     pub(crate) fn new() -> Self {
         Self {
             inner: KeccakState::new(),

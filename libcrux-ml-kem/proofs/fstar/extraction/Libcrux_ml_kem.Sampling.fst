@@ -144,6 +144,104 @@ let sample_from_uniform_distribution_next
   <:
   (t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool)
 
+#push-options "--admit_smt_queries true"
+
+let sample_from_xof
+      (v_K: usize)
+      (#v_Vector #v_Hasher: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i3:
+          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (seeds: t_Array (t_Array u8 (sz 34)) v_K)
+     =
+  let (sampled_coefficients: t_Array usize v_K):t_Array usize v_K =
+    Rust_primitives.Hax.repeat (sz 0) v_K
+  in
+  let (out: t_Array (t_Array i16 (sz 272)) v_K):t_Array (t_Array i16 (sz 272)) v_K =
+    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0s (sz 272) <: t_Array i16 (sz 272)) v_K
+  in
+  let xof_state:v_Hasher =
+    Libcrux_ml_kem.Hash_functions.f_shake128_init_absorb_final #v_Hasher
+      #v_K
+      #FStar.Tactics.Typeclasses.solve
+      seeds
+  in
+  let tmp0, out1:(v_Hasher & t_Array (t_Array u8 (sz 504)) v_K) =
+    Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_first_three_blocks #v_Hasher
+      #v_K
+      #FStar.Tactics.Typeclasses.solve
+      xof_state
+  in
+  let xof_state:v_Hasher = tmp0 in
+  let randomness:t_Array (t_Array u8 (sz 504)) v_K = out1 in
+  let tmp0, tmp1, out1:(t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool) =
+    sample_from_uniform_distribution_next #v_Vector v_K (sz 504) randomness sampled_coefficients out
+  in
+  let sampled_coefficients:t_Array usize v_K = tmp0 in
+  let out:t_Array (t_Array i16 (sz 272)) v_K = tmp1 in
+  let done:bool = out1 in
+  let done, out, sampled_coefficients, xof_state:(bool & t_Array (t_Array i16 (sz 272)) v_K &
+    t_Array usize v_K &
+    v_Hasher) =
+    Rust_primitives.f_while_loop (fun temp_0_ ->
+          let done, out, sampled_coefficients, xof_state:(bool & t_Array (t_Array i16 (sz 272)) v_K &
+            t_Array usize v_K &
+            v_Hasher) =
+            temp_0_
+          in
+          ~.done <: bool)
+      (done, out, sampled_coefficients, xof_state
+        <:
+        (bool & t_Array (t_Array i16 (sz 272)) v_K & t_Array usize v_K & v_Hasher))
+      (fun temp_0_ ->
+          let done, out, sampled_coefficients, xof_state:(bool & t_Array (t_Array i16 (sz 272)) v_K &
+            t_Array usize v_K &
+            v_Hasher) =
+            temp_0_
+          in
+          let tmp0, out1:(v_Hasher & t_Array (t_Array u8 (sz 168)) v_K) =
+            Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_next_block #v_Hasher
+              #v_K
+              #FStar.Tactics.Typeclasses.solve
+              xof_state
+          in
+          let xof_state:v_Hasher = tmp0 in
+          let randomness:t_Array (t_Array u8 (sz 168)) v_K = out1 in
+          let tmp0, tmp1, out1:(t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool) =
+            sample_from_uniform_distribution_next #v_Vector
+              v_K
+              (sz 168)
+              randomness
+              sampled_coefficients
+              out
+          in
+          let sampled_coefficients:t_Array usize v_K = tmp0 in
+          let out:t_Array (t_Array i16 (sz 272)) v_K = tmp1 in
+          let done:bool = out1 in
+          done, out, sampled_coefficients, xof_state
+          <:
+          (bool & t_Array (t_Array i16 (sz 272)) v_K & t_Array usize v_K & v_Hasher))
+  in
+  Core.Array.impl_23__map #(t_Array i16 (sz 272))
+    v_K
+    #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+    out
+    (fun s ->
+        let s:t_Array i16 (sz 272) = s in
+        Libcrux_ml_kem.Polynomial.impl_2__from_i16_array #v_Vector
+          (s.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 256 }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice i16)
+        <:
+        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+
+#pop-options
+
 #push-options "--z3rlimit 800"
 
 let sample_from_binomial_distribution_2_
@@ -324,101 +422,3 @@ let sample_from_binomial_distribution
 
         <:
         Rust_primitives.Hax.t_Never)
-
-#push-options "--admit_smt_queries true"
-
-let sample_from_xof
-      (v_K: usize)
-      (#v_Vector #v_Hasher: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-      (seeds: t_Array (t_Array u8 (sz 34)) v_K)
-     =
-  let (sampled_coefficients: t_Array usize v_K):t_Array usize v_K =
-    Rust_primitives.Hax.repeat (sz 0) v_K
-  in
-  let (out: t_Array (t_Array i16 (sz 272)) v_K):t_Array (t_Array i16 (sz 272)) v_K =
-    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0s (sz 272) <: t_Array i16 (sz 272)) v_K
-  in
-  let xof_state:v_Hasher =
-    Libcrux_ml_kem.Hash_functions.f_shake128_init_absorb_final #v_Hasher
-      #v_K
-      #FStar.Tactics.Typeclasses.solve
-      seeds
-  in
-  let tmp0, out1:(v_Hasher & t_Array (t_Array u8 (sz 504)) v_K) =
-    Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_first_three_blocks #v_Hasher
-      #v_K
-      #FStar.Tactics.Typeclasses.solve
-      xof_state
-  in
-  let xof_state:v_Hasher = tmp0 in
-  let randomness:t_Array (t_Array u8 (sz 504)) v_K = out1 in
-  let tmp0, tmp1, out1:(t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool) =
-    sample_from_uniform_distribution_next #v_Vector v_K (sz 504) randomness sampled_coefficients out
-  in
-  let sampled_coefficients:t_Array usize v_K = tmp0 in
-  let out:t_Array (t_Array i16 (sz 272)) v_K = tmp1 in
-  let done:bool = out1 in
-  let done, out, sampled_coefficients, xof_state:(bool & t_Array (t_Array i16 (sz 272)) v_K &
-    t_Array usize v_K &
-    v_Hasher) =
-    Rust_primitives.f_while_loop (fun temp_0_ ->
-          let done, out, sampled_coefficients, xof_state:(bool & t_Array (t_Array i16 (sz 272)) v_K &
-            t_Array usize v_K &
-            v_Hasher) =
-            temp_0_
-          in
-          ~.done <: bool)
-      (done, out, sampled_coefficients, xof_state
-        <:
-        (bool & t_Array (t_Array i16 (sz 272)) v_K & t_Array usize v_K & v_Hasher))
-      (fun temp_0_ ->
-          let done, out, sampled_coefficients, xof_state:(bool & t_Array (t_Array i16 (sz 272)) v_K &
-            t_Array usize v_K &
-            v_Hasher) =
-            temp_0_
-          in
-          let tmp0, out1:(v_Hasher & t_Array (t_Array u8 (sz 168)) v_K) =
-            Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_next_block #v_Hasher
-              #v_K
-              #FStar.Tactics.Typeclasses.solve
-              xof_state
-          in
-          let xof_state:v_Hasher = tmp0 in
-          let randomness:t_Array (t_Array u8 (sz 168)) v_K = out1 in
-          let tmp0, tmp1, out1:(t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool) =
-            sample_from_uniform_distribution_next #v_Vector
-              v_K
-              (sz 168)
-              randomness
-              sampled_coefficients
-              out
-          in
-          let sampled_coefficients:t_Array usize v_K = tmp0 in
-          let out:t_Array (t_Array i16 (sz 272)) v_K = tmp1 in
-          let done:bool = out1 in
-          done, out, sampled_coefficients, xof_state
-          <:
-          (bool & t_Array (t_Array i16 (sz 272)) v_K & t_Array usize v_K & v_Hasher))
-  in
-  Core.Array.impl_23__map #(t_Array i16 (sz 272))
-    v_K
-    #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-    out
-    (fun s ->
-        let s:t_Array i16 (sz 272) = s in
-        Libcrux_ml_kem.Polynomial.impl_2__from_i16_array #v_Vector
-          (s.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 256 }
-              <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice i16)
-        <:
-        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-
-#pop-options

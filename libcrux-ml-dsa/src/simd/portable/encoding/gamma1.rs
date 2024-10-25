@@ -1,5 +1,4 @@
-use crate::simd::traits::Operations;
-use super::super::vector_type::PortableSIMDUnit;
+use super::super::vector_type::{PortableSIMDUnit, ZERO};
 // This function is marked public since it is called in the corresponding AVX2 code.
 #[inline(always)]
 pub fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
@@ -81,7 +80,7 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8]) -> PortableSIMDUnit {
     const GAMMA1: i32 = 1 << 17;
     const GAMMA1_TIMES_2_BITMASK: i32 = (GAMMA1 << 1) - 1;
 
-    let mut simd_unit = PortableSIMDUnit::ZERO();
+    let mut simd_unit = ZERO();
 
     for (i, bytes) in serialized.chunks_exact(9).enumerate() {
         simd_unit.coefficients[4 * i] = bytes[0] as i32;
@@ -121,7 +120,7 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8]) -> PortableSIMDUnit {
     const GAMMA1: i32 = 1 << 19;
     const GAMMA1_TIMES_2_BITMASK: i32 = (GAMMA1 << 1) - 1;
 
-    let mut simd_unit = PortableSIMDUnit::ZERO();
+    let mut simd_unit = ZERO();
 
     for (i, bytes) in serialized.chunks_exact(5).enumerate() {
         simd_unit.coefficients[2 * i] = bytes[0] as i32;

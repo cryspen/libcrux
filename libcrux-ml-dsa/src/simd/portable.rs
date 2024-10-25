@@ -1,4 +1,4 @@
-use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
+use crate::simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT};
 
 mod vector_type;
 mod arithmetic;

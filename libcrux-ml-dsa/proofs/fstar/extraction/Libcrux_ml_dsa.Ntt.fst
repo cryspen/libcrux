@@ -83,8 +83,9 @@ let invert_ntt_at_layer_2_
       (zeta_i: usize)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
-  let (re, zeta_i), hax_temp_output:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
-    usize) =
+  let (re, zeta_i), hax_temp_output:((Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
+      usize) &
+    Prims.unit) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 256 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: usize)
       (fun temp_0_ temp_1_ ->
@@ -132,8 +133,9 @@ let invert_ntt_at_layer_3_plus
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
   let step:usize = sz 1 <<! v_LAYER in
-  let (re, zeta_i), hax_temp_output:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
-    usize) =
+  let (re, zeta_i), hax_temp_output:((Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
+      usize) &
+    Prims.unit) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 128 >>! v_LAYER <: usize)
       (fun temp_0_ temp_1_ ->

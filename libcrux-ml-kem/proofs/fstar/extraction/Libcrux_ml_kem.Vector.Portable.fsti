@@ -10,6 +10,22 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+val deserialize_11_ (a: t_Slice u8)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      (requires (Core.Slice.impl__len #u8 a <: usize) =. sz 22)
+      (fun _ -> Prims.l_True)
+
+val deserialize_5_ (a: t_Slice u8)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      (requires (Core.Slice.impl__len #u8 a <: usize) =. sz 10)
+      (fun _ -> Prims.l_True)
+
+val serialize_11_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure (t_Array u8 (sz 22)) Prims.l_True (fun _ -> Prims.l_True)
+
+val serialize_5_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure (t_Array u8 (sz 10)) Prims.l_True (fun _ -> Prims.l_True)
+
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_ml_kem.Vector.Traits.t_Repr
 Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -29,22 +45,6 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
       Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x
   }
-
-val deserialize_11_ (a: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires (Core.Slice.impl__len #u8 a <: usize) =. sz 22)
-      (fun _ -> Prims.l_True)
-
-val deserialize_5_ (a: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires (Core.Slice.impl__len #u8 a <: usize) =. sz 10)
-      (fun _ -> Prims.l_True)
-
-val serialize_11_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure (t_Array u8 (sz 22)) Prims.l_True (fun _ -> Prims.l_True)
-
-val serialize_5_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure (t_Array u8 (sz 10)) Prims.l_True (fun _ -> Prims.l_True)
 
 val deserialize_1_ (a: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector

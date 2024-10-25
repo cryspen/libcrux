@@ -3,6 +3,11 @@ module Libcrux_ml_kem.Hash_functions.Neon
 open Core
 open FStar.Mul
 
+/// The state.
+/// It\'s only used for SHAKE128.
+/// All other functions don\'t actually use any members.
+val t_Simd128Hash:Type0
+
 val v_G (input: t_Slice u8)
     : Prims.Pure (t_Array u8 (sz 64))
       Prims.l_True
@@ -29,11 +34,6 @@ val v_PRF (v_LEN: usize) (input: t_Slice u8)
 
 val v_PRFxN (v_K v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K)
     : Prims.Pure (t_Array (t_Array u8 v_LEN) v_K) Prims.l_True (fun _ -> Prims.l_True)
-
-/// The state.
-/// It\'s only used for SHAKE128.
-/// All other functions don\'t actually use any members.
-val t_Simd128Hash:Type0
 
 val shake128_init_absorb_final (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
     : Prims.Pure t_Simd128Hash Prims.l_True (fun _ -> Prims.l_True)

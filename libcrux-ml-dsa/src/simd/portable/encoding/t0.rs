@@ -1,9 +1,6 @@
-use crate::{
-    constants::BITS_IN_LOWER_PART_OF_T,
-    simd::traits::Operations,
-};
+use crate::constants::BITS_IN_LOWER_PART_OF_T;
 
-use super::super::vector_type::PortableSIMDUnit;
+use super::super::vector_type::{PortableSIMDUnit, ZERO};
 
 // If t0 is a signed representative, change it to an unsigned one and
 // vice versa.
@@ -65,7 +62,7 @@ pub fn serialize(simd_unit: PortableSIMDUnit) -> [u8; 13] {
 pub fn deserialize(serialized: &[u8]) -> PortableSIMDUnit {
     debug_assert!(serialized.len() == 13);
 
-    let mut simd_unit = PortableSIMDUnit::ZERO();
+    let mut simd_unit = ZERO();
 
     const BITS_IN_LOWER_PART_OF_T_MASK: i32 = (1 << (BITS_IN_LOWER_PART_OF_T as i32)) - 1;
 

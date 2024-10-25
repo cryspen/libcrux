@@ -52,7 +52,7 @@ pub(crate) fn ntt_step(vec: &mut PortableVector, zeta: i16, i: usize, j: usize) 
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 100")]
-#[hax_lib::requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+#[hax_lib ::requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
                             Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
                             Spec.Utils.is_i16b_array (11207+5*3328) ${vec}.f_elements"))]
 #[hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b_array (11207+6*3328) ${result}.f_elements"))]
