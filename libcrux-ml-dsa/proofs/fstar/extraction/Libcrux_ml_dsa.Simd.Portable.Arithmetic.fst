@@ -37,26 +37,11 @@ let decompose_element (v_GAMMA2 r: i32) =
     if true
     then
       let _:Prims.unit =
-        if
-          ~.((r >. (Core.Ops.Arith.Neg.neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
+        Hax_lib.v_assert ((r >.
+              (Core.Ops.Arith.Neg.neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
               <:
               bool) &&
             (r <. Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: bool))
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic_fmt (Core.Fmt.impl_2__new_v1 (sz 1)
-                    (sz 1)
-                    (let list = ["the representative is "] in
-                      FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                      Rust_primitives.Hax.array_of_list 1 list)
-                    (let list =
-                        [Core.Fmt.Rt.impl_1__new_display #i32 r <: Core.Fmt.Rt.t_Argument]
-                      in
-                      FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                      Rust_primitives.Hax.array_of_list 1 list)
-                  <:
-                  Core.Fmt.t_Arguments)
-              <:
-              Rust_primitives.Hax.t_Never)
       in
       ()
   in
@@ -128,7 +113,7 @@ let infinity_norm_exceeds
           in
           let sign:i32 = coefficient >>! 31l in
           let normalized:i32 = coefficient -! (sign &. (2l *! coefficient <: i32) <: i32) in
-          let exceeds:bool = exceeds |. (normalized >=. bound <: bool) in
+          let exceeds:bool = exceeds || normalized >=. bound in
           exceeds)
   in
   exceeds
@@ -138,26 +123,11 @@ let power2round_element (t: i32) =
     if true
     then
       let _:Prims.unit =
-        if
-          ~.((t >. (Core.Ops.Arith.Neg.neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
+        Hax_lib.v_assert ((t >.
+              (Core.Ops.Arith.Neg.neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
               <:
               bool) &&
             (t <. Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: bool))
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic_fmt (Core.Fmt.impl_2__new_v1 (sz 1)
-                    (sz 1)
-                    (let list = ["t is "] in
-                      FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                      Rust_primitives.Hax.array_of_list 1 list)
-                    (let list =
-                        [Core.Fmt.Rt.impl_1__new_display #i32 t <: Core.Fmt.Rt.t_Argument]
-                      in
-                      FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                      Rust_primitives.Hax.array_of_list 1 list)
-                  <:
-                  Core.Fmt.t_Arguments)
-              <:
-              Rust_primitives.Hax.t_Never)
       in
       ()
   in

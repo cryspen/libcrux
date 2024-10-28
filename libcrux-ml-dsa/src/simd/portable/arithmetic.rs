@@ -101,7 +101,7 @@ pub(crate) fn montgomery_multiply(
 // to the standard unsigned range.
 #[inline(always)]
 fn power2round_element(t: i32) -> (i32, i32) {
-    debug_assert!(t > -FIELD_MODULUS && t < FIELD_MODULUS, "t is {}", t);
+    debug_assert!(t > -FIELD_MODULUS && t < FIELD_MODULUS);
 
     // Convert the signed representative to the standard unsigned one.
     let t = t + ((t >> 31) & FIELD_MODULUS);
@@ -158,7 +158,7 @@ pub fn infinity_norm_exceeds(simd_unit: PortableSIMDUnit, bound: i32) -> bool {
         let sign = coefficient >> 31;
         let normalized = coefficient - (sign & (2 * coefficient));
 
-        exceeds |= normalized >= bound;
+        exceeds = exceeds || normalized >= bound;
     }
 
     exceeds
@@ -228,9 +228,7 @@ pub fn compute_hint<const GAMMA2: i32>(
 #[inline(always)]
 fn decompose_element<const GAMMA2: i32>(r: i32) -> (i32, i32) {
     debug_assert!(
-        r > -FIELD_MODULUS && r < FIELD_MODULUS,
-        "the representative is {}",
-        r
+        r > -FIELD_MODULUS && r < FIELD_MODULUS
     );
 
     // Convert the signed representative to the standard unsigned one.

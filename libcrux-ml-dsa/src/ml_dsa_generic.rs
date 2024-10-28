@@ -12,7 +12,7 @@ use crate::{
     },
     ntt::ntt,
     types::{SigningError, VerificationError, Signature},
-    pre_hash::{DomainSeparationContext, PreHash},
+    pre_hash::{DomainSeparationContext, DomainSeparationError, PreHash},
     sample::{sample_challenge_ring_element, sample_mask_vector},
     samplex4,
     simd::traits::Operations,
@@ -120,32 +120,37 @@ pub(crate) fn sign_pre_hashed<
         return Err(SigningError::ContextTooLongError);
     }
     let pre_hashed_message = PH::hash(message);
-
-    sign_internal::<
-        SIMDUnit,
-        Shake128X4,
-        Shake256,
-        Shake256X4,
-        ROWS_IN_A,
-        COLUMNS_IN_A,
-        ETA,
-        ERROR_RING_ELEMENT_SIZE,
-        GAMMA1_EXPONENT,
-        GAMMA2,
-        COMMITMENT_RING_ELEMENT_SIZE,
-        COMMITMENT_VECTOR_SIZE,
-        COMMITMENT_HASH_SIZE,
-        ONES_IN_VERIFIER_CHALLENGE,
-        MAX_ONES_IN_HINT,
-        GAMMA1_RING_ELEMENT_SIZE,
-        SIGNING_KEY_SIZE,
-        SIGNATURE_SIZE,
-    >(
-        &signing_key,
-        &pre_hashed_message,
-        Some(DomainSeparationContext::new(context, Some(&PH::oid()))?),
-        randomness,
-    )
+    // TODO: Support implicit into() in ? so that this match becomes unnecessary
+    match DomainSeparationContext::new(context, Some(&PH::oid())) {
+        Ok(d) =>
+            sign_internal::<
+                SIMDUnit,
+                Shake128X4,
+                Shake256,
+                Shake256X4,
+                ROWS_IN_A,
+                COLUMNS_IN_A,
+                ETA,
+                ERROR_RING_ELEMENT_SIZE,
+                GAMMA1_EXPONENT,
+                GAMMA2,
+                COMMITMENT_RING_ELEMENT_SIZE,
+                COMMITMENT_VECTOR_SIZE,
+                COMMITMENT_HASH_SIZE,
+                ONES_IN_VERIFIER_CHALLENGE,
+                MAX_ONES_IN_HINT,
+                GAMMA1_RING_ELEMENT_SIZE,
+                SIGNING_KEY_SIZE,
+                SIGNATURE_SIZE,
+            >(
+                &signing_key,
+                &pre_hashed_message,
+                Some(d),
+                randomness,
+            ),
+            
+        Err(DomainSeparationError::ContextTooLongError) => Err(SigningError::ContextTooLongError)
+    }
 }
 
 #[allow(non_snake_case)]
@@ -174,32 +179,37 @@ pub(crate) fn sign<
     context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-    sign_internal::<
-        SIMDUnit,
-        Shake128X4,
-        Shake256,
-        Shake256X4,
-        ROWS_IN_A,
-        COLUMNS_IN_A,
-        ETA,
-        ERROR_RING_ELEMENT_SIZE,
-        GAMMA1_EXPONENT,
-        GAMMA2,
-        COMMITMENT_RING_ELEMENT_SIZE,
-        COMMITMENT_VECTOR_SIZE,
-        COMMITMENT_HASH_SIZE,
-        ONES_IN_VERIFIER_CHALLENGE,
-        MAX_ONES_IN_HINT,
-        GAMMA1_RING_ELEMENT_SIZE,
-        SIGNING_KEY_SIZE,
-        SIGNATURE_SIZE,
-    >(
-        &signing_key,
-        message,
-        Some(DomainSeparationContext::new(context, None)?),
-        randomness,
-    )
-}
+    // TODO: Support implicit into() in ? so that this match becomes unnecessary
+    match DomainSeparationContext::new(context, None) {
+        Ok(d) =>
+            sign_internal::<
+                SIMDUnit,
+                Shake128X4,
+                Shake256,
+                Shake256X4,
+                ROWS_IN_A,
+                COLUMNS_IN_A,
+                ETA,
+                ERROR_RING_ELEMENT_SIZE,
+                GAMMA1_EXPONENT,
+                GAMMA2,
+                COMMITMENT_RING_ELEMENT_SIZE,
+                COMMITMENT_VECTOR_SIZE,
+                COMMITMENT_HASH_SIZE,
+                ONES_IN_VERIFIER_CHALLENGE,
+                MAX_ONES_IN_HINT,
+                GAMMA1_RING_ELEMENT_SIZE,
+                SIGNING_KEY_SIZE,
+                SIGNATURE_SIZE,
+            >(
+                &signing_key,
+                message,
+                Some(d),
+                randomness,
+            ),
+        Err(DomainSeparationError::ContextTooLongError) => Err(SigningError::ContextTooLongError)
+    }
+} 
 
 /// The internal signing API.
 ///
@@ -561,29 +571,34 @@ pub(crate) fn verify<
     context: &[u8],
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    verify_internal::<
-        SIMDUnit,
-        Shake128X4,
-        Shake256,
-        ROWS_IN_A,
-        COLUMNS_IN_A,
-        SIGNATURE_SIZE,
-        VERIFICATION_KEY_SIZE,
-        GAMMA1_EXPONENT,
-        GAMMA1_RING_ELEMENT_SIZE,
-        GAMMA2,
-        BETA,
-        COMMITMENT_RING_ELEMENT_SIZE,
-        COMMITMENT_VECTOR_SIZE,
-        COMMITMENT_HASH_SIZE,
-        ONES_IN_VERIFIER_CHALLENGE,
-        MAX_ONES_IN_HINT,
-    >(
-        &verification_key_serialized,
-        message,
-        Some(DomainSeparationContext::new(context, None)?),
-        &signature_serialized,
-    )
+    // TODO: Support implicit into() in ? so that this match becomes unnecessary
+    match DomainSeparationContext::new(context, None) {
+        Ok(d) =>
+            verify_internal::<
+                SIMDUnit,
+                Shake128X4,
+                Shake256,
+                ROWS_IN_A,
+                COLUMNS_IN_A,
+                SIGNATURE_SIZE,
+                VERIFICATION_KEY_SIZE,
+                GAMMA1_EXPONENT,
+                GAMMA1_RING_ELEMENT_SIZE,
+                GAMMA2,
+                BETA,
+                COMMITMENT_RING_ELEMENT_SIZE,
+                COMMITMENT_VECTOR_SIZE,
+                COMMITMENT_HASH_SIZE,
+                ONES_IN_VERIFIER_CHALLENGE,
+                MAX_ONES_IN_HINT,
+            >(
+                &verification_key_serialized,
+                message,
+                Some(d),
+                &signature_serialized,
+            ),
+            Err(DomainSeparationError::ContextTooLongError) => Err(VerificationError::ContextTooLongError)
+        }
 }
 
 #[allow(non_snake_case)]
@@ -614,27 +629,32 @@ pub(crate) fn verify_pre_hashed<
 ) -> Result<(), VerificationError> {
     let pre_hashed_message = PH::hash(message);
 
-    verify_internal::<
-        SIMDUnit,
-        Shake128X4,
-        Shake256,
-        ROWS_IN_A,
-        COLUMNS_IN_A,
-        SIGNATURE_SIZE,
-        VERIFICATION_KEY_SIZE,
-        GAMMA1_EXPONENT,
-        GAMMA1_RING_ELEMENT_SIZE,
-        GAMMA2,
-        BETA,
-        COMMITMENT_RING_ELEMENT_SIZE,
-        COMMITMENT_VECTOR_SIZE,
-        COMMITMENT_HASH_SIZE,
-        ONES_IN_VERIFIER_CHALLENGE,
-        MAX_ONES_IN_HINT,
-    >(
-        &verification_key_serialized,
-        &pre_hashed_message,
-        Some(DomainSeparationContext::new(context, Some(&PH::oid()))?),
-        &signature_serialized,
-    )
+    // TODO: Support implicit into() in ? so that this match becomes unnecessary
+    match DomainSeparationContext::new(context, Some(&PH::oid())) {
+        Ok(d) => 
+            verify_internal::<
+            SIMDUnit,
+            Shake128X4,
+            Shake256,
+            ROWS_IN_A,
+            COLUMNS_IN_A,
+            SIGNATURE_SIZE,
+            VERIFICATION_KEY_SIZE,
+            GAMMA1_EXPONENT,
+            GAMMA1_RING_ELEMENT_SIZE,
+            GAMMA2,
+            BETA,
+            COMMITMENT_RING_ELEMENT_SIZE,
+            COMMITMENT_VECTOR_SIZE,
+            COMMITMENT_HASH_SIZE,
+            ONES_IN_VERIFIER_CHALLENGE,
+            MAX_ONES_IN_HINT,
+        >(
+            &verification_key_serialized,
+            &pre_hashed_message,
+            Some(d),
+            &signature_serialized,
+        ),  
+        Err(DomainSeparationError::ContextTooLongError) => Err(VerificationError::ContextTooLongError)
+    }
 }

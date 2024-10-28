@@ -205,9 +205,7 @@ let ntt_at_layer_3_plus
       (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
      =
   let step:usize = sz 1 <<! v_LAYER in
-  let (re, zeta_i), hax_temp_output:((t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) &
-      usize) &
-    Prims.unit) =
+  let re, zeta_i:(t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 128 >>! v_LAYER <: usize)
       (fun temp_0_ temp_1_ ->
@@ -272,6 +270,7 @@ let ntt_at_layer_3_plus
           in
           re, zeta_i <: (t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) & usize))
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
 
 let ntt_at_layer_0_ (zeta_i: usize) (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32)) =
@@ -387,9 +386,7 @@ let ntt_at_layer_1_ (zeta_i: usize) (re: t_Array Libcrux_intrinsics.Avx2_extract
   zeta_i, re <: (usize & t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
 
 let ntt_at_layer_2_ (zeta_i: usize) (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32)) =
-  let (re, zeta_i), hax_temp_output:((t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) &
-      usize) &
-    Prims.unit) =
+  let re, zeta_i:(t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) & usize) =
     Rust_primitives.Hax.Folds.fold_range_step_by (sz 0)
       (Core.Slice.impl__len #Libcrux_intrinsics.Avx2_extract.t_Vec256
           (re <: t_Slice Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -429,6 +426,7 @@ let ntt_at_layer_2_ (zeta_i: usize) (re: t_Array Libcrux_intrinsics.Avx2_extract
           let zeta_i:usize = zeta_i +! sz 1 in
           re, zeta_i <: (t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) & usize))
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
 
 let ntt (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32)) =

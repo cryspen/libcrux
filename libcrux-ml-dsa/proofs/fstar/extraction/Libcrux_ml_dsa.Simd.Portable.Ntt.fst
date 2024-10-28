@@ -1015,10 +1015,8 @@ let ntt_at_layer_2_
       (zeta_i: usize)
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
      =
-  let (re, zeta_i), hax_temp_output:((t_Array
-        Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32) &
-      usize) &
-    Prims.unit) =
+  let re, zeta_i:(t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32) &
+    usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (Core.Slice.impl__len #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
           (re <: t_Slice Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
@@ -1057,6 +1055,7 @@ let ntt_at_layer_2_
           <:
           (t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32) & usize))
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re
   <:
   (usize & t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
@@ -1066,10 +1065,8 @@ let ntt_at_layer_3_plus
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
      =
   let step:usize = sz 1 <<! v_LAYER in
-  let (re, zeta_i), hax_temp_output:((t_Array
-        Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32) &
-      usize) &
-    Prims.unit) =
+  let re, zeta_i:(t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32) &
+    usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (sz 128 >>! v_LAYER <: usize)
       (fun temp_0_ temp_1_ ->
@@ -1150,6 +1147,7 @@ let ntt_at_layer_3_plus
           <:
           (t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32) & usize))
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re
   <:
   (usize & t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))

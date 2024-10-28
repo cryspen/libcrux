@@ -29,15 +29,13 @@ let impl__infinity_norm_exceeds
       (fun exceeds simd_unit ->
           let exceeds:bool = exceeds in
           let simd_unit:v_SIMDUnit = simd_unit in
-          exceeds |.
+          exceeds ||
           (Libcrux_ml_dsa.Simd.Traits.f_infinity_norm_exceeds #v_SIMDUnit
               #FStar.Tactics.Typeclasses.solve
               simd_unit
               bound
             <:
-            bool)
-          <:
-          bool)
+            bool))
   in
   exceeds
 
