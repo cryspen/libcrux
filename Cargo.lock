@@ -1089,7 +1089,7 @@ version = "0.0.2-beta.2"
 dependencies = [
  "cavp",
  "criterion",
- "hax-lib 0.1.0-alpha.1 (git+https://github.com/hacspec/hax/?branch=fstar-proof-lib-small-additions)",
+ "hax-lib 0.1.0-alpha.1 (git+https://github.com/hacspec/hax/)",
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",
