@@ -159,9 +159,6 @@ let deserialize (serialized: t_Slice u8) =
       in
       ()
   in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.v_ZERO ()
-  in
   let byte0:i32 = cast (serialized.[ sz 0 ] <: u8) <: i32 in
   let byte1:i32 = cast (serialized.[ sz 1 ] <: u8) <: i32 in
   let byte2:i32 = cast (serialized.[ sz 2 ] <: u8) <: i32 in
@@ -175,18 +172,36 @@ let deserialize (serialized: t_Slice u8) =
   let byte10:i32 = cast (serialized.[ sz 10 ] <: u8) <: i32 in
   let byte11:i32 = cast (serialized.[ sz 11 ] <: u8) <: i32 in
   let byte12:i32 = cast (serialized.[ sz 12 ] <: u8) <: i32 in
+  let coefficient0:i32 = byte0 in
+  let coefficient0:i32 = coefficient0 |. (byte1 <<! 8l <: i32) in
+  let coefficient0:i32 = coefficient0 &. deserialize__BITS_IN_LOWER_PART_OF_T_MASK in
+  let coefficient1:i32 = byte1 >>! 5l in
+  let coefficient1:i32 = coefficient1 |. (byte2 <<! 3l <: i32) in
+  let coefficient1:i32 = coefficient1 |. (byte3 <<! 11l <: i32) in
+  let coefficient1:i32 = coefficient1 &. deserialize__BITS_IN_LOWER_PART_OF_T_MASK in
+  let coefficient2:i32 = byte3 >>! 2l in
+  let coefficient2:i32 = coefficient2 |. (byte4 <<! 6l <: i32) in
+  let coefficient2:i32 = coefficient2 &. deserialize__BITS_IN_LOWER_PART_OF_T_MASK in
+  let coefficient3:i32 = byte4 >>! 7l in
+  let coefficient3:i32 = coefficient3 |. (byte5 <<! 1l <: i32) in
+  let coefficient3:i32 = coefficient3 |. (byte6 <<! 9l <: i32) in
+  let coefficient3:i32 = coefficient3 &. deserialize__BITS_IN_LOWER_PART_OF_T_MASK in
+  let coefficient4:i32 = byte6 >>! 4l in
+  let coefficient4:i32 = coefficient4 |. (byte7 <<! 4l <: i32) in
+  let coefficient4:i32 = coefficient4 |. (byte8 <<! 12l <: i32) in
+  let coefficient4:i32 = coefficient4 &. deserialize__BITS_IN_LOWER_PART_OF_T_MASK in
+  let coefficient5:i32 = byte8 >>! 1l in
+  let coefficient5:i32 = coefficient5 |. (byte9 <<! 7l <: i32) in
+  let coefficient5:i32 = coefficient5 &. deserialize__BITS_IN_LOWER_PART_OF_T_MASK in
+  let coefficient6:i32 = byte9 >>! 6l in
+  let coefficient6:i32 = coefficient6 |. (byte10 <<! 2l <: i32) in
+  let coefficient6:i32 = coefficient6 |. (byte11 <<! 10l <: i32) in
+  let coefficient6:i32 = coefficient6 &. deserialize__BITS_IN_LOWER_PART_OF_T_MASK in
+  let coefficient7:i32 = byte11 >>! 3l in
+  let coefficient7:i32 = coefficient7 |. (byte12 <<! 5l <: i32) in
+  let coefficient7:i32 = coefficient7 &. deserialize__BITS_IN_LOWER_PART_OF_T_MASK in
   let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 0)
-        byte0
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.v_ZERO ()
   in
   let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
     {
@@ -196,26 +211,7 @@ let deserialize (serialized: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
           .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
         (sz 0)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 0 ] <: i32) |.
-          (byte1 <<! 8l <: i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 0)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 0 ] <: i32) &.
-          deserialize__BITS_IN_LOWER_PART_OF_T_MASK
-          <:
-          i32)
+        (change_t0_interval coefficient0 <: i32)
     }
     <:
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
@@ -228,55 +224,7 @@ let deserialize (serialized: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
           .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
         (sz 1)
-        (byte1 >>! 5l <: i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 1)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 1 ] <: i32) |.
-          (byte2 <<! 3l <: i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 1)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 1 ] <: i32) |.
-          (byte3 <<! 11l <: i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 1)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 1 ] <: i32) &.
-          deserialize__BITS_IN_LOWER_PART_OF_T_MASK
-          <:
-          i32)
+        (change_t0_interval coefficient1 <: i32)
     }
     <:
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
@@ -289,39 +237,7 @@ let deserialize (serialized: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
           .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
         (sz 2)
-        (byte3 >>! 2l <: i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 2)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 2 ] <: i32) |.
-          (byte4 <<! 6l <: i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 2)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 2 ] <: i32) &.
-          deserialize__BITS_IN_LOWER_PART_OF_T_MASK
-          <:
-          i32)
+        (change_t0_interval coefficient2 <: i32)
     }
     <:
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
@@ -334,55 +250,7 @@ let deserialize (serialized: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
           .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
         (sz 3)
-        (byte4 >>! 7l <: i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 3)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 3 ] <: i32) |.
-          (byte5 <<! 1l <: i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 3)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 3 ] <: i32) |.
-          (byte6 <<! 9l <: i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 3)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 3 ] <: i32) &.
-          deserialize__BITS_IN_LOWER_PART_OF_T_MASK
-          <:
-          i32)
+        (change_t0_interval coefficient3 <: i32)
     }
     <:
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
@@ -395,55 +263,7 @@ let deserialize (serialized: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
           .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
         (sz 4)
-        (byte6 >>! 4l <: i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 4)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 4 ] <: i32) |.
-          (byte7 <<! 4l <: i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 4)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 4 ] <: i32) |.
-          (byte8 <<! 12l <: i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 4)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 4 ] <: i32) &.
-          deserialize__BITS_IN_LOWER_PART_OF_T_MASK
-          <:
-          i32)
+        (change_t0_interval coefficient4 <: i32)
     }
     <:
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
@@ -456,39 +276,7 @@ let deserialize (serialized: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
           .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
         (sz 5)
-        (byte8 >>! 1l <: i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 5)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 5 ] <: i32) |.
-          (byte9 <<! 7l <: i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 5)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 5 ] <: i32) &.
-          deserialize__BITS_IN_LOWER_PART_OF_T_MASK
-          <:
-          i32)
+        (change_t0_interval coefficient5 <: i32)
     }
     <:
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
@@ -501,55 +289,7 @@ let deserialize (serialized: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
           .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
         (sz 6)
-        (byte9 >>! 6l <: i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 6)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 6 ] <: i32) |.
-          (byte10 <<! 2l <: i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 6)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 6 ] <: i32) |.
-          (byte11 <<! 10l <: i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 6)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 6 ] <: i32) &.
-          deserialize__BITS_IN_LOWER_PART_OF_T_MASK
-          <:
-          i32)
+        (change_t0_interval coefficient6 <: i32)
     }
     <:
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
@@ -562,183 +302,7 @@ let deserialize (serialized: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
           .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
         (sz 7)
-        (byte11 >>! 3l <: i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 7)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 7 ] <: i32) |.
-          (byte12 <<! 5l <: i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 7)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 7 ] <: i32) &.
-          deserialize__BITS_IN_LOWER_PART_OF_T_MASK
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 0)
-        (change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz
-                0 ]
-              <:
-              i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 1)
-        (change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz
-                1 ]
-              <:
-              i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 2)
-        (change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz
-                2 ]
-              <:
-              i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 3)
-        (change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz
-                3 ]
-              <:
-              i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 4)
-        (change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz
-                4 ]
-              <:
-              i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 5)
-        (change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz
-                5 ]
-              <:
-              i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 6)
-        (change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz
-                6 ]
-              <:
-              i32)
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients
-        (sz 7)
-        (change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz
-                7 ]
-              <:
-              i32)
-          <:
-          i32)
+        (change_t0_interval coefficient7 <: i32)
     }
     <:
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit

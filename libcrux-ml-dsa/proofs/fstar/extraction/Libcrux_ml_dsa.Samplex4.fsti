@@ -13,6 +13,21 @@ let _ =
 
 val generate_domain_separator (row column: u8) : Prims.Pure u16 Prims.l_True (fun _ -> Prims.l_True)
 
+val update_matrix
+      (#v_SIMDUnit: Type0)
+      (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (m:
+          t_Array
+            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+            v_ROWS_IN_A)
+      (i j: usize)
+      (v: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+    : Prims.Pure
+      (t_Array
+          (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+          v_ROWS_IN_A) Prims.l_True (fun _ -> Prims.l_True)
+
 val matrix_A_4_by_4_
       (#v_SIMDUnit #v_Shake128X4: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
