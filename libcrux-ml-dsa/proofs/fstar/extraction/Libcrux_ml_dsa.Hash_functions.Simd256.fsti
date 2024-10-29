@@ -170,7 +170,7 @@ let impl_1: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4 =
     f_init_absorb_x4
     =
     (fun (input0: t_Slice u8) (input1: t_Slice u8) (input2: t_Slice u8) (input3: t_Slice u8) ->
-        init_absorb_x4 input0 input2 input2 input3);
+        init_absorb_x4 input0 input1 input2 input3);
     f_squeeze_first_block_x4_pre = (fun (self: t_Shake256x4) -> true);
     f_squeeze_first_block_x4_post
     =

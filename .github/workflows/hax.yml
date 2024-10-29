@@ -68,7 +68,7 @@ jobs:
 
       - name: 🏃 Extract ML-DSA crate
         working-directory: libcrux-ml-dsa
-        run: cargo hax into fstar
+        run: ./hax.py extract
 
       - name: 🏃 Lax ML-DSA crate
         working-directory: libcrux-ml-dsa
