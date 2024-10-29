@@ -1,7 +1,7 @@
 use super::arithmetic::{self, montgomery_multiply_by_constant, montgomery_multiply_fe_by_fer};
 use super::vector_type::PortableSIMDUnit;
 use crate::simd::traits::{
-        COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT, ZETAS_TIMES_MONTGOMERY_R,
+    COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT, ZETAS_TIMES_MONTGOMERY_R,
 };
 
 #[inline(always)]
@@ -209,7 +209,8 @@ fn ntt_at_layer_3_plus<const LAYER: usize>(
         let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
 
         for j in offset..offset + step_by {
-            let t = montgomery_multiply_by_constant(re[j + step_by], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+            let t =
+                montgomery_multiply_by_constant(re[j + step_by], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
 
             re[j + step_by] = arithmetic::subtract(&re[j], &t);
             re[j] = arithmetic::add(&re[j], &t);

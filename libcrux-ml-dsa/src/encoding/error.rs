@@ -53,7 +53,7 @@ fn deserialize<SIMDUnit: Operations, const ETA: usize>(
         result.simd_units[i] =
             SIMDUnit::error_deserialize::<ETA>(&serialized_chunks.next().unwrap());
     }
-    
+
     result
 }
 

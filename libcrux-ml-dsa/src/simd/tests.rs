@@ -51,8 +51,7 @@ fn test_power2round_generic<SIMDUnit: Operations>() {
 
     let expected_low =
         SIMDUnit::from_coefficient_array(&[3861, 3691, 437, 2882, -3959, 1028, -4020, -2308]);
-    let expected_high =
-        SIMDUnit::from_coefficient_array(&[848, 410, 706, 721, 789, 702, 106, 448]);
+    let expected_high = SIMDUnit::from_coefficient_array(&[848, 410, 706, 721, 789, 702, 106, 448]);
 
     let (low, high) = SIMDUnit::power2round(input);
 

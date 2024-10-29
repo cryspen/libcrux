@@ -10,13 +10,15 @@ fn generate_domain_separator(row: u8, column: u8) -> u16 {
     (column as u16) | ((row as u16) << 8)
 }
 
-type Matrix<SIMDUnit, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize> = 
-        [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A];
+type Matrix<SIMDUnit, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize> =
+    [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A];
 
 fn update_matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
     m: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
-    i: usize, j: usize,
-    v: PolynomialRingElement<SIMDUnit>) {
+    i: usize,
+    j: usize,
+    v: PolynomialRingElement<SIMDUnit>,
+) {
     m[i][j] = v;
 }
 
@@ -30,7 +32,7 @@ pub(crate) fn matrix_A_4_by_4<
 >(
     seed: [u8; 34],
 ) -> Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A> {
-    let mut A : Matrix::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A> = 
+    let mut A: Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A> =
         [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
 
     let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(

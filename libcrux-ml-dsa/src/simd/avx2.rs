@@ -1,10 +1,10 @@
 use crate::simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT};
 
-mod vector_type;
 mod arithmetic;
 mod encoding;
 mod ntt;
 mod rejection_sample;
+mod vector_type;
 
 pub(crate) use vector_type::AVX2SIMDUnit;
 

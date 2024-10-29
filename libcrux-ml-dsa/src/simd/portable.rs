@@ -1,7 +1,7 @@
 use crate::simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT};
 
-mod vector_type;
 mod arithmetic;
+mod vector_type;
 // Some of the portable implementations are used in lieu of vectorized ones in
 // the AVX2 module.
 pub(crate) mod encoding;

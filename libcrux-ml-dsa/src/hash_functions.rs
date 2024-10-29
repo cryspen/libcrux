@@ -168,7 +168,7 @@ pub(crate) mod portable {
             [u8; shake128::BLOCK_SIZE],
         ) {
             squeeze_next_block(self)
-        }    
+        }
     }
 
     /// Portable SHAKE 128 state
@@ -177,7 +177,7 @@ pub(crate) mod portable {
     fn shake128<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
         libcrux_sha3::portable::shake128(out, input);
     }
-    
+
     impl shake128::Xof for Shake128 {
         fn shake128<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
             shake128(input, out);
@@ -190,7 +190,6 @@ pub(crate) mod portable {
         state: libcrux_sha3::portable::KeccakState,
     }
 
-   
     fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
         libcrux_sha3::portable::shake256(out, input);
     }
@@ -302,9 +301,7 @@ pub(crate) mod portable {
         (out0, out1, out2, out3)
     }
 
-
     impl shake256::XofX4 for Shake256X4 {
-        
         fn init_absorb_x4(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
             init_absorb_x4(input0, input1, input2, input3)
         }
@@ -350,27 +347,31 @@ pub(crate) mod portable {
 
     #[cfg_attr(hax, hax_lib::opaque_type)]
     pub(crate) struct Shake256Absorb {
-        state: libcrux_sha3::portable::incremental::Shake256Absorb
+        state: libcrux_sha3::portable::incremental::Shake256Absorb,
     }
-    
+
     #[cfg_attr(hax, hax_lib::opaque_type)]
     pub(crate) struct Shake256Squeeze {
-        state: libcrux_sha3::portable::incremental::Shake256Squeeze
+        state: libcrux_sha3::portable::incremental::Shake256Squeeze,
     }
 
     use libcrux_sha3::portable::incremental::{XofAbsorb, XofSqueeze};
 
-    pub(crate) fn shake256_init() -> Shake256Absorb { 
-        Shake256Absorb {state: libcrux_sha3::portable::incremental::Shake256Absorb::new ()} 
+    pub(crate) fn shake256_init() -> Shake256Absorb {
+        Shake256Absorb {
+            state: libcrux_sha3::portable::incremental::Shake256Absorb::new(),
+        }
     }
-    pub(crate) fn shake256_absorb(st:&mut Shake256Absorb, input:&[u8]) {   
-        st.state.absorb (input) 
+    pub(crate) fn shake256_absorb(st: &mut Shake256Absorb, input: &[u8]) {
+        st.state.absorb(input)
     }
-    pub(crate) fn shake256_absorb_final(st:Shake256Absorb, input:&[u8]) -> Shake256Squeeze {   
-       Shake256Squeeze {state: st.state.absorb_final (input)}
+    pub(crate) fn shake256_absorb_final(st: Shake256Absorb, input: &[u8]) -> Shake256Squeeze {
+        Shake256Squeeze {
+            state: st.state.absorb_final(input),
+        }
     }
-    pub(crate) fn shake256_squeeze(st:&mut Shake256Squeeze, out: &mut [u8]) {   
-        st.state.squeeze (out) 
+    pub(crate) fn shake256_squeeze(st: &mut Shake256Squeeze, out: &mut [u8]) {
+        st.state.squeeze(out)
     }
 }
 
@@ -378,10 +379,9 @@ pub(crate) mod portable {
 #[cfg(feature = "simd256")]
 pub(crate) mod simd256 {
 
+    use super::{shake128, shake256};
     use libcrux_sha3::avx2::x4;
     use libcrux_sha3::portable;
-    use super::{shake128, shake256};
-
 
     /// AVX2 SHAKE 128 state
     ///
@@ -406,13 +406,7 @@ pub(crate) mod simd256 {
         out2: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
         out3: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
     ) {
-        x4::incremental::shake128_squeeze_first_five_blocks(
-            &mut x.state,
-            out0,
-            out1,
-            out2,
-            out3,
-        );
+        x4::incremental::shake128_squeeze_first_five_blocks(&mut x.state, out0, out1, out2, out3);
     }
 
     fn squeeze_next_block(
@@ -443,7 +437,7 @@ pub(crate) mod simd256 {
         fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
             init_absorb(input0, input1, input2, input3)
         }
-       
+
         fn squeeze_first_five_blocks(
             &mut self,
             out0: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
@@ -471,7 +465,6 @@ pub(crate) mod simd256 {
 
     /// AVX2 SHAKE 256 state
     pub(crate) type Shake256 = super::portable::Shake256;
-  
 
     // impl shake256::Xof for Shake256 {
     //     fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
@@ -570,11 +563,10 @@ pub(crate) mod simd256 {
     }
 
     impl shake256::XofX4 for Shake256x4 {
-        
         fn init_absorb_x4(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
             init_absorb_x4(input0, input2, input2, input3)
         }
-    
+
         fn squeeze_first_block_x4(
             &mut self,
         ) -> (
@@ -616,8 +608,8 @@ pub(crate) mod simd256 {
 #[cfg(feature = "simd128")]
 pub(crate) mod neon {
 
-    use libcrux_sha3::neon::x2;
     use super::{shake128, shake256};
+    use libcrux_sha3::neon::x2;
     #[cfg_attr(hax, hax_lib::opaque_type)]
     pub(crate) type KeccakState = x2::incremental::KeccakState;
 
@@ -705,7 +697,7 @@ pub(crate) mod neon {
     }
 
     fn squeeze_first_block_x4(
-        x:&mut Shake256x4,
+        x: &mut Shake256x4,
     ) -> (
         [u8; shake256::BLOCK_SIZE],
         [u8; shake256::BLOCK_SIZE],

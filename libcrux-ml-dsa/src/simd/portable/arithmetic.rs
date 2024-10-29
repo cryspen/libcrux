@@ -1,12 +1,10 @@
-use super::vector_type::{PortableSIMDUnit, FieldElement, ZERO};
+use super::vector_type::{FieldElement, PortableSIMDUnit, ZERO};
 use crate::{
     constants::BITS_IN_LOWER_PART_OF_T,
     simd::traits::{
-            FieldElementTimesMontgomeryR, FIELD_MODULUS,
-            INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
+        FieldElementTimesMontgomeryR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
     },
 };
-
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
@@ -145,9 +143,7 @@ pub fn infinity_norm_exceeds(simd_unit: PortableSIMDUnit, bound: i32) -> bool {
     // straightforward way to do so (returning false) will not go through hax;
     // revisit if performance is impacted.
     for coefficient in simd_unit.coefficients.into_iter() {
-        debug_assert!(
-            coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS
-        );
+        debug_assert!(coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS);
         // This norm is calculated using the absolute value of the
         // signed representative in the range:
         //
@@ -227,9 +223,7 @@ pub fn compute_hint<const GAMMA2: i32>(
 #[allow(non_snake_case)]
 #[inline(always)]
 fn decompose_element<const GAMMA2: i32>(r: i32) -> (i32, i32) {
-    debug_assert!(
-        r > -FIELD_MODULUS && r < FIELD_MODULUS
-    );
+    debug_assert!(r > -FIELD_MODULUS && r < FIELD_MODULUS);
 
     // Convert the signed representative to the standard unsigned one.
     let r = r + ((r >> 31) & FIELD_MODULUS);

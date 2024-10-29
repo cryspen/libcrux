@@ -34,11 +34,7 @@ pub struct MLDSAKeyPair<const VERIFICATION_KEY_SIZE: usize, const SIGNING_KEY_SI
     pub verification_key: MLDSAVerificationKey<VERIFICATION_KEY_SIZE>,
 }
 
-use crate::{
-    constants::*, 
-    simd::traits::Operations,
-    polynomial::PolynomialRingElement,
-};
+use crate::{constants::*, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 pub(crate) struct Signature<
     SIMDUnit: Operations,
