@@ -10,6 +10,8 @@ readme.workspace = true
 description = "Libcrux intrinsics crate"
 exclude = ["/proofs"]
 
+[dependencies]
+
 [features]
 simd128 = []
 simd256 = []
