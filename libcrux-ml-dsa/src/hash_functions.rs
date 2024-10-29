@@ -564,7 +564,7 @@ pub(crate) mod simd256 {
 
     impl shake256::XofX4 for Shake256x4 {
         fn init_absorb_x4(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self {
-            init_absorb_x4(input0, input2, input2, input3)
+            init_absorb_x4(input0, input1, input2, input3)
         }
 
         fn squeeze_first_block_x4(
