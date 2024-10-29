@@ -1,9 +1,7 @@
 module Libcrux_ml_kem.Vector.Portable.Sampling
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
-
-#push-options "--admit_smt_queries true"
 
 let rej_sample (a: t_Slice u8) (result: t_Slice i16) =
   let sampled:usize = sz 0 in
@@ -42,5 +40,3 @@ let rej_sample (a: t_Slice u8) (result: t_Slice i16) =
   in
   let hax_temp_output:usize = sampled in
   result, hax_temp_output <: (t_Slice i16 & usize)
-
-#pop-options

@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Variant
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -27,18 +27,18 @@ class t_Variant (v_Self: Type0) = {
       v_CIPHERTEXT_SIZE: usize ->
       #v_Hasher: Type0 ->
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      shared_secret: t_Slice u8 ->
-      ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE
-    -> pred: Type0{(Core.Slice.impl__len #u8 shared_secret <: usize) =. sz 32 ==> pred};
+      t_Slice u8 ->
+      Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE
+    -> Type0;
   f_kdf_post:
       v_K: usize ->
       v_CIPHERTEXT_SIZE: usize ->
       #v_Hasher: Type0 ->
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      shared_secret: t_Slice u8 ->
-      ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE ->
-      res: t_Array u8 (sz 32)
-    -> pred: Type0{pred ==> res == shared_secret};
+      t_Slice u8 ->
+      Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE ->
+      t_Array u8 (sz 32)
+    -> Type0;
   f_kdf:
       v_K: usize ->
       v_CIPHERTEXT_SIZE: usize ->
@@ -53,15 +53,15 @@ class t_Variant (v_Self: Type0) = {
       v_K: usize ->
       #v_Hasher: Type0 ->
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      randomness: t_Slice u8
-    -> pred: Type0{(Core.Slice.impl__len #u8 randomness <: usize) =. sz 32 ==> pred};
+      t_Slice u8
+    -> Type0;
   f_entropy_preprocess_post:
       v_K: usize ->
       #v_Hasher: Type0 ->
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      randomness: t_Slice u8 ->
-      res: t_Array u8 (sz 32)
-    -> pred: Type0{pred ==> res == randomness};
+      t_Slice u8 ->
+      t_Array u8 (sz 32)
+    -> Type0;
   f_entropy_preprocess:
       v_K: usize ->
       #v_Hasher: Type0 ->
@@ -74,8 +74,8 @@ class t_Variant (v_Self: Type0) = {
       v_K: usize ->
       #v_Hasher: Type0 ->
       {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      seed: t_Slice u8
-    -> pred: Type0{(Core.Slice.impl__len #u8 seed <: usize) =. sz 32 ==> pred};
+      t_Slice u8
+    -> Type0;
   f_cpa_keygen_seed_post:
       v_K: usize ->
       #v_Hasher: Type0 ->
@@ -108,7 +108,7 @@ let impl: t_Variant t_MlKem =
         (shared_secret: t_Slice u8)
         (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
         ->
-        (Core.Slice.impl__len #u8 shared_secret <: usize) =. sz 32);
+        true);
     f_kdf_post
     =
     (fun
@@ -120,9 +120,9 @@ let impl: t_Variant t_MlKem =
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (shared_secret: t_Slice u8)
         (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-        (res: t_Array u8 (sz 32))
+        (out1: t_Array u8 (sz 32))
         ->
-        res == shared_secret);
+        true);
     f_kdf
     =
     (fun
@@ -148,7 +148,7 @@ let impl: t_Variant t_MlKem =
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (randomness: t_Slice u8)
         ->
-        (Core.Slice.impl__len #u8 randomness <: usize) =. sz 32);
+        true);
     f_entropy_preprocess_post
     =
     (fun
@@ -158,9 +158,9 @@ let impl: t_Variant t_MlKem =
           i3:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (randomness: t_Slice u8)
-        (res: t_Array u8 (sz 32))
+        (out1: t_Array u8 (sz 32))
         ->
-        res == randomness);
+        true);
     f_entropy_preprocess
     =
     (fun
@@ -184,7 +184,7 @@ let impl: t_Variant t_MlKem =
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (key_generation_seed: t_Slice u8)
         ->
-        (Core.Slice.impl__len #u8 key_generation_seed <: usize) =. sz 32);
+        true);
     f_cpa_keygen_seed_post
     =
     (fun

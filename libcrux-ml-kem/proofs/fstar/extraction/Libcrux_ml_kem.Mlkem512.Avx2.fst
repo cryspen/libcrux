@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Mlkem512.Avx2
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -12,6 +12,12 @@ let validate_private_key
     (sz 768)
     private_key
     ciphertext
+
+let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800)) =
+  Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.validate_public_key (sz 2)
+    (sz 768)
+    (sz 800)
+    public_key.Libcrux_ml_kem.Types.f_value
 
 let decapsulate
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
@@ -37,9 +43,3 @@ let generate_key_pair (randomness: t_Array u8 (sz 64)) =
     (sz 3)
     (sz 192)
     randomness
-
-let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800)) =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.validate_public_key (sz 2)
-    (sz 768)
-    (sz 800)
-    public_key.Libcrux_ml_kem.Types.f_value

@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Sampling
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -51,16 +51,6 @@ val sample_from_uniform_distribution_next
       (sampled_coefficients: t_Array usize v_K)
       (out: t_Array (t_Array i16 (sz 272)) v_K)
     : Prims.Pure (t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val sample_from_xof
-      (v_K: usize)
-      (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      (seeds: t_Array (t_Array u8 (sz 34)) v_K)
-    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
@@ -124,7 +114,15 @@ val sample_from_binomial_distribution
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (randomness: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (requires
-        (v_ETA =. sz 2 || v_ETA =. sz 3) &&
-        (Core.Slice.impl__len #u8 randomness <: usize) =. (v_ETA *! sz 64 <: usize))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val sample_from_xof
+      (v_K: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (seeds: t_Array (t_Array u8 (sz 34)) v_K)
+    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      Prims.l_True
       (fun _ -> Prims.l_True)

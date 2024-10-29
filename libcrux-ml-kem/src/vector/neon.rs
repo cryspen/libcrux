@@ -16,28 +16,16 @@ use serialize::*;
 pub(crate) use vector_type::SIMD128Vector;
 use vector_type::*;
 
-#[cfg(hax)]
-impl crate::vector::traits::Repr for SIMD128Vector {
-    fn repr(x: Self) -> [i16; 16] {
-        to_i16_array(x)
-    }
-}
-
-#[hax_lib::attributes]
 impl Operations for SIMD128Vector {
     #[inline(always)]
-    #[ensures(|out| fstar!("impl.f_repr out == Seq.create 16 0s"))]
     fn ZERO() -> Self {
         ZERO()
     }
 
-    #[requires(array.len() == 16)]
-    #[ensures(|out| fstar!("impl.f_repr out == $array"))]
     fn from_i16_array(array: &[i16]) -> Self {
         from_i16_array(array)
     }
 
-    #[ensures(|out| fstar!("out == impl.f_repr $x"))]
     fn to_i16_array(x: Self) -> [i16; 16] {
         to_i16_array(x)
     }

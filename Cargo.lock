@@ -704,7 +704,17 @@ name = "hax-lib"
 version = "0.1.0-alpha.1"
 source = "git+https://github.com/hacspec/hax/?branch=fstar-proof-lib-small-additions#cb6661c67a922e402efd35efe2f8a005ac25a167"
 dependencies = [
- "hax-lib-macros",
+ "hax-lib-macros 0.1.0-alpha.1 (git+https://github.com/hacspec/hax/?branch=fstar-proof-lib-small-additions)",
+ "num-bigint",
+ "num-traits",
+]
+
+[[package]]
+name = "hax-lib"
+version = "0.1.0-alpha.1"
+source = "git+https://github.com/hacspec/hax/#001a27e20755b65d6a780243a125076fe90e6d0b"
+dependencies = [
+ "hax-lib-macros 0.1.0-alpha.1 (git+https://github.com/hacspec/hax/)",
  "num-bigint",
  "num-traits",
 ]
@@ -714,7 +724,20 @@ name = "hax-lib-macros"
 version = "0.1.0-alpha.1"
 source = "git+https://github.com/hacspec/hax/?branch=fstar-proof-lib-small-additions#cb6661c67a922e402efd35efe2f8a005ac25a167"
 dependencies = [
- "hax-lib-macros-types",
+ "hax-lib-macros-types 0.1.0-alpha.1 (git+https://github.com/hacspec/hax/?branch=fstar-proof-lib-small-additions)",
+ "paste",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.82",
+]
+
+[[package]]
+name = "hax-lib-macros"
+version = "0.1.0-alpha.1"
+source = "git+https://github.com/hacspec/hax/#001a27e20755b65d6a780243a125076fe90e6d0b"
+dependencies = [
+ "hax-lib-macros-types 0.1.0-alpha.1 (git+https://github.com/hacspec/hax/)",
  "paste",
  "proc-macro-error",
  "proc-macro2",
@@ -726,6 +749,18 @@ dependencies = [
 name = "hax-lib-macros-types"
 version = "0.1.0-alpha.1"
 source = "git+https://github.com/hacspec/hax/?branch=fstar-proof-lib-small-additions#cb6661c67a922e402efd35efe2f8a005ac25a167"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
+name = "hax-lib-macros-types"
+version = "0.1.0-alpha.1"
+source = "git+https://github.com/hacspec/hax/#001a27e20755b65d6a780243a125076fe90e6d0b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -972,7 +1007,7 @@ dependencies = [
 name = "libcrux-intrinsics"
 version = "0.0.2-beta.2"
 dependencies = [
- "hax-lib",
+ "hax-lib 0.1.0-alpha.1 (git+https://github.com/hacspec/hax/?branch=fstar-proof-lib-small-additions)",
 ]
 
 [[package]]
@@ -992,7 +1027,7 @@ name = "libcrux-ml-dsa"
 version = "0.0.2-beta.2"
 dependencies = [
  "criterion",
- "hax-lib",
+ "hax-lib 0.1.0-alpha.1 (git+https://github.com/hacspec/hax/?branch=fstar-proof-lib-small-additions)",
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",
@@ -1008,7 +1043,7 @@ name = "libcrux-ml-kem"
 version = "0.0.2-beta.2"
 dependencies = [
  "criterion",
- "hax-lib",
+ "hax-lib 0.1.0-alpha.1 (git+https://github.com/hacspec/hax/)",
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",
@@ -1054,7 +1089,7 @@ version = "0.0.2-beta.2"
 dependencies = [
  "cavp",
  "criterion",
- "hax-lib",
+ "hax-lib 0.1.0-alpha.1 (git+https://github.com/hacspec/hax/?branch=fstar-proof-lib-small-additions)",
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",

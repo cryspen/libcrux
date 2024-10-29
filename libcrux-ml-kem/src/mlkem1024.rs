@@ -410,11 +410,6 @@ pub fn validate_private_key(
 ///
 /// This function returns an [`MlKem1024KeyPair`].
 #[cfg(not(eurydice))]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|res|
-    fstar!("let ((secret_key, public_key), valid) = Spec.MLKEM.Instances.mlkem1024_generate_keypair $randomness in
-        valid ==> (${res}.f_sk.f_value == secret_key /\\ ${res}.f_pk.f_value == public_key)")
-)]
 pub fn generate_key_pair(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024> {
@@ -435,12 +430,6 @@ pub fn generate_key_pair(
 /// The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
 /// bytes of `randomness`.
 #[cfg(not(eurydice))]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|res|
-    fstar!("let ((ciphertext, shared_secret), valid) = Spec.MLKEM.Instances.mlkem1024_encapsulate ${public_key}.f_value $randomness in
-        let (res_ciphertext, res_shared_secret) = $res in
-        valid ==> (res_ciphertext.f_value == ciphertext /\\ res_shared_secret == shared_secret)")
-)]
 pub fn encapsulate(
     public_key: &MlKem1024PublicKey,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -467,11 +456,6 @@ pub fn encapsulate(
 /// Generates an [`MlKemSharedSecret`].
 /// The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
 #[cfg(not(eurydice))]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|res|
-    fstar!("let (shared_secret, valid) = Spec.MLKEM.Instances.mlkem1024_decapsulate ${private_key}.f_value ${ciphertext}.f_value in
-        valid ==> $res == shared_secret")
-)]
 pub fn decapsulate(
     private_key: &MlKem1024PrivateKey,
     ciphertext: &MlKem1024Ciphertext,

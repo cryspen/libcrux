@@ -1,65 +1,7 @@
 module Libcrux_ml_kem.Vector.Neon.Ntt
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
-
-let inv_ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (zeta: i16) =
-  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 zeta in
-  let b_minus_a:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-      v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-  in
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vaddq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-        v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-      =
-      Libcrux_ml_kem.Vector.Neon.Arithmetic.montgomery_multiply_int16x8_t b_minus_a zeta
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  v
-
-let ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (zeta: i16) =
-  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 zeta in
-  let t:u8 =
-    Libcrux_ml_kem.Vector.Neon.Arithmetic.montgomery_multiply_int16x8_t v
-        .Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-      zeta
-  in
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low t
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vaddq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low t
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  v
 
 let inv_ntt_layer_1_step
       (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
@@ -200,6 +142,35 @@ let inv_ntt_layer_2_step
   in
   v
 
+let inv_ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (zeta: i16) =
+  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 zeta in
+  let b_minus_a:u8 =
+    Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+      v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+  in
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vaddq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+        v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+      =
+      Libcrux_ml_kem.Vector.Neon.Arithmetic.montgomery_multiply_int16x8_t b_minus_a zeta
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  v
+
 let ntt_layer_1_step
       (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (zeta1 zeta2 zeta3 zeta4: i16)
@@ -329,6 +300,35 @@ let ntt_layer_2_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
             (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s64_s16 b <: u8)
           <:
           u8)
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  v
+
+let ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (zeta: i16) =
+  let zeta:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 zeta in
+  let t:u8 =
+    Libcrux_ml_kem.Vector.Neon.Arithmetic.montgomery_multiply_int16x8_t v
+        .Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+      zeta
+  in
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low t
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vaddq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low t
     }
     <:
     Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector

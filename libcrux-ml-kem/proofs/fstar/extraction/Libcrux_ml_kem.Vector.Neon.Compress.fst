@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Vector.Neon.Compress
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -23,6 +23,19 @@ let mask_n_least_significant_bits (coefficient_bits: i16) =
   | 10s -> 1023s
   | 11s -> 2047s
   | x -> (1s <<! x <: i16) -! 1s
+
+let decompress_uint32x4_t (v_COEFFICIENT_BITS: i32) (v: u8) =
+  let coeff:u8 =
+    Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u32 (1ul <<! (v_COEFFICIENT_BITS -! 1l <: i32)
+        <:
+        u32)
+  in
+  let decompressed:u8 =
+    Libcrux_intrinsics.Arm64_extract.v__vmulq_n_u32 v
+      (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: u32)
+  in
+  let decompressed:u8 = Libcrux_intrinsics.Arm64_extract.v__vaddq_u32 decompressed coeff in
+  Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 v_COEFFICIENT_BITS decompressed
 
 let compress (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
   let mask:u8 =
@@ -157,19 +170,6 @@ let compress_1_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
     Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
   in
   v
-
-let decompress_uint32x4_t (v_COEFFICIENT_BITS: i32) (v: u8) =
-  let coeff:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u32 (1ul <<! (v_COEFFICIENT_BITS -! 1l <: i32)
-        <:
-        u32)
-  in
-  let decompressed:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vmulq_n_u32 v
-      (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: u32)
-  in
-  let decompressed:u8 = Libcrux_intrinsics.Arm64_extract.v__vaddq_u32 decompressed coeff in
-  Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 v_COEFFICIENT_BITS decompressed
 
 let decompress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)

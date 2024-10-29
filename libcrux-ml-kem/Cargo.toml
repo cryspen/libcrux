@@ -27,7 +27,10 @@ libcrux-platform = { version = "0.0.2-beta.2", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2-beta.2", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-beta.2", path = "../libcrux-intrinsics" }
 
-hax-lib.workspace = true
+# This is only required for verification.
+# The hax config is set by the hax toolchain.
+[target.'cfg(hax)'.dependencies]
+hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
 
 [features]
 # By default all variants and std are enabled.
@@ -43,9 +46,6 @@ simd256 = ["libcrux-sha3/simd256", "libcrux-intrinsics/simd256"]
 mlkem512 = []
 mlkem768 = []
 mlkem1024 = []
-
-# Enable the unpacked API
-unpacked = []
 
 # Enable Round 3 Kyber in addition to ML-KEM
 kyber = []
@@ -83,7 +83,7 @@ name = "keygen"
 required-features = ["mlkem768"]
 
 [package.metadata."docs.rs"]
-features = ["pre-verification", "kyber", "unpacked"]
+features = ["pre-verification", "kyber"]
 rustdoc-args = ["--cfg", "doc_cfg"]
 
 [lints.rust]

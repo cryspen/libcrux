@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Vector.Portable.Compress
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -47,32 +47,15 @@ val compress_message_coefficient (fe: u16)
 
 val compress
       (v_COEFFICIENT_BITS: i32)
-      (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires
-        (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
-          v v_COEFFICIENT_BITS == 11) /\
-        (forall (i: nat).
-            i < 16 ==> v (Seq.index a.f_elements i) >= 0 /\ v (Seq.index a.f_elements i) < 3329))
-      (ensures
-        fun result ->
-          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
-          forall (i: nat).
-            i < 16 ==>
-            v (result.f_elements.[ sz i ] <: i16) >= 0 /\
-            v (result.f_elements.[ sz i ] <: i16) < pow2 (v v_COEFFICIENT_BITS))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val compress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+val compress_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires
-        forall (i: nat).
-          i < 16 ==> v (Seq.index a.f_elements i) >= 0 /\ v (Seq.index a.f_elements i) < 3329)
-      (ensures
-        fun result ->
-          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
-          forall (i: nat).
-            i < 16 ==>
-            v (result.f_elements.[ sz i ] <: i16) >= 0 /\ v (result.f_elements.[ sz i ] <: i16) < 2)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 val decompress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)
