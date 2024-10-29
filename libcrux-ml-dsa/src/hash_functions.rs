@@ -381,7 +381,6 @@ pub(crate) mod simd256 {
 
     use super::{shake128, shake256};
     use libcrux_sha3::avx2::x4;
-    use libcrux_sha3::portable;
 
     /// AVX2 SHAKE 128 state
     ///

@@ -50,3 +50,8 @@ harness = false
 [[bench]]
 name = "ml-dsa"
 harness = false
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(hax)',
+] }
