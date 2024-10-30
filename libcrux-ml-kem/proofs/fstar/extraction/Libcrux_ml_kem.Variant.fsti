@@ -80,9 +80,13 @@ class t_Variant (v_Self: Type0) = {
       v_K: usize ->
       #v_Hasher: Type0 ->
       {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
-      t_Slice u8 ->
-      t_Array u8 (sz 64)
-    -> Type0;
+      seed: t_Slice u8 ->
+      res: t_Array u8 (sz 64)
+    -> pred:
+      Type0
+        { pred ==>
+          Seq.length seed == 32 ==>
+          res == Spec.Utils.v_G (Seq.append seed (Seq.create 1 (cast v_K <: u8))) };
   f_cpa_keygen_seed:
       v_K: usize ->
       #v_Hasher: Type0 ->
@@ -194,9 +198,10 @@ let impl: t_Variant t_MlKem =
           i4:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (key_generation_seed: t_Slice u8)
-        (out: t_Array u8 (sz 64))
+        (res: t_Array u8 (sz 64))
         ->
-        true);
+        Seq.length key_generation_seed == 32 ==>
+        res == Spec.Utils.v_G (Seq.append key_generation_seed (Seq.create 1 (cast v_K <: u8))));
     f_cpa_keygen_seed
     =
     fun
@@ -235,6 +240,12 @@ let impl: t_Variant t_MlKem =
         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed
           Libcrux_ml_kem.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE
           (cast (v_K <: usize) <: u8)
+      in
+      let _:Prims.unit =
+        Lib.Sequence.eq_intro #u8
+          #33
+          seed
+          (Seq.append key_generation_seed (Seq.create 1 (cast v_K <: u8)))
       in
       Libcrux_ml_kem.Hash_functions.f_G #v_Hasher
         #v_K

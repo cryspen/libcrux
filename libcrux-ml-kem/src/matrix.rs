@@ -156,7 +156,9 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
              Spec.MLKEM.compute_As_plus_e_ntt
                (to_spec_matrix_t $matrix_A) 
                (to_spec_vector_t $s_as_ntt) 
-               (to_spec_vector_t $error_as_ntt)")
+               (to_spec_vector_t $error_as_ntt) /\\
+        (forall (i: nat). i < v $K ==>
+            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index ${t_as_ntt}_future i))")
 )]
 pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
     t_as_ntt: &mut [PolynomialRingElement<Vector>; K],

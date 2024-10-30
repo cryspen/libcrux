@@ -54,6 +54,16 @@ val sample_from_uniform_distribution_next
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+val sample_from_xof
+      (v_K: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (seeds: t_Array (t_Array u8 (sz 34)) v_K)
+    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 /// Given a series of uniformly random bytes in `randomness`, for some number `eta`,
 /// the `sample_from_binomial_distribution_{eta}` functions sample
 /// a ring element from a binomial distribution centered at 0 that uses two sets
@@ -117,14 +127,12 @@ val sample_from_binomial_distribution
       (requires
         (v_ETA =. sz 2 || v_ETA =. sz 3) &&
         (Core.Slice.impl__len #u8 randomness <: usize) =. (v_ETA *! sz 64 <: usize))
-      (fun _ -> Prims.l_True)
-
-val sample_from_xof
-      (v_K: usize)
-      (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      (seeds: t_Array (t_Array u8 (sz 34)) v_K)
-    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
+          (forall (i: nat).
+              i < 8 ==>
+              Libcrux_ml_kem.Ntt.ntt_layer_7_pre (result.f_coefficients.[ sz i ])
+                (result.f_coefficients.[ sz i +! sz 8 ])) /\
+          Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector result ==
+          Spec.MLKEM.sample_poly_cbd v_ETA randomness)
