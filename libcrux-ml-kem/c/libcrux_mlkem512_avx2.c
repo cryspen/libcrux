@@ -8,7 +8,7 @@
  * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 3063d19312f8ec3af5945f24ed3ebbb6b6cd9678
- * Libcrux: 020cd93ab7a1437ba4a4c626b1acbf9fa14525ad
+ * Libcrux: a089e8609d2bf2df5c165076a79e3fd30dbf87cf
  */
 
 #include "libcrux_mlkem512_avx2.h"
@@ -35,10 +35,10 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
-static void decapsulate_20(libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
+static void decapsulate_0c(libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
                            libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext,
                            uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_decapsulate_cd(private_key, ciphertext, ret);
+  libcrux_ml_kem_ind_cca_decapsulate_7f(private_key, ciphertext, ret);
 }
 
 /**
@@ -51,7 +51,7 @@ static void decapsulate_20(libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
 void libcrux_ml_kem_mlkem512_avx2_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]) {
-  decapsulate_20(private_key, ciphertext, ret);
+  decapsulate_0c(private_key, ciphertext, ret);
 }
 
 /**
@@ -71,14 +71,14 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_ec encapsulate_b0(
+static tuple_ec encapsulate_ae(
     libcrux_ml_kem_types_MlKemPublicKey_be *public_key,
     uint8_t randomness[32U]) {
   libcrux_ml_kem_types_MlKemPublicKey_be *uu____0 = public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_encapsulate_79(uu____0, copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_encapsulate_a1(uu____0, copy_of_randomness);
 }
 
 /**
@@ -95,7 +95,7 @@ tuple_ec libcrux_ml_kem_mlkem512_avx2_encapsulate(
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return encapsulate_b0(uu____0, copy_of_randomness);
+  return encapsulate_ae(uu____0, copy_of_randomness);
 }
 
 /**
@@ -109,12 +109,12 @@ libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair with const generics
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
-static libcrux_ml_kem_types_MlKemKeyPair_cb generate_keypair_8e(
+static libcrux_ml_kem_types_MlKemKeyPair_cb generate_keypair_5a(
     uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_dd(copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_generate_keypair_0b(copy_of_randomness);
 }
 
 /**
@@ -125,7 +125,7 @@ libcrux_ml_kem_mlkem512_avx2_generate_key_pair(uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_8e(copy_of_randomness);
+  return generate_keypair_5a(copy_of_randomness);
 }
 
 /**
@@ -136,10 +136,10 @@ generics
 - SECRET_KEY_SIZE= 1632
 - CIPHERTEXT_SIZE= 768
 */
-static KRML_MUSTINLINE bool validate_private_key_a1(
+static KRML_MUSTINLINE bool validate_private_key_08(
     libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext) {
-  return libcrux_ml_kem_ind_cca_validate_private_key_a8(private_key,
+  return libcrux_ml_kem_ind_cca_validate_private_key_70(private_key,
                                                         ciphertext);
 }
 
@@ -151,7 +151,7 @@ static KRML_MUSTINLINE bool validate_private_key_a1(
 bool libcrux_ml_kem_mlkem512_avx2_validate_private_key(
     libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext) {
-  return validate_private_key_a1(private_key, ciphertext);
+  return validate_private_key_08(private_key, ciphertext);
 }
 
 /**
@@ -162,8 +162,8 @@ generics
 - RANKED_BYTES_PER_RING_ELEMENT= 768
 - PUBLIC_KEY_SIZE= 800
 */
-static KRML_MUSTINLINE bool validate_public_key_c2(uint8_t *public_key) {
-  return libcrux_ml_kem_ind_cca_validate_public_key_db(public_key);
+static KRML_MUSTINLINE bool validate_public_key_f6(uint8_t *public_key) {
+  return libcrux_ml_kem_ind_cca_validate_public_key_52(public_key);
 }
 
 /**
@@ -173,5 +173,5 @@ static KRML_MUSTINLINE bool validate_public_key_c2(uint8_t *public_key) {
 */
 bool libcrux_ml_kem_mlkem512_avx2_validate_public_key(
     libcrux_ml_kem_types_MlKemPublicKey_be *public_key) {
-  return validate_public_key_c2(public_key->value);
+  return validate_public_key_f6(public_key->value);
 }

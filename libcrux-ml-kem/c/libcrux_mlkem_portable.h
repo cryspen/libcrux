@@ -8,7 +8,7 @@
  * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
  * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
  * F*: 3063d19312f8ec3af5945f24ed3ebbb6b6cd9678
- * Libcrux: 020cd93ab7a1437ba4a4c626b1acbf9fa14525ad
+ * Libcrux: a089e8609d2bf2df5c165076a79e3fd30dbf87cf
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -74,10 +74,6 @@ void libcrux_ml_kem_vector_portable_serialize_serialize_11(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
     uint8_t ret[22U]);
 
-void libcrux_ml_kem_vector_portable_serialize_11(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[22U]);
-
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
@@ -102,9 +98,6 @@ int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_11_int(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_serialize_deserialize_11(Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_11(Eurydice_slice a);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -428,7 +421,8 @@ libcrux_ml_kem_vector_portable_inv_ntt_layer_3_step_0d(
 void libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *b, int16_t zeta,
-    size_t i, libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
+    size_t i, size_t j,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_ntt_ntt_multiply(
@@ -450,10 +444,6 @@ void libcrux_ml_kem_vector_portable_serialize_serialize_1(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
     uint8_t ret[2U]);
 
-void libcrux_ml_kem_vector_portable_serialize_1(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[2U]);
-
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
@@ -464,9 +454,6 @@ void libcrux_ml_kem_vector_portable_serialize_1_0d(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_serialize_deserialize_1(Eurydice_slice v);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_1(Eurydice_slice a);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -489,10 +476,6 @@ void libcrux_ml_kem_vector_portable_serialize_serialize_4(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
     uint8_t ret[8U]);
 
-void libcrux_ml_kem_vector_portable_serialize_4(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[8U]);
-
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
@@ -506,9 +489,6 @@ int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_serialize_deserialize_4(Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_4(Eurydice_slice a);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -532,10 +512,6 @@ void libcrux_ml_kem_vector_portable_serialize_serialize_5(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
     uint8_t ret[10U]);
 
-void libcrux_ml_kem_vector_portable_serialize_5(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[10U]);
-
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
@@ -549,9 +525,6 @@ int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_serialize_deserialize_5(Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_5(Eurydice_slice a);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -567,10 +540,6 @@ void libcrux_ml_kem_vector_portable_serialize_serialize_10(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
     uint8_t ret[20U]);
 
-void libcrux_ml_kem_vector_portable_serialize_10(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[20U]);
-
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
@@ -584,9 +553,6 @@ int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_serialize_deserialize_10(Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_10(Eurydice_slice a);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
@@ -608,10 +574,6 @@ void libcrux_ml_kem_vector_portable_serialize_serialize_12(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
     uint8_t ret[24U]);
 
-void libcrux_ml_kem_vector_portable_serialize_12(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[24U]);
-
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
@@ -630,9 +592,6 @@ int16_t_x2 libcrux_ml_kem_vector_portable_serialize_deserialize_12_int(
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_serialize_deserialize_12(Eurydice_slice bytes);
-
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_12(Eurydice_slice a);
 
 /**
 This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
