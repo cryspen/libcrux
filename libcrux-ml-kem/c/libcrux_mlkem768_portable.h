@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
- * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
- * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
- * F*: 3063d19312f8ec3af5945f24ed3ebbb6b6cd9678
- * Libcrux: a089e8609d2bf2df5c165076a79e3fd30dbf87cf
+ * Charon: 2b71c3c42337fe17ceca860bedaafb3443e6c5e8
+ * Eurydice: dcfae68c874635956f71d4c05928841b29ad0a8b
+ * Karamel: 87384b244a98a0c41a2e14c65b872d885af7c8df
+ * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
+ * Libcrux: 4b0d78759e0adf160bab80862883bd5ba7338977
  */
 
 #ifndef __libcrux_mlkem768_portable_H
@@ -29,7 +29,7 @@ extern "C" {
  [`MlKem768Ciphertext`].
 */
 void libcrux_ml_kem_mlkem768_portable_decapsulate(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
 
 /**
@@ -39,8 +39,8 @@ void libcrux_ml_kem_mlkem768_portable_decapsulate(
  The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-tuple_3c libcrux_ml_kem_mlkem768_portable_encapsulate(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
+tuple_c2 libcrux_ml_kem_mlkem768_portable_encapsulate(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]);
 
 /**
@@ -55,7 +55,7 @@ libcrux_ml_kem_mlkem768_portable_generate_key_pair(uint8_t randomness[64U]);
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem768_portable_validate_private_key(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext);
 
 /**
@@ -64,7 +64,7 @@ bool libcrux_ml_kem_mlkem768_portable_validate_private_key(
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem768_portable_validate_public_key(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key);
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key);
 
 #if defined(__cplusplus)
 }

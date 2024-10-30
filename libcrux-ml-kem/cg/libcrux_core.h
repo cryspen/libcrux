@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
- * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
- * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
- * F*: 3063d19312f8ec3af5945f24ed3ebbb6b6cd9678
- * Libcrux: a089e8609d2bf2df5c165076a79e3fd30dbf87cf
+ * Charon: 2b71c3c42337fe17ceca860bedaafb3443e6c5e8
+ * Eurydice: dcfae68c874635956f71d4c05928841b29ad0a8b
+ * Karamel: 87384b244a98a0c41a2e14c65b872d885af7c8df
+ * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
+ * Libcrux: 4b0d78759e0adf160bab80862883bd5ba7338977
  */
 
 #ifndef __libcrux_core_H
@@ -25,30 +25,30 @@ A monomorphic instance of core.ops.range.Range
 with types size_t
 
 */
-typedef struct core_ops_range_Range_b3_s {
+typedef struct core_ops_range_Range_08_s {
   size_t start;
   size_t end;
-} core_ops_range_Range_b3;
+} core_ops_range_Range_08;
 
 #define Ok 0
 #define Err 1
 
-typedef uint8_t Result_86_tags;
+typedef uint8_t Result_a9_tags;
 
 #define None 0
 #define Some 1
 
-typedef uint8_t Option_ef_tags;
+typedef uint8_t Option_9e_tags;
 
 /**
 A monomorphic instance of core.option.Option
 with types size_t
 
 */
-typedef struct Option_b3_s {
-  Option_ef_tags tag;
+typedef struct Option_08_s {
+  Option_9e_tags tag;
   size_t f0;
-} Option_b3;
+} Option_08;
 
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x0, uint16_t x1);
 
@@ -88,13 +88,13 @@ A monomorphic instance of core.result.Result
 with types uint8_t[24size_t], core_array_TryFromSliceError
 
 */
-typedef struct Result_6f_s {
-  Result_86_tags tag;
+typedef struct Result_b2_s {
+  Result_a9_tags tag;
   union {
     uint8_t case_Ok[24U];
     TryFromSliceError case_Err;
   } val;
-} Result_6f;
+} Result_b2;
 
 /**
 This function found in impl {core::result::Result<T, E>[TraitClause@0,
@@ -105,7 +105,7 @@ A monomorphic instance of core.result.unwrap_26
 with types uint8_t[24size_t], core_array_TryFromSliceError
 
 */
-static inline void unwrap_26_76(Result_6f self, uint8_t ret[24U]) {
+static inline void unwrap_26_70(Result_b2 self, uint8_t ret[24U]) {
   if (self.tag == Ok) {
     uint8_t f0[24U];
     memcpy(f0, self.val.case_Ok, (size_t)24U * sizeof(uint8_t));
@@ -122,13 +122,13 @@ A monomorphic instance of core.result.Result
 with types uint8_t[20size_t], core_array_TryFromSliceError
 
 */
-typedef struct Result_7a_s {
-  Result_86_tags tag;
+typedef struct Result_e1_s {
+  Result_a9_tags tag;
   union {
     uint8_t case_Ok[20U];
     TryFromSliceError case_Err;
   } val;
-} Result_7a;
+} Result_e1;
 
 /**
 This function found in impl {core::result::Result<T, E>[TraitClause@0,
@@ -139,7 +139,7 @@ A monomorphic instance of core.result.unwrap_26
 with types uint8_t[20size_t], core_array_TryFromSliceError
 
 */
-static inline void unwrap_26_ea(Result_7a self, uint8_t ret[20U]) {
+static inline void unwrap_26_20(Result_e1 self, uint8_t ret[20U]) {
   if (self.tag == Ok) {
     uint8_t f0[20U];
     memcpy(f0, self.val.case_Ok, (size_t)20U * sizeof(uint8_t));
@@ -156,13 +156,13 @@ A monomorphic instance of core.result.Result
 with types uint8_t[10size_t], core_array_TryFromSliceError
 
 */
-typedef struct Result_cd_s {
-  Result_86_tags tag;
+typedef struct Result_9d_s {
+  Result_a9_tags tag;
   union {
     uint8_t case_Ok[10U];
     TryFromSliceError case_Err;
   } val;
-} Result_cd;
+} Result_9d;
 
 /**
 This function found in impl {core::result::Result<T, E>[TraitClause@0,
@@ -173,7 +173,7 @@ A monomorphic instance of core.result.unwrap_26
 with types uint8_t[10size_t], core_array_TryFromSliceError
 
 */
-static inline void unwrap_26_07(Result_cd self, uint8_t ret[10U]) {
+static inline void unwrap_26_ce(Result_9d self, uint8_t ret[10U]) {
   if (self.tag == Ok) {
     uint8_t f0[10U];
     memcpy(f0, self.val.case_Ok, (size_t)10U * sizeof(uint8_t));
@@ -198,7 +198,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 32
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_423(
+static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_9e(
     Eurydice_slice slice, uint8_t ret[32U]) {
   uint8_t out[32U] = {0U};
   uint8_t *uu____0 = out;
@@ -221,7 +221,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_slice_d4
 with const generics
 - SIZE= 1088
 */
-static inline uint8_t *libcrux_ml_kem_types_as_slice_d4_76(
+static inline uint8_t *libcrux_ml_kem_types_as_slice_d4_80(
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self) {
   return self->value;
 }
@@ -231,9 +231,9 @@ A monomorphic instance of libcrux_ml_kem.types.MlKemPublicKey
 with const generics
 - $1184size_t
 */
-typedef struct libcrux_ml_kem_types_MlKemPublicKey_15_s {
+typedef struct libcrux_ml_kem_types_MlKemPublicKey_30_s {
   uint8_t value[1184U];
-} libcrux_ml_kem_types_MlKemPublicKey_15;
+} libcrux_ml_kem_types_MlKemPublicKey_30;
 
 /**
 This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
@@ -244,12 +244,12 @@ A monomorphic instance of libcrux_ml_kem.types.from_5a
 with const generics
 - SIZE= 1184
 */
-static inline libcrux_ml_kem_types_MlKemPublicKey_15
-libcrux_ml_kem_types_from_5a_67(uint8_t value[1184U]) {
+static inline libcrux_ml_kem_types_MlKemPublicKey_30
+libcrux_ml_kem_types_from_5a_d0(uint8_t value[1184U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[1184U];
   memcpy(copy_of_value, value, (size_t)1184U * sizeof(uint8_t));
-  libcrux_ml_kem_types_MlKemPublicKey_15 lit;
+  libcrux_ml_kem_types_MlKemPublicKey_30 lit;
   memcpy(lit.value, copy_of_value, (size_t)1184U * sizeof(uint8_t));
   return lit;
 }
@@ -259,13 +259,13 @@ A monomorphic instance of libcrux_ml_kem.types.MlKemPrivateKey
 with const generics
 - $2400size_t
 */
-typedef struct libcrux_ml_kem_types_MlKemPrivateKey_55_s {
+typedef struct libcrux_ml_kem_types_MlKemPrivateKey_d9_s {
   uint8_t value[2400U];
-} libcrux_ml_kem_types_MlKemPrivateKey_55;
+} libcrux_ml_kem_types_MlKemPrivateKey_d9;
 
 typedef struct libcrux_ml_kem_mlkem768_MlKem768KeyPair_s {
-  libcrux_ml_kem_types_MlKemPrivateKey_55 sk;
-  libcrux_ml_kem_types_MlKemPublicKey_15 pk;
+  libcrux_ml_kem_types_MlKemPrivateKey_d9 sk;
+  libcrux_ml_kem_types_MlKemPublicKey_30 pk;
 } libcrux_ml_kem_mlkem768_MlKem768KeyPair;
 
 /**
@@ -279,8 +279,8 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_types_from_3a_ee(libcrux_ml_kem_types_MlKemPrivateKey_55 sk,
-                                libcrux_ml_kem_types_MlKemPublicKey_15 pk) {
+libcrux_ml_kem_types_from_3a_74(libcrux_ml_kem_types_MlKemPrivateKey_d9 sk,
+                                libcrux_ml_kem_types_MlKemPublicKey_30 pk) {
   return (
       CLITERAL(libcrux_ml_kem_mlkem768_MlKem768KeyPair){.sk = sk, .pk = pk});
 }
@@ -294,12 +294,12 @@ A monomorphic instance of libcrux_ml_kem.types.from_7f
 with const generics
 - SIZE= 2400
 */
-static inline libcrux_ml_kem_types_MlKemPrivateKey_55
-libcrux_ml_kem_types_from_7f_af(uint8_t value[2400U]) {
+static inline libcrux_ml_kem_types_MlKemPrivateKey_d9
+libcrux_ml_kem_types_from_7f_28(uint8_t value[2400U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[2400U];
   memcpy(copy_of_value, value, (size_t)2400U * sizeof(uint8_t));
-  libcrux_ml_kem_types_MlKemPrivateKey_55 lit;
+  libcrux_ml_kem_types_MlKemPrivateKey_d9 lit;
   memcpy(lit.value, copy_of_value, (size_t)2400U * sizeof(uint8_t));
   return lit;
 }
@@ -309,13 +309,13 @@ A monomorphic instance of core.result.Result
 with types uint8_t[32size_t], core_array_TryFromSliceError
 
 */
-typedef struct Result_00_s {
-  Result_86_tags tag;
+typedef struct Result_fb_s {
+  Result_a9_tags tag;
   union {
     uint8_t case_Ok[32U];
     TryFromSliceError case_Err;
   } val;
-} Result_00;
+} Result_fb;
 
 /**
 This function found in impl {core::result::Result<T, E>[TraitClause@0,
@@ -326,7 +326,7 @@ A monomorphic instance of core.result.unwrap_26
 with types uint8_t[32size_t], core_array_TryFromSliceError
 
 */
-static inline void unwrap_26_33(Result_00 self, uint8_t ret[32U]) {
+static inline void unwrap_26_b3(Result_fb self, uint8_t ret[32U]) {
   if (self.tag == Ok) {
     uint8_t f0[32U];
     memcpy(f0, self.val.case_Ok, (size_t)32U * sizeof(uint8_t));
@@ -344,10 +344,10 @@ with types libcrux_ml_kem_types_MlKemCiphertext[[$1088size_t]],
 uint8_t[32size_t]
 
 */
-typedef struct tuple_3c_s {
+typedef struct tuple_c2_s {
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext fst;
   uint8_t snd[32U];
-} tuple_3c;
+} tuple_c2;
 
 /**
 This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
@@ -359,7 +359,7 @@ with const generics
 - SIZE= 1088
 */
 static inline libcrux_ml_kem_mlkem768_MlKem768Ciphertext
-libcrux_ml_kem_types_from_01_8c(uint8_t value[1088U]) {
+libcrux_ml_kem_types_from_01_80(uint8_t value[1088U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[1088U];
   memcpy(copy_of_value, value, (size_t)1088U * sizeof(uint8_t));
@@ -376,8 +376,8 @@ A monomorphic instance of libcrux_ml_kem.types.as_slice_fd
 with const generics
 - SIZE= 1184
 */
-static inline uint8_t *libcrux_ml_kem_types_as_slice_fd_02(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *self) {
+static inline uint8_t *libcrux_ml_kem_types_as_slice_fd_d0(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *self) {
   return self->value;
 }
 
@@ -389,7 +389,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 33
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_422(
+static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_c8(
     Eurydice_slice slice, uint8_t ret[33U]) {
   uint8_t out[33U] = {0U};
   uint8_t *uu____0 = out;
@@ -408,7 +408,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 34
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_421(
+static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_b6(
     Eurydice_slice slice, uint8_t ret[34U]) {
   uint8_t out[34U] = {0U};
   uint8_t *uu____0 = out;
@@ -428,7 +428,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_00
 with const generics
 - SIZE= 1088
 */
-static inline Eurydice_slice libcrux_ml_kem_types_as_ref_00_8c(
+static inline Eurydice_slice libcrux_ml_kem_types_as_ref_00_80(
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self) {
   return Eurydice_array_to_slice((size_t)1088U, self->value, uint8_t);
 }
@@ -441,7 +441,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 1120
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_420(
+static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_15(
     Eurydice_slice slice, uint8_t ret[1120U]) {
   uint8_t out[1120U] = {0U};
   uint8_t *uu____0 = out;
@@ -460,7 +460,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 64
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_42(
+static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_24(
     Eurydice_slice slice, uint8_t ret[64U]) {
   uint8_t out[64U] = {0U};
   uint8_t *uu____0 = out;
@@ -476,13 +476,13 @@ A monomorphic instance of core.result.Result
 with types int16_t[16size_t], core_array_TryFromSliceError
 
 */
-typedef struct Result_c0_s {
-  Result_86_tags tag;
+typedef struct Result_0a_s {
+  Result_a9_tags tag;
   union {
     int16_t case_Ok[16U];
     TryFromSliceError case_Err;
   } val;
-} Result_c0;
+} Result_0a;
 
 /**
 This function found in impl {core::result::Result<T, E>[TraitClause@0,
@@ -493,7 +493,7 @@ A monomorphic instance of core.result.unwrap_26
 with types int16_t[16size_t], core_array_TryFromSliceError
 
 */
-static inline void unwrap_26_30(Result_c0 self, int16_t ret[16U]) {
+static inline void unwrap_26_00(Result_0a self, int16_t ret[16U]) {
   if (self.tag == Ok) {
     int16_t f0[16U];
     memcpy(f0, self.val.case_Ok, (size_t)16U * sizeof(int16_t));
@@ -510,13 +510,13 @@ A monomorphic instance of core.result.Result
 with types uint8_t[8size_t], core_array_TryFromSliceError
 
 */
-typedef struct Result_56_s {
-  Result_86_tags tag;
+typedef struct Result_15_s {
+  Result_a9_tags tag;
   union {
     uint8_t case_Ok[8U];
     TryFromSliceError case_Err;
   } val;
-} Result_56;
+} Result_15;
 
 /**
 This function found in impl {core::result::Result<T, E>[TraitClause@0,
@@ -527,7 +527,7 @@ A monomorphic instance of core.result.unwrap_26
 with types uint8_t[8size_t], core_array_TryFromSliceError
 
 */
-static inline void unwrap_26_0e(Result_56 self, uint8_t ret[8U]) {
+static inline void unwrap_26_68(Result_15 self, uint8_t ret[8U]) {
   if (self.tag == Ok) {
     uint8_t f0[8U];
     memcpy(f0, self.val.case_Ok, (size_t)8U * sizeof(uint8_t));

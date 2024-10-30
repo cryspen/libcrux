@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 28d543bfacc902ba9cc2a734b76baae9583892a4
- * Eurydice: 1a65dbf3758fe310833718c645a64266294a29ac
- * Karamel: 15d4bce74a2d43e34a64f48f8311b7d9bcb0e152
- * F*: 3063d19312f8ec3af5945f24ed3ebbb6b6cd9678
- * Libcrux: a089e8609d2bf2df5c165076a79e3fd30dbf87cf
+ * Charon: 2b71c3c42337fe17ceca860bedaafb3443e6c5e8
+ * Eurydice: dcfae68c874635956f71d4c05928841b29ad0a8b
+ * Karamel: 87384b244a98a0c41a2e14c65b872d885af7c8df
+ * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
+ * Libcrux: 4b0d78759e0adf160bab80862883bd5ba7338977
  */
 
 #ifndef __libcrux_mlkem768_avx2_types_H
@@ -27,9 +27,9 @@ A monomorphic instance of libcrux_ml_kem.polynomial.PolynomialRingElement
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 
 */
-typedef struct libcrux_ml_kem_polynomial_PolynomialRingElement_d2_s {
+typedef struct libcrux_ml_kem_polynomial_PolynomialRingElement_f6_s {
   __m256i coefficients[16U];
-} libcrux_ml_kem_polynomial_PolynomialRingElement_d2;
+} libcrux_ml_kem_polynomial_PolynomialRingElement_f6;
 
 /**
 A monomorphic instance of
@@ -37,11 +37,11 @@ libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked with types
 libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 - $3size_t
 */
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 t_as_ntt[3U];
+typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63_s {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 t_as_ntt[3U];
   uint8_t seed_for_A[32U];
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 A[3U][3U];
-} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0;
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 A[3U][3U];
+} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63;
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPublicKeyUnpacked
@@ -49,12 +49,12 @@ with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 with const generics
 - $3size_t
 */
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0_s {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 ind_cpa_public_key;
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63_s {
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 ind_cpa_public_key;
   uint8_t public_key_hash[32U];
-} libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0;
+} libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63;
 
-typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
+typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768PublicKeyUnpacked;
 
 /**
@@ -63,9 +63,9 @@ libcrux_ml_kem.ind_cpa.unpacked.IndCpaPrivateKeyUnpacked with types
 libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 - $3size_t
 */
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0_s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_d2 secret_as_ntt[3U];
-} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0;
+typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63_s {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 secret_as_ntt[3U];
+} libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63;
 
 /**
 A monomorphic instance of
@@ -73,15 +73,15 @@ libcrux_ml_kem.ind_cca.unpacked.MlKemPrivateKeyUnpacked with types
 libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 - $3size_t
 */
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0_s {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_a0
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_63_s {
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63
       ind_cpa_private_key;
   uint8_t implicit_rejection_value[32U];
-} libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0;
+} libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_63;
 
 typedef struct libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked_s {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0 private_key;
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 public_key;
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_63 private_key;
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 public_key;
 } libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked;
 
 #if defined(__cplusplus)
