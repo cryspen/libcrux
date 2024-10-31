@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-ml-dsa"
-version.workspace = true
+version = "0.0.2-beta.2"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true

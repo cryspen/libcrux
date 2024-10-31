@@ -1,0 +1,5 @@
+[toolchain]
+channel = "nightly-2023-11-13"
+profile = "minimal"
+components = ["rust-src"]
+target = "x86_64-unknown-linux-gnu"
