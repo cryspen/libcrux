@@ -99,6 +99,7 @@ pub(crate) fn montgomery_multiply(
 // to the standard unsigned range.
 #[inline(always)]
 fn power2round_element(t: i32) -> (i32, i32) {
+    // Hax issue: https://github.com/hacspec/hax/issues/1082
     debug_assert!(t > -FIELD_MODULUS && t < FIELD_MODULUS);
 
     // Convert the signed representative to the standard unsigned one.

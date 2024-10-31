@@ -459,36 +459,8 @@ pub(crate) mod simd256 {
         }
     }
 
-    // TODO: Shake256 is only portable for now. If we don't want to change that,
-    // we should use the portable Xof impelmentation above.
-
     /// AVX2 SHAKE 256 state
     pub(crate) type Shake256 = super::portable::Shake256;
-
-    // impl shake256::Xof for Shake256 {
-    //     fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
-    //         portable::shake256(out, input);
-    //     }
-
-    //     fn init_absorb(input: &[u8]) -> Self {
-    //         let mut state = portable::incremental::shake256_init();
-    //         portable::incremental::shake256_absorb_final(&mut state, input);
-
-    //         Self { state }
-    //     }
-
-    //     fn squeeze_first_block(&mut self) -> [u8; shake256::BLOCK_SIZE] {
-    //         let mut out = [0u8; shake256::BLOCK_SIZE];
-    //         portable::incremental::shake256_squeeze_first_block(&mut self.state, &mut out);
-    //         out
-    //     }
-
-    //     fn squeeze_next_block(&mut self) -> [u8; shake256::BLOCK_SIZE] {
-    //         let mut out = [0u8; shake256::BLOCK_SIZE];
-    //         portable::incremental::shake256_squeeze_next_block(&mut self.state, &mut out);
-    //         out
-    //     }
-    // }
 
     /// AVX2 SHAKE 256 x4 state.
     #[cfg_attr(hax, hax_lib::opaque_type)]
