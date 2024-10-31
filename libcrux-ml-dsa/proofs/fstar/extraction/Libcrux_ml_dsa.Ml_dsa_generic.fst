@@ -33,14 +33,6 @@ let derive_message_representative
         Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb shake
           ((let list =
                 [
-                  cast (Core.Option.impl__is_some #(t_Array u8 (sz 11))
-                        (Libcrux_ml_dsa.Pre_hash.impl_1__pre_hash_oid domain_separation_context
-                          <:
-                          Core.Option.t_Option (t_Array u8 (sz 11)))
-                      <:
-                      bool)
-                  <:
-                  u8
                 ]
               in
               FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
@@ -604,10 +596,9 @@ let sign_pre_hashed
         (Core.Option.Option_Some d
           <:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
-    | Core.Result.Result_Err (Libcrux_ml_dsa.Pre_hash.DomainSeparationError_ContextTooLongError ) ->
-      Core.Result.Result_Err
-      (Libcrux_ml_dsa.Types.SigningError_ContextTooLongError <: Libcrux_ml_dsa.Types.t_SigningError)
-      <:
+    | Core.Result.Result_Err (err) ->
+      Core.Result.Result_Err (Core.Convert.f_from err)
+        <:
       Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
         Libcrux_ml_dsa.Types.t_SigningError
 

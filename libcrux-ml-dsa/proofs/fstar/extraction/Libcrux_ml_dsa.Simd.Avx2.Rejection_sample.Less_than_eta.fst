@@ -3,37 +3,31 @@ module Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta
 open Core
 open FStar.Mul
 
-let shift_interval (v_ETA: usize) (coefficients: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+let shift_interval (v_ETA: usize) (coefficients: u8) =
   match cast (v_ETA <: usize) <: u8 with
   | 2uy ->
-    let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    let quotient:u8 =
       Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 coefficients
-        (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 26l
-          <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 26l <: u8)
     in
-    let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-      Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 7l quotient
-    in
-    let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    let quotient:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 7l quotient in
+    let quotient:u8 =
       Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 quotient
-        (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 5l
-          <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 5l <: u8)
     in
-    let coefficients_mod_5_:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    let coefficients_mod_5_:u8 =
       Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 coefficients quotient
     in
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           (cast (v_ETA <: usize) <: i32)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        u8)
       coefficients_mod_5_
   | 4uy ->
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           (cast (v_ETA <: usize) <: i32)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        u8)
       coefficients
   | _ ->
     Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
@@ -42,7 +36,7 @@ let shift_interval (v_ETA: usize) (coefficients: Libcrux_intrinsics.Avx2_extract
         Rust_primitives.Hax.t_Never)
 
 let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
-  let potential_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let potential_coefficients:u8 =
     Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.deserialize_to_unsigned (sz 4) input
   in
   let (interval_boundary: i32):i32 =
@@ -55,11 +49,11 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
           <:
           Rust_primitives.Hax.t_Never)
   in
-  let compare_with_interval_boundary:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let compare_with_interval_boundary:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_cmpgt_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           interval_boundary
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        u8)
       potential_coefficients
   in
   let good:i32 =
@@ -70,9 +64,7 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
   in
   let good_lower_half:i32 = good &. 15l in
   let good_upper_half:i32 = good >>! 4l in
-  let shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    shift_interval v_ETA potential_coefficients
-  in
+  let shifted:u8 = shift_interval v_ETA potential_coefficients in
   let lower_shuffles:t_Array u8 (sz 16) =
     Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Shuffle_table.v_SHUFFLE_TABLE.[ cast (good_lower_half
           <:
@@ -80,13 +72,11 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
       <:
       usize ]
   in
-  let lower_shuffles:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let lower_shuffles:u8 =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (lower_shuffles <: t_Slice u8)
   in
-  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 shifted
-  in
-  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let lower_coefficients:u8 = Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 shifted in
+  let lower_coefficients:u8 =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 lower_coefficients lower_shuffles
   in
   let output:t_Slice i32 =
@@ -114,13 +104,11 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
       <:
       usize ]
   in
-  let upper_shuffles:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let upper_shuffles:u8 =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (upper_shuffles <: t_Slice u8)
   in
-  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l shifted
-  in
-  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let upper_coefficients:u8 = Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l shifted in
+  let upper_coefficients:u8 =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 upper_coefficients upper_shuffles
   in
   let output:t_Slice i32 =
