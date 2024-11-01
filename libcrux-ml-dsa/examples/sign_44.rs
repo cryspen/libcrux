@@ -16,6 +16,11 @@ fn main() {
     let keypair = generate_key_pair(key_generation_seed);
 
     for _i in 0..100_000 {
-        let _ = core::hint::black_box(sign(&keypair.signing_key, &message, signing_randomness));
+        let _ = core::hint::black_box(sign(
+            &keypair.signing_key,
+            &message,
+            b"",
+            signing_randomness,
+        ));
     }
 }

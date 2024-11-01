@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 2b71c3c42337fe17ceca860bedaafb3443e6c5e8
- * Eurydice: dcfae68c874635956f71d4c05928841b29ad0a8b
- * Karamel: 87384b244a98a0c41a2e14c65b872d885af7c8df
- * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
- * Libcrux: 4b0d78759e0adf160bab80862883bd5ba7338977
+ * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
+ * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
+ * Libcrux: 18a089ceff3ef1a9f6876cd99a9f4f42c0fe05d9
  */
 
 #ifndef __internal_libcrux_sha3_internal_H
@@ -273,8 +273,13 @@ static inline size_t libcrux_sha3_generic_keccak_fill_buffer_8b_c6(
   size_t input_len = Eurydice_slice_len(inputs[0U], uint8_t);
   size_t consumed = (size_t)0U;
   if (self->buf_len > (size_t)0U) {
-    if (self->buf_len + input_len >= (size_t)136U) {
-      consumed = (size_t)136U - self->buf_len;
+    if (
+        /* There's something buffered internally to consume. */ self->buf_len +
+            input_len >=
+        (size_t)136U) {
+      consumed = (size_t)136U - /* We have enough data when combining the
+                                   internal buffer and the input. */
+                 self->buf_len;
       {
         size_t i = (size_t)0U;
         Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
@@ -380,7 +385,9 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_8b_c6(
   memcpy(copy_of_inputs, inputs, (size_t)1U * sizeof(Eurydice_slice));
   size_t input_remainder_len =
       libcrux_sha3_generic_keccak_absorb_full_8b_c6(uu____0, copy_of_inputs);
-  if (input_remainder_len > (size_t)0U) {
+  if (
+      /* ... buffer the rest if there's not enough input (left). */
+      input_remainder_len > (size_t)0U) {
     size_t input_len = Eurydice_slice_len(inputs[0U], uint8_t);
     {
       size_t i = (size_t)0U;
@@ -727,8 +734,13 @@ static inline size_t libcrux_sha3_generic_keccak_fill_buffer_8b_c60(
   size_t input_len = Eurydice_slice_len(inputs[0U], uint8_t);
   size_t consumed = (size_t)0U;
   if (self->buf_len > (size_t)0U) {
-    if (self->buf_len + input_len >= (size_t)168U) {
-      consumed = (size_t)168U - self->buf_len;
+    if (
+        /* There's something buffered internally to consume. */ self->buf_len +
+            input_len >=
+        (size_t)168U) {
+      consumed = (size_t)168U - /* We have enough data when combining the
+                                   internal buffer and the input. */
+                 self->buf_len;
       {
         size_t i = (size_t)0U;
         Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
@@ -834,7 +846,9 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_8b_c60(
   memcpy(copy_of_inputs, inputs, (size_t)1U * sizeof(Eurydice_slice));
   size_t input_remainder_len =
       libcrux_sha3_generic_keccak_absorb_full_8b_c60(uu____0, copy_of_inputs);
-  if (input_remainder_len > (size_t)0U) {
+  if (
+      /* ... buffer the rest if there's not enough input (left). */
+      input_remainder_len > (size_t)0U) {
     size_t input_len = Eurydice_slice_len(inputs[0U], uint8_t);
     {
       size_t i = (size_t)0U;
@@ -1224,7 +1238,13 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c6(
   size_t blocks = out_len / (size_t)136U;
   size_t last = out_len - out_len % (size_t)136U;
   size_t mid;
-  if ((size_t)136U >= out_len) {
+  if ((size_t)136U >=
+      /* Squeeze out one to start with. XXX: Eurydice does not extract
+         `core::cmp::min`, so we do this instead. (cf.
+         https://github.com/AeneasVerif/eurydice/issues/49) */
+      out_len
+
+  ) {
     mid = out_len;
   } else {
     mid = (size_t)136U;
@@ -1238,8 +1258,11 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c6(
   libcrux_sha3_portable_keccak_store_5a_5b(self->inner.st, out00);
   core_ops_range_Range_08 iter =
       core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
-          (CLITERAL(core_ops_range_Range_08){.start = (size_t)1U,
-                                             .end = blocks}),
+          (CLITERAL(core_ops_range_Range_08){
+              .start = (size_t)1U,
+              .end = /* If we got asked for more than one block, squeeze out
+                        more. */
+              blocks}),
           core_ops_range_Range_08, core_ops_range_Range_08);
   while (true) {
     if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
@@ -1248,7 +1271,11 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c6(
       break;
     } else {
       Eurydice_slice_uint8_t_1size_t__x2 uu____1 =
-          libcrux_sha3_portable_keccak_split_at_mut_n_5a(out_rest,
+          libcrux_sha3_portable_keccak_split_at_mut_n_5a(/* Here we know that we
+                                                            always have full
+                                                            blocks to write out.
+                                                          */
+                                                         out_rest,
                                                          (size_t)136U);
       Eurydice_slice out0[1U];
       memcpy(out0, uu____1.fst, (size_t)1U * sizeof(Eurydice_slice));
@@ -1343,7 +1370,13 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c60(
   size_t blocks = out_len / (size_t)168U;
   size_t last = out_len - out_len % (size_t)168U;
   size_t mid;
-  if ((size_t)168U >= out_len) {
+  if ((size_t)168U >=
+      /* Squeeze out one to start with. XXX: Eurydice does not extract
+         `core::cmp::min`, so we do this instead. (cf.
+         https://github.com/AeneasVerif/eurydice/issues/49) */
+      out_len
+
+  ) {
     mid = out_len;
   } else {
     mid = (size_t)168U;
@@ -1357,8 +1390,11 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c60(
   libcrux_sha3_portable_keccak_store_5a_3a(self->inner.st, out00);
   core_ops_range_Range_08 iter =
       core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
-          (CLITERAL(core_ops_range_Range_08){.start = (size_t)1U,
-                                             .end = blocks}),
+          (CLITERAL(core_ops_range_Range_08){
+              .start = (size_t)1U,
+              .end = /* If we got asked for more than one block, squeeze out
+                        more. */
+              blocks}),
           core_ops_range_Range_08, core_ops_range_Range_08);
   while (true) {
     if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
@@ -1367,7 +1403,11 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c60(
       break;
     } else {
       Eurydice_slice_uint8_t_1size_t__x2 uu____1 =
-          libcrux_sha3_portable_keccak_split_at_mut_n_5a(out_rest,
+          libcrux_sha3_portable_keccak_split_at_mut_n_5a(/* Here we know that we
+                                                            always have full
+                                                            blocks to write out.
+                                                          */
+                                                         out_rest,
                                                          (size_t)168U);
       Eurydice_slice out0[1U];
       memcpy(out0, uu____1.fst, (size_t)1U * sizeof(Eurydice_slice));

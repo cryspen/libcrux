@@ -23,6 +23,14 @@ val vec_from_i16_array (array: t_Slice i16)
           let result:t_SIMD256Vector = result in
           repr result == array)
 
+val vec_zero: Prims.unit
+  -> Prims.Pure t_SIMD256Vector
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_SIMD256Vector = result in
+          repr result == Seq.create 16 0s)
+
 val vec_to_i16_array (v: t_SIMD256Vector)
     : Prims.Pure (t_Array i16 (sz 16))
       Prims.l_True
@@ -40,14 +48,6 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector =
     f_repr_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> true);
     f_repr = fun (x: t_SIMD256Vector) -> vec_to_i16_array x
   }
-
-val vec_zero: Prims.unit
-  -> Prims.Pure t_SIMD256Vector
-      Prims.l_True
-      (ensures
-        fun result ->
-          let result:t_SIMD256Vector = result in
-          repr result == Seq.create 16 0s)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =

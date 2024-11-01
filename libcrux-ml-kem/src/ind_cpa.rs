@@ -370,6 +370,7 @@ fn sample_vector_cbd_then_ntt_out<
     (forall (i:nat). i < v $K ==>
         Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index ${public_key}_future.f_t_as_ntt i))
 "))]
+#[inline(always)]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
     const ETA1: usize,
@@ -443,6 +444,7 @@ pub(crate) fn generate_keypair_unpacked<
     length $key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE"))]
 #[hax_lib::ensures(|result| fstar!("let (expected, valid) = Spec.MLKEM.ind_cpa_generate_keypair $K $key_generation_seed in 
                                     valid ==> $result == expected"))] 
+#[inline(always)]
 pub(crate) fn generate_keypair<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
@@ -491,6 +493,7 @@ pub(crate) fn generate_keypair<
     fstar!("$out_future == Spec.MLKEM.compress_then_encode_u #$K
                (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $input)")
 )]
+#[inline(always)]
 fn compress_then_serialize_u<
     const K: usize,
     const OUT_LEN: usize,
@@ -594,11 +597,13 @@ fn compress_then_serialize_u<
       $BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
       $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
       length $randomness == Spec.MLKEM.v_SHARED_SECRET_SIZE"))]
+
 #[hax_lib::ensures(|result|
     fstar!("$result == Spec.MLKEM.ind_cpa_encrypt_unpacked $K $message $randomness
         (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${public_key}.f_t_as_ntt)
         (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${public_key}.f_A)")
 )]
+#[inline(always)]
 pub(crate) fn encrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -703,6 +708,7 @@ pub(crate) fn encrypt_unpacked<
     fstar!("let (expected, valid) = Spec.MLKEM.ind_cpa_encrypt $K $public_key $message $randomness in
             valid ==> $result == expected")
 )]
+#[inline(always)]
 pub(crate) fn encrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -875,6 +881,7 @@ fn deserialize_secret_key<const K: usize, Vector: Operations>(
     fstar!("$result == Spec.MLKEM.ind_cpa_decrypt_unpacked $K $ciphertext
         (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${secret_key}.f_secret_as_ntt)")
 )]
+#[inline(always)]
 pub(crate) fn decrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -911,6 +918,7 @@ pub(crate) fn decrypt_unpacked<
 #[hax_lib::ensures(|result|
     fstar!("$result == Spec.MLKEM.ind_cpa_decrypt $K $secret_key $ciphertext")
 )]
+#[inline(always)]
 pub(crate) fn decrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,

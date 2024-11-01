@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 2b71c3c42337fe17ceca860bedaafb3443e6c5e8
- * Eurydice: dcfae68c874635956f71d4c05928841b29ad0a8b
- * Karamel: 87384b244a98a0c41a2e14c65b872d885af7c8df
- * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
- * Libcrux: 4b0d78759e0adf160bab80862883bd5ba7338977
+ * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
+ * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
+ * Libcrux: 18a089ceff3ef1a9f6876cd99a9f4f42c0fe05d9
  */
 
 #ifndef __libcrux_sha3_internal_H
@@ -1811,6 +1811,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_c6(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
+  /* generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out); or */
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_9e4(copy_of_data, out);
 }
@@ -2159,6 +2160,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_7c(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
+  /* generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out); or */
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_9e3(copy_of_data, out);
 }
@@ -2507,6 +2509,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_1e(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
+  /* generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out); or */
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_9e2(copy_of_data, out);
 }
@@ -2695,6 +2698,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_ad0(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
+  /* generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out); or */
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_9e1(copy_of_data, out);
 }
@@ -2813,6 +2817,7 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_ad(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
+  /* generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out); or */
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_9e0(copy_of_data, out);
 }
@@ -3161,19 +3166,10 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_96(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
+  /* generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out); or */
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_9e(copy_of_data, out);
 }
-
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.KeccakState
-with types core_core_arch_x86___m256i
-with const generics
-- $4size_t
-*/
-typedef struct libcrux_sha3_generic_keccak_KeccakState_55_s {
-  __m256i st[5U][5U];
-} libcrux_sha3_generic_keccak_KeccakState_55;
 
 #if defined(__cplusplus)
 }

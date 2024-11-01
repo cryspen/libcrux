@@ -35,97 +35,12 @@ const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 256] = [
 ];
 
 #[inline(always)]
-fn ntt_at_layer_0<SIMDUnit: Operations>(
-    zeta_i: &mut usize,
-    re: &mut PolynomialRingElement<SIMDUnit>,
-) {
-    *zeta_i += 1;
-
-    for round in 0..re.simd_units.len() {
-        re.simd_units[round] = SIMDUnit::ntt_at_layer_0(
-            re.simd_units[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 2],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 3],
-        );
-
-        *zeta_i += 4;
-    }
-
-    *zeta_i -= 1;
-}
-#[inline(always)]
-fn ntt_at_layer_1<SIMDUnit: Operations>(
-    zeta_i: &mut usize,
-    re: &mut PolynomialRingElement<SIMDUnit>,
-) {
-    *zeta_i += 1;
-
-    for round in 0..re.simd_units.len() {
-        re.simd_units[round] = SIMDUnit::ntt_at_layer_1(
-            re.simd_units[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
-        );
-
-        *zeta_i += 2;
-    }
-
-    *zeta_i -= 1;
-}
-#[inline(always)]
-fn ntt_at_layer_2<SIMDUnit: Operations>(
-    zeta_i: &mut usize,
-    re: &mut PolynomialRingElement<SIMDUnit>,
-) {
-    for round in 0..re.simd_units.len() {
-        *zeta_i += 1;
-        re.simd_units[round] =
-            SIMDUnit::ntt_at_layer_2(re.simd_units[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
-    }
-}
-#[inline(always)]
-fn ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
-    zeta_i: &mut usize,
-    re: &mut PolynomialRingElement<SIMDUnit>,
-) {
-    let step = 1 << LAYER;
-
-    for round in 0..(128 >> LAYER) {
-        *zeta_i += 1;
-
-        let offset = (round * step * 2) / COEFFICIENTS_IN_SIMD_UNIT;
-        let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
-
-        for j in offset..offset + step_by {
-            let t = montgomery_multiply_by_fer::<SIMDUnit>(
-                re.simd_units[j + step_by],
-                ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-            );
-
-            re.simd_units[j + step_by] = SIMDUnit::subtract(&re.simd_units[j], &t);
-            re.simd_units[j] = SIMDUnit::add(&re.simd_units[j], &t);
-        }
-    }
-}
-
-#[inline(always)]
 pub(crate) fn ntt<SIMDUnit: Operations>(
-    mut re: PolynomialRingElement<SIMDUnit>,
+    re: PolynomialRingElement<SIMDUnit>,
 ) -> PolynomialRingElement<SIMDUnit> {
-    let mut zeta_i = 0;
-
-    ntt_at_layer_3_plus::<SIMDUnit, 7>(&mut zeta_i, &mut re);
-    ntt_at_layer_3_plus::<SIMDUnit, 6>(&mut zeta_i, &mut re);
-    ntt_at_layer_3_plus::<SIMDUnit, 5>(&mut zeta_i, &mut re);
-    ntt_at_layer_3_plus::<SIMDUnit, 4>(&mut zeta_i, &mut re);
-    ntt_at_layer_3_plus::<SIMDUnit, 3>(&mut zeta_i, &mut re);
-    ntt_at_layer_2::<SIMDUnit>(&mut zeta_i, &mut re);
-    ntt_at_layer_1::<SIMDUnit>(&mut zeta_i, &mut re);
-    ntt_at_layer_0::<SIMDUnit>(&mut zeta_i, &mut re);
-
-    re
+    PolynomialRingElement {
+        simd_units: SIMDUnit::ntt(re.simd_units),
+    }
 }
 
 #[inline(always)]

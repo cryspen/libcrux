@@ -17,10 +17,6 @@ files:
   - name: libcrux_sha3_avx2
     inline_static: true
     target: "avx2"
-    # This is needed solely for the benchmarking test -- otherwise these would
-    # all be private. Note that the order matters! So we put these first so that
-    # they match immediately (and get promoted to internal), then the rest of
-    # the behavior applies.
     api:
       patterns:
         - [libcrux_sha3, avx2, "*"]

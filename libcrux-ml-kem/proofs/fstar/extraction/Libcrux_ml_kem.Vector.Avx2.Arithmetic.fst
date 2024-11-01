@@ -85,7 +85,7 @@ let sub (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   in
   result
 
-#push-options "--z3rlimit 200 --split_queries always"
+#push-options "--z3rlimit 200"
 
 let barrett_reduce (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let t0:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
