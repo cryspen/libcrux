@@ -30,6 +30,8 @@ extern "C" {
 #define CLITERAL(type) (type)
 #endif
 
+#define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
+
 // We represent a slice as a pair of an (untyped) pointer, along with the length
 // of the slice, i.e. the number of elements in the slice (this is NOT the
 // number of bytes). This design choice has two important consequences.

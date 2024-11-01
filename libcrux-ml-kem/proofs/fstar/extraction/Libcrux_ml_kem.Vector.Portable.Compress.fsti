@@ -36,11 +36,11 @@ val compress_message_coefficient (fe: u16)
       (ensures
         fun result ->
           let result:u8 = result in
-          Hax_lib.implies ((833us <=. fe <: bool) && (fe <=. 2596us <: bool))
+          Hax_lib.implies ((833us <=. fe <: bool) && (fe <=. 2496us <: bool))
             (fun temp_0_ ->
                 let _:Prims.unit = temp_0_ in
                 result =. 1uy <: bool) &&
-          Hax_lib.implies (~.((833us <=. fe <: bool) && (fe <=. 2596us <: bool)) <: bool)
+          Hax_lib.implies (~.((833us <=. fe <: bool) && (fe <=. 2496us <: bool)) <: bool)
             (fun temp_0_ ->
                 let _:Prims.unit = temp_0_ in
                 result =. 0uy <: bool))
@@ -76,7 +76,18 @@ val compress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
 
 val decompress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)
-      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires
+        (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
+          v v_COEFFICIENT_BITS == 11) /\
+        (forall (i: nat).
+            i < 16 ==>
+            v (Seq.index a.f_elements i) >= 0 /\
+            v (Seq.index a.f_elements i) < pow2 (v v_COEFFICIENT_BITS)))
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          forall (i: nat).
+            i < 16 ==>
+            v (Seq.index result.f_elements i) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)
