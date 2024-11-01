@@ -33,6 +33,14 @@ let derive_message_representative
         Libcrux_ml_dsa.Hash_functions.Portable.shake256_absorb shake
           ((let list =
                 [
+                  cast (Core.Option.impl__is_some #(t_Array u8 (sz 11))
+                        (Libcrux_ml_dsa.Pre_hash.impl_1__pre_hash_oid domain_separation_context
+                          <:
+                          Core.Option.t_Option (t_Array u8 (sz 11)))
+                      <:
+                      bool)
+                  <:
+                  u8
                 ]
               in
               FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
@@ -525,18 +533,21 @@ let sign
     Libcrux_ml_dsa.Pre_hash.impl_1__new context
       (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (sz 11)))
   with
-  | Core.Result.Result_Ok d ->
+  | Core.Result.Result_Ok hoist36 ->
     sign_internal #v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4 v_ROWS_IN_A v_COLUMNS_IN_A
       v_ETA v_ERROR_RING_ELEMENT_SIZE v_GAMMA1_EXPONENT v_GAMMA2 v_COMMITMENT_RING_ELEMENT_SIZE
       v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE v_ONES_IN_VERIFIER_CHALLENGE
       v_MAX_ONES_IN_HINT v_GAMMA1_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_SIGNATURE_SIZE signing_key
       message
-      (Core.Option.Option_Some d
+      (Core.Option.Option_Some hoist36
         <:
         Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
-  | Core.Result.Result_Err (Libcrux_ml_dsa.Pre_hash.DomainSeparationError_ContextTooLongError ) ->
+  | Core.Result.Result_Err err ->
     Core.Result.Result_Err
-    (Libcrux_ml_dsa.Types.SigningError_ContextTooLongError <: Libcrux_ml_dsa.Types.t_SigningError)
+    (Core.Convert.f_from #Libcrux_ml_dsa.Types.t_SigningError
+        #Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
+        #FStar.Tactics.Typeclasses.solve
+        err)
     <:
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
       Libcrux_ml_dsa.Types.t_SigningError
@@ -587,18 +598,22 @@ let sign_pre_hashed
           <:
           Core.Option.t_Option (t_Array u8 (sz 11)))
     with
-    | Core.Result.Result_Ok d ->
+    | Core.Result.Result_Ok hoist39 ->
       sign_internal #v_SIMDUnit #v_Shake128X4 #v_Shake256 #v_Shake256X4 v_ROWS_IN_A v_COLUMNS_IN_A
         v_ETA v_ERROR_RING_ELEMENT_SIZE v_GAMMA1_EXPONENT v_GAMMA2 v_COMMITMENT_RING_ELEMENT_SIZE
         v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE v_ONES_IN_VERIFIER_CHALLENGE
         v_MAX_ONES_IN_HINT v_GAMMA1_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE v_SIGNATURE_SIZE
         signing_key (pre_hashed_message <: t_Slice u8)
-        (Core.Option.Option_Some d
+        (Core.Option.Option_Some hoist39
           <:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
-    | Core.Result.Result_Err (err) ->
-      Core.Result.Result_Err (Core.Convert.f_from err)
-        <:
+    | Core.Result.Result_Err err ->
+      Core.Result.Result_Err
+      (Core.Convert.f_from #Libcrux_ml_dsa.Types.t_SigningError
+          #Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
+          #FStar.Tactics.Typeclasses.solve
+          err)
+      <:
       Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
         Libcrux_ml_dsa.Types.t_SigningError
 
@@ -782,19 +797,20 @@ let verify
     Libcrux_ml_dsa.Pre_hash.impl_1__new context
       (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (sz 11)))
   with
-  | Core.Result.Result_Ok d ->
+  | Core.Result.Result_Ok hoist41 ->
     verify_internal #v_SIMDUnit #v_Shake128X4 #v_Shake256 v_ROWS_IN_A v_COLUMNS_IN_A
       v_SIGNATURE_SIZE v_VERIFICATION_KEY_SIZE v_GAMMA1_EXPONENT v_GAMMA1_RING_ELEMENT_SIZE v_GAMMA2
       v_BETA v_COMMITMENT_RING_ELEMENT_SIZE v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE
       v_ONES_IN_VERIFIER_CHALLENGE v_MAX_ONES_IN_HINT verification_key_serialized message
-      (Core.Option.Option_Some d
+      (Core.Option.Option_Some hoist41
         <:
         Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) signature_serialized
-  | Core.Result.Result_Err (Libcrux_ml_dsa.Pre_hash.DomainSeparationError_ContextTooLongError ) ->
+  | Core.Result.Result_Err err ->
     Core.Result.Result_Err
-    (Libcrux_ml_dsa.Types.VerificationError_ContextTooLongError
-      <:
-      Libcrux_ml_dsa.Types.t_VerificationError)
+    (Core.Convert.f_from #Libcrux_ml_dsa.Types.t_VerificationError
+        #Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
+        #FStar.Tactics.Typeclasses.solve
+        err)
     <:
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
 
@@ -833,20 +849,21 @@ let verify_pre_hashed
         <:
         Core.Option.t_Option (t_Array u8 (sz 11)))
   with
-  | Core.Result.Result_Ok d ->
+  | Core.Result.Result_Ok hoist43 ->
     verify_internal #v_SIMDUnit #v_Shake128X4 #v_Shake256 v_ROWS_IN_A v_COLUMNS_IN_A
       v_SIGNATURE_SIZE v_VERIFICATION_KEY_SIZE v_GAMMA1_EXPONENT v_GAMMA1_RING_ELEMENT_SIZE v_GAMMA2
       v_BETA v_COMMITMENT_RING_ELEMENT_SIZE v_COMMITMENT_VECTOR_SIZE v_COMMITMENT_HASH_SIZE
       v_ONES_IN_VERIFIER_CHALLENGE v_MAX_ONES_IN_HINT verification_key_serialized
       (pre_hashed_message <: t_Slice u8)
-      (Core.Option.Option_Some d
+      (Core.Option.Option_Some hoist43
         <:
         Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) signature_serialized
-  | Core.Result.Result_Err (Libcrux_ml_dsa.Pre_hash.DomainSeparationError_ContextTooLongError ) ->
+  | Core.Result.Result_Err err ->
     Core.Result.Result_Err
-    (Libcrux_ml_dsa.Types.VerificationError_ContextTooLongError
-      <:
-      Libcrux_ml_dsa.Types.t_VerificationError)
+    (Core.Convert.f_from #Libcrux_ml_dsa.Types.t_VerificationError
+        #Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
+        #FStar.Tactics.Typeclasses.solve
+        err)
     <:
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
 
