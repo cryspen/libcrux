@@ -50,20 +50,55 @@ fn invert_ntt_at_layer_0<SIMDUnit: Operations>(
 ) {
     *zeta_i -= 1;
 
-    for round in 0..re.simd_units.len() {
-        re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_0(
-            re.simd_units[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 2],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 3],
-        );
-
-        *zeta_i -= 4;
+    macro_rules! round {
+        ($i:literal, $zeta_0:literal, $zeta_1:literal, $zeta_2:literal, $zeta_3:literal) => {
+            re.simd_units[$i] = SIMDUnit::invert_ntt_at_layer_0(
+                re.simd_units[$i],
+                $zeta_0,
+                $zeta_1,
+                $zeta_2,
+                $zeta_3,
+            );
+            *zeta_i -= 4;
+        };
     }
+
+    round!(0, 1976782, -846154, 1400424, 3937738);
+    round!(1, -1362209, -48306, 3919660, -554416);
+    round!(2, -3545687, 1612842, -976891, 183443);
+    round!(3, -2286327, -420899, -2235985, -2939036);
+    round!(4, -3833893, -260646, -1104333, -1667432);
+    round!(5, 1910376, -1803090, 1723600, -426683);
+    round!(6, 472078, 1717735, -975884, 2213111);
+    round!(7, 269760, 3866901, 3523897, -3038916);
+    round!(8, -1799107, -3694233, 1652634, 810149);
+    round!(9, 3014001, 1616392, 162844, -3183426);
+    round!(10, -1207385, 185531, 3369112, 1957272);
+    round!(11, -164721, 2454455, 2432395, -2013608);
+    round!(12, -3776993, 594136, -3724270, -2584293);
+    round!(13, -1846953, -1671176, -2831860, -542412);
+    round!(14, 3406031, 2235880, 777191, 1500165);
+    round!(15, -1374803, -2546312, 1917081, -1279661);
+    round!(16, -1962642, 3306115, 1312455, -451100);
+    round!(17, -1430225, -3318210, 1237275, -1333058);
+    round!(18, -1050970, 1903435, 1869119, -2994039);
+    round!(19, -3548272, 2635921, 1250494, -3767016);
+    round!(20, 1595974, 2486353, 1247620, 4055324);
+    round!(21, 1265009, -2590150, 2691481, 2842341);
+    round!(22, 203044, 1735879, -3342277, 3437287);
+    round!(23, 4108315, -2437823, 286988, 342297);
+    round!(24, -3595838, -768622, -525098, -3556995);
+    round!(25, 3207046, 2031748, -3122442, -655327);
+    round!(26, -522500, -43260, -1613174, 495491);
+    round!(27, 819034, 909542, 1859098, 900702);
+    round!(28, -3193378, -1197226, -3759364, -3520352);
+    round!(29, 3513181, -1235728, 2434439, 266997);
+    round!(30, -3562462, -2446433, 2244091, -3342478);
+    round!(31, 3817976, 2316500, 3407706, 2091667);
 
     *zeta_i += 1;
 }
+
 #[inline(always)]
 fn invert_ntt_at_layer_1<SIMDUnit: Operations>(
     zeta_i: &mut usize,
@@ -71,30 +106,97 @@ fn invert_ntt_at_layer_1<SIMDUnit: Operations>(
 ) {
     *zeta_i -= 1;
 
-    for round in 0..(256 / COEFFICIENTS_IN_SIMD_UNIT) {
-        re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_1(
-            re.simd_units[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
-        );
-        *zeta_i -= 2;
+    macro_rules! round {
+        ($i:literal, $zeta_0:literal, $zeta_1:literal) => {
+            re.simd_units[$i] =
+                SIMDUnit::invert_ntt_at_layer_1(re.simd_units[$i], $zeta_0, $zeta_1);
+
+            *zeta_i -= 2;
+        };
     }
+
+    round!(0, 3839961, -3628969);
+    round!(1, -3881060, -3019102);
+    round!(2, -1439742, -812732);
+    round!(3, -1584928, 1285669);
+    round!(4, 1341330, 1315589);
+    round!(5, -177440, -2409325);
+    round!(6, -1851402, 3159746);
+    round!(7, -3553272, 189548);
+    round!(8, -1316856, 759969);
+    round!(9, -210977, 2389356);
+    round!(10, -3249728, 1653064);
+    round!(11, -8578, -3724342);
+    round!(12, 3958618, 904516);
+    round!(13, -1100098, 44288);
+    round!(14, 3097992, 508951);
+    round!(15, 264944, -3343383);
+    round!(16, -1430430, 1852771);
+    round!(17, 1349076, -381987);
+    round!(18, -1308169, -22981);
+    round!(19, -1228525, -671102);
+    round!(20, -2477047, -411027);
+    round!(21, -3693493, -2967645);
+    round!(22, 2715295, 2147896);
+    round!(23, -983419, 3412210);
+    round!(24, 126922, -3632928);
+    round!(25, -3157330, -3190144);
+    round!(26, -1000202, -4083598);
+    round!(27, 1939314, -1257611);
+    round!(28, -1585221, 2176455);
+    round!(29, 3475950, -1452451);
+    round!(30, -3041255, -3677745);
+    round!(31, -1528703, -3930395);
 
     *zeta_i += 1;
 }
+
 #[inline(always)]
 fn invert_ntt_at_layer_2<SIMDUnit: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
-    for round in 0..(256 / COEFFICIENTS_IN_SIMD_UNIT) {
-        *zeta_i -= 1;
-        re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_2(
-            re.simd_units[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-        );
+    macro_rules! round {
+        ($i:literal, $zeta:literal) => {
+            re.simd_units[$i] = SIMDUnit::invert_ntt_at_layer_2(re.simd_units[$i], $zeta);
+            *zeta_i -= 1;
+        };
     }
+
+    round!(0, -2797779);
+    round!(1, 2071892);
+    round!(2, -2556880);
+    round!(3, 3900724);
+    round!(4, 3881043);
+    round!(5, 954230);
+    round!(6, 531354);
+    round!(7, 811944);
+    round!(8, 3699596);
+    round!(9, -1600420);
+    round!(10, -2140649);
+    round!(11, 3507263);
+    round!(12, -3821735);
+    round!(13, 3505694);
+    round!(14, -1643818);
+    round!(15, -1699267);
+    round!(16, -539299);
+    round!(17, 2348700);
+    round!(18, -300467);
+    round!(19, 3539968);
+    round!(20, -2867647);
+    round!(21, 3574422);
+    round!(22, -3043716);
+    round!(23, -3861115);
+    round!(24, 3915439);
+    round!(25, -2537516);
+    round!(26, -3592148);
+    round!(27, -1661693);
+    round!(28, 3530437);
+    round!(29, 3077325);
+    round!(30, 95776);
+    round!(31, 2706023);
 }
+
 #[inline(always)]
 fn invert_ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
     zeta_i: &mut usize,
