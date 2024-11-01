@@ -11,6 +11,7 @@ description = "Libcrux intrinsics crate"
 exclude = ["/proofs"]
 
 [dependencies]
+hax-lib.workspace = true
 
 [features]
 simd128 = []

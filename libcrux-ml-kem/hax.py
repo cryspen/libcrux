@@ -40,6 +40,8 @@ class extractAction(argparse.Action):
             "-i",
             include_str,
             "fstar",
+            "--z3rlimit",
+            "80",
             "--interfaces",
             interface_include,
         ]
@@ -64,6 +66,8 @@ class extractAction(argparse.Action):
             "-i",
             include_str,
             "fstar",
+            "--z3rlimit",
+            "80",
             "--interfaces",
             interface_include,
         ]
@@ -94,9 +98,12 @@ class extractAction(argparse.Action):
             "simd128,simd256,pre-verification",
             ";",
             "into",
+            "-vv",
             "-i",
             include_str,
             "fstar",
+            "--z3rlimit",
+            "100",
             "--interfaces",
             interface_include,
         ]
