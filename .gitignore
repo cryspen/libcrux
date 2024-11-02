@@ -15,6 +15,6 @@ kyber-crate/
 # F*
 .fstar-cache
 .depend
-**/proofs/fstar/*/#*#
-**/proofs/fstar/*/.#*
+/proofs/fstar/*/#*#
+/proofs/fstar/*/.#*
 hax.fst.config.json

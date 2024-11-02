@@ -216,7 +216,7 @@ fn ntt_at_layer_3_plus<const LAYER: usize>(
             re[j] = arithmetic::add(&re[j], &t);
         }
     }
-    ()
+    () // Needed because of https://github.com/hacspec/hax/issues/720
 }
 
 #[inline(always)]

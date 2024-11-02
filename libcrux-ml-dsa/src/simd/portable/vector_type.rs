@@ -1,5 +1,5 @@
 use crate::simd::traits::COEFFICIENTS_IN_SIMD_UNIT;
-/// Values having this type hold a representative 'x' of the Kyber field.
+/// Values having this type hold a representative 'x' of the ML-DSA field.
 /// We use 'fe' as a shorthand for this type.
 pub(crate) type FieldElement = i32;
 

@@ -239,7 +239,7 @@ fn ntt_at_layer_3_plus<const LAYER: usize>(
             re[j + step_by] = arithmetic::subtract(re[j], t);
             re[j] = arithmetic::add(re[j], t);
         }
-        ()
+        () // This is because of https://github.com/hacspec/hax/issues/720
     }
     ()
 }
