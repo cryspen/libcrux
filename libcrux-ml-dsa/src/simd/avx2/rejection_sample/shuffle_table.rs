@@ -5,11 +5,13 @@
 //
 // |SHUFFLE_TABLE| was originally generated using a
 // python script.
-#[allow(dead_code)]
+
+#[cfg(test)]
 fn is_bit_set(number: usize, bit_position: u8) -> bool {
     ((number & (1 << bit_position)) >> bit_position) == 1
 }
-#[allow(dead_code)]
+
+#[cfg(test)]
 fn generate_shuffle_table() -> [[u8; 16]; 16] {
     let mut byte_shuffles = [[255u8; 16]; 16];
 

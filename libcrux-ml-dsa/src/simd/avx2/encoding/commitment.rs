@@ -1,7 +1,8 @@
 use libcrux_intrinsics::avx2::*;
 
-#[inline(always)]
-pub fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; 19];
 
     match OUTPUT_SIZE as u8 {

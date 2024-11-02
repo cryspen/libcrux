@@ -63,8 +63,10 @@ fn serialize_when_eta_is_4<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; 
 
     serialized[0..4].try_into().unwrap()
 }
-#[inline(always)]
-pub fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
+
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
     match OUTPUT_SIZE as u8 {
         3 => serialize_when_eta_is_2::<OUTPUT_SIZE>(simd_unit),
         4 => serialize_when_eta_is_4::<OUTPUT_SIZE>(simd_unit),
@@ -94,6 +96,7 @@ fn deserialize_to_unsigned_when_eta_is_2(bytes: &[u8]) -> Vec256 {
 
     mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK))
 }
+
 #[inline(always)]
 fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
     debug_assert!(bytes.len() == 4);
@@ -116,8 +119,10 @@ fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
 
     mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK))
 }
-#[inline(always)]
-pub(crate) fn deserialize_to_unsigned<const ETA: usize>(serialized: &[u8]) -> Vec256 {
+
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn deserialize_to_unsigned<const ETA: usize>(serialized: &[u8]) -> Vec256 {
     match ETA as u8 {
         2 => deserialize_to_unsigned_when_eta_is_2(serialized),
         4 => deserialize_to_unsigned_when_eta_is_4(serialized),
@@ -125,8 +130,9 @@ pub(crate) fn deserialize_to_unsigned<const ETA: usize>(serialized: &[u8]) -> Ve
     }
 }
 
-#[inline(always)]
-pub(crate) fn deserialize<const ETA: usize>(serialized: &[u8]) -> Vec256 {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn deserialize<const ETA: usize>(serialized: &[u8]) -> Vec256 {
     let unsigned = deserialize_to_unsigned::<ETA>(serialized);
 
     mm256_sub_epi32(mm256_set1_epi32(ETA as i32), unsigned)

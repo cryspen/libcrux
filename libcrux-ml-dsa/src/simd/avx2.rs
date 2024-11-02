@@ -87,57 +87,73 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
-        rejection_sample::less_than_field_modulus::sample(randomness, out)
+        unsafe { rejection_sample::less_than_field_modulus::sample(randomness, out) }
     }
+
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
-        rejection_sample::less_than_eta::sample::<2>(randomness, out)
+        unsafe { rejection_sample::less_than_eta::sample::<2>(randomness, out) }
     }
+
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
-        rejection_sample::less_than_eta::sample::<4>(randomness, out)
+        unsafe { rejection_sample::less_than_eta::sample::<4>(randomness, out) }
     }
 
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn gamma1_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::gamma1::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+        unsafe { encoding::gamma1::serialize::<OUTPUT_SIZE>(simd_unit.coefficients) }
     }
+
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self {
-        encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized).into()
+        unsafe { encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized).into() }
     }
 
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::commitment::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+        unsafe { encoding::commitment::serialize::<OUTPUT_SIZE>(simd_unit.coefficients) }
     }
 
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn error_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::error::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+        unsafe { encoding::error::serialize::<OUTPUT_SIZE>(simd_unit.coefficients) }
     }
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self {
-        encoding::error::deserialize::<ETA>(serialized).into()
+        unsafe { encoding::error::deserialize::<ETA>(serialized).into() }
     }
 
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn t0_serialize(simd_unit: Self) -> [u8; 13] {
-        encoding::t0::serialize(simd_unit.coefficients)
-    }
-    #[inline(always)]
-    fn t0_deserialize(serialized: &[u8]) -> Self {
-        encoding::t0::deserialize(serialized).into()
+        unsafe { encoding::t0::serialize(simd_unit.coefficients) }
     }
 
     #[inline(always)]
+    #[allow(unsafe_code)]
+    fn t0_deserialize(serialized: &[u8]) -> Self {
+        unsafe { encoding::t0::deserialize(serialized).into() }
+    }
+
+    #[inline(always)]
+    #[allow(unsafe_code)]
     fn t1_serialize(simd_unit: Self) -> [u8; 10] {
-        encoding::t1::serialize(simd_unit.coefficients)
+        unsafe { encoding::t1::serialize(simd_unit.coefficients) }
     }
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn t1_deserialize(serialized: &[u8]) -> Self {
-        encoding::t1::deserialize(serialized).into()
+        unsafe { encoding::t1::deserialize(serialized).into() }
     }
 
     #[inline(always)]
@@ -149,6 +165,7 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn invert_ntt_at_layer_0(
         simd_unit: Self,
         zeta0: i32,
@@ -156,14 +173,20 @@ impl Operations for AVX2SIMDUnit {
         zeta2: i32,
         zeta3: i32,
     ) -> Self {
-        ntt::invert_ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3).into()
+        unsafe {
+            ntt::invert_ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3).into()
+        }
     }
+
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1).into()
+        unsafe { ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1).into() }
     }
+
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta).into()
+        unsafe { ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta).into() }
     }
 }

@@ -23,8 +23,9 @@ fn shift_interval<const ETA: usize>(coefficients: Vec256) -> Vec256 {
     }
 }
 
-#[inline(always)]
-pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usize {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usize {
     // Whether or not ETA is 2 or 4, we always split the input bytestream into
     // values that are 4-bits wide.
     let potential_coefficients = encoding::error::deserialize_to_unsigned::<4>(input);

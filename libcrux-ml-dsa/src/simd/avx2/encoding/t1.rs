@@ -1,7 +1,8 @@
 use libcrux_intrinsics::avx2::*;
 
-#[inline(always)]
-pub(crate) fn serialize(simd_unit: Vec256) -> [u8; 10] {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn serialize(simd_unit: Vec256) -> [u8; 10] {
     let mut serialized = [0u8; 24];
 
     let adjacent_2_combined =
@@ -27,8 +28,9 @@ pub(crate) fn serialize(simd_unit: Vec256) -> [u8; 10] {
     serialized[0..10].try_into().unwrap()
 }
 
-#[inline(always)]
-pub(crate) fn deserialize(bytes: &[u8]) -> Vec256 {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn deserialize(bytes: &[u8]) -> Vec256 {
     debug_assert_eq!(bytes.len(), 10);
 
     const COEFFICIENT_MASK: i32 = (1 << 10) - 1;

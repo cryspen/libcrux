@@ -28,8 +28,9 @@ fn bytestream_to_potential_coefficients(serialized: &[u8]) -> Vec256 {
     mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK))
 }
 
-#[inline(always)]
-pub(crate) fn sample(input: &[u8], output: &mut [i32]) -> usize {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn sample(input: &[u8], output: &mut [i32]) -> usize {
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
 
     // The input bytes can be interpreted as a sequence of serialized

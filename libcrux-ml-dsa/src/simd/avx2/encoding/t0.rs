@@ -9,8 +9,9 @@ fn change_interval(simd_unit: Vec256) -> Vec256 {
     mm256_sub_epi32(interval_end, simd_unit)
 }
 
-#[inline(always)]
-pub(crate) fn serialize(simd_unit: Vec256) -> [u8; 13] {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn serialize(simd_unit: Vec256) -> [u8; 13] {
     let mut serialized = [0u8; 16];
 
     let simd_unit = change_interval(simd_unit);
@@ -37,8 +38,9 @@ pub(crate) fn serialize(simd_unit: Vec256) -> [u8; 13] {
     serialized[0..13].try_into().unwrap()
 }
 
-#[inline(always)]
-pub(crate) fn deserialize(serialized: &[u8]) -> Vec256 {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn deserialize(serialized: &[u8]) -> Vec256 {
     debug_assert_eq!(serialized.len(), 13);
 
     const COEFFICIENT_MASK: i32 = (1 << 13) - 1;

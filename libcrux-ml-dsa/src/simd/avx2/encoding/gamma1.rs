@@ -64,8 +64,9 @@ fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
     serialized[0..20].try_into().unwrap()
 }
 
-#[inline(always)]
-pub(crate) fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
     match OUTPUT_SIZE as u8 {
         18 => serialize_when_gamma1_is_2_pow_17::<OUTPUT_SIZE>(simd_unit),
         20 => serialize_when_gamma1_is_2_pow_19::<OUTPUT_SIZE>(simd_unit),
@@ -128,8 +129,9 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8]) -> Vec256 {
     mm256_sub_epi32(mm256_set1_epi32(GAMMA1), coefficients)
 }
 
-#[inline(always)]
-pub(crate) fn deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Vec256 {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Vec256 {
     match GAMMA1_EXPONENT as u8 {
         17 => deserialize_when_gamma1_is_2_pow_17(serialized),
         19 => deserialize_when_gamma1_is_2_pow_19(serialized),
