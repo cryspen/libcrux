@@ -3,7 +3,7 @@
 //! A SHA3 implementation with optional simd optimisations.
 
 #![no_std]
-#![forbid(unsafe_code)]
+#![deny(unsafe_code)]
 #![deny(missing_docs)]
 
 pub mod simd;
@@ -92,7 +92,6 @@ pub fn hash<const LEN: usize>(algorithm: Algorithm, payload: &[u8]) -> [u8; LEN]
 pub use hash as sha3;
 
 /// SHA3 224
-#[inline(always)]
 pub fn sha224(data: &[u8]) -> Sha3_224Digest {
     let mut out = [0u8; 28];
     sha224_ema(&mut out, data);
@@ -103,7 +102,6 @@ pub fn sha224(data: &[u8]) -> Sha3_224Digest {
 ///
 /// Preconditions:
 /// - `digest.len() == 28`
-#[inline(always)]
 pub fn sha224_ema(digest: &mut [u8], payload: &[u8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 28);
@@ -112,7 +110,6 @@ pub fn sha224_ema(digest: &mut [u8], payload: &[u8]) {
 }
 
 /// SHA3 256
-#[inline(always)]
 pub fn sha256(data: &[u8]) -> Sha3_256Digest {
     let mut out = [0u8; 32];
     sha256_ema(&mut out, data);
@@ -120,7 +117,6 @@ pub fn sha256(data: &[u8]) -> Sha3_256Digest {
 }
 
 /// SHA3 256
-#[inline(always)]
 pub fn sha256_ema(digest: &mut [u8], payload: &[u8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 32);
@@ -129,7 +125,6 @@ pub fn sha256_ema(digest: &mut [u8], payload: &[u8]) {
 }
 
 /// SHA3 384
-#[inline(always)]
 pub fn sha384(data: &[u8]) -> Sha3_384Digest {
     let mut out = [0u8; 48];
     sha384_ema(&mut out, data);
@@ -137,7 +132,6 @@ pub fn sha384(data: &[u8]) -> Sha3_384Digest {
 }
 
 /// SHA3 384
-#[inline(always)]
 pub fn sha384_ema(digest: &mut [u8], payload: &[u8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 48);
@@ -146,7 +140,6 @@ pub fn sha384_ema(digest: &mut [u8], payload: &[u8]) {
 }
 
 /// SHA3 512
-#[inline(always)]
 pub fn sha512(data: &[u8]) -> Sha3_512Digest {
     let mut out = [0u8; 64];
     sha512_ema(&mut out, data);
@@ -154,7 +147,6 @@ pub fn sha512(data: &[u8]) -> Sha3_512Digest {
 }
 
 /// SHA3 512
-#[inline(always)]
 pub fn sha512_ema(digest: &mut [u8], payload: &[u8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 64);
@@ -166,7 +158,6 @@ pub fn sha512_ema(digest: &mut [u8], payload: &[u8]) {
 ///
 /// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
 /// the output will only return `u32::MAX` bytes.
-#[inline(always)]
 pub fn shake128<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     let mut out = [0u8; BYTES];
     portable::shake128(&mut out, data);
@@ -176,7 +167,6 @@ pub fn shake128<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
 /// SHAKE 128
 ///
 /// Writes `out.len()` bytes.
-#[inline(always)]
 pub fn shake128_ema(out: &mut [u8], data: &[u8]) {
     portable::shake128(out, data);
 }
@@ -185,7 +175,6 @@ pub fn shake128_ema(out: &mut [u8], data: &[u8]) {
 ///
 /// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
 /// the output will only return `u32::MAX` bytes.
-#[inline(always)]
 pub fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     let mut out = [0u8; BYTES];
     portable::shake256(&mut out, data);
@@ -195,7 +184,6 @@ pub fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
 /// SHAKE 256
 ///
 /// Writes `out.len()` bytes.
-#[inline(always)]
 pub fn shake256_ema(out: &mut [u8], data: &[u8]) {
     portable::shake256(out, data);
 }
@@ -221,37 +209,31 @@ pub mod portable {
     }
 
     /// A portable SHA3 224 implementation.
-    #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
         keccakx1::<144, 0x06u8>([data], [digest]);
     }
 
     /// A portable SHA3 256 implementation.
-    #[inline(always)]
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
         keccakx1::<136, 0x06u8>([data], [digest]);
     }
 
     /// A portable SHA3 384 implementation.
-    #[inline(always)]
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
         keccakx1::<104, 0x06u8>([data], [digest]);
     }
 
     /// A portable SHA3 512 implementation.
-    #[inline(always)]
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
         keccakx1::<72, 0x06u8>([data], [digest]);
     }
 
     /// A portable SHAKE128 implementation.
-    #[inline(always)]
     pub fn shake128(digest: &mut [u8], data: &[u8]) {
         keccakx1::<168, 0x1fu8>([data], [digest]);
     }
 
     /// A portable SHAKE256 implementation.
-    #[inline(always)]
     pub fn shake256(digest: &mut [u8], data: &[u8]) {
         keccakx1::<136, 0x1fu8>([data], [digest]);
     }
@@ -366,7 +348,6 @@ pub mod portable {
         }
 
         /// Create a new SHAKE-128 state object.
-        #[inline(always)]
         pub fn shake128_init() -> KeccakState {
             KeccakState {
                 state: GenericState::<1, u64>::new(),
@@ -374,31 +355,26 @@ pub mod portable {
         }
 
         /// Absorb
-        #[inline(always)]
         pub fn shake128_absorb_final(s: &mut KeccakState, data0: &[u8]) {
             absorb_final::<1, u64, 168, 0x1fu8>(&mut s.state, [data0]);
         }
 
         /// Squeeze three blocks
-        #[inline(always)]
         pub fn shake128_squeeze_first_three_blocks(s: &mut KeccakState, out0: &mut [u8]) {
             squeeze_first_three_blocks::<1, u64, 168>(&mut s.state, [out0])
         }
 
         /// Squeeze five blocks
-        #[inline(always)]
         pub fn shake128_squeeze_first_five_blocks(s: &mut KeccakState, out0: &mut [u8]) {
             squeeze_first_five_blocks::<1, u64, 168>(&mut s.state, [out0])
         }
 
         /// Squeeze another block
-        #[inline(always)]
         pub fn shake128_squeeze_next_block(s: &mut KeccakState, out0: &mut [u8]) {
             squeeze_next_block::<1, u64, 168>(&mut s.state, [out0])
         }
 
         /// Create a new SHAKE-256 state object.
-        #[inline(always)]
         pub fn shake256_init() -> KeccakState {
             KeccakState {
                 state: GenericState::<1, u64>::new(),
@@ -406,19 +382,16 @@ pub mod portable {
         }
 
         /// Absorb some data for SHAKE-256 for the last time
-        #[inline(always)]
         pub fn shake256_absorb_final(s: &mut KeccakState, data: &[u8]) {
             absorb_final::<1, u64, 136, 0x1fu8>(&mut s.state, [data]);
         }
 
         /// Squeeze the first SHAKE-256 block
-        #[inline(always)]
         pub fn shake256_squeeze_first_block(s: &mut KeccakState, out: &mut [u8]) {
             squeeze_first_block::<1, u64, 136>(&mut s.state, [out])
         }
 
         /// Squeeze the next SHAKE-256 block
-        #[inline(always)]
         pub fn shake256_squeeze_next_block(s: &mut KeccakState, out: &mut [u8]) {
             squeeze_next_block::<1, u64, 136>(&mut s.state, [out])
         }
@@ -444,7 +417,6 @@ pub mod neon {
 
     /// A portable SHA3 224 implementation.
     #[allow(unused_variables)]
-    #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
         #[cfg(not(feature = "simd128"))]
         unimplemented!();
@@ -457,7 +429,6 @@ pub mod neon {
 
     /// A portable SHA3 256 implementation.
     #[allow(unused_variables)]
-    #[inline(always)]
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
         #[cfg(not(feature = "simd128"))]
         unimplemented!();
@@ -470,7 +441,6 @@ pub mod neon {
 
     /// A portable SHA3 384 implementation.
     #[allow(unused_variables)]
-    #[inline(always)]
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
         #[cfg(not(feature = "simd128"))]
         unimplemented!();
@@ -483,7 +453,6 @@ pub mod neon {
 
     /// A portable SHA3 512 implementation.
     #[allow(unused_variables)]
-    #[inline(always)]
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
         #[cfg(not(feature = "simd128"))]
         unimplemented!();
@@ -496,7 +465,6 @@ pub mod neon {
 
     /// A portable SHAKE128 implementation.
     #[allow(unused_variables)]
-    #[inline(always)]
     pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
         #[cfg(not(feature = "simd128"))]
         unimplemented!();
@@ -509,7 +477,6 @@ pub mod neon {
 
     /// A portable SHAKE256 implementation.
     #[allow(unused_variables)]
-    #[inline(always)]
     pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
         #[cfg(not(feature = "simd128"))]
         unimplemented!();
@@ -529,7 +496,6 @@ pub mod neon {
         ///
         /// Writes the two results into `out0` and `out1`
         #[allow(unused_variables)]
-        #[inline(always)]
         pub fn shake256(input0: &[u8], input1: &[u8], out0: &mut [u8], out1: &mut [u8]) {
             // TODO: make argument ordering consistent
             #[cfg(not(feature = "simd128"))]
@@ -596,7 +562,6 @@ pub mod neon {
             }
 
             /// Initialise the `KeccakState2`.
-            #[inline(always)]
             pub fn init() -> KeccakState {
                 #[cfg(not(feature = "simd128"))]
                 unimplemented!();
@@ -614,7 +579,6 @@ pub mod neon {
             }
 
             /// Shake128 absorb `data0` and `data1` in the [`KeccakState`] `s`.
-            #[inline(always)]
             #[allow(unused_variables)]
             pub fn shake128_absorb_final(s: &mut KeccakState, data0: &[u8], data1: &[u8]) {
                 #[cfg(not(feature = "simd128"))]
@@ -634,7 +598,6 @@ pub mod neon {
             }
 
             /// Shake256 absorb `data0` and `data1` in the [`KeccakState`] `s`.
-            #[inline(always)]
             #[allow(unused_variables)]
             pub fn shake256_absorb_final(s: &mut KeccakState, data0: &[u8], data1: &[u8]) {
                 #[cfg(not(feature = "simd128"))]
@@ -684,7 +647,6 @@ pub mod neon {
             /// Squeeze 2 times the first three blocks in parallel in the
             /// [`KeccakState`] and return the output in `out0` and `out1`.
             #[allow(unused_variables)]
-            #[inline(always)]
             pub fn shake128_squeeze_first_three_blocks(
                 s: &mut KeccakState,
                 out0: &mut [u8],
@@ -708,7 +670,6 @@ pub mod neon {
 
             /// Squeeze five blocks
             #[allow(unused_variables)]
-            #[inline(always)]
             pub fn shake128_squeeze_first_five_blocks(
                 s: &mut KeccakState,
                 out0: &mut [u8],
@@ -724,7 +685,6 @@ pub mod neon {
             }
 
             /// Squeeze block
-            #[inline(always)]
             #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_squeeze_first_block(
                 s: &mut KeccakState,
@@ -741,7 +701,6 @@ pub mod neon {
             }
 
             /// Squeeze next block
-            #[inline(always)]
             #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_squeeze_next_block(
                 s: &mut KeccakState,
@@ -816,7 +775,6 @@ pub mod neon {
             /// Squeeze 2 times the next block in parallel in the
             /// [`KeccakState`] and return the output in `out0` and `out1`.
             #[allow(unused_variables)]
-            #[inline(always)]
             pub fn shake128_squeeze_next_block(
                 s: &mut KeccakState,
                 out0: &mut [u8],
@@ -843,7 +801,6 @@ pub mod neon {
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[allow(unused_variables, non_snake_case)]
-            #[inline(always)]
             fn _shake128_squeezexN<const LEN: usize, const N: usize>(
                 state: &mut [KeccakState; 2],
             ) -> [[u8; LEN]; N] {
@@ -907,7 +864,6 @@ pub mod avx2 {
 
         /// Perform 4 SHAKE256 operations in parallel
         #[allow(unused_variables, clippy::too_many_arguments)] // TODO: decide if we want to fall back here
-        #[inline(always)]
         pub fn shake256(
             input0: &[u8],
             input1: &[u8],
@@ -944,7 +900,6 @@ pub mod avx2 {
         ///
         /// **PANICS** when `N` is not 2, 3, or 4.
         #[allow(unused_variables, non_snake_case)]
-        #[inline(always)]
         fn _shake256xN<const LEN: usize, const N: usize>(input: &[[u8; 33]; N]) -> [[u8; LEN]; N] {
             debug_assert!(N == 2 || N == 3 || N == 4);
             let mut out = [[0u8; LEN]; N];
@@ -1030,7 +985,6 @@ pub mod avx2 {
             pub type KeccakState = [crate::portable::KeccakState; 4];
 
             /// Initialise the [`KeccakState`].
-            #[inline(always)]
             pub fn init() -> KeccakState {
                 #[cfg(not(feature = "simd256"))]
                 unimplemented!();
@@ -1057,7 +1011,6 @@ pub mod avx2 {
             }
 
             /// Absorb
-            #[inline(always)]
             #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake128_absorb_final(
                 s: &mut KeccakState,
@@ -1095,7 +1048,6 @@ pub mod avx2 {
             }
 
             /// Absorb
-            #[inline(always)]
             #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_absorb_final(
                 s: &mut KeccakState,
@@ -1111,7 +1063,6 @@ pub mod avx2 {
             }
 
             /// Squeeze block
-            #[inline(always)]
             #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_squeeze_first_block(
                 s: &mut KeccakState,
@@ -1127,7 +1078,6 @@ pub mod avx2 {
             }
 
             /// Squeeze next block
-            #[inline(always)]
             #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_squeeze_next_block(
                 s: &mut KeccakState,
@@ -1175,7 +1125,6 @@ pub mod avx2 {
             }
 
             /// Squeeze three blocks
-            #[inline(always)]
             #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake128_squeeze_first_three_blocks(
                 s: &mut KeccakState,
@@ -1216,7 +1165,6 @@ pub mod avx2 {
             }
 
             /// Squeeze five blocks
-            #[inline(always)]
             #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake128_squeeze_first_five_blocks(
                 s: &mut KeccakState,
@@ -1286,7 +1234,6 @@ pub mod avx2 {
             }
 
             /// Squeeze another block
-            #[inline(always)]
             #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake128_squeeze_next_block(
                 s: &mut KeccakState,
