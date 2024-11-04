@@ -382,6 +382,8 @@ let sample_vector_cbd_then_ntt_out
   <:
   (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
 
+#push-options "--z3rlimit 500 --ext context_pruning --z3refresh"
+
 let generate_keypair_unpacked
       (v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE: usize)
       (#v_Vector #v_Hasher #v_Scheme: Type0)
@@ -496,12 +498,14 @@ let generate_keypair_unpacked
     Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector
   in
   let _:Prims.unit =
-    let ((t_as_ntt, seed_for_A), secret_as_ntt), valid =
+    let (((t_as_ntt, seed_for_A), matrix_A_as_ntt), secret_as_ntt), valid =
       Spec.MLKEM.ind_cpa_generate_keypair_unpacked v_K key_generation_seed
     in
     assert (valid ==>
         ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector public_key.f_t_as_ntt) ==
           t_as_ntt) /\ (public_key.f_seed_for_A == seed_for_A) /\
+        (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector public_key.f_A == matrix_A_as_ntt
+        ) /\
         ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector private_key.f_secret_as_ntt) ==
           secret_as_ntt));
     assert ((forall (i: nat).
@@ -519,6 +523,8 @@ let generate_keypair_unpacked
   <:
   (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector &
     Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+
+#pop-options
 
 #push-options "--z3rlimit 200 --ext context_pruning --z3refresh"
 
