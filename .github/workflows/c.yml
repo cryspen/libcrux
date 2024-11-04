@@ -162,4 +162,4 @@ jobs:
 
       - name: 🏃🏻‍♀️ Test
         run: ./build/ml_kem_test
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.os != 'windows-latest' }}
