@@ -89,7 +89,7 @@ typedef struct {
 #define Eurydice_slice_copy(dst, src, t) \
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 #define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t) \
-  ((Eurydice_slice){.ptr = ptr_, .len = len_})
+  (CLITERAL(Eurydice_slice){.ptr = ptr_, .len = len_})
 
 #define core_array___core__clone__Clone_for__Array_T__N___20__clone( \
     len, src, dst, elem_type, _ret_t)                                \
