@@ -17,8 +17,8 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
-#include "karamel/target.h"
 #include "karamel/endianness.h"
+#include "karamel/target.h"
 
 // SLICES, ARRAYS, ETC.
 
