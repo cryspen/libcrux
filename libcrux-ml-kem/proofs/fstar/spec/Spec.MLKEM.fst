@@ -189,6 +189,7 @@ let sample_vector_cbd2 (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v d
 let sample_vector_cbd_then_ntt (#r:rank) (seed:t_Array u8 (sz 32)) (domain_sep:usize{v domain_sep < 2 * v r}) : vector r =
     vector_ntt (sample_vector_cbd1 #r seed domain_sep)
 
+[@ "opaque_to_smt"]
 let vector_encode_12 (#r:rank) (v: vector r) : t_Array u8 (v_T_AS_NTT_ENCODED_SIZE r)
   = let s: t_Array (t_Array _ (sz 384)) r = map_array (byte_encode 12) (coerce_vector_12 v) in
     flatten s
@@ -229,7 +230,7 @@ let decode_then_decompress_v (u:usize{u == sz 4 \/ u == sz 5}): t_Array u8 (sz 3
 (** IND-CPA Functions *)
 
 val ind_cpa_generate_keypair_unpacked (r:rank) (randomness:t_Array u8 v_CPA_KEY_GENERATION_SEED_SIZE) :
-                             ((((vector r) & (t_Array u8 (sz 32))) & (vector r)) & bool)
+                             (((((vector r) & (t_Array u8 (sz 32))) & (matrix r)) & (vector r)) & bool)
 let ind_cpa_generate_keypair_unpacked r randomness =
     let hashed = v_G (Seq.append randomness (Seq.create 1 (cast r <: u8))) in
     let (seed_for_A, seed_for_secret_and_error) = split hashed (sz 32) in
@@ -237,7 +238,7 @@ let ind_cpa_generate_keypair_unpacked r randomness =
     let secret_as_ntt = sample_vector_cbd_then_ntt #r seed_for_secret_and_error (sz 0) in
     let error_as_ntt = sample_vector_cbd_then_ntt #r seed_for_secret_and_error r in
     let t_as_ntt = compute_As_plus_e_ntt #r matrix_A_as_ntt secret_as_ntt error_as_ntt in
-    (((t_as_ntt,seed_for_A), secret_as_ntt), sufficient_randomness)
+    (((t_as_ntt,seed_for_A), matrix_A_as_ntt), secret_as_ntt), sufficient_randomness
 
 /// This function implements most of <strong>Algorithm 12</strong> of the
 /// NIST FIPS 203 specification; this is the MLKEM CPA-PKE key generation algorithm.
@@ -249,7 +250,7 @@ let ind_cpa_generate_keypair_unpacked r randomness =
 val ind_cpa_generate_keypair (r:rank) (randomness:t_Array u8 v_CPA_KEY_GENERATION_SEED_SIZE) :
                              (t_MLKEMCPAKeyPair r & bool)
 let ind_cpa_generate_keypair r randomness =
-    let (((t_as_ntt,seed_for_A), secret_as_ntt), sufficient_randomness) =
+    let ((((t_as_ntt,seed_for_A), _), secret_as_ntt), sufficient_randomness) =
       ind_cpa_generate_keypair_unpacked r randomness in
     let public_key_serialized = Seq.append (vector_encode_12 #r t_as_ntt) seed_for_A in
     let secret_key_serialized = vector_encode_12 #r secret_as_ntt in
@@ -380,3 +381,67 @@ let ind_cca_decapsulate p secret_key ciphertext =
     if reencrypted = ciphertext
     then success_shared_secret, sufficient_randomness
     else rejection_shared_secret, sufficient_randomness
+
+val ind_cca_unpack_public_key (r:rank) (public_key: t_MLKEMPublicKey r) :
+                        t_Array u8 (sz 32) & (t_Array u8 (sz 32) & (vector r & (matrix r & bool)))
+let ind_cca_unpack_public_key p public_key =
+    let (ring_elements, seed) = split public_key (v_T_AS_NTT_ENCODED_SIZE p) in
+    let deserialized_pk = vector_decode_12 #p ring_elements in
+    let (matrix_A, sufficient_randomness) = sample_matrix_A_ntt seed in
+    let matrix_A = matrix_transpose #p matrix_A in
+    let public_key_hash = v_H public_key in
+    public_key_hash, (seed, (deserialized_pk, (matrix_A, sufficient_randomness)))
+
+let matrix_A_as_ntt_j (#r:rank) (matrix_A_as_ntt:matrix r) (i:usize{i <. r}) (j:usize{j <. r}) : polynomial =
+  Seq.index (Seq.index matrix_A_as_ntt (v j)) (v i)
+
+let matrix_A_as_ntt_i (#r:rank) (matrix_A_as_ntt:matrix r) (i:usize{i <. r}) : vector r =
+  createi r (matrix_A_as_ntt_j matrix_A_as_ntt i)
+
+val ind_cca_unpack_generate_keypair (r:rank) (randomness:t_Array u8 v_KEY_GENERATION_SEED_SIZE) :
+                             ((matrix r & t_Array u8 (sz 32)) & t_Array u8 (sz 32)) & bool
+let ind_cca_unpack_generate_keypair p randomness =
+  let (ind_cpa_keypair_randomness, implicit_rejection_value) = split randomness v_CPA_KEY_GENERATION_SEED_SIZE in
+  let ((((t_as_ntt,seed_for_A), matrix_A_as_ntt), secret_as_ntt), sufficient_randomness) =
+    ind_cpa_generate_keypair_unpacked p ind_cpa_keypair_randomness in
+  // let m_A = 
+  // createi p (fun i -> 
+  //   createi p (fun j ->
+  //     Seq.index (Seq.index matrix_A_as_ntt j) i
+  //     ))
+  // in 
+  let m_A = createi p (matrix_A_as_ntt_i matrix_A_as_ntt) in 
+  let pk_serialized = Seq.append (vector_encode_12 t_as_ntt) seed_for_A in
+  let public_key_hash = v_H pk_serialized in
+  ((m_A, public_key_hash), implicit_rejection_value), sufficient_randomness
+
+val ind_cca_unpack_encapsulate (r:rank) (public_key_hash:t_Array u8 (sz 32))
+                    (t_as_ntt:vector r)
+                    (matrix_A_as_ntt:matrix r)
+                    (randomness:t_Array u8 v_SHARED_SECRET_SIZE) :
+                    (t_MLKEMCiphertext r & t_Array u8 v_SHARED_SECRET_SIZE)
+let ind_cca_unpack_encapsulate r public_key_hash t_as_ntt matrix_A_as_ntt randomness =
+  let to_hash = concat randomness public_key_hash in
+  let hashed = v_G to_hash in
+  let (shared_secret, pseudorandomness) = split hashed v_SHARED_SECRET_SIZE in
+  let ciphertext = ind_cpa_encrypt_unpacked r randomness pseudorandomness t_as_ntt matrix_A_as_ntt in
+  ciphertext, shared_secret
+
+val ind_cca_unpack_decapsulate (r:rank) (public_key_hash:t_Array u8 (sz 32)) 
+                    (implicit_rejection_value:t_Array u8 (sz 32))
+                    (ciphertext: t_MLKEMCiphertext r)
+                    (secret_as_ntt:vector r)
+                    (t_as_ntt:vector r)
+                    (matrix_A_as_ntt:matrix r) :
+                    t_Array u8 v_SHARED_SECRET_SIZE
+let ind_cca_unpack_decapsulate r public_key_hash implicit_rejection_value ciphertext secret_as_ntt t_as_ntt matrix_A_as_ntt =
+  let decrypted = ind_cpa_decrypt_unpacked r ciphertext secret_as_ntt in
+  let to_hash = concat decrypted public_key_hash in
+  let hashed = v_G to_hash in
+  let (shared_secret, pseudorandomness) = split hashed v_SHARED_SECRET_SIZE in
+  let to_hash:t_Array u8 (v_IMPLICIT_REJECTION_HASH_INPUT_SIZE r) = concat implicit_rejection_value ciphertext in
+  let implicit_rejection_shared_secret = v_PRF v_SHARED_SECRET_SIZE to_hash in
+  let expected_ciphertext = ind_cpa_encrypt_unpacked r decrypted pseudorandomness t_as_ntt matrix_A_as_ntt in
+  if ciphertext = expected_ciphertext
+  then shared_secret
+  else implicit_rejection_shared_secret

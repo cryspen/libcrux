@@ -361,10 +361,11 @@ fn sample_vector_cbd_then_ntt_out<
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
     length $key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE"))]
-#[hax_lib::ensures(|_| fstar!("let (((t_as_ntt,seed_for_A), secret_as_ntt), valid) = Spec.MLKEM.ind_cpa_generate_keypair_unpacked $K $key_generation_seed in 
-    (valid ==> ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${public_key}_future.f_t_as_ntt) == t_as_ntt) /\\
+#[hax_lib::ensures(|_| fstar!("let ((((t_as_ntt,seed_for_A), matrix_A_as_ntt), secret_as_ntt), valid) = Spec.MLKEM.ind_cpa_generate_keypair_unpacked $K $key_generation_seed in 
+    (valid ==> (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${public_key}_future.f_t_as_ntt == t_as_ntt) /\\
         (${public_key}_future.f_seed_for_A == seed_for_A) /\\
-        ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${private_key}_future.f_secret_as_ntt) == secret_as_ntt)) /\\
+        (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${public_key}_future.f_A == matrix_A_as_ntt) /\\
+        (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${private_key}_future.f_secret_as_ntt == secret_as_ntt)) /\\
     (forall (i:nat). i < v $K ==>
         Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index ${private_key}_future.f_secret_as_ntt i)) /\\
     (forall (i:nat). i < v $K ==>
