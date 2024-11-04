@@ -149,6 +149,7 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn invert_ntt_at_layer_0(
         simd_unit: Self,
         zeta0: i32,
@@ -156,14 +157,20 @@ impl Operations for AVX2SIMDUnit {
         zeta2: i32,
         zeta3: i32,
     ) -> Self {
-        ntt::invert_ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3).into()
+        unsafe {
+            ntt::invert_ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3).into()
+        }
     }
+
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1).into()
+        unsafe { ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1).into() }
     }
+
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta).into()
+        unsafe { ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta).into() }
     }
 }

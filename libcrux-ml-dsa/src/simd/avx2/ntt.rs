@@ -100,8 +100,9 @@ fn butterfly_8(a: Vec256, b: Vec256, zeta0: i32, zeta1: i32) -> (Vec256, Vec256)
     (a_out, b_out)
 }
 
-#[inline(always)]
-pub fn invert_ntt_at_layer_0(
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(super) unsafe fn invert_ntt_at_layer_0(
     simd_unit: Vec256,
     zeta0: i32,
     zeta1: i32,
@@ -121,8 +122,9 @@ pub fn invert_ntt_at_layer_0(
     mm256_blend_epi32::<0b1_0_1_0_1_0_1_0>(sums, products)
 }
 
-#[inline(always)]
-fn ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+unsafe fn ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     macro_rules! round {
         ($i:literal, $zeta_0:literal, $zeta_1:literal, $zeta_2:literal, $zeta_3:literal, $zeta_4:literal, $zeta_5:literal, $zeta_6:literal, $zeta_7:literal) => {
             let (a, b) = butterfly_2(
@@ -160,8 +162,9 @@ fn ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     round!(30, -554416, 3919660, -48306, -1362209, 3937738, 1400424, -846154, 1976782);
 }
 
-#[inline(always)]
-pub fn invert_ntt_at_layer_1(simd_unit: Vec256, zeta0: i32, zeta1: i32) -> Vec256 {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(super) unsafe fn invert_ntt_at_layer_1(simd_unit: Vec256, zeta0: i32, zeta1: i32) -> Vec256 {
     let zetas = mm256_set_epi32(zeta1, zeta1, 0, 0, zeta0, zeta0, 0, 0);
 
     let add_by_signs = mm256_set_epi32(-1, -1, 1, 1, -1, -1, 1, 1);
@@ -175,8 +178,9 @@ pub fn invert_ntt_at_layer_1(simd_unit: Vec256, zeta0: i32, zeta1: i32) -> Vec25
     mm256_blend_epi32::<0b1_1_0_0_1_1_0_0>(sums, products)
 }
 
-#[inline(always)]
-fn ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+unsafe fn ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     macro_rules! round {
         ($i:literal, $zeta_0:literal, $zeta_1:literal, $zeta_2:literal, $zeta_3:literal) => {
             let (a, b) = butterfly_4(re[$i], re[$i + 1], $zeta_0, $zeta_1, $zeta_2, $zeta_3);
@@ -203,8 +207,9 @@ fn ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     round!(30, -3019102, -3881060, -3628969, 3839961);
 }
 
-#[inline(always)]
-pub fn invert_ntt_at_layer_2(simd_unit: Vec256, zeta: i32) -> Vec256 {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+pub(super) unsafe fn invert_ntt_at_layer_2(simd_unit: Vec256, zeta: i32) -> Vec256 {
     let zetas = mm256_set_epi32(zeta, zeta, zeta, zeta, 0, 0, 0, 0);
 
     let add_by_signs = mm256_set_epi32(-1, -1, -1, -1, 1, 1, 1, 1);
@@ -218,8 +223,9 @@ pub fn invert_ntt_at_layer_2(simd_unit: Vec256, zeta: i32) -> Vec256 {
     mm256_blend_epi32::<0b1_1_1_1_0_0_0_0>(sums, products)
 }
 
-#[inline(always)]
-fn ntt_at_layer_2(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+unsafe fn ntt_at_layer_2(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     macro_rules! round {
         ($round:literal, $zeta_0:literal, $zeta_1:literal) => {
             let (a, b) = butterfly_8(re[$round], re[$round + 1], $zeta_0, $zeta_1);
@@ -250,8 +256,9 @@ fn ntt_at_layer_2(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
 ///
 /// This does 32 Montgomery multiplications (192 multiplications).
 /// This is the same as in pqclean. The only difference is locality of registers.
-#[inline(always)]
-fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+unsafe fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     let field_modulus = mm256_set1_epi32(crate::simd::traits::FIELD_MODULUS);
     let inverse_of_modulus_mod_montgomery_r =
         mm256_set1_epi32(crate::simd::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
@@ -310,8 +317,9 @@ fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
 ///
 /// Each layer does 16 Montgomery multiplications -> 3*16 = 48 total
 /// pqclean does 4 * 4 on each layer -> 48 total | plus 4 * 4 shuffles every time (48)
-#[inline(always)]
-fn ntt_at_layer_5_to_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[target_feature(enable = "avx2")]
+#[allow(unsafe_code)]
+unsafe fn ntt_at_layer_5_to_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     macro_rules! round {
         ($i:literal, $zeta: literal) => {
             let rhs = mm256_set1_epi32($zeta);

@@ -333,6 +333,7 @@ pub(crate) fn generate_key_pair<
 
 /// Sign.
 #[allow(unsafe_code)]
+#[inline(always)]
 pub(crate) fn sign<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
