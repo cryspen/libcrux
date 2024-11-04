@@ -17,7 +17,7 @@ concurrency:
 jobs:
   s390x:
     runs-on: ubuntu-latest
-    name: Build on ubuntu-latest s390x
+    name: Build on ubuntu-22.04 s390x
     steps:
       - uses: actions/checkout@v4
       - uses: uraimo/run-on-arch-action@v2
