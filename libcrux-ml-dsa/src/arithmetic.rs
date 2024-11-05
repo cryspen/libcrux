@@ -14,7 +14,7 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations, const DIMENSION
     // straightforward way to do so (returning false) will not go through hax;
     // revisit if performance is impacted.
     for ring_element in vector.iter() {
-        exceeds |= ring_element.infinity_norm_exceeds(bound);
+        exceeds = exceeds || ring_element.infinity_norm_exceeds(bound);
     }
 
     exceeds

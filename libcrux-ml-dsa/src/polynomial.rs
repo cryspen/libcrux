@@ -44,7 +44,7 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         let mut exceeds = false;
 
         for simd_unit in self.simd_units {
-            exceeds |= SIMDUnit::infinity_norm_exceeds(simd_unit, bound);
+            exceeds = exceeds || SIMDUnit::infinity_norm_exceeds(simd_unit, bound);
         }
 
         exceeds

@@ -1,7 +1,6 @@
-use crate::{
-    constants::BITS_IN_LOWER_PART_OF_T,
-    simd::{portable::PortableSIMDUnit, traits::Operations},
-};
+use crate::constants::BITS_IN_LOWER_PART_OF_T;
+
+use super::super::vector_type::{PortableSIMDUnit, ZERO};
 
 // If t0 is a signed representative, change it to an unsigned one and
 // vice versa.
@@ -63,8 +62,6 @@ pub fn serialize(simd_unit: PortableSIMDUnit) -> [u8; 13] {
 pub fn deserialize(serialized: &[u8]) -> PortableSIMDUnit {
     debug_assert!(serialized.len() == 13);
 
-    let mut simd_unit = PortableSIMDUnit::ZERO();
-
     const BITS_IN_LOWER_PART_OF_T_MASK: i32 = (1 << (BITS_IN_LOWER_PART_OF_T as i32)) - 1;
 
     let byte0 = serialized[0] as i32;
@@ -81,50 +78,52 @@ pub fn deserialize(serialized: &[u8]) -> PortableSIMDUnit {
     let byte11 = serialized[11] as i32;
     let byte12 = serialized[12] as i32;
 
-    simd_unit.coefficients[0] = byte0;
-    simd_unit.coefficients[0] |= byte1 << 8;
-    simd_unit.coefficients[0] &= BITS_IN_LOWER_PART_OF_T_MASK;
+    let mut coefficient0 = byte0;
+    coefficient0 |= byte1 << 8;
+    coefficient0 &= BITS_IN_LOWER_PART_OF_T_MASK;
 
-    simd_unit.coefficients[1] = byte1 >> 5;
-    simd_unit.coefficients[1] |= byte2 << 3;
-    simd_unit.coefficients[1] |= byte3 << 11;
-    simd_unit.coefficients[1] &= BITS_IN_LOWER_PART_OF_T_MASK;
+    let mut coefficient1 = byte1 >> 5;
+    coefficient1 |= byte2 << 3;
+    coefficient1 |= byte3 << 11;
+    coefficient1 &= BITS_IN_LOWER_PART_OF_T_MASK;
 
-    simd_unit.coefficients[2] = byte3 >> 2;
-    simd_unit.coefficients[2] |= byte4 << 6;
-    simd_unit.coefficients[2] &= BITS_IN_LOWER_PART_OF_T_MASK;
+    let mut coefficient2 = byte3 >> 2;
+    coefficient2 |= byte4 << 6;
+    coefficient2 &= BITS_IN_LOWER_PART_OF_T_MASK;
 
-    simd_unit.coefficients[3] = byte4 >> 7;
-    simd_unit.coefficients[3] |= byte5 << 1;
-    simd_unit.coefficients[3] |= byte6 << 9;
-    simd_unit.coefficients[3] &= BITS_IN_LOWER_PART_OF_T_MASK;
+    let mut coefficient3 = byte4 >> 7;
+    coefficient3 |= byte5 << 1;
+    coefficient3 |= byte6 << 9;
+    coefficient3 &= BITS_IN_LOWER_PART_OF_T_MASK;
 
-    simd_unit.coefficients[4] = byte6 >> 4;
-    simd_unit.coefficients[4] |= byte7 << 4;
-    simd_unit.coefficients[4] |= byte8 << 12;
-    simd_unit.coefficients[4] &= BITS_IN_LOWER_PART_OF_T_MASK;
+    let mut coefficient4 = byte6 >> 4;
+    coefficient4 |= byte7 << 4;
+    coefficient4 |= byte8 << 12;
+    coefficient4 &= BITS_IN_LOWER_PART_OF_T_MASK;
 
-    simd_unit.coefficients[5] = byte8 >> 1;
-    simd_unit.coefficients[5] |= byte9 << 7;
-    simd_unit.coefficients[5] &= BITS_IN_LOWER_PART_OF_T_MASK;
+    let mut coefficient5 = byte8 >> 1;
+    coefficient5 |= byte9 << 7;
+    coefficient5 &= BITS_IN_LOWER_PART_OF_T_MASK;
 
-    simd_unit.coefficients[6] = byte9 >> 6;
-    simd_unit.coefficients[6] |= byte10 << 2;
-    simd_unit.coefficients[6] |= byte11 << 10;
-    simd_unit.coefficients[6] &= BITS_IN_LOWER_PART_OF_T_MASK;
+    let mut coefficient6 = byte9 >> 6;
+    coefficient6 |= byte10 << 2;
+    coefficient6 |= byte11 << 10;
+    coefficient6 &= BITS_IN_LOWER_PART_OF_T_MASK;
 
-    simd_unit.coefficients[7] = byte11 >> 3;
-    simd_unit.coefficients[7] |= byte12 << 5;
-    simd_unit.coefficients[7] &= BITS_IN_LOWER_PART_OF_T_MASK;
+    let mut coefficient7 = byte11 >> 3;
+    coefficient7 |= byte12 << 5;
+    coefficient7 &= BITS_IN_LOWER_PART_OF_T_MASK;
 
-    simd_unit.coefficients[0] = change_t0_interval(simd_unit.coefficients[0]);
-    simd_unit.coefficients[1] = change_t0_interval(simd_unit.coefficients[1]);
-    simd_unit.coefficients[2] = change_t0_interval(simd_unit.coefficients[2]);
-    simd_unit.coefficients[3] = change_t0_interval(simd_unit.coefficients[3]);
-    simd_unit.coefficients[4] = change_t0_interval(simd_unit.coefficients[4]);
-    simd_unit.coefficients[5] = change_t0_interval(simd_unit.coefficients[5]);
-    simd_unit.coefficients[6] = change_t0_interval(simd_unit.coefficients[6]);
-    simd_unit.coefficients[7] = change_t0_interval(simd_unit.coefficients[7]);
+    let mut simd_unit = ZERO();
+
+    simd_unit.coefficients[0] = change_t0_interval(coefficient0);
+    simd_unit.coefficients[1] = change_t0_interval(coefficient1);
+    simd_unit.coefficients[2] = change_t0_interval(coefficient2);
+    simd_unit.coefficients[3] = change_t0_interval(coefficient3);
+    simd_unit.coefficients[4] = change_t0_interval(coefficient4);
+    simd_unit.coefficients[5] = change_t0_interval(coefficient5);
+    simd_unit.coefficients[6] = change_t0_interval(coefficient6);
+    simd_unit.coefficients[7] = change_t0_interval(coefficient7);
 
     simd_unit
 }
