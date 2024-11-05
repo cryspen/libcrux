@@ -14,7 +14,6 @@ pub(crate) mod jasmin;
 
 // HACL
 pub(crate) mod hacl;
-pub(crate) mod hacl_rs;
 
 // libcrux
 pub mod aead;

@@ -203,7 +203,7 @@ pub(crate) const k384_512: [u64; 80] = [
 
 pub(crate) fn sha256_init(hash: &mut [u32]) {
     krml::unroll_for!(8, "i", 0u32, 1u32, {
-        let x: u32 = (&crate::hacl_rs::hash_sha2::h256)[i as usize];
+        let x: u32 = (&crate::hash_sha2::h256)[i as usize];
         let os: (&mut [u32], &mut [u32]) = hash.split_at_mut(0usize);
         os.1[i as usize] = x
     })
@@ -249,8 +249,8 @@ fn sha256_update(b: &[u8], hash: &mut [u32]) {
     (&mut ws)[15usize] = u14;
     krml::unroll_for!(4, "i", 0u32, 1u32, {
         krml::unroll_for!(16, "i0", 0u32, 1u32, {
-            let k_t: u32 = (&crate::hacl_rs::hash_sha2::k224_256)
-                [16u32.wrapping_mul(i).wrapping_add(i0) as usize];
+            let k_t: u32 =
+                (&crate::hash_sha2::k224_256)[16u32.wrapping_mul(i).wrapping_add(i0) as usize];
             let ws_t: u32 = (&ws)[i0 as usize];
             let a0: u32 = hash[0usize];
             let b0: u32 = hash[1usize];
@@ -318,7 +318,7 @@ pub(crate) fn sha256_update_nblocks(len: u32, b: &[u8], st: &mut [u32]) {
     for i in 0u32..blocks {
         let b0: &[u8] = b;
         let mb: (&[u8], &[u8]) = b0.split_at(i.wrapping_mul(64u32) as usize);
-        crate::hacl_rs::hash_sha2::sha256_update(mb.1, st)
+        crate::hash_sha2::sha256_update(mb.1, st)
     }
 }
 
@@ -346,9 +346,9 @@ pub(crate) fn sha256_update_last(totlen: u64, len: u32, b: &[u8], hash: &mut [u3
     let lb1: &[u8] = l1;
     let last00: &[u8] = lb0;
     let last10: &[u8] = lb1;
-    crate::hacl_rs::hash_sha2::sha256_update(last00, hash);
+    crate::hash_sha2::sha256_update(last00, hash);
     if blocks > 1u32 {
-        crate::hacl_rs::hash_sha2::sha256_update(last10, hash)
+        crate::hash_sha2::sha256_update(last10, hash)
     }
 }
 
@@ -370,7 +370,7 @@ pub(crate) fn sha256_finish(st: &[u32], h: &mut [u8]) {
 #[inline]
 fn sha224_init(hash: &mut [u32]) {
     krml::unroll_for!(8, "i", 0u32, 1u32, {
-        let x: u32 = (&crate::hacl_rs::hash_sha2::h224)[i as usize];
+        let x: u32 = (&crate::hash_sha2::h224)[i as usize];
         let os: (&mut [u32], &mut [u32]) = hash.split_at_mut(0usize);
         os.1[i as usize] = x
     })
@@ -378,11 +378,11 @@ fn sha224_init(hash: &mut [u32]) {
 
 #[inline]
 fn sha224_update_nblocks(len: u32, b: &[u8], st: &mut [u32]) {
-    crate::hacl_rs::hash_sha2::sha256_update_nblocks(len, b, st)
+    crate::hash_sha2::sha256_update_nblocks(len, b, st)
 }
 
 fn sha224_update_last(totlen: u64, len: u32, b: &[u8], st: &mut [u32]) {
-    crate::hacl_rs::hash_sha2::sha256_update_last(totlen, len, b, st)
+    crate::hash_sha2::sha256_update_last(totlen, len, b, st)
 }
 
 #[inline]
@@ -403,7 +403,7 @@ fn sha224_finish(st: &[u32], h: &mut [u8]) {
 
 pub(crate) fn sha512_init(hash: &mut [u64]) {
     krml::unroll_for!(8, "i", 0u32, 1u32, {
-        let x: u64 = (&crate::hacl_rs::hash_sha2::h512)[i as usize];
+        let x: u64 = (&crate::hash_sha2::h512)[i as usize];
         let os: (&mut [u64], &mut [u64]) = hash.split_at_mut(0usize);
         os.1[i as usize] = x
     })
@@ -449,8 +449,8 @@ fn sha512_update(b: &[u8], hash: &mut [u64]) {
     (&mut ws)[15usize] = u14;
     krml::unroll_for!(5, "i", 0u32, 1u32, {
         krml::unroll_for!(16, "i0", 0u32, 1u32, {
-            let k_t: u64 = (&crate::hacl_rs::hash_sha2::k384_512)
-                [16u32.wrapping_mul(i).wrapping_add(i0) as usize];
+            let k_t: u64 =
+                (&crate::hash_sha2::k384_512)[16u32.wrapping_mul(i).wrapping_add(i0) as usize];
             let ws_t: u64 = (&ws)[i0 as usize];
             let a0: u64 = hash[0usize];
             let b0: u64 = hash[1usize];
@@ -517,7 +517,7 @@ pub(crate) fn sha512_update_nblocks(len: u32, b: &[u8], st: &mut [u64]) {
     for i in 0u32..blocks {
         let b0: &[u8] = b;
         let mb: (&[u8], &[u8]) = b0.split_at(i.wrapping_mul(128u32) as usize);
-        crate::hacl_rs::hash_sha2::sha512_update(mb.1, st)
+        crate::hash_sha2::sha512_update(mb.1, st)
     }
 }
 
@@ -550,9 +550,9 @@ pub(crate) fn sha512_update_last(
     let lb1: &[u8] = l1;
     let last00: &[u8] = lb0;
     let last10: &[u8] = lb1;
-    crate::hacl_rs::hash_sha2::sha512_update(last00, hash);
+    crate::hash_sha2::sha512_update(last00, hash);
     if blocks > 1u32 {
-        crate::hacl_rs::hash_sha2::sha512_update(last10, hash)
+        crate::hash_sha2::sha512_update(last10, hash)
     }
 }
 
@@ -573,14 +573,14 @@ pub(crate) fn sha512_finish(st: &[u64], h: &mut [u8]) {
 
 pub(crate) fn sha384_init(hash: &mut [u64]) {
     krml::unroll_for!(8, "i", 0u32, 1u32, {
-        let x: u64 = (&crate::hacl_rs::hash_sha2::h384)[i as usize];
+        let x: u64 = (&crate::hash_sha2::h384)[i as usize];
         let os: (&mut [u64], &mut [u64]) = hash.split_at_mut(0usize);
         os.1[i as usize] = x
     })
 }
 
 pub(crate) fn sha384_update_nblocks(len: u32, b: &[u8], st: &mut [u64]) {
-    crate::hacl_rs::hash_sha2::sha512_update_nblocks(len, b, st)
+    crate::hash_sha2::sha512_update_nblocks(len, b, st)
 }
 
 pub(crate) fn sha384_update_last(
@@ -589,7 +589,7 @@ pub(crate) fn sha384_update_last(
     b: &[u8],
     st: &mut [u64],
 ) {
-    crate::hacl_rs::hash_sha2::sha512_update_last(totlen, len, b, st)
+    crate::hash_sha2::sha512_update_last(totlen, len, b, st)
 }
 
 pub(crate) fn sha384_finish(st: &[u64], h: &mut [u8]) {
@@ -607,28 +607,28 @@ pub(crate) fn sha384_finish(st: &[u64], h: &mut [u8]) {
     (h[0usize..48usize]).copy_from_slice(&(&(&hbuf)[0usize..])[0usize..48usize])
 }
 
-pub type state_t_224 = crate::hacl_rs::streaming_types::state_32;
+pub type state_t_224 = crate::streaming_types::state_32;
 
-pub type state_t_256 = crate::hacl_rs::streaming_types::state_32;
+pub type state_t_256 = crate::streaming_types::state_32;
 
-pub type state_t_384 = crate::hacl_rs::streaming_types::state_64;
+pub type state_t_384 = crate::streaming_types::state_64;
 
-pub type state_t_512 = crate::hacl_rs::streaming_types::state_64;
+pub type state_t_512 = crate::streaming_types::state_64;
 
 /**
 Allocate initial state for the SHA2_256 hash. The state is to be freed by
 calling `free_256`.
 */
-pub fn malloc_256() -> Box<[crate::hacl_rs::streaming_types::state_32]> {
+pub fn malloc_256() -> Box<[crate::streaming_types::state_32]> {
     let buf: Box<[u8]> = vec![0u8; 64usize].into_boxed_slice();
     let mut block_state: Box<[u32]> = vec![0u32; 8usize].into_boxed_slice();
-    crate::hacl_rs::hash_sha2::sha256_init(&mut block_state);
-    let s: crate::hacl_rs::streaming_types::state_32 = crate::hacl_rs::streaming_types::state_32 {
+    crate::hash_sha2::sha256_init(&mut block_state);
+    let s: crate::streaming_types::state_32 = crate::streaming_types::state_32 {
         block_state,
         buf,
         total_len: 0u32 as u64,
     };
-    let p: Box<[crate::hacl_rs::streaming_types::state_32]> = vec![s].into_boxed_slice();
+    let p: Box<[crate::streaming_types::state_32]> = vec![s].into_boxed_slice();
     p
 }
 
@@ -639,8 +639,8 @@ useful, for instance, if your control-flow diverges and you need to feed
 more (different) data into the hash in each branch.
 */
 pub fn copy_256(
-    state: &[crate::hacl_rs::streaming_types::state_32],
-) -> Box<[crate::hacl_rs::streaming_types::state_32]> {
+    state: &[crate::streaming_types::state_32],
+) -> Box<[crate::streaming_types::state_32]> {
     let block_state0: &[u32] = &(state[0usize]).block_state;
     let buf0: &[u8] = &(state[0usize]).buf;
     let total_len0: u64 = (state[0usize]).total_len;
@@ -648,35 +648,35 @@ pub fn copy_256(
     ((&mut buf)[0usize..64usize]).copy_from_slice(&buf0[0usize..64usize]);
     let mut block_state: Box<[u32]> = vec![0u32; 8usize].into_boxed_slice();
     ((&mut block_state)[0usize..8usize]).copy_from_slice(&block_state0[0usize..8usize]);
-    let s: crate::hacl_rs::streaming_types::state_32 = crate::hacl_rs::streaming_types::state_32 {
+    let s: crate::streaming_types::state_32 = crate::streaming_types::state_32 {
         block_state,
         buf,
         total_len: total_len0,
     };
-    let p: Box<[crate::hacl_rs::streaming_types::state_32]> = vec![s].into_boxed_slice();
+    let p: Box<[crate::streaming_types::state_32]> = vec![s].into_boxed_slice();
     p
 }
 
 /**
 Reset an existing state to the initial hash state with empty data.
 */
-pub fn reset_256(state: &mut [crate::hacl_rs::streaming_types::state_32]) {
+pub fn reset_256(state: &mut [crate::streaming_types::state_32]) {
     let block_state: &mut [u32] = &mut (state[0usize]).block_state;
-    crate::hacl_rs::hash_sha2::sha256_init(block_state);
+    crate::hash_sha2::sha256_init(block_state);
     let total_len: u64 = 0u32 as u64;
     (state[0usize]).total_len = total_len
 }
 
 #[inline]
 fn update_224_256(
-    state: &mut [crate::hacl_rs::streaming_types::state_32],
+    state: &mut [crate::streaming_types::state_32],
     chunk: &[u8],
     chunk_len: u32,
-) -> crate::hacl_rs::streaming_types::error_code {
+) -> crate::streaming_types::error_code {
     let block_state: &mut [u32] = &mut (state[0usize]).block_state;
     let total_len: u64 = (state[0usize]).total_len;
     if chunk_len as u64 > 2305843009213693951u64.wrapping_sub(total_len) {
-        crate::hacl_rs::streaming_types::error_code::MaximumLengthExceeded
+        crate::streaming_types::error_code::MaximumLengthExceeded
     } else {
         let sz: u32 = if total_len.wrapping_rem(64u32 as u64) == 0u64 && total_len > 0u64 {
             64u32
@@ -705,7 +705,7 @@ fn update_224_256(
                 total_len1.wrapping_rem(64u32 as u64) as u32
             };
             if sz1 != 0u32 {
-                crate::hacl_rs::hash_sha2::sha256_update_nblocks(64u32, buf, block_state)
+                crate::hash_sha2::sha256_update_nblocks(64u32, buf, block_state)
             };
             let ite: u32 = if (chunk_len as u64).wrapping_rem(64u32 as u64) == 0u64
                 && chunk_len as u64 > 0u64
@@ -719,7 +719,7 @@ fn update_224_256(
             let data2_len: u32 = chunk_len.wrapping_sub(data1_len);
             let data1: (&[u8], &[u8]) = chunk.split_at(0usize);
             let data2: (&[u8], &[u8]) = data1.1.split_at(data1_len as usize);
-            crate::hacl_rs::hash_sha2::sha256_update_nblocks(
+            crate::hash_sha2::sha256_update_nblocks(
                 data1_len.wrapping_div(64u32).wrapping_mul(64u32),
                 data2.0,
                 block_state,
@@ -752,7 +752,7 @@ fn update_224_256(
                 total_len10.wrapping_rem(64u32 as u64) as u32
             };
             if sz10 != 0u32 {
-                crate::hacl_rs::hash_sha2::sha256_update_nblocks(64u32, buf0, block_state)
+                crate::hash_sha2::sha256_update_nblocks(64u32, buf0, block_state)
             };
             let ite: u32 = if (chunk_len.wrapping_sub(diff) as u64).wrapping_rem(64u32 as u64)
                 == 0u64
@@ -770,7 +770,7 @@ fn update_224_256(
             let data2_len: u32 = chunk_len.wrapping_sub(diff).wrapping_sub(data1_len);
             let data1: (&[u8], &[u8]) = chunk2.1.split_at(0usize);
             let data2: (&[u8], &[u8]) = data1.1.split_at(data1_len as usize);
-            crate::hacl_rs::hash_sha2::sha256_update_nblocks(
+            crate::hash_sha2::sha256_update_nblocks(
                 data1_len.wrapping_div(64u32).wrapping_mul(64u32),
                 data2.0,
                 block_state,
@@ -781,7 +781,7 @@ fn update_224_256(
             (state[0usize]).total_len =
                 total_len10.wrapping_add(chunk_len.wrapping_sub(diff) as u64)
         };
-        crate::hacl_rs::streaming_types::error_code::Success
+        crate::streaming_types::error_code::Success
     }
 }
 
@@ -793,11 +793,11 @@ success, or 1 if the combined length of all of the data passed to `update_256`
 This function is identical to the update function for SHA2_224.
 */
 pub fn update_256(
-    state: &mut [crate::hacl_rs::streaming_types::state_32],
+    state: &mut [crate::streaming_types::state_32],
     input: &[u8],
     input_len: u32,
-) -> crate::hacl_rs::streaming_types::error_code {
-    crate::hacl_rs::hash_sha2::update_224_256(state, input, input_len)
+) -> crate::streaming_types::error_code {
+    crate::hash_sha2::update_224_256(state, input, input_len)
 }
 
 /**
@@ -806,7 +806,7 @@ valid after a call to `digest_256`, meaning the user may feed more data into
 the hash via `update_256`. (The digest_256 function operates on an internal copy of
 the state and therefore does not invalidate the client-held state `p`.)
 */
-pub fn digest_256(state: &[crate::hacl_rs::streaming_types::state_32], output: &mut [u8]) {
+pub fn digest_256(state: &[crate::streaming_types::state_32], output: &mut [u8]) {
     let block_state: &[u32] = &(state[0usize]).block_state;
     let buf_: &[u8] = &(state[0usize]).buf;
     let total_len: u64 = (state[0usize]).total_len;
@@ -825,15 +825,15 @@ pub fn digest_256(state: &[crate::hacl_rs::streaming_types::state_32], output: &
         r.wrapping_rem(64u32)
     };
     let buf_last: (&[u8], &[u8]) = buf_multi.1.split_at(r.wrapping_sub(ite) as usize);
-    crate::hacl_rs::hash_sha2::sha256_update_nblocks(0u32, buf_last.0, &mut tmp_block_state);
+    crate::hash_sha2::sha256_update_nblocks(0u32, buf_last.0, &mut tmp_block_state);
     let prev_len_last: u64 = total_len.wrapping_sub(r as u64);
-    crate::hacl_rs::hash_sha2::sha256_update_last(
+    crate::hash_sha2::sha256_update_last(
         prev_len_last.wrapping_add(r as u64),
         r,
         buf_last.1,
         &mut tmp_block_state,
     );
-    crate::hacl_rs::hash_sha2::sha256_finish(&tmp_block_state, output)
+    crate::hash_sha2::sha256_finish(&tmp_block_state, output)
 }
 
 /**
@@ -843,43 +843,43 @@ pub fn hash_256(output: &mut [u8], input: &[u8], input_len: u32) {
     let ib: &[u8] = input;
     let rb: &mut [u8] = output;
     let mut st: [u32; 8] = [0u32; 8usize];
-    crate::hacl_rs::hash_sha2::sha256_init(&mut st);
+    crate::hash_sha2::sha256_init(&mut st);
     let rem: u32 = input_len.wrapping_rem(64u32);
     let len·: u64 = input_len as u64;
-    crate::hacl_rs::hash_sha2::sha256_update_nblocks(input_len, ib, &mut st);
+    crate::hash_sha2::sha256_update_nblocks(input_len, ib, &mut st);
     let rem1: u32 = input_len.wrapping_rem(64u32);
     let b0: &[u8] = ib;
     let lb: (&[u8], &[u8]) = b0.split_at(input_len.wrapping_sub(rem1) as usize);
-    crate::hacl_rs::hash_sha2::sha256_update_last(len·, rem, lb.1, &mut st);
-    crate::hacl_rs::hash_sha2::sha256_finish(&st, rb)
+    crate::hash_sha2::sha256_update_last(len·, rem, lb.1, &mut st);
+    crate::hash_sha2::sha256_finish(&st, rb)
 }
 
-pub fn malloc_224() -> Box<[crate::hacl_rs::streaming_types::state_32]> {
+pub fn malloc_224() -> Box<[crate::streaming_types::state_32]> {
     let buf: Box<[u8]> = vec![0u8; 64usize].into_boxed_slice();
     let mut block_state: Box<[u32]> = vec![0u32; 8usize].into_boxed_slice();
-    crate::hacl_rs::hash_sha2::sha224_init(&mut block_state);
-    let s: crate::hacl_rs::streaming_types::state_32 = crate::hacl_rs::streaming_types::state_32 {
+    crate::hash_sha2::sha224_init(&mut block_state);
+    let s: crate::streaming_types::state_32 = crate::streaming_types::state_32 {
         block_state,
         buf,
         total_len: 0u32 as u64,
     };
-    let p: Box<[crate::hacl_rs::streaming_types::state_32]> = vec![s].into_boxed_slice();
+    let p: Box<[crate::streaming_types::state_32]> = vec![s].into_boxed_slice();
     p
 }
 
-pub fn reset_224(state: &mut [crate::hacl_rs::streaming_types::state_32]) {
+pub fn reset_224(state: &mut [crate::streaming_types::state_32]) {
     let block_state: &mut [u32] = &mut (state[0usize]).block_state;
-    crate::hacl_rs::hash_sha2::sha224_init(block_state);
+    crate::hash_sha2::sha224_init(block_state);
     let total_len: u64 = 0u32 as u64;
     (state[0usize]).total_len = total_len
 }
 
 pub fn update_224(
-    state: &mut [crate::hacl_rs::streaming_types::state_32],
+    state: &mut [crate::streaming_types::state_32],
     input: &[u8],
     input_len: u32,
-) -> crate::hacl_rs::streaming_types::error_code {
-    crate::hacl_rs::hash_sha2::update_224_256(state, input, input_len)
+) -> crate::streaming_types::error_code {
+    crate::hash_sha2::update_224_256(state, input, input_len)
 }
 
 /**
@@ -887,7 +887,7 @@ Write the resulting hash into `output`, an array of 28 bytes. The state remains
 valid after a call to `digest_224`, meaning the user may feed more data into
 the hash via `update_224`.
 */
-pub fn digest_224(state: &[crate::hacl_rs::streaming_types::state_32], output: &mut [u8]) {
+pub fn digest_224(state: &[crate::streaming_types::state_32], output: &mut [u8]) {
     let block_state: &[u32] = &(state[0usize]).block_state;
     let buf_: &[u8] = &(state[0usize]).buf;
     let total_len: u64 = (state[0usize]).total_len;
@@ -906,15 +906,15 @@ pub fn digest_224(state: &[crate::hacl_rs::streaming_types::state_32], output: &
         r.wrapping_rem(64u32)
     };
     let buf_last: (&[u8], &[u8]) = buf_multi.1.split_at(r.wrapping_sub(ite) as usize);
-    crate::hacl_rs::hash_sha2::sha224_update_nblocks(0u32, buf_last.0, &mut tmp_block_state);
+    crate::hash_sha2::sha224_update_nblocks(0u32, buf_last.0, &mut tmp_block_state);
     let prev_len_last: u64 = total_len.wrapping_sub(r as u64);
-    crate::hacl_rs::hash_sha2::sha224_update_last(
+    crate::hash_sha2::sha224_update_last(
         prev_len_last.wrapping_add(r as u64),
         r,
         buf_last.1,
         &mut tmp_block_state,
     );
-    crate::hacl_rs::hash_sha2::sha224_finish(&tmp_block_state, output)
+    crate::hash_sha2::sha224_finish(&tmp_block_state, output)
 }
 
 /**
@@ -924,27 +924,27 @@ pub fn hash_224(output: &mut [u8], input: &[u8], input_len: u32) {
     let ib: &[u8] = input;
     let rb: &mut [u8] = output;
     let mut st: [u32; 8] = [0u32; 8usize];
-    crate::hacl_rs::hash_sha2::sha224_init(&mut st);
+    crate::hash_sha2::sha224_init(&mut st);
     let rem: u32 = input_len.wrapping_rem(64u32);
     let len·: u64 = input_len as u64;
-    crate::hacl_rs::hash_sha2::sha224_update_nblocks(input_len, ib, &mut st);
+    crate::hash_sha2::sha224_update_nblocks(input_len, ib, &mut st);
     let rem1: u32 = input_len.wrapping_rem(64u32);
     let b0: &[u8] = ib;
     let lb: (&[u8], &[u8]) = b0.split_at(input_len.wrapping_sub(rem1) as usize);
-    crate::hacl_rs::hash_sha2::sha224_update_last(len·, rem, lb.1, &mut st);
-    crate::hacl_rs::hash_sha2::sha224_finish(&st, rb)
+    crate::hash_sha2::sha224_update_last(len·, rem, lb.1, &mut st);
+    crate::hash_sha2::sha224_finish(&st, rb)
 }
 
-pub fn malloc_512() -> Box<[crate::hacl_rs::streaming_types::state_64]> {
+pub fn malloc_512() -> Box<[crate::streaming_types::state_64]> {
     let buf: Box<[u8]> = vec![0u8; 128usize].into_boxed_slice();
     let mut block_state: Box<[u64]> = vec![0u64; 8usize].into_boxed_slice();
-    crate::hacl_rs::hash_sha2::sha512_init(&mut block_state);
-    let s: crate::hacl_rs::streaming_types::state_64 = crate::hacl_rs::streaming_types::state_64 {
+    crate::hash_sha2::sha512_init(&mut block_state);
+    let s: crate::streaming_types::state_64 = crate::streaming_types::state_64 {
         block_state,
         buf,
         total_len: 0u32 as u64,
     };
-    let p: Box<[crate::hacl_rs::streaming_types::state_64]> = vec![s].into_boxed_slice();
+    let p: Box<[crate::streaming_types::state_64]> = vec![s].into_boxed_slice();
     p
 }
 
@@ -955,8 +955,8 @@ useful, for instance, if your control-flow diverges and you need to feed
 more (different) data into the hash in each branch.
 */
 pub fn copy_512(
-    state: &[crate::hacl_rs::streaming_types::state_64],
-) -> Box<[crate::hacl_rs::streaming_types::state_64]> {
+    state: &[crate::streaming_types::state_64],
+) -> Box<[crate::streaming_types::state_64]> {
     let block_state0: &[u64] = &(state[0usize]).block_state;
     let buf0: &[u8] = &(state[0usize]).buf;
     let total_len0: u64 = (state[0usize]).total_len;
@@ -964,32 +964,32 @@ pub fn copy_512(
     ((&mut buf)[0usize..128usize]).copy_from_slice(&buf0[0usize..128usize]);
     let mut block_state: Box<[u64]> = vec![0u64; 8usize].into_boxed_slice();
     ((&mut block_state)[0usize..8usize]).copy_from_slice(&block_state0[0usize..8usize]);
-    let s: crate::hacl_rs::streaming_types::state_64 = crate::hacl_rs::streaming_types::state_64 {
+    let s: crate::streaming_types::state_64 = crate::streaming_types::state_64 {
         block_state,
         buf,
         total_len: total_len0,
     };
-    let p: Box<[crate::hacl_rs::streaming_types::state_64]> = vec![s].into_boxed_slice();
+    let p: Box<[crate::streaming_types::state_64]> = vec![s].into_boxed_slice();
     p
 }
 
-pub fn reset_512(state: &mut [crate::hacl_rs::streaming_types::state_64]) {
+pub fn reset_512(state: &mut [crate::streaming_types::state_64]) {
     let block_state: &mut [u64] = &mut (state[0usize]).block_state;
-    crate::hacl_rs::hash_sha2::sha512_init(block_state);
+    crate::hash_sha2::sha512_init(block_state);
     let total_len: u64 = 0u32 as u64;
     (state[0usize]).total_len = total_len
 }
 
 #[inline]
 fn update_384_512(
-    state: &mut [crate::hacl_rs::streaming_types::state_64],
+    state: &mut [crate::streaming_types::state_64],
     chunk: &[u8],
     chunk_len: u32,
-) -> crate::hacl_rs::streaming_types::error_code {
+) -> crate::streaming_types::error_code {
     let block_state: &mut [u64] = &mut (state[0usize]).block_state;
     let total_len: u64 = (state[0usize]).total_len;
     if chunk_len as u64 > 18446744073709551615u64.wrapping_sub(total_len) {
-        crate::hacl_rs::streaming_types::error_code::MaximumLengthExceeded
+        crate::streaming_types::error_code::MaximumLengthExceeded
     } else {
         let sz: u32 = if total_len.wrapping_rem(128u32 as u64) == 0u64 && total_len > 0u64 {
             128u32
@@ -1018,7 +1018,7 @@ fn update_384_512(
                 total_len1.wrapping_rem(128u32 as u64) as u32
             };
             if sz1 != 0u32 {
-                crate::hacl_rs::hash_sha2::sha512_update_nblocks(128u32, buf, block_state)
+                crate::hash_sha2::sha512_update_nblocks(128u32, buf, block_state)
             };
             let ite: u32 = if (chunk_len as u64).wrapping_rem(128u32 as u64) == 0u64
                 && chunk_len as u64 > 0u64
@@ -1032,7 +1032,7 @@ fn update_384_512(
             let data2_len: u32 = chunk_len.wrapping_sub(data1_len);
             let data1: (&[u8], &[u8]) = chunk.split_at(0usize);
             let data2: (&[u8], &[u8]) = data1.1.split_at(data1_len as usize);
-            crate::hacl_rs::hash_sha2::sha512_update_nblocks(
+            crate::hash_sha2::sha512_update_nblocks(
                 data1_len.wrapping_div(128u32).wrapping_mul(128u32),
                 data2.0,
                 block_state,
@@ -1065,7 +1065,7 @@ fn update_384_512(
                 total_len10.wrapping_rem(128u32 as u64) as u32
             };
             if sz10 != 0u32 {
-                crate::hacl_rs::hash_sha2::sha512_update_nblocks(128u32, buf0, block_state)
+                crate::hash_sha2::sha512_update_nblocks(128u32, buf0, block_state)
             };
             let ite: u32 = if (chunk_len.wrapping_sub(diff) as u64).wrapping_rem(128u32 as u64)
                 == 0u64
@@ -1083,7 +1083,7 @@ fn update_384_512(
             let data2_len: u32 = chunk_len.wrapping_sub(diff).wrapping_sub(data1_len);
             let data1: (&[u8], &[u8]) = chunk2.1.split_at(0usize);
             let data2: (&[u8], &[u8]) = data1.1.split_at(data1_len as usize);
-            crate::hacl_rs::hash_sha2::sha512_update_nblocks(
+            crate::hash_sha2::sha512_update_nblocks(
                 data1_len.wrapping_div(128u32).wrapping_mul(128u32),
                 data2.0,
                 block_state,
@@ -1094,7 +1094,7 @@ fn update_384_512(
             (state[0usize]).total_len =
                 total_len10.wrapping_add(chunk_len.wrapping_sub(diff) as u64)
         };
-        crate::hacl_rs::streaming_types::error_code::Success
+        crate::streaming_types::error_code::Success
     }
 }
 
@@ -1106,11 +1106,11 @@ success, or 1 if the combined length of all of the data passed to `update_512`
 This function is identical to the update function for SHA2_384.
 */
 pub fn update_512(
-    state: &mut [crate::hacl_rs::streaming_types::state_64],
+    state: &mut [crate::streaming_types::state_64],
     input: &[u8],
     input_len: u32,
-) -> crate::hacl_rs::streaming_types::error_code {
-    crate::hacl_rs::hash_sha2::update_384_512(state, input, input_len)
+) -> crate::streaming_types::error_code {
+    crate::hash_sha2::update_384_512(state, input, input_len)
 }
 
 /**
@@ -1119,7 +1119,7 @@ valid after a call to `digest_512`, meaning the user may feed more data into
 the hash via `update_512`. (The digest_512 function operates on an internal copy of
 the state and therefore does not invalidate the client-held state `p`.)
 */
-pub fn digest_512(state: &[crate::hacl_rs::streaming_types::state_64], output: &mut [u8]) {
+pub fn digest_512(state: &[crate::streaming_types::state_64], output: &mut [u8]) {
     let block_state: &[u64] = &(state[0usize]).block_state;
     let buf_: &[u8] = &(state[0usize]).buf;
     let total_len: u64 = (state[0usize]).total_len;
@@ -1138,9 +1138,9 @@ pub fn digest_512(state: &[crate::hacl_rs::streaming_types::state_64], output: &
         r.wrapping_rem(128u32)
     };
     let buf_last: (&[u8], &[u8]) = buf_multi.1.split_at(r.wrapping_sub(ite) as usize);
-    crate::hacl_rs::hash_sha2::sha512_update_nblocks(0u32, buf_last.0, &mut tmp_block_state);
+    crate::hash_sha2::sha512_update_nblocks(0u32, buf_last.0, &mut tmp_block_state);
     let prev_len_last: u64 = total_len.wrapping_sub(r as u64);
-    crate::hacl_rs::hash_sha2::sha512_update_last(
+    crate::hash_sha2::sha512_update_last(
         fstar::uint128::add(
             fstar::uint128::uint64_to_uint128(prev_len_last),
             fstar::uint128::uint64_to_uint128(r as u64),
@@ -1149,7 +1149,7 @@ pub fn digest_512(state: &[crate::hacl_rs::streaming_types::state_64], output: &
         buf_last.1,
         &mut tmp_block_state,
     );
-    crate::hacl_rs::hash_sha2::sha512_finish(&tmp_block_state, output)
+    crate::hash_sha2::sha512_finish(&tmp_block_state, output)
 }
 
 /**
@@ -1159,43 +1159,43 @@ pub fn hash_512(output: &mut [u8], input: &[u8], input_len: u32) {
     let ib: &[u8] = input;
     let rb: &mut [u8] = output;
     let mut st: [u64; 8] = [0u64; 8usize];
-    crate::hacl_rs::hash_sha2::sha512_init(&mut st);
+    crate::hash_sha2::sha512_init(&mut st);
     let rem: u32 = input_len.wrapping_rem(128u32);
     let len·: fstar::uint128::uint128 = fstar::uint128::uint64_to_uint128(input_len as u64);
-    crate::hacl_rs::hash_sha2::sha512_update_nblocks(input_len, ib, &mut st);
+    crate::hash_sha2::sha512_update_nblocks(input_len, ib, &mut st);
     let rem1: u32 = input_len.wrapping_rem(128u32);
     let b0: &[u8] = ib;
     let lb: (&[u8], &[u8]) = b0.split_at(input_len.wrapping_sub(rem1) as usize);
-    crate::hacl_rs::hash_sha2::sha512_update_last(len·, rem, lb.1, &mut st);
-    crate::hacl_rs::hash_sha2::sha512_finish(&st, rb)
+    crate::hash_sha2::sha512_update_last(len·, rem, lb.1, &mut st);
+    crate::hash_sha2::sha512_finish(&st, rb)
 }
 
-pub fn malloc_384() -> Box<[crate::hacl_rs::streaming_types::state_64]> {
+pub fn malloc_384() -> Box<[crate::streaming_types::state_64]> {
     let buf: Box<[u8]> = vec![0u8; 128usize].into_boxed_slice();
     let mut block_state: Box<[u64]> = vec![0u64; 8usize].into_boxed_slice();
-    crate::hacl_rs::hash_sha2::sha384_init(&mut block_state);
-    let s: crate::hacl_rs::streaming_types::state_64 = crate::hacl_rs::streaming_types::state_64 {
+    crate::hash_sha2::sha384_init(&mut block_state);
+    let s: crate::streaming_types::state_64 = crate::streaming_types::state_64 {
         block_state,
         buf,
         total_len: 0u32 as u64,
     };
-    let p: Box<[crate::hacl_rs::streaming_types::state_64]> = vec![s].into_boxed_slice();
+    let p: Box<[crate::streaming_types::state_64]> = vec![s].into_boxed_slice();
     p
 }
 
-pub fn reset_384(state: &mut [crate::hacl_rs::streaming_types::state_64]) {
+pub fn reset_384(state: &mut [crate::streaming_types::state_64]) {
     let block_state: &mut [u64] = &mut (state[0usize]).block_state;
-    crate::hacl_rs::hash_sha2::sha384_init(block_state);
+    crate::hash_sha2::sha384_init(block_state);
     let total_len: u64 = 0u32 as u64;
     (state[0usize]).total_len = total_len
 }
 
 pub fn update_384(
-    state: &mut [crate::hacl_rs::streaming_types::state_64],
+    state: &mut [crate::streaming_types::state_64],
     input: &[u8],
     input_len: u32,
-) -> crate::hacl_rs::streaming_types::error_code {
-    crate::hacl_rs::hash_sha2::update_384_512(state, input, input_len)
+) -> crate::streaming_types::error_code {
+    crate::hash_sha2::update_384_512(state, input, input_len)
 }
 
 /**
@@ -1203,7 +1203,7 @@ Write the resulting hash into `output`, an array of 48 bytes. The state remains
 valid after a call to `digest_384`, meaning the user may feed more data into
 the hash via `update_384`.
 */
-pub fn digest_384(state: &[crate::hacl_rs::streaming_types::state_64], output: &mut [u8]) {
+pub fn digest_384(state: &[crate::streaming_types::state_64], output: &mut [u8]) {
     let block_state: &[u64] = &(state[0usize]).block_state;
     let buf_: &[u8] = &(state[0usize]).buf;
     let total_len: u64 = (state[0usize]).total_len;
@@ -1222,9 +1222,9 @@ pub fn digest_384(state: &[crate::hacl_rs::streaming_types::state_64], output: &
         r.wrapping_rem(128u32)
     };
     let buf_last: (&[u8], &[u8]) = buf_multi.1.split_at(r.wrapping_sub(ite) as usize);
-    crate::hacl_rs::hash_sha2::sha384_update_nblocks(0u32, buf_last.0, &mut tmp_block_state);
+    crate::hash_sha2::sha384_update_nblocks(0u32, buf_last.0, &mut tmp_block_state);
     let prev_len_last: u64 = total_len.wrapping_sub(r as u64);
-    crate::hacl_rs::hash_sha2::sha384_update_last(
+    crate::hash_sha2::sha384_update_last(
         fstar::uint128::add(
             fstar::uint128::uint64_to_uint128(prev_len_last),
             fstar::uint128::uint64_to_uint128(r as u64),
@@ -1233,7 +1233,7 @@ pub fn digest_384(state: &[crate::hacl_rs::streaming_types::state_64], output: &
         buf_last.1,
         &mut tmp_block_state,
     );
-    crate::hacl_rs::hash_sha2::sha384_finish(&tmp_block_state, output)
+    crate::hash_sha2::sha384_finish(&tmp_block_state, output)
 }
 
 /**
@@ -1243,107 +1243,13 @@ pub fn hash_384(output: &mut [u8], input: &[u8], input_len: u32) {
     let ib: &[u8] = input;
     let rb: &mut [u8] = output;
     let mut st: [u64; 8] = [0u64; 8usize];
-    crate::hacl_rs::hash_sha2::sha384_init(&mut st);
+    crate::hash_sha2::sha384_init(&mut st);
     let rem: u32 = input_len.wrapping_rem(128u32);
     let len·: fstar::uint128::uint128 = fstar::uint128::uint64_to_uint128(input_len as u64);
-    crate::hacl_rs::hash_sha2::sha384_update_nblocks(input_len, ib, &mut st);
+    crate::hash_sha2::sha384_update_nblocks(input_len, ib, &mut st);
     let rem1: u32 = input_len.wrapping_rem(128u32);
     let b0: &[u8] = ib;
     let lb: (&[u8], &[u8]) = b0.split_at(input_len.wrapping_sub(rem1) as usize);
-    crate::hacl_rs::hash_sha2::sha384_update_last(len·, rem, lb.1, &mut st);
-    crate::hacl_rs::hash_sha2::sha384_finish(&st, rb)
+    crate::hash_sha2::sha384_update_last(len·, rem, lb.1, &mut st);
+    crate::hash_sha2::sha384_finish(&st, rb)
 }
-
-// END GENERATED CODE
-
-macro_rules! impl_hash {
-    ($name:ident, $digest_size:literal, $state:ty, $malloc:expr, $reset:expr, $update:expr, $finish:expr, $copy:expr, $hash:expr) => {
-        pub struct $name {
-            state: $state,
-        }
-
-        impl $name {
-            /// Return the digest for the given input byte slice, in immediate mode.
-            pub fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) {
-                $hash(digest, payload, payload.len() as u32)
-            }
-
-            /// Initialize a new digest state for streaming use.
-            pub fn new() -> $name {
-                $name { state: $malloc() }
-            }
-
-            /// Add the `payload` to the digest.
-            pub fn update(&mut self, payload: &[u8]) {
-                $update(self.state.as_mut(), payload, payload.len() as u32);
-            }
-
-            /// Get the digest.
-            ///
-            /// Note that the digest state can be continued to be used, to extend the
-            /// digest.
-            pub fn finish(&self, digest: &mut [u8; $digest_size]) {
-                $finish(self.state.as_ref(), digest);
-            }
-
-            /// Reset the digest state.
-            pub fn reset(&mut self) {
-                $reset(self.state.as_mut());
-            }
-        }
-
-        impl Clone for $name {
-            fn clone(&self) -> Self {
-                Self {
-                    state: $copy(self.state.as_ref()),
-                }
-            }
-        }
-    };
-}
-
-impl_hash!(
-    HaclRs_Sha2_Sha256,
-    32,
-    Box<[crate::hacl_rs::streaming_types::state_32]>,
-    malloc_256,
-    reset_256,
-    update_256,
-    digest_256,
-    copy_256,
-    hash_256
-);
-impl_hash!(
-    HaclRs_Sha2_Sha256_224,
-    28,
-    Box<[crate::hacl_rs::streaming_types::state_32]>,
-    malloc_224,
-    reset_224,
-    update_224,
-    digest_224,
-    copy_256,
-    hash_224
-);
-
-impl_hash!(
-    HaclRs_Sha2_Sha512,
-    64,
-    Box<[crate::hacl_rs::streaming_types::state_64]>,
-    malloc_512,
-    reset_512,
-    update_512,
-    digest_512,
-    copy_512,
-    hash_512
-);
-impl_hash!(
-    HaclRs_Sha2_Sha512_384,
-    48,
-    Box<[crate::hacl_rs::streaming_types::state_64]>,
-    malloc_384,
-    reset_384,
-    update_384,
-    digest_384,
-    copy_512,
-    hash_384
-);

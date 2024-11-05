@@ -940,7 +940,7 @@ dependencies = [
  "libcrux",
  "libcrux-ecdh",
  "libcrux-hacl",
- "libcrux-hacl-rs-krml",
+ "libcrux-hacl-rs",
  "libcrux-hkdf",
  "libcrux-hmac",
  "libcrux-kem",
@@ -989,6 +989,13 @@ dependencies = [
  "hex",
  "libcrux-platform",
  "wasm-bindgen-test",
+]
+
+[[package]]
+name = "libcrux-hacl-rs"
+version = "0.1.0"
+dependencies = [
+ "libcrux-hacl-rs-krml",
 ]
 
 [[package]]

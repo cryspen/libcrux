@@ -2,8 +2,8 @@
 mod fstar;
 mod lowstar;
 
-pub(crate) mod hash_sha1;
-pub(crate) mod hash_sha2;
+pub mod hash_sha1;
+pub mod hash_sha2;
 //pub(crate) mod hkdf;
-pub(crate) mod hmac;
-pub(crate) mod streaming_types;
+pub mod hmac;
+pub mod streaming_types;

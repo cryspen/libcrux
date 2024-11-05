@@ -5,8 +5,7 @@
 #![allow(unreachable_patterns)]
 
 #[derive(PartialEq, Clone, Copy)]
-pub enum hash_alg
-{
+pub enum hash_alg {
     SHA2_224,
     SHA2_256,
     SHA2_384,
@@ -20,22 +19,27 @@ pub enum hash_alg
     SHA3_384,
     SHA3_512,
     Shake128,
-    Shake256
+    Shake256,
 }
 
 #[derive(PartialEq, Clone, Copy)]
-pub enum error_code
-{
+pub enum error_code {
     Success,
     InvalidAlgorithm,
     InvalidLength,
-    MaximumLengthExceeded
+    MaximumLengthExceeded,
 }
 
 #[derive(PartialEq, Clone)]
-pub struct state_32
-{ pub block_state: Box<[u32]>, pub buf: Box<[u8]>, pub total_len: u64 }
+pub struct state_32 {
+    pub block_state: Box<[u32]>,
+    pub buf: Box<[u8]>,
+    pub total_len: u64,
+}
 
 #[derive(PartialEq, Clone)]
-pub struct state_64
-{ pub block_state: Box<[u64]>, pub buf: Box<[u8]>, pub total_len: u64 }
+pub struct state_64 {
+    pub block_state: Box<[u64]>,
+    pub buf: Box<[u8]>,
+    pub total_len: u64,
+}
