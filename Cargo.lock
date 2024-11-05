@@ -940,6 +940,7 @@ dependencies = [
  "libcrux",
  "libcrux-ecdh",
  "libcrux-hacl",
+ "libcrux-hacl-rs-krml",
  "libcrux-hkdf",
  "libcrux-hmac",
  "libcrux-kem",

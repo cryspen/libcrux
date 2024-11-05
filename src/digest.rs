@@ -291,10 +291,52 @@ macro_rules! impl_streaming {
     };
 }
 impl_streaming!(Sha2_224, Sha224, Sha2_224Digest);
-impl_streaming!(Sha2_256, Sha256, Sha2_256Digest);
 impl_streaming!(Sha2_384, Sha384, Sha2_384Digest);
 impl_streaming!(Sha2_512, Sha512, Sha2_512Digest);
 
+// Streaming API - This is the recommended one.
+// For implementations based on hacl_rs (over hacl-c)
+macro_rules! impl_streaming_hacl_rs {
+    ($name:ident, $state:ty, $result:ty) => {
+        #[derive(Clone)]
+        pub struct $name {
+            state: $state,
+        }
+        impl $name {
+            /// Initialize a new digest state.
+            pub fn new() -> Self {
+                Self {
+                    state: <$state>::new(),
+                }
+            }
+
+            /// Add the `payload` to the digest.
+            pub fn update(&mut self, payload: &[u8]) {
+                self.state.update(payload);
+            }
+
+            /// Get the digest.
+            ///
+            /// Note that the digest state can be continued to be used, to extend the
+            /// digest.
+            pub fn finish(&self, digest: &mut $result) {
+                self.state.finish(digest)
+            }
+        }
+
+        impl Default for $name {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
+    };
+}
+
+impl_streaming_hacl_rs!(
+    Sha2_256,
+    crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha256,
+    Sha2_256Digest
+);
 // SHAKE messages from SHA 3
 
 #[cfg(simd256)]

@@ -4,8 +4,9 @@
 #[test]
 fn sha256_kat_streaming() {
     let mut digest = libcrux::digest::Sha2_256::new();
+    let mut d = [0u8; 32];
     digest.update(b"libcrux sha2 256 tests");
-    let d = digest.finish();
+    digest.finish(&mut d);
 
     let expected = "8683520e19e5b33db33c8fb90918c0c96fcdfd9a17c695ce0f0ea2eaa0c95956";
     assert_eq!(hex::encode(&d), expected);
@@ -38,8 +39,10 @@ fn sha2_clone() {
     let mut hasher256_2 = hasher_256.clone();
     hasher_256.update(b"more 256");
     hasher256_2.update(b"more 256");
-    let digest = hasher_256.finish();
-    let digest_2 = hasher256_2.finish();
+    let mut digest = [0u8; 32];
+    let mut digest_2 = [0u8; 32];
+    hasher_256.finish(&mut digest);
+    hasher256_2.finish(&mut digest_2);
 
     assert_eq!(digest, digest_2);
     assert_eq!(digest, libcrux::digest::sha2_256(b"test 256more 256"));
