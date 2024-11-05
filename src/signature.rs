@@ -4,8 +4,10 @@
 //! * EdDSA 25519
 //! * RSA PSS
 
-use crate::{ecdh, hacl};
-use libcrux_hacl_rs::ed25519;
+use crate::{
+    ecdh,
+    hacl::{self, ed25519},
+};
 use rand::{CryptoRng, Rng, RngCore};
 
 use self::rsa_pss::RsaPssSignature;
@@ -393,13 +395,11 @@ pub fn sign(
             )?
         }
         Algorithm::Ed25519 => {
-            let mut signature = [0u8; 64];
-            ed25519::sign(
-                &mut signature,
-                private_key.try_into().map_err(|_| Error::SigningError)?,
-                payload.len() as u32,
+            let signature = ed25519::sign(
                 payload,
-            );
+                private_key.try_into().map_err(|_| Error::SigningError)?,
+            )
+            .map_err(into_signing_error)?;
             Signature::Ed25519(Ed25519Signature { signature })
         }
         Algorithm::RsaPss(_) => {
@@ -461,16 +461,7 @@ pub fn verify(payload: &[u8], signature: &Signature, public_key: &[u8]) -> Resul
         .map_err(into_verify_error),
         Signature::Ed25519(signature) => {
             let public_key = public_key.try_into().map_err(|_| Error::InvalidSignature)?;
-            if ed25519::verify(
-                public_key,
-                payload.len() as u32,
-                payload,
-                &signature.signature,
-            ) {
-                Ok(())
-            } else {
-                Err(Error::InvalidSignature)
-            }
+            ed25519::verify(payload, public_key, &signature.signature).map_err(into_verify_error)
         }
         Signature::RsaPss(_) => todo!(),
     }
@@ -507,8 +498,7 @@ pub fn key_gen(
 
                 break;
             }
-            let mut pk = [0u8; 32];
-            ed25519::secret_to_public(&mut pk, &sk);
+            let pk = ed25519::secret_to_public(&sk);
 
             Ok((sk.to_vec(), pk.to_vec()))
         }
