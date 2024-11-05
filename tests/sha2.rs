@@ -28,8 +28,10 @@ fn sha2_clone() {
     let mut hasher224_2 = hasher_224.clone();
     hasher_224.update(b"more 224");
     hasher224_2.update(b"more 224");
-    let digest = hasher_224.finish();
-    let digest_2 = hasher224_2.finish();
+    let mut digest = [0u8; 28];
+    let mut digest_2 = [0u8; 28];
+    hasher_224.finish(&mut digest);
+    hasher224_2.finish(&mut digest_2);
 
     assert_eq!(digest, digest_2);
     assert_eq!(digest, libcrux::digest::sha2_224(b"test 224more 224"));
@@ -52,8 +54,10 @@ fn sha2_clone() {
     let mut hasher384_2 = hasher_384.clone();
     hasher_384.update(b"more 384");
     hasher384_2.update(b"more 384");
-    let digest = hasher_384.finish();
-    let digest_2 = hasher384_2.finish();
+    let mut digest = [0u8; 48];
+    let mut digest_2 = [0u8; 48];
+    hasher_384.finish(&mut digest);
+    hasher384_2.finish(&mut digest_2);
 
     assert_eq!(digest, digest_2);
     assert_eq!(digest, libcrux::digest::sha2_384(b"test 384more 384"));
@@ -63,8 +67,10 @@ fn sha2_clone() {
     let mut hasher512_2 = hasher_512.clone();
     hasher_512.update(b"more 512");
     hasher512_2.update(b"more 512");
-    let digest = hasher_512.finish();
-    let digest_2 = hasher512_2.finish();
+    let mut digest = [0u8; 64];
+    let mut digest_2 = [0u8; 64];
+    hasher_512.finish(&mut digest);
+    hasher512_2.finish(&mut digest_2);
 
     assert_eq!(digest, digest_2);
     assert_eq!(digest, libcrux::digest::sha2_512(b"test 512more 512"));

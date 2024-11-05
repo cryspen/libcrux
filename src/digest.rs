@@ -13,14 +13,7 @@
 //! On x64 CPUs the libjade implementation is used and if AVX2 is available, the
 //! optimised libjade implementation is used.
 
-use crate::hacl::{
-    blake2,
-    sha2::{
-        self,
-        streaming::{Sha224, Sha256, Sha384, Sha512},
-    },
-    sha3,
-};
+use crate::hacl::{blake2, sha3};
 
 use libcrux_platform::{simd128_support, simd256_support};
 
@@ -179,10 +172,10 @@ pub fn hash(alg: Algorithm, payload: &[u8]) -> Vec<u8> {
     // So we only use streaming.
     match alg {
         Algorithm::Sha1 => todo!(),
-        Algorithm::Sha224 => sha2::sha224(payload).into(),
-        Algorithm::Sha256 => sha2::sha256(payload).into(),
-        Algorithm::Sha384 => sha2::sha384(payload).into(),
-        Algorithm::Sha512 => sha2::sha512(payload).into(),
+        Algorithm::Sha224 => sha2_224(payload).into(),
+        Algorithm::Sha256 => sha2_256(payload).into(),
+        Algorithm::Sha384 => sha2_384(payload).into(),
+        Algorithm::Sha512 => sha2_512(payload).into(),
         Algorithm::Blake2s => blake2s(payload, &[]),
         Algorithm::Blake2b => blake2b(payload, &[]),
         Algorithm::Sha3_224 => sha3_224(payload).into(),
@@ -236,63 +229,33 @@ fn blake2b(payload: &[u8], key: &[u8]) -> Vec<u8> {
 
 /// SHA2 224
 pub fn sha2_224(payload: &[u8]) -> Sha2_224Digest {
-    sha2::sha224(payload)
+    let mut digest = Sha2_224Digest::default();
+    Sha2_224::hash(&mut digest, payload);
+    digest
 }
 
 /// SHA2 256
 pub fn sha2_256(payload: &[u8]) -> Sha2_256Digest {
-    sha2::sha256(payload)
+    let mut digest = Sha2_256Digest::default();
+    Sha2_256::hash(&mut digest, payload);
+    digest
 }
 
 /// SHA2 384
 pub fn sha2_384(payload: &[u8]) -> Sha2_384Digest {
-    sha2::sha384(payload)
+    // NB: this doesn't have default and we can't implement it.
+    let mut digest = [0; 48];
+    Sha2_384::hash(&mut digest, payload);
+    digest
 }
 
 /// SHA2 512
 pub fn sha2_512(payload: &[u8]) -> Sha2_512Digest {
-    sha2::sha512(payload)
+    // NB: this doesn't have default and we can't implement it.
+    let mut digest = [0; 64];
+    Sha2_512::hash(&mut digest, payload);
+    digest
 }
-
-// Streaming API - This is the recommended one.
-macro_rules! impl_streaming {
-    ($name:ident, $state:ty, $result:ty) => {
-        #[derive(Clone)]
-        pub struct $name {
-            state: $state,
-        }
-        impl $name {
-            /// Initialize a new digest state.
-            pub fn new() -> Self {
-                Self {
-                    state: <$state>::new(),
-                }
-            }
-
-            /// Add the `payload` to the digest.
-            pub fn update(&mut self, payload: &[u8]) {
-                self.state.update(payload);
-            }
-
-            /// Get the digest.
-            ///
-            /// Note that the digest state can be continued to be used, to extend the
-            /// digest.
-            pub fn finish(&mut self) -> $result {
-                self.state.finish()
-            }
-        }
-
-        impl Default for $name {
-            fn default() -> Self {
-                Self::new()
-            }
-        }
-    };
-}
-impl_streaming!(Sha2_224, Sha224, Sha2_224Digest);
-impl_streaming!(Sha2_384, Sha384, Sha2_384Digest);
-impl_streaming!(Sha2_512, Sha512, Sha2_512Digest);
 
 // Streaming API - This is the recommended one.
 // For implementations based on hacl_rs (over hacl-c)
@@ -303,6 +266,11 @@ macro_rules! impl_streaming_hacl_rs {
             state: $state,
         }
         impl $name {
+            /// Return the digest for the given input byte slice, in immediate mode.
+            pub fn hash(digest: &mut [u8], input: &[u8]) {
+                <$state>::hash(digest, input)
+            }
+
             /// Initialize a new digest state.
             pub fn new() -> Self {
                 Self {
@@ -322,6 +290,11 @@ macro_rules! impl_streaming_hacl_rs {
             pub fn finish(&self, digest: &mut $result) {
                 self.state.finish(digest)
             }
+
+            /// Reset the digest state.
+            pub fn reset(&mut self) {
+                self.state.reset()
+            }
         }
 
         impl Default for $name {
@@ -333,9 +306,24 @@ macro_rules! impl_streaming_hacl_rs {
 }
 
 impl_streaming_hacl_rs!(
+    Sha2_224,
+    crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha256_224,
+    Sha2_224Digest
+);
+impl_streaming_hacl_rs!(
     Sha2_256,
     crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha256,
     Sha2_256Digest
+);
+impl_streaming_hacl_rs!(
+    Sha2_384,
+    crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha512_384,
+    Sha2_384Digest
+);
+impl_streaming_hacl_rs!(
+    Sha2_512,
+    crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha512,
+    Sha2_512Digest
 );
 // SHAKE messages from SHA 3
 

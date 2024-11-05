@@ -1263,6 +1263,11 @@ macro_rules! impl_hash {
         }
 
         impl $name {
+            /// Return the digest for the given input byte slice, in immediate mode.
+            pub fn hash(digest: &mut [u8], input: &[u8]) {
+                $hash(digest, input, input.len() as u32)
+            }
+
             /// Initialize a new digest state for streaming use.
             pub fn new() -> $name {
                 $name { state: $malloc() }
@@ -1281,9 +1286,9 @@ macro_rules! impl_hash {
                 $finish(self.state.as_ref(), digest);
             }
 
-            /// Return the digest for the given input byte slice, in immediate mode.
-            pub fn hash(digest: &mut [u8], input: &[u8]) {
-                $hash(digest, input, input.len() as u32)
+            /// Reset the digest state.
+            pub fn reset(&mut self) {
+                $reset(self.state.as_mut());
             }
         }
 
@@ -1302,9 +1307,43 @@ impl_hash!(
     32,
     Box<[crate::hacl_rs::streaming_types::state_32]>,
     malloc_256,
-    wat,
+    reset_256,
     update_256,
     digest_256,
     copy_256,
     hash_256
+);
+impl_hash!(
+    HaclRs_Sha2_Sha256_224,
+    28,
+    Box<[crate::hacl_rs::streaming_types::state_32]>,
+    malloc_224,
+    reset_224,
+    update_224,
+    digest_224,
+    copy_256,
+    hash_224
+);
+
+impl_hash!(
+    HaclRs_Sha2_Sha512,
+    64,
+    Box<[crate::hacl_rs::streaming_types::state_64]>,
+    malloc_512,
+    reset_512,
+    update_512,
+    digest_512,
+    copy_512,
+    hash_512
+);
+impl_hash!(
+    HaclRs_Sha2_Sha512_384,
+    48,
+    Box<[crate::hacl_rs::streaming_types::state_64]>,
+    malloc_384,
+    reset_384,
+    update_384,
+    digest_384,
+    copy_512,
+    hash_384
 );
