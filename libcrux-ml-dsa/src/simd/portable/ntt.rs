@@ -1,11 +1,8 @@
-use super::arithmetic::{self, montgomery_multiply_fe_by_fer};
-use crate::simd::{
-    portable::PortableSIMDUnit,
-    traits::{
-        montgomery_multiply_by_fer, FieldElementTimesMontgomeryR, COEFFICIENTS_IN_SIMD_UNIT,
-        SIMD_UNITS_IN_RING_ELEMENT,
-    },
+use super::arithmetic::{
+    self, montgomery_multiply_by_constant, montgomery_multiply_fe_by_fer, MontgomeryFieldElement,
 };
+use super::vector_type::PortableSIMDUnit;
+use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
 #[inline(always)]
 pub fn simd_unit_ntt_at_layer_0(
@@ -280,15 +277,11 @@ fn ntt_at_layer_2(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
-fn outer_3_plus<
-    const OFFSET: usize,
-    const STEP_BY: usize,
-    const ZETA: FieldElementTimesMontgomeryR,
->(
+fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: MontgomeryFieldElement>(
     re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
 ) {
     for j in OFFSET..OFFSET + STEP_BY {
-        let t = montgomery_multiply_by_fer(re[j + STEP_BY], ZETA);
+        let t = montgomery_multiply_by_constant(re[j + STEP_BY], ZETA);
 
         re[j + STEP_BY] = arithmetic::subtract(&re[j], &t);
         re[j] = arithmetic::add(&re[j], &t);
