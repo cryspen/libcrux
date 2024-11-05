@@ -1264,8 +1264,8 @@ macro_rules! impl_hash {
 
         impl $name {
             /// Return the digest for the given input byte slice, in immediate mode.
-            pub fn hash(digest: &mut [u8], input: &[u8]) {
-                $hash(digest, input, input.len() as u32)
+            pub fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) {
+                $hash(digest, payload, payload.len() as u32)
             }
 
             /// Initialize a new digest state for streaming use.
@@ -1282,7 +1282,7 @@ macro_rules! impl_hash {
             ///
             /// Note that the digest state can be continued to be used, to extend the
             /// digest.
-            pub fn finish(&self, digest: &mut [u8]) {
+            pub fn finish(&self, digest: &mut [u8; $digest_size]) {
                 $finish(self.state.as_ref(), digest);
             }
 

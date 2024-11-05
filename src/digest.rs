@@ -259,72 +259,11 @@ pub fn sha2_512(payload: &[u8]) -> Sha2_512Digest {
 
 // Streaming API - This is the recommended one.
 // For implementations based on hacl_rs (over hacl-c)
-macro_rules! impl_streaming_hacl_rs {
-    ($name:ident, $state:ty, $result:ty) => {
-        #[derive(Clone)]
-        pub struct $name {
-            state: $state,
-        }
-        impl $name {
-            /// Return the digest for the given input byte slice, in immediate mode.
-            pub fn hash(digest: &mut [u8], input: &[u8]) {
-                <$state>::hash(digest, input)
-            }
+pub use crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha256 as Sha2_256;
+pub use crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha256_224 as Sha2_224;
+pub use crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha512 as Sha2_512;
+pub use crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha512_384 as Sha2_384;
 
-            /// Initialize a new digest state.
-            pub fn new() -> Self {
-                Self {
-                    state: <$state>::new(),
-                }
-            }
-
-            /// Add the `payload` to the digest.
-            pub fn update(&mut self, payload: &[u8]) {
-                self.state.update(payload);
-            }
-
-            /// Get the digest.
-            ///
-            /// Note that the digest state can be continued to be used, to extend the
-            /// digest.
-            pub fn finish(&self, digest: &mut $result) {
-                self.state.finish(digest)
-            }
-
-            /// Reset the digest state.
-            pub fn reset(&mut self) {
-                self.state.reset()
-            }
-        }
-
-        impl Default for $name {
-            fn default() -> Self {
-                Self::new()
-            }
-        }
-    };
-}
-
-impl_streaming_hacl_rs!(
-    Sha2_224,
-    crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha256_224,
-    Sha2_224Digest
-);
-impl_streaming_hacl_rs!(
-    Sha2_256,
-    crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha256,
-    Sha2_256Digest
-);
-impl_streaming_hacl_rs!(
-    Sha2_384,
-    crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha512_384,
-    Sha2_384Digest
-);
-impl_streaming_hacl_rs!(
-    Sha2_512,
-    crate::hacl_rs::hash_sha2::HaclRs_Sha2_Sha512,
-    Sha2_512Digest
-);
 // SHAKE messages from SHA 3
 
 #[cfg(simd256)]
