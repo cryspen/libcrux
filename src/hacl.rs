@@ -18,7 +18,6 @@ pub(crate) mod drbg;
 pub(crate) mod ed25519;
 pub(crate) mod p256;
 
-pub(crate) mod sha2;
 pub(crate) mod sha3;
 
 /// Unified error type.
