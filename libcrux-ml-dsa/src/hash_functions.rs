@@ -172,6 +172,7 @@ pub(crate) mod portable {
     }
 
     /// Portable SHAKE 128 state
+    #[cfg_attr(hax, hax_lib::opaque_type)]
     pub(crate) struct Shake128 {}
 
     fn shake128<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
@@ -469,6 +470,7 @@ pub(crate) mod simd256 {
     }
 
     /// AVX2 SHAKE 256 state
+    #[cfg_attr(hax, hax_lib::opaque_type)]
     pub(crate) struct Shake256 {
         state: libcrux_sha3::portable::KeccakState,
     }
