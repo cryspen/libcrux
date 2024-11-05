@@ -76,9 +76,9 @@ pub(crate) mod shake128 {
 
 /// A portable implementation of [`shake128::Xof`] and [`shake256::Xof`].
 pub(crate) mod portable {
+    use super::{shake128, shake256};
     use libcrux_sha3::portable::incremental;
     use libcrux_sha3::portable::KeccakState;
-    use super::{shake128, shake256};
 
     /// Portable SHAKE 128 x4 state.
     ///
@@ -405,7 +405,13 @@ pub(crate) mod simd256 {
         out2: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
         out3: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
     ) {
-        x4::incremental::shake128_squeeze_first_five_blocks(&mut state.state, out0, out1, out2, out3);
+        x4::incremental::shake128_squeeze_first_five_blocks(
+            &mut state.state,
+            out0,
+            out1,
+            out2,
+            out3,
+        );
     }
 
     fn squeeze_next_block(
