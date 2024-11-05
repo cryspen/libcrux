@@ -474,38 +474,59 @@ pub(crate) mod simd256 {
     pub(crate) struct Shake256 {
         state: libcrux_sha3::portable::KeccakState,
     }
+
+    #[inline(always)]
+    fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
+        libcrux_sha3::portable::shake256(out, input);
+    }
+
+    #[inline(always)]
+    fn init_absorb_shake256(input: &[u8]) -> Shake256 {
+        let mut state = libcrux_sha3::portable::incremental::shake256_init();
+        libcrux_sha3::portable::incremental::shake256_absorb_final(&mut state, input);
+
+        Shake256 { state }
+    }
+
+    #[inline(always)]
+    fn squeeze_first_block_shake256(state: &mut Shake256) -> [u8; shake256::BLOCK_SIZE] {
+        let mut out = [0u8; shake256::BLOCK_SIZE];
+        libcrux_sha3::portable::incremental::shake256_squeeze_first_block(
+            &mut state.state,
+            &mut out,
+        );
+        out
+    }
+
+    #[inline(always)]
+    fn squeeze_next_block_shake256(state: &mut Shake256) -> [u8; shake256::BLOCK_SIZE] {
+        let mut out = [0u8; shake256::BLOCK_SIZE];
+        libcrux_sha3::portable::incremental::shake256_squeeze_next_block(
+            &mut state.state,
+            &mut out,
+        );
+        out
+    }
+
     impl shake256::Xof for Shake256 {
         #[inline(always)]
         fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
-            libcrux_sha3::portable::shake256(out, input);
+            shake256(input, out)
         }
 
         #[inline(always)]
         fn init_absorb(input: &[u8]) -> Self {
-            let mut state = libcrux_sha3::portable::incremental::shake256_init();
-            libcrux_sha3::portable::incremental::shake256_absorb_final(&mut state, input);
-
-            Self { state }
+            init_absorb_shake256(input)
         }
 
         #[inline(always)]
         fn squeeze_first_block(&mut self) -> [u8; shake256::BLOCK_SIZE] {
-            let mut out = [0u8; shake256::BLOCK_SIZE];
-            libcrux_sha3::portable::incremental::shake256_squeeze_first_block(
-                &mut self.state,
-                &mut out,
-            );
-            out
+            squeeze_first_block_shake256(self)
         }
 
         #[inline(always)]
         fn squeeze_next_block(&mut self) -> [u8; shake256::BLOCK_SIZE] {
-            let mut out = [0u8; shake256::BLOCK_SIZE];
-            libcrux_sha3::portable::incremental::shake256_squeeze_next_block(
-                &mut self.state,
-                &mut out,
-            );
-            out
+            squeeze_next_block_shake256(self)
         }
     }
 
