@@ -991,6 +991,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "libcrux-hacl-rs-krml"
+version = "0.1.0"
+
+[[package]]
 name = "libcrux-hkdf"
 version = "0.0.2-beta.2"
 dependencies = [
