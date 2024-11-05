@@ -1014,6 +1014,7 @@ name = "libcrux-hmac"
 version = "0.0.2-beta.2"
 dependencies = [
  "libcrux-hacl",
+ "libcrux-hacl-rs",
  "libcrux-hkdf",
 ]
 

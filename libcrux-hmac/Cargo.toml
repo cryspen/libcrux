@@ -15,3 +15,4 @@ path = "src/hmac.rs"
 [dependencies]
 libcrux-hkdf = { version = "=0.0.2-beta.2", path = "../libcrux-hkdf" }
 libcrux-hacl = { version = "=0.0.2-beta.2", path = "../sys/hacl" }
+libcrux-hacl-rs = { path = "../libcrux-hacl-rs/" }

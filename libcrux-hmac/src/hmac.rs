@@ -3,7 +3,11 @@
 //! This crate implements HMAC on SHA 1 and SHA 2 (except for SHA 224).
 
 use libcrux_hkdf as hkdf;
-pub(crate) mod hacl_hmac;
+
+use libcrux_hacl_rs::hmac::compute_sha1 as hmac_sha1;
+use libcrux_hacl_rs::hmac::compute_sha2_256 as hmac_sha256;
+use libcrux_hacl_rs::hmac::compute_sha2_384 as hmac_sha384;
+use libcrux_hacl_rs::hmac::compute_sha2_512 as hmac_sha512;
 
 /// The HMAC algorithm defining the used hash function.
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -45,11 +49,12 @@ pub fn hmac(alg: Algorithm, key: &[u8], data: &[u8], tag_length: Option<usize>) 
         Some(v) => v,
         None => native_tag_length,
     };
-    let mut dst: Vec<_> = match alg {
-        Algorithm::Sha1 => crate::hacl_hmac::sha1(key, data).into(),
-        Algorithm::Sha256 => crate::hacl_hmac::sha2_256(key, data).into(),
-        Algorithm::Sha384 => crate::hacl_hmac::sha2_384(key, data).into(),
-        Algorithm::Sha512 => crate::hacl_hmac::sha2_512(key, data).into(),
+    let mut dst = vec![0u8; native_tag_length];
+    match alg {
+        Algorithm::Sha1 => hmac_sha1(&mut dst, key, key.len() as u32, data, data.len() as u32),
+        Algorithm::Sha256 => hmac_sha256(&mut dst, key, key.len() as u32, data, data.len() as u32),
+        Algorithm::Sha384 => hmac_sha384(&mut dst, key, key.len() as u32, data, data.len() as u32),
+        Algorithm::Sha512 => hmac_sha512(&mut dst, key, key.len() as u32, data, data.len() as u32),
     };
     dst.truncate(tag_length);
     dst
