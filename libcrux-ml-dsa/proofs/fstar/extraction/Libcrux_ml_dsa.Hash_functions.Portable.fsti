@@ -21,6 +21,9 @@ val t_Shake256Absorb:Type0
 
 val t_Shake256Squeeze:Type0
 
+val init_absorb__init_absorb (input: t_Slice u8)
+    : Prims.Pure Libcrux_sha3.Portable.t_KeccakState Prims.l_True (fun _ -> Prims.l_True)
+
 val init_absorb (input0 input1 input2 input3: t_Slice u8)
     : Prims.Pure t_Shake128X4 Prims.l_True (fun _ -> Prims.l_True)
 
@@ -69,22 +72,22 @@ val shake256_init: Prims.unit -> Prims.Pure t_Shake256Absorb Prims.l_True (fun _
 val shake256_squeeze (st: t_Shake256Squeeze) (out: t_Slice u8)
     : Prims.Pure (t_Shake256Squeeze & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
-val squeeze_first_block_shake256 (x: t_Shake256)
+val squeeze_first_block_shake256 (state: t_Shake256)
     : Prims.Pure (t_Shake256 & t_Array u8 (sz 136)) Prims.l_True (fun _ -> Prims.l_True)
 
-val squeeze_first_block_x4 (x: t_Shake256X4)
+val squeeze_first_block_x4 (state: t_Shake256X4)
     : Prims.Pure
       (t_Shake256X4 &
         (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val squeeze_first_five_blocks (x: t_Shake128X4) (out0 out1 out2 out3: t_Array u8 (sz 840))
+val squeeze_first_five_blocks (state: t_Shake128X4) (out0 out1 out2 out3: t_Array u8 (sz 840))
     : Prims.Pure
       (t_Shake128X4 & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
         t_Array u8 (sz 840)) Prims.l_True (fun _ -> Prims.l_True)
 
-val squeeze_next_block (x: t_Shake128X4)
+val squeeze_next_block (state: t_Shake128X4)
     : Prims.Pure
       (t_Shake128X4 &
         (t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168)))
@@ -188,7 +191,7 @@ let impl: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128X4 =
         (t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168)))
   }
 
-val squeeze_next_block_shake256 (x: t_Shake256)
+val squeeze_next_block_shake256 (state: t_Shake256)
     : Prims.Pure (t_Shake256 & t_Array u8 (sz 136)) Prims.l_True (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -238,7 +241,7 @@ let impl_2: Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof t_Shake256 =
       self, hax_temp_output <: (t_Shake256 & t_Array u8 (sz 136))
   }
 
-val squeeze_next_block_x4 (x: t_Shake256X4)
+val squeeze_next_block_x4 (state: t_Shake256X4)
     : Prims.Pure
       (t_Shake256X4 &
         (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
