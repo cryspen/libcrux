@@ -543,11 +543,7 @@ let sign
         <:
         Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
   | Core.Result.Result_Err err ->
-    Core.Result.Result_Err
-    (Core.Convert.f_from #Libcrux_ml_dsa.Types.t_SigningError
-        #Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
-        #FStar.Tactics.Typeclasses.solve
-        err)
+    Core.Result.Result_Err (Core.Convert.f_from #FStar.Tactics.Typeclasses.solve err)
     <:
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
       Libcrux_ml_dsa.Types.t_SigningError
@@ -608,11 +604,7 @@ let sign_pre_hashed
           <:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
     | Core.Result.Result_Err err ->
-      Core.Result.Result_Err
-      (Core.Convert.f_from #Libcrux_ml_dsa.Types.t_SigningError
-          #Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
-          #FStar.Tactics.Typeclasses.solve
-          err)
+      Core.Result.Result_Err (Core.Convert.f_from #FStar.Tactics.Typeclasses.solve err)
       <:
       Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
         Libcrux_ml_dsa.Types.t_SigningError
@@ -806,11 +798,7 @@ let verify
         <:
         Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) signature_serialized
   | Core.Result.Result_Err err ->
-    Core.Result.Result_Err
-    (Core.Convert.f_from #Libcrux_ml_dsa.Types.t_VerificationError
-        #Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
-        #FStar.Tactics.Typeclasses.solve
-        err)
+    Core.Result.Result_Err (Core.Convert.f_from #FStar.Tactics.Typeclasses.solve err)
     <:
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
 
@@ -859,11 +847,7 @@ let verify_pre_hashed
         <:
         Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) signature_serialized
   | Core.Result.Result_Err err ->
-    Core.Result.Result_Err
-    (Core.Convert.f_from #Libcrux_ml_dsa.Types.t_VerificationError
-        #Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
-        #FStar.Tactics.Typeclasses.solve
-        err)
+    Core.Result.Result_Err (Core.Convert.f_from #FStar.Tactics.Typeclasses.solve err)
     <:
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
 

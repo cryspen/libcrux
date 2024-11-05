@@ -4,7 +4,7 @@ open Core
 open FStar.Mul
 
 /// Portable SHAKE 128 state
-type t_Shake128 = | Shake128 : t_Shake128
+val t_Shake128:Type0
 
 /// Portable SHAKE 128 x4 state.
 /// We\'re using a portable implementation so this is actually sequential.
@@ -20,9 +20,6 @@ val t_Shake256X4:Type0
 val t_Shake256Absorb:Type0
 
 val t_Shake256Squeeze:Type0
-
-val init_absorb__init_absorb (input: t_Slice u8)
-    : Prims.Pure Libcrux_sha3.Portable.t_KeccakState Prims.l_True (fun _ -> Prims.l_True)
 
 val init_absorb (input0 input1 input2 input3: t_Slice u8)
     : Prims.Pure t_Shake128X4 Prims.l_True (fun _ -> Prims.l_True)
