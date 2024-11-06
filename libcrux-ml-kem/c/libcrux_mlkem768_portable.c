@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 6b5e110342a771a3e1c739b10294b1778e4be8b4
- * Eurydice: 31be7d65ca5d6acdacfb33652e478d24dd85c1cb
- * Karamel: 3205d3365ea2790b02368f79fcee38e38d0b5908
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 4ad532b206174114dd4140b718e7794a28fc59ee
+ * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
+ * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
+ * Libcrux: 99b4e0ae6147eb731652e0ee355fc77d2c160664
  */
 
 #include "libcrux_mlkem768_portable.h"
@@ -38,10 +38,10 @@ libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-static void decapsulate_22(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+static void decapsulate_35(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_decapsulate_d6(private_key, ciphertext, ret);
+  libcrux_ml_kem_ind_cca_decapsulate_62(private_key, ciphertext, ret);
 }
 
 /**
@@ -52,9 +52,9 @@ static void decapsulate_22(
  [`MlKem768Ciphertext`].
 */
 void libcrux_ml_kem_mlkem768_portable_decapsulate(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
-  decapsulate_22(private_key, ciphertext, ret);
+  decapsulate_35(private_key, ciphertext, ret);
 }
 
 /**
@@ -74,14 +74,14 @@ libcrux_ml_kem.ind_cca.instantiations.portable.encapsulate with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_3c encapsulate_cf(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
+static tuple_c2 encapsulate_cd(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]) {
-  libcrux_ml_kem_types_MlKemPublicKey_15 *uu____0 = public_key;
+  libcrux_ml_kem_types_MlKemPublicKey_30 *uu____0 = public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_encapsulate_0b(uu____0, copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_encapsulate_ca(uu____0, copy_of_randomness);
 }
 
 /**
@@ -91,14 +91,14 @@ static tuple_3c encapsulate_cf(
  The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-tuple_3c libcrux_ml_kem_mlkem768_portable_encapsulate(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
+tuple_c2 libcrux_ml_kem_mlkem768_portable_encapsulate(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]) {
-  libcrux_ml_kem_types_MlKemPublicKey_15 *uu____0 = public_key;
+  libcrux_ml_kem_types_MlKemPublicKey_30 *uu____0 = public_key;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return encapsulate_cf(uu____0, copy_of_randomness);
+  return encapsulate_cd(uu____0, copy_of_randomness);
 }
 
 /**
@@ -116,12 +116,12 @@ generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_d5(
+static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_c6(
     uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_8c(copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_generate_keypair_f8(copy_of_randomness);
 }
 
 /**
@@ -132,7 +132,7 @@ libcrux_ml_kem_mlkem768_portable_generate_key_pair(uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_d5(copy_of_randomness);
+  return generate_keypair_c6(copy_of_randomness);
 }
 
 /**
@@ -146,10 +146,10 @@ generics
 - SECRET_KEY_SIZE= 2400
 - CIPHERTEXT_SIZE= 1088
 */
-static KRML_MUSTINLINE bool validate_private_key_ba(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+static bool validate_private_key_31(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext) {
-  return libcrux_ml_kem_ind_cca_validate_private_key_80(private_key,
+  return libcrux_ml_kem_ind_cca_validate_private_key_37(private_key,
                                                         ciphertext);
 }
 
@@ -159,9 +159,9 @@ static KRML_MUSTINLINE bool validate_private_key_ba(
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem768_portable_validate_private_key(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext) {
-  return validate_private_key_ba(private_key, ciphertext);
+  return validate_private_key_31(private_key, ciphertext);
 }
 
 /**
@@ -175,8 +175,8 @@ generics
 - RANKED_BYTES_PER_RING_ELEMENT= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
-static KRML_MUSTINLINE bool validate_public_key_f7(uint8_t *public_key) {
-  return libcrux_ml_kem_ind_cca_validate_public_key_3f(public_key);
+static bool validate_public_key_31(uint8_t *public_key) {
+  return libcrux_ml_kem_ind_cca_validate_public_key_6c(public_key);
 }
 
 /**
@@ -185,6 +185,6 @@ static KRML_MUSTINLINE bool validate_public_key_f7(uint8_t *public_key) {
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem768_portable_validate_public_key(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key) {
-  return validate_public_key_f7(public_key->value);
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key) {
+  return validate_public_key_31(public_key->value);
 }

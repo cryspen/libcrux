@@ -1,6 +1,6 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT, encoding, ml_dsa_generic::Signature,
-    polynomial::PolynomialRingElement, simd::traits::Operations, VerificationError,
+    constants::COEFFICIENTS_IN_RING_ELEMENT, encoding, polynomial::PolynomialRingElement,
+    simd::traits::Operations, types::Signature, VerificationError,
 };
 
 impl<
@@ -36,16 +36,20 @@ impl<
         }
 
         let mut true_hints_seen = 0;
-        let hint_serialized = &mut signature[offset..];
 
+        // Unfortunately the following does not go through hax:
+        //
+        //     let hint_serialized = &mut signature[offset..];
+        //
+        // Instead, we have to mutate signature[offset + ..] directly.
         for i in 0..ROWS_IN_A {
             for (j, hint) in self.hint[i].into_iter().enumerate() {
                 if hint == 1 {
-                    hint_serialized[true_hints_seen] = j as u8;
+                    signature[offset + true_hints_seen] = j as u8;
                     true_hints_seen += 1;
                 }
             }
-            hint_serialized[MAX_ONES_IN_HINT + i] = true_hints_seen as u8;
+            signature[offset + MAX_ONES_IN_HINT + i] = true_hints_seen as u8;
         }
 
         signature
@@ -80,50 +84,55 @@ impl<
 
         let mut previous_true_hints_seen = 0usize;
 
-        for i in 0..ROWS_IN_A {
+        let mut i = 0;
+        let mut malformed_hint = false;
+
+        while i < ROWS_IN_A && !malformed_hint {
             let current_true_hints_seen = hint_serialized[MAX_ONES_IN_HINT + i] as usize;
 
             if (current_true_hints_seen < previous_true_hints_seen)
                 || (previous_true_hints_seen > MAX_ONES_IN_HINT)
             {
                 // the true hints seen should be increasing
-                //
-                // TODO: This return won't pass through hax; it'll need
-                // to be rewritten. See https://github.com/cryspen/libcrux/issues/341
-                return Err(VerificationError::MalformedHintError);
+                malformed_hint = true;
             }
 
-            for j in previous_true_hints_seen..current_true_hints_seen {
+            let mut j = previous_true_hints_seen;
+            while !malformed_hint && j < current_true_hints_seen {
                 if j > previous_true_hints_seen && hint_serialized[j] <= hint_serialized[j - 1] {
                     // indices of true hints for a specific polynomial should be
                     // increasing
-                    // TODO: This return won't pass through hax; it'll need
-                    // to be rewritten. See https://github.com/cryspen/libcrux/issues/341
-                    return Err(VerificationError::MalformedHintError);
+                    malformed_hint = true;
                 }
-
-                hint[i][hint_serialized[j] as usize] = 1;
+                if !malformed_hint {
+                    hint[i][hint_serialized[j] as usize] = 1;
+                    j += 1;
+                }
             }
-            previous_true_hints_seen = current_true_hints_seen;
+
+            if !malformed_hint {
+                previous_true_hints_seen = current_true_hints_seen;
+                i += 1;
+            }
         }
 
-        for bit in hint_serialized
-            .iter()
-            .take(MAX_ONES_IN_HINT)
-            .skip(previous_true_hints_seen)
-        {
-            if *bit != 0 {
+        i = previous_true_hints_seen;
+        while i < MAX_ONES_IN_HINT && !malformed_hint {
+            if hint_serialized[i] != 0 {
                 // ensures padding indices are zero
-                // TODO: This return won't pass through hax; it'll need
-                // to be rewritten. See https://github.com/cryspen/libcrux/issues/341
-                return Err(VerificationError::MalformedHintError);
+                malformed_hint = true;
             }
+            i += 1;
         }
 
-        Ok(Signature {
-            commitment_hash: commitment_hash.try_into().unwrap(),
-            signer_response: signer_response,
-            hint,
-        })
+        if malformed_hint {
+            Err(VerificationError::MalformedHintError)
+        } else {
+            Ok(Signature {
+                commitment_hash: commitment_hash.try_into().unwrap(),
+                signer_response,
+                hint,
+            })
+        }
     }
 }

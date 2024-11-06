@@ -59,9 +59,10 @@ macro_rules! impl_consistency_test {
 
             let key_pair = $key_gen(key_generation_seed);
 
-            let signature = $sign(&key_pair.signing_key, &message, signing_randomness);
+            let signature = $sign(&key_pair.signing_key, &message, b"", signing_randomness)
+                .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
-            $verify(&key_pair.verification_key, &message, &signature)
+            $verify(&key_pair.verification_key, &message, b"", &signature)
                 .expect("Verification should pass since the signature was honestly generated");
         }
     };
@@ -80,30 +81,21 @@ macro_rules! impl_modified_signing_key_test {
 
             modify_signing_key::<{ $signing_key_size }>(&mut key_pair.signing_key.0);
 
-            let signature = $sign(&key_pair.signing_key, &message, signing_randomness);
+            let signature = $sign(&key_pair.signing_key, &message, b"", signing_randomness)
+                .expect("Rejection sampling failure probability is < 2⁻¹²⁸");
 
-            assert!($verify(&key_pair.verification_key, &message, &signature).is_err());
+            assert!($verify(&key_pair.verification_key, &message, b"", &signature).is_err());
         }
     };
 }
+
+// 44
 
 impl_consistency_test!(
     consistency_44,
     ml_dsa_44::generate_key_pair,
     ml_dsa_44::sign,
     ml_dsa_44::verify
-);
-impl_consistency_test!(
-    consistency_65,
-    ml_dsa_65::generate_key_pair,
-    ml_dsa_65::sign,
-    ml_dsa_65::verify
-);
-impl_consistency_test!(
-    consistency_87,
-    ml_dsa_87::generate_key_pair,
-    ml_dsa_87::sign,
-    ml_dsa_87::verify
 );
 
 impl_modified_signing_key_test!(
@@ -113,6 +105,65 @@ impl_modified_signing_key_test!(
     ml_dsa_44::sign,
     ml_dsa_44::verify
 );
+
+impl_consistency_test!(
+    consistency_44_portable,
+    ml_dsa_44::portable::generate_key_pair,
+    ml_dsa_44::portable::sign,
+    ml_dsa_44::portable::verify
+);
+
+impl_modified_signing_key_test!(
+    modified_signing_key_44_portable,
+    ml_dsa_44::portable::generate_key_pair,
+    ml_dsa_44::MLDSA44SigningKey::len(),
+    ml_dsa_44::portable::sign,
+    ml_dsa_44::portable::verify
+);
+
+#[cfg(feature = "simd128")]
+impl_consistency_test!(
+    consistency_44_simd128,
+    ml_dsa_44::neon::generate_key_pair,
+    ml_dsa_44::neon::sign,
+    ml_dsa_44::neon::verify
+);
+
+#[cfg(feature = "simd128")]
+impl_modified_signing_key_test!(
+    modified_signing_key_44_simd128,
+    ml_dsa_44::neon::generate_key_pair,
+    ml_dsa_44::MLDSA44SigningKey::len(),
+    ml_dsa_44::neon::sign,
+    ml_dsa_44::neon::verify
+);
+
+#[cfg(feature = "simd256")]
+impl_consistency_test!(
+    consistency_44_simd256,
+    ml_dsa_44::avx2::generate_key_pair,
+    ml_dsa_44::avx2::sign,
+    ml_dsa_44::avx2::verify
+);
+
+#[cfg(feature = "simd256")]
+impl_modified_signing_key_test!(
+    modified_signing_key_44_simd256,
+    ml_dsa_44::avx2::generate_key_pair,
+    ml_dsa_44::MLDSA44SigningKey::len(),
+    ml_dsa_44::avx2::sign,
+    ml_dsa_44::avx2::verify
+);
+
+// 65
+
+impl_consistency_test!(
+    consistency_65,
+    ml_dsa_65::generate_key_pair,
+    ml_dsa_65::sign,
+    ml_dsa_65::verify
+);
+
 impl_modified_signing_key_test!(
     modified_signing_key_65,
     ml_dsa_65::generate_key_pair,
@@ -120,6 +171,16 @@ impl_modified_signing_key_test!(
     ml_dsa_65::sign,
     ml_dsa_65::verify
 );
+
+// 87
+
+impl_consistency_test!(
+    consistency_87,
+    ml_dsa_87::generate_key_pair,
+    ml_dsa_87::sign,
+    ml_dsa_87::verify
+);
+
 impl_modified_signing_key_test!(
     modified_signing_key_87,
     ml_dsa_87::generate_key_pair,

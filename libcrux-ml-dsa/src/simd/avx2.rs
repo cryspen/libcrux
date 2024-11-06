@@ -1,36 +1,24 @@
-use crate::simd::traits::Operations;
-use libcrux_intrinsics;
+use crate::simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT};
 
 mod arithmetic;
 mod encoding;
 mod ntt;
 mod rejection_sample;
+mod vector_type;
 
-#[derive(Clone, Copy)]
-pub struct AVX2SIMDUnit {
-    pub(crate) coefficients: libcrux_intrinsics::avx2::Vec256,
-}
-
-impl From<libcrux_intrinsics::avx2::Vec256> for AVX2SIMDUnit {
-    fn from(coefficients: libcrux_intrinsics::avx2::Vec256) -> Self {
-        Self { coefficients }
-    }
-}
+pub(crate) use vector_type::AVX2SIMDUnit;
 
 impl Operations for AVX2SIMDUnit {
     fn ZERO() -> Self {
-        libcrux_intrinsics::avx2::mm256_setzero_si256().into()
+        vector_type::ZERO()
     }
 
     fn from_coefficient_array(coefficient_array: &[i32]) -> Self {
-        libcrux_intrinsics::avx2::mm256_loadu_si256_i32(coefficient_array).into()
+        vector_type::from_coefficient_array(coefficient_array)
     }
 
     fn to_coefficient_array(&self) -> [i32; 8] {
-        let mut coefficient_array = [0i32; 8];
-        libcrux_intrinsics::avx2::mm256_storeu_si256_i32(&mut coefficient_array, self.coefficients);
-
-        coefficient_array
+        vector_type::to_coefficient_array(&self)
     }
 
     fn add(lhs: &Self, rhs: &Self) -> Self {
@@ -118,14 +106,10 @@ impl Operations for AVX2SIMDUnit {
         encoding::t1::deserialize(serialized).into()
     }
 
-    fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
-        ntt::ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3).into()
-    }
-    fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        ntt::ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1).into()
-    }
-    fn ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        ntt::ntt_at_layer_2(simd_unit.coefficients, zeta).into()
+    fn ntt(simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT]) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
+        let result = ntt::ntt(simd_units.map(|x| x.coefficients));
+
+        result.map(|x| x.into())
     }
 
     fn invert_ntt_at_layer_0(

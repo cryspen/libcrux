@@ -1,5 +1,5 @@
-#[cfg(feature = "unpacked")]
-use crate::variant::MlKem;
+use core::array::from_fn;
+
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     hash_functions::Hash,
@@ -30,12 +30,30 @@ pub mod unpacked {
         pub(crate) secret_as_ntt: [PolynomialRingElement<Vector>; K],
     }
 
+    impl<const K: usize, Vector: Operations> Default for IndCpaPrivateKeyUnpacked<K, Vector> {
+        fn default() -> Self {
+            Self {
+                secret_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
+            }
+        }
+    }
+
     /// An unpacked ML-KEM IND-CPA Private Key
-    #[cfg(feature = "unpacked")]
+    #[derive(Clone)]
     pub(crate) struct IndCpaPublicKeyUnpacked<const K: usize, Vector: Operations> {
         pub(crate) t_as_ntt: [PolynomialRingElement<Vector>; K],
         pub(crate) seed_for_A: [u8; 32],
         pub(crate) A: [[PolynomialRingElement<Vector>; K]; K],
+    }
+
+    impl<const K: usize, Vector: Operations> Default for IndCpaPublicKeyUnpacked<K, Vector> {
+        fn default() -> Self {
+            Self {
+                t_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
+                seed_for_A: [0u8; 32],
+                A: [[PolynomialRingElement::<Vector>::ZERO(); K]; K],
+            }
+        }
     }
 }
 use unpacked::*;
@@ -52,16 +70,37 @@ pub(crate) fn serialize_public_key<
     seed_for_a: &[u8],
 ) -> [u8; PUBLIC_KEY_SIZE] {
     let mut public_key_serialized = [0u8; PUBLIC_KEY_SIZE];
-    public_key_serialized[0..RANKED_BYTES_PER_RING_ELEMENT].copy_from_slice(
-        &serialize_secret_key::<K, RANKED_BYTES_PER_RING_ELEMENT, Vector>(t_as_ntt),
+    serialize_public_key_mut::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
+        t_as_ntt,
+        seed_for_a,
+        &mut public_key_serialized,
     );
-    public_key_serialized[RANKED_BYTES_PER_RING_ELEMENT..].copy_from_slice(seed_for_a);
     public_key_serialized
+}
+
+/// Concatenate `t` and `ρ` into the public key.
+#[inline(always)]
+pub(crate) fn serialize_public_key_mut<
+    const K: usize,
+    const RANKED_BYTES_PER_RING_ELEMENT: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    Vector: Operations,
+>(
+    t_as_ntt: &[PolynomialRingElement<Vector>; K],
+    seed_for_a: &[u8],
+    serialized: &mut [u8; PUBLIC_KEY_SIZE],
+) {
+    serialized[0..RANKED_BYTES_PER_RING_ELEMENT].copy_from_slice(&serialize_secret_key::<
+        K,
+        RANKED_BYTES_PER_RING_ELEMENT,
+        Vector,
+    >(t_as_ntt));
+    serialized[RANKED_BYTES_PER_RING_ELEMENT..].copy_from_slice(seed_for_a);
 }
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
-fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector: Operations>(
+pub(crate) fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector: Operations>(
     key: &[PolynomialRingElement<Vector>; K],
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
@@ -88,7 +127,7 @@ fn sample_ring_element_cbd<
     prf_input: [u8; 33],
     mut domain_separator: u8,
 ) -> ([PolynomialRingElement<Vector>; K], u8) {
-    let mut error_1 = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    let mut error_1 = from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut prf_inputs = [prf_input; K];
     for i in 0..K {
         prf_inputs[i][32] = domain_separator;
@@ -111,10 +150,10 @@ fn sample_vector_cbd_then_ntt<
     Vector: Operations,
     Hasher: Hash<K>,
 >(
+    re_as_ntt: &mut [PolynomialRingElement<Vector>; K],
     prf_input: [u8; 33],
     mut domain_separator: u8,
-) -> ([PolynomialRingElement<Vector>; K], u8) {
-    let mut re_as_ntt = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+) -> u8 {
     let mut prf_inputs = [prf_input; K];
     for i in 0..K {
         prf_inputs[i][32] = domain_separator;
@@ -125,6 +164,26 @@ fn sample_vector_cbd_then_ntt<
         re_as_ntt[i] = sample_from_binomial_distribution::<ETA, Vector>(&prf_outputs[i]);
         ntt_binomially_sampled_ring_element(&mut re_as_ntt[i]);
     }
+    domain_separator
+}
+
+#[inline(always)]
+fn sample_vector_cbd_then_ntt_out<
+    const K: usize,
+    const ETA: usize,
+    const ETA_RANDOMNESS_SIZE: usize,
+    Vector: Operations,
+    Hasher: Hash<K>,
+>(
+    prf_input: [u8; 33],
+    mut domain_separator: u8,
+) -> ([PolynomialRingElement<Vector>; K], u8) {
+    let mut re_as_ntt = from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    domain_separator = sample_vector_cbd_then_ntt::<K, ETA, ETA_RANDOMNESS_SIZE, Vector, Hasher>(
+        &mut re_as_ntt,
+        prf_input,
+        domain_separator,
+    );
     (re_as_ntt, domain_separator)
 }
 
@@ -167,52 +226,55 @@ fn sample_vector_cbd_then_ntt<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
-#[cfg(feature = "unpacked")]
+#[inline(always)]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
     Vector: Operations,
     Hasher: Hash<K>,
+    Scheme: Variant,
 >(
     key_generation_seed: &[u8],
-) -> (
-    IndCpaPrivateKeyUnpacked<K, Vector>,
-    IndCpaPublicKeyUnpacked<K, Vector>,
+    private_key: &mut IndCpaPrivateKeyUnpacked<K, Vector>,
+    public_key: &mut IndCpaPublicKeyUnpacked<K, Vector>,
 ) {
     // (ρ,σ) := G(d) for Kyber, (ρ,σ) := G(d || K) for ML-KEM
-    let hashed = MlKem::cpa_keygen_seed::<K, Hasher>(key_generation_seed);
+    let hashed = Scheme::cpa_keygen_seed::<K, Hasher>(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed_for_A), true);
+    sample_matrix_A::<K, Vector, Hasher>(&mut public_key.A, into_padded_array(seed_for_A), true);
 
     let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
-    let (secret_as_ntt, domain_separator) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(prf_input, 0);
-    let (error_as_ntt, _) =
+    let domain_separator =
         sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+            &mut private_key.secret_as_ntt,
+            prf_input,
+            0,
+        );
+    let (error_as_ntt, _) =
+        sample_vector_cbd_then_ntt_out::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
             prf_input,
             domain_separator,
         );
 
     // tˆ := Aˆ ◦ sˆ + eˆ
-    let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
+    compute_As_plus_e(
+        &mut public_key.t_as_ntt,
+        &public_key.A,
+        &private_key.secret_as_ntt,
+        &error_as_ntt,
+    );
 
-    let seed_for_A: [u8; 32] = seed_for_A.try_into().unwrap();
+    public_key.seed_for_A = seed_for_A.try_into().unwrap();
 
     // For encapsulation, we need to store A not Aˆ, and so we untranspose A
     // However, we pass A_transpose here and let the IND-CCA layer do the untranspose.
     // We could do it here, but then we would pay the performance cost (if any) for the packed API as well.
-    let pk = IndCpaPublicKeyUnpacked {
-        t_as_ntt,
-        A: A_transpose,
-        seed_for_A,
-    };
-    let sk = IndCpaPrivateKeyUnpacked { secret_as_ntt };
-    (sk, pk)
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn generate_keypair<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
@@ -226,42 +288,30 @@ pub(crate) fn generate_keypair<
 >(
     key_generation_seed: &[u8],
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
-    // We don't use the unpacked function here in order to reduce stack size.
+    let mut private_key = IndCpaPrivateKeyUnpacked::default();
+    let mut public_key = IndCpaPublicKeyUnpacked::default();
 
-    // (ρ,σ) := G(d) for Kyber, (ρ,σ) := G(d || K) for ML-KEM
-    let hashed = Scheme::cpa_keygen_seed::<K, Hasher>(key_generation_seed);
-    let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
-
-    let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed_for_A), true);
-
-    let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
-    let (secret_as_ntt, domain_separator) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(prf_input, 0);
-    let (error_as_ntt, _) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
-            prf_input,
-            domain_separator,
-        );
-
-    // tˆ := Aˆ ◦ sˆ + eˆ
-    let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
-
-    let seed_for_A: [u8; 32] = seed_for_A.try_into().unwrap();
+    generate_keypair_unpacked::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher, Scheme>(
+        key_generation_seed,
+        &mut private_key,
+        &mut public_key,
+    );
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized =
         serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
-            &t_as_ntt,
-            &seed_for_A,
+            &public_key.t_as_ntt,
+            &public_key.seed_for_A,
         );
 
     // sk := Encode_12(sˆ mod^{+}q)
-    let secret_key_serialized = serialize_secret_key(&secret_as_ntt);
+    let secret_key_serialized = serialize_secret_key(&private_key.secret_as_ntt);
 
     (secret_key_serialized, public_key_serialized)
 }
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
+#[inline(always)]
 fn compress_then_serialize_u<
     const K: usize,
     const OUT_LEN: usize,
@@ -324,7 +374,7 @@ fn compress_then_serialize_u<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
-#[cfg(feature = "unpacked")]
+#[inline(always)]
 pub(crate) fn encrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -352,7 +402,9 @@ pub(crate) fn encrypt_unpacked<
     // rˆ := NTT(r)
     let mut prf_input: [u8; 33] = into_padded_array(randomness);
     let (r_as_ntt, domain_separator) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(prf_input, 0);
+        sample_vector_cbd_then_ntt_out::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+            prf_input, 0,
+        );
 
     // for i from 0 to k−1 do
     //     e1[i] := CBD_{η2}(PRF(r,N))
@@ -399,6 +451,7 @@ pub(crate) fn encrypt_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn encrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -419,9 +472,12 @@ pub(crate) fn encrypt<
     message: [u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
+    let mut unpacked_public_key = IndCpaPublicKeyUnpacked::<K, Vector>::default();
+
     // tˆ := Decode_12(pk)
-    let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
+    deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
         &public_key[..T_AS_NTT_ENCODED_SIZE],
+        &mut unpacked_public_key.t_as_ntt,
     );
 
     // ρ := pk + 12·k·n / 8
@@ -431,57 +487,29 @@ pub(crate) fn encrypt<
     //     end for
     // end for
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
-    let A = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed), false);
-
-    // Note that we do not use the unpacked function internally here and instead
-    // duplicate the code to avoid blowing up the stack.
-
-    // for i from 0 to k−1 do
-    //     r[i] := CBD{η1}(PRF(r, N))
-    //     N := N + 1
-    // end for
-    // rˆ := NTT(r)
-    let mut prf_input: [u8; 33] = into_padded_array(randomness);
-    let (r_as_ntt, domain_separator) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(prf_input, 0);
-
-    // for i from 0 to k−1 do
-    //     e1[i] := CBD_{η2}(PRF(r,N))
-    //     N := N + 1
-    // end for
-    let (error_1, domain_separator) =
-        sample_ring_element_cbd::<K, ETA2_RANDOMNESS_SIZE, ETA2, Vector, Hasher>(
-            prf_input,
-            domain_separator,
-        );
-
-    // e_2 := CBD{η2}(PRF(r, N))
-    prf_input[32] = domain_separator;
-    let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = Hasher::PRF(&prf_input);
-    let error_2 = sample_from_binomial_distribution::<ETA2, Vector>(&prf_output);
-
-    // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-    let u = compute_vector_u(&A, &r_as_ntt, &error_1);
-
-    // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
-    let message_as_ring_element = deserialize_then_decompress_message(message);
-    let v = compute_ring_element_v(&t_as_ntt, &r_as_ntt, &error_2, &message_as_ring_element);
-
-    let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
-
-    // c_1 := Encode_{du}(Compress_q(u,d_u))
-    compress_then_serialize_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN, Vector>(
-        u,
-        &mut ciphertext[0..C1_LEN],
+    sample_matrix_A::<K, Vector, Hasher>(
+        &mut unpacked_public_key.A,
+        into_padded_array(seed),
+        false,
     );
 
-    // c_2 := Encode_{dv}(Compress_q(v,d_v))
-    compress_then_serialize_ring_element_v::<V_COMPRESSION_FACTOR, C2_LEN, Vector>(
-        v,
-        &mut ciphertext[C1_LEN..],
-    );
-
-    ciphertext
+    // After unpacking the public key we can now call the unpacked decryption.
+    encrypt_unpacked::<
+        K,
+        CIPHERTEXT_SIZE,
+        T_AS_NTT_ENCODED_SIZE,
+        C1_LEN,
+        C2_LEN,
+        U_COMPRESSION_FACTOR,
+        V_COMPRESSION_FACTOR,
+        BLOCK_LEN,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        Vector,
+        Hasher,
+    >(&unpacked_public_key, message, randomness)
 }
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
@@ -495,7 +523,7 @@ fn deserialize_then_decompress_u<
 >(
     ciphertext: &[u8; CIPHERTEXT_SIZE],
 ) -> [PolynomialRingElement<Vector>; K] {
-    let mut u_as_ntt = core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
+    let mut u_as_ntt = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
     cloop! {
         for (i, u_bytes) in ciphertext
             .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
@@ -513,7 +541,7 @@ fn deserialize_then_decompress_u<
 fn deserialize_secret_key<const K: usize, Vector: Operations>(
     secret_key: &[u8],
 ) -> [PolynomialRingElement<Vector>; K] {
-    let mut secret_as_ntt = core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
+    let mut secret_as_ntt = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
     cloop! {
         for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
             secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(secret_bytes);
@@ -545,6 +573,7 @@ fn deserialize_secret_key<const K: usize, Vector: Operations>(
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn decrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -572,6 +601,7 @@ pub(crate) fn decrypt_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn decrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -585,7 +615,6 @@ pub(crate) fn decrypt<
 ) -> [u8; SHARED_SECRET_SIZE] {
     // sˆ := Decode_12(sk)
     let secret_as_ntt = deserialize_secret_key::<K, Vector>(secret_key);
-
     let secret_key_unpacked = IndCpaPrivateKeyUnpacked { secret_as_ntt };
 
     decrypt_unpacked::<

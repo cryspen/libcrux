@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 6b5e110342a771a3e1c739b10294b1778e4be8b4
- * Eurydice: 31be7d65ca5d6acdacfb33652e478d24dd85c1cb
- * Karamel: 3205d3365ea2790b02368f79fcee38e38d0b5908
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 4ad532b206174114dd4140b718e7794a28fc59ee
+ * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
+ * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
+ * Libcrux: 99b4e0ae6147eb731652e0ee355fc77d2c160664
  */
 
 #ifndef __internal_libcrux_mlkem_portable_H
@@ -34,9 +34,9 @@ A monomorphic instance of libcrux_ml_kem.polynomial.PolynomialRingElement
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 
 */
-typedef struct libcrux_ml_kem_polynomial_PolynomialRingElement_f0_s {
+typedef struct libcrux_ml_kem_polynomial_PolynomialRingElement_1d_s {
   libcrux_ml_kem_vector_portable_vector_type_PortableVector coefficients[16U];
-} libcrux_ml_kem_polynomial_PolynomialRingElement_f0;
+} libcrux_ml_kem_polynomial_PolynomialRingElement_1d;
 
 /**
  Validate an ML-KEM public key.
@@ -53,7 +53,7 @@ with const generics
 - RANKED_BYTES_PER_RING_ELEMENT= 1536
 - PUBLIC_KEY_SIZE= 1568
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_3f1(uint8_t *public_key);
+bool libcrux_ml_kem_ind_cca_validate_public_key_00(uint8_t *public_key);
 
 /**
  Validate an ML-KEM private key.
@@ -70,9 +70,9 @@ with const generics
 - SECRET_KEY_SIZE= 3168
 - CIPHERTEXT_SIZE= 1568
 */
-bool libcrux_ml_kem_ind_cca_validate_private_key_77(
-    libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
-    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *_ciphertext);
+bool libcrux_ml_kem_ind_cca_validate_private_key_b5(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_64 *_ciphertext);
 
 /**
  Packed API
@@ -96,7 +96,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_8c1(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_generate_keypair_f81(uint8_t randomness[64U]);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -117,8 +117,8 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_21 libcrux_ml_kem_ind_cca_encapsulate_0b1(
-    libcrux_ml_kem_types_MlKemPublicKey_1f *public_key,
+tuple_fa libcrux_ml_kem_ind_cca_encapsulate_ca1(
+    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key,
     uint8_t randomness[32U]);
 
 /**
@@ -143,9 +143,9 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-void libcrux_ml_kem_ind_cca_decapsulate_d61(
-    libcrux_ml_kem_types_MlKemPrivateKey_95 *private_key,
-    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext, uint8_t ret[32U]);
+void libcrux_ml_kem_ind_cca_decapsulate_621(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext, uint8_t ret[32U]);
 
 /**
  Validate an ML-KEM public key.
@@ -162,7 +162,7 @@ with const generics
 - RANKED_BYTES_PER_RING_ELEMENT= 768
 - PUBLIC_KEY_SIZE= 800
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_3f0(uint8_t *public_key);
+bool libcrux_ml_kem_ind_cca_validate_public_key_86(uint8_t *public_key);
 
 /**
  Validate an ML-KEM private key.
@@ -179,9 +179,9 @@ with const generics
 - SECRET_KEY_SIZE= 1632
 - CIPHERTEXT_SIZE= 768
 */
-bool libcrux_ml_kem_ind_cca_validate_private_key_09(
-    libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext_e8 *_ciphertext);
+bool libcrux_ml_kem_ind_cca_validate_private_key_fb(
+    libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_1a *_ciphertext);
 
 /**
  Packed API
@@ -204,8 +204,8 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
-libcrux_ml_kem_types_MlKemKeyPair_cb
-libcrux_ml_kem_ind_cca_generate_keypair_8c0(uint8_t randomness[64U]);
+libcrux_ml_kem_types_MlKemKeyPair_3e
+libcrux_ml_kem_ind_cca_generate_keypair_f80(uint8_t randomness[64U]);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -226,8 +226,8 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_ec libcrux_ml_kem_ind_cca_encapsulate_0b0(
-    libcrux_ml_kem_types_MlKemPublicKey_be *public_key,
+tuple_41 libcrux_ml_kem_ind_cca_encapsulate_ca0(
+    libcrux_ml_kem_types_MlKemPublicKey_52 *public_key,
     uint8_t randomness[32U]);
 
 /**
@@ -252,9 +252,9 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
-void libcrux_ml_kem_ind_cca_decapsulate_d60(
-    libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]);
+void libcrux_ml_kem_ind_cca_decapsulate_620(
+    libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_1a *ciphertext, uint8_t ret[32U]);
 
 /**
  Validate an ML-KEM public key.
@@ -271,7 +271,7 @@ with const generics
 - RANKED_BYTES_PER_RING_ELEMENT= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_3f(uint8_t *public_key);
+bool libcrux_ml_kem_ind_cca_validate_public_key_6c(uint8_t *public_key);
 
 /**
  Validate an ML-KEM private key.
@@ -288,8 +288,8 @@ with const generics
 - SECRET_KEY_SIZE= 2400
 - CIPHERTEXT_SIZE= 1088
 */
-bool libcrux_ml_kem_ind_cca_validate_private_key_80(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+bool libcrux_ml_kem_ind_cca_validate_private_key_37(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *_ciphertext);
 
 /**
@@ -314,7 +314,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_8c(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_generate_keypair_f8(uint8_t randomness[64U]);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -335,8 +335,8 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_3c libcrux_ml_kem_ind_cca_encapsulate_0b(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *public_key,
+tuple_c2 libcrux_ml_kem_ind_cca_encapsulate_ca(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]);
 
 /**
@@ -361,8 +361,8 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-void libcrux_ml_kem_ind_cca_decapsulate_d6(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 *private_key,
+void libcrux_ml_kem_ind_cca_decapsulate_62(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
 
 #if defined(__cplusplus)

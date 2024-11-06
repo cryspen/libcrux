@@ -1,8 +1,11 @@
-use super::arithmetic::*;
-use crate::simd::portable::PortableSIMDUnit;
+use super::arithmetic::{self, montgomery_multiply_by_constant, montgomery_multiply_fe_by_fer};
+use super::vector_type::PortableSIMDUnit;
+use crate::simd::traits::{
+    COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT, ZETAS_TIMES_MONTGOMERY_R,
+};
 
 #[inline(always)]
-pub fn ntt_at_layer_0(
+pub fn simd_unit_ntt_at_layer_0(
     mut simd_unit: PortableSIMDUnit,
     zeta0: i32,
     zeta1: i32,
@@ -27,8 +30,13 @@ pub fn ntt_at_layer_0(
 
     simd_unit
 }
+
 #[inline(always)]
-pub fn ntt_at_layer_1(mut simd_unit: PortableSIMDUnit, zeta1: i32, zeta2: i32) -> PortableSIMDUnit {
+pub fn simd_unit_ntt_at_layer_1(
+    mut simd_unit: PortableSIMDUnit,
+    zeta1: i32,
+    zeta2: i32,
+) -> PortableSIMDUnit {
     let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[2], zeta1);
     simd_unit.coefficients[2] = simd_unit.coefficients[0] - t;
     simd_unit.coefficients[0] = simd_unit.coefficients[0] + t;
@@ -47,8 +55,9 @@ pub fn ntt_at_layer_1(mut simd_unit: PortableSIMDUnit, zeta1: i32, zeta2: i32) -
 
     simd_unit
 }
+
 #[inline(always)]
-pub fn ntt_at_layer_2(mut simd_unit: PortableSIMDUnit, zeta: i32) -> PortableSIMDUnit {
+pub fn simd_unit_ntt_at_layer_2(mut simd_unit: PortableSIMDUnit, zeta: i32) -> PortableSIMDUnit {
     let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[4], zeta);
     simd_unit.coefficients[4] = simd_unit.coefficients[0] - t;
     simd_unit.coefficients[0] = simd_unit.coefficients[0] + t;
@@ -94,6 +103,7 @@ pub fn invert_ntt_at_layer_0(
 
     simd_unit
 }
+
 #[inline(always)]
 pub fn invert_ntt_at_layer_1(
     mut simd_unit: PortableSIMDUnit,
@@ -118,6 +128,7 @@ pub fn invert_ntt_at_layer_1(
 
     simd_unit
 }
+
 #[inline(always)]
 pub fn invert_ntt_at_layer_2(mut simd_unit: PortableSIMDUnit, zeta: i32) -> PortableSIMDUnit {
     let a_minus_b = simd_unit.coefficients[4] - simd_unit.coefficients[0];
@@ -137,4 +148,91 @@ pub fn invert_ntt_at_layer_2(mut simd_unit: PortableSIMDUnit, zeta: i32) -> Port
     simd_unit.coefficients[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
     simd_unit
+}
+
+#[inline(always)]
+fn ntt_at_layer_0(zeta_i: &mut usize, re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+    *zeta_i += 1;
+
+    for round in 0..re.len() {
+        re[round] = simd_unit_ntt_at_layer_0(
+            re[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 2],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 3],
+        );
+
+        *zeta_i += 4;
+    }
+
+    *zeta_i -= 1;
+}
+
+#[inline(always)]
+fn ntt_at_layer_1(zeta_i: &mut usize, re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+    *zeta_i += 1;
+
+    for round in 0..re.len() {
+        re[round] = simd_unit_ntt_at_layer_1(
+            re[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
+        );
+
+        *zeta_i += 2;
+    }
+
+    *zeta_i -= 1;
+}
+
+#[inline(always)]
+fn ntt_at_layer_2(zeta_i: &mut usize, re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+    for round in 0..re.len() {
+        *zeta_i += 1;
+        re[round] = simd_unit_ntt_at_layer_2(re[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+    }
+    ()
+}
+
+#[inline(always)]
+fn ntt_at_layer_3_plus<const LAYER: usize>(
+    zeta_i: &mut usize,
+    re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
+) {
+    let step = 1 << LAYER;
+
+    for round in 0..(128 >> LAYER) {
+        *zeta_i += 1;
+
+        let offset = (round * step * 2) / COEFFICIENTS_IN_SIMD_UNIT;
+        let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
+
+        for j in offset..offset + step_by {
+            let t =
+                montgomery_multiply_by_constant(re[j + step_by], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+
+            re[j + step_by] = arithmetic::subtract(&re[j], &t);
+            re[j] = arithmetic::add(&re[j], &t);
+        }
+    }
+    () // Needed because of https://github.com/hacspec/hax/issues/720
+}
+
+#[inline(always)]
+pub(crate) fn ntt(
+    mut re: [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
+) -> [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT] {
+    let mut zeta_i = 0;
+
+    ntt_at_layer_3_plus::<7>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<6>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<5>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<4>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<3>(&mut zeta_i, &mut re);
+    ntt_at_layer_2(&mut zeta_i, &mut re);
+    ntt_at_layer_1(&mut zeta_i, &mut re);
+    ntt_at_layer_0(&mut zeta_i, &mut re);
+
+    re
 }

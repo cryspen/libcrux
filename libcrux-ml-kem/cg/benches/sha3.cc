@@ -56,29 +56,29 @@ sha3_512_64(benchmark::State &state)
 }
 
 #ifdef LIBCRUX_X64
-__attribute__((target("avx2"))) static void
-shake128_34_504(benchmark::State &state)
-{
-    uint8_t digest0[504];
-    uint8_t digest1[504];
-    uint8_t digest2[504];
-    uint8_t digest3[504];
-    uint8_t input[34];
-    generate_random(input, 34);
+// __attribute__((target("avx2"))) static void
+// shake128_34_504(benchmark::State &state)
+// {
+//     uint8_t digest0[504];
+//     uint8_t digest1[504];
+//     uint8_t digest2[504];
+//     uint8_t digest3[504];
+//     uint8_t input[34];
+//     generate_random(input, 34);
 
-    Eurydice_slice last[4] = {EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34)};
-    Eurydice_slice out[4] = {EURYDICE_SLICE(digest0, 0, 504), EURYDICE_SLICE(digest1, 0, 504), EURYDICE_SLICE(digest2, 0, 504), EURYDICE_SLICE(digest3, 0, 504)};
-    libcrux_sha3_avx2_x4_incremental_KeccakState st = libcrux_sha3_avx2_x4_incremental_init();
-    libcrux_sha3_generic_keccak_absorb_final_d9(&st, last);
-    libcrux_sha3_generic_keccak_squeeze_first_three_blocks_2a(&st, out);
+//     Eurydice_slice last[4] = {EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34)};
+//     Eurydice_slice out[4] = {EURYDICE_SLICE(digest0, 0, 504), EURYDICE_SLICE(digest1, 0, 504), EURYDICE_SLICE(digest2, 0, 504), EURYDICE_SLICE(digest3, 0, 504)};
+//     libcrux_sha3_avx2_x4_incremental_KeccakState st = libcrux_sha3_avx2_x4_incremental_init();
+//     libcrux_sha3_generic_keccak_absorb_final_7f(&st, last);
+//     libcrux_sha3_generic_keccak_squeeze_first_three_blocks_ed(&st, out);
 
-    for (auto _ : state)
-    {
-        libcrux_sha3_avx2_x4_incremental_KeccakState st = libcrux_sha3_avx2_x4_incremental_init();
-        libcrux_sha3_generic_keccak_absorb_final_d9(&st, last);
-        libcrux_sha3_generic_keccak_squeeze_first_three_blocks_2a(&st, out);
-    }
-}
+//     for (auto _ : state)
+//     {
+//         libcrux_sha3_avx2_x4_incremental_KeccakState st = libcrux_sha3_avx2_x4_incremental_init();
+//         libcrux_sha3_generic_keccak_absorb_final_7f(&st, last);
+//         libcrux_sha3_generic_keccak_squeeze_first_three_blocks_ed(&st, out);
+//     }
+// }
 
 __attribute__((target("avx2"))) static void
 shake256_1120_32(benchmark::State &state)
@@ -126,7 +126,7 @@ shake256_33_128(benchmark::State &state)
     }
 }
 
-BENCHMARK(shake128_34_504);
+// BENCHMARK(shake128_34_504);
 BENCHMARK(shake256_1120_32);
 BENCHMARK(shake256_33_128);
 #endif

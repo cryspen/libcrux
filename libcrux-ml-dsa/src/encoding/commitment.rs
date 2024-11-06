@@ -6,7 +6,7 @@ fn serialize<SIMDUnit: Operations, const OUTPUT_SIZE: usize>(
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
 
-    match OUTPUT_SIZE {
+    match OUTPUT_SIZE as u8 {
         128 => {
             // The commitment has coefficients in [0,15] => each coefficient occupies
             // 4 bits. Each SIMD unit contains 8 elements, which means each

@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 6b5e110342a771a3e1c739b10294b1778e4be8b4
- * Eurydice: 31be7d65ca5d6acdacfb33652e478d24dd85c1cb
- * Karamel: 3205d3365ea2790b02368f79fcee38e38d0b5908
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 4ad532b206174114dd4140b718e7794a28fc59ee
+ * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
+ * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
+ * Libcrux: 99b4e0ae6147eb731652e0ee355fc77d2c160664
  */
 
 #ifndef __libcrux_sha3_avx2_H
@@ -29,9 +29,9 @@ with types core_core_arch_x86___m256i
 with const generics
 - $4size_t
 */
-typedef struct libcrux_sha3_generic_keccak_KeccakState_29_s {
+typedef struct libcrux_sha3_generic_keccak_KeccakState_55_s {
   __m256i st[5U][5U];
-} libcrux_sha3_generic_keccak_KeccakState_29;
+} libcrux_sha3_generic_keccak_KeccakState_55;
 
 /**
  Perform 4 SHAKE256 operations in parallel
@@ -44,56 +44,56 @@ void libcrux_sha3_avx2_x4_shake256(Eurydice_slice input0, Eurydice_slice input1,
 /**
  Initialise the [`KeccakState`].
 */
-libcrux_sha3_generic_keccak_KeccakState_29
+libcrux_sha3_generic_keccak_KeccakState_55
 libcrux_sha3_avx2_x4_incremental_init(void);
 
 /**
  Absorb
 */
 void libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice data0,
+    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice data0,
     Eurydice_slice data1, Eurydice_slice data2, Eurydice_slice data3);
 
 /**
  Squeeze another block
 */
 void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out0,
+    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3);
 
 /**
  Squeeze three blocks
 */
 void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out0,
+    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3);
 
 /**
  Squeeze five blocks
 */
 void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out0,
+    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3);
 
 /**
  Absorb
 */
 void libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice data0,
+    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice data0,
     Eurydice_slice data1, Eurydice_slice data2, Eurydice_slice data3);
 
 /**
  Squeeze block
 */
 void libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out0,
+    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3);
 
 /**
  Squeeze next block
 */
 void libcrux_sha3_avx2_x4_incremental_shake256_squeeze_next_block(
-    libcrux_sha3_generic_keccak_KeccakState_29 *s, Eurydice_slice out0,
+    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3);
 
 #if defined(__cplusplus)

@@ -1,30 +1,21 @@
+use super::vector_type::{FieldElement, PortableSIMDUnit, ZERO};
 use crate::{
     constants::BITS_IN_LOWER_PART_OF_T,
-    simd::{
-        portable::PortableSIMDUnit,
-        traits::{Operations, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R},
+    simd::traits::{
+        FieldElementTimesMontgomeryR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
     },
 };
-
-/// Values having this type hold a representative 'x' of the Kyber field.
-/// We use 'fe' as a shorthand for this type.
-pub(crate) type FieldElement = i32;
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
 /// We use 'mfe' as a shorthand for this type
 pub type MontgomeryFieldElement = i32;
 
-/// If 'x' denotes a value of type `fe`, values having this type hold a
-/// representative y ≡ x·MONTGOMERY_R (mod FIELD_MODULUS).
-/// We use 'fer' as a shorthand for this type.
-pub(crate) type FieldElementTimesMontgomeryR = i32;
-
 pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 
 #[inline(always)]
 pub fn add(lhs: &PortableSIMDUnit, rhs: &PortableSIMDUnit) -> PortableSIMDUnit {
-    let mut sum = PortableSIMDUnit::ZERO();
+    let mut sum = ZERO();
 
     for i in 0..sum.coefficients.len() {
         sum.coefficients[i] = lhs.coefficients[i] + rhs.coefficients[i];
@@ -35,7 +26,7 @@ pub fn add(lhs: &PortableSIMDUnit, rhs: &PortableSIMDUnit) -> PortableSIMDUnit {
 
 #[inline(always)]
 pub fn subtract(lhs: &PortableSIMDUnit, rhs: &PortableSIMDUnit) -> PortableSIMDUnit {
-    let mut difference = PortableSIMDUnit::ZERO();
+    let mut difference = ZERO();
 
     for i in 0..difference.coefficients.len() {
         difference.coefficients[i] = lhs.coefficients[i] - rhs.coefficients[i];
@@ -88,7 +79,7 @@ pub(crate) fn montgomery_multiply(
     lhs: &PortableSIMDUnit,
     rhs: &PortableSIMDUnit,
 ) -> PortableSIMDUnit {
-    let mut product = PortableSIMDUnit::ZERO();
+    let mut product = ZERO();
 
     for i in 0..product.coefficients.len() {
         product.coefficients[i] =
@@ -108,7 +99,8 @@ pub(crate) fn montgomery_multiply(
 // to the standard unsigned range.
 #[inline(always)]
 fn power2round_element(t: i32) -> (i32, i32) {
-    debug_assert!(t > -FIELD_MODULUS && t < FIELD_MODULUS, "t is {}", t);
+    // Hax issue: https://github.com/hacspec/hax/issues/1082
+    debug_assert!(t > -FIELD_MODULUS && t < FIELD_MODULUS);
 
     // Convert the signed representative to the standard unsigned one.
     let t = t + ((t >> 31) & FIELD_MODULUS);
@@ -125,8 +117,8 @@ fn power2round_element(t: i32) -> (i32, i32) {
 }
 
 pub fn power2round(simd_unit: PortableSIMDUnit) -> (PortableSIMDUnit, PortableSIMDUnit) {
-    let mut t0_simd_unit = PortableSIMDUnit::ZERO();
-    let mut t1_simd_unit = PortableSIMDUnit::ZERO();
+    let mut t0_simd_unit = ZERO();
+    let mut t1_simd_unit = ZERO();
 
     for (i, t) in simd_unit.coefficients.into_iter().enumerate() {
         let (t0, t1) = power2round_element(t);
@@ -152,11 +144,7 @@ pub fn infinity_norm_exceeds(simd_unit: PortableSIMDUnit, bound: i32) -> bool {
     // straightforward way to do so (returning false) will not go through hax;
     // revisit if performance is impacted.
     for coefficient in simd_unit.coefficients.into_iter() {
-        debug_assert!(
-            coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS,
-            "coefficient is {}",
-            coefficient
-        );
+        debug_assert!(coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS);
         // This norm is calculated using the absolute value of the
         // signed representative in the range:
         //
@@ -167,7 +155,7 @@ pub fn infinity_norm_exceeds(simd_unit: PortableSIMDUnit, bound: i32) -> bool {
         let sign = coefficient >> 31;
         let normalized = coefficient - (sign & (2 * coefficient));
 
-        exceeds |= normalized >= bound;
+        exceeds = exceeds || normalized >= bound;
     }
 
     exceeds
@@ -184,7 +172,7 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
 pub fn shift_left_then_reduce<const SHIFT_BY: i32>(
     simd_unit: PortableSIMDUnit,
 ) -> PortableSIMDUnit {
-    let mut out = PortableSIMDUnit::ZERO();
+    let mut out = ZERO();
 
     for i in 0..simd_unit.coefficients.len() {
         out.coefficients[i] = reduce_element(simd_unit.coefficients[i] << SHIFT_BY);
@@ -207,7 +195,7 @@ pub fn compute_hint<const GAMMA2: i32>(
     low: PortableSIMDUnit,
     high: PortableSIMDUnit,
 ) -> (usize, PortableSIMDUnit) {
-    let mut hint = PortableSIMDUnit::ZERO();
+    let mut hint = ZERO();
     let mut one_hints_count = 0;
 
     for i in 0..hint.coefficients.len() {
@@ -236,11 +224,7 @@ pub fn compute_hint<const GAMMA2: i32>(
 #[allow(non_snake_case)]
 #[inline(always)]
 fn decompose_element<const GAMMA2: i32>(r: i32) -> (i32, i32) {
-    debug_assert!(
-        r > -FIELD_MODULUS && r < FIELD_MODULUS,
-        "the representative is {}",
-        r
-    );
+    debug_assert!(r > -FIELD_MODULUS && r < FIELD_MODULUS);
 
     // Convert the signed representative to the standard unsigned one.
     let r = r + ((r >> 31) & FIELD_MODULUS);
@@ -321,8 +305,8 @@ pub(crate) fn use_one_hint<const GAMMA2: i32>(r: i32, hint: i32) -> i32 {
 pub fn decompose<const GAMMA2: i32>(
     simd_unit: PortableSIMDUnit,
 ) -> (PortableSIMDUnit, PortableSIMDUnit) {
-    let mut low = PortableSIMDUnit::ZERO();
-    let mut high = PortableSIMDUnit::ZERO();
+    let mut low = ZERO();
+    let mut high = ZERO();
 
     for i in 0..low.coefficients.len() {
         let (low_part, high_part) = decompose_element::<GAMMA2>(simd_unit.coefficients[i]);
@@ -338,7 +322,7 @@ pub fn use_hint<const GAMMA2: i32>(
     simd_unit: PortableSIMDUnit,
     hint: PortableSIMDUnit,
 ) -> PortableSIMDUnit {
-    let mut result = PortableSIMDUnit::ZERO();
+    let mut result = ZERO();
 
     for i in 0..result.coefficients.len() {
         result.coefficients[i] =

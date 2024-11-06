@@ -98,6 +98,32 @@ TEST(MlKem768TestPortable, ConsistencyTest)
                      LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 }
 
+TEST(MlKem768TestPortableUnpacked, ConsistencyTest)
+{
+    uint8_t keygen_randomness[64];
+    for (int i = 0; i < 64; i++)
+    {
+        keygen_randomness[i] = 13;
+    }
+    libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked key_pair = libcrux_ml_kem_mlkem768_portable_unpacked_init_key_pair() ;
+    libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(keygen_randomness, &key_pair);
+
+    uint8_t encap_randomness[32];
+    for (int i = 0; i < 32; i++)
+    {
+        encap_randomness[i] = 15;
+    }
+    auto ctxt = libcrux_ml_kem_mlkem768_portable_unpacked_encapsulate(&key_pair.public_key, encap_randomness);
+
+    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+    libcrux_ml_kem_mlkem768_portable_unpacked_decapsulate(&key_pair, &ctxt.fst, sharedSecret2);
+
+    EXPECT_EQ(0,
+              memcmp(ctxt.snd,
+                     sharedSecret2,
+                     LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
+}
+
 TEST(Kyber768TestPortable, ModifiedCiphertextTest)
 {
     uint8_t randomness[64];
@@ -225,6 +251,32 @@ TEST(MlKem768TestAvx2, ConsistencyTest)
 
     uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
     libcrux_ml_kem_mlkem768_avx2_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
+
+    EXPECT_EQ(0,
+              memcmp(ctxt.snd,
+                     sharedSecret2,
+                     LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
+}
+
+TEST(MlKem768TestAvx2Unpacked, ConsistencyTest)
+{
+    uint8_t keygen_randomness[64];
+    for (int i = 0; i < 64; i++)
+    {
+        keygen_randomness[i] = 13;
+    }
+    libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked key_pair = libcrux_ml_kem_mlkem768_avx2_unpacked_init_key_pair() ;
+    libcrux_ml_kem_mlkem768_avx2_unpacked_generate_key_pair(keygen_randomness, &key_pair);
+
+    uint8_t encap_randomness[32];
+    for (int i = 0; i < 32; i++)
+    {
+        encap_randomness[i] = 15;
+    }
+    auto ctxt = libcrux_ml_kem_mlkem768_avx2_unpacked_encapsulate(&key_pair.public_key, encap_randomness);
+
+    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+    libcrux_ml_kem_mlkem768_avx2_unpacked_decapsulate(&key_pair, &ctxt.fst, sharedSecret2);
 
     EXPECT_EQ(0,
               memcmp(ctxt.snd,

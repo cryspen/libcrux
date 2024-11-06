@@ -92,9 +92,15 @@ jobs:
       - name: 🏃🏻‍♀️ Test
         run: |
           cargo clean
-          cargo test --verbose $RUST_TARGET_FLAG
+          cargo test --verbose --features acvp $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Test Release
         run: |
           cargo clean
-          cargo test --verbose --release $RUST_TARGET_FLAG
+          cargo test --verbose --release --features acvp $RUST_TARGET_FLAG
+
+      # Benchmarks
+      - name: 🔨 Build Benchmarks
+        run: |
+          cargo clean
+          cargo bench --no-run

@@ -6,17 +6,12 @@ open FStar.Mul
 let rej_sample (a: t_Slice u8) (result: t_Slice i16) =
   let sampled:usize = sz 0 in
   let result, sampled:(t_Slice i16 & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
-            usize)
-          #FStar.Tactics.Typeclasses.solve
-          ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = (Core.Slice.impl__len #u8 a <: usize) /! sz 3 <: usize
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      ((Core.Slice.impl__len #u8 a <: usize) /! sz 3 <: usize)
+      (fun temp_0_ temp_1_ ->
+          let result, sampled:(t_Slice i16 & usize) = temp_0_ in
+          let _:usize = temp_1_ in
+          true)
       (result, sampled <: (t_Slice i16 & usize))
       (fun temp_0_ i ->
           let result, sampled:(t_Slice i16 & usize) = temp_0_ in

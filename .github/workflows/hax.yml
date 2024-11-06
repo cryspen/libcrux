@@ -30,7 +30,7 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: ⤵ Install FStar
-        run: nix profile install github:FStarLang/FStar/v2024.01.13
+        run: nix profile install github:FStarLang/FStar/v2024.09.05
 
       - name: ⤵ Clone HACL-star repository
         uses: actions/checkout@v4
@@ -59,6 +59,19 @@ jobs:
 
       - name: 🏃 Lax ML-KEM crate
         working-directory: libcrux-ml-kem
+        run: |
+          env FSTAR_HOME=${{ github.workspace }}/fstar \
+              HACL_HOME=${{ github.workspace }}/hacl-star \
+              HAX_HOME=${{ github.workspace }}/hax \
+              PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
+              ./hax.py prove --admit
+
+      - name: 🏃 Extract ML-DSA crate
+        working-directory: libcrux-ml-dsa
+        run: ./hax.py extract
+
+      - name: 🏃 Lax ML-DSA crate
+        working-directory: libcrux-ml-dsa
         run: |
           env FSTAR_HOME=${{ github.workspace }}/fstar \
               HACL_HOME=${{ github.workspace }}/hacl-star \

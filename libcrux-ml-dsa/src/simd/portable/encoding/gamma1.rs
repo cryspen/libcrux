@@ -1,5 +1,4 @@
-use crate::simd::{portable::PortableSIMDUnit, traits::Operations};
-
+use super::super::vector_type::{PortableSIMDUnit, ZERO};
 // This function is marked public since it is called in the corresponding AVX2 code.
 #[inline(always)]
 pub fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
@@ -37,6 +36,7 @@ pub fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
 
     serialized
 }
+
 #[inline(always)]
 fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
     simd_unit: PortableSIMDUnit,
@@ -65,7 +65,7 @@ fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
 pub(crate) fn serialize<const OUTPUT_SIZE: usize>(
     simd_unit: PortableSIMDUnit,
 ) -> [u8; OUTPUT_SIZE] {
-    match OUTPUT_SIZE {
+    match OUTPUT_SIZE as u8 {
         18 => serialize_when_gamma1_is_2_pow_17::<OUTPUT_SIZE>(simd_unit),
         20 => serialize_when_gamma1_is_2_pow_19::<OUTPUT_SIZE>(simd_unit),
         _ => unreachable!(),
@@ -81,33 +81,33 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8]) -> PortableSIMDUnit {
     const GAMMA1: i32 = 1 << 17;
     const GAMMA1_TIMES_2_BITMASK: i32 = (GAMMA1 << 1) - 1;
 
-    let mut simd_unit = PortableSIMDUnit::ZERO();
+    let mut simd_unit = ZERO();
 
     for (i, bytes) in serialized.chunks_exact(9).enumerate() {
-        simd_unit.coefficients[4 * i] = bytes[0] as i32;
-        simd_unit.coefficients[4 * i] |= (bytes[1] as i32) << 8;
-        simd_unit.coefficients[4 * i] |= (bytes[2] as i32) << 16;
-        simd_unit.coefficients[4 * i] &= GAMMA1_TIMES_2_BITMASK;
+        let mut coefficient0 = bytes[0] as i32;
+        coefficient0 |= (bytes[1] as i32) << 8;
+        coefficient0 |= (bytes[2] as i32) << 16;
+        coefficient0 &= GAMMA1_TIMES_2_BITMASK;
 
-        simd_unit.coefficients[4 * i + 1] = (bytes[2] as i32) >> 2;
-        simd_unit.coefficients[4 * i + 1] |= (bytes[3] as i32) << 6;
-        simd_unit.coefficients[4 * i + 1] |= (bytes[4] as i32) << 14;
-        simd_unit.coefficients[4 * i + 1] &= GAMMA1_TIMES_2_BITMASK;
+        let mut coefficient1 = (bytes[2] as i32) >> 2;
+        coefficient1 |= (bytes[3] as i32) << 6;
+        coefficient1 |= (bytes[4] as i32) << 14;
+        coefficient1 &= GAMMA1_TIMES_2_BITMASK;
 
-        simd_unit.coefficients[4 * i + 2] = (bytes[4] as i32) >> 4;
-        simd_unit.coefficients[4 * i + 2] |= (bytes[5] as i32) << 4;
-        simd_unit.coefficients[4 * i + 2] |= (bytes[6] as i32) << 12;
-        simd_unit.coefficients[4 * i + 2] &= GAMMA1_TIMES_2_BITMASK;
+        let mut coefficient2 = (bytes[4] as i32) >> 4;
+        coefficient2 |= (bytes[5] as i32) << 4;
+        coefficient2 |= (bytes[6] as i32) << 12;
+        coefficient2 &= GAMMA1_TIMES_2_BITMASK;
 
-        simd_unit.coefficients[4 * i + 3] = (bytes[6] as i32) >> 6;
-        simd_unit.coefficients[4 * i + 3] |= (bytes[7] as i32) << 2;
-        simd_unit.coefficients[4 * i + 3] |= (bytes[8] as i32) << 10;
-        simd_unit.coefficients[4 * i + 3] &= GAMMA1_TIMES_2_BITMASK;
+        let mut coefficient3 = (bytes[6] as i32) >> 6;
+        coefficient3 |= (bytes[7] as i32) << 2;
+        coefficient3 |= (bytes[8] as i32) << 10;
+        coefficient3 &= GAMMA1_TIMES_2_BITMASK;
 
-        simd_unit.coefficients[4 * i] = GAMMA1 - simd_unit.coefficients[4 * i];
-        simd_unit.coefficients[4 * i + 1] = GAMMA1 - simd_unit.coefficients[4 * i + 1];
-        simd_unit.coefficients[4 * i + 2] = GAMMA1 - simd_unit.coefficients[4 * i + 2];
-        simd_unit.coefficients[4 * i + 3] = GAMMA1 - simd_unit.coefficients[4 * i + 3];
+        simd_unit.coefficients[4 * i] = GAMMA1 - coefficient0;
+        simd_unit.coefficients[4 * i + 1] = GAMMA1 - coefficient1;
+        simd_unit.coefficients[4 * i + 2] = GAMMA1 - coefficient2;
+        simd_unit.coefficients[4 * i + 3] = GAMMA1 - coefficient3;
     }
 
     simd_unit
@@ -121,27 +121,27 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8]) -> PortableSIMDUnit {
     const GAMMA1: i32 = 1 << 19;
     const GAMMA1_TIMES_2_BITMASK: i32 = (GAMMA1 << 1) - 1;
 
-    let mut simd_unit = PortableSIMDUnit::ZERO();
+    let mut simd_unit = ZERO();
 
     for (i, bytes) in serialized.chunks_exact(5).enumerate() {
-        simd_unit.coefficients[2 * i] = bytes[0] as i32;
-        simd_unit.coefficients[2 * i] |= (bytes[1] as i32) << 8;
-        simd_unit.coefficients[2 * i] |= (bytes[2] as i32) << 16;
-        simd_unit.coefficients[2 * i] &= GAMMA1_TIMES_2_BITMASK;
+        let mut coefficient0 = bytes[0] as i32;
+        coefficient0 |= (bytes[1] as i32) << 8;
+        coefficient0 |= (bytes[2] as i32) << 16;
+        coefficient0 &= GAMMA1_TIMES_2_BITMASK;
 
-        simd_unit.coefficients[2 * i + 1] = (bytes[2] as i32) >> 4;
-        simd_unit.coefficients[2 * i + 1] |= (bytes[3] as i32) << 4;
-        simd_unit.coefficients[2 * i + 1] |= (bytes[4] as i32) << 12;
+        let mut coefficient1 = (bytes[2] as i32) >> 4;
+        coefficient1 |= (bytes[3] as i32) << 4;
+        coefficient1 |= (bytes[4] as i32) << 12;
 
-        simd_unit.coefficients[2 * i] = GAMMA1 - simd_unit.coefficients[2 * i];
-        simd_unit.coefficients[2 * i + 1] = GAMMA1 - simd_unit.coefficients[2 * i + 1];
+        simd_unit.coefficients[2 * i] = GAMMA1 - coefficient0;
+        simd_unit.coefficients[2 * i + 1] = GAMMA1 - coefficient1;
     }
 
     simd_unit
 }
 #[inline(always)]
 pub(crate) fn deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> PortableSIMDUnit {
-    match GAMMA1_EXPONENT {
+    match GAMMA1_EXPONENT as u8 {
         17 => deserialize_when_gamma1_is_2_pow_17(serialized),
         19 => deserialize_when_gamma1_is_2_pow_19(serialized),
         _ => unreachable!(),

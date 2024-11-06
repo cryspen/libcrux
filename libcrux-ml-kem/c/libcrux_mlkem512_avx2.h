@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 6b5e110342a771a3e1c739b10294b1778e4be8b4
- * Eurydice: 31be7d65ca5d6acdacfb33652e478d24dd85c1cb
- * Karamel: 3205d3365ea2790b02368f79fcee38e38d0b5908
- * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: 4ad532b206174114dd4140b718e7794a28fc59ee
+ * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
+ * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
+ * Libcrux: 99b4e0ae6147eb731652e0ee355fc77d2c160664
  */
 
 #ifndef __libcrux_mlkem512_avx2_H
@@ -29,8 +29,8 @@ extern "C" {
  [`MlKem512Ciphertext`].
 */
 void libcrux_ml_kem_mlkem512_avx2_decapsulate(
-    libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext, uint8_t ret[32U]);
+    libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_1a *ciphertext, uint8_t ret[32U]);
 
 /**
  Encapsulate ML-KEM 512
@@ -39,14 +39,14 @@ void libcrux_ml_kem_mlkem512_avx2_decapsulate(
  The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-tuple_ec libcrux_ml_kem_mlkem512_avx2_encapsulate(
-    libcrux_ml_kem_types_MlKemPublicKey_be *public_key,
+tuple_41 libcrux_ml_kem_mlkem512_avx2_encapsulate(
+    libcrux_ml_kem_types_MlKemPublicKey_52 *public_key,
     uint8_t randomness[32U]);
 
 /**
  Generate ML-KEM 512 Key Pair
 */
-libcrux_ml_kem_types_MlKemKeyPair_cb
+libcrux_ml_kem_types_MlKemKeyPair_3e
 libcrux_ml_kem_mlkem512_avx2_generate_key_pair(uint8_t randomness[64U]);
 
 /**
@@ -55,8 +55,8 @@ libcrux_ml_kem_mlkem512_avx2_generate_key_pair(uint8_t randomness[64U]);
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem512_avx2_validate_private_key(
-    libcrux_ml_kem_types_MlKemPrivateKey_5e *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext_e8 *ciphertext);
+    libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_1a *ciphertext);
 
 /**
  Validate a public key.
@@ -64,7 +64,7 @@ bool libcrux_ml_kem_mlkem512_avx2_validate_private_key(
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem512_avx2_validate_public_key(
-    libcrux_ml_kem_types_MlKemPublicKey_be *public_key);
+    libcrux_ml_kem_types_MlKemPublicKey_52 *public_key);
 
 #if defined(__cplusplus)
 }

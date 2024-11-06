@@ -16,8 +16,12 @@ bench = false # so libtest doesn't eat the arguments to criterion
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-libcrux-sha3 = { version = "0.0.2-alpha.3", path = "../libcrux-sha3" }
-libcrux-intrinsics = { version = "0.0.2-alpha.3", path = "../libcrux-intrinsics" }
+libcrux-sha3 = { version = "0.0.2-beta.2", path = "../libcrux-sha3" }
+libcrux-intrinsics = { version = "0.0.2-beta.2", path = "../libcrux-intrinsics" }
+libcrux-platform = { version = "0.0.2-beta.2", path = "../sys/platform" }
+
+[target.'cfg(hax)'.dependencies]
+hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
 
 [dev-dependencies]
 rand = { version = "0.8" }
@@ -25,11 +29,12 @@ hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 criterion = "0.5"
-pqcrypto-dilithium = { version = "0.5.0" } #, default-features = false
+pqcrypto-dilithium = { version = "0.5.0" }         #, default-features = false
 
 [features]
-simd128 = []
-simd256 = []
+simd128 = ["libcrux-sha3/simd128", "libcrux-intrinsics/simd128"]
+simd256 = ["libcrux-sha3/simd256", "libcrux-intrinsics/simd256"]
+acvp = [] # expose internal API for ACVP testing
 
 [[bench]]
 name = "manual44"
@@ -47,3 +52,7 @@ harness = false
 name = "ml-dsa"
 harness = false
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(hax)',
+] }
