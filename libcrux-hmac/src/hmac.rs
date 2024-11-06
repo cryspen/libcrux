@@ -46,19 +46,19 @@ pub fn hmac(alg: Algorithm, key: &[u8], data: &[u8], tag_length: Option<usize>) 
         None => native_tag_length,
     };
     let mut dst: Vec<_> = match alg {
-        Algorithm::Sha1 => wrap_bufalloc(|buf| hmac_sha1(buf, key, data)).into(),
-        Algorithm::Sha256 => wrap_bufalloc(|buf| hmac_sha256(buf, key, data)).into(),
-        Algorithm::Sha384 => wrap_bufalloc(|buf| hmac_sha384(buf, key, data)).into(),
-        Algorithm::Sha512 => wrap_bufalloc(|buf| hmac_sha512(buf, key, data)).into(),
+        Algorithm::Sha1 => wrap_bufalloc(|buf| hmac_sha1(buf, key, data)),
+        Algorithm::Sha256 => wrap_bufalloc(|buf| hmac_sha256(buf, key, data)),
+        Algorithm::Sha384 => wrap_bufalloc(|buf| hmac_sha384(buf, key, data)),
+        Algorithm::Sha512 => wrap_bufalloc(|buf| hmac_sha512(buf, key, data)),
     };
     dst.truncate(tag_length);
     dst
 }
 
-fn wrap_bufalloc<const N: usize, F: Fn(&mut [u8; N])>(f: F) -> [u8; N] {
+fn wrap_bufalloc<const N: usize, F: Fn(&mut [u8; N])>(f: F) -> Vec<u8> {
     let mut buf = [0u8; N];
     f(&mut buf);
-    buf
+    buf.to_vec()
 }
 
 macro_rules! impl_hmac {
@@ -80,5 +80,5 @@ macro_rules! impl_hmac {
 
 impl_hmac!(hmac_sha1, libcrux_hacl_rs::hmac::compute_sha1, 20);
 impl_hmac!(hmac_sha256, libcrux_hacl_rs::hmac::compute_sha2_256, 32);
-impl_hmac!(hmac_sha384, libcrux_hacl_rs::hmac::compute_sha2_384, 32);
-impl_hmac!(hmac_sha512, libcrux_hacl_rs::hmac::compute_sha2_512, 32);
+impl_hmac!(hmac_sha384, libcrux_hacl_rs::hmac::compute_sha2_384, 48);
+impl_hmac!(hmac_sha512, libcrux_hacl_rs::hmac::compute_sha2_512, 64);
