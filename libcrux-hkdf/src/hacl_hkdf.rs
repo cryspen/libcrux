@@ -95,7 +95,13 @@ macro_rules! impl_hkdf {
             ///
             /// Note that this function panics if `salt` or `ikm` is longer than  (2**32 - 1) bytes.
             pub fn extract(prk: &mut [u8; $hash_len], salt: &[u8], ikm: &[u8]) {
-                $sname::extract(prk, salt, ikm)
+                libcrux_hacl_rs::hkdf::$extract(
+                    prk,
+                    salt,
+                    checked_u32(salt.len()).unwrap(),
+                    ikm,
+                    checked_u32(ikm.len()).unwrap(),
+                );
             }
 
             /// HKDF expand using the pre-key material `prk` and `info`. The output length
