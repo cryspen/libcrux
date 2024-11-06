@@ -187,16 +187,18 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: 🛠️ Setup Rust Nightly
-        run: rustup toolchain install nightly
+        run: |
+          rustup toolchain install nightly
+          cargo install cargo-fuzz
 
-      - name: Update dependencies
+      - name: 🛠️ Update dependencies
         run: cargo update
 
-      - run: 🏃🏻‍♀️ Decaps
+      - name: 🏃🏻‍♀️ Decaps
         run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run decaps -- -runs=100000
 
-      - run: 🏃🏻‍♀️ Encaps
+      - name: 🏃🏻‍♀️ Encaps
         run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run encaps -- -runs=100000
 
-      - run: 🏃🏻‍♀️ KeyGen
+      - name: 🏃🏻‍♀️ KeyGen
         run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run keygen -- -runs=1000000
