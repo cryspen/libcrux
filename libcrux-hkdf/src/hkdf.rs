@@ -4,6 +4,8 @@
 
 pub(crate) mod hacl_hkdf;
 
+use hacl_hkdf::{HkdfMode, HkdfSha2_256, HkdfSha2_384, HkdfSha2_512};
+
 /// The HKDF algorithm defining the used hash function.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Algorithm {
@@ -12,25 +14,35 @@ pub enum Algorithm {
     Sha512,
 }
 
+impl Algorithm {
+    pub const fn tag_len(self) -> usize {
+        match self {
+            Algorithm::Sha256 => 32,
+            Algorithm::Sha384 => 48,
+            Algorithm::Sha512 => 64,
+        }
+    }
+}
+
 /// HKDF Errors
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Error {
-    OkmLengthTooLarge,
+    /// The requested output key material in expand was too large for the used
+    /// hash function.
+    OkmTooLarge,
+    /// At least one function argument has been too large to process.
+    ArgumentsTooLarge,
 }
 
 /// HKDF extract using hash function `mode`, `salt`, and the input key material `ikm`.
 /// Returns the pre-key material in a vector of tag length.
 pub fn extract(alg: Algorithm, salt: impl AsRef<[u8]>, ikm: impl AsRef<[u8]>) -> Vec<u8> {
+    let salt = salt.as_ref();
+    let ikm = ikm.as_ref();
     match alg {
-        Algorithm::Sha256 => {
-            crate::hacl_hkdf::sha2_256::extract(salt.as_ref(), ikm.as_ref()).into()
-        }
-        Algorithm::Sha384 => {
-            crate::hacl_hkdf::sha2_384::extract(salt.as_ref(), ikm.as_ref()).into()
-        }
-        Algorithm::Sha512 => {
-            crate::hacl_hkdf::sha2_512::extract(salt.as_ref(), ikm.as_ref()).into()
-        }
+        Algorithm::Sha256 => allocbuf(|prk| HkdfSha2_256::extract(prk, salt, ikm)),
+        Algorithm::Sha384 => allocbuf(|prk| HkdfSha2_384::extract(prk, salt, ikm)),
+        Algorithm::Sha512 => allocbuf(|prk| HkdfSha2_512::extract(prk, salt, ikm)),
     }
 }
 
@@ -43,19 +55,12 @@ pub fn expand(
     info: impl AsRef<[u8]>,
     okm_len: usize,
 ) -> Result<Vec<u8>, Error> {
+    let prk = prk.as_ref();
+    let info = info.as_ref();
     match alg {
-        Algorithm::Sha256 => {
-            crate::hacl_hkdf::sha2_256::vec::expand(prk.as_ref(), info.as_ref(), okm_len)
-                .map_err(|_| Error::OkmLengthTooLarge)
-        }
-        Algorithm::Sha384 => {
-            crate::hacl_hkdf::sha2_384::vec::expand(prk.as_ref(), info.as_ref(), okm_len)
-                .map_err(|_| Error::OkmLengthTooLarge)
-        }
-        Algorithm::Sha512 => {
-            crate::hacl_hkdf::sha2_512::vec::expand(prk.as_ref(), info.as_ref(), okm_len)
-                .map_err(|_| Error::OkmLengthTooLarge)
-        }
+        Algorithm::Sha256 => HkdfSha2_256::expand_vec(prk, info, okm_len),
+        Algorithm::Sha384 => HkdfSha2_384::expand_vec(prk, info, okm_len),
+        Algorithm::Sha512 => HkdfSha2_512::expand_vec(prk, info, okm_len),
     }
 }
 
@@ -65,11 +70,24 @@ pub fn expand(
 /// if the requested output length is too large.
 pub fn hkdf(
     mode: Algorithm,
-    salt: &[u8],
-    ikm: &[u8],
-    info: &[u8],
+    salt: impl AsRef<[u8]>,
+    ikm: impl AsRef<[u8]>,
+    info: impl AsRef<[u8]>,
     okm_len: usize,
 ) -> Result<Vec<u8>, Error> {
-    let prk = extract(mode, salt, ikm);
-    expand(mode, prk, info, okm_len)
+    let salt = salt.as_ref();
+    let ikm = ikm.as_ref();
+    let info = info.as_ref();
+
+    match mode {
+        Algorithm::Sha256 => HkdfSha2_256::hkdf_vec(salt, ikm, info, okm_len),
+        Algorithm::Sha384 => HkdfSha2_384::hkdf_vec(salt, ikm, info, okm_len),
+        Algorithm::Sha512 => HkdfSha2_512::hkdf_vec(salt, ikm, info, okm_len),
+    }
+}
+
+fn allocbuf<const N: usize, F: Fn(&mut [u8; N])>(f: F) -> Vec<u8> {
+    let mut buf = [0u8; N];
+    f(&mut buf);
+    buf.into()
 }

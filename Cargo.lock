@@ -1006,7 +1006,7 @@ version = "0.1.0"
 name = "libcrux-hkdf"
 version = "0.0.2-beta.2"
 dependencies = [
- "libcrux-hacl",
+ "libcrux-hacl-rs",
 ]
 
 [[package]]
