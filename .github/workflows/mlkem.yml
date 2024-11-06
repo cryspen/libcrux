@@ -192,7 +192,7 @@ jobs:
       - name: Update dependencies
         run: cargo update
 
-      - run: 🏃🏻‍♀️ Decaps
+      - name: 🏃🏻‍♀️ Decaps
         run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run decaps -- -runs=100000
 
       - run: 🏃🏻‍♀️ Encaps
