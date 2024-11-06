@@ -165,16 +165,17 @@ val generate_keypair_unpacked
             Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector) =
             temp_0_
           in
-          let ((t_as_ntt, seed_for_A), secret_as_ntt), valid =
+          let (((t_as_ntt, seed_for_A), matrix_A_as_ntt), secret_as_ntt), valid =
             Spec.MLKEM.ind_cpa_generate_keypair_unpacked v_K key_generation_seed
           in
           (valid ==>
-            ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector public_key_future.f_t_as_ntt
-              ) ==
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector public_key_future.f_t_as_ntt ==
               t_as_ntt) /\ (public_key_future.f_seed_for_A == seed_for_A) /\
-            ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
-                  #v_Vector
-                  private_key_future.f_secret_as_ntt) ==
+            (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector public_key_future.f_A ==
+              matrix_A_as_ntt) /\
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+                #v_Vector
+                private_key_future.f_secret_as_ntt ==
               secret_as_ntt)) /\
           (forall (i: nat).
               i < v v_K ==>
