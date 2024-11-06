@@ -17,7 +17,6 @@ members = [
     "libcrux-hkdf",
     "libcrux-ecdh",
     "libcrux-psq",
-    "cavp",
     "libcrux-hacl-rs-krml",
     "cavp",
 ]
