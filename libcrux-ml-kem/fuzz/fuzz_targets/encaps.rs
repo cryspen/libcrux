@@ -8,7 +8,7 @@ fuzz_target!(|data: &[u8]| {
         // Not enough entropy
         return;
     }
-    
+
     let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
     randomness.copy_from_slice(&data[..KEY_GENERATION_SEED_SIZE]);
 
