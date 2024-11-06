@@ -21,7 +21,62 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  hax:
+  hax-extract:
+    strategy:
+      fail-fast: false
+      matrix:
+        bits: [32, 64]
+        os:
+          - macos-13 # Intel mac
+          - macos-latest # macos-14 m1
+          - ubuntu-latest
+          - windows-latest
+        exclude:
+          - bits: 32
+            os: "macos-latest"
+          - bits: 32
+            os: "macos-13"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: ⤵ Install FStar
+        run: nix profile install github:FStarLang/FStar/v2024.09.05
+
+      - name: ⤵ Clone HACL-star repository
+        uses: actions/checkout@v4
+        with:
+          repository: hacl-star/hacl-star
+          path: hacl-star
+
+      - name: ⤵ Clone hax repository
+        uses: actions/checkout@v4
+        with:
+          repository: hacspec/hax
+          path: hax
+
+      - name: ⤵ Install & confiure Cachix
+        run: |
+          nix profile install nixpkgs#cachix
+          cachix use hax
+
+      - name: ⤵ Install hax
+        run: |
+          nix profile install ./hax
+
+      - name: 🏃 Extract ML-KEM crate
+        working-directory: libcrux-ml-kem
+        run: ./hax.py extract
+
+      - name: 🏃 Extract ML-DSA crate
+        working-directory: libcrux-ml-dsa
+        run: ./hax.py extract
+
+  hax-prove:
     runs-on: "ubuntu-latest"
 
     steps:
