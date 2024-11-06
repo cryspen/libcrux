@@ -1,7 +1,7 @@
 use crate::traits::internal::*;
 use libcrux_intrinsics::avx2::*;
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: Vec256) -> Vec256 {
     debug_assert!(LEFT + RIGHT == 64);
@@ -9,7 +9,7 @@ unsafe fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: Vec256) -> Vec256 {
     mm256_xor_si256(mm256_slli_epi64::<LEFT>(x), mm256_srli_epi64::<RIGHT>(x))
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn _veor5q_u64(a: Vec256, b: Vec256, c: Vec256, d: Vec256, e: Vec256) -> Vec256 {
     let ab = mm256_xor_si256(a, b);
@@ -18,26 +18,26 @@ unsafe fn _veor5q_u64(a: Vec256, b: Vec256, c: Vec256, d: Vec256, e: Vec256) -> 
     mm256_xor_si256(abcd, e)
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn _vrax1q_u64(a: Vec256, b: Vec256) -> Vec256 {
     mm256_xor_si256(a, rotate_left::<1, 63>(b))
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: Vec256, b: Vec256) -> Vec256 {
     let ab = mm256_xor_si256(a, b);
     rotate_left::<LEFT, RIGHT>(ab)
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn _vbcaxq_u64(a: Vec256, b: Vec256, c: Vec256) -> Vec256 {
     mm256_xor_si256(a, mm256_andnot_si256(c, b))
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn _veorq_n_u64(a: Vec256, c: u64) -> Vec256 {
     // Casting here is required, doesn't change the value.
@@ -45,13 +45,13 @@ unsafe fn _veorq_n_u64(a: Vec256, c: u64) -> Vec256 {
     mm256_xor_si256(a, c)
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn xor(a: Vec256, b: Vec256) -> Vec256 {
     mm256_xor_si256(a, b)
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn load_block<const RATE: usize>(s: &mut [[Vec256; 5]; 5], blocks: [&[u8]; 4]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0 && (RATE % 32 == 8 || RATE % 32 == 16));
@@ -120,7 +120,7 @@ pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[Vec256; 5]; 5], block
     };
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn store_block<const RATE: usize>(s: &[[Vec256; 5]; 5], out: [&mut [u8]; 4]) {
     for i in 0..RATE / 32 {
@@ -186,7 +186,7 @@ pub(crate) fn store_block_full<const RATE: usize>(s: &[[Vec256; 5]; 5]) -> [[u8;
     [out0, out1, out2, out3]
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn slice_4(a: [&[u8]; 4], start: usize, len: usize) -> [&[u8]; 4] {
     [
@@ -197,7 +197,7 @@ unsafe fn slice_4(a: [&[u8]; 4], start: usize, len: usize) -> [&[u8]; 4] {
     ]
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn split_at_mut_4(out: [&mut [u8]; 4], mid: usize) -> ([&mut [u8]; 4], [&mut [u8]; 4]) {
     let [out0, out1, out2, out3] = out;

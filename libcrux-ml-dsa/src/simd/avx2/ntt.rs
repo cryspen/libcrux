@@ -100,7 +100,7 @@ fn butterfly_8(a: Vec256, b: Vec256, zeta0: i32, zeta1: i32) -> (Vec256, Vec256)
     (a_out, b_out)
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 pub(super) unsafe fn invert_ntt_at_layer_0(
     simd_unit: Vec256,
@@ -122,7 +122,7 @@ pub(super) unsafe fn invert_ntt_at_layer_0(
     mm256_blend_epi32::<0b1_0_1_0_1_0_1_0>(sums, products)
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     macro_rules! round {
@@ -162,7 +162,7 @@ unsafe fn ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     round!(30, -554416, 3919660, -48306, -1362209, 3937738, 1400424, -846154, 1976782);
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 pub(super) unsafe fn invert_ntt_at_layer_1(simd_unit: Vec256, zeta0: i32, zeta1: i32) -> Vec256 {
     let zetas = mm256_set_epi32(zeta1, zeta1, 0, 0, zeta0, zeta0, 0, 0);
@@ -178,7 +178,7 @@ pub(super) unsafe fn invert_ntt_at_layer_1(simd_unit: Vec256, zeta0: i32, zeta1:
     mm256_blend_epi32::<0b1_1_0_0_1_1_0_0>(sums, products)
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     macro_rules! round {
@@ -207,7 +207,7 @@ unsafe fn ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     round!(30, -3019102, -3881060, -3628969, 3839961);
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 pub(super) unsafe fn invert_ntt_at_layer_2(simd_unit: Vec256, zeta: i32) -> Vec256 {
     let zetas = mm256_set_epi32(zeta, zeta, zeta, zeta, 0, 0, 0, 0);
@@ -223,7 +223,7 @@ pub(super) unsafe fn invert_ntt_at_layer_2(simd_unit: Vec256, zeta: i32) -> Vec2
     mm256_blend_epi32::<0b1_1_1_1_0_0_0_0>(sums, products)
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn ntt_at_layer_2(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     macro_rules! round {
@@ -256,7 +256,7 @@ unsafe fn ntt_at_layer_2(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
 ///
 /// This does 32 Montgomery multiplications (192 multiplications).
 /// This is the same as in pqclean. The only difference is locality of registers.
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     let field_modulus = mm256_set1_epi32(crate::simd::traits::FIELD_MODULUS);
@@ -317,7 +317,7 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
 ///
 /// Each layer does 16 Montgomery multiplications -> 3*16 = 48 total
 /// pqclean does 4 * 4 on each layer -> 48 total | plus 4 * 4 shuffles every time (48)
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn ntt_at_layer_5_to_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     macro_rules! round {
@@ -398,7 +398,7 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     ()
 }
 
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 pub(crate) unsafe fn ntt(
     mut re: [Vec256; SIMD_UNITS_IN_RING_ELEMENT],

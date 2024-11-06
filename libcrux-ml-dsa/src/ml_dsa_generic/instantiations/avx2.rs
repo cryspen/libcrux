@@ -9,7 +9,7 @@ mod avx2_feature {
     use super::*;
 
     /// Generate key pair.
-    #[target_feature(enable = "avx2")]
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
     pub(super) unsafe fn generate_key_pair<
         const ROWS_IN_A: usize,
@@ -36,7 +36,7 @@ mod avx2_feature {
     }
 
     /// Sign.
-    #[target_feature(enable = "avx2")]
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
     pub(super) unsafe fn sign<
         const ROWS_IN_A: usize,
@@ -83,7 +83,7 @@ mod avx2_feature {
 
     /// Sign (internal API)
     #[cfg(feature = "acvp")]
-    #[target_feature(enable = "avx2")]
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
     pub(super) unsafe fn sign_internal<
         const ROWS_IN_A: usize,
@@ -128,7 +128,7 @@ mod avx2_feature {
     }
 
     /// Sign (pre-hashed).
-    #[target_feature(enable = "avx2")]
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
     pub(super) unsafe fn sign_pre_hashed_shake128<
         const ROWS_IN_A: usize,
@@ -176,7 +176,7 @@ mod avx2_feature {
     }
 
     /// Verify.
-    #[target_feature(enable = "avx2")]
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
     pub(super) unsafe fn verify<
         const ROWS_IN_A: usize,
@@ -220,7 +220,7 @@ mod avx2_feature {
 
     /// Verify (internal API).
     #[cfg(feature = "acvp")]
-    #[target_feature(enable = "avx2")]
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
     pub(super) unsafe fn verify_internal<
         const ROWS_IN_A: usize,
@@ -262,7 +262,7 @@ mod avx2_feature {
     }
 
     /// Verify (pre-hashed with SHAKE-128).
-    #[target_feature(enable = "avx2")]
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
     pub(super) unsafe fn verify_pre_hashed_shake128<
         const ROWS_IN_A: usize,

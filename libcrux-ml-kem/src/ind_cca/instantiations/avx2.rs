@@ -5,7 +5,7 @@ use crate::{
 
 #[allow(unsafe_code)]
 /// Portable generate key pair.
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 unsafe fn generate_keypair_avx2<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -58,7 +58,7 @@ pub(crate) fn generate_keypair<
 
 #[allow(unsafe_code)]
 #[cfg(feature = "kyber")]
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 unsafe fn kyber_generate_keypair_avx2<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -111,7 +111,7 @@ pub(crate) fn kyber_generate_keypair<
 }
 
 #[allow(unsafe_code)]
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 unsafe fn validate_public_key_avx2<
     const K: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -141,7 +141,7 @@ pub(crate) fn validate_public_key<
 }
 
 #[allow(unsafe_code)]
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 unsafe fn validate_private_key_avx2<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -174,7 +174,7 @@ pub(crate) fn validate_private_key<
 
 #[allow(unsafe_code)]
 #[cfg(feature = "kyber")]
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 unsafe fn kyber_encapsulate_avx2<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -253,7 +253,7 @@ pub(crate) fn kyber_encapsulate<
 }
 
 #[allow(unsafe_code)]
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 unsafe fn encapsulate_avx2<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -332,7 +332,7 @@ pub(crate) fn encapsulate<
 
 #[allow(unsafe_code)]
 #[cfg(feature = "kyber")]
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 unsafe fn kyber_decapsulate_avx2<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -423,7 +423,7 @@ pub fn kyber_decapsulate<
 }
 
 #[allow(unsafe_code)]
-#[target_feature(enable = "avx2")]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 unsafe fn decapsulate_avx2<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -522,7 +522,7 @@ pub(crate) mod unpacked {
         crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, crate::vector::SIMD256Vector>;
 
     /// Get the unpacked public key.
-    #[target_feature(enable = "avx2")]
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
     unsafe fn unpack_public_key_avx2<
         const K: usize,
@@ -565,7 +565,7 @@ pub(crate) mod unpacked {
     }
 
     #[allow(unsafe_code)]
-    #[target_feature(enable = "avx2")]
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     unsafe fn generate_keypair_avx2<
         const K: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
@@ -620,7 +620,7 @@ pub(crate) mod unpacked {
     }
 
     #[allow(unsafe_code)]
-    #[target_feature(enable = "avx2")]
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     unsafe fn encapsulate_avx2<
         const K: usize,
         const CIPHERTEXT_SIZE: usize,
@@ -697,7 +697,7 @@ pub(crate) mod unpacked {
         }
     }
 
-    #[target_feature(enable = "avx2")]
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
     unsafe fn decapsulate_avx2<
         const K: usize,
