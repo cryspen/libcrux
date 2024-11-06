@@ -268,8 +268,10 @@ macro_rules! impl_hash {
 
         impl $name {
             /// Return the digest for the given input byte slice, in immediate mode.
+            /// Will panic if `payload` is longer than `u32::MAX`.
             pub fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) {
-                $hash(digest, payload, payload.len() as u32)
+                let payload_len = payload.len().try_into().unwrap();
+                $hash(digest, payload, payload_len)
             }
 
             /// Initialize a new digest state for streaming use.
@@ -278,8 +280,10 @@ macro_rules! impl_hash {
             }
 
             /// Add the `payload` to the digest.
+            /// Will panic if `payload` is longer than `u32::MAX`.
             pub fn update(&mut self, payload: &[u8]) {
-                $update(self.state.as_mut(), payload, payload.len() as u32);
+                let payload_len = payload.len().try_into().unwrap();
+                $update(self.state.as_mut(), payload, payload_len);
             }
 
             /// Get the digest.
