@@ -8,7 +8,7 @@
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
  * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
  * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 18a089ceff3ef1a9f6876cd99a9f4f42c0fe05d9
+ * Libcrux: 7ed909f8033142d720fcbfe309243b9fa52d181d
  */
 
 #ifndef __libcrux_mlkem768_portable_H
@@ -6965,38 +6965,22 @@ static inline tuple_c2 libcrux_ml_kem_mlkem768_portable_unpacked_encapsulate(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.ind_cca.unpacked.generate_keypair.closure.closure with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
-libcrux_ml_kem_variant_MlKem with const generics
+libcrux_ml_kem.ind_cca.unpacked.transpose_a.closure.closure with types
+libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 - K= 3
-- CPA_PRIVATE_KEY_SIZE= 1152
-- PRIVATE_KEY_SIZE= 2400
-- PUBLIC_KEY_SIZE= 1184
-- BYTES_PER_RING_ELEMENT= 1152
-- ETA1= 2
-- ETA1_RANDOMNESS_SIZE= 128
 */
 static inline libcrux_ml_kem_polynomial_PolynomialRingElement_1d
-libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_closure_f8(size_t _j) {
+libcrux_ml_kem_ind_cca_unpacked_transpose_a_closure_closure_1b(size_t _j) {
   return libcrux_ml_kem_polynomial_ZERO_ef_8c();
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.unpacked.generate_keypair.closure with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector,
-libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
-libcrux_ml_kem_variant_MlKem with const generics
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.transpose_a.closure
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
 - K= 3
-- CPA_PRIVATE_KEY_SIZE= 1152
-- PRIVATE_KEY_SIZE= 2400
-- PUBLIC_KEY_SIZE= 1184
-- BYTES_PER_RING_ELEMENT= 1152
-- ETA1= 2
-- ETA1_RANDOMNESS_SIZE= 128
 */
-static inline void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_f8(
+static inline void libcrux_ml_kem_ind_cca_unpacked_transpose_a_closure_1b(
     size_t _i, libcrux_ml_kem_polynomial_PolynomialRingElement_1d ret[3U]) {
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
     ret[i] = libcrux_ml_kem_polynomial_ZERO_ef_8c();
@@ -7029,8 +7013,36 @@ libcrux_ml_kem_polynomial_clone_8d_8c(
 }
 
 /**
- Generate Unpacked Keys
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.transpose_a
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+- K= 3
 */
+static inline void libcrux_ml_kem_ind_cca_unpacked_transpose_a_1b(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d ind_cpa_a[3U][3U],
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d ret[3U][3U]) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d A[3U][3U];
+  for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
+    libcrux_ml_kem_ind_cca_unpacked_transpose_a_closure_1b(i, A[i]);
+  }
+  for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
+    size_t i0 = i;
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d _a_i[3U][3U];
+    memcpy(_a_i, A,
+           (size_t)3U *
+               sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d[3U]));
+    for (size_t i1 = (size_t)0U; i1 < (size_t)3U; i1++) {
+      size_t j = i1;
+      libcrux_ml_kem_polynomial_PolynomialRingElement_1d uu____0 =
+          libcrux_ml_kem_polynomial_clone_8d_8c(&ind_cpa_a[j][i0]);
+      A[i0][j] = uu____0;
+    }
+  }
+  memcpy(ret, A,
+         (size_t)3U *
+             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d[3U]));
+}
+
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -7057,20 +7069,12 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_f8(
   libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_1c(
       ind_cpa_keypair_randomness, &out->private_key.ind_cpa_private_key,
       &out->public_key.ind_cpa_public_key);
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d uu____0[3U][3U];
+  memcpy(uu____0, out->public_key.ind_cpa_public_key.A,
+         (size_t)3U *
+             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d[3U]));
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d A[3U][3U];
-  for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    libcrux_ml_kem_ind_cca_unpacked_generate_keypair_closure_f8(i, A[i]);
-  }
-  for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++) {
-    size_t i1 = i0;
-    for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-      size_t j = i;
-      libcrux_ml_kem_polynomial_PolynomialRingElement_1d uu____0 =
-          libcrux_ml_kem_polynomial_clone_8d_8c(
-              &out->public_key.ind_cpa_public_key.A[j][i1]);
-      A[i1][j] = uu____0;
-    }
-  }
+  libcrux_ml_kem_ind_cca_unpacked_transpose_a_1b(uu____0, A);
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d uu____1[3U][3U];
   memcpy(uu____1, A,
          (size_t)3U *
@@ -7140,16 +7144,16 @@ static inline void libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(
 /**
 This function found in impl {(core::default::Default for
 libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector,
-K>[TraitClause@0, TraitClause@1])#1}
+K>[TraitClause@0, TraitClause@1])}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_1c
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_09
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 */
 static KRML_MUSTINLINE libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
-libcrux_ml_kem_ind_cca_unpacked_default_1c_1b(void) {
+libcrux_ml_kem_ind_cca_unpacked_default_09_1b(void) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 lit;
   lit.ind_cpa_public_key = libcrux_ml_kem_ind_cpa_unpacked_default_8d_1b();
   lit.public_key_hash[0U] = 0U;
@@ -7190,17 +7194,17 @@ libcrux_ml_kem_ind_cca_unpacked_default_1c_1b(void) {
 /**
 This function found in impl {(core::default::Default for
 libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector,
-K>[TraitClause@0, TraitClause@1])#3}
+K>[TraitClause@0, TraitClause@1])#1}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_07
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_53
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
-    libcrux_ml_kem_ind_cca_unpacked_default_07_1b(void) {
+    libcrux_ml_kem_ind_cca_unpacked_default_53_1b(void) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0 uu____0;
   uu____0.ind_cpa_private_key = libcrux_ml_kem_ind_cpa_unpacked_default_1a_1b();
   uu____0.implicit_rejection_value[0U] = 0U;
@@ -7238,7 +7242,7 @@ static KRML_MUSTINLINE
   return (CLITERAL(
       libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked){
       .private_key = uu____0,
-      .public_key = libcrux_ml_kem_ind_cca_unpacked_default_1c_1b()});
+      .public_key = libcrux_ml_kem_ind_cca_unpacked_default_09_1b()});
 }
 
 /**
@@ -7246,7 +7250,7 @@ static KRML_MUSTINLINE
 */
 static inline libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_mlkem768_portable_unpacked_init_key_pair(void) {
-  return libcrux_ml_kem_ind_cca_unpacked_default_07_1b();
+  return libcrux_ml_kem_ind_cca_unpacked_default_53_1b();
 }
 
 /**
@@ -7254,27 +7258,24 @@ libcrux_ml_kem_mlkem768_portable_unpacked_init_key_pair(void) {
 */
 static inline libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
 libcrux_ml_kem_mlkem768_portable_unpacked_init_public_key(void) {
-  return libcrux_ml_kem_ind_cca_unpacked_default_1c_1b();
+  return libcrux_ml_kem_ind_cca_unpacked_default_09_1b();
 }
 
 /**
- Get the serialized public key.
-*/
-/**
 This function found in impl
 {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector,
-K>[TraitClause@0, TraitClause@1]}
+K>[TraitClause@0, TraitClause@1]#3}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_mut_dd with types
+libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_mut_30 with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 - K= 3
 - RANKED_BYTES_PER_RING_ELEMENT= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
 static KRML_MUSTINLINE void
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_dd_6c(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_30_6c(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *self,
     libcrux_ml_kem_types_MlKemPublicKey_30 *serialized) {
   libcrux_ml_kem_ind_cpa_serialize_public_key_mut_6c(
@@ -7285,26 +7286,23 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_dd_6c(
 }
 
 /**
- Get the serialized public key.
-*/
-/**
 This function found in impl
 {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector,
-K>[TraitClause@0, TraitClause@1]#2}
+K>[TraitClause@0, TraitClause@1]#4}
 */
 /**
 A monomorphic instance of
-libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_mut_de with types
+libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_mut_fc with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 - K= 3
 - RANKED_BYTES_PER_RING_ELEMENT= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
 static KRML_MUSTINLINE void
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_de_6c(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_fc_6c(
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self,
     libcrux_ml_kem_types_MlKemPublicKey_30 *serialized) {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_dd_6c(
+  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_30_6c(
       &self->public_key, serialized);
 }
 
@@ -7315,7 +7313,7 @@ static inline void
 libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_public_key(
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair,
     libcrux_ml_kem_types_MlKemPublicKey_30 *serialized) {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_de_6c(key_pair,
+  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_fc_6c(key_pair,
                                                                   serialized);
 }
 
@@ -7358,16 +7356,16 @@ libcrux_ml_kem_ind_cpa_unpacked_clone_ef_1b(
 /**
 This function found in impl {(core::clone::Clone for
 libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector,
-K>[TraitClause@0, TraitClause@2])#4}
+K>[TraitClause@0, TraitClause@2])#2}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.clone_28
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.clone_dd
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 */
 static inline libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
-libcrux_ml_kem_ind_cca_unpacked_clone_28_1b(
+libcrux_ml_kem_ind_cca_unpacked_clone_dd_1b(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *self) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 lit;
   lit.ind_cpa_public_key =
@@ -7380,21 +7378,18 @@ libcrux_ml_kem_ind_cca_unpacked_clone_28_1b(
 }
 
 /**
- Get the serialized public key.
-*/
-/**
 This function found in impl
 {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector,
-K>[TraitClause@0, TraitClause@1]#2}
+K>[TraitClause@0, TraitClause@1]#4}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.public_key_de
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.public_key_fc
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 */
 static KRML_MUSTINLINE libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *
-libcrux_ml_kem_ind_cca_unpacked_public_key_de_1b(
+libcrux_ml_kem_ind_cca_unpacked_public_key_fc_1b(
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self) {
   return &self->public_key;
 }
@@ -7406,8 +7401,8 @@ static inline void libcrux_ml_kem_mlkem768_portable_unpacked_public_key(
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair,
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *pk) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 uu____0 =
-      libcrux_ml_kem_ind_cca_unpacked_clone_28_1b(
-          libcrux_ml_kem_ind_cca_unpacked_public_key_de_1b(key_pair));
+      libcrux_ml_kem_ind_cca_unpacked_clone_dd_1b(
+          libcrux_ml_kem_ind_cca_unpacked_public_key_fc_1b(key_pair));
   pk[0U] = uu____0;
 }
 
@@ -7418,13 +7413,10 @@ static inline void
 libcrux_ml_kem_mlkem768_portable_unpacked_serialized_public_key(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
     libcrux_ml_kem_types_MlKemPublicKey_30 *serialized) {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_dd_6c(public_key,
+  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_30_6c(public_key,
                                                                   serialized);
 }
 
-/**
- Generate an unpacked key from a serialized key.
-*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.unpack_public_key
 with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
