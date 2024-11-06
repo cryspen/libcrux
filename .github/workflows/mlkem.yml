@@ -168,3 +168,35 @@ jobs:
         run: |
           cargo clean
           cargo hack test --each-feature $EXCLUDE_FEATURES --verbose $RUST_TARGET_FLAG
+
+  fuzz:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest # macos-14 m1
+          - ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: libcrux-ml-kem
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🛠️ Setup Rust Nightly
+        run: rustup toolchain install nightly
+
+      - name: Update dependencies
+        run: cargo update
+
+      - run: 🏃🏻‍♀️ Decaps
+        run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run decaps -- -runs=100000
+
+      - run: 🏃🏻‍♀️ Encaps
+        run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run encaps -- -runs=100000
+
+      - run: 🏃🏻‍♀️ KeyGen
+        run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run keygen -- -runs=1000000
