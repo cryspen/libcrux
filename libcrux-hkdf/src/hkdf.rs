@@ -15,7 +15,8 @@ pub enum Algorithm {
 }
 
 impl Algorithm {
-    pub const fn tag_len(self) -> usize {
+    /// Returns the length of the underlying hash function.
+    pub const fn hash_len(self) -> usize {
         match self {
             Algorithm::Sha256 => 32,
             Algorithm::Sha384 => 48,
