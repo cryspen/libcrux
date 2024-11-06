@@ -29,6 +29,16 @@ let invert_ntt_at_layer_7___STEP: usize = sz 128
 
 let invert_ntt_at_layer_7___STEP_BY: usize = sz 16
 
+val invert_ntt_at_layer_0___round
+      (#v_SIMDUnit: Type0)
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      (index: usize)
+      (zeta_0_ zeta_1_ zeta_2_ zeta_3_: i32)
+    : Prims.Pure (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 val invert_ntt_at_layer_0_
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
@@ -37,10 +47,30 @@ val invert_ntt_at_layer_0_
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+val invert_ntt_at_layer_1___round
+      (#v_SIMDUnit: Type0)
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      (index: usize)
+      (zeta_0_ zeta_1_: i32)
+    : Prims.Pure (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 val invert_ntt_at_layer_1_
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+    : Prims.Pure (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val invert_ntt_at_layer_2___round
+      (#v_SIMDUnit: Type0)
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      (index: usize)
+      (zeta: i32)
     : Prims.Pure (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       Prims.l_True
       (fun _ -> Prims.l_True)

@@ -51,6 +51,14 @@ val simd_unit_ntt_at_layer_0_
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+val ntt_at_layer_0___round
+      (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
+      (index: usize)
+      (zeta_0_ zeta_1_ zeta_2_ zeta_3_: i32)
+    : Prims.Pure (t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 val ntt_at_layer_0_
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
     : Prims.Pure (t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
@@ -64,6 +72,14 @@ val simd_unit_ntt_at_layer_1_
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+val ntt_at_layer_1___round
+      (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
+      (index: usize)
+      (zeta_0_ zeta_1_: i32)
+    : Prims.Pure (t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 val ntt_at_layer_1_
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
     : Prims.Pure (t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
@@ -74,6 +90,14 @@ val simd_unit_ntt_at_layer_2_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
       (zeta: i32)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val ntt_at_layer_2___round
+      (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
+      (index: usize)
+      (zeta: i32)
+    : Prims.Pure (t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
 

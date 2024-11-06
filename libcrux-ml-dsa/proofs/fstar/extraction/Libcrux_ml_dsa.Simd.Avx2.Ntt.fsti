@@ -11,6 +11,14 @@ let ntt_at_layer_5_to_3___STEP_1: usize = sz 1 <<! 4l
 
 let ntt_at_layer_5_to_3___STEP_2: usize = sz 1 <<! 3l
 
+val ntt_at_layer_7_and_6___mul
+      (re: t_Array u8 (sz 32))
+      (index: usize)
+      (zeta: u8)
+      (step_by: usize)
+      (field_modulus inverse_of_modulus_mod_montgomery_r: u8)
+    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+
 let ntt_at_layer_5_to_3___STEP_BY: usize =
   ntt_at_layer_5_to_3___STEP /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
 
@@ -44,10 +52,25 @@ val invert_ntt_at_layer_1_ (simd_unit: u8) (zeta0 zeta1: i32)
 val invert_ntt_at_layer_2_ (simd_unit: u8) (zeta: i32)
     : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
+val ntt_at_layer_0___round
+      (re: t_Array u8 (sz 32))
+      (index: usize)
+      (zeta_0_ zeta_1_ zeta_2_ zeta_3_ zeta_4_ zeta_5_ zeta_6_ zeta_7_: i32)
+    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+
 val ntt_at_layer_0_ (re: t_Array u8 (sz 32))
     : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
+val ntt_at_layer_1___round
+      (re: t_Array u8 (sz 32))
+      (index: usize)
+      (zeta_0_ zeta_1_ zeta_2_ zeta_3_: i32)
+    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+
 val ntt_at_layer_1_ (re: t_Array u8 (sz 32))
+    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+
+val ntt_at_layer_2___round (re: t_Array u8 (sz 32)) (index: usize) (zeta_0_ zeta_1_: i32)
     : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
 val ntt_at_layer_2_ (re: t_Array u8 (sz 32))
@@ -57,6 +80,13 @@ val ntt_at_layer_2_ (re: t_Array u8 (sz 32))
 /// This does 32 Montgomery multiplications (192 multiplications).
 /// This is the same as in pqclean. The only difference is locality of registers.
 val ntt_at_layer_7_and_6_ (re: t_Array u8 (sz 32))
+    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+
+val ntt_at_layer_5_to_3___round
+      (v_STEP v_STEP_BY: usize)
+      (re: t_Array u8 (sz 32))
+      (index: usize)
+      (zeta: i32)
     : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Layer 5, 4, 3
