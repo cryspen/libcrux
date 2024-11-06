@@ -300,6 +300,12 @@ macro_rules! impl_hash {
             }
         }
 
+        impl Default for $name {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
+
         impl Clone for $name {
             fn clone(&self) -> Self {
                 Self {
