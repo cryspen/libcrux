@@ -20,6 +20,6 @@ hacl = ["dep:libcrux-hmac", "dep:libcrux-hacl-rs", "dep:krml"]
 [dependencies]
 libcrux-hacl-rs = { path = "../libcrux-hacl-rs/", optional = true }
 libcrux-hmac = { path = "../libcrux-hmac", optional = true, features = [
-  "hacl",
+    "hacl",
 ] }
 krml = { package = "libcrux-hacl-rs-krml", path = "../libcrux-hacl-rs-krml", optional = true }
