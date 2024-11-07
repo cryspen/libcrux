@@ -95,7 +95,7 @@ macro_rules! impl_hkdf {
             ///
             /// Note that this function panics if `salt` or `ikm` is longer than  (2**32 - 1) bytes.
             pub fn extract(prk: &mut [u8; $hash_len], salt: &[u8], ikm: &[u8]) {
-                libcrux_hacl_rs::hkdf::$extract(
+                crate::hacl::$extract(
                     prk,
                     salt,
                     checked_u32(salt.len()).unwrap(),
@@ -121,7 +121,7 @@ macro_rules! impl_hkdf {
                     return Err(Error::OkmTooLarge);
                 }
 
-                libcrux_hacl_rs::hkdf::$expand(
+                crate::hacl::$expand(
                     okm,
                     prk,
                     checked_u32(prk.len())?,
@@ -168,7 +168,7 @@ macro_rules! impl_hkdf {
                     }
 
                     let mut okm = vec![0u8; okm_len];
-                    libcrux_hacl_rs::hkdf::$expand(
+                    crate::hacl::$expand(
                         &mut okm,
                         prk,
                         checked_u32(prk.len())?,

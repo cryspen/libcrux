@@ -945,6 +945,7 @@ dependencies = [
  "hex",
  "libcrux",
  "libcrux-ecdh",
+ "libcrux-ed25519",
  "libcrux-hacl",
  "libcrux-hacl-rs",
  "libcrux-hkdf",
@@ -952,6 +953,8 @@ dependencies = [
  "libcrux-kem",
  "libcrux-ml-kem",
  "libcrux-platform",
+ "libcrux-sha2",
+ "libcrux-traits",
  "log",
  "pretty_env_logger",
  "quickcheck",
@@ -966,16 +969,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "libcrux-curve25519"
+version = "0.0.2-beta.2"
+dependencies = [
+ "libcrux-hacl-rs",
+ "libcrux-hacl-rs-krml",
+ "libcrux-sha2",
+]
+
+[[package]]
 name = "libcrux-ecdh"
 version = "0.0.2-beta.2"
 dependencies = [
  "hex",
+ "libcrux-curve25519",
  "libcrux-hacl",
  "pretty_env_logger",
  "rand",
  "rand_core",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "libcrux-ed25519"
+version = "0.0.2-beta.2"
+dependencies = [
+ "libcrux-hacl-rs",
+ "libcrux-hacl-rs-krml",
+ "libcrux-sha2",
 ]
 
 [[package]]
@@ -1014,15 +1036,17 @@ name = "libcrux-hkdf"
 version = "0.0.2-beta.2"
 dependencies = [
  "libcrux-hacl-rs",
+ "libcrux-hacl-rs-krml",
+ "libcrux-hmac",
 ]
 
 [[package]]
 name = "libcrux-hmac"
 version = "0.0.2-beta.2"
 dependencies = [
- "libcrux-hacl",
  "libcrux-hacl-rs",
- "libcrux-hkdf",
+ "libcrux-hacl-rs-krml",
+ "libcrux-sha2",
 ]
 
 [[package]]
@@ -1111,6 +1135,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "libcrux-sha1"
+version = "0.0.2-beta.2"
+dependencies = [
+ "libcrux-hacl-rs",
+ "libcrux-hacl-rs-krml",
+ "libcrux-traits",
+]
+
+[[package]]
+name = "libcrux-sha2"
+version = "0.0.2-beta.2"
+dependencies = [
+ "libcrux-hacl-rs",
+ "libcrux-hacl-rs-krml",
+ "libcrux-traits",
+]
+
+[[package]]
 name = "libcrux-sha3"
 version = "0.0.2-beta.2"
 dependencies = [
@@ -1123,6 +1165,10 @@ dependencies = [
  "pretty_env_logger",
  "rand",
 ]
+
+[[package]]
+name = "libcrux-traits"
+version = "0.0.2-beta.2"
 
 [[package]]
 name = "libfuzzer-sys"

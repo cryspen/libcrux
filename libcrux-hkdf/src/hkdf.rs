@@ -2,9 +2,13 @@
 //!
 //! This crate implements HKDF on SHA 1 and SHA 2 (except for SHA 224).
 
-pub(crate) mod hacl_hkdf;
+#[cfg(feature = "hacl")]
+pub mod hacl;
 
-use hacl_hkdf::{HkdfMode, HkdfSha2_256, HkdfSha2_384, HkdfSha2_512};
+#[cfg(feature = "hacl")]
+mod impl_hacl;
+
+use impl_hacl::{HkdfMode, HkdfSha2_256, HkdfSha2_384, HkdfSha2_512};
 
 /// The HKDF algorithm defining the used hash function.
 #[derive(Copy, Clone, Debug, PartialEq)]

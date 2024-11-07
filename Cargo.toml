@@ -19,6 +19,11 @@ members = [
     "libcrux-psq",
     "libcrux-hacl-rs-krml",
     "cavp",
+    "libcrux-sha1",
+    "libcrux-traits",
+    "libcrux-sha2",
+    "libcrux-ed25519",
+    "libcrux-curve25519",
 ]
 
 [workspace.package]
@@ -64,11 +69,14 @@ bench = false                               # so libtest doesn't eat the argumen
 libcrux-platform = { version = "=0.0.2-beta.2", path = "sys/platform" }
 
 [dependencies]
+libcrux-traits = { path = "libcrux-traits" }
 libcrux-hacl-rs = { path = "libcrux-hacl-rs" }
 libcrux-hacl = { version = "=0.0.2-beta.2", path = "sys/hacl" }
 libcrux-platform = { version = "=0.0.2-beta.2", path = "sys/platform" }
 libcrux-hkdf = { version = "=0.0.2-beta.2", path = "libcrux-hkdf" }
 libcrux-hmac = { version = "=0.0.2-beta.2", path = "libcrux-hmac" }
+libcrux-sha2 = { path = "libcrux-sha2" }
+libcrux-ed25519 = { path = "libcrux-ed25519" }
 libcrux-ecdh = { version = "=0.0.2-beta.2", path = "libcrux-ecdh" }
 libcrux-ml-kem = { version = "=0.0.2-beta.2", path = "libcrux-ml-kem" }
 libcrux-kem = { version = "=0.0.2-beta.2", path = "libcrux-kem" }

@@ -2,7 +2,19 @@
 //!
 //! This crate implements HMAC on SHA 1 and SHA 2 (except for SHA 224).
 
-use libcrux_hkdf as hkdf;
+//use libcrux_hkdf as hkdf;
+
+#[cfg(feature = "hacl")]
+pub mod hacl {
+    pub mod hash_sha1;
+    pub mod hmac;
+}
+
+#[cfg(feature = "hacl")]
+mod impl_hacl;
+
+#[cfg(feature = "portable_hacl")]
+pub use impl_hacl::*;
 
 /// The HMAC algorithm defining the used hash function.
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -15,6 +27,7 @@ pub enum Algorithm {
     Sha512,
 }
 
+/*
 impl From<hkdf::Algorithm> for Algorithm {
     fn from(value: hkdf::Algorithm) -> Self {
         match value {
@@ -24,6 +37,7 @@ impl From<hkdf::Algorithm> for Algorithm {
         }
     }
 }
+*/
 
 /// Get the tag size for a given algorithm.
 pub const fn tag_size(alg: Algorithm) -> usize {
@@ -47,9 +61,9 @@ pub fn hmac(alg: Algorithm, key: &[u8], data: &[u8], tag_length: Option<usize>) 
     };
     let mut dst: Vec<_> = match alg {
         Algorithm::Sha1 => wrap_bufalloc(|buf| hmac_sha1(buf, key, data)),
-        Algorithm::Sha256 => wrap_bufalloc(|buf| hmac_sha256(buf, key, data)),
-        Algorithm::Sha384 => wrap_bufalloc(|buf| hmac_sha384(buf, key, data)),
-        Algorithm::Sha512 => wrap_bufalloc(|buf| hmac_sha512(buf, key, data)),
+        Algorithm::Sha256 => wrap_bufalloc(|buf| hmac_sha2_256(buf, key, data)),
+        Algorithm::Sha384 => wrap_bufalloc(|buf| hmac_sha2_384(buf, key, data)),
+        Algorithm::Sha512 => wrap_bufalloc(|buf| hmac_sha2_512(buf, key, data)),
     };
     dst.truncate(tag_length);
     dst
@@ -60,25 +74,3 @@ fn wrap_bufalloc<const N: usize, F: Fn(&mut [u8; N])>(f: F) -> Vec<u8> {
     f(&mut buf);
     buf.to_vec()
 }
-
-macro_rules! impl_hmac {
-    ($name:ident,$fun:path,$tag_len:literal) => {
-        /// Compute HMAC.
-        ///
-        /// Note that this function panics if `key` or `data` is larger than 2**32 bytes.
-        pub fn $name(dst: &mut [u8; $tag_len], key: &[u8], data: &[u8]) {
-            $fun(
-                dst,
-                key,
-                key.len().try_into().unwrap(),
-                data,
-                data.len().try_into().unwrap(),
-            )
-        }
-    };
-}
-
-impl_hmac!(hmac_sha1, libcrux_hacl_rs::hmac::compute_sha1, 20);
-impl_hmac!(hmac_sha256, libcrux_hacl_rs::hmac::compute_sha2_256, 32);
-impl_hmac!(hmac_sha384, libcrux_hacl_rs::hmac::compute_sha2_384, 48);
-impl_hmac!(hmac_sha512, libcrux_hacl_rs::hmac::compute_sha2_512, 64);

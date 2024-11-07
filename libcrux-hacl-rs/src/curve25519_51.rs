@@ -156,7 +156,7 @@ fn montgomery_ladder(out: &mut [u64], key: &[u8], init: &[u64]) {
     (out[0usize..10usize]).copy_from_slice(&p010.1[0usize..10usize])
 }
 
-pub(crate) fn fsquare_times(o: &mut [u64], inp: &[u64], tmp: &[fstar::uint128::uint128], n: u32) {
+pub fn fsquare_times(o: &mut [u64], inp: &[u64], tmp: &[fstar::uint128::uint128], n: u32) {
     crate::bignum25519_51::fsqr(o, inp, tmp);
     for _i in 0u32..n.wrapping_sub(1u32) {
         let mut f1_copy: [u64; 5] = [0u64; 5usize];
@@ -165,7 +165,7 @@ pub(crate) fn fsquare_times(o: &mut [u64], inp: &[u64], tmp: &[fstar::uint128::u
     }
 }
 
-pub(crate) fn finv(o: &mut [u64], i: &[u64], tmp: &[fstar::uint128::uint128]) {
+pub fn finv(o: &mut [u64], i: &[u64], tmp: &[fstar::uint128::uint128]) {
     let mut t1: [u64; 20] = [0u64; 20usize];
     let a1: (&mut [u64], &mut [u64]) = t1.split_at_mut(0usize);
     let b1: (&mut [u64], &mut [u64]) = a1.1.split_at_mut(5usize);

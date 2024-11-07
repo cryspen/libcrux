@@ -227,140 +227,16 @@ fn blake2b(payload: &[u8], key: &[u8]) -> Vec<u8> {
     .into()
 }
 
-/// SHA2 224
-pub fn sha2_224(payload: &[u8]) -> Sha2_224Digest {
-    let mut digest = Sha2_224Digest::default();
-    Sha2_224::hash(&mut digest, payload);
-    digest
-}
+// import SHA2
+pub use libcrux_sha2::sha224 as sha2_224;
+pub use libcrux_sha2::sha256 as sha2_256;
+pub use libcrux_sha2::sha384 as sha2_384;
+pub use libcrux_sha2::sha512 as sha2_512;
 
-/// SHA2 256
-pub fn sha2_256(payload: &[u8]) -> Sha2_256Digest {
-    let mut digest = Sha2_256Digest::default();
-    Sha2_256::hash(&mut digest, payload);
-    digest
-}
-
-/// SHA2 384
-pub fn sha2_384(payload: &[u8]) -> Sha2_384Digest {
-    // NB: this doesn't have default and we can't implement it.
-    let mut digest = [0; 48];
-    Sha2_384::hash(&mut digest, payload);
-    digest
-}
-
-/// SHA2 512
-pub fn sha2_512(payload: &[u8]) -> Sha2_512Digest {
-    // NB: this doesn't have default and we can't implement it.
-    let mut digest = [0; 64];
-    Sha2_512::hash(&mut digest, payload);
-    digest
-}
-
-// Streaming API - This is the recommended one.
-// For implementations based on hacl_rs (over hacl-c)
-macro_rules! impl_hash {
-    ($name:ident, $digest_size:literal, $state:ty, $malloc:expr, $reset:expr, $update:expr, $finish:expr, $copy:expr, $hash:expr) => {
-        #[allow(non_camel_case_types)]
-        pub struct $name {
-            state: $state,
-        }
-
-        impl $name {
-            /// Return the digest for the given input byte slice, in immediate mode.
-            /// Will panic if `payload` is longer than `u32::MAX`.
-            pub fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) {
-                let payload_len = payload.len().try_into().unwrap();
-                $hash(digest, payload, payload_len)
-            }
-
-            /// Initialize a new digest state for streaming use.
-            pub fn new() -> $name {
-                $name { state: $malloc() }
-            }
-
-            /// Add the `payload` to the digest.
-            /// Will panic if `payload` is longer than `u32::MAX`.
-            pub fn update(&mut self, payload: &[u8]) {
-                let payload_len = payload.len().try_into().unwrap();
-                $update(self.state.as_mut(), payload, payload_len);
-            }
-
-            /// Get the digest.
-            ///
-            /// Note that the digest state can be continued to be used, to extend the
-            /// digest.
-            pub fn finish(&self, digest: &mut [u8; $digest_size]) {
-                $finish(self.state.as_ref(), digest);
-            }
-
-            /// Reset the digest state.
-            pub fn reset(&mut self) {
-                $reset(self.state.as_mut());
-            }
-        }
-
-        impl Default for $name {
-            fn default() -> Self {
-                Self::new()
-            }
-        }
-
-        impl Clone for $name {
-            fn clone(&self) -> Self {
-                Self {
-                    state: $copy(self.state.as_ref()),
-                }
-            }
-        }
-    };
-}
-
-impl_hash!(
-    Sha2_256,
-    32,
-    Box<[libcrux_hacl_rs::streaming_types::state_32]>,
-    libcrux_hacl_rs::hash_sha2::malloc_256,
-    libcrux_hacl_rs::hash_sha2::reset_256,
-    libcrux_hacl_rs::hash_sha2::update_256,
-    libcrux_hacl_rs::hash_sha2::digest_256,
-    libcrux_hacl_rs::hash_sha2::copy_256,
-    libcrux_hacl_rs::hash_sha2::hash_256
-);
-impl_hash!(
-    Sha2_224,
-    28,
-    Box<[libcrux_hacl_rs::streaming_types::state_32]>,
-    libcrux_hacl_rs::hash_sha2::malloc_224,
-    libcrux_hacl_rs::hash_sha2::reset_224,
-    libcrux_hacl_rs::hash_sha2::update_224,
-    libcrux_hacl_rs::hash_sha2::digest_224,
-    libcrux_hacl_rs::hash_sha2::copy_256,
-    libcrux_hacl_rs::hash_sha2::hash_224
-);
-
-impl_hash!(
-    Sha2_512,
-    64,
-    Box<[libcrux_hacl_rs::streaming_types::state_64]>,
-    libcrux_hacl_rs::hash_sha2::malloc_512,
-    libcrux_hacl_rs::hash_sha2::reset_512,
-    libcrux_hacl_rs::hash_sha2::update_512,
-    libcrux_hacl_rs::hash_sha2::digest_512,
-    libcrux_hacl_rs::hash_sha2::copy_512,
-    libcrux_hacl_rs::hash_sha2::hash_512
-);
-impl_hash!(
-    Sha2_384,
-    48,
-    Box<[libcrux_hacl_rs::streaming_types::state_64]>,
-    libcrux_hacl_rs::hash_sha2::malloc_384,
-    libcrux_hacl_rs::hash_sha2::reset_384,
-    libcrux_hacl_rs::hash_sha2::update_384,
-    libcrux_hacl_rs::hash_sha2::digest_384,
-    libcrux_hacl_rs::hash_sha2::copy_512,
-    libcrux_hacl_rs::hash_sha2::hash_384
-);
+pub use libcrux_sha2::Sha224 as Sha2_224;
+pub use libcrux_sha2::Sha256 as Sha2_256;
+pub use libcrux_sha2::Sha384 as Sha2_384;
+pub use libcrux_sha2::Sha512 as Sha2_512;
 
 // SHAKE messages from SHA 3
 

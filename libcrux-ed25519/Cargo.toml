@@ -1,5 +1,5 @@
 [package]
-name = "libcrux-hmac"
+name = "libcrux-ed25519"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -7,10 +7,6 @@ homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
 readme.workspace = true
-description = "Libcrux HMAC implementation"
-
-[lib]
-path = "src/hmac.rs"
 
 [features]
 default = ["portable_hacl"]

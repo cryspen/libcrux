@@ -1,3 +1,5 @@
+use libcrux_traits::Digest as _;
+
 // XXX: The tests in here are failing in wasm for some reason.
 
 // #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]

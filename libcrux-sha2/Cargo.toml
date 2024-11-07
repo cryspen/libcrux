@@ -1,0 +1,19 @@
+[package]
+name = "libcrux-sha2"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[features]
+default = ["portable_hacl"]
+portable_hacl = ["hacl"]
+hacl = ["dep:libcrux-hacl-rs"]
+
+[dependencies]
+libcrux-hacl-rs = { version = "0.1.0", path = "../libcrux-hacl-rs", optional = true }
+libcrux-traits = { path = "../libcrux-traits/" }
+krml = { package = "libcrux-hacl-rs-krml", path = "../libcrux-hacl-rs-krml" }

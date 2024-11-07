@@ -1,5 +1,3 @@
-use libcrux_hacl::{Hacl_Curve25519_51_ecdh, Hacl_Curve25519_51_secret_to_public};
-
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Error {
     InvalidInput,
@@ -14,13 +12,8 @@ pub fn ecdh(
     public_key: impl AsRef<[u8; 32]>,
 ) -> Result<[u8; 32], Error> {
     let mut shared = [0u8; 32];
-    let ok = unsafe {
-        Hacl_Curve25519_51_ecdh(
-            shared.as_mut_ptr(),
-            private_key.as_ref().as_ptr() as _,
-            public_key.as_ref().as_ptr() as _,
-        )
-    };
+    let ok = libcrux_curve25519::hacl::ecdh(&mut shared, private_key.as_ref(), public_key.as_ref());
+
     if !ok {
         Err(Error::InvalidInput)
     } else {
@@ -36,9 +29,7 @@ pub fn ecdh(
 #[inline(always)]
 pub fn secret_to_public(private_key: impl AsRef<[u8; 32]>) -> [u8; 32] {
     let mut public = [0u8; 32];
-    unsafe {
-        Hacl_Curve25519_51_secret_to_public(public.as_mut_ptr(), private_key.as_ref().as_ptr() as _)
-    };
+    libcrux_curve25519::hacl::secret_to_public(&mut public, private_key.as_ref());
     public
 }
 
