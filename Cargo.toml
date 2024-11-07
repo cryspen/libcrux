@@ -19,7 +19,6 @@ members = [
     "libcrux-psq",
     "libcrux-hacl-rs-krml",
     "cavp",
-    "libcrux-sha1",
     "libcrux-traits",
     "libcrux-sha2",
     "libcrux-ed25519",
