@@ -1135,15 +1135,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "libcrux-sha1"
-version = "0.0.2-beta.2"
-dependencies = [
- "libcrux-hacl-rs",
- "libcrux-hacl-rs-krml",
- "libcrux-traits",
-]
-
-[[package]]
 name = "libcrux-sha2"
 version = "0.0.2-beta.2"
 dependencies = [
