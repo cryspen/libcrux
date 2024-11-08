@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 7ed909f8033142d720fcbfe309243b9fa52d181d
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: a31e411ce57494f7a7e8c5962c9951a52a62c770
  */
 
 #ifndef __libcrux_sha3_avx2_H
@@ -2405,19 +2405,6 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_ef_3a(
 }
 
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-- RATE= 168
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_970(
-    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out[4U]) {
-  libcrux_sha3_simd_avx2_store_block_ef_3a(s->st, out);
-}
-
-/**
 A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_next_block
 with types core_core_arch_x86___m256i
 with const generics
@@ -2428,6 +2415,31 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_970(
     libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out[4U]) {
   libcrux_sha3_generic_keccak_keccakf1600_a6(s);
+  libcrux_sha3_simd_avx2_store_block_ef_3a(s->st, out);
+}
+
+/**
+ Squeeze another block
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE void
+libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
+    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
+    Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
+  Eurydice_slice buf[4U] = {out0, out1, out2, out3};
+  libcrux_sha3_generic_keccak_squeeze_next_block_970(s, buf);
+}
+
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.squeeze_first_block
+with types core_core_arch_x86___m256i
+with const generics
+- N= 4
+- RATE= 168
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_first_block_970(
+    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out[4U]) {
   libcrux_sha3_simd_avx2_store_block_ef_3a(s->st, out);
 }
 
@@ -2469,18 +2481,6 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
   Eurydice_slice buf[4U] = {out0, out1, out2, out3};
   libcrux_sha3_generic_keccak_squeeze_first_three_blocks_97(s, buf);
-}
-
-/**
- Squeeze another block
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void
-libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
-    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
-    Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
-  Eurydice_slice buf[4U] = {out0, out1, out2, out3};
-  libcrux_sha3_generic_keccak_squeeze_next_block_970(s, buf);
 }
 
 /**

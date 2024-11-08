@@ -17,6 +17,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
+#include "karamel/endianness.h"
 #include "karamel/target.h"
 
 // SLICES, ARRAYS, ETC.
@@ -29,8 +30,6 @@ extern "C" {
 #else
 #define CLITERAL(type) (type)
 #endif
-
-#define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
 
 // We represent a slice as a pair of an (untyped) pointer, along with the length
 // of the slice, i.e. the number of elements in the slice (this is NOT the
@@ -90,7 +89,7 @@ typedef struct {
 #define Eurydice_slice_copy(dst, src, t) \
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 #define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t) \
-  ((Eurydice_slice){.ptr = ptr_, .len = len_})
+  (CLITERAL(Eurydice_slice){.ptr = ptr_, .len = len_})
 
 #define core_array___core__clone__Clone_for__Array_T__N___20__clone( \
     len, src, dst, elem_type, _ret_t)                                \
@@ -132,18 +131,14 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
 // CORE STUFF (conversions, endianness, ...)
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
-  memcpy(buf, &v, sizeof(v));
+  store64_le(buf, v);
 }
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
-  uint64_t v;
-  memcpy(&v, buf, sizeof(v));
-  return v;
+  return load64_le(buf);
 }
 
 static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
-  uint32_t v;
-  memcpy(&v, buf, sizeof(v));
-  return v;
+  return load32_le(buf);
 }
 
 static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {

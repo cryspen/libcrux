@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 18a089ceff3ef1a9f6876cd99a9f4f42c0fe05d9
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: a31e411ce57494f7a7e8c5962c9951a52a62c770
  */
 
 #ifndef __internal_libcrux_mlkem_avx2_H
@@ -34,6 +34,13 @@ typedef struct libcrux_ml_kem_polynomial_PolynomialRingElement_f6_s {
 } libcrux_ml_kem_polynomial_PolynomialRingElement_f6;
 
 /**
+ Validate an ML-KEM public key.
+
+ This implements the Modulus check in 7.2 2.
+ Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
+ `public_key` type.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 with const generics
@@ -43,6 +50,13 @@ with const generics
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_ed(uint8_t *public_key);
 
+/**
+ Validate an ML-KEM private key.
+
+ This implements the Hash check in 7.3 3.
+ Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
+ and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
 with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
@@ -56,6 +70,14 @@ bool libcrux_ml_kem_ind_cca_validate_private_key_12(
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *_ciphertext);
 
 /**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
 libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
@@ -64,7 +86,7 @@ with const generics
 - CPA_PRIVATE_KEY_SIZE= 1152
 - PRIVATE_KEY_SIZE= 2400
 - PUBLIC_KEY_SIZE= 1184
-- RANKED_BYTES_PER_RING_ELEMENT= 1152
+- BYTES_PER_RING_ELEMENT= 1152
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
@@ -84,7 +106,7 @@ with const generics
 - C2_SIZE= 128
 - VECTOR_U_COMPRESSION_FACTOR= 10
 - VECTOR_V_COMPRESSION_FACTOR= 4
-- C1_BLOCK_SIZE= 320
+- VECTOR_U_BLOCK_LEN= 320
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 - ETA2= 2
@@ -121,6 +143,13 @@ void libcrux_ml_kem_ind_cca_decapsulate_a11(
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
 
 /**
+ Validate an ML-KEM public key.
+
+ This implements the Modulus check in 7.2 2.
+ Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
+ `public_key` type.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 with const generics
@@ -130,6 +159,13 @@ with const generics
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_1e(uint8_t *public_key);
 
+/**
+ Validate an ML-KEM private key.
+
+ This implements the Hash check in 7.3 3.
+ Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
+ and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
 with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
@@ -143,6 +179,14 @@ bool libcrux_ml_kem_ind_cca_validate_private_key_b9(
     libcrux_ml_kem_types_MlKemCiphertext_64 *_ciphertext);
 
 /**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
 libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
@@ -151,7 +195,7 @@ with const generics
 - CPA_PRIVATE_KEY_SIZE= 1536
 - PRIVATE_KEY_SIZE= 3168
 - PUBLIC_KEY_SIZE= 1568
-- RANKED_BYTES_PER_RING_ELEMENT= 1536
+- BYTES_PER_RING_ELEMENT= 1536
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
@@ -171,7 +215,7 @@ with const generics
 - C2_SIZE= 160
 - VECTOR_U_COMPRESSION_FACTOR= 11
 - VECTOR_V_COMPRESSION_FACTOR= 5
-- C1_BLOCK_SIZE= 352
+- VECTOR_U_BLOCK_LEN= 352
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 - ETA2= 2
@@ -208,6 +252,13 @@ void libcrux_ml_kem_ind_cca_decapsulate_a10(
     libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext, uint8_t ret[32U]);
 
 /**
+ Validate an ML-KEM public key.
+
+ This implements the Modulus check in 7.2 2.
+ Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
+ `public_key` type.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 with const generics
@@ -217,6 +268,13 @@ with const generics
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_ba(uint8_t *public_key);
 
+/**
+ Validate an ML-KEM private key.
+
+ This implements the Hash check in 7.3 3.
+ Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
+ and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
 with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
@@ -230,6 +288,14 @@ bool libcrux_ml_kem_ind_cca_validate_private_key_ad(
     libcrux_ml_kem_types_MlKemCiphertext_1a *_ciphertext);
 
 /**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
 libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
@@ -238,7 +304,7 @@ with const generics
 - CPA_PRIVATE_KEY_SIZE= 768
 - PRIVATE_KEY_SIZE= 1632
 - PUBLIC_KEY_SIZE= 800
-- RANKED_BYTES_PER_RING_ELEMENT= 768
+- BYTES_PER_RING_ELEMENT= 768
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
@@ -258,7 +324,7 @@ with const generics
 - C2_SIZE= 128
 - VECTOR_U_COMPRESSION_FACTOR= 10
 - VECTOR_V_COMPRESSION_FACTOR= 4
-- C1_BLOCK_SIZE= 320
+- VECTOR_U_BLOCK_LEN= 320
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 - ETA2= 2

@@ -4,17 +4,20 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 18a089ceff3ef1a9f6876cd99a9f4f42c0fe05d9
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: a31e411ce57494f7a7e8c5962c9951a52a62c770
  */
 
 #include "libcrux_mlkem512_portable.h"
 
 #include "internal/libcrux_mlkem_portable.h"
 
+/**
+ Portable decapsulate
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
@@ -65,7 +68,7 @@ libcrux_ml_kem.ind_cca.instantiations.portable.encapsulate with const generics
 - C2_SIZE= 128
 - VECTOR_U_COMPRESSION_FACTOR= 10
 - VECTOR_V_COMPRESSION_FACTOR= 4
-- C1_BLOCK_SIZE= 320
+- VECTOR_U_BLOCK_LEN= 320
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 - ETA2= 2
@@ -99,6 +102,9 @@ tuple_41 libcrux_ml_kem_mlkem512_portable_encapsulate(
 }
 
 /**
+ Portable generate key pair.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.generate_keypair with const
 generics
@@ -106,7 +112,7 @@ generics
 - CPA_PRIVATE_KEY_SIZE= 768
 - PRIVATE_KEY_SIZE= 1632
 - PUBLIC_KEY_SIZE= 800
-- RANKED_BYTES_PER_RING_ELEMENT= 768
+- BYTES_PER_RING_ELEMENT= 768
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
@@ -130,6 +136,9 @@ libcrux_ml_kem_mlkem512_portable_generate_key_pair(uint8_t randomness[64U]) {
 }
 
 /**
+ Portable private key validation
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.validate_private_key with const
 generics
@@ -137,7 +146,7 @@ generics
 - SECRET_KEY_SIZE= 1632
 - CIPHERTEXT_SIZE= 768
 */
-static KRML_MUSTINLINE bool validate_private_key_1c(
+static bool validate_private_key_1c(
     libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_1a *ciphertext) {
   return libcrux_ml_kem_ind_cca_validate_private_key_fb(private_key,
@@ -156,6 +165,9 @@ bool libcrux_ml_kem_mlkem512_portable_validate_private_key(
 }
 
 /**
+ Portable public key validation
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.validate_public_key with const
 generics
@@ -163,7 +175,7 @@ generics
 - RANKED_BYTES_PER_RING_ELEMENT= 768
 - PUBLIC_KEY_SIZE= 800
 */
-static KRML_MUSTINLINE bool validate_public_key_1c(uint8_t *public_key) {
+static bool validate_public_key_1c(uint8_t *public_key) {
   return libcrux_ml_kem_ind_cca_validate_public_key_86(public_key);
 }
 

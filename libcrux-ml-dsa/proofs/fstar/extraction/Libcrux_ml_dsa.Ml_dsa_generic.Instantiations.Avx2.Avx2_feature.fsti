@@ -1,7 +1,18 @@
-module Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2
+module Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Avx2_feature
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
+
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_dsa.Hash_functions.Shake128 in
+  let open Libcrux_ml_dsa.Hash_functions.Shake256 in
+  let open Libcrux_ml_dsa.Hash_functions.Simd256 in
+  let open Libcrux_ml_dsa.Pre_hash in
+  let open Libcrux_ml_dsa.Simd.Avx2 in
+  let open Libcrux_ml_dsa.Simd.Traits in
+  ()
 
 /// Generate key pair.
 val generate_key_pair

@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 18a089ceff3ef1a9f6876cd99a9f4f42c0fe05d9
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: a31e411ce57494f7a7e8c5962c9951a52a62c770
  */
 
 #ifndef __internal_libcrux_sha3_internal_H
@@ -40,6 +40,16 @@ libcrux_sha3_portable_incremental_shake128_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState_17 *s, Eurydice_slice data0) {
   Eurydice_slice buf[1U] = {data0};
   libcrux_sha3_generic_keccak_absorb_final_9e(s, buf);
+}
+
+/**
+ Squeeze another block
+*/
+static KRML_MUSTINLINE void
+libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
+    libcrux_sha3_generic_keccak_KeccakState_17 *s, Eurydice_slice out0) {
+  Eurydice_slice buf[1U] = {out0};
+  libcrux_sha3_generic_keccak_squeeze_next_block_c6(s, buf);
 }
 
 /**
@@ -77,16 +87,6 @@ libcrux_sha3_portable_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_generic_keccak_KeccakState_17 *s, Eurydice_slice out0) {
   Eurydice_slice buf[1U] = {out0};
   libcrux_sha3_generic_keccak_squeeze_first_three_blocks_c6(s, buf);
-}
-
-/**
- Squeeze another block
-*/
-static KRML_MUSTINLINE void
-libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
-    libcrux_sha3_generic_keccak_KeccakState_17 *s, Eurydice_slice out0) {
-  Eurydice_slice buf[1U] = {out0};
-  libcrux_sha3_generic_keccak_squeeze_next_block_c6(s, buf);
 }
 
 #define libcrux_sha3_Sha224 0
