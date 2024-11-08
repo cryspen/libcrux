@@ -26,32 +26,36 @@ let bytestream_to_potential_coefficients (serialized: t_Slice u8) =
         <:
         t_Slice u8)
   in
-  let coefficients:u8 =
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_u8 (serialized_extended <: t_Slice u8)
   in
-  let coefficients:u8 =
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_permutevar8x32_epi32 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 5l 4l 3l 0l 2l 1l 0l <: u8)
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 5l 4l 3l 0l 2l 1l 0l
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
-  let coefficients:u8 =
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 coefficients
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (-1y) 11y 10y 9y (-1y) 8y 7y 6y (-1y) 5y 4y 3y
           (-1y) 2y 1y 0y (-1y) 11y 10y 9y (-1y) 8y 7y 6y (-1y) 5y 4y 3y (-1y) 2y 1y 0y
         <:
-        u8)
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
     (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 bytestream_to_potential_coefficients__COEFFICIENT_MASK
 
       <:
-      u8)
+      Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
 let sample (input: t_Slice u8) (output: t_Slice i32) =
-  let field_modulus:u8 =
+  let field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
   in
-  let potential_coefficients:u8 = bytestream_to_potential_coefficients input in
-  let compare_with_field_modulus:u8 =
+  let potential_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    bytestream_to_potential_coefficients input
+  in
+  let compare_with_field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_cmpgt_epi32 field_modulus potential_coefficients
   in
   let good:i32 =
@@ -69,13 +73,13 @@ let sample (input: t_Slice u8) (output: t_Slice i32) =
       <:
       usize ]
   in
-  let lower_shuffles:u8 =
+  let lower_shuffles:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (lower_shuffles <: t_Slice u8)
   in
-  let lower_coefficients:u8 =
+  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 potential_coefficients
   in
-  let lower_coefficients:u8 =
+  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 lower_coefficients lower_shuffles
   in
   let output:t_Slice i32 =
@@ -103,13 +107,13 @@ let sample (input: t_Slice u8) (output: t_Slice i32) =
       <:
       usize ]
   in
-  let upper_shuffles:u8 =
+  let upper_shuffles:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (upper_shuffles <: t_Slice u8)
   in
-  let upper_coefficients:u8 =
+  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l potential_coefficients
   in
-  let upper_coefficients:u8 =
+  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 upper_coefficients upper_shuffles
   in
   let output:t_Slice i32 =
