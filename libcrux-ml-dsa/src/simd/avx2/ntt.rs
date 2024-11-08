@@ -488,16 +488,18 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     ()
 }
 
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
-pub(crate) unsafe fn ntt(
+#[inline(always)]
+pub(crate) fn ntt(
     mut re: [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
 ) -> [Vec256; SIMD_UNITS_IN_RING_ELEMENT] {
-    ntt_at_layer_7_and_6(&mut re);
-    ntt_at_layer_5_to_3(&mut re);
-    ntt_at_layer_2(&mut re);
-    ntt_at_layer_1(&mut re);
-    ntt_at_layer_0(&mut re);
+    unsafe {
+        ntt_at_layer_7_and_6(&mut re);
+        ntt_at_layer_5_to_3(&mut re);
+        ntt_at_layer_2(&mut re);
+        ntt_at_layer_1(&mut re);
+        ntt_at_layer_0(&mut re);
+    }
 
     re
 }
