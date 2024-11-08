@@ -34,7 +34,7 @@ pqcrypto-dilithium = { version = "0.5.0" }         #, default-features = false
 [features]
 simd128 = ["libcrux-sha3/simd128", "libcrux-intrinsics/simd128"]
 simd256 = ["libcrux-sha3/simd256", "libcrux-intrinsics/simd256"]
-acvp = []                                                        # expose internal API for ACVP testing
+acvp = [] # expose internal API for ACVP testing
 
 [[bench]]
 name = "manual44"
