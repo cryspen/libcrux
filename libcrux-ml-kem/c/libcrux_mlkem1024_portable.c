@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
+ * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
- * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: a31e411ce57494f7a7e8c5962c9951a52a62c770
+ * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
+ * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
+ * Libcrux: 4996d487b60ebd3e41551da8c2a59653beadcb77
  */
 
 #include "libcrux_mlkem1024_portable.h"
@@ -136,9 +136,6 @@ libcrux_ml_kem_mlkem1024_portable_generate_key_pair(uint8_t randomness[64U]) {
 }
 
 /**
- Portable private key validation
-*/
-/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.validate_private_key with const
 generics
@@ -146,7 +143,7 @@ generics
 - SECRET_KEY_SIZE= 3168
 - CIPHERTEXT_SIZE= 1568
 */
-static bool validate_private_key_6b(
+static KRML_MUSTINLINE bool validate_private_key_6b(
     libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext) {
   return libcrux_ml_kem_ind_cca_validate_private_key_b5(private_key,
@@ -165,9 +162,6 @@ bool libcrux_ml_kem_mlkem1024_portable_validate_private_key(
 }
 
 /**
- Portable public key validation
-*/
-/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.validate_public_key with const
 generics
@@ -175,7 +169,7 @@ generics
 - RANKED_BYTES_PER_RING_ELEMENT= 1536
 - PUBLIC_KEY_SIZE= 1568
 */
-static bool validate_public_key_6b(uint8_t *public_key) {
+static KRML_MUSTINLINE bool validate_public_key_6b(uint8_t *public_key) {
   return libcrux_ml_kem_ind_cca_validate_public_key_00(public_key);
 }
 
