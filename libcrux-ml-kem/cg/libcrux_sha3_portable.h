@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: b6ea994fd158898395679fbace91f4cb000bbe13
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: a31e411ce57494f7a7e8c5962c9951a52a62c770
  */
 
 #ifndef __libcrux_sha3_portable_H
@@ -1662,8 +1662,8 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_96(
 /**
  A portable SHA3 512 implementation.
 */
-static inline void libcrux_sha3_portable_sha512(Eurydice_slice digest,
-                                                Eurydice_slice data) {
+static KRML_MUSTINLINE void libcrux_sha3_portable_sha512(Eurydice_slice digest,
+                                                         Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
   libcrux_sha3_portable_keccakx1_96(buf0, buf);
@@ -2021,8 +2021,8 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_ad(
 /**
  A portable SHA3 256 implementation.
 */
-static inline void libcrux_sha3_portable_sha256(Eurydice_slice digest,
-                                                Eurydice_slice data) {
+static KRML_MUSTINLINE void libcrux_sha3_portable_sha256(Eurydice_slice digest,
+                                                         Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
   libcrux_sha3_portable_keccakx1_ad(buf0, buf);
@@ -2150,8 +2150,8 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_ad0(
 /**
  A portable SHAKE256 implementation.
 */
-static inline void libcrux_sha3_portable_shake256(Eurydice_slice digest,
-                                                  Eurydice_slice data) {
+static KRML_MUSTINLINE void libcrux_sha3_portable_shake256(
+    Eurydice_slice digest, Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
   libcrux_sha3_portable_keccakx1_ad0(buf0, buf);
@@ -2163,7 +2163,7 @@ typedef libcrux_sha3_generic_keccak_KeccakState_17
 /**
  Create a new SHAKE-128 state object.
 */
-static inline libcrux_sha3_generic_keccak_KeccakState_17
+static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_17
 libcrux_sha3_portable_incremental_shake128_init(void) {
   return libcrux_sha3_generic_keccak_new_89_04();
 }
@@ -2256,7 +2256,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_9e2(
 /**
  Absorb
 */
-static inline void libcrux_sha3_portable_incremental_shake128_absorb_final(
+static KRML_MUSTINLINE void
+libcrux_sha3_portable_incremental_shake128_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState_17 *s, Eurydice_slice data0) {
   Eurydice_slice buf[1U] = {data0};
   libcrux_sha3_generic_keccak_absorb_final_9e2(s, buf);
@@ -2310,7 +2311,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_next_block_c61(
 /**
  Squeeze another block
 */
-static inline void
+static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState_17 *s, Eurydice_slice out0) {
   Eurydice_slice buf[1U] = {out0};
@@ -2359,7 +2360,7 @@ libcrux_sha3_generic_keccak_squeeze_first_three_blocks_c6(
 /**
  Squeeze three blocks
 */
-static inline void
+static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_generic_keccak_KeccakState_17 *s, Eurydice_slice out0) {
   Eurydice_slice buf[1U] = {out0};
@@ -2756,8 +2757,8 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_1e(
 /**
  A portable SHA3 224 implementation.
 */
-static inline void libcrux_sha3_portable_sha224(Eurydice_slice digest,
-                                                Eurydice_slice data) {
+static KRML_MUSTINLINE void libcrux_sha3_portable_sha224(Eurydice_slice digest,
+                                                         Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
   libcrux_sha3_portable_keccakx1_1e(buf0, buf);
@@ -3115,8 +3116,8 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_7c(
 /**
  A portable SHA3 384 implementation.
 */
-static inline void libcrux_sha3_portable_sha384(Eurydice_slice digest,
-                                                Eurydice_slice data) {
+static KRML_MUSTINLINE void libcrux_sha3_portable_sha384(Eurydice_slice digest,
+                                                         Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
   libcrux_sha3_portable_keccakx1_7c(buf0, buf);
@@ -3128,15 +3129,16 @@ static inline void libcrux_sha3_portable_sha384(Eurydice_slice digest,
  Preconditions:
  - `digest.len() == 28`
 */
-static inline void libcrux_sha3_sha224_ema(Eurydice_slice digest,
-                                           Eurydice_slice payload) {
+static KRML_MUSTINLINE void libcrux_sha3_sha224_ema(Eurydice_slice digest,
+                                                    Eurydice_slice payload) {
   libcrux_sha3_portable_sha224(digest, payload);
 }
 
 /**
  SHA3 224
 */
-static inline void libcrux_sha3_sha224(Eurydice_slice data, uint8_t ret[28U]) {
+static KRML_MUSTINLINE void libcrux_sha3_sha224(Eurydice_slice data,
+                                                uint8_t ret[28U]) {
   uint8_t out[28U] = {0U};
   libcrux_sha3_sha224_ema(Eurydice_array_to_slice((size_t)28U, out, uint8_t),
                           data);
@@ -3146,15 +3148,16 @@ static inline void libcrux_sha3_sha224(Eurydice_slice data, uint8_t ret[28U]) {
 /**
  SHA3 256
 */
-static inline void libcrux_sha3_sha256_ema(Eurydice_slice digest,
-                                           Eurydice_slice payload) {
+static KRML_MUSTINLINE void libcrux_sha3_sha256_ema(Eurydice_slice digest,
+                                                    Eurydice_slice payload) {
   libcrux_sha3_portable_sha256(digest, payload);
 }
 
 /**
  SHA3 256
 */
-static inline void libcrux_sha3_sha256(Eurydice_slice data, uint8_t ret[32U]) {
+static KRML_MUSTINLINE void libcrux_sha3_sha256(Eurydice_slice data,
+                                                uint8_t ret[32U]) {
   uint8_t out[32U] = {0U};
   libcrux_sha3_sha256_ema(Eurydice_array_to_slice((size_t)32U, out, uint8_t),
                           data);
@@ -3164,15 +3167,16 @@ static inline void libcrux_sha3_sha256(Eurydice_slice data, uint8_t ret[32U]) {
 /**
  SHA3 384
 */
-static inline void libcrux_sha3_sha384_ema(Eurydice_slice digest,
-                                           Eurydice_slice payload) {
+static KRML_MUSTINLINE void libcrux_sha3_sha384_ema(Eurydice_slice digest,
+                                                    Eurydice_slice payload) {
   libcrux_sha3_portable_sha384(digest, payload);
 }
 
 /**
  SHA3 384
 */
-static inline void libcrux_sha3_sha384(Eurydice_slice data, uint8_t ret[48U]) {
+static KRML_MUSTINLINE void libcrux_sha3_sha384(Eurydice_slice data,
+                                                uint8_t ret[48U]) {
   uint8_t out[48U] = {0U};
   libcrux_sha3_sha384_ema(Eurydice_array_to_slice((size_t)48U, out, uint8_t),
                           data);
@@ -3182,15 +3186,16 @@ static inline void libcrux_sha3_sha384(Eurydice_slice data, uint8_t ret[48U]) {
 /**
  SHA3 512
 */
-static inline void libcrux_sha3_sha512_ema(Eurydice_slice digest,
-                                           Eurydice_slice payload) {
+static KRML_MUSTINLINE void libcrux_sha3_sha512_ema(Eurydice_slice digest,
+                                                    Eurydice_slice payload) {
   libcrux_sha3_portable_sha512(digest, payload);
 }
 
 /**
  SHA3 512
 */
-static inline void libcrux_sha3_sha512(Eurydice_slice data, uint8_t ret[64U]) {
+static KRML_MUSTINLINE void libcrux_sha3_sha512(Eurydice_slice data,
+                                                uint8_t ret[64U]) {
   uint8_t out[64U] = {0U};
   libcrux_sha3_sha512_ema(Eurydice_array_to_slice((size_t)64U, out, uint8_t),
                           data);
@@ -3407,8 +3412,8 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_c6(
 /**
  A portable SHAKE128 implementation.
 */
-static inline void libcrux_sha3_portable_shake128(Eurydice_slice digest,
-                                                  Eurydice_slice data) {
+static KRML_MUSTINLINE void libcrux_sha3_portable_shake128(
+    Eurydice_slice digest, Eurydice_slice data) {
   Eurydice_slice buf0[1U] = {data};
   Eurydice_slice buf[1U] = {digest};
   libcrux_sha3_portable_keccakx1_c6(buf0, buf);
@@ -3419,8 +3424,8 @@ static inline void libcrux_sha3_portable_shake128(Eurydice_slice digest,
 
  Writes `out.len()` bytes.
 */
-static inline void libcrux_sha3_shake128_ema(Eurydice_slice out,
-                                             Eurydice_slice data) {
+static KRML_MUSTINLINE void libcrux_sha3_shake128_ema(Eurydice_slice out,
+                                                      Eurydice_slice data) {
   libcrux_sha3_portable_shake128(out, data);
 }
 
@@ -3429,8 +3434,8 @@ static inline void libcrux_sha3_shake128_ema(Eurydice_slice out,
 
  Writes `out.len()` bytes.
 */
-static inline void libcrux_sha3_shake256_ema(Eurydice_slice out,
-                                             Eurydice_slice data) {
+static KRML_MUSTINLINE void libcrux_sha3_shake256_ema(Eurydice_slice out,
+                                                      Eurydice_slice data) {
   libcrux_sha3_portable_shake256(out, data);
 }
 
@@ -3451,8 +3456,8 @@ static const size_t libcrux_sha3_generic_keccak__ROTC[24U] = {
 /**
  A portable SHA3 224 implementation.
 */
-static inline void libcrux_sha3_neon_sha224(Eurydice_slice digest,
-                                            Eurydice_slice data) {
+static KRML_MUSTINLINE void libcrux_sha3_neon_sha224(Eurydice_slice digest,
+                                                     Eurydice_slice data) {
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -3461,8 +3466,8 @@ static inline void libcrux_sha3_neon_sha224(Eurydice_slice digest,
 /**
  A portable SHA3 256 implementation.
 */
-static inline void libcrux_sha3_neon_sha256(Eurydice_slice digest,
-                                            Eurydice_slice data) {
+static KRML_MUSTINLINE void libcrux_sha3_neon_sha256(Eurydice_slice digest,
+                                                     Eurydice_slice data) {
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -3471,8 +3476,8 @@ static inline void libcrux_sha3_neon_sha256(Eurydice_slice digest,
 /**
  A portable SHA3 384 implementation.
 */
-static inline void libcrux_sha3_neon_sha384(Eurydice_slice digest,
-                                            Eurydice_slice data) {
+static KRML_MUSTINLINE void libcrux_sha3_neon_sha384(Eurydice_slice digest,
+                                                     Eurydice_slice data) {
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -3481,8 +3486,8 @@ static inline void libcrux_sha3_neon_sha384(Eurydice_slice digest,
 /**
  A portable SHA3 512 implementation.
 */
-static inline void libcrux_sha3_neon_sha512(Eurydice_slice digest,
-                                            Eurydice_slice data) {
+static KRML_MUSTINLINE void libcrux_sha3_neon_sha512(Eurydice_slice digest,
+                                                     Eurydice_slice data) {
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -3493,10 +3498,10 @@ static inline void libcrux_sha3_neon_sha512(Eurydice_slice digest,
 
  Writes the two results into `out0` and `out1`
 */
-static inline void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0,
-                                                 Eurydice_slice input1,
-                                                 Eurydice_slice out0,
-                                                 Eurydice_slice out1) {
+static KRML_MUSTINLINE void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0,
+                                                          Eurydice_slice input1,
+                                                          Eurydice_slice out0,
+                                                          Eurydice_slice out1) {
   /* TODO: make argument ordering consistent */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
@@ -3510,7 +3515,7 @@ typedef struct libcrux_sha3_neon_x2_incremental_KeccakState_s {
 /**
  Initialise the `KeccakState2`.
 */
-static inline libcrux_sha3_neon_x2_incremental_KeccakState
+static KRML_MUSTINLINE libcrux_sha3_neon_x2_incremental_KeccakState
 libcrux_sha3_neon_x2_incremental_init(void) {
   /* XXX: These functions could alternatively implement the same with the
    * portable implementation { let s0 = KeccakState::new(); let s1 =
@@ -3523,7 +3528,8 @@ libcrux_sha3_neon_x2_incremental_init(void) {
 /**
  Shake128 absorb `data0` and `data1` in the [`KeccakState`] `s`.
 */
-static inline void libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
+static KRML_MUSTINLINE void
+libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice data0,
     Eurydice_slice data1) {
   /* XXX: These functions could alternatively implement the same with the
@@ -3539,7 +3545,7 @@ static inline void libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
  Squeeze 2 times the first three blocks in parallel in the
  [`KeccakState`] and return the output in `out0` and `out1`.
 */
-static inline void
+static KRML_MUSTINLINE void
 libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
     Eurydice_slice out1) {
@@ -3556,7 +3562,8 @@ libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
  Squeeze 2 times the next block in parallel in the
  [`KeccakState`] and return the output in `out0` and `out1`.
 */
-static inline void libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
+static KRML_MUSTINLINE void
+libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
     Eurydice_slice out1) {
   /* XXX: These functions could alternatively implement the same with the
@@ -3571,7 +3578,7 @@ static inline void libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
 /**
  Squeeze five blocks
 */
-static inline void
+static KRML_MUSTINLINE void
 libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_five_blocks(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
     Eurydice_slice out1) {
@@ -3583,7 +3590,8 @@ libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_five_blocks(
 /**
  Shake256 absorb `data0` and `data1` in the [`KeccakState`] `s`.
 */
-static inline void libcrux_sha3_neon_x2_incremental_shake256_absorb_final(
+static KRML_MUSTINLINE void
+libcrux_sha3_neon_x2_incremental_shake256_absorb_final(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice data0,
     Eurydice_slice data1) {
   /* XXX: These functions could alternatively implement the same with the
@@ -3598,7 +3606,7 @@ static inline void libcrux_sha3_neon_x2_incremental_shake256_absorb_final(
 /**
  Squeeze block
 */
-static inline void
+static KRML_MUSTINLINE void
 libcrux_sha3_neon_x2_incremental_shake256_squeeze_first_block(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
     Eurydice_slice out1) {
@@ -3610,7 +3618,8 @@ libcrux_sha3_neon_x2_incremental_shake256_squeeze_first_block(
 /**
  Squeeze next block
 */
-static inline void libcrux_sha3_neon_x2_incremental_shake256_squeeze_next_block(
+static KRML_MUSTINLINE void
+libcrux_sha3_neon_x2_incremental_shake256_squeeze_next_block(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
     Eurydice_slice out1) {
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
@@ -3662,7 +3671,7 @@ libcrux_sha3_generic_keccak_squeeze_first_five_blocks_c6(
 /**
  Squeeze five blocks
 */
-static inline void
+static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake128_squeeze_first_five_blocks(
     libcrux_sha3_generic_keccak_KeccakState_17 *s, Eurydice_slice out0) {
   Eurydice_slice buf[1U] = {out0};
@@ -3672,7 +3681,8 @@ libcrux_sha3_portable_incremental_shake128_squeeze_first_five_blocks(
 /**
  Absorb some data for SHAKE-256 for the last time
 */
-static inline void libcrux_sha3_portable_incremental_shake256_absorb_final(
+static KRML_MUSTINLINE void
+libcrux_sha3_portable_incremental_shake256_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState_17 *s, Eurydice_slice data) {
   Eurydice_slice buf[1U] = {data};
   libcrux_sha3_generic_keccak_absorb_final_9e1(s, buf);
@@ -3681,7 +3691,7 @@ static inline void libcrux_sha3_portable_incremental_shake256_absorb_final(
 /**
  Create a new SHAKE-256 state object.
 */
-static inline libcrux_sha3_generic_keccak_KeccakState_17
+static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_17
 libcrux_sha3_portable_incremental_shake256_init(void) {
   return libcrux_sha3_generic_keccak_new_89_04();
 }
@@ -3689,7 +3699,7 @@ libcrux_sha3_portable_incremental_shake256_init(void) {
 /**
  Squeeze the first SHAKE-256 block
 */
-static inline void
+static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
     libcrux_sha3_generic_keccak_KeccakState_17 *s, Eurydice_slice out) {
   Eurydice_slice buf[1U] = {out};
@@ -3699,7 +3709,7 @@ libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
 /**
  Squeeze the next SHAKE-256 block
 */
-static inline void
+static KRML_MUSTINLINE void
 libcrux_sha3_portable_incremental_shake256_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState_17 *s, Eurydice_slice out) {
   Eurydice_slice buf[1U] = {out};

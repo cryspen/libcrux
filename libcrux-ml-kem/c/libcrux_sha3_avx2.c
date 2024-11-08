@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: a971e8a0892ab58eb114a276e1eff2291093dae6
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: a31e411ce57494f7a7e8c5962c9951a52a62c770
  */
 
 #include "internal/libcrux_sha3_avx2.h"
@@ -23,8 +23,8 @@ static KRML_MUSTINLINE __m256i zero_ef(void) {
   return mm256_set1_epi64x((int64_t)0);
 }
 
-static __m256i _veor5q_u64(__m256i a, __m256i b, __m256i c, __m256i d,
-                           __m256i e) {
+static KRML_MUSTINLINE __m256i _veor5q_u64(__m256i a, __m256i b, __m256i c,
+                                           __m256i d, __m256i e) {
   __m256i ab = mm256_xor_si256(a, b);
   __m256i cd = mm256_xor_si256(c, d);
   __m256i abcd = mm256_xor_si256(ab, cd);
@@ -46,12 +46,12 @@ with const generics
 - LEFT= 1
 - RIGHT= 63
 */
-static __m256i rotate_left_76(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_76(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)1, x, __m256i),
                          mm256_srli_epi64((int32_t)63, x, __m256i));
 }
 
-static __m256i _vrax1q_u64(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vrax1q_u64(__m256i a, __m256i b) {
   __m256i uu____0 = a;
   return mm256_xor_si256(uu____0, rotate_left_76(b));
 }
@@ -64,7 +64,7 @@ static KRML_MUSTINLINE __m256i rotate_left1_and_xor_ef(__m256i a, __m256i b) {
   return _vrax1q_u64(a, b);
 }
 
-static __m256i _vbcaxq_u64(__m256i a, __m256i b, __m256i c) {
+static KRML_MUSTINLINE __m256i _vbcaxq_u64(__m256i a, __m256i b, __m256i c) {
   return mm256_xor_si256(a, mm256_andnot_si256(c, b));
 }
 
@@ -76,7 +76,7 @@ static KRML_MUSTINLINE __m256i and_not_xor_ef(__m256i a, __m256i b, __m256i c) {
   return _vbcaxq_u64(a, b, c);
 }
 
-static __m256i _veorq_n_u64(__m256i a, uint64_t c) {
+static KRML_MUSTINLINE __m256i _veorq_n_u64(__m256i a, uint64_t c) {
   __m256i c0 = mm256_set1_epi64x(
       (int64_t) /* Casting here is required, doesn't change the value. */ c);
   return mm256_xor_si256(a, c0);
@@ -90,18 +90,16 @@ static KRML_MUSTINLINE __m256i xor_constant_ef(__m256i a, uint64_t c) {
   return _veorq_n_u64(a, c);
 }
 
-static __m256i xor0(__m256i a, __m256i b) { return mm256_xor_si256(a, b); }
-
 /**
 This function found in impl {(libcrux_sha3::traits::internal::KeccakItem<4:
 usize> for core::core_arch::x86::__m256i)}
 */
 static KRML_MUSTINLINE __m256i xor_ef(__m256i a, __m256i b) {
-  return xor0(a, b);
+  return mm256_xor_si256(a, b);
 }
 
-static void slice_4(Eurydice_slice a[4U], size_t start, size_t len,
-                    Eurydice_slice ret[4U]) {
+static KRML_MUSTINLINE void slice_4(Eurydice_slice a[4U], size_t start,
+                                    size_t len, Eurydice_slice ret[4U]) {
   ret[0U] = Eurydice_slice_subslice2(a[0U], start, start + len, uint8_t);
   ret[1U] = Eurydice_slice_subslice2(a[1U], start, start + len, uint8_t);
   ret[2U] = Eurydice_slice_subslice2(a[2U], start, start + len, uint8_t);
@@ -122,8 +120,8 @@ static KRML_MUSTINLINE void slice_n_ef(Eurydice_slice a[4U], size_t start,
   memcpy(ret, ret0, (size_t)4U * sizeof(Eurydice_slice));
 }
 
-static Eurydice_slice_uint8_t_4size_t__x2 split_at_mut_4(Eurydice_slice out[4U],
-                                                         size_t mid) {
+static KRML_MUSTINLINE Eurydice_slice_uint8_t_4size_t__x2
+split_at_mut_4(Eurydice_slice out[4U], size_t mid) {
   Eurydice_slice out0 = out[0U];
   Eurydice_slice out1 = out[1U];
   Eurydice_slice out2 = out[2U];
@@ -214,7 +212,8 @@ A monomorphic instance of libcrux_sha3.simd.avx2.load_block
 with const generics
 - RATE= 136
 */
-static void load_block_5b(__m256i (*s)[5U], Eurydice_slice blocks[4U]) {
+static KRML_MUSTINLINE void load_block_5b(__m256i (*s)[5U],
+                                          Eurydice_slice blocks[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)32U; i++) {
     size_t i0 = i;
     __m256i v00 = mm256_loadu_si256_u8(
@@ -348,7 +347,7 @@ with const generics
 - LEFT= 36
 - RIGHT= 28
 */
-static __m256i rotate_left_02(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_02(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)36, x, __m256i),
                          mm256_srli_epi64((int32_t)28, x, __m256i));
 }
@@ -359,7 +358,7 @@ with const generics
 - LEFT= 36
 - RIGHT= 28
 */
-static __m256i _vxarq_u64_02(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_02(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_02(ab);
 }
@@ -384,7 +383,7 @@ with const generics
 - LEFT= 3
 - RIGHT= 61
 */
-static __m256i rotate_left_ac(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_ac(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)3, x, __m256i),
                          mm256_srli_epi64((int32_t)61, x, __m256i));
 }
@@ -395,7 +394,7 @@ with const generics
 - LEFT= 3
 - RIGHT= 61
 */
-static __m256i _vxarq_u64_ac(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_ac(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_ac(ab);
 }
@@ -420,7 +419,7 @@ with const generics
 - LEFT= 41
 - RIGHT= 23
 */
-static __m256i rotate_left_020(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_020(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)41, x, __m256i),
                          mm256_srli_epi64((int32_t)23, x, __m256i));
 }
@@ -431,7 +430,7 @@ with const generics
 - LEFT= 41
 - RIGHT= 23
 */
-static __m256i _vxarq_u64_020(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_020(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_020(ab);
 }
@@ -456,7 +455,7 @@ with const generics
 - LEFT= 18
 - RIGHT= 46
 */
-static __m256i rotate_left_a9(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_a9(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)18, x, __m256i),
                          mm256_srli_epi64((int32_t)46, x, __m256i));
 }
@@ -467,7 +466,7 @@ with const generics
 - LEFT= 18
 - RIGHT= 46
 */
-static __m256i _vxarq_u64_a9(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_a9(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_a9(ab);
 }
@@ -492,7 +491,7 @@ with const generics
 - LEFT= 1
 - RIGHT= 63
 */
-static __m256i _vxarq_u64_76(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_76(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_76(ab);
 }
@@ -517,7 +516,7 @@ with const generics
 - LEFT= 44
 - RIGHT= 20
 */
-static __m256i rotate_left_58(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_58(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)44, x, __m256i),
                          mm256_srli_epi64((int32_t)20, x, __m256i));
 }
@@ -528,7 +527,7 @@ with const generics
 - LEFT= 44
 - RIGHT= 20
 */
-static __m256i _vxarq_u64_58(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_58(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_58(ab);
 }
@@ -553,7 +552,7 @@ with const generics
 - LEFT= 10
 - RIGHT= 54
 */
-static __m256i rotate_left_e0(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_e0(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)10, x, __m256i),
                          mm256_srli_epi64((int32_t)54, x, __m256i));
 }
@@ -564,7 +563,7 @@ with const generics
 - LEFT= 10
 - RIGHT= 54
 */
-static __m256i _vxarq_u64_e0(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_e0(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_e0(ab);
 }
@@ -589,7 +588,7 @@ with const generics
 - LEFT= 45
 - RIGHT= 19
 */
-static __m256i rotate_left_63(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_63(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)45, x, __m256i),
                          mm256_srli_epi64((int32_t)19, x, __m256i));
 }
@@ -600,7 +599,7 @@ with const generics
 - LEFT= 45
 - RIGHT= 19
 */
-static __m256i _vxarq_u64_63(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_63(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_63(ab);
 }
@@ -625,7 +624,7 @@ with const generics
 - LEFT= 2
 - RIGHT= 62
 */
-static __m256i rotate_left_6a(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_6a(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)2, x, __m256i),
                          mm256_srli_epi64((int32_t)62, x, __m256i));
 }
@@ -636,7 +635,7 @@ with const generics
 - LEFT= 2
 - RIGHT= 62
 */
-static __m256i _vxarq_u64_6a(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_6a(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_6a(ab);
 }
@@ -661,7 +660,7 @@ with const generics
 - LEFT= 62
 - RIGHT= 2
 */
-static __m256i rotate_left_ab(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_ab(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)62, x, __m256i),
                          mm256_srli_epi64((int32_t)2, x, __m256i));
 }
@@ -672,7 +671,7 @@ with const generics
 - LEFT= 62
 - RIGHT= 2
 */
-static __m256i _vxarq_u64_ab(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_ab(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_ab(ab);
 }
@@ -697,7 +696,7 @@ with const generics
 - LEFT= 6
 - RIGHT= 58
 */
-static __m256i rotate_left_5b(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_5b(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)6, x, __m256i),
                          mm256_srli_epi64((int32_t)58, x, __m256i));
 }
@@ -708,7 +707,7 @@ with const generics
 - LEFT= 6
 - RIGHT= 58
 */
-static __m256i _vxarq_u64_5b(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_5b(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_5b(ab);
 }
@@ -733,7 +732,7 @@ with const generics
 - LEFT= 43
 - RIGHT= 21
 */
-static __m256i rotate_left_6f(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_6f(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)43, x, __m256i),
                          mm256_srli_epi64((int32_t)21, x, __m256i));
 }
@@ -744,7 +743,7 @@ with const generics
 - LEFT= 43
 - RIGHT= 21
 */
-static __m256i _vxarq_u64_6f(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_6f(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_6f(ab);
 }
@@ -769,7 +768,7 @@ with const generics
 - LEFT= 15
 - RIGHT= 49
 */
-static __m256i rotate_left_62(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_62(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)15, x, __m256i),
                          mm256_srli_epi64((int32_t)49, x, __m256i));
 }
@@ -780,7 +779,7 @@ with const generics
 - LEFT= 15
 - RIGHT= 49
 */
-static __m256i _vxarq_u64_62(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_62(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_62(ab);
 }
@@ -805,7 +804,7 @@ with const generics
 - LEFT= 61
 - RIGHT= 3
 */
-static __m256i rotate_left_23(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_23(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)61, x, __m256i),
                          mm256_srli_epi64((int32_t)3, x, __m256i));
 }
@@ -816,7 +815,7 @@ with const generics
 - LEFT= 61
 - RIGHT= 3
 */
-static __m256i _vxarq_u64_23(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_23(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_23(ab);
 }
@@ -841,7 +840,7 @@ with const generics
 - LEFT= 28
 - RIGHT= 36
 */
-static __m256i rotate_left_37(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_37(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)28, x, __m256i),
                          mm256_srli_epi64((int32_t)36, x, __m256i));
 }
@@ -852,7 +851,7 @@ with const generics
 - LEFT= 28
 - RIGHT= 36
 */
-static __m256i _vxarq_u64_37(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_37(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_37(ab);
 }
@@ -877,7 +876,7 @@ with const generics
 - LEFT= 55
 - RIGHT= 9
 */
-static __m256i rotate_left_bb(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_bb(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)55, x, __m256i),
                          mm256_srli_epi64((int32_t)9, x, __m256i));
 }
@@ -888,7 +887,7 @@ with const generics
 - LEFT= 55
 - RIGHT= 9
 */
-static __m256i _vxarq_u64_bb(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_bb(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_bb(ab);
 }
@@ -913,7 +912,7 @@ with const generics
 - LEFT= 25
 - RIGHT= 39
 */
-static __m256i rotate_left_b9(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_b9(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)25, x, __m256i),
                          mm256_srli_epi64((int32_t)39, x, __m256i));
 }
@@ -924,7 +923,7 @@ with const generics
 - LEFT= 25
 - RIGHT= 39
 */
-static __m256i _vxarq_u64_b9(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_b9(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_b9(ab);
 }
@@ -949,7 +948,7 @@ with const generics
 - LEFT= 21
 - RIGHT= 43
 */
-static __m256i rotate_left_54(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_54(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)21, x, __m256i),
                          mm256_srli_epi64((int32_t)43, x, __m256i));
 }
@@ -960,7 +959,7 @@ with const generics
 - LEFT= 21
 - RIGHT= 43
 */
-static __m256i _vxarq_u64_54(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_54(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_54(ab);
 }
@@ -985,7 +984,7 @@ with const generics
 - LEFT= 56
 - RIGHT= 8
 */
-static __m256i rotate_left_4c(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_4c(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)56, x, __m256i),
                          mm256_srli_epi64((int32_t)8, x, __m256i));
 }
@@ -996,7 +995,7 @@ with const generics
 - LEFT= 56
 - RIGHT= 8
 */
-static __m256i _vxarq_u64_4c(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_4c(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_4c(ab);
 }
@@ -1021,7 +1020,7 @@ with const generics
 - LEFT= 27
 - RIGHT= 37
 */
-static __m256i rotate_left_ce(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_ce(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)27, x, __m256i),
                          mm256_srli_epi64((int32_t)37, x, __m256i));
 }
@@ -1032,7 +1031,7 @@ with const generics
 - LEFT= 27
 - RIGHT= 37
 */
-static __m256i _vxarq_u64_ce(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_ce(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_ce(ab);
 }
@@ -1057,7 +1056,7 @@ with const generics
 - LEFT= 20
 - RIGHT= 44
 */
-static __m256i rotate_left_77(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_77(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)20, x, __m256i),
                          mm256_srli_epi64((int32_t)44, x, __m256i));
 }
@@ -1068,7 +1067,7 @@ with const generics
 - LEFT= 20
 - RIGHT= 44
 */
-static __m256i _vxarq_u64_77(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_77(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_77(ab);
 }
@@ -1093,7 +1092,7 @@ with const generics
 - LEFT= 39
 - RIGHT= 25
 */
-static __m256i rotate_left_25(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_25(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)39, x, __m256i),
                          mm256_srli_epi64((int32_t)25, x, __m256i));
 }
@@ -1104,7 +1103,7 @@ with const generics
 - LEFT= 39
 - RIGHT= 25
 */
-static __m256i _vxarq_u64_25(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_25(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_25(ab);
 }
@@ -1129,7 +1128,7 @@ with const generics
 - LEFT= 8
 - RIGHT= 56
 */
-static __m256i rotate_left_af(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_af(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)8, x, __m256i),
                          mm256_srli_epi64((int32_t)56, x, __m256i));
 }
@@ -1140,7 +1139,7 @@ with const generics
 - LEFT= 8
 - RIGHT= 56
 */
-static __m256i _vxarq_u64_af(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_af(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_af(ab);
 }
@@ -1165,7 +1164,7 @@ with const generics
 - LEFT= 14
 - RIGHT= 50
 */
-static __m256i rotate_left_fd(__m256i x) {
+static KRML_MUSTINLINE __m256i rotate_left_fd(__m256i x) {
   return mm256_xor_si256(mm256_slli_epi64((int32_t)14, x, __m256i),
                          mm256_srli_epi64((int32_t)50, x, __m256i));
 }
@@ -1176,7 +1175,7 @@ with const generics
 - LEFT= 14
 - RIGHT= 50
 */
-static __m256i _vxarq_u64_fd(__m256i a, __m256i b) {
+static KRML_MUSTINLINE __m256i _vxarq_u64_fd(__m256i a, __m256i b) {
   __m256i ab = mm256_xor_si256(a, b);
   return rotate_left_fd(ab);
 }
@@ -1422,7 +1421,8 @@ A monomorphic instance of libcrux_sha3.simd.avx2.store_block
 with const generics
 - RATE= 136
 */
-static void store_block_5b(__m256i (*s)[5U], Eurydice_slice out[4U]) {
+static KRML_MUSTINLINE void store_block_5b(__m256i (*s)[5U],
+                                           Eurydice_slice out[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)32U; i++) {
     size_t i0 = i;
     __m256i v0l = mm256_permute2x128_si256(
@@ -1775,7 +1775,8 @@ A monomorphic instance of libcrux_sha3.simd.avx2.load_block
 with const generics
 - RATE= 168
 */
-static void load_block_3a(__m256i (*s)[5U], Eurydice_slice blocks[4U]) {
+static KRML_MUSTINLINE void load_block_3a(__m256i (*s)[5U],
+                                          Eurydice_slice blocks[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)32U; i++) {
     size_t i0 = i;
     __m256i v00 = mm256_loadu_si256_u8(
@@ -1961,7 +1962,8 @@ A monomorphic instance of libcrux_sha3.simd.avx2.store_block
 with const generics
 - RATE= 168
 */
-static void store_block_3a(__m256i (*s)[5U], Eurydice_slice out[4U]) {
+static KRML_MUSTINLINE void store_block_3a(__m256i (*s)[5U],
+                                           Eurydice_slice out[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)32U; i++) {
     size_t i0 = i;
     __m256i v0l = mm256_permute2x128_si256(
@@ -2205,7 +2207,8 @@ static KRML_MUSTINLINE void squeeze_first_five_blocks_97(
 /**
  Squeeze five blocks
 */
-void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
+KRML_MUSTINLINE void
+libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
     libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
   Eurydice_slice buf[4U] = {out0, out1, out2, out3};
@@ -2215,7 +2218,7 @@ void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
 /**
  Absorb
 */
-void libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
+KRML_MUSTINLINE void libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice data0,
     Eurydice_slice data1, Eurydice_slice data2, Eurydice_slice data3) {
   Eurydice_slice buf[4U] = {data0, data1, data2, data3};
@@ -2225,7 +2228,8 @@ void libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
 /**
  Squeeze block
 */
-void libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
+KRML_MUSTINLINE void
+libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
     libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
   Eurydice_slice buf[4U] = {out0, out1, out2, out3};
@@ -2235,7 +2239,8 @@ void libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
 /**
  Squeeze next block
 */
-void libcrux_sha3_avx2_x4_incremental_shake256_squeeze_next_block(
+KRML_MUSTINLINE void
+libcrux_sha3_avx2_x4_incremental_shake256_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
   Eurydice_slice buf[4U] = {out0, out1, out2, out3};
