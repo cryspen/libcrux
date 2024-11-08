@@ -16,5 +16,5 @@ ADMIT_MODULES = Libcrux_ml_kem.Vector.Avx2.fsti \
               Libcrux_ml_kem.Vector.Neon.Serialize.fst \
               Libcrux_ml_kem.Vector.Neon.Vector_type.fst
 
-FSTAR_INCLUDE_DIRS_EXTRA += ../spec
+FSTAR_INCLUDE_DIRS_EXTRA += ../spec $(shell git rev-parse --show-toplevel)/fstar-helpers/fstar-bitvec
 include $(shell git rev-parse --show-toplevel)/fstar-helpers/Makefile.base
