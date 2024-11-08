@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Utils
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -7,8 +7,4 @@ open FStar.Mul
 val into_padded_array (v_LEN: usize) (slice: t_Slice u8)
     : Prims.Pure (t_Array u8 v_LEN)
       (requires (Core.Slice.impl__len #u8 slice <: usize) <=. v_LEN)
-      (ensures
-        fun result ->
-          let result:t_Array u8 v_LEN = result in
-          result == Seq.append slice (Seq.create (v v_LEN - v (Core.Slice.impl__len #u8 slice)) 0uy)
-      )
+      (fun _ -> Prims.l_True)

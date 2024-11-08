@@ -9,7 +9,50 @@ let _ =
   let open Libcrux_ml_kem.Ind_cca.Unpacked in
   let open Libcrux_ml_kem.Vector.Portable in
   let open Libcrux_ml_kem.Vector.Portable.Vector_type in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
+
+/// Create a new, empty unpacked key.
+val init_key_pair: Prims.unit
+  -> Prims.Pure
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Create a new, empty unpacked public key.
+val init_public_key: Prims.unit
+  -> Prims.Pure
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Get the unpacked public key.
+val public_key
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (pk:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Get the unpacked public key.
+val unpacked_public_key
+      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+      (unpacked_public_key:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 let _ =
                 (* This module has implicit dependencies, here we make them explicit. *)
@@ -31,11 +74,13 @@ val encapsulate
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-/// Create a new, empty unpacked public key.
-val init_public_key: Prims.unit
-  -> Prims.Pure
-      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
-          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+/// Get the serialized public key.
+val key_pair_serialized_public_key
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
@@ -46,18 +91,6 @@ val serialized_public_key
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-/// Get the unpacked public key.
-val unpacked_public_key
-      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-      (unpacked_public_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure
-      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
-          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
@@ -80,38 +113,6 @@ val generate_key_pair
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure
       (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
-          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-/// Create a new, empty unpacked key.
-val init_key_pair: Prims.unit
-  -> Prims.Pure
-      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
-          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-/// Get the serialized public key.
-val key_pair_serialized_public_key
-      (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-/// Get the unpacked public key.
-val public_key
-      (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (pk:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure
-      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       Prims.l_True
       (fun _ -> Prims.l_True)

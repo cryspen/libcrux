@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cca.Unpacked
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -63,7 +63,7 @@ let transpose_a
             v_K
             (fun v__j ->
                 let v__j:usize = v__j in
-                Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
+                Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
                 <:
                 Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           <:
@@ -169,7 +169,8 @@ let unpack_public_key
         unpacked_public_key.f_ind_cpa_public_key with
         Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
         =
-        Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_K
+        Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_T_AS_NTT_ENCODED_SIZE
+          v_K
           #v_Vector
           (public_key.Libcrux_ml_kem.Types.f_value.[ {
                 Core.Ops.Range.f_end = v_T_AS_NTT_ENCODED_SIZE
@@ -257,7 +258,7 @@ let unpack_public_key
       Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
         #v_K
         #FStar.Tactics.Typeclasses.solve
-        (Libcrux_ml_kem.Types.impl_20__as_slice v_PUBLIC_KEY_SIZE public_key <: t_Slice u8)
+        (Libcrux_ml_kem.Types.impl_21__as_slice v_PUBLIC_KEY_SIZE public_key <: t_Slice u8)
     }
     <:
     t_MlKemPublicKeyUnpacked v_K v_Vector

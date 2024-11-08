@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cpa
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -29,6 +29,24 @@ val deserialize_secret_key
           let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
           Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
           Spec.MLKEM.vector_decode_12 #v_K secret_key)
+
+/// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
+/// in the `ciphertext`.
+val deserialize_then_decompress_u
+      (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
+    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
+        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K)
+      (ensures
+        fun res ->
+          let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
+          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
+          Spec.MLKEM.(vector_ntt (decode_then_decompress_u #v_K
+                  (Seq.slice ciphertext 0 (v (Spec.MLKEM.v_C1_SIZE v_K))))))
 
 /// Sample a vector of ring elements from a centered binomial distribution.
 val sample_ring_element_cbd
@@ -188,6 +206,64 @@ val generate_keypair_unpacked
                       .f_t_as_ntt
                     i)))
 
+/// This function implements <strong>Algorithm 14</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
+/// Algorithm 14 is reproduced below:
+/// ```plaintext
+/// Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+/// Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+/// Output: message m ∈ 𝔹^{32}.
+/// c₁ ← c[0 : 32dᵤk]
+/// c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
+/// u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
+/// v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
+/// ŝ ← ByteDecode₁₂(dkₚₖₑ)
+/// w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
+/// m ← ByteEncode₁(Compress₁(w))
+/// return m
+/// ```
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+val decrypt_unpacked
+      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
+          usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (secret_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
+      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
+    : Prims.Pure (t_Array u8 (sz 32))
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
+        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
+        v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
+        v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K)
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 32) = result in
+          result ==
+          Spec.MLKEM.ind_cpa_decrypt_unpacked v_K
+            ciphertext
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector secret_key.f_secret_as_ntt))
+
+val decrypt
+      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
+          usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (secret_key: t_Slice u8)
+      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
+    : Prims.Pure (t_Array u8 (sz 32))
+      (requires
+        Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
+        v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K /\
+        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
+        v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K)
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 32) = result in
+          result == Spec.MLKEM.ind_cpa_decrypt v_K secret_key ciphertext)
+
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
 val compress_then_serialize_u
       (v_K v_OUT_LEN v_COMPRESSION_FACTOR v_BLOCK_LEN: usize)
@@ -303,82 +379,6 @@ val encrypt
           let result:t_Array u8 v_CIPHERTEXT_SIZE = result in
           let expected, valid = Spec.MLKEM.ind_cpa_encrypt v_K public_key message randomness in
           valid ==> result == expected)
-
-/// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
-/// in the `ciphertext`.
-val deserialize_then_decompress_u
-      (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      (requires
-        Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
-        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K)
-      (ensures
-        fun res ->
-          let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
-          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
-          Spec.MLKEM.(vector_ntt (decode_then_decompress_u #v_K
-                  (Seq.slice ciphertext 0 (v (Spec.MLKEM.v_C1_SIZE v_K))))))
-
-/// This function implements <strong>Algorithm 14</strong> of the
-/// NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
-/// Algorithm 14 is reproduced below:
-/// ```plaintext
-/// Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
-/// Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
-/// Output: message m ∈ 𝔹^{32}.
-/// c₁ ← c[0 : 32dᵤk]
-/// c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
-/// u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
-/// v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
-/// ŝ ← ByteDecode₁₂(dkₚₖₑ)
-/// w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
-/// m ← ByteEncode₁(Compress₁(w))
-/// return m
-/// ```
-/// The NIST FIPS 203 standard can be found at
-/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-val decrypt_unpacked
-      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
-          usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (secret_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
-      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32))
-      (requires
-        Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
-        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
-        v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
-        v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K)
-      (ensures
-        fun result ->
-          let result:t_Array u8 (sz 32) = result in
-          result ==
-          Spec.MLKEM.ind_cpa_decrypt_unpacked v_K
-            ciphertext
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector secret_key.f_secret_as_ntt))
-
-val decrypt
-      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
-          usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (secret_key: t_Slice u8)
-      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32))
-      (requires
-        Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
-        v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
-        v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K /\
-        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
-        v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K)
-      (ensures
-        fun result ->
-          let result:t_Array u8 (sz 32) = result in
-          result == Spec.MLKEM.ind_cpa_decrypt v_K secret_key ciphertext)
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 val serialize_secret_key

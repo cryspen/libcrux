@@ -17,13 +17,13 @@ let field_modulus_range (#v_Vector: Type0)
         {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
         (a: v_Vector) =
     let coef = Libcrux_ml_kem.Vector.Traits.f_to_i16_array a in
-    forall (i:nat). i < 16 ==> v (Seq.index coef i) > -(v $FIELD_MODULUS) /\\
-        v (Seq.index coef i) < v $FIELD_MODULUS")]
+    forall (i:nat). i < 16 ==> v (Seq.index coef i) > -3329 /\\
+        v (Seq.index coef i) < 3329")]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("field_modulus_range $a"))]
 #[hax_lib::ensures(|result| fstar!("forall (i:nat). i < 16 ==>
     v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) >= 0 /\\
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) < v $FIELD_MODULUS"))]
+    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) < 3329"))]
 pub(super) fn to_unsigned_field_element<Vector: Operations>(
     a: Vector,
 ) -> Vector {

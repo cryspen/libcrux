@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cca.Multiplexing
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -52,7 +52,7 @@ let decapsulate
         private_key ciphertext
 
 let encapsulate
-      (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
+      (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
       (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: t_Array u8 (sz 32))
@@ -61,23 +61,23 @@ let encapsulate
   then
     Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.encapsulate v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE
       v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR
-      v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
+      v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
       v_ETA2_RANDOMNESS_SIZE public_key randomness
   else
     if Libcrux_platform.Platform.simd128_support ()
     then
       Libcrux_ml_kem.Ind_cca.Instantiations.Neon.encapsulate v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE
         v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR
-        v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
+        v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
         v_ETA2_RANDOMNESS_SIZE public_key randomness
     else
       Libcrux_ml_kem.Ind_cca.Instantiations.Portable.encapsulate v_K v_CIPHERTEXT_SIZE
         v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR
-        v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
+        v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
         v_ETA2_RANDOMNESS_SIZE public_key randomness
 
 let generate_keypair
-      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
+      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (randomness: t_Array u8 (sz 64))
      =
@@ -87,7 +87,7 @@ let generate_keypair
       v_CPA_PRIVATE_KEY_SIZE
       v_PRIVATE_KEY_SIZE
       v_PUBLIC_KEY_SIZE
-      v_RANKED_BYTES_PER_RING_ELEMENT
+      v_BYTES_PER_RING_ELEMENT
       v_ETA1
       v_ETA1_RANDOMNESS_SIZE
       randomness
@@ -98,7 +98,7 @@ let generate_keypair
         v_CPA_PRIVATE_KEY_SIZE
         v_PRIVATE_KEY_SIZE
         v_PUBLIC_KEY_SIZE
-        v_RANKED_BYTES_PER_RING_ELEMENT
+        v_BYTES_PER_RING_ELEMENT
         v_ETA1
         v_ETA1_RANDOMNESS_SIZE
         randomness
@@ -107,7 +107,7 @@ let generate_keypair
         v_CPA_PRIVATE_KEY_SIZE
         v_PRIVATE_KEY_SIZE
         v_PUBLIC_KEY_SIZE
-        v_RANKED_BYTES_PER_RING_ELEMENT
+        v_BYTES_PER_RING_ELEMENT
         v_ETA1
         v_ETA1_RANDOMNESS_SIZE
         randomness

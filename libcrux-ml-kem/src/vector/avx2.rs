@@ -35,6 +35,7 @@ fn from_i16_array(array: &[i16]) -> SIMD256Vector {
     }
 }
 
+#[hax_lib::attributes]
 impl Operations for SIMD256Vector {
     #[inline(always)]
     #[ensures(|out| fstar!("impl.f_repr out == Seq.create 16 0s"))]

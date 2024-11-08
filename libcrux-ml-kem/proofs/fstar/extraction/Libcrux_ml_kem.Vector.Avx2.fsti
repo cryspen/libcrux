@@ -1,77 +1,40 @@
 module Libcrux_ml_kem.Vector.Avx2
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
-let _ =
-  (* This module has implicit dependencies, here we make them explicit. *)
-  (* The implicit dependencies arise from typeclasses instances. *)
-  let open Libcrux_ml_kem.Vector.Traits in
-  ()
+type t_SIMD256Vector = { f_elements:u8 }
 
-noeq
+val from_i16_array (array: t_Slice i16)
+    : Prims.Pure t_SIMD256Vector Prims.l_True (fun _ -> Prims.l_True)
 
-type t_SIMD256Vector = { f_elements:Libcrux_intrinsics.Avx2_extract.t_Vec256 }
+val zero: Prims.unit -> Prims.Pure t_SIMD256Vector Prims.l_True (fun _ -> Prims.l_True)
 
-let repr (x:t_SIMD256Vector) : t_Array i16 (sz 16) = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 x.f_elements
-
-val vec_from_i16_array (array: t_Slice i16)
-    : Prims.Pure t_SIMD256Vector
-      Prims.l_True
-      (ensures
-        fun result ->
-          let result:t_SIMD256Vector = result in
-          repr result == array)
-
-val vec_zero: Prims.unit
-  -> Prims.Pure t_SIMD256Vector
-      Prims.l_True
-      (ensures
-        fun result ->
-          let result:t_SIMD256Vector = result in
-          repr result == Seq.create 16 0s)
-
-val vec_to_i16_array (v: t_SIMD256Vector)
-    : Prims.Pure (t_Array i16 (sz 16))
-      Prims.l_True
-      (ensures
-        fun result ->
-          let result:t_Array i16 (sz 16) = result in
-          result == repr v)
+val to_i16_array (v: t_SIMD256Vector)
+    : Prims.Pure (t_Array i16 (sz 16)) Prims.l_True (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector =
+let impl_2: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
   {
     _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
     _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
-    f_repr_pre = (fun (x: t_SIMD256Vector) -> true);
-    f_repr_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> true);
-    f_repr = fun (x: t_SIMD256Vector) -> vec_to_i16_array x
-  }
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
-  {
-    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
-    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
-    _super_8706949974463268012 = FStar.Tactics.Typeclasses.solve;
     f_ZERO_pre = (fun (_: Prims.unit) -> true);
     f_ZERO_post
     =
     (fun (_: Prims.unit) (out: t_SIMD256Vector) -> impl.f_repr out == Seq.create 16 0s);
-    f_ZERO = (fun (_: Prims.unit) -> vec_zero ());
+    f_ZERO = (fun (_: Prims.unit) -> zero ());
     f_from_i16_array_pre
     =
     (fun (array: t_Slice i16) -> (Core.Slice.impl__len #i16 array <: usize) =. sz 16);
     f_from_i16_array_post
     =
     (fun (array: t_Slice i16) (out: t_SIMD256Vector) -> impl.f_repr out == array);
-    f_from_i16_array = (fun (array: t_Slice i16) -> vec_from_i16_array array);
+    f_from_i16_array = (fun (array: t_Slice i16) -> from_i16_array array);
     f_to_i16_array_pre = (fun (x: t_SIMD256Vector) -> true);
     f_to_i16_array_post
     =
     (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> out == impl.f_repr x);
-    f_to_i16_array = (fun (x: t_SIMD256Vector) -> vec_to_i16_array x);
+    f_to_i16_array = (fun (x: t_SIMD256Vector) -> to_i16_array x);
     f_add_pre
     =
     (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
@@ -173,7 +136,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_cond_subtract_3329_
     =
     (fun (vector: t_SIMD256Vector) ->
-        let _:Prims.unit = admit () in
         { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.cond_subtract_3329_ vector.f_elements }
         <:
         t_SIMD256Vector);
@@ -217,7 +179,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_compress_1_
     =
     (fun (vector: t_SIMD256Vector) ->
-        let _:Prims.unit = admit () in
         {
           f_elements
           =
@@ -244,7 +205,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_compress
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) ->
-        let _:Prims.unit = admit () in
         {
           f_elements
           =
@@ -292,7 +252,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_ntt_layer_1_step
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (zeta2: i16) (zeta3: i16) ->
-        let _:Prims.unit = admit () in
         {
           f_elements
           =
@@ -312,7 +271,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_ntt_layer_2_step
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) ->
-        let _:Prims.unit = admit () in
         {
           f_elements = Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_layer_2_step vector.f_elements zeta0 zeta1
         }
@@ -330,7 +288,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_ntt_layer_3_step
     =
     (fun (vector: t_SIMD256Vector) (zeta: i16) ->
-        let _:Prims.unit = admit () in
         { f_elements = Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_layer_3_step vector.f_elements zeta }
         <:
         t_SIMD256Vector);
@@ -354,7 +311,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_inv_ntt_layer_1_step
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) (zeta2: i16) (zeta3: i16) ->
-        let _:Prims.unit = admit () in
         {
           f_elements
           =
@@ -378,7 +334,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_inv_ntt_layer_2_step
     =
     (fun (vector: t_SIMD256Vector) (zeta0: i16) (zeta1: i16) ->
-        let _:Prims.unit = admit () in
         {
           f_elements
           =
@@ -397,7 +352,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_inv_ntt_layer_3_step
     =
     (fun (vector: t_SIMD256Vector) (zeta: i16) ->
-        let _:Prims.unit = admit () in
         { f_elements = Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_3_step vector.f_elements zeta }
         <:
         t_SIMD256Vector);
@@ -437,7 +391,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         (zeta2: i16)
         (zeta3: i16)
         ->
-        let _:Prims.unit = admit () in
         {
           f_elements
           =
@@ -505,7 +458,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_serialize_5_
     =
     (fun (vector: t_SIMD256Vector) ->
-        let _:Prims.unit = admit () in
         Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_5_ vector.f_elements);
     f_deserialize_5_pre
     =
@@ -514,7 +466,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_deserialize_5_
     =
     (fun (bytes: t_Slice u8) ->
-        let _:Prims.unit = admit () in
         { f_elements = Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_5_ bytes }
         <:
         t_SIMD256Vector);

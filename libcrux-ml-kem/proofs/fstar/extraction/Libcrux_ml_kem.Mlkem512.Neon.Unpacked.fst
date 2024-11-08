@@ -8,22 +8,8 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Ind_cca.Unpacked in
   let open Libcrux_ml_kem.Vector.Neon in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
-
-let encapsulate
-      (public_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
-            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-      (randomness: t_Array u8 (sz 32))
-     =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked.encapsulate (sz 2) (sz 768) (sz 800) (sz 768)
-    (sz 640) (sz 128) (sz 10) (sz 4) (sz 320) (sz 3) (sz 192) (sz 2) (sz 128) public_key randomness
-
-let init_public_key (_: Prims.unit) =
-  Core.Default.f_default #(Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
-        Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-    #FStar.Tactics.Typeclasses.solve
-    ()
 
 let serialized_public_key
       (public_key:
@@ -33,7 +19,7 @@ let serialized_public_key
      =
   let hax_temp_output, serialized:(Prims.unit & Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800)) =
     (),
-    Libcrux_ml_kem.Ind_cca.Unpacked.impl__serialized_public_key_mut (sz 2)
+    Libcrux_ml_kem.Ind_cca.Unpacked.impl_3__serialized_public_key_mut (sz 2)
       #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
       (sz 768)
       (sz 800)
@@ -44,29 +30,6 @@ let serialized_public_key
   in
   serialized
 
-let unpacked_public_key
-      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
-      (unpacked_public_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
-            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-     =
-  let hax_temp_output, unpacked_public_key:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
-      Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
-    (),
-    Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked.unpack_public_key (sz 2)
-      (sz 768)
-      (sz 768)
-      (sz 800)
-      public_key
-      unpacked_public_key
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
-        Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-  in
-  unpacked_public_key
-
 let decapsulate
       (private_key:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
@@ -76,6 +39,15 @@ let decapsulate
   Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked.decapsulate (sz 2) (sz 1632) (sz 768) (sz 800)
     (sz 768) (sz 768) (sz 640) (sz 128) (sz 10) (sz 4) (sz 320) (sz 3) (sz 192) (sz 2) (sz 128)
     (sz 800) private_key ciphertext
+
+let encapsulate
+      (public_key:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+      (randomness: t_Array u8 (sz 32))
+     =
+  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked.encapsulate (sz 2) (sz 768) (sz 800) (sz 768)
+    (sz 640) (sz 128) (sz 10) (sz 4) (sz 320) (sz 3) (sz 192) (sz 2) (sz 128) public_key randomness
 
 let generate_key_pair
       (randomness: t_Array u8 (sz 64))
@@ -102,3 +74,32 @@ let init_key_pair (_: Prims.unit) =
         Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
     #FStar.Tactics.Typeclasses.solve
     ()
+
+let init_public_key (_: Prims.unit) =
+  Core.Default.f_default #(Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+        Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+    #FStar.Tactics.Typeclasses.solve
+    ()
+
+let unpacked_public_key
+      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
+      (unpacked_public_key:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+     =
+  let hax_temp_output, unpacked_public_key:(Prims.unit &
+    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+      Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
+    (),
+    Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked.unpack_public_key (sz 2)
+      (sz 768)
+      (sz 768)
+      (sz 800)
+      public_key
+      unpacked_public_key
+    <:
+    (Prims.unit &
+      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+        Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+  in
+  unpacked_public_key

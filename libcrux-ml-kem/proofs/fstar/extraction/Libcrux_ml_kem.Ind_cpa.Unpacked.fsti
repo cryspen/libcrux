@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cpa.Unpacked
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -40,7 +40,7 @@ let impl
       {
         f_secret_as_ntt
         =
-        Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
+        Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           v_K
@@ -66,14 +66,14 @@ let impl_1
       {
         f_t_as_ntt
         =
-        Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
+        Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           v_K;
         f_seed_for_A = Rust_primitives.Hax.repeat 0uy (sz 32);
         f_A
         =
-        Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl_2__ZERO
+        Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl__ZERO
                   #v_Vector
                   ()
                 <:
