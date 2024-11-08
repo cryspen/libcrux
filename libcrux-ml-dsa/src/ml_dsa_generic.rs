@@ -1,39 +1,29 @@
-use libcrux_sha3::portable::incremental::{Shake256Absorb, XofAbsorb, XofSqueeze};
-
 use crate::{
     arithmetic::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
     },
     constants::*,
     encoding,
-    hash_functions::{shake128, shake256},
+    hash_functions::{
+        portable::{shake256_absorb, shake256_absorb_final, shake256_init, shake256_squeeze},
+        shake128, shake256,
+    },
     matrix::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
         vector_times_ring_element,
     },
     ntt::ntt,
-    polynomial::PolynomialRingElement,
     pre_hash::{DomainSeparationContext, PreHash},
     sample::{sample_challenge_ring_element, sample_mask_vector},
     samplex4,
     simd::traits::Operations,
+    types::{Signature, SigningError, VerificationError},
     utils::into_padded_array,
     MLDSASignature,
 };
 
 pub(crate) mod instantiations;
 pub(crate) mod multiplexing;
-
-pub(crate) struct Signature<
-    SIMDUnit: Operations,
-    const COMMITMENT_HASH_SIZE: usize,
-    const COLUMNS_IN_A: usize,
-    const ROWS_IN_A: usize,
-> {
-    pub commitment_hash: [u8; COMMITMENT_HASH_SIZE],
-    pub signer_response: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
-    pub hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
-}
 
 /// Generate a key pair.
 pub(crate) fn generate_key_pair<
@@ -52,10 +42,10 @@ pub(crate) fn generate_key_pair<
 ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
     let mut seed_expanded = [0; 128];
-    let mut shake = Shake256Absorb::new();
-    shake.absorb(&randomness);
-    let mut shake = shake.absorb_final(&[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
-    shake.squeeze(&mut seed_expanded);
+    let mut shake = shake256_init();
+    shake256_absorb(&mut shake, &randomness);
+    let mut shake = shake256_absorb_final(shake, &[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
+    shake256_squeeze(&mut shake, &mut seed_expanded);
 
     let (seed_for_a, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
     let (seed_for_error_vectors, seed_for_signing) =
@@ -99,20 +89,6 @@ pub(crate) fn generate_key_pair<
     (signing_key_serialized, verification_key_serialized)
 }
 
-#[derive(Debug)]
-pub enum VerificationError {
-    MalformedHintError,
-    SignerResponseExceedsBoundError,
-    CommitmentHashesDontMatchError,
-    ContextTooLongError,
-}
-
-#[derive(Debug)]
-pub enum SigningError {
-    RejectionSamplingError,
-    ContextTooLongError,
-}
-
 #[allow(non_snake_case)]
 pub(crate) fn sign_pre_hashed<
     SIMDUnit: Operations,
@@ -145,7 +121,6 @@ pub(crate) fn sign_pre_hashed<
         return Err(SigningError::ContextTooLongError);
     }
     let pre_hashed_message = PH::hash(message);
-
     sign_internal::<
         SIMDUnit,
         Shake128X4,
@@ -199,6 +174,7 @@ pub(crate) fn sign<
     context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
+    // TODO: Support implicit into() in ? so that this match becomes unnecessary
     sign_internal::<
         SIMDUnit,
         Shake128X4,
@@ -280,12 +256,12 @@ pub(crate) fn sign_internal<
 
     let mut mask_seed = [0; MASK_SEED_SIZE];
     {
-        let mut shake = Shake256Absorb::new();
-        shake.absorb(&seed_for_signing);
-        shake.absorb(&randomness);
-        let mut shake = shake.absorb_final(&message_representative);
+        let mut shake = shake256_init();
+        shake256_absorb(&mut shake, &seed_for_signing);
+        shake256_absorb(&mut shake, &randomness);
+        let mut shake = shake256_absorb_final(shake, &message_representative);
 
-        shake.squeeze(&mut mask_seed);
+        shake256_squeeze(&mut shake, &mut mask_seed);
     }
 
     let mut domain_separator_for_mask: u16 = 0;
@@ -326,11 +302,11 @@ pub(crate) fn sign_internal<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut shake = Shake256Absorb::new();
-            shake.absorb(&message_representative);
-            let mut shake = shake.absorb_final(&commitment_serialized);
+            let mut shake = shake256_init();
+            shake256_absorb(&mut shake, &message_representative);
+            let mut shake = shake256_absorb_final(shake, &commitment_serialized);
 
-            shake.squeeze(&mut commitment_hash_candidate);
+            shake256_squeeze(&mut shake, &mut commitment_hash_candidate);
         }
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
@@ -443,19 +419,25 @@ fn derive_message_representative(
     message: &[u8],
     message_representative: &mut [u8; 64],
 ) {
-    let mut shake = Shake256Absorb::new();
-    shake.absorb(&verification_key_hash);
+    let mut shake = shake256_init();
+    shake256_absorb(&mut shake, &verification_key_hash);
     if let Some(domain_separation_context) = domain_separation_context {
-        shake.absorb(&[domain_separation_context.pre_hash_oid().is_some() as u8]);
-        shake.absorb(&[domain_separation_context.context().len() as u8]);
-        shake.absorb(domain_separation_context.context());
+        shake256_absorb(
+            &mut shake,
+            &[domain_separation_context.pre_hash_oid().is_some() as u8],
+        );
+        shake256_absorb(
+            &mut shake,
+            &[domain_separation_context.context().len() as u8],
+        );
+        shake256_absorb(&mut shake, domain_separation_context.context());
         if let Some(pre_hash_oid) = domain_separation_context.pre_hash_oid() {
-            shake.absorb(pre_hash_oid)
+            shake256_absorb(&mut shake, pre_hash_oid)
         }
     }
 
-    let mut shake = shake.absorb_final(message);
-    shake.squeeze(message_representative);
+    let mut shake = shake256_absorb_final(shake, message);
+    shake256_squeeze(&mut shake, message_representative);
 }
 
 /// The internal verification API.
@@ -545,11 +527,11 @@ pub(crate) fn verify_internal<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut shake = Shake256Absorb::new();
-            shake.absorb(&message_representative);
-            let mut shake = shake.absorb_final(&commitment_serialized);
+            let mut shake = shake256_init();
+            shake256_absorb(&mut shake, &message_representative);
+            let mut shake = shake256_absorb_final(shake, &commitment_serialized);
 
-            shake.squeeze(&mut commitment_hash);
+            shake256_squeeze(&mut shake, &mut commitment_hash);
         }
 
         if signature.commitment_hash != commitment_hash {
@@ -586,6 +568,7 @@ pub(crate) fn verify<
     context: &[u8],
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
+    // TODO: Support implicit into() in ? so that this match becomes unnecessary
     verify_internal::<
         SIMDUnit,
         Shake128X4,

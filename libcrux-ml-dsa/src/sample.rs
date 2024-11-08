@@ -251,8 +251,8 @@ pub(crate) fn sample_four_error_ring_elements<
     seed3[64] = domain_separator3 as u8;
     seed3[65] = (domain_separator3 >> 8) as u8;
 
-    let mut state = Shake256::init_absorb(&seed0, &seed1, &seed2, &seed3);
-    let randomnesses = state.squeeze_first_block();
+    let mut state = Shake256::init_absorb_x4(&seed0, &seed1, &seed2, &seed3);
+    let randomnesses = state.squeeze_first_block_x4();
 
     // Every call to |rejection_sample_less_than_field_modulus|
     // will result in a call to |SIMDUnit::rejection_sample_less_than_field_modulus|;
@@ -283,7 +283,7 @@ pub(crate) fn sample_four_error_ring_elements<
 
     while !done0 || !done1 || !done2 || !done3 {
         // Always sample another 4, but we only use it if we actually need it.
-        let randomnesses = state.squeeze_next_block();
+        let randomnesses = state.squeeze_next_block_x4();
         if !done0 {
             done0 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
                 &randomnesses.0,
@@ -380,7 +380,7 @@ pub(crate) fn sample_mask_vector<
             let mut out1 = [0; 576];
             let mut out2 = [0; 576];
             let mut out3 = [0; 576];
-            Shake256X4::shake256(
+            Shake256X4::shake256_x4(
                 &seed0, &seed1, &seed2, &seed3, &mut out0, &mut out1, &mut out2, &mut out3,
             );
             mask[0] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0);
@@ -393,7 +393,7 @@ pub(crate) fn sample_mask_vector<
             let mut out1 = [0; 640];
             let mut out2 = [0; 640];
             let mut out3 = [0; 640];
-            Shake256X4::shake256(
+            Shake256X4::shake256_x4(
                 &seed0, &seed1, &seed2, &seed3, &mut out0, &mut out1, &mut out2, &mut out3,
             );
             mask[0] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0);

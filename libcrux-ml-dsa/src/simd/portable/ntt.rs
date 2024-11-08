@@ -1,10 +1,7 @@
-use super::arithmetic::{self, montgomery_multiply_fe_by_fer};
-use crate::simd::{
-    portable::PortableSIMDUnit,
-    traits::{
-        montgomery_multiply_by_fer, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT,
-        ZETAS_TIMES_MONTGOMERY_R,
-    },
+use super::arithmetic::{self, montgomery_multiply_by_constant, montgomery_multiply_fe_by_fer};
+use super::vector_type::PortableSIMDUnit;
+use crate::simd::traits::{
+    COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT, ZETAS_TIMES_MONTGOMERY_R,
 };
 
 #[inline(always)]
@@ -33,6 +30,7 @@ pub fn simd_unit_ntt_at_layer_0(
 
     simd_unit
 }
+
 #[inline(always)]
 pub fn simd_unit_ntt_at_layer_1(
     mut simd_unit: PortableSIMDUnit,
@@ -57,6 +55,7 @@ pub fn simd_unit_ntt_at_layer_1(
 
     simd_unit
 }
+
 #[inline(always)]
 pub fn simd_unit_ntt_at_layer_2(mut simd_unit: PortableSIMDUnit, zeta: i32) -> PortableSIMDUnit {
     let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[4], zeta);
@@ -104,6 +103,7 @@ pub fn invert_ntt_at_layer_0(
 
     simd_unit
 }
+
 #[inline(always)]
 pub fn invert_ntt_at_layer_1(
     mut simd_unit: PortableSIMDUnit,
@@ -128,6 +128,7 @@ pub fn invert_ntt_at_layer_1(
 
     simd_unit
 }
+
 #[inline(always)]
 pub fn invert_ntt_at_layer_2(mut simd_unit: PortableSIMDUnit, zeta: i32) -> PortableSIMDUnit {
     let a_minus_b = simd_unit.coefficients[4] - simd_unit.coefficients[0];
@@ -167,6 +168,7 @@ fn ntt_at_layer_0(zeta_i: &mut usize, re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_
 
     *zeta_i -= 1;
 }
+
 #[inline(always)]
 fn ntt_at_layer_1(zeta_i: &mut usize, re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
     *zeta_i += 1;
@@ -183,13 +185,16 @@ fn ntt_at_layer_1(zeta_i: &mut usize, re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_
 
     *zeta_i -= 1;
 }
+
 #[inline(always)]
 fn ntt_at_layer_2(zeta_i: &mut usize, re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
     for round in 0..re.len() {
         *zeta_i += 1;
         re[round] = simd_unit_ntt_at_layer_2(re[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
     }
+    ()
 }
+
 #[inline(always)]
 fn ntt_at_layer_3_plus<const LAYER: usize>(
     zeta_i: &mut usize,
@@ -204,12 +209,14 @@ fn ntt_at_layer_3_plus<const LAYER: usize>(
         let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
 
         for j in offset..offset + step_by {
-            let t = montgomery_multiply_by_fer(re[j + step_by], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+            let t =
+                montgomery_multiply_by_constant(re[j + step_by], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
 
             re[j + step_by] = arithmetic::subtract(&re[j], &t);
             re[j] = arithmetic::add(&re[j], &t);
         }
     }
+    () // Needed because of https://github.com/hacspec/hax/issues/720
 }
 
 #[inline(always)]

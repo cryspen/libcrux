@@ -94,6 +94,7 @@ fn invert_ntt_at_layer_2<SIMDUnit: Operations>(
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
         );
     }
+    ()
 }
 #[inline(always)]
 fn invert_ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
@@ -114,7 +115,9 @@ fn invert_ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
             re.simd_units[j + step_by] =
                 montgomery_multiply_by_fer(a_minus_b, ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
         }
+        ()
     }
+    ()
 }
 
 #[inline(always)]

@@ -214,6 +214,7 @@ fn ntt_at_layer_2(zeta_i: &mut usize, re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEME
 
         *zeta_i += 1;
     }
+    ()
 }
 
 #[inline(always)]
@@ -238,7 +239,9 @@ fn ntt_at_layer_3_plus<const LAYER: usize>(
             re[j + step_by] = arithmetic::subtract(re[j], t);
             re[j] = arithmetic::add(re[j], t);
         }
+        () // This is because of https://github.com/hacspec/hax/issues/720
     }
+    ()
 }
 
 #[inline(always)]

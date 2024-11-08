@@ -1,34 +1,26 @@
-use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
+use crate::simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT};
 
 mod arithmetic;
-
+mod vector_type;
 // Some of the portable implementations are used in lieu of vectorized ones in
 // the AVX2 module.
 pub(crate) mod encoding;
-
 mod ntt;
 mod sample;
 
-#[derive(Clone, Copy)]
-pub struct PortableSIMDUnit {
-    pub(crate) coefficients: [arithmetic::FieldElement; COEFFICIENTS_IN_SIMD_UNIT],
-}
+pub(crate) use vector_type::PortableSIMDUnit;
 
 impl Operations for PortableSIMDUnit {
     fn ZERO() -> Self {
-        PortableSIMDUnit {
-            coefficients: [0i32; COEFFICIENTS_IN_SIMD_UNIT],
-        }
+        vector_type::ZERO()
     }
 
     fn from_coefficient_array(array: &[i32]) -> Self {
-        PortableSIMDUnit {
-            coefficients: array[0..8].try_into().unwrap(),
-        }
+        vector_type::from_coefficient_array(array)
     }
 
     fn to_coefficient_array(&self) -> [i32; 8] {
-        self.coefficients.try_into().unwrap()
+        vector_type::to_coefficient_array(&self)
     }
 
     fn add(lhs: &Self, rhs: &Self) -> Self {

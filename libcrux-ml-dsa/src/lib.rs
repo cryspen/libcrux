@@ -16,10 +16,7 @@ mod types;
 mod utils;
 // Public interface
 
-pub use {
-    ml_dsa_generic::{SigningError, VerificationError},
-    types::*,
-};
+pub use types::*;
 
 pub use crate::constants::KEY_GENERATION_RANDOMNESS_SIZE;
 pub use crate::constants::SIGNING_RANDOMNESS_SIZE;

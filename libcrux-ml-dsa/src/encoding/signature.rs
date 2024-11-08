@@ -1,6 +1,6 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT, encoding, ml_dsa_generic::Signature,
-    polynomial::PolynomialRingElement, simd::traits::Operations, VerificationError,
+    constants::COEFFICIENTS_IN_RING_ELEMENT, encoding, polynomial::PolynomialRingElement,
+    simd::traits::Operations, types::Signature, VerificationError,
 };
 
 impl<

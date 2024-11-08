@@ -3,9 +3,9 @@ macro_rules! instantiate {
         pub mod $modp {
             use crate::{
                 constants::*,
-                ml_dsa_generic::{SigningError, VerificationError},
                 pre_hash::SHAKE128_PH,
                 types::*,
+                types::{SigningError, VerificationError},
             };
 
             /// Generate key pair.

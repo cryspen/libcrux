@@ -1,7 +1,6 @@
 use crate::vector::{to_standard_domain, Operations, FIELD_ELEMENTS_IN_VECTOR};
 
-const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
-    hax_lib::fstar!("assert_norm (pow2 16 == 65536)"); [
+pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = [
     -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474, 1468,
     573, -1325, 264, 383, -829, 1458, -1602, -130, -681, 1017, 732, 608, -1542, 411, -205, -1571,
     1223, 652, -552, 1015, -1293, 1491, -282, -1544, 516, -8, -320, -666, -1618, -1162, 126, 1469,
@@ -10,38 +9,17 @@ const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
     778, 1159, -147, -777, 1483, -602, 1119, -1590, 644, -872, 349, 418, 329, -156, -75, 817, 1097,
     603, 610, 1322, -1285, -1465, 384, -1215, -136, 1218, -1335, -874, 220, -1187, -1659, -1185,
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
-]};
-
-#[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(i < 128)]
-#[hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b 1664 result"))]
-pub fn get_zeta(i:usize) -> i16 {
-    ZETAS_TIMES_MONTGOMERY_R[i]
-}
+];
 
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
-#[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
-    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r =
-    createi r (fun i -> to_spec_vector_t #r #v_Vector (m.[i]))"))]
-#[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
-    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (m:t_Array (t_PolynomialRingElement v_Vector) r) : Spec.MLKEM.vector r =
-    createi r (fun i -> to_spec_poly_t #v_Vector (m.[i]))"))]
-#[cfg_attr(hax, hax_lib::fstar::after(interface, "let to_spec_poly_t (#v_Vector: Type0)
-    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
-    admit()"))]
 // XXX: We don't want to copy this. But for eurydice we have to have this.
 #[derive(Clone, Copy)]
 pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
 
-#[hax_lib::attributes]
 impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
@@ -52,7 +30,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
-    #[requires(VECTORS_IN_RING_ELEMENT * 16 <= a.len())]
     pub(crate) fn from_i16_array(a: &[i16]) -> Self {
         let mut result = PolynomialRingElement::ZERO();
         for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -65,7 +42,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     /// sum of their constituent coefficients.
     #[inline(always)]
     pub(crate) fn add_to_ring_element<const K: usize>(&mut self, rhs: &Self) {
-        hax_lib::fstar!("admit ()");
         // The semicolon and parentheses at the end of loop are a workaround
         // for the following bug https://github.com/hacspec/hax/issues/720
         for i in 0..self.coefficients.len() {
@@ -76,8 +52,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub fn poly_barrett_reduce(&mut self) {
-        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-        hax_lib::fstar!("admit ()");
         // The semicolon and parentheses at the end of loop are a workaround
         // for the following bug https://github.com/hacspec/hax/issues/720
         for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -88,8 +62,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub(crate) fn subtract_reduce(&self, mut b: Self) -> Self {
-        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-        hax_lib::fstar!("admit ()");
         for i in 0..VECTORS_IN_RING_ELEMENT {
             let coefficient_normal_form =
                 Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
@@ -101,8 +73,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub(crate) fn add_message_error_reduce(&self, message: &Self, mut result: Self) -> Self {
-        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-        hax_lib::fstar!("admit ()");
         for i in 0..VECTORS_IN_RING_ELEMENT {
             let coefficient_normal_form =
                 Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
@@ -132,8 +102,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub(crate) fn add_error_reduce(&mut self, error: &Self) {
-        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-        hax_lib::fstar!("admit ()");
         // The semicolon and parentheses at the end of loop are a workaround
         // for the following bug https://github.com/hacspec/hax/issues/720
         for j in 0..VECTORS_IN_RING_ELEMENT {
@@ -150,8 +118,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub(crate) fn add_standard_error_reduce(&mut self, error: &Self) {
-        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-        hax_lib::fstar!("admit ()");
         // The semicolon and parentheses at the end of loop are a workaround
         // for the following bug https://github.com/hacspec/hax/issues/720
         for j in 0..VECTORS_IN_RING_ELEMENT {
@@ -207,8 +173,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     // ))))]
     #[inline(always)]
     pub(crate) fn ntt_multiply(&self, rhs: &Self) -> Self {
-        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-        hax_lib::fstar!("admit ()");
         // hax_debug_debug_assert!(lhs
         //     .coefficients
         //     .into_iter()
@@ -220,10 +184,10 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
             out.coefficients[i] = Vector::ntt_multiply(
                 &self.coefficients[i],
                 &rhs.coefficients[i],
-                get_zeta (64 + 4 * i),
-                get_zeta (64 + 4 * i + 1),
-                get_zeta (64 + 4 * i + 2),
-                get_zeta (64 + 4 * i + 3),
+                ZETAS_TIMES_MONTGOMERY_R[64 + 4 * i],
+                ZETAS_TIMES_MONTGOMERY_R[64 + 4 * i + 1],
+                ZETAS_TIMES_MONTGOMERY_R[64 + 4 * i + 2],
+                ZETAS_TIMES_MONTGOMERY_R[64 + 4 * i + 3],
             );
         }
 

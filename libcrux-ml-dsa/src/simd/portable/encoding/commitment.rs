@@ -1,4 +1,4 @@
-use crate::simd::portable::PortableSIMDUnit;
+use super::super::vector_type::PortableSIMDUnit;
 
 #[inline(always)]
 pub fn serialize<const OUTPUT_SIZE: usize>(simd_unit: PortableSIMDUnit) -> [u8; OUTPUT_SIZE] {

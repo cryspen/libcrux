@@ -600,7 +600,6 @@ fn compress_then_serialize_u<
       $BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
       $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
       length $randomness == Spec.MLKEM.v_SHARED_SECRET_SIZE"))]
-
 #[hax_lib::ensures(|result|
     fstar!("$result == Spec.MLKEM.ind_cpa_encrypt_unpacked $K $message $randomness
         (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${public_key}.f_t_as_ntt)
@@ -736,7 +735,7 @@ pub(crate) fn encrypt<
     let mut unpacked_public_key = IndCpaPublicKeyUnpacked::<K, Vector>::default();
 
     // tˆ := Decode_12(pk)
-    deserialize_ring_elements_reduced::<K, Vector>(
+    deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
         &public_key[..T_AS_NTT_ENCODED_SIZE],
         &mut unpacked_public_key.t_as_ntt,
     );

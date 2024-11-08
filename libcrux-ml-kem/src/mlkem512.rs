@@ -3,31 +3,34 @@ use super::{constants::*, ind_cca::*, types::*, *};
 
 // Kyber 512 parameters
 const RANK_512: usize = 2;
-const RANKED_BYTES_PER_RING_ELEMENT_512: usize = 768;
-const T_AS_NTT_ENCODED_SIZE_512: usize = 768;
+const RANKED_BYTES_PER_RING_ELEMENT_512: usize = RANK_512 * BITS_PER_RING_ELEMENT / 8;
+const T_AS_NTT_ENCODED_SIZE_512: usize =
+    (RANK_512 * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
 const VECTOR_U_COMPRESSION_FACTOR_512: usize = 10;
 // [hax]: hacspec/hacspec-v2#27 stealing error
 // block_len::<VECTOR_U_COMPRESSION_FACTOR_512>()
-const C1_BLOCK_SIZE_512: usize = 320;
+const C1_BLOCK_SIZE_512: usize =
+    (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR_512) / 8;
 // [hax]: hacspec/hacspec-v2#27 stealing error
 // serialized_len::<RANK_512, C1_BLOCK_SIZE_512>()
-const C1_SIZE_512: usize = 640;
+const C1_SIZE_512: usize = C1_BLOCK_SIZE_512 * RANK_512;
 const VECTOR_V_COMPRESSION_FACTOR_512: usize = 4;
 // [hax]: hacspec/hacspec-v2#27 stealing error
 // block_len::<VECTOR_V_COMPRESSION_FACTOR_512>()
-const C2_SIZE_512: usize = 128;
-const CPA_PKE_SECRET_KEY_SIZE_512: usize = 768;
-pub(crate) const CPA_PKE_PUBLIC_KEY_SIZE_512: usize = 800;
-const CPA_PKE_CIPHERTEXT_SIZE_512: usize = 768;
-
-pub(crate) const SECRET_KEY_SIZE_512: usize = 1632;
+const C2_SIZE_512: usize = (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_V_COMPRESSION_FACTOR_512) / 8;
+const CPA_PKE_SECRET_KEY_SIZE_512: usize =
+    (RANK_512 * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
+pub(crate) const CPA_PKE_PUBLIC_KEY_SIZE_512: usize = T_AS_NTT_ENCODED_SIZE_512 + 32;
+const CPA_PKE_CIPHERTEXT_SIZE_512: usize = C1_SIZE_512 + C2_SIZE_512;
+pub(crate) const SECRET_KEY_SIZE_512: usize =
+    CPA_PKE_SECRET_KEY_SIZE_512 + CPA_PKE_PUBLIC_KEY_SIZE_512 + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
 
 const ETA1: usize = 3;
-const ETA1_RANDOMNESS_SIZE: usize = 192;
+const ETA1_RANDOMNESS_SIZE: usize = ETA1 * 64;
 const ETA2: usize = 2;
-const ETA2_RANDOMNESS_SIZE: usize = 128;
+const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 
-const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = 800;
+const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE_512;
 
 // Kyber 512 types
 /// An ML-KEM 512 Ciphertext
@@ -400,11 +403,6 @@ pub fn validate_private_key(
 ///
 /// This function returns an [`MlKem512KeyPair`].
 #[cfg(not(eurydice))]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|res|
-    fstar!("let ((secret_key, public_key), valid) = Spec.MLKEM.Instances.mlkem512_generate_keypair $randomness in
-        valid ==> (${res}.f_sk.f_value == secret_key /\\ ${res}.f_pk.f_value == public_key)")
-)]
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512KeyPair {
     multiplexing::generate_keypair::<
         RANK_512,
@@ -423,12 +421,6 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512
 /// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
 /// bytes of `randomness`.
 #[cfg(not(eurydice))]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|res|
-    fstar!("let ((ciphertext, shared_secret), valid) = Spec.MLKEM.Instances.mlkem512_encapsulate ${public_key}.f_value $randomness in
-        let (res_ciphertext, res_shared_secret) = $res in
-        valid ==> (res_ciphertext.f_value == ciphertext /\\ res_shared_secret == shared_secret)")
-)]
 pub fn encapsulate(
     public_key: &MlKem512PublicKey,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -455,11 +447,6 @@ pub fn encapsulate(
 /// Generates an [`MlKemSharedSecret`].
 /// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
 #[cfg(not(eurydice))]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|res|
-    fstar!("let (shared_secret, valid) = Spec.MLKEM.Instances.mlkem512_decapsulate ${private_key}.f_value ${ciphertext}.f_value in
-        valid ==> $res == shared_secret")
-)]
 pub fn decapsulate(
     private_key: &MlKem512PrivateKey,
     ciphertext: &MlKem512Ciphertext,
