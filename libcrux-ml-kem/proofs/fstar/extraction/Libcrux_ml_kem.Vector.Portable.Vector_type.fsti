@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Vector.Portable.Vector_type
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 

@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Vector.Avx2.Ntt
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 

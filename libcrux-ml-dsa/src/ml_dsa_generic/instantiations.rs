@@ -3,9 +3,9 @@ macro_rules! instantiate {
         pub mod $modp {
             use crate::{
                 constants::*,
-                ml_dsa_generic::{SigningError, VerificationError},
                 pre_hash::SHAKE128_PH,
                 types::*,
+                types::{SigningError, VerificationError},
             };
 
             /// Generate key pair.
@@ -305,12 +305,7 @@ instantiate! {portable,
 
 // AVX2 generic implementation.
 #[cfg(feature = "simd256")]
-instantiate! {avx2,
-    crate::simd::avx2::AVX2SIMDUnit,
-    crate::hash_functions::simd256::Shake128x4,
-    crate::hash_functions::simd256::Shake256,
-    crate::hash_functions::simd256::Shake256x4
-}
+pub mod avx2;
 
 // NEON generic implementation.
 #[cfg(feature = "simd128")]
