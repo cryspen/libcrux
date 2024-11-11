@@ -82,7 +82,7 @@ val deserialize_then_decompress_ring_element_v
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires
         Spec.MLKEM.is_rank v_K /\
-        v v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
+        v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
         Seq.length serialized == 32 * v v_COMPRESSION_FACTOR)
       (ensures
         fun result ->

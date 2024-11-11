@@ -459,13 +459,13 @@ fn deserialize_then_decompress_5<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank v_K /\\ 
-    v $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\\
-    Seq.length serialized == 32 * v v_COMPRESSION_FACTOR")
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\ 
+    $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\\
+    Seq.length $serialized == 32 * v $COMPRESSION_FACTOR")
 )]
 #[hax_lib::ensures(|result|
     fstar!("Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $result == 
-        Spec.MLKEM.decode_then_decompress_v #v_K $serialized")
+        Spec.MLKEM.decode_then_decompress_v #${K} $serialized")
 )]
 pub(super) fn deserialize_then_decompress_ring_element_v<
     const K: usize,
