@@ -401,7 +401,7 @@ fn deserialize_then_decompress_11<Vector: Operations>(
 )]
 #[hax_lib::ensures(|result|
     fstar!("Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $result == 
-        Spec.MLKEM.byte_decode_then_decompress $COMPRESSION_FACTOR $serialized")
+        Spec.MLKEM.byte_decode_then_decompress (v $COMPRESSION_FACTOR) $serialized")
 )]
 pub(super) fn deserialize_then_decompress_ring_element_u<
     const COMPRESSION_FACTOR: usize,

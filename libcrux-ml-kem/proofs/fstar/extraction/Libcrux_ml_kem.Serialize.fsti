@@ -264,7 +264,7 @@ val deserialize_then_decompress_ring_element_u
         fun result ->
           let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
           Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector result ==
-          Spec.MLKEM.byte_decode_then_decompress v_COMPRESSION_FACTOR serialized)
+          Spec.MLKEM.byte_decode_then_decompress (v v_COMPRESSION_FACTOR) serialized)
 
 val serialize_uncompressed_ring_element
       (#v_Vector: Type0)
