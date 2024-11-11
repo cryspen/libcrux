@@ -326,7 +326,7 @@ fn compress_then_serialize_5<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank v_K /\\ 
-    v $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\\
+    $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\\
     Seq.length $out == v $OUT_LEN /\\ coefficients_field_modulus_range $re"))]
 #[hax_lib::ensures(|_|
     fstar!("${out_future.len()} == ${out.len()} /\\
