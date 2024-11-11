@@ -15,11 +15,11 @@ path = "src/hmac.rs"
 [features]
 default = ["portable_hacl"]
 portable_hacl = ["hacl"]
-hacl = ["dep:libcrux-sha2", "dep:libcrux-hacl-rs", "dep:krml"]
+hacl = ["dep:libcrux-sha2", "dep:libcrux-hacl-rs", "dep:libcrux-macros"]
 
 [dependencies]
-libcrux-hacl-rs = { path = "../libcrux-hacl-rs/", optional = true }
-libcrux-sha2 = { path = "../libcrux-sha2", optional = true, features = [
-    "hacl",
+libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "../hacl-rs/", optional = true }
+libcrux-sha2 = { version = "=0.0.2-beta.2", path = "../sha2", optional = true, features = [
+  "hacl",
 ] }
-krml = { package = "libcrux-hacl-rs-krml", path = "../libcrux-hacl-rs-krml", optional = true }
+libcrux-macros = { version = "=0.0.2-beta.2", path = "../macros", optional = true }

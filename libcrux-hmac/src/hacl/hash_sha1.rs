@@ -5,6 +5,7 @@
 #![allow(unreachable_patterns)]
 
 use libcrux_hacl_rs::lowstar;
+use libcrux_macros as krml;
 
 const _h0: [u32; 5] = [
     0x67452301u32,

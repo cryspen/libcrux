@@ -6,6 +6,7 @@
 
 use libcrux_hacl_rs::fstar;
 use libcrux_hacl_rs::lowstar;
+use libcrux_macros as krml;
 use libcrux_sha2::hacl as hash_sha2;
 
 #[derive(PartialEq, Clone, Copy)]

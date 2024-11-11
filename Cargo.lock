@@ -973,7 +973,7 @@ name = "libcrux-curve25519"
 version = "0.0.2-beta.2"
 dependencies = [
  "libcrux-hacl-rs",
- "libcrux-hacl-rs-krml",
+ "libcrux-macros",
  "libcrux-sha2",
 ]
 
@@ -996,7 +996,7 @@ name = "libcrux-ed25519"
 version = "0.0.2-beta.2"
 dependencies = [
  "libcrux-hacl-rs",
- "libcrux-hacl-rs-krml",
+ "libcrux-macros",
  "libcrux-sha2",
 ]
 
@@ -1022,21 +1022,16 @@ dependencies = [
 
 [[package]]
 name = "libcrux-hacl-rs"
-version = "0.1.0"
+version = "0.0.2-beta.2"
 dependencies = [
- "libcrux-hacl-rs-krml",
+ "libcrux-macros",
 ]
-
-[[package]]
-name = "libcrux-hacl-rs-krml"
-version = "0.1.0"
 
 [[package]]
 name = "libcrux-hkdf"
 version = "0.0.2-beta.2"
 dependencies = [
  "libcrux-hacl-rs",
- "libcrux-hacl-rs-krml",
  "libcrux-hmac",
 ]
 
@@ -1045,7 +1040,7 @@ name = "libcrux-hmac"
 version = "0.0.2-beta.2"
 dependencies = [
  "libcrux-hacl-rs",
- "libcrux-hacl-rs-krml",
+ "libcrux-macros",
  "libcrux-sha2",
 ]
 
@@ -1064,6 +1059,10 @@ dependencies = [
  "libcrux-sha3",
  "rand",
 ]
+
+[[package]]
+name = "libcrux-macros"
+version = "0.0.2-beta.2"
 
 [[package]]
 name = "libcrux-ml-dsa"
@@ -1139,7 +1138,7 @@ name = "libcrux-sha2"
 version = "0.0.2-beta.2"
 dependencies = [
  "libcrux-hacl-rs",
- "libcrux-hacl-rs-krml",
+ "libcrux-macros",
  "libcrux-traits",
 ]
 

@@ -1,28 +1,28 @@
 [workspace]
 members = [
-    "sys/hacl",
-    "sys/libjade",
-    "sys/platform",
-    "sys/pqclean",
-    "sys/lib25519",
-    "benchmarks",
-    "fuzz",
-    "libcrux-ml-kem",
-    "libcrux-ml-kem/fuzz",
-    "libcrux-sha3",
-    "libcrux-ml-dsa",
-    "libcrux-intrinsics",
-    "libcrux-kem",
-    "libcrux-hmac",
-    "libcrux-hkdf",
-    "libcrux-ecdh",
-    "libcrux-psq",
-    "libcrux-hacl-rs-krml",
-    "cavp",
-    "libcrux-traits",
-    "libcrux-sha2",
-    "libcrux-ed25519",
-    "libcrux-curve25519",
+  "sys/hacl",
+  "sys/libjade",
+  "sys/platform",
+  "sys/pqclean",
+  "sys/lib25519",
+  "benchmarks",
+  "fuzz",
+  "libcrux-ml-kem",
+  "libcrux-ml-kem/fuzz",
+  "libcrux-sha3",
+  "libcrux-ml-dsa",
+  "libcrux-intrinsics",
+  "libcrux-kem",
+  "libcrux-hmac",
+  "libcrux-hkdf",
+  "libcrux-ecdh",
+  "libcrux-psq",
+  "macros",
+  "cavp",
+  "traits",
+  "sha2",
+  "ed25519",
+  "curve25519",
 ]
 
 [workspace.package]
@@ -49,15 +49,15 @@ readme.workspace = true
 documentation = "https://docs.rs/libcrux/"
 description = "The Formally Verified Cryptography Library"
 exclude = [
-    "/tests",
-    "/specs",
-    "/proofs",
-    "/*.py",
-    "/wasm-demo",
-    "/fuzz",
-    "/git-hooks",
-    "/architecture",
-    "/libcrux.fst.config.json",
+  "/tests",
+  "/specs",
+  "/proofs",
+  "/*.py",
+  "/wasm-demo",
+  "/fuzz",
+  "/git-hooks",
+  "/architecture",
+  "/libcrux.fst.config.json",
 ]
 
 [lib]
@@ -68,14 +68,14 @@ bench = false                               # so libtest doesn't eat the argumen
 libcrux-platform = { version = "=0.0.2-beta.2", path = "sys/platform" }
 
 [dependencies]
-libcrux-traits = { path = "libcrux-traits" }
-libcrux-hacl-rs = { path = "libcrux-hacl-rs" }
+libcrux-traits = { version = "=0.0.2-beta.2", path = "traits" }
+libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "hacl-rs" }
 libcrux-hacl = { version = "=0.0.2-beta.2", path = "sys/hacl" }
 libcrux-platform = { version = "=0.0.2-beta.2", path = "sys/platform" }
 libcrux-hkdf = { version = "=0.0.2-beta.2", path = "libcrux-hkdf" }
 libcrux-hmac = { version = "=0.0.2-beta.2", path = "libcrux-hmac" }
-libcrux-sha2 = { path = "libcrux-sha2" }
-libcrux-ed25519 = { path = "libcrux-ed25519" }
+libcrux-sha2 = { version = "=0.0.2-beta.2", path = "sha2" }
+libcrux-ed25519 = { version = "=0.0.2-beta.2", path = "ed25519" }
 libcrux-ecdh = { version = "=0.0.2-beta.2", path = "libcrux-ecdh" }
 libcrux-ml-kem = { version = "=0.0.2-beta.2", path = "libcrux-ml-kem" }
 libcrux-kem = { version = "=0.0.2-beta.2", path = "libcrux-kem" }
@@ -123,11 +123,11 @@ panic = "abort"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
-    'cfg(hax)',
-    'cfg(eurydice)',
-    'cfg(doc_cfg)',
-    'cfg(libjade)',
-    'cfg(simd128)',
-    'cfg(simd256)',
-    'cfg(aes_ni)',
+  'cfg(hax)',
+  'cfg(eurydice)',
+  'cfg(doc_cfg)',
+  'cfg(libjade)',
+  'cfg(simd128)',
+  'cfg(simd256)',
+  'cfg(aes_ni)',
 ] }
