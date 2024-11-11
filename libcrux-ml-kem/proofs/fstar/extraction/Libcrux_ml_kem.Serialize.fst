@@ -777,7 +777,7 @@ let compress_then_serialize_ring_element_u
   result
 
 let compress_then_serialize_ring_element_v
-      (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
+      (v_K v_COMPRESSION_FACTOR v_OUT_LEN: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
@@ -862,7 +862,7 @@ let deserialize_then_decompress_10_
   re
 
 let deserialize_then_decompress_ring_element_u
-      (v_COMPRESSION_FACTOR: usize)
+      (v_K v_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:

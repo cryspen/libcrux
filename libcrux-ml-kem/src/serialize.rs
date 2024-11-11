@@ -325,14 +325,16 @@ fn compress_then_serialize_5<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(fstar!("(v $COMPRESSION_FACTOR == 4 \\/ v $COMPRESSION_FACTOR == 5) /\\ v $OUT_LEN == 32 * v $COMPRESSION_FACTOR /\\
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank v_K /\\ 
+    v $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\\
     Seq.length $out == v $OUT_LEN /\\ coefficients_field_modulus_range $re"))]
 #[hax_lib::ensures(|_|
     fstar!("${out_future.len()} == ${out.len()} /\\
-        ${out}_future == Spec.MLKEM.compress_then_encode_v $COMPRESSION_FACTOR
+        ${out}_future == Spec.MLKEM.compress_then_encode_v #v_K
             (Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $re)")
 )]
 pub(super) fn compress_then_serialize_ring_element_v<
+    const K: usize,
     const COMPRESSION_FACTOR: usize,
     const OUT_LEN: usize,
     Vector: Operations,
@@ -399,9 +401,10 @@ fn deserialize_then_decompress_11<Vector: Operations>(
 )]
 #[hax_lib::ensures(|result|
     fstar!("Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $result == 
-        Spec.MLKEM.byte_decode_then_decompress (v $COMPRESSION_FACTOR) $serialized")
+        Spec.MLKEM.byte_decode_then_decompress #v_K $serialized")
 )]
 pub(super) fn deserialize_then_decompress_ring_element_u<
+    const K: usize, 
     const COMPRESSION_FACTOR: usize,
     Vector: Operations,
 >(
@@ -457,13 +460,13 @@ fn deserialize_then_decompress_5<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(
-    (COMPRESSION_FACTOR == 4 || COMPRESSION_FACTOR == 5) &&
-    serialized.len() == 32 * COMPRESSION_FACTOR
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank v_K /\\ 
+    v $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\\
+    Seq.length serialized == 32 * v v_COMPRESSION_FACTOR")
 )]
 #[hax_lib::ensures(|result|
     fstar!("Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $result == 
-        Spec.MLKEM.decode_then_decompress_v $COMPRESSION_FACTOR $serialized")
+        Spec.MLKEM.decode_then_decompress_v #v_K $serialized")
 )]
 pub(super) fn deserialize_then_decompress_ring_element_v<
     const COMPRESSION_FACTOR: usize,

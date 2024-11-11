@@ -81,13 +81,14 @@ val deserialize_then_decompress_ring_element_v
       (serialized: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires
-        (v_COMPRESSION_FACTOR =. sz 4 || v_COMPRESSION_FACTOR =. sz 5) &&
-        (Core.Slice.impl__len #u8 serialized <: usize) =. (sz 32 *! v_COMPRESSION_FACTOR <: usize))
+        Spec.MLKEM.is_rank v_K /\
+        v v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
+        Seq.length serialized == 32 * v v_COMPRESSION_FACTOR)
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
           Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector result ==
-          Spec.MLKEM.decode_then_decompress_v v_COMPRESSION_FACTOR serialized)
+          Spec.MLKEM.decode_then_decompress_v #v_K serialized)
 
 /// Only use with public values.
 /// This MUST NOT be used with secret inputs, like its caller `deserialize_ring_elements_reduced`.
@@ -224,22 +225,22 @@ val compress_then_serialize_ring_element_u
             (Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector re))
 
 val compress_then_serialize_ring_element_v
-      (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
+      (v_K v_COMPRESSION_FACTOR v_OUT_LEN: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (out: t_Slice u8)
     : Prims.Pure (t_Slice u8)
       (requires
-        (v v_COMPRESSION_FACTOR == 4 \/ v v_COMPRESSION_FACTOR == 5) /\
-        v v_OUT_LEN == 32 * v v_COMPRESSION_FACTOR /\ Seq.length out == v v_OUT_LEN /\
-        coefficients_field_modulus_range re)
+        Spec.MLKEM.is_rank v_K /\
+        v v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
+        Seq.length out == v v_OUT_LEN /\ coefficients_field_modulus_range re)
       (ensures
         fun out_future ->
           let out_future:t_Slice u8 = out_future in
           Core.Slice.impl__len #u8 out_future == Core.Slice.impl__len #u8 out /\
           out_future ==
-          Spec.MLKEM.compress_then_encode_v v_COMPRESSION_FACTOR
+          Spec.MLKEM.compress_then_encode_v #v_K
             (Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector re))
 
 val deserialize_then_decompress_10_
@@ -251,7 +252,7 @@ val deserialize_then_decompress_10_
       (fun _ -> Prims.l_True)
 
 val deserialize_then_decompress_ring_element_u
-      (v_COMPRESSION_FACTOR: usize)
+      (v_K v_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (serialized: t_Slice u8)
@@ -263,7 +264,7 @@ val deserialize_then_decompress_ring_element_u
         fun result ->
           let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = result in
           Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector result ==
-          Spec.MLKEM.byte_decode_then_decompress (v v_COMPRESSION_FACTOR) serialized)
+          Spec.MLKEM.byte_decode_then_decompress #v_K serialized)
 
 val serialize_uncompressed_ring_element
       (#v_Vector: Type0)
