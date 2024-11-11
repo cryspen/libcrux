@@ -882,8 +882,7 @@ let deserialize_then_decompress_u
           let u_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize u_as_ntt
               i
-              (Libcrux_ml_kem.Serialize.deserialize_then_decompress_ring_element_u v_K
-                  v_U_COMPRESSION_FACTOR
+              (Libcrux_ml_kem.Serialize.deserialize_then_decompress_ring_element_u v_U_COMPRESSION_FACTOR
                   #v_Vector
                   u_bytes
                 <:

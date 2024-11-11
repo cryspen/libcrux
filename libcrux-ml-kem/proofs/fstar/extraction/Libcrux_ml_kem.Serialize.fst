@@ -862,7 +862,7 @@ let deserialize_then_decompress_10_
   re
 
 let deserialize_then_decompress_ring_element_u
-      (v_K v_COMPRESSION_FACTOR: usize)
+      (v_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
