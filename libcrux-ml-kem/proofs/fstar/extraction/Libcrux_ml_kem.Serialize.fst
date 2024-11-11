@@ -241,7 +241,7 @@ let deserialize_then_decompress_message
   result
 
 let deserialize_then_decompress_ring_element_v
-      (v_COMPRESSION_FACTOR: usize)
+      (v_K v_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:

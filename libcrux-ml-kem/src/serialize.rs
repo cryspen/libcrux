@@ -469,6 +469,7 @@ fn deserialize_then_decompress_5<Vector: Operations>(
         Spec.MLKEM.decode_then_decompress_v #v_K $serialized")
 )]
 pub(super) fn deserialize_then_decompress_ring_element_v<
+    const K: usize,
     const COMPRESSION_FACTOR: usize,
     Vector: Operations,
 >(

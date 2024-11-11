@@ -926,7 +926,8 @@ let decrypt_unpacked
     deserialize_then_decompress_u v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR #v_Vector ciphertext
   in
   let v:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Serialize.deserialize_then_decompress_ring_element_v v_V_COMPRESSION_FACTOR
+    Libcrux_ml_kem.Serialize.deserialize_then_decompress_ring_element_v v_K
+      v_V_COMPRESSION_FACTOR
       #v_Vector
       (ciphertext.[ { Core.Ops.Range.f_start = v_VECTOR_U_ENCODED_SIZE }
           <:

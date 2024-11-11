@@ -75,7 +75,7 @@ val deserialize_then_decompress_message
           Spec.MLKEM.decode_then_decompress_message serialized)
 
 val deserialize_then_decompress_ring_element_v
-      (v_COMPRESSION_FACTOR: usize)
+      (v_K v_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (serialized: t_Slice u8)

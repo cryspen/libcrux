@@ -902,7 +902,7 @@ pub(crate) fn decrypt_unpacked<
     );
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
-    let v = deserialize_then_decompress_ring_element_v::<V_COMPRESSION_FACTOR, Vector>(
+    let v = deserialize_then_decompress_ring_element_v::<K, V_COMPRESSION_FACTOR, Vector>(
         &ciphertext[VECTOR_U_ENCODED_SIZE..],
     );
 
