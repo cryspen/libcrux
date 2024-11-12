@@ -263,6 +263,7 @@ val ind_cpa_encrypt_unpacked (r:rank)
                     (matrix_A_as_ntt:matrix r) :
                     t_MLKEMCiphertext r
 
+#push-options "--z3rlimit 500 --ext context_pruning"
 let ind_cpa_encrypt_unpacked r message randomness t_as_ntt matrix_A_as_ntt =
     let r_as_ntt = sample_vector_cbd_then_ntt #r randomness (sz 0) in
     let error_1 = sample_vector_cbd2 #r randomness r in
@@ -273,6 +274,7 @@ let ind_cpa_encrypt_unpacked r message randomness t_as_ntt matrix_A_as_ntt =
     let c1 = compress_then_encode_u #r u in
     let c2 = compress_then_encode_v #r v in
     concat c1 c2
+#pop-options
 
 /// This function implements <strong>Algorithm 13</strong> of the
 /// NIST FIPS 203 specification; this is the MLKEM CPA-PKE encryption algorithm.
