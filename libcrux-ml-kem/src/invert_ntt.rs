@@ -5,6 +5,7 @@ use crate::{
 };
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]
    let invert_ntt_re_range_2 (#v_Vector: Type0)
            {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -60,6 +61,7 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::requires(fstar!("v ${*zeta_i} == 64 /\\
     invert_ntt_re_range_2 $re "))]
 #[hax_lib::ensures(|result| fstar!("invert_ntt_re_range_2 ${re}_future /\\
@@ -100,6 +102,7 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::requires(fstar!("v ${*zeta_i} == 32 /\\
     invert_ntt_re_range_2 $re"))]
 #[hax_lib::ensures(|result| fstar!("invert_ntt_re_range_2 ${re}_future /\\

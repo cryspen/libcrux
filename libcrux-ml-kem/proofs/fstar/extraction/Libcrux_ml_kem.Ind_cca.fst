@@ -12,6 +12,8 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+#push-options "--z3rlimit 300"
+
 let validate_private_key
       (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
       (#v_Hasher: Type0)
@@ -43,6 +45,8 @@ let validate_private_key
       Core.Ops.Range.t_Range usize ]
   in
   t =. expected
+
+#pop-options
 
 #push-options "--z3rlimit 150"
 

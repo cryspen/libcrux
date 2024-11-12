@@ -5,6 +5,7 @@ use crate::{
 };
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]
    let ntt_re_range_2 (#v_Vector: Type0)
          {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -61,6 +62,7 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]
    let ntt_re_range_3 (#v_Vector: Type0)
          {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -109,6 +111,7 @@ pub(crate) fn ntt_at_layer_2<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]
    let ntt_re_range_4 (#v_Vector: Type0)
          {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -261,7 +264,8 @@ pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<
 #[hax_lib::requires(fstar!("forall i. i < 8 ==> ntt_layer_7_pre (${re}.f_coefficients.[ sz i ])
     (${re}.f_coefficients.[ sz i +! sz 8 ])"))]
 #[hax_lib::ensures(|_| fstar!("Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector ${re}_future ==
-    Spec.MLKEM.poly_ntt (Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $re)"))]
+    Spec.MLKEM.poly_ntt (Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $re) /\\
+    Libcrux_ml_kem.Serialize.coefficients_field_modulus_range #$:Vector ${re}_future"))]
 pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
 ) {

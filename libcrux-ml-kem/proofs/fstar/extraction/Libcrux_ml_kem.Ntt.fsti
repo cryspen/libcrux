@@ -168,7 +168,8 @@ val ntt_binomially_sampled_ring_element
         fun re_future ->
           let re_future:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re_future in
           Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector re_future ==
-          Spec.MLKEM.poly_ntt (Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector re))
+          Spec.MLKEM.poly_ntt (Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector re) /\
+          Libcrux_ml_kem.Serialize.coefficients_field_modulus_range #v_Vector re_future)
 
 val ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)

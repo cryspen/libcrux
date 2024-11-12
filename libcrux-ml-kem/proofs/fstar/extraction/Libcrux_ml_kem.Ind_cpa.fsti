@@ -12,6 +12,19 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+val prf_input_inc (v_K: usize) (prf_inputs: t_Array (t_Array u8 (sz 33)) v_K) (domain_separator: u8)
+    : Prims.Pure (t_Array (t_Array u8 (sz 33)) v_K & u8)
+      (requires range (v domain_separator + v v_K) u8_inttype)
+      (ensures
+        fun temp_0_ ->
+          let prf_inputs_future, ds:(t_Array (t_Array u8 (sz 33)) v_K & u8) = temp_0_ in
+          v ds == v domain_separator + v v_K /\
+          (forall (i: nat).
+              i < v v_K ==>
+              v (Seq.index (Seq.index prf_inputs_future i) 32) == v domain_separator + i /\
+              Seq.slice (Seq.index prf_inputs_future i) 0 32 ==
+              Seq.slice (Seq.index prf_inputs i) 0 32))
+
 /// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
 val deserialize_secret_key
       (v_K: usize)
@@ -82,8 +95,8 @@ val sample_vector_cbd_then_ntt
             (sz (v domain_separator)) /\
           (forall (i: nat).
               i < v v_K ==>
-              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index re_as_ntt_future
-                    i)))
+              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range #v_Vector
+                (Seq.index re_as_ntt_future i)))
 
 val sample_vector_cbd_then_ntt_out
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)

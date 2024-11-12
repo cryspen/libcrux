@@ -117,6 +117,7 @@ fn validate_public_key<
 /// Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
 /// and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"))]
