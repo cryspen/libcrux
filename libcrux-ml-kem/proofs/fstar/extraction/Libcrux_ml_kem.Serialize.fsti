@@ -234,7 +234,8 @@ val compress_then_serialize_ring_element_v
       (requires
         Spec.MLKEM.is_rank v_K /\
         v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
-        Seq.length out == v v_OUT_LEN /\ coefficients_field_modulus_range re)
+        Seq.length out == v v_OUT_LEN /\ v v_OUT_LEN == 32 * v v_COMPRESSION_FACTOR /\
+        coefficients_field_modulus_range re)
       (ensures
         fun out_future ->
           let out_future:t_Slice u8 = out_future in
