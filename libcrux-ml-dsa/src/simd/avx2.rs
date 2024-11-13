@@ -138,26 +138,73 @@ impl Operations for AVX2SIMDUnit {
     #[inline(always)]
     #[allow(unsafe_code)]
     fn invert_ntt_at_layer_0(
-        simd_unit: Self,
-        zeta0: i32,
-        zeta1: i32,
-        zeta2: i32,
-        zeta3: i32,
-    ) -> Self {
+        simd_unit0: Self,
+        simd_unit1: Self,
+        zeta00: i32,
+        zeta01: i32,
+        zeta02: i32,
+        zeta03: i32,
+        zeta10: i32,
+        zeta11: i32,
+        zeta12: i32,
+        zeta13: i32,
+    ) -> (Self, Self) {
         unsafe {
-            ntt::invert_ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3).into()
+            let (a, b) = ntt::invert_ntt_at_layer_0(
+                simd_unit0.coefficients,
+                simd_unit1.coefficients,
+                zeta00,
+                zeta01,
+                zeta02,
+                zeta03,
+                zeta10,
+                zeta11,
+                zeta12,
+                zeta13,
+            );
+            (a.into(), b.into())
         }
     }
 
     #[inline(always)]
     #[allow(unsafe_code)]
-    fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        unsafe { ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1).into() }
+    fn invert_ntt_at_layer_1(
+        simd_unit0: Self,
+        simd_unit1: Self,
+        zeta00: i32,
+        zeta01: i32,
+        zeta10: i32,
+        zeta11: i32,
+    ) -> (Self, Self) {
+        unsafe {
+            let (a, b) = ntt::invert_ntt_at_layer_1(
+                simd_unit0.coefficients,
+                simd_unit1.coefficients,
+                zeta00,
+                zeta01,
+                zeta10,
+                zeta11,
+            );
+            (a.into(), b.into())
+        }
     }
 
     #[inline(always)]
     #[allow(unsafe_code)]
-    fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        unsafe { ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta).into() }
+    fn invert_ntt_at_layer_2(
+        simd_unit0: Self,
+        simd_unit1: Self,
+        zeta0: i32,
+        zeta1: i32,
+    ) -> (Self, Self) {
+        unsafe {
+            let (a, b) = ntt::invert_ntt_at_layer_2(
+                simd_unit0.coefficients,
+                simd_unit1.coefficients,
+                zeta0,
+                zeta1,
+            );
+            (a.into(), b.into())
+        }
     }
 }

@@ -102,28 +102,6 @@ fn butterfly_8(a: Vec256, b: Vec256, zeta0: i32, zeta1: i32) -> (Vec256, Vec256)
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
-pub(super) unsafe fn invert_ntt_at_layer_0(
-    simd_unit: Vec256,
-    zeta0: i32,
-    zeta1: i32,
-    zeta2: i32,
-    zeta3: i32,
-) -> Vec256 {
-    let zetas = mm256_set_epi32(zeta3, 0, zeta2, 0, zeta1, 0, zeta0, 0);
-
-    let add_by_signs = mm256_set_epi32(-1, 1, -1, 1, -1, 1, -1, 1);
-    let add_by = mm256_shuffle_epi32::<0b10_11_00_01>(simd_unit);
-    let add_by = mm256_mullo_epi32(add_by, add_by_signs);
-
-    let sums = mm256_add_epi32(simd_unit, add_by);
-
-    let products = arithmetic::montgomery_multiply(sums, zetas);
-
-    mm256_blend_epi32::<0b1_0_1_0_1_0_1_0>(sums, products)
-}
-
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-#[allow(unsafe_code)]
 unsafe fn ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[inline(always)]
     fn round(
@@ -206,22 +184,6 @@ unsafe fn ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
-pub(super) unsafe fn invert_ntt_at_layer_1(simd_unit: Vec256, zeta0: i32, zeta1: i32) -> Vec256 {
-    let zetas = mm256_set_epi32(zeta1, zeta1, 0, 0, zeta0, zeta0, 0, 0);
-
-    let add_by_signs = mm256_set_epi32(-1, -1, 1, 1, -1, -1, 1, 1);
-    let add_by = mm256_shuffle_epi32::<0b01_00_11_10>(simd_unit);
-    let add_by = mm256_mullo_epi32(add_by, add_by_signs);
-
-    let sums = mm256_add_epi32(simd_unit, add_by);
-
-    let products = arithmetic::montgomery_multiply(sums, zetas);
-
-    mm256_blend_epi32::<0b1_1_0_0_1_1_0_0>(sums, products)
-}
-
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-#[allow(unsafe_code)]
 unsafe fn ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[inline(always)]
     fn round(
@@ -253,22 +215,6 @@ unsafe fn ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     round(re, 26, -2409325, -177440, 1315589, 1341330);
     round(re, 28, 1285669, -1584928, -812732, -1439742);
     round(re, 30, -3019102, -3881060, -3628969, 3839961);
-}
-
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-#[allow(unsafe_code)]
-pub(super) unsafe fn invert_ntt_at_layer_2(simd_unit: Vec256, zeta: i32) -> Vec256 {
-    let zetas = mm256_set_epi32(zeta, zeta, zeta, zeta, 0, 0, 0, 0);
-
-    let add_by_signs = mm256_set_epi32(-1, -1, -1, -1, 1, 1, 1, 1);
-    let add_by = mm256_permute4x64_epi64::<0b01_00_11_10>(simd_unit);
-    let add_by = mm256_mullo_epi32(add_by, add_by_signs);
-
-    let sums = mm256_add_epi32(simd_unit, add_by);
-
-    let products = arithmetic::montgomery_multiply(sums, zetas);
-
-    mm256_blend_epi32::<0b1_1_1_1_0_0_0_0>(sums, products)
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
@@ -502,4 +448,88 @@ pub(crate) fn ntt(
     }
 
     re
+}
+
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+#[allow(unsafe_code)]
+pub(super) unsafe fn invert_ntt_at_layer_0(
+    simd_unit0: Vec256,
+    simd_unit1: Vec256,
+    zeta00: i32,
+    zeta01: i32,
+    zeta02: i32,
+    zeta03: i32,
+    zeta10: i32,
+    zeta11: i32,
+    zeta12: i32,
+    zeta13: i32,
+) -> (Vec256, Vec256) {
+    const SHUFFLE: i32 = 0b11_01_10_00;
+    let a_shuffled = mm256_shuffle_epi32::<SHUFFLE>(simd_unit0);
+    let b_shuffled = mm256_shuffle_epi32::<SHUFFLE>(simd_unit1);
+    
+    let lo_values = mm256_unpacklo_epi64(a_shuffled, b_shuffled);
+    let hi_values = mm256_unpackhi_epi64(a_shuffled, b_shuffled);
+    
+    let sums = arithmetic::add(lo_values, hi_values);
+    let differences = arithmetic::subtract(hi_values, lo_values);
+
+    let zetas = mm256_set_epi32(zeta13, zeta12, zeta03, zeta02,zeta11, zeta10, zeta01, zeta00);
+    let products = arithmetic::montgomery_multiply(differences, zetas);
+
+    let a_shuffled = mm256_unpacklo_epi64(sums, products);
+    let b_shuffled = mm256_unpackhi_epi64(sums, products);
+
+    let a = mm256_shuffle_epi32::<SHUFFLE>(a_shuffled);
+    let b = mm256_shuffle_epi32::<SHUFFLE>(b_shuffled);
+
+    (a, b)
+}
+
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+#[allow(unsafe_code)]
+pub(super) unsafe fn invert_ntt_at_layer_1(
+    simd_unit0: Vec256,
+    simd_unit1: Vec256,
+    zeta00: i32,
+    zeta01: i32,
+    zeta10: i32,
+    zeta11: i32,
+) -> (Vec256, Vec256) {
+    let lo_values = mm256_unpacklo_epi64(simd_unit0, simd_unit1);
+    let hi_values = mm256_unpackhi_epi64(simd_unit0, simd_unit1);
+    
+    let sums = arithmetic::add(lo_values, hi_values);
+    let differences = arithmetic::subtract(hi_values, lo_values);
+
+    let zetas = mm256_set_epi32(zeta11, zeta11, zeta01, zeta01,zeta10, zeta10, zeta00, zeta00);
+    let products = arithmetic::montgomery_multiply(differences, zetas);
+
+    let a = mm256_unpacklo_epi64(sums, products);
+    let b = mm256_unpackhi_epi64(sums, products);
+
+    (a, b)
+}
+
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+#[allow(unsafe_code)]
+pub(super) unsafe fn invert_ntt_at_layer_2(
+    simd_unit0: Vec256,
+    simd_unit1: Vec256,
+    zeta0: i32,
+    zeta1: i32,
+) -> (Vec256, Vec256) {
+    let lo_values = mm256_permute2x128_si256::<0x20>(simd_unit0, simd_unit1);
+    let hi_values = mm256_permute2x128_si256::<0x31>(simd_unit0, simd_unit1);
+    
+    let sums = arithmetic::add(lo_values, hi_values);
+    let differences = arithmetic::subtract(hi_values, lo_values);
+
+    let zetas = mm256_set_epi32(zeta1, zeta1, zeta1, zeta1,zeta0, zeta0, zeta0, zeta0);
+    let products = arithmetic::montgomery_multiply(differences, zetas);
+
+    let a = mm256_permute2x128_si256::<0x20>(sums, products);
+    let b = mm256_permute2x128_si256::<0x31>(sums, products);
+
+    (a,b)
 }

@@ -107,18 +107,45 @@ impl Operations for PortableSIMDUnit {
     }
 
     fn invert_ntt_at_layer_0(
-        simd_unit: Self,
+        simd_unit0: Self,
+        simd_unit1: Self,
+        zeta00: i32,
+        zeta01: i32,
+        zeta02: i32,
+        zeta03: i32,
+        zeta10: i32,
+        zeta11: i32,
+        zeta12: i32,
+        zeta13: i32,
+    ) -> (Self, Self) {
+        (
+            ntt::invert_ntt_at_layer_0(simd_unit0, zeta00, zeta01, zeta02, zeta03),
+            ntt::invert_ntt_at_layer_0(simd_unit1, zeta10, zeta11, zeta12, zeta13),
+        )
+    }
+    fn invert_ntt_at_layer_1(
+        simd_unit0: Self,
+        simd_unit1: Self,
+        zeta00: i32,
+        zeta01: i32,
+        zeta10: i32,
+        zeta11: i32,
+    ) -> (Self, Self) {
+        (
+            ntt::invert_ntt_at_layer_1(simd_unit0, zeta00, zeta01),
+            ntt::invert_ntt_at_layer_1(simd_unit1, zeta10, zeta11),
+        )
+    }
+
+    fn invert_ntt_at_layer_2(
+        simd_unit0: Self,
+        simd_unit1: Self,
         zeta0: i32,
         zeta1: i32,
-        zeta2: i32,
-        zeta3: i32,
-    ) -> Self {
-        ntt::invert_ntt_at_layer_0(simd_unit, zeta0, zeta1, zeta2, zeta3)
-    }
-    fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        ntt::invert_ntt_at_layer_1(simd_unit, zeta0, zeta1)
-    }
-    fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        ntt::invert_ntt_at_layer_2(simd_unit, zeta)
+    ) -> (Self, Self) {
+        (
+            ntt::invert_ntt_at_layer_2(simd_unit0, zeta0),
+            ntt::invert_ntt_at_layer_2(simd_unit1, zeta1),
+        )
     }
 }
