@@ -88,9 +88,13 @@ pub trait Operations: Copy + Clone + Repr {
             v $COEFFICIENT_BITS == 11) ==>
                 (forall (i:nat). i < 16 ==> bounded (Seq.index (f_repr $result) i) (v $COEFFICIENT_BITS))"))]
     fn compress<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
-    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
-        COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
-    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
+    #[requires(fstar!("(v $COEFFICIENT_BITS == 4 \\/
+        v $COEFFICIENT_BITS == 5 \\/
+        v $COEFFICIENT_BITS == 10 \\/
+        v $COEFFICIENT_BITS == 11) /\\
+    (forall (i:nat). i < 16 ==> v (Seq.index (f_repr $a) i) >= 0 /\\
+        v (Seq.index (f_repr $a) i) < pow2 (v $COEFFICIENT_BITS))"))]
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
 
     // NTT
     #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
@@ -189,7 +193,7 @@ pub trait Operations: Copy + Clone {
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
     fn compress_1(v: Self) -> Self;
     fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
-    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self;

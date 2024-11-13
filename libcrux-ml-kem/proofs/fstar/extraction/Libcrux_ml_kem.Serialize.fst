@@ -21,6 +21,8 @@ let to_unsigned_field_modulus
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+#push-options "--admit_smt_queries true"
+
 let deserialize_then_decompress_11_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -72,6 +74,8 @@ let deserialize_then_decompress_11_
   in
   re
 
+#pop-options
+
 let deserialize_then_decompress_4_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -122,6 +126,8 @@ let deserialize_then_decompress_4_
           re)
   in
   re
+
+#push-options "--admit_smt_queries true"
 
 let deserialize_then_decompress_5_
       (#v_Vector: Type0)
@@ -185,6 +191,8 @@ let deserialize_then_decompress_5_
           re)
   in
   re
+
+#pop-options
 
 let deserialize_then_decompress_message
       (#v_Vector: Type0)

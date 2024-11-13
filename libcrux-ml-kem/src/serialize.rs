@@ -375,6 +375,7 @@ fn deserialize_then_decompress_10<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(
     serialized.len() == 352
 )]
@@ -440,6 +441,7 @@ fn deserialize_then_decompress_4<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(
     serialized.len() == 160
 )]

@@ -1,7 +1,6 @@
 SLOW_MODULES += Libcrux_ml_kem.Vector.Portable.Serialize.fst
 
 ADMIT_MODULES = Libcrux_ml_kem.Vector.Avx2.fsti \
-              Libcrux_ml_kem.Vector.Portable.fsti \
               Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.fst \
               Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.Unpacked.fst \
               Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked.fst \
@@ -15,7 +14,6 @@ ADMIT_MODULES = Libcrux_ml_kem.Vector.Avx2.fsti \
               Libcrux_ml_kem.Mlkem512.Avx2.Unpacked.fst \
               Libcrux_ml_kem.Mlkem512.Neon.Unpacked.fst \
               Libcrux_ml_kem.Mlkem512.Portable.Unpacked.fst \
-              Libcrux_ml_kem.Vector.Portable.fst \
               Libcrux_ml_kem.Vector.Avx2.Serialize.fst \
               Libcrux_ml_kem.Vector.Avx2.fst \
               Libcrux_ml_kem.Vector.Avx2.Ntt.fst \

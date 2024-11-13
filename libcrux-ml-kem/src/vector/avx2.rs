@@ -181,8 +181,12 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
-        COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
+    #[requires(fstar!("(v $COEFFICIENT_BITS == 4 \\/
+        v $COEFFICIENT_BITS == 5 \\/
+        v $COEFFICIENT_BITS == 10 \\/
+        v $COEFFICIENT_BITS == 11) /\\
+    (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\\
+        v (Seq.index (impl.f_repr $vector) i) < pow2 (v $COEFFICIENT_BITS))"))]
     #[inline(always)]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(vector: Self) -> Self {
         Self {

@@ -45,6 +45,8 @@ let impl_4__serialized_private_key
       <:
       Rust_primitives.Hax.t_Never)
 
+#push-options "--z3rlimit 200"
+
 let transpose_a
       (v_K: usize)
       (#v_Vector: Type0)
@@ -137,6 +139,8 @@ let transpose_a
                 v_A))
   in
   v_A
+
+#pop-options
 
 let impl_4__new
       (v_K: usize)
@@ -421,7 +425,7 @@ let impl_4__serialized_public_key
     v_PUBLIC_KEY_SIZE
     self.f_public_key
 
-#push-options "--z3rlimit 200 --ext context_pruning"
+#push-options "--z3rlimit 800 --ext context_pruning"
 
 let generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:

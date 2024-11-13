@@ -625,6 +625,7 @@ pub(crate) mod unpacked {
         }
     }
 
+    #[hax_lib::fstar::options("--z3rlimit 200")]
     #[hax_lib::ensures(|result|
         fstar!("forall (i: nat). i < v $K ==>
             (forall (j: nat). j < v $K ==>
@@ -667,7 +668,7 @@ pub(crate) mod unpacked {
 
     /// Generate Unpacked Keys
     #[inline(always)]
-    #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
+    #[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning")]
     #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
         $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\\

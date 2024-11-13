@@ -198,10 +198,14 @@ impl Operations for PortableVector {
         compress::<COEFFICIENT_BITS>(a)
     }
 
-    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
-               COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
-    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
-        decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(v)
+    #[requires(fstar!("(v $COEFFICIENT_BITS == 4 \\/
+        v $COEFFICIENT_BITS == 5 \\/
+        v $COEFFICIENT_BITS == 10 \\/
+        v $COEFFICIENT_BITS == 11) /\\
+    (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\\
+        v (Seq.index (impl.f_repr $a) i) < pow2 (v $COEFFICIENT_BITS))"))]
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self {
+        decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(a)
     }
 
     #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
