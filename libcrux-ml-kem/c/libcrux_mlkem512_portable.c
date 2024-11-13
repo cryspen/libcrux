@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
+ * Eurydice: 7d686376ec943225ff89942978c6c3028bac689c
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 76be5813ea48977a7e122f6af350f1a5324b2cb6
+ * Libcrux: 150df2319c18ad9912639a9541adddd0d0e40015
  */
 
 #include "libcrux_mlkem512_portable.h"
@@ -146,7 +146,7 @@ generics
 - SECRET_KEY_SIZE= 1632
 - CIPHERTEXT_SIZE= 768
 */
-static bool validate_private_key_1c(
+static KRML_MUSTINLINE bool validate_private_key_1c(
     libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_1a *ciphertext) {
   return libcrux_ml_kem_ind_cca_validate_private_key_fb(private_key,
@@ -200,7 +200,7 @@ generics
 - RANKED_BYTES_PER_RING_ELEMENT= 768
 - PUBLIC_KEY_SIZE= 800
 */
-static bool validate_public_key_1c(uint8_t *public_key) {
+static KRML_MUSTINLINE bool validate_public_key_1c(uint8_t *public_key) {
   return libcrux_ml_kem_ind_cca_validate_public_key_86(public_key);
 }
 

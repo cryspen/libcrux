@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
+ * Eurydice: 7d686376ec943225ff89942978c6c3028bac689c
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 76be5813ea48977a7e122f6af350f1a5324b2cb6
+ * Libcrux: 150df2319c18ad9912639a9541adddd0d0e40015
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -4886,8 +4886,10 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static void encrypt_2a1(Eurydice_slice public_key, uint8_t message[32U],
-                        Eurydice_slice randomness, uint8_t ret[1568U]) {
+static KRML_MUSTINLINE void encrypt_2a1(Eurydice_slice public_key,
+                                        uint8_t message[32U],
+                                        Eurydice_slice randomness,
+                                        uint8_t ret[1568U]) {
   IndCpaPublicKeyUnpacked_af unpacked_public_key =
       build_unpacked_public_key_3f1(public_key);
   IndCpaPublicKeyUnpacked_af *uu____0 = &unpacked_public_key;
@@ -7316,8 +7318,10 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static void encrypt_2a0(Eurydice_slice public_key, uint8_t message[32U],
-                        Eurydice_slice randomness, uint8_t ret[768U]) {
+static KRML_MUSTINLINE void encrypt_2a0(Eurydice_slice public_key,
+                                        uint8_t message[32U],
+                                        Eurydice_slice randomness,
+                                        uint8_t ret[768U]) {
   IndCpaPublicKeyUnpacked_d4 unpacked_public_key =
       build_unpacked_public_key_3f0(public_key);
   IndCpaPublicKeyUnpacked_d4 *uu____0 = &unpacked_public_key;
@@ -9330,8 +9334,10 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static void encrypt_2a(Eurydice_slice public_key, uint8_t message[32U],
-                       Eurydice_slice randomness, uint8_t ret[1088U]) {
+static KRML_MUSTINLINE void encrypt_2a(Eurydice_slice public_key,
+                                       uint8_t message[32U],
+                                       Eurydice_slice randomness,
+                                       uint8_t ret[1088U]) {
   IndCpaPublicKeyUnpacked_a0 unpacked_public_key =
       build_unpacked_public_key_3f(public_key);
   IndCpaPublicKeyUnpacked_a0 *uu____0 = &unpacked_public_key;

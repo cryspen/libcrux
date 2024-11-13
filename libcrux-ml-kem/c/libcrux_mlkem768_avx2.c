@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
+ * Eurydice: 7d686376ec943225ff89942978c6c3028bac689c
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 76be5813ea48977a7e122f6af350f1a5324b2cb6
+ * Libcrux: 150df2319c18ad9912639a9541adddd0d0e40015
  */
 
 #include "libcrux_mlkem768_avx2.h"
@@ -205,7 +205,12 @@ libcrux_ml_kem_mlkem768_avx2_generate_key_pair(uint8_t randomness[64U]) {
 }
 
 /**
- Private key validation
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key_avx2 with const
+generics
+- K= 3
+- SECRET_KEY_SIZE= 2400
+- CIPHERTEXT_SIZE= 1088
 */
 static bool validate_private_key_avx2_31(
     libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key,
@@ -265,7 +270,12 @@ bool libcrux_ml_kem_mlkem768_avx2_validate_private_key_only(
 }
 
 /**
- Public key validation
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.validate_public_key_avx2 with const
+generics
+- K= 3
+- RANKED_BYTES_PER_RING_ELEMENT= 1152
+- PUBLIC_KEY_SIZE= 1184
 */
 static bool validate_public_key_avx2_31(uint8_t *public_key) {
   return libcrux_ml_kem_ind_cca_validate_public_key_ed(public_key);
