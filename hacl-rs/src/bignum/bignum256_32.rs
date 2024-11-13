@@ -504,7 +504,7 @@ pub fn r#mod(n: &[u32], a: &[u32], res: &mut [u32]) -> bool {
     if is_valid_m == 0xFFFFFFFFu32 {
         let mut r2: [u32; 8] = [0u32; 8usize];
         super::bignum256_32::precompr2(nBits, n, &mut r2);
-        let mu: u32 = super::bignum::mod_inv_uint32(n[0usize]);
+        let mu: u32 = super::base::mod_inv_uint32(n[0usize]);
         super::bignum256_32::bn_slow_precomp(n, mu, &r2, a, res)
     } else {
         (res[0usize..8usize]).copy_from_slice(&[0u32; 8usize])
@@ -850,7 +850,7 @@ fn exp_consttime_precomp(
 fn exp_vartime(nBits: u32, n: &[u32], a: &[u32], bBits: u32, b: &[u32], res: &mut [u32]) {
     let mut r2: [u32; 8] = [0u32; 8usize];
     super::bignum256_32::precompr2(nBits, n, &mut r2);
-    let mu: u32 = super::bignum::mod_inv_uint32(n[0usize]);
+    let mu: u32 = super::base::mod_inv_uint32(n[0usize]);
     super::bignum256_32::exp_vartime_precomp(n, mu, &r2, a, bBits, b, res)
 }
 
@@ -858,7 +858,7 @@ fn exp_vartime(nBits: u32, n: &[u32], a: &[u32], bBits: u32, b: &[u32], res: &mu
 fn exp_consttime(nBits: u32, n: &[u32], a: &[u32], bBits: u32, b: &[u32], res: &mut [u32]) {
     let mut r2: [u32; 8] = [0u32; 8usize];
     super::bignum256_32::precompr2(nBits, n, &mut r2);
-    let mu: u32 = super::bignum::mod_inv_uint32(n[0usize]);
+    let mu: u32 = super::base::mod_inv_uint32(n[0usize]);
     super::bignum256_32::exp_consttime_precomp(n, mu, &r2, a, bBits, b, res)
 }
 
@@ -1030,7 +1030,7 @@ Heap-allocate and initialize a montgomery context.
   The caller will need to call Hacl_Bignum256_mont_ctx_free on the return value
   to avoid memory leaks.
 */
-pub fn mont_ctx_init(n: &[u32]) -> Box<[super::bignum::bn_mont_ctx_u32]> {
+pub fn mont_ctx_init(n: &[u32]) -> Box<[super::base::bn_mont_ctx_u32]> {
     let mut r2: Box<[u32]> = vec![0u32; 8usize].into_boxed_slice();
     let mut n1: Box<[u32]> = vec![0u32; 8usize].into_boxed_slice();
     let r21: &mut [u32] = &mut r2;
@@ -1038,14 +1038,14 @@ pub fn mont_ctx_init(n: &[u32]) -> Box<[super::bignum::bn_mont_ctx_u32]> {
     (n11[0usize..8usize]).copy_from_slice(&n[0usize..8usize]);
     let nBits: u32 = 32u32.wrapping_mul(super::bignum_base::bn_get_top_index_u32(8u32, n));
     super::bignum256_32::precompr2(nBits, n, r21);
-    let mu: u32 = super::bignum::mod_inv_uint32(n[0usize]);
-    let res: super::bignum::bn_mont_ctx_u32 = super::bignum::bn_mont_ctx_u32 {
+    let mu: u32 = super::base::mod_inv_uint32(n[0usize]);
+    let res: super::base::bn_mont_ctx_u32 = super::base::bn_mont_ctx_u32 {
         len: 8u32,
         n: (*n11).into(),
         mu,
         r2: (*r21).into(),
     };
-    let buf: Box<[super::bignum::bn_mont_ctx_u32]> = vec![res].into_boxed_slice();
+    let buf: Box<[super::base::bn_mont_ctx_u32]> = vec![res].into_boxed_slice();
     buf
 }
 
@@ -1056,7 +1056,7 @@ Write `a mod n` in `res`.
   The outparam res is meant to be a 256-bit bignum, i.e. uint32_t[8].
   The argument k is a montgomery context obtained through Hacl_Bignum256_mont_ctx_init.
 */
-pub fn mod_precomp(k: &[super::bignum::bn_mont_ctx_u32], a: &[u32], res: &mut [u32]) {
+pub fn mod_precomp(k: &[super::base::bn_mont_ctx_u32], a: &[u32], res: &mut [u32]) {
     let n: &[u32] = &(k[0usize]).n;
     let mu: u32 = (k[0usize]).mu;
     let r2: &[u32] = &(k[0usize]).r2;
@@ -1083,7 +1083,7 @@ Write `a ^ b mod n` in `res`.
   • a < n
 */
 pub fn mod_exp_vartime_precomp(
-    k: &[super::bignum::bn_mont_ctx_u32],
+    k: &[super::base::bn_mont_ctx_u32],
     a: &[u32],
     bBits: u32,
     b: &[u32],
@@ -1115,7 +1115,7 @@ Write `a ^ b mod n` in `res`.
   • a < n
 */
 pub fn mod_exp_consttime_precomp(
-    k: &[super::bignum::bn_mont_ctx_u32],
+    k: &[super::base::bn_mont_ctx_u32],
     a: &[u32],
     bBits: u32,
     b: &[u32],
@@ -1140,7 +1140,7 @@ Write `a ^ (-1) mod n` in `res`.
   • a < n
 */
 pub fn mod_inv_prime_vartime_precomp(
-    k: &[super::bignum::bn_mont_ctx_u32],
+    k: &[super::base::bn_mont_ctx_u32],
     a: &[u32],
     res: &mut [u32],
 ) {

@@ -1,4 +1,4 @@
-pub mod bignum;
+pub mod base;
 pub mod bignum256;
 pub mod bignum256_32;
 pub mod bignum32;

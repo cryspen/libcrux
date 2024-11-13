@@ -216,7 +216,7 @@ Write `a * b` in `res`.
 */
 pub fn mul(a: &[u64], b: &[u64], res: &mut [u64]) {
     let mut tmp: [u64; 256] = [0u64; 256usize];
-    super::bignum::bn_karatsuba_mul_uint64(64u32, a, b, &mut tmp, res)
+    super::base::bn_karatsuba_mul_uint64(64u32, a, b, &mut tmp, res)
 }
 
 /**
@@ -227,7 +227,7 @@ Write `a * a` in `res`.
 */
 pub fn sqr(a: &[u64], res: &mut [u64]) {
     let mut tmp: [u64; 256] = [0u64; 256usize];
-    super::bignum::bn_karatsuba_sqr_uint64(64u32, a, &mut tmp, res)
+    super::base::bn_karatsuba_sqr_uint64(64u32, a, &mut tmp, res)
 }
 
 #[inline]
@@ -425,7 +425,7 @@ pub fn r#mod(n: &[u64], a: &[u64], res: &mut [u64]) -> bool {
     if is_valid_m == 0xFFFFFFFFFFFFFFFFu64 {
         let mut r2: [u64; 64] = [0u64; 64usize];
         super::bignum4096::precompr2(nBits, n, &mut r2);
-        let mu: u64 = super::bignum::mod_inv_uint64(n[0usize]);
+        let mu: u64 = super::base::mod_inv_uint64(n[0usize]);
         super::bignum4096::bn_slow_precomp(n, mu, &r2, a, res)
     } else {
         (res[0usize..64usize]).copy_from_slice(&[0u64; 64usize])
@@ -771,7 +771,7 @@ fn exp_consttime_precomp(
 fn exp_vartime(nBits: u32, n: &[u64], a: &[u64], bBits: u32, b: &[u64], res: &mut [u64]) {
     let mut r2: [u64; 64] = [0u64; 64usize];
     super::bignum4096::precompr2(nBits, n, &mut r2);
-    let mu: u64 = super::bignum::mod_inv_uint64(n[0usize]);
+    let mu: u64 = super::base::mod_inv_uint64(n[0usize]);
     super::bignum4096::exp_vartime_precomp(n, mu, &r2, a, bBits, b, res)
 }
 
@@ -779,7 +779,7 @@ fn exp_vartime(nBits: u32, n: &[u64], a: &[u64], bBits: u32, b: &[u64], res: &mu
 fn exp_consttime(nBits: u32, n: &[u64], a: &[u64], bBits: u32, b: &[u64], res: &mut [u64]) {
     let mut r2: [u64; 64] = [0u64; 64usize];
     super::bignum4096::precompr2(nBits, n, &mut r2);
-    let mu: u64 = super::bignum::mod_inv_uint64(n[0usize]);
+    let mu: u64 = super::base::mod_inv_uint64(n[0usize]);
     super::bignum4096::exp_consttime_precomp(n, mu, &r2, a, bBits, b, res)
 }
 
@@ -951,7 +951,7 @@ Heap-allocate and initialize a montgomery context.
   The caller will need to call Hacl_Bignum4096_mont_ctx_free on the return value
   to avoid memory leaks.
 */
-pub fn mont_ctx_init(n: &[u64]) -> Box<[super::bignum::bn_mont_ctx_u64]> {
+pub fn mont_ctx_init(n: &[u64]) -> Box<[super::base::bn_mont_ctx_u64]> {
     let mut r2: Box<[u64]> = vec![0u64; 64usize].into_boxed_slice();
     let mut n1: Box<[u64]> = vec![0u64; 64usize].into_boxed_slice();
     let r21: &mut [u64] = &mut r2;
@@ -959,14 +959,14 @@ pub fn mont_ctx_init(n: &[u64]) -> Box<[super::bignum::bn_mont_ctx_u64]> {
     (n11[0usize..64usize]).copy_from_slice(&n[0usize..64usize]);
     let nBits: u32 = 64u32.wrapping_mul(super::bignum_base::bn_get_top_index_u64(64u32, n) as u32);
     super::bignum4096::precompr2(nBits, n, r21);
-    let mu: u64 = super::bignum::mod_inv_uint64(n[0usize]);
-    let res: super::bignum::bn_mont_ctx_u64 = super::bignum::bn_mont_ctx_u64 {
+    let mu: u64 = super::base::mod_inv_uint64(n[0usize]);
+    let res: super::base::bn_mont_ctx_u64 = super::base::bn_mont_ctx_u64 {
         len: 64u32,
         n: (*n11).into(),
         mu,
         r2: (*r21).into(),
     };
-    let buf: Box<[super::bignum::bn_mont_ctx_u64]> = vec![res].into_boxed_slice();
+    let buf: Box<[super::base::bn_mont_ctx_u64]> = vec![res].into_boxed_slice();
     buf
 }
 
@@ -977,7 +977,7 @@ Write `a mod n` in `res`.
   The outparam res is meant to be a 4096-bit bignum, i.e. uint64_t[64].
   The argument k is a montgomery context obtained through Hacl_Bignum4096_mont_ctx_init.
 */
-pub fn mod_precomp(k: &[super::bignum::bn_mont_ctx_u64], a: &[u64], res: &mut [u64]) {
+pub fn mod_precomp(k: &[super::base::bn_mont_ctx_u64], a: &[u64], res: &mut [u64]) {
     let n: &[u64] = &(k[0usize]).n;
     let mu: u64 = (k[0usize]).mu;
     let r2: &[u64] = &(k[0usize]).r2;
@@ -1004,7 +1004,7 @@ Write `a ^ b mod n` in `res`.
   • a < n
 */
 pub fn mod_exp_vartime_precomp(
-    k: &[super::bignum::bn_mont_ctx_u64],
+    k: &[super::base::bn_mont_ctx_u64],
     a: &[u64],
     bBits: u32,
     b: &[u64],
@@ -1036,7 +1036,7 @@ Write `a ^ b mod n` in `res`.
   • a < n
 */
 pub fn mod_exp_consttime_precomp(
-    k: &[super::bignum::bn_mont_ctx_u64],
+    k: &[super::base::bn_mont_ctx_u64],
     a: &[u64],
     bBits: u32,
     b: &[u64],
@@ -1061,7 +1061,7 @@ Write `a ^ (-1) mod n` in `res`.
   • a < n
 */
 pub fn mod_inv_prime_vartime_precomp(
-    k: &[super::bignum::bn_mont_ctx_u64],
+    k: &[super::base::bn_mont_ctx_u64],
     a: &[u64],
     res: &mut [u64],
 ) {

@@ -8,7 +8,7 @@ use crate::fstar;
 use crate::lowstar;
 use crate::util as lib;
 
-pub type pbn_mont_ctx_u32<'a> = &'a [super::bignum::bn_mont_ctx_u32];
+pub type pbn_mont_ctx_u32<'a> = &'a [super::base::bn_mont_ctx_u32];
 
 /**
 Write `a + b mod 2 ^ (32 * len)` in `res`.
@@ -76,7 +76,7 @@ pub fn add_mod(len: u32, n: &[u32], a: &[u32], b: &[u32], res: &mut [u32]) {
     let mut b_copy: Box<[u32]> = vec![0u32; len as usize].into_boxed_slice();
     ((&mut a_copy)[0usize..len as usize]).copy_from_slice(&a[0usize..len as usize]);
     ((&mut b_copy)[0usize..len as usize]).copy_from_slice(&b[0usize..len as usize]);
-    super::bignum::bn_add_mod_n_u32(len, n, &a_copy, &b_copy, res)
+    super::base::bn_add_mod_n_u32(len, n, &a_copy, &b_copy, res)
 }
 
 /**
@@ -101,7 +101,7 @@ Write `(a - b) mod n` in `res`.
     - `b < n`
 */
 pub fn sub_mod(len: u32, n: &[u32], a: &[u32], b: &[u32], res: &mut [u32]) {
-    super::bignum::bn_sub_mod_n_u32(len, n, a, b, res)
+    super::base::bn_sub_mod_n_u32(len, n, a, b, res)
 }
 
 /**
@@ -117,7 +117,7 @@ Write `a * b` in `res`.
 */
 pub fn mul(len: u32, a: &[u32], b: &[u32], res: &mut [u32]) {
     let mut tmp: Box<[u32]> = vec![0u32; 4u32.wrapping_mul(len) as usize].into_boxed_slice();
-    super::bignum::bn_karatsuba_mul_uint32(len, a, b, &mut tmp, res)
+    super::base::bn_karatsuba_mul_uint32(len, a, b, &mut tmp, res)
 }
 
 /**
@@ -130,7 +130,7 @@ Write `a * a` in `res`.
 */
 pub fn sqr(len: u32, a: &[u32], res: &mut [u32]) {
     let mut tmp: Box<[u32]> = vec![0u32; 4u32.wrapping_mul(len) as usize].into_boxed_slice();
-    super::bignum::bn_karatsuba_sqr_uint32(len, a, &mut tmp, res)
+    super::base::bn_karatsuba_sqr_uint32(len, a, &mut tmp, res)
 }
 
 #[inline]
@@ -139,8 +139,8 @@ fn bn_slow_precomp(len: u32, n: &[u32], mu: u32, r2: &[u32], a: &[u32], res: &mu
     let mut a1: Box<[u32]> = vec![0u32; len.wrapping_add(len) as usize].into_boxed_slice();
     ((&mut a1)[0usize..len.wrapping_add(len) as usize])
         .copy_from_slice(&a[0usize..len.wrapping_add(len) as usize]);
-    super::bignum::bn_almost_mont_reduction_u32(len, n, mu, &mut a1, &mut a_mod);
-    super::bignum::bn_to_mont_u32(len, n, mu, r2, &a_mod, res)
+    super::base::bn_almost_mont_reduction_u32(len, n, mu, &mut a1, &mut a_mod);
+    super::base::bn_to_mont_u32(len, n, mu, r2, &a_mod, res)
 }
 
 /**
@@ -178,8 +178,8 @@ pub fn r#mod(len: u32, n: &[u32], a: &[u32], res: &mut [u32]) -> bool {
     let nBits: u32 = 32u32.wrapping_mul(super::bignum_base::bn_get_top_index_u32(len, n));
     if is_valid_m == 0xFFFFFFFFu32 {
         let mut r2: Box<[u32]> = vec![0u32; len as usize].into_boxed_slice();
-        super::bignum::bn_precomp_r2_mod_n_u32(len, nBits, n, &mut r2);
-        let mu: u32 = super::bignum::mod_inv_uint32(n[0usize]);
+        super::base::bn_precomp_r2_mod_n_u32(len, nBits, n, &mut r2);
+        let mu: u32 = super::base::mod_inv_uint32(n[0usize]);
         super::bignum32::bn_slow_precomp(len, n, mu, &r2, a, res)
     } else {
         (res[0usize..len as usize]).copy_from_slice(&vec![0u32; len as usize].into_boxed_slice())
@@ -223,10 +223,10 @@ pub fn mod_exp_vartime(
     b: &[u32],
     res: &mut [u32],
 ) -> bool {
-    let is_valid_m: u32 = super::bignum::bn_check_mod_exp_u32(len, n, a, bBits, b);
+    let is_valid_m: u32 = super::base::bn_check_mod_exp_u32(len, n, a, bBits, b);
     let nBits: u32 = 32u32.wrapping_mul(super::bignum_base::bn_get_top_index_u32(len, n));
     if is_valid_m == 0xFFFFFFFFu32 {
-        super::bignum::bn_mod_exp_vartime_u32(len, nBits, n, a, bBits, b, res)
+        super::base::bn_mod_exp_vartime_u32(len, nBits, n, a, bBits, b, res)
     } else {
         (res[0usize..len as usize]).copy_from_slice(&vec![0u32; len as usize].into_boxed_slice())
     };
@@ -269,10 +269,10 @@ pub fn mod_exp_consttime(
     b: &[u32],
     res: &mut [u32],
 ) -> bool {
-    let is_valid_m: u32 = super::bignum::bn_check_mod_exp_u32(len, n, a, bBits, b);
+    let is_valid_m: u32 = super::base::bn_check_mod_exp_u32(len, n, a, bBits, b);
     let nBits: u32 = 32u32.wrapping_mul(super::bignum_base::bn_get_top_index_u32(len, n));
     if is_valid_m == 0xFFFFFFFFu32 {
-        super::bignum::bn_mod_exp_consttime_u32(len, nBits, n, a, bBits, b, res)
+        super::base::bn_mod_exp_consttime_u32(len, nBits, n, a, bBits, b, res)
     } else {
         (res[0usize..len as usize]).copy_from_slice(&vec![0u32; len as usize].into_boxed_slice())
     };
@@ -378,7 +378,7 @@ pub fn mod_inv_prime_vartime(len: u32, n: &[u32], a: &[u32], res: &mut [u32]) ->
             c0
         };
         lowstar::ignore::ignore::<u32>(c);
-        super::bignum::bn_mod_exp_vartime_u32(len, nBits, n, a, 32u32.wrapping_mul(len), &n2, res)
+        super::base::bn_mod_exp_vartime_u32(len, nBits, n, a, 32u32.wrapping_mul(len), &n2, res)
     } else {
         (res[0usize..len as usize]).copy_from_slice(&vec![0u32; len as usize].into_boxed_slice())
     };
@@ -399,22 +399,22 @@ Heap-allocate and initialize a montgomery context.
     - `n % 2 = 1`
     - `1 < n`
 */
-pub fn mont_ctx_init(len: u32, n: &[u32]) -> Box<[super::bignum::bn_mont_ctx_u32]> {
+pub fn mont_ctx_init(len: u32, n: &[u32]) -> Box<[super::base::bn_mont_ctx_u32]> {
     let mut r2: Box<[u32]> = vec![0u32; len as usize].into_boxed_slice();
     let mut n1: Box<[u32]> = vec![0u32; len as usize].into_boxed_slice();
     let r21: &mut [u32] = &mut r2;
     let n11: &mut [u32] = &mut n1;
     (n11[0usize..len as usize]).copy_from_slice(&n[0usize..len as usize]);
     let nBits: u32 = 32u32.wrapping_mul(super::bignum_base::bn_get_top_index_u32(len, n));
-    super::bignum::bn_precomp_r2_mod_n_u32(len, nBits, n, r21);
-    let mu: u32 = super::bignum::mod_inv_uint32(n[0usize]);
-    let res: super::bignum::bn_mont_ctx_u32 = super::bignum::bn_mont_ctx_u32 {
+    super::base::bn_precomp_r2_mod_n_u32(len, nBits, n, r21);
+    let mu: u32 = super::base::mod_inv_uint32(n[0usize]);
+    let res: super::base::bn_mont_ctx_u32 = super::base::bn_mont_ctx_u32 {
         len,
         n: (*n11).into(),
         mu,
         r2: (*r21).into(),
     };
-    let buf: Box<[super::bignum::bn_mont_ctx_u32]> = vec![res].into_boxed_slice();
+    let buf: Box<[super::base::bn_mont_ctx_u32]> = vec![res].into_boxed_slice();
     buf
 }
 
@@ -427,7 +427,7 @@ Write `a mod n` in `res`.
   @param[out] res Points to `len` number of limbs, i.e. `uint32_t[len]`. Must be
     disjoint from the memory location of `a`.
 */
-pub fn mod_precomp(k: &[super::bignum::bn_mont_ctx_u32], a: &[u32], res: &mut [u32]) {
+pub fn mod_precomp(k: &[super::base::bn_mont_ctx_u32], a: &[u32], res: &mut [u32]) {
     let len1: u32 = (k[0usize]).len;
     let n: &[u32] = &(k[0usize]).n;
     let mu: u32 = (k[0usize]).mu;
@@ -459,7 +459,7 @@ Write `a ^ b mod n` in `res`.
     - `a < n`
 */
 pub fn mod_exp_vartime_precomp(
-    k: &[super::bignum::bn_mont_ctx_u32],
+    k: &[super::base::bn_mont_ctx_u32],
     a: &[u32],
     bBits: u32,
     b: &[u32],
@@ -469,7 +469,7 @@ pub fn mod_exp_vartime_precomp(
     let n: &[u32] = &(k[0usize]).n;
     let mu: u32 = (k[0usize]).mu;
     let r2: &[u32] = &(k[0usize]).r2;
-    super::bignum::bn_mod_exp_vartime_precomp_u32(len1, n, mu, r2, a, bBits, b, res)
+    super::base::bn_mod_exp_vartime_precomp_u32(len1, n, mu, r2, a, bBits, b, res)
 }
 
 /**
@@ -496,7 +496,7 @@ Write `a ^ b mod n` in `res`.
     - `a < n`
 */
 pub fn mod_exp_consttime_precomp(
-    k: &[super::bignum::bn_mont_ctx_u32],
+    k: &[super::base::bn_mont_ctx_u32],
     a: &[u32],
     bBits: u32,
     b: &[u32],
@@ -506,7 +506,7 @@ pub fn mod_exp_consttime_precomp(
     let n: &[u32] = &(k[0usize]).n;
     let mu: u32 = (k[0usize]).mu;
     let r2: &[u32] = &(k[0usize]).r2;
-    super::bignum::bn_mod_exp_consttime_precomp_u32(len1, n, mu, r2, a, bBits, b, res)
+    super::base::bn_mod_exp_consttime_precomp_u32(len1, n, mu, r2, a, bBits, b, res)
 }
 
 /**
@@ -525,7 +525,7 @@ Write `a ^ (-1) mod n` in `res`.
     - `a < n`
 */
 pub fn mod_inv_prime_vartime_precomp(
-    k: &[super::bignum::bn_mont_ctx_u32],
+    k: &[super::base::bn_mont_ctx_u32],
     a: &[u32],
     res: &mut [u32],
 ) {
@@ -575,7 +575,7 @@ pub fn mod_inv_prime_vartime_precomp(
         c0
     };
     lowstar::ignore::ignore::<u32>(c);
-    super::bignum::bn_mod_exp_vartime_precomp_u32(
+    super::base::bn_mod_exp_vartime_precomp_u32(
         len1,
         n,
         mu,
