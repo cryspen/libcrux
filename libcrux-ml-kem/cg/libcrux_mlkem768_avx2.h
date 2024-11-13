@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
+ * Eurydice: 7d686376ec943225ff89942978c6c3028bac689c
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 76be5813ea48977a7e122f6af350f1a5324b2cb6
+ * Libcrux: 122ee3d193e33f55c2324ee84f974e647255f545
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -5940,7 +5940,12 @@ static KRML_MUSTINLINE bool libcrux_ml_kem_ind_cca_validate_private_key_12(
 }
 
 /**
- Private key validation
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key_avx2 with const
+generics
+- K= 3
+- SECRET_KEY_SIZE= 2400
+- CIPHERTEXT_SIZE= 1088
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline bool
@@ -6120,7 +6125,12 @@ static KRML_MUSTINLINE bool libcrux_ml_kem_ind_cca_validate_public_key_ed(
 }
 
 /**
- Public key validation
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.validate_public_key_avx2 with const
+generics
+- K= 3
+- RANKED_BYTES_PER_RING_ELEMENT= 1152
+- PUBLIC_KEY_SIZE= 1184
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline bool
@@ -6322,7 +6332,7 @@ generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void
+static inline void
 libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_decapsulate_35(
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair,
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
@@ -6467,7 +6477,7 @@ generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE tuple_c2
+static inline tuple_c2
 libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_encapsulate_cd(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *public_key,
     uint8_t randomness[32U]) {
@@ -6676,7 +6686,7 @@ generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void
+static inline void
 libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_generate_keypair_c6(
     uint8_t randomness[64U],
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *out) {
@@ -7477,7 +7487,7 @@ generics
 - PUBLIC_KEY_SIZE= 1184
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void
+static inline void
 libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_unpack_public_key_a5(
     libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63
