@@ -4,6 +4,8 @@
 #![allow(unused_assignments)]
 #![allow(unreachable_patterns)]
 
+//! This module contains generated hacl code.
+
 use libcrux_hacl_rs::lowstar;
 
 /**

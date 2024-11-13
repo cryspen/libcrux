@@ -2,6 +2,8 @@ use super::*;
 use libcrux_traits::Digest;
 
 /// SHA2 224
+/// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
+/// process it.
 pub fn sha224(payload: &[u8]) -> [u8; SHA224_LENGTH] {
     let mut digest = [0u8; SHA224_LENGTH];
     Sha224::hash(&mut digest, payload);
@@ -9,6 +11,8 @@ pub fn sha224(payload: &[u8]) -> [u8; SHA224_LENGTH] {
 }
 
 /// SHA2 256
+/// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
+/// process it.
 pub fn sha256(payload: &[u8]) -> [u8; SHA256_LENGTH] {
     let mut digest = [0u8; SHA256_LENGTH];
     Sha256::hash(&mut digest, payload);
@@ -16,6 +20,8 @@ pub fn sha256(payload: &[u8]) -> [u8; SHA256_LENGTH] {
 }
 
 /// SHA2 384
+/// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
+/// process it.
 pub fn sha384(payload: &[u8]) -> [u8; SHA384_LENGTH] {
     let mut digest = [0u8; SHA384_LENGTH];
     Sha384::hash(&mut digest, payload);
@@ -23,6 +29,8 @@ pub fn sha384(payload: &[u8]) -> [u8; SHA384_LENGTH] {
 }
 
 /// SHA2 512
+/// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
+/// process it.
 pub fn sha512(payload: &[u8]) -> [u8; SHA512_LENGTH] {
     let mut digest = [0u8; SHA512_LENGTH];
     Sha512::hash(&mut digest, payload);
@@ -47,14 +55,16 @@ macro_rules! impl_hash {
 
         impl libcrux_traits::Digest<$digest_size> for $name {
             /// Return the digest for the given input byte slice, in immediate mode.
-            /// Will panic if `payload` is longer than `u32::MAX`.
+            /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
+            /// process it.
             fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) {
                 let payload_len = payload.len().try_into().unwrap();
                 $hash(digest, payload, payload_len)
             }
 
             /// Add the `payload` to the digest.
-            /// Will panic if `payload` is longer than `u32::MAX`.
+            /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
+            /// process it.
             fn update(&mut self, payload: &[u8]) {
                 let payload_len = payload.len().try_into().unwrap();
                 $update(self.state.as_mut(), payload, payload_len);

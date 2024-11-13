@@ -12,12 +12,9 @@ pub fn ecdh(
     public_key: impl AsRef<[u8; 32]>,
 ) -> Result<[u8; 32], Error> {
     let mut shared = [0u8; 32];
-    let ok = libcrux_curve25519::hacl::ecdh(&mut shared, private_key.as_ref(), public_key.as_ref());
-
-    if !ok {
-        Err(Error::InvalidInput)
-    } else {
-        Ok(shared)
+    match libcrux_curve25519::ecdh(&mut shared, private_key.as_ref(), public_key.as_ref()) {
+        Ok(_) => Ok(shared),
+        Err(_) => Err(Error::InvalidInput),
     }
 }
 
@@ -29,7 +26,7 @@ pub fn ecdh(
 #[inline(always)]
 pub fn secret_to_public(private_key: impl AsRef<[u8; 32]>) -> [u8; 32] {
     let mut public = [0u8; 32];
-    libcrux_curve25519::hacl::secret_to_public(&mut public, private_key.as_ref());
+    libcrux_curve25519::secret_to_public(&mut public, private_key.as_ref());
     public
 }
 

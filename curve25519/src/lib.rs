@@ -22,7 +22,11 @@ pub struct Error;
 /// This trait is implemented by the backing implementations.
 /// Only used for implementation agility.
 trait Curve25519 {
+    /// Computes a public key from a secret key.
     fn secret_to_public(pk: &mut [u8; PK_LEN], sk: &[u8; SK_LEN]);
+
+    /// Computes the scalar multiplication between the provided public and secret keys. Returns an
+    /// error if the result is 0.
     fn ecdh(out: &mut [u8; SHK_LEN], pk: &[u8; PK_LEN], sk: &[u8; SK_LEN]) -> Result<(), Error>;
 }
 

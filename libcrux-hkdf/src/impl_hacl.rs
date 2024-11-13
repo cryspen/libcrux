@@ -10,7 +10,7 @@ pub trait HkdfMode<const HASH_LEN: usize> {
     /// The result is written to `prk`.
     ///
     /// Note that this function panics if `salt` or `ikm` is longer than  (2**32 - 1) bytes.
-    fn extract(prk: &mut [u8; HASH_LEN], salt: &[u8], ikm: &[u8]);
+    fn extract(prk: &mut [u8; HASH_LEN], salt: &[u8], ikm: &[u8]) -> Result<(), Error>;
 
     /// HKDF expand using the pre-key material `prk` and `info`. The output length
     /// is defined through the type of the `okm` parameter, that the output is written to.
@@ -47,9 +47,10 @@ pub trait HkdfMode<const HASH_LEN: usize> {
         info: &[u8],
     ) -> Result<(), Error> {
         let mut prk = [0u8; HASH_LEN];
-        Self::extract(&mut prk, salt, ikm);
+        Self::extract(&mut prk, salt, ikm)?;
         Self::expand(okm, &prk, info)
     }
+
     /// HKDF using the `salt`, input key material `ikm`, `info`. The output length
     /// is defined by the parameter `okm_len`.
     /// Calls `extract` and `expand` with the given input.
@@ -58,7 +59,7 @@ pub trait HkdfMode<const HASH_LEN: usize> {
     /// Note that this function panics if `salt` or `ikm` is longer than  (2**32 - 1) bytes.
     fn hkdf_vec(salt: &[u8], ikm: &[u8], info: &[u8], okm_len: usize) -> Result<Vec<u8>, Error> {
         let mut prk = [0u8; HASH_LEN];
-        Self::extract(&mut prk, salt, ikm);
+        Self::extract(&mut prk, salt, ikm)?;
         Self::expand_vec(&prk, info, okm_len)
     }
 }
@@ -73,7 +74,11 @@ macro_rules! impl_hkdf {
             impl HkdfMode<$hash_len> for $sname {
                 const MODE: Algorithm = $mode;
 
-                fn extract(prk: &mut [u8; $hash_len], salt: &[u8], ikm: &[u8]) {
+                fn extract(
+                    prk: &mut [u8; $hash_len],
+                    salt: &[u8],
+                    ikm: &[u8],
+                ) -> Result<(), Error> {
                     extract(prk, salt, ikm)
                 }
 
@@ -93,15 +98,20 @@ macro_rules! impl_hkdf {
             /// HKDF extract using the `salt`, and the input key material `ikm`.
             /// Returns the pre-key material in an array of hash length.
             ///
-            /// Note that this function panics if `salt` or `ikm` is longer than  (2**32 - 1) bytes.
-            pub fn extract(prk: &mut [u8; $hash_len], salt: &[u8], ikm: &[u8]) {
-                crate::hacl::$extract(
+            /// Note that this function returns an [`Error::ArgumentsTooLarge`]
+            /// if `salt` or `ikm` is larger than 2**32 bytes.
+            pub fn extract(
+                prk: &mut [u8; $hash_len],
+                salt: &[u8],
+                ikm: &[u8],
+            ) -> Result<(), Error> {
+                Ok(crate::hacl::$extract(
                     prk,
                     salt,
-                    checked_u32(salt.len()).unwrap(),
+                    checked_u32(salt.len())?,
                     ikm,
-                    checked_u32(ikm.len()).unwrap(),
-                );
+                    checked_u32(ikm.len())?,
+                ))
             }
 
             /// HKDF expand using the pre-key material `prk` and `info`. The output length
@@ -110,7 +120,7 @@ macro_rules! impl_hkdf {
             /// [`Error::OkmTooLarge`] if the requested `okm_len` is too large.
             ///
             /// Note that this function returns an [`Error::ArgumentsTooLarge`]
-            /// if `salt`, `ikm`, or `OKM_LEN` is larger than 2**32 bytes.
+            /// if `prk`, `info`, or `OKM_LEN` is larger than 2**32 bytes.
             pub fn expand<const OKM_LEN: usize>(
                 okm: &mut [u8; OKM_LEN],
                 prk: &[u8],
@@ -121,15 +131,14 @@ macro_rules! impl_hkdf {
                     return Err(Error::OkmTooLarge);
                 }
 
-                crate::hacl::$expand(
+                Ok(crate::hacl::$expand(
                     okm,
                     prk,
                     checked_u32(prk.len())?,
                     info,
                     checked_u32(info.len())?,
                     checked_u32(OKM_LEN)?,
-                );
-                Ok(())
+                ))
             }
 
             /// HKDF using the `salt`, input key material `ikm`, `info`. The output length
@@ -145,7 +154,7 @@ macro_rules! impl_hkdf {
                 info: &[u8],
             ) -> Result<(), Error> {
                 let mut prk = [0u8; $hash_len];
-                extract(&mut prk, salt, ikm);
+                extract(&mut prk, salt, ikm)?;
                 expand(okm, &prk, info)
             }
 

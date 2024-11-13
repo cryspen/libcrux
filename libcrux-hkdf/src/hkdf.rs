@@ -41,7 +41,11 @@ pub enum Error {
 
 /// HKDF extract using hash function `mode`, `salt`, and the input key material `ikm`.
 /// Returns the pre-key material in a vector of tag length.
-pub fn extract(alg: Algorithm, salt: impl AsRef<[u8]>, ikm: impl AsRef<[u8]>) -> Vec<u8> {
+pub fn extract(
+    alg: Algorithm,
+    salt: impl AsRef<[u8]>,
+    ikm: impl AsRef<[u8]>,
+) -> Result<Vec<u8>, Error> {
     let salt = salt.as_ref();
     let ikm = ikm.as_ref();
     match alg {
@@ -91,8 +95,8 @@ pub fn hkdf(
     }
 }
 
-fn allocbuf<const N: usize, F: Fn(&mut [u8; N])>(f: F) -> Vec<u8> {
+fn allocbuf<const N: usize, T, E, F: Fn(&mut [u8; N]) -> Result<T, E>>(f: F) -> Result<Vec<u8>, E> {
     let mut buf = [0u8; N];
-    f(&mut buf);
-    buf.into()
+
+    f(&mut buf).map(|_| buf.into())
 }
