@@ -106,7 +106,7 @@ TEST(MlKem768TestPortableUnpacked, ConsistencyTest)
         keygen_randomness[i] = 13;
     }
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked key_pair = libcrux_ml_kem_mlkem768_portable_unpacked_init_key_pair() ;
-    libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(keygen_randomness, &key_pair);
+    libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(keygen_randomness, &key_pair);
 
     uint8_t encap_randomness[32];
     for (int i = 0; i < 32; i++)
@@ -266,7 +266,7 @@ TEST(MlKem768TestAvx2Unpacked, ConsistencyTest)
         keygen_randomness[i] = 13;
     }
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked key_pair = libcrux_ml_kem_mlkem768_avx2_unpacked_init_key_pair() ;
-    libcrux_ml_kem_mlkem768_avx2_unpacked_generate_key_pair(keygen_randomness, &key_pair);
+    libcrux_ml_kem_mlkem768_avx2_unpacked_generate_key_pair_mut(keygen_randomness, &key_pair);
 
     uint8_t encap_randomness[32];
     for (int i = 0; i < 32; i++)

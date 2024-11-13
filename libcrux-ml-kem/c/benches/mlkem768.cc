@@ -14,7 +14,7 @@
 
 void generate_random(uint8_t *output, uint32_t output_len)
 {
-  for (int i = 0; i < output_len; i++)
+  for (uint32_t i = 0; i < output_len; i++)
     output[i] = 13;
 }
 

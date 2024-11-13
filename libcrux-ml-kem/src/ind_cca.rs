@@ -35,21 +35,41 @@ pub(crate) mod instantiations;
 
 /// Serialize the secret key.
 #[inline(always)]
+fn serialize_kem_secret_key_mut<
+    const K: usize,
+    const SERIALIZED_KEY_LEN: usize,
+    Hasher: Hash<K>,
+>(
+    private_key: &[u8],
+    public_key: &[u8],
+    implicit_rejection_value: &[u8],
+    serialized: &mut [u8; SERIALIZED_KEY_LEN],
+) {
+    let mut pointer = 0;
+    serialized[pointer..pointer + private_key.len()].copy_from_slice(private_key);
+    pointer += private_key.len();
+    serialized[pointer..pointer + public_key.len()].copy_from_slice(public_key);
+    pointer += public_key.len();
+    serialized[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&Hasher::H(public_key));
+    pointer += H_DIGEST_SIZE;
+    serialized[pointer..pointer + implicit_rejection_value.len()]
+        .copy_from_slice(implicit_rejection_value);
+}
+
+/// Serialize the secret key.
+#[inline(always)]
 fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Hasher: Hash<K>>(
     private_key: &[u8],
     public_key: &[u8],
     implicit_rejection_value: &[u8],
 ) -> [u8; SERIALIZED_KEY_LEN] {
     let mut out = [0u8; SERIALIZED_KEY_LEN];
-    let mut pointer = 0;
-    out[pointer..pointer + private_key.len()].copy_from_slice(private_key);
-    pointer += private_key.len();
-    out[pointer..pointer + public_key.len()].copy_from_slice(public_key);
-    pointer += public_key.len();
-    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&Hasher::H(public_key));
-    pointer += H_DIGEST_SIZE;
-    out[pointer..pointer + implicit_rejection_value.len()]
-        .copy_from_slice(implicit_rejection_value);
+    serialize_kem_secret_key_mut::<K, SERIALIZED_KEY_LEN, Hasher>(
+        private_key,
+        public_key,
+        implicit_rejection_value,
+        &mut out,
+    );
     out
 }
 
@@ -93,6 +113,16 @@ fn validate_private_key<
 >(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     _ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+) -> bool {
+    validate_private_key_only::<K, SECRET_KEY_SIZE, Hasher>(private_key)
+}
+
+/// Validate an ML-KEM private key.
+///
+/// This implements the Hash check in 7.3 3.
+#[inline(always)]
+fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize, Hasher: Hash<K>>(
+    private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
 ) -> bool {
     // Eurydice can't access values directly on the types. We need to go to the
     // `value` directly.
@@ -226,9 +256,8 @@ pub(crate) fn decapsulate<
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
-    let (ind_cpa_secret_key, secret_key) = private_key.value.split_at(CPA_SECRET_KEY_SIZE);
-    let (ind_cpa_public_key, secret_key) = secret_key.split_at(PUBLIC_KEY_SIZE);
-    let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
+    let (ind_cpa_secret_key, ind_cpa_public_key, ind_cpa_public_key_hash, implicit_rejection_value) =
+        unpack_private_key::<CPA_SECRET_KEY_SIZE, PUBLIC_KEY_SIZE>(&private_key.value);
 
     let decrypted = crate::ind_cpa::decrypt::<
         K,
@@ -288,7 +317,8 @@ pub(crate) mod unpacked {
         constant_time_ops::{
             compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
         },
-        ind_cpa::{generate_keypair_unpacked, serialize_public_key_mut, unpacked::*},
+        hash_functions::portable::PortableHash,
+        ind_cpa::{self, generate_keypair_unpacked, serialize_public_key_mut, unpacked::*},
         matrix::sample_matrix_A,
         polynomial::PolynomialRingElement,
         serialize::deserialize_ring_elements_reduced,
@@ -344,7 +374,7 @@ pub(crate) mod unpacked {
     impl<const K: usize, Vector: Operations> MlKemPublicKeyUnpacked<K, Vector> {
         /// Get the serialized public key.
         #[inline(always)]
-        pub fn serialized_public_key_mut<
+        pub fn serialized_mut<
             const RANKED_BYTES_PER_RING_ELEMENT: usize,
             const PUBLIC_KEY_SIZE: usize,
         >(
@@ -360,17 +390,21 @@ pub(crate) mod unpacked {
 
         /// Get the serialized public key.
         #[inline(always)]
-        pub fn serialized_public_key<
+        pub fn serialized<
             const RANKED_BYTES_PER_RING_ELEMENT: usize,
             const PUBLIC_KEY_SIZE: usize,
         >(
             &self,
         ) -> MlKemPublicKey<PUBLIC_KEY_SIZE> {
-            serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
+            MlKemPublicKey::from(serialize_public_key::<
+                K,
+                RANKED_BYTES_PER_RING_ELEMENT,
+                PUBLIC_KEY_SIZE,
+                Vector,
+            >(
                 &self.ind_cpa_public_key.t_as_ntt,
                 &self.ind_cpa_public_key.seed_for_A,
-            )
-            .into()
+            ))
         }
     }
 
@@ -384,11 +418,85 @@ pub(crate) mod unpacked {
         }
     }
 
+    /// Take a serialized private key and generate an unpacked key pair from it.
+    #[inline(always)]
+    pub fn keys_from_private_key<
+        const K: usize,
+        const SECRET_KEY_SIZE: usize,
+        const CPA_SECRET_KEY_SIZE: usize,
+        const PUBLIC_KEY_SIZE: usize,
+        const BYTES_PER_RING_ELEMENT: usize,
+        const T_AS_NTT_ENCODED_SIZE: usize,
+        Vector: Operations,
+    >(
+        private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+        key_pair: &mut MlKemKeyPairUnpacked<K, Vector>,
+    ) {
+        let (
+            ind_cpa_secret_key,
+            ind_cpa_public_key,
+            ind_cpa_public_key_hash,
+            implicit_rejection_value,
+        ) = unpack_private_key::<CPA_SECRET_KEY_SIZE, PUBLIC_KEY_SIZE>(&private_key.value);
+
+        // XXX: We need to copy_from_slice here because karamel can't handle
+        //      the assignment cf. https://github.com/FStarLang/karamel/pull/491
+
+        key_pair
+            .private_key
+            .ind_cpa_private_key
+            .secret_as_ntt
+            .copy_from_slice(&ind_cpa::deserialize_secret_key::<K, Vector>(
+                ind_cpa_secret_key,
+            ));
+        ind_cpa::build_unpacked_public_key_mut::<K, T_AS_NTT_ENCODED_SIZE, Vector, PortableHash<K>>(
+            ind_cpa_public_key,
+            &mut key_pair.public_key.ind_cpa_public_key,
+        );
+        key_pair
+            .public_key
+            .public_key_hash
+            .copy_from_slice(ind_cpa_public_key_hash);
+        key_pair
+            .private_key
+            .implicit_rejection_value
+            .copy_from_slice(implicit_rejection_value);
+        key_pair
+            .public_key
+            .ind_cpa_public_key
+            .seed_for_A
+            .copy_from_slice(&ind_cpa_public_key[T_AS_NTT_ENCODED_SIZE..]);
+    }
+
     impl<const K: usize, Vector: Operations> MlKemKeyPairUnpacked<K, Vector> {
         /// Create a new empty unpacked key pair.
         #[inline(always)]
         pub fn new() -> Self {
             Self::default()
+        }
+
+        /// Take a serialized private key and generate an unpacked key pair from it.
+        #[inline(always)]
+        pub fn from_private_key<
+            const SECRET_KEY_SIZE: usize,
+            const CPA_SECRET_KEY_SIZE: usize,
+            const PUBLIC_KEY_SIZE: usize,
+            const BYTES_PER_RING_ELEMENT: usize,
+            const T_AS_NTT_ENCODED_SIZE: usize,
+        >(
+            private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+        ) -> Self {
+            let mut out = Self::default();
+            keys_from_private_key::<
+                K,
+                SECRET_KEY_SIZE,
+                CPA_SECRET_KEY_SIZE,
+                PUBLIC_KEY_SIZE,
+                BYTES_PER_RING_ELEMENT,
+                T_AS_NTT_ENCODED_SIZE,
+                Vector,
+            >(private_key, &mut out);
+            out
         }
 
         /// Get the serialized public key.
@@ -401,9 +509,7 @@ pub(crate) mod unpacked {
             serialized: &mut MlKemPublicKey<PUBLIC_KEY_SIZE>,
         ) {
             self.public_key
-                .serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
-                    serialized,
-                )
+                .serialized_mut::<RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(serialized)
         }
 
         /// Get the serialized public key.
@@ -415,7 +521,7 @@ pub(crate) mod unpacked {
             &self,
         ) -> MlKemPublicKey<PUBLIC_KEY_SIZE> {
             self.public_key
-                .serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>()
+                .serialized::<RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>()
         }
 
         /// Get the serialized public key.
@@ -431,8 +537,48 @@ pub(crate) mod unpacked {
         }
 
         /// Get the serialized private key.
-        pub fn serialized_private_key(&self) -> MlKemPrivateKey<K> {
-            todo!()
+        #[inline(always)]
+        pub fn serialized_private_key_mut<
+            const CPA_PRIVATE_KEY_SIZE: usize,
+            const PRIVATE_KEY_SIZE: usize,
+            const PUBLIC_KEY_SIZE: usize,
+            const RANKED_BYTES_PER_RING_ELEMENT: usize,
+        >(
+            &self,
+            serialized: &mut MlKemPrivateKey<PRIVATE_KEY_SIZE>,
+        ) {
+            let (ind_cpa_private_key, ind_cpa_public_key) = ind_cpa::serialize_unpacked_secret_key::<
+                K,
+                CPA_PRIVATE_KEY_SIZE,
+                PUBLIC_KEY_SIZE,
+                RANKED_BYTES_PER_RING_ELEMENT,
+                Vector,
+            >(
+                &self.public_key.ind_cpa_public_key,
+                &self.private_key.ind_cpa_private_key,
+            );
+
+            serialize_kem_secret_key_mut::<K, PRIVATE_KEY_SIZE, PortableHash<K>>(
+                &ind_cpa_private_key,
+                &ind_cpa_public_key,
+                &self.private_key.implicit_rejection_value,
+                &mut serialized.value,
+            );
+        }
+
+        /// Get the serialized private key.
+        #[inline(always)]
+        pub fn serialized_private_key<
+            const CPA_PRIVATE_KEY_SIZE: usize,
+            const PRIVATE_KEY_SIZE: usize,
+            const PUBLIC_KEY_SIZE: usize,
+            const RANKED_BYTES_PER_RING_ELEMENT: usize,
+        >(
+            &self,
+        ) -> MlKemPrivateKey<PRIVATE_KEY_SIZE> {
+            let mut sk = MlKemPrivateKey::default();
+            self.serialized_private_key_mut::<CPA_PRIVATE_KEY_SIZE, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE, RANKED_BYTES_PER_RING_ELEMENT>(&mut sk);
+            sk
         }
     }
 
@@ -529,7 +675,7 @@ pub(crate) mod unpacked {
         let hashed = Hasher::G(&to_hash);
         let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
-        let ciphertext = crate::ind_cpa::encrypt_unpacked::<
+        let ciphertext = ind_cpa::encrypt_unpacked::<
             K,
             CIPHERTEXT_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -575,7 +721,7 @@ pub(crate) mod unpacked {
         key_pair: &MlKemKeyPairUnpacked<K, Vector>,
         ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
     ) -> MlKemSharedSecret {
-        let decrypted = crate::ind_cpa::decrypt_unpacked::<
+        let decrypted = ind_cpa::decrypt_unpacked::<
             K,
             CIPHERTEXT_SIZE,
             C1_SIZE,
@@ -595,7 +741,7 @@ pub(crate) mod unpacked {
         to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
         let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
 
-        let expected_ciphertext = crate::ind_cpa::encrypt_unpacked::<
+        let expected_ciphertext = ind_cpa::encrypt_unpacked::<
             K,
             CIPHERTEXT_SIZE,
             T_AS_NTT_ENCODED_SIZE,
