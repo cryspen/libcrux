@@ -36,3 +36,4 @@ jobs:
         with:
           context: .docker/c/
           push: true
+          tags: latest
