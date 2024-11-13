@@ -1,4 +1,4 @@
-use crate::simd::{portable::PortableSIMDUnit, traits::Operations};
+use super::super::vector_type::{PortableSIMDUnit, ZERO};
 
 #[inline(always)]
 fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(
@@ -54,7 +54,7 @@ pub(crate) fn serialize<const OUTPUT_SIZE: usize>(
 fn deserialize_when_eta_is_2(serialized: &[u8]) -> PortableSIMDUnit {
     debug_assert!(serialized.len() == 3);
 
-    let mut simd_unit = PortableSIMDUnit::ZERO();
+    let mut simd_unit = ZERO();
     const ETA: i32 = 2;
 
     let byte0 = serialized[0] as i32;
@@ -76,7 +76,7 @@ fn deserialize_when_eta_is_2(serialized: &[u8]) -> PortableSIMDUnit {
 fn deserialize_when_eta_is_4(serialized: &[u8]) -> PortableSIMDUnit {
     debug_assert!(serialized.len() == 4);
 
-    let mut simd_unit = PortableSIMDUnit::ZERO();
+    let mut simd_unit = ZERO();
     const ETA: i32 = 4;
 
     for (i, byte) in serialized.iter().enumerate() {

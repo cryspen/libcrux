@@ -8,6 +8,7 @@ members = [
     "benchmarks",
     "fuzz",
     "libcrux-ml-kem",
+    "libcrux-ml-kem/fuzz",
     "libcrux-sha3",
     "libcrux-ml-dsa",
     "libcrux-intrinsics",

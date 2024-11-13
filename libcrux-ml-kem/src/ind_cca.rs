@@ -138,6 +138,7 @@ fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize, Hashe
 ///
 /// Depending on the `Vector` and `Hasher` used, this requires different hardware
 /// features
+#[inline(always)]
 fn generate_keypair<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -178,6 +179,7 @@ fn generate_keypair<
     MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key))
 }
 
+#[inline(always)]
 fn encapsulate<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -229,6 +231,7 @@ fn encapsulate<
     (ciphertext, shared_secret_array)
 }
 
+#[inline(always)]
 pub(crate) fn decapsulate<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -593,6 +596,7 @@ pub(crate) mod unpacked {
     }
 
     /// Generate Unpacked Keys
+    #[inline(always)]
     pub(crate) fn generate_keypair<
         const K: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
@@ -644,6 +648,7 @@ pub(crate) mod unpacked {
     }
 
     // Encapsulate with Unpacked Public Key
+    #[inline(always)]
     pub(crate) fn encapsulate<
         const K: usize,
         const CIPHERTEXT_SIZE: usize,
@@ -692,6 +697,7 @@ pub(crate) mod unpacked {
     }
 
     // Decapsulate with Unpacked Private Key
+    #[inline(always)]
     pub(crate) fn decapsulate<
         const K: usize,
         const SECRET_KEY_SIZE: usize,

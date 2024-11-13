@@ -146,7 +146,7 @@ generics
 - SECRET_KEY_SIZE= 1632
 - CIPHERTEXT_SIZE= 768
 */
-static KRML_MUSTINLINE bool validate_private_key_1c(
+static bool validate_private_key_1c(
     libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_1a *ciphertext) {
   return libcrux_ml_kem_ind_cca_validate_private_key_fb(private_key,
@@ -200,7 +200,7 @@ generics
 - RANKED_BYTES_PER_RING_ELEMENT= 768
 - PUBLIC_KEY_SIZE= 800
 */
-static KRML_MUSTINLINE bool validate_public_key_1c(uint8_t *public_key) {
+static bool validate_public_key_1c(uint8_t *public_key) {
   return libcrux_ml_kem_ind_cca_validate_public_key_86(public_key);
 }
 

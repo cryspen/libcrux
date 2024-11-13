@@ -2381,7 +2381,7 @@ libcrux_ml_kem.vector.traits.to_unsigned_representative with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 
 */
-static libcrux_ml_kem_vector_portable_vector_type_PortableVector
+static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 to_unsigned_representative_8c(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a) {
   libcrux_ml_kem_vector_portable_vector_type_PortableVector t =
@@ -3328,7 +3328,7 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 
 */
-static libcrux_ml_kem_vector_portable_vector_type_PortableVector
+static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 montgomery_multiply_fe_8c(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t fer) {
   return libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(v,
@@ -3672,7 +3672,7 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 
 */
-static libcrux_ml_kem_vector_portable_vector_type_PortableVector
+static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 to_standard_domain_8c(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
   return libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(
@@ -3799,7 +3799,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static void generate_keypair_unpacked_1c(
+static KRML_MUSTINLINE void generate_keypair_unpacked_1c(
     Eurydice_slice key_generation_seed,
     IndCpaPrivateKeyUnpacked_af *private_key,
     IndCpaPublicKeyUnpacked_af *public_key) {
@@ -3893,8 +3893,8 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static libcrux_ml_kem_utils_extraction_helper_Keypair1024 generate_keypair_151(
-    Eurydice_slice key_generation_seed) {
+static KRML_MUSTINLINE libcrux_ml_kem_utils_extraction_helper_Keypair1024
+generate_keypair_151(Eurydice_slice key_generation_seed) {
   IndCpaPrivateKeyUnpacked_af private_key = default_1a_d0();
   IndCpaPublicKeyUnpacked_af public_key = default_8d_d0();
   generate_keypair_unpacked_1c(key_generation_seed, &private_key, &public_key);
@@ -4404,7 +4404,7 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 
 */
-static libcrux_ml_kem_vector_portable_vector_type_PortableVector
+static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 decompress_1_8c(libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
   libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
       libcrux_ml_kem_vector_portable_ZERO_0d();
@@ -4609,7 +4609,7 @@ with const generics
 - COMPRESSION_FACTOR= 11
 - BLOCK_LEN= 352
 */
-static void compress_then_serialize_u_2f(
+static KRML_MUSTINLINE void compress_then_serialize_u_2f(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d input[4U],
     Eurydice_slice out) {
   for (size_t i = (size_t)0U;
@@ -4812,9 +4812,9 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static void encrypt_unpacked_2a(IndCpaPublicKeyUnpacked_af *public_key,
-                                uint8_t message[32U], Eurydice_slice randomness,
-                                uint8_t ret[1568U]) {
+static KRML_MUSTINLINE void encrypt_unpacked_2a(
+    IndCpaPublicKeyUnpacked_af *public_key, uint8_t message[32U],
+    Eurydice_slice randomness, uint8_t ret[1568U]) {
   uint8_t prf_input[33U];
   libcrux_ml_kem_utils_into_padded_array_c8(randomness, prf_input);
   /* Passing arrays by value in Rust generates a copy in C */
@@ -5485,8 +5485,9 @@ with const generics
 - U_COMPRESSION_FACTOR= 11
 - V_COMPRESSION_FACTOR= 5
 */
-static void decrypt_unpacked_7d(IndCpaPrivateKeyUnpacked_af *secret_key,
-                                uint8_t *ciphertext, uint8_t ret[32U]) {
+static KRML_MUSTINLINE void decrypt_unpacked_7d(
+    IndCpaPrivateKeyUnpacked_af *secret_key, uint8_t *ciphertext,
+    uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d u_as_ntt[4U];
   deserialize_then_decompress_u_00(ciphertext, u_as_ntt);
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d v =
@@ -5510,8 +5511,8 @@ with const generics
 - U_COMPRESSION_FACTOR= 11
 - V_COMPRESSION_FACTOR= 5
 */
-static void decrypt_7d(Eurydice_slice secret_key, uint8_t *ciphertext,
-                       uint8_t ret[32U]) {
+static KRML_MUSTINLINE void decrypt_7d(Eurydice_slice secret_key,
+                                       uint8_t *ciphertext, uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d secret_as_ntt[4U];
   deserialize_secret_key_d0(secret_key, secret_as_ntt);
   /* Passing arrays by value in Rust generates a copy in C */
@@ -6598,7 +6599,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
-static void generate_keypair_unpacked_1c0(
+static KRML_MUSTINLINE void generate_keypair_unpacked_1c0(
     Eurydice_slice key_generation_seed,
     IndCpaPrivateKeyUnpacked_d4 *private_key,
     IndCpaPublicKeyUnpacked_d4 *public_key) {
@@ -6692,8 +6693,8 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
-static libcrux_ml_kem_utils_extraction_helper_Keypair512 generate_keypair_150(
-    Eurydice_slice key_generation_seed) {
+static KRML_MUSTINLINE libcrux_ml_kem_utils_extraction_helper_Keypair512
+generate_keypair_150(Eurydice_slice key_generation_seed) {
   IndCpaPrivateKeyUnpacked_d4 private_key = default_1a_a0();
   IndCpaPublicKeyUnpacked_d4 public_key = default_8d_a0();
   generate_keypair_unpacked_1c0(key_generation_seed, &private_key, &public_key);
@@ -7147,7 +7148,7 @@ with const generics
 - COMPRESSION_FACTOR= 10
 - BLOCK_LEN= 320
 */
-static void compress_then_serialize_u_6d(
+static KRML_MUSTINLINE void compress_then_serialize_u_6d(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d input[2U],
     Eurydice_slice out) {
   for (size_t i = (size_t)0U;
@@ -7240,9 +7241,9 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static void encrypt_unpacked_2a0(IndCpaPublicKeyUnpacked_d4 *public_key,
-                                 uint8_t message[32U],
-                                 Eurydice_slice randomness, uint8_t ret[768U]) {
+static KRML_MUSTINLINE void encrypt_unpacked_2a0(
+    IndCpaPublicKeyUnpacked_d4 *public_key, uint8_t message[32U],
+    Eurydice_slice randomness, uint8_t ret[768U]) {
   uint8_t prf_input[33U];
   libcrux_ml_kem_utils_into_padded_array_c8(randomness, prf_input);
   /* Passing arrays by value in Rust generates a copy in C */
@@ -7597,8 +7598,9 @@ with const generics
 - U_COMPRESSION_FACTOR= 10
 - V_COMPRESSION_FACTOR= 4
 */
-static void decrypt_unpacked_d1(IndCpaPrivateKeyUnpacked_d4 *secret_key,
-                                uint8_t *ciphertext, uint8_t ret[32U]) {
+static KRML_MUSTINLINE void decrypt_unpacked_d1(
+    IndCpaPrivateKeyUnpacked_d4 *secret_key, uint8_t *ciphertext,
+    uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d u_as_ntt[2U];
   deserialize_then_decompress_u_86(ciphertext, u_as_ntt);
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d v =
@@ -7622,8 +7624,8 @@ with const generics
 - U_COMPRESSION_FACTOR= 10
 - V_COMPRESSION_FACTOR= 4
 */
-static void decrypt_d1(Eurydice_slice secret_key, uint8_t *ciphertext,
-                       uint8_t ret[32U]) {
+static KRML_MUSTINLINE void decrypt_d1(Eurydice_slice secret_key,
+                                       uint8_t *ciphertext, uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d secret_as_ntt[2U];
   deserialize_secret_key_a0(secret_key, secret_as_ntt);
   /* Passing arrays by value in Rust generates a copy in C */
@@ -8693,7 +8695,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static void generate_keypair_unpacked_1c1(
+static KRML_MUSTINLINE void generate_keypair_unpacked_1c1(
     Eurydice_slice key_generation_seed,
     IndCpaPrivateKeyUnpacked_a0 *private_key,
     IndCpaPublicKeyUnpacked_a0 *public_key) {
@@ -8787,8 +8789,8 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static libcrux_ml_kem_utils_extraction_helper_Keypair768 generate_keypair_15(
-    Eurydice_slice key_generation_seed) {
+static KRML_MUSTINLINE libcrux_ml_kem_utils_extraction_helper_Keypair768
+generate_keypair_15(Eurydice_slice key_generation_seed) {
   IndCpaPrivateKeyUnpacked_a0 private_key = default_1a_1b();
   IndCpaPublicKeyUnpacked_a0 public_key = default_8d_1b();
   generate_keypair_unpacked_1c1(key_generation_seed, &private_key, &public_key);
@@ -9172,7 +9174,7 @@ with const generics
 - COMPRESSION_FACTOR= 10
 - BLOCK_LEN= 320
 */
-static void compress_then_serialize_u_43(
+static KRML_MUSTINLINE void compress_then_serialize_u_43(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d input[3U],
     Eurydice_slice out) {
   for (size_t i = (size_t)0U;
@@ -9253,10 +9255,9 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static void encrypt_unpacked_2a1(IndCpaPublicKeyUnpacked_a0 *public_key,
-                                 uint8_t message[32U],
-                                 Eurydice_slice randomness,
-                                 uint8_t ret[1088U]) {
+static KRML_MUSTINLINE void encrypt_unpacked_2a1(
+    IndCpaPublicKeyUnpacked_a0 *public_key, uint8_t message[32U],
+    Eurydice_slice randomness, uint8_t ret[1088U]) {
   uint8_t prf_input[33U];
   libcrux_ml_kem_utils_into_padded_array_c8(randomness, prf_input);
   /* Passing arrays by value in Rust generates a copy in C */
@@ -9570,8 +9571,9 @@ with const generics
 - U_COMPRESSION_FACTOR= 10
 - V_COMPRESSION_FACTOR= 4
 */
-static void decrypt_unpacked_42(IndCpaPrivateKeyUnpacked_a0 *secret_key,
-                                uint8_t *ciphertext, uint8_t ret[32U]) {
+static KRML_MUSTINLINE void decrypt_unpacked_42(
+    IndCpaPrivateKeyUnpacked_a0 *secret_key, uint8_t *ciphertext,
+    uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d u_as_ntt[3U];
   deserialize_then_decompress_u_6c(ciphertext, u_as_ntt);
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d v =
@@ -9595,8 +9597,8 @@ with const generics
 - U_COMPRESSION_FACTOR= 10
 - V_COMPRESSION_FACTOR= 4
 */
-static void decrypt_42(Eurydice_slice secret_key, uint8_t *ciphertext,
-                       uint8_t ret[32U]) {
+static KRML_MUSTINLINE void decrypt_42(Eurydice_slice secret_key,
+                                       uint8_t *ciphertext, uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d secret_as_ntt[3U];
   deserialize_secret_key_1b(secret_key, secret_as_ntt);
   /* Passing arrays by value in Rust generates a copy in C */

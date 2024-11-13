@@ -226,6 +226,7 @@ fn sample_vector_cbd_then_ntt_out<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
     const ETA1: usize,
@@ -273,6 +274,7 @@ pub(crate) fn generate_keypair_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn generate_keypair<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
@@ -329,6 +331,7 @@ pub(crate) fn serialize_unpacked_secret_key<
 }
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
+#[inline(always)]
 fn compress_then_serialize_u<
     const K: usize,
     const OUT_LEN: usize,
@@ -391,6 +394,7 @@ fn compress_then_serialize_u<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn encrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -467,6 +471,7 @@ pub(crate) fn encrypt_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn encrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -615,6 +620,7 @@ pub(crate) fn deserialize_secret_key<const K: usize, Vector: Operations>(
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn decrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -642,6 +648,7 @@ pub(crate) fn decrypt_unpacked<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn decrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
