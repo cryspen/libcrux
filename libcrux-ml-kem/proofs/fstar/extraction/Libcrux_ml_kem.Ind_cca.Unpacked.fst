@@ -142,6 +142,71 @@ let transpose_a
 
 #pop-options
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+    : Core.Default.t_Default (t_MlKemPublicKeyUnpacked v_K v_Vector) =
+  {
+    f_default_pre = (fun (_: Prims.unit) -> true);
+    f_default_post = (fun (_: Prims.unit) (out: t_MlKemPublicKeyUnpacked v_K v_Vector) -> true);
+    f_default
+    =
+    fun (_: Prims.unit) ->
+      {
+        f_ind_cpa_public_key
+        =
+        Core.Default.f_default #(Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K
+              v_Vector)
+          #FStar.Tactics.Typeclasses.solve
+          ();
+        f_public_key_hash = Rust_primitives.Hax.repeat 0uy (sz 32)
+      }
+      <:
+      t_MlKemPublicKeyUnpacked v_K v_Vector
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_1
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+    : Core.Default.t_Default (t_MlKemKeyPairUnpacked v_K v_Vector) =
+  {
+    f_default_pre = (fun (_: Prims.unit) -> true);
+    f_default_post = (fun (_: Prims.unit) (out: t_MlKemKeyPairUnpacked v_K v_Vector) -> true);
+    f_default
+    =
+    fun (_: Prims.unit) ->
+      {
+        f_private_key
+        =
+        {
+          f_ind_cpa_private_key
+          =
+          Core.Default.f_default #(Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K
+                v_Vector)
+            #FStar.Tactics.Typeclasses.solve
+            ();
+          f_implicit_rejection_value = Rust_primitives.Hax.repeat 0uy (sz 32)
+        }
+        <:
+        t_MlKemPrivateKeyUnpacked v_K v_Vector;
+        f_public_key
+        =
+        Core.Default.f_default #(t_MlKemPublicKeyUnpacked v_K v_Vector)
+          #FStar.Tactics.Typeclasses.solve
+          ()
+      }
+      <:
+      t_MlKemKeyPairUnpacked v_K v_Vector
+  }
+
 let impl_4__new
       (v_K: usize)
       (#v_Vector: Type0)

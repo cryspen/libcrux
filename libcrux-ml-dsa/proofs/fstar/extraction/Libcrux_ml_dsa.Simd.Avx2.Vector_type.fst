@@ -3,6 +3,19 @@ module Libcrux_ml_dsa.Simd.Avx2.Vector_type
 open Core
 open FStar.Mul
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl: Core.Convert.t_From t_AVX2SIMDUnit Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  {
+    f_from_pre = (fun (coefficients: Libcrux_intrinsics.Avx2_extract.t_Vec256) -> true);
+    f_from_post
+    =
+    (fun (coefficients: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_AVX2SIMDUnit) -> true);
+    f_from
+    =
+    fun (coefficients: Libcrux_intrinsics.Avx2_extract.t_Vec256) ->
+      { f_coefficients = coefficients } <: t_AVX2SIMDUnit
+  }
+
 let v_ZERO (_: Prims.unit) =
   Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
     #t_AVX2SIMDUnit
