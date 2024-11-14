@@ -55,6 +55,13 @@ pub(crate) mod x25519_internal {
     #[derive(Debug)]
     pub struct PublicKey(pub [u8; 32]);
 
+    /// Output of a scalar multiplication between a public key and a secret key.
+    ///
+    /// This value is NOT (!) safe for use as a key and needs to be processed in a round of key
+    /// derivation, to ensure both that the output is uniformly random and that unkown key share
+    /// attacks can not happen.
+    pub struct SharedSecret(pub [u8; 32]);
+
     impl From<&[u8; 32]> for PublicKey {
         fn from(value: &[u8; 32]) -> Self {
             Self(*value)
@@ -83,6 +90,20 @@ pub(crate) mod x25519_internal {
         }
     }
 
+    impl From<&[u8; 32]> for SharedSecret {
+        fn from(value: &[u8; 32]) -> Self {
+            Self(*value)
+        }
+    }
+
+    impl TryFrom<&[u8]> for SharedSecret {
+        type Error = Error;
+
+        fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+            Ok(Self(value.try_into().map_err(|_| Error::InvalidScalar)?))
+        }
+    }
+
     impl AsRef<[u8]> for PrivateKey {
         fn as_ref(&self) -> &[u8] {
             &self.0
@@ -90,6 +111,12 @@ pub(crate) mod x25519_internal {
     }
 
     impl AsRef<[u8]> for PublicKey {
+        fn as_ref(&self) -> &[u8] {
+            &self.0
+        }
+    }
+
+    impl AsRef<[u8]> for SharedSecret {
         fn as_ref(&self) -> &[u8] {
             &self.0
         }
@@ -107,8 +134,14 @@ pub(crate) mod x25519_internal {
         }
     }
 
+    impl AsRef<[u8; 32]> for SharedSecret {
+        fn as_ref(&self) -> &[u8; 32] {
+            &self.0
+        }
+    }
+
     #[cfg(all(bmi2, adx, target_arch = "x86_64"))]
-    pub fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
+    pub fn derive(p: &PublicKey, s: &PrivateKey) -> Result<SharedSecret, Error> {
         use crate::hacl::curve25519;
         use libcrux_platform::x25519_support;
         // On x64 we use vale if available or hacl as fallback.
@@ -117,14 +150,14 @@ pub(crate) mod x25519_internal {
         if x25519_support() {
             curve25519::vale::ecdh(s, p)
                 .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
-                .map(|p| PublicKey(p))
+                .map(SharedSecret)
             // XXX: not verified yet
             // crate::jasmin::x25519::mulx::derive(s, p)
             //     .map_err(|e| Error::Custom(format!("Libjade Error {:?}", e)))
         } else {
             curve25519::ecdh(s, p)
                 .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
-                .map(|p| PublicKey(p))
+                .map(SharedSecret)
             // XXX: not verified yet
             // crate::jasmin::x25519::derive(s, p)
             //     .map_err(|e| Error::Custom(format!("Libjade Error {:?}", e)))
@@ -135,27 +168,27 @@ pub(crate) mod x25519_internal {
         all(target_arch = "x86_64", any(not(bmi2), not(adx))),
         target_arch = "x86"
     ))]
-    pub fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
+    pub fn derive(p: &PublicKey, s: &PrivateKey) -> Result<SharedSecret, Error> {
         use crate::hacl::curve25519;
         // On x64 we use vale if available or hacl as fallback.
         // Jasmin exists but is not verified yet.
 
         curve25519::ecdh(s, p)
             .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
-            .map(|p| PublicKey(p))
+            .map(SharedSecret)
         // XXX: not verified yet
         // crate::jasmin::x25519::derive(s, p)
         //     .map_err(|e| Error::Custom(format!("Libjade Error {:?}", e)))
     }
 
     #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-    pub fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
+    pub fn derive(p: &PublicKey, s: &PrivateKey) -> Result<SharedSecret, Error> {
         // On any other platform we use the portable HACL implementation.
         use crate::hacl::curve25519;
 
         curve25519::ecdh(s, p)
             .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
-            .map(PublicKey)
+            .map(SharedSecret)
     }
 
     // XXX: libjade's secret to public is broken on Windows (overflows the stack).
@@ -209,11 +242,13 @@ pub use x25519_internal::generate_secret as x25519_generate_secret;
 pub use x25519_internal::key_gen as x25519_key_gen;
 pub use x25519_internal::PrivateKey as X25519PrivateKey;
 pub use x25519_internal::PublicKey as X25519PublicKey;
+pub use x25519_internal::SharedSecret as X25519SharedSecret;
 
 pub mod curve25519 {
     use super::hacl;
     pub use hacl::curve25519::Error;
 }
+
 pub(crate) mod p256_internal {
     use rand::{CryptoRng, Rng};
 
@@ -226,6 +261,13 @@ pub(crate) mod p256_internal {
 
     #[derive(Debug)]
     pub struct PublicKey(pub [u8; 64]);
+
+    /// Output of a scalar multiplication between a public key and a secret key.
+    ///
+    /// This value is NOT (!) safe for use as a key and needs to be processed in a round of key
+    /// derivation, to ensure both that the output is uniformly random and that unkown key share
+    /// attacks can not happen.
+    pub struct SharedSecret(pub [u8; 64]);
 
     impl From<&[u8; 64]> for PublicKey {
         fn from(value: &[u8; 64]) -> Self {
@@ -255,6 +297,20 @@ pub(crate) mod p256_internal {
         }
     }
 
+    impl From<&[u8; 64]> for SharedSecret {
+        fn from(value: &[u8; 64]) -> Self {
+            Self(*value)
+        }
+    }
+
+    impl TryFrom<&[u8]> for SharedSecret {
+        type Error = Error;
+
+        fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+            Ok(Self(value.try_into().map_err(|_| Error::InvalidScalar)?))
+        }
+    }
+
     impl AsRef<[u8]> for PrivateKey {
         fn as_ref(&self) -> &[u8] {
             &self.0
@@ -262,6 +318,12 @@ pub(crate) mod p256_internal {
     }
 
     impl AsRef<[u8]> for PublicKey {
+        fn as_ref(&self) -> &[u8] {
+            &self.0
+        }
+    }
+
+    impl AsRef<[u8]> for SharedSecret {
         fn as_ref(&self) -> &[u8] {
             &self.0
         }
@@ -279,11 +341,17 @@ pub(crate) mod p256_internal {
         }
     }
 
-    pub(super) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
+    impl AsRef<[u8; 64]> for SharedSecret {
+        fn as_ref(&self) -> &[u8; 64] {
+            &self.0
+        }
+    }
+
+    pub(super) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<SharedSecret, Error> {
         // We assume that the private key has been validated.
         p256::ecdh(s, p)
             .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
-            .map(PublicKey)
+            .map(SharedSecret)
     }
 
     pub(super) fn secret_to_public(s: &PrivateKey) -> Result<PublicKey, Error> {
@@ -364,6 +432,7 @@ pub use p256_internal::key_gen as p256_key_gen;
 pub use p256_internal::validate_scalar as p256_validate_scalar;
 pub use p256_internal::PrivateKey as P256PrivateKey;
 pub use p256_internal::PublicKey as P256PublicKey;
+pub use p256_internal::SharedSecret as P256SharedSecret;
 
 /// Derive the ECDH shared secret.
 /// Returns `Ok(point * scalar)` on the provided curve [`Algorithm`] or an error.
@@ -391,7 +460,7 @@ pub fn derive(
 pub fn p256_derive(
     point: &p256_internal::PublicKey,
     scalar: &p256_internal::PrivateKey,
-) -> Result<p256_internal::PublicKey, Error> {
+) -> Result<p256_internal::SharedSecret, Error> {
     p256_internal::validate_point(point)?;
     p256_internal::validate_scalar(scalar)?;
 
