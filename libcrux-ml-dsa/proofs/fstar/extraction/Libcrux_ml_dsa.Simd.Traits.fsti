@@ -59,12 +59,6 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_montgomery_multiply_pre x0 x1)
         (fun result -> f_montgomery_multiply_post x0 x1 result);
-  f_montgomery_multiply_by_constant_pre:v_Self -> i32 -> Type0;
-  f_montgomery_multiply_by_constant_post:v_Self -> i32 -> v_Self -> Type0;
-  f_montgomery_multiply_by_constant:x0: v_Self -> x1: i32
-    -> Prims.Pure v_Self
-        (f_montgomery_multiply_by_constant_pre x0 x1)
-        (fun result -> f_montgomery_multiply_by_constant_post x0 x1 result);
   f_shift_left_then_reduce_pre:v_SHIFT_BY: i32 -> v_Self -> Type0;
   f_shift_left_then_reduce_post:v_SHIFT_BY: i32 -> v_Self -> v_Self -> Type0;
   f_shift_left_then_reduce:v_SHIFT_BY: i32 -> x0: v_Self
@@ -152,24 +146,12 @@ class t_Operations (v_Self: Type0) = {
   f_ntt_post:t_Array v_Self (sz 32) -> t_Array v_Self (sz 32) -> Type0;
   f_ntt:x0: t_Array v_Self (sz 32)
     -> Prims.Pure (t_Array v_Self (sz 32)) (f_ntt_pre x0) (fun result -> f_ntt_post x0 result);
-  f_invert_ntt_at_layer_0_pre:v_Self -> i32 -> i32 -> i32 -> i32 -> Type0;
-  f_invert_ntt_at_layer_0_post:v_Self -> i32 -> i32 -> i32 -> i32 -> v_Self -> Type0;
-  f_invert_ntt_at_layer_0_:x0: v_Self -> x1: i32 -> x2: i32 -> x3: i32 -> x4: i32
-    -> Prims.Pure v_Self
-        (f_invert_ntt_at_layer_0_pre x0 x1 x2 x3 x4)
-        (fun result -> f_invert_ntt_at_layer_0_post x0 x1 x2 x3 x4 result);
-  f_invert_ntt_at_layer_1_pre:v_Self -> i32 -> i32 -> Type0;
-  f_invert_ntt_at_layer_1_post:v_Self -> i32 -> i32 -> v_Self -> Type0;
-  f_invert_ntt_at_layer_1_:x0: v_Self -> x1: i32 -> x2: i32
-    -> Prims.Pure v_Self
-        (f_invert_ntt_at_layer_1_pre x0 x1 x2)
-        (fun result -> f_invert_ntt_at_layer_1_post x0 x1 x2 result);
-  f_invert_ntt_at_layer_2_pre:v_Self -> i32 -> Type0;
-  f_invert_ntt_at_layer_2_post:v_Self -> i32 -> v_Self -> Type0;
-  f_invert_ntt_at_layer_2_:x0: v_Self -> x1: i32
-    -> Prims.Pure v_Self
-        (f_invert_ntt_at_layer_2_pre x0 x1)
-        (fun result -> f_invert_ntt_at_layer_2_post x0 x1 result)
+  f_invert_ntt_montgomery_pre:t_Array v_Self (sz 32) -> Type0;
+  f_invert_ntt_montgomery_post:t_Array v_Self (sz 32) -> t_Array v_Self (sz 32) -> Type0;
+  f_invert_ntt_montgomery:x0: t_Array v_Self (sz 32)
+    -> Prims.Pure (t_Array v_Self (sz 32))
+        (f_invert_ntt_montgomery_pre x0)
+        (fun result -> f_invert_ntt_montgomery_post x0 result)
 }
 
 let v_COEFFICIENTS_IN_SIMD_UNIT: usize = sz 8
@@ -180,6 +162,3 @@ let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58728449uL
 
 let v_SIMD_UNITS_IN_RING_ELEMENT: usize =
   Libcrux_ml_dsa.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! v_COEFFICIENTS_IN_SIMD_UNIT
-
-val montgomery_multiply_by_fer (#v_S: Type0) {| i1: t_Operations v_S |} (simd_unit: v_S) (fer: i32)
-    : Prims.Pure v_S Prims.l_True (fun _ -> Prims.l_True)
