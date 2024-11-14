@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.Unpacked
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
