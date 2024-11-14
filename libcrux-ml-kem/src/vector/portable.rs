@@ -102,8 +102,8 @@ fn deserialize_12(a: &[u8]) -> PortableVector {
     serialize::deserialize_12(a)
 }
 
-#[hax_lib::fstar::before(interface, r#"#push-options "--z3rlimit 400 --split_queries always""#)]
-#[hax_lib::fstar::after(interface, r#"#pop-options"#)]
+#[hax_lib::fstar::before(r#"#push-options "--z3rlimit 400 --split_queries always""#)]
+#[hax_lib::fstar::after(r#"#pop-options"#)]
 #[hax_lib::attributes] 
 impl Operations for PortableVector {
     #[ensures(|out| fstar!("impl.f_repr out == Seq.create 16 0s"))]
