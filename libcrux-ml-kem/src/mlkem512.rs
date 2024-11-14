@@ -243,6 +243,9 @@ macro_rules! instantiate {
                 }
 
                 /// Get the serialized public key.
+                #[hax_lib::requires(fstar!("forall (i:nat). i < 2 ==>
+                    Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
+                        ${public_key}.f_ind_cpa_public_key.f_t_as_ntt i)"))]
                 pub fn serialized_public_key(
                     public_key: &MlKem512PublicKeyUnpacked,
                     serialized: &mut MlKem512PublicKey,
