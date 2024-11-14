@@ -104,3 +104,19 @@ jobs:
         run: |
           cargo clean
           cargo bench --no-run
+
+  stack-size:
+        runs-on: ubuntu-latest
+        defaults:
+          run:
+            shell: bash
+            working-directory: libcrux-ml-dsa
+        steps:
+            - uses: actions/checkout@v4
+        
+            - name: 📚 Check stack sizes
+              run: |
+                cargo clean
+                chmod +x ./stack-sizes.sh
+                ./stack-sizes.sh verify_87
+
