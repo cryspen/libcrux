@@ -58,7 +58,8 @@ macro_rules! instantiate {
                 >(randomness)
             }
 
-            /// Portable public key validation
+            /// Public key validation
+            #[inline(always)]
             pub(crate) fn validate_public_key<
                 const K: usize,
                 const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -74,7 +75,8 @@ macro_rules! instantiate {
                 >(public_key)
             }
 
-            /// Portable private key validation
+            /// Private key validation
+            #[inline(always)]
             pub(crate) fn validate_private_key<
                 const K: usize,
                 const SECRET_KEY_SIZE: usize,
@@ -87,6 +89,17 @@ macro_rules! instantiate {
                     private_key,
                     ciphertext,
                 )
+            }
+
+            /// Private key validation
+            #[inline(always)]
+            pub(crate) fn validate_private_key_only<
+                const K: usize,
+                const SECRET_KEY_SIZE: usize,
+            >(
+                private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+            ) -> bool {
+                crate::ind_cca::validate_private_key_only::<K, SECRET_KEY_SIZE, $hash>(private_key)
             }
 
             /// Portable encapsulate
@@ -268,6 +281,7 @@ macro_rules! instantiate {
                     crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
 
                 /// Get the unpacked public key.
+                #[inline(always)]
                 pub(crate) fn unpack_public_key<
                     const K: usize,
                     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -287,7 +301,32 @@ macro_rules! instantiate {
                     >(public_key, unpacked_public_key)
                 }
 
+                /// Take a serialized private key and generate an unpacked key pair from it.
+                #[inline(always)]
+                pub(crate) fn keypair_from_private_key<
+                    const K: usize,
+                    const SECRET_KEY_SIZE: usize,
+                    const CPA_SECRET_KEY_SIZE: usize,
+                    const PUBLIC_KEY_SIZE: usize,
+                    const BYTES_PER_RING_ELEMENT: usize,
+                    const T_AS_NTT_ENCODED_SIZE: usize,
+                >(
+                    private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+                    key_pair: &mut MlKemKeyPairUnpacked<K>,
+                ) {
+                    crate::ind_cca::unpacked::keys_from_private_key::<
+                        K,
+                        SECRET_KEY_SIZE,
+                        CPA_SECRET_KEY_SIZE,
+                        PUBLIC_KEY_SIZE,
+                        BYTES_PER_RING_ELEMENT,
+                        T_AS_NTT_ENCODED_SIZE,
+                        $vector,
+                    >(private_key, key_pair);
+                }
+
                 /// Generate a key pair
+                #[inline(always)]
                 pub(crate) fn generate_keypair<
                     const K: usize,
                     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -315,6 +354,7 @@ macro_rules! instantiate {
                 }
 
                 /// Unpacked encapsulate
+                #[inline(always)]
                 pub(crate) fn encapsulate<
                     const K: usize,
                     const CIPHERTEXT_SIZE: usize,
@@ -353,6 +393,7 @@ macro_rules! instantiate {
                 }
 
                 /// Unpacked decapsulate
+                #[inline(always)]
                 pub(crate) fn decapsulate<
                     const K: usize,
                     const SECRET_KEY_SIZE: usize,

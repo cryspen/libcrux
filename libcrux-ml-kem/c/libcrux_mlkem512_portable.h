@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Eurydice: 7d686376ec943225ff89942978c6c3028bac689c
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: a31e411ce57494f7a7e8c5962c9951a52a62c770
+ * Libcrux: 122ee3d193e33f55c2324ee84f974e647255f545
  */
 
 #ifndef __libcrux_mlkem512_portable_H
@@ -57,6 +57,14 @@ libcrux_ml_kem_mlkem512_portable_generate_key_pair(uint8_t randomness[64U]);
 bool libcrux_ml_kem_mlkem512_portable_validate_private_key(
     libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_1a *ciphertext);
+
+/**
+ Validate the private key only.
+
+ Returns `true` if valid, and `false` otherwise.
+*/
+bool libcrux_ml_kem_mlkem512_portable_validate_private_key_only(
+    libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key);
 
 /**
  Validate a public key.

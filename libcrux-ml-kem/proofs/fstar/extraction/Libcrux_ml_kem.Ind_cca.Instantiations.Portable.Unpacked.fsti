@@ -6,8 +6,11 @@ open FStar.Mul
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_kem.Hash_functions in
   let open Libcrux_ml_kem.Hash_functions.Portable in
+  let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Portable in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
 /// Unpacked encapsulate
@@ -51,6 +54,20 @@ val generate_keypair
           usize)
       (randomness: t_Array u8 (sz 64))
       (out:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
+          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Take a serialized private key and generate an unpacked key pair from it.
+val keypair_from_private_key
+      (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
+          usize)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (key_pair:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure

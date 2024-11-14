@@ -6,19 +6,27 @@ open FStar.Mul
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_kem.Hash_functions in
   let open Libcrux_ml_kem.Hash_functions.Avx2 in
   let open Libcrux_ml_kem.Variant in
   let open Libcrux_ml_kem.Vector.Avx2 in
+  let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-/// Portable private key validation
+/// Private key validation
+val validate_private_key_only
+      (v_K v_SECRET_KEY_SIZE: usize)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
+/// Private key validation
 val validate_private_key
       (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
-/// Portable public key validation
+/// Public key validation
 val validate_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)

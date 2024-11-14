@@ -46,6 +46,20 @@ macro_rules! impl_nist_known_answer_tests {
                 #[cfg(feature = "pre-verification")]
                 assert!(validate_public_key(key_pair.public_key()));
 
+                #[cfg(all(feature = "pre-verification", not(feature = "kyber")))]
+                {
+                    let unpacked_keys = unpacked::generate_key_pair(kat.key_generation_seed);
+
+                    let pk = unpacked::key_pair_serialized_public_key(&unpacked_keys);
+                    let sk = unpacked::key_pair_serialized_private_key(&unpacked_keys);
+
+                    let public_key_hash = sha256(pk.as_slice());
+                    let secret_key_hash = sha256(sk.as_slice());
+
+                    assert_eq!(public_key_hash, kat.sha3_256_hash_of_public_key, "lhs: computed public key hash, rhs: hash from kat");
+                    assert_eq!(secret_key_hash, kat.sha3_256_hash_of_secret_key, "lhs: computed secret key hash, rhs: hash from kat");
+                }
+
                 let public_key_hash = sha256(key_pair.pk());
                 eprintln!("pk hash: {}", hex::encode(public_key_hash));
                 let secret_key_hash = sha256(key_pair.sk());
