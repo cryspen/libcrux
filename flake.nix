@@ -68,18 +68,25 @@
            , mold-wrapped
            , ninja
            , python3
+           , runCommand
            , crane
            , hax
            , googletest
            , benchmark
            , json
            , tools-environment
+           , cargoLock ? ./Cargo.lock
            , checkHax ? true
            , runBenchmarks ? true
            }:
             let
               craneLib = crane.mkLib pkgs;
-              src = ./.;
+              src = runCommand "libcrux-src" { } ''
+                cp -r ${./.} $out
+                chmod u+w $out
+                rm -f $out/Cargo.lock
+                cp ${cargoLock} $out/Cargo.lock
+              '';
               cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
             in
             craneLib.buildPackage (tools-environment // {
