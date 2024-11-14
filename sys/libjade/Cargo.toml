@@ -13,7 +13,7 @@ publish = false
 [dependencies]
 
 [build-dependencies]
-cc = { version = "1.1", features = ["parallel"] }
+cc = { version = "1.2", features = ["parallel"] }
 libcrux-platform = { version = "=0.0.2-beta.2", path = "../platform" }
 
 [target.'cfg(not(windows))'.build-dependencies]
