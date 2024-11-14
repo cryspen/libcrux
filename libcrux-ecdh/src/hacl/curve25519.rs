@@ -12,10 +12,9 @@ pub fn ecdh(
     public_key: impl AsRef<[u8; 32]>,
 ) -> Result<[u8; 32], Error> {
     let mut shared = [0u8; 32];
-    match libcrux_curve25519::ecdh(&mut shared, private_key.as_ref(), public_key.as_ref()) {
-        Ok(_) => Ok(shared),
-        Err(_) => Err(Error::InvalidInput),
-    }
+    libcrux_curve25519::ecdh(&mut shared, public_key.as_ref(), private_key.as_ref())
+        .map(|_| shared)
+        .map_err(|_| Error::InvalidInput)
 }
 
 /// Compute the public key for the provided `private_key` (scalar multiplication
