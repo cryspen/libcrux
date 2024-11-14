@@ -80,7 +80,7 @@
             python hax.py extract
             bash c.sh
             cd c
-            cmake \
+            LIBCRUX_BENCHMARKS=1 cmake \
               -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=${googletest} \
               -DFETCHCONTENT_SOURCE_DIR_BENCHMARK=${benchmark} \
               -DFETCHCONTENT_SOURCE_DIR_JSON=${json} \

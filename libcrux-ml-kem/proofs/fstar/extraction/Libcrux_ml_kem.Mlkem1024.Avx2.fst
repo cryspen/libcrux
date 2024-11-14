@@ -13,6 +13,9 @@ let validate_private_key
     private_key
     ciphertext
 
+let validate_private_key_only (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 3168)) =
+  Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.validate_private_key_only (sz 4) (sz 3168) private_key
+
 let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568)) =
   Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.validate_public_key (sz 4)
     (sz 1536)
