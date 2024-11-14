@@ -9,7 +9,7 @@ pub enum Error {
 /// - the signature is a 64 byte buffer,
 /// - the payload buffer is not shorter than payload_len.
 ///
-/// We enfore the first two using types, and the latter by using `payload.len()` and `payload_len`.
+/// We enforce the first two using types, and the latter by using `payload.len()` and `payload_len`.
 /// This has the caveat that `payload_len` must be <= u32::MAX, so we return an error if that is
 /// not the case.
 pub fn sign(payload: &[u8], private_key: &[u8; 32]) -> Result<[u8; 64], Error> {
@@ -29,7 +29,7 @@ pub fn sign(payload: &[u8], private_key: &[u8; 32]) -> Result<[u8; 64], Error> {
 /// - the signature is a 64 byte buffer,
 /// - the payload buffer is not shorter than payload_len.
 ///
-/// We enfore the first two using types, and the latter by using `payload.len()` and `payload_len`.
+/// We enforce the first two using types, and the latter by using `payload.len()` and `payload_len`.
 /// This has the caveat that `payload_len` must be <= u32::MAX, so we return an error if that is
 /// not the case.
 ///
