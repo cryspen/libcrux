@@ -1,7 +1,27 @@
 #!/bin/bash
 
 # This script runs `cargo stack-sizes` to obtain stack frame sizes for
-# functions in the crate. 
+# functions in the crate. It
+#  - temporarily installs the cargo stack-sizes tool,
+#  - temporarily reconfigure the crate to the requirements of cargo
+#    stack-sizes (installs a minimal Rust nightly toolchain and sets a
+#    bogus `version` in Cargo.toml),
+#  - runs the stack-sizes tool on a given example.
+#
+# The script will then print all stack frame sizes it collects in
+# increasing order and will exit normally if the FRAME_SIZE_LIMIT is
+# not exceeded by any of them. If the limit is exceeded the script
+# will error and print the name of the offending function.
+#
+# Before exiting, the script will restore the previous state of the
+# crate and uninstall the stack-sizes tool.
+#
+# Usage:
+#
+#    ./stack-sizes.sh <example>
+#
+# where <example> is an example program as you would run it with cargo
+# run --example <example>.
 
 set -euo pipefail
 
