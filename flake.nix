@@ -60,45 +60,78 @@
           FSTAR_REV = inputs.fstar.rev;
         };
 
-        craneLib = inputs.crane.mkLib pkgs;
-        src = ./.;
-        cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
-        ml-kem = craneLib.buildPackage (tools-environment // {
-          name = "ml-kem";
-          inherit src cargoArtifacts;
+        ml-kem = pkgs.callPackage
+          ({ pkgs
+           , lib
+           , clang-tools
+           , cmake
+           , mold-wrapped
+           , ninja
+           , python3
+           , crane
+           , hax
+           , googletest
+           , benchmark
+           , json
+           , tools-environment
+           , checkHax ? true
+           , runBenchmarks ? true
+           }:
+            let
+              craneLib = crane.mkLib pkgs;
+              src = ./.;
+              cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
+            in
+            craneLib.buildPackage (tools-environment // {
+              name = "ml-kem";
+              inherit src cargoArtifacts;
 
-          nativeBuildInputs = [
-            pkgs.clang-tools
-            pkgs.cmake
-            pkgs.mold-wrapped
-            pkgs.ninja
-            pkgs.python3
-            inputs.hax.packages.${system}.default
-          ];
-          buildPhase = ''
-            cd libcrux-ml-kem
-            python hax.py extract
-            bash c.sh
-            cd c
-            LIBCRUX_BENCHMARKS=1 cmake \
-              -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=${googletest} \
-              -DFETCHCONTENT_SOURCE_DIR_BENCHMARK=${benchmark} \
-              -DFETCHCONTENT_SOURCE_DIR_JSON=${json} \
-              -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
-              -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
-              -G "Ninja Multi-Config" -B build
-            cmake --build build --config Release
-            rm -rf build/_deps
-          '';
-          checkPhase = ''
-            build/Release/ml_kem_test
-            build/Release/ml_kem_bench
-          '';
-          installPhase = ''
-            cd ./..
-            cp -r . $out
-          '';
-        });
+              nativeBuildInputs = [
+                clang-tools
+                cmake
+                mold-wrapped
+                ninja
+                python3
+              ] ++ lib.optional checkHax [
+                hax
+              ];
+              buildPhase = ''
+                cd libcrux-ml-kem
+                ${lib.optionalString checkHax ''
+                  python hax.py extract
+                ''}
+                bash c.sh
+                cd c
+                ${lib.optionalString runBenchmarks "LIBCRUX_BENCHMARKS=1"} \
+                  cmake \
+                  -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=${googletest} \
+                  -DFETCHCONTENT_SOURCE_DIR_BENCHMARK=${benchmark} \
+                  -DFETCHCONTENT_SOURCE_DIR_JSON=${json} \
+                  -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
+                  -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
+                  -G "Ninja Multi-Config" -B build
+                cmake --build build --config Release
+                rm -rf build/_deps
+              '';
+              checkPhase = ''
+                build/Release/ml_kem_test
+              '' + lib.optionalString runBenchmarks ''
+                build/Release/ml_kem_bench
+              '';
+              installPhase = ''
+                cd ./..
+                cp -r . $out
+              '';
+            })
+          )
+          {
+            inherit
+              googletest benchmark json
+              tools-environment;
+            crane = inputs.crane;
+            hax =
+              inputs.hax.packages.${system}.default;
+          };
       in
       rec {
         packages = {
