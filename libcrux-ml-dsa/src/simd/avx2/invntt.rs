@@ -3,21 +3,20 @@ use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT}
 
 use libcrux_intrinsics::avx2::*;
 
-#[inline(always)]
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
-pub(crate) fn invert_ntt_montgomery(
+pub(crate) unsafe fn invert_ntt_montgomery(
     mut re: [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
 ) -> [Vec256; SIMD_UNITS_IN_RING_ELEMENT] {
-    unsafe {
-        invert_ntt_at_layer_0(&mut re);
-        invert_ntt_at_layer_1(&mut re);
-        invert_ntt_at_layer_2(&mut re);
-        invert_ntt_at_layer_3(&mut re);
-        invert_ntt_at_layer_4(&mut re);
-        invert_ntt_at_layer_5(&mut re);
-        invert_ntt_at_layer_6(&mut re);
-        invert_ntt_at_layer_7(&mut re);
-    }
+    invert_ntt_at_layer_0(&mut re);
+    invert_ntt_at_layer_1(&mut re);
+    invert_ntt_at_layer_2(&mut re);
+    invert_ntt_at_layer_3(&mut re);
+    invert_ntt_at_layer_4(&mut re);
+    invert_ntt_at_layer_5(&mut re);
+    invert_ntt_at_layer_6(&mut re);
+    invert_ntt_at_layer_7(&mut re);
+
     for i in 0..re.len() {
         // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}
         // we multiply by (MONTGOMERY_R^2) * (1/2^8) mod Q = 41,978 to both:
@@ -115,9 +114,8 @@ fn simd_unit_invert_ntt_at_layer_2(
     (a, b)
 }
 
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-#[allow(unsafe_code)]
-unsafe fn invert_ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[inline(always)]
+fn invert_ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[inline(always)]
     fn round(
         re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
@@ -195,9 +193,8 @@ unsafe fn invert_ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     );
 }
 
-#[allow(unsafe_code)]
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-unsafe fn invert_ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[inline(always)]
+fn invert_ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[inline(always)]
     fn round(
         re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
@@ -235,9 +232,8 @@ unsafe fn invert_ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     round(re, 30, -3041255, -3677745, -1528703, -3930395);
 }
 
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-#[allow(unsafe_code)]
-unsafe fn invert_ntt_at_layer_2(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[inline(always)]
+fn invert_ntt_at_layer_2(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[inline(always)]
     fn round(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT], index: usize, zeta1: i32, zeta2: i32) {
         (re[index], re[index + 1]) =
@@ -274,9 +270,8 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     ()
 }
 
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-#[allow(unsafe_code)]
-unsafe fn invert_ntt_at_layer_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[inline(always)]
+fn invert_ntt_at_layer_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 8; // 1 << LAYER;
     const STEP_BY: usize = 1; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -298,9 +293,8 @@ unsafe fn invert_ntt_at_layer_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (15 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 2725464>(re);
 }
 
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-#[allow(unsafe_code)]
-unsafe fn invert_ntt_at_layer_4(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[inline(always)]
+fn invert_ntt_at_layer_4(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 16; // 1 << LAYER;
     const STEP_BY: usize = 2; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -313,10 +307,8 @@ unsafe fn invert_ntt_at_layer_4(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (6 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 2353451>(re);
     outer_3_plus::<{ (7 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 1826347>(re);
 }
-
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-#[allow(unsafe_code)]
-unsafe fn invert_ntt_at_layer_5(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[inline(always)]
+fn invert_ntt_at_layer_5(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 32; // 1 << LAYER;
     const STEP_BY: usize = 4; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -326,9 +318,8 @@ unsafe fn invert_ntt_at_layer_5(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (3 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 237124>(re);
 }
 
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-#[allow(unsafe_code)]
-unsafe fn invert_ntt_at_layer_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[inline(always)]
+fn invert_ntt_at_layer_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 64; // 1 << LAYER;
     const STEP_BY: usize = 8; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -336,9 +327,8 @@ unsafe fn invert_ntt_at_layer_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (1 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -2608894>(re);
 }
 
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-#[allow(unsafe_code)]
-unsafe fn invert_ntt_at_layer_7(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+#[inline(always)]
+fn invert_ntt_at_layer_7(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 128; // 1 << LAYER;
     const STEP_BY: usize = 16; // step / COEFFICIENTS_IN_SIMD_UNIT;
 

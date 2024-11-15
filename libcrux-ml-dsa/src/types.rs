@@ -42,9 +42,9 @@ pub(crate) struct Signature<
     const COLUMNS_IN_A: usize,
     const ROWS_IN_A: usize,
 > {
-    pub commitment_hash: [u8; COMMITMENT_HASH_SIZE],
-    pub signer_response: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
-    pub hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
+    pub(crate) commitment_hash: [u8; COMMITMENT_HASH_SIZE],
+    pub(crate) signer_response: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
+    pub(crate) hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
 }
 
 #[derive(Debug)]

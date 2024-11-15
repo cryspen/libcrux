@@ -134,10 +134,11 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
+    #[allow(unsafe_code)]
     fn invert_ntt_montgomery(
         simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT],
     ) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
-        let result = invntt::invert_ntt_montgomery(simd_units.map(|x| x.coefficients));
+        let result = unsafe { invntt::invert_ntt_montgomery(simd_units.map(|x| x.coefficients)) };
 
         result.map(|x| x.into())
     }

@@ -4,7 +4,7 @@ use crate::{ntt::ntt, polynomial::PolynomialRingElement, simd::traits::Operation
 
 #[inline(always)]
 pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement<SIMDUnit>,
+    re: &PolynomialRingElement<SIMDUnit>,
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
 

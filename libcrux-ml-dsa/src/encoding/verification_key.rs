@@ -21,7 +21,7 @@ pub(crate) fn generate_serialized<
     for (i, ring_element) in t1.iter().enumerate() {
         let offset = SEED_FOR_A_SIZE + (i * RING_ELEMENT_OF_T1S_SIZE);
         verification_key_serialized[offset..offset + RING_ELEMENT_OF_T1S_SIZE]
-            .copy_from_slice(&t1::serialize::<SIMDUnit>(*ring_element));
+            .copy_from_slice(&t1::serialize::<SIMDUnit>(ring_element));
     }
 
     verification_key_serialized
@@ -39,12 +39,14 @@ pub(crate) fn deserialize<
     [u8; SEED_FOR_A_SIZE],
     [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) {
+    // This may be ok to do here because it's only used in one place where we'd need to "allocate".
     let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
     let (seed_for_A, serialized_remaining) = serialized.split_at(SEED_FOR_A_SIZE);
 
     for i in 0..ROWS_IN_A {
-        t1[i] = t1::deserialize::<SIMDUnit>(
+        t1::deserialize::<SIMDUnit>(
             &serialized_remaining[i * RING_ELEMENT_OF_T1S_SIZE..(i + 1) * RING_ELEMENT_OF_T1S_SIZE],
+            &mut t1[i],
         );
     }
 

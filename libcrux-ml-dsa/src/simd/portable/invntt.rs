@@ -290,6 +290,7 @@ fn invert_ntt_at_layer_7(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]
     outer_3_plus::<{ (0 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 25847>(re);
 }
 
+#[inline(always)]
 pub(crate) fn invert_ntt_montgomery(
     mut re: [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
 ) -> [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT] {

@@ -9,7 +9,7 @@ use crate::{
 
 #[inline(always)]
 pub(crate) fn serialize<SIMDUnit: Operations>(
-    re: PolynomialRingElement<SIMDUnit>,
+    re: &PolynomialRingElement<SIMDUnit>,
 ) -> [u8; RING_ELEMENT_OF_T0S_SIZE] {
     let mut serialized = [0u8; RING_ELEMENT_OF_T0S_SIZE];
 
@@ -104,7 +104,7 @@ mod tests {
             114, 203, 81, 128, 188, 172, 90, 39, 25, 122, 156, 12, 71, 57, 204, 234, 227,
         ];
 
-        assert_eq!(serialize::<SIMDUnit>(re), expected_bytes);
+        assert_eq!(serialize::<SIMDUnit>(&re), expected_bytes);
     }
     fn test_deserialize_generic<SIMDUnit: Operations>() {
         let serialized = [
