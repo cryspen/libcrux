@@ -1157,6 +1157,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "libcrux-stack"
+version = "0.0.2-beta.2"
+
+[[package]]
 name = "libcrux-traits"
 version = "0.0.2-beta.2"
 
