@@ -38,10 +38,11 @@ pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations, Shake128: shake128
     domain_separator1: u16,
     domain_seperator2: u16,
     domain_separator3: u16,
-    out0: &mut PolynomialRingElement<SIMDUnit>,
-    out1: &mut PolynomialRingElement<SIMDUnit>,
-    out2: &mut PolynomialRingElement<SIMDUnit>,
-    out3: &mut PolynomialRingElement<SIMDUnit>,
+) -> (
+    PolynomialRingElement<SIMDUnit>,
+    PolynomialRingElement<SIMDUnit>,
+    PolynomialRingElement<SIMDUnit>,
+    PolynomialRingElement<SIMDUnit>,
 ) {
     // Prepare the seeds
     seed0[32] = domain_separator0 as u8;
@@ -143,12 +144,12 @@ pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations, Shake128: shake128
         }
     }
 
-    // XXX: It would be better if we wouldn't have the coefficients but instead
-    //      use the out elements directly.
-    *out0 = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients0);
-    *out1 = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients1);
-    *out2 = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients2);
-    *out3 = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients3);
+    (
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients0),
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients1),
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients2),
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients3),
+    )
 }
 
 #[inline(always)]
@@ -486,24 +487,15 @@ mod tests {
     fn sample_ring_element_uniform<SIMDUnit: Operations, Shake128: shake128::XofX4>(
         seed: [u8; 34],
     ) -> PolynomialRingElement<SIMDUnit> {
-        let mut four_ring_elements0 = PolynomialRingElement::<SIMDUnit>::ZERO();
-        let mut four_ring_elements1 = PolynomialRingElement::<SIMDUnit>::ZERO();
-        let mut four_ring_elements2 = PolynomialRingElement::<SIMDUnit>::ZERO();
-        let mut four_ring_elements3 = PolynomialRingElement::<SIMDUnit>::ZERO();
-
-        sample_four_ring_elements::<SIMDUnit, Shake128>(
+        let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128>(
             seed,
             ((seed[33] as u16) << 8) | (seed[32] as u16),
             0,
             0,
             0,
-            &mut four_ring_elements0,
-            &mut four_ring_elements1,
-            &mut four_ring_elements2,
-            &mut four_ring_elements3,
         );
 
-        four_ring_elements0
+        four_ring_elements.0
     }
 
     // This is just a wrapper around sample_four_ring_elements, for testing
