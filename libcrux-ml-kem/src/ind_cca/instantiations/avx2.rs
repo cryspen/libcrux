@@ -198,6 +198,18 @@ pub(crate) fn validate_private_key<
     }
 }
 
+/// Private key validation
+#[inline(always)]
+pub(crate) fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize>(
+    private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+) -> bool {
+    crate::ind_cca::validate_private_key_only::<
+        K,
+        SECRET_KEY_SIZE,
+        crate::hash_functions::avx2::Simd256Hash,
+    >(private_key)
+}
+
 #[allow(unsafe_code)]
 #[cfg(feature = "kyber")]
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
@@ -656,6 +668,30 @@ pub(crate) mod unpacked {
                 PUBLIC_KEY_SIZE,
             >(public_key, unpacked_public_key)
         }
+    }
+
+    /// Take a serialized private key and generate an unpacked key pair from it.
+    #[inline(always)]
+    pub(crate) fn keypair_from_private_key<
+        const K: usize,
+        const SECRET_KEY_SIZE: usize,
+        const CPA_SECRET_KEY_SIZE: usize,
+        const PUBLIC_KEY_SIZE: usize,
+        const BYTES_PER_RING_ELEMENT: usize,
+        const T_AS_NTT_ENCODED_SIZE: usize,
+    >(
+        private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+        key_pair: &mut MlKemKeyPairUnpacked<K>,
+    ) {
+        crate::ind_cca::unpacked::keys_from_private_key::<
+            K,
+            SECRET_KEY_SIZE,
+            CPA_SECRET_KEY_SIZE,
+            PUBLIC_KEY_SIZE,
+            BYTES_PER_RING_ELEMENT,
+            T_AS_NTT_ENCODED_SIZE,
+            crate::vector::SIMD256Vector,
+        >(private_key, key_pair);
     }
 
     #[allow(unsafe_code)]

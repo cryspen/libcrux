@@ -5,6 +5,7 @@ mod vector_type;
 // Some of the portable implementations are used in lieu of vectorized ones in
 // the AVX2 module.
 pub(crate) mod encoding;
+mod invntt;
 mod ntt;
 mod sample;
 
@@ -31,12 +32,10 @@ impl Operations for PortableSIMDUnit {
         arithmetic::subtract(lhs, rhs)
     }
 
-    fn montgomery_multiply_by_constant(simd_unit: Self, c: i32) -> Self {
-        arithmetic::montgomery_multiply_by_constant(simd_unit, c)
-    }
     fn montgomery_multiply(lhs: Self, rhs: Self) -> Self {
         arithmetic::montgomery_multiply(&lhs, &rhs)
     }
+
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Self) -> Self {
         arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit)
     }
@@ -106,19 +105,9 @@ impl Operations for PortableSIMDUnit {
         ntt::ntt(simd_units)
     }
 
-    fn invert_ntt_at_layer_0(
-        simd_unit: Self,
-        zeta0: i32,
-        zeta1: i32,
-        zeta2: i32,
-        zeta3: i32,
-    ) -> Self {
-        ntt::invert_ntt_at_layer_0(simd_unit, zeta0, zeta1, zeta2, zeta3)
-    }
-    fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        ntt::invert_ntt_at_layer_1(simd_unit, zeta0, zeta1)
-    }
-    fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        ntt::invert_ntt_at_layer_2(simd_unit, zeta)
+    fn invert_ntt_montgomery(
+        simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT],
+    ) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
+        invntt::invert_ntt_montgomery(simd_units)
     }
 }

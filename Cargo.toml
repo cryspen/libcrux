@@ -17,7 +17,12 @@ members = [
     "libcrux-hkdf",
     "libcrux-ecdh",
     "libcrux-psq",
+    "macros",
     "cavp",
+    "traits",
+    "sha2",
+    "ed25519",
+    "curve25519",
 ]
 
 [workspace.package]
@@ -63,10 +68,14 @@ bench = false                               # so libtest doesn't eat the argumen
 libcrux-platform = { version = "=0.0.2-beta.2", path = "sys/platform" }
 
 [dependencies]
+libcrux-traits = { version = "=0.0.2-beta.2", path = "traits" }
+libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "hacl-rs" }
 libcrux-hacl = { version = "=0.0.2-beta.2", path = "sys/hacl" }
 libcrux-platform = { version = "=0.0.2-beta.2", path = "sys/platform" }
 libcrux-hkdf = { version = "=0.0.2-beta.2", path = "libcrux-hkdf" }
 libcrux-hmac = { version = "=0.0.2-beta.2", path = "libcrux-hmac" }
+libcrux-sha2 = { version = "=0.0.2-beta.2", path = "sha2" }
+libcrux-ed25519 = { version = "=0.0.2-beta.2", path = "ed25519" }
 libcrux-ecdh = { version = "=0.0.2-beta.2", path = "libcrux-ecdh" }
 libcrux-ml-kem = { version = "=0.0.2-beta.2", path = "libcrux-ml-kem" }
 libcrux-kem = { version = "=0.0.2-beta.2", path = "libcrux-kem" }
@@ -88,6 +97,7 @@ serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 clap = { version = "4.5", features = ["derive"] }
+wycheproof = "0.6.0"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"

@@ -33,9 +33,11 @@
 
 use rand::{CryptoRng, Rng};
 
-use libcrux_ecdh;
 use libcrux_ecdh::{p256_derive, x25519_derive};
-use libcrux_ecdh::{P256PrivateKey, P256PublicKey, X25519PrivateKey, X25519PublicKey};
+use libcrux_ecdh::{
+    P256PrivateKey, P256PublicKey, P256SharedSecret, X25519PrivateKey, X25519PublicKey,
+    X25519SharedSecret,
+};
 use libcrux_sha3 as sha3;
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
@@ -370,8 +372,8 @@ impl Ct {
                 Ok(Ss::XWingKemDraft02(
                     ss_m,
                     ss_x,
-                    X25519PublicKey(ct_x.0.clone()),
-                    X25519PublicKey(pk_x.0.clone()),
+                    X25519PublicKey(ct_x.0),
+                    X25519PublicKey(pk_x.0),
                 ))
             }
             Ct::MlKem1024(ct) => {
@@ -430,25 +432,25 @@ impl Ct {
 
 /// A KEM shared secret
 pub enum Ss {
-    X25519(X25519PublicKey),
-    P256(P256PublicKey),
+    X25519(X25519SharedSecret),
+    P256(P256SharedSecret),
     MlKem512(MlKemSharedSecret),
     MlKem768(MlKemSharedSecret),
-    X25519MlKem768Draft00(MlKemSharedSecret, X25519PublicKey),
+    X25519MlKem768Draft00(MlKemSharedSecret, X25519SharedSecret),
     XWingKemDraft02(
-        MlKemSharedSecret, // ss_M
-        X25519PublicKey,   // ss_X
-        X25519PublicKey,   // ct_X
-        X25519PublicKey,   // pk_X
+        MlKemSharedSecret,  // ss_M
+        X25519SharedSecret, // ss_X
+        X25519PublicKey,    // ct_X
+        X25519PublicKey,    // pk_X
     ),
     #[cfg(feature = "kyber")]
     X25519Kyber768Draft00(MlKemSharedSecret, X25519PublicKey),
     #[cfg(feature = "kyber")]
     XWingKyberDraft02(
-        MlKemSharedSecret, // ss_M
-        X25519PublicKey,   // ss_X
-        X25519PublicKey,   // ct_X
-        X25519PublicKey,   // pk_X
+        MlKemSharedSecret,  // ss_M
+        X25519SharedSecret, // ss_X
+        X25519PublicKey,    // ct_X
+        X25519PublicKey,    // pk_X
     ),
     MlKem1024(MlKemSharedSecret),
 }

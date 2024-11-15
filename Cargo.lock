@@ -500,6 +500,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "data-encoding"
+version = "2.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8566979429cf69b49a5c740c60791108e86440e8be149bbea4fe54d2c32d6e2"
+
+[[package]]
 name = "der"
 version = "0.7.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -903,12 +909,16 @@ dependencies = [
  "hex",
  "libcrux",
  "libcrux-ecdh",
+ "libcrux-ed25519",
  "libcrux-hacl",
+ "libcrux-hacl-rs",
  "libcrux-hkdf",
  "libcrux-hmac",
  "libcrux-kem",
  "libcrux-ml-kem",
  "libcrux-platform",
+ "libcrux-sha2",
+ "libcrux-traits",
  "log",
  "pretty_env_logger",
  "quickcheck",
@@ -919,6 +929,16 @@ dependencies = [
  "serde_json",
  "wasm-bindgen",
  "wasm-bindgen-test",
+ "wycheproof",
+]
+
+[[package]]
+name = "libcrux-curve25519"
+version = "0.0.2-beta.2"
+dependencies = [
+ "libcrux-hacl-rs",
+ "libcrux-macros",
+ "libcrux-sha2",
 ]
 
 [[package]]
@@ -926,12 +946,22 @@ name = "libcrux-ecdh"
 version = "0.0.2-beta.2"
 dependencies = [
  "hex",
+ "libcrux-curve25519",
  "libcrux-hacl",
  "pretty_env_logger",
  "rand",
  "rand_core",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "libcrux-ed25519"
+version = "0.0.2-beta.2"
+dependencies = [
+ "libcrux-hacl-rs",
+ "libcrux-macros",
+ "libcrux-sha2",
 ]
 
 [[package]]
@@ -955,18 +985,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "libcrux-hacl-rs"
+version = "0.0.2-beta.2"
+dependencies = [
+ "libcrux-macros",
+]
+
+[[package]]
 name = "libcrux-hkdf"
 version = "0.0.2-beta.2"
 dependencies = [
- "libcrux-hacl",
+ "libcrux-hacl-rs",
+ "libcrux-hmac",
 ]
 
 [[package]]
 name = "libcrux-hmac"
 version = "0.0.2-beta.2"
 dependencies = [
- "libcrux-hacl",
- "libcrux-hkdf",
+ "libcrux-hacl-rs",
+ "libcrux-macros",
+ "libcrux-sha2",
 ]
 
 [[package]]
@@ -987,6 +1026,10 @@ dependencies = [
  "libcrux-sha3",
  "rand",
 ]
+
+[[package]]
+name = "libcrux-macros"
+version = "0.0.2-beta.2"
 
 [[package]]
 name = "libcrux-ml-dsa"
@@ -1058,6 +1101,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "libcrux-sha2"
+version = "0.0.2-beta.2"
+dependencies = [
+ "libcrux-hacl-rs",
+ "libcrux-macros",
+ "libcrux-traits",
+]
+
+[[package]]
 name = "libcrux-sha3"
 version = "0.0.2-beta.2"
 dependencies = [
@@ -1070,6 +1122,10 @@ dependencies = [
  "pretty_env_logger",
  "rand",
 ]
+
+[[package]]
+name = "libcrux-traits"
+version = "0.0.2-beta.2"
 
 [[package]]
 name = "libfuzzer-sys"
@@ -2050,6 +2106,17 @@ name = "windows_x86_64_msvc"
 version = "0.52.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
+
+[[package]]
+name = "wycheproof"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "efb3be19abfb206c6adcbdf2007b09b0e8ca1f6530db40c03b42ce8ed4719894"
+dependencies = [
+ "data-encoding",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "x25519-dalek"

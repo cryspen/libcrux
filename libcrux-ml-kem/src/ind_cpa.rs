@@ -526,6 +526,26 @@ pub(crate) fn generate_keypair<
         &mut public_key,
     );
 
+    serialize_unpacked_secret_key::<
+        K,
+        PRIVATE_KEY_SIZE,
+        PUBLIC_KEY_SIZE,
+        RANKED_BYTES_PER_RING_ELEMENT,
+        Vector,
+    >(&public_key, &private_key)
+}
+
+/// Serialize the secret key from the unpacked key pair generation.
+pub(crate) fn serialize_unpacked_secret_key<
+    const K: usize,
+    const PRIVATE_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const RANKED_BYTES_PER_RING_ELEMENT: usize,
+    Vector: Operations,
+>(
+    public_key: &IndCpaPublicKeyUnpacked<K, Vector>,
+    private_key: &IndCpaPrivateKeyUnpacked<K, Vector>,
+) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized =
         serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
@@ -789,28 +809,8 @@ pub(crate) fn encrypt<
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
     hax_lib::fstar!("reveal_opaque (`%Spec.MLKEM.ind_cpa_encrypt) Spec.MLKEM.ind_cpa_encrypt");
-    let mut unpacked_public_key = IndCpaPublicKeyUnpacked::<K, Vector>::default();
-
-    // tˆ := Decode_12(pk)
-    deserialize_ring_elements_reduced::<K, Vector>(
-        &public_key[..T_AS_NTT_ENCODED_SIZE],
-        &mut unpacked_public_key.t_as_ntt,
-    );
-
-    // ρ := pk + 12·k·n / 8
-    // for i from 0 to k−1 do
-    //     for j from 0 to k − 1 do
-    //         AˆT[i][j] := Parse(XOF(ρ, i, j))
-    //     end for
-    // end for
-    let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
-    hax_lib::fstar!("Lib.Sequence.eq_intro #u8 #32 $seed (Seq.slice
-        (Libcrux_ml_kem.Utils.into_padded_array (sz 34) $seed) 0 32)");
-    sample_matrix_A::<K, Vector, Hasher>(
-        &mut unpacked_public_key.A,
-        into_padded_array(seed),
-        false,
-    );
+    let unpacked_public_key =
+        build_unpacked_public_key::<K, T_AS_NTT_ENCODED_SIZE, Vector, Hasher>(public_key);
 
     // After unpacking the public key we can now call the unpacked decryption.
     encrypt_unpacked::<
@@ -829,6 +829,51 @@ pub(crate) fn encrypt<
         Vector,
         Hasher,
     >(&unpacked_public_key, message, randomness)
+}
+
+fn build_unpacked_public_key<
+    const K: usize,
+    const T_AS_NTT_ENCODED_SIZE: usize,
+    Vector: Operations,
+    Hasher: Hash<K>,
+>(
+    public_key: &[u8],
+) -> IndCpaPublicKeyUnpacked<K, Vector> {
+    let mut unpacked_public_key = IndCpaPublicKeyUnpacked::<K, Vector>::default();
+    build_unpacked_public_key_mut::<K, T_AS_NTT_ENCODED_SIZE, Vector, Hasher>(
+        public_key,
+        &mut unpacked_public_key,
+    );
+    unpacked_public_key
+}
+
+pub(crate) fn build_unpacked_public_key_mut<
+    const K: usize,
+    const T_AS_NTT_ENCODED_SIZE: usize,
+    Vector: Operations,
+    Hasher: Hash<K>,
+>(
+    public_key: &[u8],
+    unpacked_public_key: &mut IndCpaPublicKeyUnpacked<K, Vector>,
+) {
+    // tˆ := Decode_12(pk)
+    deserialize_ring_elements_reduced::<K, Vector>(
+        &public_key[..T_AS_NTT_ENCODED_SIZE],
+        &mut unpacked_public_key.t_as_ntt,
+    );
+
+    // ρ := pk + 12·k·n / 8
+    // for i from 0 to k−1 do
+    //     for j from 0 to k − 1 do
+    //         AˆT[i][j] := Parse(XOF(ρ, i, j))
+    //     end for
+    // end for
+    let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
+    sample_matrix_A::<K, Vector, Hasher>(
+        &mut unpacked_public_key.A,
+        into_padded_array(seed),
+        false,
+    );
 }
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
@@ -885,7 +930,7 @@ fn deserialize_then_decompress_u<
     fstar!("Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $res ==
          Spec.MLKEM.vector_decode_12 #$K $secret_key")
 )]
-fn deserialize_secret_key<const K: usize, Vector: Operations>(
+pub(crate) fn deserialize_secret_key<const K: usize, Vector: Operations>(
     secret_key: &[u8],
 ) -> [PolynomialRingElement<Vector>; K] {
     hax_lib::fstar!("assert_norm (Spec.MLKEM.polynomial_d 12 == Spec.MLKEM.polynomial)");
