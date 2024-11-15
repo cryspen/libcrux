@@ -116,10 +116,9 @@ log = ["dep:log"]
 tests = []                           # Expose functions for testing.
 experimental = []                    # Expose experimental APIs.
 
-[profile.release]
-lto = "fat"
-codegen-units = 1
-panic = "abort"
+# [profile.release]
+# lto = "fat"
+# panic = "abort"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

@@ -337,18 +337,17 @@ fn sample_mask_ring_element<
     const GAMMA1_EXPONENT: usize,
 >(
     seed: [u8; 66],
-    result: &mut PolynomialRingElement<SIMDUnit>,
-) {
+) -> PolynomialRingElement<SIMDUnit> {
     match GAMMA1_EXPONENT as u8 {
         17 => {
             let mut out = [0u8; 576];
             Shake256::shake256::<576>(&seed, &mut out);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out, result);
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out)
         }
         19 => {
             let mut out = [0u8; 640];
             Shake256::shake256::<640>(&seed, &mut out);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out, result);
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out)
         }
         _ => unreachable!(),
     }
@@ -385,10 +384,10 @@ pub(crate) fn sample_mask_vector<
             Shake256X4::shake256_x4(
                 &seed0, &seed1, &seed2, &seed3, &mut out0, &mut out1, &mut out2, &mut out3,
             );
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0, &mut mask[0]);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1, &mut mask[1]);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2, &mut mask[2]);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3, &mut mask[3]);
+            mask[0] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0);
+            mask[1] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1);
+            mask[2] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2);
+            mask[3] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3);
         }
         19 => {
             let mut out0 = [0; 640];
@@ -398,10 +397,10 @@ pub(crate) fn sample_mask_vector<
             Shake256X4::shake256_x4(
                 &seed0, &seed1, &seed2, &seed3, &mut out0, &mut out1, &mut out2, &mut out3,
             );
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0, &mut mask[0]);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1, &mut mask[1]);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2, &mut mask[2]);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3, &mut mask[3]);
+            mask[0] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0);
+            mask[1] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1);
+            mask[2] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2);
+            mask[3] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3);
         }
         _ => unreachable!(),
     }
@@ -413,7 +412,7 @@ pub(crate) fn sample_mask_vector<
         *domain_separator += 1;
 
         // TODO: For 87 we may want to do another 4 and discard 1.
-        sample_mask_ring_element::<SIMDUnit, Shake256, GAMMA1_EXPONENT>(seed, &mut mask[i]);
+        mask[i] = sample_mask_ring_element::<SIMDUnit, Shake256, GAMMA1_EXPONENT>(seed);
     }
 
     mask

@@ -304,7 +304,7 @@ pub(crate) fn sign_internal<
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
                 COMMITMENT_VECTOR_SIZE,
-            >(&commitment);
+            >(commitment);
 
             let mut shake = shake256_init();
             shake256_absorb(&mut shake, &message_representative);
@@ -336,12 +336,12 @@ pub(crate) fn sign_internal<
             subtract_vectors::<SIMDUnit, ROWS_IN_A>(&w0, &challenge_times_s2);
 
         if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
-            &signer_response_candidate,
+            signer_response_candidate,
             (1 << GAMMA1_EXPONENT) - BETA,
         ) {
         } else {
             if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(
-                &w0_minus_challenge_times_s2,
+                w0_minus_challenge_times_s2,
                 GAMMA2 - BETA,
             ) {
             } else {
@@ -349,8 +349,7 @@ pub(crate) fn sign_internal<
                     &t0_as_ntt,
                     &verifier_challenge_as_ntt,
                 );
-                if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(&challenge_times_t0, GAMMA2)
-                {
+                if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(challenge_times_t0, GAMMA2) {
                 } else {
                     let w0_minus_c_times_s2_plus_c_times_t0 = add_vectors::<SIMDUnit, ROWS_IN_A>(
                         &w0_minus_challenge_times_s2,
@@ -475,25 +474,22 @@ pub(crate) fn verify_internal<
     domain_separation_context: Option<DomainSeparationContext>,
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    let (seed_for_A, mut t1) =
+    let (seed_for_A, t1) =
         encoding::verification_key::deserialize::<SIMDUnit, ROWS_IN_A, VERIFICATION_KEY_SIZE>(
             verification_key_serialized,
         );
 
-    let Signature {
-        commitment_hash: sig_commitment_hash,
-        hint,
-        signer_response,
-    } = Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
-        GAMMA1_EXPONENT,
-        GAMMA1_RING_ELEMENT_SIZE,
-        MAX_ONES_IN_HINT,
-        SIGNATURE_SIZE,
-    >(signature_serialized)?;
+    let signature =
+        Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
+            GAMMA1_EXPONENT,
+            GAMMA1_RING_ELEMENT_SIZE,
+            MAX_ONES_IN_HINT,
+            SIGNATURE_SIZE,
+        >(signature_serialized)?;
 
     // We use if-else branches because early returns will not go through hax.
     if !vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
-        &signer_response,
+        signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
         let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
@@ -518,25 +514,24 @@ pub(crate) fn verify_internal<
             Shake256,
             ONES_IN_VERIFIER_CHALLENGE,
             COMMITMENT_HASH_SIZE,
-        >(sig_commitment_hash));
+        >(signature.commitment_hash));
 
-        compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
+        let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
             &A_as_ntt,
-            &signer_response,
-            &verifier_challenge_as_ntt,
-            &mut t1,
+            signature.signer_response,
+            verifier_challenge_as_ntt,
+            t1,
         );
-        let w_approx = t1;
 
         let mut commitment_hash = [0; COMMITMENT_HASH_SIZE];
         {
-            let commitment = use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(hint, w_approx);
+            let commitment = use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
             let commitment_serialized = encoding::commitment::serialize_vector::<
                 SIMDUnit,
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
                 COMMITMENT_VECTOR_SIZE,
-            >(&commitment);
+            >(commitment);
 
             let mut shake = shake256_init();
             shake256_absorb(&mut shake, &message_representative);
@@ -545,7 +540,7 @@ pub(crate) fn verify_internal<
             shake256_squeeze(&mut shake, &mut commitment_hash);
         }
 
-        if sig_commitment_hash != commitment_hash {
+        if signature.commitment_hash != commitment_hash {
             Err(VerificationError::CommitmentHashesDontMatchError)
         } else {
             Ok(())

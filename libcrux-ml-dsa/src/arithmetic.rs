@@ -5,7 +5,7 @@ use crate::{
 
 #[inline(always)]
 pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations, const DIMENSION: usize>(
-    vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+    vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
     bound: i32,
 ) -> bool {
     let mut exceeds = false;
