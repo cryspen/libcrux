@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
- * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 38837f1aab3f2ae348a0cb53cf44d97652e2c977
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
+ * Eurydice: 7d686376ec943225ff89942978c6c3028bac689c
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: 3b3cafa339ed7c6eae210cd474cce4c2ebabc36b
  */
 
 #include "internal/libcrux_core.h"
@@ -72,25 +72,6 @@ void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_i
 }
 
 /**
-This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#16}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_5a
-with const generics
-- SIZE= 1568
-*/
-libcrux_ml_kem_types_MlKemPublicKey_64 libcrux_ml_kem_types_from_5a_af(
-    uint8_t value[1568U]) {
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_value[1568U];
-  memcpy(copy_of_value, value, (size_t)1568U * sizeof(uint8_t));
-  libcrux_ml_kem_types_MlKemPublicKey_64 lit;
-  memcpy(lit.value, copy_of_value, (size_t)1568U * sizeof(uint8_t));
-  return lit;
-}
-
-/**
 This function found in impl
 {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>#21}
 */
@@ -127,25 +108,6 @@ libcrux_ml_kem_types_MlKemPrivateKey_83 libcrux_ml_kem_types_from_7f_39(
 }
 
 /**
-This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#16}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_5a
-with const generics
-- SIZE= 1184
-*/
-libcrux_ml_kem_types_MlKemPublicKey_30 libcrux_ml_kem_types_from_5a_d0(
-    uint8_t value[1184U]) {
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_value[1184U];
-  memcpy(copy_of_value, value, (size_t)1184U * sizeof(uint8_t));
-  libcrux_ml_kem_types_MlKemPublicKey_30 lit;
-  memcpy(lit.value, copy_of_value, (size_t)1184U * sizeof(uint8_t));
-  return lit;
-}
-
-/**
 This function found in impl
 {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>#21}
 */
@@ -178,25 +140,6 @@ libcrux_ml_kem_types_MlKemPrivateKey_d9 libcrux_ml_kem_types_from_7f_28(
   memcpy(copy_of_value, value, (size_t)2400U * sizeof(uint8_t));
   libcrux_ml_kem_types_MlKemPrivateKey_d9 lit;
   memcpy(lit.value, copy_of_value, (size_t)2400U * sizeof(uint8_t));
-  return lit;
-}
-
-/**
-This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#16}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_5a
-with const generics
-- SIZE= 800
-*/
-libcrux_ml_kem_types_MlKemPublicKey_52 libcrux_ml_kem_types_from_5a_4d(
-    uint8_t value[800U]) {
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_value[800U];
-  memcpy(copy_of_value, value, (size_t)800U * sizeof(uint8_t));
-  libcrux_ml_kem_types_MlKemPublicKey_52 lit;
-  memcpy(lit.value, copy_of_value, (size_t)800U * sizeof(uint8_t));
   return lit;
 }
 
@@ -250,6 +193,57 @@ uint8_t *libcrux_ml_kem_types_as_slice_fd_d0(
 
 /**
 This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
+libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#16}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.from_5a
+with const generics
+- SIZE= 1184
+*/
+libcrux_ml_kem_types_MlKemPublicKey_30 libcrux_ml_kem_types_from_5a_d0(
+    uint8_t value[1184U]) {
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_value[1184U];
+  memcpy(copy_of_value, value, (size_t)1184U * sizeof(uint8_t));
+  libcrux_ml_kem_types_MlKemPublicKey_30 lit;
+  memcpy(lit.value, copy_of_value, (size_t)1184U * sizeof(uint8_t));
+  return lit;
+}
+
+/**
+ Unpack an incoming private key into it's different parts.
+
+ We have this here in types to extract into a common core for C.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.unpack_private_key
+with const generics
+- CPA_SECRET_KEY_SIZE= 1152
+- PUBLIC_KEY_SIZE= 1184
+*/
+Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_b4(
+    Eurydice_slice private_key) {
+  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
+      private_key, (size_t)1152U, uint8_t, Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_secret_key = uu____0.fst;
+  Eurydice_slice secret_key0 = uu____0.snd;
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
+      secret_key0, (size_t)1184U, uint8_t, Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_public_key = uu____1.fst;
+  Eurydice_slice secret_key = uu____1.snd;
+  Eurydice_slice_uint8_t_x2 uu____2 = Eurydice_slice_split_at(
+      secret_key, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
+      Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
+  Eurydice_slice implicit_rejection_value = uu____2.snd;
+  return (CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
+                                              .snd = ind_cpa_public_key,
+                                              .thd = ind_cpa_public_key_hash,
+                                              .f3 = implicit_rejection_value});
+}
+
+/**
+This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
 libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#2}
 */
 /**
@@ -265,6 +259,23 @@ libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_from_01_80(
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext lit;
   memcpy(lit.value, copy_of_value, (size_t)1088U * sizeof(uint8_t));
   return lit;
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.utils.prf_input_inc
+with const generics
+- K= 3
+*/
+uint8_t libcrux_ml_kem_utils_prf_input_inc_e0(uint8_t (*prf_inputs)[33U],
+                                              uint8_t domain_separator) {
+  uint8_t ret[3U][33U];
+  core_array___core__clone__Clone_for__Array_T__N___20__clone(
+      (size_t)3U, prf_inputs, ret, uint8_t[33U], void *);
+  LowStar_Ignore_ignore(ret, uint8_t[3U][33U], void *);
+  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
+                  prf_inputs[i0][32U] = domain_separator;
+                  domain_separator = (uint32_t)domain_separator + 1U;);
+  return domain_separator;
 }
 
 /**
@@ -315,6 +326,57 @@ uint8_t *libcrux_ml_kem_types_as_slice_fd_4d(
 
 /**
 This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
+libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#16}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.from_5a
+with const generics
+- SIZE= 800
+*/
+libcrux_ml_kem_types_MlKemPublicKey_52 libcrux_ml_kem_types_from_5a_4d(
+    uint8_t value[800U]) {
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_value[800U];
+  memcpy(copy_of_value, value, (size_t)800U * sizeof(uint8_t));
+  libcrux_ml_kem_types_MlKemPublicKey_52 lit;
+  memcpy(lit.value, copy_of_value, (size_t)800U * sizeof(uint8_t));
+  return lit;
+}
+
+/**
+ Unpack an incoming private key into it's different parts.
+
+ We have this here in types to extract into a common core for C.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.unpack_private_key
+with const generics
+- CPA_SECRET_KEY_SIZE= 768
+- PUBLIC_KEY_SIZE= 800
+*/
+Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_0c(
+    Eurydice_slice private_key) {
+  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
+      private_key, (size_t)768U, uint8_t, Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_secret_key = uu____0.fst;
+  Eurydice_slice secret_key0 = uu____0.snd;
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
+      secret_key0, (size_t)800U, uint8_t, Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_public_key = uu____1.fst;
+  Eurydice_slice secret_key = uu____1.snd;
+  Eurydice_slice_uint8_t_x2 uu____2 = Eurydice_slice_split_at(
+      secret_key, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
+      Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
+  Eurydice_slice implicit_rejection_value = uu____2.snd;
+  return (CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
+                                              .snd = ind_cpa_public_key,
+                                              .thd = ind_cpa_public_key_hash,
+                                              .f3 = implicit_rejection_value});
+}
+
+/**
+This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
 libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#2}
 */
 /**
@@ -330,6 +392,23 @@ libcrux_ml_kem_types_MlKemCiphertext_1a libcrux_ml_kem_types_from_01_d0(
   libcrux_ml_kem_types_MlKemCiphertext_1a lit;
   memcpy(lit.value, copy_of_value, (size_t)768U * sizeof(uint8_t));
   return lit;
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.utils.prf_input_inc
+with const generics
+- K= 2
+*/
+uint8_t libcrux_ml_kem_utils_prf_input_inc_fd(uint8_t (*prf_inputs)[33U],
+                                              uint8_t domain_separator) {
+  uint8_t ret[2U][33U];
+  core_array___core__clone__Clone_for__Array_T__N___20__clone(
+      (size_t)2U, prf_inputs, ret, uint8_t[33U], void *);
+  LowStar_Ignore_ignore(ret, uint8_t[2U][33U], void *);
+  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
+                  prf_inputs[i0][32U] = domain_separator;
+                  domain_separator = (uint32_t)domain_separator + 1U;);
+  return domain_separator;
 }
 
 /**
@@ -376,6 +455,57 @@ with const generics
 uint8_t *libcrux_ml_kem_types_as_slice_fd_af(
     libcrux_ml_kem_types_MlKemPublicKey_64 *self) {
   return self->value;
+}
+
+/**
+This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
+libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#16}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.from_5a
+with const generics
+- SIZE= 1568
+*/
+libcrux_ml_kem_types_MlKemPublicKey_64 libcrux_ml_kem_types_from_5a_af(
+    uint8_t value[1568U]) {
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_value[1568U];
+  memcpy(copy_of_value, value, (size_t)1568U * sizeof(uint8_t));
+  libcrux_ml_kem_types_MlKemPublicKey_64 lit;
+  memcpy(lit.value, copy_of_value, (size_t)1568U * sizeof(uint8_t));
+  return lit;
+}
+
+/**
+ Unpack an incoming private key into it's different parts.
+
+ We have this here in types to extract into a common core for C.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.unpack_private_key
+with const generics
+- CPA_SECRET_KEY_SIZE= 1536
+- PUBLIC_KEY_SIZE= 1568
+*/
+Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_1f(
+    Eurydice_slice private_key) {
+  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
+      private_key, (size_t)1536U, uint8_t, Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_secret_key = uu____0.fst;
+  Eurydice_slice secret_key0 = uu____0.snd;
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
+      secret_key0, (size_t)1568U, uint8_t, Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_public_key = uu____1.fst;
+  Eurydice_slice secret_key = uu____1.snd;
+  Eurydice_slice_uint8_t_x2 uu____2 = Eurydice_slice_split_at(
+      secret_key, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
+      Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
+  Eurydice_slice implicit_rejection_value = uu____2.snd;
+  return (CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
+                                              .snd = ind_cpa_public_key,
+                                              .thd = ind_cpa_public_key_hash,
+                                              .f3 = implicit_rejection_value});
 }
 
 /**
@@ -435,6 +565,23 @@ libcrux_ml_kem_types_MlKemCiphertext_64 libcrux_ml_kem_types_from_01_af(
   libcrux_ml_kem_types_MlKemCiphertext_64 lit;
   memcpy(lit.value, copy_of_value, (size_t)1568U * sizeof(uint8_t));
   return lit;
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.utils.prf_input_inc
+with const generics
+- K= 4
+*/
+uint8_t libcrux_ml_kem_utils_prf_input_inc_ac(uint8_t (*prf_inputs)[33U],
+                                              uint8_t domain_separator) {
+  uint8_t ret[4U][33U];
+  core_array___core__clone__Clone_for__Array_T__N___20__clone(
+      (size_t)4U, prf_inputs, ret, uint8_t[33U], void *);
+  LowStar_Ignore_ignore(ret, uint8_t[4U][33U], void *);
+  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
+                  prf_inputs[i0][32U] = domain_separator;
+                  domain_separator = (uint32_t)domain_separator + 1U;);
+  return domain_separator;
 }
 
 /**
