@@ -31,7 +31,6 @@ pub(crate) trait Operations: Copy + Clone {
 
     // Modular operations
     fn montgomery_multiply(lhs: Self, rhs: Self) -> Self;
-    fn montgomery_multiply_by_constant(simd_unit: Self, c: i32) -> Self;
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Self) -> Self;
 
     // Decomposition operations
@@ -75,20 +74,8 @@ pub(crate) trait Operations: Copy + Clone {
     // NTT
     fn ntt(simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT]) -> [Self; SIMD_UNITS_IN_RING_ELEMENT];
 
-    // Inverse NTT
-    fn invert_ntt_at_layer_0(
-        simd_unit: Self,
-        zeta0: i32,
-        zeta1: i32,
-        zeta2: i32,
-        zeta3: i32,
-    ) -> Self;
-    fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self;
-    fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self;
-}
-
-// hax does not support trait with default implementations, so we use the
-// following pattern.
-pub fn montgomery_multiply_by_fer<S: Operations>(simd_unit: S, fer: i32) -> S {
-    S::montgomery_multiply_by_constant(simd_unit, fer)
+    // invert NTT and convert to standard domain
+    fn invert_ntt_montgomery(
+        simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT],
+    ) -> [Self; SIMD_UNITS_IN_RING_ELEMENT];
 }
