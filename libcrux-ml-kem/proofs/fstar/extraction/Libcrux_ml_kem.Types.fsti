@@ -137,12 +137,28 @@ val impl_21__sk
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
     : Prims.Pure (t_Array u8 v_PRIVATE_KEY_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
-/// Unpack an incoming private key into it's different parts.
+/// Unpack an incoming private key into it\'s different parts.
 /// We have this here in types to extract into a common core for C.
 val unpack_private_key (v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE: usize) (private_key: t_Slice u8)
     : Prims.Pure (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires
+        Seq.length private_key >=
+        v v_CPA_SECRET_KEY_SIZE + v v_PUBLIC_KEY_SIZE + v Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE)
+      (ensures
+        fun result ->
+          let result:(t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8) = result in
+          let
+          ind_cpa_secret_key, ind_cpa_public_key, ind_cpa_public_key_hash, implicit_rejection_value
+          =
+            result
+          in
+          Seq.length ind_cpa_secret_key == v v_CPA_SECRET_KEY_SIZE /\
+          Seq.length ind_cpa_public_key == v v_PUBLIC_KEY_SIZE /\
+          Seq.length ind_cpa_public_key_hash == v Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE /\
+          Seq.length implicit_rejection_value ==
+          Seq.length private_key -
+          (v v_CPA_SECRET_KEY_SIZE + v v_PUBLIC_KEY_SIZE +
+            v Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE))
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl (v_SIZE: usize) : Core.Default.t_Default (t_MlKemCiphertext v_SIZE)

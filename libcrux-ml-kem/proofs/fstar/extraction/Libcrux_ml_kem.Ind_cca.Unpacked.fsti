@@ -106,7 +106,14 @@ val keys_from_private_key
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
       (key_pair: t_MlKemKeyPairUnpacked v_K v_Vector)
-    : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
+        v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+        v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K)
+      (fun _ -> Prims.l_True)
 
 /// Take a serialized private key and generate an unpacked key pair from it.
 val impl_4__from_private_key
@@ -116,7 +123,14 @@ val impl_4__from_private_key
           usize)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
-    : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
+        v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+        v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K)
+      (fun _ -> Prims.l_True)
 
 /// Generate an unpacked key from a serialized key.
 val unpack_public_key
