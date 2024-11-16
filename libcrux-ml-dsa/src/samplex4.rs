@@ -365,17 +365,27 @@ fn sample_s1_and_s2_4_by_4<
     let mut s1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S1_DIMENSION];
     let mut s2 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S2_DIMENSION];
 
-    let four = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 0, 1, 2, 3);
-    s1[0] = four.0;
-    s1[1] = four.1;
-    s1[2] = four.2;
-    s1[3] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(
+        seed_base,
+        0,
+        1,
+        2,
+        3,
+        &[(0, 0), (0, 1), (0, 2), (0, 3)],
+        &mut s1,
+        &mut s2,
+    );
 
-    let four = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 4, 5, 6, 7);
-    s2[0] = four.0;
-    s2[1] = four.1;
-    s2[2] = four.2;
-    s2[3] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(
+        seed_base,
+        4,
+        5,
+        6,
+        7,
+        &[(1, 0), (1, 1), (1, 2), (1, 3)],
+        &mut s1,
+        &mut s2,
+    );
 
     (s1, s2)
 }
@@ -395,23 +405,38 @@ fn sample_s1_and_s2_5_by_6<
     let mut s1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S1_DIMENSION];
     let mut s2 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S2_DIMENSION];
 
-    let four = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 0, 1, 2, 3);
-    s1[0] = four.0;
-    s1[1] = four.1;
-    s1[2] = four.2;
-    s1[3] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(
+        seed_base,
+        0,
+        1,
+        2,
+        3,
+        &[(0, 0), (0, 1), (0, 2), (0, 3)],
+        &mut s1,
+        &mut s2,
+    );
 
-    let four = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 4, 5, 6, 7);
-    s1[4] = four.0;
-    s2[0] = four.1;
-    s2[1] = four.2;
-    s2[2] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(
+        seed_base,
+        4,
+        5,
+        6,
+        7,
+        &[(0, 4), (1, 0), (1, 1), (1, 2)],
+        &mut s1,
+        &mut s2,
+    );
 
-    let four =
-        sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 8, 9, 10, 11);
-    s2[3] = four.0;
-    s2[4] = four.1;
-    s2[5] = four.2;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(
+        seed_base,
+        8,
+        9,
+        10,
+        11,
+        &[(1, 3), (1, 4), (1, 5)],
+        &mut s1,
+        &mut s2,
+    );
 
     (s1, s2)
 }
@@ -431,33 +456,53 @@ fn sample_s1_and_s2_7_by_8<
     let mut s1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S1_DIMENSION];
     let mut s2 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S2_DIMENSION];
 
-    let four = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 0, 1, 2, 3);
-    s1[0] = four.0;
-    s1[1] = four.1;
-    s1[2] = four.2;
-    s1[3] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(
+        seed_base,
+        0,
+        1,
+        2,
+        3,
+        &[(0, 0), (0, 1), (0, 2), (0, 3)],
+        &mut s1,
+        &mut s2,
+    );
 
-    let four = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 4, 5, 6, 7);
-    s1[4] = four.0;
-    s1[5] = four.1;
-    s1[6] = four.2;
-    s2[0] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(
+        seed_base,
+        4,
+        5,
+        6,
+        7,
+        &[(0, 4), (0, 5), (0, 6), (1, 0)],
+        &mut s1,
+        &mut s2,
+    );
 
-    let four =
-        sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 8, 9, 10, 11);
-    s2[1] = four.0;
-    s2[2] = four.1;
-    s2[3] = four.2;
-    s2[4] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(
+        seed_base,
+        8,
+        9,
+        10,
+        11,
+        &[(1, 1), (1, 2), (1, 3), (1, 4)],
+        &mut s1,
+        &mut s2,
+    );
 
-    let four =
-        sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 12, 13, 14, 15);
-    s2[5] = four.0;
-    s2[6] = four.1;
-    s2[7] = four.2;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(
+        seed_base,
+        12,
+        13,
+        14,
+        15,
+        &[(1, 5), (1, 6), (1, 7)],
+        &mut s1,
+        &mut s2,
+    );
 
     (s1, s2)
 }
+
 #[inline(always)]
 pub(crate) fn sample_s1_and_s2<
     SIMDUnit: Operations,

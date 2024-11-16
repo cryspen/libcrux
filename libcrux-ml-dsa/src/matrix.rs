@@ -24,11 +24,11 @@ pub(crate) fn compute_As1_plus_s2<
         for (j, ring_element) in row.iter().enumerate() {
             let product =
                 ntt_multiply_montgomery::<SIMDUnit>(ring_element, &ntt::<SIMDUnit>(s1[j]));
-            result[i] = PolynomialRingElement::add(&result[i], &product);
+            PolynomialRingElement::add_mut(&mut result[i], &product);
         }
 
         result[i] = invert_ntt_montgomery::<SIMDUnit>(result[i]);
-        result[i] = PolynomialRingElement::add(&result[i], &s2[i]);
+        PolynomialRingElement::add_mut(&mut result[i], &s2[i]);
     }
 
     result
@@ -50,7 +50,7 @@ pub(crate) fn compute_A_times_mask<
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
             let product = ntt_multiply_montgomery(&ring_element, &ntt(mask[j]));
-            result[i] = PolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
+            PolynomialRingElement::<SIMDUnit>::add_mut(&mut result[i], &product);
         }
 
         result[i] = invert_ntt_montgomery(result[i]);

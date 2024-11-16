@@ -72,9 +72,10 @@ impl<
         let mut signer_response = [PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A];
 
         for i in 0..COLUMNS_IN_A {
-            signer_response[i] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(
                 &signer_response_serialized
                     [i * GAMMA1_RING_ELEMENT_SIZE..(i + 1) * GAMMA1_RING_ELEMENT_SIZE],
+                &mut signer_response[i],
             );
         }
 

@@ -25,8 +25,18 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         result
     }
 
-    // This is useful for debugging.
-    #[allow(dead_code)]
+    /// XXX: Can we transmute instead of copying?
+    #[inline(always)]
+    pub(crate) fn from_i32_array_mut(array: &[i32], result: &mut Self) {
+        debug_assert!(array.len() >= 256);
+
+        let mut array_chunks = array.chunks(COEFFICIENTS_IN_SIMD_UNIT);
+        for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
+            result.simd_units[i] = SIMDUnit::from_coefficient_array(&array_chunks.next().unwrap());
+        }
+    }
+
+    #[inline(always)]
     pub(crate) fn from_i32_array(array: &[i32]) -> Self {
         debug_assert!(array.len() >= 256);
 
@@ -59,6 +69,13 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         }
 
         sum
+    }
+
+    #[inline(always)]
+    pub(crate) fn add_mut(&mut self, rhs: &Self) {
+        for i in 0..self.simd_units.len() {
+            self.simd_units[i] = SIMDUnit::add(&self.simd_units[i], &rhs.simd_units[i]);
+        }
     }
 
     #[inline(always)]
