@@ -38,12 +38,14 @@ pub(crate) fn generate_serialized<
     offset += SEED_FOR_SIGNING_SIZE;
 
     let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
-    Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
-        verification_key,
-        &mut verification_key_hash,
-    );
-    signing_key_serialized[offset..offset + BYTES_FOR_VERIFICATION_KEY_HASH]
-        .copy_from_slice(&verification_key_hash);
+    {
+        Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
+            verification_key,
+            &mut verification_key_hash,
+        );
+        signing_key_serialized[offset..offset + BYTES_FOR_VERIFICATION_KEY_HASH]
+            .copy_from_slice(&verification_key_hash);
+    }
     offset += BYTES_FOR_VERIFICATION_KEY_HASH;
 
     for ring_element in s1.iter() {

@@ -14,16 +14,16 @@ pub(crate) fn compute_As1_plus_s2<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
-    A_as_ntt: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+    A_as_ntt: [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
     s1: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
     s2: &[PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
     let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    let s1_ntt = s1.map(|s1_j| ntt::<SIMDUnit>(s1_j));
 
-    for (i, row) in A_as_ntt.iter().enumerate() {
-        for (j, ring_element) in row.iter().enumerate() {
-            let product =
-                ntt_multiply_montgomery::<SIMDUnit>(ring_element, &ntt::<SIMDUnit>(s1[j]));
+    for (i, row) in A_as_ntt.into_iter().enumerate() {
+        for (j, ring_element) in row.into_iter().enumerate() {
+            let product = ntt_multiply_montgomery::<SIMDUnit>(&ring_element, &s1_ntt[j]);
             PolynomialRingElement::add_mut(&mut result[i], &product);
         }
 
@@ -124,6 +124,7 @@ pub(crate) fn compute_w_approx<
         let challenge_times_t1_shifted =
             ntt_multiply_montgomery(&verifier_challenge_as_ntt, &ntt(t1_shifted));
 
+        // XXX: This could be nicer
         let mut tmp = PolynomialRingElement::<SIMDUnit>::ZERO();
         for (j, ring_element) in row.iter().enumerate() {
             let product = ntt_multiply_montgomery(&ring_element, &ntt(signer_response[j]));

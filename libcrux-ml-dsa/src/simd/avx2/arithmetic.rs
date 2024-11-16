@@ -5,6 +5,7 @@ use crate::{
 
 use libcrux_intrinsics::avx2::*;
 
+#[inline(always)]
 fn to_unsigned_representatives(t: Vec256) -> Vec256 {
     let signs = mm256_srai_epi32::<31>(t);
     let conditional_add_field_modulus = mm256_and_si256(signs, mm256_set1_epi32(FIELD_MODULUS));

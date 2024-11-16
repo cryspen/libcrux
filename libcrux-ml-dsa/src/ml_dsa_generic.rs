@@ -41,28 +41,31 @@ pub(crate) fn generate_key_pair<
 >(
     randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
 ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
+    // Expand seed
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
     let mut seed_expanded = [0; 128];
-    let mut shake = shake256_init();
-    shake256_absorb(&mut shake, &randomness);
-    let mut shake = shake256_absorb_final(shake, &[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
-    shake256_squeeze(&mut shake, &mut seed_expanded);
+    {
+        let mut shake = shake256_init();
+        shake256_absorb(&mut shake, &randomness);
+        let mut shake = shake256_absorb_final(shake, &[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
+        shake256_squeeze(&mut shake, &mut seed_expanded);
+    }
 
     let (seed_for_a, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-    let a_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
-        into_padded_array(seed_for_a),
-    );
-
     let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
         into_padded_array(seed_for_error_vectors),
     );
 
-    let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1, &s2);
-
-    let (t0, t1) = power2round_vector::<SIMDUnit, ROWS_IN_A>(t);
+    let (t0, t1) = {
+        let a_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+            into_padded_array(seed_for_a),
+        );
+        let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(a_as_ntt, &s1, &s2);
+        power2round_vector::<SIMDUnit, ROWS_IN_A>(t)
+    };
 
     let verification_key_serialized = encoding::verification_key::generate_serialized::<
         SIMDUnit,
@@ -475,11 +478,13 @@ pub(crate) fn verify_internal<
     domain_separation_context: Option<DomainSeparationContext>,
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
+    // Deserialize key
     let (seed_for_A, mut t1_w_approx) =
         encoding::verification_key::deserialize::<SIMDUnit, ROWS_IN_A, VERIFICATION_KEY_SIZE>(
             verification_key_serialized,
         );
 
+    // Deserialize the signature.
     let Signature {
         commitment_hash,
         signer_response,
@@ -491,6 +496,7 @@ pub(crate) fn verify_internal<
         SIGNATURE_SIZE,
     >(signature_serialized)?;
 
+    // Check vector norm
     if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
         &signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
@@ -498,38 +504,45 @@ pub(crate) fn verify_internal<
         return Err(VerificationError::SignerResponseExceedsBoundError);
     }
 
-    let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
-        into_padded_array(&seed_for_A),
-    );
+    // Compute w_approx
+    {
+        let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+            into_padded_array(&seed_for_A),
+        );
 
-    let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
-    Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
-        verification_key_serialized,
-        &mut verification_key_hash,
-    );
+        let challenge = sample_challenge_ring_element::<
+            SIMDUnit,
+            Shake256,
+            ONES_IN_VERIFIER_CHALLENGE,
+            COMMITMENT_HASH_SIZE,
+        >(commitment_hash);
+        let verifier_challenge_as_ntt = ntt(challenge);
+
+        compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
+            &A_as_ntt,
+            &signer_response,
+            &verifier_challenge_as_ntt,
+            &mut t1_w_approx,
+        );
+    }
+
+    // Get the message_representative
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
-    derive_message_representative(
-        verification_key_hash,
-        domain_separation_context,
-        message,
-        &mut message_representative,
-    );
+    {
+        let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
+        Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
+            verification_key_serialized,
+            &mut verification_key_hash,
+        );
+        derive_message_representative(
+            verification_key_hash,
+            domain_separation_context,
+            message,
+            &mut message_representative,
+        );
+    }
 
-    let challenge = sample_challenge_ring_element::<
-        SIMDUnit,
-        Shake256,
-        ONES_IN_VERIFIER_CHALLENGE,
-        COMMITMENT_HASH_SIZE,
-    >(commitment_hash);
-    let verifier_challenge_as_ntt = ntt(challenge);
-
-    compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
-        &A_as_ntt,
-        &signer_response,
-        &verifier_challenge_as_ntt,
-        &mut t1_w_approx,
-    );
-
+    // Compute the commitmeht hash
     let mut my_commitment_hash = [0; COMMITMENT_HASH_SIZE];
     {
         let commitment = use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(hint, t1_w_approx);
@@ -547,6 +560,7 @@ pub(crate) fn verify_internal<
         shake256_squeeze(&mut shake, &mut my_commitment_hash);
     }
 
+    // Check the commitment hash
     if commitment_hash != my_commitment_hash {
         Err(VerificationError::CommitmentHashesDontMatchError)
     } else {

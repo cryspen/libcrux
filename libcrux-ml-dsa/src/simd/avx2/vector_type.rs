@@ -10,6 +10,7 @@ impl From<libcrux_intrinsics::avx2::Vec256> for AVX2SIMDUnit {
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn ZERO() -> AVX2SIMDUnit {
     libcrux_intrinsics::avx2::mm256_setzero_si256().into()
 }
