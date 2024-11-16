@@ -26,19 +26,16 @@ fn update_matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_
     m[i][j] = v;
 }
 
-#[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn matrix_A_4_by_4<
+pub(crate) fn matrix_4_by_4<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
     seed: [u8; 34],
-) -> Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A> {
-    let mut A: Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A> =
-        [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
-
+    matrix: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
+) {
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(0, 0),
@@ -46,7 +43,7 @@ pub(crate) fn matrix_A_4_by_4<
         generate_domain_separator(0, 2),
         generate_domain_separator(0, 3),
         &[(0, 0), (0, 1), (0, 2), (0, 3)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -56,7 +53,7 @@ pub(crate) fn matrix_A_4_by_4<
         generate_domain_separator(1, 2),
         generate_domain_separator(1, 3),
         &[(1, 0), (1, 1), (1, 2), (1, 3)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -66,7 +63,7 @@ pub(crate) fn matrix_A_4_by_4<
         generate_domain_separator(2, 2),
         generate_domain_separator(2, 3),
         &[(2, 0), (2, 1), (2, 2), (2, 3)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -76,24 +73,20 @@ pub(crate) fn matrix_A_4_by_4<
         generate_domain_separator(3, 2),
         generate_domain_separator(3, 3),
         &[(3, 0), (3, 1), (3, 2), (3, 3)],
-        &mut A,
+        matrix,
     );
-
-    A
 }
 
-#[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn matrix_A_6_by_5<
+pub(crate) fn matrix_6_by_5<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
     seed: [u8; 34],
-) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
-    let mut A = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
-
+    matrix: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
+) {
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(0, 0),
@@ -101,7 +94,7 @@ pub(crate) fn matrix_A_6_by_5<
         generate_domain_separator(0, 2),
         generate_domain_separator(0, 3),
         &[(0, 0), (0, 1), (0, 2), (0, 3)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -111,7 +104,7 @@ pub(crate) fn matrix_A_6_by_5<
         generate_domain_separator(1, 1),
         generate_domain_separator(1, 2),
         &[(0, 4), (1, 0), (1, 1), (1, 2)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -121,7 +114,7 @@ pub(crate) fn matrix_A_6_by_5<
         generate_domain_separator(2, 0),
         generate_domain_separator(2, 1),
         &[(1, 3), (1, 4), (2, 0), (2, 1)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -131,7 +124,7 @@ pub(crate) fn matrix_A_6_by_5<
         generate_domain_separator(2, 4),
         generate_domain_separator(3, 0),
         &[(2, 2), (2, 3), (2, 4), (3, 0)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -141,7 +134,7 @@ pub(crate) fn matrix_A_6_by_5<
         generate_domain_separator(3, 3),
         generate_domain_separator(3, 4),
         &[(3, 1), (3, 2), (3, 3), (3, 4)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -151,7 +144,7 @@ pub(crate) fn matrix_A_6_by_5<
         generate_domain_separator(4, 2),
         generate_domain_separator(4, 3),
         &[(4, 0), (4, 1), (4, 2), (4, 3)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -161,7 +154,7 @@ pub(crate) fn matrix_A_6_by_5<
         generate_domain_separator(5, 1),
         generate_domain_separator(5, 2),
         &[(4, 4), (5, 0), (5, 1), (5, 2)],
-        &mut A,
+        matrix,
     );
 
     // The the last 2 sampled ring elements are discarded here.
@@ -172,23 +165,20 @@ pub(crate) fn matrix_A_6_by_5<
         generate_domain_separator(5, 5),
         generate_domain_separator(5, 6),
         &[(5, 3), (5, 4)],
-        &mut A,
+        matrix,
     );
-
-    A
 }
-#[allow(non_snake_case)]
+
 #[inline(always)]
-pub(crate) fn matrix_A_8_by_7<
+pub(crate) fn matrix_8_by_7<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
     seed: [u8; 34],
-) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
-    let mut A = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
-
+    matrix: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
+) {
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(0, 0),
@@ -196,7 +186,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(0, 2),
         generate_domain_separator(0, 3),
         &[(0, 0), (0, 1), (0, 2), (0, 3)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -206,7 +196,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(0, 6),
         generate_domain_separator(1, 0),
         &[(0, 4), (0, 5), (0, 6), (1, 0)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -216,7 +206,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(1, 3),
         generate_domain_separator(1, 4),
         &[(1, 1), (1, 2), (1, 3), (1, 4)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -226,7 +216,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(2, 0),
         generate_domain_separator(2, 1),
         &[(1, 5), (1, 6), (2, 0), (2, 1)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -236,7 +226,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(2, 4),
         generate_domain_separator(2, 5),
         &[(2, 2), (2, 3), (2, 4), (2, 5)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -246,7 +236,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(3, 1),
         generate_domain_separator(3, 2),
         &[(2, 6), (3, 0), (3, 1), (3, 2)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -256,7 +246,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(3, 5),
         generate_domain_separator(3, 6),
         &[(3, 3), (3, 4), (3, 5), (3, 6)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -266,7 +256,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(4, 2),
         generate_domain_separator(4, 3),
         &[(4, 0), (4, 1), (4, 2), (4, 3)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -276,7 +266,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(4, 6),
         generate_domain_separator(5, 0),
         &[(4, 4), (4, 5), (4, 6), (5, 0)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -286,7 +276,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(5, 3),
         generate_domain_separator(5, 4),
         &[(5, 1), (5, 2), (5, 3), (5, 4)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -296,7 +286,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(6, 0),
         generate_domain_separator(6, 1),
         &[(5, 5), (5, 6), (6, 0), (6, 1)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -306,7 +296,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(6, 4),
         generate_domain_separator(6, 5),
         &[(6, 2), (6, 3), (6, 4), (6, 5)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -316,7 +306,7 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(7, 1),
         generate_domain_separator(7, 2),
         &[(6, 6), (7, 0), (7, 1), (7, 2)],
-        &mut A,
+        matrix,
     );
 
     sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
@@ -326,25 +316,24 @@ pub(crate) fn matrix_A_8_by_7<
         generate_domain_separator(7, 5),
         generate_domain_separator(7, 6),
         &[(7, 3), (7, 4), (7, 5), (7, 6)],
-        &mut A,
+        matrix,
     );
-
-    A
 }
-#[allow(non_snake_case)]
+
 #[inline(always)]
-pub(crate) fn matrix_A<
+pub(crate) fn matrix<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
     seed: [u8; 34],
-) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
+    matrix: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
+) {
     match (ROWS_IN_A as u8, COLUMNS_IN_A as u8) {
-        (4, 4) => matrix_A_4_by_4::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(seed),
-        (6, 5) => matrix_A_6_by_5::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(seed),
-        (8, 7) => matrix_A_8_by_7::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(seed),
+        (4, 4) => matrix_4_by_4::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(seed, matrix),
+        (6, 5) => matrix_6_by_5::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(seed, matrix),
+        (8, 7) => matrix_8_by_7::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(seed, matrix),
         _ => unreachable!(),
     }
 }

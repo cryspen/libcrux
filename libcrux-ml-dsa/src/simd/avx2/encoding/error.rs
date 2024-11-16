@@ -36,6 +36,7 @@ fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; 
 
     serialized[0..3].try_into().unwrap()
 }
+
 #[inline(always)]
 fn serialize_when_eta_is_4<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; 16];
@@ -63,6 +64,7 @@ fn serialize_when_eta_is_4<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; 
 
     serialized[0..4].try_into().unwrap()
 }
+
 #[inline(always)]
 pub fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
     match OUTPUT_SIZE as u8 {

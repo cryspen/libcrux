@@ -13,6 +13,7 @@ use crate::{
         vector_times_ring_element,
     },
     ntt::ntt,
+    polynomial::PolynomialRingElement,
     pre_hash::{DomainSeparationContext, PreHash},
     sample::{sample_challenge_ring_element, sample_mask_vector},
     samplex4,
@@ -60,8 +61,10 @@ pub(crate) fn generate_key_pair<
     );
 
     let (t0, t1) = {
-        let a_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+        let mut a_as_ntt = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+        samplex4::matrix::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
             into_padded_array(seed_for_a),
+            &mut a_as_ntt,
         );
         let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(a_as_ntt, &s1, &s2);
         power2round_vector::<SIMDUnit, ROWS_IN_A>(t)
@@ -85,9 +88,9 @@ pub(crate) fn generate_key_pair<
         seed_for_a,
         seed_for_signing,
         &verification_key_serialized,
-        s1,
-        s2,
-        t0,
+        &s1,
+        &s2,
+        &t0,
     );
 
     (signing_key_serialized, verification_key_serialized)
@@ -249,8 +252,10 @@ pub(crate) fn sign_internal<
             SIGNING_KEY_SIZE,
         >(signing_key);
 
-    let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+    let mut a_as_ntt = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+    samplex4::matrix::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
         into_padded_array(&seed_for_A),
+        &mut a_as_ntt,
     );
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
@@ -296,7 +301,7 @@ pub(crate) fn sign_internal<
             );
 
         let A_times_mask =
-            compute_A_times_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, &mask);
+            compute_A_times_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &mask);
 
         let (w0, commitment) = decompose_vector::<SIMDUnit, ROWS_IN_A, GAMMA2>(A_times_mask);
 
@@ -506,8 +511,10 @@ pub(crate) fn verify_internal<
 
     // Compute w_approx
     {
-        let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
+        let mut a_as_ntt = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+        samplex4::matrix::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
             into_padded_array(&seed_for_A),
+            &mut a_as_ntt,
         );
 
         let challenge = sample_challenge_ring_element::<
@@ -519,7 +526,7 @@ pub(crate) fn verify_internal<
         let verifier_challenge_as_ntt = ntt(challenge);
 
         compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
-            &A_as_ntt,
+            &a_as_ntt,
             &signer_response,
             &verifier_challenge_as_ntt,
             &mut t1_w_approx,
