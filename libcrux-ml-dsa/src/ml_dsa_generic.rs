@@ -304,7 +304,7 @@ pub(crate) fn sign_internal<
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
                 COMMITMENT_VECTOR_SIZE,
-            >(commitment);
+            >(&commitment);
 
             let mut shake = shake256_init();
             shake256_absorb(&mut shake, &message_representative);
@@ -531,7 +531,7 @@ pub(crate) fn verify_internal<
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
                 COMMITMENT_VECTOR_SIZE,
-            >(commitment);
+            >(&commitment);
 
             let mut shake = shake256_init();
             shake256_absorb(&mut shake, &message_representative);

@@ -39,53 +39,45 @@ pub(crate) fn matrix_A_4_by_4<
     let mut A: Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A> =
         [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(0, 0),
         generate_domain_separator(0, 1),
         generate_domain_separator(0, 2),
         generate_domain_separator(0, 3),
+        &[(0, 0), (0, 1), (0, 2), (0, 3)],
+        &mut A,
     );
-    update_matrix(&mut A, 0, 0, four_ring_elements.0);
-    update_matrix(&mut A, 0, 1, four_ring_elements.1);
-    update_matrix(&mut A, 0, 2, four_ring_elements.2);
-    update_matrix(&mut A, 0, 3, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(1, 0),
         generate_domain_separator(1, 1),
         generate_domain_separator(1, 2),
         generate_domain_separator(1, 3),
+        &[(1, 0), (1, 1), (1, 2), (1, 3)],
+        &mut A,
     );
-    update_matrix(&mut A, 1, 0, four_ring_elements.0);
-    update_matrix(&mut A, 1, 1, four_ring_elements.1);
-    update_matrix(&mut A, 1, 2, four_ring_elements.2);
-    update_matrix(&mut A, 1, 3, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(2, 0),
         generate_domain_separator(2, 1),
         generate_domain_separator(2, 2),
         generate_domain_separator(2, 3),
+        &[(2, 0), (2, 1), (2, 2), (2, 3)],
+        &mut A,
     );
-    update_matrix(&mut A, 2, 0, four_ring_elements.0);
-    update_matrix(&mut A, 2, 1, four_ring_elements.1);
-    update_matrix(&mut A, 2, 2, four_ring_elements.2);
-    update_matrix(&mut A, 2, 3, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(3, 0),
         generate_domain_separator(3, 1),
         generate_domain_separator(3, 2),
         generate_domain_separator(3, 3),
+        &[(3, 0), (3, 1), (3, 2), (3, 3)],
+        &mut A,
     );
-    update_matrix(&mut A, 3, 0, four_ring_elements.0);
-    update_matrix(&mut A, 3, 1, four_ring_elements.1);
-    update_matrix(&mut A, 3, 2, four_ring_elements.2);
-    update_matrix(&mut A, 3, 3, four_ring_elements.3);
 
     A
 }
@@ -102,100 +94,86 @@ pub(crate) fn matrix_A_6_by_5<
 ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
     let mut A = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(0, 0),
         generate_domain_separator(0, 1),
         generate_domain_separator(0, 2),
         generate_domain_separator(0, 3),
+        &[(0, 0), (0, 1), (0, 2), (0, 3)],
+        &mut A,
     );
-    update_matrix(&mut A, 0, 0, four_ring_elements.0);
-    update_matrix(&mut A, 0, 1, four_ring_elements.1);
-    update_matrix(&mut A, 0, 2, four_ring_elements.2);
-    update_matrix(&mut A, 0, 3, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(0, 4),
         generate_domain_separator(1, 0),
         generate_domain_separator(1, 1),
         generate_domain_separator(1, 2),
+        &[(0, 4), (1, 0), (1, 1), (1, 2)],
+        &mut A,
     );
-    update_matrix(&mut A, 0, 4, four_ring_elements.0);
-    update_matrix(&mut A, 1, 0, four_ring_elements.1);
-    update_matrix(&mut A, 1, 1, four_ring_elements.2);
-    update_matrix(&mut A, 1, 2, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(1, 3),
         generate_domain_separator(1, 4),
         generate_domain_separator(2, 0),
         generate_domain_separator(2, 1),
+        &[(1, 3), (1, 4), (2, 0), (2, 1)],
+        &mut A,
     );
-    update_matrix(&mut A, 1, 3, four_ring_elements.0);
-    update_matrix(&mut A, 1, 4, four_ring_elements.1);
-    update_matrix(&mut A, 2, 0, four_ring_elements.2);
-    update_matrix(&mut A, 2, 1, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(2, 2),
         generate_domain_separator(2, 3),
         generate_domain_separator(2, 4),
         generate_domain_separator(3, 0),
+        &[(2, 2), (2, 3), (2, 4), (3, 0)],
+        &mut A,
     );
-    update_matrix(&mut A, 2, 2, four_ring_elements.0);
-    update_matrix(&mut A, 2, 3, four_ring_elements.1);
-    update_matrix(&mut A, 2, 4, four_ring_elements.2);
-    update_matrix(&mut A, 3, 0, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(3, 1),
         generate_domain_separator(3, 2),
         generate_domain_separator(3, 3),
         generate_domain_separator(3, 4),
+        &[(3, 1), (3, 2), (3, 3), (3, 4)],
+        &mut A,
     );
-    update_matrix(&mut A, 3, 1, four_ring_elements.0);
-    update_matrix(&mut A, 3, 2, four_ring_elements.1);
-    update_matrix(&mut A, 3, 3, four_ring_elements.2);
-    update_matrix(&mut A, 3, 4, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(4, 0),
         generate_domain_separator(4, 1),
         generate_domain_separator(4, 2),
         generate_domain_separator(4, 3),
+        &[(4, 0), (4, 1), (4, 2), (4, 3)],
+        &mut A,
     );
-    update_matrix(&mut A, 4, 0, four_ring_elements.0);
-    update_matrix(&mut A, 4, 1, four_ring_elements.1);
-    update_matrix(&mut A, 4, 2, four_ring_elements.2);
-    update_matrix(&mut A, 4, 3, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(4, 4),
         generate_domain_separator(5, 0),
         generate_domain_separator(5, 1),
         generate_domain_separator(5, 2),
+        &[(4, 4), (5, 0), (5, 1), (5, 2)],
+        &mut A,
     );
-    update_matrix(&mut A, 4, 4, four_ring_elements.0);
-    update_matrix(&mut A, 5, 0, four_ring_elements.1);
-    update_matrix(&mut A, 5, 1, four_ring_elements.2);
-    update_matrix(&mut A, 5, 2, four_ring_elements.3);
 
     // The the last 2 sampled ring elements are discarded here.
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(5, 3),
         generate_domain_separator(5, 4),
         generate_domain_separator(5, 5),
         generate_domain_separator(5, 6),
+        &[(5, 3), (5, 4)],
+        &mut A,
     );
-    update_matrix(&mut A, 5, 3, four_ring_elements.0);
-    update_matrix(&mut A, 5, 4, four_ring_elements.1);
 
     A
 }
@@ -211,173 +189,145 @@ pub(crate) fn matrix_A_8_by_7<
 ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
     let mut A = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(0, 0),
         generate_domain_separator(0, 1),
         generate_domain_separator(0, 2),
         generate_domain_separator(0, 3),
+        &[(0, 0), (0, 1), (0, 2), (0, 3)],
+        &mut A,
     );
-    update_matrix(&mut A, 0, 0, four_ring_elements.0);
-    update_matrix(&mut A, 0, 1, four_ring_elements.1);
-    update_matrix(&mut A, 0, 2, four_ring_elements.2);
-    update_matrix(&mut A, 0, 3, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(0, 4),
         generate_domain_separator(0, 5),
         generate_domain_separator(0, 6),
         generate_domain_separator(1, 0),
+        &[(0, 4), (0, 5), (0, 6), (1, 0)],
+        &mut A,
     );
-    update_matrix(&mut A, 0, 4, four_ring_elements.0);
-    update_matrix(&mut A, 0, 5, four_ring_elements.1);
-    update_matrix(&mut A, 0, 6, four_ring_elements.2);
-    update_matrix(&mut A, 1, 0, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(1, 1),
         generate_domain_separator(1, 2),
         generate_domain_separator(1, 3),
         generate_domain_separator(1, 4),
+        &[(1, 1), (1, 2), (1, 3), (1, 4)],
+        &mut A,
     );
-    update_matrix(&mut A, 1, 1, four_ring_elements.0);
-    update_matrix(&mut A, 1, 2, four_ring_elements.1);
-    update_matrix(&mut A, 1, 3, four_ring_elements.2);
-    update_matrix(&mut A, 1, 4, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(1, 5),
         generate_domain_separator(1, 6),
         generate_domain_separator(2, 0),
         generate_domain_separator(2, 1),
+        &[(1, 5), (1, 6), (2, 0), (2, 1)],
+        &mut A,
     );
-    update_matrix(&mut A, 1, 5, four_ring_elements.0);
-    update_matrix(&mut A, 1, 6, four_ring_elements.1);
-    update_matrix(&mut A, 2, 0, four_ring_elements.2);
-    update_matrix(&mut A, 2, 1, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(2, 2),
         generate_domain_separator(2, 3),
         generate_domain_separator(2, 4),
         generate_domain_separator(2, 5),
+        &[(2, 2), (2, 3), (2, 4), (2, 5)],
+        &mut A,
     );
-    update_matrix(&mut A, 2, 2, four_ring_elements.0);
-    update_matrix(&mut A, 2, 3, four_ring_elements.1);
-    update_matrix(&mut A, 2, 4, four_ring_elements.2);
-    update_matrix(&mut A, 2, 5, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(2, 6),
         generate_domain_separator(3, 0),
         generate_domain_separator(3, 1),
         generate_domain_separator(3, 2),
+        &[(2, 6), (3, 0), (3, 1), (3, 2)],
+        &mut A,
     );
-    update_matrix(&mut A, 2, 6, four_ring_elements.0);
-    update_matrix(&mut A, 3, 0, four_ring_elements.1);
-    update_matrix(&mut A, 3, 1, four_ring_elements.2);
-    update_matrix(&mut A, 3, 2, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(3, 3),
         generate_domain_separator(3, 4),
         generate_domain_separator(3, 5),
         generate_domain_separator(3, 6),
+        &[(3, 3), (3, 4), (3, 5), (3, 6)],
+        &mut A,
     );
-    update_matrix(&mut A, 3, 3, four_ring_elements.0);
-    update_matrix(&mut A, 3, 4, four_ring_elements.1);
-    update_matrix(&mut A, 3, 5, four_ring_elements.2);
-    update_matrix(&mut A, 3, 6, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(4, 0),
         generate_domain_separator(4, 1),
         generate_domain_separator(4, 2),
         generate_domain_separator(4, 3),
+        &[(4, 0), (4, 1), (4, 2), (4, 3)],
+        &mut A,
     );
-    update_matrix(&mut A, 4, 0, four_ring_elements.0);
-    update_matrix(&mut A, 4, 1, four_ring_elements.1);
-    update_matrix(&mut A, 4, 2, four_ring_elements.2);
-    update_matrix(&mut A, 4, 3, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(4, 4),
         generate_domain_separator(4, 5),
         generate_domain_separator(4, 6),
         generate_domain_separator(5, 0),
+        &[(4, 4), (4, 5), (4, 6), (5, 0)],
+        &mut A,
     );
-    update_matrix(&mut A, 4, 4, four_ring_elements.0);
-    update_matrix(&mut A, 4, 5, four_ring_elements.1);
-    update_matrix(&mut A, 4, 6, four_ring_elements.2);
-    update_matrix(&mut A, 5, 0, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(5, 1),
         generate_domain_separator(5, 2),
         generate_domain_separator(5, 3),
         generate_domain_separator(5, 4),
+        &[(5, 1), (5, 2), (5, 3), (5, 4)],
+        &mut A,
     );
-    update_matrix(&mut A, 5, 1, four_ring_elements.0);
-    update_matrix(&mut A, 5, 2, four_ring_elements.1);
-    update_matrix(&mut A, 5, 3, four_ring_elements.2);
-    update_matrix(&mut A, 5, 4, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(5, 5),
         generate_domain_separator(5, 6),
         generate_domain_separator(6, 0),
         generate_domain_separator(6, 1),
+        &[(5, 5), (5, 6), (6, 0), (6, 1)],
+        &mut A,
     );
-    update_matrix(&mut A, 5, 5, four_ring_elements.0);
-    update_matrix(&mut A, 5, 6, four_ring_elements.1);
-    update_matrix(&mut A, 6, 0, four_ring_elements.2);
-    update_matrix(&mut A, 6, 1, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(6, 2),
         generate_domain_separator(6, 3),
         generate_domain_separator(6, 4),
         generate_domain_separator(6, 5),
+        &[(6, 2), (6, 3), (6, 4), (6, 5)],
+        &mut A,
     );
-    update_matrix(&mut A, 6, 2, four_ring_elements.0);
-    update_matrix(&mut A, 6, 3, four_ring_elements.1);
-    update_matrix(&mut A, 6, 4, four_ring_elements.2);
-    update_matrix(&mut A, 6, 5, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(6, 6),
         generate_domain_separator(7, 0),
         generate_domain_separator(7, 1),
         generate_domain_separator(7, 2),
+        &[(6, 6), (7, 0), (7, 1), (7, 2)],
+        &mut A,
     );
-    update_matrix(&mut A, 6, 6, four_ring_elements.0);
-    update_matrix(&mut A, 7, 0, four_ring_elements.1);
-    update_matrix(&mut A, 7, 1, four_ring_elements.2);
-    update_matrix(&mut A, 7, 2, four_ring_elements.3);
 
-    let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128X4>(
+    sample_four_ring_elements::<SIMDUnit, Shake128X4, COLUMNS_IN_A, ROWS_IN_A>(
         seed,
         generate_domain_separator(7, 3),
         generate_domain_separator(7, 4),
         generate_domain_separator(7, 5),
         generate_domain_separator(7, 6),
+        &[(7, 3), (7, 4), (7, 5), (7, 6)],
+        &mut A,
     );
-    update_matrix(&mut A, 7, 3, four_ring_elements.0);
-    update_matrix(&mut A, 7, 4, four_ring_elements.1);
-    update_matrix(&mut A, 7, 5, four_ring_elements.2);
-    update_matrix(&mut A, 7, 6, four_ring_elements.3);
 
     A
 }
