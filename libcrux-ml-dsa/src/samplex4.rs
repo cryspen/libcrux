@@ -351,8 +351,8 @@ fn sample_s1_and_s2_4_by_4<
     [PolynomialRingElement<SIMDUnit>; S1_DIMENSION],
     [PolynomialRingElement<SIMDUnit>; S2_DIMENSION],
 ) {
-    let mut s1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S1_DIMENSION];
-    let mut s2 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S2_DIMENSION];
+    let mut s1 = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
+    let mut s2 = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(
         seed_base,
@@ -391,8 +391,8 @@ fn sample_s1_and_s2_5_by_6<
     [PolynomialRingElement<SIMDUnit>; S1_DIMENSION],
     [PolynomialRingElement<SIMDUnit>; S2_DIMENSION],
 ) {
-    let mut s1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S1_DIMENSION];
-    let mut s2 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S2_DIMENSION];
+    let mut s1 = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
+    let mut s2 = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(
         seed_base,
@@ -442,8 +442,8 @@ fn sample_s1_and_s2_7_by_8<
     [PolynomialRingElement<SIMDUnit>; S1_DIMENSION],
     [PolynomialRingElement<SIMDUnit>; S2_DIMENSION],
 ) {
-    let mut s1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S1_DIMENSION];
-    let mut s2 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S2_DIMENSION];
+    let mut s1 = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
+    let mut s2 = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(
         seed_base,

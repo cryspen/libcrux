@@ -40,7 +40,7 @@ fn deserialize<SIMDUnit: Operations>(serialized: &[u8]) -> PolynomialRingElement
 pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations, const DIMENSION: usize>(
     serialized: &[u8],
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut ring_elements = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut ring_elements = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     for (i, bytes) in serialized.chunks(RING_ELEMENT_OF_T0S_SIZE).enumerate() {
         ring_elements[i] = ntt(deserialize::<SIMDUnit>(bytes));

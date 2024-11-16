@@ -29,7 +29,7 @@ impl<
         for i in 0..COLUMNS_IN_A {
             signature[offset..offset + GAMMA1_RING_ELEMENT_SIZE].copy_from_slice(
                 &encoding::gamma1::serialize::<SIMDUnit, GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE>(
-                    self.signer_response[i],
+                    self.signer_response[i].clone(),
                 ),
             );
             offset += GAMMA1_RING_ELEMENT_SIZE;
@@ -69,7 +69,8 @@ impl<
         let (signer_response_serialized, hint_serialized) =
             rest_of_serialized.split_at(GAMMA1_RING_ELEMENT_SIZE * COLUMNS_IN_A);
 
-        let mut signer_response = [PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A];
+        let mut signer_response =
+            core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
         for i in 0..COLUMNS_IN_A {
             encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(

@@ -50,14 +50,14 @@ pub(crate) fn serialize_vector<
     const RING_ELEMENT_SIZE: usize,
     const OUTPUT_SIZE: usize,
 >(
-    vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+    vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
     let mut offset: usize = 0;
 
-    for ring_element in vector.iter() {
+    for ring_element in vector.into_iter() {
         serialized[offset..offset + RING_ELEMENT_SIZE]
-            .copy_from_slice(&serialize::<SIMDUnit, RING_ELEMENT_SIZE>(*ring_element));
+            .copy_from_slice(&serialize::<SIMDUnit, RING_ELEMENT_SIZE>(ring_element));
         offset += RING_ELEMENT_SIZE;
     }
 

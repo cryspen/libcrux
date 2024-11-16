@@ -1,9 +1,10 @@
 use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
     pub(crate) simd_units: [SIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
 }
+
 impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {

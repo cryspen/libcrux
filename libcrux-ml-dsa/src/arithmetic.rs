@@ -40,8 +40,8 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations, const DIMENSION: usize>(
     [PolynomialRingElement<SIMDUnit>; DIMENSION],
     [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) {
-    let mut t0 = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-    let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut t0 = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
+    let mut t1 = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     for (i, ring_element) in t.iter().enumerate() {
         for (j, simd_unit) in ring_element.simd_units.iter().enumerate() {
@@ -62,8 +62,8 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations, const DIMENSION: usize, con
     [PolynomialRingElement<SIMDUnit>; DIMENSION],
     [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) {
-    let mut vector_low = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-    let mut vector_high = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut vector_low = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
+    let mut vector_high = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     for i in 0..DIMENSION {
         for j in 0..vector_low[0].simd_units.len() {
@@ -107,7 +107,7 @@ pub(crate) fn use_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA
     hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION],
     re_vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut result = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     for i in 0..DIMENSION {
         let hint_simd = PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i]);

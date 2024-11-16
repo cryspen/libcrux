@@ -18,10 +18,10 @@ pub(crate) fn generate_serialized<
     let mut verification_key_serialized = [0u8; VERIFICATION_KEY_SIZE];
     verification_key_serialized[0..SEED_FOR_A_SIZE].copy_from_slice(seed_for_A);
 
-    for (i, ring_element) in t1.iter().enumerate() {
+    for (i, ring_element) in t1.into_iter().enumerate() {
         let offset = SEED_FOR_A_SIZE + (i * RING_ELEMENT_OF_T1S_SIZE);
         verification_key_serialized[offset..offset + RING_ELEMENT_OF_T1S_SIZE]
-            .copy_from_slice(&t1::serialize::<SIMDUnit>(*ring_element));
+            .copy_from_slice(&t1::serialize::<SIMDUnit>(ring_element));
     }
 
     verification_key_serialized
@@ -39,7 +39,7 @@ pub(crate) fn deserialize<
     [u8; SEED_FOR_A_SIZE],
     [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) {
-    let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    let mut t1 = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
     let (seed_for_A, serialized_remaining) = serialized.split_at(SEED_FOR_A_SIZE);
 
     for i in 0..ROWS_IN_A {

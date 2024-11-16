@@ -23,9 +23,9 @@ pub(crate) fn generate_serialized<
     seed_for_A: &[u8],
     seed_for_signing: &[u8],
     verification_key: &[u8],
-    s1: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
-    s2: &[PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
-    t0: &[PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+    s1: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
+    s2: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+    t0: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) -> [u8; SIGNING_KEY_SIZE] {
     let mut signing_key_serialized = [0u8; SIGNING_KEY_SIZE];
     let mut offset = 0;
@@ -48,23 +48,23 @@ pub(crate) fn generate_serialized<
     }
     offset += BYTES_FOR_VERIFICATION_KEY_HASH;
 
-    for ring_element in s1.iter() {
+    for ring_element in s1.into_iter() {
         signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
-            &encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
+            &encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(ring_element),
         );
         offset += ERROR_RING_ELEMENT_SIZE;
     }
 
-    for ring_element in s2.iter() {
+    for ring_element in s2.into_iter() {
         signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
-            &encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
+            &encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(ring_element),
         );
         offset += ERROR_RING_ELEMENT_SIZE;
     }
 
-    for ring_element in t0.iter() {
+    for ring_element in t0.into_iter() {
         signing_key_serialized[offset..offset + RING_ELEMENT_OF_T0S_SIZE]
-            .copy_from_slice(&encoding::t0::serialize::<SIMDUnit>(*ring_element));
+            .copy_from_slice(&encoding::t0::serialize::<SIMDUnit>(ring_element));
         offset += RING_ELEMENT_OF_T0S_SIZE;
     }
 

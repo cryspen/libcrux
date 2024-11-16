@@ -27,20 +27,22 @@ struct MlDsaNISTKAT {
     sha3_256_hash_of_signature: [u8; 32],
 }
 
+fn read(parameter_set: u32) -> Vec<MlDsaNISTKAT> {
+    let katfile_path = Path::new("tests")
+        .join("kats")
+        .join(format!("nistkats-{}.json", parameter_set));
+    let katfile = File::open(katfile_path).expect("Could not open KAT file.");
+    let reader = BufReader::new(katfile);
+
+    serde_json::from_reader(reader).expect("Could not deserialize KAT file.")
+}
+
 macro_rules! impl_nist_known_answer_tests {
     ($name:ident, $name_pre_hashed:ident, $parameter_set:literal, $key_gen:expr, $sign:expr, $verify:expr, $sign_pre_hashed:expr, $verify_pre_hashed:expr) => {
         #[test]
         fn $name() {
-            let katfile_path = Path::new("tests")
-                .join("kats")
-                .join(format!("nistkats-{}.json", $parameter_set));
-            let katfile = File::open(katfile_path).expect("Could not open KAT file.");
-            let reader = BufReader::new(katfile);
-
-            let nist_kats: Vec<MlDsaNISTKAT> =
-                serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
-
-            for kat in nist_kats {
+            let kats = read($parameter_set);
+            for kat in kats {
                 let key_pair = $key_gen(kat.key_generation_seed);
 
                 let verification_key_hash = libcrux_sha3::sha256(&key_pair.verification_key.0);
@@ -177,6 +179,29 @@ impl_nist_known_answer_tests!(
     libcrux_ml_dsa::ml_dsa_65::verify_pre_hashed_shake128
 );
 
+#[cfg(feature = "simd256")]
+impl_nist_known_answer_tests!(
+    nist_known_answer_tests_65_simd256,
+    nist_known_answer_tests_pre_hashed_65_simd256,
+    65,
+    libcrux_ml_dsa::ml_dsa_65::avx2::generate_key_pair,
+    libcrux_ml_dsa::ml_dsa_65::avx2::sign,
+    libcrux_ml_dsa::ml_dsa_65::avx2::verify,
+    libcrux_ml_dsa::ml_dsa_65::sign_pre_hashed_shake128,
+    libcrux_ml_dsa::ml_dsa_65::verify_pre_hashed_shake128
+);
+
+impl_nist_known_answer_tests!(
+    nist_known_answer_tests_65_portable,
+    nist_known_answer_tests_pre_hashed_65_portable,
+    65,
+    libcrux_ml_dsa::ml_dsa_65::portable::generate_key_pair,
+    libcrux_ml_dsa::ml_dsa_65::portable::sign,
+    libcrux_ml_dsa::ml_dsa_65::portable::verify,
+    libcrux_ml_dsa::ml_dsa_65::sign_pre_hashed_shake128,
+    libcrux_ml_dsa::ml_dsa_65::verify_pre_hashed_shake128
+);
+
 // 87
 
 impl_nist_known_answer_tests!(
@@ -186,6 +211,29 @@ impl_nist_known_answer_tests!(
     libcrux_ml_dsa::ml_dsa_87::generate_key_pair,
     libcrux_ml_dsa::ml_dsa_87::sign,
     libcrux_ml_dsa::ml_dsa_87::verify,
+    libcrux_ml_dsa::ml_dsa_87::sign_pre_hashed_shake128,
+    libcrux_ml_dsa::ml_dsa_87::verify_pre_hashed_shake128
+);
+
+#[cfg(feature = "simd256")]
+impl_nist_known_answer_tests!(
+    nist_known_answer_tests_87_simd256,
+    nist_known_answer_tests_pre_hashed_87_simd256,
+    87,
+    libcrux_ml_dsa::ml_dsa_87::avx2::generate_key_pair,
+    libcrux_ml_dsa::ml_dsa_87::avx2::sign,
+    libcrux_ml_dsa::ml_dsa_87::avx2::verify,
+    libcrux_ml_dsa::ml_dsa_87::sign_pre_hashed_shake128,
+    libcrux_ml_dsa::ml_dsa_87::verify_pre_hashed_shake128
+);
+
+impl_nist_known_answer_tests!(
+    nist_known_answer_tests_87_portable,
+    nist_known_answer_tests_pre_hashed_87_portable,
+    87,
+    libcrux_ml_dsa::ml_dsa_87::portable::generate_key_pair,
+    libcrux_ml_dsa::ml_dsa_87::portable::sign,
+    libcrux_ml_dsa::ml_dsa_87::portable::verify,
     libcrux_ml_dsa::ml_dsa_87::sign_pre_hashed_shake128,
     libcrux_ml_dsa::ml_dsa_87::verify_pre_hashed_shake128
 );

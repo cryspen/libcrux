@@ -376,7 +376,7 @@ pub(crate) fn sample_mask_vector<
     mut seed: [u8; 66],
     domain_separator: &mut u16,
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut mask = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut mask = core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO());
 
     // DIMENSION is COLUMNS_IN_A
     debug_assert!(DIMENSION == 4 || DIMENSION == 5 || DIMENSION == 7);
@@ -511,7 +511,7 @@ mod tests {
             &mut element,
         );
 
-        element[0][0]
+        element[0][0].clone()
     }
 
     // This is just a wrapper around sample_four_ring_elements, for testing
@@ -535,7 +535,7 @@ mod tests {
             &mut [],
         );
 
-        element[0]
+        element[0].clone()
     }
 
     fn test_sample_ring_element_uniform_generic<SIMDUnit: Operations, Shake128: shake128::XofX4>() {

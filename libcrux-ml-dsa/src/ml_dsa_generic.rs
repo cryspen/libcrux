@@ -61,7 +61,9 @@ pub(crate) fn generate_key_pair<
     );
 
     let (t0, t1) = {
-        let mut a_as_ntt = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+        let mut a_as_ntt = core::array::from_fn(|_| {
+            core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO())
+        });
         samplex4::matrix::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
             into_padded_array(seed_for_a),
             &mut a_as_ntt,
@@ -88,9 +90,9 @@ pub(crate) fn generate_key_pair<
         seed_for_a,
         seed_for_signing,
         &verification_key_serialized,
-        &s1,
-        &s2,
-        &t0,
+        s1,
+        s2,
+        t0,
     );
 
     (signing_key_serialized, verification_key_serialized)
@@ -252,7 +254,9 @@ pub(crate) fn sign_internal<
             SIGNING_KEY_SIZE,
         >(signing_key);
 
-    let mut a_as_ntt = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+    let mut a_as_ntt = core::array::from_fn(|_| {
+        core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO())
+    });
     samplex4::matrix::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
         into_padded_array(&seed_for_A),
         &mut a_as_ntt,
@@ -312,7 +316,7 @@ pub(crate) fn sign_internal<
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
                 COMMITMENT_VECTOR_SIZE,
-            >(&commitment);
+            >(commitment.clone());
 
             let mut shake = shake256_init();
             shake256_absorb(&mut shake, &message_representative);
@@ -511,7 +515,9 @@ pub(crate) fn verify_internal<
 
     // Compute w_approx
     {
-        let mut a_as_ntt = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+        let mut a_as_ntt = core::array::from_fn(|_| {
+            core::array::from_fn(|_| PolynomialRingElement::<SIMDUnit>::ZERO())
+        });
         samplex4::matrix::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
             into_padded_array(&seed_for_A),
             &mut a_as_ntt,
@@ -558,7 +564,7 @@ pub(crate) fn verify_internal<
             ROWS_IN_A,
             COMMITMENT_RING_ELEMENT_SIZE,
             COMMITMENT_VECTOR_SIZE,
-        >(&commitment);
+        >(commitment);
 
         let mut shake = shake256_init();
         shake256_absorb(&mut shake, &message_representative);
