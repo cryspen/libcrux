@@ -582,6 +582,7 @@ pub(crate) mod unpacked {
 
     /// Take a serialized private key and generate an unpacked key pair from it.
     #[inline(always)]
+    #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K"))]
     pub fn keys_from_private_key<
         const K: usize,
         const SECRET_KEY_SIZE: usize,

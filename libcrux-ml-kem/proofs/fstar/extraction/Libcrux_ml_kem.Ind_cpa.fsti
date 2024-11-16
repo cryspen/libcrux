@@ -43,6 +43,27 @@ val deserialize_secret_key
           Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
           Spec.MLKEM.vector_decode_12 #v_K secret_key)
 
+val build_unpacked_public_key_mut
+      (v_K v_T_AS_NTT_ENCODED_SIZE: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (public_key: t_Slice u8)
+      (unpacked_public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+    : Prims.Pure (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val build_unpacked_public_key
+      (v_K v_T_AS_NTT_ENCODED_SIZE: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (public_key: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 /// Sample a vector of ring elements from a centered binomial distribution.
 val sample_ring_element_cbd
       (v_K v_ETA2_RANDOMNESS_SIZE v_ETA2: usize)
@@ -458,6 +479,17 @@ val serialize_public_key
           Seq.append (Spec.MLKEM.vector_encode_12 #v_K
                 (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector tt_as_ntt))
             seed_for_a)
+
+/// Serialize the secret key from the unpacked key pair generation.
+val serialize_unpacked_secret_key
+      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      (private_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
+    : Prims.Pure (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 val generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:

@@ -12,16 +12,13 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-#push-options "--z3rlimit 300"
-
-let validate_private_key
-      (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
+let validate_private_key_only
+      (v_K v_SECRET_KEY_SIZE: usize)
       (#v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
-      (v__ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
      =
   let t:t_Array u8 (sz 32) =
     Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
@@ -46,7 +43,131 @@ let validate_private_key
   in
   t =. expected
 
+#push-options "--z3rlimit 300"
+
+let validate_private_key
+      (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
+      (#v_Hasher: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (v__ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+     = validate_private_key_only v_K v_SECRET_KEY_SIZE #v_Hasher private_key
+
 #pop-options
+
+let serialize_kem_secret_key_mut
+      (v_K v_SERIALIZED_KEY_LEN: usize)
+      (#v_Hasher: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (private_key public_key implicit_rejection_value: t_Slice u8)
+      (serialized: t_Array u8 v_SERIALIZED_KEY_LEN)
+     =
+  let pointer:usize = sz 0 in
+  let serialized:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+      ({
+          Core.Ops.Range.f_start = pointer;
+          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len #u8 private_key <: usize) <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice #u8
+          (serialized.[ {
+                Core.Ops.Range.f_start = pointer;
+                Core.Ops.Range.f_end
+                =
+                pointer +! (Core.Slice.impl__len #u8 private_key <: usize) <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          private_key
+        <:
+        t_Slice u8)
+  in
+  let pointer:usize = pointer +! (Core.Slice.impl__len #u8 private_key <: usize) in
+  let serialized:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+      ({
+          Core.Ops.Range.f_start = pointer;
+          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len #u8 public_key <: usize) <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice #u8
+          (serialized.[ {
+                Core.Ops.Range.f_start = pointer;
+                Core.Ops.Range.f_end
+                =
+                pointer +! (Core.Slice.impl__len #u8 public_key <: usize) <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          public_key
+        <:
+        t_Slice u8)
+  in
+  let pointer:usize = pointer +! (Core.Slice.impl__len #u8 public_key <: usize) in
+  let serialized:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+      ({
+          Core.Ops.Range.f_start = pointer;
+          Core.Ops.Range.f_end = pointer +! Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice #u8
+          (serialized.[ {
+                Core.Ops.Range.f_start = pointer;
+                Core.Ops.Range.f_end = pointer +! Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
+              #v_K
+              #FStar.Tactics.Typeclasses.solve
+              public_key
+            <:
+            t_Slice u8)
+        <:
+        t_Slice u8)
+  in
+  let pointer:usize = pointer +! Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE in
+  let serialized:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+      ({
+          Core.Ops.Range.f_start = pointer;
+          Core.Ops.Range.f_end
+          =
+          pointer +! (Core.Slice.impl__len #u8 implicit_rejection_value <: usize) <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice #u8
+          (serialized.[ {
+                Core.Ops.Range.f_start = pointer;
+                Core.Ops.Range.f_end
+                =
+                pointer +! (Core.Slice.impl__len #u8 implicit_rejection_value <: usize) <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          implicit_rejection_value
+        <:
+        t_Slice u8)
+  in
+  serialized
 
 #push-options "--z3rlimit 150"
 
@@ -193,6 +314,15 @@ let serialize_kem_secret_key
       public_key
       (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher #v_K public_key)
       implicit_rejection_value
+  in
+  let out:t_Array u8 v_SERIALIZED_KEY_LEN =
+    serialize_kem_secret_key_mut v_K
+      v_SERIALIZED_KEY_LEN
+      #v_Hasher
+      private_key
+      public_key
+      implicit_rejection_value
+      out
   in
   out
 
@@ -399,16 +529,14 @@ let decapsulate
     assert (v v_CIPHERTEXT_SIZE ==
         v v_IMPLICIT_REJECTION_HASH_INPUT_SIZE - v Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE)
   in
-  let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8
+  let ind_cpa_secret_key, ind_cpa_public_key, ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice
+    u8 &
+    t_Slice u8 &
+    t_Slice u8 &
+    t_Slice u8) =
+    Libcrux_ml_kem.Types.unpack_private_key v_CPA_SECRET_KEY_SIZE
+      v_PUBLIC_KEY_SIZE
       (private_key.Libcrux_ml_kem.Types.f_value <: t_Slice u8)
-      v_CPA_SECRET_KEY_SIZE
-  in
-  let ind_cpa_public_key, secret_key:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8 secret_key v_PUBLIC_KEY_SIZE
-  in
-  let ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8 secret_key Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE
   in
   let _:Prims.unit =
     assert (ind_cpa_secret_key == slice private_key.f_value (sz 0) v_CPA_SECRET_KEY_SIZE);

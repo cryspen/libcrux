@@ -11,6 +11,44 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+/// Get the serialized private key.
+val key_pair_serialized_private_key
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Get the serialized private key.
+val key_pair_serialized_private_key_mut
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Get the serialized public key.
+val key_pair_serialized_public_key
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Get the serialized public key.
+val key_pair_serialized_public_key_mut
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 /// Get the serialized public key.
 val serialized_public_key
       (public_key:
@@ -59,11 +97,19 @@ val encapsulate
       (fun _ -> Prims.l_True)
 
 /// Generate ML-KEM 512 Key Pair in "unpacked" form
-val generate_key_pair
+val generate_key_pair_mut
       (randomness: t_Array u8 (sz 64))
       (key_pair:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Generate ML-KEM 512 Key Pair in "unpacked" form.
+val generate_key_pair (randomness: t_Array u8 (sz 64))
     : Prims.Pure
       (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -82,6 +128,18 @@ val init_key_pair: Prims.unit
 val init_public_key: Prims.unit
   -> Prims.Pure
       (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Get an unpacked key from a private key.
+val key_pair_from_private_mut
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       Prims.l_True
       (fun _ -> Prims.l_True)

@@ -10,6 +10,11 @@ val validate_private_key
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
+/// Validate the private key only.
+/// Returns `true` if valid, and `false` otherwise.
+val validate_private_key_only (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
 /// Decapsulate ML-KEM 768
 /// Generates an [`MlKemSharedSecret`].
 /// The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].

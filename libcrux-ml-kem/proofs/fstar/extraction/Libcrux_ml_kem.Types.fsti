@@ -137,6 +137,13 @@ val impl_21__sk
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
     : Prims.Pure (t_Array u8 v_PRIVATE_KEY_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Unpack an incoming private key into it's different parts.
+/// We have this here in types to extract into a common core for C.
+val unpack_private_key (v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE: usize) (private_key: t_Slice u8)
+    : Prims.Pure (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl (v_SIZE: usize) : Core.Default.t_Default (t_MlKemCiphertext v_SIZE)
 

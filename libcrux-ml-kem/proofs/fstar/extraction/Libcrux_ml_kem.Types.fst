@@ -158,6 +158,20 @@ let impl_21__sk
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
      = impl_13__as_slice v_PRIVATE_KEY_SIZE self.f_sk
 
+let unpack_private_key (v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE: usize) (private_key: t_Slice u8) =
+  let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
+    Core.Slice.impl__split_at #u8 private_key v_CPA_SECRET_KEY_SIZE
+  in
+  let ind_cpa_public_key, secret_key:(t_Slice u8 & t_Slice u8) =
+    Core.Slice.impl__split_at #u8 secret_key v_PUBLIC_KEY_SIZE
+  in
+  let ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
+    Core.Slice.impl__split_at #u8 secret_key Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE
+  in
+  ind_cpa_secret_key, ind_cpa_public_key, ind_cpa_public_key_hash, implicit_rejection_value
+  <:
+  (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
+
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl (v_SIZE: usize) : Core.Default.t_Default (t_MlKemCiphertext v_SIZE) =
   {

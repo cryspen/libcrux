@@ -13,6 +13,11 @@ let validate_private_key
     private_key
     ciphertext
 
+let validate_private_key_only (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400)) =
+  Libcrux_ml_kem.Ind_cca.Instantiations.Portable.validate_private_key_only (sz 3)
+    (sz 2400)
+    private_key
+
 let decapsulate
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
