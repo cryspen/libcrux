@@ -19,6 +19,13 @@ pub(crate) fn invert_ntt_montgomery<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+pub(crate) fn invert_ntt_montgomery_mut<SIMDUnit: Operations>(
+    re: &mut PolynomialRingElement<SIMDUnit>,
+) {
+    re.simd_units = SIMDUnit::invert_ntt_montgomery(re.simd_units);
+}
+
+#[inline(always)]
 pub(crate) fn ntt_multiply_montgomery<SIMDUnit: Operations>(
     lhs: &PolynomialRingElement<SIMDUnit>,
     rhs: &PolynomialRingElement<SIMDUnit>,
