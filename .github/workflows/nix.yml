@@ -10,7 +10,7 @@ jobs:
   nix:
     runs-on: ubuntu-latest
     steps:
-      - uses: DeterminateSystems/nix-installer-action@v13
+      - uses: DeterminateSystems/nix-installer-action@v16
       - uses: DeterminateSystems/magic-nix-cache-action@v7
       - name: Install & configure Cachix
         shell: bash
