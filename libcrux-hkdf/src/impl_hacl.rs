@@ -3,13 +3,15 @@
 use crate::{Algorithm, Error, HkdfMode};
 
 macro_rules! impl_hkdf {
-    ($sname:ident,$name:ident, $mode:path, $extract:ident, $expand:ident,$hash_len:literal) => {
-        pub struct $sname;
+    ($struct_name:ident,$name:ident, $string_name:literal, $mode:path, $extract:ident, $expand:ident,$hash_len:literal) => {
+        #[doc = "Implemantation of HKDF backed by"]
+        #[doc = $string_name]
+        pub struct $struct_name;
 
         pub mod $name {
-            use super::{checked_u32, $sname, Algorithm, Error, HkdfMode};
+            use super::{checked_u32, $struct_name, Algorithm, Error, HkdfMode};
 
-            impl HkdfMode<$hash_len> for $sname {
+            impl HkdfMode<$hash_len> for $struct_name {
                 const MODE: Algorithm = $mode;
 
                 fn extract(
@@ -133,6 +135,7 @@ macro_rules! impl_hkdf {
 impl_hkdf!(
     HkdfSha2_256,
     sha2_256,
+    "SHA2-256",
     Algorithm::Sha256,
     extract_sha2_256,
     expand_sha2_256,
@@ -142,6 +145,7 @@ impl_hkdf!(
 impl_hkdf!(
     HkdfSha2_384,
     sha2_384,
+    "SHA2-384",
     Algorithm::Sha384,
     extract_sha2_384,
     expand_sha2_384,
@@ -151,6 +155,7 @@ impl_hkdf!(
 impl_hkdf!(
     HkdfSha2_512,
     sha2_512,
+    "SHA2-512",
     Algorithm::Sha512,
     extract_sha2_512,
     expand_sha2_512,
