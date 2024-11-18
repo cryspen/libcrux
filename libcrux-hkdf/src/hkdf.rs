@@ -8,7 +8,7 @@ pub mod hacl;
 #[cfg(feature = "hacl")]
 mod impl_hacl;
 
-use impl_hacl::{HkdfMode, HkdfSha2_256, HkdfSha2_384, HkdfSha2_512};
+pub use impl_hacl::{HkdfMode, HkdfSha2_256, HkdfSha2_384, HkdfSha2_512};
 
 /// The HKDF algorithm defining the used hash function.
 #[derive(Copy, Clone, Debug, PartialEq)]
