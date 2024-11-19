@@ -43,15 +43,6 @@ val butterfly_4_ (a b: u8) (zeta_a0 zeta_a1 zeta_b0 zeta_b1: i32)
 val butterfly_8_ (a b: u8) (zeta0 zeta1: i32)
     : Prims.Pure (u8 & u8) Prims.l_True (fun _ -> Prims.l_True)
 
-val invert_ntt_at_layer_0_ (simd_unit: u8) (zeta0 zeta1 zeta2 zeta3: i32)
-    : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
-
-val invert_ntt_at_layer_1_ (simd_unit: u8) (zeta0 zeta1: i32)
-    : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
-
-val invert_ntt_at_layer_2_ (simd_unit: u8) (zeta: i32)
-    : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
-
 val ntt_at_layer_0___round
       (re: t_Array u8 (sz 32))
       (index: usize)

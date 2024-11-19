@@ -87,21 +87,6 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
         (rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
         ->
         Libcrux_ml_dsa.Simd.Portable.Arithmetic.subtract lhs rhs);
-    f_montgomery_multiply_by_constant_pre
-    =
-    (fun (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit) (c: i32) -> true);
-    f_montgomery_multiply_by_constant_post
-    =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        (c: i32)
-        (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        ->
-        true);
-    f_montgomery_multiply_by_constant
-    =
-    (fun (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit) (c: i32) ->
-        Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_by_constant simd_unit c);
     f_montgomery_multiply_pre
     =
     (fun
@@ -457,76 +442,21 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
         (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
         ->
         Libcrux_ml_dsa.Simd.Portable.Ntt.ntt simd_units);
-    f_invert_ntt_at_layer_0_pre
+    f_invert_ntt_montgomery_pre
     =
     (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        (zeta0: i32)
-        (zeta1: i32)
-        (zeta2: i32)
-        (zeta3: i32)
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
         ->
         true);
-    f_invert_ntt_at_layer_0_post
+    f_invert_ntt_montgomery_post
     =
     (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        (zeta0: i32)
-        (zeta1: i32)
-        (zeta2: i32)
-        (zeta3: i32)
-        (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
+        (out: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32))
         ->
         true);
-    f_invert_ntt_at_layer_0_
+    f_invert_ntt_montgomery
     =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        (zeta0: i32)
-        (zeta1: i32)
-        (zeta2: i32)
-        (zeta3: i32)
-        ->
-        Libcrux_ml_dsa.Simd.Portable.Ntt.invert_ntt_at_layer_0_ simd_unit zeta0 zeta1 zeta2 zeta3);
-    f_invert_ntt_at_layer_1_pre
-    =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        (zeta0: i32)
-        (zeta1: i32)
-        ->
-        true);
-    f_invert_ntt_at_layer_1_post
-    =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        (zeta0: i32)
-        (zeta1: i32)
-        (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        ->
-        true);
-    f_invert_ntt_at_layer_1_
-    =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        (zeta0: i32)
-        (zeta1: i32)
-        ->
-        Libcrux_ml_dsa.Simd.Portable.Ntt.invert_ntt_at_layer_1_ simd_unit zeta0 zeta1);
-    f_invert_ntt_at_layer_2_pre
-    =
-    (fun (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit) (zeta: i32) ->
-        true);
-    f_invert_ntt_at_layer_2_post
-    =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        (zeta: i32)
-        (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        ->
-        true);
-    f_invert_ntt_at_layer_2_
-    =
-    fun (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit) (zeta: i32) ->
-      Libcrux_ml_dsa.Simd.Portable.Ntt.invert_ntt_at_layer_2_ simd_unit zeta
+    fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit (sz 32)) ->
+      Libcrux_ml_dsa.Simd.Portable.Invntt.invert_ntt_montgomery simd_units
   }

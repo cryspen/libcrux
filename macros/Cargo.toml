@@ -1,0 +1,18 @@
+[package]
+name = "libcrux-macros"
+description = "Macros needed in libcrux"
+
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[lib]
+proc-macro = true

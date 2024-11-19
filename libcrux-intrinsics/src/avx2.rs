@@ -549,8 +549,8 @@ pub fn mm256_set_epi64x(input3: i64, input2: i64, input1: i64, input0: i64) -> V
 }
 
 #[inline(always)]
-pub fn mm256_unpacklo_epi64(a: Vec256, b: Vec256) -> Vec256 {
-    unsafe { _mm256_unpacklo_epi64(a, b) }
+pub fn mm256_unpacklo_epi64(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unsafe { _mm256_unpacklo_epi64(lhs, rhs) }
 }
 
 #[inline(always)]

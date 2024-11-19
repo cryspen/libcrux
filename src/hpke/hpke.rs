@@ -427,7 +427,7 @@ pub fn SetupBaseS(
             );
             let ss = crate::kem::Ss::X25519MlKem768Draft00(
                 ss2.as_slice().try_into().unwrap(),
-                libcrux_ecdh::X25519PublicKey(ss1.try_into().unwrap()),
+                libcrux_ecdh::X25519SharedSecret(ss1.try_into().unwrap()),
             );
             (ss.encode(), ct.encode())
         }
@@ -523,7 +523,7 @@ pub fn SetupBaseR(
             let ss2 = Kyber768Draft00_Decap(kyber.as_ref(), &enc[32..])?;
             let ss = crate::kem::Ss::X25519MlKem768Draft00(
                 ss2.as_slice().try_into().unwrap(),
-                libcrux_ecdh::X25519PublicKey(ss1.try_into().unwrap()),
+                libcrux_ecdh::X25519SharedSecret(ss1.try_into().unwrap()),
             );
             ss.encode()
         }

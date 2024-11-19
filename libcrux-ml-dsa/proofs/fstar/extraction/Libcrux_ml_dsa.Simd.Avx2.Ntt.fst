@@ -126,43 +126,6 @@ let butterfly_8_ (a b: u8) (zeta0 zeta1: i32) =
   let b_out:u8 = Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 19l sub_terms add_terms in
   a_out, b_out <: (u8 & u8)
 
-let invert_ntt_at_layer_0_ (simd_unit: u8) (zeta0 zeta1 zeta2 zeta3: i32) =
-  let zetas:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta3 0l zeta2 0l zeta1 0l zeta0 0l
-  in
-  let add_by_signs:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (-1l) 1l (-1l) 1l (-1l) 1l (-1l) 1l
-  in
-  let add_by:u8 = Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 177l simd_unit in
-  let add_by:u8 = Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 add_by add_by_signs in
-  let sums:u8 = Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 simd_unit add_by in
-  let products:u8 = Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply sums zetas in
-  Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 170l sums products
-
-let invert_ntt_at_layer_1_ (simd_unit: u8) (zeta0 zeta1: i32) =
-  let zetas:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta1 zeta1 0l 0l zeta0 zeta0 0l 0l
-  in
-  let add_by_signs:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (-1l) (-1l) 1l 1l (-1l) (-1l) 1l 1l
-  in
-  let add_by:u8 = Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 78l simd_unit in
-  let add_by:u8 = Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 add_by add_by_signs in
-  let sums:u8 = Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 simd_unit add_by in
-  let products:u8 = Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply sums zetas in
-  Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 204l sums products
-
-let invert_ntt_at_layer_2_ (simd_unit: u8) (zeta: i32) =
-  let zetas:u8 = Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta zeta zeta zeta 0l 0l 0l 0l in
-  let add_by_signs:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (-1l) (-1l) (-1l) (-1l) 1l 1l 1l 1l
-  in
-  let add_by:u8 = Libcrux_intrinsics.Avx2_extract.mm256_permute4x64_epi64 78l simd_unit in
-  let add_by:u8 = Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 add_by add_by_signs in
-  let sums:u8 = Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 simd_unit add_by in
-  let products:u8 = Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply sums zetas in
-  Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 240l sums products
-
 let ntt_at_layer_0___round
       (re: t_Array u8 (sz 32))
       (index: usize)
@@ -714,4 +677,5 @@ let ntt (re: t_Array u8 (sz 32)) =
   let re:t_Array u8 (sz 32) = ntt_at_layer_2_ re in
   let re:t_Array u8 (sz 32) = ntt_at_layer_1_ re in
   let re:t_Array u8 (sz 32) = ntt_at_layer_0_ re in
+  let _:Prims.unit = () in
   re

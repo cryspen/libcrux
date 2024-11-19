@@ -23,27 +23,6 @@ let ntt_at_layer_7___STEP: usize = sz 128
 
 let ntt_at_layer_7___STEP_BY: usize = sz 16
 
-val invert_ntt_at_layer_0_
-      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-      (zeta0 zeta1 zeta2 zeta3: i32)
-    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val invert_ntt_at_layer_1_
-      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-      (zeta0 zeta1: i32)
-    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val invert_ntt_at_layer_2_
-      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-      (zeta: i32)
-    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 val simd_unit_ntt_at_layer_0_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
       (zeta0 zeta1 zeta2 zeta3: i32)

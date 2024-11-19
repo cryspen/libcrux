@@ -481,6 +481,8 @@ pub fn key_gen(
         Algorithm::Ed25519 => {
             const LIMIT: usize = 100;
             let mut sk = [0u8; 32];
+            let mut pk = [0u8; 32];
+
             for _ in 0..LIMIT {
                 rng.try_fill_bytes(&mut sk)
                     .map_err(|_| Error::KeyGenError)?;
@@ -498,7 +500,8 @@ pub fn key_gen(
 
                 break;
             }
-            let pk = ed25519::secret_to_public(&sk);
+
+            ed25519::secret_to_public(&mut pk, &sk);
 
             Ok((sk.to_vec(), pk.to_vec()))
         }

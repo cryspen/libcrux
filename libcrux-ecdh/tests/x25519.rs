@@ -80,7 +80,7 @@ fn wycheproof() {
                 "public key = 57896044618658097711785492504343953926634992332820282019728792003956564819968" => false,
                 "public key = 57896044618658097711785492504343953926634992332820282019728792003956564819969" => false,
                 "special case public key" => {
-                    if (test.flags.contains(&"Twist".to_owned()) && test.tcId != 154)
+                    (test.flags.contains(&"Twist".to_owned()) && test.tcId != 154)
                        || test.tcId == 120
                        || test.tcId == 122
                        || test.tcId == 123
@@ -102,11 +102,7 @@ fn wycheproof() {
                        || test.tcId == 150
                        || test.tcId == 151
                        || test.tcId == 152
-                       || test.tcId == 153 {
-                        true
-                    } else {
-                        false
-                    }
+                       || test.tcId == 153
                 },
                 "D = 0 in multiplication by 2" => false,
                 _ => valid,

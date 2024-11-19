@@ -101,28 +101,6 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
               rhs.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
             <:
             u8));
-    f_montgomery_multiply_by_constant_pre
-    =
-    (fun (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) (constant: i32) -> true);
-    f_montgomery_multiply_by_constant_post
-    =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (constant: i32)
-        (out: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        ->
-        true);
-    f_montgomery_multiply_by_constant
-    =
-    (fun (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) (constant: i32) ->
-        Core.Convert.f_into #u8
-          #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-          #FStar.Tactics.Typeclasses.solve
-          (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_by_constant simd_unit
-                .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
-              constant
-            <:
-            u8));
     f_montgomery_multiply_pre
     =
     (fun
@@ -537,100 +515,40 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
                 x
               <:
               Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit));
-    f_invert_ntt_at_layer_0_pre
+    f_invert_ntt_montgomery_pre
+    =
+    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32)) -> true);
+    f_invert_ntt_montgomery_post
     =
     (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (zeta0: i32)
-        (zeta1: i32)
-        (zeta2: i32)
-        (zeta3: i32)
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32))
+        (out: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32))
         ->
         true);
-    f_invert_ntt_at_layer_0_post
+    f_invert_ntt_montgomery
     =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (zeta0: i32)
-        (zeta1: i32)
-        (zeta2: i32)
-        (zeta3: i32)
-        (out: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        ->
-        true);
-    f_invert_ntt_at_layer_0_
-    =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (zeta0: i32)
-        (zeta1: i32)
-        (zeta2: i32)
-        (zeta3: i32)
-        ->
-        Core.Convert.f_into #u8
-          #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-          #FStar.Tactics.Typeclasses.solve
-          (Libcrux_ml_dsa.Simd.Avx2.Ntt.invert_ntt_at_layer_0_ simd_unit
-                .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
-              zeta0
-              zeta1
-              zeta2
-              zeta3
+    fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32)) ->
+      let result:t_Array u8 (sz 32) =
+        Libcrux_ml_dsa.Simd.Avx2.Invntt.invert_ntt_montgomery (Core.Array.impl_23__map #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
+              (sz 32)
+              #u8
+              simd_units
+              (fun x ->
+                  let x:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit = x in
+                  x.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients)
             <:
-            u8));
-    f_invert_ntt_at_layer_1_pre
-    =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (zeta0: i32)
-        (zeta1: i32)
-        ->
-        true);
-    f_invert_ntt_at_layer_1_post
-    =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (zeta0: i32)
-        (zeta1: i32)
-        (out: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        ->
-        true);
-    f_invert_ntt_at_layer_1_
-    =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (zeta0: i32)
-        (zeta1: i32)
-        ->
-        Core.Convert.f_into #u8
-          #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-          #FStar.Tactics.Typeclasses.solve
-          (Libcrux_ml_dsa.Simd.Avx2.Ntt.invert_ntt_at_layer_1_ simd_unit
-                .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
-              zeta0
-              zeta1
-            <:
-            u8));
-    f_invert_ntt_at_layer_2_pre
-    =
-    (fun (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) (zeta: i32) -> true);
-    f_invert_ntt_at_layer_2_post
-    =
-    (fun
-        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (zeta: i32)
-        (out: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        ->
-        true);
-    f_invert_ntt_at_layer_2_
-    =
-    fun (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) (zeta: i32) ->
-      Core.Convert.f_into #u8
+            t_Array u8 (sz 32))
+      in
+      Core.Array.impl_23__map #u8
+        (sz 32)
         #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-        #FStar.Tactics.Typeclasses.solve
-        (Libcrux_ml_dsa.Simd.Avx2.Ntt.invert_ntt_at_layer_2_ simd_unit
-              .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
-            zeta
-          <:
-          u8)
+        result
+        (fun x ->
+            let x:u8 = x in
+            Core.Convert.f_into #u8
+              #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
+              #FStar.Tactics.Typeclasses.solve
+              x
+            <:
+            Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
   }

@@ -12,6 +12,13 @@ description = "Libcrux HKDF implementation"
 [lib]
 path = "src/hkdf.rs"
 
-[dependencies]
-libcrux-hacl = { version = "=0.0.2-beta.2", path = "../sys/hacl" }
+[features]
+default = ["portable_hacl"]
+portable_hacl = ["hacl"]
+hacl = ["dep:libcrux-hmac", "dep:libcrux-hacl-rs"]
 
+[dependencies]
+libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "../hacl-rs/", optional = true }
+libcrux-hmac = { version = "=0.0.2-beta.2", path = "../libcrux-hmac", optional = true, features = [
+    "hacl",
+] }
