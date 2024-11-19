@@ -262,11 +262,12 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
         let inverse_of_modulus_mod_montgomery_r =
             _mm256_set1_epi32(crate::simd::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
 
-        // macro_rules! mul {
-        //     () => {
+        const STEP_BY_7: usize = 2 * COEFFICIENTS_IN_SIMD_UNIT;
+        const STEP_BY_6: usize = (1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
 
-        //     };
-        // }
+        let zeta7 = _mm256_set1_epi32(25847);
+        let zeta60 = _mm256_set1_epi32(-2608894);
+        let zeta61 = _mm256_set1_epi32(-518909);
 
         #[inline(always)]
         fn mul(
@@ -295,9 +296,7 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
                 let t = _mm256_blend_epi32::<0b10101010>(res02_shifted, res13); // 0xAA
 
                 re[index + step_by] = _mm256_sub_epi32(re[index], t);
-                // arithmetic::subtract(re[index], t);
                 re[index] = _mm256_add_epi32(re[index], t);
-                // arithmetic::add(re[index], t);
             }
         }
 
@@ -343,50 +342,6 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
                 inverse_of_modulus_mod_montgomery_r,
             );
         }
-
-        // macro_rules! layer {
-        //     ($start:literal, $zeta:expr, $step_by:expr) => {{
-        //         mul(
-        //             re,
-        //             $start,
-        //             $zeta,
-        //             $step_by,
-        //             field_modulus,
-        //             inverse_of_modulus_mod_montgomery_r,
-        //         );
-        //         mul(
-        //             re,
-        //             $start + 1,
-        //             $zeta,
-        //             $step_by,
-        //             field_modulus,
-        //             inverse_of_modulus_mod_montgomery_r,
-        //         );
-        //         mul(
-        //             re,
-        //             $start + 2,
-        //             $zeta,
-        //             $step_by,
-        //             field_modulus,
-        //             inverse_of_modulus_mod_montgomery_r,
-        //         );
-        //         mul(
-        //             re,
-        //             $start + 3,
-        //             $zeta,
-        //             $step_by,
-        //             field_modulus,
-        //             inverse_of_modulus_mod_montgomery_r,
-        //         );
-        //     }};
-        // }
-
-        const STEP_BY_7: usize = 2 * COEFFICIENTS_IN_SIMD_UNIT;
-        const STEP_BY_6: usize = (1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
-
-        let zeta7 = _mm256_set1_epi32(25847);
-        let zeta60 = _mm256_set1_epi32(-2608894);
-        let zeta61 = _mm256_set1_epi32(-518909);
 
         layer(
             re,
