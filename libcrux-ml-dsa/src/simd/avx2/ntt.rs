@@ -257,92 +257,203 @@ unsafe fn ntt_at_layer_2(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
-    let field_modulus = mm256_set1_epi32(crate::simd::traits::FIELD_MODULUS);
-    let inverse_of_modulus_mod_montgomery_r =
-        mm256_set1_epi32(crate::simd::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
+    unsafe {
+        let field_modulus = _mm256_set1_epi32(crate::simd::traits::FIELD_MODULUS);
+        let inverse_of_modulus_mod_montgomery_r =
+            _mm256_set1_epi32(crate::simd::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
 
-    #[inline(always)]
-    fn mul(
-        re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
-        index: usize,
-        zeta: Vec256,
-        step_by: usize,
-        field_modulus: Vec256,
-        inverse_of_modulus_mod_montgomery_r: Vec256,
-    ) {
-        let prod02 = mm256_mul_epi32(re[index + step_by], zeta);
-        let prod13 = mm256_mul_epi32(
-            mm256_shuffle_epi32::<0b11_11_01_01>(re[index + step_by]), // 0xF5
-            mm256_shuffle_epi32::<0b11_11_01_01>(zeta),                // 0xF5
+        // macro_rules! mul {
+        //     () => {
+
+        //     };
+        // }
+
+        #[inline(always)]
+        fn mul(
+            re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
+            index: usize,
+            zeta: Vec256,
+            step_by: usize,
+            field_modulus: Vec256,
+            inverse_of_modulus_mod_montgomery_r: Vec256,
+        ) {
+            unsafe {
+                let prod02 = _mm256_mul_epi32(re[index + step_by], zeta);
+                let prod13 = _mm256_mul_epi32(
+                    _mm256_shuffle_epi32::<0b11_11_01_01>(re[index + step_by]), // 0xF5
+                    _mm256_shuffle_epi32::<0b11_11_01_01>(zeta),                // 0xF5
+                );
+                let k02 = _mm256_mul_epi32(prod02, inverse_of_modulus_mod_montgomery_r);
+                let k13 = _mm256_mul_epi32(prod13, inverse_of_modulus_mod_montgomery_r);
+
+                let c02 = _mm256_mul_epi32(k02, field_modulus);
+                let c13 = _mm256_mul_epi32(k13, field_modulus);
+
+                let res02 = _mm256_sub_epi32(prod02, c02);
+                let res13 = _mm256_sub_epi32(prod13, c13);
+                let res02_shifted = _mm256_shuffle_epi32::<0b11_11_01_01>(res02); // 0xF5
+                let t = _mm256_blend_epi32::<0b10101010>(res02_shifted, res13); // 0xAA
+
+                re[index + step_by] = _mm256_sub_epi32(re[index], t);
+                // arithmetic::subtract(re[index], t);
+                re[index] = _mm256_add_epi32(re[index], t);
+                // arithmetic::add(re[index], t);
+            }
+        }
+
+        #[inline(always)]
+        fn layer(
+            re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
+            start: usize,
+            zeta: Vec256,
+            step_by: usize,
+            field_modulus: Vec256,
+            inverse_of_modulus_mod_montgomery_r: Vec256,
+        ) {
+            mul(
+                re,
+                start,
+                zeta,
+                step_by,
+                field_modulus,
+                inverse_of_modulus_mod_montgomery_r,
+            );
+            mul(
+                re,
+                start + 1,
+                zeta,
+                step_by,
+                field_modulus,
+                inverse_of_modulus_mod_montgomery_r,
+            );
+            mul(
+                re,
+                start + 2,
+                zeta,
+                step_by,
+                field_modulus,
+                inverse_of_modulus_mod_montgomery_r,
+            );
+            mul(
+                re,
+                start + 3,
+                zeta,
+                step_by,
+                field_modulus,
+                inverse_of_modulus_mod_montgomery_r,
+            );
+        }
+
+        // macro_rules! layer {
+        //     ($start:literal, $zeta:expr, $step_by:expr) => {{
+        //         mul(
+        //             re,
+        //             $start,
+        //             $zeta,
+        //             $step_by,
+        //             field_modulus,
+        //             inverse_of_modulus_mod_montgomery_r,
+        //         );
+        //         mul(
+        //             re,
+        //             $start + 1,
+        //             $zeta,
+        //             $step_by,
+        //             field_modulus,
+        //             inverse_of_modulus_mod_montgomery_r,
+        //         );
+        //         mul(
+        //             re,
+        //             $start + 2,
+        //             $zeta,
+        //             $step_by,
+        //             field_modulus,
+        //             inverse_of_modulus_mod_montgomery_r,
+        //         );
+        //         mul(
+        //             re,
+        //             $start + 3,
+        //             $zeta,
+        //             $step_by,
+        //             field_modulus,
+        //             inverse_of_modulus_mod_montgomery_r,
+        //         );
+        //     }};
+        // }
+
+        const STEP_BY_7: usize = 2 * COEFFICIENTS_IN_SIMD_UNIT;
+        const STEP_BY_6: usize = (1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
+
+        let zeta7 = _mm256_set1_epi32(25847);
+        let zeta60 = _mm256_set1_epi32(-2608894);
+        let zeta61 = _mm256_set1_epi32(-518909);
+
+        layer(
+            re,
+            0,
+            zeta7,
+            STEP_BY_7,
+            field_modulus,
+            inverse_of_modulus_mod_montgomery_r,
         );
-        let k02 = mm256_mul_epi32(prod02, inverse_of_modulus_mod_montgomery_r);
-        let k13 = mm256_mul_epi32(prod13, inverse_of_modulus_mod_montgomery_r);
+        layer(
+            re,
+            8,
+            zeta7,
+            STEP_BY_7,
+            field_modulus,
+            inverse_of_modulus_mod_montgomery_r,
+        );
+        layer(
+            re,
+            0,
+            zeta60,
+            STEP_BY_6,
+            field_modulus,
+            inverse_of_modulus_mod_montgomery_r,
+        );
+        layer(
+            re,
+            16,
+            zeta61,
+            STEP_BY_6,
+            field_modulus,
+            inverse_of_modulus_mod_montgomery_r,
+        );
 
-        let c02 = mm256_mul_epi32(k02, field_modulus);
-        let c13 = mm256_mul_epi32(k13, field_modulus);
-
-        let res02 = mm256_sub_epi32(prod02, c02);
-        let res13 = mm256_sub_epi32(prod13, c13);
-        let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02); // 0xF5
-        let t = mm256_blend_epi32::<0b10101010>(res02_shifted, res13); // 0xAA
-
-        re[index + step_by] = arithmetic::subtract(re[index], t);
-        re[index] = arithmetic::add(re[index], t);
+        layer(
+            re,
+            4,
+            zeta7,
+            STEP_BY_7,
+            field_modulus,
+            inverse_of_modulus_mod_montgomery_r,
+        );
+        layer(
+            re,
+            12,
+            zeta7,
+            STEP_BY_7,
+            field_modulus,
+            inverse_of_modulus_mod_montgomery_r,
+        );
+        layer(
+            re,
+            4,
+            zeta60,
+            STEP_BY_6,
+            field_modulus,
+            inverse_of_modulus_mod_montgomery_r,
+        );
+        layer(
+            re,
+            20,
+            zeta61,
+            STEP_BY_6,
+            field_modulus,
+            inverse_of_modulus_mod_montgomery_r,
+        );
     }
-
-    macro_rules! layer {
-        ($start:literal, $zeta:expr, $step_by:expr) => {{
-            mul(
-                re,
-                $start,
-                $zeta,
-                $step_by,
-                field_modulus,
-                inverse_of_modulus_mod_montgomery_r,
-            );
-            mul(
-                re,
-                $start + 1,
-                $zeta,
-                $step_by,
-                field_modulus,
-                inverse_of_modulus_mod_montgomery_r,
-            );
-            mul(
-                re,
-                $start + 2,
-                $zeta,
-                $step_by,
-                field_modulus,
-                inverse_of_modulus_mod_montgomery_r,
-            );
-            mul(
-                re,
-                $start + 3,
-                $zeta,
-                $step_by,
-                field_modulus,
-                inverse_of_modulus_mod_montgomery_r,
-            );
-        }};
-    }
-
-    const STEP_BY_7: usize = 2 * COEFFICIENTS_IN_SIMD_UNIT;
-    const STEP_BY_6: usize = (1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
-
-    let zeta7 = mm256_set1_epi32(25847);
-    let zeta60 = mm256_set1_epi32(-2608894);
-    let zeta61 = mm256_set1_epi32(-518909);
-
-    layer!(0, zeta7, STEP_BY_7);
-    layer!(8, zeta7, STEP_BY_7);
-    layer!(0, zeta60, STEP_BY_6);
-    layer!(16, zeta61, STEP_BY_6);
-
-    layer!(4, zeta7, STEP_BY_7);
-    layer!(12, zeta7, STEP_BY_7);
-    layer!(4, zeta60, STEP_BY_6);
-    layer!(20, zeta61, STEP_BY_6);
 }
 
 /// Layer 5, 4, 3
