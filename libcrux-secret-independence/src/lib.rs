@@ -25,10 +25,7 @@ pub use public_integers::*;
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        secret_sequences::arrayref::SecretArrayRef,
-        traits::{Classify, Declassify},
-    };
+    use super::traits::{Classify, Declassify};
 
     #[test]
     fn scalar_example() {
