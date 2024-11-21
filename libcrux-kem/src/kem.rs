@@ -218,14 +218,14 @@ impl X25519MlKem768Draft00PublicKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
             mlkem: {
-                let key = MlKem768PublicKey::try_from(&bytes[32..])
+                let key = MlKem768PublicKey::try_from(&bytes[..1184])
                     .map_err(|_| Error::InvalidPublicKey)?;
                 if !mlkem768::validate_public_key(&key) {
                     return Err(Error::InvalidPublicKey);
                 }
                 key
             },
-            x25519: bytes[0..32]
+            x25519: bytes[1184..]
                 .try_into()
                 .map_err(|_| Error::InvalidPublicKey)?,
         })
@@ -716,8 +716,8 @@ impl Ss {
             Ss::MlKem512(k) => k.as_ref().to_vec(),
             Ss::MlKem768(k) => k.as_ref().to_vec(),
             Ss::X25519MlKem768Draft00(kk, xk) => {
-                let mut out = xk.0.to_vec();
-                out.extend_from_slice(kk.as_ref());
+                let mut out = kk.to_vec();
+                out.extend_from_slice(xk.0.as_ref());
                 out
             }
             Ss::XWingKemDraft02(ss_m, ss_x, ct_x, pk_x) => {
@@ -763,8 +763,8 @@ impl Ct {
             Ct::MlKem512(k) => k.as_ref().to_vec(),
             Ct::MlKem768(k) => k.as_ref().to_vec(),
             Ct::X25519MlKem768Draft00(kk, xk) => {
-                let mut out = xk.0.to_vec();
-                out.extend_from_slice(kk.as_ref());
+                let mut out = kk.as_ref().to_vec();
+                out.extend_from_slice(xk.0.as_ref());
                 out
             }
             Ct::XWingKemDraft02(ct_m, ct_x) => {
