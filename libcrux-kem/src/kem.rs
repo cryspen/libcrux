@@ -147,18 +147,18 @@ pub struct X25519MlKem768Draft00PrivateKey {
 impl X25519MlKem768Draft00PrivateKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
-            mlkem: bytes[32..]
+            mlkem: bytes[..2400]
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)?,
-            x25519: bytes[..32]
+            x25519: bytes[2400..]
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)?,
         })
     }
 
     pub fn encode(&self) -> Vec<u8> {
-        let mut out = self.x25519.0.to_vec();
-        out.extend_from_slice(self.mlkem.as_ref());
+        let mut out = self.mlkem.as_ref().to_vec();
+        out.extend_from_slice(&self.x25519.0);
         out
     }
 }
