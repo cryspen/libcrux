@@ -232,8 +232,8 @@ impl X25519MlKem768Draft00PublicKey {
     }
 
     pub fn encode(&self) -> Vec<u8> {
-        let mut out = self.x25519.0.to_vec();
-        out.extend_from_slice(self.mlkem.as_ref());
+        let mut out = self.mlkem.as_ref().to_vec();
+        out.extend_from_slice(&self.x25519.0);
         out
     }
 }
