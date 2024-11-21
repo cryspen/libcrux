@@ -444,7 +444,7 @@ pub enum Ss {
         X25519PublicKey,    // pk_X
     ),
     #[cfg(feature = "kyber")]
-    X25519Kyber768Draft00(MlKemSharedSecret, X25519PublicKey),
+    X25519Kyber768Draft00(MlKemSharedSecret, X25519SharedSecret),
     #[cfg(feature = "kyber")]
     XWingKyberDraft02(
         MlKemSharedSecret,  // ss_M
