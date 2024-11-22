@@ -810,7 +810,7 @@ impl Ct {
             Algorithm::X25519MlKem768Draft00 => {
                 let key: [u8; MlKem768Ciphertext::len() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
-                let (xct, kct) = key.split_at(32);
+                let (kct, xct) = key.split_at(1088);
                 Ok(Self::X25519MlKem768Draft00(
                     kct.try_into().map_err(|_| Error::InvalidCiphertext)?,
                     xct.try_into().map_err(|_| Error::InvalidCiphertext)?,
