@@ -519,8 +519,8 @@ pub fn SetupBaseR(
                 mlkem: kyber,
                 x25519,
             } = X25519MlKem768Draft00PrivateKey::decode(skR).unwrap();
-            let ss1 = Decap(KEM::DHKEM_X25519_HKDF_SHA256, &enc[0..32], &x25519.0)?;
-            let ss2 = Kyber768Draft00_Decap(kyber.as_ref(), &enc[32..])?;
+            let ss1 = Decap(KEM::DHKEM_X25519_HKDF_SHA256, &enc[1088..], &x25519.0)?;
+            let ss2 = Kyber768Draft00_Decap(kyber.as_ref(), &enc[..1088])?;
             let ss = crate::kem::Ss::X25519MlKem768Draft00(
                 ss2.as_slice().try_into().unwrap(),
                 libcrux_ecdh::X25519SharedSecret(ss1.try_into().unwrap()),
