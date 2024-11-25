@@ -1,3 +1,5 @@
+#![no_std]
+
 #[cfg(feature = "hacl")]
 pub use libcrux_hacl_rs::curve25519_51 as hacl;
 

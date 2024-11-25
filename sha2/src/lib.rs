@@ -1,3 +1,5 @@
+#![no_std]
+
 /// The length of a SHA224 hash in bytes.
 pub const SHA224_LENGTH: usize = 28;
 

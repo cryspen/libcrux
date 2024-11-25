@@ -30,6 +30,11 @@
 //! ```
 //!
 //! [FIPS 203]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.ipd.pdf
+#![no_std]
+
+extern crate alloc;
+
+use alloc::{vec, vec::Vec};
 
 use rand::{CryptoRng, Rng};
 
