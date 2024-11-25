@@ -20,7 +20,7 @@ pub mod prelude {
     extern crate alloc;
 
     pub use alloc::boxed::Box;
-    pub use alloc::vec;
+    pub use alloc::{vec, vec::Vec};
 
     pub use crate::{bignum, fstar, lowstar, streaming_types, util as lib};
 }

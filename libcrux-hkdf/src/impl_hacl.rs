@@ -2,6 +2,8 @@
 
 use crate::{Algorithm, Error, HkdfMode};
 
+use libcrux_hacl_rs::prelude::*;
+
 macro_rules! impl_hkdf {
     ($struct_name:ident,$name:ident, $string_name:literal, $mode:path, $extract:ident, $expand:ident,$hash_len:literal) => {
         #[doc = "Implementation of HKDF backed by"]
