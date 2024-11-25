@@ -4,7 +4,7 @@ use crate::{Algorithm, Error, HkdfMode};
 
 macro_rules! impl_hkdf {
     ($struct_name:ident,$name:ident, $string_name:literal, $mode:path, $extract:ident, $expand:ident,$hash_len:literal) => {
-        #[doc = "Implemantation of HKDF backed by"]
+        #[doc = "Implementation of HKDF backed by"]
         #[doc = $string_name]
         pub struct $struct_name;
 
@@ -31,15 +31,16 @@ macro_rules! impl_hkdf {
                 }
 
                 fn expand_vec(prk: &[u8], info: &[u8], okm_len: usize) -> Result<Vec<u8>, Error> {
-                    vec::expand(prk, info, okm_len)
+                    expand_vec(prk, info, okm_len)
                 }
             }
 
-            /// HKDF extract using the `salt`, and the input key material `ikm`.
-            /// Returns the pre-key material in an array of hash length.
+            /// HKDF extract using the `salt` and the input key material `ikm`.
+            /// The result is written to `prk`.
             ///
-            /// Note that this function returns an [`Error::ArgumentsTooLarge`]
-            /// if `salt` or `ikm` is larger than 2**32 bytes.
+            /// Returns nothing on success.
+            /// Returns [`Error::ArgumentsTooLarge`] if one of `ikm` or `salt` is longer than
+            /// [`u32::MAX`] bytes.
             pub fn extract(
                 prk: &mut [u8; $hash_len],
                 salt: &[u8],
@@ -54,13 +55,13 @@ macro_rules! impl_hkdf {
                 ))
             }
 
-            /// HKDF expand using the pre-key material `prk` and `info`. The output length
-            /// is defined through the result type.
-            /// Returns the key material in an array of length `okm_len` or
-            /// [`Error::OkmTooLarge`] if the requested `okm_len` is too large.
+            /// HKDF expand using the pre-key material `prk` and `info`.
+            /// The output is written to `okm`.
             ///
-            /// Note that this function returns an [`Error::ArgumentsTooLarge`]
-            /// if `prk`, `info`, or `OKM_LEN` is larger than 2**32 bytes.
+            /// Returns nothing on success.
+            /// Returns [`Error::OkmTooLarge`] if the requested `OKM_LEN` is large.
+            /// Returns [`Error::ArgumentsTooLarge`] if one of `prk` or `info` is longer than
+            /// [`u32::MAX`] bytes.
             pub fn expand<const OKM_LEN: usize>(
                 okm: &mut [u8; OKM_LEN],
                 prk: &[u8],
@@ -81,12 +82,39 @@ macro_rules! impl_hkdf {
                 ))
             }
 
-            /// HKDF using the `salt`, input key material `ikm`, `info`. The output length
-            /// is defined through the result type.
+            /// HKDF expand using the pre-key material `prk` and `info`. The output length
+            /// is defined by the parameter `okm_len`.
+            ///
+            /// Returns the key material in a [`Vec<u8>`] of length `okm_len` on success.
+            /// Returns [`Error::OkmTooLarge`] if the requested `okm_len` is too large.
+            /// Returns [`Error::ArgumentsTooLarge`] if `prk` or `info` is longer than [`u32::MAX`] bytes.
+            pub fn expand_vec(prk: &[u8], info: &[u8], okm_len: usize) -> Result<Vec<u8>, Error> {
+                if okm_len > 255 * $hash_len {
+                    // Output size is too large. HACL doesn't catch this.
+                    return Err(Error::OkmTooLarge);
+                }
+
+                let mut okm = vec![0u8; okm_len];
+                crate::hacl::$expand(
+                    &mut okm,
+                    prk,
+                    checked_u32(prk.len())?,
+                    info,
+                    checked_u32(info.len())?,
+                    checked_u32(okm_len)?,
+                );
+                Ok(okm)
+            }
+
+            /// HKDF using the `salt`, input key material `ikm`, `info`.
+            /// The result is written to `okm`.
+            /// The output length is defined through the length of `okm`.
             /// Calls `extract` and `expand` with the given input.
             ///
-            /// Returns the key material in an array of length `okm_len`.
-            /// Note that this function panics if `salt` or `ikm` is longer than  (2**32 - 1) bytes.
+            /// Returns nothing on success.
+            /// Returns [`Error::OkmTooLarge`] if the requested `OKM_LEN` is too large.
+            /// Returns [`Error::ArgumentsTooLarge`] if one of `ikm`, `salt` or `info` is longer
+            /// than [`u32::MAX`] bytes.
             pub fn hkdf<const OKM_LEN: usize>(
                 okm: &mut [u8; OKM_LEN],
                 salt: &[u8],
@@ -98,35 +126,22 @@ macro_rules! impl_hkdf {
                 expand(okm, &prk, info)
             }
 
-            /// This module uses heap allocated vectors for cases where the output
-            /// length is not const.
-            pub mod vec {
-                use super::{checked_u32, Error};
-
-                /// HKDF expand using the pre-key material `prk` and `info`. The output length
-                /// is defined by the parameter `okm_len`.
-                /// Returns the key material in an array of length `okm_len` or
-                /// [`Error::OkmTooLarge`] if the requested `okm_len` is too large.
-                ///
-                /// Note that this function returns an [`Error::ArgumentsTooLarge`]
-                /// if `salt`, `ikm`, or `OKM_LEN` is longer than (2**32 - 1) bytes.
-                pub fn expand(prk: &[u8], info: &[u8], okm_len: usize) -> Result<Vec<u8>, Error> {
-                    if okm_len > 255 * $hash_len {
-                        // Output size is too large. HACL doesn't catch this.
-                        return Err(Error::OkmTooLarge);
-                    }
-
-                    let mut okm = vec![0u8; okm_len];
-                    crate::hacl::$expand(
-                        &mut okm,
-                        prk,
-                        checked_u32(prk.len())?,
-                        info,
-                        checked_u32(info.len())?,
-                        checked_u32(okm_len)?,
-                    );
-                    Ok(okm)
-                }
+            /// HKDF using the `salt`, input key material `ikm`, `info`.
+            /// The output length is defined by the parameter `okm_len`.
+            /// Calls `extract` and `expand_vec` with the given input.
+            ///
+            /// Returns the key material in a [`Vec<u8>`] of length `okm_len` on success.
+            /// Returns [`Error::OkmTooLarge`] if the requested `okm_len` is too large.
+            /// Returns [`Error::ArgumentsTooLarge`] if `salt`, `ikm` or `info` is longer than [`u32::MAX`] bytes.
+            pub fn hkdf_vec(
+                salt: &[u8],
+                ikm: &[u8],
+                info: &[u8],
+                okm_len: usize,
+            ) -> Result<Vec<u8>, Error> {
+                let mut prk = [0u8; $hash_len];
+                extract(&mut prk, salt, ikm)?;
+                expand_vec(&prk, info, okm_len)
             }
         }
     };
