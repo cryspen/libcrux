@@ -60,7 +60,7 @@ pub fn key_generation(c: &mut Criterion) {
                     rng.fill_bytes(&mut seed);
                     b.iter(|| {
                         let mut kp = p::init_key_pair();
-                        p::generate_key_pair(seed, &mut kp);
+                        p::generate_key_pair_mut(seed, &mut kp);
                     })
                 },
             );
@@ -141,7 +141,7 @@ pub fn encapsulation(c: &mut Criterion) {
                     b.iter_batched(
                         || {
                             let mut kp = p::init_key_pair();
-                            p::generate_key_pair(seed1, &mut kp);
+                            p::generate_key_pair_mut(seed1, &mut kp);
                             kp
                         },
                         |keypair| {
@@ -197,7 +197,7 @@ pub fn decapsulation(c: &mut Criterion) {
                 b.iter_batched(
                     || {
                         let mut keypair = p::init_key_pair();
-                        p::generate_key_pair(seed1, &mut keypair);
+                        p::generate_key_pair_mut(seed1, &mut keypair);
                         let (ciphertext, _shared_secret) =
                             p::encapsulate(&keypair.public_key, seed2);
                         (keypair, ciphertext)

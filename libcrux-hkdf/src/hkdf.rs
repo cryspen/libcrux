@@ -8,7 +8,73 @@ pub mod hacl;
 #[cfg(feature = "hacl")]
 mod impl_hacl;
 
-use impl_hacl::{HkdfMode, HkdfSha2_256, HkdfSha2_384, HkdfSha2_512};
+pub use impl_hacl::{HkdfSha2_256, HkdfSha2_384, HkdfSha2_512};
+
+pub trait HkdfMode<const HASH_LEN: usize> {
+    /// The hash algorithm used in this HKDF mode.
+    const MODE: Algorithm;
+
+    /// HKDF extract using the `salt` and the input key material `ikm`.
+    /// The result is written to `prk`.
+    ///
+    /// Returns nothing on success.
+    /// Returns [`Error::ArgumentsTooLarge`] if one of `ikm` or `salt` is longer than [`u32::MAX`]
+    /// bytes.
+    fn extract(prk: &mut [u8; HASH_LEN], salt: &[u8], ikm: &[u8]) -> Result<(), Error>;
+
+    /// HKDF expand using the pre-key material `prk` and `info`. The output length
+    /// is defined through the type of the `okm` parameter, that the output is written to.
+    ///
+    /// Returns nothing on success.
+    /// Returns [`Error::OkmTooLarge`] if the requested `OKM_LEN` is large.
+    /// Returns [`Error::ArgumentsTooLarge`] if `prk` or `info` is longer than [`u32::MAX`] bytes.
+    fn expand<const OKM_LEN: usize>(
+        okm: &mut [u8; OKM_LEN],
+        prk: &[u8],
+        info: &[u8],
+    ) -> Result<(), Error>;
+
+    /// HKDF expand using the pre-key material `prk` and `info`. The output length
+    /// is defined by the parameter `okm_len`.
+    ///
+    /// Returns the key material in a [`Vec<u8>`] of length `okm_len` on success.
+    /// Returns [`Error::OkmTooLarge`] if the requested `okm_len` is too large.
+    /// Returns [`Error::ArgumentsTooLarge`] if `prk` or `info` is longer than [`u32::MAX`] bytes.
+    fn expand_vec(prk: &[u8], info: &[u8], okm_len: usize) -> Result<Vec<u8>, Error>;
+
+    /// HKDF using the `salt`, input key material `ikm`, `info`.
+    /// The result is written to `okm`.
+    /// The output length is defined through the length of `okm`.
+    /// Calls `extract` and `expand` with the given inputs.
+    ///
+    /// Returns nothing on success.
+    /// Returns [`Error::OkmTooLarge`] if the requested `OKM_LEN` is too large.
+    /// Returns [`Error::ArgumentsTooLarge`] if one of `ikm`, `salt` or `info` is longer than
+    /// [`u32::MAX`] bytes.
+    fn hkdf<const OKM_LEN: usize>(
+        okm: &mut [u8; OKM_LEN],
+        salt: &[u8],
+        ikm: &[u8],
+        info: &[u8],
+    ) -> Result<(), Error> {
+        let mut prk = [0u8; HASH_LEN];
+        Self::extract(&mut prk, salt, ikm)?;
+        Self::expand(okm, &prk, info)
+    }
+
+    /// HKDF using the `salt`, input key material `ikm`, `info`.
+    /// The output length is defined by the parameter `okm_len`.
+    /// Calls `extract` and `expand_vec` with the given input.
+    ///
+    /// Returns the key material in a [`Vec<u8>`] of length `okm_len` on success.
+    /// Returns [`Error::OkmTooLarge`] if the requested `okm_len` is too large.
+    /// Returns [`Error::ArgumentsTooLarge`] if `salt`, `ikm` or `info` is longer than [`u32::MAX`] bytes.
+    fn hkdf_vec(salt: &[u8], ikm: &[u8], info: &[u8], okm_len: usize) -> Result<Vec<u8>, Error> {
+        let mut prk = [0u8; HASH_LEN];
+        Self::extract(&mut prk, salt, ikm)?;
+        Self::expand_vec(&prk, info, okm_len)
+    }
+}
 
 /// The HKDF algorithm defining the used hash function.
 #[derive(Copy, Clone, Debug, PartialEq)]
