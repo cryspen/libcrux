@@ -1,6 +1,11 @@
 //! HKDF
 //!
 //! This crate implements HKDF on SHA 1 and SHA 2 (except for SHA 224).
+#![no_std]
+
+extern crate alloc;
+
+use alloc::vec::Vec;
 
 #[cfg(feature = "hacl")]
 pub mod hacl;

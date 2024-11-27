@@ -10,6 +10,7 @@ macro_rules! impl_hkdf {
 
         pub mod $name {
             use super::{checked_u32, $struct_name, Algorithm, Error, HkdfMode};
+            use libcrux_hacl_rs::prelude::*;
 
             impl HkdfMode<$hash_len> for $struct_name {
                 const MODE: Algorithm = $mode;
