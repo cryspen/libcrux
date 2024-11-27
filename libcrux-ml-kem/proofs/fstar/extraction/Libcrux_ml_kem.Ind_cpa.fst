@@ -176,6 +176,7 @@ let build_unpacked_public_key_mut
     <:
     Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector
   in
+  let hax_temp_output:Prims.unit = admit () (* Panic freedom *) in
   unpacked_public_key
 
 let build_unpacked_public_key

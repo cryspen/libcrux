@@ -27,7 +27,10 @@ val validate_private_key_only
       (#v_Hasher: Type0)
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
-    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure bool
+      (requires Spec.MLKEM.is_rank v_K /\ v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K
+      )
+      (fun _ -> Prims.l_True)
 
 /// Validate an ML-KEM private key.
 /// This implements the Hash check in 7.3 3.

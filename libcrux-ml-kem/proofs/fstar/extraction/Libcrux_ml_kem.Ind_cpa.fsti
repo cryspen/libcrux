@@ -51,8 +51,26 @@ val build_unpacked_public_key_mut
       (public_key: t_Slice u8)
       (unpacked_public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
     : Prims.Pure (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K /\
+        length public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K)
+      (ensures
+        fun unpacked_public_key_future ->
+          let unpacked_public_key_future:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked
+            v_K v_Vector =
+            unpacked_public_key_future
+          in
+          let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
+          let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
+          let matrix_A_as_ntt, sufficient_randomness =
+            Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A
+          in
+          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+              #v_Vector
+              unpacked_public_key_future.f_t_as_ntt ==
+            t_as_ntt /\ unpacked_public_key_future.f_seed_for_A == seed_for_A /\
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector unpacked_public_key_future.f_A ==
+            matrix_A_as_ntt))
 
 val build_unpacked_public_key
       (v_K v_T_AS_NTT_ENCODED_SIZE: usize)
@@ -61,8 +79,23 @@ val build_unpacked_public_key
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (public_key: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K /\
+        length public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector =
+            result
+          in
+          let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
+          let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
+          let matrix_A_as_ntt, sufficient_randomness =
+            Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A
+          in
+          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector result.f_t_as_ntt == t_as_ntt /\
+            result.f_seed_for_A == seed_for_A /\
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector result.f_A == matrix_A_as_ntt)
+      )
 
 /// Sample a vector of ring elements from a centered binomial distribution.
 val sample_ring_element_cbd

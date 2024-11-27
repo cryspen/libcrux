@@ -676,7 +676,6 @@ fn compress_then_serialize_u<
       $BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
       $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
       length $randomness == Spec.MLKEM.v_SHARED_SECRET_SIZE"))]
-
 #[hax_lib::ensures(|result|
     fstar!("$result == Spec.MLKEM.ind_cpa_encrypt_unpacked $K $message $randomness
         (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${public_key}.f_t_as_ntt)
@@ -831,6 +830,17 @@ pub(crate) fn encrypt<
     >(&unpacked_public_key, message, randomness)
 }
 
+#[inline(always)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\\
+    length $public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"))]
+#[hax_lib::ensures(|result| fstar!("
+    let (t_as_ntt_bytes, seed_for_A) = split public_key $T_AS_NTT_ENCODED_SIZE in
+    let t_as_ntt = Spec.MLKEM.vector_decode_12 #$K t_as_ntt_bytes in 
+    let matrix_A_as_ntt, sufficient_randomness = Spec.MLKEM.sample_matrix_A_ntt #$K seed_for_A in
+    (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${result}.f_t_as_ntt == t_as_ntt /\\
+     ${result}.f_seed_for_A == seed_for_A /\\
+     Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${result}.f_A == matrix_A_as_ntt)"))]
 fn build_unpacked_public_key<
     const K: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -847,6 +857,18 @@ fn build_unpacked_public_key<
     unpacked_public_key
 }
 
+#[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\\
+    length $public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"))]
+#[hax_lib::ensures(|_| fstar!("
+    let (t_as_ntt_bytes, seed_for_A) = split public_key $T_AS_NTT_ENCODED_SIZE in
+    let t_as_ntt = Spec.MLKEM.vector_decode_12 #$K t_as_ntt_bytes in 
+    let matrix_A_as_ntt, sufficient_randomness = Spec.MLKEM.sample_matrix_A_ntt #$K seed_for_A in
+    (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${unpacked_public_key}_future.f_t_as_ntt == t_as_ntt /\\
+     ${unpacked_public_key}_future.f_seed_for_A == seed_for_A /\\
+     Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${unpacked_public_key}_future.f_A == matrix_A_as_ntt)"))]
 pub(crate) fn build_unpacked_public_key_mut<
     const K: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,

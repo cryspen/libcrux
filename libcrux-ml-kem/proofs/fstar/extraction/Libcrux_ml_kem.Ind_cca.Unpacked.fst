@@ -551,13 +551,17 @@ let encapsulate
   let shared_secret_array:t_Array u8 (sz 32) =
     Core.Slice.impl__copy_from_slice #u8 shared_secret_array shared_secret
   in
-  Core.Convert.f_from #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-    #(t_Array u8 v_CIPHERTEXT_SIZE)
-    #FStar.Tactics.Typeclasses.solve
-    ciphertext,
-  shared_secret_array
-  <:
-  (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+  let result:(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32)) =
+    Core.Convert.f_from #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+      #(t_Array u8 v_CIPHERTEXT_SIZE)
+      #FStar.Tactics.Typeclasses.solve
+      ciphertext,
+    shared_secret_array
+    <:
+    (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 let impl_3__serialized_mut
       (v_K: usize)

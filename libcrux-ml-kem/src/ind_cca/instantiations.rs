@@ -106,6 +106,9 @@ macro_rules! instantiate {
 
             /// Private key validation
             #[inline(always)]
+            #[inline(always)]
+            #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+                $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K"))]
             pub(crate) fn validate_private_key_only<
                 const K: usize,
                 const SECRET_KEY_SIZE: usize,

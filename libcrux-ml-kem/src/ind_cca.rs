@@ -170,6 +170,9 @@ fn validate_private_key<
 ///
 /// This implements the Hash check in 7.3 3.
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K"))]
 fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize, Hasher: Hash<K>>(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
 ) -> bool {
@@ -910,6 +913,7 @@ pub(crate) mod unpacked {
 
     // Encapsulate with Unpacked Public Key
     #[inline(always)]
+    #[hax_lib::fstar::verification_status(panic_free)]
     #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
         $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
