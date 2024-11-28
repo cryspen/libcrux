@@ -31,7 +31,7 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
     done
 }
 
-pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations, Shake128: shake128::XofX4>(
+pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations>(
     mut seed0: [u8; 34],
     domain_separator0: u16,
     domain_separator1: u16,
@@ -43,6 +43,8 @@ pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations, Shake128: shake128
     PolynomialRingElement<SIMDUnit>,
     PolynomialRingElement<SIMDUnit>,
 ) {
+    use crate::hash_functions::shake128::XofX4;
+
     // Prepare the seeds
     seed0[32] = domain_separator0 as u8;
     seed0[33] = (domain_separator0 >> 8) as u8;
@@ -59,7 +61,12 @@ pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations, Shake128: shake128
     seed3[32] = domain_separator3 as u8;
     seed3[33] = (domain_separator3 >> 8) as u8;
 
-    let mut state = Shake128::init_absorb(&seed0, &seed1, &seed2, &seed3);
+    // FIXME: We use the portable implementation here, since the
+    // compiler has an easier time optimizing it, compared to the AVX2
+    // version, which actually results in faster code (except for key
+    // generation), even in the AVX2 instantiation of ML-DSA.
+    let mut state =
+        crate::hash_functions::portable::Shake128X4::init_absorb(&seed0, &seed1, &seed2, &seed3);
 
     let mut randomness0 = [0u8; shake128::FIVE_BLOCKS_SIZE];
     let mut randomness1 = [0u8; shake128::FIVE_BLOCKS_SIZE];
