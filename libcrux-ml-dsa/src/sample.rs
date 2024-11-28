@@ -489,10 +489,10 @@ mod tests {
 
     // This is just a wrapper around sample_four_ring_elements, for testing
     // purposes.
-    fn sample_ring_element_uniform<SIMDUnit: Operations, Shake128: shake128::XofX4>(
+    fn sample_ring_element_uniform<SIMDUnit: Operations>(
         seed: [u8; 34],
     ) -> PolynomialRingElement<SIMDUnit> {
-        let four_ring_elements = sample_four_ring_elements::<SIMDUnit, Shake128>(
+        let four_ring_elements = sample_four_ring_elements::<SIMDUnit>(
             seed,
             ((seed[33] as u16) << 8) | (seed[32] as u16),
             0,
@@ -560,7 +560,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_ring_element_uniform::<SIMDUnit, Shake128>(seed).to_i32_array(),
+            sample_ring_element_uniform::<SIMDUnit>(seed).to_i32_array(),
             expected_coefficients
         );
 
@@ -574,8 +574,7 @@ mod tests {
             0xB1, 0x83, 0x9B, 0x86, 0x06, 0xF5, 0x94, 0x8B, 0x9D, 0x72, 0xA9, 0x56, 0xDC, 0xF1,
             0x01, 0x16, 0xDA, 0x9E, 0x01, 0x00,
         ];
-        let actual_coefficients =
-            sample_ring_element_uniform::<SIMDUnit, Shake128>(seed).to_i32_array();
+        let actual_coefficients = sample_ring_element_uniform::<SIMDUnit>(seed).to_i32_array();
 
         assert_eq!(actual_coefficients[0], 1_165_602);
         assert_eq!(
