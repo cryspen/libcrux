@@ -30,9 +30,6 @@ let compare (lhs rhs: t_Slice u8) =
   in
   is_non_zero r
 
-let compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8) =
-  Core.Hint.black_box #u8 (compare lhs rhs <: u8)
-
 let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
   let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in
   let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
@@ -54,6 +51,9 @@ let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
           t_Array u8 (sz 32))
   in
   out
+
+let compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8) =
+  Core.Hint.black_box #u8 (compare lhs rhs <: u8)
 
 let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
   Core.Hint.black_box #(t_Array u8 (sz 32)) (select_ct lhs rhs selector <: t_Array u8 (sz 32))

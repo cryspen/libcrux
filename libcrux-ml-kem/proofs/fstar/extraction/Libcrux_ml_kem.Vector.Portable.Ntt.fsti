@@ -3,6 +3,33 @@ module Libcrux_ml_kem.Vector.Portable.Ntt
 open Core
 open FStar.Mul
 
+val ntt_step
+      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (zeta: i16)
+      (i j: usize)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val ntt_layer_1_step
+      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (zeta0 zeta1 zeta2 zeta3: i16)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val ntt_layer_2_step
+      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (zeta0 zeta1: i16)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 val inv_ntt_step
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta: i16)
@@ -53,33 +80,6 @@ val ntt_multiply_binomials
       (zeta: i16)
       (i j: usize)
       (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val ntt_step
-      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (zeta: i16)
-      (i j: usize)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val ntt_layer_1_step
-      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (zeta0 zeta1 zeta2 zeta3: i16)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val ntt_layer_2_step
-      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (zeta0 zeta1: i16)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
       (fun _ -> Prims.l_True)

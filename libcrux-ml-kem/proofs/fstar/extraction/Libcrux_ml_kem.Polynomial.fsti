@@ -9,6 +9,10 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+type t_PolynomialRingElement
+  (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+  = { f_coefficients:t_Array v_Vector (sz 16) }
+
 let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
   let list =
     [
@@ -32,32 +36,16 @@ let v_VECTORS_IN_RING_ELEMENT: usize =
   Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!
   Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
 
-type t_PolynomialRingElement
-  (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-  = { f_coefficients:t_Array v_Vector (sz 16) }
-
 val impl__ZERO:
     #v_Vector: Type0 ->
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
     Prims.unit
   -> Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl__add_error_reduce
+val impl__from_i16_array
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self error: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
-val impl__add_message_error_reduce
-      (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self message result: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
-val impl__add_standard_error_reduce
-      (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self error: t_PolynomialRingElement v_Vector)
+      (a: t_Slice i16)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
@@ -69,10 +57,34 @@ val impl__add_to_ring_element
       (self rhs: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl__from_i16_array
+val impl__poly_barrett_reduce
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (a: t_Slice i16)
+      (self: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl__subtract_reduce
+      (#v_Vector: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self b: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl__add_message_error_reduce
+      (#v_Vector: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self message result: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl__add_error_reduce
+      (#v_Vector: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self error: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl__add_standard_error_reduce
+      (#v_Vector: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self error: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Given two `KyberPolynomialRingElement`s in their NTT representations,
@@ -99,16 +111,4 @@ val impl__ntt_multiply
       (#v_Vector: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self rhs: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
-val impl__poly_barrett_reduce
-      (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
-val impl__subtract_reduce
-      (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self b: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)

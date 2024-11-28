@@ -3,6 +3,14 @@ module Libcrux_ml_kem.Vector.Traits
 open Core
 open FStar.Mul
 
+let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353s
+
+let v_FIELD_MODULUS: i16 = 3329s
+
+let v_FIELD_ELEMENTS_IN_VECTOR: usize = sz 16
+
+let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209ul
+
 class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
@@ -187,17 +195,6 @@ class t_Operations (v_Self: Type0) = {
         (fun result -> f_rej_sample_post x0 x1 result)
 }
 
-let v_FIELD_ELEMENTS_IN_VECTOR: usize = sz 16
-
-let v_FIELD_MODULUS: i16 = 3329s
-
-let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209ul
-
-let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353s
-
-val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
-    : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
-
 val montgomery_multiply_fe (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T) (fer: i16)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
 
@@ -205,4 +202,7 @@ val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
 
 val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
+    : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
+
+val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)

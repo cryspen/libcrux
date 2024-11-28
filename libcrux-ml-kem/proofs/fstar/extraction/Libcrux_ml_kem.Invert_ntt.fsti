@@ -9,13 +9,6 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-val inv_ntt_layer_int_vec_step_reduce
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (a b: v_Vector)
-      (zeta_r: i16)
-    : Prims.Pure (v_Vector & v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
 val invert_ntt_at_layer_1_
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -45,6 +38,13 @@ val invert_ntt_at_layer_3_
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
+
+val inv_ntt_layer_int_vec_step_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (a b: v_Vector)
+      (zeta_r: i16)
+    : Prims.Pure (v_Vector & v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer_4_plus
       (#v_Vector: Type0)

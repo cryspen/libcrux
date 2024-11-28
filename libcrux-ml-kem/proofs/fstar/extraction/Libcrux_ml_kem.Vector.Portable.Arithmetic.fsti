@@ -3,16 +3,16 @@ module Libcrux_ml_kem.Vector.Portable.Arithmetic
 open Core
 open FStar.Mul
 
-/// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
-let v_BARRETT_MULTIPLIER: i32 = 20159l
+let v_MONTGOMERY_SHIFT: u8 = 16uy
+
+let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
 let v_BARRETT_SHIFT: i32 = 26l
 
 let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
 
-let v_MONTGOMERY_SHIFT: u8 = 16uy
-
-let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
+/// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
+let v_BARRETT_MULTIPLIER: i32 = 20159l
 
 val get_n_least_significant_bits (n: u8) (value: u32)
     : Prims.Pure u32
@@ -25,6 +25,38 @@ val get_n_least_significant_bits (n: u8) (value: u32)
               (Core.Convert.f_into #u8 #u32 #FStar.Tactics.Typeclasses.solve n <: u32)
             <:
             u32))
+
+val add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val bitwise_and_with_constant
+      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (c: i16)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 /// Signed Barrett Reduction
 /// Given an input `value`, `barrett_reduce` outputs a representative `result`
@@ -45,6 +77,11 @@ val barrett_reduce_element (value: i16)
           let result:i16 = result in
           result >. (Core.Ops.Arith.Neg.neg Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) &&
           result <. Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)
+
+val barrett_reduce (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 /// Signed Montgomery Reduction
 /// Given an input `value`, `montgomery_reduce` outputs a representative `o`
@@ -88,46 +125,9 @@ val montgomery_reduce_element (value: i32)
 val montgomery_multiply_fe_by_fer (fe fer: i16)
     : Prims.Pure i16 Prims.l_True (fun _ -> Prims.l_True)
 
-val add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val barrett_reduce (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val bitwise_and_with_constant
-      (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (c: i16)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 val montgomery_multiply_by_constant
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (c: i16)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
       (fun _ -> Prims.l_True)

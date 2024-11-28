@@ -20,6 +20,33 @@ let mulhi_mm256_epi32 (lhs rhs: u8) =
       u8)
     (Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi32 prod02 prod13 <: u8)
 
+let compress_message_coefficient (vector: u8) =
+  let field_modulus_halved:u8 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS -!
+          1s
+          <:
+          i16) /!
+        2s
+        <:
+        i16)
+  in
+  let field_modulus_quartered:u8 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS -!
+          1s
+          <:
+          i16) /!
+        4s
+        <:
+        i16)
+  in
+  let shifted:u8 = Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 field_modulus_halved vector in
+  let mask:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 15l shifted in
+  let shifted_to_positive:u8 = Libcrux_intrinsics.Avx2_extract.mm256_xor_si256 mask shifted in
+  let shifted_to_positive_in_range:u8 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 shifted_to_positive field_modulus_quartered
+  in
+  Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 15l shifted_to_positive_in_range
+
 let compress_ciphertext_coefficient (v_COEFFICIENT_BITS: i32) (vector: u8) =
   let field_modulus_halved:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (((cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
@@ -72,33 +99,6 @@ let compress_ciphertext_coefficient (v_COEFFICIENT_BITS: i32) (vector: u8) =
     Libcrux_intrinsics.Avx2_extract.mm256_packs_epi32 compressed_low compressed_high
   in
   Libcrux_intrinsics.Avx2_extract.mm256_permute4x64_epi64 216l compressed
-
-let compress_message_coefficient (vector: u8) =
-  let field_modulus_halved:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS -!
-          1s
-          <:
-          i16) /!
-        2s
-        <:
-        i16)
-  in
-  let field_modulus_quartered:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS -!
-          1s
-          <:
-          i16) /!
-        4s
-        <:
-        i16)
-  in
-  let shifted:u8 = Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 field_modulus_halved vector in
-  let mask:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 15l shifted in
-  let shifted_to_positive:u8 = Libcrux_intrinsics.Avx2_extract.mm256_xor_si256 mask shifted in
-  let shifted_to_positive_in_range:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 shifted_to_positive field_modulus_quartered
-  in
-  Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 15l shifted_to_positive_in_range
 
 let decompress_ciphertext_coefficient (v_COEFFICIENT_BITS: i32) (vector: u8) =
   let field_modulus:u8 =
