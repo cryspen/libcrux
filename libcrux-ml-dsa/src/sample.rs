@@ -31,7 +31,6 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
     done
 }
 
-#[inline(always)]
 pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations, Shake128: shake128::XofX4>(
     mut seed0: [u8; 34],
     domain_separator0: u16,
