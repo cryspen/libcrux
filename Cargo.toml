@@ -121,6 +121,9 @@ lto = "fat"
 codegen-units = 1
 panic = "abort"
 
+[profile.dev.package."libcrux-ml-dsa"]
+opt-level = 1
+
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
     'cfg(hax)',
