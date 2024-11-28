@@ -55,7 +55,19 @@ val serialize_kem_secret_key_mut
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (private_key public_key implicit_rejection_value: t_Slice u8)
       (serialized: t_Array u8 v_SERIALIZED_KEY_LEN)
-    : Prims.Pure (t_Array u8 v_SERIALIZED_KEY_LEN) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_SERIALIZED_KEY_LEN)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_SERIALIZED_KEY_LEN == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
+        Core.Slice.impl__len #u8 private_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        Core.Slice.impl__len #u8 public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        Core.Slice.impl__len #u8 implicit_rejection_value == Spec.MLKEM.v_SHARED_SECRET_SIZE)
+      (ensures
+        fun serialized_future ->
+          let serialized_future:t_Array u8 v_SERIALIZED_KEY_LEN = serialized_future in
+          serialized_future ==
+          Seq.append private_key
+            (Seq.append public_key (Seq.append (Spec.Utils.v_H public_key) implicit_rejection_value)
+            ))
 
 val serialize_kem_secret_key
       (v_K v_SERIALIZED_KEY_LEN: usize)

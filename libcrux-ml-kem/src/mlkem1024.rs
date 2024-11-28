@@ -287,11 +287,17 @@ macro_rules! instantiate {
                 }
 
                 /// Get the serialized public key.
+                #[hax_lib::requires(fstar!("forall (i:nat). i < 4 ==>
+                    Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
+                        ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"))]
                 pub fn key_pair_serialized_public_key_mut(key_pair: &MlKem1024KeyPairUnpacked, serialized: &mut MlKem1024PublicKey) {
                     key_pair.serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>(serialized);
                 }
 
                 /// Get the serialized public key.
+                #[hax_lib::requires(fstar!("forall (i:nat). i < 4 ==>
+                    Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
+                        ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"))]
                 pub fn key_pair_serialized_public_key(key_pair: &MlKem1024KeyPairUnpacked) ->MlKem1024PublicKey {
                     key_pair.serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>()
                 }

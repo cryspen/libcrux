@@ -674,6 +674,13 @@ pub(crate) mod unpacked {
 
     /// Take a serialized private key and generate an unpacked key pair from it.
     #[inline(always)]
+    #[hax_lib::requires(
+        fstar!("Spec.MLKEM.is_rank $K /\\
+                v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\\
+                v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\\
+                v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\\
+                v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\\
+                v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K"))]
     pub(crate) fn keypair_from_private_key<
         const K: usize,
         const SECRET_KEY_SIZE: usize,

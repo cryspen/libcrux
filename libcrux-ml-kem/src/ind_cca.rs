@@ -37,6 +37,16 @@ pub(crate) mod instantiations;
 /// Serialize the secret key.
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+    $SERIALIZED_KEY_LEN == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
+    ${private_key.len()} == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
+    ${public_key.len()} == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+    ${implicit_rejection_value.len()} == Spec.MLKEM.v_SHARED_SECRET_SIZE"))]
+#[hax_lib::ensures(|result| fstar!("${serialized}_future == Seq.append $private_key (
+                                              Seq.append $public_key (
+                                              Seq.append (Spec.Utils.v_H $public_key) 
+                                                  $implicit_rejection_value))"))]
 fn serialize_kem_secret_key_mut<
     const K: usize,
     const SERIALIZED_KEY_LEN: usize,
@@ -56,6 +66,27 @@ fn serialize_kem_secret_key_mut<
     pointer += H_DIGEST_SIZE;
     serialized[pointer..pointer + implicit_rejection_value.len()]
         .copy_from_slice(implicit_rejection_value);
+
+    hax_lib::fstar!("let open Spec.Utils in
+    assert (Seq.slice serialized 0 (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K)) `Seq.equal` $private_key);
+    assert (Seq.slice serialized (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K))
+                            (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +! Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K)) `Seq.equal` $public_key);
+    assert (Seq.slice serialized (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
+                                            Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K))
+                            (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
+                                            Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K +!
+                                            Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE))
+            `Seq.equal` Libcrux_ml_kem.Hash_functions.f_H #$:Hasher #$K $public_key);
+    assert (Seq.slice serialized (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
+                                            Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K +!
+                                            Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE))
+                            (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
+                                            Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K +!
+                                            Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE +!
+                                            Spec.MLKEM.v_SHARED_SECRET_SIZE))
+            == $implicit_rejection_value);
+    lemma_slice_append_4 serialized $private_key $public_key (Libcrux_ml_kem.Hash_functions.f_H #$:Hasher #$K $public_key) $implicit_rejection_value");
+
 }
 
 
@@ -76,35 +107,6 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
     implicit_rejection_value: &[u8],
 ) -> [u8; SERIALIZED_KEY_LEN] {
     let mut out = [0u8; SERIALIZED_KEY_LEN];
-
-    let mut pointer = 0;
-    out[pointer..pointer + private_key.len()].copy_from_slice(private_key);
-    pointer += private_key.len();
-    out[pointer..pointer + public_key.len()].copy_from_slice(public_key);
-    pointer += public_key.len();
-    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&Hasher::H(public_key));
-    pointer += H_DIGEST_SIZE;
-    out[pointer..pointer + implicit_rejection_value.len()]
-        .copy_from_slice(implicit_rejection_value);
-    hax_lib::fstar!("let open Spec.Utils in
-        assert (Seq.slice $out 0 (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K)) `Seq.equal` $private_key);
-        assert (Seq.slice $out (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K))
-                                (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +! Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K)) `Seq.equal` $public_key);
-        assert (Seq.slice $out (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
-                                                Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K))
-                                (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
-                                                Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K +!
-                                                Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE))
-                `Seq.equal` Libcrux_ml_kem.Hash_functions.f_H #$:Hasher #$K $public_key);
-        assert (Seq.slice $out (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
-                                                Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K +!
-                                                Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE))
-                                (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
-                                                Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K +!
-                                                Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE +!
-                                                Spec.MLKEM.v_SHARED_SECRET_SIZE))
-                == $implicit_rejection_value);
-        lemma_slice_append_4 $out $private_key $public_key (Libcrux_ml_kem.Hash_functions.f_H #$:Hasher #$K $public_key) $implicit_rejection_value");
 
     serialize_kem_secret_key_mut::<K, SERIALIZED_KEY_LEN, Hasher>(
         private_key,
@@ -190,6 +192,8 @@ fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize, Hashe
 ///
 /// Depending on the `Vector` and `Hasher` used, this requires different hardware
 /// features
+#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
@@ -240,7 +244,8 @@ fn generate_keypair<
     MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key))
 }
 
-#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
@@ -312,6 +317,7 @@ fn encapsulate<
 
 /// This code verifies on some machines, runs out of memory on others
 #[hax_lib::fstar::options("--z3rlimit 500")]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
     $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
@@ -543,6 +549,7 @@ pub(crate) mod unpacked {
 
         /// Get the serialized public key.
         #[inline(always)]
+        #[hax_lib::fstar::verification_status(panic_free)]
         #[requires(fstar!("Spec.MLKEM.is_rank $K /\\
             $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
@@ -590,7 +597,7 @@ pub(crate) mod unpacked {
            v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\\
            v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\\
            v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\\
-           v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K)"))]
+           v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K"))]
     pub fn keys_from_private_key<
         const K: usize,
         const SECRET_KEY_SIZE: usize,
@@ -741,6 +748,11 @@ pub(crate) mod unpacked {
 
         /// Get the serialized private key.
         #[inline(always)]
+        #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+            $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
+            $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
+            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K"))]
         pub fn serialized_private_key_mut<
             const CPA_PRIVATE_KEY_SIZE: usize,
             const PRIVATE_KEY_SIZE: usize,
@@ -771,6 +783,11 @@ pub(crate) mod unpacked {
 
         /// Get the serialized private key.
         #[inline(always)]
+        #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
+            $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
+            $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
+            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K"))]
         pub fn serialized_private_key<
             const CPA_PRIVATE_KEY_SIZE: usize,
             const PRIVATE_KEY_SIZE: usize,
@@ -987,6 +1004,7 @@ pub(crate) mod unpacked {
 
     // Decapsulate with Unpacked Private Key
     #[inline(always)]
+    #[hax_lib::fstar::verification_status(lax)]
     #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning --z3refresh")]
     #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\\

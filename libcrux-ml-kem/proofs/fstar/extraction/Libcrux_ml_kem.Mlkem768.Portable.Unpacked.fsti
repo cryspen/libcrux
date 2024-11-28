@@ -53,7 +53,14 @@ val key_pair_serialized_public_key_mut
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-      Prims.l_True
+      (requires
+        (forall (i: nat).
+            i < 3 ==>
+            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key_pair
+                    .f_public_key
+                    .f_ind_cpa_public_key
+                    .f_t_as_ntt
+                  i)))
       (fun _ -> Prims.l_True)
 
 /// Get the serialized public key.

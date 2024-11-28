@@ -36,7 +36,13 @@ val key_pair_serialized_public_key
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568))
-      Prims.l_True
+      (requires
+        forall (i: nat).
+          i < 4 ==>
+          Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key_pair.f_public_key
+                  .f_ind_cpa_public_key
+                  .f_t_as_ntt
+                i))
       (fun _ -> Prims.l_True)
 
 /// Get the serialized public key.
@@ -46,7 +52,13 @@ val key_pair_serialized_public_key_mut
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568))
-      Prims.l_True
+      (requires
+        forall (i: nat).
+          i < 4 ==>
+          Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key_pair.f_public_key
+                  .f_ind_cpa_public_key
+                  .f_t_as_ntt
+                i))
       (fun _ -> Prims.l_True)
 
 /// Get the serialized public key.
