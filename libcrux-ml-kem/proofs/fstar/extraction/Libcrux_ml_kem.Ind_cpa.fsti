@@ -87,13 +87,11 @@ val build_unpacked_public_key
           in
           let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
           let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
-          let matrix_A_as_ntt, sufficient_randomness =
-            Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A
-          in
+          let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
           (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector result.f_t_as_ntt == t_as_ntt /\
-            result.f_seed_for_A == seed_for_A /\
-            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector result.f_A == matrix_A_as_ntt)
-      )
+            valid ==>
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector result.f_A ==
+            Spec.MLKEM.matrix_transpose matrix_A_as_ntt))
 
 /// Sample a vector of ring elements from a centered binomial distribution.
 val sample_ring_element_cbd
