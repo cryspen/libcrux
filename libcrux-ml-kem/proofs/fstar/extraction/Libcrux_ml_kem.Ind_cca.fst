@@ -320,13 +320,9 @@ let encapsulate
       shared_secret
       ciphertext
   in
-  let result:(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32)) =
-    ciphertext, shared_secret_array
-    <:
-    (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  ciphertext, shared_secret_array
+  <:
+  (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
 
 #pop-options
 
@@ -412,23 +408,17 @@ let generate_keypair
       #FStar.Tactics.Typeclasses.solve
       secret_key_serialized
   in
-  let result:Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE =
-    Libcrux_ml_kem.Types.impl_21__from v_PRIVATE_KEY_SIZE
-      v_PUBLIC_KEY_SIZE
-      private_key
-      (Core.Convert.f_from #(Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
-          #(t_Array u8 v_PUBLIC_KEY_SIZE)
-          #FStar.Tactics.Typeclasses.solve
-          public_key
-        <:
-        Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  Libcrux_ml_kem.Types.impl_21__from v_PRIVATE_KEY_SIZE
+    v_PUBLIC_KEY_SIZE
+    private_key
+    (Core.Convert.f_from #(Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
+        #(t_Array u8 v_PUBLIC_KEY_SIZE)
+        #FStar.Tactics.Typeclasses.solve
+        public_key
+      <:
+      Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
 
 #pop-options
-
-#push-options "--admit_smt_queries true"
 
 #push-options "--z3rlimit 500"
 
@@ -604,7 +594,5 @@ let decapsulate
     (expected_ciphertext <: t_Slice u8)
     (shared_secret <: t_Slice u8)
     (implicit_rejection_shared_secret <: t_Slice u8)
-
-#pop-options
 
 #pop-options

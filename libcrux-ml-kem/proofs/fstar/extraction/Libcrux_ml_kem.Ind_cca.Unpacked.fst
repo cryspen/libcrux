@@ -551,17 +551,13 @@ let encapsulate
   let shared_secret_array:t_Array u8 (sz 32) =
     Core.Slice.impl__copy_from_slice #u8 shared_secret_array shared_secret
   in
-  let result:(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32)) =
-    Core.Convert.f_from #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-      #(t_Array u8 v_CIPHERTEXT_SIZE)
-      #FStar.Tactics.Typeclasses.solve
-      ciphertext,
-    shared_secret_array
-    <:
-    (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  Core.Convert.f_from #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+    #(t_Array u8 v_CIPHERTEXT_SIZE)
+    #FStar.Tactics.Typeclasses.solve
+    ciphertext,
+  shared_secret_array
+  <:
+  (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
 
 let impl_3__serialized_mut
       (v_K: usize)
@@ -624,21 +620,17 @@ let impl_3__serialized
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self: t_MlKemPublicKeyUnpacked v_K v_Vector)
      =
-  let result:Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE =
-    Core.Convert.f_from #(Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
-      #(t_Array u8 v_PUBLIC_KEY_SIZE)
-      #FStar.Tactics.Typeclasses.solve
-      (Libcrux_ml_kem.Ind_cpa.serialize_public_key v_K
-          v_RANKED_BYTES_PER_RING_ELEMENT
-          v_PUBLIC_KEY_SIZE
-          #v_Vector
-          self.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
-          (self.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A <: t_Slice u8)
-        <:
-        t_Array u8 v_PUBLIC_KEY_SIZE)
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  Core.Convert.f_from #(Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
+    #(t_Array u8 v_PUBLIC_KEY_SIZE)
+    #FStar.Tactics.Typeclasses.solve
+    (Libcrux_ml_kem.Ind_cpa.serialize_public_key v_K
+        v_RANKED_BYTES_PER_RING_ELEMENT
+        v_PUBLIC_KEY_SIZE
+        #v_Vector
+        self.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+        (self.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A <: t_Slice u8)
+      <:
+      t_Array u8 v_PUBLIC_KEY_SIZE)
 
 let impl_4__serialized_public_key
       (v_K: usize)
@@ -901,8 +893,6 @@ let impl_4__serialized_private_key
 
 #push-options "--z3rlimit 200 --ext context_pruning --z3refresh"
 
-#push-options "--admit_smt_queries true"
-
 let decapsulate
       (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
           usize)
@@ -1032,7 +1022,5 @@ let decapsulate
   Libcrux_ml_kem.Constant_time_ops.select_shared_secret_in_constant_time shared_secret
     (implicit_rejection_shared_secret <: t_Slice u8)
     selector
-
-#pop-options
 
 #pop-options

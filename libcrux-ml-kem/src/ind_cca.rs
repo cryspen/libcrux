@@ -193,7 +193,6 @@ fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize, Hashe
 /// Depending on the `Vector` and `Hasher` used, this requires different hardware
 /// features
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
@@ -245,7 +244,6 @@ fn generate_keypair<
 }
 
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
@@ -317,7 +315,6 @@ fn encapsulate<
 
 /// This code verifies on some machines, runs out of memory on others
 #[hax_lib::fstar::options("--z3rlimit 500")]
-#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
     $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
@@ -549,7 +546,6 @@ pub(crate) mod unpacked {
 
         /// Get the serialized public key.
         #[inline(always)]
-        #[hax_lib::fstar::verification_status(panic_free)]
         #[requires(fstar!("Spec.MLKEM.is_rank $K /\\
             $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
@@ -930,7 +926,6 @@ pub(crate) mod unpacked {
 
     // Encapsulate with Unpacked Public Key
     #[inline(always)]
-    #[hax_lib::fstar::verification_status(panic_free)]
     #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
         $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
@@ -1004,7 +999,6 @@ pub(crate) mod unpacked {
 
     // Decapsulate with Unpacked Private Key
     #[inline(always)]
-    #[hax_lib::fstar::verification_status(lax)]
     #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning --z3refresh")]
     #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
