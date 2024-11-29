@@ -79,7 +79,7 @@ macro_rules! impl_modified_signing_key_test {
 
             let mut key_pair = $key_gen(key_generation_seed);
 
-            modify_signing_key::<{ $signing_key_size }>(&mut key_pair.signing_key.0);
+            modify_signing_key::<{ $signing_key_size }>(key_pair.signing_key.as_raw_mut());
 
             let signature = $sign(&key_pair.signing_key, &message, b"", signing_randomness)
                 .expect("Rejection sampling failure probability is < 2⁻¹²⁸");

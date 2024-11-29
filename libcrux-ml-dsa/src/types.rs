@@ -1,19 +1,37 @@
 //! Common types
 
-// XXX:
-// - use named structs?
-// - add conversion helpers?
-
 macro_rules! impl_struct {
     ($name:ident, $doc:expr) => {
         #[doc = $doc]
         #[derive(Clone)]
-        pub struct $name<const SIZE: usize>(pub [u8; SIZE]);
+        pub struct $name<const SIZE: usize> {
+            pub(crate) value: [u8; SIZE],
+        }
 
         impl<const SIZE: usize> $name<SIZE> {
+            /// Build
+            pub fn new(value: [u8; SIZE]) -> Self {
+                Self { value }
+            }
+
             /// A reference to the raw byte slice.
             pub fn as_slice(&self) -> &[u8] {
-                &self.0
+                &self.value
+            }
+
+            /// A mutable reference to the raw byte slice.
+            pub fn as_mut_slice(&mut self) -> &mut [u8] {
+                &mut self.value
+            }
+
+            /// A reference to the raw byte array.
+            pub fn as_raw(&self) -> &[u8; SIZE] {
+                &self.value
+            }
+
+            /// A mutable reference to the raw byte array.
+            pub fn as_raw_mut(&mut self) -> &mut [u8; SIZE] {
+                &mut self.value
             }
 
             /// The number of bytes
@@ -32,19 +50,6 @@ impl_struct!(MLDSASignature, "An ML-DSA signature.");
 pub struct MLDSAKeyPair<const VERIFICATION_KEY_SIZE: usize, const SIGNING_KEY_SIZE: usize> {
     pub signing_key: MLDSASigningKey<SIGNING_KEY_SIZE>,
     pub verification_key: MLDSAVerificationKey<VERIFICATION_KEY_SIZE>,
-}
-
-use crate::{constants::*, polynomial::PolynomialRingElement, simd::traits::Operations};
-
-pub(crate) struct Signature<
-    SIMDUnit: Operations,
-    const COMMITMENT_HASH_SIZE: usize,
-    const COLUMNS_IN_A: usize,
-    const ROWS_IN_A: usize,
-> {
-    pub commitment_hash: [u8; COMMITMENT_HASH_SIZE],
-    pub signer_response: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
-    pub hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
 }
 
 #[derive(Debug)]
