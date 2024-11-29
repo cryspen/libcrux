@@ -866,6 +866,8 @@ let encrypt_unpacked
 
 #pop-options
 
+#push-options "--z3rlimit 500 --ext context_pruning"
+
 let encrypt
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
@@ -887,6 +889,8 @@ let encrypt
   encrypt_unpacked v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN
     v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
     v_ETA2_RANDOMNESS_SIZE #v_Vector #v_Hasher unpacked_public_key message randomness
+
+#pop-options
 
 #push-options "--z3rlimit 800 --ext context_pruning"
 
@@ -1214,6 +1218,8 @@ let serialize_public_key
   in
   public_key_serialized
 
+#push-options "--admit_smt_queries true"
+
 let serialize_unpacked_secret_key
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT: usize)
       (#v_Vector: Type0)
@@ -1240,6 +1246,8 @@ let serialize_unpacked_secret_key
   secret_key_serialized, public_key_serialized
   <:
   (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
+
+#pop-options
 
 let generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
