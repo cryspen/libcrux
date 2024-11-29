@@ -858,17 +858,15 @@ fn build_unpacked_public_key<
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\\
     length $public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"))]
 #[hax_lib::ensures(|_| fstar!("
     let (t_as_ntt_bytes, seed_for_A) = split public_key $T_AS_NTT_ENCODED_SIZE in
     let t_as_ntt = Spec.MLKEM.vector_decode_12 #$K t_as_ntt_bytes in 
-    let matrix_A_as_ntt, sufficient_randomness = Spec.MLKEM.sample_matrix_A_ntt #$K seed_for_A in
+    let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #$K seed_for_A in
     (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${unpacked_public_key}_future.f_t_as_ntt == t_as_ntt /\\
-     ${unpacked_public_key}_future.f_seed_for_A == seed_for_A /\\
-     Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${unpacked_public_key}_future.f_A == matrix_A_as_ntt)"))]
+    valid ==> Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${unpacked_public_key}_future.f_A == Spec.MLKEM.matrix_transpose matrix_A_as_ntt)"))]
 pub(crate) fn build_unpacked_public_key_mut<
     const K: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -891,6 +889,8 @@ pub(crate) fn build_unpacked_public_key_mut<
     //     end for
     // end for
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
+    hax_lib::fstar!("Lib.Sequence.eq_intro #u8 #32 $seed
+      (Seq.slice (Libcrux_ml_kem.Utils.into_padded_array (sz 34) $seed) 0 32)");
     sample_matrix_A::<K, Vector, Hasher>(
         &mut unpacked_public_key.A,
         into_padded_array(seed),

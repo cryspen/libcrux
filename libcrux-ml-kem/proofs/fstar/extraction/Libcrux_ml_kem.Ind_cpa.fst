@@ -161,6 +161,12 @@ let build_unpacked_public_key_mut
       <:
       Core.Ops.Range.t_RangeFrom usize ]
   in
+  let _:Prims.unit =
+    Lib.Sequence.eq_intro #u8
+      #32
+      seed
+      (Seq.slice (Libcrux_ml_kem.Utils.into_padded_array (sz 34) seed) 0 32)
+  in
   let unpacked_public_key:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector =
     {
       unpacked_public_key with
@@ -176,7 +182,6 @@ let build_unpacked_public_key_mut
     <:
     Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector
   in
-  let hax_temp_output:Prims.unit = admit () (* Panic freedom *) in
   unpacked_public_key
 
 let build_unpacked_public_key
