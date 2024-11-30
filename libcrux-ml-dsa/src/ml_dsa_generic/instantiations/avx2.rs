@@ -21,11 +21,7 @@ mod avx2_feature {
     >(
         randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
     ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
-        crate::ml_dsa_generic::generate_key_pair::<
-            crate::simd::avx2::AVX2SIMDUnit,
-            crate::hash_functions::simd256::Shake128x4,
-            crate::hash_functions::simd256::Shake256,
-            crate::hash_functions::simd256::Shake256x4,
+        crate::simd::avx2::Platform::generate_key_pair::<
             ROWS_IN_A,
             COLUMNS_IN_A,
             ETA,
@@ -59,11 +55,7 @@ mod avx2_feature {
         context: &[u8],
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-        crate::ml_dsa_generic::sign::<
-            crate::simd::avx2::AVX2SIMDUnit,
-            crate::hash_functions::simd256::Shake128x4,
-            crate::hash_functions::simd256::Shake256,
-            crate::hash_functions::simd256::Shake256x4,
+        crate::simd::avx2::Platform::sign::<
             ROWS_IN_A,
             COLUMNS_IN_A,
             ETA,
@@ -105,11 +97,7 @@ mod avx2_feature {
         message: &[u8],
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-        crate::ml_dsa_generic::sign_internal::<
-            crate::simd::avx2::AVX2SIMDUnit,
-            crate::hash_functions::simd256::Shake128x4,
-            crate::hash_functions::simd256::Shake256,
-            crate::hash_functions::simd256::Shake256x4,
+        crate::simd::avx2::Platform::sign_internal::<
             ROWS_IN_A,
             COLUMNS_IN_A,
             ETA,
@@ -151,11 +139,7 @@ mod avx2_feature {
         context: &[u8],
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-        crate::ml_dsa_generic::sign_pre_hashed::<
-            crate::simd::avx2::AVX2SIMDUnit,
-            crate::hash_functions::simd256::Shake128x4,
-            crate::hash_functions::simd256::Shake256,
-            crate::hash_functions::simd256::Shake256x4,
+        crate::simd::avx2::Platform::sign_pre_hashed::<
             SHAKE128_PH,
             256,
             ROWS_IN_A,
@@ -198,10 +182,7 @@ mod avx2_feature {
         context: &[u8],
         signature: &[u8; SIGNATURE_SIZE],
     ) -> Result<(), VerificationError> {
-        crate::ml_dsa_generic::verify::<
-            crate::simd::avx2::AVX2SIMDUnit,
-            crate::hash_functions::simd256::Shake128x4,
-            crate::hash_functions::simd256::Shake256,
+        crate::simd::avx2::Platform::verify::<
             ROWS_IN_A,
             COLUMNS_IN_A,
             SIGNATURE_SIZE,
@@ -241,10 +222,7 @@ mod avx2_feature {
         message: &[u8],
         signature: &[u8; SIGNATURE_SIZE],
     ) -> Result<(), VerificationError> {
-        crate::ml_dsa_generic::verify_internal::<
-            crate::simd::avx2::AVX2SIMDUnit,
-            crate::hash_functions::simd256::Shake128x4,
-            crate::hash_functions::simd256::Shake256,
+        crate::simd::avx2::Platform::verify_internal::<
             ROWS_IN_A,
             COLUMNS_IN_A,
             SIGNATURE_SIZE,
@@ -284,10 +262,7 @@ mod avx2_feature {
         context: &[u8],
         signature: &[u8; SIGNATURE_SIZE],
     ) -> Result<(), VerificationError> {
-        crate::ml_dsa_generic::verify_pre_hashed::<
-            crate::simd::avx2::AVX2SIMDUnit,
-            crate::hash_functions::simd256::Shake128x4,
-            crate::hash_functions::simd256::Shake256,
+        crate::simd::avx2::Platform::verify_pre_hashed::<
             SHAKE128_PH,
             256,
             ROWS_IN_A,

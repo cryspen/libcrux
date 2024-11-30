@@ -9,6 +9,9 @@ mod vector_type;
 
 pub(crate) use vector_type::AVX2SIMDUnit;
 
+/// Empty struct to hold monomorphised, platform dependent functions.
+pub(crate) struct Platform {}
+
 impl Operations for AVX2SIMDUnit {
     #[inline(always)]
     fn ZERO() -> Self {

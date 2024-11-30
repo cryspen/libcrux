@@ -1,3 +1,5 @@
+use libcrux_macros::generic_types;
+
 use crate::{
     hash_functions::shake256,
     polynomial::PolynomialRingElement,
@@ -380,7 +382,17 @@ pub(crate) fn matrix_A_8_by_7<
 }
 #[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+#[generic_types(
+    portable(
+        Platform: crate::simd::portable::Platform,
+        SIMDUnit: crate::simd::portable::PortableSIMDUnit,
+    ),
+    avx2(
+        Platform: crate::simd::avx2::Platform,
+        SIMDUnit: crate::simd::avx2::AVX2SIMDUnit,
+    )
+)]
+pub(crate) fn matrix_A<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
     seed: [u8; 34],
 ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
     match (ROWS_IN_A as u8, COLUMNS_IN_A as u8) {

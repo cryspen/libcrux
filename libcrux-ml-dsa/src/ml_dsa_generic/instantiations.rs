@@ -19,11 +19,7 @@ macro_rules! instantiate {
             >(
                 randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
             ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
-                crate::ml_dsa_generic::generate_key_pair::<
-                    $simdunit,
-                    $shake128x4,
-                    $shake256,
-                    $shake256x4,
+                crate::simd::portable::Platform::generate_key_pair::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
                     ETA,
@@ -55,11 +51,7 @@ macro_rules! instantiate {
                 context: &[u8],
                 randomness: [u8; SIGNING_RANDOMNESS_SIZE],
             ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-                crate::ml_dsa_generic::sign::<
-                    $simdunit,
-                    $shake128x4,
-                    $shake256,
-                    $shake256x4,
+                crate::simd::portable::Platform::sign::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
                     ETA,
@@ -99,11 +91,7 @@ macro_rules! instantiate {
                 message: &[u8],
                 randomness: [u8; SIGNING_RANDOMNESS_SIZE],
             ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-                crate::ml_dsa_generic::sign_internal::<
-                    $simdunit,
-                    $shake128x4,
-                    $shake256,
-                    $shake256x4,
+                crate::simd::portable::Platform::sign_internal::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
                     ETA,
@@ -143,11 +131,7 @@ macro_rules! instantiate {
                 context: &[u8],
                 randomness: [u8; SIGNING_RANDOMNESS_SIZE],
             ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-                crate::ml_dsa_generic::sign_pre_hashed::<
-                    $simdunit,
-                    $shake128x4,
-                    $shake256,
-                    $shake256x4,
+                crate::simd::portable::Platform::sign_pre_hashed::<
                     SHAKE128_PH,
                     256,
                     ROWS_IN_A,
@@ -188,10 +172,7 @@ macro_rules! instantiate {
                 context: &[u8],
                 signature: &[u8; SIGNATURE_SIZE],
             ) -> Result<(), VerificationError> {
-                crate::ml_dsa_generic::verify::<
-                    $simdunit,
-                    $shake128x4,
-                    $shake256,
+                crate::simd::portable::Platform::verify::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
                     SIGNATURE_SIZE,
@@ -229,10 +210,7 @@ macro_rules! instantiate {
                 message: &[u8],
                 signature: &[u8; SIGNATURE_SIZE],
             ) -> Result<(), VerificationError> {
-                crate::ml_dsa_generic::verify_internal::<
-                    $simdunit,
-                    $shake128x4,
-                    $shake256,
+                crate::simd::avx2::Platform::verify_internal::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
                     SIGNATURE_SIZE,
@@ -270,10 +248,7 @@ macro_rules! instantiate {
                 context: &[u8],
                 signature: &[u8; SIGNATURE_SIZE],
             ) -> Result<(), VerificationError> {
-                crate::ml_dsa_generic::verify_pre_hashed::<
-                    $simdunit,
-                    $shake128x4,
-                    $shake256,
+                crate::simd::portable::Platform::verify_pre_hashed::<
                     SHAKE128_PH,
                     256,
                     ROWS_IN_A,

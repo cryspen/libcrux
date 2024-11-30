@@ -11,7 +11,7 @@ fn random_array<const L: usize>() -> [u8; L] {
 fn main() {
     let key_generation_seed = random_array();
 
-    for _i in 0..100_000 {
+    for _i in 0..1_000 {
         let _ = ml_dsa_65::generate_key_pair(key_generation_seed);
     }
 }

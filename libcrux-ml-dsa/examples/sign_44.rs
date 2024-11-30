@@ -15,7 +15,7 @@ fn main() {
 
     let keypair = generate_key_pair(key_generation_seed);
 
-    for _i in 0..100_000 {
+    for _i in 0..10_000 {
         let _ = core::hint::black_box(sign(
             &keypair.signing_key,
             &message,

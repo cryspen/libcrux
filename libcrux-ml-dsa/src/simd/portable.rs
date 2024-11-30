@@ -11,6 +11,9 @@ mod sample;
 
 pub(crate) use vector_type::PortableSIMDUnit;
 
+/// Empty struct to hold monomorphised, platform dependent functions.
+pub(crate) struct Platform {}
+
 impl Operations for PortableSIMDUnit {
     fn ZERO() -> Self {
         vector_type::ZERO()

@@ -1,3 +1,5 @@
+use libcrux_macros::generic_types;
+
 use crate::{
     arithmetic::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
@@ -5,6 +7,7 @@ use crate::{
     constants::*,
     encoding,
     hash_functions::{
+        self,
         portable::{shake256_absorb, shake256_absorb_final, shake256_init, shake256_squeeze},
         shake128, shake256,
     },
@@ -12,6 +15,7 @@ use crate::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
         vector_times_ring_element,
     },
+    ml_dsa_generic::shake256::Xof,
     ntt::ntt,
     pre_hash::{DomainSeparationContext, PreHash},
     sample::{sample_challenge_ring_element, sample_mask_vector},
@@ -27,11 +31,21 @@ pub(crate) mod multiplexing;
 
 /// Generate a key pair.
 #[inline(always)]
+#[generic_types(
+    portable(
+        Platform: crate::simd::portable::Platform,
+        SIMDUnit: crate::simd::portable::PortableSIMDUnit,
+        Shake256X4: crate::hash_functions::portable::Shake256X4,
+        Shake256: crate::hash_functions::portable::Shake256
+    ),
+    avx2(
+        Platform: crate::simd::avx2::Platform,
+        SIMDUnit: crate::simd::avx2::AVX2SIMDUnit,
+        Shake256X4: crate::hash_functions::simd256::Shake256x4,
+        Shake256: crate::hash_functions::simd256::Shake256
+    )
+)]
 pub(crate) fn generate_key_pair<
-    SIMDUnit: Operations,
-    Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
-    Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
@@ -52,8 +66,7 @@ pub(crate) fn generate_key_pair<
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-    let a_as_ntt =
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_a));
+    let a_as_ntt = Platform::matrix_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_a));
 
     let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
         into_padded_array(seed_for_error_vectors),
@@ -91,11 +104,23 @@ pub(crate) fn generate_key_pair<
 
 #[allow(non_snake_case)]
 #[inline(always)]
+#[generic_types(
+    portable(
+        Platform: crate::simd::portable::Platform,
+        SIMDUnit: crate::simd::portable::PortableSIMDUnit,
+        Shake128X4: crate::hash_functions::portable::Shake128X4,
+        Shake256X4: crate::hash_functions::portable::Shake256X4,
+        Shake256: crate::hash_functions::portable::Shake256
+    ),
+    avx2(
+        Platform: crate::simd::avx2::Platform,
+        SIMDUnit: crate::simd::avx2::AVX2SIMDUnit,
+        Shake128X4: crate::hash_functions::simd256::Shake128x4,
+        Shake256X4: crate::hash_functions::simd256::Shake256x4,
+        Shake256: crate::hash_functions::simd256::Shake256
+    )
+)]
 pub(crate) fn sign_pre_hashed<
-    SIMDUnit: Operations,
-    Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
-    Shake256X4: shake256::XofX4,
     PH: PreHash<PH_DIGEST_LEN>,
     const PH_DIGEST_LEN: usize,
     const ROWS_IN_A: usize,
@@ -122,11 +147,7 @@ pub(crate) fn sign_pre_hashed<
         return Err(SigningError::ContextTooLongError);
     }
     let pre_hashed_message = PH::hash(message);
-    sign_internal::<
-        SIMDUnit,
-        Shake128X4,
-        Shake256,
-        Shake256X4,
+    Platform::sign_internal::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -151,11 +172,23 @@ pub(crate) fn sign_pre_hashed<
 
 #[allow(non_snake_case)]
 #[inline(always)]
+#[generic_types(
+    portable(
+        Platform: crate::simd::portable::Platform,
+        SIMDUnit: crate::simd::portable::PortableSIMDUnit,
+        Shake128X4: crate::hash_functions::portable::Shake128X4,
+        Shake256X4: crate::hash_functions::portable::Shake256X4,
+        Shake256: crate::hash_functions::portable::Shake256
+    ),
+    avx2(
+        Platform: crate::simd::avx2::Platform,
+        SIMDUnit: crate::simd::avx2::AVX2SIMDUnit,
+        Shake128X4: crate::hash_functions::simd256::Shake128x4,
+        Shake256X4: crate::hash_functions::simd256::Shake256x4,
+        Shake256: crate::hash_functions::simd256::Shake256
+    )
+)]
 pub(crate) fn sign<
-    SIMDUnit: Operations,
-    Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
-    Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
@@ -177,11 +210,7 @@ pub(crate) fn sign<
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     // TODO: Support implicit into() in ? so that this match becomes unnecessary
-    sign_internal::<
-        SIMDUnit,
-        Shake128X4,
-        Shake256,
-        Shake256X4,
+    Platform::sign_internal::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -210,11 +239,23 @@ pub(crate) fn sign<
 /// `message` already contains the domain separation.
 #[allow(non_snake_case)]
 #[inline(always)]
+#[generic_types(
+    portable(
+        Platform: crate::simd::portable::Platform,
+        SIMDUnit: crate::simd::portable::PortableSIMDUnit,
+        Shake128X4: crate::hash_functions::portable::Shake128X4,
+        Shake256X4: crate::hash_functions::portable::Shake256X4,
+        Shake256: crate::hash_functions::portable::Shake256
+    ),
+    avx2(
+        Platform: crate::simd::avx2::Platform,
+        SIMDUnit: crate::simd::avx2::AVX2SIMDUnit,
+        Shake128X4: crate::hash_functions::simd256::Shake128x4,
+        Shake256X4: crate::hash_functions::simd256::Shake256x4,
+        Shake256: crate::hash_functions::simd256::Shake256
+    )
+)]
 pub(crate) fn sign_internal<
-    SIMDUnit: Operations,
-    Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
-    Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
@@ -245,8 +286,7 @@ pub(crate) fn sign_internal<
             SIGNING_KEY_SIZE,
         >(signing_key);
 
-    let A_as_ntt =
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+    let A_as_ntt = Platform::matrix_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative(
@@ -449,10 +489,21 @@ fn derive_message_representative(
 /// `message` already contains the domain separation.
 #[allow(non_snake_case)]
 #[inline(always)]
+#[generic_types(
+    portable(
+        Platform: crate::simd::portable::Platform,
+        SIMDUnit: crate::simd::portable::PortableSIMDUnit,
+        Shake128X4: crate::hash_functions::portable::Shake128X4,
+        Shake256: crate::hash_functions::portable::Shake256
+    ),
+    avx2(
+        Platform: crate::simd::avx2::Platform,
+        SIMDUnit: crate::simd::avx2::AVX2SIMDUnit,
+        Shake128X4: crate::hash_functions::simd256::Shake128x4,
+        Shake256: crate::hash_functions::portable::Shake256
+    )
+)]
 pub(crate) fn verify_internal<
-    SIMDUnit: Operations,
-    Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const SIGNATURE_SIZE: usize,
@@ -491,10 +542,10 @@ pub(crate) fn verify_internal<
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
         let A_as_ntt =
-            samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+            Platform::matrix_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
         let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
-        Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
+        hash_functions::portable::Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
             verification_key_serialized,
             &mut verification_key_hash,
         );
@@ -549,10 +600,21 @@ pub(crate) fn verify_internal<
 
 #[allow(non_snake_case)]
 #[inline(always)]
+#[generic_types(
+    portable(
+        Platform: crate::simd::portable::Platform,
+        SIMDUnit: crate::simd::portable::PortableSIMDUnit,
+        Shake128X4: crate::hash_functions::portable::Shake128X4,
+        Shake256: crate::hash_functions::portable::Shake256
+    ),
+    avx2(
+        Platform: crate::simd::avx2::Platform,
+        SIMDUnit: crate::simd::avx2::AVX2SIMDUnit,
+        Shake128X4: crate::hash_functions::simd256::Shake128x4,
+        Shake256: crate::hash_functions::portable::Shake256
+    )
+)]
 pub(crate) fn verify<
-    SIMDUnit: Operations,
-    Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const SIGNATURE_SIZE: usize,
@@ -573,10 +635,7 @@ pub(crate) fn verify<
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
     // TODO: Support implicit into() in ? so that this match becomes unnecessary
-    verify_internal::<
-        SIMDUnit,
-        Shake128X4,
-        Shake256,
+    Platform::verify_internal::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
@@ -600,10 +659,21 @@ pub(crate) fn verify<
 
 #[allow(non_snake_case)]
 #[inline(always)]
+#[generic_types(
+    portable(
+        Platform: crate::simd::portable::Platform,
+        SIMDUnit: crate::simd::portable::PortableSIMDUnit,
+        Shake128X4: crate::hash_functions::portable::Shake128X4,
+        Shake256: crate::hash_functions::portable::Shake256
+    ),
+    avx2(
+        Platform: crate::simd::avx2::Platform,
+        SIMDUnit: crate::simd::avx2::AVX2SIMDUnit,
+        Shake128X4: crate::hash_functions::simd256::Shake128x4,
+        Shake256: crate::hash_functions::portable::Shake256
+    )
+)]
 pub(crate) fn verify_pre_hashed<
-    SIMDUnit: Operations,
-    Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
     PH: PreHash<PH_DIGEST_LEN>,
     const PH_DIGEST_LEN: usize,
     const ROWS_IN_A: usize,
@@ -627,10 +697,7 @@ pub(crate) fn verify_pre_hashed<
 ) -> Result<(), VerificationError> {
     let pre_hashed_message = PH::hash(message);
 
-    verify_internal::<
-        SIMDUnit,
-        Shake128X4,
-        Shake256,
+    Platform::verify_internal::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
