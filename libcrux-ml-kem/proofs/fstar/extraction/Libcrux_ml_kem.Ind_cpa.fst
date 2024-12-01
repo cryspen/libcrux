@@ -12,53 +12,6 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-#push-options "--z3rlimit 200"
-
-let prf_input_inc (v_K: usize) (prf_inputs: t_Array (t_Array u8 (sz 33)) v_K) (domain_separator: u8) =
-  let v__domain_separator_init:u8 = domain_separator in
-  let v__prf_inputs_init:t_Array (t_Array u8 (sz 33)) v_K =
-    Core.Clone.f_clone #(t_Array (t_Array u8 (sz 33)) v_K)
-      #FStar.Tactics.Typeclasses.solve
-      prf_inputs
-  in
-  let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
-      v_K
-      (fun temp_0_ i ->
-          let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) = temp_0_ in
-          let i:usize = i in
-          v domain_separator == v v__domain_separator_init + v i /\
-          (v i < v v_K ==>
-            (forall (j: nat).
-                (j >= v i /\ j < v v_K) ==> prf_inputs.[ sz j ] == v__prf_inputs_init.[ sz j ])) /\
-          (forall (j: nat).
-              j < v i ==>
-              v (Seq.index (Seq.index prf_inputs j) 32) == v v__domain_separator_init + j /\
-              Seq.slice (Seq.index prf_inputs j) 0 32 ==
-              Seq.slice (Seq.index v__prf_inputs_init j) 0 32))
-      (domain_separator, prf_inputs <: (u8 & t_Array (t_Array u8 (sz 33)) v_K))
-      (fun temp_0_ i ->
-          let domain_separator, prf_inputs:(u8 & t_Array (t_Array u8 (sz 33)) v_K) = temp_0_ in
-          let i:usize = i in
-          let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize prf_inputs
-              i
-              (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (prf_inputs.[ i ]
-                    <:
-                    t_Array u8 (sz 33))
-                  (sz 32)
-                  domain_separator
-                <:
-                t_Array u8 (sz 33))
-          in
-          let domain_separator:u8 = domain_separator +! 1uy in
-          domain_separator, prf_inputs <: (u8 & t_Array (t_Array u8 (sz 33)) v_K))
-  in
-  let hax_temp_output:u8 = domain_separator in
-  prf_inputs, hax_temp_output <: (t_Array (t_Array u8 (sz 33)) v_K & u8)
-
-#pop-options
-
 #push-options "--ext context_pruning"
 
 let deserialize_secret_key
@@ -236,7 +189,7 @@ let sample_ring_element_cbd
   let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K = Rust_primitives.Hax.repeat prf_input v_K in
   let v__domain_separator_init:u8 = domain_separator in
   let tmp0, out:(t_Array (t_Array u8 (sz 33)) v_K & u8) =
-    prf_input_inc v_K prf_inputs domain_separator
+    Libcrux_ml_kem.Utils.prf_input_inc v_K prf_inputs domain_separator
   in
   let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K = tmp0 in
   let domain_separator:u8 = out in
@@ -384,7 +337,7 @@ let sample_vector_cbd_then_ntt
   let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K = Rust_primitives.Hax.repeat prf_input v_K in
   let v__domain_separator_init:u8 = domain_separator in
   let tmp0, out:(t_Array (t_Array u8 (sz 33)) v_K & u8) =
-    prf_input_inc v_K prf_inputs domain_separator
+    Libcrux_ml_kem.Utils.prf_input_inc v_K prf_inputs domain_separator
   in
   let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K = tmp0 in
   let domain_separator:u8 = out in
