@@ -8,7 +8,7 @@
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
  * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
  * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 38837f1aab3f2ae348a0cb53cf44d97652e2c977
+ * Libcrux: 2ecc08ac92e56197cd05d04f3e873d8da088ad11
  */
 
 #ifndef __internal_libcrux_mlkem_portable_H
@@ -47,6 +47,16 @@ with const generics
 - PUBLIC_KEY_SIZE= 1568
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_00(uint8_t *public_key);
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
+with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]]
+with const generics
+- K= 4
+- SECRET_KEY_SIZE= 3168
+*/
+bool libcrux_ml_kem_ind_cca_validate_private_key_only_60(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
@@ -136,6 +146,16 @@ with const generics
 bool libcrux_ml_kem_ind_cca_validate_public_key_86(uint8_t *public_key);
 
 /**
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
+with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]]
+with const generics
+- K= 2
+- SECRET_KEY_SIZE= 1632
+*/
+bool libcrux_ml_kem_ind_cca_validate_private_key_only_30(
+    libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key);
+
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
 with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]]
 with const generics
@@ -221,6 +241,16 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_6c(uint8_t *public_key);
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
+with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]]
+with const generics
+- K= 3
+- SECRET_KEY_SIZE= 2400
+*/
+bool libcrux_ml_kem_ind_cca_validate_private_key_only_d6(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
