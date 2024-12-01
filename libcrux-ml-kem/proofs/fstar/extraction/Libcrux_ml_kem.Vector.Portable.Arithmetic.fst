@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Vector.Portable.Arithmetic
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -310,6 +310,8 @@ let bitwise_and_with_constant
   in
   vec
 
+#push-options "--z3rlimit 300"
+
 let cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
   let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -355,6 +357,8 @@ let cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Porta
       (Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) v__vec0.f_elements)
   in
   vec
+
+#pop-options
 
 #push-options "--z3rlimit 150"
 

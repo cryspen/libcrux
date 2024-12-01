@@ -1,7 +1,9 @@
 module Libcrux_ml_kem.Vector.Portable.Compress
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
+
+#push-options "--z3rlimit 200 --ext context_pruning"
 
 let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) =
   let compressed:u64 = (cast (fe <: u16) <: u64) <<! coefficient_bits in
@@ -14,6 +16,10 @@ let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) =
       u32)
   <:
   i16
+
+#pop-options
+
+#push-options "--z3rlimit 200 --ext context_pruning"
 
 let compress_message_coefficient (fe: u16) =
   let (shifted: i16):i16 = 1664s -! (cast (fe <: u16) <: i16) in
@@ -54,6 +60,8 @@ let compress_message_coefficient (fe: u16) =
     assert (v res = v r1)
   in
   res
+
+#pop-options
 
 #push-options "--fuel 0 --ifuel 0 --z3rlimit 2000"
 

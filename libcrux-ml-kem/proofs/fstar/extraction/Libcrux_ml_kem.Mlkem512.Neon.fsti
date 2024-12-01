@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Mlkem512.Neon
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -8,6 +8,11 @@ open FStar.Mul
 val validate_private_key
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 768))
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
+/// Validate the private key only.
+/// Returns `true` if valid, and `false` otherwise.
+val validate_private_key_only (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 /// Decapsulate ML-KEM 512

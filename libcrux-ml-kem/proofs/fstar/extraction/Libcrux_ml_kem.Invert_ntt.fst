@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Invert_ntt
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -28,6 +28,8 @@ let inv_ntt_layer_int_vec_step_reduce
   in
   let b:v_Vector = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe #v_Vector a_minus_b zeta_r in
   a, b <: (v_Vector & v_Vector)
+
+#push-options "--z3rlimit 200 --ext context_pruning"
 
 let invert_ntt_at_layer_1_
       (#v_Vector: Type0)
@@ -107,6 +109,10 @@ let invert_ntt_at_layer_1_
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
+#pop-options
+
+#push-options "--z3rlimit 200 --ext context_pruning"
+
 let invert_ntt_at_layer_2_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -182,6 +188,10 @@ let invert_ntt_at_layer_2_
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
+#pop-options
+
+#push-options "--z3rlimit 200 --ext context_pruning"
+
 let invert_ntt_at_layer_3_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -254,6 +264,8 @@ let invert_ntt_at_layer_3_
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+
+#pop-options
 
 #push-options "--admit_smt_queries true"
 

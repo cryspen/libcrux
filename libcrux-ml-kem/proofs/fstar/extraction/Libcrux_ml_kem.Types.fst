@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Types
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -10,6 +10,7 @@ let impl_13__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
 let impl_20__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
 
 let impl_6__as_slice (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) = self.f_value
+
 
 let impl_13__as_slice (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE) = self.f_value
 
@@ -70,3 +71,51 @@ let impl_21__sk
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
      = impl_13__as_slice v_PRIVATE_KEY_SIZE self.f_sk
+
+let unpack_private_key (v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE: usize) (private_key: t_Slice u8) =
+  let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
+    Core.Slice.impl__split_at #u8 private_key v_CPA_SECRET_KEY_SIZE
+  in
+  let ind_cpa_public_key, secret_key:(t_Slice u8 & t_Slice u8) =
+    Core.Slice.impl__split_at #u8 secret_key v_PUBLIC_KEY_SIZE
+  in
+  let ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
+    Core.Slice.impl__split_at #u8 secret_key Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE
+  in
+  ind_cpa_secret_key, ind_cpa_public_key, ind_cpa_public_key_hash, implicit_rejection_value
+  <:
+  (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl (v_SIZE: usize) : Core.Default.t_Default (t_MlKemCiphertext v_SIZE) =
+  {
+    f_default_pre = (fun (_: Prims.unit) -> true);
+    f_default_post = (fun (_: Prims.unit) (out: t_MlKemCiphertext v_SIZE) -> true);
+    f_default
+    =
+    fun (_: Prims.unit) ->
+      { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MlKemCiphertext v_SIZE
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_7 (v_SIZE: usize) : Core.Default.t_Default (t_MlKemPrivateKey v_SIZE) =
+  {
+    f_default_pre = (fun (_: Prims.unit) -> true);
+    f_default_post = (fun (_: Prims.unit) (out: t_MlKemPrivateKey v_SIZE) -> true);
+    f_default
+    =
+    fun (_: Prims.unit) ->
+      { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MlKemPrivateKey v_SIZE
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_14 (v_SIZE: usize) : Core.Default.t_Default (t_MlKemPublicKey v_SIZE) =
+  {
+    f_default_pre = (fun (_: Prims.unit) -> true);
+    f_default_post = (fun (_: Prims.unit) (out: t_MlKemPublicKey v_SIZE) -> true);
+    f_default
+    =
+    fun (_: Prims.unit) ->
+      { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MlKemPublicKey v_SIZE
+  }
+

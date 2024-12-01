@@ -8,7 +8,7 @@
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
  * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
  * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 18a089ceff3ef1a9f6876cd99a9f4f42c0fe05d9
+ * Libcrux: 2ecc08ac92e56197cd05d04f3e873d8da088ad11
  */
 
 #ifndef __internal_libcrux_mlkem_avx2_H
@@ -42,6 +42,16 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_ed(uint8_t *public_key);
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
+with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+with const generics
+- K= 3
+- SECRET_KEY_SIZE= 2400
+*/
+bool libcrux_ml_kem_ind_cca_validate_private_key_only_ae(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
@@ -131,6 +141,16 @@ with const generics
 bool libcrux_ml_kem_ind_cca_validate_public_key_1e(uint8_t *public_key);
 
 /**
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
+with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+with const generics
+- K= 4
+- SECRET_KEY_SIZE= 3168
+*/
+bool libcrux_ml_kem_ind_cca_validate_private_key_only_5e(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key);
+
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
 with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
 with const generics
@@ -216,6 +236,16 @@ with const generics
 - PUBLIC_KEY_SIZE= 800
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_ba(uint8_t *public_key);
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
+with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+with const generics
+- K= 2
+- SECRET_KEY_SIZE= 1632
+*/
+bool libcrux_ml_kem_ind_cca_validate_private_key_only_4d(
+    libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key

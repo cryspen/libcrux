@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Mlkem768
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 

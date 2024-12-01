@@ -14,16 +14,11 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations, const DIMENSION
     // straightforward way to do so (returning false) will not go through hax;
     // revisit if performance is impacted.
     for ring_element in vector.iter() {
-        exceeds |= ring_element.infinity_norm_exceeds(bound);
+        exceeds = exceeds || ring_element.infinity_norm_exceeds(bound);
     }
 
     exceeds
 }
-
-/// If 'x' denotes a value of type `fe`, values having this type hold a
-/// representative y ≡ x·MONTGOMERY_R (mod FIELD_MODULUS).
-/// We use 'fer' as a shorthand for this type.
-pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 #[inline(always)]
 pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(

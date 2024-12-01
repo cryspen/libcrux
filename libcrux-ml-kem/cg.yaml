@@ -23,8 +23,6 @@ files:
         - [libcrux_sha3, simd, avx2, "*"]
       monomorphizations_exact:
         - [libcrux_sha3, generic_keccak, KeccakState_55]
-        - [libcrux_sha3, generic_keccak, absorb_final_fb ]
-        - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks_97 ]
       monomorphizations_of:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
@@ -46,34 +44,6 @@ files:
         - [libcrux_sha3, "*"]
       monomorphizations_using:
         - [libcrux_sha3, "*"]
-
-  # Header with types only
-
-  - name: libcrux_mlkem768_avx2_types
-    inline_static: true
-    api:
-      monomorphizations_exact:
-        - [ libcrux_ml_kem, mlkem768, avx2, unpacked, MlKem768KeyPairUnpacked ]
-        - [ libcrux_ml_kem, mlkem768, avx2, unpacked, MlKem768PublicKeyUnpacked ]
-        - [ libcrux_ml_kem, ind_cca, unpacked, MlKemPrivateKeyUnpacked_63 ]
-        - [ libcrux_ml_kem, ind_cca, unpacked, MlKemPublicKeyUnpacked_63 ]
-        - [ libcrux_ml_kem, ind_cpa, unpacked, IndCpaPrivateKeyUnpacked_63 ]
-        - [ libcrux_ml_kem, ind_cpa, unpacked, IndCpaPublicKeyUnpacked_63 ]
-        - [ libcrux_ml_kem, polynomial, PolynomialRingElement_f6 ]
-        - [ libcrux_ml_kem, vector, avx2, SIMD256Vector ]
-
-  - name: libcrux_mlkem768_portable_types
-    inline_static: true
-    api:
-      monomorphizations_exact:
-        - [ libcrux_ml_kem, mlkem768, portable, unpacked, MlKem768KeyPairUnpacked ]
-        - [ libcrux_ml_kem, mlkem768, portable, unpacked, MlKem768PublicKeyUnpacked ]
-        - [ libcrux_ml_kem, ind_cca, unpacked, MlKemPrivateKeyUnpacked_a0 ]
-        - [ libcrux_ml_kem, ind_cca, unpacked, MlKemPublicKeyUnpacked_a0 ]
-        - [ libcrux_ml_kem, ind_cpa, unpacked, IndCpaPrivateKeyUnpacked_a0 ]
-        - [ libcrux_ml_kem, ind_cpa, unpacked, IndCpaPublicKeyUnpacked_a0 ]
-        - [ libcrux_ml_kem, polynomial, PolynomialRingElement_1d ]
-        - [ libcrux_ml_kem, vector, portable, vector_type, PortableVector ]
 
   # MLKEM: MISC NON-ARCHITECTURE SPECIFIC HEADERS
   - name: libcrux_core

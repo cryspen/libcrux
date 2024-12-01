@@ -79,6 +79,18 @@ macro_rules! instantiate {
                 
             }
 
+            /// Validate the private key only.
+            ///
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_private_key_only(
+                private_key: &MlKem1024PrivateKey,
+            ) -> bool {
+                p::validate_private_key_only::<
+                    RANK_1024,
+                    SECRET_KEY_SIZE_1024,
+                >(private_key)
+            }
+
             /// Generate Kyber 1024 Key Pair
             #[cfg(feature = "kyber")]
             #[cfg_attr(docsrs, doc(cfg(feature = "kyber")))]
@@ -251,14 +263,48 @@ macro_rules! instantiate {
                 }
 
                 /// Get the serialized public key.
+                #[hax_lib::requires(fstar!("forall (i:nat). i < 4 ==>
+                    Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
+                        ${public_key}.f_ind_cpa_public_key.f_t_as_ntt i)"))]
                 pub fn serialized_public_key(
                     public_key: &MlKem1024PublicKeyUnpacked,
                     serialized: &mut MlKem1024PublicKey,
                 ) {
-                    public_key.serialized_public_key_mut::<
-                                                                RANKED_BYTES_PER_RING_ELEMENT_1024,
-                                                                CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                                                            >(serialized);
+                    public_key.serialized_mut::<
+                        RANKED_BYTES_PER_RING_ELEMENT_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                    >(serialized);
+                }
+
+                /// Get the serialized private key.
+                pub fn key_pair_serialized_private_key(key_pair: &MlKem1024KeyPairUnpacked) -> MlKem1024PrivateKey {
+                    key_pair.serialized_private_key::<CPA_PKE_SECRET_KEY_SIZE_1024, SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024, RANKED_BYTES_PER_RING_ELEMENT_1024>()
+                }
+
+                /// Get the serialized private key.
+                pub fn key_pair_serialized_private_key_mut(key_pair: &MlKem1024KeyPairUnpacked, serialized : &mut MlKem1024PrivateKey) {
+                    key_pair.serialized_private_key_mut::<CPA_PKE_SECRET_KEY_SIZE_1024, SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024, RANKED_BYTES_PER_RING_ELEMENT_1024>(serialized);
+                }
+
+                /// Get the serialized public key.
+                #[hax_lib::requires(fstar!("forall (i:nat). i < 4 ==>
+                    Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
+                        ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"))]
+                pub fn key_pair_serialized_public_key_mut(key_pair: &MlKem1024KeyPairUnpacked, serialized: &mut MlKem1024PublicKey) {
+                    key_pair.serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>(serialized);
+                }
+
+                /// Get the serialized public key.
+                #[hax_lib::requires(fstar!("forall (i:nat). i < 4 ==>
+                    Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
+                        ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"))]
+                pub fn key_pair_serialized_public_key(key_pair: &MlKem1024KeyPairUnpacked) ->MlKem1024PublicKey {
+                    key_pair.serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>()
+                }
+
+                /// Get an unpacked key from a private key.
+                pub fn key_pair_from_private_mut(private_key: &MlKem1024PrivateKey, key_pair: &mut MlKem1024KeyPairUnpacked) {
+                    p::unpacked::keypair_from_private_key::<RANK_1024, SECRET_KEY_SIZE_1024, CPA_PKE_SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024, RANKED_BYTES_PER_RING_ELEMENT_1024, T_AS_NTT_ENCODED_SIZE_1024>(private_key, key_pair);
                 }
 
                 /// Get the unpacked public key.
@@ -275,8 +321,17 @@ macro_rules! instantiate {
                     
                 }
 
-                /// Generate ML-KEM 1024 Key Pair in "unpacked" form
+                /// Generate ML-KEM 1024 Key Pair in "unpacked" form.
                 pub fn generate_key_pair(
+                    randomness: [u8; KEY_GENERATION_SEED_SIZE]
+                ) ->  MlKem1024KeyPairUnpacked {
+                    let mut key_pair = MlKem1024KeyPairUnpacked::default();
+                    generate_key_pair_mut(randomness, &mut key_pair);
+                    key_pair
+                }
+
+                /// Generate ML-KEM 1024 Key Pair in "unpacked" form
+                pub fn generate_key_pair_mut(
                     randomness: [u8; KEY_GENERATION_SEED_SIZE],
                     key_pair: &mut MlKem1024KeyPairUnpacked,
                 ) {

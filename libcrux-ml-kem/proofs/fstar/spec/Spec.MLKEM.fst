@@ -221,11 +221,11 @@ let decode_then_decompress_u (#r:rank) (arr: t_Array u8 (v_C1_SIZE r)): vector r
       byte_decode_then_decompress (v d) slice
     )
 
-let compress_then_encode_v (u:usize{u == sz 4 \/ u == sz 5}): polynomial -> t_Array u8 (sz 32 *! u)
-  = compress_then_byte_encode (v u)
+let compress_then_encode_v (#r:rank): polynomial -> t_Array u8 (v_C2_SIZE r)
+  = compress_then_byte_encode (v (v_VECTOR_V_COMPRESSION_FACTOR r))
 
-let decode_then_decompress_v (u:usize{u == sz 4 \/ u == sz 5}): t_Array u8 (sz 32 *! u) -> polynomial
-  = byte_decode_then_decompress (v u)
+let decode_then_decompress_v (#r:rank): t_Array u8 (v_C2_SIZE r) -> polynomial
+  = byte_decode_then_decompress (v (v_VECTOR_V_COMPRESSION_FACTOR r)) 
 
 (** IND-CPA Functions *)
 
@@ -263,6 +263,7 @@ val ind_cpa_encrypt_unpacked (r:rank)
                     (matrix_A_as_ntt:matrix r) :
                     t_MLKEMCiphertext r
 
+#push-options "--z3rlimit 500 --ext context_pruning"
 let ind_cpa_encrypt_unpacked r message randomness t_as_ntt matrix_A_as_ntt =
     let r_as_ntt = sample_vector_cbd_then_ntt #r randomness (sz 0) in
     let error_1 = sample_vector_cbd2 #r randomness r in
@@ -271,8 +272,9 @@ let ind_cpa_encrypt_unpacked r message randomness t_as_ntt matrix_A_as_ntt =
     let mu = decode_then_decompress_message message in
     let v = poly_add (poly_add (vector_dot_product_ntt t_as_ntt r_as_ntt) error_2) mu in  
     let c1 = compress_then_encode_u #r u in
-    let c2 = compress_then_encode_v (v_VECTOR_V_COMPRESSION_FACTOR r) v in
+    let c2 = compress_then_encode_v #r v in
     concat c1 c2
+#pop-options
 
 /// This function implements <strong>Algorithm 13</strong> of the
 /// NIST FIPS 203 specification; this is the MLKEM CPA-PKE encryption algorithm.
@@ -297,7 +299,7 @@ val ind_cpa_decrypt_unpacked (r:rank)
 let ind_cpa_decrypt_unpacked r ciphertext secret_as_ntt =
     let (c1,c2) = split ciphertext (v_C1_SIZE r) in
     let u = decode_then_decompress_u #r c1 in
-    let v = decode_then_decompress_v (v_VECTOR_V_COMPRESSION_FACTOR r) c2 in
+    let v = decode_then_decompress_v #r c2 in
     let w = poly_sub v (poly_inv_ntt (vector_dot_product_ntt secret_as_ntt (vector_ntt u))) in
     compress_then_encode_message w
 

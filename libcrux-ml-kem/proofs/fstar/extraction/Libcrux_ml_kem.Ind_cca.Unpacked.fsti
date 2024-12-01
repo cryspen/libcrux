@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cca.Unpacked
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -7,6 +7,7 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Hash_functions in
+  let open Libcrux_ml_kem.Hash_functions.Portable in
   let open Libcrux_ml_kem.Ind_cpa.Unpacked in
   let open Libcrux_ml_kem.Polynomial in
   let open Libcrux_ml_kem.Types in
@@ -54,14 +55,6 @@ val impl_4__public_key
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
     : Prims.Pure (t_MlKemPublicKeyUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-/// Get the serialized private key.
-val impl_4__serialized_private_key
-      (v_K: usize)
-      (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self: t_MlKemKeyPairUnpacked v_K v_Vector)
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey v_K) Prims.l_True (fun _ -> Prims.l_True)
-
 val transpose_a
       (v_K: usize)
       (#v_Vector: Type0)
@@ -84,69 +77,18 @@ val transpose_a
                 Seq.index (Seq.index result i) j == Seq.index (Seq.index ind_cpa_a j) i))
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl
+val impl
       (v_K: usize)
       (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-    : Core.Default.t_Default (t_MlKemPublicKeyUnpacked v_K v_Vector) =
-  {
-    f_default_pre = (fun (_: Prims.unit) -> true);
-    f_default_post = (fun (_: Prims.unit) (out: t_MlKemPublicKeyUnpacked v_K v_Vector) -> true);
-    f_default
-    =
-    fun (_: Prims.unit) ->
-      {
-        f_ind_cpa_public_key
-        =
-        Core.Default.f_default #(Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K
-              v_Vector)
-          #FStar.Tactics.Typeclasses.solve
-          ();
-        f_public_key_hash = Rust_primitives.Hax.repeat 0uy (sz 32)
-      }
-      <:
-      t_MlKemPublicKeyUnpacked v_K v_Vector
-  }
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    : Core.Default.t_Default (t_MlKemPublicKeyUnpacked v_K v_Vector)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl_1
+val impl_1
       (v_K: usize)
       (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-    : Core.Default.t_Default (t_MlKemKeyPairUnpacked v_K v_Vector) =
-  {
-    f_default_pre = (fun (_: Prims.unit) -> true);
-    f_default_post = (fun (_: Prims.unit) (out: t_MlKemKeyPairUnpacked v_K v_Vector) -> true);
-    f_default
-    =
-    fun (_: Prims.unit) ->
-      {
-        f_private_key
-        =
-        {
-          f_ind_cpa_private_key
-          =
-          Core.Default.f_default #(Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K
-                v_Vector)
-            #FStar.Tactics.Typeclasses.solve
-            ();
-          f_implicit_rejection_value = Rust_primitives.Hax.repeat 0uy (sz 32)
-        }
-        <:
-        t_MlKemPrivateKeyUnpacked v_K v_Vector;
-        f_public_key
-        =
-        Core.Default.f_default #(t_MlKemPublicKeyUnpacked v_K v_Vector)
-          #FStar.Tactics.Typeclasses.solve
-          ()
-      }
-      <:
-      t_MlKemKeyPairUnpacked v_K v_Vector
-  }
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    : Core.Default.t_Default (t_MlKemKeyPairUnpacked v_K v_Vector)
 
 /// Create a new empty unpacked key pair.
 val impl_4__new:
@@ -155,6 +97,40 @@ val impl_4__new:
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
     Prims.unit
   -> Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Take a serialized private key and generate an unpacked key pair from it.
+val keys_from_private_key
+      (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
+          usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (key_pair: t_MlKemKeyPairUnpacked v_K v_Vector)
+    : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
+        v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+        v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K)
+      (fun _ -> Prims.l_True)
+
+/// Take a serialized private key and generate an unpacked key pair from it.
+val impl_4__from_private_key
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
+          usize)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+    : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
+        v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+        v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K)
+      (fun _ -> Prims.l_True)
 
 /// Generate an unpacked key from a serialized key.
 val unpack_public_key
@@ -227,7 +203,7 @@ val encapsulate
           ciphertext_result.f_value == ciphertext /\ shared_secret_array == shared_secret)
 
 /// Get the serialized public key.
-val impl_3__serialized_public_key_mut
+val impl_3__serialized_mut
       (v_K: usize)
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
@@ -289,7 +265,7 @@ val impl_4__serialized_public_key_mut
             self.f_public_key.f_ind_cpa_public_key.f_seed_for_A)
 
 /// Get the serialized public key.
-val impl_3__serialized_public_key
+val impl_3__serialized
       (v_K: usize)
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
@@ -372,6 +348,39 @@ val generate_keypair
             out_future.f_public_key.f_ind_cpa_public_key.f_A ==
           m_A /\ out_future.f_public_key.f_public_key_hash == public_key_hash /\
           out_future.f_private_key.f_implicit_rejection_value == implicit_rejection_value)
+
+/// Get the serialized private key.
+val impl_4__serialized_private_key_mut
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT:
+          usize)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self: t_MlKemKeyPairUnpacked v_K v_Vector)
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
+        v_CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K)
+      (fun _ -> Prims.l_True)
+
+/// Get the serialized private key.
+val impl_4__serialized_private_key
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT:
+          usize)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self: t_MlKemKeyPairUnpacked v_K v_Vector)
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
+        v_CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K)
+      (fun _ -> Prims.l_True)
 
 val decapsulate
       (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:

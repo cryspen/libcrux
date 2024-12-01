@@ -135,6 +135,7 @@ pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVect
 /// Note: This function is not secret independent
 /// Only use with public values.
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array (pow2 12 - 1) ${vec}.f_elements"))]
 #[hax_lib::ensures(|result| fstar!("${result}.f_elements == Spec.Utils.map_array 
                 (fun x -> if x >=. 3329s then x -! 3329s else x) (${vec}.f_elements)"))]

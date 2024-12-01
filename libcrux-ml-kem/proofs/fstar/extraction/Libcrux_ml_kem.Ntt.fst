@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ntt
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -25,6 +25,8 @@ let ntt_layer_int_vec_step
     Libcrux_ml_kem.Vector.Traits.f_add #v_Vector #FStar.Tactics.Typeclasses.solve a t
   in
   a, b <: (v_Vector & v_Vector)
+
+#push-options "--z3rlimit 200 --ext context_pruning"
 
 let ntt_at_layer_1_
       (#v_Vector: Type0)
@@ -104,6 +106,10 @@ let ntt_at_layer_1_
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
+#pop-options
+
+#push-options "--z3rlimit 200 --ext context_pruning"
+
 let ntt_at_layer_2_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -180,6 +186,10 @@ let ntt_at_layer_2_
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
+#pop-options
+
+#push-options "--z3rlimit 200 --ext context_pruning"
+
 let ntt_at_layer_3_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -253,6 +263,8 @@ let ntt_at_layer_3_
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+
+#pop-options
 
 #push-options "--admit_smt_queries true"
 

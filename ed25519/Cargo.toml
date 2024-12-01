@@ -1,0 +1,23 @@
+[package]
+name = "libcrux-ed25519"
+description = "Formally verified ed25519 signature library"
+
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[features]
+default = ["portable_hacl"]
+portable_hacl = ["hacl"]
+hacl = ["dep:libcrux-sha2", "dep:libcrux-hacl-rs", "dep:libcrux-macros"]
+
+[dependencies]
+libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "../hacl-rs/", optional = true }
+libcrux-sha2 = { version = "=0.0.2-beta.2", path = "../sha2", optional = true, features = [
+    "hacl",
+] }
+libcrux-macros = { version = "=0.0.2-beta.2", path = "../macros", optional = true }

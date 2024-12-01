@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Mlkem1024.Portable
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -12,6 +12,11 @@ let validate_private_key
     (sz 1568)
     private_key
     ciphertext
+
+let validate_private_key_only (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 3168)) =
+  Libcrux_ml_kem.Ind_cca.Instantiations.Portable.validate_private_key_only (sz 4)
+    (sz 3168)
+    private_key
 
 let decapsulate
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 3168))

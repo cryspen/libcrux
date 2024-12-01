@@ -33,63 +33,81 @@ pub type Vec256 = u8;
 pub type Vec128 = u8;
 pub type Vec256Float = u8;
 
+#[inline(always)]
 pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
     debug_assert_eq!(output.len(), 32);
     unimplemented!()
 }
 
 #[hax_lib::ensures(|()| future(output).len() == output.len())]
+#[inline(always)]
 pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
     debug_assert_eq!(output.len(), 16);
     unimplemented!()
 }
+
+#[inline(always)]
 pub fn mm256_storeu_si256_i32(output: &mut [i32], vector: Vec256) {
     debug_assert_eq!(output.len(), 8);
     unimplemented!()
 }
 
+#[inline(always)]
 pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
     debug_assert!(output.len() >= 8);
     unimplemented!()
 }
+
+#[inline(always)]
 pub fn mm_storeu_si128_i32(output: &mut [i32], vector: Vec128) {
     debug_assert_eq!(output.len(), 4);
     unimplemented!()
 }
 
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm_storeu_bytes_si128}")]
+#[inline(always)]
 pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
     debug_assert_eq!(output.len(), 16);
     unimplemented!()
 }
 
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm_loadu_si128}")]
+#[inline(always)]
 pub fn mm_loadu_si128(input: &[u8]) -> Vec128 {
     debug_assert_eq!(input.len(), 16);
     unimplemented!()
 }
 
+#[inline(always)]
 pub fn mm256_loadu_si256_u8(input: &[u8]) -> Vec256 {
     debug_assert_eq!(input.len(), 32);
     unimplemented!()
 }
+
+#[inline(always)]
 pub fn mm256_loadu_si256_i16(input: &[i16]) -> Vec256 {
     debug_assert_eq!(input.len(), 16);
     unimplemented!()
 }
+
+#[inline(always)]
 pub fn mm256_loadu_si256_i32(input: &[i32]) -> Vec256 {
     debug_assert_eq!(input.len(), 8);
     unimplemented!()
 }
 
+#[inline(always)]
 pub fn mm256_setzero_si256() -> Vec256 {
     unimplemented!()
 }
+
+#[inline(always)]
 pub fn mm256_set_m128i(hi: Vec128, lo: Vec128) -> Vec256 {
     unimplemented!()
 }
 
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm_set_epi8}")]
+#[inline(always)]
 pub fn mm_set_epi8(
     byte15: u8,
     byte14: u8,
@@ -112,6 +130,7 @@ pub fn mm_set_epi8(
 }
 
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_set_epi8}")]
+#[inline(always)]
 pub fn mm256_set_epi8(
     byte31: i8,
     byte30: i8,
@@ -162,6 +181,7 @@ val lemma_mm256_set1_epi16 constant
           [SMTPat (vec256_as_i16x16 (mm256_set1_epi16 constant))]
 "#
 )]
+#[inline(always)]
 pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
     unimplemented!()
 }
@@ -231,25 +251,30 @@ pub fn mm256_set_epi32(
 
 #[hax_lib::ensures(|result| fstar!("vec128_as_i16x8 $result == 
             Spec.Utils.map2 (+.) (vec128_as_i16x8 $lhs) (vec128_as_i16x8 $rhs)"))]
+#[inline(always)]
 pub fn mm_add_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unimplemented!()
 }
 
 #[hax_lib::ensures(|result| fstar!("vec128_as_i16x8 $result == 
             Spec.Utils.map2 (-.) (vec128_as_i16x8 $lhs) (vec128_as_i16x8 $rhs)"))]
+#[inline(always)]
 pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unimplemented!()
 }
 
 #[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == 
             Spec.Utils.map2 (+.) (vec256_as_i16x16 $lhs) (vec256_as_i16x16 $rhs)"))]
+#[inline(always)]
 pub fn mm256_add_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
+
 #[hax_lib::fstar::replace(
     interface,
     "include BitVec.Intrinsics {mm256_madd_epi16 as ${mm256_madd_epi16}}"
 )]
+#[inline(always)]
 pub fn mm256_madd_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
@@ -538,9 +563,11 @@ pub fn mm256_permutevar8x32_epi32(vector: Vec256, control: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[inline(always)]
 pub fn mm256_srlv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unimplemented!()
 }
+
 #[inline(always)]
 pub fn mm256_srlv_epi64(vector: Vec256, counts: Vec256) -> Vec256 {
     unimplemented!()

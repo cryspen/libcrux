@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cca.Instantiations.Portable
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -13,7 +13,7 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-/// Portable private key validation
+/// Private key validation
 val validate_private_key
       (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
@@ -22,6 +22,15 @@ val validate_private_key
       (requires
         Spec.MLKEM.is_rank v_K /\ v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
         v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K)
+      (fun _ -> Prims.l_True)
+
+/// Private key validation
+val validate_private_key_only
+      (v_K v_SECRET_KEY_SIZE: usize)
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+    : Prims.Pure bool
+      (requires Spec.MLKEM.is_rank v_K /\ v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K
+      )
       (fun _ -> Prims.l_True)
 
 /// Portable decapsulate
@@ -81,7 +90,7 @@ val generate_keypair
         v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K)
       (fun _ -> Prims.l_True)
 
-/// Portable public key validation
+/// Public key validation
 val validate_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)

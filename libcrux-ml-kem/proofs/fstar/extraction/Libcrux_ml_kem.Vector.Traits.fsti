@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Vector.Traits
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -167,11 +167,15 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_compress_pre v_COEFFICIENT_BITS x0)
         (fun result -> f_compress_post v_COEFFICIENT_BITS x0 result);
-  f_decompress_ciphertext_coefficient_pre:v_COEFFICIENT_BITS: i32 -> v: v_Self
+  f_decompress_ciphertext_coefficient_pre:v_COEFFICIENT_BITS: i32 -> a: v_Self
     -> pred:
       Type0
-        { v_COEFFICIENT_BITS =. 4l || v_COEFFICIENT_BITS =. 5l || v_COEFFICIENT_BITS =. 10l ||
-          v_COEFFICIENT_BITS =. 11l ==>
+        { (v v_COEFFICIENT_BITS == 4 \/ v v_COEFFICIENT_BITS == 5 \/ v v_COEFFICIENT_BITS == 10 \/
+            v v_COEFFICIENT_BITS == 11) /\
+          (forall (i: nat).
+              i < 16 ==>
+              v (Seq.index (f_repr a) i) >= 0 /\
+              v (Seq.index (f_repr a) i) < pow2 (v v_COEFFICIENT_BITS)) ==>
           pred };
   f_decompress_ciphertext_coefficient_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> Type0;
   f_decompress_ciphertext_coefficient:v_COEFFICIENT_BITS: i32 -> x0: v_Self

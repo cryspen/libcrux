@@ -8,6 +8,7 @@ members = [
     "benchmarks",
     "fuzz",
     "libcrux-ml-kem",
+    "libcrux-ml-kem/fuzz",
     "libcrux-sha3",
     "libcrux-ml-dsa",
     "libcrux-intrinsics",
@@ -16,7 +17,12 @@ members = [
     "libcrux-hkdf",
     "libcrux-ecdh",
     "libcrux-psq",
+    "macros",
     "cavp",
+    "traits",
+    "sha2",
+    "ed25519",
+    "curve25519",
 ]
 
 [workspace.package]
@@ -62,10 +68,14 @@ bench = false                               # so libtest doesn't eat the argumen
 libcrux-platform = { version = "=0.0.2-beta.2", path = "sys/platform" }
 
 [dependencies]
+libcrux-traits = { version = "=0.0.2-beta.2", path = "traits" }
+libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "hacl-rs" }
 libcrux-hacl = { version = "=0.0.2-beta.2", path = "sys/hacl" }
 libcrux-platform = { version = "=0.0.2-beta.2", path = "sys/platform" }
 libcrux-hkdf = { version = "=0.0.2-beta.2", path = "libcrux-hkdf" }
 libcrux-hmac = { version = "=0.0.2-beta.2", path = "libcrux-hmac" }
+libcrux-sha2 = { version = "=0.0.2-beta.2", path = "sha2" }
+libcrux-ed25519 = { version = "=0.0.2-beta.2", path = "ed25519" }
 libcrux-ecdh = { version = "=0.0.2-beta.2", path = "libcrux-ecdh" }
 libcrux-ml-kem = { version = "=0.0.2-beta.2", path = "libcrux-ml-kem" }
 libcrux-kem = { version = "=0.0.2-beta.2", path = "libcrux-kem" }
@@ -74,13 +84,7 @@ log = { version = "0.4", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
 getrandom = { version = "0.2", features = ["js"], optional = true }
-
-# When using the hax toolchain, we have more dependencies.
-# This is only required when doing proofs.
-#[target.'cfg(hax)'.dependencies]
-[workspace.dependencies]
-hax-lib-macros = { git = "https://github.com/hacspec/hax", branch = "main" }
-hax-lib = { git = "https://github.com/hacspec/hax/", branch = "main" }
+hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
 
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand", "tests"] }
@@ -93,6 +97,7 @@ serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 clap = { version = "4.5", features = ["derive"] }
+wycheproof = "0.6.0"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"

@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Serialize
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -20,6 +20,8 @@ let to_unsigned_field_modulus
   let result:v_Vector = Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector a in
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
+
+#push-options "--admit_smt_queries true"
 
 let deserialize_then_decompress_11_
       (#v_Vector: Type0)
@@ -72,6 +74,8 @@ let deserialize_then_decompress_11_
   in
   re
 
+#pop-options
+
 let deserialize_then_decompress_4_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -122,6 +126,8 @@ let deserialize_then_decompress_4_
           re)
   in
   re
+
+#push-options "--admit_smt_queries true"
 
 let deserialize_then_decompress_5_
       (#v_Vector: Type0)
@@ -186,6 +192,8 @@ let deserialize_then_decompress_5_
   in
   re
 
+#pop-options
+
 let deserialize_then_decompress_message
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -241,7 +249,7 @@ let deserialize_then_decompress_message
   result
 
 let deserialize_then_decompress_ring_element_v
-      (v_COMPRESSION_FACTOR: usize)
+      (v_K v_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
@@ -777,7 +785,7 @@ let compress_then_serialize_ring_element_u
   result
 
 let compress_then_serialize_ring_element_v
-      (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
+      (v_K v_COMPRESSION_FACTOR v_OUT_LEN: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:

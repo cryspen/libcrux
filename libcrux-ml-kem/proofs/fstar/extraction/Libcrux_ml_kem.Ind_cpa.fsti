@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cpa
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -29,6 +29,56 @@ val deserialize_secret_key
           let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
           Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
           Spec.MLKEM.vector_decode_12 #v_K secret_key)
+
+val build_unpacked_public_key_mut
+      (v_K v_T_AS_NTT_ENCODED_SIZE: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (public_key: t_Slice u8)
+      (unpacked_public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+    : Prims.Pure (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K /\
+        length public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K)
+      (ensures
+        fun unpacked_public_key_future ->
+          let unpacked_public_key_future:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked
+            v_K v_Vector =
+            unpacked_public_key_future
+          in
+          let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
+          let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
+          let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
+          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+              #v_Vector
+              unpacked_public_key_future.f_t_as_ntt ==
+            t_as_ntt /\ valid ==>
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector unpacked_public_key_future.f_A ==
+            Spec.MLKEM.matrix_transpose matrix_A_as_ntt))
+
+val build_unpacked_public_key
+      (v_K v_T_AS_NTT_ENCODED_SIZE: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (public_key: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K /\
+        length public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector =
+            result
+          in
+          let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
+          let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
+          let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
+          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector result.f_t_as_ntt == t_as_ntt /\
+            valid ==>
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector result.f_A ==
+            Spec.MLKEM.matrix_transpose matrix_A_as_ntt))
 
 /// Sample a vector of ring elements from a centered binomial distribution.
 val sample_ring_element_cbd
@@ -82,8 +132,8 @@ val sample_vector_cbd_then_ntt
             (sz (v domain_separator)) /\
           (forall (i: nat).
               i < v v_K ==>
-              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index re_as_ntt_future
-                    i)))
+              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range #v_Vector
+                (Seq.index re_as_ntt_future i)))
 
 val sample_vector_cbd_then_ntt_out
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
@@ -445,6 +495,17 @@ val serialize_public_key
           Seq.append (Spec.MLKEM.vector_encode_12 #v_K
                 (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector tt_as_ntt))
             seed_for_a)
+
+/// Serialize the secret key from the unpacked key pair generation.
+val serialize_unpacked_secret_key
+      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      (private_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
+    : Prims.Pure (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 val generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:

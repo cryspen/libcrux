@@ -102,8 +102,8 @@ fn deserialize_12(a: &[u8]) -> PortableVector {
     serialize::deserialize_12(a)
 }
 
-#[hax_lib::fstar::before(interface, r#"#push-options "--z3rlimit 400 --split_queries always""#)]
-#[hax_lib::fstar::after(interface, r#"#pop-options"#)]
+#[hax_lib::fstar::before(r#"#push-options "--z3rlimit 400 --split_queries always""#)]
+#[hax_lib::fstar::after(r#"#pop-options"#)]
 #[hax_lib::attributes] 
 impl Operations for PortableVector {
     #[ensures(|out| fstar!("impl.f_repr out == Seq.create 16 0s"))]
@@ -198,10 +198,14 @@ impl Operations for PortableVector {
         compress::<COEFFICIENT_BITS>(a)
     }
 
-    #[requires(COEFFICIENT_BITS == 4 || COEFFICIENT_BITS == 5 ||
-               COEFFICIENT_BITS == 10 || COEFFICIENT_BITS == 11)]
-    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
-        decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(v)
+    #[requires(fstar!("(v $COEFFICIENT_BITS == 4 \\/
+        v $COEFFICIENT_BITS == 5 \\/
+        v $COEFFICIENT_BITS == 10 \\/
+        v $COEFFICIENT_BITS == 11) /\\
+    (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\\
+        v (Seq.index (impl.f_repr $a) i) < pow2 (v $COEFFICIENT_BITS))"))]
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self {
+        decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(a)
     }
 
     #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
