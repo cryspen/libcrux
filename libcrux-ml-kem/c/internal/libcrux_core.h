@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 2ecc08ac92e56197cd05d04f3e873d8da088ad11
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: e7d31cc9d00fb10b9002777a3fc8a209dba74b83
  */
 
 #ifndef __internal_libcrux_core_H
@@ -169,6 +169,11 @@ typedef struct Eurydice_slice_uint8_t_x4_s {
 } Eurydice_slice_uint8_t_x4;
 
 /**
+ Unpack an incoming private key into it's different parts.
+
+ We have this here in types to extract into a common core for C.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.types.unpack_private_key
 with const generics
 - CPA_SECRET_KEY_SIZE= 1152
@@ -244,6 +249,11 @@ libcrux_ml_kem_types_MlKemPublicKey_52 libcrux_ml_kem_types_from_5f_4d(
     uint8_t value[800U]);
 
 /**
+ Unpack an incoming private key into it's different parts.
+
+ We have this here in types to extract into a common core for C.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.types.unpack_private_key
 with const generics
 - CPA_SECRET_KEY_SIZE= 768
@@ -318,6 +328,11 @@ with const generics
 libcrux_ml_kem_types_MlKemPublicKey_64 libcrux_ml_kem_types_from_5f_af(
     uint8_t value[1568U]);
 
+/**
+ Unpack an incoming private key into it's different parts.
+
+ We have this here in types to extract into a common core for C.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.types.unpack_private_key
 with const generics

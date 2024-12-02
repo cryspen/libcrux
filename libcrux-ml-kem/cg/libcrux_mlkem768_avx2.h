@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 8fa4c2d98c5fd5a203b5a37a971a46f2296646d9
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: e7d31cc9d00fb10b9002777a3fc8a209dba74b83
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -82,9 +82,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_vec_to_i16_array(
   int16_t output[16U] = {0U};
   libcrux_intrinsics_avx2_mm256_storeu_si256_i16(
       Eurydice_array_to_slice((size_t)16U, output, int16_t), v);
-  int16_t result[16U];
-  memcpy(result, output, (size_t)16U * sizeof(int16_t));
-  memcpy(ret, result, (size_t)16U * sizeof(int16_t));
+  memcpy(ret, output, (size_t)16U * sizeof(int16_t));
 }
 
 /**
@@ -1774,20 +1772,18 @@ libcrux_ml_kem_vector_avx2_sampling_rejection_sample(Eurydice_slice input,
                                                    compare_with_field_modulus,
                                                    good);
   uint8_t lower_shuffles[16U];
-  memcpy(
-      lower_shuffles,
-      /* We need to provide a definition or post-condition for
-         Core.Num.impl__u8__count_ones Each bit (and its corresponding position)
-         represents an element we want to sample. We'd like all such elements to
-         be next to each other starting at index 0, so that they can be read
-         from the vector easily. |REJECTION_SAMPLE_SHUFFLE_TABLE| encodes the
-         byte-level shuffling indices needed to make this happen. For e.g. if
-         good[0] = 0b0_0_0_0_0_0_1_0, we need to move the element in the 2-nd
-         16-bit lane to the first. To do this, we need the byte-level shuffle
-         indices to be 2 3 X X X X ... */
-      libcrux_ml_kem_vector_rej_sample_table_REJECTION_SAMPLE_SHUFFLE_TABLE[(
-          size_t)good[0U]],
-      (size_t)16U * sizeof(uint8_t));
+  memcpy(lower_shuffles,
+         /* Each bit (and its corresponding position) represents an element we
+            want to sample. We'd like all such elements to be next to each other
+            starting at index 0, so that they can be read from the vector
+            easily. |REJECTION_SAMPLE_SHUFFLE_TABLE| encodes the byte-level
+            shuffling indices needed to make this happen. For e.g. if good[0] =
+            0b0_0_0_0_0_0_1_0, we need to move the element in the 2-nd 16-bit
+            lane to the first. To do this, we need the byte-level shuffle
+            indices to be 2 3 X X X X ... */
+         libcrux_ml_kem_vector_rej_sample_table_REJECTION_SAMPLE_SHUFFLE_TABLE[(
+             size_t)good[0U]],
+         (size_t)16U * sizeof(uint8_t));
   __m128i lower_shuffles0 =
       libcrux_intrinsics_avx2_mm_loadu_si128(Eurydice_array_to_slice(
           (size_t)16U,
@@ -1907,6 +1903,9 @@ libcrux_ml_kem_serialize_deserialize_to_uncompressed_ring_element_61(
   return re;
 }
 
+/**
+ Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_secret_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -2357,10 +2356,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_poly_barrett_reduce_ef_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self) {
   for (size_t i = (size_t)0U;
        i <
-       /* Using `hax_lib::fstar::verification_status(lax)` works but produces an
-          error while extracting The semicolon and parentheses at the end of
-          loop are a workaround for the following bug
-          https://github.com/hacspec/hax/issues/720 */
+       /* The semicolon and parentheses at the end of loop are a workaround for
+          the following bug https://github.com/hacspec/hax/issues/720 */
        LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
        i++) {
     size_t i0 = i;
@@ -2396,6 +2393,10 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_vector_u_ee(
   libcrux_ml_kem_polynomial_poly_barrett_reduce_ef_61(re);
 }
 
+/**
+ Call [`deserialize_then_decompress_ring_element_u`] on each ring element
+ in the `ciphertext`.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_then_decompress_u
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -2696,10 +2697,8 @@ static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
 libcrux_ml_kem_polynomial_ntt_multiply_ef_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *rhs) {
-  /* Using `hax_lib::fstar::verification_status(lax)` works but produces an
-   * error while extracting hax_debug_debug_assert!(lhs .coefficients
-   * .into_iter() .all(|coefficient| coefficient >= 0 && coefficient < 4096));
-   */
+  /* hax_debug_debug_assert!(lhs .coefficients .into_iter() .all(|coefficient|
+   * coefficient >= 0 && coefficient < 4096)); */
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 out =
       libcrux_ml_kem_polynomial_ZERO_ef_61();
   for (size_t i = (size_t)0U;
@@ -2919,11 +2918,7 @@ libcrux_ml_kem_polynomial_subtract_reduce_ef_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 b) {
   for (size_t i = (size_t)0U;
-       i <
-       /* Using `hax_lib::fstar::verification_status(lax)` works but produces an
-          error while extracting */
-       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
-       i++) {
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     __m256i coefficient_normal_form =
         libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_09(
@@ -2935,6 +2930,12 @@ libcrux_ml_kem_polynomial_subtract_reduce_ef_61(
   return b;
 }
 
+/**
+ The following functions compute various expressions involving
+ vectors and matrices. The computation of these expressions has been
+ abstracted away into these functions in order to save on loop iterations.
+ Compute v − InverseNTT(sᵀ ◦ NTT(u))
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_message
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -3038,11 +3039,33 @@ libcrux_ml_kem_serialize_compress_then_serialize_message_61(
     Eurydice_slice_copy(
         uu____0, Eurydice_array_to_slice((size_t)2U, bytes, uint8_t), uint8_t);
   }
-  uint8_t result[32U];
-  memcpy(result, serialized, (size_t)32U * sizeof(uint8_t));
-  memcpy(ret, result, (size_t)32U * sizeof(uint8_t));
+  memcpy(ret, serialized, (size_t)32U * sizeof(uint8_t));
 }
 
+/**
+ This function implements <strong>Algorithm 14</strong> of the
+ NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
+
+ Algorithm 14 is reproduced below:
+
+ ```plaintext
+ Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+ Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+ Output: message m ∈ 𝔹^{32}.
+
+ c₁ ← c[0 : 32dᵤk]
+ c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
+ u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
+ v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
+ ŝ ← ByteDecode₁₂(dkₚₖₑ)
+ w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
+ m ← ByteEncode₁(Compress₁(w))
+ return m
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.decrypt_unpacked
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -3202,6 +3225,12 @@ libcrux_ml_kem_ind_cpa_unpacked_default_8d_ab(void) {
 }
 
 /**
+ Only use with public values.
+
+ This MUST NOT be used with secret inputs, like its caller
+ `deserialize_ring_elements_reduced`.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_to_reduced_ring_element with types
 libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
@@ -3225,6 +3254,9 @@ libcrux_ml_kem_serialize_deserialize_to_reduced_ring_element_61(
   return re;
 }
 
+/**
+ See [deserialize_ring_elements_reduced_out].
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
@@ -3836,6 +3868,55 @@ static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRFxN_a9_41(
 }
 
 /**
+ Given a series of uniformly random bytes in `randomness`, for some number
+ `eta`, the `sample_from_binomial_distribution_{eta}` functions sample a ring
+ element from a binomial distribution centered at 0 that uses two sets of `eta`
+ coin flips. If, for example, `eta = ETA`, each ring coefficient is a value `v`
+ such such that `v ∈ {-ETA, -ETA + 1, ..., 0, ..., ETA + 1, ETA}` and:
+
+ ```plaintext
+ - If v < 0, Pr[v] = Pr[-v]
+ - If v >= 0, Pr[v] = BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) / 2 ^ (2 * ETA)
+ ```
+
+ The values `v < 0` are mapped to the appropriate `KyberFieldElement`.
+
+ The expected value is:
+
+ ```plaintext
+ E[X] = (-ETA)Pr[-ETA] + (-(ETA - 1))Pr[-(ETA - 1)] + ... + (ETA - 1)Pr[ETA - 1]
+ + (ETA)Pr[ETA] = 0 since Pr[-v] = Pr[v] when v < 0.
+ ```
+
+ And the variance is:
+
+ ```plaintext
+ Var(X) = E[(X - E[X])^2]
+        = E[X^2]
+        = sum_(v=-ETA to ETA)v^2 * (BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) /
+ 2^(2 * ETA)) = ETA / 2
+ ```
+
+ This function implements <strong>Algorithm 7</strong> of the NIST FIPS 203
+ standard, which is reproduced below:
+
+ ```plaintext
+ Input: byte array B ∈ 𝔹^{64η}.
+ Output: array f ∈ ℤ₂₅₆.
+
+ b ← BytesToBits(B)
+ for (i ← 0; i < 256; i++)
+     x ← ∑(j=0 to η - 1) b[2iη + j]
+     y ← ∑(j=0 to η - 1) b[2iη + η + j]
+     f[i] ← x−y mod q
+ end for
+ return f
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_binomial_distribution_2 with types
 libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
@@ -3999,6 +4080,10 @@ libcrux_ml_kem_ntt_ntt_binomially_sampled_ring_element_61(
 }
 
 /**
+ Sample a vector of ring elements from a centered binomial distribution and
+ convert them into their NTT representations.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_vector_cbd_then_ntt
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
 libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
@@ -4080,6 +4165,9 @@ libcrux_ml_kem_ind_cpa_sample_ring_element_cbd_closure_b4(size_t _i) {
   return libcrux_ml_kem_polynomial_ZERO_ef_61();
 }
 
+/**
+ Sample a vector of ring elements from a centered binomial distribution.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_ring_element_cbd
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
@@ -4186,10 +4274,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_error_reduce_ef_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *error) {
   for (size_t i = (size_t)0U;
        i <
-       /* Using `hax_lib::fstar::verification_status(lax)` works but produces an
-          error while extracting The semicolon and parentheses at the end of
-          loop are a workaround for the following bug
-          https://github.com/hacspec/hax/issues/720 */
+       /* The semicolon and parentheses at the end of loop are a workaround for
+          the following bug https://github.com/hacspec/hax/issues/720 */
        LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
        i++) {
     size_t j = i;
@@ -4202,6 +4288,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_error_reduce_ef_61(
   }
 }
 
+/**
+ Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_vector_u
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -4306,11 +4395,7 @@ libcrux_ml_kem_polynomial_add_message_error_reduce_ef_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *message,
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 result) {
   for (size_t i = (size_t)0U;
-       i <
-       /* Using `hax_lib::fstar::verification_status(lax)` works but produces an
-          error while extracting */
-       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
-       i++) {
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     __m256i coefficient_normal_form =
         libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_09(
@@ -4343,6 +4428,9 @@ libcrux_ml_kem_polynomial_add_message_error_reduce_ef_61(
   return result;
 }
 
+/**
+ Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_ring_element_v
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -4497,9 +4585,7 @@ libcrux_ml_kem_serialize_compress_then_serialize_10_0e(
     Eurydice_slice_copy(
         uu____0, Eurydice_array_to_slice((size_t)20U, bytes, uint8_t), uint8_t);
   }
-  uint8_t result[320U];
-  memcpy(result, serialized, (size_t)320U * sizeof(uint8_t));
-  memcpy(ret, result, (size_t)320U * sizeof(uint8_t));
+  memcpy(ret, serialized, (size_t)320U * sizeof(uint8_t));
 }
 
 /**
@@ -4642,11 +4728,14 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 libcrux_ml_kem_serialize_compress_then_serialize_ring_element_u_a4(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re, uint8_t ret[320U]) {
-  uint8_t result[320U];
-  libcrux_ml_kem_serialize_compress_then_serialize_10_0e(re, result);
-  memcpy(ret, result, (size_t)320U * sizeof(uint8_t));
+  uint8_t uu____0[320U];
+  libcrux_ml_kem_serialize_compress_then_serialize_10_0e(re, uu____0);
+  memcpy(ret, uu____0, (size_t)320U * sizeof(uint8_t));
 }
 
+/**
+ Call [`compress_then_serialize_ring_element_u`] on each ring element.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.compress_then_serialize_u
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -4669,14 +4758,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_compress_then_serialize_u_8c(
        i++) {
     size_t i0 = i;
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re = input[i0];
-    Eurydice_slice uu____0 =
-        Eurydice_slice_subslice2(/* The semicolon and parentheses at the end of
-                                    loop are a workaround for the following bug
-                                    https://github.com/hacspec/hax/issues/720 */
-                                 out, i0 * ((size_t)960U / (size_t)3U),
-                                 (i0 + (size_t)1U) *
-                                     ((size_t)960U / (size_t)3U),
-                                 uint8_t);
+    Eurydice_slice uu____0 = Eurydice_slice_subslice2(
+        out, i0 * ((size_t)960U / (size_t)3U),
+        (i0 + (size_t)1U) * ((size_t)960U / (size_t)3U), uint8_t);
     uint8_t ret[320U];
     libcrux_ml_kem_serialize_compress_then_serialize_ring_element_u_a4(&re,
                                                                        ret);
@@ -4807,9 +4891,7 @@ libcrux_ml_kem_serialize_compress_then_serialize_4_61(
     size_t i0 = i;
     __m256i coefficient = libcrux_ml_kem_vector_avx2_compress_09_d1(
         libcrux_ml_kem_serialize_to_unsigned_field_modulus_61(
-            re.coefficients[/* NOTE: Using `$serialized` in loop_invariant
-                               doesn't work here */
-                            i0]));
+            re.coefficients[i0]));
     uint8_t bytes[8U];
     libcrux_ml_kem_vector_avx2_serialize_4_09(coefficient, bytes);
     Eurydice_slice_copy(
@@ -4967,6 +5049,47 @@ libcrux_ml_kem_serialize_compress_then_serialize_ring_element_v_ed(
 }
 
 /**
+ This function implements <strong>Algorithm 13</strong> of the
+ NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
+
+ Algorithm 13 is reproduced below:
+
+ ```plaintext
+ Input: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
+ Input: message m ∈ 𝔹^{32}.
+ Input: encryption randomness r ∈ 𝔹^{32}.
+ Output: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+
+ N ← 0
+ t̂ ← ByteDecode₁₂(ekₚₖₑ[0:384k])
+ ρ ← ekₚₖₑ[384k: 384k + 32]
+ for (i ← 0; i < k; i++)
+     for(j ← 0; j < k; j++)
+         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
+     end for
+ end for
+ for(i ← 0; i < k; i++)
+     r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
+     N ← N + 1
+ end for
+ for(i ← 0; i < k; i++)
+     e₁[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
+     N ← N + 1
+ end for
+ e₂ ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
+ r̂ ← NTT(r)
+ u ← NTT-¹(Âᵀ ◦ r̂) + e₁
+ μ ← Decompress₁(ByteDecode₁(m)))
+ v ← NTT-¹(t̂ᵀ ◦ rˆ) + e₂ + μ
+ c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
+ c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
+ return c ← (c₁ ‖ c₂)
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.encrypt_unpacked
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
 libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
@@ -5107,6 +5230,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_variant_kdf_d8_ae(
   memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
+/**
+ This code verifies on some machines, runs out of memory on others
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
@@ -5534,10 +5660,8 @@ libcrux_ml_kem_polynomial_add_standard_error_reduce_ef_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *error) {
   for (size_t i = (size_t)0U;
        i <
-       /* Using `hax_lib::fstar::verification_status(lax)` works but produces an
-          error while extracting The semicolon and parentheses at the end of
-          loop are a workaround for the following bug
-          https://github.com/hacspec/hax/issues/720 */
+       /* The semicolon and parentheses at the end of loop are a workaround for
+          the following bug https://github.com/hacspec/hax/issues/720 */
        LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
        i++) {
     size_t j = i;
@@ -5553,6 +5677,9 @@ libcrux_ml_kem_polynomial_add_standard_error_reduce_ef_61(
   }
 }
 
+/**
+ Compute Â ◦ ŝ + ê
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_As_plus_e
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -5600,6 +5727,47 @@ static KRML_MUSTINLINE void libcrux_ml_kem_matrix_compute_As_plus_e_ab(
   }
 }
 
+/**
+ This function implements most of <strong>Algorithm 12</strong> of the
+ NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation
+ algorithm.
+
+ We say "most of" since Algorithm 12 samples the required randomness within
+ the function itself, whereas this implementation expects it to be provided
+ through the `key_generation_seed` parameter.
+
+ Algorithm 12 is reproduced below:
+
+ ```plaintext
+ Output: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
+ Output: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+
+ d ←$ B
+ (ρ,σ) ← G(d)
+ N ← 0
+ for (i ← 0; i < k; i++)
+     for(j ← 0; j < k; j++)
+         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
+     end for
+ end for
+ for(i ← 0; i < k; i++)
+     s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
+     N ← N + 1
+ end for
+ for(i ← 0; i < k; i++)
+     e[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(σ,N))
+     N ← N + 1
+ end for
+ ŝ ← NTT(s)
+ ê ← NTT(e)
+ t̂ ← Â◦ŝ + ê
+ ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
+ dkₚₖₑ ← ByteEncode₁₂(ŝ)
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.generate_keypair_unpacked
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
@@ -5682,11 +5850,12 @@ libcrux_ml_kem_serialize_serialize_uncompressed_ring_element_61(
     Eurydice_slice_copy(
         uu____0, Eurydice_array_to_slice((size_t)24U, bytes, uint8_t), uint8_t);
   }
-  uint8_t result[384U];
-  memcpy(result, serialized, (size_t)384U * sizeof(uint8_t));
-  memcpy(ret, result, (size_t)384U * sizeof(uint8_t));
+  memcpy(ret, serialized, (size_t)384U * sizeof(uint8_t));
 }
 
+/**
+ Call [`serialize_uncompressed_ring_element`] for each ring element.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_secret_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -5721,6 +5890,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_serialize_secret_key_ed(
 }
 
 /**
+ Concatenate `t` and `ρ` into the public key.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_public_key_mut
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 with const generics
@@ -5744,6 +5916,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_serialize_public_key_mut_ed(
       seed_for_a, uint8_t);
 }
 
+/**
+ Concatenate `t` and `ρ` into the public key.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_public_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -5835,6 +6010,9 @@ libcrux_ml_kem_ind_cpa_generate_keypair_bb(Eurydice_slice key_generation_seed) {
 }
 
 /**
+ Serialize the secret key.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.serialize_kem_secret_key_mut
 with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
 with const generics
@@ -5902,6 +6080,14 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_serialize_kem_secret_key_ae(
 }
 
 /**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
 libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
@@ -5949,6 +6135,9 @@ libcrux_ml_kem_ind_cca_generate_keypair_d6(uint8_t randomness[64U]) {
       uu____2, libcrux_ml_kem_types_from_5f_d0(copy_of_public_key));
 }
 
+/**
+ Portable generate key pair.
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair_avx2 with const
@@ -6040,6 +6229,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_variant_kdf_33_ae(
   memcpy(ret, ret1, (size_t)32U * sizeof(uint8_t));
 }
 
+/**
+ This code verifies on some machines, runs out of memory on others
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
@@ -6390,6 +6582,47 @@ static KRML_MUSTINLINE void libcrux_ml_kem_variant_cpa_keygen_seed_33_be(
 }
 
 /**
+ This function implements most of <strong>Algorithm 12</strong> of the
+ NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation
+ algorithm.
+
+ We say "most of" since Algorithm 12 samples the required randomness within
+ the function itself, whereas this implementation expects it to be provided
+ through the `key_generation_seed` parameter.
+
+ Algorithm 12 is reproduced below:
+
+ ```plaintext
+ Output: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
+ Output: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+
+ d ←$ B
+ (ρ,σ) ← G(d)
+ N ← 0
+ for (i ← 0; i < k; i++)
+     for(j ← 0; j < k; j++)
+         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
+     end for
+ end for
+ for(i ← 0; i < k; i++)
+     s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
+     N ← N + 1
+ end for
+ for(i ← 0; i < k; i++)
+     e[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(σ,N))
+     N ← N + 1
+ end for
+ ŝ ← NTT(s)
+ ê ← NTT(e)
+ t̂ ← Â◦ŝ + ê
+ ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
+ dkₚₖₑ ← ByteEncode₁₂(ŝ)
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.generate_keypair_unpacked
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
 libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_Kyber
@@ -6475,6 +6708,14 @@ libcrux_ml_kem_ind_cpa_generate_keypair_bb0(
                                                                  &private_key);
 }
 
+/**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
@@ -6582,6 +6823,11 @@ libcrux_ml_kem_mlkem768_avx2_kyber_generate_key_pair(uint8_t randomness[64U]) {
 }
 
 /**
+ Validate an ML-KEM private key.
+
+ This implements the Hash check in 7.3 3.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
 with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
 with const generics
@@ -6607,6 +6853,13 @@ static KRML_MUSTINLINE bool libcrux_ml_kem_ind_cca_validate_private_key_only_ae(
       (size_t)32U, t, &expected, uint8_t, uint8_t, bool);
 }
 
+/**
+ Validate an ML-KEM private key.
+
+ This implements the Hash check in 7.3 3.
+ Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
+ and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
 with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
@@ -6670,6 +6923,9 @@ static inline bool libcrux_ml_kem_mlkem768_avx2_validate_private_key(
 }
 
 /**
+ Private key validation
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key_only with const
 generics
@@ -6709,6 +6965,12 @@ libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_out_closure_ab(
 }
 
 /**
+ This function deserializes ring elements and reduces the result by the field
+ modulus.
+
+ This function MUST NOT be used on secret inputs.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_ring_elements_reduced_out with types
 libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
@@ -6725,15 +6987,18 @@ libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_out_ab(
   }
   libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_ab(
       public_key, deserialized_pk);
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 result[3U];
   memcpy(
-      result, deserialized_pk,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
-  memcpy(
-      ret, result,
+      ret, deserialized_pk,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
 }
 
+/**
+ Validate an ML-KEM public key.
+
+ This implements the Modulus check in 7.2 2.
+ Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
+ `public_key` type.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
@@ -6945,6 +7210,9 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_decapsulate_avx2_35(
 }
 
 /**
+ Unpacked decapsulate
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.decapsulate with const
 generics
@@ -7090,6 +7358,9 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_encapsulate_avx2_cd(
 }
 
 /**
+ Unpacked encapsulate
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.encapsulate with const
 generics
@@ -7224,6 +7495,9 @@ static inline void libcrux_ml_kem_ind_cca_unpacked_transpose_a_ab(
 }
 
 /**
+ Generate Unpacked Keys
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.generate_keypair
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
 libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
@@ -7306,6 +7580,9 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_generate_keypair_avx2_c6(
   libcrux_ml_kem_ind_cca_unpacked_generate_keypair_d6(copy_of_randomness, out);
 }
 
+/**
+ Generate a key pair
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.generate_keypair with const
@@ -7636,6 +7913,9 @@ libcrux_ml_kem_ind_cpa_build_unpacked_public_key_mut_bf(
 }
 
 /**
+ Take a serialized private key and generate an unpacked key pair from it.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.keys_from_private_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 with const generics
@@ -7689,6 +7969,9 @@ libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_e2(
                       uint8_t);
 }
 
+/**
+ Take a serialized private key and generate an unpacked key pair from it.
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.keypair_from_private_key
@@ -7850,6 +8133,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_fc_ed(
   return libcrux_ml_kem_ind_cca_unpacked_serialized_30_ed(&self->public_key);
 }
 
+/**
+ Get the serialized public key.
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_types_MlKemPublicKey_30
 libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_public_key(
@@ -7904,6 +8190,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_fc_ed(
                                                        serialized);
 }
 
+/**
+ Get the serialized public key.
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void
 libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_public_key_mut(
@@ -8006,6 +8295,9 @@ static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_public_key(
   pk[0U] = uu____0;
 }
 
+/**
+ Get the serialized public key.
+*/
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_serialized_public_key(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *public_key,
@@ -8013,6 +8305,9 @@ static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_serialized_public_key(
   libcrux_ml_kem_ind_cca_unpacked_serialized_mut_30_ed(public_key, serialized);
 }
 
+/**
+ Generate an unpacked key from a serialized key.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.unpack_public_key
 with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash,
@@ -8058,6 +8353,9 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_6d(
 }
 
 /**
+ Get the unpacked public key.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.unpack_public_key_avx2 with
 const generics
@@ -8076,6 +8374,9 @@ libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_unpack_public_key_avx2_a5(
                                                        unpacked_public_key);
 }
 
+/**
+ Get the unpacked public key.
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.unpack_public_key with const

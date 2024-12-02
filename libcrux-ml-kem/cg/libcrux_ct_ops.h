@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 8fa4c2d98c5fd5a203b5a37a971a46f2296646d9
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: e7d31cc9d00fb10b9002777a3fc8a209dba74b83
  */
 
 #ifndef __libcrux_ct_ops_H
@@ -21,6 +21,9 @@ extern "C" {
 #include "eurydice_glue.h"
 #include "libcrux_core.h"
 
+/**
+ Return 1 if `value` is not zero and 0 otherwise.
+*/
 static inline uint8_t libcrux_ml_kem_constant_time_ops_inz(uint8_t value) {
   uint16_t value0 = (uint16_t)value;
   uint8_t result =
@@ -33,6 +36,10 @@ libcrux_ml_kem_constant_time_ops_is_non_zero(uint8_t value) {
   return libcrux_ml_kem_constant_time_ops_inz(value);
 }
 
+/**
+ Return 1 if the bytes of `lhs` and `rhs` do not exactly
+ match and 0 otherwise.
+*/
 static inline uint8_t libcrux_ml_kem_constant_time_ops_compare(
     Eurydice_slice lhs, Eurydice_slice rhs) {
   uint8_t r = 0U;
@@ -52,6 +59,10 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
   return libcrux_ml_kem_constant_time_ops_compare(lhs, rhs);
 }
 
+/**
+ If `selector` is not zero, return the bytes in `rhs`; return the bytes in
+ `lhs` otherwise.
+*/
 static inline void libcrux_ml_kem_constant_time_ops_select_ct(
     Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
     uint8_t ret[32U]) {

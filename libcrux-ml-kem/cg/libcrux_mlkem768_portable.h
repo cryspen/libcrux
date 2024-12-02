@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
  * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 8fa4c2d98c5fd5a203b5a37a971a46f2296646d9
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: e7d31cc9d00fb10b9002777a3fc8a209dba74b83
  */
 
 #ifndef __libcrux_mlkem768_portable_H
@@ -1040,6 +1040,10 @@ libcrux_ml_kem_vector_portable_bitwise_and_with_constant_0d(
                                                                              c);
 }
 
+/**
+ Note: This function is not secret independent
+ Only use with public values.
+*/
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_arithmetic_cond_subtract_3329(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector vec) {
@@ -1538,6 +1542,28 @@ libcrux_ml_kem_vector_portable_inv_ntt_layer_3_step_0d(
   return libcrux_ml_kem_vector_portable_ntt_inv_ntt_layer_3_step(a, zeta);
 }
 
+/**
+ Compute the product of two Kyber binomials with respect to the
+ modulus `X² - zeta`.
+
+ This function almost implements <strong>Algorithm 11</strong> of the
+ NIST FIPS 203 standard, which is reproduced below:
+
+ ```plaintext
+ Input:  a₀, a₁, b₀, b₁ ∈ ℤq.
+ Input: γ ∈ ℤq.
+ Output: c₀, c₁ ∈ ℤq.
+
+ c₀ ← a₀·b₀ + a₁·b₁·γ
+ c₁ ← a₀·b₁ + a₁·b₀
+ return c₀, c₁
+ ```
+ We say "almost" because the coefficients output by this function are in
+ the Montgomery domain (unlike in the specification).
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 static KRML_MUSTINLINE void
 libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
@@ -2624,6 +2650,9 @@ libcrux_ml_kem_serialize_deserialize_to_uncompressed_ring_element_8c(
 }
 
 /**
+ Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_secret_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -2980,10 +3009,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_poly_barrett_reduce_ef_8c(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *self) {
   for (size_t i = (size_t)0U;
        i <
-       /* Using `hax_lib::fstar::verification_status(lax)` works but produces an
-          error while extracting The semicolon and parentheses at the end of
-          loop are a workaround for the following bug
-          https://github.com/hacspec/hax/issues/720 */
+       /* The semicolon and parentheses at the end of loop are a workaround for
+          the following bug https://github.com/hacspec/hax/issues/720 */
        LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
        i++) {
     size_t i0 = i;
@@ -3020,6 +3047,10 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_vector_u_0a(
   libcrux_ml_kem_polynomial_poly_barrett_reduce_ef_8c(re);
 }
 
+/**
+ Call [`deserialize_then_decompress_ring_element_u`] on each ring element
+ in the `ciphertext`.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_then_decompress_u
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -3219,10 +3250,8 @@ static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_1d
 libcrux_ml_kem_polynomial_ntt_multiply_ef_8c(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *rhs) {
-  /* Using `hax_lib::fstar::verification_status(lax)` works but produces an
-   * error while extracting hax_debug_debug_assert!(lhs .coefficients
-   * .into_iter() .all(|coefficient| coefficient >= 0 && coefficient < 4096));
-   */
+  /* hax_debug_debug_assert!(lhs .coefficients .into_iter() .all(|coefficient|
+   * coefficient >= 0 && coefficient < 4096)); */
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d out =
       libcrux_ml_kem_polynomial_ZERO_ef_8c();
   for (size_t i = (size_t)0U;
@@ -3444,11 +3473,7 @@ libcrux_ml_kem_polynomial_subtract_reduce_ef_8c(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d b) {
   for (size_t i = (size_t)0U;
-       i <
-       /* Using `hax_lib::fstar::verification_status(lax)` works but produces an
-          error while extracting */
-       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
-       i++) {
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector
         coefficient_normal_form =
@@ -3463,6 +3488,12 @@ libcrux_ml_kem_polynomial_subtract_reduce_ef_8c(
   return b;
 }
 
+/**
+ The following functions compute various expressions involving
+ vectors and matrices. The computation of these expressions has been
+ abstracted away into these functions in order to save on loop iterations.
+ Compute v − InverseNTT(sᵀ ◦ NTT(u))
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_message
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -3545,9 +3576,7 @@ with const generics
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_serialize_to_unsigned_field_modulus_8c(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a) {
-  libcrux_ml_kem_vector_portable_vector_type_PortableVector result =
-      libcrux_ml_kem_vector_traits_to_unsigned_representative_8c(a);
-  return result;
+  return libcrux_ml_kem_vector_traits_to_unsigned_representative_8c(a);
 }
 
 /**
@@ -3576,11 +3605,33 @@ libcrux_ml_kem_serialize_compress_then_serialize_message_8c(
     Eurydice_slice_copy(
         uu____0, Eurydice_array_to_slice((size_t)2U, bytes, uint8_t), uint8_t);
   }
-  uint8_t result[32U];
-  memcpy(result, serialized, (size_t)32U * sizeof(uint8_t));
-  memcpy(ret, result, (size_t)32U * sizeof(uint8_t));
+  memcpy(ret, serialized, (size_t)32U * sizeof(uint8_t));
 }
 
+/**
+ This function implements <strong>Algorithm 14</strong> of the
+ NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
+
+ Algorithm 14 is reproduced below:
+
+ ```plaintext
+ Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+ Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+ Output: message m ∈ 𝔹^{32}.
+
+ c₁ ← c[0 : 32dᵤk]
+ c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
+ u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
+ v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
+ ŝ ← ByteDecode₁₂(dkₚₖₑ)
+ w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
+ m ← ByteEncode₁(Compress₁(w))
+ return m
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.decrypt_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -3734,6 +3785,12 @@ libcrux_ml_kem_ind_cpa_unpacked_default_8d_1b(void) {
 }
 
 /**
+ Only use with public values.
+
+ This MUST NOT be used with secret inputs, like its caller
+ `deserialize_ring_elements_reduced`.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_to_reduced_ring_element with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
@@ -3758,6 +3815,9 @@ libcrux_ml_kem_serialize_deserialize_to_reduced_ring_element_8c(
   return re;
 }
 
+/**
+ See [deserialize_ring_elements_reduced_out].
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_ring_elements_reduced with types
@@ -4340,6 +4400,55 @@ static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_PRFxN_f1_41(
 }
 
 /**
+ Given a series of uniformly random bytes in `randomness`, for some number
+ `eta`, the `sample_from_binomial_distribution_{eta}` functions sample a ring
+ element from a binomial distribution centered at 0 that uses two sets of `eta`
+ coin flips. If, for example, `eta = ETA`, each ring coefficient is a value `v`
+ such such that `v ∈ {-ETA, -ETA + 1, ..., 0, ..., ETA + 1, ETA}` and:
+
+ ```plaintext
+ - If v < 0, Pr[v] = Pr[-v]
+ - If v >= 0, Pr[v] = BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) / 2 ^ (2 * ETA)
+ ```
+
+ The values `v < 0` are mapped to the appropriate `KyberFieldElement`.
+
+ The expected value is:
+
+ ```plaintext
+ E[X] = (-ETA)Pr[-ETA] + (-(ETA - 1))Pr[-(ETA - 1)] + ... + (ETA - 1)Pr[ETA - 1]
+ + (ETA)Pr[ETA] = 0 since Pr[-v] = Pr[v] when v < 0.
+ ```
+
+ And the variance is:
+
+ ```plaintext
+ Var(X) = E[(X - E[X])^2]
+        = E[X^2]
+        = sum_(v=-ETA to ETA)v^2 * (BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) /
+ 2^(2 * ETA)) = ETA / 2
+ ```
+
+ This function implements <strong>Algorithm 7</strong> of the NIST FIPS 203
+ standard, which is reproduced below:
+
+ ```plaintext
+ Input: byte array B ∈ 𝔹^{64η}.
+ Output: array f ∈ ℤ₂₅₆.
+
+ b ← BytesToBits(B)
+ for (i ← 0; i < 256; i++)
+     x ← ∑(j=0 to η - 1) b[2iη + j]
+     y ← ∑(j=0 to η - 1) b[2iη + η + j]
+     f[i] ← x−y mod q
+ end for
+ return f
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_binomial_distribution_2 with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
@@ -4500,6 +4609,10 @@ libcrux_ml_kem_ntt_ntt_binomially_sampled_ring_element_8c(
 }
 
 /**
+ Sample a vector of ring elements from a centered binomial distribution and
+ convert them into their NTT representations.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_vector_cbd_then_ntt
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]] with const
@@ -4581,6 +4694,9 @@ libcrux_ml_kem_ind_cpa_sample_ring_element_cbd_closure_3b(size_t _i) {
   return libcrux_ml_kem_polynomial_ZERO_ef_8c();
 }
 
+/**
+ Sample a vector of ring elements from a centered binomial distribution.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_ring_element_cbd
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -4683,10 +4799,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_error_reduce_ef_8c(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *error) {
   for (size_t i = (size_t)0U;
        i <
-       /* Using `hax_lib::fstar::verification_status(lax)` works but produces an
-          error while extracting The semicolon and parentheses at the end of
-          loop are a workaround for the following bug
-          https://github.com/hacspec/hax/issues/720 */
+       /* The semicolon and parentheses at the end of loop are a workaround for
+          the following bug https://github.com/hacspec/hax/issues/720 */
        LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
        i++) {
     size_t j = i;
@@ -4702,6 +4816,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_error_reduce_ef_8c(
   }
 }
 
+/**
+ Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_vector_u
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -4810,11 +4927,7 @@ libcrux_ml_kem_polynomial_add_message_error_reduce_ef_8c(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *message,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d result) {
   for (size_t i = (size_t)0U;
-       i <
-       /* Using `hax_lib::fstar::verification_status(lax)` works but produces an
-          error while extracting */
-       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
-       i++) {
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector
         coefficient_normal_form =
@@ -4852,6 +4965,9 @@ libcrux_ml_kem_polynomial_add_message_error_reduce_ef_8c(
   return result;
 }
 
+/**
+ Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_ring_element_v
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -4937,9 +5053,7 @@ libcrux_ml_kem_serialize_compress_then_serialize_10_ff(
     Eurydice_slice_copy(
         uu____0, Eurydice_array_to_slice((size_t)20U, bytes, uint8_t), uint8_t);
   }
-  uint8_t result[320U];
-  memcpy(result, serialized, (size_t)320U * sizeof(uint8_t));
-  memcpy(ret, result, (size_t)320U * sizeof(uint8_t));
+  memcpy(ret, serialized, (size_t)320U * sizeof(uint8_t));
 }
 
 /**
@@ -5013,11 +5127,14 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 static KRML_MUSTINLINE void
 libcrux_ml_kem_serialize_compress_then_serialize_ring_element_u_fe(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *re, uint8_t ret[320U]) {
-  uint8_t result[320U];
-  libcrux_ml_kem_serialize_compress_then_serialize_10_ff(re, result);
-  memcpy(ret, result, (size_t)320U * sizeof(uint8_t));
+  uint8_t uu____0[320U];
+  libcrux_ml_kem_serialize_compress_then_serialize_10_ff(re, uu____0);
+  memcpy(ret, uu____0, (size_t)320U * sizeof(uint8_t));
 }
 
+/**
+ Call [`compress_then_serialize_ring_element_u`] on each ring element.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.compress_then_serialize_u
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -5039,14 +5156,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_compress_then_serialize_u_43(
        i++) {
     size_t i0 = i;
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d re = input[i0];
-    Eurydice_slice uu____0 =
-        Eurydice_slice_subslice2(/* The semicolon and parentheses at the end of
-                                    loop are a workaround for the following bug
-                                    https://github.com/hacspec/hax/issues/720 */
-                                 out, i0 * ((size_t)960U / (size_t)3U),
-                                 (i0 + (size_t)1U) *
-                                     ((size_t)960U / (size_t)3U),
-                                 uint8_t);
+    Eurydice_slice uu____0 = Eurydice_slice_subslice2(
+        out, i0 * ((size_t)960U / (size_t)3U),
+        (i0 + (size_t)1U) * ((size_t)960U / (size_t)3U), uint8_t);
     uint8_t ret[320U];
     libcrux_ml_kem_serialize_compress_then_serialize_ring_element_u_fe(&re,
                                                                        ret);
@@ -5109,9 +5221,7 @@ libcrux_ml_kem_serialize_compress_then_serialize_4_8c(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector coefficient =
         libcrux_ml_kem_vector_portable_compress_0d_d1(
             libcrux_ml_kem_serialize_to_unsigned_field_modulus_8c(
-                re.coefficients[/* NOTE: Using `$serialized` in loop_invariant
-                                   doesn't work here */
-                                i0]));
+                re.coefficients[i0]));
     uint8_t bytes[8U];
     libcrux_ml_kem_vector_portable_serialize_4_0d(coefficient, bytes);
     Eurydice_slice_copy(
@@ -5199,6 +5309,47 @@ libcrux_ml_kem_serialize_compress_then_serialize_ring_element_v_6c(
   libcrux_ml_kem_serialize_compress_then_serialize_4_8c(re, out);
 }
 
+/**
+ This function implements <strong>Algorithm 13</strong> of the
+ NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
+
+ Algorithm 13 is reproduced below:
+
+ ```plaintext
+ Input: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
+ Input: message m ∈ 𝔹^{32}.
+ Input: encryption randomness r ∈ 𝔹^{32}.
+ Output: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+
+ N ← 0
+ t̂ ← ByteDecode₁₂(ekₚₖₑ[0:384k])
+ ρ ← ekₚₖₑ[384k: 384k + 32]
+ for (i ← 0; i < k; i++)
+     for(j ← 0; j < k; j++)
+         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
+     end for
+ end for
+ for(i ← 0; i < k; i++)
+     r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
+     N ← N + 1
+ end for
+ for(i ← 0; i < k; i++)
+     e₁[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
+     N ← N + 1
+ end for
+ e₂ ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
+ r̂ ← NTT(r)
+ u ← NTT-¹(Âᵀ ◦ r̂) + e₁
+ μ ← Decompress₁(ByteDecode₁(m)))
+ v ← NTT-¹(t̂ᵀ ◦ rˆ) + e₂ + μ
+ c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
+ c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
+ return c ← (c₁ ‖ c₂)
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.encrypt_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -5340,6 +5491,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_variant_kdf_d8_d6(
 }
 
 /**
+ This code verifies on some machines, runs out of memory on others
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
@@ -5427,6 +5581,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_decapsulate_62(
   memcpy(ret, shared_secret, (size_t)32U * sizeof(uint8_t));
 }
 
+/**
+ Portable decapsulate
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
@@ -5697,10 +5854,8 @@ libcrux_ml_kem_polynomial_add_standard_error_reduce_ef_8c(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *error) {
   for (size_t i = (size_t)0U;
        i <
-       /* Using `hax_lib::fstar::verification_status(lax)` works but produces an
-          error while extracting The semicolon and parentheses at the end of
-          loop are a workaround for the following bug
-          https://github.com/hacspec/hax/issues/720 */
+       /* The semicolon and parentheses at the end of loop are a workaround for
+          the following bug https://github.com/hacspec/hax/issues/720 */
        LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
        i++) {
     size_t j = i;
@@ -5720,6 +5875,9 @@ libcrux_ml_kem_polynomial_add_standard_error_reduce_ef_8c(
   }
 }
 
+/**
+ Compute Â ◦ ŝ + ê
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.matrix.compute_As_plus_e
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -5766,6 +5924,47 @@ static KRML_MUSTINLINE void libcrux_ml_kem_matrix_compute_As_plus_e_1b(
   }
 }
 
+/**
+ This function implements most of <strong>Algorithm 12</strong> of the
+ NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation
+ algorithm.
+
+ We say "most of" since Algorithm 12 samples the required randomness within
+ the function itself, whereas this implementation expects it to be provided
+ through the `key_generation_seed` parameter.
+
+ Algorithm 12 is reproduced below:
+
+ ```plaintext
+ Output: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
+ Output: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+
+ d ←$ B
+ (ρ,σ) ← G(d)
+ N ← 0
+ for (i ← 0; i < k; i++)
+     for(j ← 0; j < k; j++)
+         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
+     end for
+ end for
+ for(i ← 0; i < k; i++)
+     s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
+     N ← N + 1
+ end for
+ for(i ← 0; i < k; i++)
+     e[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(σ,N))
+     N ← N + 1
+ end for
+ ŝ ← NTT(s)
+ ê ← NTT(e)
+ t̂ ← Â◦ŝ + ê
+ ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
+ dkₚₖₑ ← ByteEncode₁₂(ŝ)
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.generate_keypair_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -5847,11 +6046,12 @@ libcrux_ml_kem_serialize_serialize_uncompressed_ring_element_8c(
     Eurydice_slice_copy(
         uu____0, Eurydice_array_to_slice((size_t)24U, bytes, uint8_t), uint8_t);
   }
-  uint8_t result[384U];
-  memcpy(result, serialized, (size_t)384U * sizeof(uint8_t));
-  memcpy(ret, result, (size_t)384U * sizeof(uint8_t));
+  memcpy(ret, serialized, (size_t)384U * sizeof(uint8_t));
 }
 
+/**
+ Call [`serialize_uncompressed_ring_element`] for each ring element.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_secret_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -5885,6 +6085,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_serialize_secret_key_89(
 }
 
 /**
+ Concatenate `t` and `ρ` into the public key.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_public_key_mut
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -5907,6 +6110,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_serialize_public_key_mut_6c(
       seed_for_a, uint8_t);
 }
 
+/**
+ Concatenate `t` and `ρ` into the public key.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.serialize_public_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -5995,6 +6201,9 @@ libcrux_ml_kem_ind_cpa_generate_keypair_15(Eurydice_slice key_generation_seed) {
 }
 
 /**
+ Serialize the secret key.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.serialize_kem_secret_key_mut
 with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]]
 with const generics
@@ -6060,6 +6269,14 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_serialize_kem_secret_key_d6(
 }
 
 /**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
@@ -6106,6 +6323,9 @@ libcrux_ml_kem_ind_cca_generate_keypair_f8(uint8_t randomness[64U]) {
       uu____2, libcrux_ml_kem_types_from_5f_d0(copy_of_public_key));
 }
 
+/**
+ Portable generate key pair.
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.generate_keypair with const
@@ -6172,6 +6392,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_variant_kdf_33_d6(
   memcpy(ret, ret1, (size_t)32U * sizeof(uint8_t));
 }
 
+/**
+ This code verifies on some machines, runs out of memory on others
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
@@ -6461,6 +6684,47 @@ static KRML_MUSTINLINE void libcrux_ml_kem_variant_cpa_keygen_seed_33_9c(
 }
 
 /**
+ This function implements most of <strong>Algorithm 12</strong> of the
+ NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation
+ algorithm.
+
+ We say "most of" since Algorithm 12 samples the required randomness within
+ the function itself, whereas this implementation expects it to be provided
+ through the `key_generation_seed` parameter.
+
+ Algorithm 12 is reproduced below:
+
+ ```plaintext
+ Output: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
+ Output: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+
+ d ←$ B
+ (ρ,σ) ← G(d)
+ N ← 0
+ for (i ← 0; i < k; i++)
+     for(j ← 0; j < k; j++)
+         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
+     end for
+ end for
+ for(i ← 0; i < k; i++)
+     s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
+     N ← N + 1
+ end for
+ for(i ← 0; i < k; i++)
+     e[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(σ,N))
+     N ← N + 1
+ end for
+ ŝ ← NTT(s)
+ ê ← NTT(e)
+ t̂ ← Â◦ŝ + ê
+ ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
+ dkₚₖₑ ← ByteEncode₁₂(ŝ)
+ ```
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.generate_keypair_unpacked
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
@@ -6545,6 +6809,14 @@ libcrux_ml_kem_ind_cpa_generate_keypair_150(
 }
 
 /**
+ Packed API
+
+ Generate a key pair.
+
+ Depending on the `Vector` and `Hasher` used, this requires different hardware
+ features
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
@@ -6626,6 +6898,11 @@ libcrux_ml_kem_mlkem768_portable_kyber_generate_key_pair(
 }
 
 /**
+ Validate an ML-KEM private key.
+
+ This implements the Hash check in 7.3 3.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
 with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]]
 with const generics
@@ -6651,6 +6928,13 @@ static KRML_MUSTINLINE bool libcrux_ml_kem_ind_cca_validate_private_key_only_d6(
 }
 
 /**
+ Validate an ML-KEM private key.
+
+ This implements the Hash check in 7.3 3.
+ Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
+ and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
 with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]]
 with const generics
@@ -6664,6 +6948,9 @@ static KRML_MUSTINLINE bool libcrux_ml_kem_ind_cca_validate_private_key_37(
   return libcrux_ml_kem_ind_cca_validate_private_key_only_d6(private_key);
 }
 
+/**
+ Private key validation
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.validate_private_key with const
@@ -6692,6 +6979,9 @@ static inline bool libcrux_ml_kem_mlkem768_portable_validate_private_key(
       private_key, ciphertext);
 }
 
+/**
+ Private key validation
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.validate_private_key_only with
@@ -6730,6 +7020,12 @@ libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_out_closure_1b(
 }
 
 /**
+ This function deserializes ring elements and reduces the result by the field
+ modulus.
+
+ This function MUST NOT be used on secret inputs.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_ring_elements_reduced_out with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
@@ -6745,15 +7041,18 @@ libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_out_1b(
   }
   libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_1b(
       public_key, deserialized_pk);
-  libcrux_ml_kem_polynomial_PolynomialRingElement_1d result[3U];
   memcpy(
-      result, deserialized_pk,
-      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
-  memcpy(
-      ret, result,
+      ret, deserialized_pk,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
 }
 
+/**
+ Validate an ML-KEM public key.
+
+ This implements the Modulus check in 7.2 2.
+ Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
+ `public_key` type.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -6780,6 +7079,9 @@ static KRML_MUSTINLINE bool libcrux_ml_kem_ind_cca_validate_public_key_6c(
       (size_t)1184U, public_key, public_key_serialized, uint8_t, uint8_t, bool);
 }
 
+/**
+ Public key validation
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.validate_public_key with const
@@ -6921,6 +7223,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_unpacked_decapsulate_51(
 }
 
 /**
+ Unpacked decapsulate
+*/
+/**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.unpacked.decapsulate with const
 generics
@@ -7031,6 +7336,9 @@ static KRML_MUSTINLINE tuple_c2 libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c(
   return lit;
 }
 
+/**
+ Unpacked encapsulate
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.unpacked.encapsulate with const
@@ -7163,6 +7471,9 @@ static inline void libcrux_ml_kem_ind_cca_unpacked_transpose_a_1b(
 }
 
 /**
+ Generate Unpacked Keys
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.generate_keypair
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector,
 libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
@@ -7221,6 +7532,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_f8(
          (size_t)32U * sizeof(uint8_t));
 }
 
+/**
+ Generate a key pair
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.unpacked.generate_keypair with
@@ -7394,6 +7708,9 @@ libcrux_ml_kem_mlkem768_portable_unpacked_init_public_key(void) {
 }
 
 /**
+ Take a serialized private key and generate an unpacked key pair from it.
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.keys_from_private_key
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -7447,6 +7764,9 @@ libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_df(
                       uint8_t);
 }
 
+/**
+ Take a serialized private key and generate an unpacked key pair from it.
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.unpacked.keypair_from_private_key
@@ -7603,6 +7923,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_fc_6c(
   return libcrux_ml_kem_ind_cca_unpacked_serialized_30_6c(&self->public_key);
 }
 
+/**
+ Get the serialized public key.
+*/
 static inline libcrux_ml_kem_types_MlKemPublicKey_30
 libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_public_key(
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
@@ -7655,6 +7978,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_fc_6c(
                                                        serialized);
 }
 
+/**
+ Get the serialized public key.
+*/
 static inline void
 libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_public_key_mut(
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair,
@@ -7752,6 +8078,9 @@ static inline void libcrux_ml_kem_mlkem768_portable_unpacked_public_key(
   pk[0U] = uu____0;
 }
 
+/**
+ Get the serialized public key.
+*/
 static inline void
 libcrux_ml_kem_mlkem768_portable_unpacked_serialized_public_key(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
@@ -7759,6 +8088,9 @@ libcrux_ml_kem_mlkem768_portable_unpacked_serialized_public_key(
   libcrux_ml_kem_ind_cca_unpacked_serialized_mut_30_6c(public_key, serialized);
 }
 
+/**
+ Generate an unpacked key from a serialized key.
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.unpack_public_key
 with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]],
@@ -7802,6 +8134,9 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_f9(
          (size_t)32U * sizeof(uint8_t));
 }
 
+/**
+ Get the unpacked public key.
+*/
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.unpacked.unpack_public_key with
