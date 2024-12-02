@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 9d4ad0ef1e00d55aa483ae761f3d5b4911c0678f
+ * Libcrux: 3e54f3c659bef6ee815d197ee5c74dd40c75186a
  */
 
 #include "internal/libcrux_mlkem_avx2.h"
@@ -141,16 +141,11 @@ KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_arithmetic_cond_subtract_3329(__m256i vector) {
   __m256i field_modulus =
       mm256_set1_epi16(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  __m256i v_minus_field_modulus =
-      mm256_sub_epi16(/* Compute v_i - Q and crate a mask from the sign bit of
-                         each of these quantities. */
-                      vector,
-                      field_modulus);
+  __m256i v_minus_field_modulus = mm256_sub_epi16(vector, field_modulus);
   __m256i sign_mask =
       mm256_srai_epi16((int32_t)15, v_minus_field_modulus, __m256i);
-  __m256i conditional_add_field_modulus = mm256_and_si256(
-      /* If v_i - Q < 0 then add back Q to (v_i - Q). */ sign_mask,
-      field_modulus);
+  __m256i conditional_add_field_modulus =
+      mm256_and_si256(sign_mask, field_modulus);
   return mm256_add_epi16(v_minus_field_modulus, conditional_add_field_modulus);
 }
 
@@ -455,7 +450,6 @@ libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(__m256i vec) {
 KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
     __m256i lhs, __m256i rhs, int16_t zeta0, int16_t zeta1, int16_t zeta2,
     int16_t zeta3) {
-  /* Compute the first term of the product */
   __m256i shuffle_with = mm256_set_epi8(
       (int8_t)15, (int8_t)14, (int8_t)11, (int8_t)10, (int8_t)7, (int8_t)6,
       (int8_t)3, (int8_t)2, (int8_t)13, (int8_t)12, (int8_t)9, (int8_t)8,
@@ -463,8 +457,7 @@ KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
       (int8_t)11, (int8_t)10, (int8_t)7, (int8_t)6, (int8_t)3, (int8_t)2,
       (int8_t)13, (int8_t)12, (int8_t)9, (int8_t)8, (int8_t)5, (int8_t)4,
       (int8_t)1, (int8_t)0);
-  __m256i lhs_shuffled =
-      mm256_shuffle_epi8(/* Prepare the left hand side */ lhs, shuffle_with);
+  __m256i lhs_shuffled = mm256_shuffle_epi8(lhs, shuffle_with);
   __m256i lhs_shuffled0 =
       mm256_permute4x64_epi64((int32_t)216, lhs_shuffled, __m256i);
   __m128i lhs_evens = mm256_castsi256_si128(lhs_shuffled0);
@@ -472,8 +465,7 @@ KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
   __m128i lhs_odds =
       mm256_extracti128_si256((int32_t)1, lhs_shuffled0, __m128i);
   __m256i lhs_odds0 = mm256_cvtepi16_epi32(lhs_odds);
-  __m256i rhs_shuffled =
-      mm256_shuffle_epi8(/* Prepare the right hand side */ rhs, shuffle_with);
+  __m256i rhs_shuffled = mm256_shuffle_epi8(rhs, shuffle_with);
   __m256i rhs_shuffled0 =
       mm256_permute4x64_epi64((int32_t)216, rhs_shuffled, __m256i);
   __m128i rhs_evens = mm256_castsi256_si128(rhs_shuffled0);
@@ -481,8 +473,7 @@ KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
   __m128i rhs_odds =
       mm256_extracti128_si256((int32_t)1, rhs_shuffled0, __m128i);
   __m256i rhs_odds0 = mm256_cvtepi16_epi32(rhs_odds);
-  __m256i left =
-      mm256_mullo_epi32(/* Start operating with them */ lhs_evens0, rhs_evens0);
+  __m256i left = mm256_mullo_epi32(lhs_evens0, rhs_evens0);
   __m256i right = mm256_mullo_epi32(lhs_odds0, rhs_odds0);
   __m256i right0 =
       libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(right);
@@ -495,7 +486,7 @@ KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
       libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(
           products_left);
   __m256i rhs_adjacent_swapped = mm256_shuffle_epi8(
-      /* Compute the second term of the product */ rhs,
+      rhs,
       mm256_set_epi8((int8_t)13, (int8_t)12, (int8_t)15, (int8_t)14, (int8_t)9,
                      (int8_t)8, (int8_t)11, (int8_t)10, (int8_t)5, (int8_t)4,
                      (int8_t)7, (int8_t)6, (int8_t)1, (int8_t)0, (int8_t)3,
@@ -509,9 +500,8 @@ KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_multiply(
           products_right);
   __m256i products_right1 =
       mm256_slli_epi32((int32_t)16, products_right0, __m256i);
-  return mm256_blend_epi16((int32_t)170,
-                           /* Combine them into one vector */ products_left0,
-                           products_right1, __m256i);
+  return mm256_blend_epi16((int32_t)170, products_left0, products_right1,
+                           __m256i);
 }
 
 /**
@@ -527,44 +517,11 @@ KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_ntt_multiply_09(
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_1(
     __m256i vector, uint8_t ret[2U]) {
-  __m256i lsb_to_msb = mm256_slli_epi16(
-      (int32_t)15,
-      /* Suppose |vector| is laid out as follows (superscript number indicates
-         the corresponding bit is duplicated that many times): 0¹⁵a₀ 0¹⁵b₀ 0¹⁵c₀
-         0¹⁵d₀ | 0¹⁵e₀ 0¹⁵f₀ 0¹⁵g₀ 0¹⁵h₀ | ... We care only about the least
-         significant bit in each lane, move it to the most significant position
-         to make it easier to work with. |vector| now becomes: a₀0¹⁵ b₀0¹⁵ c₀0¹⁵
-         d₀0¹⁵ | e₀0¹⁵ f₀0¹⁵ g₀0¹⁵ h₀0¹⁵ | ↩ i₀0¹⁵ j₀0¹⁵ k₀0¹⁵ l₀0¹⁵ | m₀0¹⁵
-         n₀0¹⁵ o₀0¹⁵ p₀0¹⁵ */
-      vector, __m256i);
-  __m128i low_msbs = mm256_castsi256_si128(
-      /* Get the first 8 16-bit elements ... */ lsb_to_msb);
-  __m128i high_msbs = mm256_extracti128_si256(
-      (int32_t)1,
-      /* ... and the next 8 16-bit elements ... */ lsb_to_msb, __m128i);
-  __m128i msbs =
-      mm_packs_epi16(/* ... and then pack them into 8-bit values using signed
-                        saturation. This function packs all the |low_msbs|, and
-                        then the high ones. low_msbs = a₀0¹⁵ b₀0¹⁵ c₀0¹⁵ d₀0¹⁵ |
-                        e₀0¹⁵ f₀0¹⁵ g₀0¹⁵ h₀0¹⁵ high_msbs = i₀0¹⁵ j₀0¹⁵ k₀0¹⁵
-                        l₀0¹⁵ | m₀0¹⁵ n₀0¹⁵ o₀0¹⁵ p₀0¹⁵ We shifted by 15 above
-                        to take advantage of the signed saturation performed by
-                        mm_packs_epi16: - if the sign bit of the 16-bit element
-                        being packed is 1, the corresponding 8-bit element in
-                        |msbs| will be 0xFF. - if the sign bit of the 16-bit
-                        element being packed is 0, the corresponding 8-bit
-                        element in |msbs| will be 0. Thus, if, for example, a₀ =
-                        1, e₀ = 1, and p₀ = 1, and every other bit is 0, after
-                        packing into 8 bit value, |msbs| will look like: 0xFF
-                        0x00 0x00 0x00 | 0xFF 0x00 0x00 0x00 | 0x00 0x00 0x00
-                        0x00 | 0x00 0x00 0x00 0xFF */
-                     low_msbs,
-                     high_msbs);
-  int32_t bits_packed =
-      mm_movemask_epi8(/* Now that every element is either 0xFF or 0x00, we just
-                          extract the most significant bit from each element and
-                          collate them into two bytes. */
-                       msbs);
+  __m256i lsb_to_msb = mm256_slli_epi16((int32_t)15, vector, __m256i);
+  __m128i low_msbs = mm256_castsi256_si128(lsb_to_msb);
+  __m128i high_msbs = mm256_extracti128_si256((int32_t)1, lsb_to_msb, __m128i);
+  __m128i msbs = mm_packs_epi16(low_msbs, high_msbs);
+  int32_t bits_packed = mm_movemask_epi8(msbs);
   uint8_t result[2U] = {(uint8_t)bits_packed, (uint8_t)(bits_packed >> 8U)};
   memcpy(ret, result, (size_t)2U * sizeof(uint8_t));
 }
@@ -582,39 +539,16 @@ KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_i16s(
     int16_t a, int16_t b) {
   __m256i coefficients =
-      mm256_set_epi16(/* We need to take each bit from the 2 bytes of input and
-                         put them into their own 16-bit lane. Ideally, we'd load
-                         the two bytes into the vector, duplicate them, and
-                         right-shift the 0th element by 0 bits, the first
-                         element by 1 bit, the second by 2 bits and so on before
-                         AND-ing with 0x1 to leave only the least signifinicant
-                         bit. But since |_mm256_srlv_epi16| does not exist, so
-                         we have to resort to a workaround. Rather than shifting
-                         each element by a different amount, we'll multiply each
-                         element by a value such that the bit we're interested
-                         in becomes the most significant bit. The coefficients
-                         are loaded as follows: */
-                      b,
-                      b, b, b, b, b, b, b, a, a, a, a, a, a, a, a);
-  __m256i coefficients_in_msb =
-      mm256_mullo_epi16(/* And this vector, when multiplied with the previous
-                           one, ensures that the bit we'd like to keep in each
-                           lane becomes the most significant bit upon
-                           multiplication. */
-                        coefficients,
-                        mm256_set_epi16((int16_t)1 << 8U, (int16_t)1 << 9U,
-                                        (int16_t)1 << 10U, (int16_t)1 << 11U,
-                                        (int16_t)1 << 12U, (int16_t)1 << 13U,
-                                        (int16_t)1 << 14U, (int16_t)-32768,
-                                        (int16_t)1 << 8U, (int16_t)1 << 9U,
-                                        (int16_t)1 << 10U, (int16_t)1 << 11U,
-                                        (int16_t)1 << 12U, (int16_t)1 << 13U,
-                                        (int16_t)1 << 14U, (int16_t)-32768));
-  return mm256_srli_epi16(
-      (int32_t)15,
-      /* Now that they're all in the most significant bit position, shift them
-         down to the least significant bit. */
-      coefficients_in_msb, __m256i);
+      mm256_set_epi16(b, b, b, b, b, b, b, b, a, a, a, a, a, a, a, a);
+  __m256i coefficients_in_msb = mm256_mullo_epi16(
+      coefficients,
+      mm256_set_epi16((int16_t)1 << 8U, (int16_t)1 << 9U, (int16_t)1 << 10U,
+                      (int16_t)1 << 11U, (int16_t)1 << 12U, (int16_t)1 << 13U,
+                      (int16_t)1 << 14U, (int16_t)-32768, (int16_t)1 << 8U,
+                      (int16_t)1 << 9U, (int16_t)1 << 10U, (int16_t)1 << 11U,
+                      (int16_t)1 << 12U, (int16_t)1 << 13U, (int16_t)1 << 14U,
+                      (int16_t)-32768));
+  return mm256_srli_epi16((int32_t)15, coefficients_in_msb, __m256i);
 }
 
 KRML_MUSTINLINE __m256i
@@ -627,23 +561,7 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_u8s(
 KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_1(Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_u8s(
-      Eurydice_slice_index(
-          bytes,
-          /* We need to take each bit from the 2 bytes of input and put them
-             into their own 16-bit lane. Ideally, we'd load the two bytes into
-             the vector, duplicate them, and right-shift the 0th element by 0
-             bits, the first element by 1 bit, the second by 2 bits and so on
-             before AND-ing with 0x1 to leave only the least signifinicant bit.
-             But since |_mm256_srlv_epi16| does not exist, so we have to resort
-             to a workaround. Rather than shifting each element by a different
-             amount, we'll multiply each element by a value such that the bit
-             we're interested in becomes the most significant bit. The
-             coefficients are loaded as follows: And this vector, when
-             multiplied with the previous one, ensures that the bit we'd like to
-             keep in each lane becomes the most significant bit upon
-             multiplication. Now that they're all in the most significant bit
-             position, shift them down to the least significant bit. */
-          (size_t)0U, uint8_t, uint8_t *),
+      Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *),
       Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *));
 }
 
@@ -676,47 +594,23 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_4(
     __m256i vector, uint8_t ret[8U]) {
   uint8_t serialized[16U] = {0U};
   __m256i adjacent_2_combined =
-      libcrux_ml_kem_vector_avx2_serialize_mm256_concat_pairs_n(
-          4U,
-          /* If |vector| is laid out as follows: 0x000A 0x000B 0x000C 0x000D |
-             0x000E 0x000F 0x000G 0x000H | .... |adjacent_2_combined| will be
-             laid out as a series of 32-bit integeres, as follows: 0x00_00_00_BA
-             0x00_00_00_DC | 0x00_00_00_FE 0x00_00_00_HG | ... */
-          vector);
-  __m256i adjacent_8_combined =
-      mm256_shuffle_epi8(/* Recall that |adjacent_2_combined| goes as follows:
-                            0x00_00_00_BA 0x00_00_00_DC | 0x00_00_00_FE
-                            0x00_00_00_HG | ... Out of this, we only need the
-                            first byte, the 4th byte, the 8th byte and so on
-                            from the bottom and the top 128 bits. */
-                         adjacent_2_combined,
-                         mm256_set_epi8(
-                             (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-                             (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-                             (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-                             (int8_t)12, (int8_t)8, (int8_t)4, (int8_t)0,
-                             (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-                             (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-                             (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-                             (int8_t)12, (int8_t)8, (int8_t)4, (int8_t)0));
-  __m256i combined =
-      mm256_permutevar8x32_epi32(/* |adjacent_8_combined| looks like this: 0:
-                                    0xHG_FE_DC_BA 1: 0x00_00_00_00 | 2:
-                                    0x00_00_00_00 3: 0x00_00_00_00 | 4:
-                                    0xPO_NM_LK_JI .... We put the element at 4
-                                    after the element at 0 ... */
-                                 adjacent_8_combined,
-                                 mm256_set_epi32((int32_t)0, (int32_t)0,
-                                                 (int32_t)0, (int32_t)0,
-                                                 (int32_t)0, (int32_t)0,
-                                                 (int32_t)4, (int32_t)0));
+      libcrux_ml_kem_vector_avx2_serialize_mm256_concat_pairs_n(4U, vector);
+  __m256i adjacent_8_combined = mm256_shuffle_epi8(
+      adjacent_2_combined,
+      mm256_set_epi8((int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+                     (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+                     (int8_t)-1, (int8_t)-1, (int8_t)12, (int8_t)8, (int8_t)4,
+                     (int8_t)0, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+                     (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+                     (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)12, (int8_t)8,
+                     (int8_t)4, (int8_t)0));
+  __m256i combined = mm256_permutevar8x32_epi32(
+      adjacent_8_combined,
+      mm256_set_epi32((int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0,
+                      (int32_t)0, (int32_t)0, (int32_t)4, (int32_t)0));
   __m128i combined0 = mm256_castsi256_si128(combined);
   mm_storeu_bytes_si128(
-      Eurydice_array_to_slice(
-          (size_t)16U,
-          /* ... so that we can read them out in one go. */ serialized,
-          uint8_t),
-      combined0);
+      Eurydice_array_to_slice((size_t)16U, serialized, uint8_t), combined0);
   uint8_t ret0[8U];
   core_result_Result_15 dst;
   Eurydice_slice_to_array2(
@@ -740,23 +634,8 @@ KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_i16s(
     int16_t b0, int16_t b1, int16_t b2, int16_t b3, int16_t b4, int16_t b5,
     int16_t b6, int16_t b7) {
-  __m256i coefficients =
-      mm256_set_epi16(/* Every 4 bits from each byte of input should be put into
-                         its own 16-bit lane. Since |_mm256_srlv_epi16| does not
-                         exist, we have to resort to a workaround. Rather than
-                         shifting each element by a different amount, we'll
-                         multiply each element by a value such that the bits
-                         we're interested in become the most significant bits
-                         (of an 8-bit value). In this lane, the 4 bits we need
-                         to put are already the most significant bits of
-                         |bytes[7]| (that is, b7). */
-                      b7,
-                      /* In this lane, the 4 bits we need to put are the least
-                         significant bits, so we need to shift the 4
-                         least-significant bits of |b7| to the most significant
-                         bits (of an 8-bit value). */
-                      b7, b6, b6, b5, b5, b4, b4, b3, b3, b2, b2, b1, b1, b0,
-                      b0);
+  __m256i coefficients = mm256_set_epi16(b7, b7, b6, b6, b5, b5, b4, b4, b3, b3,
+                                         b2, b2, b1, b1, b0, b0);
   __m256i coefficients_in_msb = mm256_mullo_epi16(
       coefficients,
       mm256_set_epi16((int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
@@ -765,12 +644,9 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_i16s(
                       (int16_t)1 << 4U, (int16_t)1 << 0U, (int16_t)1 << 4U,
                       (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
                       (int16_t)1 << 4U));
-  __m256i coefficients_in_lsb = mm256_srli_epi16(
-      (int32_t)4,
-      /* Once the 4-bit coefficients are in the most significant positions (of
-         an 8-bit value), shift them all down by 4. */
-      coefficients_in_msb, __m256i);
-  return mm256_and_si256(/* Zero the remaining bits. */ coefficients_in_lsb,
+  __m256i coefficients_in_lsb =
+      mm256_srli_epi16((int32_t)4, coefficients_in_msb, __m256i);
+  return mm256_and_si256(coefficients_in_lsb,
                          mm256_set1_epi16(((int16_t)1 << 4U) - (int16_t)1));
 }
 
@@ -786,23 +662,7 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_u8s(
 KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_4(Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_u8s(
-      Eurydice_slice_index(
-          bytes,
-          /* Every 4 bits from each byte of input should be put into its own
-             16-bit lane. Since |_mm256_srlv_epi16| does not exist, we have to
-             resort to a workaround. Rather than shifting each element by a
-             different amount, we'll multiply each element by a value such that
-             the bits we're interested in become the most significant bits (of
-             an 8-bit value). In this lane, the 4 bits we need to put are
-             already the most significant bits of |bytes[7]| (that is, b7). In
-             this lane, the 4 bits we need to put are the least significant
-             bits, so we need to shift the 4 least-significant bits of |b7| to
-             the most significant bits (of an 8-bit value). These constants are
-             chosen to shift the bits of the values that we loaded into
-             |coefficients|. Once the 4-bit coefficients are in the most
-             significant positions (of an 8-bit value), shift them all down
-             by 4. Zero the remaining bits. */
-          (size_t)0U, uint8_t, uint8_t *),
+      Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *),
       Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
       Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *),
       Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *),
@@ -824,78 +684,32 @@ libcrux_ml_kem_vector_avx2_deserialize_4_09(Eurydice_slice bytes) {
 KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_5(
     __m256i vector, uint8_t ret[10U]) {
   uint8_t serialized[32U] = {0U};
-  __m256i adjacent_2_combined =
-      mm256_madd_epi16(/* If |vector| is laid out as follows (superscript number
-                          indicates the corresponding bit is duplicated that
-                          many times): 0¹¹a₄a₃a₂a₁a₀ 0¹¹b₄b₃b₂b₁b₀ 0¹¹c₄c₃c₂c₁c₀
-                          0¹¹d₄d₃d₂d₁d₀ | ↩ 0¹¹e₄e₃e₂e₁e₀ 0¹¹f₄f₃f₂f₁f₀
-                          0¹¹g₄g₃g₂g₁g₀ 0¹¹h₄h₃h₂h₁h₀ | ↩ |adjacent_2_combined|
-                          will be laid out as a series of 32-bit integers, as
-                          follows: 0²²b₄b₃b₂b₁b₀a₄a₃a₂a₁a₀
-                          0²²d₄d₃d₂d₁d₀c₄c₃c₂c₁c₀ | ↩ 0²²f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀
-                          0²²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀ | ↩ .... */
-                       vector,
-                       mm256_set_epi16(
-                           (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U,
-                           (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
-                           (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U,
-                           (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
-                           (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U,
-                           (int16_t)1));
-  __m256i adjacent_4_combined =
-      mm256_sllv_epi32(/* Recall that |adjacent_2_combined| is laid out as
-                          follows: 0²²b₄b₃b₂b₁b₀a₄a₃a₂a₁a₀
-                          0²²d₄d₃d₂d₁d₀c₄c₃c₂c₁c₀ | ↩ 0²²f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀
-                          0²²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀ | ↩ .... This shift results
-                          in: b₄b₃b₂b₁b₀a₄a₃a₂a₁a₀0²² 0²²d₄d₃d₂d₁d₀c₄c₃c₂c₁c₀ |
-                          ↩ f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀0²² 0²²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀ | ↩
-                          .... */
-                       adjacent_2_combined,
-                       mm256_set_epi32((int32_t)0, (int32_t)22, (int32_t)0,
-                                       (int32_t)22, (int32_t)0, (int32_t)22,
-                                       (int32_t)0, (int32_t)22));
-  __m256i adjacent_4_combined0 = mm256_srli_epi64(
-      (int32_t)22,
-      /* |adjacent_4_combined|, when viewed as 64-bit lanes, is:
-         0²²d₄d₃d₂d₁d₀c₄c₃c₂c₁c₀b₄b₃b₂b₁b₀a₄a₃a₂a₁a₀0²² | ↩
-         0²²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀0²² | ↩ ... so we just shift
-         down by 22 bits to remove the least significant 0 bits that aren't part
-         of the bits we need. */
-      adjacent_4_combined, __m256i);
-  __m256i adjacent_8_combined = mm256_shuffle_epi32(
-      (int32_t)8,
-      /* |adjacent_4_combined|, when viewed as a set of 32-bit values, looks
-         like: 0:0¹²d₄d₃d₂d₁d₀c₄c₃c₂c₁c₀b₄b₃b₂b₁b₀a₄a₃a₂a₁a₀ 1:0³²
-         2:0¹²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀ 3:0³² | ↩ To be able to
-         read out the bytes in one go, we need to shifts the bits in position 2
-         to position 1 in each 128-bit lane. */
-      adjacent_4_combined0, __m256i);
-  __m256i adjacent_8_combined0 =
-      mm256_sllv_epi32(/* |adjacent_8_combined|, when viewed as a set of 32-bit
-                          values, now looks like:
-                          0¹²d₄d₃d₂d₁d₀c₄c₃c₂c₁c₀b₄b₃b₂b₁b₀a₄a₃a₂a₁a₀
-                          0¹²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀ 0³² 0³² |
-                          ↩ Once again, we line these bits up by shifting the up
-                          values at indices 0 and 5 by 12, viewing the resulting
-                          register as a set of 64-bit values, and then shifting
-                          down the 64-bit values by 12 bits. */
-                       adjacent_8_combined,
-                       mm256_set_epi32((int32_t)0, (int32_t)0, (int32_t)0,
-                                       (int32_t)12, (int32_t)0, (int32_t)0,
-                                       (int32_t)0, (int32_t)12));
+  __m256i adjacent_2_combined = mm256_madd_epi16(
+      vector, mm256_set_epi16(
+                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
+                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
+                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
+                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1));
+  __m256i adjacent_4_combined = mm256_sllv_epi32(
+      adjacent_2_combined,
+      mm256_set_epi32((int32_t)0, (int32_t)22, (int32_t)0, (int32_t)22,
+                      (int32_t)0, (int32_t)22, (int32_t)0, (int32_t)22));
+  __m256i adjacent_4_combined0 =
+      mm256_srli_epi64((int32_t)22, adjacent_4_combined, __m256i);
+  __m256i adjacent_8_combined =
+      mm256_shuffle_epi32((int32_t)8, adjacent_4_combined0, __m256i);
+  __m256i adjacent_8_combined0 = mm256_sllv_epi32(
+      adjacent_8_combined,
+      mm256_set_epi32((int32_t)0, (int32_t)0, (int32_t)0, (int32_t)12,
+                      (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)12));
   __m256i adjacent_8_combined1 =
       mm256_srli_epi64((int32_t)12, adjacent_8_combined0, __m256i);
-  __m128i lower_8 =
-      mm256_castsi256_si128(/* We now have 40 bits starting at position 0 in the
-                               lower 128-bit lane, ... */
-                            adjacent_8_combined1);
+  __m128i lower_8 = mm256_castsi256_si128(adjacent_8_combined1);
   mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t),
       lower_8);
-  __m128i upper_8 = mm256_extracti128_si256(
-      (int32_t)1,
-      /* ... and the second 40 bits at position 0 in the upper 128-bit lane */
-      adjacent_8_combined1, __m128i);
+  __m128i upper_8 =
+      mm256_extracti128_si256((int32_t)1, adjacent_8_combined1, __m128i);
   mm_storeu_bytes_si128(
       Eurydice_array_to_subslice2(serialized, (size_t)5U, (size_t)21U, uint8_t),
       upper_8);
@@ -989,67 +803,25 @@ core_core_arch_x86___m128i_x2
 libcrux_ml_kem_vector_avx2_serialize_serialize_10_serialize_10_vec(
     __m256i vector) {
   __m256i adjacent_2_combined =
-      libcrux_ml_kem_vector_avx2_serialize_mm256_concat_pairs_n(
-          10U,
-          /* If |vector| is laid out as follows (superscript number indicates
-             the corresponding bit is duplicated that many times):
-             0⁶a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀ 0⁶b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀
-             0⁶c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀ 0⁶d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀ | ↩
-             0⁶e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀ 0⁶f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀
-             0⁶g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀ 0⁶h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀ | ↩ ...
-             |adjacent_2_combined| will be laid out as a series of 32-bit
-             integers, as follows: 0¹²b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀
-             0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀ | ↩
-             0¹²f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀
-             0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀ | ↩ .... */
-          vector);
-  __m256i adjacent_4_combined =
-      mm256_sllv_epi32(/* Shifting up the values at the even indices by 12, we
-                          get: b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀0¹²
-                          0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀ | ↩
-                          f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀0¹²
-                          0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀ | ↩ ... */
-                       adjacent_2_combined,
-                       mm256_set_epi32((int32_t)0, (int32_t)12, (int32_t)0,
-                                       (int32_t)12, (int32_t)0, (int32_t)12,
-                                       (int32_t)0, (int32_t)12));
+      libcrux_ml_kem_vector_avx2_serialize_mm256_concat_pairs_n(10U, vector);
+  __m256i adjacent_4_combined = mm256_sllv_epi32(
+      adjacent_2_combined,
+      mm256_set_epi32((int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12,
+                      (int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12));
   __m256i adjacent_4_combined0 =
-      mm256_srli_epi64((int32_t)12,
-                       /* Viewing this as a set of 64-bit integers we get:
-                          0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀0¹²
-                          | ↩
-                          0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀0¹²
-                          | ↩ ... Shifting down by 12 gives us:
-                          0²⁴d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀
-                          | ↩
-                          0²⁴h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀
-                          | ↩ ... */
-                       adjacent_4_combined, __m256i);
-  __m256i adjacent_8_combined =
-      mm256_shuffle_epi8(/* |adjacent_4_combined|, when the bottom and top 128
-                            bit-lanes are grouped into bytes, looks like:
-                            0₇0₆0₅B₄B₃B₂B₁B₀ | ↩ 0₁₅0₁₄0₁₃B₁₂B₁₁B₁₀B₉B₈ | ↩ In
-                            each 128-bit lane, we want to put bytes 8, 9, 10,
-                            11, 12 after bytes 0, 1, 2, 3 to allow for
-                            sequential reading. */
-                         adjacent_4_combined0,
-                         mm256_set_epi8(
-                             (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-                             (int8_t)-1, (int8_t)-1, (int8_t)12, (int8_t)11,
-                             (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)4,
-                             (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0,
-                             (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-                             (int8_t)-1, (int8_t)-1, (int8_t)12, (int8_t)11,
-                             (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)4,
-                             (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0));
-  __m128i lower_8 =
-      mm256_castsi256_si128(/* We now have 64 bits starting at position 0 in the
-                               lower 128-bit lane, ... */
-                            adjacent_8_combined);
-  __m128i upper_8 = mm256_extracti128_si256(
-      (int32_t)1,
-      /* and 64 bits starting at position 0 in the upper 128-bit lane. */
-      adjacent_8_combined, __m128i);
+      mm256_srli_epi64((int32_t)12, adjacent_4_combined, __m256i);
+  __m256i adjacent_8_combined = mm256_shuffle_epi8(
+      adjacent_4_combined0,
+      mm256_set_epi8((int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+                     (int8_t)-1, (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9,
+                     (int8_t)8, (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)1,
+                     (int8_t)0, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+                     (int8_t)-1, (int8_t)-1, (int8_t)12, (int8_t)11, (int8_t)10,
+                     (int8_t)9, (int8_t)8, (int8_t)4, (int8_t)3, (int8_t)2,
+                     (int8_t)1, (int8_t)0));
+  __m128i lower_8 = mm256_castsi256_si128(adjacent_8_combined);
+  __m128i upper_8 =
+      mm256_extracti128_si256((int32_t)1, adjacent_8_combined, __m128i);
   return (
       CLITERAL(core_core_arch_x86___m128i_x2){.fst = lower_8, .snd = upper_8});
 }
@@ -1057,167 +829,8 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_10_serialize_10_vec(
 KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_10(
     __m256i vector, uint8_t ret[20U]) {
   core_core_arch_x86___m128i_x2 uu____0 =
-      libcrux_ml_kem_vector_avx2_serialize_serialize_10_serialize_10_vec(/* If
-                                                                            |vector|
-                                                                            is
-                                                                            laid
-                                                                            out
-                                                                            as
-                                                                            follows
-                                                                            (superscript
-                                                                            number
-                                                                            indicates
-                                                                            the
-                                                                            corresponding
-                                                                            bit
-                                                                            is
-                                                                            duplicated
-                                                                            that
-                                                                            many
-                                                                            times):
-                                                                            0⁶a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀
-                                                                            0⁶b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀
-                                                                            0⁶c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀
-                                                                            0⁶d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀
-                                                                            | ↩
-                                                                            0⁶e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀
-                                                                            0⁶f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀
-                                                                            0⁶g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀
-                                                                            0⁶h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀
-                                                                            | ↩
-                                                                            ...
-                                                                            |adjacent_2_combined|
-                                                                            will
-                                                                            be
-                                                                            laid
-                                                                            out
-                                                                            as a
-                                                                            series
-                                                                            of
-                                                                            32-bit
-                                                                            integers,
-                                                                            as
-                                                                            follows:
-                                                                            0¹²b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀
-                                                                            0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀
-                                                                            | ↩
-                                                                            0¹²f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀
-                                                                            0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀
-                                                                            | ↩
-                                                                            ....
-                                                                            Shifting
-                                                                            up
-                                                                            the
-                                                                            values
-                                                                            at
-                                                                            the
-                                                                            even
-                                                                            indices
-                                                                            by
-                                                                            12,
-                                                                            we
-                                                                            get:
-                                                                            b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀0¹²
-                                                                            0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀
-                                                                            | ↩
-                                                                            f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀0¹²
-                                                                            0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀
-                                                                            | ↩
-                                                                            ...
-                                                                            Viewing
-                                                                            this
-                                                                            as a
-                                                                            set
-                                                                            of
-                                                                            64-bit
-                                                                            integers
-                                                                            we
-                                                                            get:
-                                                                            0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀0¹²
-                                                                            | ↩
-                                                                            0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀0¹²
-                                                                            | ↩
-                                                                            ...
-                                                                            Shifting
-                                                                            down
-                                                                            by
-                                                                            12
-                                                                            gives
-                                                                            us:
-                                                                            0²⁴d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀
-                                                                            | ↩
-                                                                            0²⁴h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀
-                                                                            | ↩
-                                                                            ...
-                                                                            |adjacent_4_combined|,
-                                                                            when
-                                                                            the
-                                                                            bottom
-                                                                            and
-                                                                            top
-                                                                            128
-                                                                            bit-lanes
-                                                                            are
-                                                                            grouped
-                                                                            into
-                                                                            bytes,
-                                                                            looks
-                                                                            like:
-                                                                            0₇0₆0₅B₄B₃B₂B₁B₀
-                                                                            | ↩
-                                                                            0₁₅0₁₄0₁₃B₁₂B₁₁B₁₀B₉B₈
-                                                                            | ↩
-                                                                            In
-                                                                            each
-                                                                            128-bit
-                                                                            lane,
-                                                                            we
-                                                                            want
-                                                                            to
-                                                                            put
-                                                                            bytes
-                                                                            8,
-                                                                            9,
-                                                                            10,
-                                                                            11,
-                                                                            12
-                                                                            after
-                                                                            bytes
-                                                                            0,
-                                                                            1,
-                                                                            2, 3
-                                                                            to
-                                                                            allow
-                                                                            for
-                                                                            sequential
-                                                                            reading.
-                                                                            We
-                                                                            now
-                                                                            have
-                                                                            64
-                                                                            bits
-                                                                            starting
-                                                                            at
-                                                                            position
-                                                                            0 in
-                                                                            the
-                                                                            lower
-                                                                            128-bit
-                                                                            lane,
-                                                                            ...
-                                                                            and
-                                                                            64
-                                                                            bits
-                                                                            starting
-                                                                            at
-                                                                            position
-                                                                            0 in
-                                                                            the
-                                                                            upper
-                                                                            128-bit
-                                                                            lane.
-                                                                          */
-                                                                         vector);
+      libcrux_ml_kem_vector_avx2_serialize_serialize_10_serialize_10_vec(
+          vector);
   __m128i lower_8 = uu____0.fst;
   __m128i upper_8 = uu____0.snd;
   uint8_t serialized[32U] = {0U};
@@ -1267,16 +880,14 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_10_deserialize_10_vec(
                       (int16_t)1 << 0U, (int16_t)1 << 2U, (int16_t)1 << 4U,
                       (int16_t)1 << 6U));
   __m256i coefficients1 = mm256_srli_epi16((int32_t)6, coefficients0, __m256i);
-  return mm256_and_si256(
-      /* Here I can prove this `and` is not useful */ coefficients1,
-      mm256_set1_epi16(((int16_t)1 << 10U) - (int16_t)1));
+  return mm256_and_si256(coefficients1,
+                         mm256_set1_epi16(((int16_t)1 << 10U) - (int16_t)1));
 }
 
 KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_10(Eurydice_slice bytes) {
-  Eurydice_slice lower_coefficients = Eurydice_slice_subslice2(
-      /* Here I can prove this `and` is not useful */ bytes, (size_t)0U,
-      (size_t)16U, uint8_t);
+  Eurydice_slice lower_coefficients =
+      Eurydice_slice_subslice2(bytes, (size_t)0U, (size_t)16U, uint8_t);
   Eurydice_slice upper_coefficients =
       Eurydice_slice_subslice2(bytes, (size_t)4U, (size_t)20U, uint8_t);
   return libcrux_ml_kem_vector_avx2_serialize_deserialize_10_deserialize_10_vec(
@@ -1442,64 +1053,26 @@ KRML_MUSTINLINE size_t libcrux_ml_kem_vector_avx2_sampling_rejection_sample(
   __m256i field_modulus =
       mm256_set1_epi16(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i potential_coefficients =
-      libcrux_ml_kem_vector_avx2_serialize_deserialize_12(/* The input bytes can
-                                                             be interpreted as a
-                                                             sequence of
-                                                             serialized 12-bit
-                                                             (i.e. uncompressed)
-                                                             coefficients. Not
-                                                             all coefficients
-                                                             may be less than
-                                                             FIELD_MODULUS
-                                                             though. */
-                                                          input);
+      libcrux_ml_kem_vector_avx2_serialize_deserialize_12(input);
   __m256i compare_with_field_modulus =
-      mm256_cmpgt_epi16(/* Suppose we view |potential_coefficients| as follows
-                           (grouping 64-bit elements): A B C D | E F G H | ....
-                           and A < 3329, D < 3329 and H < 3329,
-                           |compare_with_field_modulus| will look like: 0xFF 0 0
-                           0xFF | 0 0 0 0xFF | ... */
-                        field_modulus,
-                        potential_coefficients);
+      mm256_cmpgt_epi16(field_modulus, potential_coefficients);
   uint8_t good[2U];
-  libcrux_ml_kem_vector_avx2_serialize_serialize_1(/* Since every bit in each
-                                                      lane is either 0 or 1, we
-                                                      only need one bit from
-                                                      each lane in the register
-                                                      to tell us what
-                                                      coefficients to keep and
-                                                      what to throw-away.
-                                                      Combine all the bits
-                                                      (there are 16) into two
-                                                      bytes. */
-                                                   compare_with_field_modulus,
+  libcrux_ml_kem_vector_avx2_serialize_serialize_1(compare_with_field_modulus,
                                                    good);
   uint8_t lower_shuffles[16U];
   memcpy(lower_shuffles,
-         /* Each bit (and its corresponding position) represents an element we
-            want to sample. We'd like all such elements to be next to each other
-            starting at index 0, so that they can be read from the vector
-            easily. |REJECTION_SAMPLE_SHUFFLE_TABLE| encodes the byte-level
-            shuffling indices needed to make this happen. For e.g. if good[0] =
-            0b0_0_0_0_0_0_1_0, we need to move the element in the 2-nd 16-bit
-            lane to the first. To do this, we need the byte-level shuffle
-            indices to be 2 3 X X X X ... */
          libcrux_ml_kem_vector_rej_sample_table_REJECTION_SAMPLE_SHUFFLE_TABLE[(
              size_t)good[0U]],
          (size_t)16U * sizeof(uint8_t));
-  __m128i lower_shuffles0 = mm_loadu_si128(Eurydice_array_to_slice(
-      (size_t)16U,
-      /* Shuffle the lower 8 16-bits accordingly ... */ lower_shuffles,
-      uint8_t));
+  __m128i lower_shuffles0 = mm_loadu_si128(
+      Eurydice_array_to_slice((size_t)16U, lower_shuffles, uint8_t));
   __m128i lower_coefficients = mm256_castsi256_si128(potential_coefficients);
   __m128i lower_coefficients0 =
       mm_shuffle_epi8(lower_coefficients, lower_shuffles0);
-  mm_storeu_si128(/* ... then write them out ... */ output,
-                  lower_coefficients0);
+  mm_storeu_si128(output, lower_coefficients0);
   size_t sampled_count = (size_t)core_num__u8_6__count_ones(good[0U]);
   uint8_t upper_shuffles[16U];
   memcpy(upper_shuffles,
-         /* Do the same for |goood[1]| */
          libcrux_ml_kem_vector_rej_sample_table_REJECTION_SAMPLE_SHUFFLE_TABLE[(
              size_t)good[1U]],
          (size_t)16U * sizeof(uint8_t));
@@ -1852,13 +1425,9 @@ with const generics
 bool libcrux_ml_kem_ind_cca_validate_private_key_only_ae(
     libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key) {
   uint8_t t[32U];
-  H_a9_e0(Eurydice_array_to_subslice2(/* Eurydice can't access values directly
-                                         on the types. We need to go to the
-                                         `value` directly. */
-                                      private_key->value,
-                                      (size_t)384U * (size_t)3U,
-                                      (size_t)768U * (size_t)3U + (size_t)32U,
-                                      uint8_t),
+  H_a9_e0(Eurydice_array_to_subslice2(
+              private_key->value, (size_t)384U * (size_t)3U,
+              (size_t)768U * (size_t)3U + (size_t)32U, uint8_t),
           t);
   Eurydice_slice expected = Eurydice_array_to_subslice2(
       private_key->value, (size_t)768U * (size_t)3U + (size_t)32U,
@@ -2345,10 +1914,6 @@ static KRML_MUSTINLINE void sample_from_xof_6c1(
   memcpy(copy_of_randomness0, randomness0, (size_t)3U * sizeof(uint8_t[504U]));
   bool done = sample_from_uniform_distribution_next_ed(
       copy_of_randomness0, sampled_coefficients, out);
-  /* Requiring more than 5 blocks to sample a ring element should be very
-   * unlikely according to: https://eprint.iacr.org/2023/708.pdf To avoid
-   * failing here, we squeeze more blocks out of the state until we have enough.
-   */
   while (true) {
     if (done) {
       break;
@@ -2407,7 +1972,7 @@ static KRML_MUSTINLINE void sample_matrix_A_6c1(
            i++) {
         size_t j = i;
         libcrux_ml_kem_polynomial_PolynomialRingElement_f6 sample = sampled[j];
-        if (/* A[i][j] = A_transpose[j][i] */ transpose) {
+        if (transpose) {
           A_transpose[j][i1] = sample;
         } else {
           A_transpose[i1][j] = sample;
@@ -2622,12 +2187,7 @@ with const generics
 static KRML_MUSTINLINE void ntt_at_layer_7_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
   size_t step = LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT / (size_t)2U;
-  for (size_t i = (size_t)0U;
-       i <
-       /* The semicolon and parentheses at the end of loop are a workaround for
-          the following bug https://github.com/hacspec/hax/issues/720 */
-       step;
-       i++) {
+  for (size_t i = (size_t)0U; i < step; i++) {
     size_t j = i;
     __m256i t = libcrux_ml_kem_vector_avx2_multiply_by_constant_09(
         re->coefficients[j + step], (int16_t)-1600);
@@ -2679,13 +2239,7 @@ static KRML_MUSTINLINE void ntt_at_layer_4_plus_61(
     size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
     size_t layer) {
   size_t step = (size_t)1U << (uint32_t)layer;
-  for (size_t i0 = (size_t)0U;
-       i0 < (size_t)128U >>
-       (uint32_t) /* The semicolon and parentheses at the end of loop are a
-                     workaround for the following bug
-                     https://github.com/hacspec/hax/issues/720 */
-       layer;
-       i0++) {
+  for (size_t i0 = (size_t)0U; i0 < (size_t)128U >> (uint32_t)layer; i0++) {
     size_t round = i0;
     zeta_i[0U] = zeta_i[0U] + (size_t)1U;
     size_t offset = round * step * (size_t)2U;
@@ -2773,11 +2327,7 @@ with const generics
 static KRML_MUSTINLINE void poly_barrett_reduce_ef_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self) {
   for (size_t i = (size_t)0U;
-       i <
-       /* The semicolon and parentheses at the end of loop are a workaround for
-          the following bug https://github.com/hacspec/hax/issues/720 */
-       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
-       i++) {
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     self->coefficients[i0] =
         libcrux_ml_kem_vector_avx2_barrett_reduce_09(self->coefficients[i0]);
@@ -2792,9 +2342,7 @@ with const generics
 */
 static KRML_MUSTINLINE void ntt_binomially_sampled_ring_element_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
-  ntt_at_layer_7_61(/* Due to the small coefficient bound, we can skip the first
-                       round of Montgomery reductions. */
-                    re);
+  ntt_at_layer_7_61(re);
   size_t zeta_i = (size_t)1U;
   ntt_at_layer_4_plus_61(&zeta_i, re, (size_t)6U);
   ntt_at_layer_4_plus_61(&zeta_i, re, (size_t)5U);
@@ -2895,8 +2443,6 @@ with const generics
 static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
 ntt_multiply_ef_61(libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
                    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *rhs) {
-  /* hax_debug_debug_assert!(lhs .coefficients .into_iter() .all(|coefficient|
-   * coefficient >= 0 && coefficient < 4096)); */
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 out = ZERO_ef_61();
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
@@ -2929,14 +2475,9 @@ static KRML_MUSTINLINE void add_to_ring_element_ef_ab(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *rhs) {
   for (size_t i = (size_t)0U;
-       i <
-       Eurydice_slice_len(Eurydice_array_to_slice(
-                              (size_t)16U,
-                              /* The semicolon and parentheses at the end of
-                                 loop are a workaround for the following bug
-                                 https://github.com/hacspec/hax/issues/720 */
-                              self->coefficients, __m256i),
-                          __m256i);
+       i < Eurydice_slice_len(Eurydice_array_to_slice(
+                                  (size_t)16U, self->coefficients, __m256i),
+                              __m256i);
        i++) {
     size_t i0 = i;
     self->coefficients[i0] = libcrux_ml_kem_vector_avx2_add_09(
@@ -2970,17 +2511,10 @@ static KRML_MUSTINLINE void add_standard_error_reduce_ef_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *error) {
   for (size_t i = (size_t)0U;
-       i <
-       /* The semicolon and parentheses at the end of loop are a workaround for
-          the following bug https://github.com/hacspec/hax/issues/720 */
-       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
-       i++) {
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t j = i;
-    __m256i coefficient_normal_form = to_standard_domain_61(
-        self->coefficients[/* The coefficients are of the form aR^{-1} mod q,
-                              which means calling to_montgomery_domain() on them
-                              should return a mod q. */
-                           j]);
+    __m256i coefficient_normal_form =
+        to_standard_domain_61(self->coefficients[j]);
     self->coefficients[j] = libcrux_ml_kem_vector_avx2_barrett_reduce_09(
         libcrux_ml_kem_vector_avx2_add_09(coefficient_normal_form,
                                           &error->coefficients[j]));
@@ -3010,8 +2544,6 @@ static KRML_MUSTINLINE void compute_As_plus_e_ab(
        i++) {
     size_t i0 = i;
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *row = matrix_A[i0];
-    /* This may be externally provided memory. Ensure that `t_as_ntt` is all 0.
-     */
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____0 = ZERO_ef_61();
     t_as_ntt[i0] = uu____0;
     for (size_t i1 = (size_t)0U;
@@ -3087,10 +2619,7 @@ static KRML_MUSTINLINE void generate_keypair_unpacked_221(
     IndCpaPrivateKeyUnpacked_63 *private_key,
     IndCpaPublicKeyUnpacked_63 *public_key) {
   uint8_t hashed[64U];
-  cpa_keygen_seed_d8_be(/* (ρ,σ) := G(d) for Kyber, (ρ,σ) := G(d || K) for
-                           ML-KEM */
-                        key_generation_seed,
-                        hashed);
+  cpa_keygen_seed_d8_be(key_generation_seed, hashed);
   Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t), (size_t)32U,
       uint8_t, Eurydice_slice_uint8_t_x2);
@@ -3120,8 +2649,8 @@ static KRML_MUSTINLINE void generate_keypair_unpacked_221(
       sample_vector_cbd_then_ntt_out_b41(copy_of_prf_input, domain_separator)
           .fst,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
-  compute_As_plus_e_ab(/* tˆ := Aˆ ◦ sˆ + eˆ */ public_key->t_as_ntt,
-                       public_key->A, private_key->secret_as_ntt, error_as_ntt);
+  compute_As_plus_e_ab(public_key->t_as_ntt, public_key->A,
+                       private_key->secret_as_ntt, error_as_ntt);
   uint8_t uu____5[32U];
   core_result_Result_fb dst;
   Eurydice_slice_to_array2(&dst, seed_for_A, Eurydice_slice, uint8_t[32U]);
@@ -3146,13 +2675,11 @@ serialize_unpacked_secret_key_8c(IndCpaPublicKeyUnpacked_63 *public_key,
                                  IndCpaPrivateKeyUnpacked_63 *private_key) {
   uint8_t public_key_serialized[1184U];
   serialize_public_key_ed(
-      /* pk := (Encode_12(tˆ mod^{+}q) || ρ) */ public_key->t_as_ntt,
+      public_key->t_as_ntt,
       Eurydice_array_to_slice((size_t)32U, public_key->seed_for_A, uint8_t),
       public_key_serialized);
   uint8_t secret_key_serialized[1152U];
-  serialize_secret_key_ed(
-      /* sk := Encode_12(sˆ mod^{+}q) */ private_key->secret_as_ntt,
-      secret_key_serialized);
+  serialize_secret_key_ed(private_key->secret_as_ntt, secret_key_serialized);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_secret_key_serialized[1152U];
   memcpy(copy_of_secret_key_serialized, secret_key_serialized,
@@ -3339,15 +2866,11 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 static KRML_MUSTINLINE void build_unpacked_public_key_mut_fa1(
     Eurydice_slice public_key,
     IndCpaPublicKeyUnpacked_63 *unpacked_public_key) {
-  Eurydice_slice uu____0 = Eurydice_slice_subslice_to(
-      /* tˆ := Decode_12(pk) */ public_key, (size_t)1152U, uint8_t, size_t);
+  Eurydice_slice uu____0 =
+      Eurydice_slice_subslice_to(public_key, (size_t)1152U, uint8_t, size_t);
   deserialize_ring_elements_reduced_ab(uu____0, unpacked_public_key->t_as_ntt);
   Eurydice_slice seed =
-      Eurydice_slice_subslice_from(/* ρ := pk + 12·k·n / 8 for i from 0 to k−1
-                                      do for j from 0 to k − 1 do AˆT[i][j] :=
-                                      Parse(XOF(ρ, i, j)) end for end for */
-                                   public_key,
-                                   (size_t)1152U, uint8_t, size_t);
+      Eurydice_slice_subslice_from(public_key, (size_t)1152U, uint8_t, size_t);
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6(*uu____1)[3U] =
       unpacked_public_key->A;
   uint8_t ret[34U];
@@ -3524,13 +3047,7 @@ static KRML_MUSTINLINE void invert_ntt_at_layer_4_plus_61(
     size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
     size_t layer) {
   size_t step = (size_t)1U << (uint32_t)layer;
-  for (size_t i0 = (size_t)0U;
-       i0 < (size_t)128U >>
-       (uint32_t) /* The semicolon and parentheses at the end of loop are a
-                     workaround for the following bug
-                     https://github.com/hacspec/hax/issues/720 */
-       layer;
-       i0++) {
+  for (size_t i0 = (size_t)0U; i0 < (size_t)128U >> (uint32_t)layer; i0++) {
     size_t round = i0;
     zeta_i[0U] = zeta_i[0U] - (size_t)1U;
     size_t offset = round * step * (size_t)2U;
@@ -3561,10 +3078,7 @@ with const generics
 static KRML_MUSTINLINE void invert_ntt_montgomery_ab(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
   size_t zeta_i =
-      /* We only ever call this function after matrix/vector multiplication */
-      LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT
-
-      / (size_t)2U;
+      LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT / (size_t)2U;
   invert_ntt_at_layer_1_61(&zeta_i, re);
   invert_ntt_at_layer_2_61(&zeta_i, re);
   invert_ntt_at_layer_3_61(&zeta_i, re);
@@ -3590,11 +3104,7 @@ static KRML_MUSTINLINE void add_error_reduce_ef_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *error) {
   for (size_t i = (size_t)0U;
-       i <
-       /* The semicolon and parentheses at the end of loop are a workaround for
-          the following bug https://github.com/hacspec/hax/issues/720 */
-       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
-       i++) {
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t j = i;
     __m256i coefficient_normal_form =
         libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_09(
@@ -3707,26 +3217,8 @@ add_message_error_reduce_ef_61(
     __m256i coefficient_normal_form =
         libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_09(
             result.coefficients[i0], (int16_t)1441);
-    __m256i tmp = libcrux_ml_kem_vector_avx2_add_09(
-        self->coefficients
-            [/* FIXME: Eurydice crashes with: Warning 11: in top-level
-                declaration
-                libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.add_message_error_reduce__libcrux_ml_kem_libcrux_polynomials_PortableVector:
-                this expression is not Low*; the enclosing function cannot be
-                translated into C*: let mutable ret(Mark.Present,(Mark.AtMost
-                2), ): int16_t[16size_t] = $any in
-                libcrux_ml_kem.libcrux_polynomials.{(libcrux_ml_kem::libcrux_polynomials::libcrux_traits::Operations␣for␣libcrux_ml_kem::libcrux_polynomials::PortableVector)}.add
-                ((@9:
-                libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t]*)[0uint32_t]:int16_t[16size_t][16size_t])[@4]
-                &(((@8:
-                libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t]*)[0uint32_t]:libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t])[@4])
-                @0; @0 Warning 11 is fatal, exiting. On the following code:
-                ```rust result.coefficients[i] =
-                Vector::barrett_reduce(Vector::add( coefficient_normal_form,
-                &Vector::add(self.coefficients[i], &message.coefficients[i]),
-                )); ``` */
-             i0],
-        &message->coefficients[i0]);
+    __m256i tmp = libcrux_ml_kem_vector_avx2_add_09(self->coefficients[i0],
+                                                    &message->coefficients[i0]);
     __m256i tmp0 =
         libcrux_ml_kem_vector_avx2_add_09(coefficient_normal_form, &tmp);
     result.coefficients[i0] =
@@ -3774,18 +3266,8 @@ compress_ciphertext_coefficient_ef(__m256i vector) {
   __m256i compression_factor = mm256_set1_epi32((int32_t)10321340);
   __m256i coefficient_bits_mask =
       mm256_set1_epi32(((int32_t)1 << (uint32_t)(int32_t)10) - (int32_t)1);
-  __m128i coefficients_low =
-      mm256_castsi256_si128(/* ---- Compress the first 8 coefficients ---- Take
-                               the bottom 128 bits, i.e. the first 8 16-bit
-                               coefficients */
-                            vector);
-  __m256i coefficients_low0 =
-      mm256_cvtepi16_epi32(/* If: coefficients_low[0:15] = A
-                              coefficients_low[16:31] = B
-                              coefficients_low[32:63] = C and so on ... after
-                              this step: coefficients_low[0:31] = A
-                              coefficients_low[32:63] = B and so on ... */
-                           coefficients_low);
+  __m128i coefficients_low = mm256_castsi256_si128(vector);
+  __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
   __m256i compressed_low =
       mm256_slli_epi32((int32_t)10, coefficients_low0, __m256i);
   __m256i compressed_low0 =
@@ -3793,18 +3275,12 @@ compress_ciphertext_coefficient_ef(__m256i vector) {
   __m256i compressed_low1 =
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
                                                             compression_factor);
-  __m256i compressed_low2 = mm256_srli_epi32(
-      (int32_t)3,
-      /* Due to the mulhi_mm256_epi32 we've already shifted right by 32 bits, we
-         just need to shift right by 35 - 32 = 3 more. */
-      compressed_low1, __m256i);
+  __m256i compressed_low2 =
+      mm256_srli_epi32((int32_t)3, compressed_low1, __m256i);
   __m256i compressed_low3 =
       mm256_and_si256(compressed_low2, coefficient_bits_mask);
-  __m128i coefficients_high = mm256_extracti128_si256(
-      (int32_t)1,
-      /* ---- Compress the next 8 coefficients ---- Take the upper 128 bits,
-         i.e. the next 8 16-bit coefficients */
-      vector, __m128i);
+  __m128i coefficients_high =
+      mm256_extracti128_si256((int32_t)1, vector, __m128i);
   __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
   __m256i compressed_high =
       mm256_slli_epi32((int32_t)10, coefficients_high0, __m256i);
@@ -3817,20 +3293,8 @@ compress_ciphertext_coefficient_ef(__m256i vector) {
       mm256_srli_epi32((int32_t)3, compressed_high1, __m256i);
   __m256i compressed_high3 =
       mm256_and_si256(compressed_high2, coefficient_bits_mask);
-  __m256i compressed =
-      mm256_packs_epi32(/* Combining them, and grouping each set of 64-bits,
-                           this function results in: 0: low low low low | 1:
-                           high high high high | 2: low low low low | 3: high
-                           high high high where each |low| and |high| is a
-                           16-bit element */
-                        compressed_low3,
-                        compressed_high3);
-  return mm256_permute4x64_epi64(
-      (int32_t)216,
-      /* To be in the right order, we need to move the |low|s above in position
-         2 to position 1 and the |high|s in position 1 to position 2, and leave
-         the rest unchanged. */
-      compressed, __m256i);
+  __m256i compressed = mm256_packs_epi32(compressed_low3, compressed_high3);
+  return mm256_permute4x64_epi64((int32_t)216, compressed, __m256i);
 }
 
 /**
@@ -3884,18 +3348,8 @@ compress_ciphertext_coefficient_c4(__m256i vector) {
   __m256i compression_factor = mm256_set1_epi32((int32_t)10321340);
   __m256i coefficient_bits_mask =
       mm256_set1_epi32(((int32_t)1 << (uint32_t)(int32_t)11) - (int32_t)1);
-  __m128i coefficients_low =
-      mm256_castsi256_si128(/* ---- Compress the first 8 coefficients ---- Take
-                               the bottom 128 bits, i.e. the first 8 16-bit
-                               coefficients */
-                            vector);
-  __m256i coefficients_low0 =
-      mm256_cvtepi16_epi32(/* If: coefficients_low[0:15] = A
-                              coefficients_low[16:31] = B
-                              coefficients_low[32:63] = C and so on ... after
-                              this step: coefficients_low[0:31] = A
-                              coefficients_low[32:63] = B and so on ... */
-                           coefficients_low);
+  __m128i coefficients_low = mm256_castsi256_si128(vector);
+  __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
   __m256i compressed_low =
       mm256_slli_epi32((int32_t)11, coefficients_low0, __m256i);
   __m256i compressed_low0 =
@@ -3903,18 +3357,12 @@ compress_ciphertext_coefficient_c4(__m256i vector) {
   __m256i compressed_low1 =
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
                                                             compression_factor);
-  __m256i compressed_low2 = mm256_srli_epi32(
-      (int32_t)3,
-      /* Due to the mulhi_mm256_epi32 we've already shifted right by 32 bits, we
-         just need to shift right by 35 - 32 = 3 more. */
-      compressed_low1, __m256i);
+  __m256i compressed_low2 =
+      mm256_srli_epi32((int32_t)3, compressed_low1, __m256i);
   __m256i compressed_low3 =
       mm256_and_si256(compressed_low2, coefficient_bits_mask);
-  __m128i coefficients_high = mm256_extracti128_si256(
-      (int32_t)1,
-      /* ---- Compress the next 8 coefficients ---- Take the upper 128 bits,
-         i.e. the next 8 16-bit coefficients */
-      vector, __m128i);
+  __m128i coefficients_high =
+      mm256_extracti128_si256((int32_t)1, vector, __m128i);
   __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
   __m256i compressed_high =
       mm256_slli_epi32((int32_t)11, coefficients_high0, __m256i);
@@ -3927,20 +3375,8 @@ compress_ciphertext_coefficient_c4(__m256i vector) {
       mm256_srli_epi32((int32_t)3, compressed_high1, __m256i);
   __m256i compressed_high3 =
       mm256_and_si256(compressed_high2, coefficient_bits_mask);
-  __m256i compressed =
-      mm256_packs_epi32(/* Combining them, and grouping each set of 64-bits,
-                           this function results in: 0: low low low low | 1:
-                           high high high high | 2: low low low low | 3: high
-                           high high high where each |low| and |high| is a
-                           16-bit element */
-                        compressed_low3,
-                        compressed_high3);
-  return mm256_permute4x64_epi64(
-      (int32_t)216,
-      /* To be in the right order, we need to move the |low|s above in position
-         2 to position 1 and the |high|s in position 1 to position 2, and leave
-         the rest unchanged. */
-      compressed, __m256i);
+  __m256i compressed = mm256_packs_epi32(compressed_low3, compressed_high3);
+  return mm256_permute4x64_epi64((int32_t)216, compressed, __m256i);
 }
 
 /**
@@ -4018,18 +3454,8 @@ compress_ciphertext_coefficient_d1(__m256i vector) {
   __m256i compression_factor = mm256_set1_epi32((int32_t)10321340);
   __m256i coefficient_bits_mask =
       mm256_set1_epi32(((int32_t)1 << (uint32_t)(int32_t)4) - (int32_t)1);
-  __m128i coefficients_low =
-      mm256_castsi256_si128(/* ---- Compress the first 8 coefficients ---- Take
-                               the bottom 128 bits, i.e. the first 8 16-bit
-                               coefficients */
-                            vector);
-  __m256i coefficients_low0 =
-      mm256_cvtepi16_epi32(/* If: coefficients_low[0:15] = A
-                              coefficients_low[16:31] = B
-                              coefficients_low[32:63] = C and so on ... after
-                              this step: coefficients_low[0:31] = A
-                              coefficients_low[32:63] = B and so on ... */
-                           coefficients_low);
+  __m128i coefficients_low = mm256_castsi256_si128(vector);
+  __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
   __m256i compressed_low =
       mm256_slli_epi32((int32_t)4, coefficients_low0, __m256i);
   __m256i compressed_low0 =
@@ -4037,18 +3463,12 @@ compress_ciphertext_coefficient_d1(__m256i vector) {
   __m256i compressed_low1 =
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
                                                             compression_factor);
-  __m256i compressed_low2 = mm256_srli_epi32(
-      (int32_t)3,
-      /* Due to the mulhi_mm256_epi32 we've already shifted right by 32 bits, we
-         just need to shift right by 35 - 32 = 3 more. */
-      compressed_low1, __m256i);
+  __m256i compressed_low2 =
+      mm256_srli_epi32((int32_t)3, compressed_low1, __m256i);
   __m256i compressed_low3 =
       mm256_and_si256(compressed_low2, coefficient_bits_mask);
-  __m128i coefficients_high = mm256_extracti128_si256(
-      (int32_t)1,
-      /* ---- Compress the next 8 coefficients ---- Take the upper 128 bits,
-         i.e. the next 8 16-bit coefficients */
-      vector, __m128i);
+  __m128i coefficients_high =
+      mm256_extracti128_si256((int32_t)1, vector, __m128i);
   __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
   __m256i compressed_high =
       mm256_slli_epi32((int32_t)4, coefficients_high0, __m256i);
@@ -4061,20 +3481,8 @@ compress_ciphertext_coefficient_d1(__m256i vector) {
       mm256_srli_epi32((int32_t)3, compressed_high1, __m256i);
   __m256i compressed_high3 =
       mm256_and_si256(compressed_high2, coefficient_bits_mask);
-  __m256i compressed =
-      mm256_packs_epi32(/* Combining them, and grouping each set of 64-bits,
-                           this function results in: 0: low low low low | 1:
-                           high high high high | 2: low low low low | 3: high
-                           high high high where each |low| and |high| is a
-                           16-bit element */
-                        compressed_low3,
-                        compressed_high3);
-  return mm256_permute4x64_epi64(
-      (int32_t)216,
-      /* To be in the right order, we need to move the |low|s above in position
-         2 to position 1 and the |high|s in position 1 to position 2, and leave
-         the rest unchanged. */
-      compressed, __m256i);
+  __m256i compressed = mm256_packs_epi32(compressed_low3, compressed_high3);
+  return mm256_permute4x64_epi64((int32_t)216, compressed, __m256i);
 }
 
 /**
@@ -4100,11 +3508,7 @@ static KRML_MUSTINLINE void compress_then_serialize_4_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re,
     Eurydice_slice serialized) {
   for (size_t i = (size_t)0U;
-       i <
-       /* The semicolon and parentheses at the end of loop are a workaround for
-          the following bug https://github.com/hacspec/hax/issues/720 */
-       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
-       i++) {
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     __m256i coefficient =
         compress_09_d1(to_unsigned_field_modulus_61(re.coefficients[i0]));
@@ -4131,18 +3535,8 @@ compress_ciphertext_coefficient_f4(__m256i vector) {
   __m256i compression_factor = mm256_set1_epi32((int32_t)10321340);
   __m256i coefficient_bits_mask =
       mm256_set1_epi32(((int32_t)1 << (uint32_t)(int32_t)5) - (int32_t)1);
-  __m128i coefficients_low =
-      mm256_castsi256_si128(/* ---- Compress the first 8 coefficients ---- Take
-                               the bottom 128 bits, i.e. the first 8 16-bit
-                               coefficients */
-                            vector);
-  __m256i coefficients_low0 =
-      mm256_cvtepi16_epi32(/* If: coefficients_low[0:15] = A
-                              coefficients_low[16:31] = B
-                              coefficients_low[32:63] = C and so on ... after
-                              this step: coefficients_low[0:31] = A
-                              coefficients_low[32:63] = B and so on ... */
-                           coefficients_low);
+  __m128i coefficients_low = mm256_castsi256_si128(vector);
+  __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
   __m256i compressed_low =
       mm256_slli_epi32((int32_t)5, coefficients_low0, __m256i);
   __m256i compressed_low0 =
@@ -4150,18 +3544,12 @@ compress_ciphertext_coefficient_f4(__m256i vector) {
   __m256i compressed_low1 =
       libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
                                                             compression_factor);
-  __m256i compressed_low2 = mm256_srli_epi32(
-      (int32_t)3,
-      /* Due to the mulhi_mm256_epi32 we've already shifted right by 32 bits, we
-         just need to shift right by 35 - 32 = 3 more. */
-      compressed_low1, __m256i);
+  __m256i compressed_low2 =
+      mm256_srli_epi32((int32_t)3, compressed_low1, __m256i);
   __m256i compressed_low3 =
       mm256_and_si256(compressed_low2, coefficient_bits_mask);
-  __m128i coefficients_high = mm256_extracti128_si256(
-      (int32_t)1,
-      /* ---- Compress the next 8 coefficients ---- Take the upper 128 bits,
-         i.e. the next 8 16-bit coefficients */
-      vector, __m128i);
+  __m128i coefficients_high =
+      mm256_extracti128_si256((int32_t)1, vector, __m128i);
   __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
   __m256i compressed_high =
       mm256_slli_epi32((int32_t)5, coefficients_high0, __m256i);
@@ -4174,20 +3562,8 @@ compress_ciphertext_coefficient_f4(__m256i vector) {
       mm256_srli_epi32((int32_t)3, compressed_high1, __m256i);
   __m256i compressed_high3 =
       mm256_and_si256(compressed_high2, coefficient_bits_mask);
-  __m256i compressed =
-      mm256_packs_epi32(/* Combining them, and grouping each set of 64-bits,
-                           this function results in: 0: low low low low | 1:
-                           high high high high | 2: low low low low | 3: high
-                           high high high where each |low| and |high| is a
-                           16-bit element */
-                        compressed_low3,
-                        compressed_high3);
-  return mm256_permute4x64_epi64(
-      (int32_t)216,
-      /* To be in the right order, we need to move the |low|s above in position
-         2 to position 1 and the |high|s in position 1 to position 2, and leave
-         the rest unchanged. */
-      compressed, __m256i);
+  __m256i compressed = mm256_packs_epi32(compressed_low3, compressed_high3);
+  return mm256_permute4x64_epi64((int32_t)216, compressed, __m256i);
 }
 
 /**
@@ -4213,11 +3589,7 @@ static KRML_MUSTINLINE void compress_then_serialize_5_61(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re,
     Eurydice_slice serialized) {
   for (size_t i = (size_t)0U;
-       i <
-       /* The semicolon and parentheses at the end of loop are a workaround for
-          the following bug https://github.com/hacspec/hax/issues/720 */
-       LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT;
-       i++) {
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     __m256i coefficients =
         compress_09_f4(to_unsigned_representative_61(re.coefficients[i0]));
@@ -4305,11 +3677,7 @@ static KRML_MUSTINLINE void encrypt_unpacked_741(
     IndCpaPublicKeyUnpacked_63 *public_key, uint8_t message[32U],
     Eurydice_slice randomness, uint8_t ret[1088U]) {
   uint8_t prf_input[33U];
-  libcrux_ml_kem_utils_into_padded_array_c8(/* for i from 0 to k−1 do r[i] :=
-                                               CBD{η1}(PRF(r, N)) N := N + 1 end
-                                               for rˆ := NTT(r) */
-                                            randomness,
-                                            prf_input);
+  libcrux_ml_kem_utils_into_padded_array_c8(randomness, prf_input);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input0[33U];
   memcpy(copy_of_prf_input0, prf_input, (size_t)33U * sizeof(uint8_t));
@@ -4321,7 +3689,6 @@ static KRML_MUSTINLINE void encrypt_unpacked_741(
   uint8_t domain_separator0 = uu____1.snd;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input[33U];
-  /* for i from 0 to k−1 do e1[i] := CBD_{η2}(PRF(r,N)) N := N + 1 end for */
   memcpy(copy_of_prf_input, prf_input, (size_t)33U * sizeof(uint8_t));
   tuple_23 uu____3 =
       sample_ring_element_cbd_b41(copy_of_prf_input, domain_separator0);
@@ -4330,7 +3697,7 @@ static KRML_MUSTINLINE void encrypt_unpacked_741(
       error_1, uu____3.fst,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   uint8_t domain_separator = uu____3.snd;
-  prf_input[32U] = /* e_2 := CBD{η2}(PRF(r, N)) */ domain_separator;
+  prf_input[32U] = domain_separator;
   uint8_t prf_output[128U];
   PRF_a9_410(Eurydice_array_to_slice((size_t)33U, prf_input, uint8_t),
              prf_output);
@@ -4338,11 +3705,9 @@ static KRML_MUSTINLINE void encrypt_unpacked_741(
       sample_from_binomial_distribution_89(
           Eurydice_array_to_slice((size_t)128U, prf_output, uint8_t));
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 u[3U];
-  compute_vector_u_ab(/* u := NTT^{-1}(AˆT ◦ rˆ) + e_1 */ public_key->A,
-                      r_as_ntt, error_1, u);
+  compute_vector_u_ab(public_key->A, r_as_ntt, error_1, u);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_message[32U];
-  /* v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1) */
   memcpy(copy_of_message, message, (size_t)32U * sizeof(uint8_t));
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 message_as_ring_element =
       deserialize_then_decompress_message_61(copy_of_message);
@@ -4351,14 +3716,12 @@ static KRML_MUSTINLINE void encrypt_unpacked_741(
                                 &message_as_ring_element);
   uint8_t ciphertext[1088U] = {0U};
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____5[3U];
-  /* c_1 := Encode_{du}(Compress_q(u,d_u)) */
   memcpy(
       uu____5, u,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   compress_then_serialize_u_8c(
       uu____5, Eurydice_array_to_subslice2(ciphertext, (size_t)0U, (size_t)960U,
                                            uint8_t));
-  /* c_2 := Encode_{dv}(Compress_q(v,d_v)) */
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____6 = v;
   compress_then_serialize_ring_element_v_ed(
       uu____6, Eurydice_array_to_subslice_from((size_t)1088U, ciphertext,
@@ -4553,8 +3916,7 @@ decompress_ciphertext_coefficient_ef(__m256i vector) {
       mm256_set1_epi32((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i two_pow_coefficient_bits =
       mm256_set1_epi32((int32_t)1 << (uint32_t)(int32_t)10);
-  __m128i coefficients_low = mm256_castsi256_si128(
-      /* ---- Compress the first 8 coefficients ---- */ vector);
+  __m128i coefficients_low = mm256_castsi256_si128(vector);
   __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
   __m256i decompressed_low =
       mm256_mullo_epi32(coefficients_low0, field_modulus);
@@ -4562,16 +3924,12 @@ decompress_ciphertext_coefficient_ef(__m256i vector) {
       mm256_slli_epi32((int32_t)1, decompressed_low, __m256i);
   __m256i decompressed_low1 =
       mm256_add_epi32(decompressed_low0, two_pow_coefficient_bits);
-  __m256i decompressed_low2 = mm256_srli_epi32(
-      (int32_t)10,
-      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
-         support for const generic expressions. */
-      decompressed_low1, __m256i);
+  __m256i decompressed_low2 =
+      mm256_srli_epi32((int32_t)10, decompressed_low1, __m256i);
   __m256i decompressed_low3 =
       mm256_srli_epi32((int32_t)1, decompressed_low2, __m256i);
-  __m128i coefficients_high = mm256_extracti128_si256(
-      (int32_t)1,
-      /* ---- Compress the next 8 coefficients ---- */ vector, __m128i);
+  __m128i coefficients_high =
+      mm256_extracti128_si256((int32_t)1, vector, __m128i);
   __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
   __m256i decompressed_high =
       mm256_mullo_epi32(coefficients_high0, field_modulus);
@@ -4579,27 +3937,12 @@ decompress_ciphertext_coefficient_ef(__m256i vector) {
       mm256_slli_epi32((int32_t)1, decompressed_high, __m256i);
   __m256i decompressed_high1 =
       mm256_add_epi32(decompressed_high0, two_pow_coefficient_bits);
-  __m256i decompressed_high2 = mm256_srli_epi32(
-      (int32_t)10,
-      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
-         support for const generic expressions. */
-      decompressed_high1, __m256i);
+  __m256i decompressed_high2 =
+      mm256_srli_epi32((int32_t)10, decompressed_high1, __m256i);
   __m256i decompressed_high3 =
       mm256_srli_epi32((int32_t)1, decompressed_high2, __m256i);
-  __m256i compressed =
-      mm256_packs_epi32(/* Combining them, and grouping each set of 64-bits,
-                           this function results in: 0: low low low low | 1:
-                           high high high high | 2: low low low low | 3: high
-                           high high high where each |low| and |high| is a
-                           16-bit element */
-                        decompressed_low3,
-                        decompressed_high3);
-  return mm256_permute4x64_epi64(
-      (int32_t)216,
-      /* To be in the right order, we need to move the |low|s above in position
-         2 to position 1 and the |high|s in position 1 to position 2, and leave
-         the rest unchanged. */
-      compressed, __m256i);
+  __m256i compressed = mm256_packs_epi32(decompressed_low3, decompressed_high3);
+  return mm256_permute4x64_epi64((int32_t)216, compressed, __m256i);
 }
 
 /**
@@ -4654,8 +3997,7 @@ decompress_ciphertext_coefficient_c4(__m256i vector) {
       mm256_set1_epi32((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i two_pow_coefficient_bits =
       mm256_set1_epi32((int32_t)1 << (uint32_t)(int32_t)11);
-  __m128i coefficients_low = mm256_castsi256_si128(
-      /* ---- Compress the first 8 coefficients ---- */ vector);
+  __m128i coefficients_low = mm256_castsi256_si128(vector);
   __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
   __m256i decompressed_low =
       mm256_mullo_epi32(coefficients_low0, field_modulus);
@@ -4663,16 +4005,12 @@ decompress_ciphertext_coefficient_c4(__m256i vector) {
       mm256_slli_epi32((int32_t)1, decompressed_low, __m256i);
   __m256i decompressed_low1 =
       mm256_add_epi32(decompressed_low0, two_pow_coefficient_bits);
-  __m256i decompressed_low2 = mm256_srli_epi32(
-      (int32_t)11,
-      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
-         support for const generic expressions. */
-      decompressed_low1, __m256i);
+  __m256i decompressed_low2 =
+      mm256_srli_epi32((int32_t)11, decompressed_low1, __m256i);
   __m256i decompressed_low3 =
       mm256_srli_epi32((int32_t)1, decompressed_low2, __m256i);
-  __m128i coefficients_high = mm256_extracti128_si256(
-      (int32_t)1,
-      /* ---- Compress the next 8 coefficients ---- */ vector, __m128i);
+  __m128i coefficients_high =
+      mm256_extracti128_si256((int32_t)1, vector, __m128i);
   __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
   __m256i decompressed_high =
       mm256_mullo_epi32(coefficients_high0, field_modulus);
@@ -4680,27 +4018,12 @@ decompress_ciphertext_coefficient_c4(__m256i vector) {
       mm256_slli_epi32((int32_t)1, decompressed_high, __m256i);
   __m256i decompressed_high1 =
       mm256_add_epi32(decompressed_high0, two_pow_coefficient_bits);
-  __m256i decompressed_high2 = mm256_srli_epi32(
-      (int32_t)11,
-      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
-         support for const generic expressions. */
-      decompressed_high1, __m256i);
+  __m256i decompressed_high2 =
+      mm256_srli_epi32((int32_t)11, decompressed_high1, __m256i);
   __m256i decompressed_high3 =
       mm256_srli_epi32((int32_t)1, decompressed_high2, __m256i);
-  __m256i compressed =
-      mm256_packs_epi32(/* Combining them, and grouping each set of 64-bits,
-                           this function results in: 0: low low low low | 1:
-                           high high high high | 2: low low low low | 3: high
-                           high high high where each |low| and |high| is a
-                           16-bit element */
-                        decompressed_low3,
-                        decompressed_high3);
-  return mm256_permute4x64_epi64(
-      (int32_t)216,
-      /* To be in the right order, we need to move the |low|s above in position
-         2 to position 1 and the |high|s in position 1 to position 2, and leave
-         the rest unchanged. */
-      compressed, __m256i);
+  __m256i compressed = mm256_packs_epi32(decompressed_low3, decompressed_high3);
+  return mm256_permute4x64_epi64((int32_t)216, compressed, __m256i);
 }
 
 /**
@@ -4823,8 +4146,7 @@ decompress_ciphertext_coefficient_d1(__m256i vector) {
       mm256_set1_epi32((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i two_pow_coefficient_bits =
       mm256_set1_epi32((int32_t)1 << (uint32_t)(int32_t)4);
-  __m128i coefficients_low = mm256_castsi256_si128(
-      /* ---- Compress the first 8 coefficients ---- */ vector);
+  __m128i coefficients_low = mm256_castsi256_si128(vector);
   __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
   __m256i decompressed_low =
       mm256_mullo_epi32(coefficients_low0, field_modulus);
@@ -4832,16 +4154,12 @@ decompress_ciphertext_coefficient_d1(__m256i vector) {
       mm256_slli_epi32((int32_t)1, decompressed_low, __m256i);
   __m256i decompressed_low1 =
       mm256_add_epi32(decompressed_low0, two_pow_coefficient_bits);
-  __m256i decompressed_low2 = mm256_srli_epi32(
-      (int32_t)4,
-      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
-         support for const generic expressions. */
-      decompressed_low1, __m256i);
+  __m256i decompressed_low2 =
+      mm256_srli_epi32((int32_t)4, decompressed_low1, __m256i);
   __m256i decompressed_low3 =
       mm256_srli_epi32((int32_t)1, decompressed_low2, __m256i);
-  __m128i coefficients_high = mm256_extracti128_si256(
-      (int32_t)1,
-      /* ---- Compress the next 8 coefficients ---- */ vector, __m128i);
+  __m128i coefficients_high =
+      mm256_extracti128_si256((int32_t)1, vector, __m128i);
   __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
   __m256i decompressed_high =
       mm256_mullo_epi32(coefficients_high0, field_modulus);
@@ -4849,27 +4167,12 @@ decompress_ciphertext_coefficient_d1(__m256i vector) {
       mm256_slli_epi32((int32_t)1, decompressed_high, __m256i);
   __m256i decompressed_high1 =
       mm256_add_epi32(decompressed_high0, two_pow_coefficient_bits);
-  __m256i decompressed_high2 = mm256_srli_epi32(
-      (int32_t)4,
-      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
-         support for const generic expressions. */
-      decompressed_high1, __m256i);
+  __m256i decompressed_high2 =
+      mm256_srli_epi32((int32_t)4, decompressed_high1, __m256i);
   __m256i decompressed_high3 =
       mm256_srli_epi32((int32_t)1, decompressed_high2, __m256i);
-  __m256i compressed =
-      mm256_packs_epi32(/* Combining them, and grouping each set of 64-bits,
-                           this function results in: 0: low low low low | 1:
-                           high high high high | 2: low low low low | 3: high
-                           high high high where each |low| and |high| is a
-                           16-bit element */
-                        decompressed_low3,
-                        decompressed_high3);
-  return mm256_permute4x64_epi64(
-      (int32_t)216,
-      /* To be in the right order, we need to move the |low|s above in position
-         2 to position 1 and the |high|s in position 1 to position 2, and leave
-         the rest unchanged. */
-      compressed, __m256i);
+  __m256i compressed = mm256_packs_epi32(decompressed_low3, decompressed_high3);
+  return mm256_permute4x64_epi64((int32_t)216, compressed, __m256i);
 }
 
 /**
@@ -4919,8 +4222,7 @@ decompress_ciphertext_coefficient_f4(__m256i vector) {
       mm256_set1_epi32((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
   __m256i two_pow_coefficient_bits =
       mm256_set1_epi32((int32_t)1 << (uint32_t)(int32_t)5);
-  __m128i coefficients_low = mm256_castsi256_si128(
-      /* ---- Compress the first 8 coefficients ---- */ vector);
+  __m128i coefficients_low = mm256_castsi256_si128(vector);
   __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
   __m256i decompressed_low =
       mm256_mullo_epi32(coefficients_low0, field_modulus);
@@ -4928,16 +4230,12 @@ decompress_ciphertext_coefficient_f4(__m256i vector) {
       mm256_slli_epi32((int32_t)1, decompressed_low, __m256i);
   __m256i decompressed_low1 =
       mm256_add_epi32(decompressed_low0, two_pow_coefficient_bits);
-  __m256i decompressed_low2 = mm256_srli_epi32(
-      (int32_t)5,
-      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
-         support for const generic expressions. */
-      decompressed_low1, __m256i);
+  __m256i decompressed_low2 =
+      mm256_srli_epi32((int32_t)5, decompressed_low1, __m256i);
   __m256i decompressed_low3 =
       mm256_srli_epi32((int32_t)1, decompressed_low2, __m256i);
-  __m128i coefficients_high = mm256_extracti128_si256(
-      (int32_t)1,
-      /* ---- Compress the next 8 coefficients ---- */ vector, __m128i);
+  __m128i coefficients_high =
+      mm256_extracti128_si256((int32_t)1, vector, __m128i);
   __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
   __m256i decompressed_high =
       mm256_mullo_epi32(coefficients_high0, field_modulus);
@@ -4945,27 +4243,12 @@ decompress_ciphertext_coefficient_f4(__m256i vector) {
       mm256_slli_epi32((int32_t)1, decompressed_high, __m256i);
   __m256i decompressed_high1 =
       mm256_add_epi32(decompressed_high0, two_pow_coefficient_bits);
-  __m256i decompressed_high2 = mm256_srli_epi32(
-      (int32_t)5,
-      /* We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack of
-         support for const generic expressions. */
-      decompressed_high1, __m256i);
+  __m256i decompressed_high2 =
+      mm256_srli_epi32((int32_t)5, decompressed_high1, __m256i);
   __m256i decompressed_high3 =
       mm256_srli_epi32((int32_t)1, decompressed_high2, __m256i);
-  __m256i compressed =
-      mm256_packs_epi32(/* Combining them, and grouping each set of 64-bits,
-                           this function results in: 0: low low low low | 1:
-                           high high high high | 2: low low low low | 3: high
-                           high high high where each |low| and |high| is a
-                           16-bit element */
-                        decompressed_low3,
-                        decompressed_high3);
-  return mm256_permute4x64_epi64(
-      (int32_t)216,
-      /* To be in the right order, we need to move the |low|s above in position
-         2 to position 1 and the |high|s in position 1 to position 2, and leave
-         the rest unchanged. */
-      compressed, __m256i);
+  __m256i compressed = mm256_packs_epi32(decompressed_low3, decompressed_high3);
+  return mm256_permute4x64_epi64((int32_t)216, compressed, __m256i);
 }
 
 /**
@@ -5132,14 +4415,11 @@ static KRML_MUSTINLINE void decrypt_unpacked_2f(
     IndCpaPrivateKeyUnpacked_63 *secret_key, uint8_t *ciphertext,
     uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 u_as_ntt[3U];
-  deserialize_then_decompress_u_ed(
-      /* u := Decompress_q(Decode_{d_u}(c), d_u) */ ciphertext, u_as_ntt);
+  deserialize_then_decompress_u_ed(ciphertext, u_as_ntt);
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 v =
       deserialize_then_decompress_ring_element_v_ed(
-          Eurydice_array_to_subslice_from(
-              (size_t)1088U,
-              /* v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v) */
-              ciphertext, (size_t)960U, uint8_t, size_t));
+          Eurydice_array_to_subslice_from((size_t)1088U, ciphertext,
+                                          (size_t)960U, uint8_t, size_t));
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 message =
       compute_message_ab(&v, secret_key->secret_as_ntt, u_as_ntt);
   uint8_t ret0[32U];
@@ -5160,8 +4440,7 @@ with const generics
 static KRML_MUSTINLINE void decrypt_2f(Eurydice_slice secret_key,
                                        uint8_t *ciphertext, uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 secret_as_ntt[3U];
-  deserialize_secret_key_ab(/* sˆ := Decode_12(sk) */ secret_key,
-                            secret_as_ntt);
+  deserialize_secret_key_ab(secret_key, secret_as_ntt);
   /* Passing arrays by value in Rust generates a copy in C */
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 copy_of_secret_as_ntt[3U];
   memcpy(
@@ -5481,13 +4760,9 @@ with const generics
 bool libcrux_ml_kem_ind_cca_validate_private_key_only_5e(
     libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key) {
   uint8_t t[32U];
-  H_a9_ac(Eurydice_array_to_subslice2(/* Eurydice can't access values directly
-                                         on the types. We need to go to the
-                                         `value` directly. */
-                                      private_key->value,
-                                      (size_t)384U * (size_t)4U,
-                                      (size_t)768U * (size_t)4U + (size_t)32U,
-                                      uint8_t),
+  H_a9_ac(Eurydice_array_to_subslice2(
+              private_key->value, (size_t)384U * (size_t)4U,
+              (size_t)768U * (size_t)4U + (size_t)32U, uint8_t),
           t);
   Eurydice_slice expected = Eurydice_array_to_subslice2(
       private_key->value, (size_t)768U * (size_t)4U + (size_t)32U,
@@ -5964,10 +5239,6 @@ static KRML_MUSTINLINE void sample_from_xof_6c(
   memcpy(copy_of_randomness0, randomness0, (size_t)4U * sizeof(uint8_t[504U]));
   bool done = sample_from_uniform_distribution_next_78(
       copy_of_randomness0, sampled_coefficients, out);
-  /* Requiring more than 5 blocks to sample a ring element should be very
-   * unlikely according to: https://eprint.iacr.org/2023/708.pdf To avoid
-   * failing here, we squeeze more blocks out of the state until we have enough.
-   */
   while (true) {
     if (done) {
       break;
@@ -6026,7 +5297,7 @@ static KRML_MUSTINLINE void sample_matrix_A_6c(
            i++) {
         size_t j = i;
         libcrux_ml_kem_polynomial_PolynomialRingElement_f6 sample = sampled[j];
-        if (/* A[i][j] = A_transpose[j][i] */ transpose) {
+        if (transpose) {
           A_transpose[j][i1] = sample;
         } else {
           A_transpose[i1][j] = sample;
@@ -6177,14 +5448,9 @@ static KRML_MUSTINLINE void add_to_ring_element_ef_42(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *rhs) {
   for (size_t i = (size_t)0U;
-       i <
-       Eurydice_slice_len(Eurydice_array_to_slice(
-                              (size_t)16U,
-                              /* The semicolon and parentheses at the end of
-                                 loop are a workaround for the following bug
-                                 https://github.com/hacspec/hax/issues/720 */
-                              self->coefficients, __m256i),
-                          __m256i);
+       i < Eurydice_slice_len(Eurydice_array_to_slice(
+                                  (size_t)16U, self->coefficients, __m256i),
+                              __m256i);
        i++) {
     size_t i0 = i;
     self->coefficients[i0] = libcrux_ml_kem_vector_avx2_add_09(
@@ -6215,8 +5481,6 @@ static KRML_MUSTINLINE void compute_As_plus_e_42(
        i++) {
     size_t i0 = i;
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *row = matrix_A[i0];
-    /* This may be externally provided memory. Ensure that `t_as_ntt` is all 0.
-     */
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____0 = ZERO_ef_61();
     t_as_ntt[i0] = uu____0;
     for (size_t i1 = (size_t)0U;
@@ -6292,10 +5556,7 @@ static KRML_MUSTINLINE void generate_keypair_unpacked_22(
     IndCpaPrivateKeyUnpacked_39 *private_key,
     IndCpaPublicKeyUnpacked_39 *public_key) {
   uint8_t hashed[64U];
-  cpa_keygen_seed_d8_6a(/* (ρ,σ) := G(d) for Kyber, (ρ,σ) := G(d || K) for
-                           ML-KEM */
-                        key_generation_seed,
-                        hashed);
+  cpa_keygen_seed_d8_6a(key_generation_seed, hashed);
   Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t), (size_t)32U,
       uint8_t, Eurydice_slice_uint8_t_x2);
@@ -6325,8 +5586,8 @@ static KRML_MUSTINLINE void generate_keypair_unpacked_22(
       sample_vector_cbd_then_ntt_out_b4(copy_of_prf_input, domain_separator)
           .fst,
       (size_t)4U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
-  compute_As_plus_e_42(/* tˆ := Aˆ ◦ sˆ + eˆ */ public_key->t_as_ntt,
-                       public_key->A, private_key->secret_as_ntt, error_as_ntt);
+  compute_As_plus_e_42(public_key->t_as_ntt, public_key->A,
+                       private_key->secret_as_ntt, error_as_ntt);
   uint8_t uu____5[32U];
   core_result_Result_fb dst;
   Eurydice_slice_to_array2(&dst, seed_for_A, Eurydice_slice, uint8_t[32U]);
@@ -6351,13 +5612,11 @@ serialize_unpacked_secret_key_c9(IndCpaPublicKeyUnpacked_39 *public_key,
                                  IndCpaPrivateKeyUnpacked_39 *private_key) {
   uint8_t public_key_serialized[1568U];
   serialize_public_key_1e(
-      /* pk := (Encode_12(tˆ mod^{+}q) || ρ) */ public_key->t_as_ntt,
+      public_key->t_as_ntt,
       Eurydice_array_to_slice((size_t)32U, public_key->seed_for_A, uint8_t),
       public_key_serialized);
   uint8_t secret_key_serialized[1536U];
-  serialize_secret_key_78(
-      /* sk := Encode_12(sˆ mod^{+}q) */ private_key->secret_as_ntt,
-      secret_key_serialized);
+  serialize_secret_key_78(private_key->secret_as_ntt, secret_key_serialized);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_secret_key_serialized[1536U];
   memcpy(copy_of_secret_key_serialized, secret_key_serialized,
@@ -6544,15 +5803,11 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 static KRML_MUSTINLINE void build_unpacked_public_key_mut_fa0(
     Eurydice_slice public_key,
     IndCpaPublicKeyUnpacked_39 *unpacked_public_key) {
-  Eurydice_slice uu____0 = Eurydice_slice_subslice_to(
-      /* tˆ := Decode_12(pk) */ public_key, (size_t)1536U, uint8_t, size_t);
+  Eurydice_slice uu____0 =
+      Eurydice_slice_subslice_to(public_key, (size_t)1536U, uint8_t, size_t);
   deserialize_ring_elements_reduced_42(uu____0, unpacked_public_key->t_as_ntt);
   Eurydice_slice seed =
-      Eurydice_slice_subslice_from(/* ρ := pk + 12·k·n / 8 for i from 0 to k−1
-                                      do for j from 0 to k − 1 do AˆT[i][j] :=
-                                      Parse(XOF(ρ, i, j)) end for end for */
-                                   public_key,
-                                   (size_t)1536U, uint8_t, size_t);
+      Eurydice_slice_subslice_from(public_key, (size_t)1536U, uint8_t, size_t);
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6(*uu____1)[4U] =
       unpacked_public_key->A;
   uint8_t ret[34U];
@@ -6644,10 +5899,7 @@ with const generics
 static KRML_MUSTINLINE void invert_ntt_montgomery_42(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
   size_t zeta_i =
-      /* We only ever call this function after matrix/vector multiplication */
-      LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT
-
-      / (size_t)2U;
+      LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT / (size_t)2U;
   invert_ntt_at_layer_1_61(&zeta_i, re);
   invert_ntt_at_layer_2_61(&zeta_i, re);
   invert_ntt_at_layer_3_61(&zeta_i, re);
@@ -6877,11 +6129,7 @@ static KRML_MUSTINLINE void encrypt_unpacked_74(
     IndCpaPublicKeyUnpacked_39 *public_key, uint8_t message[32U],
     Eurydice_slice randomness, uint8_t ret[1568U]) {
   uint8_t prf_input[33U];
-  libcrux_ml_kem_utils_into_padded_array_c8(/* for i from 0 to k−1 do r[i] :=
-                                               CBD{η1}(PRF(r, N)) N := N + 1 end
-                                               for rˆ := NTT(r) */
-                                            randomness,
-                                            prf_input);
+  libcrux_ml_kem_utils_into_padded_array_c8(randomness, prf_input);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input0[33U];
   memcpy(copy_of_prf_input0, prf_input, (size_t)33U * sizeof(uint8_t));
@@ -6893,7 +6141,6 @@ static KRML_MUSTINLINE void encrypt_unpacked_74(
   uint8_t domain_separator0 = uu____1.snd;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input[33U];
-  /* for i from 0 to k−1 do e1[i] := CBD_{η2}(PRF(r,N)) N := N + 1 end for */
   memcpy(copy_of_prf_input, prf_input, (size_t)33U * sizeof(uint8_t));
   tuple_dd uu____3 =
       sample_ring_element_cbd_b4(copy_of_prf_input, domain_separator0);
@@ -6902,7 +6149,7 @@ static KRML_MUSTINLINE void encrypt_unpacked_74(
       error_1, uu____3.fst,
       (size_t)4U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   uint8_t domain_separator = uu____3.snd;
-  prf_input[32U] = /* e_2 := CBD{η2}(PRF(r, N)) */ domain_separator;
+  prf_input[32U] = domain_separator;
   uint8_t prf_output[128U];
   PRF_a9_440(Eurydice_array_to_slice((size_t)33U, prf_input, uint8_t),
              prf_output);
@@ -6910,11 +6157,9 @@ static KRML_MUSTINLINE void encrypt_unpacked_74(
       sample_from_binomial_distribution_89(
           Eurydice_array_to_slice((size_t)128U, prf_output, uint8_t));
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 u[4U];
-  compute_vector_u_42(/* u := NTT^{-1}(AˆT ◦ rˆ) + e_1 */ public_key->A,
-                      r_as_ntt, error_1, u);
+  compute_vector_u_42(public_key->A, r_as_ntt, error_1, u);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_message[32U];
-  /* v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1) */
   memcpy(copy_of_message, message, (size_t)32U * sizeof(uint8_t));
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 message_as_ring_element =
       deserialize_then_decompress_message_61(copy_of_message);
@@ -6923,14 +6168,12 @@ static KRML_MUSTINLINE void encrypt_unpacked_74(
                                 &message_as_ring_element);
   uint8_t ciphertext[1568U] = {0U};
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____5[4U];
-  /* c_1 := Encode_{du}(Compress_q(u,d_u)) */
   memcpy(
       uu____5, u,
       (size_t)4U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   compress_then_serialize_u_c9(
       uu____5, Eurydice_array_to_subslice2(ciphertext, (size_t)0U,
                                            (size_t)1408U, uint8_t));
-  /* c_2 := Encode_{dv}(Compress_q(v,d_v)) */
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____6 = v;
   compress_then_serialize_ring_element_v_1e(
       uu____6, Eurydice_array_to_subslice_from((size_t)1568U, ciphertext,
@@ -7244,14 +6487,11 @@ static KRML_MUSTINLINE void decrypt_unpacked_37(
     IndCpaPrivateKeyUnpacked_39 *secret_key, uint8_t *ciphertext,
     uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 u_as_ntt[4U];
-  deserialize_then_decompress_u_1e(
-      /* u := Decompress_q(Decode_{d_u}(c), d_u) */ ciphertext, u_as_ntt);
+  deserialize_then_decompress_u_1e(ciphertext, u_as_ntt);
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 v =
       deserialize_then_decompress_ring_element_v_78(
-          Eurydice_array_to_subslice_from(
-              (size_t)1568U,
-              /* v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v) */
-              ciphertext, (size_t)1408U, uint8_t, size_t));
+          Eurydice_array_to_subslice_from((size_t)1568U, ciphertext,
+                                          (size_t)1408U, uint8_t, size_t));
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 message =
       compute_message_42(&v, secret_key->secret_as_ntt, u_as_ntt);
   uint8_t ret0[32U];
@@ -7272,8 +6512,7 @@ with const generics
 static KRML_MUSTINLINE void decrypt_37(Eurydice_slice secret_key,
                                        uint8_t *ciphertext, uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 secret_as_ntt[4U];
-  deserialize_secret_key_42(/* sˆ := Decode_12(sk) */ secret_key,
-                            secret_as_ntt);
+  deserialize_secret_key_42(secret_key, secret_as_ntt);
   /* Passing arrays by value in Rust generates a copy in C */
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 copy_of_secret_as_ntt[4U];
   memcpy(
@@ -7581,13 +6820,9 @@ with const generics
 bool libcrux_ml_kem_ind_cca_validate_private_key_only_4d(
     libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key) {
   uint8_t t[32U];
-  H_a9_fd(Eurydice_array_to_subslice2(/* Eurydice can't access values directly
-                                         on the types. We need to go to the
-                                         `value` directly. */
-                                      private_key->value,
-                                      (size_t)384U * (size_t)2U,
-                                      (size_t)768U * (size_t)2U + (size_t)32U,
-                                      uint8_t),
+  H_a9_fd(Eurydice_array_to_subslice2(
+              private_key->value, (size_t)384U * (size_t)2U,
+              (size_t)768U * (size_t)2U + (size_t)32U, uint8_t),
           t);
   Eurydice_slice expected = Eurydice_array_to_subslice2(
       private_key->value, (size_t)768U * (size_t)2U + (size_t)32U,
@@ -8038,10 +7273,6 @@ static KRML_MUSTINLINE void sample_from_xof_6c0(
   memcpy(copy_of_randomness0, randomness0, (size_t)2U * sizeof(uint8_t[504U]));
   bool done = sample_from_uniform_distribution_next_29(
       copy_of_randomness0, sampled_coefficients, out);
-  /* Requiring more than 5 blocks to sample a ring element should be very
-   * unlikely according to: https://eprint.iacr.org/2023/708.pdf To avoid
-   * failing here, we squeeze more blocks out of the state until we have enough.
-   */
   while (true) {
     if (done) {
       break;
@@ -8100,7 +7331,7 @@ static KRML_MUSTINLINE void sample_matrix_A_6c0(
            i++) {
         size_t j = i;
         libcrux_ml_kem_polynomial_PolynomialRingElement_f6 sample = sampled[j];
-        if (/* A[i][j] = A_transpose[j][i] */ transpose) {
+        if (transpose) {
           A_transpose[j][i1] = sample;
         } else {
           A_transpose[i1][j] = sample;
@@ -8256,14 +7487,9 @@ static KRML_MUSTINLINE void add_to_ring_element_ef_89(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *rhs) {
   for (size_t i = (size_t)0U;
-       i <
-       Eurydice_slice_len(Eurydice_array_to_slice(
-                              (size_t)16U,
-                              /* The semicolon and parentheses at the end of
-                                 loop are a workaround for the following bug
-                                 https://github.com/hacspec/hax/issues/720 */
-                              self->coefficients, __m256i),
-                          __m256i);
+       i < Eurydice_slice_len(Eurydice_array_to_slice(
+                                  (size_t)16U, self->coefficients, __m256i),
+                              __m256i);
        i++) {
     size_t i0 = i;
     self->coefficients[i0] = libcrux_ml_kem_vector_avx2_add_09(
@@ -8294,8 +7520,6 @@ static KRML_MUSTINLINE void compute_As_plus_e_89(
        i++) {
     size_t i0 = i;
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *row = matrix_A[i0];
-    /* This may be externally provided memory. Ensure that `t_as_ntt` is all 0.
-     */
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____0 = ZERO_ef_61();
     t_as_ntt[i0] = uu____0;
     for (size_t i1 = (size_t)0U;
@@ -8371,10 +7595,7 @@ static KRML_MUSTINLINE void generate_keypair_unpacked_220(
     IndCpaPrivateKeyUnpacked_94 *private_key,
     IndCpaPublicKeyUnpacked_94 *public_key) {
   uint8_t hashed[64U];
-  cpa_keygen_seed_d8_f8(/* (ρ,σ) := G(d) for Kyber, (ρ,σ) := G(d || K) for
-                           ML-KEM */
-                        key_generation_seed,
-                        hashed);
+  cpa_keygen_seed_d8_f8(key_generation_seed, hashed);
   Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice((size_t)64U, hashed, uint8_t), (size_t)32U,
       uint8_t, Eurydice_slice_uint8_t_x2);
@@ -8404,8 +7625,8 @@ static KRML_MUSTINLINE void generate_keypair_unpacked_220(
       sample_vector_cbd_then_ntt_out_b40(copy_of_prf_input, domain_separator)
           .fst,
       (size_t)2U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
-  compute_As_plus_e_89(/* tˆ := Aˆ ◦ sˆ + eˆ */ public_key->t_as_ntt,
-                       public_key->A, private_key->secret_as_ntt, error_as_ntt);
+  compute_As_plus_e_89(public_key->t_as_ntt, public_key->A,
+                       private_key->secret_as_ntt, error_as_ntt);
   uint8_t uu____5[32U];
   core_result_Result_fb dst;
   Eurydice_slice_to_array2(&dst, seed_for_A, Eurydice_slice, uint8_t[32U]);
@@ -8430,13 +7651,11 @@ serialize_unpacked_secret_key_2d(IndCpaPublicKeyUnpacked_94 *public_key,
                                  IndCpaPrivateKeyUnpacked_94 *private_key) {
   uint8_t public_key_serialized[800U];
   serialize_public_key_ba(
-      /* pk := (Encode_12(tˆ mod^{+}q) || ρ) */ public_key->t_as_ntt,
+      public_key->t_as_ntt,
       Eurydice_array_to_slice((size_t)32U, public_key->seed_for_A, uint8_t),
       public_key_serialized);
   uint8_t secret_key_serialized[768U];
-  serialize_secret_key_29(
-      /* sk := Encode_12(sˆ mod^{+}q) */ private_key->secret_as_ntt,
-      secret_key_serialized);
+  serialize_secret_key_29(private_key->secret_as_ntt, secret_key_serialized);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_secret_key_serialized[768U];
   memcpy(copy_of_secret_key_serialized, secret_key_serialized,
@@ -8623,15 +7842,11 @@ libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
 static KRML_MUSTINLINE void build_unpacked_public_key_mut_fa(
     Eurydice_slice public_key,
     IndCpaPublicKeyUnpacked_94 *unpacked_public_key) {
-  Eurydice_slice uu____0 = Eurydice_slice_subslice_to(
-      /* tˆ := Decode_12(pk) */ public_key, (size_t)768U, uint8_t, size_t);
+  Eurydice_slice uu____0 =
+      Eurydice_slice_subslice_to(public_key, (size_t)768U, uint8_t, size_t);
   deserialize_ring_elements_reduced_89(uu____0, unpacked_public_key->t_as_ntt);
   Eurydice_slice seed =
-      Eurydice_slice_subslice_from(/* ρ := pk + 12·k·n / 8 for i from 0 to k−1
-                                      do for j from 0 to k − 1 do AˆT[i][j] :=
-                                      Parse(XOF(ρ, i, j)) end for end for */
-                                   public_key,
-                                   (size_t)768U, uint8_t, size_t);
+      Eurydice_slice_subslice_from(public_key, (size_t)768U, uint8_t, size_t);
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6(*uu____1)[2U] =
       unpacked_public_key->A;
   uint8_t ret[34U];
@@ -8769,10 +7984,7 @@ with const generics
 static KRML_MUSTINLINE void invert_ntt_montgomery_89(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
   size_t zeta_i =
-      /* We only ever call this function after matrix/vector multiplication */
-      LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT
-
-      / (size_t)2U;
+      LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT / (size_t)2U;
   invert_ntt_at_layer_1_61(&zeta_i, re);
   invert_ntt_at_layer_2_61(&zeta_i, re);
   invert_ntt_at_layer_3_61(&zeta_i, re);
@@ -8964,11 +8176,7 @@ static KRML_MUSTINLINE void encrypt_unpacked_740(
     IndCpaPublicKeyUnpacked_94 *public_key, uint8_t message[32U],
     Eurydice_slice randomness, uint8_t ret[768U]) {
   uint8_t prf_input[33U];
-  libcrux_ml_kem_utils_into_padded_array_c8(/* for i from 0 to k−1 do r[i] :=
-                                               CBD{η1}(PRF(r, N)) N := N + 1 end
-                                               for rˆ := NTT(r) */
-                                            randomness,
-                                            prf_input);
+  libcrux_ml_kem_utils_into_padded_array_c8(randomness, prf_input);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input0[33U];
   memcpy(copy_of_prf_input0, prf_input, (size_t)33U * sizeof(uint8_t));
@@ -8980,7 +8188,6 @@ static KRML_MUSTINLINE void encrypt_unpacked_740(
   uint8_t domain_separator0 = uu____1.snd;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_prf_input[33U];
-  /* for i from 0 to k−1 do e1[i] := CBD_{η2}(PRF(r,N)) N := N + 1 end for */
   memcpy(copy_of_prf_input, prf_input, (size_t)33U * sizeof(uint8_t));
   tuple_40 uu____3 =
       sample_ring_element_cbd_b40(copy_of_prf_input, domain_separator0);
@@ -8989,7 +8196,7 @@ static KRML_MUSTINLINE void encrypt_unpacked_740(
       error_1, uu____3.fst,
       (size_t)2U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   uint8_t domain_separator = uu____3.snd;
-  prf_input[32U] = /* e_2 := CBD{η2}(PRF(r, N)) */ domain_separator;
+  prf_input[32U] = domain_separator;
   uint8_t prf_output[128U];
   PRF_a9_490(Eurydice_array_to_slice((size_t)33U, prf_input, uint8_t),
              prf_output);
@@ -8997,11 +8204,9 @@ static KRML_MUSTINLINE void encrypt_unpacked_740(
       sample_from_binomial_distribution_89(
           Eurydice_array_to_slice((size_t)128U, prf_output, uint8_t));
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 u[2U];
-  compute_vector_u_89(/* u := NTT^{-1}(AˆT ◦ rˆ) + e_1 */ public_key->A,
-                      r_as_ntt, error_1, u);
+  compute_vector_u_89(public_key->A, r_as_ntt, error_1, u);
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_message[32U];
-  /* v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1) */
   memcpy(copy_of_message, message, (size_t)32U * sizeof(uint8_t));
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 message_as_ring_element =
       deserialize_then_decompress_message_61(copy_of_message);
@@ -9010,14 +8215,12 @@ static KRML_MUSTINLINE void encrypt_unpacked_740(
                                 &message_as_ring_element);
   uint8_t ciphertext[768U] = {0U};
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____5[2U];
-  /* c_1 := Encode_{du}(Compress_q(u,d_u)) */
   memcpy(
       uu____5, u,
       (size_t)2U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   compress_then_serialize_u_2d(
       uu____5, Eurydice_array_to_subslice2(ciphertext, (size_t)0U, (size_t)640U,
                                            uint8_t));
-  /* c_2 := Encode_{dv}(Compress_q(v,d_v)) */
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____6 = v;
   compress_then_serialize_ring_element_v_ba(
       uu____6, Eurydice_array_to_subslice_from((size_t)768U, ciphertext,
@@ -9301,14 +8504,11 @@ static KRML_MUSTINLINE void decrypt_unpacked_4b(
     IndCpaPrivateKeyUnpacked_94 *secret_key, uint8_t *ciphertext,
     uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 u_as_ntt[2U];
-  deserialize_then_decompress_u_ba(
-      /* u := Decompress_q(Decode_{d_u}(c), d_u) */ ciphertext, u_as_ntt);
+  deserialize_then_decompress_u_ba(ciphertext, u_as_ntt);
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 v =
       deserialize_then_decompress_ring_element_v_29(
-          Eurydice_array_to_subslice_from(
-              (size_t)768U,
-              /* v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v) */
-              ciphertext, (size_t)640U, uint8_t, size_t));
+          Eurydice_array_to_subslice_from((size_t)768U, ciphertext,
+                                          (size_t)640U, uint8_t, size_t));
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 message =
       compute_message_89(&v, secret_key->secret_as_ntt, u_as_ntt);
   uint8_t ret0[32U];
@@ -9329,8 +8529,7 @@ with const generics
 static KRML_MUSTINLINE void decrypt_4b(Eurydice_slice secret_key,
                                        uint8_t *ciphertext, uint8_t ret[32U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 secret_as_ntt[2U];
-  deserialize_secret_key_89(/* sˆ := Decode_12(sk) */ secret_key,
-                            secret_as_ntt);
+  deserialize_secret_key_89(secret_key, secret_as_ntt);
   /* Passing arrays by value in Rust generates a copy in C */
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 copy_of_secret_as_ntt[2U];
   memcpy(

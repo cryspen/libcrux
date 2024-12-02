@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
+ * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 9d4ad0ef1e00d55aa483ae761f3d5b4911c0678f
+ * Libcrux: 3e54f3c659bef6ee815d197ee5c74dd40c75186a
  */
 
 #ifndef __libcrux_sha3_avx2_H
@@ -104,9 +104,7 @@ libcrux_sha3_simd_avx2_and_not_xor_ef(__m256i a, __m256i b, __m256i c) {
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i libcrux_sha3_simd_avx2__veorq_n_u64(__m256i a,
                                                                    uint64_t c) {
-  __m256i c0 = libcrux_intrinsics_avx2_mm256_set1_epi64x(
-      (int64_t) /* Casting here is required, doesn't change the value. */
-      c);
+  __m256i c0 = libcrux_intrinsics_avx2_mm256_set1_epi64x((int64_t)c);
   return libcrux_intrinsics_avx2_mm256_xor_si256(a, c0);
 }
 
@@ -1701,7 +1699,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_5b(
         __m256i);
     __m256i v1h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
         (int32_t)32,
-        s[((size_t)4U * /* 0 0 2 2 */ i0 + (size_t)1U) / (size_t)5U]
+        s[((size_t)4U * i0 + (size_t)1U) / (size_t)5U]
          [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
         s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
          [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
@@ -2036,15 +2034,7 @@ static KRML_MUSTINLINE void libcrux_sha3_avx2_x4_shake256(
     Eurydice_slice input0, Eurydice_slice input1, Eurydice_slice input2,
     Eurydice_slice input3, Eurydice_slice out0, Eurydice_slice out1,
     Eurydice_slice out2, Eurydice_slice out3) {
-  Eurydice_slice buf0[4U] = {
-      /* XXX: These functions could alternatively implement the same with the
-         portable implementation #[cfg(feature = "simd128")] { keccakx2::<136,
-         0x1fu8>([input0, input1], [out0, out1]); keccakx2::<136,
-         0x1fu8>([input2, input3], [out2, out3]); } { keccakx1::<136,
-         0x1fu8>([input0], [out0]); keccakx1::<136, 0x1fu8>([input1], [out1]);
-         keccakx1::<136, 0x1fu8>([input2], [out2]); keccakx1::<136,
-         0x1fu8>([input3], [out3]); } */
-      input0, input1, input2, input3};
+  Eurydice_slice buf0[4U] = {input0, input1, input2, input3};
   Eurydice_slice buf[4U] = {out0, out1, out2, out3};
   libcrux_sha3_generic_keccak_keccak_fb(buf0, buf);
 }
@@ -2284,7 +2274,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_3a(
         __m256i);
     __m256i v1h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
         (int32_t)32,
-        s[((size_t)4U * /* 0 0 2 2 */ i0 + (size_t)1U) / (size_t)5U]
+        s[((size_t)4U * i0 + (size_t)1U) / (size_t)5U]
          [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
         s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
          [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
