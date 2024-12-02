@@ -66,6 +66,7 @@ pub fn hmac(alg: Algorithm, key: &[u8], data: &[u8], tag_length: Option<usize>) 
     dst
 }
 
+#[inline(always)]
 fn wrap_bufalloc<const N: usize, F: Fn(&mut [u8; N])>(f: F) -> Vec<u8> {
     let mut buf = [0u8; N];
     f(&mut buf);

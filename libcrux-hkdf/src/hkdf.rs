@@ -57,6 +57,7 @@ pub trait HkdfMode<const HASH_LEN: usize> {
     /// Returns [`Error::OkmTooLarge`] if the requested `OKM_LEN` is too large.
     /// Returns [`Error::ArgumentsTooLarge`] if one of `ikm`, `salt` or `info` is longer than
     /// [`u32::MAX`] bytes.
+    #[inline(always)]
     fn hkdf<const OKM_LEN: usize>(
         okm: &mut [u8; OKM_LEN],
         salt: &[u8],
@@ -75,6 +76,7 @@ pub trait HkdfMode<const HASH_LEN: usize> {
     /// Returns the key material in a [`Vec<u8>`] of length `okm_len` on success.
     /// Returns [`Error::OkmTooLarge`] if the requested `okm_len` is too large.
     /// Returns [`Error::ArgumentsTooLarge`] if `salt`, `ikm` or `info` is longer than [`u32::MAX`] bytes.
+    #[inline(always)]
     fn hkdf_vec(salt: &[u8], ikm: &[u8], info: &[u8], okm_len: usize) -> Result<Vec<u8>, Error> {
         let mut prk = [0u8; HASH_LEN];
         Self::extract(&mut prk, salt, ikm)?;
@@ -114,6 +116,7 @@ pub enum Error {
 /// HKDF extract using hash function `mode`, `salt`, and the input key material `ikm`.
 /// Returns the pre-key material in a vector of tag length.
 #[cfg(feature = "hacl")]
+#[inline(always)]
 pub fn extract(
     alg: Algorithm,
     salt: impl AsRef<[u8]>,
@@ -132,6 +135,7 @@ pub fn extract(
 /// Returns the key material in a vector of length `okm_len` or [`Error::OkmLengthTooLarge`]
 /// if the requested output length is too large.
 #[cfg(feature = "hacl")]
+#[inline(always)]
 pub fn expand(
     alg: Algorithm,
     prk: impl AsRef<[u8]>,
@@ -152,6 +156,7 @@ pub fn expand(
 /// Returns the key material in a vector of length `okm_len` or [`Error::OkmLengthTooLarge`]
 /// if the requested output length is too large.
 #[cfg(feature = "hacl")]
+#[inline(always)]
 pub fn hkdf(
     mode: Algorithm,
     salt: impl AsRef<[u8]>,
@@ -170,6 +175,7 @@ pub fn hkdf(
     }
 }
 
+#[inline(always)]
 fn allocbuf<const N: usize, T, E, F: Fn(&mut [u8; N]) -> Result<T, E>>(f: F) -> Result<Vec<u8>, E> {
     let mut buf = [0u8; N];
 

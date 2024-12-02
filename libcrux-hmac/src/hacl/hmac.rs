@@ -22,6 +22,7 @@ Write the HMAC-SHA-1 MAC of a message (`data`) by using a key (`key`) into `dst`
 The key can be any length and will be hashed if it is longer and padded if it is shorter than 64 byte.
 `dst` must point to 20 bytes of memory.
 */
+#[inline(always)]
 pub fn compute_sha1(dst: &mut [u8], key: &[u8], key_len: u32, data: &[u8], data_len: u32) {
     let l: u32 = 64u32;
     let mut key_block: Box<[u8]> = vec![0x00u8; l as usize].into_boxed_slice();
@@ -126,6 +127,7 @@ Write the HMAC-SHA-2-256 MAC of a message (`data`) by using a key (`key`) into `
 The key can be any length and will be hashed if it is longer and padded if it is shorter than 64 bytes.
 `dst` must point to 32 bytes of memory.
 */
+#[inline(always)]
 pub fn compute_sha2_256(dst: &mut [u8], key: &[u8], key_len: u32, data: &[u8], data_len: u32) {
     let l: u32 = 64u32;
     let mut key_block: Box<[u8]> = vec![0x00u8; l as usize].into_boxed_slice();
@@ -234,6 +236,7 @@ Write the HMAC-SHA-2-384 MAC of a message (`data`) by using a key (`key`) into `
 The key can be any length and will be hashed if it is longer and padded if it is shorter than 128 bytes.
 `dst` must point to 48 bytes of memory.
 */
+#[inline(always)]
 pub fn compute_sha2_384(dst: &mut [u8], key: &[u8], key_len: u32, data: &[u8], data_len: u32) {
     let l: u32 = 128u32;
     let mut key_block: Box<[u8]> = vec![0x00u8; l as usize].into_boxed_slice();
@@ -358,6 +361,7 @@ Write the HMAC-SHA-2-512 MAC of a message (`data`) by using a key (`key`) into `
 The key can be any length and will be hashed if it is longer and padded if it is shorter than 128 bytes.
 `dst` must point to 64 bytes of memory.
 */
+#[inline(always)]
 pub fn compute_sha2_512(dst: &mut [u8], key: &[u8], key_len: u32, data: &[u8], data_len: u32) {
     let l: u32 = 128u32;
     let mut key_block: Box<[u8]> = vec![0x00u8; l as usize].into_boxed_slice();

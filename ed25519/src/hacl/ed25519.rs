@@ -118,6 +118,7 @@ fn fsquare_times_inplace(output: &mut [u64], count: u32) {
     libcrux_hacl_rs::curve25519_51::fsquare_times(output, &input, &tmp, count)
 }
 
+#[inline]
 pub(crate) fn inverse(out: &mut [u64], a: &[u64]) {
     let tmp: [fstar::uint128::uint128; 10] = [fstar::uint128::uint64_to_uint128(0u64); 10usize];
     libcrux_hacl_rs::curve25519_51::finv(out, a, &tmp)
