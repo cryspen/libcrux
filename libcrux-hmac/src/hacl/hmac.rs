@@ -4,6 +4,8 @@
 #![allow(unused_assignments)]
 #![allow(unreachable_patterns)]
 
+//! This module contains generated hacl code.
+
 use libcrux_hacl_rs::prelude::*;
 use libcrux_macros as krml;
 use libcrux_sha2::hacl as hash_sha2;
