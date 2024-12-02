@@ -11,8 +11,7 @@ repository.workspace = true
 readme.workspace = true
 
 [features]
-default = ["portable_hacl"]
-portable_hacl = ["hacl"]
+default = ["hacl"]
 hacl = ["dep:libcrux-sha2", "dep:libcrux-hacl-rs", "dep:libcrux-macros"]
 
 [dependencies]

@@ -13,6 +13,7 @@ pub mod hacl;
 #[cfg(feature = "hacl")]
 mod impl_hacl;
 
+#[cfg(feature = "hacl")]
 pub use impl_hacl::{HkdfSha2_256, HkdfSha2_384, HkdfSha2_512};
 
 pub trait HkdfMode<const HASH_LEN: usize> {
@@ -112,6 +113,7 @@ pub enum Error {
 
 /// HKDF extract using hash function `mode`, `salt`, and the input key material `ikm`.
 /// Returns the pre-key material in a vector of tag length.
+#[cfg(feature = "hacl")]
 pub fn extract(
     alg: Algorithm,
     salt: impl AsRef<[u8]>,
@@ -129,6 +131,7 @@ pub fn extract(
 /// HKDF expand using hash function `mode`, pre-key material `prk`, `info`, and output length `okm_len`.
 /// Returns the key material in a vector of length `okm_len` or [`Error::OkmLengthTooLarge`]
 /// if the requested output length is too large.
+#[cfg(feature = "hacl")]
 pub fn expand(
     alg: Algorithm,
     prk: impl AsRef<[u8]>,
@@ -148,6 +151,7 @@ pub fn expand(
 /// Calls `extract` and `expand` with the given input.
 /// Returns the key material in a vector of length `okm_len` or [`Error::OkmLengthTooLarge`]
 /// if the requested output length is too large.
+#[cfg(feature = "hacl")]
 pub fn hkdf(
     mode: Algorithm,
     salt: impl AsRef<[u8]>,
