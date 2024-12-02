@@ -72,11 +72,7 @@ pub(crate) trait Hash<const K: usize> {
 /// A portable implementation of [`Hash`]
 pub(crate) mod portable {
     use super::*;
-    use libcrux_sha3::portable::{
-        self,
-        incremental,
-        KeccakState,
-    };
+    use libcrux_sha3::portable::{self, incremental, KeccakState};
 
     /// The state.
     ///
@@ -152,13 +148,18 @@ pub(crate) mod portable {
 
         let mut out = [[0u8; THREE_BLOCKS]; K];
         for i in 0..K {
-            incremental::shake128_squeeze_first_three_blocks(&mut st.shake128_state[i], &mut out[i]);
+            incremental::shake128_squeeze_first_three_blocks(
+                &mut st.shake128_state[i],
+                &mut out[i],
+            );
         }
         out
     }
 
     #[inline(always)]
-    fn shake128_squeeze_next_block<const K: usize>(st: &mut PortableHash<K>) -> [[u8; BLOCK_SIZE]; K] {
+    fn shake128_squeeze_next_block<const K: usize>(
+        st: &mut PortableHash<K>,
+    ) -> [[u8; BLOCK_SIZE]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
 
         let mut out = [[0u8; BLOCK_SIZE]; K];

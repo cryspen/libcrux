@@ -104,7 +104,7 @@ fn deserialize_12(a: &[u8]) -> PortableVector {
 
 #[hax_lib::fstar::before(r#"#push-options "--z3rlimit 400 --split_queries always""#)]
 #[hax_lib::fstar::after(r#"#pop-options"#)]
-#[hax_lib::attributes] 
+#[hax_lib::attributes]
 impl Operations for PortableVector {
     #[ensures(|out| fstar!("impl.f_repr out == Seq.create 16 0s"))]
     fn ZERO() -> Self {
@@ -252,7 +252,6 @@ impl Operations for PortableVector {
         inv_ntt_layer_3_step(a, zeta)
     }
 
-    
     #[requires(fstar!("Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
                        Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
                        Spec.Utils.is_i16b_array 3328 (impl.f_repr ${lhs}) /\\
@@ -284,7 +283,7 @@ impl Operations for PortableVector {
     #[requires(fstar!("Spec.MLKEM.serialize_pre 4 (impl.f_repr $a)"))]
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $a) $out"))]
     fn serialize_4(a: Self) -> [u8; 8] {
-       serialize_4(a)
+        serialize_4(a)
     }
 
     #[requires(a.len() == 8)]

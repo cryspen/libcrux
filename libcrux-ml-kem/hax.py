@@ -91,7 +91,7 @@ class extractAction(argparse.Action):
             "hax",
             "-C",
             "--features",
-            "simd128,simd256,pre-verification",
+            "simd128,simd256",
             ";",
             "into",
             "-i",

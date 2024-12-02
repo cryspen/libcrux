@@ -65,10 +65,14 @@ fn is_non_zero(value: u8) -> u8 {
 fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
     let mut r: u8 = 0;
     for i in 0..lhs.len() {
-        hax_lib::loop_invariant!(|i: usize| { fstar!("v $i <= Seq.length $lhs /\\
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                "v $i <= Seq.length $lhs /\\
             (if (Seq.slice $lhs 0 (v $i) = Seq.slice $rhs 0 (v $i)) then
                 $r == 0uy
-                else ~ ($r == 0uy))") });
+                else ~ ($r == 0uy))"
+            )
+        });
         let nr = r | (lhs[i] ^ rhs[i]);
         hax_lib::fstar!("if $r =. 0uy then (
             if (Seq.index $lhs (v $i) = Seq.index $rhs (v $i)) then (
@@ -115,15 +119,19 @@ fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
 #[hax_lib::fstar::options("--ifuel 0 --z3rlimit 50")]
 fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8) -> [u8; SHARED_SECRET_SIZE] {
     let mask = is_non_zero(selector).wrapping_sub(1);
-    hax_lib::fstar!("assert (if $selector = 0uy then $mask = ones else $mask = zero);
+    hax_lib::fstar!(
+        "assert (if $selector = 0uy then $mask = ones else $mask = zero);
         lognot_lemma $mask;
-        assert (if $selector = 0uy then ~.$mask = zero else ~.$mask = ones)");
+        assert (if $selector = 0uy then ~.$mask = zero else ~.$mask = ones)"
+    );
     let mut out = [0u8; SHARED_SECRET_SIZE];
 
     for i in 0..SHARED_SECRET_SIZE {
-        hax_lib::loop_invariant!(|i: usize| { fstar!("v $i <= v $SHARED_SECRET_SIZE /\\
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!("v $i <= v $SHARED_SECRET_SIZE /\\
             (forall j. j < v $i ==> (if ($selector =. 0uy) then Seq.index $out j == Seq.index $lhs j else Seq.index $out j == Seq.index $rhs j)) /\\
-            (forall j. j >= v $i ==> Seq.index $out j == 0uy)") });
+            (forall j. j >= v $i ==> Seq.index $out j == 0uy)")
+        });
         hax_lib::fstar!("assert ((${out}.[ $i ] <: u8) = 0uy)");
         let outi = (lhs[i] & mask) | (rhs[i] & !mask);
         hax_lib::fstar!("if ($selector = 0uy) then (
@@ -152,12 +160,14 @@ fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8) -> [u8; SHARED_SECRET_SIZE] {
         out[i] = outi;
     }
 
-    hax_lib::fstar!("if ($selector =. 0uy) then (
+    hax_lib::fstar!(
+        "if ($selector =. 0uy) then (
             eq_intro $out $lhs
         )
         else (
             eq_intro $out $rhs
-        )");
+        )"
+    );
     out
 }
 

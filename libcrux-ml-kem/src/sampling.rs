@@ -1,6 +1,6 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*,
-    helper::cloop, polynomial::PolynomialRingElement, vector::Operations,
+    constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, helper::cloop,
+    polynomial::PolynomialRingElement, vector::Operations,
 };
 
 /// If `bytes` contains a set of uniformly random bytes, this function
@@ -163,8 +163,10 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
 fn sample_from_binomial_distribution_2<Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!("assert (v (sz 2 *! sz 64) == 128);
-        assert (Seq.length $randomness == 128)");
+    hax_lib::fstar!(
+        "assert (v (sz 2 *! sz 64) == 128);
+        assert (Seq.length $randomness == 128)"
+    );
     let mut sampled_i16s = [0i16; 256];
 
     cloop! {
@@ -212,8 +214,10 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
 fn sample_from_binomial_distribution_3<Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!("assert (v (sz 3 *! sz 64) == 192);
-        assert (Seq.length $randomness == 192)");
+    hax_lib::fstar!(
+        "assert (v (sz 3 *! sz 64) == 192);
+        assert (Seq.length $randomness == 192)"
+    );
     let mut sampled_i16s = [0i16; 256];
 
     cloop! {
@@ -261,9 +265,11 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
 pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!("assert (
+    hax_lib::fstar!(
+        "assert (
         (v (cast $ETA <: u32) == 2) \\/
-        (v (cast $ETA <: u32) == 3))");
+        (v (cast $ETA <: u32) == 3))"
+    );
     match ETA as u32 {
         2 => sample_from_binomial_distribution_2(randomness),
         3 => sample_from_binomial_distribution_3(randomness),

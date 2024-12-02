@@ -52,13 +52,13 @@ By default, all ML-KEM parameter sets are enabled. If required, they are
 available individually under feature flags `mlkem512`, `mlkem768`,
 `mlkem1024`.
 
-In addition to the verified implementations of the ML-KEM variants, the
-feature flag `pre-verification` gives access to, as yet, unverified
-implementations of ML-KEM that are optimized for SIMD instruction sets.
+The implementation is optimized for the AVX2 and NEON SIMD instruction sets.
+
+Note that the NEON implementation is not yet fully verified.
 
 ### Kyber Round 3
 
-The `kyber` flag (in combination with `pre-verification`) also gives access
+The `kyber` flag also gives access
 to an, as yet, unverified implementation of Kyber as submitted in Round 3 of
 the NIST PQ competition.
 

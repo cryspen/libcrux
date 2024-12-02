@@ -12,23 +12,18 @@ macro_rules! init {
         group.measurement_time(Duration::from_secs(10));
 
         use $version as version;
-        #[cfg(feature = "pre-verification")]
-        {
-            fun!("portable", version::portable, group);
-            fun_unpacked!("portable", version::portable::unpacked, group);
-        }
-        #[cfg(all(feature = "simd128", feature = "pre-verification"))]
+        fun!("portable", version::portable, group);
+        fun_unpacked!("portable", version::portable::unpacked, group);
+        #[cfg(feature = "simd128")]
         {
             fun!("neon", version::neon, group);
             fun_unpacked!("neon", version::neon::unpacked, group);
         }
-        #[cfg(all(feature = "simd256", feature = "pre-verification"))]
+        #[cfg(feature = "simd256")]
         {
             fun!("avx2", version::avx2, group);
             fun_unpacked!("avx2", version::avx2::unpacked, group);
         }
-        #[cfg(not(feature = "pre-verification"))]
-        fun!("verified", version, group);
     }};
 }
 
@@ -60,7 +55,7 @@ pub fn key_generation(c: &mut Criterion) {
                     rng.fill_bytes(&mut seed);
                     b.iter(|| {
                         let mut kp = p::init_key_pair();
-                        p::generate_key_pair(seed, &mut kp);
+                        p::generate_key_pair_mut(seed, &mut kp);
                     })
                 },
             );
@@ -141,7 +136,7 @@ pub fn encapsulation(c: &mut Criterion) {
                     b.iter_batched(
                         || {
                             let mut kp = p::init_key_pair();
-                            p::generate_key_pair(seed1, &mut kp);
+                            p::generate_key_pair_mut(seed1, &mut kp);
                             kp
                         },
                         |keypair| {
@@ -197,7 +192,7 @@ pub fn decapsulation(c: &mut Criterion) {
                 b.iter_batched(
                     || {
                         let mut keypair = p::init_key_pair();
-                        p::generate_key_pair(seed1, &mut keypair);
+                        p::generate_key_pair_mut(seed1, &mut keypair);
                         let (ciphertext, _shared_secret) =
                             p::encapsulate(&keypair.public_key, seed2);
                         (keypair, ciphertext)

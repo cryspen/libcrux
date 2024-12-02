@@ -35,7 +35,7 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
                 }
             }
         }
-    };
+    }
     ()
 }
 

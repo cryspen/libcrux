@@ -61,7 +61,7 @@ macro_rules! instantiate {
                         RANKED_BYTES_PER_RING_ELEMENT_1024,
                         CPA_PKE_PUBLIC_KEY_SIZE_1024,
                     >(&public_key.value)
-                
+
             }
 
             /// Validate a private key.
@@ -76,7 +76,7 @@ macro_rules! instantiate {
                         SECRET_KEY_SIZE_1024,
                         CPA_PKE_CIPHERTEXT_SIZE_1024,
                     >(private_key, ciphertext)
-                
+
             }
 
             /// Validate the private key only.
@@ -106,7 +106,7 @@ macro_rules! instantiate {
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
                     >(randomness)
-                
+
             }
 
             /// Generate ML-KEM 1024 Key Pair
@@ -122,7 +122,7 @@ macro_rules! instantiate {
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
                     >(randomness)
-                
+
             }
 
             /// Encapsulate ML-KEM 1024
@@ -149,7 +149,7 @@ macro_rules! instantiate {
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
                     >(public_key, randomness)
-                
+
             }
 
             /// Encapsulate Kyber 1024
@@ -178,7 +178,7 @@ macro_rules! instantiate {
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
                     >(public_key, randomness)
-                
+
             }
 
             /// Decapsulate ML-KEM 1024
@@ -207,7 +207,7 @@ macro_rules! instantiate {
                         ETA2_RANDOMNESS_SIZE,
                         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     >(private_key, ciphertext)
-                
+
             }
 
             /// Decapsulate Kyber 1024
@@ -238,7 +238,7 @@ macro_rules! instantiate {
                         ETA2_RANDOMNESS_SIZE,
                         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     >(private_key, ciphertext)
-                
+
             }
 
             /// Unpacked APIs that don't use serialized keys.
@@ -318,7 +318,7 @@ macro_rules! instantiate {
                             RANKED_BYTES_PER_RING_ELEMENT_1024,
                             CPA_PKE_PUBLIC_KEY_SIZE_1024,
                         >(public_key, unpacked_public_key)
-                    
+
                 }
 
                 /// Generate ML-KEM 1024 Key Pair in "unpacked" form.
@@ -344,7 +344,7 @@ macro_rules! instantiate {
                             ETA1,
                             ETA1_RANDOMNESS_SIZE,
                         >(randomness, key_pair)
-                    
+
                 }
 
                 /// Encapsulate ML-KEM 1024 (unpacked)
@@ -386,7 +386,7 @@ macro_rules! instantiate {
                             ETA2,
                             ETA2_RANDOMNESS_SIZE,
                         >(public_key, randomness)
-                    
+
                 }
 
                 /// Decapsulate ML-KEM 1024 (unpacked)
@@ -416,7 +416,7 @@ macro_rules! instantiate {
                             ETA2_RANDOMNESS_SIZE,
                             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                         >(private_key, ciphertext)
-                    
+
                 }
             }
         }

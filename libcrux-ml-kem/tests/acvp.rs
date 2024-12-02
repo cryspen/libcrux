@@ -1,7 +1,4 @@
-#![cfg(all(
-    feature = "pre-verification",
-    any(feature = "mlkem512", feature = "mlkem768", feature = "mlkem1024",)
-))]
+#![cfg(any(feature = "mlkem512", feature = "mlkem768", feature = "mlkem1024",))]
 
 use serde::{de::DeserializeOwned, Deserialize};
 use std::{fs::File, io::BufReader, path::Path};

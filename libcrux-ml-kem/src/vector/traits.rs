@@ -19,11 +19,11 @@ pub trait Operations: Copy + Clone + Repr {
     #[requires(true)]
     #[ensures(|result| fstar!("f_repr $result == Seq.create 16 0s"))]
     fn ZERO() -> Self;
-  
+
     #[requires(array.len() == 16)]
     #[ensures(|result| fstar!("f_repr $result == $array"))]
     fn from_i16_array(array: &[i16]) -> Self;
-     
+
     #[requires(true)]
     #[ensures(|result| fstar!("f_repr $x == $result"))]
     fn to_i16_array(x: Self) -> [i16; 16];
@@ -248,13 +248,17 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
 #[inline(always)]
 pub fn decompress_1<T: Operations>(vec: T) -> T {
     let z = T::ZERO();
-    hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${z}) i == 0s)");
-    hax_lib::fstar!("assert(forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
-                                      ((0 - v x) == 0 \\/ (0 - v x) == -1))"); 
+    hax_lib::fstar!(
+        "assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${z}) i == 0s)"
+    );
+    hax_lib::fstar!(
+        "assert(forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
+                                      ((0 - v x) == 0 \\/ (0 - v x) == -1))"
+    );
     hax_lib::fstar!("assert(forall i. i < 16 ==>
                                       Spec.Utils.is_intb (pow2 15 - 1) 
-                                        (0 - v (Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i)))");                               
-    
+                                        (0 - v (Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i)))");
+
     let s = T::sub(z, &vec);
     hax_lib::fstar!("assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == 0s \\/ 
                                       Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == -1s)");

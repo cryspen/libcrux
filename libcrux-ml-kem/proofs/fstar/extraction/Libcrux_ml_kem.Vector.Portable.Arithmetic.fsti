@@ -24,9 +24,7 @@ val get_n_least_significant_bits (n: u8) (value: u32)
 /// - result ≡ value (mod FIELD_MODULUS)
 /// - the absolute value of `result` is bound as follows:
 /// `|result| ≤ FIELD_MODULUS / 2 · (|value|/BARRETT_R + 1)
-///
 /// Note: The input bound is 28296 to prevent overflow in the multiplication of quotient by FIELD_MODULUS
-///
 val barrett_reduce_element (value: i16)
     : Prims.Pure i16
       (requires Spec.Utils.is_i16b 28296 value)
@@ -43,7 +41,6 @@ val barrett_reduce_element (value: i16)
 /// `|result| ≤ ceil(|value| / MONTGOMERY_R) + 1665
 /// In particular, if `|value| ≤ FIELD_MODULUS-1 * FIELD_MODULUS-1`, then `|o| <= FIELD_MODULUS-1`.
 /// And, if `|value| ≤ pow2 16 * FIELD_MODULUS-1`, then `|o| <= FIELD_MODULUS + 1664
-///
 val montgomery_reduce_element (value: i32)
     : Prims.Pure i16
       (requires Spec.Utils.is_i32b (3328 * pow2 16) value)

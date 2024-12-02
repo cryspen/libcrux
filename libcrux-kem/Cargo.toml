@@ -20,9 +20,9 @@ libcrux-ecdh = { version = "=0.0.2-beta.2", path = "../libcrux-ecdh" }
 rand = { version = "0.8" }
 
 [features]
-tests = []                                             # Expose functions for testing.
+tests = []                       # Expose functions for testing.
 kyber = ["libcrux-ml-kem/kyber"]
-pre-verification = ["libcrux-ml-kem/pre-verification"]
+pre-verification = []
 
 [dev-dependencies]
 libcrux-kem = { path = "./", features = ["tests"] }

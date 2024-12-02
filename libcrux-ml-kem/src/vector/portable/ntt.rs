@@ -17,7 +17,9 @@ use super::vector_type::*;
                                     Spec.Utils.ntt_spec ${vec}.f_elements (v $zeta) (v $i) (v $j) ${vec}_future.f_elements"))]
 pub(crate) fn ntt_step(vec: &mut PortableVector, zeta: i16, i: usize, j: usize) {
     let t = montgomery_multiply_fe_by_fer(vec.elements[j], zeta);
-    hax_lib::fstar!("assert (v t % 3329 == ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329))");
+    hax_lib::fstar!(
+        "assert (v t % 3329 == ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329))"
+    );
     let a_minus_t = vec.elements[i] - t;
     hax_lib::fstar!("
     calc (==) {
@@ -46,8 +48,10 @@ pub(crate) fn ntt_step(vec: &mut PortableVector, zeta: i16, i: usize, j: usize) 
     }");
     vec.elements[j] = a_minus_t;
     vec.elements[i] = a_plus_t;
-    hax_lib::fstar!("assert (Seq.index vec.f_elements (v i) == a_plus_t);
-                     assert (Seq.index vec.f_elements (v j) == a_minus_t)");
+    hax_lib::fstar!(
+        "assert (Seq.index vec.f_elements (v i) == a_plus_t);
+                     assert (Seq.index vec.f_elements (v j) == a_minus_t)"
+    );
 }
 
 #[inline(always)]
@@ -140,11 +144,13 @@ pub(crate) fn inv_ntt_step(vec: &mut PortableVector, zeta: i16, i: usize, j: usi
         (v a_minus_b * v zeta * 169) % 3329;
         (==) { }
         ((v (Seq.index vec.f_elements (v j)) - v (Seq.index vec.f_elements (v i))) * v zeta * 169) % 3329;
-    }");     
+    }");
     vec.elements[i] = o0;
     vec.elements[j] = o1;
-    hax_lib::fstar!("assert (Seq.index vec.f_elements (v i) == o0);
-                     assert (Seq.index vec.f_elements (v j) == o1)");
+    hax_lib::fstar!(
+        "assert (Seq.index vec.f_elements (v i) == o0);
+                     assert (Seq.index vec.f_elements (v j) == o1)"
+    );
 }
 
 #[inline(always)]
@@ -249,7 +255,9 @@ pub(crate) fn inv_ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> Portab
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::fstar::options("--z3rlimit 250 --split_queries always --query_stats --ext context_prune")]
+#[hax_lib::fstar::options(
+    "--z3rlimit 250 --split_queries always --query_stats --ext context_prune"
+)]
 #[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]")]
 #[hax_lib::requires(fstar!("v i < 8 /\\ Spec.Utils.is_i16b 1664 $zeta /\\
         Spec.Utils.is_i16b_array 3328 ${a}.f_elements /\\
@@ -274,16 +282,18 @@ pub(crate) fn ntt_multiply_binomials(
     i: usize,
     out: &mut PortableVector,
 ) {
-    let ai = a.elements[2*i];
-    let bi = b.elements[2*i];
-    let aj = a.elements[2*i+1];
-    let bj = b.elements[2*i+1];
-    hax_lib::fstar!("assert(Spec.Utils.is_i16b 3328 $ai);
+    let ai = a.elements[2 * i];
+    let bi = b.elements[2 * i];
+    let aj = a.elements[2 * i + 1];
+    let bj = b.elements[2 * i + 1];
+    hax_lib::fstar!(
+        "assert(Spec.Utils.is_i16b 3328 $ai);
                      assert(Spec.Utils.is_i16b 3328 $bi);
                      assert(Spec.Utils.is_i16b 3328 $aj);
                      assert(Spec.Utils.is_i16b 3328 $bj);
-                     assert_norm (3328 * 3328 < pow2 31)");         
-            
+                     assert_norm (3328 * 3328 < pow2 31)"
+    );
+
     hax_lib::fstar!("Spec.Utils.lemma_mul_i16b 3328 3328 $ai $bi");
     let ai_bi = (ai as i32) * (bi as i32);
     hax_lib::fstar!("Spec.Utils.lemma_mul_i16b 3328 3328 $aj $bj");
@@ -331,7 +341,8 @@ pub(crate) fn ntt_multiply_binomials(
     hax_lib::fstar!("assert(Spec.Utils.is_i32b (3328*3328 + 3328*3328) ai_bj_aj_bi) ");
     hax_lib::fstar!("assert_norm (3328 * 3328 + 3328 * 3328 <= 3328 * pow2 15)");
     let o1 = montgomery_reduce_element(ai_bj_aj_bi);
-    hax_lib::fstar!("calc  ( == ) {
+    hax_lib::fstar!(
+        "calc  ( == ) {
         v $o1 % 3329;
         ( == ) { () }
         (v $ai_bj_aj_bi * 169) % 3329;
@@ -341,16 +352,19 @@ pub(crate) fn ntt_multiply_binomials(
         ((v ai * v bj + v aj_bi) * 169) % 3329;
         ( == ) { assert (v aj_bi == v aj * v bi) }
         ((v ai * v bj + v aj * v bi) * 169) % 3329;
-    }");
+    }"
+    );
     let _out0 = out.elements;
-    out.elements[2*i] = o0;
-    out.elements[2*i+1] = o1;
-    hax_lib::fstar!("assert (Seq.index out.f_elements (2 * v i) == o0);
+    out.elements[2 * i] = o0;
+    out.elements[2 * i + 1] = o1;
+    hax_lib::fstar!(
+        "assert (Seq.index out.f_elements (2 * v i) == o0);
                      assert (Seq.index out.f_elements (2 * v i + 1) == o1);
                      assert (Spec.Utils.is_i16b_array 3328 out.f_elements);
                      assert (forall k. (k <> 2 * v i /\\ k <> 2 * v i + 1) ==>
                                         Seq.index out.f_elements k ==
-                                        Seq.index ${_out0} k)");
+                                        Seq.index ${_out0} k)"
+    );
 }
 
 // #[inline(always)]
