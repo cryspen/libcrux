@@ -11,13 +11,14 @@ open Spec.MLKEM
 
 let mlkem768_rank : rank = sz 3
 
-#push-options "--z3rlimit 300"
+#set-options "--z3rlimit 350"
 let mlkem768_generate_keypair (randomness:t_Array u8 (sz 64)):
                               (t_Array u8 (sz 2400) & t_Array u8 (sz 1184)) & bool =
     ind_cca_generate_keypair mlkem768_rank randomness
 
 let mlkem768_encapsulate (public_key: t_Array u8 (sz 1184)) (randomness: t_Array u8 (sz 32)):
                          (t_Array u8 (sz 1088) & t_Array u8 (sz 32)) & bool =
+    assert (v_CPA_CIPHERTEXT_SIZE mlkem768_rank == sz 1088);            
     ind_cca_encapsulate mlkem768_rank public_key randomness
 
 let mlkem768_decapsulate (secret_key: t_Array u8 (sz 2400)) (ciphertext: t_Array u8 (sz 1088)):
@@ -32,7 +33,6 @@ let mlkem1024_generate_keypair (randomness:t_Array u8 (sz 64)):
                                (t_Array u8 (sz 3168) & t_Array u8 (sz 1568)) & bool =
     ind_cca_generate_keypair mlkem1024_rank randomness
 
-#set-options "--z3rlimit 100"
 let mlkem1024_encapsulate (public_key: t_Array u8 (sz 1568)) (randomness: t_Array u8 (sz 32)):
                           (t_Array u8 (sz 1568) & t_Array u8 (sz 32)) & bool  =
     assert (v_CPA_CIPHERTEXT_SIZE mlkem1024_rank == sz 1568);            
