@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
- * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: cbc0d48933fbcbffaaf1f817d7fbd4047a7630a1
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
+ * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9
+ * Libcrux: fbef3649fa222b800fc7dcc349855bcd7de48e36
  */
 
 #ifndef __libcrux_sha3_portable_H
@@ -1654,7 +1654,6 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_96(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
-  /* generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out); or */
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_9e(copy_of_data, out);
 }
@@ -2013,7 +2012,6 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_ad(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
-  /* generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out); or */
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_9e0(copy_of_data, out);
 }
@@ -2142,7 +2140,6 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_ad0(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
-  /* generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out); or */
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_9e1(copy_of_data, out);
 }
@@ -2749,7 +2746,6 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_1e(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
-  /* generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out); or */
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_9e2(copy_of_data, out);
 }
@@ -3108,7 +3104,6 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_7c(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
-  /* generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out); or */
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_9e3(copy_of_data, out);
 }
@@ -3404,7 +3399,6 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_keccakx1_c6(
     Eurydice_slice data[1U], Eurydice_slice out[1U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   Eurydice_slice copy_of_data[1U];
-  /* generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out); or */
   memcpy(copy_of_data, data, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_generic_keccak_keccak_9e4(copy_of_data, out);
 }
@@ -3502,7 +3496,6 @@ static KRML_MUSTINLINE void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0,
                                                           Eurydice_slice input1,
                                                           Eurydice_slice out0,
                                                           Eurydice_slice out1) {
-  /* TODO: make argument ordering consistent */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -3517,9 +3510,6 @@ typedef struct libcrux_sha3_neon_x2_incremental_KeccakState_s {
 */
 static KRML_MUSTINLINE libcrux_sha3_neon_x2_incremental_KeccakState
 libcrux_sha3_neon_x2_incremental_init(void) {
-  /* XXX: These functions could alternatively implement the same with the
-   * portable implementation { let s0 = KeccakState::new(); let s1 =
-   * KeccakState::new(); [s0, s1] } */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -3532,10 +3522,6 @@ static KRML_MUSTINLINE void
 libcrux_sha3_neon_x2_incremental_shake128_absorb_final(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice data0,
     Eurydice_slice data1) {
-  /* XXX: These functions could alternatively implement the same with the
-   * portable implementation { let [mut s0, mut s1] = s;
-   * shake128_absorb_final(&mut s0, data0); shake128_absorb_final(&mut s1,
-   * data1); } */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -3549,10 +3535,6 @@ static KRML_MUSTINLINE void
 libcrux_sha3_neon_x2_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
     Eurydice_slice out1) {
-  /* XXX: These functions could alternatively implement the same with the
-   * portable implementation { let [mut s0, mut s1] = s;
-   * shake128_squeeze_first_three_blocks(&mut s0, out0);
-   * shake128_squeeze_first_three_blocks(&mut s1, out1); } */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -3566,10 +3548,6 @@ static KRML_MUSTINLINE void
 libcrux_sha3_neon_x2_incremental_shake128_squeeze_next_block(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice out0,
     Eurydice_slice out1) {
-  /* XXX: These functions could alternatively implement the same with the
-   * portable implementation { let [mut s0, mut s1] = s;
-   * shake128_squeeze_next_block(&mut s0, out0);
-   * shake128_squeeze_next_block(&mut s1, out1); } */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -3594,10 +3572,6 @@ static KRML_MUSTINLINE void
 libcrux_sha3_neon_x2_incremental_shake256_absorb_final(
     libcrux_sha3_neon_x2_incremental_KeccakState *s, Eurydice_slice data0,
     Eurydice_slice data1) {
-  /* XXX: These functions could alternatively implement the same with the
-   * portable implementation { let [mut s0, mut s1] = s;
-   * shake128_absorb_final(&mut s0, data0); shake128_absorb_final(&mut s1,
-   * data1); } */
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                     "panic!");
   KRML_HOST_EXIT(255U);
@@ -3759,13 +3733,8 @@ static inline size_t libcrux_sha3_generic_keccak_fill_buffer_8b_c6(
   size_t input_len = Eurydice_slice_len(inputs[0U], uint8_t);
   size_t consumed = (size_t)0U;
   if (self->buf_len > (size_t)0U) {
-    if (
-        /* There's something buffered internally to consume. */ self->buf_len +
-            input_len >=
-        (size_t)136U) {
-      consumed = (size_t)136U - /* We have enough data when combining the
-                                   internal buffer and the input. */
-                 self->buf_len;
+    if (self->buf_len + input_len >= (size_t)136U) {
+      consumed = (size_t)136U - self->buf_len;
       for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
         size_t i0 = i;
         Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
@@ -3871,9 +3840,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_8b_c6(
   memcpy(copy_of_inputs, inputs, (size_t)1U * sizeof(Eurydice_slice));
   size_t input_remainder_len =
       libcrux_sha3_generic_keccak_absorb_full_8b_c6(uu____0, copy_of_inputs);
-  if (
-      /* ... buffer the rest if there's not enough input (left). */
-      input_remainder_len > (size_t)0U) {
+  if (input_remainder_len > (size_t)0U) {
     size_t input_len = Eurydice_slice_len(inputs[0U], uint8_t);
     for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
       size_t i0 = i;
@@ -4220,13 +4187,8 @@ static inline size_t libcrux_sha3_generic_keccak_fill_buffer_8b_c60(
   size_t input_len = Eurydice_slice_len(inputs[0U], uint8_t);
   size_t consumed = (size_t)0U;
   if (self->buf_len > (size_t)0U) {
-    if (
-        /* There's something buffered internally to consume. */ self->buf_len +
-            input_len >=
-        (size_t)168U) {
-      consumed = (size_t)168U - /* We have enough data when combining the
-                                   internal buffer and the input. */
-                 self->buf_len;
+    if (self->buf_len + input_len >= (size_t)168U) {
+      consumed = (size_t)168U - self->buf_len;
       for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
         size_t i0 = i;
         Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
@@ -4332,9 +4294,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_8b_c60(
   memcpy(copy_of_inputs, inputs, (size_t)1U * sizeof(Eurydice_slice));
   size_t input_remainder_len =
       libcrux_sha3_generic_keccak_absorb_full_8b_c60(uu____0, copy_of_inputs);
-  if (
-      /* ... buffer the rest if there's not enough input (left). */
-      input_remainder_len > (size_t)0U) {
+  if (input_remainder_len > (size_t)0U) {
     size_t input_len = Eurydice_slice_len(inputs[0U], uint8_t);
     for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
       size_t i0 = i;
@@ -4724,13 +4684,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c6(
   size_t blocks = out_len / (size_t)136U;
   size_t last = out_len - out_len % (size_t)136U;
   size_t mid;
-  if ((size_t)136U >=
-      /* Squeeze out one to start with. XXX: Eurydice does not extract
-         `core::cmp::min`, so we do this instead. (cf.
-         https://github.com/AeneasVerif/eurydice/issues/49) */
-      out_len
-
-  ) {
+  if ((size_t)136U >= out_len) {
     mid = out_len;
   } else {
     mid = (size_t)136U;
@@ -4744,11 +4698,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c6(
   libcrux_sha3_portable_keccak_store_5a_5b(self->inner.st, out00);
   core_ops_range_Range_08 iter =
       core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
-          (CLITERAL(core_ops_range_Range_08){
-              .start = (size_t)1U,
-              .end = /* If we got asked for more than one block, squeeze out
-                        more. */
-              blocks}),
+          (CLITERAL(core_ops_range_Range_08){.start = (size_t)1U,
+                                             .end = blocks}),
           core_ops_range_Range_08, core_ops_range_Range_08);
   while (true) {
     if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
@@ -4757,11 +4708,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c6(
       break;
     } else {
       Eurydice_slice_uint8_t_1size_t__x2 uu____1 =
-          libcrux_sha3_portable_keccak_split_at_mut_n_5a(/* Here we know that we
-                                                            always have full
-                                                            blocks to write out.
-                                                          */
-                                                         out_rest,
+          libcrux_sha3_portable_keccak_split_at_mut_n_5a(out_rest,
                                                          (size_t)136U);
       Eurydice_slice out0[1U];
       memcpy(out0, uu____1.fst, (size_t)1U * sizeof(Eurydice_slice));
@@ -4856,13 +4803,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c60(
   size_t blocks = out_len / (size_t)168U;
   size_t last = out_len - out_len % (size_t)168U;
   size_t mid;
-  if ((size_t)168U >=
-      /* Squeeze out one to start with. XXX: Eurydice does not extract
-         `core::cmp::min`, so we do this instead. (cf.
-         https://github.com/AeneasVerif/eurydice/issues/49) */
-      out_len
-
-  ) {
+  if ((size_t)168U >= out_len) {
     mid = out_len;
   } else {
     mid = (size_t)168U;
@@ -4876,11 +4817,8 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c60(
   libcrux_sha3_portable_keccak_store_5a_3a(self->inner.st, out00);
   core_ops_range_Range_08 iter =
       core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
-          (CLITERAL(core_ops_range_Range_08){
-              .start = (size_t)1U,
-              .end = /* If we got asked for more than one block, squeeze out
-                        more. */
-              blocks}),
+          (CLITERAL(core_ops_range_Range_08){.start = (size_t)1U,
+                                             .end = blocks}),
           core_ops_range_Range_08, core_ops_range_Range_08);
   while (true) {
     if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
@@ -4889,11 +4827,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c60(
       break;
     } else {
       Eurydice_slice_uint8_t_1size_t__x2 uu____1 =
-          libcrux_sha3_portable_keccak_split_at_mut_n_5a(/* Here we know that we
-                                                            always have full
-                                                            blocks to write out.
-                                                          */
-                                                         out_rest,
+          libcrux_sha3_portable_keccak_split_at_mut_n_5a(out_rest,
                                                          (size_t)168U);
       Eurydice_slice out0[1U];
       memcpy(out0, uu____1.fst, (size_t)1U * sizeof(Eurydice_slice));

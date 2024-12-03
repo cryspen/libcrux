@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3a133fe0eee9bd3928d5bb16c24ddd2dd0f3ee7f
- * Eurydice: 1fff1c51ae6e6c87eafd28ec9d5594f54bc91c0c
- * Karamel: c31a22c1e07d2118c07ee5cebb640d863e31a198
- * F*: 2c32d6e230851bbceadac7a21fc418fa2bb7e4bc
- * Libcrux: 0e587d6e842717408ea9357e00d47e372e505c80
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
+ * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9
+ * Libcrux: fbef3649fa222b800fc7dcc349855bcd7de48e36
  */
 
 #include "internal/libcrux_sha3_avx2.h"
@@ -77,8 +77,7 @@ static KRML_MUSTINLINE __m256i and_not_xor_ef(__m256i a, __m256i b, __m256i c) {
 }
 
 static KRML_MUSTINLINE __m256i _veorq_n_u64(__m256i a, uint64_t c) {
-  __m256i c0 = mm256_set1_epi64x(
-      (int64_t) /* Casting here is required, doesn't change the value. */ c);
+  __m256i c0 = mm256_set1_epi64x((int64_t)c);
   return mm256_xor_si256(a, c0);
 }
 
@@ -1431,13 +1430,13 @@ static KRML_MUSTINLINE void store_block_5b(__m256i (*s)[5U],
         s[((size_t)4U * i0 + (size_t)2U) / (size_t)5U]
          [((size_t)4U * i0 + (size_t)2U) % (size_t)5U],
         __m256i);
-    __m256i v1h = mm256_permute2x128_si256(
-        (int32_t)32,
-        s[((size_t)4U * /* 0 0 2 2 */ i0 + (size_t)1U) / (size_t)5U]
-         [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
-        s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
-         [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
-        __m256i);
+    __m256i v1h =
+        mm256_permute2x128_si256((int32_t)32,
+                                 s[((size_t)4U * i0 + (size_t)1U) / (size_t)5U]
+                                  [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
+                                 s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
+                                  [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
+                                 __m256i);
     __m256i v2l = mm256_permute2x128_si256(
         (int32_t)49,
         s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U],
@@ -1748,16 +1747,7 @@ void libcrux_sha3_avx2_x4_shake256(Eurydice_slice input0, Eurydice_slice input1,
                                    Eurydice_slice input2, Eurydice_slice input3,
                                    Eurydice_slice out0, Eurydice_slice out1,
                                    Eurydice_slice out2, Eurydice_slice out3) {
-  Eurydice_slice buf0[4U] = {
-      /* XXX: These functions could alternatively implement the same with the
-         portable implementation #[cfg(feature = "simd128")] { keccakx2::<136,
-         0x1fu8>([input0, input1], [out0, out1]); keccakx2::<136,
-         0x1fu8>([input2, input3], [out2, out3]); } { keccakx1::<136,
-         0x1fu8>([input0], [out0]); keccakx1::<136, 0x1fu8>([input1], [out1]);
-         keccakx1::<136, 0x1fu8>([input2], [out2]); keccakx1::<136,
-         0x1fu8>([input3], [out3]); } */
-      input0,
-      input1, input2, input3};
+  Eurydice_slice buf0[4U] = {input0, input1, input2, input3};
   Eurydice_slice buf[4U] = {out0, out1, out2, out3};
   keccak_fb(buf0, buf);
 }
@@ -1972,13 +1962,13 @@ static KRML_MUSTINLINE void store_block_3a(__m256i (*s)[5U],
         s[((size_t)4U * i0 + (size_t)2U) / (size_t)5U]
          [((size_t)4U * i0 + (size_t)2U) % (size_t)5U],
         __m256i);
-    __m256i v1h = mm256_permute2x128_si256(
-        (int32_t)32,
-        s[((size_t)4U * /* 0 0 2 2 */ i0 + (size_t)1U) / (size_t)5U]
-         [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
-        s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
-         [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
-        __m256i);
+    __m256i v1h =
+        mm256_permute2x128_si256((int32_t)32,
+                                 s[((size_t)4U * i0 + (size_t)1U) / (size_t)5U]
+                                  [((size_t)4U * i0 + (size_t)1U) % (size_t)5U],
+                                 s[((size_t)4U * i0 + (size_t)3U) / (size_t)5U]
+                                  [((size_t)4U * i0 + (size_t)3U) % (size_t)5U],
+                                 __m256i);
     __m256i v2l = mm256_permute2x128_si256(
         (int32_t)49,
         s[(size_t)4U * i0 / (size_t)5U][(size_t)4U * i0 % (size_t)5U],
