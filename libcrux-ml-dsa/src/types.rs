@@ -19,19 +19,9 @@ macro_rules! impl_struct {
                 &self.value
             }
 
-            /// A mutable reference to the raw byte slice.
-            pub fn as_mut_slice(&mut self) -> &mut [u8] {
-                &mut self.value
-            }
-
             /// A reference to the raw byte array.
             pub fn as_raw(&self) -> &[u8; SIZE] {
                 &self.value
-            }
-
-            /// A mutable reference to the raw byte array.
-            pub fn as_raw_mut(&mut self) -> &mut [u8; SIZE] {
-                &mut self.value
             }
 
             /// The number of bytes
@@ -45,6 +35,30 @@ macro_rules! impl_struct {
 impl_struct!(MLDSASigningKey, "An ML-DSA signature key.");
 impl_struct!(MLDSAVerificationKey, "An ML-DSA verification key.");
 impl_struct!(MLDSASignature, "An ML-DSA signature.");
+
+macro_rules! impl_non_hax_types {
+    ($name:ident) => {
+        impl<const SIZE: usize> $name<SIZE> {
+            /// A mutable reference to the raw byte slice.
+            pub fn as_mut_slice(&mut self) -> &mut [u8] {
+                &mut self.value
+            }
+
+            /// A mutable reference to the raw byte array.
+            pub fn as_raw_mut(&mut self) -> &mut [u8; SIZE] {
+                &mut self.value
+            }
+        }
+    };
+}
+
+// Hax can't handle these.
+mod non_hax_impls {
+    use super::*;
+    impl_non_hax_types!(MLDSASigningKey);
+    impl_non_hax_types!(MLDSAVerificationKey);
+    impl_non_hax_types!(MLDSASignature);
+}
 
 /// An ML-DSA key pair.
 pub struct MLDSAKeyPair<const VERIFICATION_KEY_SIZE: usize, const SIGNING_KEY_SIZE: usize> {

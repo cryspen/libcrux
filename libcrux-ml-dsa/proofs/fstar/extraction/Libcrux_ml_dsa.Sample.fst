@@ -6,6 +6,7 @@ open FStar.Mul
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_dsa.Hash_functions.Portable in
   let open Libcrux_ml_dsa.Hash_functions.Shake128 in
   let open Libcrux_ml_dsa.Hash_functions.Shake256 in
   let open Libcrux_ml_dsa.Simd.Traits in
@@ -681,13 +682,10 @@ let sample_four_error_ring_elements
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
 
 let sample_four_ring_elements
-      (#v_SIMDUnit #v_Shake128: Type0)
+      (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i3:
-          Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128)
       (seed0: t_Array u8 (sz 34))
       (domain_separator0 domain_separator1 domain_seperator2 domain_separator3: u16)
      =
@@ -734,8 +732,8 @@ let sample_four_ring_elements
       (sz 33)
       (cast (domain_separator3 >>! 8l <: u16) <: u8)
   in
-  let state:v_Shake128 =
-    Libcrux_ml_dsa.Hash_functions.Shake128.f_init_absorb #v_Shake128
+  let state:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4 =
+    Libcrux_ml_dsa.Hash_functions.Shake128.f_init_absorb #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4
       #FStar.Tactics.Typeclasses.solve
       (seed0 <: t_Slice u8)
       (seed1 <: t_Slice u8)
@@ -746,10 +744,12 @@ let sample_four_ring_elements
   let randomness1:t_Array u8 (sz 840) = Rust_primitives.Hax.repeat 0uy (sz 840) in
   let randomness2:t_Array u8 (sz 840) = Rust_primitives.Hax.repeat 0uy (sz 840) in
   let randomness3:t_Array u8 (sz 840) = Rust_primitives.Hax.repeat 0uy (sz 840) in
-  let tmp0, tmp1, tmp2, tmp3, tmp4:(v_Shake128 & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
+  let tmp0, tmp1, tmp2, tmp3, tmp4:(Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4 &
+    t_Array u8 (sz 840) &
+    t_Array u8 (sz 840) &
     t_Array u8 (sz 840) &
     t_Array u8 (sz 840)) =
-    Libcrux_ml_dsa.Hash_functions.Shake128.f_squeeze_first_five_blocks #v_Shake128
+    Libcrux_ml_dsa.Hash_functions.Shake128.f_squeeze_first_five_blocks #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4
       #FStar.Tactics.Typeclasses.solve
       state
       randomness0
@@ -757,7 +757,7 @@ let sample_four_ring_elements
       randomness2
       randomness3
   in
-  let state:v_Shake128 = tmp0 in
+  let state:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4 = tmp0 in
   let randomness0:t_Array u8 (sz 840) = tmp1 in
   let randomness1:t_Array u8 (sz 840) = tmp2 in
   let randomness2:t_Array u8 (sz 840) = tmp3 in
@@ -829,7 +829,7 @@ let sample_four_ring_elements
     usize &
     usize &
     usize &
-    v_Shake128) =
+    Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4) =
     Rust_primitives.f_while_loop (fun temp_0_ ->
           let
           coefficients0,
@@ -854,7 +854,7 @@ let sample_four_ring_elements
             usize &
             usize &
             usize &
-            v_Shake128) =
+            Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4) =
             temp_0_
           in
           (~.done0 <: bool) || (~.done1 <: bool) || (~.done2 <: bool) || (~.done3 <: bool))
@@ -881,7 +881,7 @@ let sample_four_ring_elements
           usize &
           usize &
           usize &
-          v_Shake128))
+          Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4))
       (fun temp_0_ ->
           let
           coefficients0,
@@ -906,17 +906,17 @@ let sample_four_ring_elements
             usize &
             usize &
             usize &
-            v_Shake128) =
+            Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4) =
             temp_0_
           in
-          let tmp0, out:(v_Shake128 &
+          let tmp0, out:(Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4 &
             (t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168)))
           =
-            Libcrux_ml_dsa.Hash_functions.Shake128.f_squeeze_next_block #v_Shake128
+            Libcrux_ml_dsa.Hash_functions.Shake128.f_squeeze_next_block #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4
               #FStar.Tactics.Typeclasses.solve
               state
           in
-          let state:v_Shake128 = tmp0 in
+          let state:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4 = tmp0 in
           let randomnesses:(t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) &
             t_Array u8 (sz 168)) =
             out
@@ -1001,7 +1001,7 @@ let sample_four_ring_elements
               usize &
               usize &
               usize &
-              v_Shake128)
+              Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4)
           else
             coefficients0,
             coefficients1,
@@ -1027,7 +1027,7 @@ let sample_four_ring_elements
               usize &
               usize &
               usize &
-              v_Shake128))
+              Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4))
   in
   Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (coefficients0 <: t_Slice i32),
   Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (coefficients1 <: t_Slice i32),
