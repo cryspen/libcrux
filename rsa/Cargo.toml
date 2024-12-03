@@ -1,0 +1,24 @@
+[package]
+name = "libcrux-rsa"
+description = "Formally verified RSA signature library"
+
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[features]
+default = ["hacl"]
+hacl = ["dep:libcrux-hacl-rs"]
+expose-hacl = ["hacl"]
+
+[dependencies]
+libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "../hacl-rs", optional = true }
+libcrux-traits = { version = "=0.0.2-beta.2", path = "../traits/" }
+libcrux-macros = { version = "=0.0.2-beta.2", path = "../macros" }
+libcrux-sha2 = { version = "=0.0.2-beta.2", path = "../sha2", features = [
+    "expose-hacl",
+] }
