@@ -361,7 +361,9 @@ val lemma_mont_mul_red_i16_int (x y:i16): Lemma
           let result:i16 = mont_mul_red_i16 x y in
           is_i16b 3328 result /\
           v result % 3329 == (v x * v y * 169) % 3329))
-          
+
+#push-options "--z3rlimit 200"
+
 let lemma_mont_mul_red_i16_int (x y:i16) = 
   let vlow = x *. y in
   let prod = v x * v y in
@@ -429,6 +431,7 @@ let lemma_mont_mul_red_i16_int (x y:i16) =
       ((prod) * 169) % 3329; 
     }
 
+#pop-options
 
 val lemma_mont_mul_red_i16 (x y:i16): Lemma
   (requires (is_i16b 1664 y \/ is_intb (3326 * pow2 15) (v x * v y)))

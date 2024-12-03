@@ -235,7 +235,7 @@ let serialize_kem_secret_key
 
 #pop-options
 
-#push-options "--z3rlimit 300"
+#push-options "--z3rlimit 300 --ext context_pruning --split_queries always"
 
 let encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
