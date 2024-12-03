@@ -213,7 +213,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     ///
     /// The NIST FIPS 203 standard can be found at
     /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-    
+
     // TODO: Remove or replace with something that works and is useful for the proof.
     // #[cfg_attr(hax, hax_lib::requires(
     //     hax_lib::forall(|i:usize|
@@ -229,7 +229,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     pub(crate) fn ntt_multiply(&self, rhs: &Self) -> Self {
         hax_lib::fstar!("admit ()");
-        
+
         let mut out = PolynomialRingElement::ZERO();
 
         for i in 0..VECTORS_IN_RING_ELEMENT {
