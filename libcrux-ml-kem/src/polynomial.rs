@@ -15,11 +15,12 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
     ]
 };
 
+// A function to retrieve zetas so that we can add a post-condition
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(i < 128)]
 #[hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b 1664 result"))]
-pub fn get_zeta(i: usize) -> i16 {
+pub fn zeta(i: usize) -> i16 {
     ZETAS_TIMES_MONTGOMERY_R[i]
 }
 
@@ -67,7 +68,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
         Self {
-            // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
             coefficients: [Vector::ZERO(); 16],
         }
     }
@@ -213,13 +213,13 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     ///
     /// The NIST FIPS 203 standard can be found at
     /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+    
     // TODO: Remove or replace with something that works and is useful for the proof.
     // #[cfg_attr(hax, hax_lib::requires(
     //     hax_lib::forall(|i:usize|
     //         hax_lib::implies(i < COEFFICIENTS_IN_RING_ELEMENT, ||
     //             (lhs.coefficients[i] >= 0 && lhs.coefficients[i] < 4096) &&
     //             (rhs.coefficients[i].abs() <= FIELD_MODULUS)
-
     // ))))]
     // #[cfg_attr(hax, hax_lib::ensures(|result|
     //     hax_lib::forall(|i:usize|
@@ -228,23 +228,18 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     // ))))]
     #[inline(always)]
     pub(crate) fn ntt_multiply(&self, rhs: &Self) -> Self {
-        // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
         hax_lib::fstar!("admit ()");
-        // hax_debug_debug_assert!(lhs
-        //     .coefficients
-        //     .into_iter()
-        //     .all(|coefficient| coefficient >= 0 && coefficient < 4096));
-
+        
         let mut out = PolynomialRingElement::ZERO();
 
         for i in 0..VECTORS_IN_RING_ELEMENT {
             out.coefficients[i] = Vector::ntt_multiply(
                 &self.coefficients[i],
                 &rhs.coefficients[i],
-                get_zeta(64 + 4 * i),
-                get_zeta(64 + 4 * i + 1),
-                get_zeta(64 + 4 * i + 2),
-                get_zeta(64 + 4 * i + 3),
+                zeta(64 + 4 * i),
+                zeta(64 + 4 * i + 1),
+                zeta(64 + 4 * i + 2),
+                zeta(64 + 4 * i + 3),
             );
         }
 

@@ -1,6 +1,6 @@
 use crate::{
     hax_utils::hax_debug_assert,
-    polynomial::{get_zeta, PolynomialRingElement},
+    polynomial::{zeta, PolynomialRingElement},
     vector::{montgomery_multiply_fe, Operations, FIELD_ELEMENTS_IN_VECTOR},
 };
 
@@ -55,10 +55,10 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
                         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))");
         re.coefficients[round] = Vector::inv_ntt_layer_1_step(
             re.coefficients[round],
-            get_zeta(*zeta_i),
-            get_zeta(*zeta_i - 1),
-            get_zeta(*zeta_i - 2),
-            get_zeta(*zeta_i - 3),
+            zeta(*zeta_i),
+            zeta(*zeta_i - 1),
+            zeta(*zeta_i - 2),
+            zeta(*zeta_i - 3),
         );
         *zeta_i -= 3;
         hax_lib::fstar!("reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
@@ -104,8 +104,8 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
                         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))");
         re.coefficients[round] = Vector::inv_ntt_layer_2_step(
             re.coefficients[round],
-            get_zeta(*zeta_i),
-            get_zeta(*zeta_i - 1),
+            zeta(*zeta_i),
+            zeta(*zeta_i - 1),
         );
         *zeta_i -= 1;
         hax_lib::fstar!("reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
@@ -150,7 +150,7 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
                         (Spec.Utils.is_i16b_array_opaque 3328 
                         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))");
         re.coefficients[round] =
-            Vector::inv_ntt_layer_3_step(re.coefficients[round], get_zeta(*zeta_i));
+            Vector::inv_ntt_layer_3_step(re.coefficients[round], zeta(*zeta_i));
         hax_lib::fstar!(
             "reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
             (Spec.Utils.is_i16b_array_opaque 3328 
@@ -210,7 +210,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
             let (x, y) = inv_ntt_layer_int_vec_step_reduce(
                 re.coefficients[j],
                 re.coefficients[j + step_vec],
-                get_zeta(*zeta_i),
+                zeta(*zeta_i),
             );
             re.coefficients[j] = x;
             re.coefficients[j + step_vec] = y;

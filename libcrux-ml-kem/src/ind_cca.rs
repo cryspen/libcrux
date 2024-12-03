@@ -427,13 +427,12 @@ pub(crate) fn decapsulate<
         Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(&implicit_rejection_shared_secret, ciphertext);
     let shared_secret = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, ciphertext);
 
-    let shared_secret = compare_ciphertexts_select_shared_secret_in_constant_time(
+    compare_ciphertexts_select_shared_secret_in_constant_time(
         ciphertext.as_ref(),
         &expected_ciphertext,
         &shared_secret,
         &implicit_rejection_shared_secret,
-    );
-    shared_secret
+    )
 }
 
 /// Types for the unpacked API.
@@ -821,7 +820,7 @@ pub(crate) mod unpacked {
                 Seq.index (Seq.index $result i) j ==
                     Seq.index (Seq.index $ind_cpa_a j) i)"))
     ]
-    pub(crate) fn transpose_a<const K: usize, Vector: Operations>(
+    fn transpose_a<const K: usize, Vector: Operations>(
         ind_cpa_a: [[PolynomialRingElement<Vector>; K]; K],
     ) -> [[PolynomialRingElement<Vector>; K]; K] {
         // We need to un-transpose the A_transpose matrix provided by IND-CPA

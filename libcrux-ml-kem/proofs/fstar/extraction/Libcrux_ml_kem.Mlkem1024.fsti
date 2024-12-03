@@ -3,64 +3,39 @@ module Libcrux_ml_kem.Mlkem1024
 open Core
 open FStar.Mul
 
+let v_C1_BLOCK_SIZE_1024_: usize = sz 352
+
+let v_C1_SIZE_1024_: usize = sz 1408
+
+let v_C2_SIZE_1024_: usize = sz 160
+
+let v_CPA_PKE_CIPHERTEXT_SIZE_1024_: usize = sz 1568
+
+let v_CPA_PKE_PUBLIC_KEY_SIZE_1024_: usize = sz 1568
+
+let v_CPA_PKE_SECRET_KEY_SIZE_1024_: usize = sz 1536
+
 let v_ETA1: usize = sz 2
 
-let v_ETA1_RANDOMNESS_SIZE: usize = v_ETA1 *! sz 64
+let v_ETA1_RANDOMNESS_SIZE: usize = sz 128
 
 let v_ETA2: usize = sz 2
 
-let v_ETA2_RANDOMNESS_SIZE: usize = v_ETA2 *! sz 64
+let v_ETA2_RANDOMNESS_SIZE: usize = sz 128
+
+let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = sz 1600
+
+let v_RANKED_BYTES_PER_RING_ELEMENT_1024_: usize = sz 1536
 
 let v_RANK_1024_: usize = sz 4
 
-let v_CPA_PKE_SECRET_KEY_SIZE_1024_: usize =
-  ((v_RANK_1024_ *! Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT <: usize) *!
-    Libcrux_ml_kem.Constants.v_BITS_PER_COEFFICIENT
-    <:
-    usize) /!
-  sz 8
+let v_SECRET_KEY_SIZE_1024_: usize = sz 3168
 
-let v_RANKED_BYTES_PER_RING_ELEMENT_1024_: usize =
-  (v_RANK_1024_ *! Libcrux_ml_kem.Constants.v_BITS_PER_RING_ELEMENT <: usize) /! sz 8
-
-let v_T_AS_NTT_ENCODED_SIZE_1024_: usize =
-  ((v_RANK_1024_ *! Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT <: usize) *!
-    Libcrux_ml_kem.Constants.v_BITS_PER_COEFFICIENT
-    <:
-    usize) /!
-  sz 8
-
-let v_CPA_PKE_PUBLIC_KEY_SIZE_1024_: usize = v_T_AS_NTT_ENCODED_SIZE_1024_ +! sz 32
-
-let v_SECRET_KEY_SIZE_1024_: usize =
-  ((v_CPA_PKE_SECRET_KEY_SIZE_1024_ +! v_CPA_PKE_PUBLIC_KEY_SIZE_1024_ <: usize) +!
-    Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE
-    <:
-    usize) +!
-  Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
+let v_T_AS_NTT_ENCODED_SIZE_1024_: usize = sz 1536
 
 let v_VECTOR_U_COMPRESSION_FACTOR_1024_: usize = sz 11
 
-let v_C1_BLOCK_SIZE_1024_: usize =
-  (Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_VECTOR_U_COMPRESSION_FACTOR_1024_
-    <:
-    usize) /!
-  sz 8
-
-let v_C1_SIZE_1024_: usize = v_C1_BLOCK_SIZE_1024_ *! v_RANK_1024_
-
 let v_VECTOR_V_COMPRESSION_FACTOR_1024_: usize = sz 5
-
-let v_C2_SIZE_1024_: usize =
-  (Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_VECTOR_V_COMPRESSION_FACTOR_1024_
-    <:
-    usize) /!
-  sz 8
-
-let v_CPA_PKE_CIPHERTEXT_SIZE_1024_: usize = v_C1_SIZE_1024_ +! v_C2_SIZE_1024_
-
-let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize =
-  Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE +! v_CPA_PKE_CIPHERTEXT_SIZE_1024_
 
 /// Validate a private key.
 /// Returns `true` if valid, and `false` otherwise.

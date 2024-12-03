@@ -285,7 +285,6 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(fstar!("Spec.MLKEM.serialize_pre 1 (impl.f_repr $vector)"))]
-    // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 1 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 1 (impl.f_repr $vector) $out"))]
     #[inline(always)]
     fn serialize_1(vector: Self) -> [u8; 2] {
@@ -293,7 +292,6 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(bytes.len() == 2)]
-    // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("sz (Seq.length $bytes) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $bytes (impl.f_repr $out)"))]
     #[inline(always)]
     fn deserialize_1(bytes: &[u8]) -> Self {
@@ -303,7 +301,6 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(fstar!("Spec.MLKEM.serialize_pre 4 (impl.f_repr $vector)"))]
-    // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 4 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $vector) $out"))]
     #[inline(always)]
     fn serialize_4(vector: Self) -> [u8; 8] {
@@ -311,7 +308,6 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(bytes.len() == 8)]
-    // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("sz (Seq.length $bytes) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $bytes (impl.f_repr $out)"))]
     #[inline(always)]
     fn deserialize_4(bytes: &[u8]) -> Self {
@@ -336,7 +332,6 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(fstar!("Spec.MLKEM.serialize_pre 10 (impl.f_repr $vector)"))]
-    // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 10 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $vector) $out"))]
     #[inline(always)]
     fn serialize_10(vector: Self) -> [u8; 20] {
@@ -344,7 +339,6 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(bytes.len() == 20)]
-    // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("sz (Seq.length $bytes) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $bytes (impl.f_repr $out)"))]
     #[inline(always)]
     fn deserialize_10(bytes: &[u8]) -> Self {
@@ -367,7 +361,6 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(fstar!("Spec.MLKEM.serialize_pre 12 (impl.f_repr $vector)"))]
-    // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 12 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $vector) $out"))]
     #[inline(always)]
     fn serialize_12(vector: Self) -> [u8; 24] {
@@ -375,7 +368,6 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(bytes.len() == 24)]
-    // Output name has be `out` https://github.com/hacspec/hax/issues/832
     #[ensures(|out| fstar!("sz (Seq.length $bytes) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $bytes (impl.f_repr $out)"))]
     #[inline(always)]
     fn deserialize_12(bytes: &[u8]) -> Self {
