@@ -63,10 +63,8 @@ macro_rules! impl_rsapss {
 
             let msg_len = msg.len().try_into().map_err(|_| Error::MessageTooLarge)?;
 
-            let pkey = crate::hacl::rsapss::new_rsapss_load_pkey($bits, E_BITS, &pk.n, &E);
-
             match crate::hacl::rsapss::rsapss_pkey_verify(
-                alg, $bits, E_BITS, &pkey, &E, salt_len, $bytes, /*signature length*/
+                alg, $bits, E_BITS, &pk.n, &E, salt_len, $bytes, /*signature length*/
                 &sig.0, msg_len, msg,
             ) {
                 true => Ok(()),
