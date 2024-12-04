@@ -5,6 +5,8 @@ pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1
 pub const BARRETT_SHIFT: i32 = 26;
 pub const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 
+// We define a trait that allows us to talk about the contents of a vector.
+// This is used extensively in pre- and post-conditions to reason about the code.
 #[cfg(hax)]
 #[hax_lib::attributes]
 pub trait Repr: Copy + Clone {

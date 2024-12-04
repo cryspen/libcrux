@@ -15,11 +15,12 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
     ]
 };
 
+// A function to retrieve zetas so that we can add a post-condition
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(i < 128)]
 #[hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b 1664 result"))]
-pub fn get_zeta(i: usize) -> i16 {
+pub fn zeta(i: usize) -> i16 {
     ZETAS_TIMES_MONTGOMERY_R[i]
 }
 

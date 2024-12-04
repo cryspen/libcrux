@@ -9,7 +9,7 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-let get_zeta (i: usize) =
+let zeta (i: usize) =
   let result:i16 = v_ZETAS_TIMES_MONTGOMERY_R.[ i ] in
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
@@ -445,10 +445,10 @@ let ntt_multiply
                   #FStar.Tactics.Typeclasses.solve
                   (myself.f_coefficients.[ i ] <: v_Vector)
                   (rhs.f_coefficients.[ i ] <: v_Vector)
-                  (get_zeta (sz 64 +! (sz 4 *! i <: usize) <: usize) <: i16)
-                  (get_zeta ((sz 64 +! (sz 4 *! i <: usize) <: usize) +! sz 1 <: usize) <: i16)
-                  (get_zeta ((sz 64 +! (sz 4 *! i <: usize) <: usize) +! sz 2 <: usize) <: i16)
-                  (get_zeta ((sz 64 +! (sz 4 *! i <: usize) <: usize) +! sz 3 <: usize) <: i16)
+                  (zeta (sz 64 +! (sz 4 *! i <: usize) <: usize) <: i16)
+                  (zeta ((sz 64 +! (sz 4 *! i <: usize) <: usize) +! sz 1 <: usize) <: i16)
+                  (zeta ((sz 64 +! (sz 4 *! i <: usize) <: usize) +! sz 2 <: usize) <: i16)
+                  (zeta ((sz 64 +! (sz 4 *! i <: usize) <: usize) +! sz 3 <: usize) <: i16)
                 <:
                 v_Vector)
             <:

@@ -94,11 +94,6 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     result
 }
 
-// #[inline(always)]
-// pub(crate) fn shift_left<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
-//     mm256_slli_epi16::<{ SHIFT_BY }>(vector)
-// }
-
 #[inline(always)]
 #[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 100"))]
 #[hax_lib::requires(fstar!("Spec.Utils.is_i16b_array (pow2 12 - 1) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"))]
