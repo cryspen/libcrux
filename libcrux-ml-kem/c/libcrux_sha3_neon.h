@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
- * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
- * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
+ * Eurydice: 7d686376ec943225ff89942978c6c3028bac689c
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 99498eed461fa03566e0382b445c77bd2af5b59d
+ * Libcrux: 122ee3d193e33f55c2324ee84f974e647255f545
  */
 
 #ifndef __libcrux_sha3_neon_H
@@ -51,7 +51,7 @@ void libcrux_sha3_neon_x2_shake256(Eurydice_slice input0, Eurydice_slice input1,
                                    Eurydice_slice out0, Eurydice_slice out1);
 
 typedef struct libcrux_sha3_neon_x2_incremental_KeccakState_s {
-  libcrux_sha3_generic_keccak_KeccakState_48 state[2U];
+  libcrux_sha3_generic_keccak_KeccakState_17 state[2U];
 } libcrux_sha3_neon_x2_incremental_KeccakState;
 
 /**

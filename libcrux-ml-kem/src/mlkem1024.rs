@@ -1,7 +1,5 @@
 //! ML-KEM 1024
 use super::{constants::*, ind_cca::*, types::*, *};
-#[cfg(feature = "unpacked")]
-use super::{ind_cca::unpacked::*, vector::traits::VectorType};
 
 // Kyber 1024 parameters
 const RANK_1024: usize = 4;
@@ -46,17 +44,6 @@ pub type MlKem1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 /// An ML-KEM 1024 Key pair
 pub type MlKem1024KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 
-/// An Unpacked ML-KEM 1024 Public key
-#[allow(type_alias_bounds)]
-#[cfg(feature = "unpacked")]
-#[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
-pub type MlKem1024PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_1024, Vector>;
-/// Am Unpacked ML-KEM 1024 Key pair
-#[allow(type_alias_bounds)]
-#[cfg(feature = "unpacked")]
-#[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
-pub type MlKem1024KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_1024, Vector>;
-
 // Instantiate the different functions.
 macro_rules! instantiate {
     ($modp:ident, $p:path, $vec:path, $doc:expr) => {
@@ -69,11 +56,12 @@ macro_rules! instantiate {
             ///
             /// Returns `true` if valid, and `false` otherwise.
             pub fn validate_public_key(public_key: &MlKem1024PublicKey) -> bool {
-                p::validate_public_key::<
-                    RANK_1024,
-                    RANKED_BYTES_PER_RING_ELEMENT_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                >(&public_key.value)
+                    p::validate_public_key::<
+                        RANK_1024,
+                        RANKED_BYTES_PER_RING_ELEMENT_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                    >(&public_key.value)
+                
             }
 
             /// Validate a private key.
@@ -83,11 +71,24 @@ macro_rules! instantiate {
                 private_key: &MlKem1024PrivateKey,
                 ciphertext: &MlKem1024Ciphertext,
             ) -> bool {
-                p::validate_private_key::<
+                    p::validate_private_key::<
+                        RANK_1024,
+                        SECRET_KEY_SIZE_1024,
+                        CPA_PKE_CIPHERTEXT_SIZE_1024,
+                    >(private_key, ciphertext)
+                
+            }
+
+            /// Validate the private key only.
+            ///
+            /// Returns `true` if valid, and `false` otherwise.
+            pub fn validate_private_key_only(
+                private_key: &MlKem1024PrivateKey,
+            ) -> bool {
+                p::validate_private_key_only::<
                     RANK_1024,
                     SECRET_KEY_SIZE_1024,
-                    CPA_PKE_CIPHERTEXT_SIZE_1024,
-                >(private_key, ciphertext)
+                >(private_key)
             }
 
             /// Generate Kyber 1024 Key Pair
@@ -96,30 +97,32 @@ macro_rules! instantiate {
             pub fn kyber_generate_key_pair(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem1024KeyPair {
-                p::kyber_generate_keypair::<
-                    RANK_1024,
-                    CPA_PKE_SECRET_KEY_SIZE_1024,
-                    SECRET_KEY_SIZE_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    RANKED_BYTES_PER_RING_ELEMENT_1024,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                >(randomness)
+                    p::kyber_generate_keypair::<
+                        RANK_1024,
+                        CPA_PKE_SECRET_KEY_SIZE_1024,
+                        SECRET_KEY_SIZE_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                        RANKED_BYTES_PER_RING_ELEMENT_1024,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                    >(randomness)
+                
             }
 
             /// Generate ML-KEM 1024 Key Pair
             pub fn generate_key_pair(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem1024KeyPair {
-                p::generate_keypair::<
-                    RANK_1024,
-                    CPA_PKE_SECRET_KEY_SIZE_1024,
-                    SECRET_KEY_SIZE_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    RANKED_BYTES_PER_RING_ELEMENT_1024,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                >(randomness)
+                    p::generate_keypair::<
+                        RANK_1024,
+                        CPA_PKE_SECRET_KEY_SIZE_1024,
+                        SECRET_KEY_SIZE_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                        RANKED_BYTES_PER_RING_ELEMENT_1024,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                    >(randomness)
+                
             }
 
             /// Encapsulate ML-KEM 1024
@@ -131,21 +134,22 @@ macro_rules! instantiate {
                 public_key: &MlKem1024PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
-                p::encapsulate::<
-                    RANK_1024,
-                    CPA_PKE_CIPHERTEXT_SIZE_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    T_AS_NTT_ENCODED_SIZE_1024,
-                    C1_SIZE_1024,
-                    C2_SIZE_1024,
-                    VECTOR_U_COMPRESSION_FACTOR_1024,
-                    VECTOR_V_COMPRESSION_FACTOR_1024,
-                    C1_BLOCK_SIZE_1024,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    ETA2,
-                    ETA2_RANDOMNESS_SIZE,
-                >(public_key, randomness)
+                    p::encapsulate::<
+                        RANK_1024,
+                        CPA_PKE_CIPHERTEXT_SIZE_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                        T_AS_NTT_ENCODED_SIZE_1024,
+                        C1_SIZE_1024,
+                        C2_SIZE_1024,
+                        VECTOR_U_COMPRESSION_FACTOR_1024,
+                        VECTOR_V_COMPRESSION_FACTOR_1024,
+                        C1_BLOCK_SIZE_1024,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                    >(public_key, randomness)
+                
             }
 
             /// Encapsulate Kyber 1024
@@ -159,21 +163,22 @@ macro_rules! instantiate {
                 public_key: &MlKem1024PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
-                p::kyber_encapsulate::<
-                    RANK_1024,
-                    CPA_PKE_CIPHERTEXT_SIZE_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    T_AS_NTT_ENCODED_SIZE_1024,
-                    C1_SIZE_1024,
-                    C2_SIZE_1024,
-                    VECTOR_U_COMPRESSION_FACTOR_1024,
-                    VECTOR_V_COMPRESSION_FACTOR_1024,
-                    C1_BLOCK_SIZE_1024,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    ETA2,
-                    ETA2_RANDOMNESS_SIZE,
-                >(public_key, randomness)
+                    p::kyber_encapsulate::<
+                        RANK_1024,
+                        CPA_PKE_CIPHERTEXT_SIZE_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                        T_AS_NTT_ENCODED_SIZE_1024,
+                        C1_SIZE_1024,
+                        C2_SIZE_1024,
+                        VECTOR_U_COMPRESSION_FACTOR_1024,
+                        VECTOR_V_COMPRESSION_FACTOR_1024,
+                        C1_BLOCK_SIZE_1024,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                    >(public_key, randomness)
+                
             }
 
             /// Decapsulate ML-KEM 1024
@@ -184,24 +189,25 @@ macro_rules! instantiate {
                 private_key: &MlKem1024PrivateKey,
                 ciphertext: &MlKem1024Ciphertext,
             ) -> MlKemSharedSecret {
-                p::decapsulate::<
-                    RANK_1024,
-                    SECRET_KEY_SIZE_1024,
-                    CPA_PKE_SECRET_KEY_SIZE_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    CPA_PKE_CIPHERTEXT_SIZE_1024,
-                    T_AS_NTT_ENCODED_SIZE_1024,
-                    C1_SIZE_1024,
-                    C2_SIZE_1024,
-                    VECTOR_U_COMPRESSION_FACTOR_1024,
-                    VECTOR_V_COMPRESSION_FACTOR_1024,
-                    C1_BLOCK_SIZE_1024,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    ETA2,
-                    ETA2_RANDOMNESS_SIZE,
-                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-                >(private_key, ciphertext)
+                    p::decapsulate::<
+                        RANK_1024,
+                        SECRET_KEY_SIZE_1024,
+                        CPA_PKE_SECRET_KEY_SIZE_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                        CPA_PKE_CIPHERTEXT_SIZE_1024,
+                        T_AS_NTT_ENCODED_SIZE_1024,
+                        C1_SIZE_1024,
+                        C2_SIZE_1024,
+                        VECTOR_U_COMPRESSION_FACTOR_1024,
+                        VECTOR_V_COMPRESSION_FACTOR_1024,
+                        C1_BLOCK_SIZE_1024,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                    >(private_key, ciphertext)
+                
             }
 
             /// Decapsulate Kyber 1024
@@ -214,115 +220,195 @@ macro_rules! instantiate {
                 private_key: &MlKem1024PrivateKey,
                 ciphertext: &MlKem1024Ciphertext,
             ) -> MlKemSharedSecret {
-                p::kyber_decapsulate::<
-                    RANK_1024,
-                    SECRET_KEY_SIZE_1024,
-                    CPA_PKE_SECRET_KEY_SIZE_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    CPA_PKE_CIPHERTEXT_SIZE_1024,
-                    T_AS_NTT_ENCODED_SIZE_1024,
-                    C1_SIZE_1024,
-                    C2_SIZE_1024,
-                    VECTOR_U_COMPRESSION_FACTOR_1024,
-                    VECTOR_V_COMPRESSION_FACTOR_1024,
-                    C1_BLOCK_SIZE_1024,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    ETA2,
-                    ETA2_RANDOMNESS_SIZE,
-                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-                >(private_key, ciphertext)
+                    p::kyber_decapsulate::<
+                        RANK_1024,
+                        SECRET_KEY_SIZE_1024,
+                        CPA_PKE_SECRET_KEY_SIZE_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                        CPA_PKE_CIPHERTEXT_SIZE_1024,
+                        T_AS_NTT_ENCODED_SIZE_1024,
+                        C1_SIZE_1024,
+                        C2_SIZE_1024,
+                        VECTOR_U_COMPRESSION_FACTOR_1024,
+                        VECTOR_V_COMPRESSION_FACTOR_1024,
+                        C1_BLOCK_SIZE_1024,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                    >(private_key, ciphertext)
+                
             }
 
-            /// Generate ML-KEM 1024 Key Pair in "unpacked" form
-            #[cfg(feature = "unpacked")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
-            pub fn generate_key_pair_unpacked(
-                randomness: [u8; KEY_GENERATION_SEED_SIZE],
-            ) -> MlKem1024KeyPairUnpacked<$vec> {
-                p::generate_keypair_unpacked::<
-                    RANK_1024,
-                    CPA_PKE_SECRET_KEY_SIZE_1024,
-                    SECRET_KEY_SIZE_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    RANKED_BYTES_PER_RING_ELEMENT_1024,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                >(randomness)
-            }
+            /// Unpacked APIs that don't use serialized keys.
+            pub mod unpacked {
+                use super::*;
 
-            /// Encapsulate ML-KEM 1024 (unpacked)
-            ///
-            /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
-            /// The input is a reference to an unpacked public key of type [`MlKem1024PublicKeyUnpacked`],
-            /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
-            /// TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
-            /// <https://github.com/hacspec/hax/issues/770>
-            #[cfg_attr(
-                hax,
-                hax_lib::fstar::before(
-                    interface,
-                    "
-let _ =
-    (* This module has implicit dependencies, here we make them explicit. *)
-    (* The implicit dependencies arise from typeclasses instances. *)
-    let open Libcrux_ml_kem.Vector.Portable in
-    let open Libcrux_ml_kem.Vector.Neon in
-    ()"
-                )
-            )]
-            #[cfg(feature = "unpacked")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
-            pub fn encapsulate_unpacked(
-                public_key: &MlKem1024PublicKeyUnpacked<$vec>,
-                randomness: [u8; SHARED_SECRET_SIZE],
-            ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
-                p::encapsulate_unpacked::<
-                    RANK_1024,
-                    CPA_PKE_CIPHERTEXT_SIZE_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    T_AS_NTT_ENCODED_SIZE_1024,
-                    C1_SIZE_1024,
-                    C2_SIZE_1024,
-                    VECTOR_U_COMPRESSION_FACTOR_1024,
-                    VECTOR_V_COMPRESSION_FACTOR_1024,
-                    C1_BLOCK_SIZE_1024,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    ETA2,
-                    ETA2_RANDOMNESS_SIZE,
-                >(public_key, randomness)
-            }
+                /// An Unpacked ML-KEM 1024 Public key
+                pub type MlKem1024PublicKeyUnpacked =
+                    p::unpacked::MlKemPublicKeyUnpacked<RANK_1024>;
 
-            /// Decapsulate ML-KEM 1024 (unpacked)
-            ///
-            /// Generates an [`MlKemSharedSecret`].
-            /// The input is a reference to an unpacked key pair of type [`MlKem1024KeyPairUnpacked`]
-            /// and an [`MlKem1024Ciphertext`].
-            #[cfg(feature = "unpacked")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "unpacked")))]
-            pub fn decapsulate_unpacked(
-                private_key: &MlKem1024KeyPairUnpacked<$vec>,
-                ciphertext: &MlKem1024Ciphertext,
-            ) -> MlKemSharedSecret {
-                p::decapsulate_unpacked::<
-                    RANK_1024,
-                    SECRET_KEY_SIZE_1024,
-                    CPA_PKE_SECRET_KEY_SIZE_1024,
-                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
-                    CPA_PKE_CIPHERTEXT_SIZE_1024,
-                    T_AS_NTT_ENCODED_SIZE_1024,
-                    C1_SIZE_1024,
-                    C2_SIZE_1024,
-                    VECTOR_U_COMPRESSION_FACTOR_1024,
-                    VECTOR_V_COMPRESSION_FACTOR_1024,
-                    C1_BLOCK_SIZE_1024,
-                    ETA1,
-                    ETA1_RANDOMNESS_SIZE,
-                    ETA2,
-                    ETA2_RANDOMNESS_SIZE,
-                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-                >(private_key, ciphertext)
+                /// Am Unpacked ML-KEM 1024 Key pair
+                pub type MlKem1024KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK_1024>;
+
+                /// Create a new, empty unpacked key.
+                pub fn init_key_pair() -> MlKem1024KeyPairUnpacked {
+                    MlKem1024KeyPairUnpacked::default()
+                }
+
+                /// Create a new, empty unpacked public key.
+                pub fn init_public_key() -> MlKem1024PublicKeyUnpacked {
+                    MlKem1024PublicKeyUnpacked::default()
+                }
+
+                /// Get the serialized public key.
+                pub fn serialized_public_key(
+                    public_key: &MlKem1024PublicKeyUnpacked,
+                    serialized: &mut MlKem1024PublicKey,
+                ) {
+                    public_key.serialized_mut::<
+                        RANKED_BYTES_PER_RING_ELEMENT_1024,
+                        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                    >(serialized);
+                }
+
+                /// Get the serialized private key.
+                pub fn key_pair_serialized_private_key(key_pair: &MlKem1024KeyPairUnpacked) -> MlKem1024PrivateKey {
+                    key_pair.serialized_private_key::<CPA_PKE_SECRET_KEY_SIZE_1024, SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024, RANKED_BYTES_PER_RING_ELEMENT_1024>()
+                }
+
+                /// Get the serialized private key.
+                pub fn key_pair_serialized_private_key_mut(key_pair: &MlKem1024KeyPairUnpacked, serialized : &mut MlKem1024PrivateKey) {
+                    key_pair.serialized_private_key_mut::<CPA_PKE_SECRET_KEY_SIZE_1024, SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024, RANKED_BYTES_PER_RING_ELEMENT_1024>(serialized);
+                }
+
+                /// Get the serialized public key.
+                pub fn key_pair_serialized_public_key_mut(key_pair: &MlKem1024KeyPairUnpacked, serialized: &mut MlKem1024PublicKey) {
+                    key_pair.serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>(serialized);
+                }
+
+                /// Get the serialized public key.
+                pub fn key_pair_serialized_public_key(key_pair: &MlKem1024KeyPairUnpacked) ->MlKem1024PublicKey {
+                    key_pair.serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>()
+                }
+
+                /// Get an unpacked key from a private key.
+                pub fn key_pair_from_private_mut(private_key: &MlKem1024PrivateKey, key_pair: &mut MlKem1024KeyPairUnpacked) {
+                    p::unpacked::keypair_from_private_key::<RANK_1024, SECRET_KEY_SIZE_1024, CPA_PKE_SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024, RANKED_BYTES_PER_RING_ELEMENT_1024, T_AS_NTT_ENCODED_SIZE_1024>(private_key, key_pair);
+                }
+
+                /// Get the unpacked public key.
+                pub fn unpacked_public_key(
+                    public_key: &MlKem1024PublicKey,
+                    unpacked_public_key: &mut MlKem1024PublicKeyUnpacked,
+                ) {
+                        p::unpacked::unpack_public_key::<
+                            RANK_1024,
+                            T_AS_NTT_ENCODED_SIZE_1024,
+                            RANKED_BYTES_PER_RING_ELEMENT_1024,
+                            CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                        >(public_key, unpacked_public_key)
+                    
+                }
+
+                /// Generate ML-KEM 1024 Key Pair in "unpacked" form.
+                pub fn generate_key_pair(
+                    randomness: [u8; KEY_GENERATION_SEED_SIZE]
+                ) ->  MlKem1024KeyPairUnpacked {
+                    let mut key_pair = MlKem1024KeyPairUnpacked::default();
+                    generate_key_pair_mut(randomness, &mut key_pair);
+                    key_pair
+                }
+
+                /// Generate ML-KEM 1024 Key Pair in "unpacked" form
+                pub fn generate_key_pair_mut(
+                    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+                    key_pair: &mut MlKem1024KeyPairUnpacked,
+                ) {
+                        p::unpacked::generate_keypair::<
+                            RANK_1024,
+                            CPA_PKE_SECRET_KEY_SIZE_1024,
+                            SECRET_KEY_SIZE_1024,
+                            CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                            RANKED_BYTES_PER_RING_ELEMENT_1024,
+                            ETA1,
+                            ETA1_RANDOMNESS_SIZE,
+                        >(randomness, key_pair)
+                    
+                }
+
+                /// Encapsulate ML-KEM 1024 (unpacked)
+                ///
+                /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
+                /// The input is a reference to an unpacked public key of type [`MlKem1024PublicKeyUnpacked`],
+                /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+                /// TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
+                /// <https://github.com/hacspec/hax/issues/770>
+                #[cfg_attr(
+                    hax,
+                    hax_lib::fstar::before(
+                        interface,
+                        "
+    let _ =
+        (* This module has implicit dependencies, here we make them explicit. *)
+        (* The implicit dependencies arise from typeclasses instances. *)
+        let open Libcrux_ml_kem.Vector.Portable in
+        let open Libcrux_ml_kem.Vector.Neon in
+        ()"
+                    )
+                )]
+                pub fn encapsulate(
+                    public_key: &MlKem1024PublicKeyUnpacked,
+                    randomness: [u8; SHARED_SECRET_SIZE],
+                ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
+                        p::unpacked::encapsulate::<
+                            RANK_1024,
+                            CPA_PKE_CIPHERTEXT_SIZE_1024,
+                            CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                            T_AS_NTT_ENCODED_SIZE_1024,
+                            C1_SIZE_1024,
+                            C2_SIZE_1024,
+                            VECTOR_U_COMPRESSION_FACTOR_1024,
+                            VECTOR_V_COMPRESSION_FACTOR_1024,
+                            C1_BLOCK_SIZE_1024,
+                            ETA1,
+                            ETA1_RANDOMNESS_SIZE,
+                            ETA2,
+                            ETA2_RANDOMNESS_SIZE,
+                        >(public_key, randomness)
+                    
+                }
+
+                /// Decapsulate ML-KEM 1024 (unpacked)
+                ///
+                /// Generates an [`MlKemSharedSecret`].
+                /// The input is a reference to an unpacked key pair of type [`MlKem1024KeyPairUnpacked`]
+                /// and an [`MlKem1024Ciphertext`].
+                pub fn decapsulate(
+                    private_key: &MlKem1024KeyPairUnpacked,
+                    ciphertext: &MlKem1024Ciphertext,
+                ) -> MlKemSharedSecret {
+                        p::unpacked::decapsulate::<
+                            RANK_1024,
+                            SECRET_KEY_SIZE_1024,
+                            CPA_PKE_SECRET_KEY_SIZE_1024,
+                            CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                            CPA_PKE_CIPHERTEXT_SIZE_1024,
+                            T_AS_NTT_ENCODED_SIZE_1024,
+                            C1_SIZE_1024,
+                            C2_SIZE_1024,
+                            VECTOR_U_COMPRESSION_FACTOR_1024,
+                            VECTOR_V_COMPRESSION_FACTOR_1024,
+                            C1_BLOCK_SIZE_1024,
+                            ETA1,
+                            ETA1_RANDOMNESS_SIZE,
+                            ETA2,
+                            ETA2_RANDOMNESS_SIZE,
+                            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                        >(private_key, ciphertext)
+                    
+                }
             }
         }
     };

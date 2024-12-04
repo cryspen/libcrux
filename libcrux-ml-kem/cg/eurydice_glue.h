@@ -17,6 +17,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
+#include "karamel/endianness.h"
 #include "karamel/target.h"
 
 // SLICES, ARRAYS, ETC.
@@ -88,7 +89,7 @@ typedef struct {
 #define Eurydice_slice_copy(dst, src, t) \
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 #define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t) \
-  ((Eurydice_slice){.ptr = ptr_, .len = len_})
+  (CLITERAL(Eurydice_slice){.ptr = ptr_, .len = len_})
 
 #define core_array___core__clone__Clone_for__Array_T__N___20__clone( \
     len, src, dst, elem_type, _ret_t)                                \
@@ -130,18 +131,14 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
 // CORE STUFF (conversions, endianness, ...)
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
-  memcpy(buf, &v, sizeof(v));
+  store64_le(buf, v);
 }
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
-  uint64_t v;
-  memcpy(&v, buf, sizeof(v));
-  return v;
+  return load64_le(buf);
 }
 
 static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
-  uint32_t v;
-  memcpy(&v, buf, sizeof(v));
-  return v;
+  return load32_le(buf);
 }
 
 static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
@@ -164,10 +161,10 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
 
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
   (((iter_ptr)->start == (iter_ptr)->end)            \
-       ? (CLITERAL(ret_t){.tag = None})              \
+       ? (CLITERAL(ret_t){.tag = None, .f0 = 0})     \
        : (CLITERAL(ret_t){.tag = Some, .f0 = (iter_ptr)->start++}))
 
-#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next \
+#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this

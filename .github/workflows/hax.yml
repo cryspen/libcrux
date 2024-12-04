@@ -11,6 +11,10 @@ on:
     - cron: "0 0 * * *"
 
   workflow_dispatch:
+    inputs:
+      hax_rev:
+        description: 'The hax revision you want this job to use'
+        default: 'main'
   merge_group:
 
 env:
@@ -42,6 +46,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: hacspec/hax
+          ref: ${{ github.event.inputs.hax_rev || 'main' }}
           path: hax
 
       - name: ⤵ Install & confiure Cachix
@@ -68,4 +73,13 @@ jobs:
 
       - name: 🏃 Extract ML-DSA crate
         working-directory: libcrux-ml-dsa
-        run: cargo hax into fstar
+        run: ./hax.py extract
+
+      - name: 🏃 Lax ML-DSA crate
+        working-directory: libcrux-ml-dsa
+        run: |
+          env FSTAR_HOME=${{ github.workspace }}/fstar \
+              HACL_HOME=${{ github.workspace }}/hacl-star \
+              HAX_HOME=${{ github.workspace }}/hax \
+              PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
+              ./hax.py prove --admit

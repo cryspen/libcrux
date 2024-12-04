@@ -5,6 +5,12 @@ macro_rules! impl_generic_struct {
             pub(crate) value: [u8; SIZE],
         }
 
+        impl<const SIZE: usize> Default for $name<SIZE> {
+            fn default() -> Self {
+                Self { value: [0u8; SIZE] }
+            }
+        }
+
         impl<const SIZE: usize> AsRef<[u8]> for $name<SIZE> {
             fn as_ref(&self) -> &[u8] {
                 &self.value
@@ -188,4 +194,22 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
     ) {
         (self.sk, self.pk)
     }
+}
+
+/// Unpack an incoming private key into it's different parts.
+///
+/// We have this here in types to extract into a common core for C.
+pub(crate) fn unpack_private_key<const CPA_SECRET_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>(
+    private_key: &[u8], // len: SECRET_KEY_SIZE
+) -> (&[u8], &[u8], &[u8], &[u8]) {
+    let (ind_cpa_secret_key, secret_key) = private_key.split_at(CPA_SECRET_KEY_SIZE);
+    let (ind_cpa_public_key, secret_key) = secret_key.split_at(PUBLIC_KEY_SIZE);
+    let (ind_cpa_public_key_hash, implicit_rejection_value) =
+        secret_key.split_at(crate::constants::H_DIGEST_SIZE);
+    (
+        ind_cpa_secret_key,
+        ind_cpa_public_key,
+        ind_cpa_public_key_hash,
+        implicit_rejection_value,
+    )
 }

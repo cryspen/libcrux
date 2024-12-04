@@ -30,12 +30,19 @@
 //! ```
 //!
 //! [FIPS 203]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.ipd.pdf
+#![no_std]
+
+extern crate alloc;
+
+use alloc::{vec, vec::Vec};
 
 use rand::{CryptoRng, Rng};
 
-use libcrux_ecdh;
 use libcrux_ecdh::{p256_derive, x25519_derive};
-use libcrux_ecdh::{P256PrivateKey, P256PublicKey, X25519PrivateKey, X25519PublicKey};
+use libcrux_ecdh::{
+    P256PrivateKey, P256PublicKey, P256SharedSecret, X25519PrivateKey, X25519PublicKey,
+    X25519SharedSecret,
+};
 use libcrux_sha3 as sha3;
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
@@ -145,18 +152,18 @@ pub struct X25519MlKem768Draft00PrivateKey {
 impl X25519MlKem768Draft00PrivateKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
-            mlkem: bytes[32..]
+            mlkem: bytes[..2400]
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)?,
-            x25519: bytes[..32]
+            x25519: bytes[2400..]
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)?,
         })
     }
 
     pub fn encode(&self) -> Vec<u8> {
-        let mut out = self.x25519.0.to_vec();
-        out.extend_from_slice(self.mlkem.as_ref());
+        let mut out = self.mlkem.as_ref().to_vec();
+        out.extend_from_slice(&self.x25519.0);
         out
     }
 }
@@ -216,22 +223,22 @@ impl X25519MlKem768Draft00PublicKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
             mlkem: {
-                let key = MlKem768PublicKey::try_from(&bytes[32..])
+                let key = MlKem768PublicKey::try_from(&bytes[..1184])
                     .map_err(|_| Error::InvalidPublicKey)?;
                 if !mlkem768::validate_public_key(&key) {
                     return Err(Error::InvalidPublicKey);
                 }
                 key
             },
-            x25519: bytes[0..32]
+            x25519: bytes[1184..]
                 .try_into()
                 .map_err(|_| Error::InvalidPublicKey)?,
         })
     }
 
     pub fn encode(&self) -> Vec<u8> {
-        let mut out = self.x25519.0.to_vec();
-        out.extend_from_slice(self.mlkem.as_ref());
+        let mut out = self.mlkem.as_ref().to_vec();
+        out.extend_from_slice(&self.x25519.0);
         out
     }
 }
@@ -370,8 +377,8 @@ impl Ct {
                 Ok(Ss::XWingKemDraft02(
                     ss_m,
                     ss_x,
-                    X25519PublicKey(ct_x.0.clone()),
-                    X25519PublicKey(pk_x.0.clone()),
+                    X25519PublicKey(ct_x.0),
+                    X25519PublicKey(pk_x.0),
                 ))
             }
             Ct::MlKem1024(ct) => {
@@ -430,25 +437,25 @@ impl Ct {
 
 /// A KEM shared secret
 pub enum Ss {
-    X25519(X25519PublicKey),
-    P256(P256PublicKey),
+    X25519(X25519SharedSecret),
+    P256(P256SharedSecret),
     MlKem512(MlKemSharedSecret),
     MlKem768(MlKemSharedSecret),
-    X25519MlKem768Draft00(MlKemSharedSecret, X25519PublicKey),
+    X25519MlKem768Draft00(MlKemSharedSecret, X25519SharedSecret),
     XWingKemDraft02(
-        MlKemSharedSecret, // ss_M
-        X25519PublicKey,   // ss_X
-        X25519PublicKey,   // ct_X
-        X25519PublicKey,   // pk_X
+        MlKemSharedSecret,  // ss_M
+        X25519SharedSecret, // ss_X
+        X25519PublicKey,    // ct_X
+        X25519PublicKey,    // pk_X
     ),
     #[cfg(feature = "kyber")]
-    X25519Kyber768Draft00(MlKemSharedSecret, X25519PublicKey),
+    X25519Kyber768Draft00(MlKemSharedSecret, X25519SharedSecret),
     #[cfg(feature = "kyber")]
     XWingKyberDraft02(
-        MlKemSharedSecret, // ss_M
-        X25519PublicKey,   // ss_X
-        X25519PublicKey,   // ct_X
-        X25519PublicKey,   // pk_X
+        MlKemSharedSecret,  // ss_M
+        X25519SharedSecret, // ss_X
+        X25519PublicKey,    // ct_X
+        X25519PublicKey,    // pk_X
     ),
     MlKem1024(MlKemSharedSecret),
 }
@@ -714,8 +721,8 @@ impl Ss {
             Ss::MlKem512(k) => k.as_ref().to_vec(),
             Ss::MlKem768(k) => k.as_ref().to_vec(),
             Ss::X25519MlKem768Draft00(kk, xk) => {
-                let mut out = xk.0.to_vec();
-                out.extend_from_slice(kk.as_ref());
+                let mut out = kk.to_vec();
+                out.extend_from_slice(xk.0.as_ref());
                 out
             }
             Ss::XWingKemDraft02(ss_m, ss_x, ct_x, pk_x) => {
@@ -761,8 +768,8 @@ impl Ct {
             Ct::MlKem512(k) => k.as_ref().to_vec(),
             Ct::MlKem768(k) => k.as_ref().to_vec(),
             Ct::X25519MlKem768Draft00(kk, xk) => {
-                let mut out = xk.0.to_vec();
-                out.extend_from_slice(kk.as_ref());
+                let mut out = kk.as_ref().to_vec();
+                out.extend_from_slice(xk.0.as_ref());
                 out
             }
             Ct::XWingKemDraft02(ct_m, ct_x) => {
@@ -808,7 +815,7 @@ impl Ct {
             Algorithm::X25519MlKem768Draft00 => {
                 let key: [u8; MlKem768Ciphertext::len() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
-                let (xct, kct) = key.split_at(32);
+                let (kct, xct) = key.split_at(1088);
                 Ok(Self::X25519MlKem768Draft00(
                     kct.try_into().map_err(|_| Error::InvalidCiphertext)?,
                     xct.try_into().map_err(|_| Error::InvalidCiphertext)?,

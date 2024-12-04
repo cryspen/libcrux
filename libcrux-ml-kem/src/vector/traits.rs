@@ -65,28 +65,21 @@ pub trait Operations: Copy + Clone {
 }
 
 // hax does not support trait with default implementations, so we use the following pattern
+#[inline(always)]
 pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
     T::montgomery_multiply_by_constant(v, fer)
 }
+#[inline(always)]
 pub fn to_standard_domain<T: Operations>(v: T) -> T {
     T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
-
+#[inline(always)]
 pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
     let t = T::shift_right::<15>(a);
     let fm = T::bitwise_and_with_constant(t, FIELD_MODULUS);
     T::add(a, &fm)
 }
-
+#[inline(always)]
 pub fn decompress_1<T: Operations>(v: T) -> T {
     T::bitwise_and_with_constant(T::sub(T::ZERO(), &v), 1665)
 }
-
-/// Internal vectors.
-///
-/// Used in the unpacked API.
-#[cfg(feature = "unpacked")]
-pub trait VectorType: Operations {}
-
-#[cfg(feature = "unpacked")]
-impl<T: Operations> VectorType for T {}

@@ -1,9 +1,23 @@
 //! HMAC
 //!
 //! This crate implements HMAC on SHA 1 and SHA 2 (except for SHA 224).
+#![no_std]
 
-use libcrux_hkdf as hkdf;
-pub(crate) mod hacl_hmac;
+extern crate alloc;
+
+use alloc::vec::Vec;
+
+#[cfg(feature = "hacl")]
+pub mod hacl {
+    pub mod hash_sha1;
+    pub mod hmac;
+}
+
+#[cfg(feature = "hacl")]
+mod impl_hacl;
+
+#[cfg(feature = "portable_hacl")]
+pub use impl_hacl::*;
 
 /// The HMAC algorithm defining the used hash function.
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -14,16 +28,6 @@ pub enum Algorithm {
     Sha256,
     Sha384,
     Sha512,
-}
-
-impl From<hkdf::Algorithm> for Algorithm {
-    fn from(value: hkdf::Algorithm) -> Self {
-        match value {
-            hkdf::Algorithm::Sha256 => Self::Sha256,
-            hkdf::Algorithm::Sha384 => Self::Sha384,
-            hkdf::Algorithm::Sha512 => Self::Sha512,
-        }
-    }
 }
 
 /// Get the tag size for a given algorithm.
@@ -39,6 +43,7 @@ pub const fn tag_size(alg: Algorithm) -> usize {
 /// Compute the HMAC value with the given `alg` and `key` on `data` with an
 /// output tag length of `tag_length`.
 /// Returns a vector of length `tag_length`.
+/// Panics if either `key` or `data` are longer than `u32::MAX`.
 pub fn hmac(alg: Algorithm, key: &[u8], data: &[u8], tag_length: Option<usize>) -> Vec<u8> {
     let native_tag_length = tag_size(alg);
     let tag_length = match tag_length {
@@ -46,11 +51,17 @@ pub fn hmac(alg: Algorithm, key: &[u8], data: &[u8], tag_length: Option<usize>) 
         None => native_tag_length,
     };
     let mut dst: Vec<_> = match alg {
-        Algorithm::Sha1 => crate::hacl_hmac::sha1(key, data).into(),
-        Algorithm::Sha256 => crate::hacl_hmac::sha2_256(key, data).into(),
-        Algorithm::Sha384 => crate::hacl_hmac::sha2_384(key, data).into(),
-        Algorithm::Sha512 => crate::hacl_hmac::sha2_512(key, data).into(),
+        Algorithm::Sha1 => wrap_bufalloc(|buf| hmac_sha1(buf, key, data)),
+        Algorithm::Sha256 => wrap_bufalloc(|buf| hmac_sha2_256(buf, key, data)),
+        Algorithm::Sha384 => wrap_bufalloc(|buf| hmac_sha2_384(buf, key, data)),
+        Algorithm::Sha512 => wrap_bufalloc(|buf| hmac_sha2_512(buf, key, data)),
     };
     dst.truncate(tag_length);
     dst
+}
+
+fn wrap_bufalloc<const N: usize, F: Fn(&mut [u8; N])>(f: F) -> Vec<u8> {
+    let mut buf = [0u8; N];
+    f(&mut buf);
+    buf.to_vec()
 }

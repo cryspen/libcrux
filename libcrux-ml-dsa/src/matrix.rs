@@ -19,11 +19,11 @@ pub(crate) fn compute_As1_plus_s2<
     s2: &[PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
     let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    let s1_ntt = s1.map(|s| ntt::<SIMDUnit>(s));
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
-            let product =
-                ntt_multiply_montgomery::<SIMDUnit>(ring_element, &ntt::<SIMDUnit>(s1[j]));
+            let product = ntt_multiply_montgomery::<SIMDUnit>(ring_element, &s1_ntt[j]);
             result[i] = PolynomialRingElement::add(&result[i], &product);
         }
 

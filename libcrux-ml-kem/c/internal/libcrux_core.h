@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: b351338f6a84c7a1afc27433eb0ffdc668b3581d
- * Eurydice: 7efec1624422fd5e94388ef06b9c76dfe7a48d46
- * Karamel: c96fb69d15693284644d6aecaa90afa37e4de8f0
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
+ * Eurydice: 7d686376ec943225ff89942978c6c3028bac689c
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 99498eed461fa03566e0382b445c77bd2af5b59d
+ * Libcrux: 122ee3d193e33f55c2324ee84f974e647255f545
  */
 
 #ifndef __internal_libcrux_core_H
@@ -61,18 +61,6 @@ typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair768_s {
 } libcrux_ml_kem_utils_extraction_helper_Keypair768;
 
 /**
-This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#14}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_b6
-with const generics
-- SIZE= 1568
-*/
-libcrux_ml_kem_types_MlKemPublicKey_1f libcrux_ml_kem_types_from_b6_8c1(
-    uint8_t value[1568U]);
-
-/**
  Create a new [`MlKemKeyPair`] from the secret and public key.
 */
 /**
@@ -85,82 +73,21 @@ with const generics
 - PRIVATE_KEY_SIZE= 3168
 - PUBLIC_KEY_SIZE= 1568
 */
-libcrux_ml_kem_mlkem1024_MlKem1024KeyPair libcrux_ml_kem_types_from_17_f61(
-    libcrux_ml_kem_types_MlKemPrivateKey_95 sk,
-    libcrux_ml_kem_types_MlKemPublicKey_1f pk);
+libcrux_ml_kem_mlkem1024_MlKem1024KeyPair libcrux_ml_kem_types_from_17_94(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 sk,
+    libcrux_ml_kem_types_MlKemPublicKey_64 pk);
 
 /**
 This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemPrivateKey<SIZE>)#8}
+libcrux_ml_kem::types::MlKemPrivateKey<SIZE>)#10}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_05
+A monomorphic instance of libcrux_ml_kem.types.from_88
 with const generics
 - SIZE= 3168
 */
-libcrux_ml_kem_types_MlKemPrivateKey_95 libcrux_ml_kem_types_from_05_9d1(
+libcrux_ml_kem_types_MlKemPrivateKey_83 libcrux_ml_kem_types_from_88_39(
     uint8_t value[3168U]);
-
-/**
-This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#2}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_01
-with const generics
-- SIZE= 1568
-*/
-libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext libcrux_ml_kem_types_from_01_131(
-    uint8_t value[1568U]);
-
-/**
- A reference to the raw byte slice.
-*/
-/**
-This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>#18}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.as_slice_cb
-with const generics
-- SIZE= 1568
-*/
-uint8_t *libcrux_ml_kem_types_as_slice_cb_a91(
-    libcrux_ml_kem_types_MlKemPublicKey_1f *self);
-
-/**
-This function found in impl {(core::convert::AsRef<@Slice<u8>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#1}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.as_ref_00
-with const generics
-- SIZE= 1568
-*/
-Eurydice_slice libcrux_ml_kem_types_as_ref_00_df1(
-    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *self);
-
-/**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
-with const generics
-- LEN= 1600
-*/
-void libcrux_ml_kem_utils_into_padded_array_424(Eurydice_slice slice,
-                                                uint8_t ret[1600U]);
-
-/**
-This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#14}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_b6
-with const generics
-- SIZE= 1184
-*/
-libcrux_ml_kem_types_MlKemPublicKey_15 libcrux_ml_kem_types_from_b6_8c0(
-    uint8_t value[1184U]);
 
 /**
  Create a new [`MlKemKeyPair`] from the secret and public key.
@@ -175,82 +102,21 @@ with const generics
 - PRIVATE_KEY_SIZE= 2400
 - PUBLIC_KEY_SIZE= 1184
 */
-libcrux_ml_kem_mlkem768_MlKem768KeyPair libcrux_ml_kem_types_from_17_f60(
-    libcrux_ml_kem_types_MlKemPrivateKey_55 sk,
-    libcrux_ml_kem_types_MlKemPublicKey_15 pk);
+libcrux_ml_kem_mlkem768_MlKem768KeyPair libcrux_ml_kem_types_from_17_74(
+    libcrux_ml_kem_types_MlKemPrivateKey_d9 sk,
+    libcrux_ml_kem_types_MlKemPublicKey_30 pk);
 
 /**
 This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemPrivateKey<SIZE>)#8}
+libcrux_ml_kem::types::MlKemPrivateKey<SIZE>)#10}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_05
+A monomorphic instance of libcrux_ml_kem.types.from_88
 with const generics
 - SIZE= 2400
 */
-libcrux_ml_kem_types_MlKemPrivateKey_55 libcrux_ml_kem_types_from_05_9d0(
+libcrux_ml_kem_types_MlKemPrivateKey_d9 libcrux_ml_kem_types_from_88_28(
     uint8_t value[2400U]);
-
-/**
-This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#2}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_01
-with const generics
-- SIZE= 1088
-*/
-libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_from_01_130(
-    uint8_t value[1088U]);
-
-/**
- A reference to the raw byte slice.
-*/
-/**
-This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>#18}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.as_slice_cb
-with const generics
-- SIZE= 1184
-*/
-uint8_t *libcrux_ml_kem_types_as_slice_cb_a90(
-    libcrux_ml_kem_types_MlKemPublicKey_15 *self);
-
-/**
-This function found in impl {(core::convert::AsRef<@Slice<u8>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#1}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.as_ref_00
-with const generics
-- SIZE= 1088
-*/
-Eurydice_slice libcrux_ml_kem_types_as_ref_00_df0(
-    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self);
-
-/**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
-with const generics
-- LEN= 1120
-*/
-void libcrux_ml_kem_utils_into_padded_array_423(Eurydice_slice slice,
-                                                uint8_t ret[1120U]);
-
-/**
-This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#14}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_b6
-with const generics
-- SIZE= 800
-*/
-libcrux_ml_kem_types_MlKemPublicKey_be libcrux_ml_kem_types_from_b6_8c(
-    uint8_t value[800U]);
 
 /**
  Create a new [`MlKemKeyPair`] from the secret and public key.
@@ -265,104 +131,167 @@ with const generics
 - PRIVATE_KEY_SIZE= 1632
 - PUBLIC_KEY_SIZE= 800
 */
-libcrux_ml_kem_types_MlKemKeyPair_cb libcrux_ml_kem_types_from_17_f6(
-    libcrux_ml_kem_types_MlKemPrivateKey_5e sk,
-    libcrux_ml_kem_types_MlKemPublicKey_be pk);
+libcrux_ml_kem_types_MlKemKeyPair_3e libcrux_ml_kem_types_from_17_fa(
+    libcrux_ml_kem_types_MlKemPrivateKey_fa sk,
+    libcrux_ml_kem_types_MlKemPublicKey_52 pk);
 
 /**
 This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemPrivateKey<SIZE>)#8}
+libcrux_ml_kem::types::MlKemPrivateKey<SIZE>)#10}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_05
+A monomorphic instance of libcrux_ml_kem.types.from_88
 with const generics
 - SIZE= 1632
 */
-libcrux_ml_kem_types_MlKemPrivateKey_5e libcrux_ml_kem_types_from_05_9d(
+libcrux_ml_kem_types_MlKemPrivateKey_fa libcrux_ml_kem_types_from_88_2a(
     uint8_t value[1632U]);
-
-/**
-A monomorphic instance of core.result.Result
-with types uint8_t[32size_t], core_array_TryFromSliceError
-
-*/
-typedef struct core_result_Result_00_s {
-  core_result_Result_86_tags tag;
-  union {
-    uint8_t case_Ok[32U];
-    core_array_TryFromSliceError case_Err;
-  } val;
-} core_result_Result_00;
-
-/**
-This function found in impl {core::result::Result<T, E>}
-*/
-/**
-A monomorphic instance of core.result.unwrap_41
-with types uint8_t[32size_t], core_array_TryFromSliceError
-
-*/
-void core_result_unwrap_41_33(core_result_Result_00 self, uint8_t ret[32U]);
-
-/**
-This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#2}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_01
-with const generics
-- SIZE= 768
-*/
-libcrux_ml_kem_types_MlKemCiphertext_e8 libcrux_ml_kem_types_from_01_13(
-    uint8_t value[768U]);
 
 /**
  A reference to the raw byte slice.
 */
 /**
-This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>#18}
+This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>#21}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_slice_cb
+A monomorphic instance of libcrux_ml_kem.types.as_slice_ba
 with const generics
-- SIZE= 800
+- SIZE= 1184
 */
-uint8_t *libcrux_ml_kem_types_as_slice_cb_a9(
-    libcrux_ml_kem_types_MlKemPublicKey_be *self);
+uint8_t *libcrux_ml_kem_types_as_slice_ba_d0(
+    libcrux_ml_kem_types_MlKemPublicKey_30 *self);
 
 /**
- Pad the `slice` with `0`s at the end.
+This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
+libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#17}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+A monomorphic instance of libcrux_ml_kem.types.from_40
 with const generics
-- LEN= 33
+- SIZE= 1184
 */
-void libcrux_ml_kem_utils_into_padded_array_422(Eurydice_slice slice,
-                                                uint8_t ret[33U]);
+libcrux_ml_kem_types_MlKemPublicKey_30 libcrux_ml_kem_types_from_40_d0(
+    uint8_t value[1184U]);
+
+typedef struct Eurydice_slice_uint8_t_x4_s {
+  Eurydice_slice fst;
+  Eurydice_slice snd;
+  Eurydice_slice thd;
+  Eurydice_slice f3;
+} Eurydice_slice_uint8_t_x4;
 
 /**
- Pad the `slice` with `0`s at the end.
+ Unpack an incoming private key into it's different parts.
+
+ We have this here in types to extract into a common core for C.
 */
 /**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+A monomorphic instance of libcrux_ml_kem.types.unpack_private_key
 with const generics
-- LEN= 34
+- CPA_SECRET_KEY_SIZE= 1152
+- PUBLIC_KEY_SIZE= 1184
 */
-void libcrux_ml_kem_utils_into_padded_array_421(Eurydice_slice slice,
-                                                uint8_t ret[34U]);
+Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_b4(
+    Eurydice_slice private_key);
+
+/**
+This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
+libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#3}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.from_fc
+with const generics
+- SIZE= 1088
+*/
+libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_from_fc_80(
+    uint8_t value[1088U]);
 
 /**
 This function found in impl {(core::convert::AsRef<@Slice<u8>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#1}
+libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#2}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_ref_00
+A monomorphic instance of libcrux_ml_kem.types.as_ref_fd
+with const generics
+- SIZE= 1088
+*/
+Eurydice_slice libcrux_ml_kem_types_as_ref_fd_80(
+    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self);
+
+/**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 1120
+*/
+void libcrux_ml_kem_utils_into_padded_array_15(Eurydice_slice slice,
+                                               uint8_t ret[1120U]);
+
+/**
+ A reference to the raw byte slice.
+*/
+/**
+This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>#21}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.as_slice_ba
+with const generics
+- SIZE= 800
+*/
+uint8_t *libcrux_ml_kem_types_as_slice_ba_4d(
+    libcrux_ml_kem_types_MlKemPublicKey_52 *self);
+
+/**
+This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
+libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#17}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.from_40
+with const generics
+- SIZE= 800
+*/
+libcrux_ml_kem_types_MlKemPublicKey_52 libcrux_ml_kem_types_from_40_4d(
+    uint8_t value[800U]);
+
+/**
+ Unpack an incoming private key into it's different parts.
+
+ We have this here in types to extract into a common core for C.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.unpack_private_key
+with const generics
+- CPA_SECRET_KEY_SIZE= 768
+- PUBLIC_KEY_SIZE= 800
+*/
+Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_0c(
+    Eurydice_slice private_key);
+
+/**
+This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
+libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#3}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.from_fc
 with const generics
 - SIZE= 768
 */
-Eurydice_slice libcrux_ml_kem_types_as_ref_00_df(
-    libcrux_ml_kem_types_MlKemCiphertext_e8 *self);
+libcrux_ml_kem_types_MlKemCiphertext_1a libcrux_ml_kem_types_from_fc_d0(
+    uint8_t value[768U]);
+
+/**
+This function found in impl {(core::convert::AsRef<@Slice<u8>> for
+libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#2}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.as_ref_fd
+with const generics
+- SIZE= 768
+*/
+Eurydice_slice libcrux_ml_kem_types_as_ref_fd_d0(
+    libcrux_ml_kem_types_MlKemCiphertext_1a *self);
 
 /**
  Pad the `slice` with `0`s at the end.
@@ -372,8 +301,129 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 800
 */
-void libcrux_ml_kem_utils_into_padded_array_420(Eurydice_slice slice,
-                                                uint8_t ret[800U]);
+void libcrux_ml_kem_utils_into_padded_array_4d(Eurydice_slice slice,
+                                               uint8_t ret[800U]);
+
+/**
+ A reference to the raw byte slice.
+*/
+/**
+This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>#21}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.as_slice_ba
+with const generics
+- SIZE= 1568
+*/
+uint8_t *libcrux_ml_kem_types_as_slice_ba_af(
+    libcrux_ml_kem_types_MlKemPublicKey_64 *self);
+
+/**
+This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
+libcrux_ml_kem::types::MlKemPublicKey<SIZE>)#17}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.from_40
+with const generics
+- SIZE= 1568
+*/
+libcrux_ml_kem_types_MlKemPublicKey_64 libcrux_ml_kem_types_from_40_af(
+    uint8_t value[1568U]);
+
+/**
+ Unpack an incoming private key into it's different parts.
+
+ We have this here in types to extract into a common core for C.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.unpack_private_key
+with const generics
+- CPA_SECRET_KEY_SIZE= 1536
+- PUBLIC_KEY_SIZE= 1568
+*/
+Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_1f(
+    Eurydice_slice private_key);
+
+/**
+A monomorphic instance of core.result.Result
+with types uint8_t[32size_t], core_array_TryFromSliceError
+
+*/
+typedef struct core_result_Result_fb_s {
+  core_result_Result_a9_tags tag;
+  union {
+    uint8_t case_Ok[32U];
+    core_array_TryFromSliceError case_Err;
+  } val;
+} core_result_Result_fb;
+
+/**
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types uint8_t[32size_t], core_array_TryFromSliceError
+
+*/
+void core_result_unwrap_26_b3(core_result_Result_fb self, uint8_t ret[32U]);
+
+/**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 34
+*/
+void libcrux_ml_kem_utils_into_padded_array_b6(Eurydice_slice slice,
+                                               uint8_t ret[34U]);
+
+/**
+This function found in impl {(core::convert::From<@Array<u8, SIZE>> for
+libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#3}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.from_fc
+with const generics
+- SIZE= 1568
+*/
+libcrux_ml_kem_types_MlKemCiphertext_64 libcrux_ml_kem_types_from_fc_af(
+    uint8_t value[1568U]);
+
+/**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 33
+*/
+void libcrux_ml_kem_utils_into_padded_array_c8(Eurydice_slice slice,
+                                               uint8_t ret[33U]);
+
+/**
+This function found in impl {(core::convert::AsRef<@Slice<u8>> for
+libcrux_ml_kem::types::MlKemCiphertext<SIZE>)#2}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.as_ref_fd
+with const generics
+- SIZE= 1568
+*/
+Eurydice_slice libcrux_ml_kem_types_as_ref_fd_af(
+    libcrux_ml_kem_types_MlKemCiphertext_64 *self);
+
+/**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 1600
+*/
+void libcrux_ml_kem_utils_into_padded_array_7f(Eurydice_slice slice,
+                                               uint8_t ret[1600U]);
 
 /**
  Pad the `slice` with `0`s at the end.
@@ -383,7 +433,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 64
 */
-void libcrux_ml_kem_utils_into_padded_array_42(Eurydice_slice slice,
+void libcrux_ml_kem_utils_into_padded_array_24(Eurydice_slice slice,
                                                uint8_t ret[64U]);
 
 /**
@@ -391,92 +441,96 @@ A monomorphic instance of core.result.Result
 with types uint8_t[24size_t], core_array_TryFromSliceError
 
 */
-typedef struct core_result_Result_6f_s {
-  core_result_Result_86_tags tag;
+typedef struct core_result_Result_b2_s {
+  core_result_Result_a9_tags tag;
   union {
     uint8_t case_Ok[24U];
     core_array_TryFromSliceError case_Err;
   } val;
-} core_result_Result_6f;
+} core_result_Result_b2;
 
 /**
-This function found in impl {core::result::Result<T, E>}
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_41
+A monomorphic instance of core.result.unwrap_26
 with types uint8_t[24size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_76(core_result_Result_6f self, uint8_t ret[24U]);
+void core_result_unwrap_26_70(core_result_Result_b2 self, uint8_t ret[24U]);
 
 /**
 A monomorphic instance of core.result.Result
 with types uint8_t[20size_t], core_array_TryFromSliceError
 
 */
-typedef struct core_result_Result_7a_s {
-  core_result_Result_86_tags tag;
+typedef struct core_result_Result_e1_s {
+  core_result_Result_a9_tags tag;
   union {
     uint8_t case_Ok[20U];
     core_array_TryFromSliceError case_Err;
   } val;
-} core_result_Result_7a;
+} core_result_Result_e1;
 
 /**
-This function found in impl {core::result::Result<T, E>}
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_41
+A monomorphic instance of core.result.unwrap_26
 with types uint8_t[20size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_ea(core_result_Result_7a self, uint8_t ret[20U]);
+void core_result_unwrap_26_20(core_result_Result_e1 self, uint8_t ret[20U]);
 
 /**
 A monomorphic instance of core.result.Result
 with types uint8_t[10size_t], core_array_TryFromSliceError
 
 */
-typedef struct core_result_Result_cd_s {
-  core_result_Result_86_tags tag;
+typedef struct core_result_Result_9d_s {
+  core_result_Result_a9_tags tag;
   union {
     uint8_t case_Ok[10U];
     core_array_TryFromSliceError case_Err;
   } val;
-} core_result_Result_cd;
+} core_result_Result_9d;
 
 /**
-This function found in impl {core::result::Result<T, E>}
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_41
+A monomorphic instance of core.result.unwrap_26
 with types uint8_t[10size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_07(core_result_Result_cd self, uint8_t ret[10U]);
+void core_result_unwrap_26_ce(core_result_Result_9d self, uint8_t ret[10U]);
 
 /**
 A monomorphic instance of core.result.Result
 with types int16_t[16size_t], core_array_TryFromSliceError
 
 */
-typedef struct core_result_Result_c0_s {
-  core_result_Result_86_tags tag;
+typedef struct core_result_Result_0a_s {
+  core_result_Result_a9_tags tag;
   union {
     int16_t case_Ok[16U];
     core_array_TryFromSliceError case_Err;
   } val;
-} core_result_Result_c0;
+} core_result_Result_0a;
 
 /**
-This function found in impl {core::result::Result<T, E>}
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_41
+A monomorphic instance of core.result.unwrap_26
 with types int16_t[16size_t], core_array_TryFromSliceError
 
 */
-void core_result_unwrap_41_30(core_result_Result_c0 self, int16_t ret[16U]);
+void core_result_unwrap_26_00(core_result_Result_0a self, int16_t ret[16U]);
 
 typedef struct Eurydice_slice_uint8_t_4size_t__x2_s {
   Eurydice_slice fst[4U];

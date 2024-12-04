@@ -118,7 +118,7 @@ jobs:
           
       - name: 🔨 Build
         run: |
-          cmake -B build
+          LIBCRUX_BENCHMARKS=1 cmake -B build
           cmake --build build
 
       - name: 🏃🏻‍♀️ Test
@@ -132,7 +132,7 @@ jobs:
       - name: 🔨 Build Release
         run: |
           rm -rf build
-          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          LIBCRUX_BENCHMARKS=1 cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
         if: ${{ matrix.os != 'windows-latest' }}
 
@@ -159,13 +159,6 @@ jobs:
           cmake -B build
           cmake --build build
       # FIXME: Benchmark build for cg on Windows CI is not working right now.
-        if: ${{ matrix.os != 'windows-latest' }}
-
-      # FIXME: Benchmark build for cg on Windows CI are not working right now.
-      # - name: 🏃🏻‍♀️ Test (cg)
-      #   working-directory: libcrux-ml-kem/cg
-      #   run: ./build/Debug/ml_kem_test
-      #   if: ${{ matrix.os == 'windows-latest' }}
 
       - name: 🏃🏻‍♀️ Test
         run: ./build/ml_kem_test

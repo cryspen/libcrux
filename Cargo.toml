@@ -8,6 +8,7 @@ members = [
     "benchmarks",
     "fuzz",
     "libcrux-ml-kem",
+    "libcrux-ml-kem/fuzz",
     "libcrux-sha3",
     "libcrux-ml-dsa",
     "libcrux-intrinsics",
@@ -16,11 +17,16 @@ members = [
     "libcrux-hkdf",
     "libcrux-ecdh",
     "libcrux-psq",
+    "macros",
     "cavp",
+    "traits",
+    "sha2",
+    "ed25519",
+    "curve25519",
 ]
 
 [workspace.package]
-version = "0.0.2-alpha.3"
+version = "0.0.2-beta.2"
 authors = ["Cryspen"]
 license = "Apache-2.0"
 homepage = "https://github.com/cryspen/libcrux"
@@ -56,19 +62,23 @@ exclude = [
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]
-bench = false # so libtest doesn't eat the arguments for criterion
+bench = false                               # so libtest doesn't eat the arguments for criterion
 
 [build-dependencies]
-libcrux-platform = { version = "=0.0.2-alpha.3", path = "sys/platform" }
+libcrux-platform = { version = "=0.0.2-beta.2", path = "sys/platform" }
 
 [dependencies]
-libcrux-hacl = { version = "=0.0.2-alpha.3", path = "sys/hacl" }
-libcrux-platform = { version = "=0.0.2-alpha.3", path = "sys/platform" }
-libcrux-hkdf = { version = "=0.0.2-alpha.3", path = "libcrux-hkdf" }
-libcrux-hmac = { version = "=0.0.2-alpha.3", path = "libcrux-hmac" }
-libcrux-ecdh = { version = "=0.0.2-alpha.3", path = "libcrux-ecdh" }
-libcrux-ml-kem = { version = "=0.0.2-alpha.3", path = "libcrux-ml-kem" }
-libcrux-kem = { version = "=0.0.2-alpha.3", path = "libcrux-kem" }
+libcrux-traits = { version = "=0.0.2-beta.2", path = "traits" }
+libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "hacl-rs" }
+libcrux-hacl = { version = "=0.0.2-beta.2", path = "sys/hacl" }
+libcrux-platform = { version = "=0.0.2-beta.2", path = "sys/platform" }
+libcrux-hkdf = { version = "=0.0.2-beta.2", path = "libcrux-hkdf" }
+libcrux-hmac = { version = "=0.0.2-beta.2", path = "libcrux-hmac" }
+libcrux-sha2 = { version = "=0.0.2-beta.2", path = "sha2" }
+libcrux-ed25519 = { version = "=0.0.2-beta.2", path = "ed25519" }
+libcrux-ecdh = { version = "=0.0.2-beta.2", path = "libcrux-ecdh" }
+libcrux-ml-kem = { version = "=0.0.2-beta.2", path = "libcrux-ml-kem" }
+libcrux-kem = { version = "=0.0.2-beta.2", path = "libcrux-kem" }
 rand = { version = "0.8" }
 log = { version = "0.4", optional = true }
 # WASM API
@@ -92,20 +102,35 @@ serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 clap = { version = "4.5", features = ["derive"] }
+wycheproof = "0.6.0"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"
 getrandom = { version = "0.2", features = ["js"] }
 
 [features]
-hacspec = []            # TODO: #7 Use specs instead of efficient implementations
+hacspec = []                         # TODO: #7 Use specs instead of efficient implementations
 rand = []
 wasm = ["wasm-bindgen", "getrandom"]
 log = ["dep:log"]
-tests = []              # Expose functions for testing.
-experimental = []       # Expose experimental APIs.
+tests = []                           # Expose functions for testing.
+experimental = []                    # Expose experimental APIs.
 
 [profile.release]
 lto = "fat"
 codegen-units = 1
 panic = "abort"
+
+[profile.dev.package."libcrux-ml-dsa"]
+opt-level = 1
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(hax)',
+    'cfg(eurydice)',
+    'cfg(doc_cfg)',
+    'cfg(libjade)',
+    'cfg(simd128)',
+    'cfg(simd256)',
+    'cfg(aes_ni)',
+] }

@@ -3,17 +3,31 @@ module Libcrux_ml_kem.Types
 open Core
 open FStar.Mul
 
-let impl_6__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
+let impl_7__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
 
-let impl_12__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
+let impl_14__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
 
-let impl_18__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
+let impl_21__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
 
-let impl_6__as_slice (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) = self.f_value
+let unpack_private_key (v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE: usize) (private_key: t_Slice u8) =
+  let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
+    Core.Slice.impl__split_at #u8 private_key v_CPA_SECRET_KEY_SIZE
+  in
+  let ind_cpa_public_key, secret_key:(t_Slice u8 & t_Slice u8) =
+    Core.Slice.impl__split_at #u8 secret_key v_PUBLIC_KEY_SIZE
+  in
+  let ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
+    Core.Slice.impl__split_at #u8 secret_key Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE
+  in
+  ind_cpa_secret_key, ind_cpa_public_key, ind_cpa_public_key_hash, implicit_rejection_value
+  <:
+  (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
 
-let impl_12__as_slice (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE) = self.f_value
+let impl_7__as_slice (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) = self.f_value
 
-let impl_18__as_slice (v_SIZE: usize) (self: t_MlKemPublicKey v_SIZE) = self.f_value
+let impl_14__as_slice (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE) = self.f_value
+
+let impl_21__as_slice (v_SIZE: usize) (self: t_MlKemPublicKey v_SIZE) = self.f_value
 
 let impl__from
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
@@ -54,7 +68,7 @@ let impl__new
 let impl__pk
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-     = impl_18__as_slice v_PUBLIC_KEY_SIZE self.f_pk
+     = impl_21__as_slice v_PUBLIC_KEY_SIZE self.f_pk
 
 let impl__private_key
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
@@ -69,4 +83,4 @@ let impl__public_key
 let impl__sk
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-     = impl_12__as_slice v_PRIVATE_KEY_SIZE self.f_sk
+     = impl_14__as_slice v_PRIVATE_KEY_SIZE self.f_sk
