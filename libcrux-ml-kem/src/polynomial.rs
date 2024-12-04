@@ -237,10 +237,10 @@ fn ntt_multiply<Vector: Operations>(myself: &PolynomialRingElement<Vector>, rhs:
         out.coefficients[i] = Vector::ntt_multiply(
             &myself.coefficients[i],
             &rhs.coefficients[i],
-            get_zeta(64 + 4 * i),
-            get_zeta(64 + 4 * i + 1),
-            get_zeta(64 + 4 * i + 2),
-            get_zeta(64 + 4 * i + 3),
+            zeta(64 + 4 * i),
+            zeta(64 + 4 * i + 1),
+            zeta(64 + 4 * i + 2),
+            zeta(64 + 4 * i + 3),
         );
     }
 

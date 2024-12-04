@@ -28,7 +28,7 @@ let get_n_least_significant_bits (n: u8) (value: u32) =
 
 #pop-options
 
-#push-options "--z3rlimit 200"
+#push-options "--z3rlimit 150"
 
 let barrett_reduce_element (value: i16) =
   let t:i32 =
