@@ -66,7 +66,7 @@ pub(crate) struct PolynomialRingElement<Vector: Operations> {
 
 
 #[allow(non_snake_case)]
-pub(crate) fn ZERO<Vector: Operations>() -> PolynomialRingElement<Vector> {
+fn ZERO<Vector: Operations>() -> PolynomialRingElement<Vector> {
     PolynomialRingElement {
         // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
         coefficients: [Vector::ZERO(); 16],
@@ -75,7 +75,7 @@ pub(crate) fn ZERO<Vector: Operations>() -> PolynomialRingElement<Vector> {
 
 #[inline(always)]
 #[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 <= a.len())]
-pub(crate) fn from_i16_array<Vector: Operations>(a: &[i16]) -> PolynomialRingElement<Vector> {
+fn from_i16_array<Vector: Operations>(a: &[i16]) -> PolynomialRingElement<Vector> {
     let mut result = ZERO();
     for i in 0..VECTORS_IN_RING_ELEMENT {
         result.coefficients[i] = Vector::from_i16_array(&a[i * 16..(i + 1) * 16]);
@@ -86,8 +86,8 @@ pub(crate) fn from_i16_array<Vector: Operations>(a: &[i16]) -> PolynomialRingEle
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
 /// sum of their constituent coefficients.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
-pub(crate) fn add_to_ring_element<Vector: Operations, const K: usize>(myself: &mut PolynomialRingElement<Vector>, rhs: &PolynomialRingElement<Vector>) {
+#[hax_lib::fstar::verification_status(lax)]
+fn add_to_ring_element<Vector: Operations, const K: usize>(myself: &mut PolynomialRingElement<Vector>, rhs: &PolynomialRingElement<Vector>) {
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..myself.coefficients.len() {
@@ -97,9 +97,9 @@ pub(crate) fn add_to_ring_element<Vector: Operations, const K: usize>(myself: &m
 }
 
 #[inline(always)]
-pub fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>) {
+#[hax_lib::fstar::verification_status(lax)]
+fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>) {
     // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-    hax_lib::fstar!("admit ()");
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -109,9 +109,9 @@ pub fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElemen
 }
 
 #[inline(always)]
-pub(crate) fn subtract_reduce<Vector: Operations>(myself: &PolynomialRingElement<Vector>, mut b: PolynomialRingElement<Vector>) -> PolynomialRingElement<Vector> {
+#[hax_lib::fstar::verification_status(lax)]
+fn subtract_reduce<Vector: Operations>(myself: &PolynomialRingElement<Vector>, mut b: PolynomialRingElement<Vector>) -> PolynomialRingElement<Vector> {
     // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-    hax_lib::fstar!("admit ()");
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
@@ -122,9 +122,9 @@ pub(crate) fn subtract_reduce<Vector: Operations>(myself: &PolynomialRingElement
 }
 
 #[inline(always)]
-pub(crate) fn add_message_error_reduce<Vector: Operations>(myself: &PolynomialRingElement<Vector>, message: &PolynomialRingElement<Vector>, mut result: PolynomialRingElement<Vector>) -> PolynomialRingElement<Vector> {
+#[hax_lib::fstar::verification_status(lax)]
+fn add_message_error_reduce<Vector: Operations>(myself: &PolynomialRingElement<Vector>, message: &PolynomialRingElement<Vector>, mut result: PolynomialRingElement<Vector>) -> PolynomialRingElement<Vector> {
     // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-    hax_lib::fstar!("admit ()");
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
@@ -153,9 +153,9 @@ pub(crate) fn add_message_error_reduce<Vector: Operations>(myself: &PolynomialRi
 }
 
 #[inline(always)]
-pub(crate) fn add_error_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>, error: &PolynomialRingElement<Vector>) {
+#[hax_lib::fstar::verification_status(lax)]
+fn add_error_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>, error: &PolynomialRingElement<Vector>) {
     // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-    hax_lib::fstar!("admit ()");
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for j in 0..VECTORS_IN_RING_ELEMENT {
@@ -171,9 +171,9 @@ pub(crate) fn add_error_reduce<Vector: Operations>(myself: &mut PolynomialRingEl
 }
 
 #[inline(always)]
-pub(crate) fn add_standard_error_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>, error: &PolynomialRingElement<Vector>) {
+#[hax_lib::fstar::verification_status(lax)]
+fn add_standard_error_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>, error: &PolynomialRingElement<Vector>) {
     // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-    hax_lib::fstar!("admit ()");
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for j in 0..VECTORS_IN_RING_ELEMENT {
@@ -228,14 +228,8 @@ pub(crate) fn add_standard_error_reduce<Vector: Operations>(myself: &mut Polynom
 //                 result.coefficients[i].abs() <= FIELD_MODULUS
 // ))))]
 #[inline(always)]
-pub(crate) fn ntt_multiply<Vector: Operations>(myself: &PolynomialRingElement<Vector>, rhs: &PolynomialRingElement<Vector>) -> PolynomialRingElement<Vector> {
-    // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-    hax_lib::fstar!("admit ()");
-    // hax_debug_debug_assert!(lhs
-    //     .coefficients
-    //     .into_iter()
-    //     .all(|coefficient| coefficient >= 0 && coefficient < 4096));
-
+#[hax_lib::fstar::verification_status(lax)]
+fn ntt_multiply<Vector: Operations>(myself: &PolynomialRingElement<Vector>, rhs: &PolynomialRingElement<Vector>) -> PolynomialRingElement<Vector> {
     let mut out = ZERO();
 
     for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -257,7 +251,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
         Self {
-            // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
             coefficients: [Vector::ZERO(); 16],
         }
     }
@@ -276,7 +269,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
-    pub fn poly_barrett_reduce(&mut self) {
+    pub(crate) fn poly_barrett_reduce(&mut self) {
         poly_barrett_reduce(self);
     }
 

@@ -18,6 +18,7 @@ let mlkem768_generate_keypair (randomness:t_Array u8 (sz 64)):
 
 let mlkem768_encapsulate (public_key: t_Array u8 (sz 1184)) (randomness: t_Array u8 (sz 32)):
                          (t_Array u8 (sz 1088) & t_Array u8 (sz 32)) & bool =
+    assert (v_CPA_CIPHERTEXT_SIZE mlkem768_rank == sz 1088); 
     ind_cca_encapsulate mlkem768_rank public_key randomness
 
 let mlkem768_decapsulate (secret_key: t_Array u8 (sz 2400)) (ciphertext: t_Array u8 (sz 1088)):
