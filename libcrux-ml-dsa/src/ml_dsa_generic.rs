@@ -126,6 +126,11 @@ pub(crate) fn sign_pre_hashed<
         return Err(SigningError::ContextTooLongError);
     }
     let pre_hashed_message = PH::hash::<Shake128>(message);
+    let oid = PH::oid();
+    let domain_separation_context = match DomainSeparationContext::new(context, Some(&oid)) {
+        Ok(domain_separation_context) => domain_separation_context,
+        Err(_) => return Err(SigningError::ContextTooLongError),
+    };
     sign_internal::<
         SIMDUnit,
         Shake128X4,
@@ -149,7 +154,7 @@ pub(crate) fn sign_pre_hashed<
     >(
         &signing_key,
         &pre_hashed_message,
-        Some(DomainSeparationContext::new(context, Some(&PH::oid()))?),
+        Some(domain_separation_context),
         randomness,
     )
 }
@@ -183,6 +188,10 @@ pub(crate) fn sign<
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     // TODO: Support implicit into() in ? so that this match becomes unnecessary
+    let domain_separation_context = match DomainSeparationContext::new(context, None) {
+        Ok(domain_separation_context) => domain_separation_context,
+        Err(_) => return Err(SigningError::ContextTooLongError),
+    };
     sign_internal::<
         SIMDUnit,
         Shake128X4,
@@ -206,7 +215,7 @@ pub(crate) fn sign<
     >(
         &signing_key,
         message,
-        Some(DomainSeparationContext::new(context, None)?),
+        Some(domain_separation_context),
         randomness,
     )
 }
@@ -577,6 +586,10 @@ pub(crate) fn verify<
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
     // TODO: Support implicit into() in ? so that this match becomes unnecessary
+    let domain_separation_context = match DomainSeparationContext::new(context, None) {
+        Ok(domain_separation_context) => domain_separation_context,
+        Err(_) => return Err(VerificationError::ContextTooLongError),
+    };
     verify_internal::<
         SIMDUnit,
         Shake128X4,
@@ -598,7 +611,7 @@ pub(crate) fn verify<
     >(
         &verification_key_serialized,
         message,
-        Some(DomainSeparationContext::new(context, None)?),
+        Some(domain_separation_context),
         &signature_serialized,
     )
 }
@@ -633,6 +646,11 @@ pub(crate) fn verify_pre_hashed<
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
     let pre_hashed_message = PH::hash::<Shake128>(message);
+    let oid = PH::oid();
+    let domain_separation_context = match DomainSeparationContext::new(context, Some(&oid)) {
+        Ok(domain_separation_context) => domain_separation_context,
+        Err(_) => return Err(VerificationError::ContextTooLongError),
+    };
 
     verify_internal::<
         SIMDUnit,
@@ -655,7 +673,7 @@ pub(crate) fn verify_pre_hashed<
     >(
         &verification_key_serialized,
         &pre_hashed_message,
-        Some(DomainSeparationContext::new(context, Some(&PH::oid()))?),
+        Some(domain_separation_context),
         &signature_serialized,
     )
 }

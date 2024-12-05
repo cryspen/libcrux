@@ -5,6 +5,7 @@ use crate::{
     },
     encoding,
     hash_functions::shake256,
+    helper::cloop,
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
@@ -46,24 +47,30 @@ pub(crate) fn generate_serialized<
         .copy_from_slice(&verification_key_hash);
     offset += BYTES_FOR_VERIFICATION_KEY_HASH;
 
-    for ring_element in s1.iter() {
-        signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
-            &encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
-        );
-        offset += ERROR_RING_ELEMENT_SIZE;
+    cloop! {
+        for ring_element in s1.iter() {
+            signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
+                &encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
+            );
+            offset += ERROR_RING_ELEMENT_SIZE;
+        }
     }
 
-    for ring_element in s2.iter() {
-        signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
-            &encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
-        );
-        offset += ERROR_RING_ELEMENT_SIZE;
+    cloop! {
+        for ring_element in s2.iter() {
+            signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
+                &encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
+            );
+            offset += ERROR_RING_ELEMENT_SIZE;
+        }
     }
 
-    for ring_element in t0.iter() {
-        signing_key_serialized[offset..offset + RING_ELEMENT_OF_T0S_SIZE]
-            .copy_from_slice(&encoding::t0::serialize::<SIMDUnit>(*ring_element));
-        offset += RING_ELEMENT_OF_T0S_SIZE;
+    cloop! {
+        for ring_element in t0.iter() {
+            signing_key_serialized[offset..offset + RING_ELEMENT_OF_T0S_SIZE]
+                .copy_from_slice(&encoding::t0::serialize::<SIMDUnit>(*ring_element));
+            offset += RING_ELEMENT_OF_T0S_SIZE;
+        }
     }
 
     signing_key_serialized
