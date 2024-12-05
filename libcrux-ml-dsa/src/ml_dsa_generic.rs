@@ -3,7 +3,7 @@ use crate::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
     },
     constants::*,
-    encoding,
+    encoding::{self, signature::Signature},
     hash_functions::{
         portable::{shake256_absorb, shake256_absorb_final, shake256_init, shake256_squeeze},
         shake128, shake256,
@@ -17,12 +17,14 @@ use crate::{
     sample::{sample_challenge_ring_element, sample_mask_vector},
     samplex4,
     simd::traits::Operations,
-    types::{Signature, SigningError, VerificationError},
+    types::{SigningError, VerificationError},
     utils::into_padded_array,
     MLDSASignature,
 };
 
 pub(crate) mod instantiations;
+
+#[cfg(not(eurydice))]
 pub(crate) mod multiplexing;
 
 /// Generate a key pair.
@@ -392,7 +394,7 @@ pub(crate) fn sign_internal<
     }
     .serialize::<GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE, MAX_ONES_IN_HINT, SIGNATURE_SIZE>();
 
-    Ok(MLDSASignature(signature))
+    Ok(MLDSASignature::new(signature))
 }
 
 /// This corresponds to line 6 in algorithm 7 in FIPS 204 (line 7 in algorithm

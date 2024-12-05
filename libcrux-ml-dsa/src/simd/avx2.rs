@@ -128,17 +128,33 @@ impl Operations for AVX2SIMDUnit {
 
     #[inline(always)]
     fn ntt(simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT]) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
-        let result = ntt::ntt(simd_units.map(|x| x.coefficients));
+        // XXX: We can't use from_fn or map here because of Eurydice.
+        //      But this should be rewritten anyway to avoid having to do the map.
+        let mut re = [libcrux_intrinsics::avx2::mm256_setzero_si256(); SIMD_UNITS_IN_RING_ELEMENT];
+        for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
+            re[i] = simd_units[i].coefficients;
+        }
+        let result = ntt::ntt(re);
 
-        result.map(|x| x.into())
+        core::array::from_fn(|i| Self {
+            coefficients: result[i],
+        })
     }
 
     #[inline(always)]
     fn invert_ntt_montgomery(
         simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT],
     ) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
-        let result = invntt::invert_ntt_montgomery(simd_units.map(|x| x.coefficients));
+        // XXX: We can't use from_fn or map here because of Eurydice.
+        //      But this should be rewritten anyway to avoid having to do the map.
+        let mut re = [libcrux_intrinsics::avx2::mm256_setzero_si256(); SIMD_UNITS_IN_RING_ELEMENT];
+        for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
+            re[i] = simd_units[i].coefficients;
+        }
+        let result = invntt::invert_ntt_montgomery(re);
 
-        result.map(|x| x.into())
+        core::array::from_fn(|i| Self {
+            coefficients: result[i],
+        })
     }
 }

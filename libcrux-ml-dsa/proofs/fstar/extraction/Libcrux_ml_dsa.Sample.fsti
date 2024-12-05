@@ -6,6 +6,7 @@ open FStar.Mul
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_dsa.Hash_functions.Portable in
   let open Libcrux_ml_dsa.Hash_functions.Shake128 in
   let open Libcrux_ml_dsa.Hash_functions.Shake256 in
   let open Libcrux_ml_dsa.Simd.Traits in
@@ -80,9 +81,8 @@ val sample_four_error_ring_elements
       (fun _ -> Prims.l_True)
 
 val sample_four_ring_elements
-      (#v_SIMDUnit #v_Shake128: Type0)
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128 |}
+      (#v_SIMDUnit: Type0)
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (seed0: t_Array u8 (sz 34))
       (domain_separator0 domain_separator1 domain_seperator2 domain_separator3: u16)
     : Prims.Pure

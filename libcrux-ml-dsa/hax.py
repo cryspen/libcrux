@@ -85,6 +85,7 @@ class extractAction(argparse.Action):
             "-libcrux_ml_dsa::hash_functions::simd256::*",
             "-libcrux_ml_dsa::hash_functions::neon::*",
             "+:libcrux_ml_dsa::hash_functions::*::*",
+            "-**::types::non_hax_impls::**",
         ]
         include_str = " ".join(includes)
         interface_include = "+**"

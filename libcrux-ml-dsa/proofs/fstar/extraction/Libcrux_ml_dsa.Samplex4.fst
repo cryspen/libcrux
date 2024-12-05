@@ -6,7 +6,6 @@ open FStar.Mul
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
-  let open Libcrux_ml_dsa.Hash_functions.Shake128 in
   let open Libcrux_ml_dsa.Hash_functions.Shake256 in
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
@@ -43,14 +42,11 @@ let update_matrix
   m
 
 let matrix_A_4_by_4_
-      (#v_SIMDUnit #v_Shake128X4: Type0)
+      (#v_SIMDUnit: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i3:
-          Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
       (seed: t_Array u8 (sz 34))
      =
   let
@@ -73,7 +69,6 @@ let matrix_A_4_by_4_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 0uy 0uy <: u16)
       (generate_domain_separator 0uy 1uy <: u16)
@@ -105,7 +100,6 @@ let matrix_A_4_by_4_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 1uy 0uy <: u16)
       (generate_domain_separator 1uy 1uy <: u16)
@@ -137,7 +131,6 @@ let matrix_A_4_by_4_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 2uy 0uy <: u16)
       (generate_domain_separator 2uy 1uy <: u16)
@@ -169,7 +162,6 @@ let matrix_A_4_by_4_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 3uy 0uy <: u16)
       (generate_domain_separator 3uy 1uy <: u16)
@@ -199,14 +191,11 @@ let matrix_A_4_by_4_
   v_A
 
 let matrix_A_6_by_5_
-      (#v_SIMDUnit #v_Shake128X4: Type0)
+      (#v_SIMDUnit: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i3:
-          Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
       (seed: t_Array u8 (sz 34))
      =
   let v_A:t_Array
@@ -226,7 +215,6 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 0uy 0uy <: u16)
       (generate_domain_separator 0uy 1uy <: u16)
@@ -258,7 +246,6 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 0uy 4uy <: u16)
       (generate_domain_separator 1uy 0uy <: u16)
@@ -290,7 +277,6 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 1uy 3uy <: u16)
       (generate_domain_separator 1uy 4uy <: u16)
@@ -322,7 +308,6 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 2uy 2uy <: u16)
       (generate_domain_separator 2uy 3uy <: u16)
@@ -354,7 +339,6 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 3uy 1uy <: u16)
       (generate_domain_separator 3uy 2uy <: u16)
@@ -386,7 +370,6 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 4uy 0uy <: u16)
       (generate_domain_separator 4uy 1uy <: u16)
@@ -418,7 +401,6 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 4uy 4uy <: u16)
       (generate_domain_separator 5uy 0uy <: u16)
@@ -450,7 +432,6 @@ let matrix_A_6_by_5_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 5uy 3uy <: u16)
       (generate_domain_separator 5uy 4uy <: u16)
@@ -470,14 +451,11 @@ let matrix_A_6_by_5_
   v_A
 
 let matrix_A_8_by_7_
-      (#v_SIMDUnit #v_Shake128X4: Type0)
+      (#v_SIMDUnit: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i3:
-          Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
       (seed: t_Array u8 (sz 34))
      =
   let v_A:t_Array
@@ -497,7 +475,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 0uy 0uy <: u16)
       (generate_domain_separator 0uy 1uy <: u16)
@@ -529,7 +506,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 0uy 4uy <: u16)
       (generate_domain_separator 0uy 5uy <: u16)
@@ -561,7 +537,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 1uy 1uy <: u16)
       (generate_domain_separator 1uy 2uy <: u16)
@@ -593,7 +568,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 1uy 5uy <: u16)
       (generate_domain_separator 1uy 6uy <: u16)
@@ -625,7 +599,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 2uy 2uy <: u16)
       (generate_domain_separator 2uy 3uy <: u16)
@@ -657,7 +630,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 2uy 6uy <: u16)
       (generate_domain_separator 3uy 0uy <: u16)
@@ -689,7 +661,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 3uy 3uy <: u16)
       (generate_domain_separator 3uy 4uy <: u16)
@@ -721,7 +692,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 4uy 0uy <: u16)
       (generate_domain_separator 4uy 1uy <: u16)
@@ -753,7 +723,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 4uy 4uy <: u16)
       (generate_domain_separator 4uy 5uy <: u16)
@@ -785,7 +754,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 5uy 1uy <: u16)
       (generate_domain_separator 5uy 2uy <: u16)
@@ -817,7 +785,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 5uy 5uy <: u16)
       (generate_domain_separator 5uy 6uy <: u16)
@@ -849,7 +816,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 6uy 2uy <: u16)
       (generate_domain_separator 6uy 3uy <: u16)
@@ -881,7 +847,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 6uy 6uy <: u16)
       (generate_domain_separator 7uy 0uy <: u16)
@@ -913,7 +878,6 @@ let matrix_A_8_by_7_
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Libcrux_ml_dsa.Sample.sample_four_ring_elements #v_SIMDUnit
-      #v_Shake128X4
       seed
       (generate_domain_separator 7uy 3uy <: u16)
       (generate_domain_separator 7uy 4uy <: u16)
@@ -943,22 +907,19 @@ let matrix_A_8_by_7_
   v_A
 
 let matrix_A
-      (#v_SIMDUnit #v_Shake128X4: Type0)
+      (#v_SIMDUnit: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i3:
-          Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
       (seed: t_Array u8 (sz 34))
      =
   match
     (cast (v_ROWS_IN_A <: usize) <: u8), (cast (v_COLUMNS_IN_A <: usize) <: u8) <: (u8 & u8)
   with
-  | 4uy, 4uy -> matrix_A_4_by_4_ #v_SIMDUnit #v_Shake128X4 v_ROWS_IN_A v_COLUMNS_IN_A seed
-  | 6uy, 5uy -> matrix_A_6_by_5_ #v_SIMDUnit #v_Shake128X4 v_ROWS_IN_A v_COLUMNS_IN_A seed
-  | 8uy, 7uy -> matrix_A_8_by_7_ #v_SIMDUnit #v_Shake128X4 v_ROWS_IN_A v_COLUMNS_IN_A seed
+  | 4uy, 4uy -> matrix_A_4_by_4_ #v_SIMDUnit v_ROWS_IN_A v_COLUMNS_IN_A seed
+  | 6uy, 5uy -> matrix_A_6_by_5_ #v_SIMDUnit v_ROWS_IN_A v_COLUMNS_IN_A seed
+  | 8uy, 7uy -> matrix_A_8_by_7_ #v_SIMDUnit v_ROWS_IN_A v_COLUMNS_IN_A seed
   | _ ->
     Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 

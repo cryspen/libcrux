@@ -3,17 +3,26 @@ module Libcrux_ml_dsa.Types
 open Core
 open FStar.Mul
 
-let _ =
-  (* This module has implicit dependencies, here we make them explicit. *)
-  (* The implicit dependencies arise from typeclasses instances. *)
-  let open Libcrux_ml_dsa.Simd.Traits in
-  ()
-
 let impl__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
 
 let impl_2__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
 
 let impl_4__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
+
+let impl_4__as_raw (v_SIZE: usize) (self: t_MLDSASignature v_SIZE) = self.f_value
+
+let impl_4__new (v_SIZE: usize) (value: t_Array u8 v_SIZE) =
+  { f_value = value } <: t_MLDSASignature v_SIZE
+
+let impl__as_raw (v_SIZE: usize) (self: t_MLDSASigningKey v_SIZE) = self.f_value
+
+let impl__new (v_SIZE: usize) (value: t_Array u8 v_SIZE) =
+  { f_value = value } <: t_MLDSASigningKey v_SIZE
+
+let impl_2__as_raw (v_SIZE: usize) (self: t_MLDSAVerificationKey v_SIZE) = self.f_value
+
+let impl_2__new (v_SIZE: usize) (value: t_Array u8 v_SIZE) =
+  { f_value = value } <: t_MLDSAVerificationKey v_SIZE
 
 let t_SigningError_cast_to_repr (x: t_SigningError) =
   match x with
@@ -27,8 +36,9 @@ let t_VerificationError_cast_to_repr (x: t_VerificationError) =
   | VerificationError_CommitmentHashesDontMatchError  -> isz 3
   | VerificationError_ContextTooLongError  -> isz 6
 
-let impl__as_slice (v_SIZE: usize) (self: t_MLDSASigningKey v_SIZE) = self._0 <: t_Slice u8
+let impl__as_slice (v_SIZE: usize) (self: t_MLDSASigningKey v_SIZE) = self.f_value <: t_Slice u8
 
-let impl_2__as_slice (v_SIZE: usize) (self: t_MLDSAVerificationKey v_SIZE) = self._0 <: t_Slice u8
+let impl_2__as_slice (v_SIZE: usize) (self: t_MLDSAVerificationKey v_SIZE) =
+  self.f_value <: t_Slice u8
 
-let impl_4__as_slice (v_SIZE: usize) (self: t_MLDSASignature v_SIZE) = self._0 <: t_Slice u8
+let impl_4__as_slice (v_SIZE: usize) (self: t_MLDSASignature v_SIZE) = self.f_value <: t_Slice u8
