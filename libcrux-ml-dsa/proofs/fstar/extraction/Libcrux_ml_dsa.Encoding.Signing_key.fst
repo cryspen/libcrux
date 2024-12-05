@@ -102,7 +102,7 @@ let generate_serialized
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
       (seed_for_A seed_for_signing verification_key: t_Slice u8)
       (s1: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       (s2 t0: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)

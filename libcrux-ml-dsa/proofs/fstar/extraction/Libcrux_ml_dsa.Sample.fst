@@ -281,11 +281,11 @@ let sample_challenge_ring_element
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
       (seed: t_Array u8 v_SEED_SIZE)
      =
   let state:v_Shake256 =
-    Libcrux_ml_dsa.Hash_functions.Shake256.f_init_absorb #v_Shake256
+    Libcrux_ml_dsa.Hash_functions.Shake256.f_init_absorb_final #v_Shake256
       #FStar.Tactics.Typeclasses.solve
       (seed <: t_Slice u8)
   in
@@ -1047,7 +1047,7 @@ let sample_mask_ring_element
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
       (seed: t_Array u8 (sz 66))
      =
   match cast (v_GAMMA1_EXPONENT <: usize) <: u8 with
@@ -1085,7 +1085,7 @@ let sample_mask_vector
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i4:
-          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i5:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)

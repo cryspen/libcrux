@@ -321,5 +321,6 @@ instantiate! {neon,
     crate::simd::portable::PortableSIMDUnit,
     crate::hash_functions::neon::Shake128x4,
     crate::hash_functions::portable::Shake256,
+    crate::hash_functions::portable::Shake256Xof,
     crate::hash_functions::neon::Shake256x4
 }
