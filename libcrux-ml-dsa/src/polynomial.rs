@@ -7,6 +7,9 @@ use crate::{
 pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
     pub(crate) simd_units: [SIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
 }
+
+pub type OptionalRingElement<SIMDUnit> = Option<PolynomialRingElement<SIMDUnit>>;
+
 impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {

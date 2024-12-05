@@ -4,10 +4,7 @@ use crate::{
     },
     constants::*,
     encoding::{self, signature::Signature},
-    hash_functions::{
-        portable::{shake256_absorb, shake256_absorb_final, shake256_init, shake256_squeeze},
-        shake128, shake256,
-    },
+    hash_functions::{portable::Shake256, shake128, shake256},
     matrix::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
         vector_times_ring_element,
@@ -45,9 +42,10 @@ pub(crate) fn generate_key_pair<
 ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
     let mut seed_expanded = [0; 128];
-    let mut shake = shake256_init();
-    shake256_absorb(&mut shake, &randomness);
-    let mut shake = shake256_absorb_final(shake, &[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
+    let mut shake = Shake256::init_absorb(&randomness);
+    // let mut shake = shake256_absorb_final(shake, &[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
+    shake.absorb(&[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
+
     shake256_squeeze(&mut shake, &mut seed_expanded);
 
     let (seed_for_a, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);

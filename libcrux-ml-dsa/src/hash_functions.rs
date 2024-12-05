@@ -6,7 +6,7 @@ pub(crate) mod shake256 {
 
     pub(crate) trait Xof {
         fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]);
-        fn init_absorb(input: &[u8]) -> Self;
+        fn init_absorb_final(input: &[u8]) -> Self;
         // TODO: There should only be a `squeeze_block`
         fn squeeze_first_block(&mut self) -> [u8; BLOCK_SIZE];
         fn squeeze_next_block(&mut self) -> [u8; BLOCK_SIZE];
@@ -77,8 +77,10 @@ pub(crate) mod shake128 {
 /// A portable implementation of [`shake128::Xof`] and [`shake256::Xof`].
 pub(crate) mod portable {
     use super::{shake128, shake256};
-    use libcrux_sha3::portable::incremental;
-    use libcrux_sha3::portable::KeccakState;
+    use libcrux_sha3::portable::{
+        incremental::{self, XofAbsorb, XofSqueeze},
+        KeccakState,
+    };
 
     /// Portable SHAKE 128 x4 state.
     ///
@@ -206,7 +208,7 @@ pub(crate) mod portable {
     }
 
     #[inline(always)]
-    fn init_absorb_shake256(input: &[u8]) -> Shake256 {
+    fn init_absorb_final_shake256(input: &[u8]) -> Shake256 {
         let mut state = incremental::shake256_init();
         incremental::shake256_absorb_final(&mut state, input);
         Shake256 { state }
@@ -233,8 +235,18 @@ pub(crate) mod portable {
         }
 
         #[inline(always)]
+        fn init_absorb_final(input: &[u8]) -> Self {
+            init_absorb_final_shake256(input)
+        }
+
+        #[inline(always)]
         fn init_absorb(input: &[u8]) -> Self {
             init_absorb_shake256(input)
+        }
+
+        #[inline(always)]
+        fn absorb(input: &[u8]) -> Self {
+            absorb_shake256(self, input)
         }
 
         #[inline(always)]
@@ -373,38 +385,38 @@ pub(crate) mod portable {
 
     #[cfg_attr(hax, hax_lib::opaque_type)]
     pub(crate) struct Shake256Absorb {
-        state: libcrux_sha3::portable::incremental::Shake256Absorb,
+        state: incremental::Shake256Absorb,
+    }
+
+    impl Shake256Absorb {
+        #[inline(always)]
+        pub(crate) fn init() -> Shake256Absorb {
+            Shake256Absorb {
+                state: incremental::Shake256Absorb::new(),
+            }
+        }
+
+        #[inline(always)]
+        pub(crate) fn absorb(st: &mut Shake256Absorb, input: &[u8]) {
+            st.state.absorb(input)
+        }
+
+        #[inline(always)]
+        pub(crate) fn absorb_final(st: Shake256Absorb, input: &[u8]) -> Shake256Squeeze {
+            st.state.absorb_final(input)
+        }
     }
 
     #[cfg_attr(hax, hax_lib::opaque_type)]
     pub(crate) struct Shake256Squeeze {
-        state: libcrux_sha3::portable::incremental::Shake256Squeeze,
+        state: incremental::Shake256Squeeze,
     }
 
-    use libcrux_sha3::portable::incremental::{XofAbsorb, XofSqueeze};
-
-    #[inline(always)]
-    pub(crate) fn shake256_init() -> Shake256Absorb {
-        Shake256Absorb {
-            state: libcrux_sha3::portable::incremental::Shake256Absorb::new(),
+    impl Shake256Squeeze {
+        #[inline(always)]
+        pub(crate) fn shake256_squeeze(st: &mut Shake256Squeeze, out: &mut [u8]) {
+            st.state.squeeze(out)
         }
-    }
-
-    #[inline(always)]
-    pub(crate) fn shake256_absorb(st: &mut Shake256Absorb, input: &[u8]) {
-        st.state.absorb(input)
-    }
-
-    #[inline(always)]
-    pub(crate) fn shake256_absorb_final(st: Shake256Absorb, input: &[u8]) -> Shake256Squeeze {
-        Shake256Squeeze {
-            state: st.state.absorb_final(input),
-        }
-    }
-
-    #[inline(always)]
-    pub(crate) fn shake256_squeeze(st: &mut Shake256Squeeze, out: &mut [u8]) {
-        st.state.squeeze(out)
     }
 }
 
@@ -516,9 +528,17 @@ pub(crate) mod simd256 {
     }
 
     #[inline(always)]
-    fn init_absorb_shake256(input: &[u8]) -> Shake256 {
+    fn init_absorb_final_shake256(input: &[u8]) -> Shake256 {
         let mut state = libcrux_sha3::portable::incremental::shake256_init();
         libcrux_sha3::portable::incremental::shake256_absorb_final(&mut state, input);
+
+        Shake256 { state }
+    }
+
+    #[inline(always)]
+    fn init_absorb_shake256(input: &[u8]) -> Shake256 {
+        let mut state = libcrux_sha3::portable::incremental::shake256_init();
+        libcrux_sha3::portable::incremental::shake256_absorb(&mut state, input);
 
         Shake256 { state }
     }
@@ -550,8 +570,18 @@ pub(crate) mod simd256 {
         }
 
         #[inline(always)]
+        fn init_absorb_final(input: &[u8]) -> Self {
+            init_absorb_final_shake256(input)
+        }
+
+        #[inline(always)]
         fn init_absorb(input: &[u8]) -> Self {
             init_absorb_shake256(input)
+        }
+
+        #[inline(always)]
+        fn absorb(input: &[u8]) -> Self {
+            absorb_shake256(self, input)
         }
 
         #[inline(always)]

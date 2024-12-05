@@ -459,7 +459,7 @@ pub(crate) fn sample_challenge_ring_element<
 >(
     seed: [u8; SEED_SIZE],
 ) -> PolynomialRingElement<SIMDUnit> {
-    let mut state = Shake256::init_absorb(&seed);
+    let mut state = Shake256::init_absorb_final(&seed);
     let randomness = state.squeeze_first_block();
 
     let mut signs = u64::from_le_bytes(randomness[0..8].try_into().unwrap());
