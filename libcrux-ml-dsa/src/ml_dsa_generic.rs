@@ -4,7 +4,7 @@ use crate::{
     },
     constants::*,
     encoding::{self, signature::Signature},
-    hash_functions::{portable::Shake256, shake128, shake256},
+    hash_functions::{shake128, shake256},
     matrix::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
         vector_times_ring_element,
@@ -29,7 +29,8 @@ pub(crate) mod multiplexing;
 pub(crate) fn generate_key_pair<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
@@ -42,11 +43,12 @@ pub(crate) fn generate_key_pair<
 ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
     let mut seed_expanded = [0; 128];
-    let mut shake = Shake256::init_absorb(&randomness);
-    // let mut shake = shake256_absorb_final(shake, &[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
-    shake.absorb(&[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
-
-    shake256_squeeze(&mut shake, &mut seed_expanded);
+    {
+        let mut shake = Shake256Xof::init();
+        shake.absorb(&randomness);
+        shake.absorb_final(&[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
+        shake.squeeze(&mut seed_expanded);
+    }
 
     let (seed_for_a, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
     let (seed_for_error_vectors, seed_for_signing) =
@@ -94,7 +96,8 @@ pub(crate) fn generate_key_pair<
 pub(crate) fn sign_pre_hashed<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     Shake256X4: shake256::XofX4,
     PH: PreHash<PH_DIGEST_LEN>,
     const PH_DIGEST_LEN: usize,
@@ -126,6 +129,7 @@ pub(crate) fn sign_pre_hashed<
         SIMDUnit,
         Shake128X4,
         Shake256,
+        Shake256Xof,
         Shake256X4,
         ROWS_IN_A,
         COLUMNS_IN_A,
@@ -154,7 +158,8 @@ pub(crate) fn sign_pre_hashed<
 pub(crate) fn sign<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
@@ -181,6 +186,7 @@ pub(crate) fn sign<
         SIMDUnit,
         Shake128X4,
         Shake256,
+        Shake256Xof,
         Shake256X4,
         ROWS_IN_A,
         COLUMNS_IN_A,
@@ -213,7 +219,8 @@ pub(crate) fn sign<
 pub(crate) fn sign_internal<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
@@ -249,7 +256,7 @@ pub(crate) fn sign_internal<
         samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
-    derive_message_representative(
+    derive_message_representative::<Shake256Xof>(
         verification_key_hash,
         domain_separation_context,
         message,
@@ -258,12 +265,12 @@ pub(crate) fn sign_internal<
 
     let mut mask_seed = [0; MASK_SEED_SIZE];
     {
-        let mut shake = shake256_init();
-        shake256_absorb(&mut shake, &seed_for_signing);
-        shake256_absorb(&mut shake, &randomness);
-        let mut shake = shake256_absorb_final(shake, &message_representative);
+        let mut shake = Shake256Xof::init();
+        shake.absorb(&seed_for_signing);
+        shake.absorb(&randomness);
+        shake.absorb_final(&message_representative);
 
-        shake256_squeeze(&mut shake, &mut mask_seed);
+        shake.squeeze(&mut mask_seed);
     }
 
     let mut domain_separator_for_mask: u16 = 0;
@@ -304,11 +311,11 @@ pub(crate) fn sign_internal<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut shake = shake256_init();
-            shake256_absorb(&mut shake, &message_representative);
-            let mut shake = shake256_absorb_final(shake, &commitment_serialized);
+            let mut shake = Shake256Xof::init();
+            shake.absorb(&message_representative);
+            shake.absorb_final(&commitment_serialized);
 
-            shake256_squeeze(&mut shake, &mut commitment_hash_candidate);
+            shake.squeeze(&mut commitment_hash_candidate);
         }
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
@@ -416,31 +423,25 @@ pub(crate) fn sign_internal<
 /// 23 of Algorithm 4 (and line 18 of Algorithm 5,resp.) describe domain separation for the HashMl-DSA
 /// variant.
 #[inline(always)]
-fn derive_message_representative(
+fn derive_message_representative<Shake256Xof: shake256::Xof>(
     verification_key_hash: [u8; 64],
     domain_separation_context: Option<DomainSeparationContext>,
     message: &[u8],
     message_representative: &mut [u8; 64],
 ) {
-    let mut shake = shake256_init();
-    shake256_absorb(&mut shake, &verification_key_hash);
+    let mut shake = Shake256Xof::init();
+    shake.absorb(&verification_key_hash);
     if let Some(domain_separation_context) = domain_separation_context {
-        shake256_absorb(
-            &mut shake,
-            &[domain_separation_context.pre_hash_oid().is_some() as u8],
-        );
-        shake256_absorb(
-            &mut shake,
-            &[domain_separation_context.context().len() as u8],
-        );
-        shake256_absorb(&mut shake, domain_separation_context.context());
+        shake.absorb(&[domain_separation_context.pre_hash_oid().is_some() as u8]);
+        shake.absorb(&[domain_separation_context.context().len() as u8]);
+        shake.absorb(domain_separation_context.context());
         if let Some(pre_hash_oid) = domain_separation_context.pre_hash_oid() {
-            shake256_absorb(&mut shake, pre_hash_oid)
+            shake.absorb(pre_hash_oid)
         }
     }
 
-    let mut shake = shake256_absorb_final(shake, message);
-    shake256_squeeze(&mut shake, message_representative);
+    shake.absorb_final(message);
+    shake.squeeze(message_representative);
 }
 
 /// The internal verification API.
@@ -452,7 +453,8 @@ fn derive_message_representative(
 pub(crate) fn verify_internal<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const SIGNATURE_SIZE: usize,
@@ -499,7 +501,7 @@ pub(crate) fn verify_internal<
             &mut verification_key_hash,
         );
         let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
-        derive_message_representative(
+        derive_message_representative::<Shake256Xof>(
             verification_key_hash,
             domain_separation_context,
             message,
@@ -530,11 +532,11 @@ pub(crate) fn verify_internal<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut shake = shake256_init();
-            shake256_absorb(&mut shake, &message_representative);
-            let mut shake = shake256_absorb_final(shake, &commitment_serialized);
+            let mut shake = Shake256Xof::init();
+            shake.absorb(&message_representative);
+            shake.absorb_final(&commitment_serialized);
 
-            shake256_squeeze(&mut shake, &mut commitment_hash);
+            shake.squeeze(&mut commitment_hash);
         }
 
         if signature.commitment_hash != commitment_hash {
@@ -552,7 +554,8 @@ pub(crate) fn verify_internal<
 pub(crate) fn verify<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const SIGNATURE_SIZE: usize,
@@ -577,6 +580,7 @@ pub(crate) fn verify<
         SIMDUnit,
         Shake128X4,
         Shake256,
+        Shake256Xof,
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
@@ -603,7 +607,8 @@ pub(crate) fn verify<
 pub(crate) fn verify_pre_hashed<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     PH: PreHash<PH_DIGEST_LEN>,
     const PH_DIGEST_LEN: usize,
     const ROWS_IN_A: usize,
@@ -631,6 +636,7 @@ pub(crate) fn verify_pre_hashed<
         SIMDUnit,
         Shake128X4,
         Shake256,
+        Shake256Xof,
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,

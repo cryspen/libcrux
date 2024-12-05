@@ -339,7 +339,7 @@ fn update_seed(mut seed: [u8; 66], domain_separator: &mut u16) -> [u8; 66] {
 #[inline(always)]
 fn sample_mask_ring_element<
     SIMDUnit: Operations,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
     const GAMMA1_EXPONENT: usize,
 >(
     seed: [u8; 66],
@@ -362,7 +362,7 @@ fn sample_mask_ring_element<
 #[inline(always)]
 pub(crate) fn sample_mask_vector<
     SIMDUnit: Operations,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
     Shake256X4: shake256::XofX4,
     const DIMENSION: usize,
     const GAMMA1_EXPONENT: usize,
@@ -453,7 +453,7 @@ fn inside_out_shuffle(
 #[inline(always)]
 pub(crate) fn sample_challenge_ring_element<
     SIMDUnit: Operations,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
     const NUMBER_OF_ONES: usize,
     const SEED_SIZE: usize,
 >(
@@ -669,7 +669,7 @@ mod tests {
         );
     }
 
-    fn test_sample_challenge_ring_element_generic<SIMDUnit: Operations, Shake256: shake256::Xof>() {
+    fn test_sample_challenge_ring_element_generic<SIMDUnit: Operations, Shake256: shake256::DsaXof>() {
         // When TAU = 39
         let seed: [u8; 32] = [
             3, 9, 159, 119, 236, 6, 207, 7, 103, 108, 187, 137, 222, 35, 37, 30, 79, 224, 204, 186,

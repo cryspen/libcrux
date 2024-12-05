@@ -13,7 +13,7 @@ use crate::{
 #[inline(always)]
 pub(crate) fn generate_serialized<
     SIMDUnit: Operations,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,

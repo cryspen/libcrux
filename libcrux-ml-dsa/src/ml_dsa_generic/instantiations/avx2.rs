@@ -25,6 +25,7 @@ mod avx2_feature {
             crate::simd::avx2::AVX2SIMDUnit,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
+            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
             crate::hash_functions::simd256::Shake256x4,
             ROWS_IN_A,
             COLUMNS_IN_A,
@@ -63,6 +64,7 @@ mod avx2_feature {
             crate::simd::avx2::AVX2SIMDUnit,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
+            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
             crate::hash_functions::simd256::Shake256x4,
             ROWS_IN_A,
             COLUMNS_IN_A,
@@ -109,6 +111,7 @@ mod avx2_feature {
             crate::simd::avx2::AVX2SIMDUnit,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
+            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
             crate::hash_functions::simd256::Shake256x4,
             ROWS_IN_A,
             COLUMNS_IN_A,
@@ -155,6 +158,7 @@ mod avx2_feature {
             crate::simd::avx2::AVX2SIMDUnit,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
+            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
             crate::hash_functions::simd256::Shake256x4,
             SHAKE128_PH,
             256,
@@ -202,6 +206,7 @@ mod avx2_feature {
             crate::simd::avx2::AVX2SIMDUnit,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
+            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
             ROWS_IN_A,
             COLUMNS_IN_A,
             SIGNATURE_SIZE,
@@ -245,6 +250,7 @@ mod avx2_feature {
             crate::simd::avx2::AVX2SIMDUnit,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
+            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
             ROWS_IN_A,
             COLUMNS_IN_A,
             SIGNATURE_SIZE,
@@ -288,6 +294,7 @@ mod avx2_feature {
             crate::simd::avx2::AVX2SIMDUnit,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
+            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
             SHAKE128_PH,
             256,
             ROWS_IN_A,
