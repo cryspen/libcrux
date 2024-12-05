@@ -12,7 +12,7 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-#push-options "--ext context_pruning"
+#push-options "--z3rlimit 120 --ext context_pruning"
 
 let deserialize_secret_key
       (v_K: usize)
