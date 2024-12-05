@@ -367,21 +367,6 @@ pub(crate) fn ntt_multiply_binomials(
     );
 }
 
-// #[inline(always)]
-// pub(crate) fn ntt_multiply_binomials(
-//     (a0, a1): (FieldElement, FieldElement),
-//     (b0, b1): (FieldElement, FieldElement),
-//     zeta: FieldElementTimesMontgomeryR,
-// ) -> (MontgomeryFieldElement, MontgomeryFieldElement) {
-//     (
-//         montgomery_reduce_element(
-//             (a0 as i32) * (b0 as i32)
-//                 + (montgomery_reduce_element((a1 as i32) * (b1 as i32)) as i32) * (zeta as i32),
-//         ),
-//         montgomery_reduce_element((a0 as i32) * (b1 as i32) + (a1 as i32) * (b0 as i32)),
-//     )
-// }
-
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options("--z3rlimit 100")]

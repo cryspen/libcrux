@@ -81,10 +81,10 @@ let ntt_at_layer_1_
                 (Libcrux_ml_kem.Vector.Traits.f_ntt_layer_1_step #v_Vector
                     #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
-                    (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
-                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! sz 1 <: usize) <: i16)
-                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! sz 2 <: usize) <: i16)
-                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! sz 3 <: usize) <: i16)
+                    (Libcrux_ml_kem.Polynomial.zeta zeta_i <: i16)
+                    (Libcrux_ml_kem.Polynomial.zeta (zeta_i +! sz 1 <: usize) <: i16)
+                    (Libcrux_ml_kem.Polynomial.zeta (zeta_i +! sz 2 <: usize) <: i16)
+                    (Libcrux_ml_kem.Polynomial.zeta (zeta_i +! sz 3 <: usize) <: i16)
                   <:
                   v_Vector)
             }
@@ -163,8 +163,8 @@ let ntt_at_layer_2_
                 (Libcrux_ml_kem.Vector.Traits.f_ntt_layer_2_step #v_Vector
                     #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
-                    (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
-                    (Libcrux_ml_kem.Polynomial.get_zeta (zeta_i +! sz 1 <: usize) <: i16)
+                    (Libcrux_ml_kem.Polynomial.zeta zeta_i <: i16)
+                    (Libcrux_ml_kem.Polynomial.zeta (zeta_i +! sz 1 <: usize) <: i16)
                   <:
                   v_Vector)
             }
@@ -243,7 +243,7 @@ let ntt_at_layer_3_
                 (Libcrux_ml_kem.Vector.Traits.f_ntt_layer_3_step #v_Vector
                     #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
-                    (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
+                    (Libcrux_ml_kem.Polynomial.zeta zeta_i <: i16)
                   <:
                   v_Vector)
             }
@@ -315,7 +315,7 @@ let ntt_at_layer_4_plus
                       (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ j +! step_vec <: usize ]
                         <:
                         v_Vector)
-                      (Libcrux_ml_kem.Polynomial.get_zeta zeta_i <: i16)
+                      (Libcrux_ml_kem.Polynomial.zeta zeta_i <: i16)
                   in
                   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
                     {

@@ -171,7 +171,6 @@ pub(crate) mod portable {
 
     #[hax_lib::attributes]
     impl<const K: usize> Hash<K> for PortableHash<K> {
-        // Output name has be `out` https://github.com/hacspec/hax/issues/832
         #[ensures(|out|
             fstar!("$out == Spec.Utils.v_G $input"))
         ]
@@ -180,7 +179,6 @@ pub(crate) mod portable {
             G(input)
         }
 
-        // Output name has be `out` https://github.com/hacspec/hax/issues/832
         #[ensures(|out|
             fstar!("$out == Spec.Utils.v_H $input"))
         ]
@@ -190,7 +188,6 @@ pub(crate) mod portable {
         }
 
         #[requires(fstar!("v $LEN < pow2 32"))]
-        // Output name has be `out` https://github.com/hacspec/hax/issues/832
         #[ensures(|out|
             // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
             fstar!("v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"))
@@ -201,7 +198,6 @@ pub(crate) mod portable {
         }
 
         #[requires(fstar!("v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)"))]
-        // Output name has be `out` https://github.com/hacspec/hax/issues/832
         #[ensures(|out|
             fstar!("(v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)) ==>
                 $out == Spec.Utils.v_PRFxN $K $LEN $input"))
@@ -428,7 +424,6 @@ pub(crate) mod avx2 {
 
     #[hax_lib::attributes]
     impl<const K: usize> Hash<K> for Simd256Hash {
-        // Output name has be `out` https://github.com/hacspec/hax/issues/832
         #[ensures(|out|
             fstar!("$out == Spec.Utils.v_G $input"))
         ]
@@ -437,7 +432,6 @@ pub(crate) mod avx2 {
             G(input)
         }
 
-        // Output name has be `out` https://github.com/hacspec/hax/issues/832
         #[ensures(|out|
             fstar!("$out == Spec.Utils.v_H $input"))
         ]
@@ -447,7 +441,6 @@ pub(crate) mod avx2 {
         }
 
         #[requires(fstar!("v $LEN < pow2 32"))]
-        // Output name has be `out` https://github.com/hacspec/hax/issues/832
         #[hax_lib::ensures(|out|
             // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
             fstar!("v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"))
@@ -458,7 +451,6 @@ pub(crate) mod avx2 {
         }
 
         #[requires(fstar!("v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)"))]
-        // Output name has be `out` https://github.com/hacspec/hax/issues/832
         #[ensures(|out|
             fstar!("(v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)) ==>
                 $out == Spec.Utils.v_PRFxN $K $LEN $input"))
@@ -710,7 +702,6 @@ pub(crate) mod neon {
 
     #[hax_lib::attributes]
     impl<const K: usize> Hash<K> for Simd128Hash {
-        // Output name has be `out` https://github.com/hacspec/hax/issues/832
         #[ensures(|out|
             fstar!("$out == Spec.Utils.v_G $input"))
         ]
@@ -719,7 +710,6 @@ pub(crate) mod neon {
             G(input)
         }
 
-        // Output name has be `out` https://github.com/hacspec/hax/issues/832
         #[ensures(|out|
             fstar!("$out == Spec.Utils.v_H $input"))
         ]
@@ -729,7 +719,6 @@ pub(crate) mod neon {
         }
 
         #[requires(fstar!("v $LEN < pow2 32"))]
-        // Output name has be `out` https://github.com/hacspec/hax/issues/832
         #[ensures(|out|
             // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
             fstar!("v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"))
@@ -740,7 +729,6 @@ pub(crate) mod neon {
         }
 
         #[requires(fstar!("v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)"))]
-        // Output name has be `out` https://github.com/hacspec/hax/issues/832
         #[ensures(|out|
             // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
             fstar!("(v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)) ==>

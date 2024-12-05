@@ -7,8 +7,8 @@
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
  * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
- * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 3e54f3c659bef6ee815d197ee5c74dd40c75186a
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9
+ * Libcrux: fbef3649fa222b800fc7dcc349855bcd7de48e36
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -1676,7 +1676,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_4_plus_61(
       libcrux_ml_kem_vector_avx2_SIMD256Vector_x2 uu____0 =
           libcrux_ml_kem_ntt_ntt_layer_int_vec_step_61(
               re->coefficients[j], re->coefficients[j + step_vec],
-              libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U]));
+              libcrux_ml_kem_polynomial_zeta(zeta_i[0U]));
       __m256i x = uu____0.fst;
       __m256i y = uu____0.snd;
       re->coefficients[j] = x;
@@ -1699,8 +1699,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_3_61(
     size_t round = i;
     zeta_i[0U] = zeta_i[0U] + (size_t)1U;
     re->coefficients[round] = libcrux_ml_kem_vector_avx2_ntt_layer_3_step_09(
-        re->coefficients[round],
-        libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U]));
+        re->coefficients[round], libcrux_ml_kem_polynomial_zeta(zeta_i[0U]));
   }
 }
 
@@ -1718,8 +1717,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_2_61(
     size_t round = i;
     zeta_i[0U] = zeta_i[0U] + (size_t)1U;
     re->coefficients[round] = libcrux_ml_kem_vector_avx2_ntt_layer_2_step_09(
-        re->coefficients[round], libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U]),
-        libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U] + (size_t)1U));
+        re->coefficients[round], libcrux_ml_kem_polynomial_zeta(zeta_i[0U]),
+        libcrux_ml_kem_polynomial_zeta(zeta_i[0U] + (size_t)1U));
     zeta_i[0U] = zeta_i[0U] + (size_t)1U;
   }
 }
@@ -1738,10 +1737,10 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_1_61(
     size_t round = i;
     zeta_i[0U] = zeta_i[0U] + (size_t)1U;
     re->coefficients[round] = libcrux_ml_kem_vector_avx2_ntt_layer_1_step_09(
-        re->coefficients[round], libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U]),
-        libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U] + (size_t)1U),
-        libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U] + (size_t)2U),
-        libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U] + (size_t)3U));
+        re->coefficients[round], libcrux_ml_kem_polynomial_zeta(zeta_i[0U]),
+        libcrux_ml_kem_polynomial_zeta(zeta_i[0U] + (size_t)1U),
+        libcrux_ml_kem_polynomial_zeta(zeta_i[0U] + (size_t)2U),
+        libcrux_ml_kem_polynomial_zeta(zeta_i[0U] + (size_t)3U));
     zeta_i[0U] = zeta_i[0U] + (size_t)3U;
   }
 }
@@ -2062,13 +2061,13 @@ libcrux_ml_kem_polynomial_ntt_multiply_ef_61(
     size_t i0 = i;
     out.coefficients[i0] = libcrux_ml_kem_vector_avx2_ntt_multiply_09(
         &self->coefficients[i0], &rhs->coefficients[i0],
-        libcrux_ml_kem_polynomial_get_zeta((size_t)64U + (size_t)4U * i0),
-        libcrux_ml_kem_polynomial_get_zeta((size_t)64U + (size_t)4U * i0 +
-                                           (size_t)1U),
-        libcrux_ml_kem_polynomial_get_zeta((size_t)64U + (size_t)4U * i0 +
-                                           (size_t)2U),
-        libcrux_ml_kem_polynomial_get_zeta((size_t)64U + (size_t)4U * i0 +
-                                           (size_t)3U));
+        libcrux_ml_kem_polynomial_zeta((size_t)64U + (size_t)4U * i0),
+        libcrux_ml_kem_polynomial_zeta((size_t)64U + (size_t)4U * i0 +
+                                       (size_t)1U),
+        libcrux_ml_kem_polynomial_zeta((size_t)64U + (size_t)4U * i0 +
+                                       (size_t)2U),
+        libcrux_ml_kem_polynomial_zeta((size_t)64U + (size_t)4U * i0 +
+                                       (size_t)3U));
   }
   return out;
 }
@@ -2114,11 +2113,10 @@ static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_1_61(
     zeta_i[0U] = zeta_i[0U] - (size_t)1U;
     re->coefficients[round] =
         libcrux_ml_kem_vector_avx2_inv_ntt_layer_1_step_09(
-            re->coefficients[round],
-            libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U]),
-            libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U] - (size_t)1U),
-            libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U] - (size_t)2U),
-            libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U] - (size_t)3U));
+            re->coefficients[round], libcrux_ml_kem_polynomial_zeta(zeta_i[0U]),
+            libcrux_ml_kem_polynomial_zeta(zeta_i[0U] - (size_t)1U),
+            libcrux_ml_kem_polynomial_zeta(zeta_i[0U] - (size_t)2U),
+            libcrux_ml_kem_polynomial_zeta(zeta_i[0U] - (size_t)3U));
     zeta_i[0U] = zeta_i[0U] - (size_t)3U;
   }
 }
@@ -2138,9 +2136,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_2_61(
     zeta_i[0U] = zeta_i[0U] - (size_t)1U;
     re->coefficients[round] =
         libcrux_ml_kem_vector_avx2_inv_ntt_layer_2_step_09(
-            re->coefficients[round],
-            libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U]),
-            libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U] - (size_t)1U));
+            re->coefficients[round], libcrux_ml_kem_polynomial_zeta(zeta_i[0U]),
+            libcrux_ml_kem_polynomial_zeta(zeta_i[0U] - (size_t)1U));
     zeta_i[0U] = zeta_i[0U] - (size_t)1U;
   }
 }
@@ -2161,7 +2158,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_3_61(
     re->coefficients[round] =
         libcrux_ml_kem_vector_avx2_inv_ntt_layer_3_step_09(
             re->coefficients[round],
-            libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U]));
+            libcrux_ml_kem_polynomial_zeta(zeta_i[0U]));
   }
 }
 
@@ -2209,7 +2206,7 @@ libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_61(
       libcrux_ml_kem_vector_avx2_SIMD256Vector_x2 uu____0 =
           libcrux_ml_kem_invert_ntt_inv_ntt_layer_int_vec_step_reduce_61(
               re->coefficients[j], re->coefficients[j + step_vec],
-              libcrux_ml_kem_polynomial_get_zeta(zeta_i[0U]));
+              libcrux_ml_kem_polynomial_zeta(zeta_i[0U]));
       __m256i x = uu____0.fst;
       __m256i y = uu____0.snd;
       re->coefficients[j] = x;
@@ -4460,17 +4457,17 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_decapsulate_a1(
       Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret0,
                               uint8_t),
       ciphertext, implicit_rejection_shared_secret);
-  uint8_t shared_secret1[32U];
-  libcrux_ml_kem_variant_kdf_d8_ae(shared_secret0, ciphertext, shared_secret1);
   uint8_t shared_secret[32U];
+  libcrux_ml_kem_variant_kdf_d8_ae(shared_secret0, ciphertext, shared_secret);
+  uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
       libcrux_ml_kem_types_as_ref_43_80(ciphertext),
       Eurydice_array_to_slice((size_t)1088U, expected_ciphertext, uint8_t),
-      Eurydice_array_to_slice((size_t)32U, shared_secret1, uint8_t),
+      Eurydice_array_to_slice((size_t)32U, shared_secret, uint8_t),
       Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret,
                               uint8_t),
-      shared_secret);
-  memcpy(ret, shared_secret, (size_t)32U * sizeof(uint8_t));
+      ret0);
+  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
 
 /**
@@ -5442,17 +5439,17 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_decapsulate_a10(
       Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret0,
                               uint8_t),
       ciphertext, implicit_rejection_shared_secret);
-  uint8_t shared_secret1[32U];
-  libcrux_ml_kem_variant_kdf_33_ae(shared_secret0, ciphertext, shared_secret1);
   uint8_t shared_secret[32U];
+  libcrux_ml_kem_variant_kdf_33_ae(shared_secret0, ciphertext, shared_secret);
+  uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
       libcrux_ml_kem_types_as_ref_43_80(ciphertext),
       Eurydice_array_to_slice((size_t)1088U, expected_ciphertext, uint8_t),
-      Eurydice_array_to_slice((size_t)32U, shared_secret1, uint8_t),
+      Eurydice_array_to_slice((size_t)32U, shared_secret, uint8_t),
       Eurydice_array_to_slice((size_t)32U, implicit_rejection_shared_secret,
                               uint8_t),
-      shared_secret);
-  memcpy(ret, shared_secret, (size_t)32U * sizeof(uint8_t));
+      ret0);
+  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
 
 /**

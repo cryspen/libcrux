@@ -1,5 +1,5 @@
 module BitVecEq
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 open MkSeq
@@ -72,7 +72,7 @@ let int_t_array_bitwise_eq
 //                                 else get_bit_nat (pow2 (bits n) + v x) (v nth))
 //     with get_bit_intro #n x nth
 
-#push-options "--fuel 0 --ifuel 0 --z3rlimit 80"
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 150"
 /// Rewrite a `bit_vec_of_int_t_array (Seq.slice arr ...)` into a `bit_vec_sub ...`
 let int_t_seq_slice_to_bv_sub_lemma #t #n 
   (arr: t_Array (int_t t) n)
