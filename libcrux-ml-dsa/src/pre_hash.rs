@@ -6,7 +6,7 @@
 //! pre-hash trait for SHAKE-128, with a digest length of 256 bytes.
 use crate::{
     constants::CONTEXT_MAX_LEN,
-    hash_functions::shake128::Xof,
+    hash_functions,
     types::{SigningError, VerificationError},
 };
 
@@ -19,7 +19,7 @@ pub(crate) trait PreHash<const DIGEST_LEN: usize> {
     fn oid() -> PreHashOID;
 
     /// Used to derive the pre-hash PH of the message before signing.
-    fn hash(message: &[u8]) -> [u8; DIGEST_LEN];
+    fn hash<Shake128: hash_functions::shake128::Xof>(message: &[u8]) -> [u8; DIGEST_LEN];
 }
 
 #[allow(non_camel_case_types)]
@@ -34,9 +34,9 @@ impl PreHash<256> for SHAKE128_PH {
         ]
     }
 
-    fn hash(message: &[u8]) -> [u8; 256] {
+    fn hash<Shake128: hash_functions::shake128::Xof>(message: &[u8]) -> [u8; 256] {
         let mut output = [0u8; 256];
-        crate::hash_functions::portable::Shake128::shake128(message, &mut output);
+        Shake128::shake128(message, &mut output);
 
         output
     }
@@ -53,12 +53,14 @@ pub(crate) enum DomainSeparationError {
     ContextTooLongError,
 }
 
+pub(crate) type PreHashResult<'a> = Result<DomainSeparationContext<'a>, DomainSeparationError>;
+
 impl<'a> DomainSeparationContext<'a> {
     /// `context` must be at most 255 bytes long.
     pub(crate) fn new(
         context: &'a [u8],
         pre_hash_oid: Option<&'a PreHashOID>,
-    ) -> Result<Self, DomainSeparationError> {
+    ) -> PreHashResult<'a> {
         if context.len() > CONTEXT_MAX_LEN {
             Err(DomainSeparationError::ContextTooLongError)
         } else {

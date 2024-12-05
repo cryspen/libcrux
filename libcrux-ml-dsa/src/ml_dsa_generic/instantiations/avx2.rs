@@ -156,6 +156,7 @@ mod avx2_feature {
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
         crate::ml_dsa_generic::sign_pre_hashed::<
             crate::simd::avx2::AVX2SIMDUnit,
+            crate::hash_functions::portable::Shake128, // XXX: Use simd256
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
             crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
@@ -292,6 +293,7 @@ mod avx2_feature {
     ) -> Result<(), VerificationError> {
         crate::ml_dsa_generic::verify_pre_hashed::<
             crate::simd::avx2::AVX2SIMDUnit,
+            crate::hash_functions::portable::Shake128, // XXX: Use simd256
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
             crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256

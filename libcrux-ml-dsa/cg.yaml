@@ -45,6 +45,26 @@ files:
       monomorphizations_using:
         - [libcrux_sha3, "*"]
 
+  # MLKEM: MISC NON-ARCHITECTURE SPECIFIC HEADERS
+  - name: libcrux_core
+    inline_static: true
+    private:
+      monomorphizations_of:
+        - [core, "*"]
+        - [libcrux_ml_dsa, types, "*"]
+        - [libcrux_ml_dsa, utils, "*" ]
+      monomorphizations_using:
+        - [Eurydice, "*" ]
+        - [libcrux_ml_dsa, types, "*"]
+      patterns:
+        - [core, "*"]
+        - [libcrux_ml_dsa, types ]
+        - [libcrux_ml_dsa, constants ]
+        - [libcrux_ml_dsa, utils, "*" ]
+        # - [libcrux_ml_dsa, simd, traits ]
+    api:
+      - [Eurydice, "*"]
+
   # MLDSA-65
 
   - name: libcrux_mldsa65_avx2
@@ -92,27 +112,6 @@ files:
         - [libcrux_ml_dsa, hash_functions, portable, "*"]
         - [libcrux_ml_dsa, ml_dsa_generic, instantiations, portable, "*"]
         - [core, option, Option_84]
-
-
-  # MLKEM: MISC NON-ARCHITECTURE SPECIFIC HEADERS
-  - name: libcrux_core
-    inline_static: true
-    private:
-      monomorphizations_of:
-        - [core, "*"]
-        - [libcrux_ml_dsa, types, "*"]
-        - [libcrux_ml_dsa, utils, "*" ]
-      monomorphizations_using:
-        - [Eurydice, "*" ]
-        - [libcrux_ml_dsa, types, "*"]
-      patterns:
-        - [core, "*"]
-        - [libcrux_ml_dsa, types, "*" ]
-        - [libcrux_ml_dsa, constants ]
-        - [libcrux_ml_dsa, utils, "*" ]
-        - [libcrux_ml_dsa, simd, traits ]
-    api:
-      - [Eurydice, "*"]
 
 naming:
   skip_prefix:

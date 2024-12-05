@@ -95,6 +95,7 @@ pub(crate) fn generate_key_pair<
 #[inline(always)]
 pub(crate) fn sign_pre_hashed<
     SIMDUnit: Operations,
+    Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
@@ -124,7 +125,7 @@ pub(crate) fn sign_pre_hashed<
     if context.len() > CONTEXT_MAX_LEN {
         return Err(SigningError::ContextTooLongError);
     }
-    let pre_hashed_message = PH::hash(message);
+    let pre_hashed_message = PH::hash::<Shake128>(message);
     sign_internal::<
         SIMDUnit,
         Shake128X4,
@@ -606,6 +607,7 @@ pub(crate) fn verify<
 #[inline(always)]
 pub(crate) fn verify_pre_hashed<
     SIMDUnit: Operations,
+    Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
@@ -630,7 +632,7 @@ pub(crate) fn verify_pre_hashed<
     context: &[u8],
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    let pre_hashed_message = PH::hash(message);
+    let pre_hashed_message = PH::hash::<Shake128>(message);
 
     verify_internal::<
         SIMDUnit,
