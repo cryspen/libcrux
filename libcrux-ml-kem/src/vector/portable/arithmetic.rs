@@ -193,7 +193,7 @@ pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
 ///
 /// Note: The input bound is 28296 to prevent overflow in the multiplication of quotient by FIELD_MODULUS
 ///
-#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::fstar::options("--z3rlimit 150 --ext context_pruning")]
 #[cfg_attr(hax, hax_lib::requires(fstar!("Spec.Utils.is_i16b 28296 value")))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!("Spec.Utils.is_i16b 3328 result /\\
                 v result % 3329 == v value % 3329")))]
