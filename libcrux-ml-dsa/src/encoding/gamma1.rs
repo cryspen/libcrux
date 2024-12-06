@@ -42,21 +42,13 @@ pub(crate) fn serialize<
 #[inline(always)]
 pub(crate) fn deserialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
     serialized: &[u8],
-) -> PolynomialRingElement<SIMDUnit> {
-    let mut serialized_chunks = match GAMMA1_EXPONENT as u8 {
-        17 => serialized.chunks(18),
-        19 => serialized.chunks(20),
-        _ => unreachable!(),
-    };
-
-    let mut result = PolynomialRingElement::<SIMDUnit>::ZERO();
-
+    result: &mut PolynomialRingElement<SIMDUnit>,
+) {
     for i in 0..result.simd_units.len() {
-        result.simd_units[i] =
-            SIMDUnit::gamma1_deserialize::<GAMMA1_EXPONENT>(&serialized_chunks.next().unwrap());
+        result.simd_units[i] = SIMDUnit::gamma1_deserialize::<GAMMA1_EXPONENT>(
+            &serialized[i * (GAMMA1_EXPONENT + 1)..(i + 1) * (GAMMA1_EXPONENT + 1)],
+        );
     }
-
-    result
 }
 
 #[cfg(test)]
@@ -199,10 +191,9 @@ mod tests {
             -69944, -100373, 94602,
         ];
 
-        assert_eq!(
-            deserialize::<SIMDUnit, 17>(&bytes).to_i32_array(),
-            expected_coefficients
-        );
+        let mut result = PolynomialRingElement::<SIMDUnit>::ZERO();
+        deserialize::<SIMDUnit, 17>(&bytes, &mut result);
+        assert_eq!(result.to_i32_array(), expected_coefficients);
 
         let bytes: [u8; 640] = [
             253, 11, 216, 60, 251, 71, 79, 187, 242, 250, 209, 44, 72, 206, 98, 3, 22, 91, 184, 22,
@@ -270,10 +261,9 @@ mod tests {
             -138892, -414002, 42982,
         ];
 
-        assert_eq!(
-            deserialize::<SIMDUnit, 19>(&bytes).to_i32_array(),
-            expected_coefficients
-        );
+        let mut result = PolynomialRingElement::<SIMDUnit>::ZERO();
+        deserialize::<SIMDUnit, 19>(&bytes, &mut result);
+        assert_eq!(result.to_i32_array(), expected_coefficients);
     }
 
     #[cfg(not(feature = "simd256"))]

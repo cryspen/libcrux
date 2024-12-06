@@ -66,7 +66,7 @@ pub struct MLDSAKeyPair<const VERIFICATION_KEY_SIZE: usize, const SIGNING_KEY_SI
     pub verification_key: MLDSAVerificationKey<VERIFICATION_KEY_SIZE>,
 }
 
-#[derive(Debug)]
+#[cfg_attr(not(eurydice), derive(Debug))]
 pub enum VerificationError {
     MalformedHintError,
     SignerResponseExceedsBoundError,
@@ -76,7 +76,7 @@ pub enum VerificationError {
     VerificationContextTooLongError,
 }
 
-#[derive(Debug)]
+#[cfg_attr(not(eurydice), derive(Debug))]
 pub enum SigningError {
     RejectionSamplingError,
     ContextTooLongError,
