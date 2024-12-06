@@ -71,7 +71,9 @@ pub enum VerificationError {
     MalformedHintError,
     SignerResponseExceedsBoundError,
     CommitmentHashesDontMatchError,
-    ContextTooLongError,
+    // FIXME: Eurydice can't handle enum variants with the same name
+    // https://github.com/AeneasVerif/eurydice/issues/102
+    VerificationContextTooLongError,
 }
 
 #[derive(Debug)]

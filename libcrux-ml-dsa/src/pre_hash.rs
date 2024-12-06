@@ -4,7 +4,7 @@
 //! of FIPS 204, any NIST-approved hash function or XOF can be used to
 //!/perform the pre-hash of the message. This module implements the
 //! pre-hash trait for SHAKE-128, with a digest length of 256 bytes.
-use crate::{constants::CONTEXT_MAX_LEN, hash_functions};
+use crate::{constants::CONTEXT_MAX_LEN, hash_functions, SigningError, VerificationError};
 
 pub(crate) const PRE_HASH_OID_LEN: usize = 11;
 pub(crate) type PreHashOID = [u8; PRE_HASH_OID_LEN];
@@ -12,7 +12,7 @@ pub(crate) type PreHashOID = [u8; PRE_HASH_OID_LEN];
 pub(crate) trait PreHash<const DIGEST_LEN: usize> {
     /// The object identifier (OID) of the hash function or XOF used
     /// to perform the pre-hashing of the message.
-    fn oid() -> PreHashOID;
+    const OID: PreHashOID;
 
     /// Used to derive the pre-hash PH of the message before signing.
     fn hash<Shake128: hash_functions::shake128::Xof>(message: &[u8]) -> [u8; DIGEST_LEN];
@@ -24,12 +24,11 @@ pub(crate) trait PreHash<const DIGEST_LEN: usize> {
 pub(crate) struct SHAKE128_PH();
 
 impl PreHash<256> for SHAKE128_PH {
-    fn oid() -> PreHashOID {
-        [
-            0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x0b,
-        ]
-    }
+    const OID: PreHashOID = [
+        0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x0b,
+    ];
 
+    #[inline(always)]
     fn hash<Shake128: hash_functions::shake128::Xof>(message: &[u8]) -> [u8; 256] {
         let mut output = [0u8; 256];
         Shake128::shake128(message, &mut output);
@@ -75,5 +74,23 @@ impl<'a> DomainSeparationContext<'a> {
     /// Returns the pre-hash OID, if any.
     pub fn pre_hash_oid(&self) -> Option<&PreHashOID> {
         self.pre_hash_oid
+    }
+}
+
+impl From<DomainSeparationError> for SigningError {
+    fn from(e: DomainSeparationError) -> SigningError {
+        match e {
+            DomainSeparationError::ContextTooLongError => SigningError::ContextTooLongError,
+        }
+    }
+}
+
+impl From<DomainSeparationError> for VerificationError {
+    fn from(e: DomainSeparationError) -> VerificationError {
+        match e {
+            DomainSeparationError::ContextTooLongError => {
+                VerificationError::VerificationContextTooLongError
+            }
+        }
     }
 }
