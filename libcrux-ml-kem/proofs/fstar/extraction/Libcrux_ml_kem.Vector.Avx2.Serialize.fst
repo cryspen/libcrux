@@ -12,6 +12,8 @@ let _ =
 
 [@@"opaque_to_smt"]
 
+#push-options "--ext context_pruning"
+
 let deserialize_1___deserialize_1_i16s (a b: i16) =
   let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 b b b b b b b b a a a a a a a a
@@ -26,6 +28,8 @@ let deserialize_1___deserialize_1_i16s (a b: i16) =
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 15l coefficients_in_msb
+
+#pop-options
 
 [@@"opaque_to_smt"]
 

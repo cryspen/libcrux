@@ -109,6 +109,7 @@ pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
 "#
     ))]
     #[inline(always)]
+    #[hax_lib::fstar::options("--ext context_pruning")]
     #[hax_lib::fstar::before(r#"[@@"opaque_to_smt"]"#)]
     pub(crate) fn deserialize_1_i16s(a: i16, b: i16) -> Vec256 {
         // We need to take each bit from the 2 bytes of input and put them
