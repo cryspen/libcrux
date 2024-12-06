@@ -67,8 +67,7 @@ pub(crate) fn generate_serialized<
 
     cloop! {
         for ring_element in t0.iter() {
-            signing_key_serialized[offset..offset + RING_ELEMENT_OF_T0S_SIZE]
-                .copy_from_slice(&encoding::t0::serialize::<SIMDUnit>(*ring_element));
+            encoding::t0::serialize::<SIMDUnit>(*ring_element, &mut signing_key_serialized[offset..offset + RING_ELEMENT_OF_T0S_SIZE]);
             offset += RING_ELEMENT_OF_T0S_SIZE;
         }
     }

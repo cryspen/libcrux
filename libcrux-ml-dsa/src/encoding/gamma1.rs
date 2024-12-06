@@ -1,15 +1,17 @@
-use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
+use crate::{helper::cloop, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
 pub(crate) fn serialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
     re: PolynomialRingElement<SIMDUnit>,
     serialized: &mut [u8], // OUTPUT_BYTES
 ) {
-    for (i, simd_unit) in re.simd_units.iter().enumerate() {
-        SIMDUnit::gamma1_serialize::<GAMMA1_EXPONENT>(
-            *simd_unit,
-            &mut serialized[i * (GAMMA1_EXPONENT + 1)..(i + 1) * (GAMMA1_EXPONENT + 1)],
-        );
+    cloop! {
+        for (i, simd_unit) in re.simd_units.iter().enumerate() {
+            SIMDUnit::gamma1_serialize::<GAMMA1_EXPONENT>(
+                *simd_unit,
+                &mut serialized[i * (GAMMA1_EXPONENT + 1)..(i + 1) * (GAMMA1_EXPONENT + 1)],
+            );
+        }
     }
 }
 
