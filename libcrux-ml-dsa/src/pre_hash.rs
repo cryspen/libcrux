@@ -12,7 +12,7 @@ pub(crate) type PreHashOID = [u8; PRE_HASH_OID_LEN];
 pub(crate) trait PreHash<const DIGEST_LEN: usize> {
     /// The object identifier (OID) of the hash function or XOF used
     /// to perform the pre-hashing of the message.
-    const OID: PreHashOID;
+    fn oid() -> PreHashOID;
 
     /// Used to derive the pre-hash PH of the message before signing.
     fn hash<Shake128: hash_functions::shake128::Xof>(message: &[u8]) -> [u8; DIGEST_LEN];
@@ -23,10 +23,14 @@ pub(crate) trait PreHash<const DIGEST_LEN: usize> {
 /// digest length 256 bytes.
 pub(crate) struct SHAKE128_PH();
 
+const SHAKE128_OID: PreHashOID = [
+    0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x0b,
+];
+
 impl PreHash<256> for SHAKE128_PH {
-    const OID: PreHashOID = [
-        0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x0b,
-    ];
+    fn oid() -> PreHashOID {
+        SHAKE128_OID
+    }
 
     #[inline(always)]
     fn hash<Shake128: hash_functions::shake128::Xof>(message: &[u8]) -> [u8; 256] {
@@ -41,7 +45,7 @@ impl PreHash<256> for SHAKE128_PH {
 /// the hash function or XOF used for pre-hashing.
 pub(crate) struct DomainSeparationContext<'a> {
     context: &'a [u8],
-    pre_hash_oid: Option<&'a PreHashOID>,
+    pre_hash_oid: Option<PreHashOID>,
 }
 
 pub(crate) enum DomainSeparationError {
@@ -52,18 +56,15 @@ pub(crate) type PreHashResult<'a> = Result<DomainSeparationContext<'a>, DomainSe
 
 impl<'a> DomainSeparationContext<'a> {
     /// `context` must be at most 255 bytes long.
-    pub(crate) fn new(
-        context: &'a [u8],
-        pre_hash_oid: Option<&'a PreHashOID>,
-    ) -> PreHashResult<'a> {
+    pub(crate) fn new(context: &'a [u8], pre_hash_oid: Option<PreHashOID>) -> PreHashResult<'a> {
         if context.len() > CONTEXT_MAX_LEN {
-            Err(DomainSeparationError::ContextTooLongError)
-        } else {
-            Ok(Self {
-                context,
-                pre_hash_oid,
-            })
+            return Err(DomainSeparationError::ContextTooLongError);
         }
+
+        Ok(Self {
+            context,
+            pre_hash_oid,
+        })
     }
 
     /// Returns the context, guaranteed to be at most 255 bytes long.
@@ -72,8 +73,8 @@ impl<'a> DomainSeparationContext<'a> {
     }
 
     /// Returns the pre-hash OID, if any.
-    pub fn pre_hash_oid(&self) -> Option<&PreHashOID> {
-        self.pre_hash_oid
+    pub fn pre_hash_oid(&self) -> &Option<PreHashOID> {
+        &self.pre_hash_oid
     }
 }
 

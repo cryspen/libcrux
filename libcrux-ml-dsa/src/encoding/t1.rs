@@ -1,5 +1,5 @@
 use crate::{
-    constants::RING_ELEMENT_OF_T1S_SIZE, polynomial::PolynomialRingElement,
+    constants::RING_ELEMENT_OF_T1S_SIZE, helper::cloop, polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
@@ -13,9 +13,11 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 
     const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 10;
 
-    for (i, simd_unit) in re.simd_units.iter().enumerate() {
-        serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-            .copy_from_slice(&SIMDUnit::t1_serialize(*simd_unit));
+    cloop! {
+        for (i, simd_unit) in re.simd_units.iter().enumerate() {
+            serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+                .copy_from_slice(&SIMDUnit::t1_serialize(*simd_unit));
+        }
     }
 
     serialized

@@ -126,7 +126,10 @@ pub(crate) fn sign_pre_hashed<
         return Err(SigningError::ContextTooLongError);
     }
     let pre_hashed_message = PH::hash::<Shake128>(message);
-    let domain_separation_context = DomainSeparationContext::new(context, Some(&PH::OID))?;
+    let domain_separation_context = match DomainSeparationContext::new(context, Some(PH::oid())) {
+        Ok(dsc) => dsc,
+        Err(_) => return Err(SigningError::ContextTooLongError),
+    };
     sign_internal::<
         SIMDUnit,
         Shake128X4,
@@ -183,7 +186,10 @@ pub(crate) fn sign<
     context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-    let domain_separation_context = DomainSeparationContext::new(context, None)?;
+    let domain_separation_context = match DomainSeparationContext::new(context, None) {
+        Ok(dsc) => dsc,
+        Err(_) => return Err(SigningError::ContextTooLongError),
+    };
     sign_internal::<
         SIMDUnit,
         Shake128X4,
@@ -482,12 +488,16 @@ pub(crate) fn verify_internal<
         );
 
     let signature =
-        Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
+        match Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
             GAMMA1_EXPONENT,
             GAMMA1_RING_ELEMENT_SIZE,
             MAX_ONES_IN_HINT,
             SIGNATURE_SIZE,
-        >(signature_serialized)?;
+        >(signature_serialized)
+        {
+            Ok(s) => s,
+            Err(e) => return Err(e),
+        };
 
     // We use if-else branches because early returns will not go through hax.
     if !vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
@@ -578,7 +588,10 @@ pub(crate) fn verify<
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
     // We manually do the matching here to make Eurydice happy.
-    let domain_separation_context = DomainSeparationContext::new(context, None)?;
+    let domain_separation_context = match DomainSeparationContext::new(context, None) {
+        Ok(dsc) => dsc,
+        Err(_) => return Err(VerificationError::VerificationContextTooLongError),
+    };
     verify_internal::<
         SIMDUnit,
         Shake128X4,
@@ -635,7 +648,10 @@ pub(crate) fn verify_pre_hashed<
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
     let pre_hashed_message = PH::hash::<Shake128>(message);
-    let domain_separation_context = DomainSeparationContext::new(context, Some(&PH::OID))?;
+    let domain_separation_context = match DomainSeparationContext::new(context, Some(PH::oid())) {
+        Ok(dsc) => dsc,
+        Err(_) => return Err(VerificationError::VerificationContextTooLongError),
+    };
 
     verify_internal::<
         SIMDUnit,

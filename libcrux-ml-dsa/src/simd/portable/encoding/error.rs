@@ -1,3 +1,5 @@
+use crate::helper::cloop;
+
 use super::super::vector_type::{PortableSIMDUnit, ZERO};
 
 #[inline(always)]
@@ -23,11 +25,13 @@ fn serialize_when_eta_is_2(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
 fn serialize_when_eta_is_4(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
     const ETA: i32 = 4;
 
-    for (i, coefficients) in simd_unit.coefficients.chunks_exact(2).enumerate() {
-        let coefficient0 = (ETA - coefficients[0]) as u8;
-        let coefficient1 = (ETA - coefficients[1]) as u8;
+    cloop! {
+        for (i, coefficients) in simd_unit.coefficients.chunks_exact(2).enumerate() {
+            let coefficient0 = (ETA - coefficients[0]) as u8;
+            let coefficient1 = (ETA - coefficients[1]) as u8;
 
-        serialized[i] = (coefficient1 << 4) | coefficient0;
+            serialized[i] = (coefficient1 << 4) | coefficient0;
+        }
     }
 }
 
@@ -62,6 +66,7 @@ fn deserialize_when_eta_is_2(serialized: &[u8]) -> PortableSIMDUnit {
 
     simd_unit
 }
+
 #[inline(always)]
 fn deserialize_when_eta_is_4(serialized: &[u8]) -> PortableSIMDUnit {
     debug_assert!(serialized.len() == 4);
@@ -69,9 +74,11 @@ fn deserialize_when_eta_is_4(serialized: &[u8]) -> PortableSIMDUnit {
     let mut simd_unit = ZERO();
     const ETA: i32 = 4;
 
-    for (i, byte) in serialized.iter().enumerate() {
-        simd_unit.coefficients[2 * i] = ETA - ((byte & 0xF) as i32);
-        simd_unit.coefficients[2 * i + 1] = ETA - ((byte >> 4) as i32);
+    cloop! {
+        for (i, byte) in serialized.iter().enumerate() {
+            simd_unit.coefficients[2 * i] = ETA - ((byte & 0xF) as i32);
+            simd_unit.coefficients[2 * i + 1] = ETA - ((byte >> 4) as i32);
+        }
     }
 
     simd_unit

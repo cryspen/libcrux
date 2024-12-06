@@ -141,13 +141,13 @@ impl<
         }
 
         if malformed_hint {
-            Err(VerificationError::MalformedHintError)
-        } else {
-            Ok(Signature {
-                commitment_hash: commitment_hash.try_into().unwrap(),
-                signer_response,
-                hint,
-            })
+            return Err(VerificationError::MalformedHintError);
         }
+
+        Ok(Signature {
+            commitment_hash: commitment_hash.try_into().unwrap(),
+            signer_response,
+            hint,
+        })
     }
 }

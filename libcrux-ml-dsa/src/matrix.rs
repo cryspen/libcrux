@@ -1,6 +1,7 @@
 use crate::{
     arithmetic::shift_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
+    helper::cloop,
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
@@ -21,14 +22,18 @@ pub(crate) fn compute_As1_plus_s2<
     let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
     let s1_ntt = s1.map(|s| ntt::<SIMDUnit>(s));
 
-    for (i, row) in A_as_ntt.iter().enumerate() {
-        for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery::<SIMDUnit>(ring_element, &s1_ntt[j]);
-            result[i] = PolynomialRingElement::add(&result[i], &product);
-        }
+    cloop! {
+        for (i, row) in A_as_ntt.iter().enumerate() {
+            cloop!{
+                for (j, ring_element) in row.iter().enumerate() {
+                    let product = ntt_multiply_montgomery::<SIMDUnit>(ring_element, &s1_ntt[j]);
+                    result[i] = PolynomialRingElement::add(&result[i], &product);
+                }
+            }
 
-        result[i] = invert_ntt_montgomery::<SIMDUnit>(result[i]);
-        result[i] = PolynomialRingElement::add(&result[i], &s2[i]);
+            result[i] = invert_ntt_montgomery::<SIMDUnit>(result[i]);
+            result[i] = PolynomialRingElement::add(&result[i], &s2[i]);
+        }
     }
 
     result

@@ -28,8 +28,8 @@ macro_rules! cloop {
         }
     };
     (for $item:ident in $val:ident.iter() $body:block) => {
-        for _cloop_i in 0..$val.len() {
-            let $item = &$val[_cloop_i];
+        for _cloop_j in 0..$val.len() {
+            let $item = &$val[_cloop_j];
             $body
         }
     };
@@ -42,6 +42,18 @@ macro_rules! cloop {
     (for ($i:ident, $item:ident) in $val:ident.into_iter().enumerate() $body:block) => {
         for $i in 0..$val.len() {
             let $item = $val[$i];
+            $body
+        }
+    };
+    (for ($i:ident, $item:ident) in $val:ident.$values:ident.into_iter().enumerate() $body:block) => {
+        for $i in 0..$val.$values.len() {
+            let $item = $val.$values[$i];
+            $body
+        }
+    };
+    (for $item:ident in $val:ident.$values:ident.into_iter() $body:block) => {
+        for _cloop_k in 0..$val.$values.len() {
+            let $item = $val.$values[_cloop_k];
             $body
         }
     };
@@ -75,6 +87,12 @@ macro_rules! cloop {
     };
     (for ($i:ident, $item:ident) in $val:ident.into_iter().enumerate() $body:block) => {
         for ($i, $item) in $val.into_iter().enumerate() $body
+    };
+    (for ($i:ident, $item:ident) in $val:ident.$values:ident.into_iter().enumerate() $body:block) => {
+        for ($i, $item) in $val.$values.into_iter().enumerate() $body
+    };
+    (for $item:ident in $val:ident.$values:ident.into_iter() $body:block) => {
+        for $item in $val.$values.into_iter() $body
     };
     (for $i:ident in ($start:literal..$end:expr).step_by($step:literal) $body:block) => {
         for $i in ($start..$end).step_by($step) $body

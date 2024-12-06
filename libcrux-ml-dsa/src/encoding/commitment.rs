@@ -1,4 +1,4 @@
-use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
+use crate::{helper::cloop, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
 fn serialize<SIMDUnit: Operations, const OUTPUT_SIZE: usize>(
@@ -55,10 +55,12 @@ pub(crate) fn serialize_vector<
     let mut serialized = [0u8; OUTPUT_SIZE];
     let mut offset: usize = 0;
 
-    for ring_element in vector.iter() {
-        serialized[offset..offset + RING_ELEMENT_SIZE]
-            .copy_from_slice(&serialize::<SIMDUnit, RING_ELEMENT_SIZE>(*ring_element));
-        offset += RING_ELEMENT_SIZE;
+    cloop! {
+        for ring_element in vector.iter() {
+            serialized[offset..offset + RING_ELEMENT_SIZE]
+                .copy_from_slice(&serialize::<SIMDUnit, RING_ELEMENT_SIZE>(*ring_element));
+            offset += RING_ELEMENT_SIZE;
+        }
     }
 
     serialized
