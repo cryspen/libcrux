@@ -60,7 +60,7 @@ pub(crate) trait Operations: Copy + Clone {
     fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE];
 
     // Error
-    fn error_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE];
+    fn error_serialize<const ETA: usize>(simd_unit: Self, serialized: &mut [u8]);
     fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self;
 
     // t0

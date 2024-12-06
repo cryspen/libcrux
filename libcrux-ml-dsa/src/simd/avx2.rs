@@ -100,8 +100,8 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn error_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::error::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+    fn error_serialize<const ETA: usize>(simd_unit: Self, serialized: &mut [u8]) {
+        encoding::error::serialize::<ETA>(simd_unit.coefficients, serialized)
     }
     #[inline(always)]
     fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self {

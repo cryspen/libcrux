@@ -1,10 +1,7 @@
 use super::super::vector_type::{PortableSIMDUnit, ZERO};
 
 #[inline(always)]
-fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(
-    simd_unit: PortableSIMDUnit,
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
+fn serialize_when_eta_is_2(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
     const ETA: i32 = 2;
 
     let coefficient0 = (ETA - simd_unit.coefficients[0]) as u8;
@@ -20,14 +17,10 @@ fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(
     serialized[1] =
         (coefficient5 << 7) | (coefficient4 << 4) | (coefficient3 << 1) | (coefficient2 >> 2);
     serialized[2] = (coefficient7 << 5) | (coefficient6 << 2) | (coefficient5 >> 1);
-
-    serialized
 }
+
 #[inline(always)]
-fn serialize_when_eta_is_4<const OUTPUT_SIZE: usize>(
-    simd_unit: PortableSIMDUnit,
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
+fn serialize_when_eta_is_4(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
     const ETA: i32 = 4;
 
     for (i, coefficients) in simd_unit.coefficients.chunks_exact(2).enumerate() {
@@ -36,16 +29,13 @@ fn serialize_when_eta_is_4<const OUTPUT_SIZE: usize>(
 
         serialized[i] = (coefficient1 << 4) | coefficient0;
     }
-
-    serialized
 }
+
 #[inline(always)]
-pub(crate) fn serialize<const OUTPUT_SIZE: usize>(
-    simd_unit: PortableSIMDUnit,
-) -> [u8; OUTPUT_SIZE] {
-    match OUTPUT_SIZE as u8 {
-        3 => serialize_when_eta_is_2::<OUTPUT_SIZE>(simd_unit),
-        4 => serialize_when_eta_is_4::<OUTPUT_SIZE>(simd_unit),
+pub(crate) fn serialize<const ETA: usize>(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
+    match ETA as u8 {
+        2 => serialize_when_eta_is_2(simd_unit, serialized),
+        4 => serialize_when_eta_is_4(simd_unit, serialized),
         _ => unreachable!(),
     }
 }
