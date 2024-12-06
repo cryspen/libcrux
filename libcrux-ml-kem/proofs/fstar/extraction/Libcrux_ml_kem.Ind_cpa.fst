@@ -12,7 +12,7 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-#push-options "--z3rlimit 120 --ext context_pruning"
+#push-options "--z3rlimit 800 --ext context_pruning"
 
 let deserialize_secret_key
       (v_K: usize)
@@ -163,6 +163,57 @@ let build_unpacked_public_key
   in
   unpacked_public_key
 
+let sample_ring_element_cbd_helper_1
+      (v_K: usize)
+      (prf_inputs: t_Array (t_Array u8 (sz 33)) v_K)
+      (prf_input: t_Array u8 (sz 33))
+      (domain_separator: u8) : Lemma 
+        (requires Spec.MLKEM.is_rank v_K /\ v domain_separator < 2 * v v_K /\
+          (forall (i: nat). i < v v_K ==>
+            v (Seq.index (Seq.index prf_inputs i) 32) == v domain_separator + i /\
+            Seq.slice (Seq.index prf_inputs i) 0 32 == Seq.slice prf_input 0 32))
+        (ensures prf_inputs == createi v_K
+          (Spec.MLKEM.sample_vector_cbd2_prf_input #v_K
+            (Seq.slice prf_input 0 32) (sz (v domain_separator))))
+    =
+    let lemma_aux (i: nat{i < v v_K}) : Lemma
+        (prf_inputs.[ sz i ] == (Seq.append (Seq.slice prf_input 0 32) (Seq.create 1
+          (mk_int #u8_inttype (v (domain_separator +! (mk_int #u8_inttype i))))))) =
+      Lib.Sequence.eq_intro #u8 #33 prf_inputs.[ sz i ]
+        (Seq.append (Seq.slice prf_input 0 32)
+          (Seq.create 1 (mk_int #u8_inttype (v domain_separator + i))))
+    in
+    Classical.forall_intro lemma_aux;
+    Lib.Sequence.eq_intro #(t_Array u8 (sz 33)) #(v v_K) prf_inputs
+      (createi v_K (Spec.MLKEM.sample_vector_cbd2_prf_input #v_K
+        (Seq.slice prf_input 0 32) (sz (v domain_separator))))
+
+let sample_ring_element_cbd_helper_2
+      (v_K v_ETA2 v_ETA2_RANDOMNESS_SIZE: usize)
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (error_1: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (prf_input: t_Array u8 (sz 33))
+      (domain_separator: u8) : Lemma
+        (requires Spec.MLKEM.is_rank v_K /\ v_ETA2 == Spec.MLKEM.v_ETA2 v_K /\
+          v_ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE v_K /\
+          v domain_separator < 2 * v v_K /\ 
+          (let prf_outputs = Spec.MLKEM.v_PRFxN v_K v_ETA2_RANDOMNESS_SIZE
+            (createi v_K (Spec.MLKEM.sample_vector_cbd2_prf_input #v_K
+              (Seq.slice prf_input 0 32) (sz (v domain_separator)))) in 
+          forall (i: nat). i < v v_K ==>
+            Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector error_1.[ sz i ] ==
+            Spec.MLKEM.sample_poly_cbd v_ETA2 prf_outputs.[ sz i ]))
+        (ensures Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector error_1 ==
+          (Spec.MLKEM.sample_vector_cbd2 #v_K
+            (Seq.slice prf_input 0 32) (sz (v domain_separator))))
+    =
+    Lib.Sequence.eq_intro #(Spec.MLKEM.polynomial) #(v v_K)
+    (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector error_1) 
+    (Spec.MLKEM.sample_vector_cbd2 #v_K (Seq.slice prf_input 0 32) (sz (v domain_separator)))
+
 #push-options "--max_fuel 15 --z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always"
 
 let sample_ring_element_cbd
@@ -194,26 +245,7 @@ let sample_ring_element_cbd
   let prf_inputs:t_Array (t_Array u8 (sz 33)) v_K = tmp0 in
   let domain_separator:u8 = out in
   let _:Prims.unit =
-    let lemma_aux (i: nat{i < v v_K})
-        : Lemma
-        (prf_inputs.[ sz i ] ==
-          (Seq.append (Seq.slice prf_input 0 32)
-              (Seq.create 1
-                  (mk_int #u8_inttype (v (v__domain_separator_init +! (mk_int #u8_inttype i))))))) =
-      Lib.Sequence.eq_intro #u8
-        #33
-        prf_inputs.[ sz i ]
-        (Seq.append (Seq.slice prf_input 0 32)
-            (Seq.create 1 (mk_int #u8_inttype (v v__domain_separator_init + i))))
-    in
-    Classical.forall_intro lemma_aux;
-    Lib.Sequence.eq_intro #(t_Array u8 (sz 33))
-      #(v v_K)
-      prf_inputs
-      (createi v_K
-          (Spec.MLKEM.sample_vector_cbd2_prf_input #v_K
-              (Seq.slice prf_input 0 32)
-              (sz (v v__domain_separator_init))))
+    sample_ring_element_cbd_helper_1 v_K prf_inputs prf_input v__domain_separator_init
   in
   let (prf_outputs: t_Array (t_Array u8 v_ETA2_RANDOMNESS_SIZE) v_K):t_Array
     (t_Array u8 v_ETA2_RANDOMNESS_SIZE) v_K =
@@ -253,12 +285,13 @@ let sample_ring_element_cbd
           error_1_)
   in
   let _:Prims.unit =
-    Lib.Sequence.eq_intro #(Spec.MLKEM.polynomial)
-      #(v v_K)
-      (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector error_1_)
-      (Spec.MLKEM.sample_vector_cbd2 #v_K
-          (Seq.slice prf_input 0 32)
-          (sz (v v__domain_separator_init)))
+    sample_ring_element_cbd_helper_2 v_K
+      v_ETA2
+      v_ETA2_RANDOMNESS_SIZE
+      #v_Vector
+      error_1_
+      prf_input
+      v__domain_separator_init
   in
   error_1_, domain_separator
   <:
@@ -319,7 +352,7 @@ let sample_vector_cbd_then_ntt_helper_2
       (Spec.MLKEM.sample_vector_cbd_then_ntt #v_K
         (Seq.slice prf_input 0 32) (sz (v domain_separator)))
 
-#push-options "--max_fuel 15 --z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always"
+#push-options "--max_fuel 25 --z3rlimit 2500 --ext context_pruning --z3refresh --split_queries always"
 
 let sample_vector_cbd_then_ntt
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
@@ -991,7 +1024,7 @@ let decrypt
     secret_key_unpacked
     ciphertext
 
-#push-options "--z3rlimit 200 --ext context_pruning --z3refresh"
+#push-options "--z3rlimit 1000 --ext context_pruning --z3refresh"
 
 let serialize_secret_key
       (v_K v_OUT_LEN: usize)

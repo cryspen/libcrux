@@ -128,7 +128,7 @@ pub(crate) fn serialize_public_key_mut<
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning --z3refresh")]
+#[hax_lib::fstar::options("--z3rlimit 1000 --ext context_pruning --z3refresh")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $OUT_LEN == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
     (forall (i:nat). i < v $K ==>
@@ -178,6 +178,60 @@ pub(crate) fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector:
 #[hax_lib::fstar::options(
     "--max_fuel 15 --z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always"
 )]
+#[cfg_attr(hax, hax_lib::fstar::before("let sample_ring_element_cbd_helper_2
+      (v_K v_ETA2 v_ETA2_RANDOMNESS_SIZE: usize)
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (error_1: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (prf_input: t_Array u8 (sz 33))
+      (domain_separator: u8) : Lemma
+        (requires Spec.MLKEM.is_rank v_K /\\ v_ETA2 == Spec.MLKEM.v_ETA2 v_K /\\
+          v_ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE v_K /\\
+          v domain_separator < 2 * v v_K /\\ 
+          (let prf_outputs = Spec.MLKEM.v_PRFxN v_K v_ETA2_RANDOMNESS_SIZE
+            (createi v_K (Spec.MLKEM.sample_vector_cbd2_prf_input #v_K
+              (Seq.slice prf_input 0 32) (sz (v domain_separator)))) in 
+          forall (i: nat). i < v v_K ==>
+            Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector error_1.[ sz i ] ==
+            Spec.MLKEM.sample_poly_cbd v_ETA2 prf_outputs.[ sz i ]))
+        (ensures Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector error_1 ==
+          (Spec.MLKEM.sample_vector_cbd2 #v_K
+            (Seq.slice prf_input 0 32) (sz (v domain_separator))))
+    =
+    Lib.Sequence.eq_intro #(Spec.MLKEM.polynomial) #(v v_K)
+    (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector error_1) 
+    (Spec.MLKEM.sample_vector_cbd2 #v_K (Seq.slice prf_input 0 32) (sz (v domain_separator)))"))]
+#[cfg_attr(
+    hax,
+    hax_lib::fstar::before(
+        "let sample_ring_element_cbd_helper_1
+      (v_K: usize)
+      (prf_inputs: t_Array (t_Array u8 (sz 33)) v_K)
+      (prf_input: t_Array u8 (sz 33))
+      (domain_separator: u8) : Lemma 
+        (requires Spec.MLKEM.is_rank v_K /\\ v domain_separator < 2 * v v_K /\\
+          (forall (i: nat). i < v v_K ==>
+            v (Seq.index (Seq.index prf_inputs i) 32) == v domain_separator + i /\\
+            Seq.slice (Seq.index prf_inputs i) 0 32 == Seq.slice prf_input 0 32))
+        (ensures prf_inputs == createi v_K
+          (Spec.MLKEM.sample_vector_cbd2_prf_input #v_K
+            (Seq.slice prf_input 0 32) (sz (v domain_separator))))
+    =
+    let lemma_aux (i: nat{i < v v_K}) : Lemma
+        (prf_inputs.[ sz i ] == (Seq.append (Seq.slice prf_input 0 32) (Seq.create 1
+          (mk_int #u8_inttype (v (domain_separator +! (mk_int #u8_inttype i))))))) =
+      Lib.Sequence.eq_intro #u8 #33 prf_inputs.[ sz i ]
+        (Seq.append (Seq.slice prf_input 0 32)
+          (Seq.create 1 (mk_int #u8_inttype (v domain_separator + i))))
+    in
+    Classical.forall_intro lemma_aux;
+    Lib.Sequence.eq_intro #(t_Array u8 (sz 33)) #(v v_K) prf_inputs
+      (createi v_K (Spec.MLKEM.sample_vector_cbd2_prf_input #v_K
+        (Seq.slice prf_input 0 32) (sz (v domain_separator))))"
+    )
+)]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
     $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
@@ -203,14 +257,9 @@ fn sample_ring_element_cbd<
     // See https://github.com/hacspec/hax/issues/1167
     let _domain_separator_init = domain_separator;
     domain_separator = prf_input_inc::<K>(&mut prf_inputs, domain_separator);
-    hax_lib::fstar!("let lemma_aux (i:nat{ i < v $K }) : Lemma (${prf_inputs}.[sz i] == (Seq.append (Seq.slice $prf_input 0 32) 
-        (Seq.create 1 (mk_int #u8_inttype (v ($_domain_separator_init +! (mk_int #u8_inttype i))))))) =
-        Lib.Sequence.eq_intro #u8 #33 ${prf_inputs}.[sz i] (Seq.append (Seq.slice $prf_input 0 32) 
-        (Seq.create 1 (mk_int #u8_inttype (v $_domain_separator_init + i)))) in
-
-    Classical.forall_intro lemma_aux;
-    Lib.Sequence.eq_intro #(t_Array u8 (sz 33)) #(v $K) $prf_inputs 
-        (createi $K (Spec.MLKEM.sample_vector_cbd2_prf_input #$K (Seq.slice $prf_input 0 32) (sz (v $_domain_separator_init))))");
+    hax_lib::fstar!(
+        "sample_ring_element_cbd_helper_1 $K $prf_inputs $prf_input $_domain_separator_init"
+    );
     let prf_outputs: [[u8; ETA2_RANDOMNESS_SIZE]; K] = Hasher::PRFxN(&prf_inputs);
     for i in 0..K {
         hax_lib::loop_invariant!(|i: usize| {
@@ -222,9 +271,10 @@ fn sample_ring_element_cbd<
         });
         error_1[i] = sample_from_binomial_distribution::<ETA2, Vector>(&prf_outputs[i]);
     }
-    hax_lib::fstar!("Lib.Sequence.eq_intro #(Spec.MLKEM.polynomial) #(v $K)
-    (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $error_1) 
-    (Spec.MLKEM.sample_vector_cbd2 #$K (Seq.slice $prf_input 0 32) (sz (v $_domain_separator_init)))");
+    hax_lib::fstar!(
+        "sample_ring_element_cbd_helper_2
+        $K $ETA2 $ETA2_RANDOMNESS_SIZE #$:Vector error_1_ $prf_input $_domain_separator_init"
+    );
     (error_1, domain_separator)
 }
 
@@ -232,7 +282,7 @@ fn sample_ring_element_cbd<
 /// convert them into their NTT representations.
 #[inline(always)]
 #[hax_lib::fstar::options(
-    "--max_fuel 15 --z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always"
+    "--max_fuel 25 --z3rlimit 2500 --ext context_pruning --z3refresh --split_queries always"
 )]
 #[cfg_attr(hax, hax_lib::fstar::before("let sample_vector_cbd_then_ntt_helper_2
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
@@ -962,7 +1012,7 @@ fn deserialize_then_decompress_u<
 
 /// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
-#[hax_lib::fstar::options("--ext context_pruning")]
+#[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning")]
 #[hax_lib::requires(fstar!("Spec.MLKEM.is_rank $K /\\
     length $secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
     v (${secret_key.len()}) / v $BYTES_PER_RING_ELEMENT <= v $K"))]
