@@ -1,12 +1,8 @@
 use super::super::vector_type::{PortableSIMDUnit, ZERO};
-// This function is marked public since it is called in the corresponding AVX2 code.
-#[inline(always)]
-pub fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
-    simd_unit: PortableSIMDUnit,
-) -> [u8; OUTPUT_SIZE] {
-    const GAMMA1: i32 = 1 << 17;
 
-    let mut serialized = [0u8; OUTPUT_SIZE];
+#[inline(always)]
+fn serialize_when_gamma1_is_2_pow_17(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
+    const GAMMA1: i32 = 1 << 17;
 
     for (i, coefficients) in simd_unit.coefficients.chunks_exact(4).enumerate() {
         let coefficient0 = GAMMA1 - coefficients[0];
@@ -33,17 +29,11 @@ pub fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
         serialized[9 * i + 7] = (coefficient3 >> 2) as u8;
         serialized[9 * i + 8] = (coefficient3 >> 10) as u8;
     }
-
-    serialized
 }
 
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
-    simd_unit: PortableSIMDUnit,
-) -> [u8; OUTPUT_SIZE] {
+fn serialize_when_gamma1_is_2_pow_19(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
     const GAMMA1: i32 = 1 << 19;
-
-    let mut serialized = [0u8; OUTPUT_SIZE];
 
     for (i, coefficients) in simd_unit.coefficients.chunks_exact(2).enumerate() {
         let coefficient0 = GAMMA1 - coefficients[0];
@@ -58,16 +48,15 @@ fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
         serialized[5 * i + 3] = (coefficient1 >> 4) as u8;
         serialized[5 * i + 4] = (coefficient1 >> 12) as u8;
     }
-
-    serialized
 }
 #[inline(always)]
-pub(crate) fn serialize<const OUTPUT_SIZE: usize>(
+pub(crate) fn serialize<const GAMMA1_EXPONENT: usize>(
     simd_unit: PortableSIMDUnit,
-) -> [u8; OUTPUT_SIZE] {
-    match OUTPUT_SIZE as u8 {
-        18 => serialize_when_gamma1_is_2_pow_17::<OUTPUT_SIZE>(simd_unit),
-        20 => serialize_when_gamma1_is_2_pow_19::<OUTPUT_SIZE>(simd_unit),
+    serialized: &mut [u8],
+) {
+    match GAMMA1_EXPONENT as u8 {
+        17 => serialize_when_gamma1_is_2_pow_17(simd_unit, serialized),
+        19 => serialize_when_gamma1_is_2_pow_19(simd_unit, serialized),
         _ => unreachable!(),
     }
 }

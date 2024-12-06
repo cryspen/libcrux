@@ -86,8 +86,8 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn gamma1_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::gamma1::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(simd_unit: Self, serialized: &mut [u8]) {
+        encoding::gamma1::serialize::<GAMMA1_EXPONENT>(simd_unit.coefficients, serialized)
     }
     #[inline(always)]
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self {

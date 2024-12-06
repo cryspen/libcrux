@@ -41,10 +41,9 @@ impl<
         offset += COMMITMENT_HASH_SIZE;
 
         for i in 0..COLUMNS_IN_A {
-            signature[offset..offset + GAMMA1_RING_ELEMENT_SIZE].copy_from_slice(
-                &encoding::gamma1::serialize::<SIMDUnit, GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE>(
-                    self.signer_response[i],
-                ),
+            encoding::gamma1::serialize::<SIMDUnit, GAMMA1_EXPONENT>(
+                self.signer_response[i],
+                &mut signature[offset..offset + GAMMA1_RING_ELEMENT_SIZE],
             );
             offset += GAMMA1_RING_ELEMENT_SIZE;
         }

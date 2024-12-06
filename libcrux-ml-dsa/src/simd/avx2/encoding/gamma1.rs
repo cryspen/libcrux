@@ -1,9 +1,7 @@
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
-    simd_unit: Vec256,
-) -> [u8; OUTPUT_SIZE] {
+fn serialize_when_gamma1_is_2_pow_17(simd_unit: Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 32];
 
     const GAMMA1: i32 = 1 << 17;
@@ -27,13 +25,11 @@ fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
     let upper_4 = mm256_extracti128_si256::<1>(adjacent_4_combined);
     mm_storeu_bytes_si128(&mut serialized[9..25], upper_4);
 
-    serialized[0..18].try_into().unwrap()
+    out.copy_from_slice(&serialized[0..18]);
 }
 
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
-    simd_unit: Vec256,
-) -> [u8; OUTPUT_SIZE] {
+fn serialize_when_gamma1_is_2_pow_19(simd_unit: Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 32];
 
     const GAMMA1: i32 = 1 << 19;
@@ -61,14 +57,14 @@ fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
     let upper_4 = mm256_extracti128_si256::<1>(adjacent_4_combined);
     mm_storeu_bytes_si128(&mut serialized[10..26], upper_4);
 
-    serialized[0..20].try_into().unwrap()
+    out.copy_from_slice(&serialized[0..20])
 }
 
 #[inline(always)]
-pub(crate) fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
-    match OUTPUT_SIZE as u8 {
-        18 => serialize_when_gamma1_is_2_pow_17::<OUTPUT_SIZE>(simd_unit),
-        20 => serialize_when_gamma1_is_2_pow_19::<OUTPUT_SIZE>(simd_unit),
+pub(crate) fn serialize<const GAMMA1_EXPONENT: usize>(simd_unit: Vec256, serialized: &mut [u8]) {
+    match GAMMA1_EXPONENT as u8 {
+        17 => serialize_when_gamma1_is_2_pow_17(simd_unit, serialized),
+        19 => serialize_when_gamma1_is_2_pow_19(simd_unit, serialized),
         _ => unreachable!(),
     }
 }

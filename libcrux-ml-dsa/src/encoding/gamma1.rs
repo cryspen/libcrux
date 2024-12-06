@@ -1,41 +1,15 @@
 use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-pub(crate) fn serialize<
-    SIMDUnit: Operations,
-    const GAMMA1_EXPONENT: usize,
-    const OUTPUT_BYTES: usize,
->(
+pub(crate) fn serialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
     re: PolynomialRingElement<SIMDUnit>,
-) -> [u8; OUTPUT_BYTES] {
-    let mut serialized = [0u8; OUTPUT_BYTES];
-
-    match GAMMA1_EXPONENT as u8 {
-        17 => {
-            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 18;
-
-            for (i, simd_unit) in re.simd_units.iter().enumerate() {
-                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                    .copy_from_slice(&SIMDUnit::gamma1_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(
-                        *simd_unit,
-                    ));
-            }
-
-            serialized
-        }
-        19 => {
-            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 20;
-
-            for (i, simd_unit) in re.simd_units.iter().enumerate() {
-                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                    .copy_from_slice(&SIMDUnit::gamma1_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(
-                        *simd_unit,
-                    ));
-            }
-
-            serialized
-        }
-        _ => unreachable!(),
+    serialized: &mut [u8], // OUTPUT_BYTES
+) {
+    for (i, simd_unit) in re.simd_units.iter().enumerate() {
+        SIMDUnit::gamma1_serialize::<GAMMA1_EXPONENT>(
+            *simd_unit,
+            &mut serialized[i * (GAMMA1_EXPONENT + 1)..(i + 1) * (GAMMA1_EXPONENT + 1)],
+        );
     }
 }
 
@@ -126,7 +100,9 @@ mod tests {
             117, 5, 185, 26, 141, 188, 106, 44, 164, 240, 119,
         ];
 
-        assert_eq!(serialize::<SIMDUnit, 19, 640>(re), expected_bytes);
+        let mut result = [0u8; 640];
+        serialize::<SIMDUnit, 19>(re, &mut result);
+        assert_eq!(result, expected_bytes);
     }
 
     fn test_deserialize_generic<SIMDUnit: Operations>() {
