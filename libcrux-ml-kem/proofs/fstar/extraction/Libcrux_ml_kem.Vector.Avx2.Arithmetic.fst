@@ -184,7 +184,7 @@ let cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
 
 #pop-options
 
-#push-options "--z3rlimit 200"
+#push-options "--z3rlimit 100 --ext context_pruning"
 
 let montgomery_multiply_by_constant
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
