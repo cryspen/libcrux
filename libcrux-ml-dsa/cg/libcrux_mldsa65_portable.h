@@ -8,7 +8,7 @@
  * Eurydice: b665364a6d86749566ce2d650d13fa12c8fab2c5
  * Karamel: 96572bc631fde691a2aea7bce5a5a3838b3a5968
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 5a0f22fa8387080e4c4e4ac018aaddcdf944e4be
+ * Libcrux: 11a2dcf9b3f0c4803b93a53caa737ed8eac8bfd1
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -531,53 +531,6 @@ libcrux_ml_dsa_samplex4_generate_domain_separator(uint8_t row, uint8_t column) {
 
 #define LIBCRUX_ML_DSA_SIMD_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R \
   (58728449ULL)
-
-typedef struct libcrux_ml_dsa_pre_hash_DomainSeparationContext_s {
-  Eurydice_slice context;
-  Option_3f pre_hash_oid;
-} libcrux_ml_dsa_pre_hash_DomainSeparationContext;
-
-#define libcrux_ml_dsa_pre_hash_ContextTooLongError 0
-
-typedef uint8_t libcrux_ml_dsa_pre_hash_DomainSeparationError;
-
-/**
-A monomorphic instance of core.result.Result
-with types libcrux_ml_dsa_pre_hash_DomainSeparationContext,
-libcrux_ml_dsa_pre_hash_DomainSeparationError
-
-*/
-typedef struct Result_a8_s {
-  Result_a9_tags tag;
-  union {
-    libcrux_ml_dsa_pre_hash_DomainSeparationContext case_Ok;
-    libcrux_ml_dsa_pre_hash_DomainSeparationError case_Err;
-  } val;
-} Result_a8;
-
-/**
- `context` must be at most 255 bytes long.
-*/
-/**
-This function found in impl
-{libcrux_ml_dsa::pre_hash::DomainSeparationContext<'a>#1}
-*/
-static inline Result_a8 libcrux_ml_dsa_pre_hash_new_45(Eurydice_slice context,
-                                                       Option_3f pre_hash_oid) {
-  Result_a8 uu____0;
-  if (Eurydice_slice_len(context, uint8_t) >
-      LIBCRUX_ML_DSA_CONSTANTS_CONTEXT_MAX_LEN) {
-    uu____0 = (CLITERAL(Result_a8){
-        .tag = Err,
-        .val = {.case_Err = libcrux_ml_dsa_pre_hash_ContextTooLongError}});
-  } else {
-    uu____0 = (CLITERAL(Result_a8){
-        .tag = Ok,
-        .val = {
-            .case_Ok = {.context = context, .pre_hash_oid = pre_hash_oid}}});
-  }
-  return uu____0;
-}
 
 typedef struct libcrux_ml_dsa_pre_hash_SHAKE128_PH_s {
 } libcrux_ml_dsa_pre_hash_SHAKE128_PH;
@@ -3702,31 +3655,23 @@ static KRML_MUSTINLINE bool
 libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ba(
     Eurydice_slice randomness, size_t *sampled_coefficients, int32_t *out) {
   bool done = false;
-  core_slice_iter_Chunks iter =
-      core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
-          core_slice___Slice_T___chunks(randomness, (size_t)24U, uint8_t,
-                                        core_slice_iter_Chunks),
-          core_slice_iter_Chunks, core_slice_iter_Chunks);
-  while (true) {
-    Option_1b uu____0 =
-        core_slice_iter___core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T__TraitClause_0___71__next(
-            &iter, uint8_t, Option_1b);
-    if (uu____0.tag == None) {
-      break;
-    } else {
-      Eurydice_slice random_bytes = uu____0.f0;
-      if (!done) {
-        Eurydice_slice uu____1 = random_bytes;
-        size_t sampled =
-            libcrux_ml_dsa_simd_portable_rejection_sample_less_than_field_modulus_36(
-                uu____1, Eurydice_array_to_subslice_from(
-                             (size_t)263U, out, sampled_coefficients[0U],
-                             int32_t, size_t));
-        sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
-        if (sampled_coefficients[0U] >=
-            LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
-          done = true;
-        }
+  for (size_t i = (size_t)0U;
+       i < Eurydice_slice_len(randomness, uint8_t) / (size_t)24U; i++) {
+    size_t _cloop_i = i;
+    Eurydice_slice random_bytes =
+        Eurydice_slice_subslice2(randomness, _cloop_i * (size_t)24U,
+                                 _cloop_i * (size_t)24U + (size_t)24U, uint8_t);
+    if (!done) {
+      Eurydice_slice uu____0 = random_bytes;
+      size_t sampled =
+          libcrux_ml_dsa_simd_portable_rejection_sample_less_than_field_modulus_36(
+              uu____0, Eurydice_array_to_subslice_from((size_t)263U, out,
+                                                       sampled_coefficients[0U],
+                                                       int32_t, size_t));
+      sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
+      if (sampled_coefficients[0U] >=
+          LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
+        done = true;
       }
     }
   }
@@ -3746,9 +3691,6 @@ with const generics
 */
 static inline libcrux_ml_dsa_polynomial_PolynomialRingElement_9b
 libcrux_ml_dsa_polynomial_from_i32_array_ff_ba(Eurydice_slice array) {
-  core_slice_iter_Chunks array_chunks = core_slice___Slice_T___chunks(
-      array, LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT, int32_t,
-      core_slice_iter_Chunks);
   libcrux_ml_dsa_polynomial_PolynomialRingElement_9b result =
       libcrux_ml_dsa_polynomial_ZERO_ff_ba();
   for (size_t i = (size_t)0U;
@@ -3756,10 +3698,12 @@ libcrux_ml_dsa_polynomial_from_i32_array_ff_ba(Eurydice_slice array) {
     size_t i0 = i;
     libcrux_ml_dsa_simd_portable_vector_type_PortableSIMDUnit uu____0 =
         libcrux_ml_dsa_simd_portable_from_coefficient_array_36(
-            core_option__core__option__Option_T__TraitClause_0___unwrap(
-                core_slice_iter___core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T__TraitClause_0___71__next(
-                    &array_chunks, int32_t, Option_93),
-                Eurydice_slice, Eurydice_slice));
+            Eurydice_slice_subslice2(
+                array,
+                i0 * LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT,
+                (i0 + (size_t)1U) *
+                    LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT,
+                int32_t));
     result.simd_units[i0] = uu____0;
   }
   return result;
@@ -4632,31 +4576,23 @@ static KRML_MUSTINLINE bool
 libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_2_ba(
     Eurydice_slice randomness, size_t *sampled_coefficients, int32_t *out) {
   bool done = false;
-  core_slice_iter_Chunks iter =
-      core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
-          core_slice___Slice_T___chunks(randomness, (size_t)4U, uint8_t,
-                                        core_slice_iter_Chunks),
-          core_slice_iter_Chunks, core_slice_iter_Chunks);
-  while (true) {
-    Option_1b uu____0 =
-        core_slice_iter___core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T__TraitClause_0___71__next(
-            &iter, uint8_t, Option_1b);
-    if (uu____0.tag == None) {
-      break;
-    } else {
-      Eurydice_slice random_bytes = uu____0.f0;
-      if (!done) {
-        Eurydice_slice uu____1 = random_bytes;
-        size_t sampled =
-            libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_2_36(
-                uu____1, Eurydice_array_to_subslice_from(
-                             (size_t)263U, out, sampled_coefficients[0U],
-                             int32_t, size_t));
-        sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
-        if (sampled_coefficients[0U] >=
-            LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
-          done = true;
-        }
+  for (size_t i = (size_t)0U;
+       i < Eurydice_slice_len(randomness, uint8_t) / (size_t)4U; i++) {
+    size_t _cloop_i = i;
+    Eurydice_slice random_bytes =
+        Eurydice_slice_subslice2(randomness, _cloop_i * (size_t)4U,
+                                 _cloop_i * (size_t)4U + (size_t)4U, uint8_t);
+    if (!done) {
+      Eurydice_slice uu____0 = random_bytes;
+      size_t sampled =
+          libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_2_36(
+              uu____0, Eurydice_array_to_subslice_from((size_t)263U, out,
+                                                       sampled_coefficients[0U],
+                                                       int32_t, size_t));
+      sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
+      if (sampled_coefficients[0U] >=
+          LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
+        done = true;
       }
     }
   }
@@ -4673,31 +4609,23 @@ static KRML_MUSTINLINE bool
 libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_4_ba(
     Eurydice_slice randomness, size_t *sampled_coefficients, int32_t *out) {
   bool done = false;
-  core_slice_iter_Chunks iter =
-      core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
-          core_slice___Slice_T___chunks(randomness, (size_t)4U, uint8_t,
-                                        core_slice_iter_Chunks),
-          core_slice_iter_Chunks, core_slice_iter_Chunks);
-  while (true) {
-    Option_1b uu____0 =
-        core_slice_iter___core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T__TraitClause_0___71__next(
-            &iter, uint8_t, Option_1b);
-    if (uu____0.tag == None) {
-      break;
-    } else {
-      Eurydice_slice random_bytes = uu____0.f0;
-      if (!done) {
-        Eurydice_slice uu____1 = random_bytes;
-        size_t sampled =
-            libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_4_36(
-                uu____1, Eurydice_array_to_subslice_from(
-                             (size_t)263U, out, sampled_coefficients[0U],
-                             int32_t, size_t));
-        sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
-        if (sampled_coefficients[0U] >=
-            LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
-          done = true;
-        }
+  for (size_t i = (size_t)0U;
+       i < Eurydice_slice_len(randomness, uint8_t) / (size_t)4U; i++) {
+    size_t _cloop_i = i;
+    Eurydice_slice random_bytes =
+        Eurydice_slice_subslice2(randomness, _cloop_i * (size_t)4U,
+                                 _cloop_i * (size_t)4U + (size_t)4U, uint8_t);
+    if (!done) {
+      Eurydice_slice uu____0 = random_bytes;
+      size_t sampled =
+          libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_4_36(
+              uu____0, Eurydice_array_to_subslice_from((size_t)263U, out,
+                                                       sampled_coefficients[0U],
+                                                       int32_t, size_t));
+      sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
+      if (sampled_coefficients[0U] >=
+          LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
+        done = true;
       }
     }
   }
@@ -5589,56 +5517,6 @@ libcrux_ml_dsa_ml_dsa_65_portable_generate_key_pair(uint8_t randomness[32U]) {
 }
 
 /**
-A monomorphic instance of core.option.Option
-with types libcrux_ml_dsa_pre_hash_DomainSeparationContext
-
-*/
-typedef struct Option_84_s {
-  Option_08_tags tag;
-  libcrux_ml_dsa_pre_hash_DomainSeparationContext f0;
-} Option_84;
-
-/**
- The internal signing API.
-
- If no `domain_separation_context` is supplied, it is assumed that
- `message` already contains the domain separation.
-*/
-/**
-A monomorphic instance of libcrux_ml_dsa.ml_dsa_generic.sign_internal
-with types libcrux_ml_dsa_simd_portable_vector_type_PortableSIMDUnit,
-libcrux_ml_dsa_hash_functions_portable_Shake128X4,
-libcrux_ml_dsa_hash_functions_portable_Shake256,
-libcrux_ml_dsa_hash_functions_portable_Shake256Xof,
-libcrux_ml_dsa_hash_functions_portable_Shake256X4 with const generics
-- ROWS_IN_A= 6
-- COLUMNS_IN_A= 5
-- ETA= 4
-- ERROR_RING_ELEMENT_SIZE= 128
-- GAMMA1_EXPONENT= 19
-- GAMMA2= 261888
-- COMMITMENT_RING_ELEMENT_SIZE= 128
-- COMMITMENT_VECTOR_SIZE= 768
-- COMMITMENT_HASH_SIZE= 48
-- ONES_IN_VERIFIER_CHALLENGE= 49
-- MAX_ONES_IN_HINT= 55
-- GAMMA1_RING_ELEMENT_SIZE= 640
-- SIGNING_KEY_SIZE= 4032
-- SIGNATURE_SIZE= 3309
-*/
-static KRML_MUSTINLINE Result_2e libcrux_ml_dsa_ml_dsa_generic_sign_internal_05(
-    uint8_t *signing_key, Eurydice_slice message,
-    Option_84 domain_separation_context, uint8_t randomness[32U]) {
-  KRML_HOST_EPRINTF(
-      "KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-      "Eurydice error: Failure(\"TODO: TraitTypes "
-      "core::result::{core::ops::try_trait::Try for core::result::Result<T, "
-      "E>[TraitClause@0, TraitClause@1]}#26<T@0, T@1>[TraitClause@0, "
-      "TraitClause@1]::Residual\")\n");
-  KRML_HOST_EXIT(255U);
-}
-
-/**
 A monomorphic instance of libcrux_ml_dsa.ml_dsa_generic.sign
 with types libcrux_ml_dsa_simd_portable_vector_type_PortableSIMDUnit,
 libcrux_ml_dsa_hash_functions_portable_Shake128X4,
@@ -5663,28 +5541,13 @@ libcrux_ml_dsa_hash_functions_portable_Shake256X4 with const generics
 static KRML_MUSTINLINE Result_2e libcrux_ml_dsa_ml_dsa_generic_sign_05(
     uint8_t *signing_key, Eurydice_slice message, Eurydice_slice context,
     uint8_t randomness[32U]) {
-  Result_a8 uu____0 = libcrux_ml_dsa_pre_hash_new_45(
-      context, (CLITERAL(Option_3f){.tag = None}));
-  Result_2e uu____1;
-  if (uu____0.tag == Ok) {
-    libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context =
-        uu____0.val.case_Ok;
-    libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context0 =
-        domain_separation_context;
-    uint8_t *uu____2 = signing_key;
-    Eurydice_slice uu____3 = message;
-    Option_84 uu____4 = {.tag = Some, .f0 = domain_separation_context0};
-    /* Passing arrays by value in Rust generates a copy in C */
-    uint8_t copy_of_randomness[32U];
-    memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-    uu____1 = libcrux_ml_dsa_ml_dsa_generic_sign_internal_05(
-        uu____2, uu____3, uu____4, copy_of_randomness);
-  } else {
-    uu____1 = (CLITERAL(Result_2e){
-        .tag = Err,
-        .val = {.case_Err = libcrux_ml_dsa_types_ContextTooLongError}});
-  }
-  return uu____1;
+  KRML_HOST_EPRINTF(
+      "KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+      "Eurydice error: Failure(\"TODO: TraitTypes "
+      "core::result::{core::ops::try_trait::Try for core::result::Result<T, "
+      "E>[TraitClause@0, TraitClause@1]}#26<T@0, T@1>[TraitClause@0, "
+      "TraitClause@1]::Residual\")\n");
+  KRML_HOST_EXIT(255U);
 }
 
 /**
@@ -5836,45 +5699,6 @@ libcrux_ml_dsa_ml_dsa_65_portable_sign_pre_hashed_shake128(
 }
 
 /**
- The internal verification API.
-
- If no `domain_separation_context` is supplied, it is assumed that
- `message` already contains the domain separation.
-*/
-/**
-A monomorphic instance of libcrux_ml_dsa.ml_dsa_generic.verify_internal
-with types libcrux_ml_dsa_simd_portable_vector_type_PortableSIMDUnit,
-libcrux_ml_dsa_hash_functions_portable_Shake128X4,
-libcrux_ml_dsa_hash_functions_portable_Shake256,
-libcrux_ml_dsa_hash_functions_portable_Shake256Xof with const generics
-- ROWS_IN_A= 6
-- COLUMNS_IN_A= 5
-- SIGNATURE_SIZE= 3309
-- VERIFICATION_KEY_SIZE= 1952
-- GAMMA1_EXPONENT= 19
-- GAMMA1_RING_ELEMENT_SIZE= 640
-- GAMMA2= 261888
-- BETA= 196
-- COMMITMENT_RING_ELEMENT_SIZE= 128
-- COMMITMENT_VECTOR_SIZE= 768
-- COMMITMENT_HASH_SIZE= 48
-- ONES_IN_VERIFIER_CHALLENGE= 49
-- MAX_ONES_IN_HINT= 55
-*/
-static KRML_MUSTINLINE Result_41
-libcrux_ml_dsa_ml_dsa_generic_verify_internal_99(
-    uint8_t *verification_key_serialized, Eurydice_slice message,
-    Option_84 domain_separation_context, uint8_t *signature_serialized) {
-  KRML_HOST_EPRINTF(
-      "KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-      "Eurydice error: Failure(\"TODO: TraitTypes "
-      "core::result::{core::ops::try_trait::Try for core::result::Result<T, "
-      "E>[TraitClause@0, TraitClause@1]}#26<T@0, T@1>[TraitClause@0, "
-      "TraitClause@1]::Residual\")\n");
-  KRML_HOST_EXIT(255U);
-}
-
-/**
 A monomorphic instance of libcrux_ml_dsa.ml_dsa_generic.verify
 with types libcrux_ml_dsa_simd_portable_vector_type_PortableSIMDUnit,
 libcrux_ml_dsa_hash_functions_portable_Shake128X4,
@@ -5897,24 +5721,13 @@ libcrux_ml_dsa_hash_functions_portable_Shake256Xof with const generics
 static KRML_MUSTINLINE Result_41 libcrux_ml_dsa_ml_dsa_generic_verify_99(
     uint8_t *verification_key_serialized, Eurydice_slice message,
     Eurydice_slice context, uint8_t *signature_serialized) {
-  Result_a8 uu____0 = libcrux_ml_dsa_pre_hash_new_45(
-      context, (CLITERAL(Option_3f){.tag = None}));
-  Result_41 uu____1;
-  if (uu____0.tag == Ok) {
-    libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context =
-        uu____0.val.case_Ok;
-    libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context0 =
-        domain_separation_context;
-    uu____1 = libcrux_ml_dsa_ml_dsa_generic_verify_internal_99(
-        verification_key_serialized, message,
-        (CLITERAL(Option_84){.tag = Some, .f0 = domain_separation_context0}),
-        signature_serialized);
-  } else {
-    uu____1 = (CLITERAL(Result_41){
-        .tag = Err,
-        .f0 = libcrux_ml_dsa_types_VerificationContextTooLongError});
-  }
-  return uu____1;
+  KRML_HOST_EPRINTF(
+      "KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+      "Eurydice error: Failure(\"TODO: TraitTypes "
+      "core::result::{core::ops::try_trait::Try for core::result::Result<T, "
+      "E>[TraitClause@0, TraitClause@1]}#26<T@0, T@1>[TraitClause@0, "
+      "TraitClause@1]::Residual\")\n");
+  KRML_HOST_EXIT(255U);
 }
 
 /**
@@ -6040,6 +5853,11 @@ libcrux_ml_dsa_ml_dsa_65_portable_verify_pre_hashed_shake128(
       libcrux_ml_dsa_types_as_raw_8f_fa(signature));
 }
 
+typedef struct libcrux_ml_dsa_pre_hash_DomainSeparationContext_s {
+  Eurydice_slice context;
+  Option_3f pre_hash_oid;
+} libcrux_ml_dsa_pre_hash_DomainSeparationContext;
+
 /**
  Returns the pre-hash OID, if any.
 */
@@ -6063,6 +5881,10 @@ static inline Eurydice_slice libcrux_ml_dsa_pre_hash_context_45(
     libcrux_ml_dsa_pre_hash_DomainSeparationContext *self) {
   return self->context;
 }
+
+#define libcrux_ml_dsa_pre_hash_ContextTooLongError 0
+
+typedef uint8_t libcrux_ml_dsa_pre_hash_DomainSeparationError;
 
 #define LIBCRUX_ML_DSA_PRE_HASH_PRE_HASH_OID_LEN ((size_t)11U)
 
@@ -6092,6 +5914,43 @@ libcrux_ml_dsa_pre_hash_from_b6(
 static const uint8_t
     libcrux_ml_dsa_pre_hash___libcrux_ml_dsa__pre_hash__PreHash_256__usize__for_libcrux_ml_dsa__pre_hash__SHAKE128_PH___OID
         [11U] = {6U, 9U, 96U, 134U, 72U, 1U, 101U, 3U, 4U, 2U, 11U};
+
+#define libcrux_ml_dsa_pre_hash_Ok 0
+#define libcrux_ml_dsa_pre_hash_Err 1
+
+typedef uint8_t libcrux_ml_dsa_pre_hash_PreHashResult_tags;
+
+typedef struct libcrux_ml_dsa_pre_hash_PreHashResult_s {
+  libcrux_ml_dsa_pre_hash_PreHashResult_tags tag;
+  union {
+    libcrux_ml_dsa_pre_hash_DomainSeparationContext case_Ok;
+    libcrux_ml_dsa_pre_hash_DomainSeparationError case_Err;
+  } val;
+} libcrux_ml_dsa_pre_hash_PreHashResult;
+
+/**
+ `context` must be at most 255 bytes long.
+*/
+/**
+This function found in impl
+{libcrux_ml_dsa::pre_hash::DomainSeparationContext<'a>#1}
+*/
+static inline libcrux_ml_dsa_pre_hash_PreHashResult
+libcrux_ml_dsa_pre_hash_new_45(Eurydice_slice context, Option_3f pre_hash_oid) {
+  libcrux_ml_dsa_pre_hash_PreHashResult uu____0;
+  if (Eurydice_slice_len(context, uint8_t) >
+      LIBCRUX_ML_DSA_CONSTANTS_CONTEXT_MAX_LEN) {
+    uu____0 = (CLITERAL(libcrux_ml_dsa_pre_hash_PreHashResult){
+        .tag = libcrux_ml_dsa_pre_hash_Err,
+        .val = {.case_Err = libcrux_ml_dsa_pre_hash_ContextTooLongError}});
+  } else {
+    uu____0 = (CLITERAL(libcrux_ml_dsa_pre_hash_PreHashResult){
+        .tag = libcrux_ml_dsa_pre_hash_Ok,
+        .val = {
+            .case_Ok = {.context = context, .pre_hash_oid = pre_hash_oid}}});
+  }
+  return uu____0;
+}
 
 static KRML_MUSTINLINE bool libcrux_ml_dsa_sample_inside_out_shuffle(
     Eurydice_slice randomness, size_t *out_index, uint64_t *signs,
@@ -6199,71 +6058,9 @@ libcrux_ml_dsa_simd_portable_vector_type_clone_ae(
   return self[0U];
 }
 
-/**
-This function found in impl {(core::fmt::Debug for
-libcrux_ml_dsa::types::SigningError)#7}
-*/
-static inline Result_a9 libcrux_ml_dsa_types_fmt_16(
-    libcrux_ml_dsa_types_SigningError *self, core_fmt_Formatter *f) {
-  core_fmt_Formatter *uu____0 = f;
-  Prims_string uu____1;
-  switch (self[0U]) {
-    case libcrux_ml_dsa_types_RejectionSamplingError: {
-      uu____1 = "RejectionSamplingError";
-      break;
-    }
-    case libcrux_ml_dsa_types_ContextTooLongError: {
-      uu____1 = "ContextTooLongError";
-      break;
-    }
-    default: {
-      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
-                        __LINE__);
-      KRML_HOST_EXIT(253U);
-    }
-  }
-  return core_fmt__core__fmt__Formatter__a__9__write_str(uu____0, uu____1);
-}
-
-/**
-This function found in impl {(core::fmt::Debug for
-libcrux_ml_dsa::types::VerificationError)#6}
-*/
-static inline Result_a9 libcrux_ml_dsa_types_fmt_7e(
-    libcrux_ml_dsa_types_VerificationError *self, core_fmt_Formatter *f) {
-  core_fmt_Formatter *uu____0 = f;
-  Prims_string uu____1;
-  switch (self[0U]) {
-    case libcrux_ml_dsa_types_MalformedHintError: {
-      uu____1 = "MalformedHintError";
-      break;
-    }
-    case libcrux_ml_dsa_types_SignerResponseExceedsBoundError: {
-      uu____1 = "SignerResponseExceedsBoundError";
-      break;
-    }
-    case libcrux_ml_dsa_types_CommitmentHashesDontMatchError: {
-      uu____1 = "CommitmentHashesDontMatchError";
-      break;
-    }
-    case libcrux_ml_dsa_types_VerificationContextTooLongError: {
-      uu____1 = "VerificationContextTooLongError";
-      break;
-    }
-    default: {
-      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
-                        __LINE__);
-      KRML_HOST_EXIT(253U);
-    }
-  }
-  return core_fmt__core__fmt__Formatter__a__9__write_str(uu____0, uu____1);
-}
-
 typedef int32_t libcrux_ml_dsa_simd_traits_FieldElementTimesMontgomeryR;
 
 typedef int32_t libcrux_ml_dsa_simd_portable_vector_type_FieldElement;
-
-typedef Result_a8 libcrux_ml_dsa_pre_hash_PreHashResult;
 
 typedef struct libcrux_ml_dsa_hash_functions_portable_Shake128_s {
 } libcrux_ml_dsa_hash_functions_portable_Shake128;

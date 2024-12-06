@@ -8,7 +8,7 @@
  * Eurydice: b665364a6d86749566ce2d650d13fa12c8fab2c5
  * Karamel: 96572bc631fde691a2aea7bce5a5a3838b3a5968
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 5a0f22fa8387080e4c4e4ac018aaddcdf944e4be
+ * Libcrux: 11a2dcf9b3f0c4803b93a53caa737ed8eac8bfd1
  */
 
 #ifndef __libcrux_core_H
@@ -53,19 +53,6 @@ typedef struct Option_08_s {
 #define Err 1
 
 typedef uint8_t Result_a9_tags;
-
-/**
-A monomorphic instance of core.result.Result
-with types (), core_fmt_Error
-
-*/
-typedef struct Result_a9_s {
-  Result_a9_tags tag;
-  void *f0;
-} Result_a9;
-
-static inline Result_a9 core_fmt__core__fmt__Formatter__a__9__write_str(
-    core_fmt_Formatter *x0, Prims_string x1);
 
 static inline uint32_t core_num__i32_2__count_ones(int32_t x0);
 
@@ -331,13 +318,13 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_utils_into_padded_array_b6(
 
 /**
 A monomorphic instance of core.option.Option
-with types Eurydice_slice int32_t
+with types  uint8_t*
 
 */
-typedef struct Option_93_s {
+typedef struct Option_3f_s {
   Option_08_tags tag;
-  Eurydice_slice f0;
-} Option_93;
+  uint8_t *f0;
+} Option_3f;
 
 /**
 A monomorphic instance of core.option.Option
@@ -382,16 +369,6 @@ static inline void unwrap_26_55(Result_6c self, int32_t ret[8U]) {
     KRML_HOST_EXIT(255U);
   }
 }
-
-/**
-A monomorphic instance of core.option.Option
-with types  uint8_t*
-
-*/
-typedef struct Option_3f_s {
-  Option_08_tags tag;
-  uint8_t *f0;
-} Option_3f;
 
 typedef struct libcrux_ml_dsa_ml_dsa_65_MLDSA65KeyPair_s {
   libcrux_ml_dsa_types_MLDSASigningKey_22 signing_key;
