@@ -46,8 +46,9 @@ pub(crate) fn deserialize<
     let (seed_for_A, serialized_remaining) = serialized.split_at(SEED_FOR_A_SIZE);
 
     for i in 0..ROWS_IN_A {
-        t1[i] = t1::deserialize::<SIMDUnit>(
+        t1::deserialize::<SIMDUnit>(
             &serialized_remaining[i * RING_ELEMENT_OF_T1S_SIZE..(i + 1) * RING_ELEMENT_OF_T1S_SIZE],
+            &mut t1[i],
         );
     }
 

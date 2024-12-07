@@ -508,65 +508,64 @@ pub(crate) fn verify_internal<
         };
 
     // We use if-else branches because early returns will not go through hax.
-    if !vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
+    if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
         signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
-        let A_as_ntt =
-            samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
-
-        let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
-        Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
-            verification_key_serialized,
-            &mut verification_key_hash,
-        );
-        let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
-        derive_message_representative::<Shake256Xof>(
-            verification_key_hash,
-            domain_separation_context,
-            message,
-            &mut message_representative,
-        );
-
-        let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
-            SIMDUnit,
-            Shake256,
-            ONES_IN_VERIFIER_CHALLENGE,
-            COMMITMENT_HASH_SIZE,
-        >(signature.commitment_hash));
-
-        let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
-            &A_as_ntt,
-            signature.signer_response,
-            verifier_challenge_as_ntt,
-            t1,
-        );
-
-        let mut commitment_hash = [0; COMMITMENT_HASH_SIZE];
-        {
-            let commitment = use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
-            let commitment_serialized = encoding::commitment::serialize_vector::<
-                SIMDUnit,
-                ROWS_IN_A,
-                COMMITMENT_RING_ELEMENT_SIZE,
-                COMMITMENT_VECTOR_SIZE,
-            >(commitment);
-
-            let mut shake = Shake256Xof::init();
-            shake.absorb(&message_representative);
-            shake.absorb_final(&commitment_serialized);
-
-            shake.squeeze(&mut commitment_hash);
-        }
-
-        if signature.commitment_hash != commitment_hash {
-            Err(VerificationError::CommitmentHashesDontMatchError)
-        } else {
-            Ok(())
-        }
-    } else {
-        Err(VerificationError::SignerResponseExceedsBoundError)
+        return Err(VerificationError::SignerResponseExceedsBoundError);
     }
+    let A_as_ntt =
+        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+
+    let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
+    Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
+        verification_key_serialized,
+        &mut verification_key_hash,
+    );
+    let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
+    derive_message_representative::<Shake256Xof>(
+        verification_key_hash,
+        domain_separation_context,
+        message,
+        &mut message_representative,
+    );
+
+    let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
+        SIMDUnit,
+        Shake256,
+        ONES_IN_VERIFIER_CHALLENGE,
+        COMMITMENT_HASH_SIZE,
+    >(signature.commitment_hash));
+
+    let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
+        &A_as_ntt,
+        signature.signer_response,
+        verifier_challenge_as_ntt,
+        t1,
+    );
+
+    let mut commitment_hash = [0; COMMITMENT_HASH_SIZE];
+    {
+        let commitment = use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
+        let commitment_serialized = encoding::commitment::serialize_vector::<
+            SIMDUnit,
+            ROWS_IN_A,
+            COMMITMENT_RING_ELEMENT_SIZE,
+            COMMITMENT_VECTOR_SIZE,
+        >(commitment);
+
+        let mut shake = Shake256Xof::init();
+        shake.absorb(&message_representative);
+        shake.absorb_final(&commitment_serialized);
+
+        shake.squeeze(&mut commitment_hash);
+    }
+
+    if signature.commitment_hash == commitment_hash {
+        return Ok(());
+    }
+
+    return Err(VerificationError::CommitmentHashesDontMatchError);
 }
 
 #[allow(non_snake_case)]
