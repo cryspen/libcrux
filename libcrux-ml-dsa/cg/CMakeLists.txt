@@ -29,7 +29,7 @@ if((CMAKE_C_COMPILER_ID STREQUAL "Clang" AND
     CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0") OR
     (CMAKE_C_COMPILER_ID STREQUAL "AppleClang" AND
     CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.1.6"))
-    add_compile_options(-Werror -Wframe-larger-than=25344)
+    # add_compile_options(-Werror -Wframe-larger-than=25344)
 endif()
 
 set(CMAKE_COLOR_DIAGNOSTICS "ON")

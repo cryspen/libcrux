@@ -35,19 +35,23 @@ TEST(MlDsa65TestPortable, ConsistencyTest)
     {
         randomness[i] = 0x55;
     }
-    uint8_t context[0];
-    auto ctxt = libcrux_ml_dsa_ml_dsa_65_portable_sign(
-        &key_pair.signing_key,
-        mk_slice(&msg, 79),
-        mk_slice(&context, 0),
+    uint8_t context[3];
+
+    auto msg_slice = mk_slice(&msg, 79);
+    auto context_slice = mk_slice(&context, 3);
+    auto signature_result = libcrux_ml_dsa_ml_dsa_65_portable_sign(
+        &key_pair.signing_key, msg_slice,
+        context_slice,
         randomness);
+    EXPECT_EQ(signature_result.tag, Ok);
+    auto signature = signature_result.val.case_Ok;
 
-    // // Verify
-    // uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
-    // libcrux_ml_kem_mlkem768_portable_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
+    // Verify
+    auto result = libcrux_ml_dsa_ml_dsa_65_portable_verify(
+        &key_pair.verification_key,
+        msg_slice,
+        context_slice,
+        &signature);
 
-    // EXPECT_EQ(0,
-    //           memcmp(ctxt.snd,
-    //                  sharedSecret2,
-    //                  LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
+    EXPECT_EQ(result.tag, Ok);
 }
