@@ -12,6 +12,7 @@ fn serialize<SIMDUnit: Operations>(re: PolynomialRingElement<SIMDUnit>, serializ
             );
         }
     }
+    ()
 }
 
 #[inline(always)]

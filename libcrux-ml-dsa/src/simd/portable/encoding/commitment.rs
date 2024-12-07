@@ -16,6 +16,7 @@ pub fn serialize(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
                     serialized[i] = (coefficient1 << 4) | coefficient0;
                 }
             }
+            ()
         }
 
         6 => {
@@ -33,6 +34,7 @@ pub fn serialize(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
                     serialized[3 * i + 2] = (coefficient3 << 2) | coefficient2 >> 4;
                 }
             }
+            ()
         }
 
         _ => unreachable!(),

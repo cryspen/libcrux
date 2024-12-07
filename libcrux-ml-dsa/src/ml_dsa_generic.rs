@@ -352,39 +352,45 @@ pub(crate) fn sign_internal<
             signer_response_candidate,
             (1 << GAMMA1_EXPONENT) - BETA,
         ) {
-            continue;
+            // XXX: https://github.com/hacspec/hax/issues/1171
+            // continue;
+        } else {
+            if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(
+                w0_minus_challenge_times_s2,
+                GAMMA2 - BETA,
+            ) {
+                // XXX: https://github.com/hacspec/hax/issues/1171
+                // continue;
+            } else {
+                let challenge_times_t0 = vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
+                    &t0_as_ntt,
+                    &verifier_challenge_as_ntt,
+                );
+                if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(challenge_times_t0, GAMMA2) {
+                    // XXX: https://github.com/hacspec/hax/issues/1171
+                    // continue;
+                } else {
+                    let w0_minus_c_times_s2_plus_c_times_t0 = add_vectors::<SIMDUnit, ROWS_IN_A>(
+                        &w0_minus_challenge_times_s2,
+                        &challenge_times_t0,
+                    );
+                    let (hint_candidate, ones_in_hint) = make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(
+                        w0_minus_c_times_s2_plus_c_times_t0,
+                        commitment,
+                    );
+
+                    if ones_in_hint > MAX_ONES_IN_HINT {
+                        // XXX: https://github.com/hacspec/hax/issues/1171
+                        // continue;
+                    } else {
+                        attempt = REJECTION_SAMPLE_BOUND_SIGN; // exit loop now
+                        commitment_hash = Some(commitment_hash_candidate);
+                        signer_response = Some(signer_response_candidate);
+                        hint = Some(hint_candidate);
+                    }
+                }
+            }
         }
-
-        if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(
-            w0_minus_challenge_times_s2,
-            GAMMA2 - BETA,
-        ) {
-            continue;
-        }
-
-        let challenge_times_t0 = vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
-            &t0_as_ntt,
-            &verifier_challenge_as_ntt,
-        );
-        if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(challenge_times_t0, GAMMA2) {
-            continue;
-        }
-
-        let w0_minus_c_times_s2_plus_c_times_t0 =
-            add_vectors::<SIMDUnit, ROWS_IN_A>(&w0_minus_challenge_times_s2, &challenge_times_t0);
-        let (hint_candidate, ones_in_hint) = make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(
-            w0_minus_c_times_s2_plus_c_times_t0,
-            commitment,
-        );
-
-        if ones_in_hint > MAX_ONES_IN_HINT {
-            continue;
-        }
-
-        attempt = REJECTION_SAMPLE_BOUND_SIGN; // exit loop now
-        commitment_hash = Some(commitment_hash_candidate);
-        signer_response = Some(signer_response_candidate);
-        hint = Some(hint_candidate);
     }
 
     let commitment_hash = match commitment_hash {

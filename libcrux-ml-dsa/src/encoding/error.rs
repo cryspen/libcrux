@@ -15,6 +15,7 @@ pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZ
                 );
         }
     }
+    ()
 }
 
 #[inline(always)]
@@ -28,6 +29,7 @@ fn deserialize<SIMDUnit: Operations, const ETA: usize>(
         result.simd_units[i] =
             SIMDUnit::error_deserialize::<ETA>(&serialized[i * chunk_size..(i + 1) * chunk_size]);
     }
+    ()
 }
 
 #[inline(always)]

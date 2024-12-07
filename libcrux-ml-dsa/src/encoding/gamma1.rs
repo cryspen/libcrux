@@ -13,6 +13,7 @@ pub(crate) fn serialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
             );
         }
     }
+    ()
 }
 
 #[inline(always)]
@@ -25,6 +26,7 @@ pub(crate) fn deserialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
             &serialized[i * (GAMMA1_EXPONENT + 1)..(i + 1) * (GAMMA1_EXPONENT + 1)],
         );
     }
+    ()
 }
 
 #[cfg(test)]

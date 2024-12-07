@@ -21,6 +21,7 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
                 .copy_from_slice(&SIMDUnit::t0_serialize(*simd_unit));
         }
     }
+    ()
 }
 
 #[inline(always)]
@@ -33,6 +34,7 @@ fn deserialize<SIMDUnit: Operations>(
             &serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT],
         );
     }
+    ()
 }
 
 #[inline(always)]

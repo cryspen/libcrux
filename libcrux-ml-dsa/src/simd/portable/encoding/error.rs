@@ -33,6 +33,7 @@ fn serialize_when_eta_is_4(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
             serialized[i] = (coefficient1 << 4) | coefficient0;
         }
     }
+    ()
 }
 
 #[inline(always)]

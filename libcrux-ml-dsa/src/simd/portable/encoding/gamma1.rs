@@ -33,6 +33,7 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: PortableSIMDUnit, serialized: &m
             serialized[9 * i + 8] = (coefficient3 >> 10) as u8;
         }
     }
+    ()
 }
 
 #[inline(always)]
@@ -54,6 +55,7 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: PortableSIMDUnit, serialized: &m
             serialized[5 * i + 4] = (coefficient1 >> 12) as u8;
         }
     }
+    ()
 }
 
 #[inline(always)]
