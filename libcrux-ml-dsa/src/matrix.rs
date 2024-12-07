@@ -52,13 +52,17 @@ pub(crate) fn compute_A_times_mask<
 ) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
     let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
 
-    for (i, row) in A_as_ntt.iter().enumerate() {
-        for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery(&ring_element, &ntt(mask[j]));
-            result[i] = PolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
-        }
+    cloop! {
+        for (i, row) in A_as_ntt.iter().enumerate() {
+            cloop! {
+                for (j, ring_element) in row.iter().enumerate() {
+                    let product = ntt_multiply_montgomery(&ring_element, &ntt(mask[j]));
+                    result[i] = PolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
+                }
+            }
 
-        result[i] = invert_ntt_montgomery(result[i]);
+            result[i] = invert_ntt_montgomery(result[i]);
+        }
     }
 
     result
@@ -72,9 +76,11 @@ pub(crate) fn vector_times_ring_element<SIMDUnit: Operations, const DIMENSION: u
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
     let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
-    for (i, vector_ring_element) in vector.iter().enumerate() {
-        result[i] =
-            invert_ntt_montgomery(ntt_multiply_montgomery(vector_ring_element, ring_element));
+    cloop! {
+        for (i, vector_ring_element) in vector.iter().enumerate() {
+            result[i] =
+                invert_ntt_montgomery(ntt_multiply_montgomery(vector_ring_element, ring_element));
+        }
     }
 
     result
