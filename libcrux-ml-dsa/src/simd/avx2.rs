@@ -95,8 +95,8 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::commitment::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+    fn commitment_serialize(simd_unit: Self, serialized: &mut [u8]) {
+        encoding::commitment::serialize(simd_unit.coefficients, serialized)
     }
 
     #[inline(always)]

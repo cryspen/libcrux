@@ -76,8 +76,8 @@ impl Operations for PortableSIMDUnit {
         encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized)
     }
 
-    fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::commitment::serialize(simd_unit)
+    fn commitment_serialize(simd_unit: Self, serialized: &mut [u8]) {
+        encoding::commitment::serialize(simd_unit, serialized)
     }
 
     fn error_serialize<const ETA: usize>(simd_unit: Self, serialized: &mut [u8]) {

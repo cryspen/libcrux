@@ -57,7 +57,7 @@ pub(crate) trait Operations: Copy + Clone {
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self;
 
     // Commitment
-    fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE];
+    fn commitment_serialize(simd_unit: Self, serialized: &mut [u8]);
 
     // Error
     fn error_serialize<const ETA: usize>(simd_unit: Self, serialized: &mut [u8]);
