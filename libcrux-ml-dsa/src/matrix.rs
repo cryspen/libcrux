@@ -125,21 +125,25 @@ pub(crate) fn compute_w_approx<
 ) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
     let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
 
-    for (i, row) in A_as_ntt.iter().enumerate() {
-        for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery(&ring_element, &ntt(signer_response[j]));
+    cloop! {
+        for (i, row) in A_as_ntt.iter().enumerate() {
+            cloop! {
+                for (j, ring_element) in row.iter().enumerate() {
+                    let product = ntt_multiply_montgomery(&ring_element, &ntt(signer_response[j]));
 
-            result[i] = PolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
+                    result[i] = PolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
+                }
+            }
+
+            let t1_shifted =
+                shift_left_then_reduce::<SIMDUnit, { BITS_IN_LOWER_PART_OF_T as i32 }>(t1[i]);
+            let challenge_times_t1_shifted =
+                ntt_multiply_montgomery(&verifier_challenge_as_ntt, &ntt(t1_shifted));
+            result[i] = invert_ntt_montgomery(PolynomialRingElement::<SIMDUnit>::subtract(
+                &result[i],
+                &challenge_times_t1_shifted,
+            ));
         }
-
-        let t1_shifted =
-            shift_left_then_reduce::<SIMDUnit, { BITS_IN_LOWER_PART_OF_T as i32 }>(t1[i]);
-        let challenge_times_t1_shifted =
-            ntt_multiply_montgomery(&verifier_challenge_as_ntt, &ntt(t1_shifted));
-        result[i] = invert_ntt_montgomery(PolynomialRingElement::<SIMDUnit>::subtract(
-            &result[i],
-            &challenge_times_t1_shifted,
-        ));
     }
 
     result
