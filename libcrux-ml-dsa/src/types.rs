@@ -20,7 +20,7 @@ macro_rules! impl_struct {
             }
 
             /// A reference to the raw byte array.
-            pub fn as_raw(&self) -> &[u8; SIZE] {
+            pub fn as_ref(&self) -> &[u8; SIZE] {
                 &self.value
             }
 
@@ -45,7 +45,7 @@ macro_rules! impl_non_hax_types {
             }
 
             /// A mutable reference to the raw byte array.
-            pub fn as_raw_mut(&mut self) -> &mut [u8; SIZE] {
+            pub fn as_ref_mut(&mut self) -> &mut [u8; SIZE] {
                 &mut self.value
             }
         }

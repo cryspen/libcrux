@@ -130,6 +130,7 @@ impl Operations for AVX2SIMDUnit {
     fn ntt(simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT]) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
         // XXX: We can't use from_fn or map here because of Eurydice.
         //      But this should be rewritten anyway to avoid having to do the map.
+        //      See linked Eurydice issues in #706
         let mut re = [libcrux_intrinsics::avx2::mm256_setzero_si256(); SIMD_UNITS_IN_RING_ELEMENT];
         for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
             re[i] = simd_units[i].coefficients;

@@ -112,7 +112,7 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(signing_key.as_raw(), message, randomness)
+                >(signing_key.as_ref(), message, randomness)
             }
 
             /// Verify an ML-DSA-65 Signature (Algorithm 8 in FIPS 204)
@@ -138,7 +138,7 @@ macro_rules! instantiate {
                     COMMITMENT_HASH_SIZE,
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
-                >(verification_key.as_raw(), message, signature.as_raw())
+                >(verification_key.as_ref(), message, signature.as_ref())
             }
 
             /// Generate an ML-DSA-65 Signature
@@ -167,7 +167,7 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(signing_key.as_raw(), message, context, randomness)
+                >(signing_key.as_ref(), message, context, randomness)
             }
 
             /// Generate a HashML-DSA-65 Signature, with a SHAKE128 pre-hashing
@@ -196,7 +196,7 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(signing_key.as_raw(), message, context, randomness)
+                >(signing_key.as_ref(), message, context, randomness)
             }
 
             /// Verify an ML-DSA-65 Signature
@@ -225,10 +225,10 @@ macro_rules! instantiate {
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
                 >(
-                    verification_key.as_raw(),
+                    verification_key.as_ref(),
                     message,
                     context,
-                    signature.as_raw(),
+                    signature.as_ref(),
                 )
             }
 
@@ -258,10 +258,10 @@ macro_rules! instantiate {
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
                 >(
-                    verification_key.as_raw(),
+                    verification_key.as_ref(),
                     message,
                     context,
-                    signature.as_raw(),
+                    signature.as_ref(),
                 )
             }
         }
@@ -330,7 +330,7 @@ pub fn sign(
         GAMMA1_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
         SIGNATURE_SIZE,
-    >(signing_key.as_raw(), message, context, randomness)
+    >(signing_key.as_ref(), message, context, randomness)
 }
 
 /// Verify an ML-DSA-65 Signature
@@ -363,10 +363,10 @@ pub fn verify(
         ONES_IN_VERIFIER_CHALLENGE,
         MAX_ONES_IN_HINT,
     >(
-        verification_key.as_raw(),
+        verification_key.as_ref(),
         message,
         context,
-        signature.as_raw(),
+        signature.as_ref(),
     )
 }
 
@@ -402,7 +402,7 @@ pub fn sign_pre_hashed_shake128(
         GAMMA1_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
         SIGNATURE_SIZE,
-    >(signing_key.as_raw(), message, context, randomness)
+    >(signing_key.as_ref(), message, context, randomness)
 }
 
 /// Verify a HashML-DSA-65 Signature, with a SHAKE128 pre-hashing
@@ -435,10 +435,10 @@ pub fn verify_pre_hashed_shake128(
         ONES_IN_VERIFIER_CHALLENGE,
         MAX_ONES_IN_HINT,
     >(
-        verification_key.as_raw(),
+        verification_key.as_ref(),
         message,
         context,
-        signature.as_raw(),
+        signature.as_ref(),
     )
 }
 /// Sign with ML-DSA 65 (Algorithm 7 in FIPS 204)
@@ -467,7 +467,7 @@ pub fn sign_internal(
         GAMMA1_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
         SIGNATURE_SIZE,
-    >(signing_key.as_raw(), message, randomness)
+    >(signing_key.as_ref(), message, randomness)
 }
 
 /// Verify an ML-DSA-65 Signature (Algorithm 8 in FIPS204)
@@ -494,5 +494,5 @@ pub fn verify_internal(
         COMMITMENT_HASH_SIZE,
         ONES_IN_VERIFIER_CHALLENGE,
         MAX_ONES_IN_HINT,
-    >(verification_key.as_raw(), message, signature.as_raw())
+    >(verification_key.as_ref(), message, signature.as_ref())
 }
