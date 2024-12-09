@@ -38,12 +38,12 @@ let rejection_sample_less_than_eta_equals_2_
      =
   let done:bool = false in
   let done, out, sampled_coefficients:(bool & t_Array i32 (sz 263) & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Chunks
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_ChunksExact
             u8)
           #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__chunks #u8 randomness (sz 4) <: Core.Slice.Iter.t_Chunks u8)
+          (Core.Slice.impl__chunks_exact #u8 randomness (sz 4) <: Core.Slice.Iter.t_ChunksExact u8)
         <:
-        Core.Slice.Iter.t_Chunks u8)
+        Core.Slice.Iter.t_ChunksExact u8)
       (done, out, sampled_coefficients <: (bool & t_Array i32 (sz 263) & usize))
       (fun temp_0_ random_bytes ->
           let done, out, sampled_coefficients:(bool & t_Array i32 (sz 263) & usize) = temp_0_ in
@@ -90,12 +90,12 @@ let rejection_sample_less_than_eta_equals_4_
      =
   let done:bool = false in
   let done, out, sampled_coefficients:(bool & t_Array i32 (sz 263) & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Chunks
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_ChunksExact
             u8)
           #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__chunks #u8 randomness (sz 4) <: Core.Slice.Iter.t_Chunks u8)
+          (Core.Slice.impl__chunks_exact #u8 randomness (sz 4) <: Core.Slice.Iter.t_ChunksExact u8)
         <:
-        Core.Slice.Iter.t_Chunks u8)
+        Core.Slice.Iter.t_ChunksExact u8)
       (done, out, sampled_coefficients <: (bool & t_Array i32 (sz 263) & usize))
       (fun temp_0_ random_bytes ->
           let done, out, sampled_coefficients:(bool & t_Array i32 (sz 263) & usize) = temp_0_ in
@@ -183,12 +183,12 @@ let rejection_sample_less_than_field_modulus
      =
   let done:bool = false in
   let done, out, sampled_coefficients:(bool & t_Array i32 (sz 263) & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Chunks
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_ChunksExact
             u8)
           #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__chunks #u8 randomness (sz 24) <: Core.Slice.Iter.t_Chunks u8)
+          (Core.Slice.impl__chunks_exact #u8 randomness (sz 24) <: Core.Slice.Iter.t_ChunksExact u8)
         <:
-        Core.Slice.Iter.t_Chunks u8)
+        Core.Slice.Iter.t_ChunksExact u8)
       (done, out, sampled_coefficients <: (bool & t_Array i32 (sz 263) & usize))
       (fun temp_0_ random_bytes ->
           let done, out, sampled_coefficients:(bool & t_Array i32 (sz 263) & usize) = temp_0_ in
@@ -232,9 +232,10 @@ let inside_out_shuffle
      =
   let done:bool = false in
   let done, out_index, result, signs:(bool & usize & t_Array i32 (sz 256) & u64) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(t_Slice u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
+            u8)
           #FStar.Tactics.Typeclasses.solve
-          randomness
+          (Core.Slice.impl__iter #u8 randomness <: Core.Slice.Iter.t_Iter u8)
         <:
         Core.Slice.Iter.t_Iter u8)
       (done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64))
@@ -281,11 +282,11 @@ let sample_challenge_ring_element
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
       (seed: t_Array u8 v_SEED_SIZE)
      =
   let state:v_Shake256 =
-    Libcrux_ml_dsa.Hash_functions.Shake256.f_init_absorb #v_Shake256
+    Libcrux_ml_dsa.Hash_functions.Shake256.f_init_absorb_final #v_Shake256
       #FStar.Tactics.Typeclasses.solve
       (seed <: t_Slice u8)
   in
@@ -1047,35 +1048,55 @@ let sample_mask_ring_element
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
       (seed: t_Array u8 (sz 66))
+      (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
-  match cast (v_GAMMA1_EXPONENT <: usize) <: u8 with
-  | 17uy ->
-    let out:t_Array u8 (sz 576) = Rust_primitives.Hax.repeat 0uy (sz 576) in
-    let out:t_Array u8 (sz 576) =
-      Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256 #v_Shake256
-        #FStar.Tactics.Typeclasses.solve
-        (sz 576)
-        (seed <: t_Slice u8)
-        out
-    in
-    Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit v_GAMMA1_EXPONENT (out <: t_Slice u8)
-  | 19uy ->
-    let out:t_Array u8 (sz 640) = Rust_primitives.Hax.repeat 0uy (sz 640) in
-    let out:t_Array u8 (sz 640) =
-      Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256 #v_Shake256
-        #FStar.Tactics.Typeclasses.solve
-        (sz 640)
-        (seed <: t_Slice u8)
-        out
-    in
-    Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit v_GAMMA1_EXPONENT (out <: t_Slice u8)
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+  let result, hax_temp_output:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
+    Prims.unit) =
+    match cast (v_GAMMA1_EXPONENT <: usize) <: u8 with
+    | 17uy ->
+      let out:t_Array u8 (sz 576) = Rust_primitives.Hax.repeat 0uy (sz 576) in
+      let out:t_Array u8 (sz 576) =
+        Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256 #v_Shake256
+          #FStar.Tactics.Typeclasses.solve
+          (sz 576)
+          (seed <: t_Slice u8)
+          out
+      in
+      let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
+        Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
+          v_GAMMA1_EXPONENT
+          (out <: t_Slice u8)
+          result
+      in
+      result, () <: (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & Prims.unit)
+    | 19uy ->
+      let out:t_Array u8 (sz 640) = Rust_primitives.Hax.repeat 0uy (sz 640) in
+      let out:t_Array u8 (sz 640) =
+        Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256 #v_Shake256
+          #FStar.Tactics.Typeclasses.solve
+          (sz 640)
+          (seed <: t_Slice u8)
+          out
+      in
+      let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
+        Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
+          v_GAMMA1_EXPONENT
+          (out <: t_Slice u8)
+          result
+      in
+      result, () <: (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & Prims.unit)
+    | _ ->
+      result,
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
-        <:
-        Rust_primitives.Hax.t_Never)
+          <:
+          Rust_primitives.Hax.t_Never)
+      <:
+      (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & Prims.unit)
+  in
+  result
 
 let sample_mask_vector
       (#v_SIMDUnit #v_Shake256 #v_Shake256X4: Type0)
@@ -1085,7 +1106,7 @@ let sample_mask_vector
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i4:
-          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i5:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
@@ -1143,6 +1164,7 @@ let sample_mask_vector
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
               v_GAMMA1_EXPONENT
               (out0 <: t_Slice u8)
+              (mask.[ sz 0 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
@@ -1152,6 +1174,7 @@ let sample_mask_vector
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
               v_GAMMA1_EXPONENT
               (out1 <: t_Slice u8)
+              (mask.[ sz 1 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
@@ -1161,6 +1184,7 @@ let sample_mask_vector
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
               v_GAMMA1_EXPONENT
               (out2 <: t_Slice u8)
+              (mask.[ sz 2 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
@@ -1170,6 +1194,7 @@ let sample_mask_vector
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
               v_GAMMA1_EXPONENT
               (out3 <: t_Slice u8)
+              (mask.[ sz 3 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
@@ -1196,6 +1221,7 @@ let sample_mask_vector
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
               v_GAMMA1_EXPONENT
               (out0 <: t_Slice u8)
+              (mask.[ sz 0 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
@@ -1205,6 +1231,7 @@ let sample_mask_vector
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
               v_GAMMA1_EXPONENT
               (out1 <: t_Slice u8)
+              (mask.[ sz 1 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
@@ -1214,6 +1241,7 @@ let sample_mask_vector
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
               v_GAMMA1_EXPONENT
               (out2 <: t_Slice u8)
+              (mask.[ sz 2 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
@@ -1223,6 +1251,7 @@ let sample_mask_vector
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
               v_GAMMA1_EXPONENT
               (out3 <: t_Slice u8)
+              (mask.[ sz 3 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
@@ -1268,7 +1297,11 @@ let sample_mask_vector
             v_DIMENSION =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize mask
               i
-              (sample_mask_ring_element #v_SIMDUnit #v_Shake256 v_GAMMA1_EXPONENT seed
+              (sample_mask_ring_element #v_SIMDUnit
+                  #v_Shake256
+                  v_GAMMA1_EXPONENT
+                  seed
+                  (mask.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                 <:
                 Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
           in

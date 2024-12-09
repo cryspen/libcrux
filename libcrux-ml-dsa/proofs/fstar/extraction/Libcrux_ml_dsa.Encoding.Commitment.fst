@@ -11,111 +11,54 @@ let _ =
 
 let serialize
       (#v_SIMDUnit: Type0)
-      (v_OUTPUT_SIZE: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      (serialized: t_Slice u8)
      =
-  let serialized:t_Array u8 v_OUTPUT_SIZE = Rust_primitives.Hax.repeat 0uy v_OUTPUT_SIZE in
-  match cast (v_OUTPUT_SIZE <: usize) <: u8 with
-  | 128uy ->
-    let serialized:t_Array u8 v_OUTPUT_SIZE =
-      Rust_primitives.Hax.Folds.fold_enumerated_slice (re.Libcrux_ml_dsa.Polynomial.f_simd_units
-          <:
-          t_Slice v_SIMDUnit)
-        (fun serialized temp_1_ ->
-            let serialized:t_Array u8 v_OUTPUT_SIZE = serialized in
-            let _:usize = temp_1_ in
-            true)
-        serialized
-        (fun serialized temp_1_ ->
-            let serialized:t_Array u8 v_OUTPUT_SIZE = serialized in
-            let i, simd_unit:(usize & v_SIMDUnit) = temp_1_ in
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
-              ({
-                  Core.Ops.Range.f_start = i *! serialize__OUTPUT_BYTES_PER_SIMD_UNIT <: usize;
-                  Core.Ops.Range.f_end
-                  =
-                  (i +! sz 1 <: usize) *! serialize__OUTPUT_BYTES_PER_SIMD_UNIT <: usize
-                }
-                <:
-                Core.Ops.Range.t_Range usize)
-              (Core.Slice.impl__copy_from_slice #u8
-                  (serialized.[ {
-                        Core.Ops.Range.f_start = i *! serialize__OUTPUT_BYTES_PER_SIMD_UNIT <: usize;
-                        Core.Ops.Range.f_end
-                        =
-                        (i +! sz 1 <: usize) *! serialize__OUTPUT_BYTES_PER_SIMD_UNIT <: usize
-                      }
-                      <:
-                      Core.Ops.Range.t_Range usize ]
-                    <:
-                    t_Slice u8)
-                  (Libcrux_ml_dsa.Simd.Traits.f_commitment_serialize #v_SIMDUnit
-                      #FStar.Tactics.Typeclasses.solve
-                      (sz 4)
-                      simd_unit
-                    <:
-                    t_Slice u8)
-                <:
-                t_Slice u8)
-            <:
-            t_Array u8 v_OUTPUT_SIZE)
-    in
-    serialized
-  | 192uy ->
-    let serialized:t_Array u8 v_OUTPUT_SIZE =
-      Rust_primitives.Hax.Folds.fold_enumerated_slice (re.Libcrux_ml_dsa.Polynomial.f_simd_units
-          <:
-          t_Slice v_SIMDUnit)
-        (fun serialized temp_1_ ->
-            let serialized:t_Array u8 v_OUTPUT_SIZE = serialized in
-            let _:usize = temp_1_ in
-            true)
-        serialized
-        (fun serialized temp_1_ ->
-            let serialized:t_Array u8 v_OUTPUT_SIZE = serialized in
-            let i, simd_unit:(usize & v_SIMDUnit) = temp_1_ in
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
-              ({
-                  Core.Ops.Range.f_start = i *! serialize__OUTPUT_BYTES_PER_SIMD_UNIT_1 <: usize;
-                  Core.Ops.Range.f_end
-                  =
-                  (i +! sz 1 <: usize) *! serialize__OUTPUT_BYTES_PER_SIMD_UNIT_1 <: usize
-                }
-                <:
-                Core.Ops.Range.t_Range usize)
-              (Core.Slice.impl__copy_from_slice #u8
-                  (serialized.[ {
-                        Core.Ops.Range.f_start
-                        =
-                        i *! serialize__OUTPUT_BYTES_PER_SIMD_UNIT_1 <: usize;
-                        Core.Ops.Range.f_end
-                        =
-                        (i +! sz 1 <: usize) *! serialize__OUTPUT_BYTES_PER_SIMD_UNIT_1 <: usize
-                      }
-                      <:
-                      Core.Ops.Range.t_Range usize ]
-                    <:
-                    t_Slice u8)
-                  (Libcrux_ml_dsa.Simd.Traits.f_commitment_serialize #v_SIMDUnit
-                      #FStar.Tactics.Typeclasses.solve
-                      (sz 6)
-                      simd_unit
-                    <:
-                    t_Slice u8)
-                <:
-                t_Slice u8)
-            <:
-            t_Array u8 v_OUTPUT_SIZE)
-    in
-    serialized
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
+  let output_bytes_per_simd_unit:usize =
+    (Core.Slice.impl__len #u8 serialized <: usize) /! (sz 8 *! sz 4 <: usize)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Folds.fold_enumerated_slice (re.Libcrux_ml_dsa.Polynomial.f_simd_units
         <:
-        Rust_primitives.Hax.t_Never)
+        t_Slice v_SIMDUnit)
+      (fun serialized temp_1_ ->
+          let serialized:t_Slice u8 = serialized in
+          let _:usize = temp_1_ in
+          true)
+      serialized
+      (fun serialized temp_1_ ->
+          let serialized:t_Slice u8 = serialized in
+          let i, simd_unit:(usize & v_SIMDUnit) = temp_1_ in
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+            ({
+                Core.Ops.Range.f_start = i *! output_bytes_per_simd_unit <: usize;
+                Core.Ops.Range.f_end = (i +! sz 1 <: usize) *! output_bytes_per_simd_unit <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize)
+            (Libcrux_ml_dsa.Simd.Traits.f_commitment_serialize #v_SIMDUnit
+                #FStar.Tactics.Typeclasses.solve
+                simd_unit
+                (serialized.[ {
+                      Core.Ops.Range.f_start = i *! output_bytes_per_simd_unit <: usize;
+                      Core.Ops.Range.f_end
+                      =
+                      (i +! sz 1 <: usize) *! output_bytes_per_simd_unit <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize ]
+                  <:
+                  t_Slice u8)
+              <:
+              t_Slice u8)
+          <:
+          t_Slice u8)
+  in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
+  serialized
 
 let serialize_vector
       (#v_SIMDUnit: Type0)
@@ -151,7 +94,8 @@ let serialize_vector
                 }
                 <:
                 Core.Ops.Range.t_Range usize)
-              (Core.Slice.impl__copy_from_slice #u8
+              (serialize #v_SIMDUnit
+                  ring_element
                   (serialized.[ {
                         Core.Ops.Range.f_start = offset;
                         Core.Ops.Range.f_end = offset +! v_RING_ELEMENT_SIZE <: usize
@@ -160,7 +104,6 @@ let serialize_vector
                       Core.Ops.Range.t_Range usize ]
                     <:
                     t_Slice u8)
-                  (serialize #v_SIMDUnit v_RING_ELEMENT_SIZE ring_element <: t_Slice u8)
                 <:
                 t_Slice u8)
           in

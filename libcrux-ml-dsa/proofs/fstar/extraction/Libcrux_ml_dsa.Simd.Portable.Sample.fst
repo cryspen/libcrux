@@ -6,9 +6,10 @@ open FStar.Mul
 let rejection_sample_less_than_eta_equals_2_ (randomness: t_Slice u8) (out: t_Slice i32) =
   let sampled:usize = sz 0 in
   let out, sampled:(t_Slice i32 & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(t_Slice u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
+            u8)
           #FStar.Tactics.Typeclasses.solve
-          randomness
+          (Core.Slice.impl__iter #u8 randomness <: Core.Slice.Iter.t_Iter u8)
         <:
         Core.Slice.Iter.t_Iter u8)
       (out, sampled <: (t_Slice i32 & usize))
@@ -54,9 +55,10 @@ let rejection_sample_less_than_eta_equals_2_ (randomness: t_Slice u8) (out: t_Sl
 let rejection_sample_less_than_eta_equals_4_ (randomness: t_Slice u8) (out: t_Slice i32) =
   let sampled:usize = sz 0 in
   let out, sampled:(t_Slice i32 & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(t_Slice u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
+            u8)
           #FStar.Tactics.Typeclasses.solve
-          randomness
+          (Core.Slice.impl__iter #u8 randomness <: Core.Slice.Iter.t_Iter u8)
         <:
         Core.Slice.Iter.t_Iter u8)
       (out, sampled <: (t_Slice i32 & usize))
@@ -94,12 +96,12 @@ let rejection_sample_less_than_eta_equals_4_ (randomness: t_Slice u8) (out: t_Sl
 let rejection_sample_less_than_field_modulus (randomness: t_Slice u8) (out: t_Slice i32) =
   let sampled:usize = sz 0 in
   let out, sampled:(t_Slice i32 & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Chunks
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_ChunksExact
             u8)
           #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__chunks #u8 randomness (sz 3) <: Core.Slice.Iter.t_Chunks u8)
+          (Core.Slice.impl__chunks_exact #u8 randomness (sz 3) <: Core.Slice.Iter.t_ChunksExact u8)
         <:
-        Core.Slice.Iter.t_Chunks u8)
+        Core.Slice.Iter.t_ChunksExact u8)
       (out, sampled <: (t_Slice i32 & usize))
       (fun temp_0_ bytes ->
           let out, sampled:(t_Slice i32 & usize) = temp_0_ in

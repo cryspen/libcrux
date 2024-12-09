@@ -391,6 +391,7 @@ pub(crate) fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUM
     }
 }
 
+#[cfg(feature = "mldsa44")]
 #[inline(always)]
 fn sample_s1_and_s2_4_by_4<
     SIMDUnit: Operations,
@@ -421,6 +422,8 @@ fn sample_s1_and_s2_4_by_4<
 
     (s1, s2)
 }
+
+#[cfg(feature = "mldsa65")]
 #[inline(always)]
 fn sample_s1_and_s2_5_by_6<
     SIMDUnit: Operations,
@@ -457,6 +460,8 @@ fn sample_s1_and_s2_5_by_6<
 
     (s1, s2)
 }
+
+#[cfg(feature = "mldsa87")]
 #[inline(always)]
 fn sample_s1_and_s2_7_by_8<
     SIMDUnit: Operations,
@@ -500,6 +505,7 @@ fn sample_s1_and_s2_7_by_8<
 
     (s1, s2)
 }
+
 #[inline(always)]
 pub(crate) fn sample_s1_and_s2<
     SIMDUnit: Operations,
@@ -514,12 +520,15 @@ pub(crate) fn sample_s1_and_s2<
     [PolynomialRingElement<SIMDUnit>; S2_DIMENSION],
 ) {
     match (S1_DIMENSION as u8, S2_DIMENSION as u8) {
+        #[cfg(feature = "mldsa44")]
         (4, 4) => {
             sample_s1_and_s2_4_by_4::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(seed)
         }
+        #[cfg(feature = "mldsa65")]
         (5, 6) => {
             sample_s1_and_s2_5_by_6::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(seed)
         }
+        #[cfg(feature = "mldsa87")]
         (7, 8) => {
             sample_s1_and_s2_7_by_8::<SIMDUnit, Shake256X4, ETA, S1_DIMENSION, S2_DIMENSION>(seed)
         }

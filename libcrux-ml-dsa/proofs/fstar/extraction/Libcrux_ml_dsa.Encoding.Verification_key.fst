@@ -62,6 +62,7 @@ let deserialize
                     Core.Ops.Range.t_Range usize ]
                   <:
                   t_Slice u8)
+                (t1.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
               <:
               Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
           <:

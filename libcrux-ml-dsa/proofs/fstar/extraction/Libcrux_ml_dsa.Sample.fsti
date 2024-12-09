@@ -59,7 +59,7 @@ val sample_challenge_ring_element
       (#v_SIMDUnit #v_Shake256: Type0)
       (v_NUMBER_OF_ONES v_SEED_SIZE: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256 |}
+      {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256 |}
       (seed: t_Array u8 v_SEED_SIZE)
     : Prims.Pure (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       Prims.l_True
@@ -97,8 +97,9 @@ val sample_mask_ring_element
       (#v_SIMDUnit #v_Shake256: Type0)
       (v_GAMMA1_EXPONENT: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256 |}
+      {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256 |}
       (seed: t_Array u8 (sz 66))
+      (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
     : Prims.Pure (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       Prims.l_True
       (fun _ -> Prims.l_True)
@@ -107,7 +108,7 @@ val sample_mask_vector
       (#v_SIMDUnit #v_Shake256 #v_Shake256X4: Type0)
       (v_DIMENSION v_GAMMA1_EXPONENT: usize)
       {| i3: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i4: Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256 |}
+      {| i4: Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256 |}
       {| i5: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
       (seed: t_Array u8 (sz 66))
       (domain_separator: u16)

@@ -5,6 +5,7 @@ use crate::{
     },
     encoding,
     hash_functions::shake256,
+    helper::cloop,
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
@@ -13,7 +14,7 @@ use crate::{
 #[inline(always)]
 pub(crate) fn generate_serialized<
     SIMDUnit: Operations,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
@@ -46,24 +47,34 @@ pub(crate) fn generate_serialized<
         .copy_from_slice(&verification_key_hash);
     offset += BYTES_FOR_VERIFICATION_KEY_HASH;
 
-    for ring_element in s1.iter() {
-        signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
-            &encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
-        );
-        offset += ERROR_RING_ELEMENT_SIZE;
+    cloop! {
+        for ring_element in s1.iter() {
+            encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(
+                *ring_element,
+                &mut signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE],
+            );
+            offset += ERROR_RING_ELEMENT_SIZE;
+        }
     }
 
-    for ring_element in s2.iter() {
-        signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
-            &encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
-        );
-        offset += ERROR_RING_ELEMENT_SIZE;
+    cloop! {
+        for ring_element in s2.iter() {
+            encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(
+                *ring_element,
+                &mut signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE],
+            );
+            offset += ERROR_RING_ELEMENT_SIZE;
+        }
     }
 
-    for ring_element in t0.iter() {
-        signing_key_serialized[offset..offset + RING_ELEMENT_OF_T0S_SIZE]
-            .copy_from_slice(&encoding::t0::serialize::<SIMDUnit>(*ring_element));
-        offset += RING_ELEMENT_OF_T0S_SIZE;
+    cloop! {
+        for ring_element in t0.iter() {
+            encoding::t0::serialize::<SIMDUnit>(
+                *ring_element,
+                &mut signing_key_serialized[offset..offset + RING_ELEMENT_OF_T0S_SIZE],
+            );
+            offset += RING_ELEMENT_OF_T0S_SIZE;
+        }
     }
 
     signing_key_serialized
@@ -112,6 +123,7 @@ pub(crate) fn deserialize_then_ntt<
         ERROR_RING_ELEMENT_SIZE,
     >(s2_serialized);
 
+    // XXX: write *_as_ntt directly into the output above
     let t0_as_ntt =
         encoding::t0::deserialize_to_vector_then_ntt::<SIMDUnit, ROWS_IN_A>(t0_serialized);
 
