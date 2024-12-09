@@ -4,6 +4,7 @@ macro_rules! impl_hmac {
         ///
         /// Note that this function panics if `key` or `data` is larger than 2**32 bytes.
         /// This ensures that all values are in the range valid to be consumed by hacl-rs.
+        #[inline(always)]
         pub fn $name(dst: &mut [u8; $tag_len], key: &[u8], data: &[u8]) {
             $fun(
                 dst,
