@@ -3,5 +3,5 @@ module Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment
 open Core
 open FStar.Mul
 
-val serialize (v_OUTPUT_SIZE: usize) (simd_unit: u8)
-    : Prims.Pure (t_Array u8 v_OUTPUT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+val serialize (simd_unit: u8) (out: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)

@@ -92,30 +92,30 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure (t_Slice i32 & usize)
         (f_rejection_sample_less_than_eta_equals_4_pre x0 x1)
         (fun result -> f_rejection_sample_less_than_eta_equals_4_post x0 x1 result);
-  f_gamma1_serialize_pre:v_OUTPUT_SIZE: usize -> v_Self -> Type0;
-  f_gamma1_serialize_post:v_OUTPUT_SIZE: usize -> v_Self -> t_Array u8 v_OUTPUT_SIZE -> Type0;
-  f_gamma1_serialize:v_OUTPUT_SIZE: usize -> x0: v_Self
-    -> Prims.Pure (t_Array u8 v_OUTPUT_SIZE)
-        (f_gamma1_serialize_pre v_OUTPUT_SIZE x0)
-        (fun result -> f_gamma1_serialize_post v_OUTPUT_SIZE x0 result);
+  f_gamma1_serialize_pre:v_GAMMA1_EXPONENT: usize -> v_Self -> t_Slice u8 -> Type0;
+  f_gamma1_serialize_post:v_GAMMA1_EXPONENT: usize -> v_Self -> t_Slice u8 -> t_Slice u8 -> Type0;
+  f_gamma1_serialize:v_GAMMA1_EXPONENT: usize -> x0: v_Self -> x1: t_Slice u8
+    -> Prims.Pure (t_Slice u8)
+        (f_gamma1_serialize_pre v_GAMMA1_EXPONENT x0 x1)
+        (fun result -> f_gamma1_serialize_post v_GAMMA1_EXPONENT x0 x1 result);
   f_gamma1_deserialize_pre:v_GAMMA1_EXPONENT: usize -> t_Slice u8 -> Type0;
   f_gamma1_deserialize_post:v_GAMMA1_EXPONENT: usize -> t_Slice u8 -> v_Self -> Type0;
   f_gamma1_deserialize:v_GAMMA1_EXPONENT: usize -> x0: t_Slice u8
     -> Prims.Pure v_Self
         (f_gamma1_deserialize_pre v_GAMMA1_EXPONENT x0)
         (fun result -> f_gamma1_deserialize_post v_GAMMA1_EXPONENT x0 result);
-  f_commitment_serialize_pre:v_OUTPUT_SIZE: usize -> v_Self -> Type0;
-  f_commitment_serialize_post:v_OUTPUT_SIZE: usize -> v_Self -> t_Array u8 v_OUTPUT_SIZE -> Type0;
-  f_commitment_serialize:v_OUTPUT_SIZE: usize -> x0: v_Self
-    -> Prims.Pure (t_Array u8 v_OUTPUT_SIZE)
-        (f_commitment_serialize_pre v_OUTPUT_SIZE x0)
-        (fun result -> f_commitment_serialize_post v_OUTPUT_SIZE x0 result);
-  f_error_serialize_pre:v_OUTPUT_SIZE: usize -> v_Self -> Type0;
-  f_error_serialize_post:v_OUTPUT_SIZE: usize -> v_Self -> t_Array u8 v_OUTPUT_SIZE -> Type0;
-  f_error_serialize:v_OUTPUT_SIZE: usize -> x0: v_Self
-    -> Prims.Pure (t_Array u8 v_OUTPUT_SIZE)
-        (f_error_serialize_pre v_OUTPUT_SIZE x0)
-        (fun result -> f_error_serialize_post v_OUTPUT_SIZE x0 result);
+  f_commitment_serialize_pre:v_Self -> t_Slice u8 -> Type0;
+  f_commitment_serialize_post:v_Self -> t_Slice u8 -> t_Slice u8 -> Type0;
+  f_commitment_serialize:x0: v_Self -> x1: t_Slice u8
+    -> Prims.Pure (t_Slice u8)
+        (f_commitment_serialize_pre x0 x1)
+        (fun result -> f_commitment_serialize_post x0 x1 result);
+  f_error_serialize_pre:v_ETA: usize -> v_Self -> t_Slice u8 -> Type0;
+  f_error_serialize_post:v_ETA: usize -> v_Self -> t_Slice u8 -> t_Slice u8 -> Type0;
+  f_error_serialize:v_ETA: usize -> x0: v_Self -> x1: t_Slice u8
+    -> Prims.Pure (t_Slice u8)
+        (f_error_serialize_pre v_ETA x0 x1)
+        (fun result -> f_error_serialize_post v_ETA x0 x1 result);
   f_error_deserialize_pre:v_ETA: usize -> t_Slice u8 -> Type0;
   f_error_deserialize_post:v_ETA: usize -> t_Slice u8 -> v_Self -> Type0;
   f_error_deserialize:v_ETA: usize -> x0: t_Slice u8

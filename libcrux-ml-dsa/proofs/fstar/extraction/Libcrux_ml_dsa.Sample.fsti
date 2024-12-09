@@ -99,6 +99,7 @@ val sample_mask_ring_element
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256 |}
       (seed: t_Array u8 (sz 66))
+      (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
     : Prims.Pure (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       Prims.l_True
       (fun _ -> Prims.l_True)

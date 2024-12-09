@@ -64,7 +64,7 @@ type t_VerificationError =
   | VerificationError_MalformedHintError : t_VerificationError
   | VerificationError_SignerResponseExceedsBoundError : t_VerificationError
   | VerificationError_CommitmentHashesDontMatchError : t_VerificationError
-  | VerificationError_ContextTooLongError : t_VerificationError
+  | VerificationError_VerificationContextTooLongError : t_VerificationError
 
 val t_VerificationError_cast_to_repr (x: t_VerificationError)
     : Prims.Pure isize Prims.l_True (fun _ -> Prims.l_True)

@@ -34,7 +34,7 @@ let t_VerificationError_cast_to_repr (x: t_VerificationError) =
   | VerificationError_MalformedHintError  -> isz 0
   | VerificationError_SignerResponseExceedsBoundError  -> isz 1
   | VerificationError_CommitmentHashesDontMatchError  -> isz 3
-  | VerificationError_ContextTooLongError  -> isz 6
+  | VerificationError_VerificationContextTooLongError  -> isz 6
 
 let impl__as_slice (v_SIZE: usize) (self: t_MLDSASigningKey v_SIZE) = self.f_value <: t_Slice u8
 
