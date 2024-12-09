@@ -26,6 +26,7 @@ pub(crate) mod multiplexing;
 
 /// Generate a key pair.
 #[inline(always)]
+#[allow(unsafe_code)]
 pub(crate) fn generate_key_pair<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
@@ -54,8 +55,9 @@ pub(crate) fn generate_key_pair<
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-    let a_as_ntt =
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_a));
+    let a_as_ntt = unsafe {
+        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_a))
+    };
 
     let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
         into_padded_array(seed_for_error_vectors),
@@ -224,6 +226,7 @@ pub(crate) fn sign<
 /// `message` already contains the domain separation.
 #[allow(non_snake_case)]
 #[inline(always)]
+#[allow(unsafe_code)]
 pub(crate) fn sign_internal<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
@@ -260,8 +263,9 @@ pub(crate) fn sign_internal<
             SIGNING_KEY_SIZE,
         >(signing_key);
 
-    let A_as_ntt =
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+    let A_as_ntt = unsafe {
+        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A))
+    };
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative::<Shake256Xof>(
@@ -466,6 +470,7 @@ fn derive_message_representative<Shake256Xof: shake256::Xof>(
 /// `message` already contains the domain separation.
 #[allow(non_snake_case)]
 #[inline(always)]
+#[allow(unsafe_code)]
 pub(crate) fn verify_internal<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
@@ -514,8 +519,9 @@ pub(crate) fn verify_internal<
     ) {
         return Err(VerificationError::SignerResponseExceedsBoundError);
     }
-    let A_as_ntt =
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+    let A_as_ntt = unsafe {
+        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A))
+    };
 
     let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
     Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
