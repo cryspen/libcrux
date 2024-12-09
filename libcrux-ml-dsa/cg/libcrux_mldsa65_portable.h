@@ -8,7 +8,7 @@
  * Eurydice: b665364a6d86749566ce2d650d13fa12c8fab2c5
  * Karamel: 96572bc631fde691a2aea7bce5a5a3838b3a5968
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: d4b51bcb3af12fb1358ed37830e33cbd72d31590
+ * Libcrux: 87497297c8d9a6be6127d9daae13a942b5439e74
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -396,7 +396,6 @@ libcrux_ml_dsa::hash_functions::portable::Shake256Xof)#4}
 */
 static inline void libcrux_ml_dsa_hash_functions_portable_squeeze_83(
     libcrux_sha3_portable_incremental_Shake256Xof *self, Eurydice_slice out) {
-  printf("squeeze out len: %lu\n", out.len);
   libcrux_sha3_portable_incremental_squeeze_68(self, out);
 }
 
@@ -646,8 +645,6 @@ static inline void libcrux_ml_dsa_pre_hash_oid_bd(uint8_t ret[11U]) {
          (size_t)11U * sizeof(uint8_t));
 }
 
-// typedef struct libcrux_ml_dsa_pre_hash_SHAKE128_PH_s {
-// } libcrux_ml_dsa_pre_hash_SHAKE128_PH;
 
 typedef struct libcrux_ml_dsa_simd_portable_vector_type_PortableSIMDUnit_s {
   int32_t coefficients[8U];
@@ -9320,9 +9317,6 @@ typedef int32_t libcrux_ml_dsa_simd_traits_FieldElementTimesMontgomeryR;
 typedef int32_t libcrux_ml_dsa_simd_portable_vector_type_FieldElement;
 
 typedef Result_a8 libcrux_ml_dsa_pre_hash_PreHashResult;
-
-// typedef struct libcrux_ml_dsa_hash_functions_portable_Shake128_s {
-// } libcrux_ml_dsa_hash_functions_portable_Shake128;
 
 #if defined(__cplusplus)
 }

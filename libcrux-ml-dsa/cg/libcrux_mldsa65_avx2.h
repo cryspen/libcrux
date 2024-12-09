@@ -8,7 +8,7 @@
  * Eurydice: b665364a6d86749566ce2d650d13fa12c8fab2c5
  * Karamel: 96572bc631fde691a2aea7bce5a5a3838b3a5968
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: d4b51bcb3af12fb1358ed37830e33cbd72d31590
+ * Libcrux: 87497297c8d9a6be6127d9daae13a942b5439e74
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -4496,65 +4496,6 @@ static KRML_MUSTINLINE
 }
 
 /**
-A monomorphic instance of libcrux_ml_dsa.samplex4.sample_s1_and_s2_4_by_4
-with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
-libcrux_ml_dsa_hash_functions_simd256_Shake256x4 with const generics
-- ETA= 4
-- S1_DIMENSION= 5
-- S2_DIMENSION= 6
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE tuple_ce0
-libcrux_ml_dsa_samplex4_sample_s1_and_s2_4_by_4_4d(uint8_t seed_base[66U]) {
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 s1[5U];
-  for (size_t i = (size_t)0U; i < (size_t)5U; i++) {
-    s1[i] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-  }
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 s2[6U];
-  for (size_t i = (size_t)0U; i < (size_t)6U; i++) {
-    s2[i] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-  }
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed_base[66U];
-  memcpy(copy_of_seed_base, seed_base, (size_t)66U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four = libcrux_ml_dsa_sample_sample_four_error_ring_elements_cb(
-          copy_of_seed_base, 0U, 1U, 2U, 3U);
-  s1[0U] = four.fst;
-  s1[1U] = four.snd;
-  s1[2U] = four.thd;
-  s1[3U] = four.f3;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed_base0[66U];
-  memcpy(copy_of_seed_base0, seed_base, (size_t)66U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four0 = libcrux_ml_dsa_sample_sample_four_error_ring_elements_cb(
-          copy_of_seed_base0, 4U, 5U, 6U, 7U);
-  s2[0U] = four0.fst;
-  s2[1U] = four0.snd;
-  s2[2U] = four0.thd;
-  s2[3U] = four0.f3;
-  /* Passing arrays by value in Rust generates a copy in C */
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 copy_of_s1[5U];
-  memcpy(
-      copy_of_s1, s1,
-      (size_t)5U * sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24));
-  /* Passing arrays by value in Rust generates a copy in C */
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 copy_of_s2[6U];
-  memcpy(
-      copy_of_s2, s2,
-      (size_t)6U * sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24));
-  tuple_ce0 lit;
-  memcpy(
-      lit.fst, copy_of_s1,
-      (size_t)5U * sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24));
-  memcpy(
-      lit.snd, copy_of_s2,
-      (size_t)6U * sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24));
-  return lit;
-}
-
-/**
 A monomorphic instance of libcrux_ml_dsa.samplex4.sample_s1_and_s2_5_by_6
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
 libcrux_ml_dsa_hash_functions_simd256_Shake256x4 with const generics
@@ -4623,84 +4564,6 @@ libcrux_ml_dsa_samplex4_sample_s1_and_s2_5_by_6_4d(uint8_t seed_base[66U]) {
 }
 
 /**
-A monomorphic instance of libcrux_ml_dsa.samplex4.sample_s1_and_s2_7_by_8
-with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
-libcrux_ml_dsa_hash_functions_simd256_Shake256x4 with const generics
-- ETA= 4
-- S1_DIMENSION= 5
-- S2_DIMENSION= 6
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE tuple_ce0
-libcrux_ml_dsa_samplex4_sample_s1_and_s2_7_by_8_4d(uint8_t seed_base[66U]) {
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 s1[5U];
-  for (size_t i = (size_t)0U; i < (size_t)5U; i++) {
-    s1[i] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-  }
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 s2[6U];
-  for (size_t i = (size_t)0U; i < (size_t)6U; i++) {
-    s2[i] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-  }
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed_base[66U];
-  memcpy(copy_of_seed_base, seed_base, (size_t)66U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four = libcrux_ml_dsa_sample_sample_four_error_ring_elements_cb(
-          copy_of_seed_base, 0U, 1U, 2U, 3U);
-  s1[0U] = four.fst;
-  s1[1U] = four.snd;
-  s1[2U] = four.thd;
-  s1[3U] = four.f3;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed_base0[66U];
-  memcpy(copy_of_seed_base0, seed_base, (size_t)66U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four0 = libcrux_ml_dsa_sample_sample_four_error_ring_elements_cb(
-          copy_of_seed_base0, 4U, 5U, 6U, 7U);
-  s1[4U] = four0.fst;
-  s1[5U] = four0.snd;
-  s1[6U] = four0.thd;
-  s2[0U] = four0.f3;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed_base1[66U];
-  memcpy(copy_of_seed_base1, seed_base, (size_t)66U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four1 = libcrux_ml_dsa_sample_sample_four_error_ring_elements_cb(
-          copy_of_seed_base1, 8U, 9U, 10U, 11U);
-  s2[1U] = four1.fst;
-  s2[2U] = four1.snd;
-  s2[3U] = four1.thd;
-  s2[4U] = four1.f3;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed_base2[66U];
-  memcpy(copy_of_seed_base2, seed_base, (size_t)66U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four2 = libcrux_ml_dsa_sample_sample_four_error_ring_elements_cb(
-          copy_of_seed_base2, 12U, 13U, 14U, 15U);
-  s2[5U] = four2.fst;
-  s2[6U] = four2.snd;
-  s2[7U] = four2.thd;
-  /* Passing arrays by value in Rust generates a copy in C */
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 copy_of_s1[5U];
-  memcpy(
-      copy_of_s1, s1,
-      (size_t)5U * sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24));
-  /* Passing arrays by value in Rust generates a copy in C */
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 copy_of_s2[6U];
-  memcpy(
-      copy_of_s2, s2,
-      (size_t)6U * sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24));
-  tuple_ce0 lit;
-  memcpy(
-      lit.fst, copy_of_s1,
-      (size_t)5U * sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24));
-  memcpy(
-      lit.snd, copy_of_s2,
-      (size_t)6U * sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24));
-  return lit;
-}
-
-/**
 A monomorphic instance of libcrux_ml_dsa.samplex4.sample_s1_and_s2
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
 libcrux_ml_dsa_hash_functions_simd256_Shake256x4 with const generics
@@ -4713,20 +4576,6 @@ static KRML_MUSTINLINE tuple_ce0
 libcrux_ml_dsa_samplex4_sample_s1_and_s2_4d(uint8_t seed[66U]) {
   uint8_t_x2 uu____0 = {.fst = (uint8_t)(size_t)5U, .snd = (uint8_t)(size_t)6U};
   switch (uu____0.fst) {
-    case 4U: {
-      switch (uu____0.snd) {
-        case 4U: {
-          /* Passing arrays by value in Rust generates a copy in C */
-          uint8_t copy_of_seed[66U];
-          memcpy(copy_of_seed, seed, (size_t)66U * sizeof(uint8_t));
-          return libcrux_ml_dsa_samplex4_sample_s1_and_s2_4_by_4_4d(
-              copy_of_seed);
-        }
-        default: {
-        }
-      }
-      break;
-    }
     case 5U: {
       switch (uu____0.snd) {
         case 6U: {
@@ -4734,20 +4583,6 @@ libcrux_ml_dsa_samplex4_sample_s1_and_s2_4d(uint8_t seed[66U]) {
           uint8_t copy_of_seed[66U];
           memcpy(copy_of_seed, seed, (size_t)66U * sizeof(uint8_t));
           return libcrux_ml_dsa_samplex4_sample_s1_and_s2_5_by_6_4d(
-              copy_of_seed);
-        }
-        default: {
-        }
-      }
-      break;
-    }
-    case 7U: {
-      switch (uu____0.snd) {
-        case 8U: {
-          /* Passing arrays by value in Rust generates a copy in C */
-          uint8_t copy_of_seed[66U];
-          memcpy(copy_of_seed, seed, (size_t)66U * sizeof(uint8_t));
-          return libcrux_ml_dsa_samplex4_sample_s1_and_s2_7_by_8_4d(
               copy_of_seed);
         }
         default: {
