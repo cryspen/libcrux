@@ -1,6 +1,16 @@
-#[cfg(feature = "hacl")]
+#![no_std]
+
+#[cfg(all(feature = "hacl", not(feature = "expose-hacl")))]
 mod hacl {
     pub(crate) mod rsapss;
+
+    use libcrux_hacl_rs::streaming_types;
+    use libcrux_sha2::hacl as hash_sha2;
+}
+
+#[cfg(feature = "expose-hacl")]
+pub mod hacl {
+    pub mod rsapss;
 
     use libcrux_hacl_rs::streaming_types;
     use libcrux_sha2::hacl as hash_sha2;
@@ -22,3 +32,6 @@ pub enum Error {
 
 #[cfg(feature = "hacl")]
 mod impl_hacl;
+
+#[cfg(feature = "hacl")]
+pub use impl_hacl::*;

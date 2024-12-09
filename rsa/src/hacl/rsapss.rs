@@ -3,8 +3,11 @@
 #![allow(non_camel_case_types)]
 #![allow(unused_assignments)]
 #![allow(unreachable_patterns)]
+#![allow(clippy::too_many_arguments)]
 
-use libcrux_hacl_rs::prelude::{bignum, fstar};
+//! This module contains generated hacl code.
+
+use libcrux_hacl_rs::prelude::{bignum, fstar, vec, Box};
 
 #[inline]
 fn hash_len(a: crate::hacl::streaming_types::hash_alg) -> u32 {
@@ -340,6 +343,7 @@ Sign a message `msg` and write the signature to `sgnt`.
   - Spec_Hash_Definitions_SHA2_256,
   - Spec_Hash_Definitions_SHA2_384, and
   - Spec_Hash_Definitions_SHA2_512.
+
 @param modBits Count of bits in the modulus (`n`).
 @param eBits Count of bits in `e` value.
 @param dBits Count of bits in `d` value.
@@ -352,6 +356,7 @@ Sign a message `msg` and write the signature to `sgnt`.
 
 @return Returns true if and only if signing was successful.
 */
+#[allow(dead_code)]
 pub fn rsapss_sign(
     a: crate::hacl::streaming_types::hash_alg,
     modBits: u32,
@@ -469,6 +474,7 @@ Verify the signature `sgnt` of a message `msg`.
   - Spec_Hash_Definitions_SHA2_256,
   - Spec_Hash_Definitions_SHA2_384, and
   - Spec_Hash_Definitions_SHA2_512.
+
 @param modBits Count of bits in the modulus (`n`).
 @param eBits Count of bits in `e` value.
 @param pkey Pointer to public key created by `Hacl_RSAPSS_new_rsapss_load_pkey`.
@@ -480,6 +486,7 @@ Verify the signature `sgnt` of a message `msg`.
 
 @return Returns true if and only if the signature is valid.
 */
+#[allow(dead_code)]
 pub fn rsapss_verify(
     a: crate::hacl::streaming_types::hash_alg,
     modBits: u32,
@@ -587,6 +594,7 @@ Load a public key from key parts.
 
 @return Returns an allocated public key upon success, otherwise, `NULL` if key part arguments are invalid or memory allocation fails. Note: caller must take care to `free()` the created key.
 */
+#[allow(dead_code)]
 pub fn new_rsapss_load_pkey(modBits: u32, eBits: u32, nb: &[u8], eb: &[u8]) -> Box<[u64]> {
     let ite: bool = if 1u32 < modBits && 0u32 < eBits {
         let nLen: u32 = modBits
@@ -673,6 +681,7 @@ Load a secret key from key parts.
 
 @return Returns an allocated secret key upon success, otherwise, `NULL` if key part arguments are invalid or memory allocation fails. Note: caller must take care to `free()` the created key.
 */
+#[allow(dead_code)]
 pub fn new_rsapss_load_skey(
     modBits: u32,
     eBits: u32,
@@ -804,6 +813,7 @@ Sign a message `msg` and write the signature to `sgnt`.
   - Spec_Hash_Definitions_SHA2_256,
   - Spec_Hash_Definitions_SHA2_384, and
   - Spec_Hash_Definitions_SHA2_512.
+
 @param modBits Count of bits in the modulus (`n`).
 @param eBits Count of bits in `e` value.
 @param dBits Count of bits in `d` value.
@@ -818,6 +828,7 @@ Sign a message `msg` and write the signature to `sgnt`.
 
 @return Returns true if and only if signing was successful.
 */
+#[allow(dead_code)]
 pub fn rsapss_skey_sign(
     a: crate::hacl::streaming_types::hash_alg,
     modBits: u32,
@@ -871,6 +882,7 @@ Verify the signature `sgnt` of a message `msg`.
   - Spec_Hash_Definitions_SHA2_256,
   - Spec_Hash_Definitions_SHA2_384, and
   - Spec_Hash_Definitions_SHA2_512.
+
 @param modBits Count of bits in the modulus (`n`).
 @param eBits Count of bits in `e` value.
 @param nb Pointer to `ceil(modBits / 8)` bytes where the modulus (`n`), in big-endian byte order, is read from.
@@ -883,6 +895,7 @@ Verify the signature `sgnt` of a message `msg`.
 
 @return Returns true if and only if the signature is valid.
 */
+#[allow(dead_code)]
 pub fn rsapss_pkey_verify(
     a: crate::hacl::streaming_types::hash_alg,
     modBits: u32,
@@ -925,6 +938,7 @@ pub fn rsapss_pkey_verify(
 The mask generation function defined in the Public Key Cryptography Standard #1
   (https://www.ietf.org/rfc/rfc2437.txt Section 10.2.1)
 */
+#[allow(dead_code)]
 pub fn mgf_hash0(
     a: crate::hacl::streaming_types::hash_alg,
     len: u32,

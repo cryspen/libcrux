@@ -4,7 +4,7 @@ use crate::Error;
 pub struct Signature<const LEN: usize>([u8; LEN]);
 
 #[derive(Debug, Clone)]
-struct PublicKey<const LEN: usize> {
+pub struct PublicKey<const LEN: usize> {
     n: [u8; LEN],
 }
 
@@ -28,44 +28,48 @@ fn hacl_hash_alg(alg: crate::DigestAlgorithm) -> libcrux_hacl_rs::streaming_type
 
 macro_rules! impl_rsapss {
     ($sign_fn:ident, $verify_fn:ident, $bits:literal, $bytes:literal) => {
-        fn $sign_fn(
+        pub fn $sign_fn(
             alg: crate::DigestAlgorithm,
             sk: &PrivateKey<$bytes>,
             msg: &[u8],
             salt: &[u8],
             sig: &mut Signature<$bytes>,
         ) -> Result<(), Error> {
-            let alg = hacl_hash_alg(alg);
-
             let salt_len = salt.len().try_into().map_err(|_| Error::SaltTooLarge)?;
             let msg_len = msg.len().try_into().map_err(|_| Error::MessageTooLarge)?;
 
-            let skey = crate::hacl::rsapss::new_rsapss_load_skey(
-                $bits, E_BITS, $bits, &sk.pk.n, &E, &sk.d,
-            );
+            let a = hacl_hash_alg(alg);
+            let mod_bits = $bits;
+            let e_bits = E_BITS;
+            let d_bits = $bits;
+            let sgnt = &mut sig.0;
 
-            match crate::hacl::rsapss::rsapss_sign(
-                alg, $bits, E_BITS, $bits, &skey, salt_len, salt, msg_len, msg, &mut sig.0,
+            match crate::hacl::rsapss::rsapss_skey_sign(
+                a, mod_bits, e_bits, d_bits, &sk.pk.n, &E, &sk.d, salt_len, salt, msg_len, msg,
+                sgnt,
             ) {
                 true => Ok(()),
                 false => Err(Error::SigningFailed),
             }
         }
 
-        fn $verify_fn(
+        pub fn $verify_fn(
             alg: crate::DigestAlgorithm,
             pk: &PublicKey<$bytes>,
             msg: &[u8],
             salt_len: u32,
             sig: &Signature<$bytes>,
         ) -> Result<(), Error> {
-            let alg = hacl_hash_alg(alg);
-
             let msg_len = msg.len().try_into().map_err(|_| Error::MessageTooLarge)?;
 
+            let a = hacl_hash_alg(alg);
+            let mod_bits = $bits;
+            let e_bits = E_BITS;
+            let sgnt = &sig.0;
+
             match crate::hacl::rsapss::rsapss_pkey_verify(
-                alg, $bits, E_BITS, &pk.n, &E, salt_len, $bytes, /*signature length*/
-                &sig.0, msg_len, msg,
+                a, mod_bits, e_bits, &pk.n, &E, salt_len, $bytes, /*signature length*/
+                sgnt, msg_len, msg,
             ) {
                 true => Ok(()),
                 false => Err(Error::VerificationFailed),
@@ -139,12 +143,11 @@ mod tests {
         sign_2048(
             crate::DigestAlgorithm::Sha2_256,
             &sk,
-            &salt,
             &msg,
+            &salt,
             &mut signature,
         )
         .unwrap();
-        println!("signature: {:x?}", signature);
         verify_2048(
             crate::DigestAlgorithm::Sha2_256,
             &pk,
