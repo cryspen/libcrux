@@ -6,12 +6,7 @@ open FStar.Mul
 type t_AVX2SIMDUnit = { f_coefficients:u8 }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Core.Convert.t_From t_AVX2SIMDUnit u8 =
-  {
-    f_from_pre = (fun (coefficients: u8) -> true);
-    f_from_post = (fun (coefficients: u8) (out: t_AVX2SIMDUnit) -> true);
-    f_from = fun (coefficients: u8) -> { f_coefficients = coefficients } <: t_AVX2SIMDUnit
-  }
+val impl:Core.Convert.t_From t_AVX2SIMDUnit u8
 
 val v_ZERO: Prims.unit -> Prims.Pure t_AVX2SIMDUnit Prims.l_True (fun _ -> Prims.l_True)
 

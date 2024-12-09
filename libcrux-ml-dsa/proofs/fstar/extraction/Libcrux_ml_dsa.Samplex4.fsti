@@ -6,7 +6,6 @@ open FStar.Mul
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
-  let open Libcrux_ml_dsa.Hash_functions.Shake128 in
   let open Libcrux_ml_dsa.Hash_functions.Shake256 in
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
@@ -29,10 +28,9 @@ val update_matrix
           v_ROWS_IN_A) Prims.l_True (fun _ -> Prims.l_True)
 
 val matrix_A_4_by_4_
-      (#v_SIMDUnit #v_Shake128X4: Type0)
+      (#v_SIMDUnit: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4 |}
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (seed: t_Array u8 (sz 34))
     : Prims.Pure
       (t_Array
@@ -40,10 +38,9 @@ val matrix_A_4_by_4_
           v_ROWS_IN_A) Prims.l_True (fun _ -> Prims.l_True)
 
 val matrix_A_6_by_5_
-      (#v_SIMDUnit #v_Shake128X4: Type0)
+      (#v_SIMDUnit: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4 |}
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (seed: t_Array u8 (sz 34))
     : Prims.Pure
       (t_Array
@@ -51,10 +48,9 @@ val matrix_A_6_by_5_
           v_ROWS_IN_A) Prims.l_True (fun _ -> Prims.l_True)
 
 val matrix_A_8_by_7_
-      (#v_SIMDUnit #v_Shake128X4: Type0)
+      (#v_SIMDUnit: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4 |}
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (seed: t_Array u8 (sz 34))
     : Prims.Pure
       (t_Array
@@ -62,10 +58,9 @@ val matrix_A_8_by_7_
           v_ROWS_IN_A) Prims.l_True (fun _ -> Prims.l_True)
 
 val matrix_A
-      (#v_SIMDUnit #v_Shake128X4: Type0)
+      (#v_SIMDUnit: Type0)
       (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4 |}
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (seed: t_Array u8 (sz 34))
     : Prims.Pure
       (t_Array

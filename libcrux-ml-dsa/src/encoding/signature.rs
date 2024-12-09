@@ -1,7 +1,21 @@
 use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT, encoding, polynomial::PolynomialRingElement,
-    simd::traits::Operations, types::Signature, VerificationError,
+    simd::traits::Operations, VerificationError,
 };
+
+/// A signature
+///
+/// This is only an internal type.
+pub(crate) struct Signature<
+    SIMDUnit: Operations,
+    const COMMITMENT_HASH_SIZE: usize,
+    const COLUMNS_IN_A: usize,
+    const ROWS_IN_A: usize,
+> {
+    pub(crate) commitment_hash: [u8; COMMITMENT_HASH_SIZE],
+    pub(crate) signer_response: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
+    pub(crate) hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
+}
 
 impl<
         SIMDUnit: Operations,
@@ -43,8 +57,9 @@ impl<
         //
         // Instead, we have to mutate signature[offset + ..] directly.
         for i in 0..ROWS_IN_A {
-            for (j, hint) in self.hint[i].into_iter().enumerate() {
-                if hint == 1 {
+            // for (j, hint) in self.hint[i].into_iter().enumerate() {
+            for j in 0..self.hint[i].len() {
+                if self.hint[i][j] == 1 {
                     signature[offset + true_hints_seen] = j as u8;
                     true_hints_seen += 1;
                 }

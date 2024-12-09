@@ -1,9 +1,4 @@
-use crate::{
-    constants::*,
-    ml_dsa_generic::{self, multiplexing},
-    types::*,
-    SigningError, VerificationError,
-};
+use crate::{constants::*, ml_dsa_generic, types::*, SigningError, VerificationError};
 
 // ML-DSA-65-specific parameters
 
@@ -89,8 +84,8 @@ macro_rules! instantiate {
                 >(randomness);
 
                 MLDSA65KeyPair {
-                    signing_key: MLDSASigningKey(signing_key),
-                    verification_key: MLDSAVerificationKey(verification_key),
+                    signing_key: MLDSASigningKey::new(signing_key),
+                    verification_key: MLDSAVerificationKey::new(verification_key),
                 }
             }
             /// Generate an ML-DSA-65 Signature (Algorithm 7 in FIPS 204)
@@ -117,7 +112,7 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(&signing_key.0, message, randomness)
+                >(signing_key.as_ref(), message, randomness)
             }
 
             /// Verify an ML-DSA-65 Signature (Algorithm 8 in FIPS 204)
@@ -143,7 +138,7 @@ macro_rules! instantiate {
                     COMMITMENT_HASH_SIZE,
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
-                >(&verification_key.0, message, &signature.0)
+                >(verification_key.as_ref(), message, signature.as_ref())
             }
 
             /// Generate an ML-DSA-65 Signature
@@ -172,7 +167,7 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(&signing_key.0, message, context, randomness)
+                >(signing_key.as_ref(), message, context, randomness)
             }
 
             /// Generate a HashML-DSA-65 Signature, with a SHAKE128 pre-hashing
@@ -201,7 +196,7 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(&signing_key.0, message, context, randomness)
+                >(signing_key.as_ref(), message, context, randomness)
             }
 
             /// Verify an ML-DSA-65 Signature
@@ -229,7 +224,12 @@ macro_rules! instantiate {
                     COMMITMENT_HASH_SIZE,
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
-                >(&verification_key.0, message, context, &signature.0)
+                >(
+                    verification_key.as_ref(),
+                    message,
+                    context,
+                    signature.as_ref(),
+                )
             }
 
             /// Verify a HashML-DSA-65 Signature, with a SHAKE128 pre-hashing
@@ -257,7 +257,12 @@ macro_rules! instantiate {
                     COMMITMENT_HASH_SIZE,
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
-                >(&verification_key.0, message, context, &signature.0)
+                >(
+                    verification_key.as_ref(),
+                    message,
+                    context,
+                    signature.as_ref(),
+                )
             }
         }
     };
@@ -279,7 +284,7 @@ instantiate! {neon, ml_dsa_generic::instantiations::neon, "Neon Optimised ML-DSA
 /// This function returns an [`MLDSA65KeyPair`].
 #[cfg(not(eurydice))]
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> MLDSA65KeyPair {
-    let (signing_key, verification_key) = multiplexing::generate_key_pair::<
+    let (signing_key, verification_key) = ml_dsa_generic::multiplexing::generate_key_pair::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -289,8 +294,8 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> ML
     >(randomness);
 
     MLDSA65KeyPair {
-        signing_key: MLDSASigningKey(signing_key),
-        verification_key: MLDSAVerificationKey(verification_key),
+        signing_key: MLDSASigningKey::new(signing_key),
+        verification_key: MLDSAVerificationKey::new(verification_key),
     }
 }
 
@@ -310,7 +315,7 @@ pub fn sign(
     context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSA65Signature, SigningError> {
-    multiplexing::sign::<
+    ml_dsa_generic::multiplexing::sign::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -325,7 +330,7 @@ pub fn sign(
         GAMMA1_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
         SIGNATURE_SIZE,
-    >(&signing_key.0, message, context, randomness)
+    >(signing_key.as_ref(), message, context, randomness)
 }
 
 /// Verify an ML-DSA-65 Signature
@@ -343,7 +348,7 @@ pub fn verify(
     context: &[u8],
     signature: &MLDSA65Signature,
 ) -> Result<(), VerificationError> {
-    multiplexing::verify::<
+    ml_dsa_generic::multiplexing::verify::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
@@ -357,7 +362,12 @@ pub fn verify(
         COMMITMENT_HASH_SIZE,
         ONES_IN_VERIFIER_CHALLENGE,
         MAX_ONES_IN_HINT,
-    >(&verification_key.0, message, context, &signature.0)
+    >(
+        verification_key.as_ref(),
+        message,
+        context,
+        signature.as_ref(),
+    )
 }
 
 /// Sign with HashML-DSA 65, with a SHAKE128 pre-hashing
@@ -377,7 +387,7 @@ pub fn sign_pre_hashed_shake128(
     context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSA65Signature, SigningError> {
-    multiplexing::sign_pre_hashed_shake128::<
+    ml_dsa_generic::multiplexing::sign_pre_hashed_shake128::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -392,7 +402,7 @@ pub fn sign_pre_hashed_shake128(
         GAMMA1_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
         SIGNATURE_SIZE,
-    >(&signing_key.0, message, context, randomness)
+    >(signing_key.as_ref(), message, context, randomness)
 }
 
 /// Verify a HashML-DSA-65 Signature, with a SHAKE128 pre-hashing
@@ -410,7 +420,7 @@ pub fn verify_pre_hashed_shake128(
     context: &[u8],
     signature: &MLDSA65Signature,
 ) -> Result<(), VerificationError> {
-    multiplexing::verify_pre_hashed_shake128::<
+    ml_dsa_generic::multiplexing::verify_pre_hashed_shake128::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
@@ -424,7 +434,12 @@ pub fn verify_pre_hashed_shake128(
         COMMITMENT_HASH_SIZE,
         ONES_IN_VERIFIER_CHALLENGE,
         MAX_ONES_IN_HINT,
-    >(&verification_key.0, message, context, &signature.0)
+    >(
+        verification_key.as_ref(),
+        message,
+        context,
+        signature.as_ref(),
+    )
 }
 /// Sign with ML-DSA 65 (Algorithm 7 in FIPS 204)
 ///
@@ -437,7 +452,7 @@ pub fn sign_internal(
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSA65Signature, SigningError> {
-    multiplexing::sign_internal::<
+    ml_dsa_generic::multiplexing::sign_internal::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -452,7 +467,7 @@ pub fn sign_internal(
         GAMMA1_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
         SIGNATURE_SIZE,
-    >(&signing_key.0, message, randomness)
+    >(signing_key.as_ref(), message, randomness)
 }
 
 /// Verify an ML-DSA-65 Signature (Algorithm 8 in FIPS204)
@@ -465,7 +480,7 @@ pub fn verify_internal(
     message: &[u8],
     signature: &MLDSA65Signature,
 ) -> Result<(), VerificationError> {
-    multiplexing::verify_internal::<
+    ml_dsa_generic::multiplexing::verify_internal::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
@@ -479,5 +494,5 @@ pub fn verify_internal(
         COMMITMENT_HASH_SIZE,
         ONES_IN_VERIFIER_CHALLENGE,
         MAX_ONES_IN_HINT,
-    >(&verification_key.0, message, &signature.0)
+    >(verification_key.as_ref(), message, signature.as_ref())
 }
