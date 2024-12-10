@@ -3,6 +3,14 @@ module Libcrux_ml_dsa.Simd.Avx2.Vector_type
 open Core
 open FStar.Mul
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl: Core.Convert.t_From t_AVX2SIMDUnit u8 =
+  {
+    f_from_pre = (fun (coefficients: u8) -> true);
+    f_from_post = (fun (coefficients: u8) (out: t_AVX2SIMDUnit) -> true);
+    f_from = fun (coefficients: u8) -> { f_coefficients = coefficients } <: t_AVX2SIMDUnit
+  }
+
 let v_ZERO (_: Prims.unit) =
   Core.Convert.f_into #u8
     #t_AVX2SIMDUnit

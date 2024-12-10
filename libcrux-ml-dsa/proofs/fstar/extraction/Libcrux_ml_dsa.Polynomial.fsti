@@ -13,13 +13,6 @@ type t_PolynomialRingElement
   (v_SIMDUnit: Type0) {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
   = { f_simd_units:t_Array v_SIMDUnit (sz 32) }
 
-val impl__infinity_norm_exceeds
-      (#v_SIMDUnit: Type0)
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (self: t_PolynomialRingElement v_SIMDUnit)
-      (bound: i32)
-    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
-
 val impl__ZERO:
     #v_SIMDUnit: Type0 ->
     {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
@@ -37,6 +30,13 @@ val impl__add
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (self rhs: t_PolynomialRingElement v_SIMDUnit)
     : Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl__infinity_norm_exceeds
+      (#v_SIMDUnit: Type0)
+      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (self: t_PolynomialRingElement v_SIMDUnit)
+      (bound: i32)
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 val impl__subtract
       (#v_SIMDUnit: Type0)

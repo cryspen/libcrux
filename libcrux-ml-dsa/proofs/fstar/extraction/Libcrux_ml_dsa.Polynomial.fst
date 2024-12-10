@@ -9,36 +9,6 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let impl__infinity_norm_exceeds
-      (#v_SIMDUnit: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (self: t_PolynomialRingElement v_SIMDUnit)
-      (bound: i32)
-     =
-  let exceeds:bool = false in
-  let exceeds:bool =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(t_Array v_SIMDUnit
-              (sz 32))
-          #FStar.Tactics.Typeclasses.solve
-          self.f_simd_units
-        <:
-        Core.Array.Iter.t_IntoIter v_SIMDUnit (sz 32))
-      exceeds
-      (fun exceeds simd_unit ->
-          let exceeds:bool = exceeds in
-          let simd_unit:v_SIMDUnit = simd_unit in
-          exceeds ||
-          (Libcrux_ml_dsa.Simd.Traits.f_infinity_norm_exceeds #v_SIMDUnit
-              #FStar.Tactics.Typeclasses.solve
-              simd_unit
-              bound
-            <:
-            bool))
-  in
-  exceeds
-
 let impl__ZERO
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -159,6 +129,36 @@ let impl__add
           t_PolynomialRingElement v_SIMDUnit)
   in
   sum
+
+let impl__infinity_norm_exceeds
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (self: t_PolynomialRingElement v_SIMDUnit)
+      (bound: i32)
+     =
+  let exceeds:bool = false in
+  let exceeds:bool =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (Core.Slice.impl__len #v_SIMDUnit (self.f_simd_units <: t_Slice v_SIMDUnit) <: usize)
+      (fun exceeds temp_1_ ->
+          let exceeds:bool = exceeds in
+          let _:usize = temp_1_ in
+          true)
+      exceeds
+      (fun exceeds i ->
+          let exceeds:bool = exceeds in
+          let i:usize = i in
+          exceeds ||
+          (Libcrux_ml_dsa.Simd.Traits.f_infinity_norm_exceeds #v_SIMDUnit
+              #FStar.Tactics.Typeclasses.solve
+              (self.f_simd_units.[ i ] <: v_SIMDUnit)
+              bound
+            <:
+            bool))
+  in
+  exceeds
 
 let impl__subtract
       (#v_SIMDUnit: Type0)

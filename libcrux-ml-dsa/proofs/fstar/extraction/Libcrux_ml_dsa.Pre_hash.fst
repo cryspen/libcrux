@@ -28,3 +28,62 @@ let impl_1__new (context: t_Slice u8) (pre_hash_oid: Core.Option.t_Option (t_Arr
 
 let t_DomainSeparationError_cast_to_repr (x: t_DomainSeparationError) =
   match x with | DomainSeparationError_ContextTooLongError  -> isz 0
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_2: Core.Convert.t_From Libcrux_ml_dsa.Types.t_SigningError t_DomainSeparationError =
+  {
+    f_from_pre = (fun (e: t_DomainSeparationError) -> true);
+    f_from_post
+    =
+    (fun (e: t_DomainSeparationError) (out: Libcrux_ml_dsa.Types.t_SigningError) -> true);
+    f_from
+    =
+    fun (e: t_DomainSeparationError) ->
+      match e with
+      | DomainSeparationError_ContextTooLongError  ->
+        Libcrux_ml_dsa.Types.SigningError_ContextTooLongError <: Libcrux_ml_dsa.Types.t_SigningError
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_3: Core.Convert.t_From Libcrux_ml_dsa.Types.t_VerificationError t_DomainSeparationError =
+  {
+    f_from_pre = (fun (e: t_DomainSeparationError) -> true);
+    f_from_post
+    =
+    (fun (e: t_DomainSeparationError) (out: Libcrux_ml_dsa.Types.t_VerificationError) -> true);
+    f_from
+    =
+    fun (e: t_DomainSeparationError) ->
+      match e with
+      | DomainSeparationError_ContextTooLongError  ->
+        Libcrux_ml_dsa.Types.VerificationError_ContextTooLongError
+        <:
+        Libcrux_ml_dsa.Types.t_VerificationError
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl: t_PreHash t_SHAKE128_PH (sz 256) =
+  {
+    f_oid_pre = (fun (_: Prims.unit) -> true);
+    f_oid_post = (fun (_: Prims.unit) (out: t_Array u8 (sz 11)) -> true);
+    f_oid
+    =
+    (fun (_: Prims.unit) ->
+        let list = [6uy; 9uy; 96uy; 134uy; 72uy; 1uy; 101uy; 3uy; 4uy; 2uy; 11uy] in
+        FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 11);
+        Rust_primitives.Hax.array_of_list 11 list);
+    f_hash_pre = (fun (message: t_Slice u8) -> true);
+    f_hash_post = (fun (message: t_Slice u8) (out: t_Array u8 (sz 256)) -> true);
+    f_hash
+    =
+    fun (message: t_Slice u8) ->
+      let output:t_Array u8 (sz 256) = Rust_primitives.Hax.repeat 0uy (sz 256) in
+      let output:t_Array u8 (sz 256) =
+        Libcrux_ml_dsa.Hash_functions.Shake128.f_shake128 #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128
+          #FStar.Tactics.Typeclasses.solve
+          (sz 256)
+          message
+          output
+      in
+      output
+  }
