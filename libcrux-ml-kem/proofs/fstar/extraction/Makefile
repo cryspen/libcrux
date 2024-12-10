@@ -1,9 +1,7 @@
 SLOW_MODULES += Libcrux_ml_kem.Vector.Portable.Serialize.fst
 
-ADMIT_MODULES = Libcrux_ml_kem.Vector.Avx2.fsti \
-              Libcrux_ml_kem.Vector.Avx2.fst \
+ADMIT_MODULES = Libcrux_ml_kem.Vector.Avx2.fst \
               Libcrux_ml_kem.Vector.Avx2.Ntt.fst \
-              Libcrux_ml_kem.Vector.Avx2.Sampling.fst \
               Libcrux_ml_kem.Vector.Rej_sample_table.fsti \
               Libcrux_ml_kem.Vector.Neon.Arithmetic.fst \
               Libcrux_ml_kem.Vector.Neon.Compress.fst \
