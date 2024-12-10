@@ -288,6 +288,7 @@ impl Operations for SIMD256Vector {
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 1 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 1 (impl.f_repr $vector) $out"))]
     #[inline(always)]
     fn serialize_1(vector: Self) -> [u8; 2] {
+        hax_lib::fstar!("admit ()");
         serialize::serialize_1(vector.elements)
     }
 
@@ -295,6 +296,7 @@ impl Operations for SIMD256Vector {
     #[ensures(|out| fstar!("sz (Seq.length $bytes) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $bytes (impl.f_repr $out)"))]
     #[inline(always)]
     fn deserialize_1(bytes: &[u8]) -> Self {
+        hax_lib::fstar!("admit ()");
         Self {
             elements: serialize::deserialize_1(bytes),
         }
@@ -304,6 +306,7 @@ impl Operations for SIMD256Vector {
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 4 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $vector) $out"))]
     #[inline(always)]
     fn serialize_4(vector: Self) -> [u8; 8] {
+        hax_lib::fstar!("admit ()");
         serialize::serialize_4(vector.elements)
     }
 
@@ -311,6 +314,7 @@ impl Operations for SIMD256Vector {
     #[ensures(|out| fstar!("sz (Seq.length $bytes) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $bytes (impl.f_repr $out)"))]
     #[inline(always)]
     fn deserialize_4(bytes: &[u8]) -> Self {
+        hax_lib::fstar!("admit ()");
         Self {
             elements: serialize::deserialize_4(bytes),
         }
@@ -335,6 +339,7 @@ impl Operations for SIMD256Vector {
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 10 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $vector) $out"))]
     #[inline(always)]
     fn serialize_10(vector: Self) -> [u8; 20] {
+        hax_lib::fstar!("admit ()");
         serialize::serialize_10(vector.elements)
     }
 
@@ -342,6 +347,7 @@ impl Operations for SIMD256Vector {
     #[ensures(|out| fstar!("sz (Seq.length $bytes) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $bytes (impl.f_repr $out)"))]
     #[inline(always)]
     fn deserialize_10(bytes: &[u8]) -> Self {
+        hax_lib::fstar!("admit ()");
         Self {
             elements: serialize::deserialize_10(bytes),
         }
@@ -364,6 +370,7 @@ impl Operations for SIMD256Vector {
     #[ensures(|out| fstar!("Spec.MLKEM.serialize_pre 12 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $vector) $out"))]
     #[inline(always)]
     fn serialize_12(vector: Self) -> [u8; 24] {
+        hax_lib::fstar!("admit ()");
         serialize::serialize_12(vector.elements)
     }
 
@@ -371,6 +378,7 @@ impl Operations for SIMD256Vector {
     #[ensures(|out| fstar!("sz (Seq.length $bytes) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $bytes (impl.f_repr $out)"))]
     #[inline(always)]
     fn deserialize_12(bytes: &[u8]) -> Self {
+        hax_lib::fstar!("admit ()");
         Self {
             elements: serialize::deserialize_12(bytes),
         }

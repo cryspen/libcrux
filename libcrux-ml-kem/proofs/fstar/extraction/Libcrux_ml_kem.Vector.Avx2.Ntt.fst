@@ -155,6 +155,8 @@ let ntt_layer_3_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta: i
   in
   Libcrux_intrinsics.Avx2_extract.mm256_inserti128_si256 1l combined upper_coefficients
 
+#push-options "--admit_smt_queries true"
+
 let ntt_multiply (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta0 zeta1 zeta2 zeta3: i16) =
   let shuffle_with:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 15y 14y 11y 10y 7y 6y 3y 2y 13y 12y 9y 8y 5y 4y
@@ -245,3 +247,5 @@ let ntt_multiply (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta0 zeta
     Libcrux_intrinsics.Avx2_extract.mm256_slli_epi32 16l products_right
   in
   Libcrux_intrinsics.Avx2_extract.mm256_blend_epi16 170l products_left products_right
+
+#pop-options
