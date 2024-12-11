@@ -3,8 +3,8 @@ use crate::vector::portable::PortableVector;
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --compat_pre_core 0")]
-#[hax_lib::requires(fstar!("forall i. i % 16 >= 1 ==> vector i == 0"))]
-#[hax_lib::ensures(|result| fstar!("forall i. bit_vec_of_int_t_array $result 8 i == $vector (i * 16)"))]
+#[hax_lib::requires(fstar!(r#"forall i. i % 16 >= 1 ==> vector i == 0"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall i. bit_vec_of_int_t_array $result 8 i == $vector (i * 16)"#))]
 pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
     // Suppose |vector| is laid out as follows (superscript number indicates the
     // corresponding bit is duplicated that many times):
@@ -109,6 +109,7 @@ pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
 "#
     ))]
     #[inline(always)]
+    #[hax_lib::fstar::options("--ext context_pruning")]
     #[hax_lib::fstar::before(r#"[@@"opaque_to_smt"]"#)]
     pub(crate) fn deserialize_1_i16s(a: i16, b: i16) -> Vec256 {
         // We need to take each bit from the 2 bytes of input and put them
@@ -178,7 +179,7 @@ fn mm256_concat_pairs_n(n: u8, x: Vec256) -> Vec256 {
         r#"forall (i: nat{i < 256}). i % 16 < 4 || $vector i = 0"#
     )
 )]
-#[hax_lib::ensures(|r| fstar!("forall (i: nat{i < 64}). bit_vec_of_int_t_array $r 8 i == $vector ((i/4) * 16 + i%4)"))]
+#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 64}). bit_vec_of_int_t_array $r 8 i == $vector ((i/4) * 16 + i%4)"#))]
 #[inline(always)]
 pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
     let mut serialized = [0u8; 16];
@@ -503,11 +504,11 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
-#[hax_lib::requires(fstar!("forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0"))]
-#[hax_lib::ensures(|r| fstar!("forall (i: nat{i < 160}). bit_vec_of_int_t_array r 8 i == vector ((i/10) * 16 + i%10)"))]
+#[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0"#))]
+#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 160}). bit_vec_of_int_t_array r 8 i == vector ((i/10) * 16 + i%10)"#))]
 pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
     #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
-    #[hax_lib::requires(fstar!("forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0"))]
+    #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0"#))]
     #[hax_lib::ensures(|(lower_8, upper_8)| fstar!(
         r#"
          forall (i: nat{i < 160}).
@@ -685,12 +686,12 @@ pub(crate) fn deserialize_11(bytes: &[u8]) -> Vec256 {
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
-#[hax_lib::requires(fstar!("forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0"))]
-#[hax_lib::ensures(|r| fstar!("forall (i: nat{i < 192}). bit_vec_of_int_t_array r 8 i == vector ((i/12) * 16 + i%12)"))]
+#[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0"#))]
+#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 192}). bit_vec_of_int_t_array r 8 i == vector ((i/12) * 16 + i%12)"#))]
 pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
     #[inline(always)]
     #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
-    #[hax_lib::requires(fstar!("forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0"))]
+    #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0"#))]
     #[hax_lib::ensures(|(lower_8, upper_8)| fstar!(
         r#"
          forall (i: nat{i < 192}).

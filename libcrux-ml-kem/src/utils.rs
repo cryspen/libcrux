@@ -9,16 +9,20 @@
     slice.len() <= LEN
 ))]
 #[cfg_attr(hax, hax_lib::ensures(|result|
-    fstar!("$result == Seq.append $slice (Seq.create (v $LEN - v (${slice.len()})) 0uy)")))]
+    fstar!(r#"$result == Seq.append $slice (Seq.create (v $LEN - v (${slice.len()})) 0uy)"#)))]
 pub(crate) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
     let mut out = [0u8; LEN];
     out[0..slice.len()].copy_from_slice(slice);
-    hax_lib::fstar!("assert (Seq.slice out 0 (Seq.length slice) == slice)");
-    hax_lib::fstar!("assert (Seq.slice out (Seq.length slice) (v v_LEN) == Seq.slice (Seq.create (v v_LEN) 0uy) (Seq.length slice) (v v_LEN))");
+    hax_lib::fstar!(r#"assert (Seq.slice out 0 (Seq.length slice) == slice)"#);
+    hax_lib::fstar!(
+        r#"assert (Seq.slice out (Seq.length slice) (v v_LEN) == Seq.slice (Seq.create (v v_LEN) 0uy) (Seq.length slice) (v v_LEN))"#
+    );
     hax_lib::fstar!(
         "assert (forall i. i < Seq.length slice ==> Seq.index out i == Seq.index slice i)"
     );
-    hax_lib::fstar!("assert (forall i. (i >= Seq.length slice && i < v v_LEN) ==> Seq.index out i == Seq.index (Seq.slice out (Seq.length slice) (v v_LEN)) (i - Seq.length slice))");
+    hax_lib::fstar!(
+        r#"assert (forall i. (i >= Seq.length slice && i < v v_LEN) ==> Seq.index out i == Seq.index (Seq.slice out (Seq.length slice) (v v_LEN)) (i - Seq.length slice))"#
+    );
     hax_lib::fstar!(
         "Seq.lemma_eq_intro out (Seq.append slice (Seq.create (v v_LEN - Seq.length slice) 0uy))"
     );
@@ -27,12 +31,12 @@ pub(crate) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200")]
-#[hax_lib::requires(fstar!("range (v $domain_separator + v $K) u8_inttype"))]
+#[hax_lib::requires(fstar!(r#"range (v $domain_separator + v $K) u8_inttype"#))]
 #[hax_lib::ensures(|ds|
-    fstar!("v $ds == v $domain_separator + v $K /\\
+    fstar!(r#"v $ds == v $domain_separator + v $K /\\
             (forall (i:nat). i < v $K ==>
                 v (Seq.index (Seq.index ${prf_inputs}_future i) 32) == v $domain_separator + i /\\
-                Seq.slice (Seq.index ${prf_inputs}_future i) 0 32 == Seq.slice (Seq.index $prf_inputs i) 0 32)")
+                Seq.slice (Seq.index ${prf_inputs}_future i) 0 32 == Seq.slice (Seq.index $prf_inputs i) 0 32)"#)
 )]
 pub(crate) fn prf_input_inc<const K: usize>(
     prf_inputs: &mut [[u8; 33]; K],
@@ -42,11 +46,13 @@ pub(crate) fn prf_input_inc<const K: usize>(
     let _prf_inputs_init = prf_inputs.clone();
     for i in 0..K {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!("v $domain_separator == v $_domain_separator_init + v $i /\\
+            fstar!(
+                r#"v $domain_separator == v $_domain_separator_init + v $i /\\
           (v $i < v $K ==> (forall (j:nat). (j >= v $i /\\ j < v $K) ==>
             prf_inputs.[ sz j ] == ${_prf_inputs_init}.[ sz j ])) /\\
           (forall (j:nat). j < v $i ==> v (Seq.index (Seq.index prf_inputs j) 32) == v $_domain_separator_init + j /\\
-            Seq.slice (Seq.index prf_inputs j) 0 32 == Seq.slice (Seq.index $_prf_inputs_init j) 0 32)")
+            Seq.slice (Seq.index prf_inputs j) 0 32 == Seq.slice (Seq.index $_prf_inputs_init j) 0 32)"#
+            )
         });
         prf_inputs[i][32] = domain_separator;
         domain_separator += 1;
