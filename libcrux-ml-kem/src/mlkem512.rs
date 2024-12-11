@@ -253,9 +253,9 @@ macro_rules! instantiate {
                 }
 
                 /// Get the serialized public key.
-                #[hax_lib::requires(fstar!("forall (i:nat). i < 2 ==>
+                #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 2 ==>
                     Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
-                        ${public_key}.f_ind_cpa_public_key.f_t_as_ntt i)"))]
+                        ${public_key}.f_ind_cpa_public_key.f_t_as_ntt i)"#))]
                 pub fn serialized_public_key(
                     public_key: &MlKem512PublicKeyUnpacked,
                     serialized: &mut MlKem512PublicKey,
@@ -277,17 +277,17 @@ macro_rules! instantiate {
                 }
 
                 /// Get the serialized public key.
-                #[hax_lib::requires(fstar!("forall (i:nat). i < 2 ==>
+                #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 2 ==>
                     Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
-                        ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"))]
+                        ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"#))]
                 pub fn key_pair_serialized_public_key_mut(key_pair: &MlKem512KeyPairUnpacked, serialized: &mut MlKem512PublicKey) {
                     key_pair.serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT_512, CPA_PKE_PUBLIC_KEY_SIZE_512>(serialized);
                 }
 
                 /// Get the serialized public key.
-                #[hax_lib::requires(fstar!("forall (i:nat). i < 2 ==>
+                #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 2 ==>
                     Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
-                        ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"))]
+                        ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"#))]
                 pub fn key_pair_serialized_public_key(key_pair: &MlKem512KeyPairUnpacked) ->MlKem512PublicKey {
                     key_pair.serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT_512, CPA_PKE_PUBLIC_KEY_SIZE_512>()
                 }
@@ -455,8 +455,8 @@ pub fn validate_private_key(
 #[cfg(not(eurydice))]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|res|
-    fstar!("let ((secret_key, public_key), valid) = Spec.MLKEM.Instances.mlkem512_generate_keypair $randomness in
-        valid ==> (${res}.f_sk.f_value == secret_key /\\ ${res}.f_pk.f_value == public_key)")
+    fstar!(r#"let ((secret_key, public_key), valid) = Spec.MLKEM.Instances.mlkem512_generate_keypair $randomness in
+        valid ==> (${res}.f_sk.f_value == secret_key /\\ ${res}.f_pk.f_value == public_key)"#)
 )]
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512KeyPair {
     multiplexing::generate_keypair::<
@@ -478,9 +478,9 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512
 #[cfg(not(eurydice))]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|res|
-    fstar!("let ((ciphertext, shared_secret), valid) = Spec.MLKEM.Instances.mlkem512_encapsulate ${public_key}.f_value $randomness in
+    fstar!(r#"let ((ciphertext, shared_secret), valid) = Spec.MLKEM.Instances.mlkem512_encapsulate ${public_key}.f_value $randomness in
         let (res_ciphertext, res_shared_secret) = $res in
-        valid ==> (res_ciphertext.f_value == ciphertext /\\ res_shared_secret == shared_secret)")
+        valid ==> (res_ciphertext.f_value == ciphertext /\\ res_shared_secret == shared_secret)"#)
 )]
 pub fn encapsulate(
     public_key: &MlKem512PublicKey,
@@ -510,8 +510,8 @@ pub fn encapsulate(
 #[cfg(not(eurydice))]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|res|
-    fstar!("let (shared_secret, valid) = Spec.MLKEM.Instances.mlkem512_decapsulate ${private_key}.f_value ${ciphertext}.f_value in
-        valid ==> $res == shared_secret")
+    fstar!(r#"let (shared_secret, valid) = Spec.MLKEM.Instances.mlkem512_decapsulate ${private_key}.f_value ${ciphertext}.f_value in
+        valid ==> $res == shared_secret"#)
 )]
 pub fn decapsulate(
     private_key: &MlKem512PrivateKey,
