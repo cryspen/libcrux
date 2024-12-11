@@ -54,7 +54,7 @@ fn cond_subtract_3329(vector: SIMD256Vector) -> SIMD256Vector {
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (repr $vector) i) >= 0 /\\
+#[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (repr $vector) i) >= 0 /\
     v (Seq.index (repr $vector) i) < 3329"#))]
 #[hax_lib::ensures(|out| fstar!(r#"forall (i:nat). i < 16 ==> bounded (Seq.index (repr $out) i) 1"#))]
 fn compress_1(vector: SIMD256Vector) -> SIMD256Vector {
@@ -68,8 +68,8 @@ fn compress_1(vector: SIMD256Vector) -> SIMD256Vector {
 #[hax_lib::requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
     v $COEFFICIENT_BITS == 5 \\/
     v $COEFFICIENT_BITS == 10 \\/
-    v $COEFFICIENT_BITS == 11) /\\
-    (forall (i:nat). i < 16 ==> v (Seq.index (repr $vector) i) >= 0 /\\
+    v $COEFFICIENT_BITS == 11) /\
+    (forall (i:nat). i < 16 ==> v (Seq.index (repr $vector) i) >= 0 /\
     v (Seq.index (repr $vector) i) < 3329)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
     v $COEFFICIENT_BITS == 5 \\/
@@ -84,8 +84,8 @@ fn compress<const COEFFICIENT_BITS: i32>(vector: SIMD256Vector) -> SIMD256Vector
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
-                    Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
+                    Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
                     Spec.Utils.is_i16b_array (11207+5*3328) (repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+6*3328) (repr $out)"#))]
 fn ntt_layer_1_step(
@@ -102,7 +102,7 @@ fn ntt_layer_1_step(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                     Spec.Utils.is_i16b_array (11207+4*3328) (repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+5*3328) (repr $out)"#))]
 fn ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
@@ -113,7 +113,7 @@ fn ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vec
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\\
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
                     Spec.Utils.is_i16b_array (11207+3*3328) (repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+4*3328) (repr $out)"#))]
 fn ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
@@ -124,8 +124,8 @@ fn ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
-                    Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3  /\\
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
+                    Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3  /\
                     Spec.Utils.is_i16b_array (4*3328) (repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr $out)"#))]
 fn inv_ntt_layer_1_step(
@@ -142,7 +142,7 @@ fn inv_ntt_layer_1_step(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                     Spec.Utils.is_i16b_array 3328 (repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr $out)"#))]
 fn inv_ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
@@ -153,7 +153,7 @@ fn inv_ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD25
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\\
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
                     Spec.Utils.is_i16b_array 3328 (repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr $out)"#))]
 fn inv_ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
@@ -164,9 +164,9 @@ fn inv_ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
-                    Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
-                    Spec.Utils.is_i16b_array 3328 (repr ${lhs}) /\\
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
+                    Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
+                    Spec.Utils.is_i16b_array 3328 (repr ${lhs}) /\
                     Spec.Utils.is_i16b_array 3328 (repr ${rhs})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr $out)"#))]
 fn ntt_multiply(
@@ -327,7 +327,7 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    #[ensures(|out| fstar!(r#"(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $vector)"#))]
+    #[ensures(|out| fstar!(r#"(v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $vector)"#))]
     #[inline(always)]
     fn shift_right<const SHIFT_BY: i32>(vector: Self) -> Self {
         Self {
@@ -358,7 +358,7 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\\
+    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\
         v (Seq.index (impl.f_repr $vector) i) < 3329"#))]
     #[ensures(|out| fstar!(r#"forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) 1"#))]
     #[inline(always)]
@@ -369,8 +369,8 @@ impl Operations for SIMD256Vector {
     #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
             v $COEFFICIENT_BITS == 5 \\/
             v $COEFFICIENT_BITS == 10 \\/
-            v $COEFFICIENT_BITS == 11) /\\
-        (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\\
+            v $COEFFICIENT_BITS == 11) /\
+        (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\
             v (Seq.index (impl.f_repr $vector) i) < 3329)"#))]
     #[ensures(|out| fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
             v $COEFFICIENT_BITS == 5 \\/
@@ -385,8 +385,8 @@ impl Operations for SIMD256Vector {
     #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
         v $COEFFICIENT_BITS == 5 \\/
         v $COEFFICIENT_BITS == 10 \\/
-        v $COEFFICIENT_BITS == 11) /\\
-    (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\\
+        v $COEFFICIENT_BITS == 11) /\
+    (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\
         v (Seq.index (impl.f_repr $vector) i) < pow2 (v $COEFFICIENT_BITS))"#))]
     #[inline(always)]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(vector: Self) -> Self {
@@ -397,8 +397,8 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
-                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
                        Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr ${vector})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+6*3328) (impl.f_repr $out)"#))]
     #[inline(always)]
@@ -406,7 +406,7 @@ impl Operations for SIMD256Vector {
         ntt_layer_1_step(vector, zeta0, zeta1, zeta2, zeta3)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                        Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr ${vector})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr $out)"#))]
     #[inline(always)]
@@ -414,7 +414,7 @@ impl Operations for SIMD256Vector {
         ntt_layer_2_step(vector, zeta0, zeta1)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
                        Spec.Utils.is_i16b_array (11207+3*3328) (impl.f_repr ${vector})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr $out)"#))]
     #[inline(always)]
@@ -422,8 +422,8 @@ impl Operations for SIMD256Vector {
         ntt_layer_3_step(vector, zeta)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
-                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3  /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3  /\
                        Spec.Utils.is_i16b_array (4*3328) (impl.f_repr ${vector})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
@@ -431,7 +431,7 @@ impl Operations for SIMD256Vector {
         inv_ntt_layer_1_step(vector, zeta0, zeta1, zeta2, zeta3)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                        Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
@@ -439,7 +439,7 @@ impl Operations for SIMD256Vector {
         inv_ntt_layer_2_step(vector, zeta0, zeta1)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
                        Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
@@ -447,9 +447,9 @@ impl Operations for SIMD256Vector {
         inv_ntt_layer_3_step(vector, zeta)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
-                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${lhs}) /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
+                       Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
+                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${lhs}) /\
                        Spec.Utils.is_i16b_array 3328 (impl.f_repr ${rhs})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
@@ -549,7 +549,7 @@ impl Operations for SIMD256Vector {
 
     #[requires(input.len() == 24 && output.len() == 16)]
     #[ensures(|result|
-        fstar!(r#"Seq.length $output_future == Seq.length $output /\\ v $result <= 16"#)
+        fstar!(r#"Seq.length $output_future == Seq.length $output /\ v $result <= 16"#)
     )]
     #[inline(always)]
     fn rej_sample(input: &[u8], output: &mut [i16]) -> usize {

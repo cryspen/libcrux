@@ -259,7 +259,7 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(fstar!(r#"(v $COMPRESSION_FACTOR == 10 \\/ v $COMPRESSION_FACTOR == 11) /\
+#[hax_lib::requires(fstar!(r#"(v $COMPRESSION_FACTOR == 10 \/ v $COMPRESSION_FACTOR == 11) /\
     v $OUT_LEN == 32 * v $COMPRESSION_FACTOR /\ coefficients_field_modulus_range $re"#))]
 #[hax_lib::ensures(|result|
     fstar!(r#"$result == Spec.MLKEM.compress_then_byte_encode (v $COMPRESSION_FACTOR)
@@ -273,10 +273,10 @@ pub(super) fn compress_then_serialize_ring_element_u<
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
     hax_lib::fstar!(
-        "assert (
-        (v (cast $COMPRESSION_FACTOR <: u32) == 10) \\/
+        r#"assert (
+        (v (cast $COMPRESSION_FACTOR <: u32) == 10) \/
         (v (cast $COMPRESSION_FACTOR <: u32) == 11));
-        Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v $COMPRESSION_FACTOR)"
+        Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v $COMPRESSION_FACTOR)"#
     );
     match COMPRESSION_FACTOR as u32 {
         10 => compress_then_serialize_10(re),
@@ -365,10 +365,10 @@ pub(super) fn compress_then_serialize_ring_element_v<
     out: &mut [u8],
 ) {
     hax_lib::fstar!(
-        "assert (
-        (v (cast $COMPRESSION_FACTOR <: u32) == 4) \\/
+        r#"assert (
+        (v (cast $COMPRESSION_FACTOR <: u32) == 4) \/
         (v (cast $COMPRESSION_FACTOR <: u32) == 5));
-        Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v $COMPRESSION_FACTOR)"
+        Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v $COMPRESSION_FACTOR)"#
     );
     match COMPRESSION_FACTOR as u32 {
         4 => compress_then_serialize_4(re, out),
@@ -435,9 +435,9 @@ pub(super) fn deserialize_then_decompress_ring_element_u<
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
     hax_lib::fstar!(
-        "assert (
-        (v (cast $COMPRESSION_FACTOR <: u32) == 10) \\/
-        (v (cast $COMPRESSION_FACTOR <: u32) == 11))"
+        r#"assert (
+        (v (cast $COMPRESSION_FACTOR <: u32) == 10) \/
+        (v (cast $COMPRESSION_FACTOR <: u32) == 11))"#
     );
     match COMPRESSION_FACTOR as u32 {
         10 => deserialize_then_decompress_10(serialized),
@@ -503,9 +503,9 @@ pub(super) fn deserialize_then_decompress_ring_element_v<
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
     hax_lib::fstar!(
-        "assert (
-        (v (cast $COMPRESSION_FACTOR <: u32) == 4) \\/
-        (v (cast $COMPRESSION_FACTOR <: u32) == 5))"
+        r#"assert (
+        (v (cast $COMPRESSION_FACTOR <: u32) == 4) \/
+        (v (cast $COMPRESSION_FACTOR <: u32) == 5))"#
     );
     match COMPRESSION_FACTOR as u32 {
         4 => deserialize_then_decompress_4(serialized),

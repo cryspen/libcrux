@@ -165,7 +165,7 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
     }
 
     /// Create a new [`MlKemKeyPair`] from the secret and public key.
-    #[ensures(|result| fstar!(r#"${result}.f_sk == $sk /\\ ${result}.f_pk == $pk"#))]
+    #[ensures(|result| fstar!(r#"${result}.f_sk == $sk /\ ${result}.f_pk == $pk"#))]
     pub fn from(
         sk: MlKemPrivateKey<PRIVATE_KEY_SIZE>,
         pk: MlKemPublicKey<PUBLIC_KEY_SIZE>,
@@ -216,13 +216,13 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
            let (ind_cpa_public_key_hash_s,implicit_rejection_value_s) = split rest Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE in
            let (ind_cpa_secret_key,ind_cpa_public_key,ind_cpa_public_key_hash,implicit_rejection_value)
                = result in
-           ind_cpa_secret_key_s == ind_cpa_secret_key /\\
-           ind_cpa_public_key_s == ind_cpa_public_key /\\
-           ind_cpa_public_key_hash_s == ind_cpa_public_key_hash /\\
-           implicit_rejection_value_s == implicit_rejection_value /\\
-           Seq.length ind_cpa_secret_key == v v_CPA_SECRET_KEY_SIZE /\\
-           Seq.length ind_cpa_public_key == v v_PUBLIC_KEY_SIZE /\\
-           Seq.length ind_cpa_public_key_hash == v Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE /\\
+           ind_cpa_secret_key_s == ind_cpa_secret_key /\
+           ind_cpa_public_key_s == ind_cpa_public_key /\
+           ind_cpa_public_key_hash_s == ind_cpa_public_key_hash /\
+           implicit_rejection_value_s == implicit_rejection_value /\
+           Seq.length ind_cpa_secret_key == v v_CPA_SECRET_KEY_SIZE /\
+           Seq.length ind_cpa_public_key == v v_PUBLIC_KEY_SIZE /\
+           Seq.length ind_cpa_public_key_hash == v Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE /\
            Seq.length implicit_rejection_value == 
            Seq.length private_key - 
              (v v_CPA_SECRET_KEY_SIZE + v v_PUBLIC_KEY_SIZE + v Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE)

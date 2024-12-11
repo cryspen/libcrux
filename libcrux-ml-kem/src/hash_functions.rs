@@ -48,10 +48,10 @@ pub(crate) trait Hash<const K: usize> {
     fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN];
 
     /// PRFxN aka N SHAKE256
-    #[requires(fstar!(r#"v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)"#))]
+    #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
     #[ensures(|result|
         // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
-        fstar!(r#"(v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)) ==>
+        fstar!(r#"(v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)) ==>
             $result == Spec.Utils.v_PRFxN $K $LEN $input"#))
     ]
     fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K];
@@ -114,7 +114,7 @@ pub(crate) mod portable {
         digest
     }
 
-    #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)"#))]
+    #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
     #[hax_lib::ensures(|result|
         fstar!(r#"$result == Spec.Utils.v_PRFxN $K $LEN $input"#))
     ]
@@ -197,9 +197,9 @@ pub(crate) mod portable {
             PRF::<LEN>(input)
         }
 
-        #[requires(fstar!(r#"v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)"#))]
+        #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
         #[ensures(|out|
-            fstar!(r#"(v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)) ==>
+            fstar!(r#"(v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)) ==>
                 $out == Spec.Utils.v_PRFxN $K $LEN $input"#))
         ]
         #[inline(always)]
@@ -273,7 +273,7 @@ pub(crate) mod avx2 {
         digest
     }
 
-    #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)"#))]
+    #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
     #[hax_lib::ensures(|result|
         fstar!(r#"$result == Spec.Utils.v_PRFxN $K $LEN $input"#))
     ]
@@ -450,9 +450,9 @@ pub(crate) mod avx2 {
             PRF::<LEN>(input)
         }
 
-        #[requires(fstar!(r#"v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)"#))]
+        #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
         #[ensures(|out|
-            fstar!(r#"(v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)) ==>
+            fstar!(r#"(v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)) ==>
                 $out == Spec.Utils.v_PRFxN $K $LEN $input"#))
         ]
         #[inline(always)]
@@ -524,7 +524,7 @@ pub(crate) mod neon {
         digest
     }
 
-    #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)"#))]
+    #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
     #[hax_lib::ensures(|result|
         fstar!(r#"$result == Spec.Utils.v_PRFxN $K $LEN $input"#))
     ]
@@ -728,10 +728,10 @@ pub(crate) mod neon {
             PRF::<LEN>(input)
         }
 
-        #[requires(fstar!(r#"v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)"#))]
+        #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
         #[ensures(|out|
             // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
-            fstar!(r#"(v $LEN < pow2 32 /\\ (v $K == 2 \\/ v $K == 3 \\/ v $K == 4)) ==>
+            fstar!(r#"(v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)) ==>
                 $out == Spec.Utils.v_PRFxN $K $LEN $input"#))
         ]
         #[inline(always)]

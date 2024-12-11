@@ -53,7 +53,7 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
         let u_spec = to_spec_vector_t $u_as_ntt in
         let v_spec = to_spec_poly_t $v in
         to_spec_poly_t $res ==
-            Spec.MLKEM.(poly_sub v_spec (poly_inv_ntt (vector_dot_product_ntt #$K secret_spec u_spec))) /\\
+            Spec.MLKEM.(poly_sub v_spec (poly_inv_ntt (vector_dot_product_ntt #$K secret_spec u_spec))) /\
         Libcrux_ml_kem.Serialize.coefficients_field_modulus_range $res"#)
 )]
 pub(crate) fn compute_message<const K: usize, Vector: Operations>(
@@ -85,7 +85,7 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
         let e2_spec = to_spec_poly_t $error_2 in
         let m_spec = to_spec_poly_t $message in
         let res_spec = to_spec_poly_t $res in
-        res_spec == Spec.MLKEM.(poly_add (poly_add (vector_dot_product_ntt #$K tt_spec r_spec) e2_spec) m_spec) /\\
+        res_spec == Spec.MLKEM.(poly_add (poly_add (vector_dot_product_ntt #$K tt_spec r_spec) e2_spec) m_spec) /\
         Libcrux_ml_kem.Serialize.coefficients_field_modulus_range $res"#)
 )]
 pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
@@ -117,7 +117,7 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
         let r_spec = to_spec_vector_t $r_as_ntt in
         let e_spec = to_spec_vector_t $error_1 in
         let res_spec = to_spec_vector_t $res in
-        res_spec == Spec.MLKEM.(vector_add (vector_inv_ntt (matrix_vector_mul_ntt a_spec r_spec)) e_spec) /\\
+        res_spec == Spec.MLKEM.(vector_add (vector_inv_ntt (matrix_vector_mul_ntt a_spec r_spec)) e_spec) /\
         (forall (i:nat). i < v $K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index $res i))"#)
 )]
@@ -156,7 +156,7 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
              Spec.MLKEM.compute_As_plus_e_ntt
                (to_spec_matrix_t $matrix_A) 
                (to_spec_vector_t $s_as_ntt) 
-               (to_spec_vector_t $error_as_ntt) /\\
+               (to_spec_vector_t $error_as_ntt) /\
         (forall (i: nat). i < v $K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index ${t_as_ntt}_future i))"#)
 )]

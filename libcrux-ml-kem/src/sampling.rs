@@ -188,8 +188,8 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
                     let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i16;
                     hax_lib::fstar!(r#"logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) 3ul;
                         logand_lemma ($coin_toss_outcomes >>! ($outcome_set +! 2ul <: u32) <: u32) 3ul;
-                        assert (v $outcome_1 >= 0 /\\ v $outcome_1 <= 3);
-                        assert (v $outcome_2 >= 0 /\\ v $outcome_2 <= 3);
+                        assert (v $outcome_1 >= 0 /\ v $outcome_1 <= 3);
+                        assert (v $outcome_2 >= 0 /\ v $outcome_2 <= 3);
                         assert (v $chunk_number <= 31);
                         assert (v (sz 8 *! $chunk_number <: usize) <= 248);
                         assert (v (cast ($outcome_set >>! 2l <: u32) <: usize) <= 7)"#);
@@ -240,8 +240,8 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
                     let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as i16;
                     hax_lib::fstar!(r#"logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) 7ul;
                         logand_lemma ($coin_toss_outcomes >>! ($outcome_set +! 3l <: i32) <: u32) 7ul;
-                        assert (v $outcome_1 >= 0 /\\ v $outcome_1 <= 7);
-                        assert (v $outcome_2 >= 0 /\\ v $outcome_2 <= 7);
+                        assert (v $outcome_1 >= 0 /\ v $outcome_1 <= 7);
+                        assert (v $outcome_2 >= 0 /\ v $outcome_2 <= 7);
                         assert (v $chunk_number <= 63);
                         assert (v (sz 4 *! $chunk_number <: usize) <= 252);
                         assert (v (cast ($outcome_set /! 6l <: i32) <: usize) <= 3)"#);
@@ -259,16 +259,16 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires((ETA == 2 || ETA == 3) && randomness.len() == ETA * 64)]
 #[hax_lib::ensures(|result| fstar!(r#"(forall (i:nat). i < 8 ==> Libcrux_ml_kem.Ntt.ntt_layer_7_pre
-    (${result}.f_coefficients.[ sz i ]) (${result}.f_coefficients.[ sz i +! sz 8 ])) /\\
+    (${result}.f_coefficients.[ sz i ]) (${result}.f_coefficients.[ sz i +! sz 8 ])) /\
     Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $result ==
         Spec.MLKEM.sample_poly_cbd $ETA $randomness"#))]
 pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
     hax_lib::fstar!(
-        "assert (
-        (v (cast $ETA <: u32) == 2) \\/
-        (v (cast $ETA <: u32) == 3))"
+        r#"assert (
+        (v (cast $ETA <: u32) == 2) \/
+        (v (cast $ETA <: u32) == 3))"#
     );
     match ETA as u32 {
         2 => sample_from_binomial_distribution_2(randomness),
