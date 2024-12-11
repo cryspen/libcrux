@@ -11,5 +11,5 @@ pub mod hacl {
 #[cfg(feature = "hacl")]
 mod impl_hacl;
 
-#[cfg(feature = "portable_hacl")]
+#[cfg(feature = "hacl")]
 pub use impl_hacl::*;
