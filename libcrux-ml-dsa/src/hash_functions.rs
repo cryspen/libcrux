@@ -5,6 +5,8 @@ pub(crate) mod shake256 {
     pub(crate) const BLOCK_SIZE: usize = 136;
 
     /// An ML-DSA specific Xof trait
+    /// This trait is not actually a full Xof implementation but opererates only
+    /// on multiple of blocks. The only real Xof API for SHAKE256 is [`Xof`].
     pub(crate) trait DsaXof {
         fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]);
         fn init_absorb_final(input: &[u8]) -> Self;
