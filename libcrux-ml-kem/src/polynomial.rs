@@ -68,6 +68,7 @@ pub(crate) struct PolynomialRingElement<Vector: Operations> {
 #[allow(non_snake_case)]
 fn ZERO<Vector: Operations>() -> PolynomialRingElement<Vector> {
     PolynomialRingElement {
+        // https://github.com/hacspec/hax/issues/27
         // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
         coefficients: [Vector::ZERO(); 16],
     }
