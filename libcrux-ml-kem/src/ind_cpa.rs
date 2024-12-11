@@ -178,7 +178,10 @@ pub(crate) fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector:
 #[hax_lib::fstar::options(
     "--max_fuel 15 --z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always"
 )]
-#[cfg_attr(hax, hax_lib::fstar::before("let sample_ring_element_cbd_helper_2
+#[cfg_attr(
+    hax,
+    hax_lib::fstar::before(
+        "let sample_ring_element_cbd_helper_2
       (v_K v_ETA2 v_ETA2_RANDOMNESS_SIZE: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -202,7 +205,9 @@ pub(crate) fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector:
     =
     Lib.Sequence.eq_intro #(Spec.MLKEM.polynomial) #(v v_K)
     (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector error_1) 
-    (Spec.MLKEM.sample_vector_cbd2 #v_K (Seq.slice prf_input 0 32) (sz (v domain_separator)))"))]
+    (Spec.MLKEM.sample_vector_cbd2 #v_K (Seq.slice prf_input 0 32) (sz (v domain_separator)))"
+    )
+)]
 #[cfg_attr(
     hax,
     hax_lib::fstar::before(

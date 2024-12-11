@@ -78,9 +78,7 @@ fn compress_1(vector: SIMD256Vector) -> SIMD256Vector {
         (forall (i:nat). i < 16 ==> bounded (Seq.index (repr $out) i) (v $COEFFICIENT_BITS))"))]
 fn compress<const COEFFICIENT_BITS: i32>(vector: SIMD256Vector) -> SIMD256Vector {
     SIMD256Vector {
-        elements: compress::compress_ciphertext_coefficient::<COEFFICIENT_BITS>(
-            vector.elements,
-        ),
+        elements: compress::compress_ciphertext_coefficient::<COEFFICIENT_BITS>(vector.elements),
     }
 }
 
@@ -90,7 +88,13 @@ fn compress<const COEFFICIENT_BITS: i32>(vector: SIMD256Vector) -> SIMD256Vector
                     Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
                     Spec.Utils.is_i16b_array (11207+5*3328) (repr ${vector})"))]
 #[hax_lib::ensures(|out| fstar!("Spec.Utils.is_i16b_array (11207+6*3328) (repr $out)"))]
-fn ntt_layer_1_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> SIMD256Vector {
+fn ntt_layer_1_step(
+    vector: SIMD256Vector,
+    zeta0: i16,
+    zeta1: i16,
+    zeta2: i16,
+    zeta3: i16,
+) -> SIMD256Vector {
     SIMD256Vector {
         elements: ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
     }
@@ -124,7 +128,13 @@ fn ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
                     Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3  /\\
                     Spec.Utils.is_i16b_array (4*3328) (repr ${vector})"))]
 #[hax_lib::ensures(|out| fstar!("Spec.Utils.is_i16b_array 3328 (repr $out)"))]
-fn inv_ntt_layer_1_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> SIMD256Vector {
+fn inv_ntt_layer_1_step(
+    vector: SIMD256Vector,
+    zeta0: i16,
+    zeta1: i16,
+    zeta2: i16,
+    zeta3: i16,
+) -> SIMD256Vector {
     SIMD256Vector {
         elements: ntt::inv_ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
     }
@@ -490,8 +500,7 @@ impl Operations for SIMD256Vector {
     #[requires(bytes.len() == 10)]
     #[inline(always)]
     fn deserialize_5(bytes: &[u8]) -> Self {
-        hax_lib::fstar!(
-            "assert (v (Core.Slice.impl__len $bytes) == Seq.length $bytes)");
+        hax_lib::fstar!("assert (v (Core.Slice.impl__len $bytes) == Seq.length $bytes)");
         Self {
             elements: serialize::deserialize_5(bytes),
         }
