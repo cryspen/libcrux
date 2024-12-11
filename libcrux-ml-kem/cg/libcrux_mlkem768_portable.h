@@ -7,8 +7,8 @@
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
  * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
- * F*: 5643e656b989aca7629723653a2570c7df6252b9
- * Libcrux: fbef3649fa222b800fc7dcc349855bcd7de48e36
+ * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
+ * Libcrux: a197c4d7286246d59e3044d437b3da9119cd5de8
  */
 
 #ifndef __libcrux_mlkem768_portable_H
@@ -2961,6 +2961,24 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_1_8c(
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.polynomial.poly_barrett_reduce
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_poly_barrett_reduce_8c(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *myself) {
+  for (size_t i = (size_t)0U;
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
+    size_t i0 = i;
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
+        libcrux_ml_kem_vector_portable_barrett_reduce_0d(
+            myself->coefficients[i0]);
+    myself->coefficients[i0] = uu____0;
+  }
+}
+
+/**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,
 TraitClause@1]#2}
@@ -2973,14 +2991,7 @@ with const generics
 */
 static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_poly_barrett_reduce_ef_8c(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *self) {
-  for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
-    size_t i0 = i;
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_barrett_reduce_0d(
-            self->coefficients[i0]);
-    self->coefficients[i0] = uu____0;
-  }
+  libcrux_ml_kem_polynomial_poly_barrett_reduce_8c(self);
 }
 
 /**
@@ -3198,28 +3209,78 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_ring_element_v_89(
 }
 
 /**
-This function found in impl
-{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,
-TraitClause@1]#2}
+A monomorphic instance of libcrux_ml_kem.polynomial.ZERO
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static inline libcrux_ml_kem_polynomial_PolynomialRingElement_1d
+libcrux_ml_kem_polynomial_ZERO_8c(void) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d lit;
+  lit.coefficients[0U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[1U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[2U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[3U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[4U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[5U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[6U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[7U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[8U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[9U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[10U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[11U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[12U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[13U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[14U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  lit.coefficients[15U] = libcrux_ml_kem_vector_portable_ZERO_0d();
+  return lit;
+}
+
+/**
+ Given two `KyberPolynomialRingElement`s in their NTT representations,
+ compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
+ the `iᵗʰ` coefficient of the product `k̂` is determined by the calculation:
+
+ ```plaintext
+ ĥ[2·i] + ĥ[2·i + 1]X = (f^[2·i] + f^[2·i + 1]X)·(ĝ[2·i] + ĝ[2·i + 1]X) mod (X²
+ - ζ^(2·BitRev₇(i) + 1))
+ ```
+
+ This function almost implements <strong>Algorithm 10</strong> of the
+ NIST FIPS 203 standard, which is reproduced below:
+
+ ```plaintext
+ Input: Two arrays fˆ ∈ ℤ₂₅₆ and ĝ ∈ ℤ₂₅₆.
+ Output: An array ĥ ∈ ℤq.
+
+ for(i ← 0; i < 128; i++)
+     (ĥ[2i], ĥ[2i+1]) ← BaseCaseMultiply(fˆ[2i], fˆ[2i+1], ĝ[2i], ĝ[2i+1],
+ ζ^(2·BitRev₇(i) + 1)) end for return ĥ
+ ```
+ We say "almost" because the coefficients of the ring element output by
+ this function are in the Montgomery domain.
+
+ The NIST FIPS 203 standard can be found at
+ <https://csrc.nist.gov/pubs/fips/203/ipd>.
 */
 /**
-A monomorphic instance of libcrux_ml_kem.polynomial.ntt_multiply_ef
+A monomorphic instance of libcrux_ml_kem.polynomial.ntt_multiply
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 
 */
 static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_1d
-libcrux_ml_kem_polynomial_ntt_multiply_ef_8c(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *self,
+libcrux_ml_kem_polynomial_ntt_multiply_8c(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *myself,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *rhs) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d out =
-      libcrux_ml_kem_polynomial_ZERO_ef_8c();
+      libcrux_ml_kem_polynomial_ZERO_8c();
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
         libcrux_ml_kem_vector_portable_ntt_multiply_0d(
-            &self->coefficients[i0], &rhs->coefficients[i0],
+            &myself->coefficients[i0], &rhs->coefficients[i0],
             libcrux_ml_kem_polynomial_zeta((size_t)64U + (size_t)4U * i0),
             libcrux_ml_kem_polynomial_zeta((size_t)64U + (size_t)4U * i0 +
                                            (size_t)1U),
@@ -3238,6 +3299,52 @@ This function found in impl
 TraitClause@1]#2}
 */
 /**
+A monomorphic instance of libcrux_ml_kem.polynomial.ntt_multiply_ef
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_1d
+libcrux_ml_kem_polynomial_ntt_multiply_ef_8c(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *self,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *rhs) {
+  return libcrux_ml_kem_polynomial_ntt_multiply_8c(self, rhs);
+}
+
+/**
+ Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
+ sum of their constituent coefficients.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.add_to_ring_element
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+- K= 3
+*/
+static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_to_ring_element_1b(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *myself,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *rhs) {
+  for (size_t i = (size_t)0U;
+       i < Eurydice_slice_len(
+               Eurydice_array_to_slice(
+                   (size_t)16U, myself->coefficients,
+                   libcrux_ml_kem_vector_portable_vector_type_PortableVector),
+               libcrux_ml_kem_vector_portable_vector_type_PortableVector);
+       i++) {
+    size_t i0 = i;
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
+        libcrux_ml_kem_vector_portable_add_0d(myself->coefficients[i0],
+                                              &rhs->coefficients[i0]);
+    myself->coefficients[i0] = uu____0;
+  }
+}
+
+/**
+This function found in impl
+{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,
+TraitClause@1]#2}
+*/
+/**
 A monomorphic instance of libcrux_ml_kem.polynomial.add_to_ring_element_ef
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -3246,19 +3353,7 @@ with const generics
 static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_to_ring_element_ef_1b(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *rhs) {
-  for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)16U, self->coefficients,
-                   libcrux_ml_kem_vector_portable_vector_type_PortableVector),
-               libcrux_ml_kem_vector_portable_vector_type_PortableVector);
-       i++) {
-    size_t i0 = i;
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_add_0d(self->coefficients[i0],
-                                              &rhs->coefficients[i0]);
-    self->coefficients[i0] = uu____0;
-  }
+  libcrux_ml_kem_polynomial_add_to_ring_element_1b(self, rhs);
 }
 
 /**
@@ -3403,6 +3498,32 @@ static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_montgomery_1b(
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.polynomial.subtract_reduce
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_1d
+libcrux_ml_kem_polynomial_subtract_reduce_8c(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *myself,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d b) {
+  for (size_t i = (size_t)0U;
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
+    size_t i0 = i;
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector
+        coefficient_normal_form =
+            libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(
+                b.coefficients[i0], (int16_t)1441);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
+        libcrux_ml_kem_vector_portable_barrett_reduce_0d(
+            libcrux_ml_kem_vector_portable_sub_0d(myself->coefficients[i0],
+                                                  &coefficient_normal_form));
+    b.coefficients[i0] = uu____0;
+  }
+  return b;
+}
+
+/**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,
 TraitClause@1]#2}
@@ -3417,20 +3538,7 @@ static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_1d
 libcrux_ml_kem_polynomial_subtract_reduce_ef_8c(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d b) {
-  for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
-    size_t i0 = i;
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector
-        coefficient_normal_form =
-            libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(
-                b.coefficients[i0], (int16_t)1441);
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_barrett_reduce_0d(
-            libcrux_ml_kem_vector_portable_sub_0d(self->coefficients[i0],
-                                                  &coefficient_normal_form));
-    b.coefficients[i0] = uu____0;
-  }
-  return b;
+  return libcrux_ml_kem_polynomial_subtract_reduce_8c(self, b);
 }
 
 /**
@@ -4087,6 +4195,28 @@ libcrux_ml_kem_sampling_sample_from_uniform_distribution_next_890(
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.polynomial.from_i16_array
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_1d
+libcrux_ml_kem_polynomial_from_i16_array_8c(Eurydice_slice a) {
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d result =
+      libcrux_ml_kem_polynomial_ZERO_8c();
+  for (size_t i = (size_t)0U;
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
+    size_t i0 = i;
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
+        libcrux_ml_kem_vector_portable_from_i16_array_0d(
+            Eurydice_slice_subslice2(a, i0 * (size_t)16U,
+                                     (i0 + (size_t)1U) * (size_t)16U, int16_t));
+    result.coefficients[i0] = uu____0;
+  }
+  return result;
+}
+
+/**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,
 TraitClause@1]#2}
@@ -4099,18 +4229,7 @@ with const generics
 */
 static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_1d
 libcrux_ml_kem_polynomial_from_i16_array_ef_8c(Eurydice_slice a) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_1d result =
-      libcrux_ml_kem_polynomial_ZERO_ef_8c();
-  for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
-    size_t i0 = i;
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_from_i16_array_0d(
-            Eurydice_slice_subslice2(a, i0 * (size_t)16U,
-                                     (i0 + (size_t)1U) * (size_t)16U, int16_t));
-    result.coefficients[i0] = uu____0;
-  }
-  return result;
+  return libcrux_ml_kem_polynomial_from_i16_array_8c(a);
 }
 
 /**
@@ -4708,6 +4827,30 @@ libcrux_ml_kem_matrix_compute_vector_u_closure_1b(size_t _i) {
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.polynomial.add_error_reduce
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_error_reduce_8c(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *myself,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *error) {
+  for (size_t i = (size_t)0U;
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
+    size_t j = i;
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector
+        coefficient_normal_form =
+            libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(
+                myself->coefficients[j], (int16_t)1441);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
+        libcrux_ml_kem_vector_portable_barrett_reduce_0d(
+            libcrux_ml_kem_vector_portable_add_0d(coefficient_normal_form,
+                                                  &error->coefficients[j]));
+    myself->coefficients[j] = uu____0;
+  }
+}
+
+/**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,
 TraitClause@1]#2}
@@ -4721,19 +4864,7 @@ with const generics
 static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_error_reduce_ef_8c(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *error) {
-  for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
-    size_t j = i;
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector
-        coefficient_normal_form =
-            libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(
-                self->coefficients[j], (int16_t)1441);
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_barrett_reduce_0d(
-            libcrux_ml_kem_vector_portable_add_0d(coefficient_normal_form,
-                                                  &error->coefficients[j]));
-    self->coefficients[j] = uu____0;
-  }
+  libcrux_ml_kem_polynomial_add_error_reduce_8c(self, error);
 }
 
 /**
@@ -4831,6 +4962,36 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_message_8c(
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.polynomial.add_message_error_reduce
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_1d
+libcrux_ml_kem_polynomial_add_message_error_reduce_8c(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *myself,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *message,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d result) {
+  for (size_t i = (size_t)0U;
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
+    size_t i0 = i;
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector
+        coefficient_normal_form =
+            libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(
+                result.coefficients[i0], (int16_t)1441);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector tmp =
+        libcrux_ml_kem_vector_portable_add_0d(myself->coefficients[i0],
+                                              &message->coefficients[i0]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector tmp0 =
+        libcrux_ml_kem_vector_portable_add_0d(coefficient_normal_form, &tmp);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
+        libcrux_ml_kem_vector_portable_barrett_reduce_0d(tmp0);
+    result.coefficients[i0] = uu____0;
+  }
+  return result;
+}
+
+/**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,
 TraitClause@1]#2}
@@ -4846,23 +5007,8 @@ libcrux_ml_kem_polynomial_add_message_error_reduce_ef_8c(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *message,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d result) {
-  for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
-    size_t i0 = i;
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector
-        coefficient_normal_form =
-            libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_0d(
-                result.coefficients[i0], (int16_t)1441);
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector tmp =
-        libcrux_ml_kem_vector_portable_add_0d(self->coefficients[i0],
-                                              &message->coefficients[i0]);
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector tmp0 =
-        libcrux_ml_kem_vector_portable_add_0d(coefficient_normal_form, &tmp);
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_barrett_reduce_0d(tmp0);
-    result.coefficients[i0] = uu____0;
-  }
-  return result;
+  return libcrux_ml_kem_polynomial_add_message_error_reduce_8c(self, message,
+                                                               result);
 }
 
 /**
@@ -5722,6 +5868,31 @@ libcrux_ml_kem_vector_traits_to_standard_domain_8c(
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.polynomial.add_standard_error_reduce
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE void
+libcrux_ml_kem_polynomial_add_standard_error_reduce_8c(
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *myself,
+    libcrux_ml_kem_polynomial_PolynomialRingElement_1d *error) {
+  for (size_t i = (size_t)0U;
+       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
+    size_t j = i;
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector
+        coefficient_normal_form =
+            libcrux_ml_kem_vector_traits_to_standard_domain_8c(
+                myself->coefficients[j]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
+        libcrux_ml_kem_vector_portable_barrett_reduce_0d(
+            libcrux_ml_kem_vector_portable_add_0d(coefficient_normal_form,
+                                                  &error->coefficients[j]));
+    myself->coefficients[j] = uu____0;
+  }
+}
+
+/**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,
 TraitClause@1]#2}
@@ -5736,19 +5907,7 @@ static KRML_MUSTINLINE void
 libcrux_ml_kem_polynomial_add_standard_error_reduce_ef_8c(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *self,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *error) {
-  for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
-    size_t j = i;
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector
-        coefficient_normal_form =
-            libcrux_ml_kem_vector_traits_to_standard_domain_8c(
-                self->coefficients[j]);
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_barrett_reduce_0d(
-            libcrux_ml_kem_vector_portable_add_0d(coefficient_normal_form,
-                                                  &error->coefficients[j]));
-    self->coefficients[j] = uu____0;
-  }
+  libcrux_ml_kem_polynomial_add_standard_error_reduce_8c(self, error);
 }
 
 /**
