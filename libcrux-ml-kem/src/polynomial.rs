@@ -264,6 +264,8 @@ fn ntt_multiply<Vector: Operations>(
     out
 }
 
+// FIXME: We pulled out all the items because of https://github.com/hacspec/hax/issues/1183
+// Revisit when that issue is fixed.
 #[hax_lib::attributes]
 impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
