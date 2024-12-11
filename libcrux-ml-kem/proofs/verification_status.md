@@ -15,7 +15,7 @@ functions in the modules still need some proofs in that category.
 
 | Category | File              | Lax Checking | Runtime Safety | Correctness  |
 | -------- | ----------------- | ------------ | -------------- | ------------ |
-| Generic  | constant_time_ops | yes          | yes            | yes          |    
+| _Generic_  | constant_time_ops | yes          | yes            | yes          |    
 |          | hash_functions    | yes          | yes            | yes          |    
 |          | ind_cpa           | yes          | yes            | yes          |    
 |          | ind_cca           | yes          | yes            | yes          |    
@@ -28,23 +28,22 @@ functions in the modules still need some proofs in that category.
 |          | sampling          | yes          | needs proofs   | needs proofs |    
 |          | polynomial        | yes          | needs proofs   | needs proofs |    
 |          | serialize         | yes          | needs proofs   | needs proofs |    
-| -------- | ----------------- | ------------ | -------------- | ------------ |
-| Portable | arithmetic        | yes          | yes            | yes          |
+| 	   |                   |              |                |              |
+| _Portable_ | arithmetic        | yes          | yes            | yes          |
 |          | ntt               | yes          | yes            | yes          |
 |          | compress          | yes          | yes            | yes          |
 |          | serialize         | yes          | yes            | yes          |
 |          | sampling          | yes          | needs proofs   | needs proofs |
-| -------- | ----------------- | ------------ | -------------- | ------------ |
-| avx2     | arithmetic        | yes          | yes            | yes          |
+|          |                   |              |                |              |
+| _Avx2_     | arithmetic        | yes          | yes            | yes          |
 |          | ntt               | yes          | yes            | yes          |
 |          | compress          | yes          | yes            | needs proofs |
 |          | serialize         | yes          | needs proofs   | needs proofs |
 |          | sampling          | yes          | needs proofs   | needs proofs |
-| -------- | ----------------- | ------------ | -------------- | ------------ |
-| neon     | arithmetic        | yes          | needs proofs   | needs proofs |
+|          |                   |              |                |              |
+| _Neon_     | arithmetic        | yes          | needs proofs   | needs proofs |
 |          | ntt               | yes          | needs proofs   | needs proofs |
 |          | compress          | yes          | needs proofs   | needs proofs |
 |          | serialize         | yes          | needs proofs   | needs proofs |
 |          | sampling          | yes          | needs proofs   | needs proofs |
-| -------- | ----------------- | ------------ | -------------- | ------------ |
 
