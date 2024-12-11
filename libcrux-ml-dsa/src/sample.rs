@@ -2,6 +2,7 @@ use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     encoding,
     hash_functions::{shake128, shake256},
+    helper::cloop,
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
@@ -14,16 +15,18 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
 ) -> bool {
     let mut done = false;
 
-    for random_bytes in randomness.chunks(24) {
-        if !done {
-            let sampled = SIMDUnit::rejection_sample_less_than_field_modulus(
-                random_bytes,
-                &mut out[*sampled_coefficients..],
-            );
-            *sampled_coefficients += sampled;
+    cloop! {
+        for random_bytes in randomness.chunks_exact(24) {
+            if !done {
+                let sampled = SIMDUnit::rejection_sample_less_than_field_modulus(
+                    random_bytes,
+                    &mut out[*sampled_coefficients..],
+                );
+                *sampled_coefficients += sampled;
 
-            if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
-                done = true;
+                if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
+                    done = true;
+                }
             }
         }
     }
@@ -168,16 +171,18 @@ fn rejection_sample_less_than_eta_equals_2<SIMDUnit: Operations>(
 
     // Since each byte can be used to sample up to 2 coefficients, and since
     // a single SIMDUnit can hold 8 coefficients, we pass in 4 bytes of randomness.
-    for random_bytes in randomness.chunks(4) {
-        if !done {
-            let sampled = SIMDUnit::rejection_sample_less_than_eta_equals_2(
-                random_bytes,
-                &mut out[*sampled_coefficients..],
-            );
-            *sampled_coefficients += sampled;
+    cloop! {
+        for random_bytes in randomness.chunks_exact(4) {
+            if !done {
+                let sampled = SIMDUnit::rejection_sample_less_than_eta_equals_2(
+                    random_bytes,
+                    &mut out[*sampled_coefficients..],
+                );
+                *sampled_coefficients += sampled;
 
-            if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
-                done = true;
+                if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
+                    done = true;
+                }
             }
         }
     }
@@ -194,16 +199,18 @@ fn rejection_sample_less_than_eta_equals_4<SIMDUnit: Operations>(
 
     // Since each byte can be used to sample up to 2 coefficients, and since
     // a single SIMDUnit can hold 8 coefficients, we pass in 4 bytes of randomness.
-    for random_bytes in randomness.chunks(4) {
-        if !done {
-            let sampled = SIMDUnit::rejection_sample_less_than_eta_equals_4(
-                random_bytes,
-                &mut out[*sampled_coefficients..],
-            );
-            *sampled_coefficients += sampled;
+    cloop! {
+        for random_bytes in randomness.chunks_exact(4) {
+            if !done {
+                let sampled = SIMDUnit::rejection_sample_less_than_eta_equals_4(
+                    random_bytes,
+                    &mut out[*sampled_coefficients..],
+                );
+                *sampled_coefficients += sampled;
 
-            if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
-                done = true;
+                if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
+                    done = true;
+                }
             }
         }
     }
@@ -339,21 +346,22 @@ fn update_seed(mut seed: [u8; 66], domain_separator: &mut u16) -> [u8; 66] {
 #[inline(always)]
 fn sample_mask_ring_element<
     SIMDUnit: Operations,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
     const GAMMA1_EXPONENT: usize,
 >(
     seed: [u8; 66],
-) -> PolynomialRingElement<SIMDUnit> {
+    result: &mut PolynomialRingElement<SIMDUnit>,
+) {
     match GAMMA1_EXPONENT as u8 {
         17 => {
             let mut out = [0u8; 576];
             Shake256::shake256::<576>(&seed, &mut out);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out)
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out, result);
         }
         19 => {
             let mut out = [0u8; 640];
             Shake256::shake256::<640>(&seed, &mut out);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out)
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out, result);
         }
         _ => unreachable!(),
     }
@@ -362,7 +370,7 @@ fn sample_mask_ring_element<
 #[inline(always)]
 pub(crate) fn sample_mask_vector<
     SIMDUnit: Operations,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
     Shake256X4: shake256::XofX4,
     const DIMENSION: usize,
     const GAMMA1_EXPONENT: usize,
@@ -390,10 +398,10 @@ pub(crate) fn sample_mask_vector<
             Shake256X4::shake256_x4(
                 &seed0, &seed1, &seed2, &seed3, &mut out0, &mut out1, &mut out2, &mut out3,
             );
-            mask[0] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0);
-            mask[1] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1);
-            mask[2] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2);
-            mask[3] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3);
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0, &mut mask[0]);
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1, &mut mask[1]);
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2, &mut mask[2]);
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3, &mut mask[3]);
         }
         19 => {
             let mut out0 = [0; 640];
@@ -403,10 +411,10 @@ pub(crate) fn sample_mask_vector<
             Shake256X4::shake256_x4(
                 &seed0, &seed1, &seed2, &seed3, &mut out0, &mut out1, &mut out2, &mut out3,
             );
-            mask[0] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0);
-            mask[1] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1);
-            mask[2] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2);
-            mask[3] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3);
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0, &mut mask[0]);
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1, &mut mask[1]);
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2, &mut mask[2]);
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3, &mut mask[3]);
         }
         _ => unreachable!(),
     }
@@ -418,7 +426,7 @@ pub(crate) fn sample_mask_vector<
         *domain_separator += 1;
 
         // TODO: For 87 we may want to do another 4 and discard 1.
-        mask[i] = sample_mask_ring_element::<SIMDUnit, Shake256, GAMMA1_EXPONENT>(seed);
+        sample_mask_ring_element::<SIMDUnit, Shake256, GAMMA1_EXPONENT>(seed, &mut mask[i]);
     }
 
     mask
@@ -433,18 +441,20 @@ fn inside_out_shuffle(
 ) -> bool {
     let mut done = false;
 
-    for byte in randomness {
-        if !done {
-            let sample_at = *byte as usize;
-            if sample_at <= *out_index {
-                result[*out_index] = result[sample_at];
-                *out_index += 1;
+    cloop! {
+        for byte in randomness.iter() {
+            if !done {
+                let sample_at = *byte as usize;
+                if sample_at <= *out_index {
+                    result[*out_index] = result[sample_at];
+                    *out_index += 1;
 
-                result[sample_at] = 1 - 2 * ((*signs & 1) as i32);
-                *signs >>= 1;
+                    result[sample_at] = 1 - 2 * ((*signs & 1) as i32);
+                    *signs >>= 1;
+                }
+
+                done = *out_index == result.len();
             }
-
-            done = *out_index == result.len();
         }
     }
 
@@ -453,13 +463,13 @@ fn inside_out_shuffle(
 #[inline(always)]
 pub(crate) fn sample_challenge_ring_element<
     SIMDUnit: Operations,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
     const NUMBER_OF_ONES: usize,
     const SEED_SIZE: usize,
 >(
     seed: [u8; SEED_SIZE],
 ) -> PolynomialRingElement<SIMDUnit> {
-    let mut state = Shake256::init_absorb(&seed);
+    let mut state = Shake256::init_absorb_final(&seed);
     let randomness = state.squeeze_first_block();
 
     let mut signs = u64::from_le_bytes(randomness[0..8].try_into().unwrap());
@@ -669,7 +679,10 @@ mod tests {
         );
     }
 
-    fn test_sample_challenge_ring_element_generic<SIMDUnit: Operations, Shake256: shake256::Xof>() {
+    fn test_sample_challenge_ring_element_generic<
+        SIMDUnit: Operations,
+        Shake256: shake256::DsaXof,
+    >() {
         // When TAU = 39
         let seed: [u8; 32] = [
             3, 9, 159, 119, 236, 6, 207, 7, 103, 108, 187, 137, 222, 35, 37, 30, 79, 224, 204, 186,

@@ -282,25 +282,36 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
     f_gamma1_serialize_pre
     =
     (fun
-        (v_OUTPUT_SIZE: usize)
+        (v_GAMMA1_EXPONENT: usize)
         (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
+        (serialized: t_Slice u8)
         ->
         true);
     f_gamma1_serialize_post
     =
     (fun
-        (v_OUTPUT_SIZE: usize)
+        (v_GAMMA1_EXPONENT: usize)
         (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        (out: t_Array u8 v_OUTPUT_SIZE)
+        (serialized: t_Slice u8)
+        (out: t_Slice u8)
         ->
         true);
     f_gamma1_serialize
     =
     (fun
-        (v_OUTPUT_SIZE: usize)
+        (v_GAMMA1_EXPONENT: usize)
         (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
+        (serialized: t_Slice u8)
         ->
-        Libcrux_ml_dsa.Simd.Portable.Encoding.Gamma1.serialize v_OUTPUT_SIZE simd_unit);
+        let hax_temp_output, serialized:(Prims.unit & t_Slice u8) =
+          (),
+          Libcrux_ml_dsa.Simd.Portable.Encoding.Gamma1.serialize v_GAMMA1_EXPONENT
+            simd_unit
+            serialized
+          <:
+          (Prims.unit & t_Slice u8)
+        in
+        serialized);
     f_gamma1_deserialize_pre = (fun (v_GAMMA1_EXPONENT: usize) (serialized: t_Slice u8) -> true);
     f_gamma1_deserialize_post
     =
@@ -317,47 +328,60 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
     f_commitment_serialize_pre
     =
     (fun
-        (v_OUTPUT_SIZE: usize)
         (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
+        (serialized: t_Slice u8)
         ->
         true);
     f_commitment_serialize_post
     =
     (fun
-        (v_OUTPUT_SIZE: usize)
         (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        (out: t_Array u8 v_OUTPUT_SIZE)
+        (serialized: t_Slice u8)
+        (out: t_Slice u8)
         ->
         true);
     f_commitment_serialize
     =
     (fun
-        (v_OUTPUT_SIZE: usize)
         (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
+        (serialized: t_Slice u8)
         ->
-        Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.serialize v_OUTPUT_SIZE simd_unit);
+        let hax_temp_output, serialized:(Prims.unit & t_Slice u8) =
+          (), Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.serialize simd_unit serialized
+          <:
+          (Prims.unit & t_Slice u8)
+        in
+        serialized);
     f_error_serialize_pre
     =
     (fun
-        (v_OUTPUT_SIZE: usize)
+        (v_ETA: usize)
         (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
+        (serialized: t_Slice u8)
         ->
         true);
     f_error_serialize_post
     =
     (fun
-        (v_OUTPUT_SIZE: usize)
+        (v_ETA: usize)
         (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-        (out: t_Array u8 v_OUTPUT_SIZE)
+        (serialized: t_Slice u8)
+        (out: t_Slice u8)
         ->
         true);
     f_error_serialize
     =
     (fun
-        (v_OUTPUT_SIZE: usize)
+        (v_ETA: usize)
         (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
+        (serialized: t_Slice u8)
         ->
-        Libcrux_ml_dsa.Simd.Portable.Encoding.Error.serialize v_OUTPUT_SIZE simd_unit);
+        let hax_temp_output, serialized:(Prims.unit & t_Slice u8) =
+          (), Libcrux_ml_dsa.Simd.Portable.Encoding.Error.serialize v_ETA simd_unit serialized
+          <:
+          (Prims.unit & t_Slice u8)
+        in
+        serialized);
     f_error_deserialize_pre = (fun (v_ETA: usize) (serialized: t_Slice u8) -> true);
     f_error_deserialize_post
     =

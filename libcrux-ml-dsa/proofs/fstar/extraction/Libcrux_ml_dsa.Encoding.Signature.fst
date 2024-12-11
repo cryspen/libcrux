@@ -65,6 +65,9 @@ let impl__deserialize
                     Core.Ops.Range.t_Range usize ]
                   <:
                   t_Slice u8)
+                (signer_response.[ i ]
+                  <:
+                  Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
               <:
               Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
           <:
@@ -274,21 +277,17 @@ let impl__serialize
                 }
                 <:
                 Core.Ops.Range.t_Range usize)
-              (Core.Slice.impl__copy_from_slice #u8
+              (Libcrux_ml_dsa.Encoding.Gamma1.serialize #v_SIMDUnit
+                  v_GAMMA1_EXPONENT
+                  (self.f_signer_response.[ i ]
+                    <:
+                    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                   (signature.[ {
                         Core.Ops.Range.f_start = offset;
                         Core.Ops.Range.f_end = offset +! v_GAMMA1_RING_ELEMENT_SIZE <: usize
                       }
                       <:
                       Core.Ops.Range.t_Range usize ]
-                    <:
-                    t_Slice u8)
-                  (Libcrux_ml_dsa.Encoding.Gamma1.serialize #v_SIMDUnit
-                      v_GAMMA1_EXPONENT
-                      v_GAMMA1_RING_ELEMENT_SIZE
-                      (self.f_signer_response.[ i ]
-                        <:
-                        Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                     <:
                     t_Slice u8)
                 <:

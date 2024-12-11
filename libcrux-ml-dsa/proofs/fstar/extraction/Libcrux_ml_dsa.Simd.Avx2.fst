@@ -344,21 +344,37 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
         out, hax_temp_output <: (t_Slice i32 & usize));
     f_gamma1_serialize_pre
     =
-    (fun (v_OUTPUT_SIZE: usize) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) ->
+    (fun
+        (v_GAMMA1_EXPONENT: usize)
+        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
+        (serialized: t_Slice u8)
+        ->
         true);
     f_gamma1_serialize_post
     =
     (fun
-        (v_OUTPUT_SIZE: usize)
+        (v_GAMMA1_EXPONENT: usize)
         (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (out: t_Array u8 v_OUTPUT_SIZE)
+        (serialized: t_Slice u8)
+        (out: t_Slice u8)
         ->
         true);
     f_gamma1_serialize
     =
-    (fun (v_OUTPUT_SIZE: usize) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) ->
-        Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1.serialize v_OUTPUT_SIZE
-          simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients);
+    (fun
+        (v_GAMMA1_EXPONENT: usize)
+        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
+        (serialized: t_Slice u8)
+        ->
+        let hax_temp_output, serialized:(Prims.unit & t_Slice u8) =
+          (),
+          Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1.serialize v_GAMMA1_EXPONENT
+            simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
+            serialized
+          <:
+          (Prims.unit & t_Slice u8)
+        in
+        serialized);
     f_gamma1_deserialize_pre = (fun (v_GAMMA1_EXPONENT: usize) (serialized: t_Slice u8) -> true);
     f_gamma1_deserialize_post
     =
@@ -377,38 +393,67 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
           (Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1.deserialize v_GAMMA1_EXPONENT serialized <: u8));
     f_commitment_serialize_pre
     =
-    (fun (v_OUTPUT_SIZE: usize) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) ->
+    (fun
+        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
+        (serialized: t_Slice u8)
+        ->
         true);
     f_commitment_serialize_post
     =
     (fun
-        (v_OUTPUT_SIZE: usize)
         (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (out: t_Array u8 v_OUTPUT_SIZE)
+        (serialized: t_Slice u8)
+        (out: t_Slice u8)
         ->
         true);
     f_commitment_serialize
     =
-    (fun (v_OUTPUT_SIZE: usize) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) ->
-        Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize v_OUTPUT_SIZE
-          simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients);
+    (fun
+        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
+        (serialized: t_Slice u8)
+        ->
+        let hax_temp_output, serialized:(Prims.unit & t_Slice u8) =
+          (),
+          Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize simd_unit
+              .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
+            serialized
+          <:
+          (Prims.unit & t_Slice u8)
+        in
+        serialized);
     f_error_serialize_pre
     =
-    (fun (v_OUTPUT_SIZE: usize) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) ->
+    (fun
+        (v_ETA: usize)
+        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
+        (serialized: t_Slice u8)
+        ->
         true);
     f_error_serialize_post
     =
     (fun
-        (v_OUTPUT_SIZE: usize)
+        (v_ETA: usize)
         (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
-        (out: t_Array u8 v_OUTPUT_SIZE)
+        (serialized: t_Slice u8)
+        (out: t_Slice u8)
         ->
         true);
     f_error_serialize
     =
-    (fun (v_OUTPUT_SIZE: usize) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) ->
-        Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.serialize v_OUTPUT_SIZE
-          simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients);
+    (fun
+        (v_ETA: usize)
+        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
+        (serialized: t_Slice u8)
+        ->
+        let hax_temp_output, serialized:(Prims.unit & t_Slice u8) =
+          (),
+          Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.serialize v_ETA
+            simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
+            serialized
+          <:
+          (Prims.unit & t_Slice u8)
+        in
+        serialized);
     f_error_deserialize_pre = (fun (v_ETA: usize) (serialized: t_Slice u8) -> true);
     f_error_deserialize_post
     =

@@ -4,10 +4,9 @@ open Core
 open FStar.Mul
 
 let serialize_when_eta_is_2_
-      (v_OUTPUT_SIZE: usize)
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
+      (serialized: t_Slice u8)
      =
-  let serialized:t_Array u8 v_OUTPUT_SIZE = Rust_primitives.Hax.repeat 0uy v_OUTPUT_SIZE in
   let coefficient0:u8 =
     cast (serialize_when_eta_is_2___ETA -!
         (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients.[ sz 0 ] <: i32)
@@ -72,12 +71,12 @@ let serialize_when_eta_is_2_
     <:
     u8
   in
-  let serialized:t_Array u8 v_OUTPUT_SIZE =
+  let serialized:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
       (sz 0)
       (((coefficient2 <<! 6l <: u8) |. (coefficient1 <<! 3l <: u8) <: u8) |. coefficient0 <: u8)
   in
-  let serialized:t_Array u8 v_OUTPUT_SIZE =
+  let serialized:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
       (sz 1)
       ((((coefficient5 <<! 7l <: u8) |. (coefficient4 <<! 4l <: u8) <: u8) |.
@@ -88,7 +87,7 @@ let serialize_when_eta_is_2_
         <:
         u8)
   in
-  let serialized:t_Array u8 v_OUTPUT_SIZE =
+  let serialized:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
       (sz 2)
       (((coefficient7 <<! 5l <: u8) |. (coefficient6 <<! 2l <: u8) <: u8) |.
@@ -288,20 +287,19 @@ let deserialize (v_ETA: usize) (serialized: t_Slice u8) =
         Rust_primitives.Hax.t_Never)
 
 let serialize_when_eta_is_4_
-      (v_OUTPUT_SIZE: usize)
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
+      (serialized: t_Slice u8)
      =
-  let serialized:t_Array u8 v_OUTPUT_SIZE = Rust_primitives.Hax.repeat 0uy v_OUTPUT_SIZE in
-  let serialized:t_Array u8 v_OUTPUT_SIZE =
+  let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 2)
       (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients <: t_Slice i32)
       (fun serialized temp_1_ ->
-          let serialized:t_Array u8 v_OUTPUT_SIZE = serialized in
+          let serialized:t_Slice u8 = serialized in
           let _:usize = temp_1_ in
           true)
       serialized
       (fun serialized temp_1_ ->
-          let serialized:t_Array u8 v_OUTPUT_SIZE = serialized in
+          let serialized:t_Slice u8 = serialized in
           let i, coefficients:(usize & t_Slice i32) = temp_1_ in
           let coefficient0:u8 =
             cast (serialize_when_eta_is_4___ETA -! (coefficients.[ sz 0 ] <: i32) <: i32) <: u8
@@ -309,24 +307,32 @@ let serialize_when_eta_is_4_
           let coefficient1:u8 =
             cast (serialize_when_eta_is_4___ETA -! (coefficients.[ sz 1 ] <: i32) <: i32) <: u8
           in
-          let serialized:t_Array u8 v_OUTPUT_SIZE =
+          let serialized:t_Slice u8 =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               i
               ((coefficient1 <<! 4l <: u8) |. coefficient0 <: u8)
           in
           serialized)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized
 
 let serialize
-      (v_OUTPUT_SIZE: usize)
+      (v_ETA: usize)
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
+      (serialized: t_Slice u8)
      =
-  match cast (v_OUTPUT_SIZE <: usize) <: u8 with
-  | 3uy -> serialize_when_eta_is_2_ v_OUTPUT_SIZE simd_unit
-  | 4uy -> serialize_when_eta_is_4_ v_OUTPUT_SIZE simd_unit
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+  let serialized, hax_temp_output:(t_Slice u8 & Prims.unit) =
+    match cast (v_ETA <: usize) <: u8 with
+    | 2uy -> serialize_when_eta_is_2_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
+    | 4uy -> serialize_when_eta_is_4_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
+    | _ ->
+      serialized,
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
-        <:
-        Rust_primitives.Hax.t_Never)
+          <:
+          Rust_primitives.Hax.t_Never)
+      <:
+      (t_Slice u8 & Prims.unit)
+  in
+  serialized

@@ -18,7 +18,7 @@ val t_Shake256:Type0
 val impl:Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128x4
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl_1:Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof t_Shake256
+val impl_1:Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof t_Shake256
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl_2:Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4
@@ -27,7 +27,7 @@ val impl_2:Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 t_Shake256x4
 val init_absorb (input0 input1 input2 input3: t_Slice u8)
     : Prims.Pure t_Shake128x4 Prims.l_True (fun _ -> Prims.l_True)
 
-val init_absorb_shake256 (input: t_Slice u8)
+val init_absorb_final_shake256 (input: t_Slice u8)
     : Prims.Pure t_Shake256 Prims.l_True (fun _ -> Prims.l_True)
 
 val init_absorb_x4 (input0 input1 input2 input3: t_Slice u8)

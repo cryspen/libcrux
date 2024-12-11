@@ -125,7 +125,7 @@ let deserialize (v_GAMMA1_EXPONENT: usize) (serialized: t_Slice u8) =
         <:
         Rust_primitives.Hax.t_Never)
 
-let serialize_when_gamma1_is_2_pow_17_ (v_OUTPUT_SIZE: usize) (simd_unit: u8) =
+let serialize_when_gamma1_is_2_pow_17_ (simd_unit: u8) (out: t_Slice u8) =
   let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let simd_unit_shifted:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
@@ -192,20 +192,18 @@ let serialize_when_gamma1_is_2_pow_17_ (v_OUTPUT_SIZE: usize) (simd_unit: u8) =
         <:
         t_Slice u8)
   in
-  Core.Result.impl__unwrap #(t_Array u8 v_OUTPUT_SIZE)
-    #Core.Array.t_TryFromSliceError
-    (Core.Convert.f_try_into #(t_Slice u8)
-        #(t_Array u8 v_OUTPUT_SIZE)
-        #FStar.Tactics.Typeclasses.solve
-        (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 18 }
-            <:
-            Core.Ops.Range.t_Range usize ]
+  let out:t_Slice u8 =
+    Core.Slice.impl__copy_from_slice #u8
+      out
+      (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 18 }
           <:
-          t_Slice u8)
-      <:
-      Core.Result.t_Result (t_Array u8 v_OUTPUT_SIZE) Core.Array.t_TryFromSliceError)
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  out
 
-let serialize_when_gamma1_is_2_pow_19_ (v_OUTPUT_SIZE: usize) (simd_unit: u8) =
+let serialize_when_gamma1_is_2_pow_19_ (simd_unit: u8) (out: t_Slice u8) =
   let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let simd_unit_shifted:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
@@ -267,25 +265,34 @@ let serialize_when_gamma1_is_2_pow_19_ (v_OUTPUT_SIZE: usize) (simd_unit: u8) =
         <:
         t_Slice u8)
   in
-  Core.Result.impl__unwrap #(t_Array u8 v_OUTPUT_SIZE)
-    #Core.Array.t_TryFromSliceError
-    (Core.Convert.f_try_into #(t_Slice u8)
-        #(t_Array u8 v_OUTPUT_SIZE)
-        #FStar.Tactics.Typeclasses.solve
-        (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 20 }
-            <:
-            Core.Ops.Range.t_Range usize ]
+  let hax_temp_output, out:(Prims.unit & t_Slice u8) =
+    (),
+    Core.Slice.impl__copy_from_slice #u8
+      out
+      (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 20 }
           <:
-          t_Slice u8)
-      <:
-      Core.Result.t_Result (t_Array u8 v_OUTPUT_SIZE) Core.Array.t_TryFromSliceError)
-
-let serialize (v_OUTPUT_SIZE: usize) (simd_unit: u8) =
-  match cast (v_OUTPUT_SIZE <: usize) <: u8 with
-  | 18uy -> serialize_when_gamma1_is_2_pow_17_ v_OUTPUT_SIZE simd_unit
-  | 20uy -> serialize_when_gamma1_is_2_pow_19_ v_OUTPUT_SIZE simd_unit
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
+          Core.Ops.Range.t_Range usize ]
         <:
-        Rust_primitives.Hax.t_Never)
+        t_Slice u8)
+    <:
+    (Prims.unit & t_Slice u8)
+  in
+  out
+
+let serialize (v_GAMMA1_EXPONENT: usize) (simd_unit: u8) (serialized: t_Slice u8) =
+  let serialized, hax_temp_output:(t_Slice u8 & Prims.unit) =
+    match cast (v_GAMMA1_EXPONENT <: usize) <: u8 with
+    | 17uy ->
+      serialize_when_gamma1_is_2_pow_17_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
+    | 19uy ->
+      serialize_when_gamma1_is_2_pow_19_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
+    | _ ->
+      serialized,
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+          <:
+          Rust_primitives.Hax.t_Never)
+      <:
+      (t_Slice u8 & Prims.unit)
+  in
+  serialized

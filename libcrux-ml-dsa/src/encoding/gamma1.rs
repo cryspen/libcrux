@@ -1,62 +1,32 @@
-use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
+use crate::{helper::cloop, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-pub(crate) fn serialize<
-    SIMDUnit: Operations,
-    const GAMMA1_EXPONENT: usize,
-    const OUTPUT_BYTES: usize,
->(
+pub(crate) fn serialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
     re: PolynomialRingElement<SIMDUnit>,
-) -> [u8; OUTPUT_BYTES] {
-    let mut serialized = [0u8; OUTPUT_BYTES];
-
-    match GAMMA1_EXPONENT as u8 {
-        17 => {
-            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 18;
-
-            for (i, simd_unit) in re.simd_units.iter().enumerate() {
-                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                    .copy_from_slice(&SIMDUnit::gamma1_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(
-                        *simd_unit,
-                    ));
-            }
-
-            serialized
+    serialized: &mut [u8], // OUTPUT_BYTES
+) {
+    cloop! {
+        for (i, simd_unit) in re.simd_units.iter().enumerate() {
+            SIMDUnit::gamma1_serialize::<GAMMA1_EXPONENT>(
+                *simd_unit,
+                &mut serialized[i * (GAMMA1_EXPONENT + 1)..(i + 1) * (GAMMA1_EXPONENT + 1)],
+            );
         }
-        19 => {
-            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 20;
-
-            for (i, simd_unit) in re.simd_units.iter().enumerate() {
-                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                    .copy_from_slice(&SIMDUnit::gamma1_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(
-                        *simd_unit,
-                    ));
-            }
-
-            serialized
-        }
-        _ => unreachable!(),
     }
+    ()
 }
 
 #[inline(always)]
 pub(crate) fn deserialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
     serialized: &[u8],
-) -> PolynomialRingElement<SIMDUnit> {
-    let mut serialized_chunks = match GAMMA1_EXPONENT as u8 {
-        17 => serialized.chunks(18),
-        19 => serialized.chunks(20),
-        _ => unreachable!(),
-    };
-
-    let mut result = PolynomialRingElement::<SIMDUnit>::ZERO();
-
+    result: &mut PolynomialRingElement<SIMDUnit>,
+) {
     for i in 0..result.simd_units.len() {
-        result.simd_units[i] =
-            SIMDUnit::gamma1_deserialize::<GAMMA1_EXPONENT>(&serialized_chunks.next().unwrap());
+        result.simd_units[i] = SIMDUnit::gamma1_deserialize::<GAMMA1_EXPONENT>(
+            &serialized[i * (GAMMA1_EXPONENT + 1)..(i + 1) * (GAMMA1_EXPONENT + 1)],
+        );
     }
-
-    result
+    ()
 }
 
 #[cfg(test)]
@@ -134,7 +104,9 @@ mod tests {
             117, 5, 185, 26, 141, 188, 106, 44, 164, 240, 119,
         ];
 
-        assert_eq!(serialize::<SIMDUnit, 19, 640>(re), expected_bytes);
+        let mut result = [0u8; 640];
+        serialize::<SIMDUnit, 19>(re, &mut result);
+        assert_eq!(result, expected_bytes);
     }
 
     fn test_deserialize_generic<SIMDUnit: Operations>() {
@@ -199,10 +171,9 @@ mod tests {
             -69944, -100373, 94602,
         ];
 
-        assert_eq!(
-            deserialize::<SIMDUnit, 17>(&bytes).to_i32_array(),
-            expected_coefficients
-        );
+        let mut result = PolynomialRingElement::<SIMDUnit>::ZERO();
+        deserialize::<SIMDUnit, 17>(&bytes, &mut result);
+        assert_eq!(result.to_i32_array(), expected_coefficients);
 
         let bytes: [u8; 640] = [
             253, 11, 216, 60, 251, 71, 79, 187, 242, 250, 209, 44, 72, 206, 98, 3, 22, 91, 184, 22,
@@ -270,10 +241,9 @@ mod tests {
             -138892, -414002, 42982,
         ];
 
-        assert_eq!(
-            deserialize::<SIMDUnit, 19>(&bytes).to_i32_array(),
-            expected_coefficients
-        );
+        let mut result = PolynomialRingElement::<SIMDUnit>::ZERO();
+        deserialize::<SIMDUnit, 19>(&bytes, &mut result);
+        assert_eq!(result.to_i32_array(), expected_coefficients);
     }
 
     #[cfg(not(feature = "simd256"))]

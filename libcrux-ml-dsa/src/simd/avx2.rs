@@ -86,8 +86,8 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn gamma1_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::gamma1::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(simd_unit: Self, serialized: &mut [u8]) {
+        encoding::gamma1::serialize::<GAMMA1_EXPONENT>(simd_unit.coefficients, serialized)
     }
     #[inline(always)]
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self {
@@ -95,13 +95,13 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::commitment::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+    fn commitment_serialize(simd_unit: Self, serialized: &mut [u8]) {
+        encoding::commitment::serialize(simd_unit.coefficients, serialized)
     }
 
     #[inline(always)]
-    fn error_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::error::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+    fn error_serialize<const ETA: usize>(simd_unit: Self, serialized: &mut [u8]) {
+        encoding::error::serialize::<ETA>(simd_unit.coefficients, serialized)
     }
     #[inline(always)]
     fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self {

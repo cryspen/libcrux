@@ -3,7 +3,10 @@ module Libcrux_ml_dsa.Hash_functions.Shake256
 open Core
 open FStar.Mul
 
-class t_Xof (v_Self: Type0) = {
+/// An ML-DSA specific Xof trait
+/// This trait is not actually a full Xof implementation but opererates only
+/// on multiple of blocks. The only real Xof API for SHAKE256 is [`Xof`].
+class t_DsaXof (v_Self: Type0) = {
   f_shake256_pre:v_OUTPUT_LENGTH: usize -> t_Slice u8 -> t_Array u8 v_OUTPUT_LENGTH -> Type0;
   f_shake256_post:
       v_OUTPUT_LENGTH: usize ->
@@ -15,10 +18,12 @@ class t_Xof (v_Self: Type0) = {
     -> Prims.Pure (t_Array u8 v_OUTPUT_LENGTH)
         (f_shake256_pre v_OUTPUT_LENGTH x0 x1)
         (fun result -> f_shake256_post v_OUTPUT_LENGTH x0 x1 result);
-  f_init_absorb_pre:t_Slice u8 -> Type0;
-  f_init_absorb_post:t_Slice u8 -> v_Self -> Type0;
-  f_init_absorb:x0: t_Slice u8
-    -> Prims.Pure v_Self (f_init_absorb_pre x0) (fun result -> f_init_absorb_post x0 result);
+  f_init_absorb_final_pre:t_Slice u8 -> Type0;
+  f_init_absorb_final_post:t_Slice u8 -> v_Self -> Type0;
+  f_init_absorb_final:x0: t_Slice u8
+    -> Prims.Pure v_Self
+        (f_init_absorb_final_pre x0)
+        (fun result -> f_init_absorb_final_post x0 result);
   f_squeeze_first_block_pre:v_Self -> Type0;
   f_squeeze_first_block_post:v_Self -> (v_Self & t_Array u8 (sz 136)) -> Type0;
   f_squeeze_first_block:x0: v_Self
@@ -31,6 +36,27 @@ class t_Xof (v_Self: Type0) = {
     -> Prims.Pure (v_Self & t_Array u8 (sz 136))
         (f_squeeze_next_block_pre x0)
         (fun result -> f_squeeze_next_block_post x0 result)
+}
+
+/// A generic Xof trait
+class t_Xof (v_Self: Type0) = {
+  f_init_pre:Prims.unit -> Type0;
+  f_init_post:Prims.unit -> v_Self -> Type0;
+  f_init:x0: Prims.unit -> Prims.Pure v_Self (f_init_pre x0) (fun result -> f_init_post x0 result);
+  f_absorb_pre:v_Self -> t_Slice u8 -> Type0;
+  f_absorb_post:v_Self -> t_Slice u8 -> v_Self -> Type0;
+  f_absorb:x0: v_Self -> x1: t_Slice u8
+    -> Prims.Pure v_Self (f_absorb_pre x0 x1) (fun result -> f_absorb_post x0 x1 result);
+  f_absorb_final_pre:v_Self -> t_Slice u8 -> Type0;
+  f_absorb_final_post:v_Self -> t_Slice u8 -> v_Self -> Type0;
+  f_absorb_final:x0: v_Self -> x1: t_Slice u8
+    -> Prims.Pure v_Self (f_absorb_final_pre x0 x1) (fun result -> f_absorb_final_post x0 x1 result);
+  f_squeeze_pre:v_Self -> t_Slice u8 -> Type0;
+  f_squeeze_post:v_Self -> t_Slice u8 -> (v_Self & t_Slice u8) -> Type0;
+  f_squeeze:x0: v_Self -> x1: t_Slice u8
+    -> Prims.Pure (v_Self & t_Slice u8)
+        (f_squeeze_pre x0 x1)
+        (fun result -> f_squeeze_post x0 x1 result)
 }
 
 class t_XofX4 (v_Self: Type0) = {
