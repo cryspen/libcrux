@@ -11,9 +11,9 @@ This file keeps track of the current verification status of the modules in the M
 * ind_cca/instaniations/avx2: Verified
 * ind_cca/multiplexing: Verified
 
-* invert_ntt: Panic Free, Not linked to spec
-* ntt: Panic Free, Not linked to spec
-* mlkem*: Panic Free, Not linked to spec
+* invert_ntt: Panic Free
+* ntt: Panic Free
+* mlkem*: Panic Free
 
 * matrix: Needs proofs
 * sampling: Needs proofs
@@ -33,3 +33,10 @@ This file keeps track of the current verification status of the modules in the M
 * compress: Panic Free
 * ntt: Needs proofs
 * sampling: Needs proofs
+
+## Neon modules
+* arithmetic: Not verified
+* serialize: Not verified
+* compress: Not verified
+* ntt: Needs Not verified
+* sampling: Not verified
