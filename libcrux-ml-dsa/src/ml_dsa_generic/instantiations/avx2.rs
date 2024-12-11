@@ -25,7 +25,9 @@ mod avx2_feature {
             crate::simd::avx2::AVX2SIMDUnit,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
-            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
+            // We use the portable version here.
+            // It doesn' make sense to do these in parallel.
+            crate::hash_functions::portable::Shake256Xof,
             crate::hash_functions::simd256::Shake256x4,
             ROWS_IN_A,
             COLUMNS_IN_A,
@@ -64,7 +66,9 @@ mod avx2_feature {
             crate::simd::avx2::AVX2SIMDUnit,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
-            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
+            // We use the portable version here.
+            // It doesn' make sense to do these in parallel.
+            crate::hash_functions::portable::Shake256Xof,
             crate::hash_functions::simd256::Shake256x4,
             ROWS_IN_A,
             COLUMNS_IN_A,
@@ -111,7 +115,9 @@ mod avx2_feature {
             crate::simd::avx2::AVX2SIMDUnit,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
-            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
+            // We use the portable version here.
+            // It doesn' make sense to do these in parallel.
+            crate::hash_functions::portable::Shake256Xof,
             crate::hash_functions::simd256::Shake256x4,
             ROWS_IN_A,
             COLUMNS_IN_A,
@@ -156,10 +162,14 @@ mod avx2_feature {
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
         crate::ml_dsa_generic::sign_pre_hashed::<
             crate::simd::avx2::AVX2SIMDUnit,
-            crate::hash_functions::portable::Shake128, // XXX: Use simd256
+            // We use the portable version here.
+            // It doesn' make sense to do these in parallel.
+            crate::hash_functions::portable::Shake128,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
-            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
+            // We use the portable version here.
+            // It doesn' make sense to do these in parallel.
+            crate::hash_functions::portable::Shake256Xof,
             crate::hash_functions::simd256::Shake256x4,
             SHAKE128_PH,
             256,
@@ -207,7 +217,9 @@ mod avx2_feature {
             crate::simd::avx2::AVX2SIMDUnit,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
-            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
+            // We use the portable version here.
+            // It doesn' make sense to do these in parallel.
+            crate::hash_functions::portable::Shake256Xof,
             ROWS_IN_A,
             COLUMNS_IN_A,
             SIGNATURE_SIZE,
@@ -251,7 +263,9 @@ mod avx2_feature {
             crate::simd::avx2::AVX2SIMDUnit,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
-            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
+            // We use the portable version here.
+            // It doesn' make sense to do these in parallel.
+            crate::hash_functions::portable::Shake256Xof,
             ROWS_IN_A,
             COLUMNS_IN_A,
             SIGNATURE_SIZE,
@@ -293,10 +307,14 @@ mod avx2_feature {
     ) -> Result<(), VerificationError> {
         crate::ml_dsa_generic::verify_pre_hashed::<
             crate::simd::avx2::AVX2SIMDUnit,
-            crate::hash_functions::portable::Shake128, // XXX: Use simd256
+            // We use the portable version here.
+            // It doesn' make sense to do these in parallel.
+            crate::hash_functions::portable::Shake128,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
-            crate::hash_functions::portable::Shake256Xof, // XXX: Use simd256
+            // We use the portable version here.
+            // It doesn' make sense to do these in parallel.
+            crate::hash_functions::portable::Shake256Xof,
             SHAKE128_PH,
             256,
             ROWS_IN_A,
