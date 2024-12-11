@@ -4,6 +4,8 @@ open Core
 open FStar.Mul
 
 /// An ML-DSA specific Xof trait
+/// This trait is not actually a full Xof implementation but opererates only
+/// on multiple of blocks. The only real Xof API for SHAKE256 is [`Xof`].
 class t_DsaXof (v_Self: Type0) = {
   f_shake256_pre:v_OUTPUT_LENGTH: usize -> t_Slice u8 -> t_Array u8 v_OUTPUT_LENGTH -> Type0;
   f_shake256_post:

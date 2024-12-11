@@ -18,7 +18,7 @@ val impl_4__len: v_SIZE: usize -> Prims.unit
 type t_MLDSASignature (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
 /// A reference to the raw byte array.
-val impl_4__as_raw (v_SIZE: usize) (self: t_MLDSASignature v_SIZE)
+val impl_4__as_ref (v_SIZE: usize) (self: t_MLDSASignature v_SIZE)
     : Prims.Pure (t_Array u8 v_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Build
@@ -29,7 +29,7 @@ val impl_4__new (v_SIZE: usize) (value: t_Array u8 v_SIZE)
 type t_MLDSASigningKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
 /// A reference to the raw byte array.
-val impl__as_raw (v_SIZE: usize) (self: t_MLDSASigningKey v_SIZE)
+val impl__as_ref (v_SIZE: usize) (self: t_MLDSASigningKey v_SIZE)
     : Prims.Pure (t_Array u8 v_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Build
@@ -40,7 +40,7 @@ val impl__new (v_SIZE: usize) (value: t_Array u8 v_SIZE)
 type t_MLDSAVerificationKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
 /// A reference to the raw byte array.
-val impl_2__as_raw (v_SIZE: usize) (self: t_MLDSAVerificationKey v_SIZE)
+val impl_2__as_ref (v_SIZE: usize) (self: t_MLDSAVerificationKey v_SIZE)
     : Prims.Pure (t_Array u8 v_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Build
