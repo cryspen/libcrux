@@ -159,7 +159,7 @@ impl Operations for PortableVector {
     }
 
     #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    #[ensures(|out| fstar!(r#"(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $v)"#))]
+    #[ensures(|out| fstar!(r#"(v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $v)"#))]
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
         shift_right::<{ SHIFT_BY }>(v)
     }
@@ -180,85 +180,85 @@ impl Operations for PortableVector {
         montgomery_multiply_by_constant(v, r)
     }
 
-    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\\
+    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\
         v (Seq.index (impl.f_repr $a) i) < 3329"#))]
     #[ensures(|out| fstar!(r#"forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) 1"#))]
     fn compress_1(a: Self) -> Self {
         compress_1(a)
     }
 
-    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
-            v $COEFFICIENT_BITS == 5 \\/
-            v $COEFFICIENT_BITS == 10 \\/
-            v $COEFFICIENT_BITS == 11) /\\
-        (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\\
+    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
+            v $COEFFICIENT_BITS == 5 \/
+            v $COEFFICIENT_BITS == 10 \/
+            v $COEFFICIENT_BITS == 11) /\
+        (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\
             v (Seq.index (impl.f_repr $a) i) < 3329)"#))]
-    #[ensures(|out| fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
-            v $COEFFICIENT_BITS == 5 \\/
-            v $COEFFICIENT_BITS == 10 \\/
+    #[ensures(|out| fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
+            v $COEFFICIENT_BITS == 5 \/
+            v $COEFFICIENT_BITS == 10 \/
             v $COEFFICIENT_BITS == 11) ==>
                 (forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) (v $COEFFICIENT_BITS))"#))]
     fn compress<const COEFFICIENT_BITS: i32>(a: Self) -> Self {
         compress::<COEFFICIENT_BITS>(a)
     }
 
-    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
-        v $COEFFICIENT_BITS == 5 \\/
-        v $COEFFICIENT_BITS == 10 \\/
-        v $COEFFICIENT_BITS == 11) /\\
-    (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\\
+    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
+        v $COEFFICIENT_BITS == 5 \/
+        v $COEFFICIENT_BITS == 10 \/
+        v $COEFFICIENT_BITS == 11) /\
+    (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\
         v (Seq.index (impl.f_repr $a) i) < pow2 (v $COEFFICIENT_BITS))"#))]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self {
         decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(a)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
-                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3  /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3  /\
                        Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr ${a})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+6*3328) (impl.f_repr $out)"#))]
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                        Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr ${a})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr $out)"#))]
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
         ntt_layer_2_step(a, zeta0, zeta1)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
                        Spec.Utils.is_i16b_array (11207+3*3328) (impl.f_repr ${a})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr $out)"#))]
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self {
         ntt_layer_3_step(a, zeta)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
-                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
                        Spec.Utils.is_i16b_array (4*3328) (impl.f_repr ${a})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         inv_ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                        Spec.Utils.is_i16b_array 3328 (impl.f_repr ${a})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
         inv_ntt_layer_2_step(a, zeta0, zeta1)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
                        Spec.Utils.is_i16b_array 3328 (impl.f_repr ${a})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
     fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self {
         inv_ntt_layer_3_step(a, zeta)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
-                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${lhs}) /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
+                       Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
+                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${lhs}) /\
                        Spec.Utils.is_i16b_array 3328 (impl.f_repr ${rhs})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
     fn ntt_multiply(
@@ -340,7 +340,7 @@ impl Operations for PortableVector {
 
     #[requires(a.len() == 24 && out.len() == 16)]
     #[ensures(|result|
-        fstar!(r#"Seq.length $out_future == Seq.length $out /\\ v $result <= 16"#)
+        fstar!(r#"Seq.length $out_future == Seq.length $out /\ v $result <= 16"#)
     )]
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
         rej_sample(a, out)

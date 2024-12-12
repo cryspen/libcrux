@@ -58,7 +58,7 @@ pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
             fstar!(
                 r#"
               (forall j. j < v i ==> (Seq.index ${lhs}.f_elements j) == 
-                                     (Seq.index ${_lhs0}.f_elements j) +! (Seq.index ${rhs}.f_elements j)) /\\
+                                     (Seq.index ${_lhs0}.f_elements j) +! (Seq.index ${rhs}.f_elements j)) /\
               (forall j. j >= v i ==> (Seq.index ${lhs}.f_elements j) == (Seq.index ${_lhs0}.f_elements j))"#
             )
         });
@@ -84,7 +84,7 @@ pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
             fstar!(
                 r#"
               (forall j. j < v i ==> (Seq.index ${lhs}.f_elements j) == 
-                                     (Seq.index ${_lhs0}.f_elements j) -! (Seq.index ${rhs}.f_elements j)) /\\
+                                     (Seq.index ${_lhs0}.f_elements j) -! (Seq.index ${rhs}.f_elements j)) /\
               (forall j. j >= v i ==> (Seq.index ${lhs}.f_elements j) == (Seq.index ${_lhs0}.f_elements j))"#
             )
         });
@@ -110,7 +110,7 @@ pub fn multiply_by_constant(mut vec: PortableVector, c: i16) -> PortableVector {
             fstar!(
                 r#"
               (forall j. j < v i ==> (Seq.index ${vec}.f_elements j) == 
-                                     (Seq.index ${_vec0}.f_elements j) *! c) /\\
+                                     (Seq.index ${_vec0}.f_elements j) *! c) /\
               (forall j. j >= v i ==> (Seq.index ${vec}.f_elements j) == (Seq.index ${_vec0}.f_elements j))"#
             )
         });
@@ -132,7 +132,7 @@ pub fn bitwise_and_with_constant(mut vec: PortableVector, c: i16) -> PortableVec
             fstar!(
                 r#"
               (forall j. j < v i ==> Seq.index ${vec}.f_elements j == 
-                                     (Seq.index ${_vec0}.f_elements j &. c)) /\\
+                                     (Seq.index ${_vec0}.f_elements j &. c)) /\
               (forall j. j >= v i ==> Seq.index ${vec}.f_elements j == Seq.index ${_vec0}.f_elements j)"#
             )
         });
@@ -146,7 +146,7 @@ pub fn bitwise_and_with_constant(mut vec: PortableVector, c: i16) -> PortableVec
 
 #[inline(always)]
 #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-#[hax_lib::ensures(|result| fstar!(r#"(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> 
+#[hax_lib::ensures(|result| fstar!(r#"(v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==> 
         ${result}.f_elements == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (${vec}.f_elements)"#))]
 pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVector {
     let _vec0 = vec;
@@ -155,7 +155,7 @@ pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVect
             fstar!(
                 r#"
               (forall j. j < v i ==> Seq.index ${vec}.f_elements j == 
-                                     (Seq.index ${_vec0}.f_elements j >>! ${SHIFT_BY})) /\\
+                                     (Seq.index ${_vec0}.f_elements j >>! ${SHIFT_BY})) /\
               (forall j. j >= v i ==> Seq.index ${vec}.f_elements j == Seq.index ${_vec0}.f_elements j)"#
             )
         });
@@ -182,7 +182,7 @@ pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
                 r#"
               (forall j. j < v i ==> Seq.index ${vec}.f_elements j == 
                                      (let x = Seq.index ${_vec0}.f_elements j in
-                                      if x >=. 3329s then x -! 3329s else x)) /\\
+                                      if x >=. 3329s then x -! 3329s else x)) /\
               (forall j. j >= v i ==> Seq.index ${vec}.f_elements j == Seq.index ${_vec0}.f_elements j)"#
             )
         });
@@ -211,7 +211,7 @@ pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
 ///
 #[hax_lib::fstar::options("--z3rlimit 150 --ext context_pruning")]
 #[cfg_attr(hax, hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 28296 value"#)))]
-#[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b 3328 result /\\
+#[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b 3328 result /\
                 v result % 3329 == v value % 3329"#)))]
 pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
     let t = (i32::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
@@ -244,7 +244,7 @@ pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[cfg_attr(hax, hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 ${vec}.f_elements"#)))]
-#[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\\
+#[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\
                 (forall i. (v (Seq.index ${result}.f_elements i) % 3329) == 
                            (v (Seq.index ${vec}.f_elements i) % 3329))"#)))]
 pub(crate) fn barrett_reduce(mut vec: PortableVector) -> PortableVector {
@@ -253,9 +253,9 @@ pub(crate) fn barrett_reduce(mut vec: PortableVector) -> PortableVector {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
                 r#"
-                (forall j. j < v i ==> (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements j) /\\
-                                        v (Seq.index ${vec}.f_elements j) % 3329 == (v (Seq.index ${_vec0}.f_elements j) % 3329))) /\\
-                (forall j. j >= v i ==> (Seq.index ${vec}.f_elements j == Seq.index ${_vec0}.f_elements j /\\
+                (forall j. j < v i ==> (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements j) /\
+                                        v (Seq.index ${vec}.f_elements j) % 3329 == (v (Seq.index ${_vec0}.f_elements j) % 3329))) /\
+                (forall j. j >= v i ==> (Seq.index ${vec}.f_elements j == Seq.index ${_vec0}.f_elements j /\
                                          Spec.Utils.is_i16b 28296 (Seq.index ${vec}.f_elements j)))"#
             )
         });
@@ -287,8 +287,8 @@ pub(crate) fn barrett_reduce(mut vec: PortableVector) -> PortableVector {
 ///
 #[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
 #[cfg_attr(hax, hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b (3328 * pow2 16) value "#)))]
-#[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b (3328 + 1665) result /\\
-                (Spec.Utils.is_i32b (3328 * pow2 15) value ==> Spec.Utils.is_i16b 3328 result) /\\
+#[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b (3328 + 1665) result /\
+                (Spec.Utils.is_i32b (3328 * pow2 15) value ==> Spec.Utils.is_i16b 3328 result) /\
                 v result % 3329 == (v value * 169) % 3329"#)))]
 pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
@@ -385,7 +385,7 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300")]
 #[cfg_attr(hax, hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 fer"#)))]
-#[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b 3328 result /\\
+#[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b 3328 result /\
                 v result % 3329 == (v fe * v fer * 169) % 3329"#)))]
 pub(crate) fn montgomery_multiply_fe_by_fer(
     fe: FieldElement,
@@ -400,7 +400,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[cfg_attr(hax, hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 c"#)))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"
-Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\\
+Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\
 (forall i. i < 16 ==> 
     (v (Seq.index ${result}.f_elements i) % 3329 == 
        (v (Seq.index ${vec}.f_elements i) * v c * 169) %3329))"#)))]
@@ -412,8 +412,8 @@ pub(crate) fn montgomery_multiply_by_constant(mut vec: PortableVector, c: i16) -
                 r#"
               (forall j. j < v i ==>
 	      	  (let vecj = Seq.index ${vec}.f_elements j in
-		       (Spec.Utils.is_i16b 3328 vecj /\\
-                v vecj % 3329 == (v (Seq.index ${_vec0}.f_elements j) * v c * 169) % 3329))) /\\
+		       (Spec.Utils.is_i16b 3328 vecj /\
+                v vecj % 3329 == (v (Seq.index ${_vec0}.f_elements j) * v c * 169) % 3329))) /\
               (forall j. j >= v i ==> (Seq.index ${vec}.f_elements j) == (Seq.index ${_vec0}.f_elements j))"#
             )
         });

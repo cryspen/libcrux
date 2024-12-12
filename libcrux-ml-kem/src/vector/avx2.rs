@@ -65,15 +65,15 @@ fn compress_1(vector: SIMD256Vector) -> SIMD256Vector {
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
-    v $COEFFICIENT_BITS == 5 \\/
-    v $COEFFICIENT_BITS == 10 \\/
+#[hax_lib::requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
+    v $COEFFICIENT_BITS == 5 \/
+    v $COEFFICIENT_BITS == 10 \/
     v $COEFFICIENT_BITS == 11) /\
     (forall (i:nat). i < 16 ==> v (Seq.index (repr $vector) i) >= 0 /\
     v (Seq.index (repr $vector) i) < 3329)"#))]
-#[hax_lib::ensures(|out| fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
-    v $COEFFICIENT_BITS == 5 \\/
-    v $COEFFICIENT_BITS == 10 \\/
+#[hax_lib::ensures(|out| fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
+    v $COEFFICIENT_BITS == 5 \/
+    v $COEFFICIENT_BITS == 10 \/
     v $COEFFICIENT_BITS == 11) ==>
         (forall (i:nat). i < 16 ==> bounded (Seq.index (repr $out) i) (v $COEFFICIENT_BITS))"#))]
 fn compress<const COEFFICIENT_BITS: i32>(vector: SIMD256Vector) -> SIMD256Vector {
@@ -366,15 +366,15 @@ impl Operations for SIMD256Vector {
         compress_1(vector)
     }
 
-    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
-            v $COEFFICIENT_BITS == 5 \\/
-            v $COEFFICIENT_BITS == 10 \\/
+    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
+            v $COEFFICIENT_BITS == 5 \/
+            v $COEFFICIENT_BITS == 10 \/
             v $COEFFICIENT_BITS == 11) /\
         (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\
             v (Seq.index (impl.f_repr $vector) i) < 3329)"#))]
-    #[ensures(|out| fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
-            v $COEFFICIENT_BITS == 5 \\/
-            v $COEFFICIENT_BITS == 10 \\/
+    #[ensures(|out| fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
+            v $COEFFICIENT_BITS == 5 \/
+            v $COEFFICIENT_BITS == 10 \/
             v $COEFFICIENT_BITS == 11) ==>
                 (forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) (v $COEFFICIENT_BITS))"#))]
     #[inline(always)]
@@ -382,9 +382,9 @@ impl Operations for SIMD256Vector {
         compress::<COEFFICIENT_BITS>(vector)
     }
 
-    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
-        v $COEFFICIENT_BITS == 5 \\/
-        v $COEFFICIENT_BITS == 10 \\/
+    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
+        v $COEFFICIENT_BITS == 5 \/
+        v $COEFFICIENT_BITS == 10 \/
         v $COEFFICIENT_BITS == 11) /\
     (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\
         v (Seq.index (impl.f_repr $vector) i) < pow2 (v $COEFFICIENT_BITS))"#))]

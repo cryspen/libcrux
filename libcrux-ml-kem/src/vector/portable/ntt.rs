@@ -199,7 +199,7 @@ pub(crate) fn inv_ntt_layer_1_step(
         assert (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements 3));
         assert (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements 0));
         assert (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements 2));
-        assert (forall (i:nat). i < 16 ==> Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements i))"#);
+        assert (forall (i:nat). i < 16 ==> Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements i))");
     vec
 }
 

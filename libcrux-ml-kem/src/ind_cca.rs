@@ -37,10 +37,10 @@ pub(crate) mod instantiations;
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-    $SERIALIZED_KEY_LEN == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
-    ${private_key.len()} == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
-    ${public_key.len()} == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $SERIALIZED_KEY_LEN == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
+    ${private_key.len()} == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
+    ${public_key.len()} == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
     ${implicit_rejection_value.len()} == Spec.MLKEM.v_SHARED_SECRET_SIZE"#))]
 #[hax_lib::ensures(|result| fstar!(r#"${serialized}_future == Seq.append $private_key (
                                               Seq.append $public_key (
@@ -91,10 +91,10 @@ fn serialize_kem_secret_key_mut<
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-    $SERIALIZED_KEY_LEN == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
-    ${private_key.len()} == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
-    ${public_key.len()} == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $SERIALIZED_KEY_LEN == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
+    ${private_key.len()} == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
+    ${public_key.len()} == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
     ${implicit_rejection_value.len()} == Spec.MLKEM.v_SHARED_SECRET_SIZE"#))]
 #[hax_lib::ensures(|result| fstar!(r#"$result == Seq.append $private_key (
                                               Seq.append $public_key (
@@ -122,8 +122,8 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
 /// Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
 /// `public_key` type.
 #[inline(always)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
 fn validate_public_key<
     const K: usize,
@@ -152,8 +152,8 @@ fn validate_public_key<
 /// and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-    $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"#))]
 fn validate_private_key<
     const K: usize,
@@ -172,7 +172,7 @@ fn validate_private_key<
 /// This implements the Hash check in 7.3 3.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K"#))]
 fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize, Hasher: Hash<K>>(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
@@ -192,12 +192,12 @@ fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize, Hashe
 /// Depending on the `Vector` and `Hasher` used, this requires different hardware
 /// features
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-    $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
-    $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
-    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
-    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
-    $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
+    $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
 #[hax_lib::ensures(|result| fstar!(r#"let (expected, valid) = Spec.MLKEM.ind_cca_generate_keypair $K $randomness in
                                     valid ==> (${result}.f_sk.f_value, ${result}.f_pk.f_value) == expected"#))]
@@ -243,18 +243,18 @@ fn generate_keypair<
 }
 
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
-    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
-    $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\\
-    $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\\
-    $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\\
-    $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR  $K /\\
-    $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR  $K /\\
-    $C1_BLOCK_SIZE == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
-    $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
-    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
-    $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+    $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\
+    $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+    $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\
+    $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR  $K /\
+    $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR  $K /\
+    $C1_BLOCK_SIZE == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+    $ETA2 == Spec.MLKEM.v_ETA2 $K /\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K"#))]
 #[hax_lib::ensures(|result| fstar!(r#"let (expected, valid) = Spec.MLKEM.ind_cca_encapsulate $K ${public_key}.f_value $randomness in
                                     valid ==> (${result}._1.f_value, ${result}._2) == expected"#))]
@@ -316,21 +316,21 @@ fn encapsulate<
 
 /// This code verifies on some machines, runs out of memory on others
 #[hax_lib::fstar::options("--z3rlimit 500")]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-    $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
-    $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
-    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
-    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
-    $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\\
-    $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\\
-    $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\\
-    $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR  $K /\\
-    $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR  $K /\\
-    $C1_BLOCK_SIZE == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
-    $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
-    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
-    $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
-    $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
+    $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
+    $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\
+    $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+    $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\
+    $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR  $K /\
+    $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR  $K /\
+    $C1_BLOCK_SIZE == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+    $ETA2 == Spec.MLKEM.v_ETA2 $K /\
+    $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\
     $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
 #[hax_lib::ensures(|result| fstar!(r#"let (expected, valid) = Spec.MLKEM.ind_cca_decapsulate $K ${private_key}.f_value ${ciphertext}.f_value in
                                     valid ==> $result == expected"#))]
@@ -483,16 +483,16 @@ pub(crate) mod unpacked {
 
     /// Generate an unpacked key from a serialized key.
     #[hax_lib::requires(
-        fstar!(r#"Spec.MLKEM.is_rank $K /\\
-        $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+        fstar!(r#"Spec.MLKEM.is_rank $K /\
+        $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
         $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K"#)
     )]
     #[hax_lib::ensures(|result|
         fstar!(r#"let (public_key_hash, (seed, (deserialized_pk, (matrix_A, valid)))) =
             Spec.MLKEM.ind_cca_unpack_public_key $K ${public_key}.f_value in (valid ==>
-            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${unpacked_public_key}_future.f_ind_cpa_public_key.f_A == matrix_A) /\\
-        Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${unpacked_public_key}_future.f_ind_cpa_public_key.f_t_as_ntt == deserialized_pk /\\
-        ${unpacked_public_key}_future.f_ind_cpa_public_key.f_seed_for_A == seed /\\
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${unpacked_public_key}_future.f_ind_cpa_public_key.f_A == matrix_A) /\
+        Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${unpacked_public_key}_future.f_ind_cpa_public_key.f_t_as_ntt == deserialized_pk /\
+        ${unpacked_public_key}_future.f_ind_cpa_public_key.f_seed_for_A == seed /\
         ${unpacked_public_key}_future.f_public_key_hash == public_key_hash"#))
     ]
     #[inline(always)]
@@ -531,9 +531,9 @@ pub(crate) mod unpacked {
     impl<const K: usize, Vector: Operations> MlKemPublicKeyUnpacked<K, Vector> {
         /// Get the serialized public key.
         #[inline(always)]
-        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
-            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
+            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
                 Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
                     self.f_ind_cpa_public_key.f_t_as_ntt i))"#))]
@@ -560,9 +560,9 @@ pub(crate) mod unpacked {
 
         /// Get the serialized public key.
         #[inline(always)]
-        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
-            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
+            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
                 Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
                     self.f_ind_cpa_public_key.f_t_as_ntt i))"#))]
@@ -602,11 +602,11 @@ pub(crate) mod unpacked {
 
     /// Take a serialized private key and generate an unpacked key pair from it.
     #[inline(always)]
-    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-           v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\\
-           v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\\
-           v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\\
-           v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\\
+    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+           v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
+           v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+           v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+           v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
            v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K"#))]
     pub fn keys_from_private_key<
         const K: usize,
@@ -666,11 +666,11 @@ pub(crate) mod unpacked {
 
         /// Take a serialized private key and generate an unpacked key pair from it.
         #[inline(always)]
-        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-           v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\\
-           v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\\
-           v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\\
-           v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\\
+        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+           v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
+           v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+           v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+           v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
            v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K)"#))]
         pub fn from_private_key<
             const SECRET_KEY_SIZE: usize,
@@ -696,9 +696,9 @@ pub(crate) mod unpacked {
 
         /// Get the serialized public key.
         #[inline(always)]
-        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
-            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
+            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
                 Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
                     self.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i))"#))]
@@ -722,9 +722,9 @@ pub(crate) mod unpacked {
 
         /// Get the serialized public key.
         #[inline(always)]
-        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
-            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
+            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
                 Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
                     self.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i))"#))]
@@ -758,10 +758,10 @@ pub(crate) mod unpacked {
 
         /// Get the serialized private key.
         #[inline(always)]
-        #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-            $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
-            $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
-            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+        #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+            $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
+            $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
+            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K"#))]
         pub fn serialized_private_key_mut<
             const CPA_PRIVATE_KEY_SIZE: usize,
@@ -793,10 +793,10 @@ pub(crate) mod unpacked {
 
         /// Get the serialized private key.
         #[inline(always)]
-        #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-            $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\\
-            $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\\
-            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\\
+        #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+            $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
+            $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
+            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K"#))]
         pub fn serialized_private_key<
             const CPA_PRIVATE_KEY_SIZE: usize,
@@ -848,21 +848,21 @@ pub(crate) mod unpacked {
         for i in 0..K {
             hax_lib::loop_invariant!(|i: usize| {
                 fstar!(
-                    "forall (j: nat). j < v $i ==>
+                    r#"forall (j: nat). j < v $i ==>
             (forall (k: nat). k < v $K ==>
                 Seq.index (Seq.index $A j) k ==
-                    Seq.index (Seq.index $ind_cpa_a k) j)"
+                    Seq.index (Seq.index $ind_cpa_a k) j)"#
                 )
             });
             let _a_i = A;
             for j in 0..K {
                 hax_lib::loop_invariant!(|j: usize| {
                     fstar!(
-                        "(forall (k: nat). k < v $i ==>
-                    Seq.index $A k == Seq.index $_a_i k) /\\
+                        r#"(forall (k: nat). k < v $i ==>
+                    Seq.index $A k == Seq.index $_a_i k) /\
                 (forall (k: nat). k < v $j ==>
                   Seq.index (Seq.index $A (v $i)) k ==
-                    Seq.index (Seq.index $ind_cpa_a k) (v $i))"
+                    Seq.index (Seq.index $ind_cpa_a k) (v $i))"#
                     )
                 });
                 A[i][j] = ind_cpa_a[j][i].clone();
@@ -874,17 +874,17 @@ pub(crate) mod unpacked {
     /// Generate Unpacked Keys
     #[inline(always)]
     #[hax_lib::fstar::options("--z3rlimit 1500 --ext context_pruning --z3refresh")]
-    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-        $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
-        $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
-        $BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\\
+    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+        $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+        $BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
         $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"#))]
     #[hax_lib::ensures(|result|
         fstar!(r#"let ((m_A, public_key_hash), implicit_rejection_value), valid =
             Spec.MLKEM.ind_cca_unpack_generate_keypair $K $randomness in
         valid ==> Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector
-            ${out}_future.f_public_key.f_ind_cpa_public_key.f_A == m_A /\\
-        ${out}_future.f_public_key.f_public_key_hash == public_key_hash /\\
+            ${out}_future.f_public_key.f_ind_cpa_public_key.f_A == m_A /\
+        ${out}_future.f_public_key.f_public_key_hash == public_key_hash /\
         ${out}_future.f_private_key.f_implicit_rejection_value == implicit_rejection_value"#))
     ]
     pub(crate) fn generate_keypair<
@@ -947,16 +947,16 @@ pub(crate) mod unpacked {
 
     // Encapsulate with Unpacked Public Key
     #[inline(always)]
-    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-        $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
-        $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
-        $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
-        $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
-        $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\\
-        $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\\
-        $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\\
-        $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\\
-        $VECTOR_U_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
+    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+        $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+        $ETA2 == Spec.MLKEM.v_ETA2 $K /\
+        $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\
+        $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+        $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\
+        $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\
+        $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\
+        $VECTOR_U_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
         $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"#))]
     #[hax_lib::ensures(|(ciphertext_result, shared_secret_array)|
         fstar!(r#"let (ciphertext, shared_secret) =
@@ -964,7 +964,7 @@ pub(crate) mod unpacked {
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${public_key}.f_ind_cpa_public_key.f_t_as_ntt)
             (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${public_key}.f_ind_cpa_public_key.f_A)
             $randomness in
-        ${ciphertext_result}.f_value == ciphertext /\\
+        ${ciphertext_result}.f_value == ciphertext /\
         $shared_secret_array == shared_secret"#))
     ]
     pub(crate) fn encapsulate<
@@ -1025,17 +1025,17 @@ pub(crate) mod unpacked {
     // Decapsulate with Unpacked Private Key
     #[inline(always)]
     #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning --z3refresh")]
-    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\\
-        $ETA1 == Spec.MLKEM.v_ETA1 $K /\\
-        $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\\
-        $ETA2 == Spec.MLKEM.v_ETA2 $K /\\
-        $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\\
-        $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\\
-        $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\\
-        $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\\
-        $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\\
-        $C1_BLOCK_SIZE == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\\
-        $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\\
+    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+        $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+        $ETA2 == Spec.MLKEM.v_ETA2 $K /\
+        $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\
+        $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+        $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\
+        $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\
+        $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\
+        $C1_BLOCK_SIZE == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
+        $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
         $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
     #[hax_lib::ensures(|result|
         fstar!(r#"$result ==

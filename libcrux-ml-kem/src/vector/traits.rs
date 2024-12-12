@@ -58,7 +58,7 @@ pub trait Operations: Copy + Clone + Repr {
     fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
 
     #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    #[ensures(|result| fstar!(r#"(v_SHIFT_BY >=. 0l /\\ v_SHIFT_BY <. 16l) ==> f_repr $result == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (f_repr $v)"#))]
+    #[ensures(|result| fstar!(r#"(v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==> f_repr $result == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (f_repr $v)"#))]
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
     // fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
 
@@ -74,62 +74,62 @@ pub trait Operations: Copy + Clone + Repr {
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
 
     // Compression
-    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (f_repr $a) i) >= 0 /\\
+    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (f_repr $a) i) >= 0 /\
         v (Seq.index (f_repr $a) i) < 3329"#))]
     #[ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> bounded (Seq.index (f_repr $result) i) 1"#))]
     fn compress_1(a: Self) -> Self;
-    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
-            v $COEFFICIENT_BITS == 5 \\/
-            v $COEFFICIENT_BITS == 10 \\/
-            v $COEFFICIENT_BITS == 11) /\\
-        (forall (i:nat). i < 16 ==> v (Seq.index (f_repr $a) i) >= 0 /\\
+    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
+            v $COEFFICIENT_BITS == 5 \/
+            v $COEFFICIENT_BITS == 10 \/
+            v $COEFFICIENT_BITS == 11) /\
+        (forall (i:nat). i < 16 ==> v (Seq.index (f_repr $a) i) >= 0 /\
             v (Seq.index (f_repr $a) i) < 3329)"#))]
-    #[ensures(|result| fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
-            v $COEFFICIENT_BITS == 5 \\/
-            v $COEFFICIENT_BITS == 10 \\/
+    #[ensures(|result| fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
+            v $COEFFICIENT_BITS == 5 \/
+            v $COEFFICIENT_BITS == 10 \/
             v $COEFFICIENT_BITS == 11) ==>
                 (forall (i:nat). i < 16 ==> bounded (Seq.index (f_repr $result) i) (v $COEFFICIENT_BITS))"#))]
     fn compress<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
-    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \\/
-        v $COEFFICIENT_BITS == 5 \\/
-        v $COEFFICIENT_BITS == 10 \\/
-        v $COEFFICIENT_BITS == 11) /\\
-    (forall (i:nat). i < 16 ==> v (Seq.index (f_repr $a) i) >= 0 /\\
+    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
+        v $COEFFICIENT_BITS == 5 \/
+        v $COEFFICIENT_BITS == 10 \/
+        v $COEFFICIENT_BITS == 11) /\
+    (forall (i:nat). i < 16 ==> v (Seq.index (f_repr $a) i) >= 0 /\
         v (Seq.index (f_repr $a) i) < pow2 (v $COEFFICIENT_BITS))"#))]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
 
     // NTT
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
-                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
                        Spec.Utils.is_i16b_array (11207+5*3328) (f_repr ${a})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+6*3328) (f_repr $out)"#))]
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                        Spec.Utils.is_i16b_array (11207+4*3328) (f_repr ${a})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+5*3328) (f_repr $out)"#))]
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
                        Spec.Utils.is_i16b_array (11207+3*3328) (f_repr ${a})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+4*3328) (f_repr $out)"#))]
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self;
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\ 
-                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
+                       Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
                        Spec.Utils.is_i16b_array (4 * 3328) (f_repr ${a})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (f_repr $out)"#))]
     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                        Spec.Utils.is_i16b_array 3328 (f_repr ${a})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (f_repr $out)"#))]
     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta/\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta/\
                        Spec.Utils.is_i16b_array 3328 (f_repr ${a})"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (f_repr $out)"#))]
     fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self;
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\\ Spec.Utils.is_i16b 1664 zeta1 /\\
-                       Spec.Utils.is_i16b 1664 zeta2 /\\ Spec.Utils.is_i16b 1664 zeta3 /\\
-                       Spec.Utils.is_i16b_array 3328 (f_repr ${lhs}) /\\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
+                       Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
+                       Spec.Utils.is_i16b_array 3328 (f_repr ${lhs}) /\
                        Spec.Utils.is_i16b_array 3328 (f_repr ${rhs}) "#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (f_repr $out)"#))]
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
@@ -174,7 +174,7 @@ pub trait Operations: Copy + Clone + Repr {
 
     #[requires(a.len() == 24 && out.len() == 16)]
     #[ensures(|result|
-        fstar!(r#"Seq.length $out_future == Seq.length $out /\\ v $result <= 16"#)
+        fstar!(r#"Seq.length $out_future == Seq.length $out /\ v $result <= 16"#)
     )]
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }
@@ -236,7 +236,7 @@ pub fn to_standard_domain<T: Operations>(v: T) -> T {
 #[hax_lib::ensures(|result| fstar!(r#"forall i.
                                        (let x = Seq.index (i1._super_8706949974463268012.f_repr ${a}) i in
                                         let y = Seq.index (i1._super_8706949974463268012.f_repr ${result}) i in
-                                        (v y >= 0 /\\ v y <= 3328 /\\ (v y % 3329 == v x % 3329)))"#))]
+                                        (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
 #[inline(always)]
 pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
     let t = T::shift_right::<15>(a);
@@ -244,9 +244,9 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
     T::add(a, &fm)
 }
 
-#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always"#)]
+#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
-                                      (x == 0s \\/ x == 1s)"#))]
+                                      (x == 0s \/ x == 1s)"#))]
 #[inline(always)]
 pub fn decompress_1<T: Operations>(vec: T) -> T {
     let z = T::ZERO();
@@ -265,7 +265,7 @@ pub fn decompress_1<T: Operations>(vec: T) -> T {
 
     let s = T::sub(z, &vec);
     hax_lib::fstar!(
-        r#"assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == 0s \\/ 
+        r#"assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == 0s \/ 
                                       Seq.index (i1._super_8706949974463268012.f_repr ${s}) i == -1s)"#
     );
     hax_lib::fstar!(r#"assert (i1.f_bitwise_and_with_constant_pre ${s} 1665s)"#);
