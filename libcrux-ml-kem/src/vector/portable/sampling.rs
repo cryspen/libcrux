@@ -6,8 +6,10 @@ use crate::vector::FIELD_MODULUS;
         fstar!(r#"Seq.length $result_future == Seq.length $result /\ v $res <= 16"#)
     )]
 pub(crate) fn rej_sample(a: &[u8], result: &mut [i16]) -> usize {
-    hax_lib::fstar!("assert (v (Core.Slice.impl__len a) == 24);
-        assert (v (Core.Slice.impl__len result) == 16)");
+    hax_lib::fstar!(
+        "assert (v (Core.Slice.impl__len a) == 24);
+        assert (v (Core.Slice.impl__len result) == 16)"
+    );
     let mut sampled = 0;
     for i in 0..a.len() / 3 {
         hax_lib::loop_invariant!(|i: usize| {
