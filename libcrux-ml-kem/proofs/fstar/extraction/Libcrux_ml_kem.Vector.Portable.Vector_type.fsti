@@ -21,6 +21,12 @@ val to_i16_array (x: t_PortableVector)
           let result:t_Array i16 (sz 16) = result in
           result == x.f_elements)
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl:Core.Clone.t_Clone t_PortableVector
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_1:Core.Marker.t_Copy t_PortableVector
+
 val zero: Prims.unit
   -> Prims.Pure t_PortableVector
       Prims.l_True

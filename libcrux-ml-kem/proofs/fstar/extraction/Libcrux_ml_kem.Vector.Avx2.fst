@@ -158,6 +158,18 @@ let ntt_multiply (lhs rhs: t_SIMD256Vector) (zeta0 zeta1 zeta2 zeta3: i16) =
 
 #pop-options
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_1': Core.Clone.t_Clone t_SIMD256Vector
+
+let impl_1 = impl_1'
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_2': Core.Marker.t_Copy t_SIMD256Vector
+
+let impl_2 = impl_2'
+
 #push-options "--admit_smt_queries true"
 
 let serialize_10_ (vector: t_SIMD256Vector) =

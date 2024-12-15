@@ -43,7 +43,7 @@ type t_MlKemKeyPairUnpacked
 val impl_4__private_key
       (v_K: usize)
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
     : Prims.Pure (t_MlKemPrivateKeyUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -51,9 +51,17 @@ val impl_4__private_key
 val impl_4__public_key
       (v_K: usize)
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
     : Prims.Pure (t_MlKemPublicKeyUnpacked v_K v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_2
+      (v_K: usize)
+      (#v_Vector: Type0)
+      {| i1: Core.Clone.t_Clone v_Vector |}
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    : Core.Clone.t_Clone (t_MlKemPublicKeyUnpacked v_K v_Vector)
 
 val transpose_a
       (v_K: usize)
@@ -121,7 +129,7 @@ val impl_4__from_private_key
       (#v_Vector: Type0)
       (v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
           usize)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
     : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector)
       (requires
@@ -238,7 +246,7 @@ val impl_4__serialized_public_key_mut
       (v_K: usize)
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
@@ -269,7 +277,7 @@ val impl_3__serialized
       (v_K: usize)
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self: t_MlKemPublicKeyUnpacked v_K v_Vector)
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (requires
@@ -297,7 +305,7 @@ val impl_4__serialized_public_key
       (v_K: usize)
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (requires
@@ -355,7 +363,7 @@ val impl_4__serialized_private_key_mut
       (#v_Vector: Type0)
       (v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT:
           usize)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
       (serialized: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
@@ -372,7 +380,7 @@ val impl_4__serialized_private_key
       (#v_Vector: Type0)
       (v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT:
           usize)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
       (requires

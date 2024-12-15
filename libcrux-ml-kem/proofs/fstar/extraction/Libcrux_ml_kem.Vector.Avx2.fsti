@@ -159,6 +159,12 @@ val ntt_multiply (lhs rhs: t_SIMD256Vector) (zeta0 zeta1 zeta2 zeta3: i16)
           let out:t_SIMD256Vector = out in
           Spec.Utils.is_i16b_array 3328 (repr out))
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_1:Core.Clone.t_Clone t_SIMD256Vector
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_2:Core.Marker.t_Copy t_SIMD256Vector
+
 val serialize_10_ (vector: t_SIMD256Vector)
     : Prims.Pure (t_Array u8 (sz 20))
       (requires Spec.MLKEM.serialize_pre 10 (repr vector))

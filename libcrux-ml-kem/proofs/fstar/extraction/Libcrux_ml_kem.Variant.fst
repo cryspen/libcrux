@@ -96,7 +96,7 @@ let impl: t_Variant t_MlKem =
         (v_K: usize)
         (#v_Hasher: Type0)
         (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i4:
+          i3:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (key_generation_seed: t_Slice u8)
         ->
@@ -107,7 +107,7 @@ let impl: t_Variant t_MlKem =
         (v_K: usize)
         (#v_Hasher: Type0)
         (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i4:
+          i3:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (key_generation_seed: t_Slice u8)
         (res: t_Array u8 (sz 64))
@@ -120,7 +120,7 @@ let impl: t_Variant t_MlKem =
       (v_K: usize)
       (#v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-        i4:
+        i3:
         Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
       (key_generation_seed: t_Slice u8)
       ->

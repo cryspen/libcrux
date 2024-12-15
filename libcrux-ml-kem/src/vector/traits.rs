@@ -254,8 +254,8 @@ pub fn decompress_1<T: Operations>(vec: T) -> T {
         "assert(forall i. Seq.index (i1._super_8706949974463268012.f_repr ${z}) i == 0s)"
     );
     hax_lib::fstar!(
-        "assert(forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
-                                      ((0 - v x) == 0 \\/ (0 - v x) == -1))"
+        r#"assert(forall i. let x = Seq.index (i1._super_8706949974463268012.f_repr ${vec}) i in 
+                                      ((0 - v x) == 0 \/ (0 - v x) == -1))"#
     );
     hax_lib::fstar!(
         r#"assert(forall i. i < 16 ==>

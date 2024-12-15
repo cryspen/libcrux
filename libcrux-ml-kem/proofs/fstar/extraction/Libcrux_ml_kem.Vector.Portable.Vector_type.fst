@@ -25,5 +25,17 @@ let from_i16_array (array: t_Slice i16) =
 
 let to_i16_array (x: t_PortableVector) = x.f_elements
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl': Core.Clone.t_Clone t_PortableVector
+
+let impl = impl'
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_1': Core.Marker.t_Copy t_PortableVector
+
+let impl_1 = impl_1'
+
 let zero (_: Prims.unit) =
   { f_elements = Rust_primitives.Hax.repeat 0s (sz 16) } <: t_PortableVector
