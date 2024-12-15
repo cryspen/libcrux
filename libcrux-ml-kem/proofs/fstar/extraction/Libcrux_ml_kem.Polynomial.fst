@@ -14,6 +14,38 @@ let zeta (i: usize) =
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl':
+    #v_Vector: Type0 ->
+    {| i1: Core.Clone.t_Clone v_Vector |} ->
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+  -> Core.Clone.t_Clone (t_PolynomialRingElement v_Vector)
+
+let impl
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Core.Clone.t_Clone v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+     = impl' #v_Vector #i1 #i2
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_1':
+    #v_Vector: Type0 ->
+    {| i1: Core.Marker.t_Copy v_Vector |} ->
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+  -> Core.Marker.t_Copy (t_PolynomialRingElement v_Vector)
+
+let impl_1
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Core.Marker.t_Copy v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+     = impl_1' #v_Vector #i1 #i2
+
 #push-options "--admit_smt_queries true"
 
 let add_error_reduce
@@ -71,7 +103,7 @@ let add_error_reduce
 let impl_2__add_error_reduce
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self error: t_PolynomialRingElement v_Vector)
      =
@@ -141,7 +173,7 @@ let add_message_error_reduce
 let impl_2__add_message_error_reduce
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self message result: t_PolynomialRingElement v_Vector)
      = add_message_error_reduce #v_Vector self message result
@@ -201,7 +233,7 @@ let add_standard_error_reduce
 let impl_2__add_standard_error_reduce
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self error: t_PolynomialRingElement v_Vector)
      =
@@ -253,7 +285,7 @@ let poly_barrett_reduce
 let impl_2__poly_barrett_reduce
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self: t_PolynomialRingElement v_Vector)
      =
@@ -316,7 +348,7 @@ let subtract_reduce
 let impl_2__subtract_reduce
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self b: t_PolynomialRingElement v_Vector)
      = subtract_reduce #v_Vector self b
@@ -409,7 +441,7 @@ let from_i16_array
 let impl_2__from_i16_array
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (a: t_Slice i16)
      = from_i16_array #v_Vector a
@@ -464,7 +496,7 @@ let ntt_multiply
 let impl_2__ntt_multiply
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self rhs: t_PolynomialRingElement v_Vector)
      = ntt_multiply #v_Vector self rhs
@@ -517,7 +549,7 @@ let impl_2__add_to_ring_element
       (#v_Vector: Type0)
       (v_K: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self rhs: t_PolynomialRingElement v_Vector)
      =

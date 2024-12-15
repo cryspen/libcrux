@@ -105,7 +105,7 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 100"#))]
+#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 100"))]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector)"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall i. i < 16 ==> 
                 get_lane $result i == 
@@ -146,7 +146,7 @@ const BARRETT_MULTIPLIER: i16 = 20159;
 /// See Section 3.2 of the implementation notes document for an explanation
 /// of this code.
 #[inline(always)]
-#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 200"#))]
+#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 200"))]
 #[cfg_attr(hax, hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})"#)))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\
                 (forall i. i < 16 ==> v (get_lane $result i) % 3329 == 
@@ -235,7 +235,7 @@ pub(crate) fn montgomery_multiply_by_constant(vector: Vec256, constant: i16) -> 
 }
 
 #[inline(always)]
-#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 100"#))]
+#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 100"))]
 #[cfg_attr(hax, hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $constants))"#)))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\
                 (forall i. i < 16 ==> v (get_lane $result i) % 3329 == 
@@ -312,7 +312,7 @@ pub(crate) fn montgomery_reduce_i32s(vec: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 100"#))]
+#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 100"))]
 #[cfg_attr(hax, hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 $constants))"#)))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 ${result}) /\
                 (forall i. i < 8 ==> v (get_lane128 $result i) % 3329 == 

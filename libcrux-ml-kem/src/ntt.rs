@@ -8,21 +8,21 @@ use crate::{
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::fstar::before(
     interface,
-    "[@@ \"opaque_to_smt\"]
+    r#"[@@ "opaque_to_smt"]
    let ntt_re_range_2 (#v_Vector: Type0)
          {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
          (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
        forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (11207+5*3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"#
 )]
 #[hax_lib::fstar::before(
     interface,
-    "[@@ \"opaque_to_smt\"]
+    r#"[@@ "opaque_to_smt"]
     let ntt_re_range_1 (#v_Vector: Type0)
             {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
             (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
         forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (11207+6*3328)
-                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"
+                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"#
 )]
 #[hax_lib::requires(fstar!(r#"v ${*zeta_i} == 63 /\
     ntt_re_range_2 $re"#))]
@@ -81,12 +81,12 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::fstar::before(
     interface,
-    "[@@ \"opaque_to_smt\"]
+    r#"[@@ "opaque_to_smt"]
    let ntt_re_range_3 (#v_Vector: Type0)
          {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
          (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
        forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (11207+4*3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"#
 )]
 #[hax_lib::requires(fstar!(r#"v ${*zeta_i} == 31 /\
     ntt_re_range_3 $re"#))]
@@ -140,12 +140,12 @@ pub(crate) fn ntt_at_layer_2<Vector: Operations>(
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::fstar::before(
     interface,
-    "[@@ \"opaque_to_smt\"]
+    r#"[@@ "opaque_to_smt"]
    let ntt_re_range_4 (#v_Vector: Type0)
          {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
          (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
        forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (11207+3*3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"#
 )]
 #[hax_lib::requires(fstar!(r#"v ${*zeta_i} == 15 /\
     ntt_re_range_4 $re"#))]
@@ -263,7 +263,7 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
 //We should make the loops inside this function `opaque_to_smt` to get it work
 #[hax_lib::fstar::before(
     interface,
-    "[@@ \"opaque_to_smt\"]
+    r#"[@@ "opaque_to_smt"]
    let ntt_layer_7_pre (#v_Vector: Type0)
         {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
         (re_0 re_1: v_Vector) =
@@ -278,7 +278,7 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
     (forall i. i < 16 ==> 
       Spec.Utils.is_intb (pow2 15 - 1) 
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_0) i) + 
-          v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))))"
+          v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))))"#
 )]
 #[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> ntt_layer_7_pre (${re}.f_coefficients.[ sz i ])
     (${re}.f_coefficients.[ sz i +! sz 8 ])"#))]

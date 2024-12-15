@@ -380,10 +380,10 @@ fn sample_vector_cbd_then_ntt<
     for i in 0..K {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
-                "forall (j:nat). j < v $i ==>
+                r#"forall (j:nat). j < v $i ==>
             Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector re_as_ntt.[ sz j ] ==
               Spec.MLKEM.poly_ntt (Spec.MLKEM.sample_poly_cbd $ETA ${prf_outputs}.[ sz j ]) /\
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range #$:Vector re_as_ntt.[ sz j ]"
+            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range #$:Vector re_as_ntt.[ sz j ]"#
             )
         });
         re_as_ntt[i] = sample_from_binomial_distribution::<ETA, Vector>(&prf_outputs[i]);

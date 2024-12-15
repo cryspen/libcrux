@@ -73,13 +73,13 @@ class t_Variant (v_Self: Type0) = {
   f_cpa_keygen_seed_pre:
       v_K: usize ->
       #v_Hasher: Type0 ->
-      {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
       seed: t_Slice u8
     -> pred: Type0{(Core.Slice.impl__len #u8 seed <: usize) =. sz 32 ==> pred};
   f_cpa_keygen_seed_post:
       v_K: usize ->
       #v_Hasher: Type0 ->
-      {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
       seed: t_Slice u8 ->
       res: t_Array u8 (sz 64)
     -> pred:
@@ -90,11 +90,11 @@ class t_Variant (v_Self: Type0) = {
   f_cpa_keygen_seed:
       v_K: usize ->
       #v_Hasher: Type0 ->
-      {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
       x0: t_Slice u8
     -> Prims.Pure (t_Array u8 (sz 64))
-        (f_cpa_keygen_seed_pre v_K #v_Hasher #i4 x0)
-        (fun result -> f_cpa_keygen_seed_post v_K #v_Hasher #i4 x0 result)
+        (f_cpa_keygen_seed_pre v_K #v_Hasher #i3 x0)
+        (fun result -> f_cpa_keygen_seed_post v_K #v_Hasher #i3 x0 result)
 }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]

@@ -183,7 +183,7 @@ pub(crate) fn inv_ntt_layer_1_step(
     inv_ntt_step(&mut vec, zeta3, 12, 14);
     inv_ntt_step(&mut vec, zeta3, 13, 15);
     hax_lib::fstar!(
-       "assert (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements 13));
+        r#"assert (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements 13));
         assert (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements 15));
         assert (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements 12));
         assert (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements 14));
@@ -199,7 +199,8 @@ pub(crate) fn inv_ntt_layer_1_step(
         assert (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements 3));
         assert (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements 0));
         assert (Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements 2));
-        assert (forall (i:nat). i < 16 ==> Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements i))"#);
+        assert (forall (i:nat). i < 16 ==> Spec.Utils.is_i16b 3328 (Seq.index ${vec}.f_elements i))"#
+    );
     vec
 }
 

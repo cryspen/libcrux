@@ -9,9 +9,21 @@ unfold type t_Vec128 = bit_vec 128
 val vec128_as_i16x8 (x: bit_vec 128) : t_Array i16 (sz 8)
 let get_lane128 (v: bit_vec 128) (i:nat{i < 8}) = Seq.index (vec128_as_i16x8 v) i
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_3:Core.Clone.t_Clone t_Vec128
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_2:Core.Marker.t_Copy t_Vec128
+
 unfold type t_Vec256 = bit_vec 256
 val vec256_as_i16x16 (x: bit_vec 256) : t_Array i16 (sz 16)
 let get_lane (v: bit_vec 256) (i:nat{i < 16}) = Seq.index (vec256_as_i16x16 v) i
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl:Core.Clone.t_Clone t_Vec256
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_1:Core.Marker.t_Copy t_Vec256
 
 val mm256_abs_epi32 (a: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 

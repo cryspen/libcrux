@@ -6,7 +6,7 @@ open FStar.Mul
 /// The state.
 /// It\'s only used for SHAKE128.
 /// All other functions don\'t actually use any members.
-val t_Simd256Hash:Type0
+val t_Simd256Hash:eqtype
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K

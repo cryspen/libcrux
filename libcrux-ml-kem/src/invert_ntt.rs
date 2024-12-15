@@ -77,7 +77,7 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning"#)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"v ${*zeta_i} == 64 /\
     invert_ntt_re_range_2 $re "#))]
 #[hax_lib::ensures(|result| fstar!(r#"invert_ntt_re_range_2 ${re}_future /\

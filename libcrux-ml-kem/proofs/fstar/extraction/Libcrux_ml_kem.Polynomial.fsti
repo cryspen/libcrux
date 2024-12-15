@@ -62,6 +62,20 @@ let v_VECTORS_IN_RING_ELEMENT: usize =
   Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!
   Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl
+      (#v_Vector: Type0)
+      {| i1: Core.Clone.t_Clone v_Vector |}
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    : Core.Clone.t_Clone (t_PolynomialRingElement v_Vector)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_1
+      (#v_Vector: Type0)
+      {| i1: Core.Marker.t_Copy v_Vector |}
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    : Core.Marker.t_Copy (t_PolynomialRingElement v_Vector)
+
 val add_error_reduce
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -70,7 +84,7 @@ val add_error_reduce
 
 val impl_2__add_error_reduce
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self error: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -82,7 +96,7 @@ val add_message_error_reduce
 
 val impl_2__add_message_error_reduce
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self message result: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -94,7 +108,7 @@ val add_standard_error_reduce
 
 val impl_2__add_standard_error_reduce
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self error: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -106,7 +120,7 @@ val poly_barrett_reduce
 
 val impl_2__poly_barrett_reduce
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -118,7 +132,7 @@ val subtract_reduce
 
 val impl_2__subtract_reduce
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self b: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -145,7 +159,7 @@ val from_i16_array
 
 val impl_2__from_i16_array
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (a: t_Slice i16)
     : Prims.Pure (t_PolynomialRingElement v_Vector)
       (requires
@@ -180,7 +194,7 @@ val ntt_multiply
 
 val impl_2__ntt_multiply
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self rhs: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -198,6 +212,6 @@ val add_to_ring_element
 val impl_2__add_to_ring_element
       (#v_Vector: Type0)
       (v_K: usize)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self rhs: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)

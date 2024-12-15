@@ -33,9 +33,9 @@ pub(crate) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
 #[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(fstar!(r#"range (v $domain_separator + v $K) u8_inttype"#))]
 #[hax_lib::ensures(|ds|
-    fstar!(r#"v $ds == v $domain_separator + v $K /\\
+    fstar!(r#"v $ds == v $domain_separator + v $K /\
             (forall (i:nat). i < v $K ==>
-                v (Seq.index (Seq.index ${prf_inputs}_future i) 32) == v $domain_separator + i /\\
+                v (Seq.index (Seq.index ${prf_inputs}_future i) 32) == v $domain_separator + i /\
                 Seq.slice (Seq.index ${prf_inputs}_future i) 0 32 == Seq.slice (Seq.index $prf_inputs i) 0 32)"#)
 )]
 pub(crate) fn prf_input_inc<const K: usize>(
@@ -47,10 +47,10 @@ pub(crate) fn prf_input_inc<const K: usize>(
     for i in 0..K {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
-                r#"v $domain_separator == v $_domain_separator_init + v $i /\\
-          (v $i < v $K ==> (forall (j:nat). (j >= v $i /\\ j < v $K) ==>
-            prf_inputs.[ sz j ] == ${_prf_inputs_init}.[ sz j ])) /\\
-          (forall (j:nat). j < v $i ==> v (Seq.index (Seq.index prf_inputs j) 32) == v $_domain_separator_init + j /\\
+                r#"v $domain_separator == v $_domain_separator_init + v $i /\
+          (v $i < v $K ==> (forall (j:nat). (j >= v $i /\ j < v $K) ==>
+            prf_inputs.[ sz j ] == ${_prf_inputs_init}.[ sz j ])) /\
+          (forall (j:nat). j < v $i ==> v (Seq.index (Seq.index prf_inputs j) 32) == v $_domain_separator_init + j /\
             Seq.slice (Seq.index prf_inputs j) 0 32 == Seq.slice (Seq.index $_prf_inputs_init j) 0 32)"#
             )
         });

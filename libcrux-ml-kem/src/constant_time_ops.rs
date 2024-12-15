@@ -69,10 +69,10 @@ fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
     for i in 0..lhs.len() {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
-                "v $i <= Seq.length $lhs /\
+                r#"v $i <= Seq.length $lhs /\
             (if (Seq.slice $lhs 0 (v $i) = Seq.slice $rhs 0 (v $i)) then
                 $r == 0uy
-                else ~ ($r == 0uy))"
+                else ~ ($r == 0uy))"#
             )
         });
         let nr = r | (lhs[i] ^ rhs[i]);

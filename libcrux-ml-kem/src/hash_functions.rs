@@ -78,7 +78,7 @@ pub(crate) mod portable {
     ///
     /// It's only used for SHAKE128.
     /// All other functions don't actually use any members.
-    #[cfg_attr(hax, hax_lib::opaque_type)]
+    #[cfg_attr(hax, hax_lib::opaque)]
     pub(crate) struct PortableHash<const K: usize> {
         shake128_state: [KeccakState; K],
     }
@@ -237,7 +237,7 @@ pub(crate) mod avx2 {
     ///
     /// It's only used for SHAKE128.
     /// All other functions don't actually use any members.
-    #[cfg_attr(hax, hax_lib::opaque_type)]
+    #[cfg_attr(hax, hax_lib::opaque)]
     pub(crate) struct Simd256Hash {
         shake128_state: KeccakState,
     }
@@ -487,7 +487,7 @@ pub(crate) mod neon {
     ///
     /// It's only used for SHAKE128.
     /// All other functions don't actually use any members.
-    #[cfg_attr(hax, hax_lib::opaque_type)]
+    #[cfg_attr(hax, hax_lib::opaque)]
     pub(crate) struct Simd128Hash {
         shake128_state: [KeccakState; 2],
     }

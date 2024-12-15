@@ -19,7 +19,7 @@ let impl_4__private_key
       (v_K: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
      = self.f_private_key
@@ -28,10 +28,28 @@ let impl_4__public_key
       (v_K: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
      = self.f_public_key
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_2':
+    v_K: usize ->
+    #v_Vector: Type0 ->
+    {| i1: Core.Clone.t_Clone v_Vector |} ->
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+  -> Core.Clone.t_Clone (t_MlKemPublicKeyUnpacked v_K v_Vector)
+
+let impl_2
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Core.Clone.t_Clone v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+     = impl_2' v_K #v_Vector #i1 #i2
 
 #push-options "--z3rlimit 200"
 
@@ -352,7 +370,7 @@ let impl_4__from_private_key
       (v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
           usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
      =
@@ -592,7 +610,7 @@ let impl_4__serialized_public_key_mut
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
@@ -616,7 +634,7 @@ let impl_3__serialized
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self: t_MlKemPublicKeyUnpacked v_K v_Vector)
      =
@@ -637,7 +655,7 @@ let impl_4__serialized_public_key
       (#v_Vector: Type0)
       (v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
      =
@@ -831,7 +849,7 @@ let impl_4__serialized_private_key_mut
       (v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT:
           usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
       (serialized: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
@@ -870,7 +888,7 @@ let impl_4__serialized_private_key
       (v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT:
           usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
      =
