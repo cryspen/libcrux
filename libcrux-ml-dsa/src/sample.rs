@@ -34,6 +34,10 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
     done
 }
 
+/// A buffering data structure for sampling into a matrix.
+///
+/// After rejection sampling the ring element at `tmp_stack[i]` will
+/// be written to the indices at `indices[i]` in `out`.
 pub(super) struct SampleArgs<
     'a,
     SIMDUnit: Operations,
@@ -41,14 +45,21 @@ pub(super) struct SampleArgs<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 > {
+    /// Buffer for holding an initial supply of rejection sampling
+    /// randomness, e.g. five blocks of XoF output.
     pub(super) rand_stack: &'a mut (
         [u8; STACK_SIZE],
         [u8; STACK_SIZE],
         [u8; STACK_SIZE],
         [u8; STACK_SIZE],
     ),
+    /// Buffers for holding coefficients of field elements as they are sampled.
     pub(super) tmp_stack: &'a mut [[i32; 263]],
+    /// Matrix into which field elements are written from
+    /// `tmp_stack`, after successful rejection sampling.
     pub(super) out: &'a mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+    /// Indices in `out` where ring elements from `tmp_stack` should
+    /// be written to.
     pub(super) indices: &'a [(usize, usize)],
 }
 
