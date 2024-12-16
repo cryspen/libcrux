@@ -253,15 +253,21 @@ pub(crate) fn sign_internal<
     domain_separation_context: Option<DomainSeparationContext>,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-    let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
-        encoding::signing_key::deserialize_then_ntt::<
-            SIMDUnit,
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-            ETA,
-            ERROR_RING_ELEMENT_SIZE,
-            SIGNING_KEY_SIZE,
-        >(signing_key);
+    let (
+        seed_for_A,
+        seed_for_signing,
+        verification_key_hash,
+        mut s1_as_ntt,
+        mut s2_as_ntt,
+        mut t0_as_ntt,
+    ) = encoding::signing_key::deserialize_then_ntt::<
+        SIMDUnit,
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        ETA,
+        ERROR_RING_ELEMENT_SIZE,
+        SIGNING_KEY_SIZE,
+    >(signing_key);
 
     let A_as_ntt = unsafe {
         samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A))
@@ -337,46 +343,43 @@ pub(crate) fn sign_internal<
             COMMITMENT_HASH_SIZE,
         >(commitment_hash_candidate));
 
-        let challenge_times_s1 = vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(
-            &s1_as_ntt,
+        vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(
+            &mut s1_as_ntt,
             &verifier_challenge_as_ntt,
         );
-        let challenge_times_s2 = vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
-            &s2_as_ntt,
+        let signer_response_candidate = add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mask, &s1_as_ntt);
+
+        vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
+            &mut s2_as_ntt,
             &verifier_challenge_as_ntt,
         );
-
-        let signer_response_candidate =
-            add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mask, &challenge_times_s1);
-
-        let w0_minus_challenge_times_s2 =
-            subtract_vectors::<SIMDUnit, ROWS_IN_A>(&w0, &challenge_times_s2);
+        let w0_minus_challenge_times_s2 = subtract_vectors::<SIMDUnit, ROWS_IN_A>(&w0, &s2_as_ntt);
 
         if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
-            signer_response_candidate,
+            &signer_response_candidate,
             (1 << GAMMA1_EXPONENT) - BETA,
         ) {
             // XXX: https://github.com/hacspec/hax/issues/1171
             // continue;
         } else {
             if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(
-                w0_minus_challenge_times_s2,
+                &w0_minus_challenge_times_s2,
                 GAMMA2 - BETA,
             ) {
                 // XXX: https://github.com/hacspec/hax/issues/1171
                 // continue;
             } else {
-                let challenge_times_t0 = vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
-                    &t0_as_ntt,
+                vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
+                    &mut t0_as_ntt,
                     &verifier_challenge_as_ntt,
                 );
-                if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(challenge_times_t0, GAMMA2) {
+                if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(&t0_as_ntt, GAMMA2) {
                     // XXX: https://github.com/hacspec/hax/issues/1171
                     // continue;
                 } else {
                     let w0_minus_c_times_s2_plus_c_times_t0 = add_vectors::<SIMDUnit, ROWS_IN_A>(
                         &w0_minus_challenge_times_s2,
-                        &challenge_times_t0,
+                        &t0_as_ntt,
                     );
                     let (hint_candidate, ones_in_hint) = make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(
                         w0_minus_c_times_s2_plus_c_times_t0,
@@ -514,7 +517,7 @@ pub(crate) fn verify_internal<
 
     // We use if-else branches because early returns will not go through hax.
     if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
-        signature.signer_response,
+        &signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
         return Err(VerificationError::SignerResponseExceedsBoundError);

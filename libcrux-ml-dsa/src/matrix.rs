@@ -72,19 +72,15 @@ pub(crate) fn compute_A_times_mask<
 #[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn vector_times_ring_element<SIMDUnit: Operations, const DIMENSION: usize>(
-    vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+    vector: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
     ring_element: &PolynomialRingElement<SIMDUnit>,
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
-    cloop! {
-        for (i, vector_ring_element) in vector.iter().enumerate() {
-            result[i] =
-                invert_ntt_montgomery(ntt_multiply_montgomery(vector_ring_element, ring_element));
-        }
+) {
+    for i in 0..vector.len() {
+        vector[i] = ntt_multiply_montgomery(&vector[i], ring_element);
     }
-
-    result
+    for i in 0..vector.len() {
+        vector[i] = invert_ntt_montgomery(vector[i]);
+    }
 }
 
 #[allow(non_snake_case)]

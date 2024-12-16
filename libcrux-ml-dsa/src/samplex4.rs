@@ -1,7 +1,7 @@
 use crate::{
     hash_functions::{shake128, shake256},
     polynomial::PolynomialRingElement,
-    sample::{sample_four_error_ring_elements, sample_four_ring_elements, SampleArgs},
+    sample::{sample_four_error_ring_elements, sample_four_ring_elements, ElementOut, SampleArgs},
     simd::traits::Operations,
 };
 
@@ -44,7 +44,12 @@ pub(crate) fn matrix_A_4_by_4<
         [0u8; shake128::FIVE_BLOCKS_SIZE],
         [0u8; shake128::FIVE_BLOCKS_SIZE],
     );
-    let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
+    let mut tmp_stack = [
+        ElementOut::new(),
+        ElementOut::new(),
+        ElementOut::new(),
+        ElementOut::new(),
+    ];
     let mut memory = SampleArgs::new(
         &mut rand_stack,
         &mut tmp_stack,
@@ -110,7 +115,12 @@ pub(crate) fn matrix_A_6_by_5<
         [0u8; shake128::FIVE_BLOCKS_SIZE],
         [0u8; shake128::FIVE_BLOCKS_SIZE],
     );
-    let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
+    let mut tmp_stack = [
+        ElementOut::new(),
+        ElementOut::new(),
+        ElementOut::new(),
+        ElementOut::new(),
+    ];
     let mut memory = SampleArgs::new(
         &mut rand_stack,
         &mut tmp_stack,
@@ -217,7 +227,12 @@ pub(crate) fn matrix_A_8_by_7<
         [0u8; shake128::FIVE_BLOCKS_SIZE],
         [0u8; shake128::FIVE_BLOCKS_SIZE],
     );
-    let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
+    let mut tmp_stack = [
+        ElementOut::new(),
+        ElementOut::new(),
+        ElementOut::new(),
+        ElementOut::new(),
+    ];
     let mut memory = SampleArgs::new(
         &mut rand_stack,
         &mut tmp_stack,
@@ -373,7 +388,11 @@ pub(crate) fn matrix_A_8_by_7<
 #[allow(unsafe_code)]
 #[allow(non_snake_case)]
 // #[inline(always)]
-pub(crate) unsafe fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+pub(crate) unsafe fn matrix_A<
+    SIMDUnit: Operations,
+    const ROWS_IN_A: usize,
+    const COLUMNS_IN_A: usize,
+>(
     seed: [u8; 34],
 ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
     match (ROWS_IN_A as u8, COLUMNS_IN_A as u8) {

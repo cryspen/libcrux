@@ -46,7 +46,7 @@ pub(super) struct SampleArgs<
         [u8; shake128::FIVE_BLOCKS_SIZE],
         [u8; shake128::FIVE_BLOCKS_SIZE],
     ),
-    pub(super) tmp_stack: &'a mut [[i32; 263]],
+    pub(super) tmp_stack: &'a mut [ElementOut<SIMDUnit>],
     pub(super) out: &'a mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
     pub(super) indices: &'a [(usize, usize)],
 }
@@ -61,7 +61,7 @@ impl<'a, SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize
             [u8; shake128::FIVE_BLOCKS_SIZE],
             [u8; shake128::FIVE_BLOCKS_SIZE],
         ),
-        tmp_stack: &'a mut [[i32; 263]],
+        tmp_stack: &'a mut [ElementOut<SIMDUnit>],
         out: &'a mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
         indices: &'a [(usize, usize)],
     ) -> Self {
@@ -75,6 +75,7 @@ impl<'a, SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize
 }
 
 #[inline(always)]
+#[allow(unsafe_code)]
 pub(crate) fn sample_four_ring_elements<
     SIMDUnit: Operations,
     const ROWS_IN_A: usize,
@@ -132,70 +133,72 @@ pub(crate) fn sample_four_ring_elements<
     let mut sampled2 = 0;
     let mut sampled3 = 0;
 
-    let mut done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut memory.rand_stack.0,
-        &mut sampled0,
-        &mut memory.tmp_stack[0],
-    );
-    let mut done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut memory.rand_stack.1,
-        &mut sampled1,
-        &mut memory.tmp_stack[1],
-    );
-    let mut done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut memory.rand_stack.2,
-        &mut sampled2,
-        &mut memory.tmp_stack[2],
-    );
-    let mut done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut memory.rand_stack.3,
-        &mut sampled3,
-        &mut memory.tmp_stack[3],
-    );
+    unsafe {
+        let mut done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+            &mut memory.rand_stack.0,
+            &mut sampled0,
+            &mut memory.tmp_stack[0].bytes,
+        );
+        let mut done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+            &mut memory.rand_stack.1,
+            &mut sampled1,
+            &mut memory.tmp_stack[1].bytes,
+        );
+        let mut done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+            &mut memory.rand_stack.2,
+            &mut sampled2,
+            &mut memory.tmp_stack[2].bytes,
+        );
+        let mut done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+            &mut memory.rand_stack.3,
+            &mut sampled3,
+            &mut memory.tmp_stack[3].bytes,
+        );
 
-    while !done0 || !done1 || !done2 || !done3 {
-        let randomnesses = state.squeeze_next_block();
-        if !done0 {
-            done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-                &randomnesses.0,
-                &mut sampled0,
-                &mut memory.tmp_stack[0],
-            );
+        while !done0 || !done1 || !done2 || !done3 {
+            let randomnesses = state.squeeze_next_block();
+            if !done0 {
+                done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+                    &randomnesses.0,
+                    &mut sampled0,
+                    &mut memory.tmp_stack[0].bytes,
+                );
+            }
+            if !done1 {
+                done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+                    &randomnesses.1,
+                    &mut sampled1,
+                    &mut memory.tmp_stack[1].bytes,
+                );
+            }
+            if !done2 {
+                done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+                    &randomnesses.2,
+                    &mut sampled2,
+                    &mut memory.tmp_stack[2].bytes,
+                );
+            }
+            if !done3 {
+                done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+                    &randomnesses.3,
+                    &mut sampled3,
+                    &mut memory.tmp_stack[3].bytes,
+                );
+            }
         }
-        if !done1 {
-            done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-                &randomnesses.1,
-                &mut sampled1,
-                &mut memory.tmp_stack[1],
-            );
-        }
-        if !done2 {
-            done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-                &randomnesses.2,
-                &mut sampled2,
-                &mut memory.tmp_stack[2],
-            );
-        }
-        if !done3 {
-            done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-                &randomnesses.3,
-                &mut sampled3,
-                &mut memory.tmp_stack[3],
-            );
-        }
-    }
 
-    for (k, (i, j)) in memory.indices.iter().enumerate() {
-        memory.out[*i][*j] =
-            PolynomialRingElement::<SIMDUnit>::from_i32_array(&memory.tmp_stack[k]);
+        for (k, (i, j)) in memory.indices.iter().enumerate() {
+            memory.out[*i][*j] = memory.tmp_stack[k].re;
+        }
     }
 }
 
 #[inline(always)]
+#[allow(unsafe_code)]
 fn rejection_sample_less_than_eta_equals_2<SIMDUnit: Operations>(
     randomness: &[u8],
     sampled_coefficients: &mut usize,
-    out: &mut [i32; 263],
+    out: &mut ElementOut<SIMDUnit>,
 ) -> bool {
     let mut done = false;
 
@@ -203,27 +206,30 @@ fn rejection_sample_less_than_eta_equals_2<SIMDUnit: Operations>(
     // a single SIMDUnit can hold 8 coefficients, we pass in 4 bytes of randomness.
     cloop! {
         for random_bytes in randomness.chunks_exact(4) {
+            unsafe {
             if !done {
                 let sampled = SIMDUnit::rejection_sample_less_than_eta_equals_2(
                     random_bytes,
-                    &mut out[*sampled_coefficients..],
+                    &mut out.bytes[*sampled_coefficients..],
                 );
                 *sampled_coefficients += sampled;
 
                 if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
                     done = true;
                 }
-            }
+            }}
         }
     }
 
     done
 }
+
 #[inline(always)]
+#[allow(unsafe_code)]
 fn rejection_sample_less_than_eta_equals_4<SIMDUnit: Operations>(
     randomness: &[u8],
     sampled_coefficients: &mut usize,
-    out: &mut [i32; 263],
+    out: &mut ElementOut<SIMDUnit>,
 ) -> bool {
     let mut done = false;
 
@@ -231,27 +237,28 @@ fn rejection_sample_less_than_eta_equals_4<SIMDUnit: Operations>(
     // a single SIMDUnit can hold 8 coefficients, we pass in 4 bytes of randomness.
     cloop! {
         for random_bytes in randomness.chunks_exact(4) {
+            unsafe {
             if !done {
                 let sampled = SIMDUnit::rejection_sample_less_than_eta_equals_4(
                     random_bytes,
-                    &mut out[*sampled_coefficients..],
+                    &mut out.bytes[*sampled_coefficients..],
                 );
                 *sampled_coefficients += sampled;
 
                 if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
                     done = true;
                 }
-            }
+            }}
         }
     }
 
     done
 }
 #[inline(always)]
-pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: usize>(
+fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: usize>(
     randomness: &[u8],
     sampled: &mut usize,
-    out: &mut [i32; 263],
+    out: &mut ElementOut<SIMDUnit>,
 ) -> bool {
     match ETA as u8 {
         2 => rejection_sample_less_than_eta_equals_2::<SIMDUnit>(randomness, sampled, out),
@@ -260,6 +267,18 @@ pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: us
     }
 }
 
+pub(super) union ElementOut<SIMDUnit: Operations> {
+    pub(super) bytes: [i32; 263],
+    pub(super) re: PolynomialRingElement<SIMDUnit>,
+}
+
+impl<SIMDUnit: Operations> ElementOut<SIMDUnit> {
+    pub(super) fn new() -> Self {
+        Self { bytes: [0i32; 263] }
+    }
+}
+
+#[allow(unsafe_code)]
 #[inline(always)]
 pub(crate) fn sample_four_error_ring_elements<
     SIMDUnit: Operations,
@@ -305,10 +324,10 @@ pub(crate) fn sample_four_error_ring_elements<
     //
     // To ensure we don't overflow the buffer in this case, we allocate 255 + 8
     // = 263 elements.
-    let mut out0 = [0i32; 263];
-    let mut out1 = [0i32; 263];
-    let mut out2 = [0i32; 263];
-    let mut out3 = [0i32; 263];
+    let mut out0 = ElementOut::new();
+    let mut out1 = ElementOut::new();
+    let mut out2 = ElementOut::new();
+    let mut out3 = ElementOut::new();
 
     let mut sampled0 = 0;
     let mut sampled1 = 0;
@@ -357,12 +376,7 @@ pub(crate) fn sample_four_error_ring_elements<
         }
     }
 
-    (
-        PolynomialRingElement::<SIMDUnit>::from_i32_array(&out0),
-        PolynomialRingElement::<SIMDUnit>::from_i32_array(&out1),
-        PolynomialRingElement::<SIMDUnit>::from_i32_array(&out2),
-        PolynomialRingElement::<SIMDUnit>::from_i32_array(&out3),
-    )
+    unsafe { (out0.re, out1.re, out2.re, out3.re) }
 }
 
 #[inline(always)]
@@ -538,7 +552,12 @@ mod tests {
             [0u8; shake128::FIVE_BLOCKS_SIZE],
             [0u8; shake128::FIVE_BLOCKS_SIZE],
         );
-        let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
+        let mut tmp_stack = [
+            ElementOut::new(),
+            ElementOut::new(),
+            ElementOut::new(),
+            ElementOut::new(),
+        ];
         let mut out = [[PolynomialRingElement::<SIMDUnit>::ZERO(); 4]; 1];
         let indices = [(0, 0), (0, 1), (0, 2), (0, 3)];
         let mut memory = SampleArgs::new(&mut rand_stack, &mut tmp_stack, &mut out, &indices);
