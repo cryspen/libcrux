@@ -47,7 +47,7 @@ jobs:
         if: ${{ matrix.bits == 64 }}
 
       - name: 🛠️ Setup Rust Nightly
-        run: rustup toolchain install nightly
+        run: rustup toolchain install nightly-2024-12-14
 
       - name: 🛠️ Setup Ubuntu x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
@@ -82,9 +82,10 @@ jobs:
       - name: 🔨 Build Release
         run: cargo build --verbose --release $RUST_TARGET_FLAG
 
+      # TODO: https://github.com/cryspen/libcrux/issues/717
       - name: 🏃🏻 Asan MacOS
         if: ${{ matrix.os == 'macos-latest' }}
-        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
+        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly-2024-12-14 test --release --target aarch64-apple-darwin
 
       # - name: ⬆ Upload build
       #   uses: ./.github/actions/upload_artifacts
