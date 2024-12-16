@@ -1,8 +1,11 @@
 //! HMAC
 //!
 //! This crate implements HMAC on SHA 1 and SHA 2 (except for SHA 224).
+#![no_std]
 
-//use libcrux_hkdf as hkdf;
+extern crate alloc;
+
+use alloc::vec::Vec;
 
 #[cfg(feature = "hacl")]
 pub mod hacl {
@@ -26,18 +29,6 @@ pub enum Algorithm {
     Sha384,
     Sha512,
 }
-
-/*
-impl From<hkdf::Algorithm> for Algorithm {
-    fn from(value: hkdf::Algorithm) -> Self {
-        match value {
-            hkdf::Algorithm::Sha256 => Self::Sha256,
-            hkdf::Algorithm::Sha384 => Self::Sha384,
-            hkdf::Algorithm::Sha512 => Self::Sha512,
-        }
-    }
-}
-*/
 
 /// Get the tag size for a given algorithm.
 pub const fn tag_size(alg: Algorithm) -> usize {

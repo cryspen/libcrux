@@ -46,7 +46,7 @@ macro_rules! wycheproof_verify_test {
                     continue;
                 }
                 let verification_key =
-                    MLDSAVerificationKey(verification_key_bytes.try_into().unwrap());
+                    MLDSAVerificationKey::new(verification_key_bytes.try_into().unwrap());
 
                 for test in test_group.tests {
                     let message = hex::decode(test.msg).unwrap();
@@ -61,7 +61,7 @@ macro_rules! wycheproof_verify_test {
 
                         continue;
                     }
-                    let signature = MLDSASignature(signature_bytes.try_into().unwrap());
+                    let signature = MLDSASignature::new(signature_bytes.try_into().unwrap());
 
                     let verification_result =
                         $verify(&verification_key, &message, &context, &signature);

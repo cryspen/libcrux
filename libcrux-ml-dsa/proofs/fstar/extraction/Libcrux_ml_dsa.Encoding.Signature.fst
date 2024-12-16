@@ -198,13 +198,12 @@ let impl__deserialize
       <:
       Libcrux_ml_dsa.Types.t_VerificationError)
     <:
-    Core.Result.t_Result
-      (Libcrux_ml_dsa.Types.t_Signature v_SIMDUnit v_COMMITMENT_HASH_SIZE v_COLUMNS_IN_A v_ROWS_IN_A
-      ) Libcrux_ml_dsa.Types.t_VerificationError
+    Core.Result.t_Result (t_Signature v_SIMDUnit v_COMMITMENT_HASH_SIZE v_COLUMNS_IN_A v_ROWS_IN_A)
+      Libcrux_ml_dsa.Types.t_VerificationError
   else
     Core.Result.Result_Ok
     ({
-        Libcrux_ml_dsa.Types.f_commitment_hash
+        f_commitment_hash
         =
         Core.Result.impl__unwrap #(t_Array u8 v_COMMITMENT_HASH_SIZE)
           #Core.Array.t_TryFromSliceError
@@ -214,15 +213,14 @@ let impl__deserialize
               commitment_hash
             <:
             Core.Result.t_Result (t_Array u8 v_COMMITMENT_HASH_SIZE) Core.Array.t_TryFromSliceError);
-        Libcrux_ml_dsa.Types.f_signer_response = signer_response;
-        Libcrux_ml_dsa.Types.f_hint = hint
+        f_signer_response = signer_response;
+        f_hint = hint
       }
       <:
-      Libcrux_ml_dsa.Types.t_Signature v_SIMDUnit v_COMMITMENT_HASH_SIZE v_COLUMNS_IN_A v_ROWS_IN_A)
+      t_Signature v_SIMDUnit v_COMMITMENT_HASH_SIZE v_COLUMNS_IN_A v_ROWS_IN_A)
     <:
-    Core.Result.t_Result
-      (Libcrux_ml_dsa.Types.t_Signature v_SIMDUnit v_COMMITMENT_HASH_SIZE v_COLUMNS_IN_A v_ROWS_IN_A
-      ) Libcrux_ml_dsa.Types.t_VerificationError
+    Core.Result.t_Result (t_Signature v_SIMDUnit v_COMMITMENT_HASH_SIZE v_COLUMNS_IN_A v_ROWS_IN_A)
+      Libcrux_ml_dsa.Types.t_VerificationError
 
 let impl__serialize
       (#v_SIMDUnit: Type0)
@@ -231,11 +229,7 @@ let impl__serialize
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (self:
-          Libcrux_ml_dsa.Types.t_Signature v_SIMDUnit
-            v_COMMITMENT_HASH_SIZE
-            v_COLUMNS_IN_A
-            v_ROWS_IN_A)
+      (self: t_Signature v_SIMDUnit v_COMMITMENT_HASH_SIZE v_COLUMNS_IN_A v_ROWS_IN_A)
      =
   let signature:t_Array u8 v_SIGNATURE_SIZE = Rust_primitives.Hax.repeat 0uy v_SIGNATURE_SIZE in
   let offset:usize = sz 0 in
@@ -256,7 +250,7 @@ let impl__serialize
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice u8)
-          (self.Libcrux_ml_dsa.Types.f_commitment_hash <: t_Slice u8)
+          (self.f_commitment_hash <: t_Slice u8)
         <:
         t_Slice u8)
   in
@@ -292,7 +286,7 @@ let impl__serialize
                   (Libcrux_ml_dsa.Encoding.Gamma1.serialize #v_SIMDUnit
                       v_GAMMA1_EXPONENT
                       v_GAMMA1_RING_ELEMENT_SIZE
-                      (self.Libcrux_ml_dsa.Types.f_signer_response.[ i ]
+                      (self.f_signer_response.[ i ]
                         <:
                         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                     <:
@@ -316,18 +310,17 @@ let impl__serialize
           let signature, true_hints_seen:(t_Array u8 v_SIGNATURE_SIZE & usize) = temp_0_ in
           let i:usize = i in
           let signature, true_hints_seen:(t_Array u8 v_SIGNATURE_SIZE & usize) =
-            Rust_primitives.Hax.Folds.fold_enumerated_slice (self.Libcrux_ml_dsa.Types.f_hint.[ i ]
-                <:
-                t_Array i32 (sz 256))
+            Rust_primitives.Hax.Folds.fold_range (sz 0)
+              (Core.Slice.impl__len #i32 (self.f_hint.[ i ] <: t_Slice i32) <: usize)
               (fun temp_0_ temp_1_ ->
                   let signature, true_hints_seen:(t_Array u8 v_SIGNATURE_SIZE & usize) = temp_0_ in
                   let _:usize = temp_1_ in
                   true)
               (signature, true_hints_seen <: (t_Array u8 v_SIGNATURE_SIZE & usize))
-              (fun temp_0_ temp_1_ ->
+              (fun temp_0_ j ->
                   let signature, true_hints_seen:(t_Array u8 v_SIGNATURE_SIZE & usize) = temp_0_ in
-                  let j, hint:(usize & i32) = temp_1_ in
-                  if hint =. 1l <: bool
+                  let j:usize = j in
+                  if ((self.f_hint.[ i ] <: t_Array i32 (sz 256)).[ j ] <: i32) =. 1l <: bool
                   then
                     let signature:t_Array u8 v_SIGNATURE_SIZE =
                       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize signature

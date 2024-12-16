@@ -5,11 +5,9 @@
 #![allow(unused_assignments)]
 #![allow(unreachable_patterns)]
 
-use libcrux_macros as krml;
+use crate::prelude::*;
 
-use crate::fstar;
-use crate::lowstar;
-use crate::util as lib;
+use libcrux_macros as krml;
 
 pub(crate) fn bn_karatsuba_mul_uint32(
     aLen: u32,
