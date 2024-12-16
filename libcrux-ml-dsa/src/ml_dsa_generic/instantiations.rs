@@ -1,5 +1,5 @@
 macro_rules! instantiate {
-    ($modp:ident, $simdunit:path, $shake128:path, $shake128x4:path, $shake256:path, $shake256xof:path, $shake256x4:path) => {
+    ($modp:ident, $simdunit:path, $shake128:path, $shake128x4:path, $shake256:path, $shake256xof:path, $shake256x4:path, $sampler:path) => {
         pub mod $modp {
             use crate::{
                 constants::*,
@@ -31,7 +31,7 @@ macro_rules! instantiate {
                     ERROR_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     VERIFICATION_KEY_SIZE,
-                >(randomness)
+                >(randomness, $sampler)
             }
 
             /// Sign.
@@ -76,7 +76,7 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(&signing_key, message, context, randomness)
+                >(&signing_key, message, context, randomness, $sampler)
             }
 
             /// Sign (internal API)
@@ -121,7 +121,13 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(&signing_key, message, None, randomness)
+                >(
+                    &signing_key,
+                    message,
+                    None,
+                    randomness,
+                    crate::samplex4::X4Sampler::AVX2,
+                )
             }
 
             /// Sign (pre-hashed).
@@ -169,7 +175,7 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(&signing_key, message, context, randomness)
+                >(&signing_key, message, context, randomness, $sampler)
             }
 
             /// Verify.
@@ -211,7 +217,7 @@ macro_rules! instantiate {
                     COMMITMENT_HASH_SIZE,
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
-                >(verification_key, message, context, signature)
+                >(verification_key, message, context, signature, $sampler)
             }
 
             /// Verify (internal API).
@@ -253,7 +259,7 @@ macro_rules! instantiate {
                     COMMITMENT_HASH_SIZE,
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
-                >(verification_key, message, None, signature)
+                >(verification_key, message, None, signature, $sampler)
             }
 
             /// Verify (pre-hashed with SHAKE-128).
@@ -298,7 +304,7 @@ macro_rules! instantiate {
                     COMMITMENT_HASH_SIZE,
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
-                >(verification_key, message, context, signature)
+                >(verification_key, message, context, signature, $sampler)
             }
         }
     };
@@ -311,7 +317,8 @@ instantiate! {portable,
     crate::hash_functions::portable::Shake128X4,
     crate::hash_functions::portable::Shake256,
     crate::hash_functions::portable::Shake256Xof,
-    crate::hash_functions::portable::Shake256X4
+    crate::hash_functions::portable::Shake256X4,
+    crate::samplex4::X4Sampler::Portable
 }
 
 // AVX2 generic implementation.
@@ -326,5 +333,6 @@ instantiate! {neon,
     crate::hash_functions::neon::Shake128x4,
     crate::hash_functions::portable::Shake256,
     crate::hash_functions::portable::Shake256Xof,
-    crate::hash_functions::neon::Shake256x4
+    crate::hash_functions::neon::Shake256x4,
+    crate::samplex4::X4Sampler::Neon
 }

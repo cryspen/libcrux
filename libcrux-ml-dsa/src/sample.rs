@@ -37,29 +37,35 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
 pub(super) struct SampleArgs<
     'a,
     SIMDUnit: Operations,
+    const STACK_SIZE: usize,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 > {
     pub(super) rand_stack: &'a mut (
-        [u8; shake128::FIVE_BLOCKS_SIZE],
-        [u8; shake128::FIVE_BLOCKS_SIZE],
-        [u8; shake128::FIVE_BLOCKS_SIZE],
-        [u8; shake128::FIVE_BLOCKS_SIZE],
+        [u8; STACK_SIZE],
+        [u8; STACK_SIZE],
+        [u8; STACK_SIZE],
+        [u8; STACK_SIZE],
     ),
     pub(super) tmp_stack: &'a mut [[i32; 263]],
     pub(super) out: &'a mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
     pub(super) indices: &'a [(usize, usize)],
 }
 
-impl<'a, SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>
-    SampleArgs<'a, SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>
+impl<
+        'a,
+        SIMDUnit: Operations,
+        const STACK_SIZE: usize,
+        const ROWS_IN_A: usize,
+        const COLUMNS_IN_A: usize,
+    > SampleArgs<'a, SIMDUnit, STACK_SIZE, ROWS_IN_A, COLUMNS_IN_A>
 {
     pub(super) fn new(
         rand_stack: &'a mut (
-            [u8; shake128::FIVE_BLOCKS_SIZE],
-            [u8; shake128::FIVE_BLOCKS_SIZE],
-            [u8; shake128::FIVE_BLOCKS_SIZE],
-            [u8; shake128::FIVE_BLOCKS_SIZE],
+            [u8; STACK_SIZE],
+            [u8; STACK_SIZE],
+            [u8; STACK_SIZE],
+            [u8; STACK_SIZE],
         ),
         tmp_stack: &'a mut [[i32; 263]],
         out: &'a mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
@@ -77,6 +83,7 @@ impl<'a, SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize
 #[inline(always)]
 pub(crate) fn sample_four_ring_elements<
     SIMDUnit: Operations,
+    Shake128: shake128::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
@@ -85,10 +92,8 @@ pub(crate) fn sample_four_ring_elements<
     domain_separator1: u16,
     domain_seperator2: u16,
     domain_separator3: u16,
-    memory: &mut SampleArgs<'_, SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
+    memory: &mut SampleArgs<'_, SIMDUnit, { shake128::FIVE_BLOCKS_SIZE }, ROWS_IN_A, COLUMNS_IN_A>,
 ) {
-    use crate::hash_functions::shake128::XofX4;
-
     // Prepare the seeds
     seed0[32] = domain_separator0 as u8;
     seed0[33] = (domain_separator0 >> 8) as u8;
@@ -105,12 +110,7 @@ pub(crate) fn sample_four_ring_elements<
     seed3[32] = domain_separator3 as u8;
     seed3[33] = (domain_separator3 >> 8) as u8;
 
-    // FIXME: We use the portable implementation here, since the
-    // compiler has an easier time optimizing it, compared to the AVX2
-    // version, which actually results in faster code (except for key
-    // generation), even in the AVX2 instantiation of ML-DSA.
-    let mut state =
-        crate::hash_functions::simd256::Shake128x4::init_absorb(&seed0, &seed1, &seed2, &seed3);
+    let mut state = Shake128::init_absorb(&seed0, &seed1, &seed2, &seed3);
 
     state.squeeze_first_five_blocks(
         &mut memory.rand_stack.0,
@@ -529,7 +529,7 @@ mod tests {
 
     // This is just a wrapper around sample_four_ring_elements, for testing
     // purposes.
-    fn sample_ring_element_uniform<SIMDUnit: Operations>(
+    fn sample_ring_element_uniform<SIMDUnit: Operations, Shake128: shake128::XofX4>(
         seed: [u8; 34],
     ) -> PolynomialRingElement<SIMDUnit> {
         let mut rand_stack = (
@@ -542,7 +542,7 @@ mod tests {
         let mut out = [[PolynomialRingElement::<SIMDUnit>::ZERO(); 4]; 1];
         let indices = [(0, 0), (0, 1), (0, 2), (0, 3)];
         let mut memory = SampleArgs::new(&mut rand_stack, &mut tmp_stack, &mut out, &indices);
-        sample_four_ring_elements::<SIMDUnit, 1, 4>(
+        sample_four_ring_elements::<SIMDUnit, Shake128, 1, 4>(
             seed,
             ((seed[33] as u16) << 8) | (seed[32] as u16),
             0,
@@ -611,7 +611,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_ring_element_uniform::<SIMDUnit>(seed).to_i32_array(),
+            sample_ring_element_uniform::<SIMDUnit, Shake128>(seed).to_i32_array(),
             expected_coefficients
         );
 
@@ -625,7 +625,8 @@ mod tests {
             0xB1, 0x83, 0x9B, 0x86, 0x06, 0xF5, 0x94, 0x8B, 0x9D, 0x72, 0xA9, 0x56, 0xDC, 0xF1,
             0x01, 0x16, 0xDA, 0x9E, 0x01, 0x00,
         ];
-        let actual_coefficients = sample_ring_element_uniform::<SIMDUnit>(seed).to_i32_array();
+        let actual_coefficients =
+            sample_ring_element_uniform::<SIMDUnit, Shake128>(seed).to_i32_array();
 
         assert_eq!(actual_coefficients[0], 1_165_602);
         assert_eq!(

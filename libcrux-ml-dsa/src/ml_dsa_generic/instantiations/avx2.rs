@@ -33,7 +33,7 @@ mod avx2_feature {
             ERROR_RING_ELEMENT_SIZE,
             SIGNING_KEY_SIZE,
             VERIFICATION_KEY_SIZE,
-        >(randomness)
+        >(randomness, crate::samplex4::X4Sampler::AVX2)
     }
 
     /// Sign.
@@ -80,7 +80,13 @@ mod avx2_feature {
             GAMMA1_RING_ELEMENT_SIZE,
             SIGNING_KEY_SIZE,
             SIGNATURE_SIZE,
-        >(&signing_key, message, context, randomness)
+        >(
+            &signing_key,
+            message,
+            context,
+            randomness,
+            crate::samplex4::X4Sampler::AVX2,
+        )
     }
 
     /// Sign (internal API)
@@ -127,7 +133,13 @@ mod avx2_feature {
             GAMMA1_RING_ELEMENT_SIZE,
             SIGNING_KEY_SIZE,
             SIGNATURE_SIZE,
-        >(&signing_key, message, None, randomness)
+        >(
+            &signing_key,
+            message,
+            None,
+            randomness,
+            crate::samplex4::X4Sampler::AVX2,
+        )
     }
 
     /// Sign (pre-hashed).
@@ -177,7 +189,13 @@ mod avx2_feature {
             GAMMA1_RING_ELEMENT_SIZE,
             SIGNING_KEY_SIZE,
             SIGNATURE_SIZE,
-        >(&signing_key, message, context, randomness)
+        >(
+            &signing_key,
+            message,
+            context,
+            randomness,
+            crate::samplex4::X4Sampler::AVX2,
+        )
     }
 
     /// Verify.
@@ -221,7 +239,13 @@ mod avx2_feature {
             COMMITMENT_HASH_SIZE,
             ONES_IN_VERIFIER_CHALLENGE,
             MAX_ONES_IN_HINT,
-        >(verification_key, message, context, signature)
+        >(
+            verification_key,
+            message,
+            context,
+            signature,
+            crate::samplex4::X4Sampler::AVX2,
+        )
     }
 
     /// Verify (internal API).
@@ -265,7 +289,13 @@ mod avx2_feature {
             COMMITMENT_HASH_SIZE,
             ONES_IN_VERIFIER_CHALLENGE,
             MAX_ONES_IN_HINT,
-        >(verification_key, message, None, signature)
+        >(
+            verification_key,
+            message,
+            None,
+            signature,
+            crate::samplex4::X4Sampler::AVX2,
+        )
     }
 
     /// Verify (pre-hashed with SHAKE-128).
@@ -312,7 +342,13 @@ mod avx2_feature {
             COMMITMENT_HASH_SIZE,
             ONES_IN_VERIFIER_CHALLENGE,
             MAX_ONES_IN_HINT,
-        >(verification_key, message, context, signature)
+        >(
+            verification_key,
+            message,
+            context,
+            signature,
+            crate::samplex4::X4Sampler::AVX2,
+        )
     }
 }
 
