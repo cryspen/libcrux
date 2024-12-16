@@ -82,9 +82,10 @@ jobs:
       - name: 🔨 Build Release
         run: cargo build --verbose --release $RUST_TARGET_FLAG
 
-      - name: 🏃🏻 Asan MacOS
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
+      # https://github.com/cryspen/libcrux/issues/717
+      # - name: 🏃🏻 Asan MacOS
+      #   if: ${{ matrix.os == 'macos-latest' }}
+      #   run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
 
       # - name: ⬆ Upload build
       #   uses: ./.github/actions/upload_artifacts
