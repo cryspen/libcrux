@@ -3,7 +3,7 @@ use crate::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
     },
     constants::*,
-    encoding,
+    encoding::{self, signature::Signature},
     hash_functions::{
         portable::{shake256_absorb, shake256_absorb_final, shake256_init, shake256_squeeze},
         shake128, shake256,
@@ -17,12 +17,14 @@ use crate::{
     sample::{sample_challenge_ring_element, sample_mask_vector},
     samplex4,
     simd::traits::Operations,
-    types::{Signature, SigningError, VerificationError},
+    types::{SigningError, VerificationError},
     utils::into_padded_array,
     MLDSASignature,
 };
 
 pub(crate) mod instantiations;
+
+#[cfg(not(eurydice))]
 pub(crate) mod multiplexing;
 
 /// Generate a key pair.
@@ -52,9 +54,8 @@ pub(crate) fn generate_key_pair<
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-    let a_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
-        into_padded_array(seed_for_a),
-    );
+    let a_as_ntt =
+        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_a));
 
     let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
         into_padded_array(seed_for_error_vectors),
@@ -246,9 +247,8 @@ pub(crate) fn sign_internal<
             SIGNING_KEY_SIZE,
         >(signing_key);
 
-    let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
-        into_padded_array(&seed_for_A),
-    );
+    let A_as_ntt =
+        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative(
@@ -394,7 +394,7 @@ pub(crate) fn sign_internal<
     }
     .serialize::<GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE, MAX_ONES_IN_HINT, SIGNATURE_SIZE>();
 
-    Ok(MLDSASignature(signature))
+    Ok(MLDSASignature::new(signature))
 }
 
 /// This corresponds to line 6 in algorithm 7 in FIPS 204 (line 7 in algorithm
@@ -492,9 +492,8 @@ pub(crate) fn verify_internal<
         signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
-        let A_as_ntt = samplex4::matrix_A::<SIMDUnit, Shake128X4, ROWS_IN_A, COLUMNS_IN_A>(
-            into_padded_array(&seed_for_A),
-        );
+        let A_as_ntt =
+            samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
         let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
         Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(

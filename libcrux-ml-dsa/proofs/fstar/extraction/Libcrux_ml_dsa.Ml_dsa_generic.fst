@@ -131,7 +131,6 @@ let sign_internal
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Libcrux_ml_dsa.Samplex4.matrix_A #v_SIMDUnit
-      #v_Shake128X4
       v_ROWS_IN_A
       v_COLUMNS_IN_A
       (Libcrux_ml_dsa.Utils.into_padded_array (sz 34) (seed_for_A <: t_Slice u8)
@@ -474,20 +473,17 @@ let sign_internal
                 v_MAX_ONES_IN_HINT
                 v_SIGNATURE_SIZE
                 ({
-                    Libcrux_ml_dsa.Types.f_commitment_hash = commitment_hash;
-                    Libcrux_ml_dsa.Types.f_signer_response = signer_response;
-                    Libcrux_ml_dsa.Types.f_hint = hint
+                    Libcrux_ml_dsa.Encoding.Signature.f_commitment_hash = commitment_hash;
+                    Libcrux_ml_dsa.Encoding.Signature.f_signer_response = signer_response;
+                    Libcrux_ml_dsa.Encoding.Signature.f_hint = hint
                   }
                   <:
-                  Libcrux_ml_dsa.Types.t_Signature v_SIMDUnit
+                  Libcrux_ml_dsa.Encoding.Signature.t_Signature v_SIMDUnit
                     v_COMMITMENT_HASH_SIZE
                     v_COLUMNS_IN_A
                     v_ROWS_IN_A)
             in
-            Core.Result.Result_Ok
-            (Libcrux_ml_dsa.Types.MLDSASignature signature
-              <:
-              Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
+            Core.Result.Result_Ok (Libcrux_ml_dsa.Types.impl_4__new v_SIGNATURE_SIZE signature)
             <:
             Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature v_SIGNATURE_SIZE)
               Libcrux_ml_dsa.Types.t_SigningError
@@ -661,7 +657,7 @@ let verify_internal
     if
       ~.(Libcrux_ml_dsa.Arithmetic.vector_infinity_norm_exceeds #v_SIMDUnit
           v_COLUMNS_IN_A
-          signature.Libcrux_ml_dsa.Types.f_signer_response
+          signature.Libcrux_ml_dsa.Encoding.Signature.f_signer_response
           ((2l <<! v_GAMMA1_EXPONENT <: i32) -! v_BETA <: i32)
         <:
         bool)
@@ -670,7 +666,6 @@ let verify_internal
         (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
         v_ROWS_IN_A =
         Libcrux_ml_dsa.Samplex4.matrix_A #v_SIMDUnit
-          #v_Shake128X4
           v_ROWS_IN_A
           v_COLUMNS_IN_A
           (Libcrux_ml_dsa.Utils.into_padded_array (sz 34) (seed_for_A <: t_Slice u8)
@@ -698,7 +693,7 @@ let verify_internal
               #v_Shake256
               v_ONES_IN_VERIFIER_CHALLENGE
               v_COMMITMENT_HASH_SIZE
-              signature.Libcrux_ml_dsa.Types.f_commitment_hash
+              signature.Libcrux_ml_dsa.Encoding.Signature.f_commitment_hash
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
@@ -708,7 +703,7 @@ let verify_internal
           v_ROWS_IN_A
           v_COLUMNS_IN_A
           v_A_as_ntt
-          signature.Libcrux_ml_dsa.Types.f_signer_response
+          signature.Libcrux_ml_dsa.Encoding.Signature.f_signer_response
           verifier_challenge_as_ntt
           t1
       in
@@ -720,7 +715,7 @@ let verify_internal
         Libcrux_ml_dsa.Arithmetic.use_hint #v_SIMDUnit
           v_ROWS_IN_A
           v_GAMMA2
-          signature.Libcrux_ml_dsa.Types.f_hint
+          signature.Libcrux_ml_dsa.Encoding.Signature.f_hint
           w_approx
       in
       let commitment_serialized:t_Array u8 v_COMMITMENT_VECTOR_SIZE =
@@ -749,7 +744,7 @@ let verify_internal
       let commitment_hash:t_Array u8 v_COMMITMENT_HASH_SIZE = tmp1 in
       let _:Prims.unit = () in
       let _:Prims.unit = () in
-      if signature.Libcrux_ml_dsa.Types.f_commitment_hash <>. commitment_hash
+      if signature.Libcrux_ml_dsa.Encoding.Signature.f_commitment_hash <>. commitment_hash
       then
         Core.Result.Result_Err
         (Libcrux_ml_dsa.Types.VerificationError_CommitmentHashesDontMatchError
@@ -920,7 +915,6 @@ let generate_key_pair
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
     v_ROWS_IN_A =
     Libcrux_ml_dsa.Samplex4.matrix_A #v_SIMDUnit
-      #v_Shake128X4
       v_ROWS_IN_A
       v_COLUMNS_IN_A
       (Libcrux_ml_dsa.Utils.into_padded_array (sz 34) seed_for_a <: t_Array u8 (sz 34))

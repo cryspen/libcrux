@@ -60,16 +60,17 @@
           FSTAR_REV = inputs.fstar.rev;
         };
 
+        craneLib = inputs.crane.mkLib pkgs;
+
         ml-kem = pkgs.callPackage
-          ({ pkgs
-           , lib
+          ({ lib
            , clang-tools
            , cmake
            , mold-wrapped
            , ninja
            , python3
            , runCommand
-           , crane
+           , craneLib
            , hax
            , googletest
            , benchmark
@@ -80,7 +81,6 @@
            , runBenchmarks ? true
            }:
             let
-              craneLib = crane.mkLib pkgs;
               src = runCommand "libcrux-src" { } ''
                 cp -r ${./.} $out
                 chmod u+w $out
@@ -134,8 +134,7 @@
           {
             inherit
               googletest benchmark json
-              tools-environment;
-            crane = inputs.crane;
+              craneLib tools-environment;
             hax =
               inputs.hax.packages.${system}.default;
           };
@@ -144,15 +143,30 @@
         packages = {
           inherit ml-kem;
         };
-        devShells.default = pkgs.mkShell (tools-environment // {
+        devShells.default = craneLib.devShell (tools-environment // {
           packages = [
             pkgs.clang
             inputs.fstar.packages.${system}.default
           ];
 
-          inputsFrom = [
-            packages.ml-kem
+          # Can't use `inputsFrom` because the `Cargo.lock` is not tracked by git on first evaluation.
+          buildInputs = [
+            pkgs.clang-tools
+            pkgs.cmake
+            pkgs.mold-wrapped
+            pkgs.ninja
+            pkgs.python3
+            inputs.hax.packages.${system}.default
           ];
+
+          shellHook = ''
+            # `Cargo.lock` need to be known to git for the flake to find it.
+            # Note: run `cargo generate-lockfile` to generate a real
+            # `Cargo.lock`. Without that nix builds will error.
+            touch Cargo.lock
+            ${pkgs.git}/bin/git add --intent-to-add --force Cargo.lock
+            ${pkgs.git}/bin/git update-index --assume-unchanged Cargo.lock
+          '';
         });
       }
     );

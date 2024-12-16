@@ -10,6 +10,11 @@
 //!
 //! ## P256
 //! For P256 the portable HACL implementation is used.
+#![no_std]
+
+extern crate alloc;
+
+use alloc::{string::String, vec::Vec};
 
 mod hacl;
 
@@ -46,6 +51,7 @@ pub enum Algorithm {
 }
 
 pub(crate) mod x25519_internal {
+    use alloc::format;
     use rand::{CryptoRng, Rng};
 
     use super::Error;
@@ -250,6 +256,7 @@ pub mod curve25519 {
 }
 
 pub(crate) mod p256_internal {
+    use alloc::format;
     use rand::{CryptoRng, Rng};
 
     // P256 we only have in HACL

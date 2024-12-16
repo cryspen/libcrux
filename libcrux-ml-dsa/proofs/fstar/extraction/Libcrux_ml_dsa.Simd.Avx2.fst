@@ -64,14 +64,14 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
         (lhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
         (rhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
         ->
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
           (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lhs
                 .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
               rhs.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
             <:
-            Libcrux_intrinsics.Avx2_extract.t_Vec256));
+            u8));
     f_subtract_pre
     =
     (fun
@@ -93,14 +93,14 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
         (lhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
         (rhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
         ->
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
           (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract lhs
                 .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
               rhs.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
             <:
-            Libcrux_intrinsics.Avx2_extract.t_Vec256));
+            u8));
     f_montgomery_multiply_pre
     =
     (fun
@@ -122,14 +122,14 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
         (lhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
         (rhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
         ->
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
           (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply lhs
                 .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
               rhs.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
             <:
-            Libcrux_intrinsics.Avx2_extract.t_Vec256));
+            u8));
     f_shift_left_then_reduce_pre
     =
     (fun (v_SHIFT_BY: i32) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) -> true);
@@ -144,13 +144,13 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_shift_left_then_reduce
     =
     (fun (v_SHIFT_BY: i32) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) ->
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
           (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.shift_left_then_reduce v_SHIFT_BY
               simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
             <:
-            Libcrux_intrinsics.Avx2_extract.t_Vec256));
+            u8));
     f_power2round_pre
     =
     (fun (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) -> true);
@@ -166,16 +166,15 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_power2round
     =
     (fun (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) ->
-        let lower, upper:(Libcrux_intrinsics.Avx2_extract.t_Vec256 &
-          Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+        let lower, upper:(u8 & u8) =
           Libcrux_ml_dsa.Simd.Avx2.Arithmetic.power2round simd_unit
               .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
         in
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
           lower,
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
           upper
@@ -215,16 +214,15 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_decompose
     =
     (fun (v_GAMMA2: i32) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) ->
-        let lower, upper:(Libcrux_intrinsics.Avx2_extract.t_Vec256 &
-          Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+        let lower, upper:(u8 & u8) =
           Libcrux_ml_dsa.Simd.Avx2.Arithmetic.decompose v_GAMMA2
             simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
         in
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
           lower,
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
           upper
@@ -255,13 +253,13 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
         (low: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
         (high: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
         ->
-        let count, hint:(usize & Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+        let count, hint:(usize & u8) =
           Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint v_GAMMA2
             low.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
             high.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
         in
         count,
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
           hint
@@ -291,14 +289,14 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
         (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
         (hint: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
         ->
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
           (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.use_hint v_GAMMA2
               simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
               hint.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
             <:
-            Libcrux_intrinsics.Avx2_extract.t_Vec256));
+            u8));
     f_rejection_sample_less_than_field_modulus_pre
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) -> true);
@@ -373,12 +371,10 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_gamma1_deserialize
     =
     (fun (v_GAMMA1_EXPONENT: usize) (serialized: t_Slice u8) ->
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
-          (Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1.deserialize v_GAMMA1_EXPONENT serialized
-            <:
-            Libcrux_intrinsics.Avx2_extract.t_Vec256));
+          (Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1.deserialize v_GAMMA1_EXPONENT serialized <: u8));
     f_commitment_serialize_pre
     =
     (fun (v_OUTPUT_SIZE: usize) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) ->
@@ -425,12 +421,10 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_error_deserialize
     =
     (fun (v_ETA: usize) (serialized: t_Slice u8) ->
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
-          (Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.deserialize v_ETA serialized
-            <:
-            Libcrux_intrinsics.Avx2_extract.t_Vec256));
+          (Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.deserialize v_ETA serialized <: u8));
     f_t0_serialize_pre
     =
     (fun (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) -> true);
@@ -454,12 +448,10 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_t0_deserialize
     =
     (fun (serialized: t_Slice u8) ->
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
-          (Libcrux_ml_dsa.Simd.Avx2.Encoding.T0.deserialize serialized
-            <:
-            Libcrux_intrinsics.Avx2_extract.t_Vec256));
+          (Libcrux_ml_dsa.Simd.Avx2.Encoding.T0.deserialize serialized <: u8));
     f_t1_serialize_pre
     =
     (fun (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit) -> true);
@@ -483,12 +475,10 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_t1_deserialize
     =
     (fun (serialized: t_Slice u8) ->
-        Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        Core.Convert.f_into #u8
           #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           #FStar.Tactics.Typeclasses.solve
-          (Libcrux_ml_dsa.Simd.Avx2.Encoding.T1.deserialize serialized
-            <:
-            Libcrux_intrinsics.Avx2_extract.t_Vec256));
+          (Libcrux_ml_dsa.Simd.Avx2.Encoding.T1.deserialize serialized <: u8));
     f_ntt_pre
     =
     (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32)) -> true);
@@ -502,27 +492,34 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_ntt
     =
     (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32)) ->
-        let result:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) =
-          Libcrux_ml_dsa.Simd.Avx2.Ntt.ntt (Core.Array.impl_23__map #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-                (sz 32)
-                #Libcrux_intrinsics.Avx2_extract.t_Vec256
-                simd_units
-                (fun x ->
-                    let x:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit = x in
-                    x.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients)
-              <:
-              t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
+        let re:t_Array u8 (sz 32) =
+          Rust_primitives.Hax.repeat (Libcrux_intrinsics.Avx2_extract.mm256_setzero_si256 () <: u8)
+            (sz 32)
         in
-        Core.Array.impl_23__map #Libcrux_intrinsics.Avx2_extract.t_Vec256
+        let re:t_Array u8 (sz 32) =
+          Rust_primitives.Hax.Folds.fold_range (sz 0)
+            Libcrux_ml_dsa.Simd.Traits.v_SIMD_UNITS_IN_RING_ELEMENT
+            (fun re temp_1_ ->
+                let re:t_Array u8 (sz 32) = re in
+                let _:usize = temp_1_ in
+                true)
+            re
+            (fun re i ->
+                let re:t_Array u8 (sz 32) = re in
+                let i:usize = i in
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  i
+                  (simd_units.[ i ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
+                    .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
+                <:
+                t_Array u8 (sz 32))
+        in
+        let result:t_Array u8 (sz 32) = Libcrux_ml_dsa.Simd.Avx2.Ntt.ntt re in
+        Core.Array.from_fn #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
           (sz 32)
-          #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-          result
-          (fun x ->
-              let x:Libcrux_intrinsics.Avx2_extract.t_Vec256 = x in
-              Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
-                #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-                #FStar.Tactics.Typeclasses.solve
-                x
+          (fun i ->
+              let i:usize = i in
+              { Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients = result.[ i ] <: u8 }
               <:
               Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit));
     f_invert_ntt_montgomery_pre
@@ -538,27 +535,34 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_invert_ntt_montgomery
     =
     fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32)) ->
-      let result:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) =
-        Libcrux_ml_dsa.Simd.Avx2.Invntt.invert_ntt_montgomery (Core.Array.impl_23__map #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-              (sz 32)
-              #Libcrux_intrinsics.Avx2_extract.t_Vec256
-              simd_units
-              (fun x ->
-                  let x:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit = x in
-                  x.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients)
-            <:
-            t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
+      let re:t_Array u8 (sz 32) =
+        Rust_primitives.Hax.repeat (Libcrux_intrinsics.Avx2_extract.mm256_setzero_si256 () <: u8)
+          (sz 32)
       in
-      Core.Array.impl_23__map #Libcrux_intrinsics.Avx2_extract.t_Vec256
+      let re:t_Array u8 (sz 32) =
+        Rust_primitives.Hax.Folds.fold_range (sz 0)
+          Libcrux_ml_dsa.Simd.Traits.v_SIMD_UNITS_IN_RING_ELEMENT
+          (fun re temp_1_ ->
+              let re:t_Array u8 (sz 32) = re in
+              let _:usize = temp_1_ in
+              true)
+          re
+          (fun re i ->
+              let re:t_Array u8 (sz 32) = re in
+              let i:usize = i in
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                i
+                (simd_units.[ i ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
+                  .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients
+              <:
+              t_Array u8 (sz 32))
+      in
+      let result:t_Array u8 (sz 32) = Libcrux_ml_dsa.Simd.Avx2.Invntt.invert_ntt_montgomery re in
+      Core.Array.from_fn #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
         (sz 32)
-        #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-        result
-        (fun x ->
-            let x:Libcrux_intrinsics.Avx2_extract.t_Vec256 = x in
-            Core.Convert.f_into #Libcrux_intrinsics.Avx2_extract.t_Vec256
-              #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-              #FStar.Tactics.Typeclasses.solve
-              x
+        (fun i ->
+            let i:usize = i in
+            { Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_coefficients = result.[ i ] <: u8 }
             <:
             Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
   }
