@@ -1,46 +1,18 @@
-use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
+use crate::{helper::cloop, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-fn serialize<SIMDUnit: Operations, const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement<SIMDUnit>,
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
+fn serialize<SIMDUnit: Operations>(re: PolynomialRingElement<SIMDUnit>, serialized: &mut [u8]) {
+    let output_bytes_per_simd_unit = serialized.len() / (8 * 4);
 
-    match OUTPUT_SIZE as u8 {
-        128 => {
-            // The commitment has coefficients in [0,15] => each coefficient occupies
-            // 4 bits. Each SIMD unit contains 8 elements, which means each
-            // SIMD unit will serialize to (8 * 4) / 8 = 4 bytes.
-            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 4;
-
-            for (i, simd_unit) in re.simd_units.iter().enumerate() {
-                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                    .copy_from_slice(
-                        &SIMDUnit::commitment_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(*simd_unit),
-                    );
-            }
-
-            serialized
+    cloop! {
+        for (i, simd_unit) in re.simd_units.iter().enumerate() {
+            SIMDUnit::commitment_serialize(
+                *simd_unit,
+                &mut serialized[i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit],
+            );
         }
-
-        192 => {
-            // The commitment has coefficients in [0,15] => each coefficient occupies
-            // 6 bits. Each SIMD unit contains 8 elements, which means each
-            // SIMD unit will serialize to (8 * 6) / 8 = 6 bytes.
-            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 6;
-
-            for (i, simd_unit) in re.simd_units.iter().enumerate() {
-                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                    .copy_from_slice(
-                        &SIMDUnit::commitment_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(*simd_unit),
-                    );
-            }
-
-            serialized
-        }
-
-        _ => unreachable!(),
     }
+    ()
 }
 
 #[inline(always)]
@@ -55,10 +27,11 @@ pub(crate) fn serialize_vector<
     let mut serialized = [0u8; OUTPUT_SIZE];
     let mut offset: usize = 0;
 
-    for ring_element in vector.iter() {
-        serialized[offset..offset + RING_ELEMENT_SIZE]
-            .copy_from_slice(&serialize::<SIMDUnit, RING_ELEMENT_SIZE>(*ring_element));
-        offset += RING_ELEMENT_SIZE;
+    cloop! {
+        for ring_element in vector.iter() {
+            serialize::<SIMDUnit>(*ring_element, &mut serialized[offset..offset + RING_ELEMENT_SIZE]);
+            offset += RING_ELEMENT_SIZE;
+        }
     }
 
     serialized
@@ -105,7 +78,9 @@ mod tests {
             149,
         ];
 
-        assert_eq!(serialize::<SIMDUnit, 192>(re), serialized);
+        let mut result = [0u8; 192];
+        serialize::<SIMDUnit>(re, &mut result);
+        assert_eq!(result, serialized);
 
         // Test serialization when LOW_ORDER_ROUNDING_RANGE = 261,888
         let coefficients = [
@@ -132,7 +107,9 @@ mod tests {
             64, 117, 190, 98, 179, 38, 80, 88, 89, 9, 34, 243, 128, 219, 98, 11,
         ];
 
-        assert_eq!(serialize::<SIMDUnit, 128>(re), serialized);
+        let mut result = [0u8; 128];
+        serialize::<SIMDUnit>(re, &mut result);
+        assert_eq!(result, serialized);
     }
 
     #[cfg(not(feature = "simd256"))]

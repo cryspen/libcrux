@@ -102,7 +102,7 @@ let generate_serialized
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256)
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
       (seed_for_A seed_for_signing verification_key: t_Slice u8)
       (s1: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       (s2 t0: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
@@ -215,19 +215,16 @@ let generate_serialized
                 }
                 <:
                 Core.Ops.Range.t_Range usize)
-              (Core.Slice.impl__copy_from_slice #u8
+              (Libcrux_ml_dsa.Encoding.Error.serialize #v_SIMDUnit
+                  v_ETA
+                  v_ERROR_RING_ELEMENT_SIZE
+                  ring_element
                   (signing_key_serialized.[ {
                         Core.Ops.Range.f_start = offset;
                         Core.Ops.Range.f_end = offset +! v_ERROR_RING_ELEMENT_SIZE <: usize
                       }
                       <:
                       Core.Ops.Range.t_Range usize ]
-                    <:
-                    t_Slice u8)
-                  (Libcrux_ml_dsa.Encoding.Error.serialize #v_SIMDUnit
-                      v_ETA
-                      v_ERROR_RING_ELEMENT_SIZE
-                      ring_element
                     <:
                     t_Slice u8)
                 <:
@@ -260,19 +257,16 @@ let generate_serialized
                 }
                 <:
                 Core.Ops.Range.t_Range usize)
-              (Core.Slice.impl__copy_from_slice #u8
+              (Libcrux_ml_dsa.Encoding.Error.serialize #v_SIMDUnit
+                  v_ETA
+                  v_ERROR_RING_ELEMENT_SIZE
+                  ring_element
                   (signing_key_serialized.[ {
                         Core.Ops.Range.f_start = offset;
                         Core.Ops.Range.f_end = offset +! v_ERROR_RING_ELEMENT_SIZE <: usize
                       }
                       <:
                       Core.Ops.Range.t_Range usize ]
-                    <:
-                    t_Slice u8)
-                  (Libcrux_ml_dsa.Encoding.Error.serialize #v_SIMDUnit
-                      v_ETA
-                      v_ERROR_RING_ELEMENT_SIZE
-                      ring_element
                     <:
                     t_Slice u8)
                 <:
@@ -307,7 +301,8 @@ let generate_serialized
                 }
                 <:
                 Core.Ops.Range.t_Range usize)
-              (Core.Slice.impl__copy_from_slice #u8
+              (Libcrux_ml_dsa.Encoding.T0.serialize #v_SIMDUnit
+                  ring_element
                   (signing_key_serialized.[ {
                         Core.Ops.Range.f_start = offset;
                         Core.Ops.Range.f_end
@@ -318,7 +313,6 @@ let generate_serialized
                       Core.Ops.Range.t_Range usize ]
                     <:
                     t_Slice u8)
-                  (Libcrux_ml_dsa.Encoding.T0.serialize #v_SIMDUnit ring_element <: t_Slice u8)
                 <:
                 t_Slice u8)
           in

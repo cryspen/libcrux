@@ -26,11 +26,11 @@ val deserialize_when_gamma1_is_2_pow_19_ (serialized: t_Slice u8)
 val deserialize (v_GAMMA1_EXPONENT: usize) (serialized: t_Slice u8)
     : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize_when_gamma1_is_2_pow_17_ (v_OUTPUT_SIZE: usize) (simd_unit: u8)
-    : Prims.Pure (t_Array u8 v_OUTPUT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+val serialize_when_gamma1_is_2_pow_17_ (simd_unit: u8) (out: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize_when_gamma1_is_2_pow_19_ (v_OUTPUT_SIZE: usize) (simd_unit: u8)
-    : Prims.Pure (t_Array u8 v_OUTPUT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+val serialize_when_gamma1_is_2_pow_19_ (simd_unit: u8) (out: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize (v_OUTPUT_SIZE: usize) (simd_unit: u8)
-    : Prims.Pure (t_Array u8 v_OUTPUT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+val serialize (v_GAMMA1_EXPONENT: usize) (simd_unit: u8) (serialized: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
