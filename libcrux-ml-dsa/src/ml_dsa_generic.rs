@@ -26,7 +26,6 @@ pub(crate) mod multiplexing;
 
 /// Generate a key pair.
 #[inline(always)]
-#[allow(unsafe_code)]
 pub(crate) fn generate_key_pair<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
@@ -232,7 +231,6 @@ pub(crate) fn sign<
 /// `message` already contains the domain separation.
 #[allow(non_snake_case)]
 #[inline(always)]
-#[allow(unsafe_code)]
 pub(crate) fn sign_internal<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
@@ -478,7 +476,6 @@ fn derive_message_representative<Shake256Xof: shake256::Xof>(
 /// `message` already contains the domain separation.
 #[allow(non_snake_case)]
 #[inline(always)]
-#[allow(unsafe_code)]
 pub(crate) fn verify_internal<
     SIMDUnit: Operations,
     Shake128X4: shake128::XofX4,
