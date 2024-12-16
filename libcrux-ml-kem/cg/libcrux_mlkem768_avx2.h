@@ -8,7 +8,7 @@
  * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
- * Libcrux: 0fc11d0192b3c434280f36914a5feeed67ae9e1e
+ * Libcrux: af3367d851f36102956c944b6bb3353f59d455bc
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -1606,11 +1606,6 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_10_61(
     Eurydice_slice serialized) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re =
       libcrux_ml_kem_polynomial_ZERO_ef_61();
-  LowStar_Ignore_ignore(
-      Eurydice_slice_len(
-          Eurydice_array_to_slice((size_t)16U, re.coefficients, __m256i),
-          __m256i),
-      size_t, void *);
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(serialized, uint8_t) / (size_t)20U; i++) {
     size_t i0 = i;
