@@ -179,8 +179,6 @@ pub(crate) fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUM
     }
 }
 
-// XXX: of course we can't do this unconditionally, but with the manual monomorphization
-//      macro, we could inject this. This gives us +50% faster key generation and +70% signing.
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 #[allow(non_snake_case)]
