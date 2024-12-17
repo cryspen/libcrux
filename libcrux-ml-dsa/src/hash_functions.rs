@@ -395,20 +395,24 @@ pub(crate) mod portable {
     }
 
     impl shake256::Xof for Shake256Xof {
+        #[inline(always)]
         fn init() -> Self {
             Shake256Xof {
                 state: incremental::Shake256Xof::new(),
             }
         }
 
+        #[inline(always)]
         fn absorb(&mut self, input: &[u8]) {
             self.state.absorb(input);
         }
 
+        #[inline(always)]
         fn absorb_final(&mut self, input: &[u8]) {
             self.state.absorb_final(input);
         }
 
+        #[inline(always)]
         fn squeeze(&mut self, out: &mut [u8]) {
             self.state.squeeze(out)
         }
