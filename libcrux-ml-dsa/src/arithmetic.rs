@@ -1,5 +1,5 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT, polynomial::PolynomialRingElement,
+    constants::COEFFICIENTS_IN_RING_ELEMENT, helper::cloop, polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
@@ -13,8 +13,10 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations, const DIMENSION
     // TODO: We can break out of this loop early if need be, but the most
     // straightforward way to do so (returning false) will not go through hax;
     // revisit if performance is impacted.
-    for ring_element in vector.iter() {
-        exceeds = exceeds || ring_element.infinity_norm_exceeds(bound);
+    cloop! {
+        for ring_element in vector.iter() {
+            exceeds = exceeds || ring_element.infinity_norm_exceeds(bound);
+        }
     }
 
     exceeds
@@ -26,8 +28,10 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
 ) -> PolynomialRingElement<SIMDUnit> {
     let mut out = PolynomialRingElement::ZERO();
 
-    for (i, simd_unit) in re.simd_units.iter().enumerate() {
-        out.simd_units[i] = SIMDUnit::shift_left_then_reduce::<SHIFT_BY>(*simd_unit);
+    cloop! {
+        for (i, simd_unit) in re.simd_units.iter().enumerate() {
+            out.simd_units[i] = SIMDUnit::shift_left_then_reduce::<SHIFT_BY>(*simd_unit);
+        }
     }
 
     out
@@ -43,12 +47,16 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations, const DIMENSION: usize>(
     let mut t0 = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
     let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
-    for (i, ring_element) in t.iter().enumerate() {
-        for (j, simd_unit) in ring_element.simd_units.iter().enumerate() {
-            let (t0_unit, t1_unit) = SIMDUnit::power2round(*simd_unit);
+    cloop! {
+        for (i, ring_element) in t.iter().enumerate() {
+            cloop!{
+                for (j, simd_unit) in ring_element.simd_units.iter().enumerate() {
+                    let (t0_unit, t1_unit) = SIMDUnit::power2round(*simd_unit);
 
-            t0[i].simd_units[j] = t0_unit;
-            t1[i].simd_units[j] = t1_unit;
+                    t0[i].simd_units[j] = t0_unit;
+                    t1[i].simd_units[j] = t1_unit;
+                }
+            }
         }
     }
 

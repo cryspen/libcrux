@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
- * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
- * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
- * Libcrux: af3367d851f36102956c944b6bb3353f59d455bc
+ * Charon: e6a9a3d65857f37917f378fd98db7b7b4d0a060f
+ * Eurydice: 907fef61b716e094dcd6b41a9a41f0850ac7fd73
+ * Karamel: 21c28f3b016868a7cdd715382338bdcd9685a3b4
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: 887cc3c3760e64d740774adb301e4bae530126d1
  */
 
 #include "internal/libcrux_mlkem_avx2.h"
@@ -1488,19 +1488,6 @@ bool libcrux_ml_kem_ind_cca_validate_public_key_ed(uint8_t *public_key) {
 }
 
 /**
-This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
-libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.hash_functions.avx2.H_a9
-with const generics
-- K= 3
-*/
-static KRML_MUSTINLINE void H_a9_e0(Eurydice_slice input, uint8_t ret[32U]) {
-  libcrux_ml_kem_hash_functions_avx2_H(input, ret);
-}
-
-/**
  Validate an ML-KEM private key.
 
  This implements the Hash check in 7.3 3.
@@ -1514,16 +1501,9 @@ with const generics
 */
 bool libcrux_ml_kem_ind_cca_validate_private_key_only_ae(
     libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key) {
-  uint8_t t[32U];
-  H_a9_e0(Eurydice_array_to_subslice2(
-              private_key->value, (size_t)384U * (size_t)3U,
-              (size_t)768U * (size_t)3U + (size_t)32U, uint8_t),
-          t);
-  Eurydice_slice expected = Eurydice_array_to_subslice2(
-      private_key->value, (size_t)768U * (size_t)3U + (size_t)32U,
-      (size_t)768U * (size_t)3U + (size_t)64U, uint8_t);
-  return core_array_equality___core__cmp__PartialEq__0___Slice_U____for__Array_T__N___3__eq(
-      (size_t)32U, t, &expected, uint8_t, uint8_t, bool);
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "Eurydice error: Invalid_argument(\"List.combine\")\n");
+  KRML_HOST_EXIT(255U);
 }
 
 /**
@@ -2918,6 +2898,19 @@ generate_keypair_bb1(Eurydice_slice key_generation_seed) {
   IndCpaPublicKeyUnpacked_63 public_key = default_8d_ab();
   generate_keypair_unpacked_221(key_generation_seed, &private_key, &public_key);
   return serialize_unpacked_secret_key_8c(&public_key, &private_key);
+}
+
+/**
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.avx2.H_a9
+with const generics
+- K= 3
+*/
+static KRML_MUSTINLINE void H_a9_e0(Eurydice_slice input, uint8_t ret[32U]) {
+  libcrux_ml_kem_hash_functions_avx2_H(input, ret);
 }
 
 /**
@@ -5006,19 +4999,6 @@ bool libcrux_ml_kem_ind_cca_validate_public_key_1e(uint8_t *public_key) {
 }
 
 /**
-This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
-libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.hash_functions.avx2.H_a9
-with const generics
-- K= 4
-*/
-static KRML_MUSTINLINE void H_a9_ac(Eurydice_slice input, uint8_t ret[32U]) {
-  libcrux_ml_kem_hash_functions_avx2_H(input, ret);
-}
-
-/**
  Validate an ML-KEM private key.
 
  This implements the Hash check in 7.3 3.
@@ -5032,16 +5012,9 @@ with const generics
 */
 bool libcrux_ml_kem_ind_cca_validate_private_key_only_5e(
     libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key) {
-  uint8_t t[32U];
-  H_a9_ac(Eurydice_array_to_subslice2(
-              private_key->value, (size_t)384U * (size_t)4U,
-              (size_t)768U * (size_t)4U + (size_t)32U, uint8_t),
-          t);
-  Eurydice_slice expected = Eurydice_array_to_subslice2(
-      private_key->value, (size_t)768U * (size_t)4U + (size_t)32U,
-      (size_t)768U * (size_t)4U + (size_t)64U, uint8_t);
-  return core_array_equality___core__cmp__PartialEq__0___Slice_U____for__Array_T__N___3__eq(
-      (size_t)32U, t, &expected, uint8_t, uint8_t, bool);
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "Eurydice error: Invalid_argument(\"List.combine\")\n");
+  KRML_HOST_EXIT(255U);
 }
 
 /**
@@ -5940,6 +5913,19 @@ generate_keypair_bb0(Eurydice_slice key_generation_seed) {
   IndCpaPublicKeyUnpacked_39 public_key = default_8d_42();
   generate_keypair_unpacked_22(key_generation_seed, &private_key, &public_key);
   return serialize_unpacked_secret_key_c9(&public_key, &private_key);
+}
+
+/**
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.avx2.H_a9
+with const generics
+- K= 4
+*/
+static KRML_MUSTINLINE void H_a9_ac(Eurydice_slice input, uint8_t ret[32U]) {
+  libcrux_ml_kem_hash_functions_avx2_H(input, ret);
 }
 
 /**
@@ -7082,19 +7068,6 @@ bool libcrux_ml_kem_ind_cca_validate_public_key_ba(uint8_t *public_key) {
 }
 
 /**
-This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
-libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.hash_functions.avx2.H_a9
-with const generics
-- K= 2
-*/
-static KRML_MUSTINLINE void H_a9_fd(Eurydice_slice input, uint8_t ret[32U]) {
-  libcrux_ml_kem_hash_functions_avx2_H(input, ret);
-}
-
-/**
  Validate an ML-KEM private key.
 
  This implements the Hash check in 7.3 3.
@@ -7108,16 +7081,9 @@ with const generics
 */
 bool libcrux_ml_kem_ind_cca_validate_private_key_only_4d(
     libcrux_ml_kem_types_MlKemPrivateKey_fa *private_key) {
-  uint8_t t[32U];
-  H_a9_fd(Eurydice_array_to_subslice2(
-              private_key->value, (size_t)384U * (size_t)2U,
-              (size_t)768U * (size_t)2U + (size_t)32U, uint8_t),
-          t);
-  Eurydice_slice expected = Eurydice_array_to_subslice2(
-      private_key->value, (size_t)768U * (size_t)2U + (size_t)32U,
-      (size_t)768U * (size_t)2U + (size_t)64U, uint8_t);
-  return core_array_equality___core__cmp__PartialEq__0___Slice_U____for__Array_T__N___3__eq(
-      (size_t)32U, t, &expected, uint8_t, uint8_t, bool);
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "Eurydice error: Invalid_argument(\"List.combine\")\n");
+  KRML_HOST_EXIT(255U);
 }
 
 /**
@@ -7995,6 +7961,19 @@ generate_keypair_bb(Eurydice_slice key_generation_seed) {
   IndCpaPublicKeyUnpacked_94 public_key = default_8d_89();
   generate_keypair_unpacked_220(key_generation_seed, &private_key, &public_key);
   return serialize_unpacked_secret_key_2d(&public_key, &private_key);
+}
+
+/**
+This function found in impl {(libcrux_ml_kem::hash_functions::Hash<K> for
+libcrux_ml_kem::hash_functions::avx2::Simd256Hash)}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.hash_functions.avx2.H_a9
+with const generics
+- K= 2
+*/
+static KRML_MUSTINLINE void H_a9_fd(Eurydice_slice input, uint8_t ret[32U]) {
+  libcrux_ml_kem_hash_functions_avx2_H(input, ret);
 }
 
 /**

@@ -29,7 +29,7 @@ let sign
      =
   Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.sign (sz 6) (sz 5) (sz 4) (sz 128) (sz 19) 261888l
     (sz 128) (sz 768) (sz 48) (sz 49) (sz 55) (sz 640) (sz 4032) (sz 3309)
-    (Libcrux_ml_dsa.Types.impl__as_raw (sz 4032) signing_key <: t_Array u8 (sz 4032)) message
+    (Libcrux_ml_dsa.Types.impl__as_ref (sz 4032) signing_key <: t_Array u8 (sz 4032)) message
     context randomness
 
 let sign_pre_hashed_shake128
@@ -39,7 +39,7 @@ let sign_pre_hashed_shake128
      =
   Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.sign_pre_hashed_shake128 (sz 6) (sz 5) (sz 4) (sz 128)
     (sz 19) 261888l (sz 128) (sz 768) (sz 48) (sz 49) (sz 55) (sz 640) (sz 4032) (sz 3309)
-    (Libcrux_ml_dsa.Types.impl__as_raw (sz 4032) signing_key <: t_Array u8 (sz 4032)) message
+    (Libcrux_ml_dsa.Types.impl__as_ref (sz 4032) signing_key <: t_Array u8 (sz 4032)) message
     context randomness
 
 let verify
@@ -49,8 +49,8 @@ let verify
      =
   Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.verify (sz 6) (sz 5) (sz 3309) (sz 1952) (sz 19)
     (sz 640) 261888l 196l (sz 128) (sz 768) (sz 48) (sz 49) (sz 55)
-    (Libcrux_ml_dsa.Types.impl_2__as_raw (sz 1952) verification_key <: t_Array u8 (sz 1952)) message
-    context (Libcrux_ml_dsa.Types.impl_4__as_raw (sz 3309) signature <: t_Array u8 (sz 3309))
+    (Libcrux_ml_dsa.Types.impl_2__as_ref (sz 1952) verification_key <: t_Array u8 (sz 1952)) message
+    context (Libcrux_ml_dsa.Types.impl_4__as_ref (sz 3309) signature <: t_Array u8 (sz 3309))
 
 let verify_pre_hashed_shake128
       (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (sz 1952))
@@ -59,5 +59,5 @@ let verify_pre_hashed_shake128
      =
   Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.verify_pre_hashed_shake128 (sz 6) (sz 5) (sz 3309)
     (sz 1952) (sz 19) (sz 640) 261888l 196l (sz 128) (sz 768) (sz 48) (sz 49) (sz 55)
-    (Libcrux_ml_dsa.Types.impl_2__as_raw (sz 1952) verification_key <: t_Array u8 (sz 1952)) message
-    context (Libcrux_ml_dsa.Types.impl_4__as_raw (sz 3309) signature <: t_Array u8 (sz 3309))
+    (Libcrux_ml_dsa.Types.impl_2__as_ref (sz 1952) verification_key <: t_Array u8 (sz 1952)) message
+    context (Libcrux_ml_dsa.Types.impl_4__as_ref (sz 3309) signature <: t_Array u8 (sz 3309))

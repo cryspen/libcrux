@@ -1,10 +1,9 @@
+use crate::helper::cloop;
+
 use super::super::vector_type::{PortableSIMDUnit, ZERO};
 
 #[inline(always)]
-fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(
-    simd_unit: PortableSIMDUnit,
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
+fn serialize_when_eta_is_2(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
     const ETA: i32 = 2;
 
     let coefficient0 = (ETA - simd_unit.coefficients[0]) as u8;
@@ -20,32 +19,28 @@ fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(
     serialized[1] =
         (coefficient5 << 7) | (coefficient4 << 4) | (coefficient3 << 1) | (coefficient2 >> 2);
     serialized[2] = (coefficient7 << 5) | (coefficient6 << 2) | (coefficient5 >> 1);
-
-    serialized
 }
+
 #[inline(always)]
-fn serialize_when_eta_is_4<const OUTPUT_SIZE: usize>(
-    simd_unit: PortableSIMDUnit,
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
+fn serialize_when_eta_is_4(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
     const ETA: i32 = 4;
 
-    for (i, coefficients) in simd_unit.coefficients.chunks_exact(2).enumerate() {
-        let coefficient0 = (ETA - coefficients[0]) as u8;
-        let coefficient1 = (ETA - coefficients[1]) as u8;
+    cloop! {
+        for (i, coefficients) in simd_unit.coefficients.chunks_exact(2).enumerate() {
+            let coefficient0 = (ETA - coefficients[0]) as u8;
+            let coefficient1 = (ETA - coefficients[1]) as u8;
 
-        serialized[i] = (coefficient1 << 4) | coefficient0;
+            serialized[i] = (coefficient1 << 4) | coefficient0;
+        }
     }
-
-    serialized
+    ()
 }
+
 #[inline(always)]
-pub(crate) fn serialize<const OUTPUT_SIZE: usize>(
-    simd_unit: PortableSIMDUnit,
-) -> [u8; OUTPUT_SIZE] {
-    match OUTPUT_SIZE as u8 {
-        3 => serialize_when_eta_is_2::<OUTPUT_SIZE>(simd_unit),
-        4 => serialize_when_eta_is_4::<OUTPUT_SIZE>(simd_unit),
+pub(crate) fn serialize<const ETA: usize>(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
+    match ETA as u8 {
+        2 => serialize_when_eta_is_2(simd_unit, serialized),
+        4 => serialize_when_eta_is_4(simd_unit, serialized),
         _ => unreachable!(),
     }
 }
@@ -72,6 +67,7 @@ fn deserialize_when_eta_is_2(serialized: &[u8]) -> PortableSIMDUnit {
 
     simd_unit
 }
+
 #[inline(always)]
 fn deserialize_when_eta_is_4(serialized: &[u8]) -> PortableSIMDUnit {
     debug_assert!(serialized.len() == 4);
@@ -79,9 +75,11 @@ fn deserialize_when_eta_is_4(serialized: &[u8]) -> PortableSIMDUnit {
     let mut simd_unit = ZERO();
     const ETA: i32 = 4;
 
-    for (i, byte) in serialized.iter().enumerate() {
-        simd_unit.coefficients[2 * i] = ETA - ((byte & 0xF) as i32);
-        simd_unit.coefficients[2 * i + 1] = ETA - ((byte >> 4) as i32);
+    cloop! {
+        for (i, byte) in serialized.iter().enumerate() {
+            simd_unit.coefficients[2 * i] = ETA - ((byte & 0xF) as i32);
+            simd_unit.coefficients[2 * i + 1] = ETA - ((byte >> 4) as i32);
+        }
     }
 
     simd_unit

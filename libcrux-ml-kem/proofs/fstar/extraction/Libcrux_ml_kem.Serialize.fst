@@ -21,6 +21,57 @@ let to_unsigned_field_modulus
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+let deserialize_then_decompress_10_
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (serialized: t_Slice u8)
+     =
+  let _:Prims.unit =
+    assert (v ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 10) /! sz 8) == 320)
+  in
+  let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
+  in
+  let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+    Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 20)
+      serialized
+      (fun re temp_1_ ->
+          let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
+          let _:usize = temp_1_ in
+          true)
+      re
+      (fun re temp_1_ ->
+          let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
+          let i, bytes:(usize & t_Slice u8) = temp_1_ in
+          let coefficient:v_Vector =
+            Libcrux_ml_kem.Vector.Traits.f_deserialize_10_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              bytes
+          in
+          let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+            {
+              re with
+              Libcrux_ml_kem.Polynomial.f_coefficients
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux_ml_kem.Polynomial.f_coefficients
+                i
+                (Libcrux_ml_kem.Vector.Traits.f_decompress_ciphertext_coefficient #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
+                    10l
+                    coefficient
+                  <:
+                  v_Vector)
+            }
+            <:
+            Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
+          in
+          re)
+  in
+  re
+
 #push-options "--admit_smt_queries true"
 
 let deserialize_then_decompress_11_
@@ -245,6 +296,31 @@ let deserialize_then_decompress_message
           re)
   in
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
+
+let deserialize_then_decompress_ring_element_u
+      (v_COMPRESSION_FACTOR: usize)
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (serialized: t_Slice u8)
+     =
+  let _:Prims.unit =
+    assert ((v (cast v_COMPRESSION_FACTOR <: u32) == 10) \/
+        (v (cast v_COMPRESSION_FACTOR <: u32) == 11))
+  in
+  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+    match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
+    | 10ul -> deserialize_then_decompress_10_ #v_Vector serialized
+    | 11ul -> deserialize_then_decompress_11_ #v_Vector serialized
+    | _ ->
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+          <:
+          Rust_primitives.Hax.t_Never)
+  in
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
@@ -814,85 +890,6 @@ let compress_then_serialize_ring_element_v
   let _:Prims.unit = admit () (* Panic freedom *) in
   let hax_temp_output:Prims.unit = result in
   out
-
-let deserialize_then_decompress_10_
-      (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (serialized: t_Slice u8)
-     =
-  let _:Prims.unit =
-    assert (v ((Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! sz 10) /! sz 8) == 320)
-  in
-  let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
-  in
-  let v__coefficients_length:usize =
-    Core.Slice.impl__len #v_Vector (re.Libcrux_ml_kem.Polynomial.f_coefficients <: t_Slice v_Vector)
-  in
-  let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 20)
-      serialized
-      (fun re temp_1_ ->
-          let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
-          let _:usize = temp_1_ in
-          true)
-      re
-      (fun re temp_1_ ->
-          let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
-          let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          let coefficient:v_Vector =
-            Libcrux_ml_kem.Vector.Traits.f_deserialize_10_ #v_Vector
-              #FStar.Tactics.Typeclasses.solve
-              bytes
-          in
-          let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-            {
-              re with
-              Libcrux_ml_kem.Polynomial.f_coefficients
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
-                  .Libcrux_ml_kem.Polynomial.f_coefficients
-                i
-                (Libcrux_ml_kem.Vector.Traits.f_decompress_ciphertext_coefficient #v_Vector
-                    #FStar.Tactics.Typeclasses.solve
-                    10l
-                    coefficient
-                  <:
-                  v_Vector)
-            }
-            <:
-            Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
-          in
-          re)
-  in
-  re
-
-let deserialize_then_decompress_ring_element_u
-      (v_COMPRESSION_FACTOR: usize)
-      (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (serialized: t_Slice u8)
-     =
-  let _:Prims.unit =
-    assert ((v (cast v_COMPRESSION_FACTOR <: u32) == 10) \/
-        (v (cast v_COMPRESSION_FACTOR <: u32) == 11))
-  in
-  let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-    match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
-    | 10ul -> deserialize_then_decompress_10_ #v_Vector serialized
-    | 11ul -> deserialize_then_decompress_11_ #v_Vector serialized
-    | _ ->
-      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-          <:
-          Rust_primitives.Hax.t_Never)
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
 
 let serialize_uncompressed_ring_element
       (#v_Vector: Type0)

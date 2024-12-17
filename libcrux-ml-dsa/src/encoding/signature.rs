@@ -41,10 +41,9 @@ impl<
         offset += COMMITMENT_HASH_SIZE;
 
         for i in 0..COLUMNS_IN_A {
-            signature[offset..offset + GAMMA1_RING_ELEMENT_SIZE].copy_from_slice(
-                &encoding::gamma1::serialize::<SIMDUnit, GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE>(
-                    self.signer_response[i],
-                ),
+            encoding::gamma1::serialize::<SIMDUnit, GAMMA1_EXPONENT>(
+                self.signer_response[i],
+                &mut signature[offset..offset + GAMMA1_RING_ELEMENT_SIZE],
             );
             offset += GAMMA1_RING_ELEMENT_SIZE;
         }
@@ -87,9 +86,10 @@ impl<
         let mut signer_response = [PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A];
 
         for i in 0..COLUMNS_IN_A {
-            signer_response[i] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(
                 &signer_response_serialized
                     [i * GAMMA1_RING_ELEMENT_SIZE..(i + 1) * GAMMA1_RING_ELEMENT_SIZE],
+                &mut signer_response[i],
             );
         }
 
@@ -141,13 +141,13 @@ impl<
         }
 
         if malformed_hint {
-            Err(VerificationError::MalformedHintError)
-        } else {
-            Ok(Signature {
-                commitment_hash: commitment_hash.try_into().unwrap(),
-                signer_response,
-                hint,
-            })
+            return Err(VerificationError::MalformedHintError);
         }
+
+        Ok(Signature {
+            commitment_hash: commitment_hash.try_into().unwrap(),
+            signer_response,
+            hint,
+        })
     }
 }

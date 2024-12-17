@@ -121,6 +121,18 @@ let compute_A_times_mask
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       v_ROWS_IN_A
   in
+  let mask_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A
+  =
+    Core.Array.impl_23__map #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      v_COLUMNS_IN_A
+      #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      mask
+      (fun s ->
+          let s:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = s in
+          Libcrux_ml_dsa.Ntt.ntt #v_SIMDUnit s
+          <:
+          Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+  in
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
     Rust_primitives.Hax.Folds.fold_enumerated_slice (v_A_as_ntt
         <:
@@ -168,10 +180,7 @@ let compute_A_times_mask
                   let product:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
                     Libcrux_ml_dsa.Ntt.ntt_multiply_montgomery #v_SIMDUnit
                       ring_element
-                      (Libcrux_ml_dsa.Ntt.ntt #v_SIMDUnit
-                          (mask.[ j ]
-                            <:
-                            Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+                      (mask_ntt.[ j ]
                         <:
                         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                   in
@@ -339,6 +348,39 @@ let compute_w_approx
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       v_ROWS_IN_A
   in
+  let signer_response:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+    v_COLUMNS_IN_A =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+          (signer_response <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+          )
+        <:
+        usize)
+      (fun signer_response temp_1_ ->
+          let signer_response:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+            v_COLUMNS_IN_A =
+            signer_response
+          in
+          let _:usize = temp_1_ in
+          true)
+      signer_response
+      (fun signer_response i ->
+          let signer_response:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+            v_COLUMNS_IN_A =
+            signer_response
+          in
+          let i:usize = i in
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize signer_response
+            i
+            (Libcrux_ml_dsa.Ntt.ntt #v_SIMDUnit
+                (signer_response.[ i ]
+                  <:
+                  Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+              <:
+              Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+          <:
+          t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+  in
   let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
     Rust_primitives.Hax.Folds.fold_enumerated_slice (v_A_as_ntt
         <:
@@ -386,10 +428,7 @@ let compute_w_approx
                   let product:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
                     Libcrux_ml_dsa.Ntt.ntt_multiply_montgomery #v_SIMDUnit
                       ring_element
-                      (Libcrux_ml_dsa.Ntt.ntt #v_SIMDUnit
-                          (signer_response.[ j ]
-                            <:
-                            Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+                      (signer_response.[ j ]
                         <:
                         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                   in
@@ -412,13 +451,14 @@ let compute_w_approx
               13l
               (t1.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
           in
+          let t1_shifted:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
+            Libcrux_ml_dsa.Ntt.ntt #v_SIMDUnit t1_shifted
+          in
           let challenge_times_t1_shifted:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement
           v_SIMDUnit =
             Libcrux_ml_dsa.Ntt.ntt_multiply_montgomery #v_SIMDUnit
               verifier_challenge_as_ntt
-              (Libcrux_ml_dsa.Ntt.ntt #v_SIMDUnit t1_shifted
-                <:
-                Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+              t1_shifted
           in
           let result:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             v_ROWS_IN_A =

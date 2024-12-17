@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
- * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
- * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
- * Libcrux: af3367d851f36102956c944b6bb3353f59d455bc
+ * Charon: e6a9a3d65857f37917f378fd98db7b7b4d0a060f
+ * Eurydice: 907fef61b716e094dcd6b41a9a41f0850ac7fd73
+ * Karamel: 21c28f3b016868a7cdd715382338bdcd9685a3b4
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: 887cc3c3760e64d740774adb301e4bae530126d1
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -6281,17 +6281,9 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE bool libcrux_ml_kem_ind_cca_validate_private_key_only_ae(
     libcrux_ml_kem_types_MlKemPrivateKey_d9 *private_key) {
-  uint8_t t[32U];
-  libcrux_ml_kem_hash_functions_avx2_H_a9_e0(
-      Eurydice_array_to_subslice2(private_key->value, (size_t)384U * (size_t)3U,
-                                  (size_t)768U * (size_t)3U + (size_t)32U,
-                                  uint8_t),
-      t);
-  Eurydice_slice expected = Eurydice_array_to_subslice2(
-      private_key->value, (size_t)768U * (size_t)3U + (size_t)32U,
-      (size_t)768U * (size_t)3U + (size_t)64U, uint8_t);
-  return core_array_equality___core__cmp__PartialEq__0___Slice_U____for__Array_T__N___3__eq(
-      (size_t)32U, t, &expected, uint8_t, uint8_t, bool);
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "Eurydice error: Invalid_argument(\"List.combine\")\n");
+  KRML_HOST_EXIT(255U);
 }
 
 /**

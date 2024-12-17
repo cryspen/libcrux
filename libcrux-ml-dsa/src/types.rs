@@ -66,15 +66,17 @@ pub struct MLDSAKeyPair<const VERIFICATION_KEY_SIZE: usize, const SIGNING_KEY_SI
     pub verification_key: MLDSAVerificationKey<VERIFICATION_KEY_SIZE>,
 }
 
-#[derive(Debug)]
+#[cfg_attr(not(eurydice), derive(Debug))]
 pub enum VerificationError {
     MalformedHintError,
     SignerResponseExceedsBoundError,
     CommitmentHashesDontMatchError,
-    ContextTooLongError,
+    // FIXME: Eurydice can't handle enum variants with the same name
+    // https://github.com/AeneasVerif/eurydice/issues/102
+    VerificationContextTooLongError,
 }
 
-#[derive(Debug)]
+#[cfg_attr(not(eurydice), derive(Debug))]
 pub enum SigningError {
     RejectionSamplingError,
     ContextTooLongError,
