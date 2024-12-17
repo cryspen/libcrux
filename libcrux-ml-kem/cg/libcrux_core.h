@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: e6a9a3d65857f37917f378fd98db7b7b4d0a060f
- * Eurydice: 907fef61b716e094dcd6b41a9a41f0850ac7fd73
- * Karamel: 21c28f3b016868a7cdd715382338bdcd9685a3b4
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 887cc3c3760e64d740774adb301e4bae530126d1
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
+ * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
+ * Libcrux: 2009b0d205f3d27e1762f7e2b8a21bc47705b2c9
  */
 
 #ifndef __libcrux_core_H
@@ -2803,10 +2803,10 @@ with const generics
 */
 static KRML_MUSTINLINE uint8_t libcrux_ml_kem_utils_prf_input_inc_e0(
     uint8_t (*prf_inputs)[33U], uint8_t domain_separator) {
-  uint8_t _prf_inputs_init[3U][33U];
+  uint8_t ret[3U][33U];
   core_array___core__clone__Clone_for__Array_T__N___20__clone(
-      (size_t)3U, prf_inputs, _prf_inputs_init, uint8_t[33U], void *);
-  LowStar_Ignore_ignore(_prf_inputs_init, uint8_t[3U][33U], void *);
+      (size_t)3U, prf_inputs, ret, uint8_t[33U], void *);
+  LowStar_Ignore_ignore(ret, uint8_t[3U][33U], void *);
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
     size_t i0 = i;
     prf_inputs[i0][32U] = domain_separator;

@@ -254,7 +254,6 @@ fn deserialize_12(bytes: &[u8]) -> SIMD256Vector {
     }
 }
 
-#[cfg(hax)]
 impl crate::vector::traits::Repr for SIMD256Vector {
     fn repr(x: Self) -> [i16; 16] {
         vec_to_i16_array(x)

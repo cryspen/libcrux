@@ -19,11 +19,6 @@
 #define inline __inline__
 #endif
 
-/* Include Apple-specific macros for use in defining KRML_ALIGNED_MALLOC. */
-#if defined(__APPLE__) && defined(__MACH__)
-#include <AvailabilityMacros.h>
-#endif
-
 /******************************************************************************/
 /* Macros that KaRaMeL will generate.                                         */
 /******************************************************************************/
@@ -130,8 +125,7 @@
 #endif
 
 /* MinGW-W64 does not support C11 aligned_alloc, but it supports
- * MSVC's _aligned_malloc. Also, fallback to use mm_malloc.h
- * implementation for macOS systems prior to 10.15 Catalina.
+ * MSVC's _aligned_malloc.
  */
 #ifndef KRML_ALIGNED_MALLOC
 #ifdef __MINGW32__
@@ -140,11 +134,6 @@
 #if (defined(_MSC_VER) || \
      (defined(__MINGW32__) && defined(__MINGW64_VERSION_MAJOR)))
 #define KRML_ALIGNED_MALLOC(X, Y) _aligned_malloc(Y, X)
-#elif defined(__APPLE__) && defined(__MACH__) && \
-    defined(MAC_OS_X_VERSION_MIN_REQUIRED) &&    \
-    (MAC_OS_X_VERSION_MIN_REQUIRED < 101500)
-#include <mm_malloc.h>
-#define KRML_ALIGNED_MALLOC(X, Y) _mm_malloc(Y, X)
 #else
 #define KRML_ALIGNED_MALLOC(X, Y) aligned_alloc(X, Y)
 #endif

@@ -7,14 +7,13 @@ pub const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 
 // We define a trait that allows us to talk about the contents of a vector.
 // This is used extensively in pre- and post-conditions to reason about the code.
-#[cfg(hax)]
 #[hax_lib::attributes]
 pub trait Repr: Copy + Clone {
     #[requires(true)]
     fn repr(x: Self) -> [i16; 16];
 }
 
-#[cfg(hax)]
+#[cfg(not(eurydice))]
 #[hax_lib::attributes]
 pub trait Operations: Copy + Clone + Repr {
     #[allow(non_snake_case)]
@@ -179,7 +178,9 @@ pub trait Operations: Copy + Clone + Repr {
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }
 
-#[cfg(not(hax))]
+// The trait is duplicated for Eurudice to avoid the trait inheritance between Operations and Repr
+// This is needed because of this issue: https://github.com/AeneasVerif/eurydice/issues/111
+#[cfg(eurydice)]
 pub trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
