@@ -53,7 +53,8 @@ files:
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
     api:
-      patterns:  
+      patterns:
+        - [libcrux_ml_dsa, samplex4, avx2, "*"]
         - [libcrux_ml_dsa, simd, avx2, "*"]
         - [libcrux_ml_dsa, hash_functions, simd256, "*"]
         - [libcrux_ml_dsa, ml_dsa_65, avx2, "*"]
@@ -76,6 +77,7 @@ files:
     api:
       patterns:
         - [libcrux_ml_dsa, "*"]
+        - [libcrux_ml_dsa, samplex4, portable, "*"]
         - [libcrux_ml_dsa, simd, "*"]
         - [libcrux_ml_dsa, hash_functions, portable, "*"]
         - [libcrux_ml_dsa, ml_dsa_65, portable, "*"]

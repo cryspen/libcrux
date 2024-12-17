@@ -8,7 +8,7 @@
  * Eurydice: b665364a6d86749566ce2d650d13fa12c8fab2c5
  * Karamel: 96572bc631fde691a2aea7bce5a5a3838b3a5968
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 87497297c8d9a6be6127d9daae13a942b5439e74
+ * Libcrux: 229548656e4eaa1324c514638f9f8d135499a5c1
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -3230,6 +3230,9 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invert_ntt_montgomery_a2(
   memcpy(ret, ret0, (size_t)32U * sizeof(__m256i));
 }
 
+typedef struct libcrux_ml_dsa_samplex4_avx2_AVX2Sampler_s {
+} libcrux_ml_dsa_samplex4_avx2_AVX2Sampler;
+
 /**
 A monomorphic instance of libcrux_ml_dsa.polynomial.PolynomialRingElement
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit
@@ -3289,415 +3292,77 @@ libcrux_ml_dsa_polynomial_ZERO_ff_ea(void) {
   return lit;
 }
 
-typedef struct
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4_s {
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 fst;
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 snd;
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 thd;
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 f3;
-} libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4;
-
 /**
-A monomorphic instance of
-libcrux_ml_dsa.sample.rejection_sample_less_than_field_modulus with types
-libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit with const generics
-
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE bool
-libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-    Eurydice_slice randomness, size_t *sampled_coefficients, int32_t *out) {
-  bool done = false;
-  for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(randomness, uint8_t) / (size_t)24U; i++) {
-    size_t _cloop_i = i;
-    Eurydice_slice random_bytes =
-        Eurydice_slice_subslice2(randomness, _cloop_i * (size_t)24U,
-                                 _cloop_i * (size_t)24U + (size_t)24U, uint8_t);
-    if (!done) {
-      Eurydice_slice uu____0 = random_bytes;
-      size_t sampled =
-          libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_field_modulus_a2(
-              uu____0, Eurydice_array_to_subslice_from((size_t)263U, out,
-                                                       sampled_coefficients[0U],
-                                                       int32_t, size_t));
-      sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
-      if (sampled_coefficients[0U] >=
-          LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
-        done = true;
-      }
-    }
-  }
-  return done;
-}
-
-/**
-This function found in impl
-{libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_ml_dsa.polynomial.from_i32_array_ff
+A monomorphic instance of libcrux_ml_dsa.sample.SampleArgs
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit
 with const generics
-
+- $840size_t
+- $6size_t
+- $5size_t
 */
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_dsa_polynomial_PolynomialRingElement_24
-libcrux_ml_dsa_polynomial_from_i32_array_ff_ea(Eurydice_slice array) {
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 result =
-      libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-  for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_DSA_SIMD_TRAITS_SIMD_UNITS_IN_RING_ELEMENT; i++) {
-    size_t i0 = i;
-    result.simd_units[i0] = libcrux_ml_dsa_simd_avx2_from_coefficient_array_a2(
-        Eurydice_slice_subslice2(
-            array, i0 * LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT,
-            (i0 + (size_t)1U) *
-                LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT,
-            int32_t));
-  }
-  return result;
-}
+typedef struct libcrux_ml_dsa_sample_SampleArgs_c5_s {
+  uint8_t_840size_t__x4 *rand_stack;
+  Eurydice_slice tmp_stack;
+  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 (*out)[5U];
+  Eurydice_slice indices;
+} libcrux_ml_dsa_sample_SampleArgs_c5;
 
 /**
-A monomorphic instance of libcrux_ml_dsa.sample.sample_four_ring_elements
+This function found in impl {libcrux_ml_dsa::sample::SampleArgs<'a, SIMDUnit,
+STACK_SIZE, ROWS_IN_A, COLUMNS_IN_A>[TraitClause@0, TraitClause@1]}
+*/
+/**
+A monomorphic instance of libcrux_ml_dsa.sample.new_29
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit
 with const generics
-
+- STACK_SIZE= 840
+- ROWS_IN_A= 6
+- COLUMNS_IN_A= 5
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-libcrux_ml_dsa_sample_sample_four_ring_elements_ea(uint8_t seed0[34U],
-                                                   uint16_t domain_separator0,
-                                                   uint16_t domain_separator1,
-                                                   uint16_t domain_seperator2,
-                                                   uint16_t domain_separator3) {
-  seed0[32U] = (uint8_t)domain_separator0;
-  seed0[33U] = (uint8_t)((uint32_t)domain_separator0 >> 8U);
-  uint8_t seed1[34U];
-  memcpy(seed1, seed0, (size_t)34U * sizeof(uint8_t));
-  seed1[32U] = (uint8_t)domain_separator1;
-  seed1[33U] = (uint8_t)((uint32_t)domain_separator1 >> 8U);
-  uint8_t seed2[34U];
-  memcpy(seed2, seed0, (size_t)34U * sizeof(uint8_t));
-  seed2[32U] = (uint8_t)domain_seperator2;
-  seed2[33U] = (uint8_t)((uint32_t)domain_seperator2 >> 8U);
-  uint8_t seed3[34U];
-  memcpy(seed3, seed0, (size_t)34U * sizeof(uint8_t));
-  seed3[32U] = (uint8_t)domain_separator3;
-  seed3[33U] = (uint8_t)((uint32_t)domain_separator3 >> 8U);
-  libcrux_ml_dsa_hash_functions_portable_Shake128X4 state =
-      libcrux_ml_dsa_hash_functions_portable_init_absorb_ed(
-          Eurydice_array_to_slice((size_t)34U, seed0, uint8_t),
-          Eurydice_array_to_slice((size_t)34U, seed1, uint8_t),
-          Eurydice_array_to_slice((size_t)34U, seed2, uint8_t),
-          Eurydice_array_to_slice((size_t)34U, seed3, uint8_t));
-  uint8_t randomness0[840U] = {0U};
-  uint8_t randomness1[840U] = {0U};
-  uint8_t randomness2[840U] = {0U};
-  uint8_t randomness3[840U] = {0U};
-  libcrux_ml_dsa_hash_functions_portable_squeeze_first_five_blocks_ed(
-      &state, randomness0, randomness1, randomness2, randomness3);
-  int32_t coefficients0[263U] = {0U};
-  int32_t coefficients1[263U] = {0U};
-  int32_t coefficients2[263U] = {0U};
-  int32_t coefficients3[263U] = {0U};
-  size_t sampled0 = (size_t)0U;
-  size_t sampled1 = (size_t)0U;
-  size_t sampled2 = (size_t)0U;
-  size_t sampled3 = (size_t)0U;
-  bool done0 =
-      libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-          Eurydice_array_to_slice((size_t)840U, randomness0, uint8_t),
-          &sampled0, coefficients0);
-  bool done1 =
-      libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-          Eurydice_array_to_slice((size_t)840U, randomness1, uint8_t),
-          &sampled1, coefficients1);
-  bool done2 =
-      libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-          Eurydice_array_to_slice((size_t)840U, randomness2, uint8_t),
-          &sampled2, coefficients2);
-  bool done3 =
-      libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-          Eurydice_array_to_slice((size_t)840U, randomness3, uint8_t),
-          &sampled3, coefficients3);
-  while (true) {
-    if (done0) {
-      if (done1) {
-        if (done2) {
-          if (done3) {
-            break;
-          } else {
-            uint8_t_168size_t__x4 randomnesses =
-                libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_ed(
-                    &state);
-            if (!done0) {
-              done0 =
-                  libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                      Eurydice_array_to_slice((size_t)168U, randomnesses.fst,
-                                              uint8_t),
-                      &sampled0, coefficients0);
-            }
-            if (!done1) {
-              done1 =
-                  libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                      Eurydice_array_to_slice((size_t)168U, randomnesses.snd,
-                                              uint8_t),
-                      &sampled1, coefficients1);
-            }
-            if (!done2) {
-              done2 =
-                  libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                      Eurydice_array_to_slice((size_t)168U, randomnesses.thd,
-                                              uint8_t),
-                      &sampled2, coefficients2);
-            }
-            if (!done3) {
-              done3 =
-                  libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                      Eurydice_array_to_slice((size_t)168U, randomnesses.f3,
-                                              uint8_t),
-                      &sampled3, coefficients3);
-            }
-          }
-        } else {
-          uint8_t_168size_t__x4 randomnesses =
-              libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_ed(
-                  &state);
-          if (!done0) {
-            done0 =
-                libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                    Eurydice_array_to_slice((size_t)168U, randomnesses.fst,
-                                            uint8_t),
-                    &sampled0, coefficients0);
-          }
-          if (!done1) {
-            done1 =
-                libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                    Eurydice_array_to_slice((size_t)168U, randomnesses.snd,
-                                            uint8_t),
-                    &sampled1, coefficients1);
-          }
-          if (!done2) {
-            done2 =
-                libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                    Eurydice_array_to_slice((size_t)168U, randomnesses.thd,
-                                            uint8_t),
-                    &sampled2, coefficients2);
-          }
-          if (!done3) {
-            done3 =
-                libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                    Eurydice_array_to_slice((size_t)168U, randomnesses.f3,
-                                            uint8_t),
-                    &sampled3, coefficients3);
-          }
-        }
-      } else {
-        uint8_t_168size_t__x4 randomnesses =
-            libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_ed(
-                &state);
-        if (!done0) {
-          done0 =
-              libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                  Eurydice_array_to_slice((size_t)168U, randomnesses.fst,
-                                          uint8_t),
-                  &sampled0, coefficients0);
-        }
-        if (!done1) {
-          done1 =
-              libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                  Eurydice_array_to_slice((size_t)168U, randomnesses.snd,
-                                          uint8_t),
-                  &sampled1, coefficients1);
-        }
-        if (!done2) {
-          done2 =
-              libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                  Eurydice_array_to_slice((size_t)168U, randomnesses.thd,
-                                          uint8_t),
-                  &sampled2, coefficients2);
-        }
-        if (!done3) {
-          done3 =
-              libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                  Eurydice_array_to_slice((size_t)168U, randomnesses.f3,
-                                          uint8_t),
-                  &sampled3, coefficients3);
-        }
-      }
-    } else {
-      uint8_t_168size_t__x4 randomnesses =
-          libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_ed(&state);
-      if (!done0) {
-        done0 =
-            libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                Eurydice_array_to_slice((size_t)168U, randomnesses.fst,
-                                        uint8_t),
-                &sampled0, coefficients0);
-      }
-      if (!done1) {
-        done1 =
-            libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                Eurydice_array_to_slice((size_t)168U, randomnesses.snd,
-                                        uint8_t),
-                &sampled1, coefficients1);
-      }
-      if (!done2) {
-        done2 =
-            libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                Eurydice_array_to_slice((size_t)168U, randomnesses.thd,
-                                        uint8_t),
-                &sampled2, coefficients2);
-      }
-      if (!done3) {
-        done3 =
-            libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-                Eurydice_array_to_slice((size_t)168U, randomnesses.f3, uint8_t),
-                &sampled3, coefficients3);
-      }
-    }
-  }
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 uu____0 =
-      libcrux_ml_dsa_polynomial_from_i32_array_ff_ea(
-          Eurydice_array_to_slice((size_t)263U, coefficients0, int32_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 uu____1 =
-      libcrux_ml_dsa_polynomial_from_i32_array_ff_ea(
-          Eurydice_array_to_slice((size_t)263U, coefficients1, int32_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 uu____2 =
-      libcrux_ml_dsa_polynomial_from_i32_array_ff_ea(
-          Eurydice_array_to_slice((size_t)263U, coefficients2, int32_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      lit;
-  lit.fst = uu____0;
-  lit.snd = uu____1;
-  lit.thd = uu____2;
-  lit.f3 = libcrux_ml_dsa_polynomial_from_i32_array_ff_ea(
-      Eurydice_array_to_slice((size_t)263U, coefficients3, int32_t));
+static inline libcrux_ml_dsa_sample_SampleArgs_c5
+libcrux_ml_dsa_sample_new_29_4f(
+    uint8_t_840size_t__x4 *rand_stack, Eurydice_slice tmp_stack,
+    libcrux_ml_dsa_polynomial_PolynomialRingElement_24 (*out)[5U],
+    Eurydice_slice indices) {
+  libcrux_ml_dsa_sample_SampleArgs_c5 lit;
+  lit.rand_stack = rand_stack;
+  lit.tmp_stack = tmp_stack;
+  lit.out = out;
+  lit.indices = indices;
   return lit;
 }
 
 /**
-A monomorphic instance of libcrux_ml_dsa.samplex4.update_matrix
-with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit
-with const generics
+A monomorphic instance of libcrux_ml_dsa.sample.sample_four_ring_elements
+with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
+libcrux_ml_dsa_hash_functions_simd256_Shake128x4 with const generics
 - ROWS_IN_A= 6
 - COLUMNS_IN_A= 5
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_dsa_samplex4_update_matrix_fe(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_24 (*m)[5U], size_t i,
-    size_t j, libcrux_ml_dsa_polynomial_PolynomialRingElement_24 v) {
-  m[i][j] = v;
-}
-
-/**
-A monomorphic instance of libcrux_ml_dsa.samplex4.matrix_A_4_by_4
-with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit
-with const generics
-- ROWS_IN_A= 6
-- COLUMNS_IN_A= 5
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_A_4_by_4_fe(
-    uint8_t seed[34U],
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_24 ret[6U][5U]) {
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 A[6U][5U];
-  for (size_t i = (size_t)0U; i < (size_t)6U; i++) {
-    A[i][0U] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-    A[i][1U] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-    A[i][2U] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-    A[i][3U] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-    A[i][4U] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-  }
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed[34U];
-  memcpy(copy_of_seed, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 3U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)0U,
-                                           four_ring_elements.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)1U,
-                                           four_ring_elements.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)2U,
-                                           four_ring_elements.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)3U,
-                                           four_ring_elements.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed0[34U];
-  memcpy(copy_of_seed0, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements0 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed0,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 3U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)0U,
-                                           four_ring_elements0.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)1U,
-                                           four_ring_elements0.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)2U,
-                                           four_ring_elements0.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)3U,
-                                           four_ring_elements0.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed1[34U];
-  memcpy(copy_of_seed1, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements1 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed1,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 3U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)0U,
-                                           four_ring_elements1.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)1U,
-                                           four_ring_elements1.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)2U,
-                                           four_ring_elements1.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)3U,
-                                           four_ring_elements1.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed2[34U];
-  memcpy(copy_of_seed2, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements2 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed2,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 3U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)0U,
-                                           four_ring_elements2.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)1U,
-                                           four_ring_elements2.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)2U,
-                                           four_ring_elements2.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)3U,
-                                           four_ring_elements2.f3);
-  memcpy(ret, A,
-         (size_t)6U *
-             sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24[5U]));
+static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
+    uint8_t seed0[34U], uint16_t domain_separator0, uint16_t domain_separator1,
+    uint16_t domain_seperator2, uint16_t domain_separator3,
+    libcrux_ml_dsa_sample_SampleArgs_c5 *memory) {
+  KRML_HOST_EPRINTF(
+      "KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+      "Eurydice error: Failure(\"Error looking trait impl: "
+      "core::slice::iter::{core::iter::traits::iterator::Iterator for "
+      "core::slice::iter::Iter<\'a, T>[TraitClause@0]}#182<\'_, (usize, "
+      "usize)>[core::marker::Sized<(usize, usize)>] enumerate\")\n");
+  KRML_HOST_EXIT(255U);
 }
 
 /**
 A monomorphic instance of libcrux_ml_dsa.samplex4.matrix_A_6_by_5
-with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit
-with const generics
+with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
+libcrux_ml_dsa_hash_functions_simd256_Shake128x4 with const generics
 - ROWS_IN_A= 6
 - COLUMNS_IN_A= 5
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_A_6_by_5_fe(
+static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_A_6_by_5_f4(
     uint8_t seed[34U],
     libcrux_ml_dsa_polynomial_PolynomialRingElement_24 ret[6U][5U]) {
   libcrux_ml_dsa_polynomial_PolynomialRingElement_24 A[6U][5U];
@@ -3708,460 +3373,1865 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_A_6_by_5_fe(
     A[i][3U] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
     A[i][4U] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
   }
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed[34U];
-  memcpy(copy_of_seed, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 3U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)0U,
-                                           four_ring_elements.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)1U,
-                                           four_ring_elements.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)2U,
-                                           four_ring_elements.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)3U,
-                                           four_ring_elements.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed0[34U];
-  memcpy(copy_of_seed0, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements0 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed0,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 4U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 2U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)4U,
-                                           four_ring_elements0.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)0U,
-                                           four_ring_elements0.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)1U,
-                                           four_ring_elements0.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)2U,
-                                           four_ring_elements0.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed1[34U];
-  memcpy(copy_of_seed1, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements1 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed1,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 3U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 4U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 1U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)3U,
-                                           four_ring_elements1.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)4U,
-                                           four_ring_elements1.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)0U,
-                                           four_ring_elements1.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)1U,
-                                           four_ring_elements1.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed2[34U];
-  memcpy(copy_of_seed2, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements2 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed2,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 3U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 4U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 0U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)2U,
-                                           four_ring_elements2.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)3U,
-                                           four_ring_elements2.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)4U,
-                                           four_ring_elements2.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)0U,
-                                           four_ring_elements2.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed3[34U];
-  memcpy(copy_of_seed3, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements3 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed3,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 3U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 4U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)1U,
-                                           four_ring_elements3.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)2U,
-                                           four_ring_elements3.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)3U,
-                                           four_ring_elements3.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)4U,
-                                           four_ring_elements3.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed4[34U];
-  memcpy(copy_of_seed4, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements4 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed4,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(4U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(4U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(4U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(4U, 3U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)4U, (size_t)0U,
-                                           four_ring_elements4.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)4U, (size_t)1U,
-                                           four_ring_elements4.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)4U, (size_t)2U,
-                                           four_ring_elements4.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)4U, (size_t)3U,
-                                           four_ring_elements4.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed5[34U];
-  memcpy(copy_of_seed5, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements5 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed5,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(4U, 4U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 2U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)4U, (size_t)4U,
-                                           four_ring_elements5.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)5U, (size_t)0U,
-                                           four_ring_elements5.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)5U, (size_t)1U,
-                                           four_ring_elements5.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)5U, (size_t)2U,
-                                           four_ring_elements5.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed6[34U];
-  memcpy(copy_of_seed6, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements6 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed6,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 3U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 4U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 5U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 6U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)5U, (size_t)3U,
-                                           four_ring_elements6.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)5U, (size_t)4U,
-                                           four_ring_elements6.snd);
+  uint8_t uu____0[840U] = {0U};
+  uint8_t uu____1[840U] = {0U};
+  uint8_t_840size_t__x4 rand_stack;
+  rand_stack.fst[0U] = 0U;
+  rand_stack.fst[1U] = 0U;
+  rand_stack.fst[2U] = 0U;
+  rand_stack.fst[3U] = 0U;
+  rand_stack.fst[4U] = 0U;
+  rand_stack.fst[5U] = 0U;
+  rand_stack.fst[6U] = 0U;
+  rand_stack.fst[7U] = 0U;
+  rand_stack.fst[8U] = 0U;
+  rand_stack.fst[9U] = 0U;
+  rand_stack.fst[10U] = 0U;
+  rand_stack.fst[11U] = 0U;
+  rand_stack.fst[12U] = 0U;
+  rand_stack.fst[13U] = 0U;
+  rand_stack.fst[14U] = 0U;
+  rand_stack.fst[15U] = 0U;
+  rand_stack.fst[16U] = 0U;
+  rand_stack.fst[17U] = 0U;
+  rand_stack.fst[18U] = 0U;
+  rand_stack.fst[19U] = 0U;
+  rand_stack.fst[20U] = 0U;
+  rand_stack.fst[21U] = 0U;
+  rand_stack.fst[22U] = 0U;
+  rand_stack.fst[23U] = 0U;
+  rand_stack.fst[24U] = 0U;
+  rand_stack.fst[25U] = 0U;
+  rand_stack.fst[26U] = 0U;
+  rand_stack.fst[27U] = 0U;
+  rand_stack.fst[28U] = 0U;
+  rand_stack.fst[29U] = 0U;
+  rand_stack.fst[30U] = 0U;
+  rand_stack.fst[31U] = 0U;
+  rand_stack.fst[32U] = 0U;
+  rand_stack.fst[33U] = 0U;
+  rand_stack.fst[34U] = 0U;
+  rand_stack.fst[35U] = 0U;
+  rand_stack.fst[36U] = 0U;
+  rand_stack.fst[37U] = 0U;
+  rand_stack.fst[38U] = 0U;
+  rand_stack.fst[39U] = 0U;
+  rand_stack.fst[40U] = 0U;
+  rand_stack.fst[41U] = 0U;
+  rand_stack.fst[42U] = 0U;
+  rand_stack.fst[43U] = 0U;
+  rand_stack.fst[44U] = 0U;
+  rand_stack.fst[45U] = 0U;
+  rand_stack.fst[46U] = 0U;
+  rand_stack.fst[47U] = 0U;
+  rand_stack.fst[48U] = 0U;
+  rand_stack.fst[49U] = 0U;
+  rand_stack.fst[50U] = 0U;
+  rand_stack.fst[51U] = 0U;
+  rand_stack.fst[52U] = 0U;
+  rand_stack.fst[53U] = 0U;
+  rand_stack.fst[54U] = 0U;
+  rand_stack.fst[55U] = 0U;
+  rand_stack.fst[56U] = 0U;
+  rand_stack.fst[57U] = 0U;
+  rand_stack.fst[58U] = 0U;
+  rand_stack.fst[59U] = 0U;
+  rand_stack.fst[60U] = 0U;
+  rand_stack.fst[61U] = 0U;
+  rand_stack.fst[62U] = 0U;
+  rand_stack.fst[63U] = 0U;
+  rand_stack.fst[64U] = 0U;
+  rand_stack.fst[65U] = 0U;
+  rand_stack.fst[66U] = 0U;
+  rand_stack.fst[67U] = 0U;
+  rand_stack.fst[68U] = 0U;
+  rand_stack.fst[69U] = 0U;
+  rand_stack.fst[70U] = 0U;
+  rand_stack.fst[71U] = 0U;
+  rand_stack.fst[72U] = 0U;
+  rand_stack.fst[73U] = 0U;
+  rand_stack.fst[74U] = 0U;
+  rand_stack.fst[75U] = 0U;
+  rand_stack.fst[76U] = 0U;
+  rand_stack.fst[77U] = 0U;
+  rand_stack.fst[78U] = 0U;
+  rand_stack.fst[79U] = 0U;
+  rand_stack.fst[80U] = 0U;
+  rand_stack.fst[81U] = 0U;
+  rand_stack.fst[82U] = 0U;
+  rand_stack.fst[83U] = 0U;
+  rand_stack.fst[84U] = 0U;
+  rand_stack.fst[85U] = 0U;
+  rand_stack.fst[86U] = 0U;
+  rand_stack.fst[87U] = 0U;
+  rand_stack.fst[88U] = 0U;
+  rand_stack.fst[89U] = 0U;
+  rand_stack.fst[90U] = 0U;
+  rand_stack.fst[91U] = 0U;
+  rand_stack.fst[92U] = 0U;
+  rand_stack.fst[93U] = 0U;
+  rand_stack.fst[94U] = 0U;
+  rand_stack.fst[95U] = 0U;
+  rand_stack.fst[96U] = 0U;
+  rand_stack.fst[97U] = 0U;
+  rand_stack.fst[98U] = 0U;
+  rand_stack.fst[99U] = 0U;
+  rand_stack.fst[100U] = 0U;
+  rand_stack.fst[101U] = 0U;
+  rand_stack.fst[102U] = 0U;
+  rand_stack.fst[103U] = 0U;
+  rand_stack.fst[104U] = 0U;
+  rand_stack.fst[105U] = 0U;
+  rand_stack.fst[106U] = 0U;
+  rand_stack.fst[107U] = 0U;
+  rand_stack.fst[108U] = 0U;
+  rand_stack.fst[109U] = 0U;
+  rand_stack.fst[110U] = 0U;
+  rand_stack.fst[111U] = 0U;
+  rand_stack.fst[112U] = 0U;
+  rand_stack.fst[113U] = 0U;
+  rand_stack.fst[114U] = 0U;
+  rand_stack.fst[115U] = 0U;
+  rand_stack.fst[116U] = 0U;
+  rand_stack.fst[117U] = 0U;
+  rand_stack.fst[118U] = 0U;
+  rand_stack.fst[119U] = 0U;
+  rand_stack.fst[120U] = 0U;
+  rand_stack.fst[121U] = 0U;
+  rand_stack.fst[122U] = 0U;
+  rand_stack.fst[123U] = 0U;
+  rand_stack.fst[124U] = 0U;
+  rand_stack.fst[125U] = 0U;
+  rand_stack.fst[126U] = 0U;
+  rand_stack.fst[127U] = 0U;
+  rand_stack.fst[128U] = 0U;
+  rand_stack.fst[129U] = 0U;
+  rand_stack.fst[130U] = 0U;
+  rand_stack.fst[131U] = 0U;
+  rand_stack.fst[132U] = 0U;
+  rand_stack.fst[133U] = 0U;
+  rand_stack.fst[134U] = 0U;
+  rand_stack.fst[135U] = 0U;
+  rand_stack.fst[136U] = 0U;
+  rand_stack.fst[137U] = 0U;
+  rand_stack.fst[138U] = 0U;
+  rand_stack.fst[139U] = 0U;
+  rand_stack.fst[140U] = 0U;
+  rand_stack.fst[141U] = 0U;
+  rand_stack.fst[142U] = 0U;
+  rand_stack.fst[143U] = 0U;
+  rand_stack.fst[144U] = 0U;
+  rand_stack.fst[145U] = 0U;
+  rand_stack.fst[146U] = 0U;
+  rand_stack.fst[147U] = 0U;
+  rand_stack.fst[148U] = 0U;
+  rand_stack.fst[149U] = 0U;
+  rand_stack.fst[150U] = 0U;
+  rand_stack.fst[151U] = 0U;
+  rand_stack.fst[152U] = 0U;
+  rand_stack.fst[153U] = 0U;
+  rand_stack.fst[154U] = 0U;
+  rand_stack.fst[155U] = 0U;
+  rand_stack.fst[156U] = 0U;
+  rand_stack.fst[157U] = 0U;
+  rand_stack.fst[158U] = 0U;
+  rand_stack.fst[159U] = 0U;
+  rand_stack.fst[160U] = 0U;
+  rand_stack.fst[161U] = 0U;
+  rand_stack.fst[162U] = 0U;
+  rand_stack.fst[163U] = 0U;
+  rand_stack.fst[164U] = 0U;
+  rand_stack.fst[165U] = 0U;
+  rand_stack.fst[166U] = 0U;
+  rand_stack.fst[167U] = 0U;
+  rand_stack.fst[168U] = 0U;
+  rand_stack.fst[169U] = 0U;
+  rand_stack.fst[170U] = 0U;
+  rand_stack.fst[171U] = 0U;
+  rand_stack.fst[172U] = 0U;
+  rand_stack.fst[173U] = 0U;
+  rand_stack.fst[174U] = 0U;
+  rand_stack.fst[175U] = 0U;
+  rand_stack.fst[176U] = 0U;
+  rand_stack.fst[177U] = 0U;
+  rand_stack.fst[178U] = 0U;
+  rand_stack.fst[179U] = 0U;
+  rand_stack.fst[180U] = 0U;
+  rand_stack.fst[181U] = 0U;
+  rand_stack.fst[182U] = 0U;
+  rand_stack.fst[183U] = 0U;
+  rand_stack.fst[184U] = 0U;
+  rand_stack.fst[185U] = 0U;
+  rand_stack.fst[186U] = 0U;
+  rand_stack.fst[187U] = 0U;
+  rand_stack.fst[188U] = 0U;
+  rand_stack.fst[189U] = 0U;
+  rand_stack.fst[190U] = 0U;
+  rand_stack.fst[191U] = 0U;
+  rand_stack.fst[192U] = 0U;
+  rand_stack.fst[193U] = 0U;
+  rand_stack.fst[194U] = 0U;
+  rand_stack.fst[195U] = 0U;
+  rand_stack.fst[196U] = 0U;
+  rand_stack.fst[197U] = 0U;
+  rand_stack.fst[198U] = 0U;
+  rand_stack.fst[199U] = 0U;
+  rand_stack.fst[200U] = 0U;
+  rand_stack.fst[201U] = 0U;
+  rand_stack.fst[202U] = 0U;
+  rand_stack.fst[203U] = 0U;
+  rand_stack.fst[204U] = 0U;
+  rand_stack.fst[205U] = 0U;
+  rand_stack.fst[206U] = 0U;
+  rand_stack.fst[207U] = 0U;
+  rand_stack.fst[208U] = 0U;
+  rand_stack.fst[209U] = 0U;
+  rand_stack.fst[210U] = 0U;
+  rand_stack.fst[211U] = 0U;
+  rand_stack.fst[212U] = 0U;
+  rand_stack.fst[213U] = 0U;
+  rand_stack.fst[214U] = 0U;
+  rand_stack.fst[215U] = 0U;
+  rand_stack.fst[216U] = 0U;
+  rand_stack.fst[217U] = 0U;
+  rand_stack.fst[218U] = 0U;
+  rand_stack.fst[219U] = 0U;
+  rand_stack.fst[220U] = 0U;
+  rand_stack.fst[221U] = 0U;
+  rand_stack.fst[222U] = 0U;
+  rand_stack.fst[223U] = 0U;
+  rand_stack.fst[224U] = 0U;
+  rand_stack.fst[225U] = 0U;
+  rand_stack.fst[226U] = 0U;
+  rand_stack.fst[227U] = 0U;
+  rand_stack.fst[228U] = 0U;
+  rand_stack.fst[229U] = 0U;
+  rand_stack.fst[230U] = 0U;
+  rand_stack.fst[231U] = 0U;
+  rand_stack.fst[232U] = 0U;
+  rand_stack.fst[233U] = 0U;
+  rand_stack.fst[234U] = 0U;
+  rand_stack.fst[235U] = 0U;
+  rand_stack.fst[236U] = 0U;
+  rand_stack.fst[237U] = 0U;
+  rand_stack.fst[238U] = 0U;
+  rand_stack.fst[239U] = 0U;
+  rand_stack.fst[240U] = 0U;
+  rand_stack.fst[241U] = 0U;
+  rand_stack.fst[242U] = 0U;
+  rand_stack.fst[243U] = 0U;
+  rand_stack.fst[244U] = 0U;
+  rand_stack.fst[245U] = 0U;
+  rand_stack.fst[246U] = 0U;
+  rand_stack.fst[247U] = 0U;
+  rand_stack.fst[248U] = 0U;
+  rand_stack.fst[249U] = 0U;
+  rand_stack.fst[250U] = 0U;
+  rand_stack.fst[251U] = 0U;
+  rand_stack.fst[252U] = 0U;
+  rand_stack.fst[253U] = 0U;
+  rand_stack.fst[254U] = 0U;
+  rand_stack.fst[255U] = 0U;
+  rand_stack.fst[256U] = 0U;
+  rand_stack.fst[257U] = 0U;
+  rand_stack.fst[258U] = 0U;
+  rand_stack.fst[259U] = 0U;
+  rand_stack.fst[260U] = 0U;
+  rand_stack.fst[261U] = 0U;
+  rand_stack.fst[262U] = 0U;
+  rand_stack.fst[263U] = 0U;
+  rand_stack.fst[264U] = 0U;
+  rand_stack.fst[265U] = 0U;
+  rand_stack.fst[266U] = 0U;
+  rand_stack.fst[267U] = 0U;
+  rand_stack.fst[268U] = 0U;
+  rand_stack.fst[269U] = 0U;
+  rand_stack.fst[270U] = 0U;
+  rand_stack.fst[271U] = 0U;
+  rand_stack.fst[272U] = 0U;
+  rand_stack.fst[273U] = 0U;
+  rand_stack.fst[274U] = 0U;
+  rand_stack.fst[275U] = 0U;
+  rand_stack.fst[276U] = 0U;
+  rand_stack.fst[277U] = 0U;
+  rand_stack.fst[278U] = 0U;
+  rand_stack.fst[279U] = 0U;
+  rand_stack.fst[280U] = 0U;
+  rand_stack.fst[281U] = 0U;
+  rand_stack.fst[282U] = 0U;
+  rand_stack.fst[283U] = 0U;
+  rand_stack.fst[284U] = 0U;
+  rand_stack.fst[285U] = 0U;
+  rand_stack.fst[286U] = 0U;
+  rand_stack.fst[287U] = 0U;
+  rand_stack.fst[288U] = 0U;
+  rand_stack.fst[289U] = 0U;
+  rand_stack.fst[290U] = 0U;
+  rand_stack.fst[291U] = 0U;
+  rand_stack.fst[292U] = 0U;
+  rand_stack.fst[293U] = 0U;
+  rand_stack.fst[294U] = 0U;
+  rand_stack.fst[295U] = 0U;
+  rand_stack.fst[296U] = 0U;
+  rand_stack.fst[297U] = 0U;
+  rand_stack.fst[298U] = 0U;
+  rand_stack.fst[299U] = 0U;
+  rand_stack.fst[300U] = 0U;
+  rand_stack.fst[301U] = 0U;
+  rand_stack.fst[302U] = 0U;
+  rand_stack.fst[303U] = 0U;
+  rand_stack.fst[304U] = 0U;
+  rand_stack.fst[305U] = 0U;
+  rand_stack.fst[306U] = 0U;
+  rand_stack.fst[307U] = 0U;
+  rand_stack.fst[308U] = 0U;
+  rand_stack.fst[309U] = 0U;
+  rand_stack.fst[310U] = 0U;
+  rand_stack.fst[311U] = 0U;
+  rand_stack.fst[312U] = 0U;
+  rand_stack.fst[313U] = 0U;
+  rand_stack.fst[314U] = 0U;
+  rand_stack.fst[315U] = 0U;
+  rand_stack.fst[316U] = 0U;
+  rand_stack.fst[317U] = 0U;
+  rand_stack.fst[318U] = 0U;
+  rand_stack.fst[319U] = 0U;
+  rand_stack.fst[320U] = 0U;
+  rand_stack.fst[321U] = 0U;
+  rand_stack.fst[322U] = 0U;
+  rand_stack.fst[323U] = 0U;
+  rand_stack.fst[324U] = 0U;
+  rand_stack.fst[325U] = 0U;
+  rand_stack.fst[326U] = 0U;
+  rand_stack.fst[327U] = 0U;
+  rand_stack.fst[328U] = 0U;
+  rand_stack.fst[329U] = 0U;
+  rand_stack.fst[330U] = 0U;
+  rand_stack.fst[331U] = 0U;
+  rand_stack.fst[332U] = 0U;
+  rand_stack.fst[333U] = 0U;
+  rand_stack.fst[334U] = 0U;
+  rand_stack.fst[335U] = 0U;
+  rand_stack.fst[336U] = 0U;
+  rand_stack.fst[337U] = 0U;
+  rand_stack.fst[338U] = 0U;
+  rand_stack.fst[339U] = 0U;
+  rand_stack.fst[340U] = 0U;
+  rand_stack.fst[341U] = 0U;
+  rand_stack.fst[342U] = 0U;
+  rand_stack.fst[343U] = 0U;
+  rand_stack.fst[344U] = 0U;
+  rand_stack.fst[345U] = 0U;
+  rand_stack.fst[346U] = 0U;
+  rand_stack.fst[347U] = 0U;
+  rand_stack.fst[348U] = 0U;
+  rand_stack.fst[349U] = 0U;
+  rand_stack.fst[350U] = 0U;
+  rand_stack.fst[351U] = 0U;
+  rand_stack.fst[352U] = 0U;
+  rand_stack.fst[353U] = 0U;
+  rand_stack.fst[354U] = 0U;
+  rand_stack.fst[355U] = 0U;
+  rand_stack.fst[356U] = 0U;
+  rand_stack.fst[357U] = 0U;
+  rand_stack.fst[358U] = 0U;
+  rand_stack.fst[359U] = 0U;
+  rand_stack.fst[360U] = 0U;
+  rand_stack.fst[361U] = 0U;
+  rand_stack.fst[362U] = 0U;
+  rand_stack.fst[363U] = 0U;
+  rand_stack.fst[364U] = 0U;
+  rand_stack.fst[365U] = 0U;
+  rand_stack.fst[366U] = 0U;
+  rand_stack.fst[367U] = 0U;
+  rand_stack.fst[368U] = 0U;
+  rand_stack.fst[369U] = 0U;
+  rand_stack.fst[370U] = 0U;
+  rand_stack.fst[371U] = 0U;
+  rand_stack.fst[372U] = 0U;
+  rand_stack.fst[373U] = 0U;
+  rand_stack.fst[374U] = 0U;
+  rand_stack.fst[375U] = 0U;
+  rand_stack.fst[376U] = 0U;
+  rand_stack.fst[377U] = 0U;
+  rand_stack.fst[378U] = 0U;
+  rand_stack.fst[379U] = 0U;
+  rand_stack.fst[380U] = 0U;
+  rand_stack.fst[381U] = 0U;
+  rand_stack.fst[382U] = 0U;
+  rand_stack.fst[383U] = 0U;
+  rand_stack.fst[384U] = 0U;
+  rand_stack.fst[385U] = 0U;
+  rand_stack.fst[386U] = 0U;
+  rand_stack.fst[387U] = 0U;
+  rand_stack.fst[388U] = 0U;
+  rand_stack.fst[389U] = 0U;
+  rand_stack.fst[390U] = 0U;
+  rand_stack.fst[391U] = 0U;
+  rand_stack.fst[392U] = 0U;
+  rand_stack.fst[393U] = 0U;
+  rand_stack.fst[394U] = 0U;
+  rand_stack.fst[395U] = 0U;
+  rand_stack.fst[396U] = 0U;
+  rand_stack.fst[397U] = 0U;
+  rand_stack.fst[398U] = 0U;
+  rand_stack.fst[399U] = 0U;
+  rand_stack.fst[400U] = 0U;
+  rand_stack.fst[401U] = 0U;
+  rand_stack.fst[402U] = 0U;
+  rand_stack.fst[403U] = 0U;
+  rand_stack.fst[404U] = 0U;
+  rand_stack.fst[405U] = 0U;
+  rand_stack.fst[406U] = 0U;
+  rand_stack.fst[407U] = 0U;
+  rand_stack.fst[408U] = 0U;
+  rand_stack.fst[409U] = 0U;
+  rand_stack.fst[410U] = 0U;
+  rand_stack.fst[411U] = 0U;
+  rand_stack.fst[412U] = 0U;
+  rand_stack.fst[413U] = 0U;
+  rand_stack.fst[414U] = 0U;
+  rand_stack.fst[415U] = 0U;
+  rand_stack.fst[416U] = 0U;
+  rand_stack.fst[417U] = 0U;
+  rand_stack.fst[418U] = 0U;
+  rand_stack.fst[419U] = 0U;
+  rand_stack.fst[420U] = 0U;
+  rand_stack.fst[421U] = 0U;
+  rand_stack.fst[422U] = 0U;
+  rand_stack.fst[423U] = 0U;
+  rand_stack.fst[424U] = 0U;
+  rand_stack.fst[425U] = 0U;
+  rand_stack.fst[426U] = 0U;
+  rand_stack.fst[427U] = 0U;
+  rand_stack.fst[428U] = 0U;
+  rand_stack.fst[429U] = 0U;
+  rand_stack.fst[430U] = 0U;
+  rand_stack.fst[431U] = 0U;
+  rand_stack.fst[432U] = 0U;
+  rand_stack.fst[433U] = 0U;
+  rand_stack.fst[434U] = 0U;
+  rand_stack.fst[435U] = 0U;
+  rand_stack.fst[436U] = 0U;
+  rand_stack.fst[437U] = 0U;
+  rand_stack.fst[438U] = 0U;
+  rand_stack.fst[439U] = 0U;
+  rand_stack.fst[440U] = 0U;
+  rand_stack.fst[441U] = 0U;
+  rand_stack.fst[442U] = 0U;
+  rand_stack.fst[443U] = 0U;
+  rand_stack.fst[444U] = 0U;
+  rand_stack.fst[445U] = 0U;
+  rand_stack.fst[446U] = 0U;
+  rand_stack.fst[447U] = 0U;
+  rand_stack.fst[448U] = 0U;
+  rand_stack.fst[449U] = 0U;
+  rand_stack.fst[450U] = 0U;
+  rand_stack.fst[451U] = 0U;
+  rand_stack.fst[452U] = 0U;
+  rand_stack.fst[453U] = 0U;
+  rand_stack.fst[454U] = 0U;
+  rand_stack.fst[455U] = 0U;
+  rand_stack.fst[456U] = 0U;
+  rand_stack.fst[457U] = 0U;
+  rand_stack.fst[458U] = 0U;
+  rand_stack.fst[459U] = 0U;
+  rand_stack.fst[460U] = 0U;
+  rand_stack.fst[461U] = 0U;
+  rand_stack.fst[462U] = 0U;
+  rand_stack.fst[463U] = 0U;
+  rand_stack.fst[464U] = 0U;
+  rand_stack.fst[465U] = 0U;
+  rand_stack.fst[466U] = 0U;
+  rand_stack.fst[467U] = 0U;
+  rand_stack.fst[468U] = 0U;
+  rand_stack.fst[469U] = 0U;
+  rand_stack.fst[470U] = 0U;
+  rand_stack.fst[471U] = 0U;
+  rand_stack.fst[472U] = 0U;
+  rand_stack.fst[473U] = 0U;
+  rand_stack.fst[474U] = 0U;
+  rand_stack.fst[475U] = 0U;
+  rand_stack.fst[476U] = 0U;
+  rand_stack.fst[477U] = 0U;
+  rand_stack.fst[478U] = 0U;
+  rand_stack.fst[479U] = 0U;
+  rand_stack.fst[480U] = 0U;
+  rand_stack.fst[481U] = 0U;
+  rand_stack.fst[482U] = 0U;
+  rand_stack.fst[483U] = 0U;
+  rand_stack.fst[484U] = 0U;
+  rand_stack.fst[485U] = 0U;
+  rand_stack.fst[486U] = 0U;
+  rand_stack.fst[487U] = 0U;
+  rand_stack.fst[488U] = 0U;
+  rand_stack.fst[489U] = 0U;
+  rand_stack.fst[490U] = 0U;
+  rand_stack.fst[491U] = 0U;
+  rand_stack.fst[492U] = 0U;
+  rand_stack.fst[493U] = 0U;
+  rand_stack.fst[494U] = 0U;
+  rand_stack.fst[495U] = 0U;
+  rand_stack.fst[496U] = 0U;
+  rand_stack.fst[497U] = 0U;
+  rand_stack.fst[498U] = 0U;
+  rand_stack.fst[499U] = 0U;
+  rand_stack.fst[500U] = 0U;
+  rand_stack.fst[501U] = 0U;
+  rand_stack.fst[502U] = 0U;
+  rand_stack.fst[503U] = 0U;
+  rand_stack.fst[504U] = 0U;
+  rand_stack.fst[505U] = 0U;
+  rand_stack.fst[506U] = 0U;
+  rand_stack.fst[507U] = 0U;
+  rand_stack.fst[508U] = 0U;
+  rand_stack.fst[509U] = 0U;
+  rand_stack.fst[510U] = 0U;
+  rand_stack.fst[511U] = 0U;
+  rand_stack.fst[512U] = 0U;
+  rand_stack.fst[513U] = 0U;
+  rand_stack.fst[514U] = 0U;
+  rand_stack.fst[515U] = 0U;
+  rand_stack.fst[516U] = 0U;
+  rand_stack.fst[517U] = 0U;
+  rand_stack.fst[518U] = 0U;
+  rand_stack.fst[519U] = 0U;
+  rand_stack.fst[520U] = 0U;
+  rand_stack.fst[521U] = 0U;
+  rand_stack.fst[522U] = 0U;
+  rand_stack.fst[523U] = 0U;
+  rand_stack.fst[524U] = 0U;
+  rand_stack.fst[525U] = 0U;
+  rand_stack.fst[526U] = 0U;
+  rand_stack.fst[527U] = 0U;
+  rand_stack.fst[528U] = 0U;
+  rand_stack.fst[529U] = 0U;
+  rand_stack.fst[530U] = 0U;
+  rand_stack.fst[531U] = 0U;
+  rand_stack.fst[532U] = 0U;
+  rand_stack.fst[533U] = 0U;
+  rand_stack.fst[534U] = 0U;
+  rand_stack.fst[535U] = 0U;
+  rand_stack.fst[536U] = 0U;
+  rand_stack.fst[537U] = 0U;
+  rand_stack.fst[538U] = 0U;
+  rand_stack.fst[539U] = 0U;
+  rand_stack.fst[540U] = 0U;
+  rand_stack.fst[541U] = 0U;
+  rand_stack.fst[542U] = 0U;
+  rand_stack.fst[543U] = 0U;
+  rand_stack.fst[544U] = 0U;
+  rand_stack.fst[545U] = 0U;
+  rand_stack.fst[546U] = 0U;
+  rand_stack.fst[547U] = 0U;
+  rand_stack.fst[548U] = 0U;
+  rand_stack.fst[549U] = 0U;
+  rand_stack.fst[550U] = 0U;
+  rand_stack.fst[551U] = 0U;
+  rand_stack.fst[552U] = 0U;
+  rand_stack.fst[553U] = 0U;
+  rand_stack.fst[554U] = 0U;
+  rand_stack.fst[555U] = 0U;
+  rand_stack.fst[556U] = 0U;
+  rand_stack.fst[557U] = 0U;
+  rand_stack.fst[558U] = 0U;
+  rand_stack.fst[559U] = 0U;
+  rand_stack.fst[560U] = 0U;
+  rand_stack.fst[561U] = 0U;
+  rand_stack.fst[562U] = 0U;
+  rand_stack.fst[563U] = 0U;
+  rand_stack.fst[564U] = 0U;
+  rand_stack.fst[565U] = 0U;
+  rand_stack.fst[566U] = 0U;
+  rand_stack.fst[567U] = 0U;
+  rand_stack.fst[568U] = 0U;
+  rand_stack.fst[569U] = 0U;
+  rand_stack.fst[570U] = 0U;
+  rand_stack.fst[571U] = 0U;
+  rand_stack.fst[572U] = 0U;
+  rand_stack.fst[573U] = 0U;
+  rand_stack.fst[574U] = 0U;
+  rand_stack.fst[575U] = 0U;
+  rand_stack.fst[576U] = 0U;
+  rand_stack.fst[577U] = 0U;
+  rand_stack.fst[578U] = 0U;
+  rand_stack.fst[579U] = 0U;
+  rand_stack.fst[580U] = 0U;
+  rand_stack.fst[581U] = 0U;
+  rand_stack.fst[582U] = 0U;
+  rand_stack.fst[583U] = 0U;
+  rand_stack.fst[584U] = 0U;
+  rand_stack.fst[585U] = 0U;
+  rand_stack.fst[586U] = 0U;
+  rand_stack.fst[587U] = 0U;
+  rand_stack.fst[588U] = 0U;
+  rand_stack.fst[589U] = 0U;
+  rand_stack.fst[590U] = 0U;
+  rand_stack.fst[591U] = 0U;
+  rand_stack.fst[592U] = 0U;
+  rand_stack.fst[593U] = 0U;
+  rand_stack.fst[594U] = 0U;
+  rand_stack.fst[595U] = 0U;
+  rand_stack.fst[596U] = 0U;
+  rand_stack.fst[597U] = 0U;
+  rand_stack.fst[598U] = 0U;
+  rand_stack.fst[599U] = 0U;
+  rand_stack.fst[600U] = 0U;
+  rand_stack.fst[601U] = 0U;
+  rand_stack.fst[602U] = 0U;
+  rand_stack.fst[603U] = 0U;
+  rand_stack.fst[604U] = 0U;
+  rand_stack.fst[605U] = 0U;
+  rand_stack.fst[606U] = 0U;
+  rand_stack.fst[607U] = 0U;
+  rand_stack.fst[608U] = 0U;
+  rand_stack.fst[609U] = 0U;
+  rand_stack.fst[610U] = 0U;
+  rand_stack.fst[611U] = 0U;
+  rand_stack.fst[612U] = 0U;
+  rand_stack.fst[613U] = 0U;
+  rand_stack.fst[614U] = 0U;
+  rand_stack.fst[615U] = 0U;
+  rand_stack.fst[616U] = 0U;
+  rand_stack.fst[617U] = 0U;
+  rand_stack.fst[618U] = 0U;
+  rand_stack.fst[619U] = 0U;
+  rand_stack.fst[620U] = 0U;
+  rand_stack.fst[621U] = 0U;
+  rand_stack.fst[622U] = 0U;
+  rand_stack.fst[623U] = 0U;
+  rand_stack.fst[624U] = 0U;
+  rand_stack.fst[625U] = 0U;
+  rand_stack.fst[626U] = 0U;
+  rand_stack.fst[627U] = 0U;
+  rand_stack.fst[628U] = 0U;
+  rand_stack.fst[629U] = 0U;
+  rand_stack.fst[630U] = 0U;
+  rand_stack.fst[631U] = 0U;
+  rand_stack.fst[632U] = 0U;
+  rand_stack.fst[633U] = 0U;
+  rand_stack.fst[634U] = 0U;
+  rand_stack.fst[635U] = 0U;
+  rand_stack.fst[636U] = 0U;
+  rand_stack.fst[637U] = 0U;
+  rand_stack.fst[638U] = 0U;
+  rand_stack.fst[639U] = 0U;
+  rand_stack.fst[640U] = 0U;
+  rand_stack.fst[641U] = 0U;
+  rand_stack.fst[642U] = 0U;
+  rand_stack.fst[643U] = 0U;
+  rand_stack.fst[644U] = 0U;
+  rand_stack.fst[645U] = 0U;
+  rand_stack.fst[646U] = 0U;
+  rand_stack.fst[647U] = 0U;
+  rand_stack.fst[648U] = 0U;
+  rand_stack.fst[649U] = 0U;
+  rand_stack.fst[650U] = 0U;
+  rand_stack.fst[651U] = 0U;
+  rand_stack.fst[652U] = 0U;
+  rand_stack.fst[653U] = 0U;
+  rand_stack.fst[654U] = 0U;
+  rand_stack.fst[655U] = 0U;
+  rand_stack.fst[656U] = 0U;
+  rand_stack.fst[657U] = 0U;
+  rand_stack.fst[658U] = 0U;
+  rand_stack.fst[659U] = 0U;
+  rand_stack.fst[660U] = 0U;
+  rand_stack.fst[661U] = 0U;
+  rand_stack.fst[662U] = 0U;
+  rand_stack.fst[663U] = 0U;
+  rand_stack.fst[664U] = 0U;
+  rand_stack.fst[665U] = 0U;
+  rand_stack.fst[666U] = 0U;
+  rand_stack.fst[667U] = 0U;
+  rand_stack.fst[668U] = 0U;
+  rand_stack.fst[669U] = 0U;
+  rand_stack.fst[670U] = 0U;
+  rand_stack.fst[671U] = 0U;
+  rand_stack.fst[672U] = 0U;
+  rand_stack.fst[673U] = 0U;
+  rand_stack.fst[674U] = 0U;
+  rand_stack.fst[675U] = 0U;
+  rand_stack.fst[676U] = 0U;
+  rand_stack.fst[677U] = 0U;
+  rand_stack.fst[678U] = 0U;
+  rand_stack.fst[679U] = 0U;
+  rand_stack.fst[680U] = 0U;
+  rand_stack.fst[681U] = 0U;
+  rand_stack.fst[682U] = 0U;
+  rand_stack.fst[683U] = 0U;
+  rand_stack.fst[684U] = 0U;
+  rand_stack.fst[685U] = 0U;
+  rand_stack.fst[686U] = 0U;
+  rand_stack.fst[687U] = 0U;
+  rand_stack.fst[688U] = 0U;
+  rand_stack.fst[689U] = 0U;
+  rand_stack.fst[690U] = 0U;
+  rand_stack.fst[691U] = 0U;
+  rand_stack.fst[692U] = 0U;
+  rand_stack.fst[693U] = 0U;
+  rand_stack.fst[694U] = 0U;
+  rand_stack.fst[695U] = 0U;
+  rand_stack.fst[696U] = 0U;
+  rand_stack.fst[697U] = 0U;
+  rand_stack.fst[698U] = 0U;
+  rand_stack.fst[699U] = 0U;
+  rand_stack.fst[700U] = 0U;
+  rand_stack.fst[701U] = 0U;
+  rand_stack.fst[702U] = 0U;
+  rand_stack.fst[703U] = 0U;
+  rand_stack.fst[704U] = 0U;
+  rand_stack.fst[705U] = 0U;
+  rand_stack.fst[706U] = 0U;
+  rand_stack.fst[707U] = 0U;
+  rand_stack.fst[708U] = 0U;
+  rand_stack.fst[709U] = 0U;
+  rand_stack.fst[710U] = 0U;
+  rand_stack.fst[711U] = 0U;
+  rand_stack.fst[712U] = 0U;
+  rand_stack.fst[713U] = 0U;
+  rand_stack.fst[714U] = 0U;
+  rand_stack.fst[715U] = 0U;
+  rand_stack.fst[716U] = 0U;
+  rand_stack.fst[717U] = 0U;
+  rand_stack.fst[718U] = 0U;
+  rand_stack.fst[719U] = 0U;
+  rand_stack.fst[720U] = 0U;
+  rand_stack.fst[721U] = 0U;
+  rand_stack.fst[722U] = 0U;
+  rand_stack.fst[723U] = 0U;
+  rand_stack.fst[724U] = 0U;
+  rand_stack.fst[725U] = 0U;
+  rand_stack.fst[726U] = 0U;
+  rand_stack.fst[727U] = 0U;
+  rand_stack.fst[728U] = 0U;
+  rand_stack.fst[729U] = 0U;
+  rand_stack.fst[730U] = 0U;
+  rand_stack.fst[731U] = 0U;
+  rand_stack.fst[732U] = 0U;
+  rand_stack.fst[733U] = 0U;
+  rand_stack.fst[734U] = 0U;
+  rand_stack.fst[735U] = 0U;
+  rand_stack.fst[736U] = 0U;
+  rand_stack.fst[737U] = 0U;
+  rand_stack.fst[738U] = 0U;
+  rand_stack.fst[739U] = 0U;
+  rand_stack.fst[740U] = 0U;
+  rand_stack.fst[741U] = 0U;
+  rand_stack.fst[742U] = 0U;
+  rand_stack.fst[743U] = 0U;
+  rand_stack.fst[744U] = 0U;
+  rand_stack.fst[745U] = 0U;
+  rand_stack.fst[746U] = 0U;
+  rand_stack.fst[747U] = 0U;
+  rand_stack.fst[748U] = 0U;
+  rand_stack.fst[749U] = 0U;
+  rand_stack.fst[750U] = 0U;
+  rand_stack.fst[751U] = 0U;
+  rand_stack.fst[752U] = 0U;
+  rand_stack.fst[753U] = 0U;
+  rand_stack.fst[754U] = 0U;
+  rand_stack.fst[755U] = 0U;
+  rand_stack.fst[756U] = 0U;
+  rand_stack.fst[757U] = 0U;
+  rand_stack.fst[758U] = 0U;
+  rand_stack.fst[759U] = 0U;
+  rand_stack.fst[760U] = 0U;
+  rand_stack.fst[761U] = 0U;
+  rand_stack.fst[762U] = 0U;
+  rand_stack.fst[763U] = 0U;
+  rand_stack.fst[764U] = 0U;
+  rand_stack.fst[765U] = 0U;
+  rand_stack.fst[766U] = 0U;
+  rand_stack.fst[767U] = 0U;
+  rand_stack.fst[768U] = 0U;
+  rand_stack.fst[769U] = 0U;
+  rand_stack.fst[770U] = 0U;
+  rand_stack.fst[771U] = 0U;
+  rand_stack.fst[772U] = 0U;
+  rand_stack.fst[773U] = 0U;
+  rand_stack.fst[774U] = 0U;
+  rand_stack.fst[775U] = 0U;
+  rand_stack.fst[776U] = 0U;
+  rand_stack.fst[777U] = 0U;
+  rand_stack.fst[778U] = 0U;
+  rand_stack.fst[779U] = 0U;
+  rand_stack.fst[780U] = 0U;
+  rand_stack.fst[781U] = 0U;
+  rand_stack.fst[782U] = 0U;
+  rand_stack.fst[783U] = 0U;
+  rand_stack.fst[784U] = 0U;
+  rand_stack.fst[785U] = 0U;
+  rand_stack.fst[786U] = 0U;
+  rand_stack.fst[787U] = 0U;
+  rand_stack.fst[788U] = 0U;
+  rand_stack.fst[789U] = 0U;
+  rand_stack.fst[790U] = 0U;
+  rand_stack.fst[791U] = 0U;
+  rand_stack.fst[792U] = 0U;
+  rand_stack.fst[793U] = 0U;
+  rand_stack.fst[794U] = 0U;
+  rand_stack.fst[795U] = 0U;
+  rand_stack.fst[796U] = 0U;
+  rand_stack.fst[797U] = 0U;
+  rand_stack.fst[798U] = 0U;
+  rand_stack.fst[799U] = 0U;
+  rand_stack.fst[800U] = 0U;
+  rand_stack.fst[801U] = 0U;
+  rand_stack.fst[802U] = 0U;
+  rand_stack.fst[803U] = 0U;
+  rand_stack.fst[804U] = 0U;
+  rand_stack.fst[805U] = 0U;
+  rand_stack.fst[806U] = 0U;
+  rand_stack.fst[807U] = 0U;
+  rand_stack.fst[808U] = 0U;
+  rand_stack.fst[809U] = 0U;
+  rand_stack.fst[810U] = 0U;
+  rand_stack.fst[811U] = 0U;
+  rand_stack.fst[812U] = 0U;
+  rand_stack.fst[813U] = 0U;
+  rand_stack.fst[814U] = 0U;
+  rand_stack.fst[815U] = 0U;
+  rand_stack.fst[816U] = 0U;
+  rand_stack.fst[817U] = 0U;
+  rand_stack.fst[818U] = 0U;
+  rand_stack.fst[819U] = 0U;
+  rand_stack.fst[820U] = 0U;
+  rand_stack.fst[821U] = 0U;
+  rand_stack.fst[822U] = 0U;
+  rand_stack.fst[823U] = 0U;
+  rand_stack.fst[824U] = 0U;
+  rand_stack.fst[825U] = 0U;
+  rand_stack.fst[826U] = 0U;
+  rand_stack.fst[827U] = 0U;
+  rand_stack.fst[828U] = 0U;
+  rand_stack.fst[829U] = 0U;
+  rand_stack.fst[830U] = 0U;
+  rand_stack.fst[831U] = 0U;
+  rand_stack.fst[832U] = 0U;
+  rand_stack.fst[833U] = 0U;
+  rand_stack.fst[834U] = 0U;
+  rand_stack.fst[835U] = 0U;
+  rand_stack.fst[836U] = 0U;
+  rand_stack.fst[837U] = 0U;
+  rand_stack.fst[838U] = 0U;
+  rand_stack.fst[839U] = 0U;
+  memcpy(rand_stack.snd, uu____0, (size_t)840U * sizeof(uint8_t));
+  memcpy(rand_stack.thd, uu____1, (size_t)840U * sizeof(uint8_t));
+  rand_stack.f3[0U] = 0U;
+  rand_stack.f3[1U] = 0U;
+  rand_stack.f3[2U] = 0U;
+  rand_stack.f3[3U] = 0U;
+  rand_stack.f3[4U] = 0U;
+  rand_stack.f3[5U] = 0U;
+  rand_stack.f3[6U] = 0U;
+  rand_stack.f3[7U] = 0U;
+  rand_stack.f3[8U] = 0U;
+  rand_stack.f3[9U] = 0U;
+  rand_stack.f3[10U] = 0U;
+  rand_stack.f3[11U] = 0U;
+  rand_stack.f3[12U] = 0U;
+  rand_stack.f3[13U] = 0U;
+  rand_stack.f3[14U] = 0U;
+  rand_stack.f3[15U] = 0U;
+  rand_stack.f3[16U] = 0U;
+  rand_stack.f3[17U] = 0U;
+  rand_stack.f3[18U] = 0U;
+  rand_stack.f3[19U] = 0U;
+  rand_stack.f3[20U] = 0U;
+  rand_stack.f3[21U] = 0U;
+  rand_stack.f3[22U] = 0U;
+  rand_stack.f3[23U] = 0U;
+  rand_stack.f3[24U] = 0U;
+  rand_stack.f3[25U] = 0U;
+  rand_stack.f3[26U] = 0U;
+  rand_stack.f3[27U] = 0U;
+  rand_stack.f3[28U] = 0U;
+  rand_stack.f3[29U] = 0U;
+  rand_stack.f3[30U] = 0U;
+  rand_stack.f3[31U] = 0U;
+  rand_stack.f3[32U] = 0U;
+  rand_stack.f3[33U] = 0U;
+  rand_stack.f3[34U] = 0U;
+  rand_stack.f3[35U] = 0U;
+  rand_stack.f3[36U] = 0U;
+  rand_stack.f3[37U] = 0U;
+  rand_stack.f3[38U] = 0U;
+  rand_stack.f3[39U] = 0U;
+  rand_stack.f3[40U] = 0U;
+  rand_stack.f3[41U] = 0U;
+  rand_stack.f3[42U] = 0U;
+  rand_stack.f3[43U] = 0U;
+  rand_stack.f3[44U] = 0U;
+  rand_stack.f3[45U] = 0U;
+  rand_stack.f3[46U] = 0U;
+  rand_stack.f3[47U] = 0U;
+  rand_stack.f3[48U] = 0U;
+  rand_stack.f3[49U] = 0U;
+  rand_stack.f3[50U] = 0U;
+  rand_stack.f3[51U] = 0U;
+  rand_stack.f3[52U] = 0U;
+  rand_stack.f3[53U] = 0U;
+  rand_stack.f3[54U] = 0U;
+  rand_stack.f3[55U] = 0U;
+  rand_stack.f3[56U] = 0U;
+  rand_stack.f3[57U] = 0U;
+  rand_stack.f3[58U] = 0U;
+  rand_stack.f3[59U] = 0U;
+  rand_stack.f3[60U] = 0U;
+  rand_stack.f3[61U] = 0U;
+  rand_stack.f3[62U] = 0U;
+  rand_stack.f3[63U] = 0U;
+  rand_stack.f3[64U] = 0U;
+  rand_stack.f3[65U] = 0U;
+  rand_stack.f3[66U] = 0U;
+  rand_stack.f3[67U] = 0U;
+  rand_stack.f3[68U] = 0U;
+  rand_stack.f3[69U] = 0U;
+  rand_stack.f3[70U] = 0U;
+  rand_stack.f3[71U] = 0U;
+  rand_stack.f3[72U] = 0U;
+  rand_stack.f3[73U] = 0U;
+  rand_stack.f3[74U] = 0U;
+  rand_stack.f3[75U] = 0U;
+  rand_stack.f3[76U] = 0U;
+  rand_stack.f3[77U] = 0U;
+  rand_stack.f3[78U] = 0U;
+  rand_stack.f3[79U] = 0U;
+  rand_stack.f3[80U] = 0U;
+  rand_stack.f3[81U] = 0U;
+  rand_stack.f3[82U] = 0U;
+  rand_stack.f3[83U] = 0U;
+  rand_stack.f3[84U] = 0U;
+  rand_stack.f3[85U] = 0U;
+  rand_stack.f3[86U] = 0U;
+  rand_stack.f3[87U] = 0U;
+  rand_stack.f3[88U] = 0U;
+  rand_stack.f3[89U] = 0U;
+  rand_stack.f3[90U] = 0U;
+  rand_stack.f3[91U] = 0U;
+  rand_stack.f3[92U] = 0U;
+  rand_stack.f3[93U] = 0U;
+  rand_stack.f3[94U] = 0U;
+  rand_stack.f3[95U] = 0U;
+  rand_stack.f3[96U] = 0U;
+  rand_stack.f3[97U] = 0U;
+  rand_stack.f3[98U] = 0U;
+  rand_stack.f3[99U] = 0U;
+  rand_stack.f3[100U] = 0U;
+  rand_stack.f3[101U] = 0U;
+  rand_stack.f3[102U] = 0U;
+  rand_stack.f3[103U] = 0U;
+  rand_stack.f3[104U] = 0U;
+  rand_stack.f3[105U] = 0U;
+  rand_stack.f3[106U] = 0U;
+  rand_stack.f3[107U] = 0U;
+  rand_stack.f3[108U] = 0U;
+  rand_stack.f3[109U] = 0U;
+  rand_stack.f3[110U] = 0U;
+  rand_stack.f3[111U] = 0U;
+  rand_stack.f3[112U] = 0U;
+  rand_stack.f3[113U] = 0U;
+  rand_stack.f3[114U] = 0U;
+  rand_stack.f3[115U] = 0U;
+  rand_stack.f3[116U] = 0U;
+  rand_stack.f3[117U] = 0U;
+  rand_stack.f3[118U] = 0U;
+  rand_stack.f3[119U] = 0U;
+  rand_stack.f3[120U] = 0U;
+  rand_stack.f3[121U] = 0U;
+  rand_stack.f3[122U] = 0U;
+  rand_stack.f3[123U] = 0U;
+  rand_stack.f3[124U] = 0U;
+  rand_stack.f3[125U] = 0U;
+  rand_stack.f3[126U] = 0U;
+  rand_stack.f3[127U] = 0U;
+  rand_stack.f3[128U] = 0U;
+  rand_stack.f3[129U] = 0U;
+  rand_stack.f3[130U] = 0U;
+  rand_stack.f3[131U] = 0U;
+  rand_stack.f3[132U] = 0U;
+  rand_stack.f3[133U] = 0U;
+  rand_stack.f3[134U] = 0U;
+  rand_stack.f3[135U] = 0U;
+  rand_stack.f3[136U] = 0U;
+  rand_stack.f3[137U] = 0U;
+  rand_stack.f3[138U] = 0U;
+  rand_stack.f3[139U] = 0U;
+  rand_stack.f3[140U] = 0U;
+  rand_stack.f3[141U] = 0U;
+  rand_stack.f3[142U] = 0U;
+  rand_stack.f3[143U] = 0U;
+  rand_stack.f3[144U] = 0U;
+  rand_stack.f3[145U] = 0U;
+  rand_stack.f3[146U] = 0U;
+  rand_stack.f3[147U] = 0U;
+  rand_stack.f3[148U] = 0U;
+  rand_stack.f3[149U] = 0U;
+  rand_stack.f3[150U] = 0U;
+  rand_stack.f3[151U] = 0U;
+  rand_stack.f3[152U] = 0U;
+  rand_stack.f3[153U] = 0U;
+  rand_stack.f3[154U] = 0U;
+  rand_stack.f3[155U] = 0U;
+  rand_stack.f3[156U] = 0U;
+  rand_stack.f3[157U] = 0U;
+  rand_stack.f3[158U] = 0U;
+  rand_stack.f3[159U] = 0U;
+  rand_stack.f3[160U] = 0U;
+  rand_stack.f3[161U] = 0U;
+  rand_stack.f3[162U] = 0U;
+  rand_stack.f3[163U] = 0U;
+  rand_stack.f3[164U] = 0U;
+  rand_stack.f3[165U] = 0U;
+  rand_stack.f3[166U] = 0U;
+  rand_stack.f3[167U] = 0U;
+  rand_stack.f3[168U] = 0U;
+  rand_stack.f3[169U] = 0U;
+  rand_stack.f3[170U] = 0U;
+  rand_stack.f3[171U] = 0U;
+  rand_stack.f3[172U] = 0U;
+  rand_stack.f3[173U] = 0U;
+  rand_stack.f3[174U] = 0U;
+  rand_stack.f3[175U] = 0U;
+  rand_stack.f3[176U] = 0U;
+  rand_stack.f3[177U] = 0U;
+  rand_stack.f3[178U] = 0U;
+  rand_stack.f3[179U] = 0U;
+  rand_stack.f3[180U] = 0U;
+  rand_stack.f3[181U] = 0U;
+  rand_stack.f3[182U] = 0U;
+  rand_stack.f3[183U] = 0U;
+  rand_stack.f3[184U] = 0U;
+  rand_stack.f3[185U] = 0U;
+  rand_stack.f3[186U] = 0U;
+  rand_stack.f3[187U] = 0U;
+  rand_stack.f3[188U] = 0U;
+  rand_stack.f3[189U] = 0U;
+  rand_stack.f3[190U] = 0U;
+  rand_stack.f3[191U] = 0U;
+  rand_stack.f3[192U] = 0U;
+  rand_stack.f3[193U] = 0U;
+  rand_stack.f3[194U] = 0U;
+  rand_stack.f3[195U] = 0U;
+  rand_stack.f3[196U] = 0U;
+  rand_stack.f3[197U] = 0U;
+  rand_stack.f3[198U] = 0U;
+  rand_stack.f3[199U] = 0U;
+  rand_stack.f3[200U] = 0U;
+  rand_stack.f3[201U] = 0U;
+  rand_stack.f3[202U] = 0U;
+  rand_stack.f3[203U] = 0U;
+  rand_stack.f3[204U] = 0U;
+  rand_stack.f3[205U] = 0U;
+  rand_stack.f3[206U] = 0U;
+  rand_stack.f3[207U] = 0U;
+  rand_stack.f3[208U] = 0U;
+  rand_stack.f3[209U] = 0U;
+  rand_stack.f3[210U] = 0U;
+  rand_stack.f3[211U] = 0U;
+  rand_stack.f3[212U] = 0U;
+  rand_stack.f3[213U] = 0U;
+  rand_stack.f3[214U] = 0U;
+  rand_stack.f3[215U] = 0U;
+  rand_stack.f3[216U] = 0U;
+  rand_stack.f3[217U] = 0U;
+  rand_stack.f3[218U] = 0U;
+  rand_stack.f3[219U] = 0U;
+  rand_stack.f3[220U] = 0U;
+  rand_stack.f3[221U] = 0U;
+  rand_stack.f3[222U] = 0U;
+  rand_stack.f3[223U] = 0U;
+  rand_stack.f3[224U] = 0U;
+  rand_stack.f3[225U] = 0U;
+  rand_stack.f3[226U] = 0U;
+  rand_stack.f3[227U] = 0U;
+  rand_stack.f3[228U] = 0U;
+  rand_stack.f3[229U] = 0U;
+  rand_stack.f3[230U] = 0U;
+  rand_stack.f3[231U] = 0U;
+  rand_stack.f3[232U] = 0U;
+  rand_stack.f3[233U] = 0U;
+  rand_stack.f3[234U] = 0U;
+  rand_stack.f3[235U] = 0U;
+  rand_stack.f3[236U] = 0U;
+  rand_stack.f3[237U] = 0U;
+  rand_stack.f3[238U] = 0U;
+  rand_stack.f3[239U] = 0U;
+  rand_stack.f3[240U] = 0U;
+  rand_stack.f3[241U] = 0U;
+  rand_stack.f3[242U] = 0U;
+  rand_stack.f3[243U] = 0U;
+  rand_stack.f3[244U] = 0U;
+  rand_stack.f3[245U] = 0U;
+  rand_stack.f3[246U] = 0U;
+  rand_stack.f3[247U] = 0U;
+  rand_stack.f3[248U] = 0U;
+  rand_stack.f3[249U] = 0U;
+  rand_stack.f3[250U] = 0U;
+  rand_stack.f3[251U] = 0U;
+  rand_stack.f3[252U] = 0U;
+  rand_stack.f3[253U] = 0U;
+  rand_stack.f3[254U] = 0U;
+  rand_stack.f3[255U] = 0U;
+  rand_stack.f3[256U] = 0U;
+  rand_stack.f3[257U] = 0U;
+  rand_stack.f3[258U] = 0U;
+  rand_stack.f3[259U] = 0U;
+  rand_stack.f3[260U] = 0U;
+  rand_stack.f3[261U] = 0U;
+  rand_stack.f3[262U] = 0U;
+  rand_stack.f3[263U] = 0U;
+  rand_stack.f3[264U] = 0U;
+  rand_stack.f3[265U] = 0U;
+  rand_stack.f3[266U] = 0U;
+  rand_stack.f3[267U] = 0U;
+  rand_stack.f3[268U] = 0U;
+  rand_stack.f3[269U] = 0U;
+  rand_stack.f3[270U] = 0U;
+  rand_stack.f3[271U] = 0U;
+  rand_stack.f3[272U] = 0U;
+  rand_stack.f3[273U] = 0U;
+  rand_stack.f3[274U] = 0U;
+  rand_stack.f3[275U] = 0U;
+  rand_stack.f3[276U] = 0U;
+  rand_stack.f3[277U] = 0U;
+  rand_stack.f3[278U] = 0U;
+  rand_stack.f3[279U] = 0U;
+  rand_stack.f3[280U] = 0U;
+  rand_stack.f3[281U] = 0U;
+  rand_stack.f3[282U] = 0U;
+  rand_stack.f3[283U] = 0U;
+  rand_stack.f3[284U] = 0U;
+  rand_stack.f3[285U] = 0U;
+  rand_stack.f3[286U] = 0U;
+  rand_stack.f3[287U] = 0U;
+  rand_stack.f3[288U] = 0U;
+  rand_stack.f3[289U] = 0U;
+  rand_stack.f3[290U] = 0U;
+  rand_stack.f3[291U] = 0U;
+  rand_stack.f3[292U] = 0U;
+  rand_stack.f3[293U] = 0U;
+  rand_stack.f3[294U] = 0U;
+  rand_stack.f3[295U] = 0U;
+  rand_stack.f3[296U] = 0U;
+  rand_stack.f3[297U] = 0U;
+  rand_stack.f3[298U] = 0U;
+  rand_stack.f3[299U] = 0U;
+  rand_stack.f3[300U] = 0U;
+  rand_stack.f3[301U] = 0U;
+  rand_stack.f3[302U] = 0U;
+  rand_stack.f3[303U] = 0U;
+  rand_stack.f3[304U] = 0U;
+  rand_stack.f3[305U] = 0U;
+  rand_stack.f3[306U] = 0U;
+  rand_stack.f3[307U] = 0U;
+  rand_stack.f3[308U] = 0U;
+  rand_stack.f3[309U] = 0U;
+  rand_stack.f3[310U] = 0U;
+  rand_stack.f3[311U] = 0U;
+  rand_stack.f3[312U] = 0U;
+  rand_stack.f3[313U] = 0U;
+  rand_stack.f3[314U] = 0U;
+  rand_stack.f3[315U] = 0U;
+  rand_stack.f3[316U] = 0U;
+  rand_stack.f3[317U] = 0U;
+  rand_stack.f3[318U] = 0U;
+  rand_stack.f3[319U] = 0U;
+  rand_stack.f3[320U] = 0U;
+  rand_stack.f3[321U] = 0U;
+  rand_stack.f3[322U] = 0U;
+  rand_stack.f3[323U] = 0U;
+  rand_stack.f3[324U] = 0U;
+  rand_stack.f3[325U] = 0U;
+  rand_stack.f3[326U] = 0U;
+  rand_stack.f3[327U] = 0U;
+  rand_stack.f3[328U] = 0U;
+  rand_stack.f3[329U] = 0U;
+  rand_stack.f3[330U] = 0U;
+  rand_stack.f3[331U] = 0U;
+  rand_stack.f3[332U] = 0U;
+  rand_stack.f3[333U] = 0U;
+  rand_stack.f3[334U] = 0U;
+  rand_stack.f3[335U] = 0U;
+  rand_stack.f3[336U] = 0U;
+  rand_stack.f3[337U] = 0U;
+  rand_stack.f3[338U] = 0U;
+  rand_stack.f3[339U] = 0U;
+  rand_stack.f3[340U] = 0U;
+  rand_stack.f3[341U] = 0U;
+  rand_stack.f3[342U] = 0U;
+  rand_stack.f3[343U] = 0U;
+  rand_stack.f3[344U] = 0U;
+  rand_stack.f3[345U] = 0U;
+  rand_stack.f3[346U] = 0U;
+  rand_stack.f3[347U] = 0U;
+  rand_stack.f3[348U] = 0U;
+  rand_stack.f3[349U] = 0U;
+  rand_stack.f3[350U] = 0U;
+  rand_stack.f3[351U] = 0U;
+  rand_stack.f3[352U] = 0U;
+  rand_stack.f3[353U] = 0U;
+  rand_stack.f3[354U] = 0U;
+  rand_stack.f3[355U] = 0U;
+  rand_stack.f3[356U] = 0U;
+  rand_stack.f3[357U] = 0U;
+  rand_stack.f3[358U] = 0U;
+  rand_stack.f3[359U] = 0U;
+  rand_stack.f3[360U] = 0U;
+  rand_stack.f3[361U] = 0U;
+  rand_stack.f3[362U] = 0U;
+  rand_stack.f3[363U] = 0U;
+  rand_stack.f3[364U] = 0U;
+  rand_stack.f3[365U] = 0U;
+  rand_stack.f3[366U] = 0U;
+  rand_stack.f3[367U] = 0U;
+  rand_stack.f3[368U] = 0U;
+  rand_stack.f3[369U] = 0U;
+  rand_stack.f3[370U] = 0U;
+  rand_stack.f3[371U] = 0U;
+  rand_stack.f3[372U] = 0U;
+  rand_stack.f3[373U] = 0U;
+  rand_stack.f3[374U] = 0U;
+  rand_stack.f3[375U] = 0U;
+  rand_stack.f3[376U] = 0U;
+  rand_stack.f3[377U] = 0U;
+  rand_stack.f3[378U] = 0U;
+  rand_stack.f3[379U] = 0U;
+  rand_stack.f3[380U] = 0U;
+  rand_stack.f3[381U] = 0U;
+  rand_stack.f3[382U] = 0U;
+  rand_stack.f3[383U] = 0U;
+  rand_stack.f3[384U] = 0U;
+  rand_stack.f3[385U] = 0U;
+  rand_stack.f3[386U] = 0U;
+  rand_stack.f3[387U] = 0U;
+  rand_stack.f3[388U] = 0U;
+  rand_stack.f3[389U] = 0U;
+  rand_stack.f3[390U] = 0U;
+  rand_stack.f3[391U] = 0U;
+  rand_stack.f3[392U] = 0U;
+  rand_stack.f3[393U] = 0U;
+  rand_stack.f3[394U] = 0U;
+  rand_stack.f3[395U] = 0U;
+  rand_stack.f3[396U] = 0U;
+  rand_stack.f3[397U] = 0U;
+  rand_stack.f3[398U] = 0U;
+  rand_stack.f3[399U] = 0U;
+  rand_stack.f3[400U] = 0U;
+  rand_stack.f3[401U] = 0U;
+  rand_stack.f3[402U] = 0U;
+  rand_stack.f3[403U] = 0U;
+  rand_stack.f3[404U] = 0U;
+  rand_stack.f3[405U] = 0U;
+  rand_stack.f3[406U] = 0U;
+  rand_stack.f3[407U] = 0U;
+  rand_stack.f3[408U] = 0U;
+  rand_stack.f3[409U] = 0U;
+  rand_stack.f3[410U] = 0U;
+  rand_stack.f3[411U] = 0U;
+  rand_stack.f3[412U] = 0U;
+  rand_stack.f3[413U] = 0U;
+  rand_stack.f3[414U] = 0U;
+  rand_stack.f3[415U] = 0U;
+  rand_stack.f3[416U] = 0U;
+  rand_stack.f3[417U] = 0U;
+  rand_stack.f3[418U] = 0U;
+  rand_stack.f3[419U] = 0U;
+  rand_stack.f3[420U] = 0U;
+  rand_stack.f3[421U] = 0U;
+  rand_stack.f3[422U] = 0U;
+  rand_stack.f3[423U] = 0U;
+  rand_stack.f3[424U] = 0U;
+  rand_stack.f3[425U] = 0U;
+  rand_stack.f3[426U] = 0U;
+  rand_stack.f3[427U] = 0U;
+  rand_stack.f3[428U] = 0U;
+  rand_stack.f3[429U] = 0U;
+  rand_stack.f3[430U] = 0U;
+  rand_stack.f3[431U] = 0U;
+  rand_stack.f3[432U] = 0U;
+  rand_stack.f3[433U] = 0U;
+  rand_stack.f3[434U] = 0U;
+  rand_stack.f3[435U] = 0U;
+  rand_stack.f3[436U] = 0U;
+  rand_stack.f3[437U] = 0U;
+  rand_stack.f3[438U] = 0U;
+  rand_stack.f3[439U] = 0U;
+  rand_stack.f3[440U] = 0U;
+  rand_stack.f3[441U] = 0U;
+  rand_stack.f3[442U] = 0U;
+  rand_stack.f3[443U] = 0U;
+  rand_stack.f3[444U] = 0U;
+  rand_stack.f3[445U] = 0U;
+  rand_stack.f3[446U] = 0U;
+  rand_stack.f3[447U] = 0U;
+  rand_stack.f3[448U] = 0U;
+  rand_stack.f3[449U] = 0U;
+  rand_stack.f3[450U] = 0U;
+  rand_stack.f3[451U] = 0U;
+  rand_stack.f3[452U] = 0U;
+  rand_stack.f3[453U] = 0U;
+  rand_stack.f3[454U] = 0U;
+  rand_stack.f3[455U] = 0U;
+  rand_stack.f3[456U] = 0U;
+  rand_stack.f3[457U] = 0U;
+  rand_stack.f3[458U] = 0U;
+  rand_stack.f3[459U] = 0U;
+  rand_stack.f3[460U] = 0U;
+  rand_stack.f3[461U] = 0U;
+  rand_stack.f3[462U] = 0U;
+  rand_stack.f3[463U] = 0U;
+  rand_stack.f3[464U] = 0U;
+  rand_stack.f3[465U] = 0U;
+  rand_stack.f3[466U] = 0U;
+  rand_stack.f3[467U] = 0U;
+  rand_stack.f3[468U] = 0U;
+  rand_stack.f3[469U] = 0U;
+  rand_stack.f3[470U] = 0U;
+  rand_stack.f3[471U] = 0U;
+  rand_stack.f3[472U] = 0U;
+  rand_stack.f3[473U] = 0U;
+  rand_stack.f3[474U] = 0U;
+  rand_stack.f3[475U] = 0U;
+  rand_stack.f3[476U] = 0U;
+  rand_stack.f3[477U] = 0U;
+  rand_stack.f3[478U] = 0U;
+  rand_stack.f3[479U] = 0U;
+  rand_stack.f3[480U] = 0U;
+  rand_stack.f3[481U] = 0U;
+  rand_stack.f3[482U] = 0U;
+  rand_stack.f3[483U] = 0U;
+  rand_stack.f3[484U] = 0U;
+  rand_stack.f3[485U] = 0U;
+  rand_stack.f3[486U] = 0U;
+  rand_stack.f3[487U] = 0U;
+  rand_stack.f3[488U] = 0U;
+  rand_stack.f3[489U] = 0U;
+  rand_stack.f3[490U] = 0U;
+  rand_stack.f3[491U] = 0U;
+  rand_stack.f3[492U] = 0U;
+  rand_stack.f3[493U] = 0U;
+  rand_stack.f3[494U] = 0U;
+  rand_stack.f3[495U] = 0U;
+  rand_stack.f3[496U] = 0U;
+  rand_stack.f3[497U] = 0U;
+  rand_stack.f3[498U] = 0U;
+  rand_stack.f3[499U] = 0U;
+  rand_stack.f3[500U] = 0U;
+  rand_stack.f3[501U] = 0U;
+  rand_stack.f3[502U] = 0U;
+  rand_stack.f3[503U] = 0U;
+  rand_stack.f3[504U] = 0U;
+  rand_stack.f3[505U] = 0U;
+  rand_stack.f3[506U] = 0U;
+  rand_stack.f3[507U] = 0U;
+  rand_stack.f3[508U] = 0U;
+  rand_stack.f3[509U] = 0U;
+  rand_stack.f3[510U] = 0U;
+  rand_stack.f3[511U] = 0U;
+  rand_stack.f3[512U] = 0U;
+  rand_stack.f3[513U] = 0U;
+  rand_stack.f3[514U] = 0U;
+  rand_stack.f3[515U] = 0U;
+  rand_stack.f3[516U] = 0U;
+  rand_stack.f3[517U] = 0U;
+  rand_stack.f3[518U] = 0U;
+  rand_stack.f3[519U] = 0U;
+  rand_stack.f3[520U] = 0U;
+  rand_stack.f3[521U] = 0U;
+  rand_stack.f3[522U] = 0U;
+  rand_stack.f3[523U] = 0U;
+  rand_stack.f3[524U] = 0U;
+  rand_stack.f3[525U] = 0U;
+  rand_stack.f3[526U] = 0U;
+  rand_stack.f3[527U] = 0U;
+  rand_stack.f3[528U] = 0U;
+  rand_stack.f3[529U] = 0U;
+  rand_stack.f3[530U] = 0U;
+  rand_stack.f3[531U] = 0U;
+  rand_stack.f3[532U] = 0U;
+  rand_stack.f3[533U] = 0U;
+  rand_stack.f3[534U] = 0U;
+  rand_stack.f3[535U] = 0U;
+  rand_stack.f3[536U] = 0U;
+  rand_stack.f3[537U] = 0U;
+  rand_stack.f3[538U] = 0U;
+  rand_stack.f3[539U] = 0U;
+  rand_stack.f3[540U] = 0U;
+  rand_stack.f3[541U] = 0U;
+  rand_stack.f3[542U] = 0U;
+  rand_stack.f3[543U] = 0U;
+  rand_stack.f3[544U] = 0U;
+  rand_stack.f3[545U] = 0U;
+  rand_stack.f3[546U] = 0U;
+  rand_stack.f3[547U] = 0U;
+  rand_stack.f3[548U] = 0U;
+  rand_stack.f3[549U] = 0U;
+  rand_stack.f3[550U] = 0U;
+  rand_stack.f3[551U] = 0U;
+  rand_stack.f3[552U] = 0U;
+  rand_stack.f3[553U] = 0U;
+  rand_stack.f3[554U] = 0U;
+  rand_stack.f3[555U] = 0U;
+  rand_stack.f3[556U] = 0U;
+  rand_stack.f3[557U] = 0U;
+  rand_stack.f3[558U] = 0U;
+  rand_stack.f3[559U] = 0U;
+  rand_stack.f3[560U] = 0U;
+  rand_stack.f3[561U] = 0U;
+  rand_stack.f3[562U] = 0U;
+  rand_stack.f3[563U] = 0U;
+  rand_stack.f3[564U] = 0U;
+  rand_stack.f3[565U] = 0U;
+  rand_stack.f3[566U] = 0U;
+  rand_stack.f3[567U] = 0U;
+  rand_stack.f3[568U] = 0U;
+  rand_stack.f3[569U] = 0U;
+  rand_stack.f3[570U] = 0U;
+  rand_stack.f3[571U] = 0U;
+  rand_stack.f3[572U] = 0U;
+  rand_stack.f3[573U] = 0U;
+  rand_stack.f3[574U] = 0U;
+  rand_stack.f3[575U] = 0U;
+  rand_stack.f3[576U] = 0U;
+  rand_stack.f3[577U] = 0U;
+  rand_stack.f3[578U] = 0U;
+  rand_stack.f3[579U] = 0U;
+  rand_stack.f3[580U] = 0U;
+  rand_stack.f3[581U] = 0U;
+  rand_stack.f3[582U] = 0U;
+  rand_stack.f3[583U] = 0U;
+  rand_stack.f3[584U] = 0U;
+  rand_stack.f3[585U] = 0U;
+  rand_stack.f3[586U] = 0U;
+  rand_stack.f3[587U] = 0U;
+  rand_stack.f3[588U] = 0U;
+  rand_stack.f3[589U] = 0U;
+  rand_stack.f3[590U] = 0U;
+  rand_stack.f3[591U] = 0U;
+  rand_stack.f3[592U] = 0U;
+  rand_stack.f3[593U] = 0U;
+  rand_stack.f3[594U] = 0U;
+  rand_stack.f3[595U] = 0U;
+  rand_stack.f3[596U] = 0U;
+  rand_stack.f3[597U] = 0U;
+  rand_stack.f3[598U] = 0U;
+  rand_stack.f3[599U] = 0U;
+  rand_stack.f3[600U] = 0U;
+  rand_stack.f3[601U] = 0U;
+  rand_stack.f3[602U] = 0U;
+  rand_stack.f3[603U] = 0U;
+  rand_stack.f3[604U] = 0U;
+  rand_stack.f3[605U] = 0U;
+  rand_stack.f3[606U] = 0U;
+  rand_stack.f3[607U] = 0U;
+  rand_stack.f3[608U] = 0U;
+  rand_stack.f3[609U] = 0U;
+  rand_stack.f3[610U] = 0U;
+  rand_stack.f3[611U] = 0U;
+  rand_stack.f3[612U] = 0U;
+  rand_stack.f3[613U] = 0U;
+  rand_stack.f3[614U] = 0U;
+  rand_stack.f3[615U] = 0U;
+  rand_stack.f3[616U] = 0U;
+  rand_stack.f3[617U] = 0U;
+  rand_stack.f3[618U] = 0U;
+  rand_stack.f3[619U] = 0U;
+  rand_stack.f3[620U] = 0U;
+  rand_stack.f3[621U] = 0U;
+  rand_stack.f3[622U] = 0U;
+  rand_stack.f3[623U] = 0U;
+  rand_stack.f3[624U] = 0U;
+  rand_stack.f3[625U] = 0U;
+  rand_stack.f3[626U] = 0U;
+  rand_stack.f3[627U] = 0U;
+  rand_stack.f3[628U] = 0U;
+  rand_stack.f3[629U] = 0U;
+  rand_stack.f3[630U] = 0U;
+  rand_stack.f3[631U] = 0U;
+  rand_stack.f3[632U] = 0U;
+  rand_stack.f3[633U] = 0U;
+  rand_stack.f3[634U] = 0U;
+  rand_stack.f3[635U] = 0U;
+  rand_stack.f3[636U] = 0U;
+  rand_stack.f3[637U] = 0U;
+  rand_stack.f3[638U] = 0U;
+  rand_stack.f3[639U] = 0U;
+  rand_stack.f3[640U] = 0U;
+  rand_stack.f3[641U] = 0U;
+  rand_stack.f3[642U] = 0U;
+  rand_stack.f3[643U] = 0U;
+  rand_stack.f3[644U] = 0U;
+  rand_stack.f3[645U] = 0U;
+  rand_stack.f3[646U] = 0U;
+  rand_stack.f3[647U] = 0U;
+  rand_stack.f3[648U] = 0U;
+  rand_stack.f3[649U] = 0U;
+  rand_stack.f3[650U] = 0U;
+  rand_stack.f3[651U] = 0U;
+  rand_stack.f3[652U] = 0U;
+  rand_stack.f3[653U] = 0U;
+  rand_stack.f3[654U] = 0U;
+  rand_stack.f3[655U] = 0U;
+  rand_stack.f3[656U] = 0U;
+  rand_stack.f3[657U] = 0U;
+  rand_stack.f3[658U] = 0U;
+  rand_stack.f3[659U] = 0U;
+  rand_stack.f3[660U] = 0U;
+  rand_stack.f3[661U] = 0U;
+  rand_stack.f3[662U] = 0U;
+  rand_stack.f3[663U] = 0U;
+  rand_stack.f3[664U] = 0U;
+  rand_stack.f3[665U] = 0U;
+  rand_stack.f3[666U] = 0U;
+  rand_stack.f3[667U] = 0U;
+  rand_stack.f3[668U] = 0U;
+  rand_stack.f3[669U] = 0U;
+  rand_stack.f3[670U] = 0U;
+  rand_stack.f3[671U] = 0U;
+  rand_stack.f3[672U] = 0U;
+  rand_stack.f3[673U] = 0U;
+  rand_stack.f3[674U] = 0U;
+  rand_stack.f3[675U] = 0U;
+  rand_stack.f3[676U] = 0U;
+  rand_stack.f3[677U] = 0U;
+  rand_stack.f3[678U] = 0U;
+  rand_stack.f3[679U] = 0U;
+  rand_stack.f3[680U] = 0U;
+  rand_stack.f3[681U] = 0U;
+  rand_stack.f3[682U] = 0U;
+  rand_stack.f3[683U] = 0U;
+  rand_stack.f3[684U] = 0U;
+  rand_stack.f3[685U] = 0U;
+  rand_stack.f3[686U] = 0U;
+  rand_stack.f3[687U] = 0U;
+  rand_stack.f3[688U] = 0U;
+  rand_stack.f3[689U] = 0U;
+  rand_stack.f3[690U] = 0U;
+  rand_stack.f3[691U] = 0U;
+  rand_stack.f3[692U] = 0U;
+  rand_stack.f3[693U] = 0U;
+  rand_stack.f3[694U] = 0U;
+  rand_stack.f3[695U] = 0U;
+  rand_stack.f3[696U] = 0U;
+  rand_stack.f3[697U] = 0U;
+  rand_stack.f3[698U] = 0U;
+  rand_stack.f3[699U] = 0U;
+  rand_stack.f3[700U] = 0U;
+  rand_stack.f3[701U] = 0U;
+  rand_stack.f3[702U] = 0U;
+  rand_stack.f3[703U] = 0U;
+  rand_stack.f3[704U] = 0U;
+  rand_stack.f3[705U] = 0U;
+  rand_stack.f3[706U] = 0U;
+  rand_stack.f3[707U] = 0U;
+  rand_stack.f3[708U] = 0U;
+  rand_stack.f3[709U] = 0U;
+  rand_stack.f3[710U] = 0U;
+  rand_stack.f3[711U] = 0U;
+  rand_stack.f3[712U] = 0U;
+  rand_stack.f3[713U] = 0U;
+  rand_stack.f3[714U] = 0U;
+  rand_stack.f3[715U] = 0U;
+  rand_stack.f3[716U] = 0U;
+  rand_stack.f3[717U] = 0U;
+  rand_stack.f3[718U] = 0U;
+  rand_stack.f3[719U] = 0U;
+  rand_stack.f3[720U] = 0U;
+  rand_stack.f3[721U] = 0U;
+  rand_stack.f3[722U] = 0U;
+  rand_stack.f3[723U] = 0U;
+  rand_stack.f3[724U] = 0U;
+  rand_stack.f3[725U] = 0U;
+  rand_stack.f3[726U] = 0U;
+  rand_stack.f3[727U] = 0U;
+  rand_stack.f3[728U] = 0U;
+  rand_stack.f3[729U] = 0U;
+  rand_stack.f3[730U] = 0U;
+  rand_stack.f3[731U] = 0U;
+  rand_stack.f3[732U] = 0U;
+  rand_stack.f3[733U] = 0U;
+  rand_stack.f3[734U] = 0U;
+  rand_stack.f3[735U] = 0U;
+  rand_stack.f3[736U] = 0U;
+  rand_stack.f3[737U] = 0U;
+  rand_stack.f3[738U] = 0U;
+  rand_stack.f3[739U] = 0U;
+  rand_stack.f3[740U] = 0U;
+  rand_stack.f3[741U] = 0U;
+  rand_stack.f3[742U] = 0U;
+  rand_stack.f3[743U] = 0U;
+  rand_stack.f3[744U] = 0U;
+  rand_stack.f3[745U] = 0U;
+  rand_stack.f3[746U] = 0U;
+  rand_stack.f3[747U] = 0U;
+  rand_stack.f3[748U] = 0U;
+  rand_stack.f3[749U] = 0U;
+  rand_stack.f3[750U] = 0U;
+  rand_stack.f3[751U] = 0U;
+  rand_stack.f3[752U] = 0U;
+  rand_stack.f3[753U] = 0U;
+  rand_stack.f3[754U] = 0U;
+  rand_stack.f3[755U] = 0U;
+  rand_stack.f3[756U] = 0U;
+  rand_stack.f3[757U] = 0U;
+  rand_stack.f3[758U] = 0U;
+  rand_stack.f3[759U] = 0U;
+  rand_stack.f3[760U] = 0U;
+  rand_stack.f3[761U] = 0U;
+  rand_stack.f3[762U] = 0U;
+  rand_stack.f3[763U] = 0U;
+  rand_stack.f3[764U] = 0U;
+  rand_stack.f3[765U] = 0U;
+  rand_stack.f3[766U] = 0U;
+  rand_stack.f3[767U] = 0U;
+  rand_stack.f3[768U] = 0U;
+  rand_stack.f3[769U] = 0U;
+  rand_stack.f3[770U] = 0U;
+  rand_stack.f3[771U] = 0U;
+  rand_stack.f3[772U] = 0U;
+  rand_stack.f3[773U] = 0U;
+  rand_stack.f3[774U] = 0U;
+  rand_stack.f3[775U] = 0U;
+  rand_stack.f3[776U] = 0U;
+  rand_stack.f3[777U] = 0U;
+  rand_stack.f3[778U] = 0U;
+  rand_stack.f3[779U] = 0U;
+  rand_stack.f3[780U] = 0U;
+  rand_stack.f3[781U] = 0U;
+  rand_stack.f3[782U] = 0U;
+  rand_stack.f3[783U] = 0U;
+  rand_stack.f3[784U] = 0U;
+  rand_stack.f3[785U] = 0U;
+  rand_stack.f3[786U] = 0U;
+  rand_stack.f3[787U] = 0U;
+  rand_stack.f3[788U] = 0U;
+  rand_stack.f3[789U] = 0U;
+  rand_stack.f3[790U] = 0U;
+  rand_stack.f3[791U] = 0U;
+  rand_stack.f3[792U] = 0U;
+  rand_stack.f3[793U] = 0U;
+  rand_stack.f3[794U] = 0U;
+  rand_stack.f3[795U] = 0U;
+  rand_stack.f3[796U] = 0U;
+  rand_stack.f3[797U] = 0U;
+  rand_stack.f3[798U] = 0U;
+  rand_stack.f3[799U] = 0U;
+  rand_stack.f3[800U] = 0U;
+  rand_stack.f3[801U] = 0U;
+  rand_stack.f3[802U] = 0U;
+  rand_stack.f3[803U] = 0U;
+  rand_stack.f3[804U] = 0U;
+  rand_stack.f3[805U] = 0U;
+  rand_stack.f3[806U] = 0U;
+  rand_stack.f3[807U] = 0U;
+  rand_stack.f3[808U] = 0U;
+  rand_stack.f3[809U] = 0U;
+  rand_stack.f3[810U] = 0U;
+  rand_stack.f3[811U] = 0U;
+  rand_stack.f3[812U] = 0U;
+  rand_stack.f3[813U] = 0U;
+  rand_stack.f3[814U] = 0U;
+  rand_stack.f3[815U] = 0U;
+  rand_stack.f3[816U] = 0U;
+  rand_stack.f3[817U] = 0U;
+  rand_stack.f3[818U] = 0U;
+  rand_stack.f3[819U] = 0U;
+  rand_stack.f3[820U] = 0U;
+  rand_stack.f3[821U] = 0U;
+  rand_stack.f3[822U] = 0U;
+  rand_stack.f3[823U] = 0U;
+  rand_stack.f3[824U] = 0U;
+  rand_stack.f3[825U] = 0U;
+  rand_stack.f3[826U] = 0U;
+  rand_stack.f3[827U] = 0U;
+  rand_stack.f3[828U] = 0U;
+  rand_stack.f3[829U] = 0U;
+  rand_stack.f3[830U] = 0U;
+  rand_stack.f3[831U] = 0U;
+  rand_stack.f3[832U] = 0U;
+  rand_stack.f3[833U] = 0U;
+  rand_stack.f3[834U] = 0U;
+  rand_stack.f3[835U] = 0U;
+  rand_stack.f3[836U] = 0U;
+  rand_stack.f3[837U] = 0U;
+  rand_stack.f3[838U] = 0U;
+  rand_stack.f3[839U] = 0U;
+  int32_t tmp_stack[4U][263U] = {{0U}};
+  size_t_x2 buf0[0U] = {};
+  libcrux_ml_dsa_sample_SampleArgs_c5 memory = libcrux_ml_dsa_sample_new_29_4f(
+      &rand_stack,
+      Eurydice_array_to_slice((size_t)4U, tmp_stack, int32_t[263U]), A,
+      Eurydice_array_to_slice((size_t)0U, buf0, size_t_x2));
+  size_t_x2 buf[4U] = {
+      (CLITERAL(size_t_x2){.fst = (size_t)0U, .snd = (size_t)0U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)0U, .snd = (size_t)1U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)0U, .snd = (size_t)2U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)0U, .snd = (size_t)3U})};
+  memory.indices = Eurydice_array_to_slice((size_t)4U, buf, size_t_x2);
+  uint8_t uu____2[34U];
+  memcpy(uu____2, seed, (size_t)34U * sizeof(uint8_t));
+  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
+      uu____2,
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 0U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 1U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 2U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 3U})),
+      &memory);
+  size_t_x2 buf1[4U] = {
+      (CLITERAL(size_t_x2){.fst = (size_t)0U, .snd = (size_t)4U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)1U, .snd = (size_t)0U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)1U, .snd = (size_t)1U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)1U, .snd = (size_t)2U})};
+  memory.indices = Eurydice_array_to_slice((size_t)4U, buf1, size_t_x2);
+  uint8_t uu____3[34U];
+  memcpy(uu____3, seed, (size_t)34U * sizeof(uint8_t));
+  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
+      uu____3,
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 4U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 0U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 1U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 2U})),
+      &memory);
+  size_t_x2 buf2[4U] = {
+      (CLITERAL(size_t_x2){.fst = (size_t)1U, .snd = (size_t)3U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)1U, .snd = (size_t)4U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)2U, .snd = (size_t)0U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)2U, .snd = (size_t)1U})};
+  memory.indices = Eurydice_array_to_slice((size_t)4U, buf2, size_t_x2);
+  uint8_t uu____4[34U];
+  memcpy(uu____4, seed, (size_t)34U * sizeof(uint8_t));
+  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
+      uu____4,
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 3U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 4U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 0U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 1U})),
+      &memory);
+  size_t_x2 buf3[4U] = {
+      (CLITERAL(size_t_x2){.fst = (size_t)2U, .snd = (size_t)2U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)2U, .snd = (size_t)3U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)2U, .snd = (size_t)4U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)3U, .snd = (size_t)0U})};
+  memory.indices = Eurydice_array_to_slice((size_t)4U, buf3, size_t_x2);
+  uint8_t uu____5[34U];
+  memcpy(uu____5, seed, (size_t)34U * sizeof(uint8_t));
+  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
+      uu____5,
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 2U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 3U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 4U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 0U})),
+      &memory);
+  size_t_x2 buf4[4U] = {
+      (CLITERAL(size_t_x2){.fst = (size_t)3U, .snd = (size_t)1U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)3U, .snd = (size_t)2U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)3U, .snd = (size_t)3U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)3U, .snd = (size_t)4U})};
+  memory.indices = Eurydice_array_to_slice((size_t)4U, buf4, size_t_x2);
+  uint8_t uu____6[34U];
+  memcpy(uu____6, seed, (size_t)34U * sizeof(uint8_t));
+  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
+      uu____6,
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 1U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 2U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 3U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 4U})),
+      &memory);
+  size_t_x2 buf5[4U] = {
+      (CLITERAL(size_t_x2){.fst = (size_t)4U, .snd = (size_t)0U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)4U, .snd = (size_t)1U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)4U, .snd = (size_t)2U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)4U, .snd = (size_t)3U})};
+  memory.indices = Eurydice_array_to_slice((size_t)4U, buf5, size_t_x2);
+  uint8_t uu____7[34U];
+  memcpy(uu____7, seed, (size_t)34U * sizeof(uint8_t));
+  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
+      uu____7,
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 0U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 1U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 2U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 3U})),
+      &memory);
+  size_t_x2 buf6[4U] = {
+      (CLITERAL(size_t_x2){.fst = (size_t)4U, .snd = (size_t)4U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)5U, .snd = (size_t)0U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)5U, .snd = (size_t)1U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)5U, .snd = (size_t)2U})};
+  memory.indices = Eurydice_array_to_slice((size_t)4U, buf6, size_t_x2);
+  uint8_t uu____8[34U];
+  memcpy(uu____8, seed, (size_t)34U * sizeof(uint8_t));
+  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
+      uu____8,
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 4U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 0U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 1U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 2U})),
+      &memory);
+  size_t_x2 buf7[2U] = {
+      (CLITERAL(size_t_x2){.fst = (size_t)5U, .snd = (size_t)3U}),
+      (CLITERAL(size_t_x2){.fst = (size_t)5U, .snd = (size_t)4U})};
+  memory.indices = Eurydice_array_to_slice((size_t)2U, buf7, size_t_x2);
+  uint8_t uu____9[34U];
+  memcpy(uu____9, seed, (size_t)34U * sizeof(uint8_t));
+  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
+      uu____9,
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 3U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 4U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 5U})),
+      libcrux_ml_dsa_samplex4_generate_domain_separator(
+          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 6U})),
+      &memory);
   memcpy(ret, A,
          (size_t)6U *
              sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24[5U]));
 }
 
 /**
-A monomorphic instance of libcrux_ml_dsa.samplex4.matrix_A_8_by_7
+A monomorphic instance of libcrux_ml_dsa.samplex4.avx2.matrix_A_avx2
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit
 with const generics
 - ROWS_IN_A= 6
 - COLUMNS_IN_A= 5
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_A_8_by_7_fe(
-    uint8_t seed[34U],
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_24 ret[6U][5U]) {
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 A[6U][5U];
-  for (size_t i = (size_t)0U; i < (size_t)6U; i++) {
-    A[i][0U] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-    A[i][1U] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-    A[i][2U] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-    A[i][3U] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-    A[i][4U] = libcrux_ml_dsa_polynomial_ZERO_ff_ea();
-  }
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed[34U];
-  memcpy(copy_of_seed, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 3U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)0U,
-                                           four_ring_elements.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)1U,
-                                           four_ring_elements.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)2U,
-                                           four_ring_elements.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)3U,
-                                           four_ring_elements.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed0[34U];
-  memcpy(copy_of_seed0, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements0 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed0,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 4U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 5U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(0U, 6U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 0U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)4U,
-                                           four_ring_elements0.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)5U,
-                                           four_ring_elements0.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)0U, (size_t)6U,
-                                           four_ring_elements0.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)0U,
-                                           four_ring_elements0.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed1[34U];
-  memcpy(copy_of_seed1, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements1 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed1,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 3U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 4U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)1U,
-                                           four_ring_elements1.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)2U,
-                                           four_ring_elements1.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)3U,
-                                           four_ring_elements1.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)4U,
-                                           four_ring_elements1.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed2[34U];
-  memcpy(copy_of_seed2, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements2 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed2,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 5U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(1U, 6U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 1U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)5U,
-                                           four_ring_elements2.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)1U, (size_t)6U,
-                                           four_ring_elements2.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)0U,
-                                           four_ring_elements2.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)1U,
-                                           four_ring_elements2.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed3[34U];
-  memcpy(copy_of_seed3, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements3 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed3,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 3U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 4U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 5U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)2U,
-                                           four_ring_elements3.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)3U,
-                                           four_ring_elements3.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)4U,
-                                           four_ring_elements3.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)5U,
-                                           four_ring_elements3.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed4[34U];
-  memcpy(copy_of_seed4, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements4 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed4,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(2U, 6U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 2U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)2U, (size_t)6U,
-                                           four_ring_elements4.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)0U,
-                                           four_ring_elements4.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)1U,
-                                           four_ring_elements4.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)2U,
-                                           four_ring_elements4.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed5[34U];
-  memcpy(copy_of_seed5, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements5 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed5,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 3U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 4U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 5U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(3U, 6U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)3U,
-                                           four_ring_elements5.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)4U,
-                                           four_ring_elements5.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)5U,
-                                           four_ring_elements5.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)3U, (size_t)6U,
-                                           four_ring_elements5.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed6[34U];
-  memcpy(copy_of_seed6, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements6 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed6,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(4U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(4U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(4U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(4U, 3U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)4U, (size_t)0U,
-                                           four_ring_elements6.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)4U, (size_t)1U,
-                                           four_ring_elements6.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)4U, (size_t)2U,
-                                           four_ring_elements6.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)4U, (size_t)3U,
-                                           four_ring_elements6.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed7[34U];
-  memcpy(copy_of_seed7, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements7 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed7,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(4U, 4U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(4U, 5U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(4U, 6U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 0U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)4U, (size_t)4U,
-                                           four_ring_elements7.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)4U, (size_t)5U,
-                                           four_ring_elements7.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)4U, (size_t)6U,
-                                           four_ring_elements7.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)5U, (size_t)0U,
-                                           four_ring_elements7.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed8[34U];
-  memcpy(copy_of_seed8, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements8 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed8,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 3U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 4U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)5U, (size_t)1U,
-                                           four_ring_elements8.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)5U, (size_t)2U,
-                                           four_ring_elements8.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)5U, (size_t)3U,
-                                           four_ring_elements8.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)5U, (size_t)4U,
-                                           four_ring_elements8.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed9[34U];
-  memcpy(copy_of_seed9, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements9 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed9,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 5U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(5U, 6U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(6U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(6U, 1U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)5U, (size_t)5U,
-                                           four_ring_elements9.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)5U, (size_t)6U,
-                                           four_ring_elements9.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)6U, (size_t)0U,
-                                           four_ring_elements9.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)6U, (size_t)1U,
-                                           four_ring_elements9.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed10[34U];
-  memcpy(copy_of_seed10, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements10 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed10,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(6U, 2U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(6U, 3U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(6U, 4U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(6U, 5U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)6U, (size_t)2U,
-                                           four_ring_elements10.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)6U, (size_t)3U,
-                                           four_ring_elements10.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)6U, (size_t)4U,
-                                           four_ring_elements10.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)6U, (size_t)5U,
-                                           four_ring_elements10.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed11[34U];
-  memcpy(copy_of_seed11, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements11 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed11,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(6U, 6U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(7U, 0U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(7U, 1U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(7U, 2U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)6U, (size_t)6U,
-                                           four_ring_elements11.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)7U, (size_t)0U,
-                                           four_ring_elements11.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)7U, (size_t)1U,
-                                           four_ring_elements11.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)7U, (size_t)2U,
-                                           four_ring_elements11.f3);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_seed12[34U];
-  memcpy(copy_of_seed12, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4
-      four_ring_elements12 = libcrux_ml_dsa_sample_sample_four_ring_elements_ea(
-          copy_of_seed12,
-          libcrux_ml_dsa_samplex4_generate_domain_separator(7U, 3U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(7U, 4U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(7U, 5U),
-          libcrux_ml_dsa_samplex4_generate_domain_separator(7U, 6U));
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)7U, (size_t)3U,
-                                           four_ring_elements12.fst);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)7U, (size_t)4U,
-                                           four_ring_elements12.snd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)7U, (size_t)5U,
-                                           four_ring_elements12.thd);
-  libcrux_ml_dsa_samplex4_update_matrix_fe(A, (size_t)7U, (size_t)6U,
-                                           four_ring_elements12.f3);
-  memcpy(ret, A,
-         (size_t)6U *
-             sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24[5U]));
-}
-
-/**
-A monomorphic instance of libcrux_ml_dsa.samplex4.matrix_A
-with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit
-with const generics
-- ROWS_IN_A= 6
-- COLUMNS_IN_A= 5
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_A_fe(
+static inline void libcrux_ml_dsa_samplex4_avx2_matrix_A_avx2_fe(
     uint8_t seed[34U],
     libcrux_ml_dsa_polynomial_PolynomialRingElement_24 ret[6U][5U]) {
   uint8_t_x2 uu____0 = {.fst = (uint8_t)(size_t)6U, .snd = (uint8_t)(size_t)5U};
   switch (uu____0.fst) {
-    case 4U: {
-      switch (uu____0.snd) {
-        case 4U: {
-          /* Passing arrays by value in Rust generates a copy in C */
-          uint8_t copy_of_seed[34U];
-          memcpy(copy_of_seed, seed, (size_t)34U * sizeof(uint8_t));
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_24 ret0[6U][5U];
-          libcrux_ml_dsa_samplex4_matrix_A_4_by_4_fe(copy_of_seed, ret0);
-          memcpy(
-              ret, ret0,
-              (size_t)6U *
-                  sizeof(
-                      libcrux_ml_dsa_polynomial_PolynomialRingElement_24[5U]));
-          return;
-        }
-        default: {
-        }
-      }
-      break;
-    }
     case 6U: {
       switch (uu____0.snd) {
         case 5U: {
@@ -4169,27 +5239,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_A_fe(
           uint8_t copy_of_seed[34U];
           memcpy(copy_of_seed, seed, (size_t)34U * sizeof(uint8_t));
           libcrux_ml_dsa_polynomial_PolynomialRingElement_24 ret0[6U][5U];
-          libcrux_ml_dsa_samplex4_matrix_A_6_by_5_fe(copy_of_seed, ret0);
-          memcpy(
-              ret, ret0,
-              (size_t)6U *
-                  sizeof(
-                      libcrux_ml_dsa_polynomial_PolynomialRingElement_24[5U]));
-          return;
-        }
-        default: {
-        }
-      }
-      break;
-    }
-    case 8U: {
-      switch (uu____0.snd) {
-        case 7U: {
-          /* Passing arrays by value in Rust generates a copy in C */
-          uint8_t copy_of_seed[34U];
-          memcpy(copy_of_seed, seed, (size_t)34U * sizeof(uint8_t));
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_24 ret0[6U][5U];
-          libcrux_ml_dsa_samplex4_matrix_A_8_by_7_fe(copy_of_seed, ret0);
+          libcrux_ml_dsa_samplex4_matrix_A_6_by_5_f4(copy_of_seed, ret0);
           memcpy(
               ret, ret0,
               (size_t)6U *
@@ -4211,6 +5261,31 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_A_fe(
 }
 
 /**
+This function found in impl {(libcrux_ml_dsa::samplex4::X4Sampler for
+libcrux_ml_dsa::samplex4::avx2::AVX2Sampler)}
+*/
+/**
+A monomorphic instance of libcrux_ml_dsa.samplex4.avx2.matrix_A_b8
+with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit
+with const generics
+- ROWS_IN_A= 6
+- COLUMNS_IN_A= 5
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_avx2_matrix_A_b8_fe(
+    uint8_t seed[34U],
+    libcrux_ml_dsa_polynomial_PolynomialRingElement_24 ret[6U][5U]) {
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_seed[34U];
+  memcpy(copy_of_seed, seed, (size_t)34U * sizeof(uint8_t));
+  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 ret0[6U][5U];
+  libcrux_ml_dsa_samplex4_avx2_matrix_A_avx2_fe(copy_of_seed, ret0);
+  memcpy(ret, ret0,
+         (size_t)6U *
+             sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24[5U]));
+}
+
+/**
 A monomorphic instance of K.
 with types libcrux_ml_dsa_polynomial_PolynomialRingElement
 libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit[5size_t],
@@ -4222,6 +5297,14 @@ typedef struct tuple_ce0_s {
   libcrux_ml_dsa_polynomial_PolynomialRingElement_24 fst[5U];
   libcrux_ml_dsa_polynomial_PolynomialRingElement_24 snd[6U];
 } tuple_ce0;
+
+typedef struct
+    libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4_s {
+  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 fst;
+  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 snd;
+  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 thd;
+  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 f3;
+} libcrux_ml_dsa_polynomial_PolynomialRingElement_libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit_x4;
 
 /**
 A monomorphic instance of
@@ -4303,6 +5386,35 @@ libcrux_ml_dsa_sample_rejection_sample_less_than_eta_4d(
     Eurydice_slice randomness, size_t *sampled, int32_t *out) {
   return libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_4_ea(
       randomness, sampled, out);
+}
+
+/**
+This function found in impl
+{libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[TraitClause@0,
+TraitClause@1]}
+*/
+/**
+A monomorphic instance of libcrux_ml_dsa.polynomial.from_i32_array_ff
+with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit
+with const generics
+
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline libcrux_ml_dsa_polynomial_PolynomialRingElement_24
+libcrux_ml_dsa_polynomial_from_i32_array_ff_ea(Eurydice_slice array) {
+  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 result =
+      libcrux_ml_dsa_polynomial_ZERO_ff_ea();
+  for (size_t i = (size_t)0U;
+       i < LIBCRUX_ML_DSA_SIMD_TRAITS_SIMD_UNITS_IN_RING_ELEMENT; i++) {
+    size_t i0 = i;
+    result.simd_units[i0] = libcrux_ml_dsa_simd_avx2_from_coefficient_array_a2(
+        Eurydice_slice_subslice2(
+            array, i0 * LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT,
+            (i0 + (size_t)1U) *
+                LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT,
+            int32_t));
+  }
+  return result;
 }
 
 /**
@@ -5134,6 +6246,7 @@ libcrux_ml_dsa_encoding_signing_key_generate_serialized_a9(
 /**
 A monomorphic instance of libcrux_ml_dsa.ml_dsa_generic.generate_key_pair
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
+libcrux_ml_dsa_samplex4_avx2_AVX2Sampler,
 libcrux_ml_dsa_hash_functions_simd256_Shake128x4,
 libcrux_ml_dsa_hash_functions_simd256_Shake256,
 libcrux_ml_dsa_hash_functions_portable_Shake256Xof,
@@ -5147,7 +6260,7 @@ libcrux_ml_dsa_hash_functions_simd256_Shake256x4 with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE tuple_a0
-libcrux_ml_dsa_ml_dsa_generic_generate_key_pair_bc(uint8_t randomness[32U]) {
+libcrux_ml_dsa_ml_dsa_generic_generate_key_pair_90(uint8_t randomness[32U]) {
   uint8_t seed_expanded0[128U] = {0U};
   libcrux_sha3_portable_incremental_Shake256Xof shake =
       libcrux_ml_dsa_hash_functions_portable_init_83();
@@ -5172,7 +6285,7 @@ libcrux_ml_dsa_ml_dsa_generic_generate_key_pair_bc(uint8_t randomness[32U]) {
   libcrux_ml_dsa_polynomial_PolynomialRingElement_24 a_as_ntt[6U][5U];
   uint8_t ret[34U];
   libcrux_ml_dsa_utils_into_padded_array_b6(seed_for_a, ret);
-  libcrux_ml_dsa_samplex4_matrix_A_fe(ret, a_as_ntt);
+  libcrux_ml_dsa_samplex4_avx2_matrix_A_b8_fe(ret, a_as_ntt);
   uint8_t ret0[66U];
   libcrux_ml_dsa_utils_into_padded_array_20(seed_for_error_vectors, ret0);
   tuple_ce0 uu____2 = libcrux_ml_dsa_samplex4_sample_s1_and_s2_4d(ret0);
@@ -5270,7 +6383,7 @@ libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_avx2_feature_generate_key_pair
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_dsa_ml_dsa_generic_generate_key_pair_bc(copy_of_randomness);
+  return libcrux_ml_dsa_ml_dsa_generic_generate_key_pair_90(copy_of_randomness);
 }
 
 /**
@@ -5646,7 +6759,7 @@ libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit[5size_t]
 
 */
 typedef struct Option_a4_s {
-  Option_d8_tags tag;
+  Option_08_tags tag;
   libcrux_ml_dsa_polynomial_PolynomialRingElement_24 f0[5U];
 } Option_a4;
 
@@ -6806,6 +7919,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_signature_serialize_92_cc(
 /**
 A monomorphic instance of libcrux_ml_dsa.ml_dsa_generic.sign_internal
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
+libcrux_ml_dsa_samplex4_avx2_AVX2Sampler,
 libcrux_ml_dsa_hash_functions_simd256_Shake128x4,
 libcrux_ml_dsa_hash_functions_simd256_Shake256,
 libcrux_ml_dsa_hash_functions_portable_Shake256Xof,
@@ -6826,7 +7940,7 @@ libcrux_ml_dsa_hash_functions_simd256_Shake256x4 with const generics
 - SIGNATURE_SIZE= 3309
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE Result_2e libcrux_ml_dsa_ml_dsa_generic_sign_internal_ea(
+static KRML_MUSTINLINE Result_2e libcrux_ml_dsa_ml_dsa_generic_sign_internal_6b(
     uint8_t *signing_key, Eurydice_slice message,
     Option_84 domain_separation_context, uint8_t randomness[32U]) {
   tuple_f00 uu____0 =
@@ -6853,7 +7967,7 @@ static KRML_MUSTINLINE Result_2e libcrux_ml_dsa_ml_dsa_generic_sign_internal_ea(
   uint8_t ret[34U];
   libcrux_ml_dsa_utils_into_padded_array_b6(
       Eurydice_array_to_slice((size_t)32U, seed_for_A, uint8_t), ret);
-  libcrux_ml_dsa_samplex4_matrix_A_fe(ret, A_as_ntt);
+  libcrux_ml_dsa_samplex4_avx2_matrix_A_b8_fe(ret, A_as_ntt);
   uint8_t message_representative[64U] = {0U};
   uint8_t uu____1[64U];
   memcpy(uu____1, verification_key_hash, (size_t)64U * sizeof(uint8_t));
@@ -7122,6 +8236,7 @@ static KRML_MUSTINLINE Result_2e libcrux_ml_dsa_ml_dsa_generic_sign_internal_ea(
 /**
 A monomorphic instance of libcrux_ml_dsa.ml_dsa_generic.sign
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
+libcrux_ml_dsa_samplex4_avx2_AVX2Sampler,
 libcrux_ml_dsa_hash_functions_simd256_Shake128x4,
 libcrux_ml_dsa_hash_functions_simd256_Shake256,
 libcrux_ml_dsa_hash_functions_portable_Shake256Xof,
@@ -7142,7 +8257,7 @@ libcrux_ml_dsa_hash_functions_simd256_Shake256x4 with const generics
 - SIGNATURE_SIZE= 3309
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE Result_2e libcrux_ml_dsa_ml_dsa_generic_sign_ea(
+static KRML_MUSTINLINE Result_2e libcrux_ml_dsa_ml_dsa_generic_sign_6b(
     uint8_t *signing_key, Eurydice_slice message, Eurydice_slice context,
     uint8_t randomness[32U]) {
   Result_a8 uu____0 = libcrux_ml_dsa_pre_hash_new_45(
@@ -7158,7 +8273,7 @@ static KRML_MUSTINLINE Result_2e libcrux_ml_dsa_ml_dsa_generic_sign_ea(
     /* Passing arrays by value in Rust generates a copy in C */
     uint8_t copy_of_randomness[32U];
     memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-    uu____1 = libcrux_ml_dsa_ml_dsa_generic_sign_internal_ea(
+    uu____1 = libcrux_ml_dsa_ml_dsa_generic_sign_internal_6b(
         uu____2, uu____3, uu____4, copy_of_randomness);
   } else {
     uu____1 = (CLITERAL(Result_2e){
@@ -7201,7 +8316,7 @@ libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_avx2_feature_sign_f3(
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_dsa_ml_dsa_generic_sign_ea(uu____0, uu____1, uu____2,
+  return libcrux_ml_dsa_ml_dsa_generic_sign_6b(uu____0, uu____1, uu____2,
                                                copy_of_randomness);
 }
 
@@ -7252,7 +8367,7 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline Result_2e libcrux_ml_dsa_ml_dsa_65_avx2_sign(
     libcrux_ml_dsa_types_MLDSASigningKey_22 *signing_key,
     Eurydice_slice message, Eurydice_slice context, uint8_t randomness[32U]) {
-  uint8_t *uu____0 = libcrux_ml_dsa_types_as_raw_9b_09(signing_key);
+  uint8_t *uu____0 = libcrux_ml_dsa_types_as_ref_9b_09(signing_key);
   Eurydice_slice uu____1 = message;
   Eurydice_slice uu____2 = context;
   /* Passing arrays by value in Rust generates a copy in C */
@@ -7265,6 +8380,7 @@ static inline Result_2e libcrux_ml_dsa_ml_dsa_65_avx2_sign(
 /**
 A monomorphic instance of libcrux_ml_dsa.ml_dsa_generic.sign_pre_hashed
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
+libcrux_ml_dsa_samplex4_avx2_AVX2Sampler,
 libcrux_ml_dsa_hash_functions_portable_Shake128,
 libcrux_ml_dsa_hash_functions_simd256_Shake128x4,
 libcrux_ml_dsa_hash_functions_simd256_Shake256,
@@ -7289,7 +8405,7 @@ libcrux_ml_dsa_pre_hash_SHAKE128_PH with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE Result_2e
-libcrux_ml_dsa_ml_dsa_generic_sign_pre_hashed_6e(uint8_t *signing_key,
+libcrux_ml_dsa_ml_dsa_generic_sign_pre_hashed_b7(uint8_t *signing_key,
                                                  Eurydice_slice message,
                                                  Eurydice_slice context,
                                                  uint8_t randomness[32U]) {
@@ -7320,7 +8436,7 @@ libcrux_ml_dsa_ml_dsa_generic_sign_pre_hashed_6e(uint8_t *signing_key,
       /* Passing arrays by value in Rust generates a copy in C */
       uint8_t copy_of_randomness[32U];
       memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-      uu____0 = libcrux_ml_dsa_ml_dsa_generic_sign_internal_ea(
+      uu____0 = libcrux_ml_dsa_ml_dsa_generic_sign_internal_6b(
           uu____3, uu____4, uu____5, copy_of_randomness);
     } else {
       uu____0 = (CLITERAL(Result_2e){
@@ -7364,7 +8480,7 @@ libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_avx2_feature_sign_pre_hashed_s
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_dsa_ml_dsa_generic_sign_pre_hashed_6e(
+  return libcrux_ml_dsa_ml_dsa_generic_sign_pre_hashed_b7(
       uu____0, uu____1, uu____2, copy_of_randomness);
 }
 
@@ -7416,7 +8532,7 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline Result_2e libcrux_ml_dsa_ml_dsa_65_avx2_sign_pre_hashed_shake128(
     libcrux_ml_dsa_types_MLDSASigningKey_22 *signing_key,
     Eurydice_slice message, Eurydice_slice context, uint8_t randomness[32U]) {
-  uint8_t *uu____0 = libcrux_ml_dsa_types_as_raw_9b_09(signing_key);
+  uint8_t *uu____0 = libcrux_ml_dsa_types_as_ref_9b_09(signing_key);
   Eurydice_slice uu____1 = message;
   Eurydice_slice uu____2 = context;
   /* Passing arrays by value in Rust generates a copy in C */
@@ -8000,6 +9116,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_arithmetic_use_hint_fe(
 /**
 A monomorphic instance of libcrux_ml_dsa.ml_dsa_generic.verify_internal
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
+libcrux_ml_dsa_samplex4_avx2_AVX2Sampler,
 libcrux_ml_dsa_hash_functions_simd256_Shake128x4,
 libcrux_ml_dsa_hash_functions_simd256_Shake256,
 libcrux_ml_dsa_hash_functions_portable_Shake256Xof with const generics
@@ -8019,7 +9136,7 @@ libcrux_ml_dsa_hash_functions_portable_Shake256Xof with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE Result_41
-libcrux_ml_dsa_ml_dsa_generic_verify_internal_d1(
+libcrux_ml_dsa_ml_dsa_generic_verify_internal_44(
     uint8_t *verification_key_serialized, Eurydice_slice message,
     Option_84 domain_separation_context, uint8_t *signature_serialized) {
   tuple_930 uu____0 = libcrux_ml_dsa_encoding_verification_key_deserialize_fe(
@@ -8050,7 +9167,7 @@ libcrux_ml_dsa_ml_dsa_generic_verify_internal_d1(
       uint8_t ret[34U];
       libcrux_ml_dsa_utils_into_padded_array_b6(
           Eurydice_array_to_slice((size_t)32U, seed_for_A, uint8_t), ret);
-      libcrux_ml_dsa_samplex4_matrix_A_fe(ret, A_as_ntt);
+      libcrux_ml_dsa_samplex4_avx2_matrix_A_b8_fe(ret, A_as_ntt);
       uint8_t verification_key_hash[64U] = {0U};
       libcrux_ml_dsa_hash_functions_simd256_shake256_d9_24(
           Eurydice_array_to_slice((size_t)1952U, verification_key_serialized,
@@ -8132,6 +9249,7 @@ libcrux_ml_dsa_ml_dsa_generic_verify_internal_d1(
 /**
 A monomorphic instance of libcrux_ml_dsa.ml_dsa_generic.verify
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
+libcrux_ml_dsa_samplex4_avx2_AVX2Sampler,
 libcrux_ml_dsa_hash_functions_simd256_Shake128x4,
 libcrux_ml_dsa_hash_functions_simd256_Shake256,
 libcrux_ml_dsa_hash_functions_portable_Shake256Xof with const generics
@@ -8150,7 +9268,7 @@ libcrux_ml_dsa_hash_functions_portable_Shake256Xof with const generics
 - MAX_ONES_IN_HINT= 55
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE Result_41 libcrux_ml_dsa_ml_dsa_generic_verify_d1(
+static KRML_MUSTINLINE Result_41 libcrux_ml_dsa_ml_dsa_generic_verify_44(
     uint8_t *verification_key_serialized, Eurydice_slice message,
     Eurydice_slice context, uint8_t *signature_serialized) {
   Result_a8 uu____0 = libcrux_ml_dsa_pre_hash_new_45(
@@ -8160,7 +9278,7 @@ static KRML_MUSTINLINE Result_41 libcrux_ml_dsa_ml_dsa_generic_verify_d1(
     libcrux_ml_dsa_pre_hash_DomainSeparationContext dsc = uu____0.val.case_Ok;
     libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context =
         dsc;
-    uu____1 = libcrux_ml_dsa_ml_dsa_generic_verify_internal_d1(
+    uu____1 = libcrux_ml_dsa_ml_dsa_generic_verify_internal_44(
         verification_key_serialized, message,
         (CLITERAL(Option_84){.tag = Some, .f0 = domain_separation_context}),
         signature_serialized);
@@ -8198,7 +9316,7 @@ static inline Result_41
 libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_avx2_feature_verify_01(
     uint8_t *verification_key, Eurydice_slice message, Eurydice_slice context,
     uint8_t *signature) {
-  return libcrux_ml_dsa_ml_dsa_generic_verify_d1(verification_key, message,
+  return libcrux_ml_dsa_ml_dsa_generic_verify_44(verification_key, message,
                                                  context, signature);
 }
 
@@ -8244,13 +9362,14 @@ static inline Result_41 libcrux_ml_dsa_ml_dsa_65_avx2_verify(
     Eurydice_slice message, Eurydice_slice context,
     libcrux_ml_dsa_ml_dsa_65_MLDSA65Signature *signature) {
   return libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_verify_01(
-      libcrux_ml_dsa_types_as_raw_66_97(verification_key), message, context,
-      libcrux_ml_dsa_types_as_raw_8f_fa(signature));
+      libcrux_ml_dsa_types_as_ref_66_97(verification_key), message, context,
+      libcrux_ml_dsa_types_as_ref_8f_fa(signature));
 }
 
 /**
 A monomorphic instance of libcrux_ml_dsa.ml_dsa_generic.verify_pre_hashed
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
+libcrux_ml_dsa_samplex4_avx2_AVX2Sampler,
 libcrux_ml_dsa_hash_functions_portable_Shake128,
 libcrux_ml_dsa_hash_functions_simd256_Shake128x4,
 libcrux_ml_dsa_hash_functions_simd256_Shake256,
@@ -8273,7 +9392,7 @@ libcrux_ml_dsa_pre_hash_SHAKE128_PH with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE Result_41
-libcrux_ml_dsa_ml_dsa_generic_verify_pre_hashed_07(
+libcrux_ml_dsa_ml_dsa_generic_verify_pre_hashed_f8(
     uint8_t *verification_key_serialized, Eurydice_slice message,
     Eurydice_slice context, uint8_t *signature_serialized) {
   uint8_t pre_hashed_message[256U];
@@ -8290,7 +9409,7 @@ libcrux_ml_dsa_ml_dsa_generic_verify_pre_hashed_07(
     libcrux_ml_dsa_pre_hash_DomainSeparationContext dsc = uu____1.val.case_Ok;
     libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context =
         dsc;
-    uu____2 = libcrux_ml_dsa_ml_dsa_generic_verify_internal_d1(
+    uu____2 = libcrux_ml_dsa_ml_dsa_generic_verify_internal_44(
         verification_key_serialized,
         Eurydice_array_to_slice((size_t)256U, pre_hashed_message, uint8_t),
         (CLITERAL(Option_84){.tag = Some, .f0 = domain_separation_context}),
@@ -8329,7 +9448,7 @@ static inline Result_41
 libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_avx2_feature_verify_pre_hashed_shake128_01(
     uint8_t *verification_key, Eurydice_slice message, Eurydice_slice context,
     uint8_t *signature) {
-  return libcrux_ml_dsa_ml_dsa_generic_verify_pre_hashed_07(
+  return libcrux_ml_dsa_ml_dsa_generic_verify_pre_hashed_f8(
       verification_key, message, context, signature);
 }
 
@@ -8377,8 +9496,8 @@ libcrux_ml_dsa_ml_dsa_65_avx2_verify_pre_hashed_shake128(
     Eurydice_slice message, Eurydice_slice context,
     libcrux_ml_dsa_ml_dsa_65_MLDSA65Signature *signature) {
   return libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_verify_pre_hashed_shake128_01(
-      libcrux_ml_dsa_types_as_raw_66_97(verification_key), message, context,
-      libcrux_ml_dsa_types_as_raw_8f_fa(signature));
+      libcrux_ml_dsa_types_as_ref_66_97(verification_key), message, context,
+      libcrux_ml_dsa_types_as_ref_8f_fa(signature));
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
