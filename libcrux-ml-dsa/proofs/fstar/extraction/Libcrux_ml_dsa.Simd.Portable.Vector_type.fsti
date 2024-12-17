@@ -11,4 +11,10 @@ val from_coefficient_array (array: t_Slice i32)
 val to_coefficient_array (x: t_PortableSIMDUnit)
     : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl:Core.Clone.t_Clone t_PortableSIMDUnit
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_1:Core.Marker.t_Copy t_PortableSIMDUnit
+
 val v_ZERO: Prims.unit -> Prims.Pure t_PortableSIMDUnit Prims.l_True (fun _ -> Prims.l_True)

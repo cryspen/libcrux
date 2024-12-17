@@ -1,5 +1,5 @@
 module Libcrux_platform.X86
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
 
@@ -37,6 +37,12 @@ type t_Feature =
   | Feature_avx512vl : t_Feature
 
 val t_Feature_cast_to_repr (x: t_Feature) : Prims.Pure isize Prims.l_True (fun _ -> Prims.l_True)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl:Core.Clone.t_Clone t_Feature
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_1:Core.Marker.t_Copy t_Feature
 
 /// Initialize CPU detection.
 val init: Prims.unit -> Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)

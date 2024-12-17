@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: 7d686376ec943225ff89942978c6c3028bac689c
+ * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
- * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 9f923062eac13378f38581b2713046191d4ae7ad
+ * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
+ * Libcrux: da72c141597b1db012f3bc23a96330f6de112770
  */
 
 #ifndef __libcrux_ct_ops_H
@@ -26,12 +26,9 @@ extern "C" {
 */
 static inline uint8_t libcrux_ml_kem_constant_time_ops_inz(uint8_t value) {
   uint16_t value0 = (uint16_t)value;
-  uint16_t result = (((uint32_t)value0 |
-                      (uint32_t)core_num__u16_7__wrapping_add(~value0, 1U)) &
-                     0xFFFFU) >>
-                        8U &
-                    1U;
-  return (uint8_t)result;
+  uint8_t result =
+      (uint8_t)((uint32_t)core_num__u16_7__wrapping_add(~value0, 1U) >> 8U);
+  return (uint32_t)result & 1U;
 }
 
 static KRML_NOINLINE uint8_t
@@ -48,9 +45,10 @@ static inline uint8_t libcrux_ml_kem_constant_time_ops_compare(
   uint8_t r = 0U;
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(lhs, uint8_t); i++) {
     size_t i0 = i;
-    r = (uint32_t)r |
-        ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *) ^
-         (uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *));
+    uint8_t nr = (uint32_t)r |
+                 ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *) ^
+                  (uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *));
+    r = nr;
   }
   return libcrux_ml_kem_constant_time_ops_is_non_zero(r);
 }
@@ -74,10 +72,12 @@ static inline void libcrux_ml_kem_constant_time_ops_select_ct(
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE;
        i++) {
     size_t i0 = i;
-    out[i0] = ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *) &
-               (uint32_t)mask) |
-              ((uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *) &
-               (uint32_t)~mask);
+    uint8_t outi =
+        ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *) &
+         (uint32_t)mask) |
+        ((uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *) &
+         (uint32_t)~mask);
+    out[i0] = outi;
   }
   memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }

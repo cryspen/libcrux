@@ -23,7 +23,7 @@ clean=0
 config=c.yaml
 out=c
 glue=$EURYDICE_HOME/include/eurydice_glue.h
-features="--cargo-arg=--features=pre-verification"
+features=""
 eurydice_glue=1
 karamel_include=1
 unrolling=16

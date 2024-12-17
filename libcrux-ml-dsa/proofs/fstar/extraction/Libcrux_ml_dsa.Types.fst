@@ -36,6 +36,36 @@ let t_VerificationError_cast_to_repr (x: t_VerificationError) =
   | VerificationError_CommitmentHashesDontMatchError  -> isz 3
   | VerificationError_VerificationContextTooLongError  -> isz 6
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_1': v_SIZE: usize -> Core.Clone.t_Clone (t_MLDSASigningKey v_SIZE)
+
+let impl_1 (v_SIZE: usize) = impl_1' v_SIZE
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_3': v_SIZE: usize -> Core.Clone.t_Clone (t_MLDSAVerificationKey v_SIZE)
+
+let impl_3 (v_SIZE: usize) = impl_3' v_SIZE
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_5': v_SIZE: usize -> Core.Clone.t_Clone (t_MLDSASignature v_SIZE)
+
+let impl_5 (v_SIZE: usize) = impl_5' v_SIZE
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_6': Core.Fmt.t_Debug t_VerificationError
+
+let impl_6 = impl_6'
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_7': Core.Fmt.t_Debug t_SigningError
+
+let impl_7 = impl_7'
+
 let impl__as_slice (v_SIZE: usize) (self: t_MLDSASigningKey v_SIZE) = self.f_value <: t_Slice u8
 
 let impl_2__as_slice (v_SIZE: usize) (self: t_MLDSAVerificationKey v_SIZE) =

@@ -69,6 +69,21 @@ type t_VerificationError =
 val t_VerificationError_cast_to_repr (x: t_VerificationError)
     : Prims.Pure isize Prims.l_True (fun _ -> Prims.l_True)
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_1 (v_SIZE: usize) : Core.Clone.t_Clone (t_MLDSASigningKey v_SIZE)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_3 (v_SIZE: usize) : Core.Clone.t_Clone (t_MLDSAVerificationKey v_SIZE)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_5 (v_SIZE: usize) : Core.Clone.t_Clone (t_MLDSASignature v_SIZE)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_6:Core.Fmt.t_Debug t_VerificationError
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_7:Core.Fmt.t_Debug t_SigningError
+
 /// A reference to the raw byte slice.
 val impl__as_slice (v_SIZE: usize) (self: t_MLDSASigningKey v_SIZE)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)

@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: 7d686376ec943225ff89942978c6c3028bac689c
+ * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
- * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 9f923062eac13378f38581b2713046191d4ae7ad
+ * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
+ * Libcrux: da72c141597b1db012f3bc23a96330f6de112770
  */
 
 #ifndef __internal_libcrux_mlkem_avx2_H
@@ -101,7 +101,7 @@ with const generics
 - CPA_PRIVATE_KEY_SIZE= 1152
 - PRIVATE_KEY_SIZE= 2400
 - PUBLIC_KEY_SIZE= 1184
-- BYTES_PER_RING_ELEMENT= 1152
+- RANKED_BYTES_PER_RING_ELEMENT= 1152
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
@@ -121,7 +121,7 @@ with const generics
 - C2_SIZE= 128
 - VECTOR_U_COMPRESSION_FACTOR= 10
 - VECTOR_V_COMPRESSION_FACTOR= 4
-- VECTOR_U_BLOCK_LEN= 320
+- C1_BLOCK_SIZE= 320
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 - ETA2= 2
@@ -131,6 +131,9 @@ tuple_c2 libcrux_ml_kem_ind_cca_encapsulate_701(
     libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
     uint8_t randomness[32U]);
 
+/**
+ This code verifies on some machines, runs out of memory on others
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
@@ -225,7 +228,7 @@ with const generics
 - CPA_PRIVATE_KEY_SIZE= 1536
 - PRIVATE_KEY_SIZE= 3168
 - PUBLIC_KEY_SIZE= 1568
-- BYTES_PER_RING_ELEMENT= 1536
+- RANKED_BYTES_PER_RING_ELEMENT= 1536
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
@@ -245,7 +248,7 @@ with const generics
 - C2_SIZE= 160
 - VECTOR_U_COMPRESSION_FACTOR= 11
 - VECTOR_V_COMPRESSION_FACTOR= 5
-- VECTOR_U_BLOCK_LEN= 352
+- C1_BLOCK_SIZE= 352
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 - ETA2= 2
@@ -255,6 +258,9 @@ tuple_fa libcrux_ml_kem_ind_cca_encapsulate_700(
     libcrux_ml_kem_types_MlKemPublicKey_64 *public_key,
     uint8_t randomness[32U]);
 
+/**
+ This code verifies on some machines, runs out of memory on others
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
@@ -349,7 +355,7 @@ with const generics
 - CPA_PRIVATE_KEY_SIZE= 768
 - PRIVATE_KEY_SIZE= 1632
 - PUBLIC_KEY_SIZE= 800
-- BYTES_PER_RING_ELEMENT= 768
+- RANKED_BYTES_PER_RING_ELEMENT= 768
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
@@ -369,7 +375,7 @@ with const generics
 - C2_SIZE= 128
 - VECTOR_U_COMPRESSION_FACTOR= 10
 - VECTOR_V_COMPRESSION_FACTOR= 4
-- VECTOR_U_BLOCK_LEN= 320
+- C1_BLOCK_SIZE= 320
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 - ETA2= 2
@@ -379,6 +385,9 @@ tuple_41 libcrux_ml_kem_ind_cca_encapsulate_70(
     libcrux_ml_kem_types_MlKemPublicKey_52 *public_key,
     uint8_t randomness[32U]);
 
+/**
+ This code verifies on some machines, runs out of memory on others
+*/
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector,

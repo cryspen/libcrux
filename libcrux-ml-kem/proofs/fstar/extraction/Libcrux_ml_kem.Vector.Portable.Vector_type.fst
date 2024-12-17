@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Vector.Portable.Vector_type
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -24,6 +24,18 @@ let from_i16_array (array: t_Slice i16) =
   t_PortableVector
 
 let to_i16_array (x: t_PortableVector) = x.f_elements
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl': Core.Clone.t_Clone t_PortableVector
+
+let impl = impl'
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_1': Core.Marker.t_Copy t_PortableVector
+
+let impl_1 = impl_1'
 
 let zero (_: Prims.unit) =
   { f_elements = Rust_primitives.Hax.repeat 0s (sz 16) } <: t_PortableVector

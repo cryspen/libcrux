@@ -85,18 +85,20 @@ class extractAction(argparse.Action):
             "+:libcrux_ml_kem::hash_functions::*::*",
         ]
         include_str = " ".join(includes)
-        interface_include = "+**"
+        interface_include = "+** -libcrux_ml_kem::types"
         cargo_hax_into = [
             "cargo",
             "hax",
             "-C",
             "--features",
-            "simd128,simd256,pre-verification",
+            "simd128,simd256",
             ";",
             "into",
             "-i",
             include_str,
             "fstar",
+            "--z3rlimit",
+            "80",
             "--interfaces",
             interface_include,
         ]
