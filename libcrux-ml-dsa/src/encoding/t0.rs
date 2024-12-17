@@ -46,8 +46,10 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations, const DIMENSI
     cloop! {
         for (i, bytes) in serialized.chunks_exact(RING_ELEMENT_OF_T0S_SIZE).enumerate() {
             deserialize::<SIMDUnit>(bytes, &mut ring_elements[i]);
-            ring_elements[i] = ntt(ring_elements[i]);
         }
+    }
+    for i in 0..ring_elements.len() {
+        ring_elements[i] = ntt(ring_elements[i]);
     }
 
     ring_elements
