@@ -38,7 +38,6 @@ let invert_ntt_at_layer_1_
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (v__layer: usize)
      =
   let _:Prims.unit = reveal_opaque (`%invert_ntt_re_range_1) (invert_ntt_re_range_1 #v_Vector) in
   let _:Prims.unit = reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #v_Vector) in
@@ -120,7 +119,6 @@ let invert_ntt_at_layer_2_
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (v__layer: usize)
      =
   let _:Prims.unit = reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #v_Vector) in
   let v__zeta_i_init:usize = zeta_i in
@@ -199,7 +197,6 @@ let invert_ntt_at_layer_3_
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (v__layer: usize)
      =
   let _:Prims.unit = reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #v_Vector) in
   let v__zeta_i_init:usize = zeta_i in
@@ -364,19 +361,19 @@ let invert_ntt_montgomery
      =
   let zeta_i:usize = Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! sz 2 in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    invert_ntt_at_layer_1_ #v_Vector zeta_i re (sz 1)
+    invert_ntt_at_layer_1_ #v_Vector zeta_i re
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    invert_ntt_at_layer_2_ #v_Vector zeta_i re (sz 2)
+    invert_ntt_at_layer_2_ #v_Vector zeta_i re
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
   let tmp0, tmp1:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    invert_ntt_at_layer_3_ #v_Vector zeta_i re (sz 3)
+    invert_ntt_at_layer_3_ #v_Vector zeta_i re
   in
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in

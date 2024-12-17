@@ -31,7 +31,6 @@ use crate::{
 pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
-    _layer: usize,
 ) {
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_1) (invert_ntt_re_range_1 #$:Vector)"#);
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)"#);
@@ -85,7 +84,6 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
 pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
-    _layer: usize,
 ) {
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)"#);
     let _zeta_i_init = *zeta_i;
@@ -133,7 +131,6 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
 pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
-    _layer: usize,
 ) {
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)"#);
     let _zeta_i_init = *zeta_i;
@@ -238,9 +235,9 @@ pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
 
     let mut zeta_i = super::constants::COEFFICIENTS_IN_RING_ELEMENT / 2;
 
-    invert_ntt_at_layer_1(&mut zeta_i, re, 1);
-    invert_ntt_at_layer_2(&mut zeta_i, re, 2);
-    invert_ntt_at_layer_3(&mut zeta_i, re, 3);
+    invert_ntt_at_layer_1(&mut zeta_i, re);
+    invert_ntt_at_layer_2(&mut zeta_i, re);
+    invert_ntt_at_layer_3(&mut zeta_i, re);
     invert_ntt_at_layer_4_plus(&mut zeta_i, re, 4);
     invert_ntt_at_layer_4_plus(&mut zeta_i, re, 5);
     invert_ntt_at_layer_4_plus(&mut zeta_i, re, 6);

@@ -50,7 +50,6 @@ val invert_ntt_at_layer_1_
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (v__layer: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires v zeta_i == 128 /\ invert_ntt_re_range_1 re)
       (ensures
@@ -66,7 +65,6 @@ val invert_ntt_at_layer_2_
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (v__layer: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires v zeta_i == 64 /\ invert_ntt_re_range_2 re)
       (ensures
@@ -82,7 +80,6 @@ val invert_ntt_at_layer_3_
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (v__layer: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires v zeta_i == 32 /\ invert_ntt_re_range_2 re)
       (ensures

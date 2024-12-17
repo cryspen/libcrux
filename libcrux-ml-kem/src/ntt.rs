@@ -31,8 +31,7 @@ use crate::{
 pub(crate) fn ntt_at_layer_1<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
-    _layer: usize,
-    _initial_coefficient_bound: usize,
+    _initial_coefficient_bound: usize, // This can be used for specifying the range of values allowed in re
 ) {
     hax_lib::fstar!(r#"reveal_opaque (`%ntt_re_range_2) (ntt_re_range_2 #$:Vector)"#);
     hax_lib::fstar!(r#"reveal_opaque (`%ntt_re_range_1) (ntt_re_range_1 #$:Vector)"#);
@@ -95,8 +94,7 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
 pub(crate) fn ntt_at_layer_2<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
-    _layer: usize,
-    _initial_coefficient_bound: usize,
+    _initial_coefficient_bound: usize, // This can be used for specifying the range of values allowed in re
 ) {
     hax_lib::fstar!(r#"reveal_opaque (`%ntt_re_range_3) (ntt_re_range_3 #$:Vector)"#);
     hax_lib::fstar!(r#"reveal_opaque (`%ntt_re_range_2) (ntt_re_range_2 #$:Vector)"#);
@@ -154,8 +152,7 @@ pub(crate) fn ntt_at_layer_2<Vector: Operations>(
 pub(crate) fn ntt_at_layer_3<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
-    _layer: usize,
-    _initial_coefficient_bound: usize,
+    _initial_coefficient_bound: usize, // This can be used for specifying the range of values allowed in re
 ) {
     hax_lib::fstar!(r#"reveal_opaque (`%ntt_re_range_4) (ntt_re_range_4 #$:Vector)"#);
     hax_lib::fstar!(r#"reveal_opaque (`%ntt_re_range_3) (ntt_re_range_3 #$:Vector)"#);
@@ -231,7 +228,7 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     layer: usize,
-    _initial_coefficient_bound: usize,
+    _initial_coefficient_bound: usize, // This can be used for specifying the range of values allowed in re
 ) {
     let step = 1 << layer;
 
@@ -322,9 +319,9 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     ntt_at_layer_4_plus(&mut zeta_i, re, 6, 11207);
     ntt_at_layer_4_plus(&mut zeta_i, re, 5, 11207 + 3328);
     ntt_at_layer_4_plus(&mut zeta_i, re, 4, 11207 + 2 * 3328);
-    ntt_at_layer_3(&mut zeta_i, re, 3, 11207 + 3 * 3328);
-    ntt_at_layer_2(&mut zeta_i, re, 2, 11207 + 4 * 3328);
-    ntt_at_layer_1(&mut zeta_i, re, 1, 11207 + 5 * 3328);
+    ntt_at_layer_3(&mut zeta_i, re, 11207 + 3 * 3328);
+    ntt_at_layer_2(&mut zeta_i, re, 11207 + 4 * 3328);
+    ntt_at_layer_1(&mut zeta_i, re, 11207 + 5 * 3328);
 
     re.poly_barrett_reduce()
 }
@@ -347,9 +344,9 @@ pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize, Vector: Ope
     ntt_at_layer_4_plus(&mut zeta_i, re, 6, 2 * 3328);
     ntt_at_layer_4_plus(&mut zeta_i, re, 5, 3 * 3328);
     ntt_at_layer_4_plus(&mut zeta_i, re, 4, 4 * 3328);
-    ntt_at_layer_3(&mut zeta_i, re, 3, 5 * 3328);
-    ntt_at_layer_2(&mut zeta_i, re, 2, 6 * 3328);
-    ntt_at_layer_1(&mut zeta_i, re, 1, 7 * 3328);
+    ntt_at_layer_3(&mut zeta_i, re, 5 * 3328);
+    ntt_at_layer_2(&mut zeta_i, re, 6 * 3328);
+    ntt_at_layer_1(&mut zeta_i, re, 7 * 3328);
 
     re.poly_barrett_reduce()
 }
