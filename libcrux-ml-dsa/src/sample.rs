@@ -196,9 +196,9 @@ pub(crate) fn sample_four_ring_elements<
         }
     }
 
-    for (k, (i, j)) in memory.indices.iter().enumerate() {
-        memory.out[*i][*j] =
-            PolynomialRingElement::<SIMDUnit>::from_i32_array(&memory.tmp_stack[k]);
+    for k in 0..memory.indices.len() {
+        let (i, j) = memory.indices[k];
+        memory.out[i][j] = PolynomialRingElement::<SIMDUnit>::from_i32_array(&memory.tmp_stack[k]);
     }
 }
 
