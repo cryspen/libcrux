@@ -8,6 +8,7 @@ __pycache__
 kyber-crate/
 *.llbc
 .cargo/
+Cargo.lock
 
 # When using sed
 *.bak

@@ -1,6 +1,6 @@
 use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
 
-/// Values having this type hold a representative 'x' of the Kyber field.
+/// Values having this type hold a representative 'x' of the ML-KEM field.
 /// We use 'fe' as a shorthand for this type.
 pub(crate) type FieldElement = i16;
 

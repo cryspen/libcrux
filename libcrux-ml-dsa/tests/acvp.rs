@@ -187,7 +187,7 @@ fn siggen_inner(
     match parameter_set.as_str() {
         "ML-DSA-44" => {
             let signature = ml_dsa_44::sign_internal(
-                &MLDSASigningKey(test.sk.try_into().unwrap()),
+                &MLDSASigningKey::new(test.sk.try_into().unwrap()),
                 &test.message,
                 rnd,
             )
@@ -197,7 +197,7 @@ fn siggen_inner(
 
         "ML-DSA-65" => {
             let signature = ml_dsa_65::sign_internal(
-                &MLDSASigningKey(test.sk.try_into().unwrap()),
+                &MLDSASigningKey::new(test.sk.try_into().unwrap()),
                 &test.message,
                 rnd,
             )
@@ -207,7 +207,7 @@ fn siggen_inner(
 
         "ML-DSA-87" => {
             let signature = ml_dsa_87::sign_internal(
-                &MLDSASigningKey(test.sk.try_into().unwrap()),
+                &MLDSASigningKey::new(test.sk.try_into().unwrap()),
                 &test.message,
                 rnd,
             )
@@ -267,27 +267,27 @@ fn sigver_inner(
     match parameter_set.as_str() {
         "ML-DSA-44" => {
             let valid = ml_dsa_44::verify_internal(
-                &MLDSAVerificationKey(pk.to_owned().try_into().unwrap()),
+                &MLDSAVerificationKey::new(pk.to_owned().try_into().unwrap()),
                 &test.message,
-                &MLDSASignature(test.signature.try_into().unwrap()),
+                &MLDSASignature::new(test.signature.try_into().unwrap()),
             );
             assert_eq!(valid.is_ok(), expected_result.testPassed);
         }
 
         "ML-DSA-65" => {
             let valid = ml_dsa_65::verify_internal(
-                &MLDSAVerificationKey(pk.to_owned().try_into().unwrap()),
+                &MLDSAVerificationKey::new(pk.to_owned().try_into().unwrap()),
                 &test.message,
-                &MLDSASignature(test.signature.try_into().unwrap()),
+                &MLDSASignature::new(test.signature.try_into().unwrap()),
             );
             assert_eq!(valid.is_ok(), expected_result.testPassed);
         }
 
         "ML-DSA-87" => {
             let valid = ml_dsa_87::verify_internal(
-                &MLDSAVerificationKey(pk.to_owned().try_into().unwrap()),
+                &MLDSAVerificationKey::new(pk.to_owned().try_into().unwrap()),
                 &test.message,
-                &MLDSASignature(test.signature.try_into().unwrap()),
+                &MLDSASignature::new(test.signature.try_into().unwrap()),
             );
             assert_eq!(valid.is_ok(), expected_result.testPassed);
         }

@@ -86,8 +86,8 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn gamma1_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::gamma1::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(simd_unit: Self, serialized: &mut [u8]) {
+        encoding::gamma1::serialize::<GAMMA1_EXPONENT>(simd_unit.coefficients, serialized)
     }
     #[inline(always)]
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self {
@@ -95,13 +95,13 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::commitment::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+    fn commitment_serialize(simd_unit: Self, serialized: &mut [u8]) {
+        encoding::commitment::serialize(simd_unit.coefficients, serialized)
     }
 
     #[inline(always)]
-    fn error_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::error::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+    fn error_serialize<const ETA: usize>(simd_unit: Self, serialized: &mut [u8]) {
+        encoding::error::serialize::<ETA>(simd_unit.coefficients, serialized)
     }
     #[inline(always)]
     fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self {
@@ -128,17 +128,34 @@ impl Operations for AVX2SIMDUnit {
 
     #[inline(always)]
     fn ntt(simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT]) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
-        let result = ntt::ntt(simd_units.map(|x| x.coefficients));
+        // XXX: We can't use from_fn or map here because of Eurydice.
+        //      But this should be rewritten anyway to avoid having to do the map.
+        //      See linked Eurydice issues in #706
+        let mut re = [libcrux_intrinsics::avx2::mm256_setzero_si256(); SIMD_UNITS_IN_RING_ELEMENT];
+        for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
+            re[i] = simd_units[i].coefficients;
+        }
+        let result = ntt::ntt(re);
 
-        result.map(|x| x.into())
+        core::array::from_fn(|i| Self {
+            coefficients: result[i],
+        })
     }
 
     #[inline(always)]
     fn invert_ntt_montgomery(
         simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT],
     ) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
-        let result = invntt::invert_ntt_montgomery(simd_units.map(|x| x.coefficients));
+        // XXX: We can't use from_fn or map here because of Eurydice.
+        //      But this should be rewritten anyway to avoid having to do the map.
+        let mut re = [libcrux_intrinsics::avx2::mm256_setzero_si256(); SIMD_UNITS_IN_RING_ELEMENT];
+        for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
+            re[i] = simd_units[i].coefficients;
+        }
+        let result = invntt::invert_ntt_montgomery(re);
 
-        result.map(|x| x.into())
+        core::array::from_fn(|i| Self {
+            coefficients: result[i],
+        })
     }
 }

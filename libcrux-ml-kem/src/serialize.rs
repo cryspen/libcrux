@@ -387,7 +387,6 @@ fn deserialize_then_decompress_10<Vector: Operations>(
     hax_lib::fstar!(r#"assert (v (($COEFFICIENTS_IN_RING_ELEMENT *! sz 10) /! sz 8) == 320)"#);
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
-    let _coefficients_length = re.coefficients.len();
     cloop! {
         for (i, bytes) in serialized.chunks_exact(20).enumerate() {
             let coefficient = Vector::deserialize_10(bytes);
