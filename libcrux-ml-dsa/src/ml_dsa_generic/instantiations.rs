@@ -21,6 +21,7 @@ macro_rules! instantiate {
             ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
                 crate::ml_dsa_generic::generate_key_pair::<
                     $simdunit,
+                    $sampler,
                     $shake128x4,
                     $shake256,
                     $shake256xof,
@@ -31,7 +32,7 @@ macro_rules! instantiate {
                     ERROR_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     VERIFICATION_KEY_SIZE,
-                >(randomness, $sampler)
+                >(randomness)
             }
 
             /// Sign.
@@ -58,6 +59,7 @@ macro_rules! instantiate {
             ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
                 crate::ml_dsa_generic::sign::<
                     $simdunit,
+                    $sampler,
                     $shake128x4,
                     $shake256,
                     $shake256xof,
@@ -76,7 +78,7 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(&signing_key, message, context, randomness, $sampler)
+                >(&signing_key, message, context, randomness)
             }
 
             /// Sign (internal API)
@@ -103,6 +105,7 @@ macro_rules! instantiate {
             ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
                 crate::ml_dsa_generic::sign_internal::<
                     $simdunit,
+                    $sampler,
                     $shake128x4,
                     $shake256,
                     $shake256xof,
@@ -121,13 +124,7 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(
-                    &signing_key,
-                    message,
-                    None,
-                    randomness,
-                    crate::samplex4::X4Sampler::AVX2,
-                )
+                >(&signing_key, message, None, randomness)
             }
 
             /// Sign (pre-hashed).
@@ -154,6 +151,7 @@ macro_rules! instantiate {
             ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
                 crate::ml_dsa_generic::sign_pre_hashed::<
                     $simdunit,
+                    $sampler,
                     $shake128,
                     $shake128x4,
                     $shake256,
@@ -175,7 +173,7 @@ macro_rules! instantiate {
                     GAMMA1_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
                     SIGNATURE_SIZE,
-                >(&signing_key, message, context, randomness, $sampler)
+                >(&signing_key, message, context, randomness)
             }
 
             /// Verify.
@@ -201,6 +199,7 @@ macro_rules! instantiate {
             ) -> Result<(), VerificationError> {
                 crate::ml_dsa_generic::verify::<
                     $simdunit,
+                    $sampler,
                     $shake128x4,
                     $shake256,
                     $shake256xof,
@@ -217,7 +216,7 @@ macro_rules! instantiate {
                     COMMITMENT_HASH_SIZE,
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
-                >(verification_key, message, context, signature, $sampler)
+                >(verification_key, message, context, signature)
             }
 
             /// Verify (internal API).
@@ -243,6 +242,7 @@ macro_rules! instantiate {
             ) -> Result<(), VerificationError> {
                 crate::ml_dsa_generic::verify_internal::<
                     $simdunit,
+                    $sampler,
                     $shake128x4,
                     $shake256,
                     $shake256xof,
@@ -259,7 +259,7 @@ macro_rules! instantiate {
                     COMMITMENT_HASH_SIZE,
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
-                >(verification_key, message, None, signature, $sampler)
+                >(verification_key, message, None, signature)
             }
 
             /// Verify (pre-hashed with SHAKE-128).
@@ -285,6 +285,7 @@ macro_rules! instantiate {
             ) -> Result<(), VerificationError> {
                 crate::ml_dsa_generic::verify_pre_hashed::<
                     $simdunit,
+                    $sampler,
                     $shake128,
                     $shake128x4,
                     $shake256,
@@ -304,7 +305,7 @@ macro_rules! instantiate {
                     COMMITMENT_HASH_SIZE,
                     ONES_IN_VERIFIER_CHALLENGE,
                     MAX_ONES_IN_HINT,
-                >(verification_key, message, context, signature, $sampler)
+                >(verification_key, message, context, signature)
             }
         }
     };
@@ -318,7 +319,7 @@ instantiate! {portable,
     crate::hash_functions::portable::Shake256,
     crate::hash_functions::portable::Shake256Xof,
     crate::hash_functions::portable::Shake256X4,
-    crate::samplex4::X4Sampler::Portable
+    crate::samplex4::portable::PortableSampler
 }
 
 // AVX2 generic implementation.
@@ -334,5 +335,5 @@ instantiate! {neon,
     crate::hash_functions::portable::Shake256,
     crate::hash_functions::portable::Shake256Xof,
     crate::hash_functions::neon::Shake256x4,
-    crate::samplex4::X4Sampler::Neon
+    crate::samplex4::neon::NeonSampler
 }

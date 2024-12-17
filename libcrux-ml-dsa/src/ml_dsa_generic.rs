@@ -28,6 +28,7 @@ pub(crate) mod multiplexing;
 #[inline(always)]
 pub(crate) fn generate_key_pair<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
@@ -40,7 +41,6 @@ pub(crate) fn generate_key_pair<
     const VERIFICATION_KEY_SIZE: usize,
 >(
     randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
-    sampler: X4Sampler,
 ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
     let mut seed_expanded = [0; 128];
@@ -55,10 +55,8 @@ pub(crate) fn generate_key_pair<
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-    let a_as_ntt = samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
-        into_padded_array(seed_for_a),
-        sampler,
-    );
+    let a_as_ntt =
+        Sampler::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_a));
 
     let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
         into_padded_array(seed_for_error_vectors),
@@ -98,6 +96,7 @@ pub(crate) fn generate_key_pair<
 #[inline(always)]
 pub(crate) fn sign_pre_hashed<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
@@ -124,7 +123,6 @@ pub(crate) fn sign_pre_hashed<
     message: &[u8],
     context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-    sampler: X4Sampler,
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     if context.len() > CONTEXT_MAX_LEN {
         return Err(SigningError::ContextTooLongError);
@@ -136,6 +134,7 @@ pub(crate) fn sign_pre_hashed<
     };
     sign_internal::<
         SIMDUnit,
+        Sampler,
         Shake128X4,
         Shake256,
         Shake256Xof,
@@ -159,7 +158,6 @@ pub(crate) fn sign_pre_hashed<
         &pre_hashed_message,
         Some(domain_separation_context),
         randomness,
-        sampler,
     )
 }
 
@@ -167,6 +165,7 @@ pub(crate) fn sign_pre_hashed<
 #[inline(always)]
 pub(crate) fn sign<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
@@ -190,7 +189,6 @@ pub(crate) fn sign<
     message: &[u8],
     context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-    sampler: X4Sampler,
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     let domain_separation_context = match DomainSeparationContext::new(context, None) {
         Ok(dsc) => dsc,
@@ -198,6 +196,7 @@ pub(crate) fn sign<
     };
     sign_internal::<
         SIMDUnit,
+        Sampler,
         Shake128X4,
         Shake256,
         Shake256Xof,
@@ -221,7 +220,6 @@ pub(crate) fn sign<
         message,
         Some(domain_separation_context),
         randomness,
-        sampler,
     )
 }
 
@@ -233,6 +231,7 @@ pub(crate) fn sign<
 #[inline(always)]
 pub(crate) fn sign_internal<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
@@ -256,7 +255,6 @@ pub(crate) fn sign_internal<
     message: &[u8],
     domain_separation_context: Option<DomainSeparationContext>,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-    sampler: X4Sampler,
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
         encoding::signing_key::deserialize_then_ntt::<
@@ -268,10 +266,8 @@ pub(crate) fn sign_internal<
             SIGNING_KEY_SIZE,
         >(signing_key);
 
-    let A_as_ntt = samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
-        into_padded_array(&seed_for_A),
-        sampler,
-    );
+    let A_as_ntt =
+        Sampler::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative::<Shake256Xof>(
@@ -478,6 +474,7 @@ fn derive_message_representative<Shake256Xof: shake256::Xof>(
 #[inline(always)]
 pub(crate) fn verify_internal<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
@@ -499,7 +496,6 @@ pub(crate) fn verify_internal<
     message: &[u8],
     domain_separation_context: Option<DomainSeparationContext>,
     signature_serialized: &[u8; SIGNATURE_SIZE],
-    sampler: X4Sampler,
 ) -> Result<(), VerificationError> {
     let (seed_for_A, t1) =
         encoding::verification_key::deserialize::<SIMDUnit, ROWS_IN_A, VERIFICATION_KEY_SIZE>(
@@ -525,10 +521,8 @@ pub(crate) fn verify_internal<
     ) {
         return Err(VerificationError::SignerResponseExceedsBoundError);
     }
-    let A_as_ntt = samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
-        into_padded_array(&seed_for_A),
-        sampler,
-    );
+    let A_as_ntt =
+        Sampler::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
     let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
     Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
@@ -585,6 +579,7 @@ pub(crate) fn verify_internal<
 #[inline(always)]
 pub(crate) fn verify<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
@@ -606,7 +601,6 @@ pub(crate) fn verify<
     message: &[u8],
     context: &[u8],
     signature_serialized: &[u8; SIGNATURE_SIZE],
-    sampler: X4Sampler,
 ) -> Result<(), VerificationError> {
     // We manually do the matching here to make Eurydice happy.
     let domain_separation_context = match DomainSeparationContext::new(context, None) {
@@ -615,6 +609,7 @@ pub(crate) fn verify<
     };
     verify_internal::<
         SIMDUnit,
+        Sampler,
         Shake128X4,
         Shake256,
         Shake256Xof,
@@ -636,7 +631,6 @@ pub(crate) fn verify<
         message,
         Some(domain_separation_context),
         &signature_serialized,
-        sampler,
     )
 }
 
@@ -644,6 +638,7 @@ pub(crate) fn verify<
 #[inline(always)]
 pub(crate) fn verify_pre_hashed<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
@@ -668,7 +663,6 @@ pub(crate) fn verify_pre_hashed<
     message: &[u8],
     context: &[u8],
     signature_serialized: &[u8; SIGNATURE_SIZE],
-    sampler: X4Sampler,
 ) -> Result<(), VerificationError> {
     let pre_hashed_message = PH::hash::<Shake128>(message);
     let domain_separation_context = match DomainSeparationContext::new(context, Some(PH::oid())) {
@@ -678,6 +672,7 @@ pub(crate) fn verify_pre_hashed<
 
     verify_internal::<
         SIMDUnit,
+        Sampler,
         Shake128X4,
         Shake256,
         Shake256Xof,
@@ -699,6 +694,5 @@ pub(crate) fn verify_pre_hashed<
         &pre_hashed_message,
         Some(domain_separation_context),
         &signature_serialized,
-        sampler,
     )
 }

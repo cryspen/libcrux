@@ -6,11 +6,12 @@ use crate::{
 };
 
 /// The x4 sampling implementation that is selected during multiplexing.
-#[allow(unused)]
-pub(crate) enum X4Sampler {
-    AVX2,
-    Neon,
-    Portable,
+pub(crate) trait X4Sampler {
+    /// Sample the matrix A using platform specific implementation.
+    #[allow(non_snake_case)]
+    fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+        seed: [u8; 34],
+    ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A];
 }
 
 #[inline(always)]
@@ -152,66 +153,94 @@ pub(crate) fn matrix_A_8_by_7<
     A
 }
 
-#[inline(always)]
-#[allow(unsafe_code)]
-#[allow(non_snake_case)]
-pub(crate) fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
-    seed: [u8; 34],
-    sampler: X4Sampler,
-) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
-    match sampler {
-        #[cfg(feature = "simd256")]
-        X4Sampler::AVX2 => unsafe { matrix_A_avx2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(seed) },
-        #[cfg(feature = "simd128")]
-        X4Sampler::Neon => matrix_A_generic::<
-            SIMDUnit,
-            crate::hash_functions::neon::Shake128x4,
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-        >(seed),
-        X4Sampler::Portable => matrix_A_generic::<
-            SIMDUnit,
-            crate::hash_functions::portable::Shake128X4,
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-        >(seed),
-        _ => unreachable!(),
+pub(crate) mod portable {
+    use super::*;
+
+    pub(crate) struct PortableSampler {}
+    impl X4Sampler for PortableSampler {
+        #[inline(always)]
+        fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+            seed: [u8; 34],
+        ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
+            matrix_A_generic::<
+                SIMDUnit,
+                crate::hash_functions::portable::Shake128X4,
+                ROWS_IN_A,
+                COLUMNS_IN_A,
+            >(seed)
+        }
     }
 }
 
-#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-#[allow(unsafe_code)]
-#[allow(non_snake_case)]
-pub(crate) unsafe fn matrix_A_avx2<
-    SIMDUnit: Operations,
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
->(
-    seed: [u8; 34],
-) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
-    match (ROWS_IN_A as u8, COLUMNS_IN_A as u8) {
-        #[cfg(feature = "mldsa44")]
-        (4, 4) => matrix_A_4_by_4::<
-            SIMDUnit,
-            crate::hash_functions::simd256::Shake128x4,
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-        >(seed),
-        #[cfg(feature = "mldsa65")]
-        (6, 5) => matrix_A_6_by_5::<
-            SIMDUnit,
-            crate::hash_functions::simd256::Shake128x4,
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-        >(seed),
-        #[cfg(feature = "mldsa87")]
-        (8, 7) => matrix_A_8_by_7::<
-            SIMDUnit,
-            crate::hash_functions::simd256::Shake128x4,
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-        >(seed),
-        _ => unreachable!(),
+#[cfg(feature = "simd128")]
+pub(crate) mod neon {
+    use super::*;
+
+    pub(crate) struct NeonSampler {}
+    impl X4Sampler for NeonSampler {
+        #[inline(always)]
+        fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+            seed: [u8; 34],
+        ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
+            matrix_A_generic::<
+                SIMDUnit,
+                crate::hash_functions::neon::Shake128X4,
+                ROWS_IN_A,
+                COLUMNS_IN_A,
+            >(seed)
+        }
+    }
+}
+
+#[cfg(feature = "simd256")]
+pub(crate) mod avx2 {
+    use super::*;
+
+    pub(crate) struct AVX2Sampler {}
+    impl X4Sampler for AVX2Sampler {
+        #[inline(always)]
+        #[allow(unsafe_code)]
+        fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+            seed: [u8; 34],
+        ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
+            unsafe { matrix_A_avx2(seed) }
+        }
+    }
+
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+    #[allow(unsafe_code)]
+    #[allow(non_snake_case)]
+    pub(crate) unsafe fn matrix_A_avx2<
+        SIMDUnit: Operations,
+        const ROWS_IN_A: usize,
+        const COLUMNS_IN_A: usize,
+    >(
+        seed: [u8; 34],
+    ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
+        match (ROWS_IN_A as u8, COLUMNS_IN_A as u8) {
+            #[cfg(feature = "mldsa44")]
+            (4, 4) => matrix_A_4_by_4::<
+                SIMDUnit,
+                crate::hash_functions::simd256::Shake128x4,
+                ROWS_IN_A,
+                COLUMNS_IN_A,
+            >(seed),
+            #[cfg(feature = "mldsa65")]
+            (6, 5) => matrix_A_6_by_5::<
+                SIMDUnit,
+                crate::hash_functions::simd256::Shake128x4,
+                ROWS_IN_A,
+                COLUMNS_IN_A,
+            >(seed),
+            #[cfg(feature = "mldsa87")]
+            (8, 7) => matrix_A_8_by_7::<
+                SIMDUnit,
+                crate::hash_functions::simd256::Shake128x4,
+                ROWS_IN_A,
+                COLUMNS_IN_A,
+            >(seed),
+            _ => unreachable!(),
+        }
     }
 }
 
