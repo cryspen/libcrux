@@ -37,6 +37,20 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
 #[inline(always)]
 fn generate_domain_separator((row, column): (u8, u8)) -> u16 {
     (column as u16) | ((row as u16) << 8)
+} // Doing deep updates like `a[1][1] = 3` causes a memory blowup in F*
+  // https://github.com/hacspec/hax/issues/1098
+  // So we are instead using a matrix abstraction with a custom update function here.
+
+type Matrix<SIMDUnit, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize> =
+    [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A];
+
+fn update_matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+    m: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
+    i: usize,
+    j: usize,
+    v: PolynomialRingElement<SIMDUnit>,
+) {
+    m[i][j] = v;
 }
 
 /// Sample and write out up to four ring elements.
@@ -55,8 +69,11 @@ pub(crate) fn sample_up_to_four_ring_elements<
     const COLUMNS_IN_A: usize,
 >(
     mut seed0: [u8; 34],
-    matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    rand_stack: &mut [[u8; shake128::FIVE_BLOCKS_SIZE]; 4],
+    matrix: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
+    rand_stack0: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+    rand_stack1: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+    rand_stack2: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+    rand_stack3: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
     tmp_stack: &mut [[i32; 263]],
     indices: &[(u8, u8); 4],
     elements_requested: usize,
@@ -86,17 +103,7 @@ pub(crate) fn sample_up_to_four_ring_elements<
 
     let mut state = Shake128::init_absorb(&seed0, &seed1, &seed2, &seed3);
 
-    let mut rand_stack0 = rand_stack[0];
-    let mut rand_stack1 = rand_stack[1];
-    let mut rand_stack2 = rand_stack[2];
-    let mut rand_stack3 = rand_stack[3];
-
-    state.squeeze_first_five_blocks(
-        &mut rand_stack0,
-        &mut rand_stack1,
-        &mut rand_stack2,
-        &mut rand_stack3,
-    );
+    state.squeeze_first_five_blocks(rand_stack0, rand_stack1, rand_stack2, rand_stack3);
 
     // Every call to |rejection_sample_less_than_field_modulus|
     // will result in a call to |PortableSIMDUnit::rejection_sample_less_than_field_modulus|;
@@ -112,22 +119,22 @@ pub(crate) fn sample_up_to_four_ring_elements<
     let mut sampled3 = 0;
 
     let mut done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut rand_stack0,
+        rand_stack0,
         &mut sampled0,
         &mut tmp_stack[0],
     );
     let mut done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut rand_stack1,
+        rand_stack1,
         &mut sampled1,
         &mut tmp_stack[1],
     );
     let mut done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut rand_stack2,
+        rand_stack2,
         &mut sampled2,
         &mut tmp_stack[2],
     );
     let mut done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut rand_stack3,
+        rand_stack3,
         &mut sampled3,
         &mut tmp_stack[3],
     );
@@ -166,9 +173,15 @@ pub(crate) fn sample_up_to_four_ring_elements<
 
     for k in 0..elements_requested {
         let (i, j) = indices[k];
-        matrix[i as usize][j as usize] =
-            PolynomialRingElement::<SIMDUnit>::from_i32_array(&tmp_stack[k]);
+        update_matrix(
+            matrix,
+            i as usize,
+            j as usize,
+            PolynomialRingElement::<SIMDUnit>::from_i32_array(&tmp_stack[k]),
+        );
     }
+
+    ()
 }
 
 #[inline(always)]

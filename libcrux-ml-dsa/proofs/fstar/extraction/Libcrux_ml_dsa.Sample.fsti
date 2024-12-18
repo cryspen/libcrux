@@ -16,6 +16,21 @@ val generate_domain_separator: (u8 & u8) -> Prims.Pure u16 Prims.l_True (fun _ -
 val update_seed (seed: t_Array u8 (sz 66)) (domain_separator: u16)
     : Prims.Pure (u16 & t_Array u8 (sz 66)) Prims.l_True (fun _ -> Prims.l_True)
 
+val update_matrix
+      (#v_SIMDUnit: Type0)
+      (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (m:
+          t_Array
+            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+            v_ROWS_IN_A)
+      (i j: usize)
+      (v: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+    : Prims.Pure
+      (t_Array
+          (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+          v_ROWS_IN_A) Prims.l_True (fun _ -> Prims.l_True)
+
 val rejection_sample_less_than_eta_equals_2_
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
@@ -122,7 +137,7 @@ val sample_up_to_four_ring_elements
           t_Array
             (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
             v_ROWS_IN_A)
-      (rand_stack: t_Array (t_Array u8 (sz 840)) (sz 4))
+      (rand_stack0 rand_stack1 rand_stack2 rand_stack3: t_Array u8 (sz 840))
       (tmp_stack: t_Slice (t_Array i32 (sz 263)))
       (indices: t_Array (u8 & u8) (sz 4))
       (elements_requested: usize)
@@ -130,5 +145,8 @@ val sample_up_to_four_ring_elements
       (t_Array
           (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
           v_ROWS_IN_A &
-        t_Array (t_Array u8 (sz 840)) (sz 4) &
+        t_Array u8 (sz 840) &
+        t_Array u8 (sz 840) &
+        t_Array u8 (sz 840) &
+        t_Array u8 (sz 840) &
         t_Slice (t_Array i32 (sz 263))) Prims.l_True (fun _ -> Prims.l_True)
