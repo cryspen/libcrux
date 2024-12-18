@@ -267,6 +267,7 @@ fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: usize>(
     }
 }
 
+#[derive(Clone, Copy)]
 pub(super) union ElementOut<SIMDUnit: Operations> {
     pub(super) bytes: [i32; 263],
     pub(super) re: PolynomialRingElement<SIMDUnit>,
@@ -290,11 +291,7 @@ pub(crate) fn sample_four_error_ring_elements<
     domain_separator1: u16,
     domain_seperator2: u16,
     domain_separator3: u16,
-) -> (
-    PolynomialRingElement<SIMDUnit>,
-    PolynomialRingElement<SIMDUnit>,
-    PolynomialRingElement<SIMDUnit>,
-    PolynomialRingElement<SIMDUnit>,
+    out: &mut [ElementOut<SIMDUnit>],
 ) {
     // Prepare the seeds
     let mut seed0 = seed_base;
@@ -324,24 +321,36 @@ pub(crate) fn sample_four_error_ring_elements<
     //
     // To ensure we don't overflow the buffer in this case, we allocate 255 + 8
     // = 263 elements.
-    let mut out0 = ElementOut::new();
-    let mut out1 = ElementOut::new();
-    let mut out2 = ElementOut::new();
-    let mut out3 = ElementOut::new();
+    // let mut out0 = ElementOut::new();
+    // let mut out1 = ElementOut::new();
+    // let mut out2 = ElementOut::new();
+    // let mut out3 = ElementOut::new();
 
     let mut sampled0 = 0;
     let mut sampled1 = 0;
     let mut sampled2 = 0;
     let mut sampled3 = 0;
 
-    let mut done0 =
-        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomnesses.0, &mut sampled0, &mut out0);
-    let mut done1 =
-        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomnesses.1, &mut sampled1, &mut out1);
-    let mut done2 =
-        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomnesses.2, &mut sampled2, &mut out2);
-    let mut done3 =
-        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomnesses.3, &mut sampled3, &mut out3);
+    let mut done0 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+        &randomnesses.0,
+        &mut sampled0,
+        &mut out[0],
+    );
+    let mut done1 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+        &randomnesses.1,
+        &mut sampled1,
+        &mut out[1],
+    );
+    let mut done2 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+        &randomnesses.2,
+        &mut sampled2,
+        &mut out[2],
+    );
+    let mut done3 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+        &randomnesses.3,
+        &mut sampled3,
+        &mut out[3],
+    );
 
     while !done0 || !done1 || !done2 || !done3 {
         // Always sample another 4, but we only use it if we actually need it.
@@ -350,33 +359,31 @@ pub(crate) fn sample_four_error_ring_elements<
             done0 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
                 &randomnesses.0,
                 &mut sampled0,
-                &mut out0,
+                &mut out[0],
             );
         }
         if !done1 {
             done1 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
                 &randomnesses.1,
                 &mut sampled1,
-                &mut out1,
+                &mut out[1],
             );
         }
         if !done2 {
             done2 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
                 &randomnesses.2,
                 &mut sampled2,
-                &mut out2,
+                &mut out[2],
             );
         }
         if !done3 {
             done3 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
                 &randomnesses.3,
                 &mut sampled3,
-                &mut out3,
+                &mut out[3],
             );
         }
     }
-
-    unsafe { (out0.re, out1.re, out2.re, out3.re) }
 }
 
 #[inline(always)]
@@ -575,6 +582,7 @@ mod tests {
 
     // This is just a wrapper around sample_four_ring_elements, for testing
     // purposes.
+    #[allow(unsafe_code)]
     fn sample_error_ring_element<
         SIMDUnit: Operations,
         Shake256X4: shake256::XofX4,
@@ -582,15 +590,22 @@ mod tests {
     >(
         seed_base: [u8; 66],
     ) -> PolynomialRingElement<SIMDUnit> {
-        let four_ring_elements = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(
+        let mut out = [
+            ElementOut::<SIMDUnit>::new(),
+            ElementOut::<SIMDUnit>::new(),
+            ElementOut::<SIMDUnit>::new(),
+            ElementOut::<SIMDUnit>::new(),
+        ];
+        sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(
             seed_base,
             ((seed_base[65] as u16) << 8) | (seed_base[64] as u16),
             0,
             0,
             0,
+            &mut out,
         );
 
-        four_ring_elements.0
+        unsafe { out[0].re }
     }
 
     fn test_sample_ring_element_uniform_generic<SIMDUnit: Operations, Shake128: shake128::XofX4>() {

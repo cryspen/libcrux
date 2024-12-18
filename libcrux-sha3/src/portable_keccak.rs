@@ -38,10 +38,12 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 }
 
 #[inline(always)]
+#[allow(unsafe_code)]
 pub(crate) fn load_block<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: [&[u8]; 1]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0);
     for i in 0..RATE / 8 {
-        s[i / 5][i % 5] ^= u64::from_le_bytes(blocks[0][8 * i..8 * i + 8].try_into().unwrap());
+        let block = core::array::from_fn(|j| blocks[0][8 * i + j]);
+        s[i / 5][i % 5] ^= u64::from_le_bytes(block);
     }
 }
 

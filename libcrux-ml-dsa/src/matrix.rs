@@ -2,7 +2,10 @@ use crate::{
     arithmetic::shift_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
     helper::cloop,
-    ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
+    ntt::{
+        invert_ntt_montgomery, invert_ntt_montgomery_mut, ntt, ntt_multiply_montgomery,
+        ntt_multiply_montgomery_mut,
+    },
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
@@ -75,14 +78,28 @@ pub(crate) fn vector_times_ring_element<SIMDUnit: Operations, const DIMENSION: u
     vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
     ring_element: &PolynomialRingElement<SIMDUnit>,
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut result = vector.clone();
     for i in 0..vector.len() {
-        result[i] = ntt_multiply_montgomery(&vector[i], ring_element);
+        ntt_multiply_montgomery_mut(&mut result[i], ring_element);
     }
     for i in 0..vector.len() {
-        result[i] = invert_ntt_montgomery(result[i]);
+        invert_ntt_montgomery_mut(&mut result[i]);
     }
     result
+}
+
+#[allow(non_snake_case)]
+#[inline(always)]
+pub(crate) fn vector_times_ring_element_mut<SIMDUnit: Operations, const DIMENSION: usize>(
+    vector: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    ring_element: &PolynomialRingElement<SIMDUnit>,
+) {
+    for i in 0..vector.len() {
+        vector[i] = ntt_multiply_montgomery(&vector[i], ring_element);
+    }
+    for i in 0..vector.len() {
+        vector[i] = invert_ntt_montgomery(vector[i]);
+    }
 }
 
 #[allow(non_snake_case)]
@@ -102,6 +119,17 @@ pub(crate) fn add_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
 
 #[allow(non_snake_case)]
 #[inline(always)]
+pub(crate) fn add_vectors_mut<SIMDUnit: Operations, const DIMENSION: usize>(
+    lhs: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    rhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+) {
+    for i in 0..DIMENSION {
+        lhs[i] = PolynomialRingElement::<SIMDUnit>::add(&lhs[i], &rhs[i]);
+    }
+}
+
+#[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn subtract_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
     lhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
     rhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
@@ -113,6 +141,17 @@ pub(crate) fn subtract_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
     }
 
     result
+}
+
+#[allow(non_snake_case)]
+#[inline(always)]
+pub(crate) fn subtract_vectors_mut<SIMDUnit: Operations, const DIMENSION: usize>(
+    lhs: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    rhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+) {
+    for i in 0..DIMENSION {
+        lhs[i] = PolynomialRingElement::<SIMDUnit>::subtract(&lhs[i], &rhs[i]);
+    }
 }
 
 /// Compute InvertNTT(Â ◦ ẑ - ĉ ◦ NTT(t₁2ᵈ))

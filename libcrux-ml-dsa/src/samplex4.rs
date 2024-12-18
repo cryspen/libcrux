@@ -405,6 +405,7 @@ pub(crate) unsafe fn matrix_A<
 
 #[cfg(feature = "mldsa44")]
 #[inline(always)]
+#[allow(unsafe_code)]
 fn sample_s1_and_s2_4_by_4<
     SIMDUnit: Operations,
     Shake256X4: shake256::XofX4,
@@ -417,26 +418,18 @@ fn sample_s1_and_s2_4_by_4<
     [PolynomialRingElement<SIMDUnit>; S1_DIMENSION],
     [PolynomialRingElement<SIMDUnit>; S2_DIMENSION],
 ) {
-    let mut s1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S1_DIMENSION];
-    let mut s2 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S2_DIMENSION];
+    let mut s1 = [ElementOut::<SIMDUnit>::new(); S1_DIMENSION];
+    let mut s2 = [ElementOut::<SIMDUnit>::new(); S2_DIMENSION];
 
-    let four = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 0, 1, 2, 3);
-    s1[0] = four.0;
-    s1[1] = four.1;
-    s1[2] = four.2;
-    s1[3] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 0, 1, 2, 3, &mut s1);
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 4, 5, 6, 7, &mut s2);
 
-    let four = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 4, 5, 6, 7);
-    s2[0] = four.0;
-    s2[1] = four.1;
-    s2[2] = four.2;
-    s2[3] = four.3;
-
-    (s1, s2)
+    (s1.map(|e| unsafe { e.re }), s2.map(|e| unsafe { e.re }))
 }
 
 #[cfg(feature = "mldsa65")]
 #[inline(always)]
+#[allow(unsafe_code)]
 fn sample_s1_and_s2_5_by_6<
     SIMDUnit: Operations,
     Shake256X4: shake256::XofX4,
@@ -449,32 +442,57 @@ fn sample_s1_and_s2_5_by_6<
     [PolynomialRingElement<SIMDUnit>; S1_DIMENSION],
     [PolynomialRingElement<SIMDUnit>; S2_DIMENSION],
 ) {
-    let mut s1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S1_DIMENSION];
-    let mut s2 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S2_DIMENSION];
+    // let mut s1 = [ElementOut::<SIMDUnit>::new(); S1_DIMENSION];
+    // let mut s2 = [ElementOut::<SIMDUnit>::new(); S2_DIMENSION];
+    let mut elements = [ElementOut::<SIMDUnit>::new(); 12];
 
-    let four = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 0, 1, 2, 3);
-    s1[0] = four.0;
-    s1[1] = four.1;
-    s1[2] = four.2;
-    s1[3] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(
+        seed_base,
+        0,
+        1,
+        2,
+        3,
+        &mut elements,
+    );
+    // s1[0] = four.0;
+    // s1[1] = four.1;
+    // s1[2] = four.2;
+    // s1[3] = four.3;
 
-    let four = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 4, 5, 6, 7);
-    s1[4] = four.0;
-    s2[0] = four.1;
-    s2[1] = four.2;
-    s2[2] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(
+        seed_base,
+        4,
+        5,
+        6,
+        7,
+        &mut elements[4..],
+    );
+    // s1[4] = four.0;
+    // s2[0] = four.1;
+    // s2[1] = four.2;
+    // s2[2] = four.3;
 
-    let four =
-        sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 8, 9, 10, 11);
-    s2[3] = four.0;
-    s2[4] = four.1;
-    s2[5] = four.2;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(
+        seed_base,
+        8,
+        9,
+        10,
+        11,
+        &mut elements[8..],
+    );
+    // s2[3] = four.0;
+    // s2[4] = four.1;
+    // s2[5] = four.2;
 
-    (s1, s2)
+    (
+        core::array::from_fn(|i| unsafe { elements[i].re }),
+        core::array::from_fn(|i| unsafe { elements[i + S1_DIMENSION].re }),
+    )
 }
 
 #[cfg(feature = "mldsa87")]
 #[inline(always)]
+#[allow(unsafe_code)]
 fn sample_s1_and_s2_7_by_8<
     SIMDUnit: Operations,
     Shake256X4: shake256::XofX4,
@@ -487,39 +505,68 @@ fn sample_s1_and_s2_7_by_8<
     [PolynomialRingElement<SIMDUnit>; S1_DIMENSION],
     [PolynomialRingElement<SIMDUnit>; S2_DIMENSION],
 ) {
-    let mut s1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S1_DIMENSION];
-    let mut s2 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S2_DIMENSION];
+    // let mut s1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S1_DIMENSION];
+    // let mut s2 = [PolynomialRingElement::<SIMDUnit>::ZERO(); S2_DIMENSION];
+    let mut elements = [ElementOut::<SIMDUnit>::new(); 16];
 
-    let four = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 0, 1, 2, 3);
-    s1[0] = four.0;
-    s1[1] = four.1;
-    s1[2] = four.2;
-    s1[3] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(
+        seed_base,
+        0,
+        1,
+        2,
+        3,
+        &mut elements,
+    );
 
-    let four = sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 4, 5, 6, 7);
-    s1[4] = four.0;
-    s1[5] = four.1;
-    s1[6] = four.2;
-    s2[0] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(
+        seed_base,
+        4,
+        5,
+        6,
+        7,
+        &mut elements[4..],
+    );
+    // s1[4] = four.0;
+    // s1[5] = four.1;
+    // s1[6] = four.2;
+    // s2[0] = four.3;
 
-    let four =
-        sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 8, 9, 10, 11);
-    s2[1] = four.0;
-    s2[2] = four.1;
-    s2[3] = four.2;
-    s2[4] = four.3;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(
+        seed_base,
+        8,
+        9,
+        10,
+        11,
+        &mut elements[8..],
+    );
+    // s2[1] = four.0;
+    // s2[2] = four.1;
+    // s2[3] = four.2;
+    // s2[4] = four.3;
 
-    let four =
-        sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 12, 13, 14, 15);
-    s2[5] = four.0;
-    s2[6] = four.1;
-    s2[7] = four.2;
+    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(
+        seed_base,
+        12,
+        13,
+        14,
+        15,
+        &mut elements[12..],
+    );
+    // s2[5] = four.0;
+    // s2[6] = four.1;
+    // s2[7] = four.2;
 
-    (s1, s2)
+    // (s1, s2)
+
+    (
+        core::array::from_fn(|i| unsafe { elements[i].re }),
+        core::array::from_fn(|i| unsafe { elements[i + S1_DIMENSION].re }),
+    )
 }
 
-#[inline(always)]
-pub(crate) fn sample_s1_and_s2<
+#[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+#[allow(unsafe_code)]
+pub(crate) unsafe fn sample_s1_and_s2<
     SIMDUnit: Operations,
     Shake256X4: shake256::XofX4,
     const ETA: usize,

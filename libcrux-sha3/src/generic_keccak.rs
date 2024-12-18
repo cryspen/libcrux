@@ -111,11 +111,12 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         let input_consumed = self.fill_buffer(inputs);
 
         if input_consumed > 0 {
-            let mut borrowed = [[0u8; RATE].as_slice(); PARALLEL_LANES];
+            let borrowed = core::array::from_fn(|i| &self.buf[i] as &[u8]);
+            // [[0u8; RATE].as_slice(); PARALLEL_LANES];
             // We have a full block in the local buffer now.
-            for i in 0..PARALLEL_LANES {
-                borrowed[i] = &self.buf[i];
-            }
+            // for i in 0..PARALLEL_LANES {
+            //     borrowed[i] = &self.buf[i];
+            // }
             STATE::load_block::<RATE>(&mut self.inner.st, borrowed);
             keccakf1600(&mut self.inner);
 
