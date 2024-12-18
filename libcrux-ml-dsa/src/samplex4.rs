@@ -1,7 +1,7 @@
 use crate::{
     hash_functions::{shake128, shake256},
     polynomial::PolynomialRingElement,
-    sample::{sample_four_error_ring_elements, sample_four_ring_elements, SampleArgs},
+    sample::{sample_four_error_ring_elements, sample_four_ring_elements},
     simd::traits::Operations,
 };
 
@@ -14,26 +14,19 @@ pub(crate) trait X4Sampler {
     ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A];
 }
 
-#[inline(always)]
-fn generate_domain_separator((row, column): (u8, u8)) -> u16 {
-    (column as u16) | ((row as u16) << 8)
-}
-
 type Matrix<SIMDUnit, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize> =
     [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A];
 
 /// A call to sample four ring elements from $seed into $memory at indices $a, $b
 /// $c, $d.
 macro_rules! sample_four_ring_elements_into {
-    ($memory:ident, $seed:ident, $a:expr, $b:expr, $c:expr, $d:expr) => {
-        $memory.indices = &[$a, $b, $c, $d];
+    ($seed:ident, $matrix:ident, $rand_stack:ident, $tmp_stack:ident, $a:expr, $b:expr, $c:expr, $d:expr) => {
         sample_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
             $seed,
-            generate_domain_separator($a),
-            generate_domain_separator($b),
-            generate_domain_separator($c),
-            generate_domain_separator($d),
-            &mut $memory,
+            &mut $matrix,
+            &mut $rand_stack,
+            &mut $tmp_stack,
+            &[$a, $b, $c, $d],
         );
     };
 }
@@ -59,12 +52,47 @@ pub(crate) fn matrix_A_4_by_4<
         [0u8; shake128::FIVE_BLOCKS_SIZE],
     );
     let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
-    let mut memory = SampleArgs::new(&mut rand_stack, &mut tmp_stack, &mut A, &[]);
 
-    sample_four_ring_elements_into!(memory, seed, (0, 0), (0, 1), (0, 2), (0, 3));
-    sample_four_ring_elements_into!(memory, seed, (1, 0), (1, 1), (1, 2), (1, 3));
-    sample_four_ring_elements_into!(memory, seed, (2, 0), (2, 1), (2, 2), (2, 3));
-    sample_four_ring_elements_into!(memory, seed, (3, 0), (3, 1), (3, 2), (3, 3));
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (0, 0),
+        (0, 1),
+        (0, 2),
+        (0, 3)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (1, 0),
+        (1, 1),
+        (1, 2),
+        (1, 3)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (2, 0),
+        (2, 1),
+        (2, 2),
+        (2, 3)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (3, 0),
+        (3, 1),
+        (3, 2),
+        (3, 3)
+    );
 
     A
 }
@@ -89,25 +117,85 @@ pub(crate) fn matrix_A_6_by_5<
         [0u8; shake128::FIVE_BLOCKS_SIZE],
     );
     let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
-    let mut memory = SampleArgs::new(&mut rand_stack, &mut tmp_stack, &mut A, &[]);
 
-    sample_four_ring_elements_into!(memory, seed, (0, 0), (0, 1), (0, 2), (0, 3));
-    sample_four_ring_elements_into!(memory, seed, (0, 4), (1, 0), (1, 1), (1, 2));
-    sample_four_ring_elements_into!(memory, seed, (1, 3), (1, 4), (2, 0), (2, 1));
-    sample_four_ring_elements_into!(memory, seed, (2, 2), (2, 3), (2, 4), (3, 0));
-    sample_four_ring_elements_into!(memory, seed, (3, 1), (3, 2), (3, 3), (3, 4));
-    sample_four_ring_elements_into!(memory, seed, (4, 0), (4, 1), (4, 2), (4, 3));
-    sample_four_ring_elements_into!(memory, seed, (4, 4), (5, 0), (5, 1), (5, 2));
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (0, 0),
+        (0, 1),
+        (0, 2),
+        (0, 3)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (0, 4),
+        (1, 0),
+        (1, 1),
+        (1, 2)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (1, 3),
+        (1, 4),
+        (2, 0),
+        (2, 1)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (2, 2),
+        (2, 3),
+        (2, 4),
+        (3, 0)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (3, 1),
+        (3, 2),
+        (3, 3),
+        (3, 4)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (4, 0),
+        (4, 1),
+        (4, 2),
+        (4, 3)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (4, 4),
+        (5, 0),
+        (5, 1),
+        (5, 2)
+    );
 
     // The last 2 sampled ring elements are discarded here.
-    memory.indices = &[(5, 3), (5, 4)];
     sample_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        generate_domain_separator((5, 3)),
-        generate_domain_separator((5, 4)),
-        generate_domain_separator((5, 5)),
-        generate_domain_separator((5, 6)),
-        &mut memory,
+        &mut A,
+        &mut rand_stack,
+        &mut tmp_stack,
+        &[(5, 3), (5, 4)],
     );
 
     A
@@ -133,22 +221,147 @@ pub(crate) fn matrix_A_8_by_7<
         [0u8; shake128::FIVE_BLOCKS_SIZE],
     );
     let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
-    let mut memory = SampleArgs::new(&mut rand_stack, &mut tmp_stack, &mut A, &[]);
 
-    sample_four_ring_elements_into!(memory, seed, (0, 0), (0, 1), (0, 2), (0, 3));
-    sample_four_ring_elements_into!(memory, seed, (0, 4), (0, 5), (0, 6), (1, 0));
-    sample_four_ring_elements_into!(memory, seed, (1, 1), (1, 2), (1, 3), (1, 4));
-    sample_four_ring_elements_into!(memory, seed, (1, 5), (1, 6), (2, 0), (2, 1));
-    sample_four_ring_elements_into!(memory, seed, (2, 2), (2, 3), (2, 4), (2, 5));
-    sample_four_ring_elements_into!(memory, seed, (2, 6), (3, 0), (3, 1), (3, 2));
-    sample_four_ring_elements_into!(memory, seed, (3, 3), (3, 4), (3, 5), (3, 6));
-    sample_four_ring_elements_into!(memory, seed, (4, 0), (4, 1), (4, 2), (4, 3));
-    sample_four_ring_elements_into!(memory, seed, (4, 4), (4, 5), (4, 6), (5, 0));
-    sample_four_ring_elements_into!(memory, seed, (5, 1), (5, 2), (5, 3), (5, 4));
-    sample_four_ring_elements_into!(memory, seed, (5, 5), (5, 6), (6, 0), (6, 1));
-    sample_four_ring_elements_into!(memory, seed, (6, 2), (6, 3), (6, 4), (6, 5));
-    sample_four_ring_elements_into!(memory, seed, (6, 6), (7, 0), (7, 1), (7, 2));
-    sample_four_ring_elements_into!(memory, seed, (7, 3), (7, 4), (7, 5), (7, 6));
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (0, 0),
+        (0, 1),
+        (0, 2),
+        (0, 3)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (0, 4),
+        (0, 5),
+        (0, 6),
+        (1, 0)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (1, 1),
+        (1, 2),
+        (1, 3),
+        (1, 4)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (1, 5),
+        (1, 6),
+        (2, 0),
+        (2, 1)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (2, 2),
+        (2, 3),
+        (2, 4),
+        (2, 5)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (2, 6),
+        (3, 0),
+        (3, 1),
+        (3, 2)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (3, 3),
+        (3, 4),
+        (3, 5),
+        (3, 6)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (4, 0),
+        (4, 1),
+        (4, 2),
+        (4, 3)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (4, 4),
+        (4, 5),
+        (4, 6),
+        (5, 0)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (5, 1),
+        (5, 2),
+        (5, 3),
+        (5, 4)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (5, 5),
+        (5, 6),
+        (6, 0),
+        (6, 1)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (6, 2),
+        (6, 3),
+        (6, 4),
+        (6, 5)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (6, 6),
+        (7, 0),
+        (7, 1),
+        (7, 2)
+    );
+    sample_four_ring_elements_into!(
+        seed,
+        A,
+        rand_stack,
+        tmp_stack,
+        (7, 3),
+        (7, 4),
+        (7, 5),
+        (7, 6)
+    );
 
     A
 }

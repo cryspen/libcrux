@@ -34,63 +34,16 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
     done
 }
 
-/// A buffering data structure for sampling into a matrix.
+#[inline(always)]
+fn generate_domain_separator((row, column): (u8, u8)) -> u16 {
+    (column as u16) | ((row as u16) << 8)
+}
+
+/// Sample and write out up to four ring elements.
 ///
-/// After rejection sampling the ring element at `tmp_stack[i]` will
-/// be written to the indices at `indices[i]` in `out`.
-pub(super) struct SampleArgs<
-    'a,
-    SIMDUnit: Operations,
-    const STACK_SIZE: usize,
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
-> {
-    /// Buffer for holding an initial supply of rejection sampling
-    /// randomness, e.g. five blocks of XoF output.
-    pub(super) rand_stack: &'a mut (
-        [u8; STACK_SIZE],
-        [u8; STACK_SIZE],
-        [u8; STACK_SIZE],
-        [u8; STACK_SIZE],
-    ),
-    /// Buffers for holding coefficients of field elements as they are sampled.
-    pub(super) tmp_stack: &'a mut [[i32; 263]],
-    /// Matrix into which field elements are written from
-    /// `tmp_stack`, after successful rejection sampling.
-    pub(super) out: &'a mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    /// Indices in `out` where ring elements from `tmp_stack` should
-    /// be written to.
-    pub(super) indices: &'a [(usize, usize)],
-}
-
-impl<
-        'a,
-        SIMDUnit: Operations,
-        const STACK_SIZE: usize,
-        const ROWS_IN_A: usize,
-        const COLUMNS_IN_A: usize,
-    > SampleArgs<'a, SIMDUnit, STACK_SIZE, ROWS_IN_A, COLUMNS_IN_A>
-{
-    pub(super) fn new(
-        rand_stack: &'a mut (
-            [u8; STACK_SIZE],
-            [u8; STACK_SIZE],
-            [u8; STACK_SIZE],
-            [u8; STACK_SIZE],
-        ),
-        tmp_stack: &'a mut [[i32; 263]],
-        out: &'a mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-        indices: &'a [(usize, usize)],
-    ) -> Self {
-        Self {
-            rand_stack,
-            tmp_stack,
-            out,
-            indices,
-        }
-    }
-}
-
+/// If `indices[i]` is provided, a field element with domain separated
+/// seed according to the provided index is generated in `tmp_stack`. After successful rejection sampling in `tmp_stack[i]`, the ring element is written to `matrix` at the provided index in `indices[i]`.
+/// `rand_stack` is a working buffer that holds initial Shake output.
 #[inline(always)]
 pub(crate) fn sample_four_ring_elements<
     SIMDUnit: Operations,
@@ -99,12 +52,26 @@ pub(crate) fn sample_four_ring_elements<
     const COLUMNS_IN_A: usize,
 >(
     mut seed0: [u8; 34],
-    domain_separator0: u16,
-    domain_separator1: u16,
-    domain_seperator2: u16,
-    domain_separator3: u16,
-    memory: &mut SampleArgs<'_, SIMDUnit, { shake128::FIVE_BLOCKS_SIZE }, ROWS_IN_A, COLUMNS_IN_A>,
+    matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+    rand_stack: &mut (
+        [u8; shake128::FIVE_BLOCKS_SIZE],
+        [u8; shake128::FIVE_BLOCKS_SIZE],
+        [u8; shake128::FIVE_BLOCKS_SIZE],
+        [u8; shake128::FIVE_BLOCKS_SIZE],
+    ),
+    tmp_stack: &mut [[i32; 263]],
+    indices: &[(u8, u8)],
 ) {
+    debug_assert!(indices.len() <= 4);
+
+    // If less than four indices are provided, the remaining slots are
+    // filled with dummy values and the results are not written out to
+    // `matrix`.
+    let domain_separator0 = generate_domain_separator(*indices.get(0).unwrap_or(&(0, 0)));
+    let domain_separator1 = generate_domain_separator(*indices.get(1).unwrap_or(&(0, 0)));
+    let domain_separator2 = generate_domain_separator(*indices.get(2).unwrap_or(&(0, 0)));
+    let domain_separator3 = generate_domain_separator(*indices.get(3).unwrap_or(&(0, 0)));
+
     // Prepare the seeds
     seed0[32] = domain_separator0 as u8;
     seed0[33] = (domain_separator0 >> 8) as u8;
@@ -114,8 +81,8 @@ pub(crate) fn sample_four_ring_elements<
     seed1[33] = (domain_separator1 >> 8) as u8;
 
     let mut seed2 = seed0;
-    seed2[32] = domain_seperator2 as u8;
-    seed2[33] = (domain_seperator2 >> 8) as u8;
+    seed2[32] = domain_separator2 as u8;
+    seed2[33] = (domain_separator2 >> 8) as u8;
 
     let mut seed3 = seed0;
     seed3[32] = domain_separator3 as u8;
@@ -124,10 +91,10 @@ pub(crate) fn sample_four_ring_elements<
     let mut state = Shake128::init_absorb(&seed0, &seed1, &seed2, &seed3);
 
     state.squeeze_first_five_blocks(
-        &mut memory.rand_stack.0,
-        &mut memory.rand_stack.1,
-        &mut memory.rand_stack.2,
-        &mut memory.rand_stack.3,
+        &mut rand_stack.0,
+        &mut rand_stack.1,
+        &mut rand_stack.2,
+        &mut rand_stack.3,
     );
 
     // Every call to |rejection_sample_less_than_field_modulus|
@@ -144,24 +111,24 @@ pub(crate) fn sample_four_ring_elements<
     let mut sampled3 = 0;
 
     let mut done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut memory.rand_stack.0,
+        &mut rand_stack.0,
         &mut sampled0,
-        &mut memory.tmp_stack[0],
+        &mut tmp_stack[0],
     );
     let mut done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut memory.rand_stack.1,
+        &mut rand_stack.1,
         &mut sampled1,
-        &mut memory.tmp_stack[1],
+        &mut tmp_stack[1],
     );
     let mut done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut memory.rand_stack.2,
+        &mut rand_stack.2,
         &mut sampled2,
-        &mut memory.tmp_stack[2],
+        &mut tmp_stack[2],
     );
     let mut done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut memory.rand_stack.3,
+        &mut rand_stack.3,
         &mut sampled3,
-        &mut memory.tmp_stack[3],
+        &mut tmp_stack[3],
     );
 
     while !done0 || !done1 || !done2 || !done3 {
@@ -170,35 +137,36 @@ pub(crate) fn sample_four_ring_elements<
             done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
                 &randomnesses.0,
                 &mut sampled0,
-                &mut memory.tmp_stack[0],
+                &mut tmp_stack[0],
             );
         }
         if !done1 {
             done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
                 &randomnesses.1,
                 &mut sampled1,
-                &mut memory.tmp_stack[1],
+                &mut tmp_stack[1],
             );
         }
         if !done2 {
             done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
                 &randomnesses.2,
                 &mut sampled2,
-                &mut memory.tmp_stack[2],
+                &mut tmp_stack[2],
             );
         }
         if !done3 {
             done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
                 &randomnesses.3,
                 &mut sampled3,
-                &mut memory.tmp_stack[3],
+                &mut tmp_stack[3],
             );
         }
     }
 
-    for k in 0..memory.indices.len() {
-        let (i, j) = memory.indices[k];
-        memory.out[i][j] = PolynomialRingElement::<SIMDUnit>::from_i32_array(&memory.tmp_stack[k]);
+    for k in 0..core::cmp::min(indices.len(), 4) {
+        let (i, j) = indices[k];
+        matrix[i as usize][j as usize] =
+            PolynomialRingElement::<SIMDUnit>::from_i32_array(&tmp_stack[k]);
     }
 }
 
@@ -538,8 +506,6 @@ mod tests {
         simd::{self, traits::Operations},
     };
 
-    // This is just a wrapper around sample_four_ring_elements, for testing
-    // purposes.
     fn sample_ring_element_uniform<SIMDUnit: Operations, Shake128: shake128::XofX4>(
         seed: [u8; 34],
     ) -> PolynomialRingElement<SIMDUnit> {
@@ -549,20 +515,36 @@ mod tests {
             [0u8; shake128::FIVE_BLOCKS_SIZE],
             [0u8; shake128::FIVE_BLOCKS_SIZE],
         );
+
+        let dummy_input = [0u8; 34];
+        let mut state = Shake128::init_absorb(&seed, &dummy_input, &dummy_input, &dummy_input);
+        state.squeeze_first_five_blocks(
+            &mut rand_stack.0,
+            &mut rand_stack.1,
+            &mut rand_stack.2,
+            &mut rand_stack.3,
+        );
         let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
-        let mut out = [[PolynomialRingElement::<SIMDUnit>::ZERO(); 4]; 1];
-        let indices = [(0, 0), (0, 1), (0, 2), (0, 3)];
-        let mut memory = SampleArgs::new(&mut rand_stack, &mut tmp_stack, &mut out, &indices);
-        sample_four_ring_elements::<SIMDUnit, Shake128, 1, 4>(
-            seed,
-            ((seed[33] as u16) << 8) | (seed[32] as u16),
-            0,
-            0,
-            0,
-            &mut memory,
+        let mut sampled = 0;
+
+        let mut done = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+            &mut rand_stack.0,
+            &mut sampled,
+            &mut tmp_stack[0],
         );
 
-        out[0][0]
+        while !done {
+            let randomnesses = state.squeeze_next_block();
+            if !done {
+                done = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+                    &randomnesses.0,
+                    &mut sampled,
+                    &mut tmp_stack[0],
+                );
+            }
+        }
+
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&tmp_stack[0])
     }
 
     // This is just a wrapper around sample_four_ring_elements, for testing
