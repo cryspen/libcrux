@@ -8,7 +8,7 @@
  * Eurydice: b665364a6d86749566ce2d650d13fa12c8fab2c5
  * Karamel: 96572bc631fde691a2aea7bce5a5a3838b3a5968
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 192edaf802604e2a52d47edca43cf9dc495a4721
+ * Libcrux: aecb2cd116d530465d34c6857e170fd6bab281b0
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -3293,47 +3293,6 @@ libcrux_ml_dsa_polynomial_ZERO_ff_ea(void) {
 }
 
 /**
-A monomorphic instance of libcrux_ml_dsa.sample.SampleArgs
-with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit
-with const generics
-- $840size_t
-- $6size_t
-- $5size_t
-*/
-typedef struct libcrux_ml_dsa_sample_SampleArgs_c5_s {
-  uint8_t_840size_t__x4 *rand_stack;
-  Eurydice_slice tmp_stack;
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_24 (*out)[5U];
-  Eurydice_slice indices;
-} libcrux_ml_dsa_sample_SampleArgs_c5;
-
-/**
-This function found in impl {libcrux_ml_dsa::sample::SampleArgs<'a, SIMDUnit,
-STACK_SIZE, ROWS_IN_A, COLUMNS_IN_A>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_ml_dsa.sample.new_29
-with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit
-with const generics
-- STACK_SIZE= 840
-- ROWS_IN_A= 6
-- COLUMNS_IN_A= 5
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_dsa_sample_SampleArgs_c5
-libcrux_ml_dsa_sample_new_29_4f(
-    uint8_t_840size_t__x4 *rand_stack, Eurydice_slice tmp_stack,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_24 (*out)[5U],
-    Eurydice_slice indices) {
-  libcrux_ml_dsa_sample_SampleArgs_c5 lit;
-  lit.rand_stack = rand_stack;
-  lit.tmp_stack = tmp_stack;
-  lit.out = out;
-  lit.indices = indices;
-  return lit;
-}
-
-/**
 A monomorphic instance of
 libcrux_ml_dsa.sample.rejection_sample_less_than_field_modulus with types
 libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit with const generics
@@ -3397,17 +3356,37 @@ libcrux_ml_dsa_polynomial_from_i32_array_ff_ea(Eurydice_slice array) {
 }
 
 /**
-A monomorphic instance of libcrux_ml_dsa.sample.sample_four_ring_elements
+ Sample and write out up to four ring elements.
+
+ If i <= `elements_requested`, a field element with domain separated
+ seed according to the provided index is generated in
+ `tmp_stack[i]`. After successful rejection sampling in
+ `tmp_stack[i]`, the ring element is written to `matrix` at the
+ provided index in `indices[i]`.
+ `rand_stack` is a working buffer that holds initial Shake output.
+*/
+/**
+A monomorphic instance of libcrux_ml_dsa.sample.sample_up_to_four_ring_elements
 with types libcrux_ml_dsa_simd_avx2_vector_type_AVX2SIMDUnit,
 libcrux_ml_dsa_hash_functions_simd256_Shake128x4 with const generics
 - ROWS_IN_A= 6
 - COLUMNS_IN_A= 5
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
-    uint8_t seed0[34U], uint16_t domain_separator0, uint16_t domain_separator1,
-    uint16_t domain_seperator2, uint16_t domain_separator3,
-    libcrux_ml_dsa_sample_SampleArgs_c5 *memory) {
+static KRML_MUSTINLINE void
+libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_f4(
+    uint8_t seed0[34U],
+    libcrux_ml_dsa_polynomial_PolynomialRingElement_24 (*matrix)[5U],
+    uint8_t_840size_t__x4 *rand_stack, Eurydice_slice tmp_stack,
+    uint8_t_x2 *indices, size_t elements_requested) {
+  uint16_t domain_separator0 =
+      libcrux_ml_dsa_sample_generate_domain_separator(indices[0U]);
+  uint16_t domain_separator1 =
+      libcrux_ml_dsa_sample_generate_domain_separator(indices[1U]);
+  uint16_t domain_separator2 =
+      libcrux_ml_dsa_sample_generate_domain_separator(indices[2U]);
+  uint16_t domain_separator3 =
+      libcrux_ml_dsa_sample_generate_domain_separator(indices[3U]);
   seed0[32U] = (uint8_t)domain_separator0;
   seed0[33U] = (uint8_t)((uint32_t)domain_separator0 >> 8U);
   uint8_t seed1[34U];
@@ -3416,8 +3395,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
   seed1[33U] = (uint8_t)((uint32_t)domain_separator1 >> 8U);
   uint8_t seed2[34U];
   memcpy(seed2, seed0, (size_t)34U * sizeof(uint8_t));
-  seed2[32U] = (uint8_t)domain_seperator2;
-  seed2[33U] = (uint8_t)((uint32_t)domain_seperator2 >> 8U);
+  seed2[32U] = (uint8_t)domain_separator2;
+  seed2[33U] = (uint8_t)((uint32_t)domain_separator2 >> 8U);
   uint8_t seed3[34U];
   memcpy(seed3, seed0, (size_t)34U * sizeof(uint8_t));
   seed3[32U] = (uint8_t)domain_separator3;
@@ -3429,39 +3408,35 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
           Eurydice_array_to_slice((size_t)34U, seed2, uint8_t),
           Eurydice_array_to_slice((size_t)34U, seed3, uint8_t));
   libcrux_ml_dsa_hash_functions_simd256_squeeze_first_five_blocks_7b(
-      &state, memory->rand_stack->fst, memory->rand_stack->snd,
-      memory->rand_stack->thd, memory->rand_stack->f3);
+      &state, rand_stack->fst, rand_stack->snd, rand_stack->thd,
+      rand_stack->f3);
   size_t sampled0 = (size_t)0U;
   size_t sampled1 = (size_t)0U;
   size_t sampled2 = (size_t)0U;
   size_t sampled3 = (size_t)0U;
   bool done0 =
       libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-          Eurydice_array_to_slice((size_t)840U, memory->rand_stack->fst,
-                                  uint8_t),
+          Eurydice_array_to_slice((size_t)840U, rand_stack->fst, uint8_t),
           &sampled0,
-          Eurydice_slice_index(memory->tmp_stack, (size_t)0U, int32_t[263U],
+          Eurydice_slice_index(tmp_stack, (size_t)0U, int32_t[263U],
                                int32_t(*)[263U]));
   bool done1 =
       libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-          Eurydice_array_to_slice((size_t)840U, memory->rand_stack->snd,
-                                  uint8_t),
+          Eurydice_array_to_slice((size_t)840U, rand_stack->snd, uint8_t),
           &sampled1,
-          Eurydice_slice_index(memory->tmp_stack, (size_t)1U, int32_t[263U],
+          Eurydice_slice_index(tmp_stack, (size_t)1U, int32_t[263U],
                                int32_t(*)[263U]));
   bool done2 =
       libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-          Eurydice_array_to_slice((size_t)840U, memory->rand_stack->thd,
-                                  uint8_t),
+          Eurydice_array_to_slice((size_t)840U, rand_stack->thd, uint8_t),
           &sampled2,
-          Eurydice_slice_index(memory->tmp_stack, (size_t)2U, int32_t[263U],
+          Eurydice_slice_index(tmp_stack, (size_t)2U, int32_t[263U],
                                int32_t(*)[263U]));
   bool done3 =
       libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
-          Eurydice_array_to_slice((size_t)840U, memory->rand_stack->f3,
-                                  uint8_t),
+          Eurydice_array_to_slice((size_t)840U, rand_stack->f3, uint8_t),
           &sampled3,
-          Eurydice_slice_index(memory->tmp_stack, (size_t)3U, int32_t[263U],
+          Eurydice_slice_index(tmp_stack, (size_t)3U, int32_t[263U],
                                int32_t(*)[263U]));
   while (true) {
     if (done0) {
@@ -3479,8 +3454,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                       Eurydice_array_to_slice((size_t)168U, randomnesses.fst,
                                               uint8_t),
                       &sampled0,
-                      Eurydice_slice_index(memory->tmp_stack, (size_t)0U,
-                                           int32_t[263U], int32_t(*)[263U]));
+                      Eurydice_slice_index(tmp_stack, (size_t)0U, int32_t[263U],
+                                           int32_t(*)[263U]));
             }
             if (!done1) {
               done1 =
@@ -3488,8 +3463,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                       Eurydice_array_to_slice((size_t)168U, randomnesses.snd,
                                               uint8_t),
                       &sampled1,
-                      Eurydice_slice_index(memory->tmp_stack, (size_t)1U,
-                                           int32_t[263U], int32_t(*)[263U]));
+                      Eurydice_slice_index(tmp_stack, (size_t)1U, int32_t[263U],
+                                           int32_t(*)[263U]));
             }
             if (!done2) {
               done2 =
@@ -3497,8 +3472,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                       Eurydice_array_to_slice((size_t)168U, randomnesses.thd,
                                               uint8_t),
                       &sampled2,
-                      Eurydice_slice_index(memory->tmp_stack, (size_t)2U,
-                                           int32_t[263U], int32_t(*)[263U]));
+                      Eurydice_slice_index(tmp_stack, (size_t)2U, int32_t[263U],
+                                           int32_t(*)[263U]));
             }
             if (!done3) {
               done3 =
@@ -3506,8 +3481,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                       Eurydice_array_to_slice((size_t)168U, randomnesses.f3,
                                               uint8_t),
                       &sampled3,
-                      Eurydice_slice_index(memory->tmp_stack, (size_t)3U,
-                                           int32_t[263U], int32_t(*)[263U]));
+                      Eurydice_slice_index(tmp_stack, (size_t)3U, int32_t[263U],
+                                           int32_t(*)[263U]));
             }
           }
         } else {
@@ -3520,8 +3495,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                     Eurydice_array_to_slice((size_t)168U, randomnesses.fst,
                                             uint8_t),
                     &sampled0,
-                    Eurydice_slice_index(memory->tmp_stack, (size_t)0U,
-                                         int32_t[263U], int32_t(*)[263U]));
+                    Eurydice_slice_index(tmp_stack, (size_t)0U, int32_t[263U],
+                                         int32_t(*)[263U]));
           }
           if (!done1) {
             done1 =
@@ -3529,8 +3504,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                     Eurydice_array_to_slice((size_t)168U, randomnesses.snd,
                                             uint8_t),
                     &sampled1,
-                    Eurydice_slice_index(memory->tmp_stack, (size_t)1U,
-                                         int32_t[263U], int32_t(*)[263U]));
+                    Eurydice_slice_index(tmp_stack, (size_t)1U, int32_t[263U],
+                                         int32_t(*)[263U]));
           }
           if (!done2) {
             done2 =
@@ -3538,8 +3513,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                     Eurydice_array_to_slice((size_t)168U, randomnesses.thd,
                                             uint8_t),
                     &sampled2,
-                    Eurydice_slice_index(memory->tmp_stack, (size_t)2U,
-                                         int32_t[263U], int32_t(*)[263U]));
+                    Eurydice_slice_index(tmp_stack, (size_t)2U, int32_t[263U],
+                                         int32_t(*)[263U]));
           }
           if (!done3) {
             done3 =
@@ -3547,8 +3522,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                     Eurydice_array_to_slice((size_t)168U, randomnesses.f3,
                                             uint8_t),
                     &sampled3,
-                    Eurydice_slice_index(memory->tmp_stack, (size_t)3U,
-                                         int32_t[263U], int32_t(*)[263U]));
+                    Eurydice_slice_index(tmp_stack, (size_t)3U, int32_t[263U],
+                                         int32_t(*)[263U]));
           }
         }
       } else {
@@ -3560,8 +3535,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                   Eurydice_array_to_slice((size_t)168U, randomnesses.fst,
                                           uint8_t),
                   &sampled0,
-                  Eurydice_slice_index(memory->tmp_stack, (size_t)0U,
-                                       int32_t[263U], int32_t(*)[263U]));
+                  Eurydice_slice_index(tmp_stack, (size_t)0U, int32_t[263U],
+                                       int32_t(*)[263U]));
         }
         if (!done1) {
           done1 =
@@ -3569,8 +3544,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                   Eurydice_array_to_slice((size_t)168U, randomnesses.snd,
                                           uint8_t),
                   &sampled1,
-                  Eurydice_slice_index(memory->tmp_stack, (size_t)1U,
-                                       int32_t[263U], int32_t(*)[263U]));
+                  Eurydice_slice_index(tmp_stack, (size_t)1U, int32_t[263U],
+                                       int32_t(*)[263U]));
         }
         if (!done2) {
           done2 =
@@ -3578,8 +3553,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                   Eurydice_array_to_slice((size_t)168U, randomnesses.thd,
                                           uint8_t),
                   &sampled2,
-                  Eurydice_slice_index(memory->tmp_stack, (size_t)2U,
-                                       int32_t[263U], int32_t(*)[263U]));
+                  Eurydice_slice_index(tmp_stack, (size_t)2U, int32_t[263U],
+                                       int32_t(*)[263U]));
         }
         if (!done3) {
           done3 =
@@ -3587,8 +3562,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                   Eurydice_array_to_slice((size_t)168U, randomnesses.f3,
                                           uint8_t),
                   &sampled3,
-                  Eurydice_slice_index(memory->tmp_stack, (size_t)3U,
-                                       int32_t[263U], int32_t(*)[263U]));
+                  Eurydice_slice_index(tmp_stack, (size_t)3U, int32_t[263U],
+                                       int32_t(*)[263U]));
         }
       }
     } else {
@@ -3600,8 +3575,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                 Eurydice_array_to_slice((size_t)168U, randomnesses.fst,
                                         uint8_t),
                 &sampled0,
-                Eurydice_slice_index(memory->tmp_stack, (size_t)0U,
-                                     int32_t[263U], int32_t(*)[263U]));
+                Eurydice_slice_index(tmp_stack, (size_t)0U, int32_t[263U],
+                                     int32_t(*)[263U]));
       }
       if (!done1) {
         done1 =
@@ -3609,8 +3584,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                 Eurydice_array_to_slice((size_t)168U, randomnesses.snd,
                                         uint8_t),
                 &sampled1,
-                Eurydice_slice_index(memory->tmp_stack, (size_t)1U,
-                                     int32_t[263U], int32_t(*)[263U]));
+                Eurydice_slice_index(tmp_stack, (size_t)1U, int32_t[263U],
+                                     int32_t(*)[263U]));
       }
       if (!done2) {
         done2 =
@@ -3618,36 +3593,30 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
                 Eurydice_array_to_slice((size_t)168U, randomnesses.thd,
                                         uint8_t),
                 &sampled2,
-                Eurydice_slice_index(memory->tmp_stack, (size_t)2U,
-                                     int32_t[263U], int32_t(*)[263U]));
+                Eurydice_slice_index(tmp_stack, (size_t)2U, int32_t[263U],
+                                     int32_t(*)[263U]));
       }
       if (!done3) {
         done3 =
             libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_ea(
                 Eurydice_array_to_slice((size_t)168U, randomnesses.f3, uint8_t),
                 &sampled3,
-                Eurydice_slice_index(memory->tmp_stack, (size_t)3U,
-                                     int32_t[263U], int32_t(*)[263U]));
+                Eurydice_slice_index(tmp_stack, (size_t)3U, int32_t[263U],
+                                     int32_t(*)[263U]));
       }
     }
   }
-  for (size_t i0 = (size_t)0U;
-       i0 < Eurydice_slice_len(memory->indices, size_t_x2); i0++) {
+  for (size_t i0 = (size_t)0U; i0 < elements_requested; i0++) {
     size_t k = i0;
     size_t uu____0 = k;
-    size_t i =
-        Eurydice_slice_index(memory->indices, uu____0, size_t_x2, size_t_x2 *)
-            .fst;
-    size_t j =
-        Eurydice_slice_index(memory->indices, uu____0, size_t_x2, size_t_x2 *)
-            .snd;
+    uint8_t i = indices[uu____0].fst;
+    uint8_t j = indices[uu____0].snd;
     libcrux_ml_dsa_polynomial_PolynomialRingElement_24 uu____1 =
         libcrux_ml_dsa_polynomial_from_i32_array_ff_ea(Eurydice_array_to_slice(
             (size_t)263U,
-            Eurydice_slice_index(memory->tmp_stack, k, int32_t[263U],
-                                 int32_t(*)[263U]),
+            Eurydice_slice_index(tmp_stack, k, int32_t[263U], int32_t(*)[263U]),
             int32_t));
-    memory->out[i][j] = uu____1;
+    matrix[(size_t)i][(size_t)j] = uu____1;
   }
 }
 
@@ -5356,161 +5325,94 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_A_6_by_5_f4(
   rand_stack.f3[838U] = 0U;
   rand_stack.f3[839U] = 0U;
   int32_t tmp_stack[4U][263U] = {{0U}};
-  size_t_x2 buf0[0U] = {};
-  libcrux_ml_dsa_sample_SampleArgs_c5 memory = libcrux_ml_dsa_sample_new_29_4f(
-      &rand_stack,
-      Eurydice_array_to_slice((size_t)4U, tmp_stack, int32_t[263U]), A,
-      Eurydice_array_to_slice((size_t)0U, buf0, size_t_x2));
-  size_t_x2 buf[4U] = {
-      (CLITERAL(size_t_x2){.fst = (size_t)0U, .snd = (size_t)0U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)0U, .snd = (size_t)1U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)0U, .snd = (size_t)2U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)0U, .snd = (size_t)3U})};
-  memory.indices = Eurydice_array_to_slice((size_t)4U, buf, size_t_x2);
-  uint8_t uu____2[34U];
-  memcpy(uu____2, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
-      uu____2,
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 0U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 1U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 2U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 3U})),
-      &memory);
-  size_t_x2 buf1[4U] = {
-      (CLITERAL(size_t_x2){.fst = (size_t)0U, .snd = (size_t)4U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)1U, .snd = (size_t)0U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)1U, .snd = (size_t)1U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)1U, .snd = (size_t)2U})};
-  memory.indices = Eurydice_array_to_slice((size_t)4U, buf1, size_t_x2);
-  uint8_t uu____3[34U];
-  memcpy(uu____3, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
-      uu____3,
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 4U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 0U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 1U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 2U})),
-      &memory);
-  size_t_x2 buf2[4U] = {
-      (CLITERAL(size_t_x2){.fst = (size_t)1U, .snd = (size_t)3U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)1U, .snd = (size_t)4U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)2U, .snd = (size_t)0U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)2U, .snd = (size_t)1U})};
-  memory.indices = Eurydice_array_to_slice((size_t)4U, buf2, size_t_x2);
-  uint8_t uu____4[34U];
-  memcpy(uu____4, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
-      uu____4,
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 3U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 4U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 0U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 1U})),
-      &memory);
-  size_t_x2 buf3[4U] = {
-      (CLITERAL(size_t_x2){.fst = (size_t)2U, .snd = (size_t)2U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)2U, .snd = (size_t)3U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)2U, .snd = (size_t)4U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)3U, .snd = (size_t)0U})};
-  memory.indices = Eurydice_array_to_slice((size_t)4U, buf3, size_t_x2);
-  uint8_t uu____5[34U];
-  memcpy(uu____5, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
-      uu____5,
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 2U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 3U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 4U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 0U})),
-      &memory);
-  size_t_x2 buf4[4U] = {
-      (CLITERAL(size_t_x2){.fst = (size_t)3U, .snd = (size_t)1U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)3U, .snd = (size_t)2U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)3U, .snd = (size_t)3U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)3U, .snd = (size_t)4U})};
-  memory.indices = Eurydice_array_to_slice((size_t)4U, buf4, size_t_x2);
-  uint8_t uu____6[34U];
-  memcpy(uu____6, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
-      uu____6,
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 1U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 2U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 3U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 4U})),
-      &memory);
-  size_t_x2 buf5[4U] = {
-      (CLITERAL(size_t_x2){.fst = (size_t)4U, .snd = (size_t)0U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)4U, .snd = (size_t)1U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)4U, .snd = (size_t)2U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)4U, .snd = (size_t)3U})};
-  memory.indices = Eurydice_array_to_slice((size_t)4U, buf5, size_t_x2);
-  uint8_t uu____7[34U];
-  memcpy(uu____7, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
-      uu____7,
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 0U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 1U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 2U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 3U})),
-      &memory);
-  size_t_x2 buf6[4U] = {
-      (CLITERAL(size_t_x2){.fst = (size_t)4U, .snd = (size_t)4U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)5U, .snd = (size_t)0U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)5U, .snd = (size_t)1U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)5U, .snd = (size_t)2U})};
-  memory.indices = Eurydice_array_to_slice((size_t)4U, buf6, size_t_x2);
-  uint8_t uu____8[34U];
-  memcpy(uu____8, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
-      uu____8,
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 4U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 0U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 1U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 2U})),
-      &memory);
-  size_t_x2 buf7[2U] = {
-      (CLITERAL(size_t_x2){.fst = (size_t)5U, .snd = (size_t)3U}),
-      (CLITERAL(size_t_x2){.fst = (size_t)5U, .snd = (size_t)4U})};
-  memory.indices = Eurydice_array_to_slice((size_t)2U, buf7, size_t_x2);
-  uint8_t uu____9[34U];
-  memcpy(uu____9, seed, (size_t)34U * sizeof(uint8_t));
-  libcrux_ml_dsa_sample_sample_four_ring_elements_f4(
-      uu____9,
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 3U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 4U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 5U})),
-      libcrux_ml_dsa_samplex4_generate_domain_separator(
-          (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 6U})),
-      &memory);
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_seed[34U];
+  memcpy(copy_of_seed, seed, (size_t)34U * sizeof(uint8_t));
+  uint8_t_x2 buf0[4U] = {(CLITERAL(uint8_t_x2){.fst = 0U, .snd = 0U}),
+                         (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 1U}),
+                         (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 2U}),
+                         (CLITERAL(uint8_t_x2){.fst = 0U, .snd = 3U})};
+  libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_f4(
+      copy_of_seed, A, &rand_stack,
+      Eurydice_array_to_slice((size_t)4U, tmp_stack, int32_t[263U]), buf0,
+      (size_t)4U);
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_seed0[34U];
+  memcpy(copy_of_seed0, seed, (size_t)34U * sizeof(uint8_t));
+  uint8_t_x2 buf1[4U] = {(CLITERAL(uint8_t_x2){.fst = 0U, .snd = 4U}),
+                         (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 0U}),
+                         (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 1U}),
+                         (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 2U})};
+  libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_f4(
+      copy_of_seed0, A, &rand_stack,
+      Eurydice_array_to_slice((size_t)4U, tmp_stack, int32_t[263U]), buf1,
+      (size_t)4U);
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_seed1[34U];
+  memcpy(copy_of_seed1, seed, (size_t)34U * sizeof(uint8_t));
+  uint8_t_x2 buf2[4U] = {(CLITERAL(uint8_t_x2){.fst = 1U, .snd = 3U}),
+                         (CLITERAL(uint8_t_x2){.fst = 1U, .snd = 4U}),
+                         (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 0U}),
+                         (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 1U})};
+  libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_f4(
+      copy_of_seed1, A, &rand_stack,
+      Eurydice_array_to_slice((size_t)4U, tmp_stack, int32_t[263U]), buf2,
+      (size_t)4U);
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_seed2[34U];
+  memcpy(copy_of_seed2, seed, (size_t)34U * sizeof(uint8_t));
+  uint8_t_x2 buf3[4U] = {(CLITERAL(uint8_t_x2){.fst = 2U, .snd = 2U}),
+                         (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 3U}),
+                         (CLITERAL(uint8_t_x2){.fst = 2U, .snd = 4U}),
+                         (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 0U})};
+  libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_f4(
+      copy_of_seed2, A, &rand_stack,
+      Eurydice_array_to_slice((size_t)4U, tmp_stack, int32_t[263U]), buf3,
+      (size_t)4U);
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_seed3[34U];
+  memcpy(copy_of_seed3, seed, (size_t)34U * sizeof(uint8_t));
+  uint8_t_x2 buf4[4U] = {(CLITERAL(uint8_t_x2){.fst = 3U, .snd = 1U}),
+                         (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 2U}),
+                         (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 3U}),
+                         (CLITERAL(uint8_t_x2){.fst = 3U, .snd = 4U})};
+  libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_f4(
+      copy_of_seed3, A, &rand_stack,
+      Eurydice_array_to_slice((size_t)4U, tmp_stack, int32_t[263U]), buf4,
+      (size_t)4U);
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_seed4[34U];
+  memcpy(copy_of_seed4, seed, (size_t)34U * sizeof(uint8_t));
+  uint8_t_x2 buf5[4U] = {(CLITERAL(uint8_t_x2){.fst = 4U, .snd = 0U}),
+                         (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 1U}),
+                         (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 2U}),
+                         (CLITERAL(uint8_t_x2){.fst = 4U, .snd = 3U})};
+  libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_f4(
+      copy_of_seed4, A, &rand_stack,
+      Eurydice_array_to_slice((size_t)4U, tmp_stack, int32_t[263U]), buf5,
+      (size_t)4U);
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_seed5[34U];
+  memcpy(copy_of_seed5, seed, (size_t)34U * sizeof(uint8_t));
+  uint8_t_x2 buf6[4U] = {(CLITERAL(uint8_t_x2){.fst = 4U, .snd = 4U}),
+                         (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 0U}),
+                         (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 1U}),
+                         (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 2U})};
+  libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_f4(
+      copy_of_seed5, A, &rand_stack,
+      Eurydice_array_to_slice((size_t)4U, tmp_stack, int32_t[263U]), buf6,
+      (size_t)4U);
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_seed6[34U];
+  memcpy(copy_of_seed6, seed, (size_t)34U * sizeof(uint8_t));
+  uint8_t_x2 buf[4U] = {(CLITERAL(uint8_t_x2){.fst = 5U, .snd = 3U}),
+                        (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 4U}),
+                        (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 5U}),
+                        (CLITERAL(uint8_t_x2){.fst = 5U, .snd = 6U})};
+  libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_f4(
+      copy_of_seed6, A, &rand_stack,
+      Eurydice_array_to_slice((size_t)4U, tmp_stack, int32_t[263U]), buf,
+      (size_t)2U);
   memcpy(ret, A,
          (size_t)6U *
              sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_24[5U]));
