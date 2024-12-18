@@ -41,11 +41,14 @@ fn generate_domain_separator((row, column): (u8, u8)) -> u16 {
 
 /// Sample and write out up to four ring elements.
 ///
-/// If `indices[i]` is provided, a field element with domain separated
-/// seed according to the provided index is generated in `tmp_stack`. After successful rejection sampling in `tmp_stack[i]`, the ring element is written to `matrix` at the provided index in `indices[i]`.
+/// If i <= `elements_requested`, a field element with domain separated
+/// seed according to the provided index is generated in
+/// `tmp_stack[i]`. After successful rejection sampling in
+/// `tmp_stack[i]`, the ring element is written to `matrix` at the
+/// provided index in `indices[i]`.
 /// `rand_stack` is a working buffer that holds initial Shake output.
 #[inline(always)]
-pub(crate) fn sample_four_ring_elements<
+pub(crate) fn sample_up_to_four_ring_elements<
     SIMDUnit: Operations,
     Shake128: shake128::XofX4,
     const ROWS_IN_A: usize,
@@ -60,18 +63,16 @@ pub(crate) fn sample_four_ring_elements<
         [u8; shake128::FIVE_BLOCKS_SIZE],
     ),
     tmp_stack: &mut [[i32; 263]],
-    indices: &[(u8, u8)],
+    indices: &[(u8, u8); 4],
+    elements_requested: usize,
 ) {
-    debug_assert!(indices.len() <= 4);
+    debug_assert!(elements_requested <= 4);
 
-    // If less than four indices are provided, the remaining slots are
-    // filled with dummy values and the results are not written out to
-    // `matrix`.
-    let domain_separator0 = generate_domain_separator(*indices.get(0).unwrap_or(&(0, 0)));
-    let domain_separator1 = generate_domain_separator(*indices.get(1).unwrap_or(&(0, 0)));
-    let domain_separator2 = generate_domain_separator(*indices.get(2).unwrap_or(&(0, 0)));
-    let domain_separator3 = generate_domain_separator(*indices.get(3).unwrap_or(&(0, 0)));
-
+    let domain_separator0 = generate_domain_separator(indices[0]);
+    let domain_separator1 = generate_domain_separator(indices[1]);
+    let domain_separator2 = generate_domain_separator(indices[2]);
+    let domain_separator3 = generate_domain_separator(indices[3]);
+    
     // Prepare the seeds
     seed0[32] = domain_separator0 as u8;
     seed0[33] = (domain_separator0 >> 8) as u8;
@@ -163,7 +164,7 @@ pub(crate) fn sample_four_ring_elements<
         }
     }
 
-    for k in 0..indices.len() {
+    for k in 0..elements_requested {
         let (i, j) = indices[k];
         matrix[i as usize][j as usize] =
             PolynomialRingElement::<SIMDUnit>::from_i32_array(&tmp_stack[k]);

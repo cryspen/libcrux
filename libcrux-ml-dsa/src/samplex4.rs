@@ -1,7 +1,7 @@
 use crate::{
     hash_functions::{shake128, shake256},
     polynomial::PolynomialRingElement,
-    sample::{sample_four_error_ring_elements, sample_four_ring_elements},
+    sample::{sample_four_error_ring_elements, sample_up_to_four_ring_elements},
     simd::traits::Operations,
 };
 
@@ -21,12 +21,13 @@ type Matrix<SIMDUnit, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize> =
 /// $c, $d.
 macro_rules! sample_four_ring_elements_into {
     ($seed:ident, $matrix:ident, $rand_stack:ident, $tmp_stack:ident, $a:expr, $b:expr, $c:expr, $d:expr) => {
-        sample_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
+        sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
             $seed,
             &mut $matrix,
             &mut $rand_stack,
             &mut $tmp_stack,
             &[$a, $b, $c, $d],
+            4,
         );
     };
 }
@@ -190,12 +191,13 @@ pub(crate) fn matrix_A_6_by_5<
     );
 
     // The last 2 sampled ring elements are discarded here.
-    sample_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
         &mut A,
         &mut rand_stack,
         &mut tmp_stack,
-        &[(5, 3), (5, 4)],
+        &[(5, 3), (5, 4), (5,5), (5,6)],
+        2,
     );
 
     A
