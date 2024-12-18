@@ -44,18 +44,6 @@ val impl_2': Core.Marker.t_Copy t_AVX2SIMDUnit
 
 let impl_2 = impl_2'
 
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-assume
-val impl_1': Core.Clone.t_Clone t_AVX2SIMDUnit
-
-let impl_1 = impl_1'
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-assume
-val impl_2': Core.Marker.t_Copy t_AVX2SIMDUnit
-
-let impl_2 = impl_2'
-
 let to_coefficient_array (x: t_AVX2SIMDUnit) =
   let coefficient_array:t_Array i32 (sz 8) = Rust_primitives.Hax.repeat 0l (sz 8) in
   let coefficient_array:t_Array i32 (sz 8) =
