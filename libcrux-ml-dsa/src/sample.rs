@@ -163,7 +163,7 @@ pub(crate) fn sample_four_ring_elements<
         }
     }
 
-    for k in 0..core::cmp::min(indices.len(), 4) {
+    for k in 0..indices.len() {
         let (i, j) = indices[k];
         matrix[i as usize][j as usize] =
             PolynomialRingElement::<SIMDUnit>::from_i32_array(&tmp_stack[k]);
