@@ -184,7 +184,7 @@ pub(crate) mod neon {
         ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
             matrix_A_generic::<
                 SIMDUnit,
-                crate::hash_functions::neon::Shake128X4,
+                crate::hash_functions::neon::Shake128x4,
                 ROWS_IN_A,
                 COLUMNS_IN_A,
             >(seed)
