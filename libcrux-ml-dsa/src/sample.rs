@@ -46,9 +46,8 @@ pub(super) struct SampleArgs<
         [u8; shake128::FIVE_BLOCKS_SIZE],
         [u8; shake128::FIVE_BLOCKS_SIZE],
     ),
-    pub(super) tmp_stack: &'a mut [ElementOut<SIMDUnit>],
-    pub(super) out: &'a mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    pub(super) indices: &'a [(usize, usize)],
+    pub(super) matrix: &'a mut [SampledRingElement<SIMDUnit>],
+    pub(super) start_index: usize,
 }
 
 impl<'a, SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>
@@ -61,15 +60,13 @@ impl<'a, SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize
             [u8; shake128::FIVE_BLOCKS_SIZE],
             [u8; shake128::FIVE_BLOCKS_SIZE],
         ),
-        tmp_stack: &'a mut [ElementOut<SIMDUnit>],
-        out: &'a mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-        indices: &'a [(usize, usize)],
+        matrix: &'a mut [SampledRingElement<SIMDUnit>],
+        start_index: usize,
     ) -> Self {
         Self {
             rand_stack,
-            tmp_stack,
-            out,
-            indices,
+            matrix,
+            start_index,
         }
     }
 }
@@ -137,22 +134,22 @@ pub(crate) fn sample_four_ring_elements<
         let mut done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
             &mut memory.rand_stack.0,
             &mut sampled0,
-            &mut memory.tmp_stack[0].bytes,
+            &mut memory.matrix[memory.start_index + 0].bytes,
         );
         let mut done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
             &mut memory.rand_stack.1,
             &mut sampled1,
-            &mut memory.tmp_stack[1].bytes,
+            &mut memory.matrix[memory.start_index + 1].bytes,
         );
         let mut done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
             &mut memory.rand_stack.2,
             &mut sampled2,
-            &mut memory.tmp_stack[2].bytes,
+            &mut memory.matrix[memory.start_index + 2].bytes,
         );
         let mut done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
             &mut memory.rand_stack.3,
             &mut sampled3,
-            &mut memory.tmp_stack[3].bytes,
+            &mut memory.matrix[memory.start_index + 3].bytes,
         );
 
         while !done0 || !done1 || !done2 || !done3 {
@@ -161,35 +158,35 @@ pub(crate) fn sample_four_ring_elements<
                 done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
                     &randomnesses.0,
                     &mut sampled0,
-                    &mut memory.tmp_stack[0].bytes,
+                    &mut memory.matrix[memory.start_index + 0].bytes,
                 );
             }
             if !done1 {
                 done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
                     &randomnesses.1,
                     &mut sampled1,
-                    &mut memory.tmp_stack[1].bytes,
+                    &mut memory.matrix[memory.start_index + 1].bytes,
                 );
             }
             if !done2 {
                 done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
                     &randomnesses.2,
                     &mut sampled2,
-                    &mut memory.tmp_stack[2].bytes,
+                    &mut memory.matrix[memory.start_index + 2].bytes,
                 );
             }
             if !done3 {
                 done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
                     &randomnesses.3,
                     &mut sampled3,
-                    &mut memory.tmp_stack[3].bytes,
+                    &mut memory.matrix[memory.start_index + 3].bytes,
                 );
             }
         }
 
-        for (k, (i, j)) in memory.indices.iter().enumerate() {
-            memory.out[*i][*j] = memory.tmp_stack[k].re;
-        }
+        // for (k, (i, j)) in memory.indices.iter().enumerate() {
+        //     memory.out[*i][*j] = memory.matrix[k].re;
+        // }
     }
 }
 
@@ -198,7 +195,7 @@ pub(crate) fn sample_four_ring_elements<
 fn rejection_sample_less_than_eta_equals_2<SIMDUnit: Operations>(
     randomness: &[u8],
     sampled_coefficients: &mut usize,
-    out: &mut ElementOut<SIMDUnit>,
+    out: &mut SampledRingElement<SIMDUnit>,
 ) -> bool {
     let mut done = false;
 
@@ -229,7 +226,7 @@ fn rejection_sample_less_than_eta_equals_2<SIMDUnit: Operations>(
 fn rejection_sample_less_than_eta_equals_4<SIMDUnit: Operations>(
     randomness: &[u8],
     sampled_coefficients: &mut usize,
-    out: &mut ElementOut<SIMDUnit>,
+    out: &mut SampledRingElement<SIMDUnit>,
 ) -> bool {
     let mut done = false;
 
@@ -258,7 +255,7 @@ fn rejection_sample_less_than_eta_equals_4<SIMDUnit: Operations>(
 fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: usize>(
     randomness: &[u8],
     sampled: &mut usize,
-    out: &mut ElementOut<SIMDUnit>,
+    out: &mut SampledRingElement<SIMDUnit>,
 ) -> bool {
     match ETA as u8 {
         2 => rejection_sample_less_than_eta_equals_2::<SIMDUnit>(randomness, sampled, out),
@@ -268,14 +265,19 @@ fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: usize>(
 }
 
 #[derive(Clone, Copy)]
-pub(super) union ElementOut<SIMDUnit: Operations> {
-    pub(super) bytes: [i32; 263],
-    pub(super) re: PolynomialRingElement<SIMDUnit>,
+pub(super) union SampledRingElement<SIMDUnit: Operations> {
+    bytes: [i32; 263],
+    re: PolynomialRingElement<SIMDUnit>,
 }
 
-impl<SIMDUnit: Operations> ElementOut<SIMDUnit> {
+impl<SIMDUnit: Operations> SampledRingElement<SIMDUnit> {
     pub(super) fn new() -> Self {
         Self { bytes: [0i32; 263] }
+    }
+
+    #[allow(unsafe_code)]
+    pub(super) fn into_ring_element(self) -> PolynomialRingElement<SIMDUnit> {
+        unsafe { self.re }
     }
 }
 
@@ -291,7 +293,7 @@ pub(crate) fn sample_four_error_ring_elements<
     domain_separator1: u16,
     domain_seperator2: u16,
     domain_separator3: u16,
-    out: &mut [ElementOut<SIMDUnit>],
+    out: &mut [SampledRingElement<SIMDUnit>],
 ) {
     // Prepare the seeds
     let mut seed0 = seed_base;
@@ -559,15 +561,8 @@ mod tests {
             [0u8; shake128::FIVE_BLOCKS_SIZE],
             [0u8; shake128::FIVE_BLOCKS_SIZE],
         );
-        let mut tmp_stack = [
-            ElementOut::new(),
-            ElementOut::new(),
-            ElementOut::new(),
-            ElementOut::new(),
-        ];
-        let mut out = [[PolynomialRingElement::<SIMDUnit>::ZERO(); 4]; 1];
-        let indices = [(0, 0), (0, 1), (0, 2), (0, 3)];
-        let mut memory = SampleArgs::new(&mut rand_stack, &mut tmp_stack, &mut out, &indices);
+        let mut out = [SampledRingElement::<SIMDUnit>::new(); 4];
+        let mut memory = SampleArgs::new(&mut rand_stack, &mut out, 0);
         sample_four_ring_elements::<SIMDUnit, 1, 4>(
             seed,
             ((seed[33] as u16) << 8) | (seed[32] as u16),
@@ -577,7 +572,7 @@ mod tests {
             &mut memory,
         );
 
-        out[0][0]
+        out[0].into_ring_element()
     }
 
     // This is just a wrapper around sample_four_ring_elements, for testing
@@ -591,10 +586,10 @@ mod tests {
         seed_base: [u8; 66],
     ) -> PolynomialRingElement<SIMDUnit> {
         let mut out = [
-            ElementOut::<SIMDUnit>::new(),
-            ElementOut::<SIMDUnit>::new(),
-            ElementOut::<SIMDUnit>::new(),
-            ElementOut::<SIMDUnit>::new(),
+            SampledRingElement::<SIMDUnit>::new(),
+            SampledRingElement::<SIMDUnit>::new(),
+            SampledRingElement::<SIMDUnit>::new(),
+            SampledRingElement::<SIMDUnit>::new(),
         ];
         sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(
             seed_base,

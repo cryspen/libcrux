@@ -12,7 +12,7 @@ use crate::{
     },
     ntt::ntt,
     pre_hash::{DomainSeparationContext, PreHash},
-    sample::{sample_challenge_ring_element, sample_mask_vector},
+    sample::{sample_challenge_ring_element, sample_mask_vector, SampledRingElement},
     samplex4,
     simd::traits::Operations,
     types::{SigningError, VerificationError},
@@ -58,17 +58,24 @@ pub(crate) fn generate_key_pair<
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-    let a_as_ntt = unsafe {
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_a))
-    };
-
-    let (s1, s2) = unsafe {
-        samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
-            into_padded_array(seed_for_error_vectors),
+    let mut a_as_ntt = [SampledRingElement::<SIMDUnit>::new(); 32];
+    unsafe {
+        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
+            into_padded_array(seed_for_a),
+            &mut a_as_ntt,
         )
     };
 
-    let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1, &s2);
+    let mut s_elements = [SampledRingElement::<SIMDUnit>::new(); 12];
+    // let (s1, s2) =
+    unsafe {
+        samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
+            into_padded_array(seed_for_error_vectors),
+            &mut s_elements,
+        )
+    };
+
+    let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s_elements);
 
     let (t0, t1) = power2round_vector::<SIMDUnit, ROWS_IN_A>(t);
 
@@ -90,8 +97,7 @@ pub(crate) fn generate_key_pair<
         seed_for_a,
         seed_for_signing,
         &verification_key_serialized,
-        s1,
-        s2,
+        &s_elements,
         t0,
     );
 
@@ -294,8 +300,12 @@ pub(crate) fn sign_internal<
     //     SIGNING_KEY_SIZE,
     // >(remaining_serialized);
 
-    let A_as_ntt = unsafe {
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A))
+    let mut A_as_ntt = [SampledRingElement::<SIMDUnit>::new(); 32];
+    unsafe {
+        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
+            into_padded_array(&seed_for_A),
+            &mut A_as_ntt,
+        )
     };
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
@@ -546,8 +556,12 @@ pub(crate) fn verify_internal<
     ) {
         return Err(VerificationError::SignerResponseExceedsBoundError);
     }
-    let A_as_ntt = unsafe {
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A))
+    let mut A_as_ntt = [SampledRingElement::<SIMDUnit>::new(); 32];
+    unsafe {
+        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
+            into_padded_array(&seed_for_A),
+            &mut A_as_ntt,
+        )
     };
 
     let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
