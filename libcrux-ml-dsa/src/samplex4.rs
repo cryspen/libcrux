@@ -46,12 +46,12 @@ pub(crate) fn matrix_A_4_by_4<
     let mut A: Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A> =
         [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
 
-    let mut rand_stack = (
+    let mut rand_stack = [
         [0u8; shake128::FIVE_BLOCKS_SIZE],
         [0u8; shake128::FIVE_BLOCKS_SIZE],
         [0u8; shake128::FIVE_BLOCKS_SIZE],
         [0u8; shake128::FIVE_BLOCKS_SIZE],
-    );
+    ];
     let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
 
     sample_four_ring_elements_into!(
@@ -111,12 +111,12 @@ pub(crate) fn matrix_A_6_by_5<
 ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
     let mut A = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
 
-    let mut rand_stack = (
+    let mut rand_stack = [
         [0u8; shake128::FIVE_BLOCKS_SIZE],
         [0u8; shake128::FIVE_BLOCKS_SIZE],
         [0u8; shake128::FIVE_BLOCKS_SIZE],
         [0u8; shake128::FIVE_BLOCKS_SIZE],
-    );
+    ];
     let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
 
     sample_four_ring_elements_into!(
@@ -216,12 +216,12 @@ pub(crate) fn matrix_A_8_by_7<
 ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
     let mut A = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
 
-    let mut rand_stack = (
+    let mut rand_stack = [
         [0u8; shake128::FIVE_BLOCKS_SIZE],
         [0u8; shake128::FIVE_BLOCKS_SIZE],
         [0u8; shake128::FIVE_BLOCKS_SIZE],
         [0u8; shake128::FIVE_BLOCKS_SIZE],
-    );
+    ];
     let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
 
     sample_four_ring_elements_into!(

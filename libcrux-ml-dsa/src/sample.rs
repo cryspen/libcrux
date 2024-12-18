@@ -56,12 +56,7 @@ pub(crate) fn sample_up_to_four_ring_elements<
 >(
     mut seed0: [u8; 34],
     matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    rand_stack: &mut (
-        [u8; shake128::FIVE_BLOCKS_SIZE],
-        [u8; shake128::FIVE_BLOCKS_SIZE],
-        [u8; shake128::FIVE_BLOCKS_SIZE],
-        [u8; shake128::FIVE_BLOCKS_SIZE],
-    ),
+    rand_stack: &mut [[u8; shake128::FIVE_BLOCKS_SIZE]; 4],
     tmp_stack: &mut [[i32; 263]],
     indices: &[(u8, u8); 4],
     elements_requested: usize,
@@ -91,11 +86,16 @@ pub(crate) fn sample_up_to_four_ring_elements<
 
     let mut state = Shake128::init_absorb(&seed0, &seed1, &seed2, &seed3);
 
+    let mut rand_stack0 = rand_stack[0];
+    let mut rand_stack1 = rand_stack[1];
+    let mut rand_stack2 = rand_stack[2];
+    let mut rand_stack3 = rand_stack[3];
+
     state.squeeze_first_five_blocks(
-        &mut rand_stack.0,
-        &mut rand_stack.1,
-        &mut rand_stack.2,
-        &mut rand_stack.3,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
     );
 
     // Every call to |rejection_sample_less_than_field_modulus|
@@ -112,22 +112,22 @@ pub(crate) fn sample_up_to_four_ring_elements<
     let mut sampled3 = 0;
 
     let mut done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut rand_stack.0,
+        &mut rand_stack0,
         &mut sampled0,
         &mut tmp_stack[0],
     );
     let mut done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut rand_stack.1,
+        &mut rand_stack1,
         &mut sampled1,
         &mut tmp_stack[1],
     );
     let mut done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut rand_stack.2,
+        &mut rand_stack2,
         &mut sampled2,
         &mut tmp_stack[2],
     );
     let mut done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &mut rand_stack.3,
+        &mut rand_stack3,
         &mut sampled3,
         &mut tmp_stack[3],
     );
