@@ -976,8 +976,7 @@ let sample_up_to_four_ring_elements
           t_Array
             (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
             v_ROWS_IN_A)
-      (rand_stack:
-          (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)))
+      (rand_stack: t_Array (t_Array u8 (sz 840)) (sz 4))
       (tmp_stack: t_Slice (t_Array i32 (sz 263)))
       (indices: t_Array (u8 & u8) (sz 4))
       (elements_requested: usize)
@@ -1043,54 +1042,33 @@ let sample_up_to_four_ring_elements
       (seed2 <: t_Slice u8)
       (seed3 <: t_Slice u8)
   in
+  let rand_stack0:t_Array u8 (sz 840) = rand_stack.[ sz 0 ] in
+  let rand_stack1:t_Array u8 (sz 840) = rand_stack.[ sz 1 ] in
+  let rand_stack2:t_Array u8 (sz 840) = rand_stack.[ sz 2 ] in
+  let rand_stack3:t_Array u8 (sz 840) = rand_stack.[ sz 3 ] in
   let tmp0, tmp1, tmp2, tmp3, tmp4:(v_Shake128 & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
     t_Array u8 (sz 840) &
     t_Array u8 (sz 840)) =
     Libcrux_ml_dsa.Hash_functions.Shake128.f_squeeze_first_five_blocks #v_Shake128
       #FStar.Tactics.Typeclasses.solve
       state
-      rand_stack._1
-      rand_stack._2
-      rand_stack._3
-      rand_stack._4
+      rand_stack0
+      rand_stack1
+      rand_stack2
+      rand_stack3
   in
   let state:v_Shake128 = tmp0 in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    { rand_stack with _1 = tmp1 }
-    <:
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840))
-  in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    { rand_stack with _2 = tmp2 }
-    <:
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840))
-  in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    { rand_stack with _3 = tmp3 }
-    <:
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840))
-  in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    { rand_stack with _4 = tmp4 }
-    <:
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840))
-  in
+  let rand_stack0:t_Array u8 (sz 840) = tmp1 in
+  let rand_stack1:t_Array u8 (sz 840) = tmp2 in
+  let rand_stack2:t_Array u8 (sz 840) = tmp3 in
+  let rand_stack3:t_Array u8 (sz 840) = tmp4 in
   let _:Prims.unit = () in
   let sampled0:usize = sz 0 in
   let sampled1:usize = sz 0 in
   let sampled2:usize = sz 0 in
   let sampled3:usize = sz 0 in
-  let tmp0, out:(t_Array u8 (sz 840) & t_Array u8 (sz 840)) = rand_stack._1 in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    { rand_stack with _1 = tmp0 }
-    <:
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840))
-  in
+  let tmp0, out:(t_Array u8 (sz 840) & t_Array u8 (sz 840)) = rand_stack0 in
+  let rand_stack0:t_Array u8 (sz 840) = tmp0 in
   let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
     rejection_sample_less_than_field_modulus #v_SIMDUnit
       (out <: t_Slice u8)
@@ -1102,13 +1080,8 @@ let sample_up_to_four_ring_elements
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp_stack (sz 0) tmp1
   in
   let done0:bool = out in
-  let tmp0, out:(t_Array u8 (sz 840) & t_Array u8 (sz 840)) = rand_stack._2 in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    { rand_stack with _2 = tmp0 }
-    <:
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840))
-  in
+  let tmp0, out:(t_Array u8 (sz 840) & t_Array u8 (sz 840)) = rand_stack1 in
+  let rand_stack1:t_Array u8 (sz 840) = tmp0 in
   let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
     rejection_sample_less_than_field_modulus #v_SIMDUnit
       (out <: t_Slice u8)
@@ -1120,13 +1093,8 @@ let sample_up_to_four_ring_elements
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp_stack (sz 1) tmp1
   in
   let done1:bool = out in
-  let tmp0, out:(t_Array u8 (sz 840) & t_Array u8 (sz 840)) = rand_stack._3 in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    { rand_stack with _3 = tmp0 }
-    <:
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840))
-  in
+  let tmp0, out:(t_Array u8 (sz 840) & t_Array u8 (sz 840)) = rand_stack2 in
+  let rand_stack2:t_Array u8 (sz 840) = tmp0 in
   let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
     rejection_sample_less_than_field_modulus #v_SIMDUnit
       (out <: t_Slice u8)
@@ -1138,13 +1106,8 @@ let sample_up_to_four_ring_elements
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp_stack (sz 2) tmp1
   in
   let done2:bool = out in
-  let tmp0, out:(t_Array u8 (sz 840) & t_Array u8 (sz 840)) = rand_stack._4 in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    { rand_stack with _4 = tmp0 }
-    <:
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840))
-  in
+  let tmp0, out:(t_Array u8 (sz 840) & t_Array u8 (sz 840)) = rand_stack3 in
+  let rand_stack3:t_Array u8 (sz 840) = tmp0 in
   let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
     rejection_sample_less_than_field_modulus #v_SIMDUnit
       (out <: t_Slice u8)
@@ -1332,5 +1295,5 @@ let sample_up_to_four_ring_elements
   <:
   (t_Array (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Slice (t_Array i32 (sz 263)))

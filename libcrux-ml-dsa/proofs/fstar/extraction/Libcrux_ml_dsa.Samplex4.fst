@@ -37,14 +37,17 @@ let matrix_A_4_by_4_
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    Rust_primitives.Hax.repeat 0uy (sz 840),
-    Rust_primitives.Hax.repeat 0uy (sz 840),
-    Rust_primitives.Hax.repeat 0uy (sz 840),
-    Rust_primitives.Hax.repeat 0uy (sz 840)
-    <:
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840))
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) =
+    let list =
+      [
+        Rust_primitives.Hax.repeat 0uy (sz 840);
+        Rust_primitives.Hax.repeat 0uy (sz 840);
+        Rust_primitives.Hax.repeat 0uy (sz 840);
+        Rust_primitives.Hax.repeat 0uy (sz 840)
+      ]
+    in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 4);
+    Rust_primitives.Hax.array_of_list 4 list
   in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) =
     let list =
@@ -61,7 +64,7 @@ let matrix_A_4_by_4_
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -81,16 +84,13 @@ let matrix_A_4_by_4_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -110,16 +110,13 @@ let matrix_A_4_by_4_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -139,16 +136,13 @@ let matrix_A_4_by_4_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -168,10 +162,7 @@ let matrix_A_4_by_4_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   v_A
@@ -199,14 +190,17 @@ let matrix_A_6_by_5_
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    Rust_primitives.Hax.repeat 0uy (sz 840),
-    Rust_primitives.Hax.repeat 0uy (sz 840),
-    Rust_primitives.Hax.repeat 0uy (sz 840),
-    Rust_primitives.Hax.repeat 0uy (sz 840)
-    <:
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840))
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) =
+    let list =
+      [
+        Rust_primitives.Hax.repeat 0uy (sz 840);
+        Rust_primitives.Hax.repeat 0uy (sz 840);
+        Rust_primitives.Hax.repeat 0uy (sz 840);
+        Rust_primitives.Hax.repeat 0uy (sz 840)
+      ]
+    in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 4);
+    Rust_primitives.Hax.array_of_list 4 list
   in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) =
     let list =
@@ -223,7 +217,7 @@ let matrix_A_6_by_5_
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -243,16 +237,13 @@ let matrix_A_6_by_5_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -272,16 +263,13 @@ let matrix_A_6_by_5_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -301,16 +289,13 @@ let matrix_A_6_by_5_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -330,16 +315,13 @@ let matrix_A_6_by_5_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -359,16 +341,13 @@ let matrix_A_6_by_5_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -388,16 +367,13 @@ let matrix_A_6_by_5_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -417,16 +393,13 @@ let matrix_A_6_by_5_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -446,10 +419,7 @@ let matrix_A_6_by_5_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   v_A
@@ -477,14 +447,17 @@ let matrix_A_8_by_7_
         t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    Rust_primitives.Hax.repeat 0uy (sz 840),
-    Rust_primitives.Hax.repeat 0uy (sz 840),
-    Rust_primitives.Hax.repeat 0uy (sz 840),
-    Rust_primitives.Hax.repeat 0uy (sz 840)
-    <:
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840))
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) =
+    let list =
+      [
+        Rust_primitives.Hax.repeat 0uy (sz 840);
+        Rust_primitives.Hax.repeat 0uy (sz 840);
+        Rust_primitives.Hax.repeat 0uy (sz 840);
+        Rust_primitives.Hax.repeat 0uy (sz 840)
+      ]
+    in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 4);
+    Rust_primitives.Hax.array_of_list 4 list
   in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) =
     let list =
@@ -501,7 +474,7 @@ let matrix_A_8_by_7_
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -521,16 +494,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -550,16 +520,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -579,16 +546,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -608,16 +572,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -637,16 +598,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -666,16 +624,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -695,16 +650,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -724,16 +676,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -753,16 +702,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -782,16 +728,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -811,16 +754,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -840,16 +780,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -869,16 +806,13 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   let tmp0, tmp1, tmp2:(t_Array
       (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
       v_ROWS_IN_A &
-    (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+    t_Array (t_Array u8 (sz 840)) (sz 4) &
     t_Array (t_Array i32 (sz 263)) (sz 4)) =
     Libcrux_ml_dsa.Sample.sample_up_to_four_ring_elements #v_SIMDUnit #v_Shake128 v_ROWS_IN_A
       v_COLUMNS_IN_A seed v_A rand_stack tmp_stack
@@ -898,10 +832,7 @@ let matrix_A_8_by_7_
     v_ROWS_IN_A =
     tmp0
   in
-  let rand_stack:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    tmp1
-  in
+  let rand_stack:t_Array (t_Array u8 (sz 840)) (sz 4) = tmp1 in
   let tmp_stack:t_Array (t_Array i32 (sz 263)) (sz 4) = tmp2 in
   let _:Prims.unit = () in
   v_A

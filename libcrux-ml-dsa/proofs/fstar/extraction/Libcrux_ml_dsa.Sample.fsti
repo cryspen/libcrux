@@ -122,8 +122,7 @@ val sample_up_to_four_ring_elements
           t_Array
             (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
             v_ROWS_IN_A)
-      (rand_stack:
-          (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)))
+      (rand_stack: t_Array (t_Array u8 (sz 840)) (sz 4))
       (tmp_stack: t_Slice (t_Array i32 (sz 263)))
       (indices: t_Array (u8 & u8) (sz 4))
       (elements_requested: usize)
@@ -131,5 +130,5 @@ val sample_up_to_four_ring_elements
       (t_Array
           (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
           v_ROWS_IN_A &
-        (t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840)) &
+        t_Array (t_Array u8 (sz 840)) (sz 4) &
         t_Slice (t_Array i32 (sz 263))) Prims.l_True (fun _ -> Prims.l_True)
