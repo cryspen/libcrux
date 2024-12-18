@@ -27,8 +27,9 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     serialized: &[u8],
     result: &mut PolynomialRingElement<SIMDUnit>,
 ) {
+    const WINDOW: usize = 10;
     for i in 0..result.simd_units.len() {
-        result.simd_units[i] = SIMDUnit::t1_deserialize(&serialized[i * 10..(i + 1) * 10]);
+        result.simd_units[i] = SIMDUnit::t1_deserialize(&serialized[i * WINDOW..(i + 1) * WINDOW]);
     }
     ()
 }

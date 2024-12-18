@@ -270,17 +270,17 @@ pub mod portable {
         }
         use super::*;
 
-        /// SHAKE128 in absorb state
+        /// SHAKE128 Xof state
         pub struct Shake128Xof {
             state: KeccakXofState<1, 168, u64>,
         }
 
-        /// SHAKE256 in absorb state
+        /// SHAKE256 Xof state
         pub struct Shake256Xof {
             state: KeccakXofState<1, 136, u64>,
         }
 
-        /// An XOF in absorb state
+        /// An XOF
         pub trait Xof<const RATE: usize>: private::Sealed {
             /// Create new absorb state
             fn new() -> Self;

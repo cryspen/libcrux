@@ -20,6 +20,8 @@ extern "C" {
 #include "karamel/endianness.h"
 #include "karamel/target.h"
 
+#define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
+
 // SLICES, ARRAYS, ETC.
 
 // The MSVC C++ compiler does not support compound literals.
@@ -160,7 +162,7 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
 // ITERATORS
 
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
-  (((iter_ptr)->start == (iter_ptr)->end)            \
+  (((iter_ptr)->start >= (iter_ptr)->end)            \
        ? (CLITERAL(ret_t){.tag = None, .f0 = 0})     \
        : (CLITERAL(ret_t){.tag = Some, .f0 = (iter_ptr)->start++}))
 

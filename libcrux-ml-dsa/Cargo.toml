@@ -19,8 +19,6 @@ bench = false # so libtest doesn't eat the arguments to criterion
 libcrux-sha3 = { version = "0.0.2-beta.2", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-beta.2", path = "../libcrux-intrinsics" }
 libcrux-platform = { version = "0.0.2-beta.2", path = "../sys/platform" }
-
-[target.'cfg(hax)'.dependencies]
 hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
 
 [dev-dependencies]

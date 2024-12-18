@@ -41,8 +41,8 @@ let deserialize
               (Libcrux_ml_dsa.Simd.Traits.f_t1_deserialize #v_SIMDUnit
                   #FStar.Tactics.Typeclasses.solve
                   (serialized.[ {
-                        Core.Ops.Range.f_start = i *! sz 10 <: usize;
-                        Core.Ops.Range.f_end = (i +! sz 1 <: usize) *! sz 10 <: usize
+                        Core.Ops.Range.f_start = i *! deserialize__WINDOW <: usize;
+                        Core.Ops.Range.f_end = (i +! sz 1 <: usize) *! deserialize__WINDOW <: usize
                       }
                       <:
                       Core.Ops.Range.t_Range usize ]

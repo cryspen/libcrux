@@ -5,7 +5,7 @@ use core::ops::Index;
 
 use crate::traits::*;
 
-#[cfg_attr(hax, hax_lib::opaque_type)]
+#[cfg_attr(hax, hax_lib::opaque)]
 #[derive(Clone, Copy)]
 pub(crate) struct KeccakState<const N: usize, T: KeccakStateItem<N>> {
     st: [[T; 5]; 5],
@@ -31,7 +31,7 @@ impl<const N: usize, T: KeccakStateItem<N>> KeccakState<N, T> {
 
 /// The internal keccak state that can also buffer inputs to absorb.
 /// This is used in the general xof APIs.
-#[cfg_attr(hax, hax_lib::opaque_type)]
+#[cfg_attr(hax, hax_lib::opaque)]
 pub(crate) struct KeccakXofState<
     const PARALLEL_LANES: usize,
     const RATE: usize,
