@@ -3,10 +3,10 @@ module Libcrux_ml_dsa.Hash_functions.Neon
 open Core
 open FStar.Mul
 
-val t_Shake128x4:Type0
+val t_Shake128x4:eqtype
 
 /// Neon SHAKE 256 x4 state
-val t_Shake256x4:Type0
+val t_Shake256x4:eqtype
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl:Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128x4

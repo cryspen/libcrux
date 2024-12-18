@@ -14,7 +14,7 @@ let impl__deserialize
       (v_COMMITMENT_HASH_SIZE v_COLUMNS_IN_A v_ROWS_IN_A v_GAMMA1_EXPONENT v_GAMMA1_RING_ELEMENT_SIZE v_MAX_ONES_IN_HINT v_SIGNATURE_SIZE:
           usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (serialized: t_Array u8 v_SIGNATURE_SIZE)
      =

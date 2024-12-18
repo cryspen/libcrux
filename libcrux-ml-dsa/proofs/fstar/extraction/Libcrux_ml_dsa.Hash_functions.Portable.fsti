@@ -4,20 +4,20 @@ open Core
 open FStar.Mul
 
 /// Portable SHAKE 128 state
-val t_Shake128:Type0
+val t_Shake128:eqtype
 
 /// Portable SHAKE 128 x4 state.
 /// We\'re using a portable implementation so this is actually sequential.
-val t_Shake128X4:Type0
+val t_Shake128X4:eqtype
 
 /// Portable SHAKE 256 state
-val t_Shake256:Type0
+val t_Shake256:eqtype
 
 /// Portable SHAKE 256 x4 state.
 /// We\'re using a portable implementation so this is actually sequential.
-val t_Shake256X4:Type0
+val t_Shake256X4:eqtype
 
-val t_Shake256Xof:Type0
+val t_Shake256Xof:eqtype
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl:Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128X4

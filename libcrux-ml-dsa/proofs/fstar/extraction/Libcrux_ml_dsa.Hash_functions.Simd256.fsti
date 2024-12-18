@@ -6,13 +6,13 @@ open FStar.Mul
 /// AVX2 SHAKE 128 state
 /// This only implements the XofX4 API. For the single Xof, the portable
 /// version is used.
-val t_Shake128x4:Type0
-
-/// AVX2 SHAKE 256 x4 state.
-val t_Shake256x4:Type0
+val t_Shake128x4:eqtype
 
 /// AVX2 SHAKE 256 state
-val t_Shake256:Type0
+val t_Shake256:eqtype
+
+/// AVX2 SHAKE 256 x4 state.
+val t_Shake256x4:eqtype
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl:Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128x4

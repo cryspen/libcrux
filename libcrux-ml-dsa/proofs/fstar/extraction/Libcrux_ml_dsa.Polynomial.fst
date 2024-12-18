@@ -9,6 +9,38 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_1':
+    #v_SIMDUnit: Type0 ->
+    {| i1: Core.Clone.t_Clone v_SIMDUnit |} ->
+    {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+  -> Core.Clone.t_Clone (t_PolynomialRingElement v_SIMDUnit)
+
+let impl_1
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Core.Clone.t_Clone v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+     = impl_1' #v_SIMDUnit #i1 #i2
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_2':
+    #v_SIMDUnit: Type0 ->
+    {| i1: Core.Marker.t_Copy v_SIMDUnit |} ->
+    {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+  -> Core.Marker.t_Copy (t_PolynomialRingElement v_SIMDUnit)
+
+let impl_2
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Core.Marker.t_Copy v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+     = impl_2' #v_SIMDUnit #i1 #i2
+
 let impl__ZERO
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -32,7 +64,7 @@ let impl__ZERO
 let impl__from_i32_array
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (array: t_Slice i32)
      =
@@ -92,7 +124,7 @@ let impl__from_i32_array
 let impl__add
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self rhs: t_PolynomialRingElement v_SIMDUnit)
      =
@@ -131,7 +163,7 @@ let impl__add
 let impl__infinity_norm_exceeds
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self: t_PolynomialRingElement v_SIMDUnit)
       (bound: i32)
@@ -161,7 +193,7 @@ let impl__infinity_norm_exceeds
 let impl__subtract
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self rhs: t_PolynomialRingElement v_SIMDUnit)
      =
@@ -200,7 +232,7 @@ let impl__subtract
 let impl__to_i32_array
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
+          i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self: t_PolynomialRingElement v_SIMDUnit)
      =
