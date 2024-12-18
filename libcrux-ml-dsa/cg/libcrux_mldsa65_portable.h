@@ -8,7 +8,7 @@
  * Eurydice: b665364a6d86749566ce2d650d13fa12c8fab2c5
  * Karamel: 96572bc631fde691a2aea7bce5a5a3838b3a5968
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: aecb2cd116d530465d34c6857e170fd6bab281b0
+ * Libcrux: c6c0198a72d0045f999b4b6a50ad7e917c8a9e42
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -70,6 +70,8 @@ extern "C" {
 #define LIBCRUX_ML_DSA_CONSTANTS_SIGNING_RANDOMNESS_SIZE ((size_t)32U)
 
 #define LIBCRUX_ML_DSA_ENCODING_T0_OUTPUT_BYTES_PER_SIMD_UNIT ((size_t)13U)
+
+#define LIBCRUX_ML_DSA_ENCODING_T1_DESERIALIZE_WINDOW ((size_t)10U)
 
 #define LIBCRUX_ML_DSA_ENCODING_T1_SERIALIZE_OUTPUT_BYTES_PER_SIMD_UNIT \
   ((size_t)10U)
@@ -9687,9 +9689,10 @@ static inline void libcrux_ml_dsa_encoding_t1_deserialize_ba(
        i++) {
     size_t i0 = i;
     libcrux_ml_dsa_simd_portable_vector_type_PortableSIMDUnit uu____0 =
-        libcrux_ml_dsa_simd_portable_t1_deserialize_36(
-            Eurydice_slice_subslice2(serialized, i0 * (size_t)10U,
-                                     (i0 + (size_t)1U) * (size_t)10U, uint8_t));
+        libcrux_ml_dsa_simd_portable_t1_deserialize_36(Eurydice_slice_subslice2(
+            serialized, i0 * LIBCRUX_ML_DSA_ENCODING_T1_DESERIALIZE_WINDOW,
+            (i0 + (size_t)1U) * LIBCRUX_ML_DSA_ENCODING_T1_DESERIALIZE_WINDOW,
+            uint8_t));
     result->simd_units[i0] = uu____0;
   }
 }

@@ -8,7 +8,7 @@
  * Eurydice: b665364a6d86749566ce2d650d13fa12c8fab2c5
  * Karamel: 96572bc631fde691a2aea7bce5a5a3838b3a5968
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: aecb2cd116d530465d34c6857e170fd6bab281b0
+ * Libcrux: c6c0198a72d0045f999b4b6a50ad7e917c8a9e42
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -8739,9 +8739,11 @@ static inline void libcrux_ml_dsa_encoding_t1_deserialize_ea(
                               __m256i);
        i++) {
     size_t i0 = i;
-    __m256i uu____0 = libcrux_ml_dsa_simd_avx2_t1_deserialize_a2(
-        Eurydice_slice_subslice2(serialized, i0 * (size_t)10U,
-                                 (i0 + (size_t)1U) * (size_t)10U, uint8_t));
+    __m256i uu____0 =
+        libcrux_ml_dsa_simd_avx2_t1_deserialize_a2(Eurydice_slice_subslice2(
+            serialized, i0 * LIBCRUX_ML_DSA_ENCODING_T1_DESERIALIZE_WINDOW,
+            (i0 + (size_t)1U) * LIBCRUX_ML_DSA_ENCODING_T1_DESERIALIZE_WINDOW,
+            uint8_t));
     result->simd_units[i0] = uu____0;
   }
 }
