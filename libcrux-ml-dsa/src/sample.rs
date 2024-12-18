@@ -72,7 +72,7 @@ pub(crate) fn sample_up_to_four_ring_elements<
     let domain_separator1 = generate_domain_separator(indices[1]);
     let domain_separator2 = generate_domain_separator(indices[2]);
     let domain_separator3 = generate_domain_separator(indices[3]);
-    
+
     // Prepare the seeds
     seed0[32] = domain_separator0 as u8;
     seed0[33] = (domain_separator0 >> 8) as u8;

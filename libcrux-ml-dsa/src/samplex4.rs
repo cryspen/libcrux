@@ -196,7 +196,7 @@ pub(crate) fn matrix_A_6_by_5<
         &mut A,
         &mut rand_stack,
         &mut tmp_stack,
-        &[(5, 3), (5, 4), (5,5), (5,6)],
+        &[(5, 3), (5, 4), (5, 5), (5, 6)],
         2,
     );
 
