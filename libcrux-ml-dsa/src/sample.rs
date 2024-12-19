@@ -34,19 +34,57 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
     done
 }
 
-pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations>(
-    mut seed0: [u8; 34],
-    domain_separator0: u16,
-    domain_separator1: u16,
-    domain_seperator2: u16,
-    domain_separator3: u16,
-) -> (
-    PolynomialRingElement<SIMDUnit>,
-    PolynomialRingElement<SIMDUnit>,
-    PolynomialRingElement<SIMDUnit>,
-    PolynomialRingElement<SIMDUnit>,
+#[inline(always)]
+fn generate_domain_separator((row, column): (u8, u8)) -> u16 {
+    (column as u16) | ((row as u16) << 8)
+}
+
+pub(crate) type Matrix<SIMDUnit, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize> =
+    [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A];
+
+// Doing deep updates like `a[1][1] = 3` causes a memory blowup in F*
+// https://github.com/hacspec/hax/issues/1098
+// So we are instead using a matrix abstraction with a custom update function here.
+fn update_matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+    m: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
+    i: usize,
+    j: usize,
+    v: PolynomialRingElement<SIMDUnit>,
 ) {
-    use crate::hash_functions::shake128::XofX4;
+    m[i][j] = v;
+}
+
+/// Sample and write out up to four ring elements.
+///
+/// If i <= `elements_requested`, a field element with domain separated
+/// seed according to the provided index is generated in
+/// `tmp_stack[i]`. After successful rejection sampling in
+/// `tmp_stack[i]`, the ring element is written to `matrix` at the
+/// provided index in `indices[i]`.
+/// `rand_stack` is a working buffer that holds initial Shake output.
+#[inline(always)]
+pub(crate) fn sample_up_to_four_ring_elements<
+    SIMDUnit: Operations,
+    Shake128: shake128::XofX4,
+    const ROWS_IN_A: usize,
+    const COLUMNS_IN_A: usize,
+>(
+    mut seed0: [u8; 34],
+    matrix: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
+    rand_stack0: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+    rand_stack1: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+    rand_stack2: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+    rand_stack3: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
+    tmp_stack: &mut [[i32; 263]],
+    indices: &[(u8, u8); 4],
+    elements_requested: usize,
+) {
+    debug_assert!(elements_requested <= 4);
+
+    let domain_separator0 = generate_domain_separator(indices[0]);
+    let domain_separator1 = generate_domain_separator(indices[1]);
+    let domain_separator2 = generate_domain_separator(indices[2]);
+    let domain_separator3 = generate_domain_separator(indices[3]);
 
     // Prepare the seeds
     seed0[32] = domain_separator0 as u8;
@@ -57,30 +95,16 @@ pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations>(
     seed1[33] = (domain_separator1 >> 8) as u8;
 
     let mut seed2 = seed0;
-    seed2[32] = domain_seperator2 as u8;
-    seed2[33] = (domain_seperator2 >> 8) as u8;
+    seed2[32] = domain_separator2 as u8;
+    seed2[33] = (domain_separator2 >> 8) as u8;
 
     let mut seed3 = seed0;
     seed3[32] = domain_separator3 as u8;
     seed3[33] = (domain_separator3 >> 8) as u8;
 
-    // FIXME: We use the portable implementation here, since the
-    // compiler has an easier time optimizing it, compared to the AVX2
-    // version, which actually results in faster code (except for key
-    // generation), even in the AVX2 instantiation of ML-DSA.
-    let mut state =
-        crate::hash_functions::portable::Shake128X4::init_absorb(&seed0, &seed1, &seed2, &seed3);
+    let mut state = Shake128::init_absorb(&seed0, &seed1, &seed2, &seed3);
 
-    let mut randomness0 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-    let mut randomness1 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-    let mut randomness2 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-    let mut randomness3 = [0u8; shake128::FIVE_BLOCKS_SIZE];
-    state.squeeze_first_five_blocks(
-        &mut randomness0,
-        &mut randomness1,
-        &mut randomness2,
-        &mut randomness3,
-    );
+    state.squeeze_first_five_blocks(rand_stack0, rand_stack1, rand_stack2, rand_stack3);
 
     // Every call to |rejection_sample_less_than_field_modulus|
     // will result in a call to |PortableSIMDUnit::rejection_sample_less_than_field_modulus|;
@@ -90,35 +114,30 @@ pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations>(
     //
     // To ensure we don't overflow the buffer in this case, we allocate 255 + 8
     // = 263 elements.
-    let mut coefficients0 = [0i32; 263];
-    let mut coefficients1 = [0i32; 263];
-    let mut coefficients2 = [0i32; 263];
-    let mut coefficients3 = [0i32; 263];
-
     let mut sampled0 = 0;
     let mut sampled1 = 0;
     let mut sampled2 = 0;
     let mut sampled3 = 0;
 
     let mut done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &randomness0,
+        rand_stack0,
         &mut sampled0,
-        &mut coefficients0,
+        &mut tmp_stack[0],
     );
     let mut done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &randomness1,
+        rand_stack1,
         &mut sampled1,
-        &mut coefficients1,
+        &mut tmp_stack[1],
     );
     let mut done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &randomness2,
+        rand_stack2,
         &mut sampled2,
-        &mut coefficients2,
+        &mut tmp_stack[2],
     );
     let mut done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
-        &randomness3,
+        rand_stack3,
         &mut sampled3,
-        &mut coefficients3,
+        &mut tmp_stack[3],
     );
 
     while !done0 || !done1 || !done2 || !done3 {
@@ -127,38 +146,43 @@ pub(crate) fn sample_four_ring_elements<SIMDUnit: Operations>(
             done0 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
                 &randomnesses.0,
                 &mut sampled0,
-                &mut coefficients0,
+                &mut tmp_stack[0],
             );
         }
         if !done1 {
             done1 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
                 &randomnesses.1,
                 &mut sampled1,
-                &mut coefficients1,
+                &mut tmp_stack[1],
             );
         }
         if !done2 {
             done2 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
                 &randomnesses.2,
                 &mut sampled2,
-                &mut coefficients2,
+                &mut tmp_stack[2],
             );
         }
         if !done3 {
             done3 = rejection_sample_less_than_field_modulus::<SIMDUnit>(
                 &randomnesses.3,
                 &mut sampled3,
-                &mut coefficients3,
+                &mut tmp_stack[3],
             );
         }
     }
 
-    (
-        PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients0),
-        PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients1),
-        PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients2),
-        PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients3),
-    )
+    for k in 0..elements_requested {
+        let (i, j) = indices[k];
+        update_matrix(
+            matrix,
+            i as usize,
+            j as usize,
+            PolynomialRingElement::<SIMDUnit>::from_i32_array(&tmp_stack[k]),
+        );
+    }
+
+    ()
 }
 
 #[inline(always)]
@@ -497,20 +521,45 @@ mod tests {
         simd::{self, traits::Operations},
     };
 
-    // This is just a wrapper around sample_four_ring_elements, for testing
-    // purposes.
-    fn sample_ring_element_uniform<SIMDUnit: Operations>(
+    fn sample_ring_element_uniform<SIMDUnit: Operations, Shake128: shake128::XofX4>(
         seed: [u8; 34],
     ) -> PolynomialRingElement<SIMDUnit> {
-        let four_ring_elements = sample_four_ring_elements::<SIMDUnit>(
-            seed,
-            ((seed[33] as u16) << 8) | (seed[32] as u16),
-            0,
-            0,
-            0,
+        let mut rand_stack = (
+            [0u8; shake128::FIVE_BLOCKS_SIZE],
+            [0u8; shake128::FIVE_BLOCKS_SIZE],
+            [0u8; shake128::FIVE_BLOCKS_SIZE],
+            [0u8; shake128::FIVE_BLOCKS_SIZE],
         );
 
-        four_ring_elements.0
+        let dummy_input = [0u8; 34];
+        let mut state = Shake128::init_absorb(&seed, &dummy_input, &dummy_input, &dummy_input);
+        state.squeeze_first_five_blocks(
+            &mut rand_stack.0,
+            &mut rand_stack.1,
+            &mut rand_stack.2,
+            &mut rand_stack.3,
+        );
+        let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
+        let mut sampled = 0;
+
+        let mut done = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+            &mut rand_stack.0,
+            &mut sampled,
+            &mut tmp_stack[0],
+        );
+
+        while !done {
+            let randomnesses = state.squeeze_next_block();
+            if !done {
+                done = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+                    &randomnesses.0,
+                    &mut sampled,
+                    &mut tmp_stack[0],
+                );
+            }
+        }
+
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&tmp_stack[0])
     }
 
     // This is just a wrapper around sample_four_ring_elements, for testing
@@ -570,7 +619,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_ring_element_uniform::<SIMDUnit>(seed).to_i32_array(),
+            sample_ring_element_uniform::<SIMDUnit, Shake128>(seed).to_i32_array(),
             expected_coefficients
         );
 
@@ -584,7 +633,8 @@ mod tests {
             0xB1, 0x83, 0x9B, 0x86, 0x06, 0xF5, 0x94, 0x8B, 0x9D, 0x72, 0xA9, 0x56, 0xDC, 0xF1,
             0x01, 0x16, 0xDA, 0x9E, 0x01, 0x00,
         ];
-        let actual_coefficients = sample_ring_element_uniform::<SIMDUnit>(seed).to_i32_array();
+        let actual_coefficients =
+            sample_ring_element_uniform::<SIMDUnit, Shake128>(seed).to_i32_array();
 
         assert_eq!(actual_coefficients[0], 1_165_602);
         assert_eq!(

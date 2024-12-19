@@ -6,11 +6,13 @@ open FStar.Mul
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
-  let open Libcrux_ml_dsa.Hash_functions.Portable in
   let open Libcrux_ml_dsa.Hash_functions.Shake128 in
   let open Libcrux_ml_dsa.Hash_functions.Shake256 in
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
+
+let generate_domain_separator (row, column: (u8 & u8)) =
+  (cast (column <: u8) <: u16) |. ((cast (row <: u8) <: u16) <<! 8l <: u16)
 
 let update_seed (seed: t_Array u8 (sz 66)) (domain_separator: u16) =
   let seed:t_Array u8 (sz 66) =
@@ -26,6 +28,34 @@ let update_seed (seed: t_Array u8 (sz 66)) (domain_separator: u16) =
   let domain_separator:u16 = domain_separator +! 1us in
   let hax_temp_output:t_Array u8 (sz 66) = seed in
   domain_separator, hax_temp_output <: (u16 & t_Array u8 (sz 66))
+
+let update_matrix
+      (#v_SIMDUnit: Type0)
+      (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (m:
+          t_Array
+            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+            v_ROWS_IN_A)
+      (i j: usize)
+      (v: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+     =
+  let m:t_Array
+    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+    v_ROWS_IN_A =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize m
+      i
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (m.[ i ]
+            <:
+            t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+          j
+          v
+        <:
+        t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+  in
+  m
 
 let rejection_sample_less_than_eta_equals_2_
       (#v_SIMDUnit: Type0)
@@ -682,364 +712,6 @@ let sample_four_error_ring_elements
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
 
-let sample_four_ring_elements
-      (#v_SIMDUnit: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (seed0: t_Array u8 (sz 34))
-      (domain_separator0 domain_separator1 domain_seperator2 domain_separator3: u16)
-     =
-  let seed0:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed0
-      (sz 32)
-      (cast (domain_separator0 <: u16) <: u8)
-  in
-  let seed0:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed0
-      (sz 33)
-      (cast (domain_separator0 >>! 8l <: u16) <: u8)
-  in
-  let seed1:t_Array u8 (sz 34) = seed0 in
-  let seed1:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed1
-      (sz 32)
-      (cast (domain_separator1 <: u16) <: u8)
-  in
-  let seed1:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed1
-      (sz 33)
-      (cast (domain_separator1 >>! 8l <: u16) <: u8)
-  in
-  let seed2:t_Array u8 (sz 34) = seed0 in
-  let seed2:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed2
-      (sz 32)
-      (cast (domain_seperator2 <: u16) <: u8)
-  in
-  let seed2:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed2
-      (sz 33)
-      (cast (domain_seperator2 >>! 8l <: u16) <: u8)
-  in
-  let seed3:t_Array u8 (sz 34) = seed0 in
-  let seed3:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed3
-      (sz 32)
-      (cast (domain_separator3 <: u16) <: u8)
-  in
-  let seed3:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed3
-      (sz 33)
-      (cast (domain_separator3 >>! 8l <: u16) <: u8)
-  in
-  let state:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4 =
-    Libcrux_ml_dsa.Hash_functions.Shake128.f_init_absorb #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4
-      #FStar.Tactics.Typeclasses.solve
-      (seed0 <: t_Slice u8)
-      (seed1 <: t_Slice u8)
-      (seed2 <: t_Slice u8)
-      (seed3 <: t_Slice u8)
-  in
-  let randomness0:t_Array u8 (sz 840) = Rust_primitives.Hax.repeat 0uy (sz 840) in
-  let randomness1:t_Array u8 (sz 840) = Rust_primitives.Hax.repeat 0uy (sz 840) in
-  let randomness2:t_Array u8 (sz 840) = Rust_primitives.Hax.repeat 0uy (sz 840) in
-  let randomness3:t_Array u8 (sz 840) = Rust_primitives.Hax.repeat 0uy (sz 840) in
-  let tmp0, tmp1, tmp2, tmp3, tmp4:(Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4 &
-    t_Array u8 (sz 840) &
-    t_Array u8 (sz 840) &
-    t_Array u8 (sz 840) &
-    t_Array u8 (sz 840)) =
-    Libcrux_ml_dsa.Hash_functions.Shake128.f_squeeze_first_five_blocks #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4
-      #FStar.Tactics.Typeclasses.solve
-      state
-      randomness0
-      randomness1
-      randomness2
-      randomness3
-  in
-  let state:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4 = tmp0 in
-  let randomness0:t_Array u8 (sz 840) = tmp1 in
-  let randomness1:t_Array u8 (sz 840) = tmp2 in
-  let randomness2:t_Array u8 (sz 840) = tmp3 in
-  let randomness3:t_Array u8 (sz 840) = tmp4 in
-  let _:Prims.unit = () in
-  let coefficients0:t_Array i32 (sz 263) = Rust_primitives.Hax.repeat 0l (sz 263) in
-  let coefficients1:t_Array i32 (sz 263) = Rust_primitives.Hax.repeat 0l (sz 263) in
-  let coefficients2:t_Array i32 (sz 263) = Rust_primitives.Hax.repeat 0l (sz 263) in
-  let coefficients3:t_Array i32 (sz 263) = Rust_primitives.Hax.repeat 0l (sz 263) in
-  let sampled0:usize = sz 0 in
-  let sampled1:usize = sz 0 in
-  let sampled2:usize = sz 0 in
-  let sampled3:usize = sz 0 in
-  let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
-    rejection_sample_less_than_field_modulus #v_SIMDUnit
-      (randomness0 <: t_Slice u8)
-      sampled0
-      coefficients0
-  in
-  let sampled0:usize = tmp0 in
-  let coefficients0:t_Array i32 (sz 263) = tmp1 in
-  let done0:bool = out in
-  let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
-    rejection_sample_less_than_field_modulus #v_SIMDUnit
-      (randomness1 <: t_Slice u8)
-      sampled1
-      coefficients1
-  in
-  let sampled1:usize = tmp0 in
-  let coefficients1:t_Array i32 (sz 263) = tmp1 in
-  let done1:bool = out in
-  let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
-    rejection_sample_less_than_field_modulus #v_SIMDUnit
-      (randomness2 <: t_Slice u8)
-      sampled2
-      coefficients2
-  in
-  let sampled2:usize = tmp0 in
-  let coefficients2:t_Array i32 (sz 263) = tmp1 in
-  let done2:bool = out in
-  let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
-    rejection_sample_less_than_field_modulus #v_SIMDUnit
-      (randomness3 <: t_Slice u8)
-      sampled3
-      coefficients3
-  in
-  let sampled3:usize = tmp0 in
-  let coefficients3:t_Array i32 (sz 263) = tmp1 in
-  let done3:bool = out in
-  let
-  coefficients0,
-  coefficients1,
-  coefficients2,
-  coefficients3,
-  done0,
-  done1,
-  done2,
-  done3,
-  sampled0,
-  sampled1,
-  sampled2,
-  sampled3,
-  state:(t_Array i32 (sz 263) & t_Array i32 (sz 263) & t_Array i32 (sz 263) & t_Array i32 (sz 263) &
-    bool &
-    bool &
-    bool &
-    bool &
-    usize &
-    usize &
-    usize &
-    usize &
-    Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4) =
-    Rust_primitives.f_while_loop (fun temp_0_ ->
-          let
-          coefficients0,
-          coefficients1,
-          coefficients2,
-          coefficients3,
-          done0,
-          done1,
-          done2,
-          done3,
-          sampled0,
-          sampled1,
-          sampled2,
-          sampled3,
-          state:(t_Array i32 (sz 263) & t_Array i32 (sz 263) & t_Array i32 (sz 263) &
-            t_Array i32 (sz 263) &
-            bool &
-            bool &
-            bool &
-            bool &
-            usize &
-            usize &
-            usize &
-            usize &
-            Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4) =
-            temp_0_
-          in
-          (~.done0 <: bool) || (~.done1 <: bool) || (~.done2 <: bool) || (~.done3 <: bool))
-      (coefficients0,
-        coefficients1,
-        coefficients2,
-        coefficients3,
-        done0,
-        done1,
-        done2,
-        done3,
-        sampled0,
-        sampled1,
-        sampled2,
-        sampled3,
-        state
-        <:
-        (t_Array i32 (sz 263) & t_Array i32 (sz 263) & t_Array i32 (sz 263) & t_Array i32 (sz 263) &
-          bool &
-          bool &
-          bool &
-          bool &
-          usize &
-          usize &
-          usize &
-          usize &
-          Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4))
-      (fun temp_0_ ->
-          let
-          coefficients0,
-          coefficients1,
-          coefficients2,
-          coefficients3,
-          done0,
-          done1,
-          done2,
-          done3,
-          sampled0,
-          sampled1,
-          sampled2,
-          sampled3,
-          state:(t_Array i32 (sz 263) & t_Array i32 (sz 263) & t_Array i32 (sz 263) &
-            t_Array i32 (sz 263) &
-            bool &
-            bool &
-            bool &
-            bool &
-            usize &
-            usize &
-            usize &
-            usize &
-            Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4) =
-            temp_0_
-          in
-          let tmp0, out:(Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4 &
-            (t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168)))
-          =
-            Libcrux_ml_dsa.Hash_functions.Shake128.f_squeeze_next_block #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4
-              #FStar.Tactics.Typeclasses.solve
-              state
-          in
-          let state:Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4 = tmp0 in
-          let randomnesses:(t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) &
-            t_Array u8 (sz 168)) =
-            out
-          in
-          let coefficients0, done0, sampled0:(t_Array i32 (sz 263) & bool & usize) =
-            if ~.done0
-            then
-              let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
-                rejection_sample_less_than_field_modulus #v_SIMDUnit
-                  (randomnesses._1 <: t_Slice u8)
-                  sampled0
-                  coefficients0
-              in
-              let sampled0:usize = tmp0 in
-              let coefficients0:t_Array i32 (sz 263) = tmp1 in
-              let done0:bool = out in
-              coefficients0, done0, sampled0 <: (t_Array i32 (sz 263) & bool & usize)
-            else coefficients0, done0, sampled0 <: (t_Array i32 (sz 263) & bool & usize)
-          in
-          let coefficients1, done1, sampled1:(t_Array i32 (sz 263) & bool & usize) =
-            if ~.done1
-            then
-              let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
-                rejection_sample_less_than_field_modulus #v_SIMDUnit
-                  (randomnesses._2 <: t_Slice u8)
-                  sampled1
-                  coefficients1
-              in
-              let sampled1:usize = tmp0 in
-              let coefficients1:t_Array i32 (sz 263) = tmp1 in
-              let done1:bool = out in
-              coefficients1, done1, sampled1 <: (t_Array i32 (sz 263) & bool & usize)
-            else coefficients1, done1, sampled1 <: (t_Array i32 (sz 263) & bool & usize)
-          in
-          let coefficients2, done2, sampled2:(t_Array i32 (sz 263) & bool & usize) =
-            if ~.done2
-            then
-              let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
-                rejection_sample_less_than_field_modulus #v_SIMDUnit
-                  (randomnesses._3 <: t_Slice u8)
-                  sampled2
-                  coefficients2
-              in
-              let sampled2:usize = tmp0 in
-              let coefficients2:t_Array i32 (sz 263) = tmp1 in
-              let done2:bool = out in
-              coefficients2, done2, sampled2 <: (t_Array i32 (sz 263) & bool & usize)
-            else coefficients2, done2, sampled2 <: (t_Array i32 (sz 263) & bool & usize)
-          in
-          if ~.done3
-          then
-            let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
-              rejection_sample_less_than_field_modulus #v_SIMDUnit
-                (randomnesses._4 <: t_Slice u8)
-                sampled3
-                coefficients3
-            in
-            let sampled3:usize = tmp0 in
-            let coefficients3:t_Array i32 (sz 263) = tmp1 in
-            let done3:bool = out in
-            coefficients0,
-            coefficients1,
-            coefficients2,
-            coefficients3,
-            done0,
-            done1,
-            done2,
-            done3,
-            sampled0,
-            sampled1,
-            sampled2,
-            sampled3,
-            state
-            <:
-            (t_Array i32 (sz 263) & t_Array i32 (sz 263) & t_Array i32 (sz 263) &
-              t_Array i32 (sz 263) &
-              bool &
-              bool &
-              bool &
-              bool &
-              usize &
-              usize &
-              usize &
-              usize &
-              Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4)
-          else
-            coefficients0,
-            coefficients1,
-            coefficients2,
-            coefficients3,
-            done0,
-            done1,
-            done2,
-            done3,
-            sampled0,
-            sampled1,
-            sampled2,
-            sampled3,
-            state
-            <:
-            (t_Array i32 (sz 263) & t_Array i32 (sz 263) & t_Array i32 (sz 263) &
-              t_Array i32 (sz 263) &
-              bool &
-              bool &
-              bool &
-              bool &
-              usize &
-              usize &
-              usize &
-              usize &
-              Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4))
-  in
-  Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (coefficients0 <: t_Slice i32),
-  Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (coefficients1 <: t_Slice i32),
-  Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (coefficients2 <: t_Slice i32),
-  Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (coefficients3 <: t_Slice i32)
-  <:
-  (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
-    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
-    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
-    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-
 let sample_mask_ring_element
       (#v_SIMDUnit #v_Shake256: Type0)
       (v_GAMMA1_EXPONENT: usize)
@@ -1317,3 +989,324 @@ let sample_mask_vector
   domain_separator, hax_temp_output
   <:
   (u16 & t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
+
+let sample_up_to_four_ring_elements
+      (#v_SIMDUnit #v_Shake128: Type0)
+      (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i3:
+          Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128)
+      (seed0: t_Array u8 (sz 34))
+      (matrix:
+          t_Array
+            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+            v_ROWS_IN_A)
+      (rand_stack0 rand_stack1 rand_stack2 rand_stack3: t_Array u8 (sz 840))
+      (tmp_stack: t_Slice (t_Array i32 (sz 263)))
+      (indices: t_Array (u8 & u8) (sz 4))
+      (elements_requested: usize)
+     =
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit = Hax_lib.v_assert (elements_requested <=. sz 4 <: bool) in
+      ()
+  in
+  let domain_separator0:u16 = generate_domain_separator (indices.[ sz 0 ] <: (u8 & u8)) in
+  let domain_separator1:u16 = generate_domain_separator (indices.[ sz 1 ] <: (u8 & u8)) in
+  let domain_separator2:u16 = generate_domain_separator (indices.[ sz 2 ] <: (u8 & u8)) in
+  let domain_separator3:u16 = generate_domain_separator (indices.[ sz 3 ] <: (u8 & u8)) in
+  let seed0:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed0
+      (sz 32)
+      (cast (domain_separator0 <: u16) <: u8)
+  in
+  let seed0:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed0
+      (sz 33)
+      (cast (domain_separator0 >>! 8l <: u16) <: u8)
+  in
+  let seed1:t_Array u8 (sz 34) = seed0 in
+  let seed1:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed1
+      (sz 32)
+      (cast (domain_separator1 <: u16) <: u8)
+  in
+  let seed1:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed1
+      (sz 33)
+      (cast (domain_separator1 >>! 8l <: u16) <: u8)
+  in
+  let seed2:t_Array u8 (sz 34) = seed0 in
+  let seed2:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed2
+      (sz 32)
+      (cast (domain_separator2 <: u16) <: u8)
+  in
+  let seed2:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed2
+      (sz 33)
+      (cast (domain_separator2 >>! 8l <: u16) <: u8)
+  in
+  let seed3:t_Array u8 (sz 34) = seed0 in
+  let seed3:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed3
+      (sz 32)
+      (cast (domain_separator3 <: u16) <: u8)
+  in
+  let seed3:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed3
+      (sz 33)
+      (cast (domain_separator3 >>! 8l <: u16) <: u8)
+  in
+  let state:v_Shake128 =
+    Libcrux_ml_dsa.Hash_functions.Shake128.f_init_absorb #v_Shake128
+      #FStar.Tactics.Typeclasses.solve
+      (seed0 <: t_Slice u8)
+      (seed1 <: t_Slice u8)
+      (seed2 <: t_Slice u8)
+      (seed3 <: t_Slice u8)
+  in
+  let tmp0, tmp1, tmp2, tmp3, tmp4:(v_Shake128 & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
+    t_Array u8 (sz 840) &
+    t_Array u8 (sz 840)) =
+    Libcrux_ml_dsa.Hash_functions.Shake128.f_squeeze_first_five_blocks #v_Shake128
+      #FStar.Tactics.Typeclasses.solve
+      state
+      rand_stack0
+      rand_stack1
+      rand_stack2
+      rand_stack3
+  in
+  let state:v_Shake128 = tmp0 in
+  let rand_stack0:t_Array u8 (sz 840) = tmp1 in
+  let rand_stack1:t_Array u8 (sz 840) = tmp2 in
+  let rand_stack2:t_Array u8 (sz 840) = tmp3 in
+  let rand_stack3:t_Array u8 (sz 840) = tmp4 in
+  let _:Prims.unit = () in
+  let sampled0:usize = sz 0 in
+  let sampled1:usize = sz 0 in
+  let sampled2:usize = sz 0 in
+  let sampled3:usize = sz 0 in
+  let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
+    rejection_sample_less_than_field_modulus #v_SIMDUnit
+      (rand_stack0 <: t_Slice u8)
+      sampled0
+      (tmp_stack.[ sz 0 ] <: t_Array i32 (sz 263))
+  in
+  let sampled0:usize = tmp0 in
+  let tmp_stack:t_Slice (t_Array i32 (sz 263)) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp_stack (sz 0) tmp1
+  in
+  let done0:bool = out in
+  let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
+    rejection_sample_less_than_field_modulus #v_SIMDUnit
+      (rand_stack1 <: t_Slice u8)
+      sampled1
+      (tmp_stack.[ sz 1 ] <: t_Array i32 (sz 263))
+  in
+  let sampled1:usize = tmp0 in
+  let tmp_stack:t_Slice (t_Array i32 (sz 263)) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp_stack (sz 1) tmp1
+  in
+  let done1:bool = out in
+  let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
+    rejection_sample_less_than_field_modulus #v_SIMDUnit
+      (rand_stack2 <: t_Slice u8)
+      sampled2
+      (tmp_stack.[ sz 2 ] <: t_Array i32 (sz 263))
+  in
+  let sampled2:usize = tmp0 in
+  let tmp_stack:t_Slice (t_Array i32 (sz 263)) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp_stack (sz 2) tmp1
+  in
+  let done2:bool = out in
+  let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
+    rejection_sample_less_than_field_modulus #v_SIMDUnit
+      (rand_stack3 <: t_Slice u8)
+      sampled3
+      (tmp_stack.[ sz 3 ] <: t_Array i32 (sz 263))
+  in
+  let sampled3:usize = tmp0 in
+  let tmp_stack:t_Slice (t_Array i32 (sz 263)) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp_stack (sz 3) tmp1
+  in
+  let done3:bool = out in
+  let done0, done1, done2, done3, sampled0, sampled1, sampled2, sampled3, state, tmp_stack:(bool &
+    bool &
+    bool &
+    bool &
+    usize &
+    usize &
+    usize &
+    usize &
+    v_Shake128 &
+    t_Slice (t_Array i32 (sz 263))) =
+    Rust_primitives.f_while_loop (fun temp_0_ ->
+          let done0, done1, done2, done3, sampled0, sampled1, sampled2, sampled3, state, tmp_stack:(bool &
+            bool &
+            bool &
+            bool &
+            usize &
+            usize &
+            usize &
+            usize &
+            v_Shake128 &
+            t_Slice (t_Array i32 (sz 263))) =
+            temp_0_
+          in
+          (~.done0 <: bool) || (~.done1 <: bool) || (~.done2 <: bool) || (~.done3 <: bool))
+      (done0, done1, done2, done3, sampled0, sampled1, sampled2, sampled3, state, tmp_stack
+        <:
+        (bool & bool & bool & bool & usize & usize & usize & usize & v_Shake128 &
+          t_Slice (t_Array i32 (sz 263))))
+      (fun temp_0_ ->
+          let done0, done1, done2, done3, sampled0, sampled1, sampled2, sampled3, state, tmp_stack:(bool &
+            bool &
+            bool &
+            bool &
+            usize &
+            usize &
+            usize &
+            usize &
+            v_Shake128 &
+            t_Slice (t_Array i32 (sz 263))) =
+            temp_0_
+          in
+          let tmp0, out:(v_Shake128 &
+            (t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168)))
+          =
+            Libcrux_ml_dsa.Hash_functions.Shake128.f_squeeze_next_block #v_Shake128
+              #FStar.Tactics.Typeclasses.solve
+              state
+          in
+          let state:v_Shake128 = tmp0 in
+          let randomnesses:(t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) &
+            t_Array u8 (sz 168)) =
+            out
+          in
+          let done0, sampled0, tmp_stack:(bool & usize & t_Slice (t_Array i32 (sz 263))) =
+            if ~.done0
+            then
+              let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
+                rejection_sample_less_than_field_modulus #v_SIMDUnit
+                  (randomnesses._1 <: t_Slice u8)
+                  sampled0
+                  (tmp_stack.[ sz 0 ] <: t_Array i32 (sz 263))
+              in
+              let sampled0:usize = tmp0 in
+              let tmp_stack:t_Slice (t_Array i32 (sz 263)) =
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp_stack (sz 0) tmp1
+              in
+              let done0:bool = out in
+              done0, sampled0, tmp_stack <: (bool & usize & t_Slice (t_Array i32 (sz 263)))
+            else done0, sampled0, tmp_stack <: (bool & usize & t_Slice (t_Array i32 (sz 263)))
+          in
+          let done1, sampled1, tmp_stack:(bool & usize & t_Slice (t_Array i32 (sz 263))) =
+            if ~.done1
+            then
+              let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
+                rejection_sample_less_than_field_modulus #v_SIMDUnit
+                  (randomnesses._2 <: t_Slice u8)
+                  sampled1
+                  (tmp_stack.[ sz 1 ] <: t_Array i32 (sz 263))
+              in
+              let sampled1:usize = tmp0 in
+              let tmp_stack:t_Slice (t_Array i32 (sz 263)) =
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp_stack (sz 1) tmp1
+              in
+              let done1:bool = out in
+              done1, sampled1, tmp_stack <: (bool & usize & t_Slice (t_Array i32 (sz 263)))
+            else done1, sampled1, tmp_stack <: (bool & usize & t_Slice (t_Array i32 (sz 263)))
+          in
+          let done2, sampled2, tmp_stack:(bool & usize & t_Slice (t_Array i32 (sz 263))) =
+            if ~.done2
+            then
+              let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
+                rejection_sample_less_than_field_modulus #v_SIMDUnit
+                  (randomnesses._3 <: t_Slice u8)
+                  sampled2
+                  (tmp_stack.[ sz 2 ] <: t_Array i32 (sz 263))
+              in
+              let sampled2:usize = tmp0 in
+              let tmp_stack:t_Slice (t_Array i32 (sz 263)) =
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp_stack (sz 2) tmp1
+              in
+              let done2:bool = out in
+              done2, sampled2, tmp_stack <: (bool & usize & t_Slice (t_Array i32 (sz 263)))
+            else done2, sampled2, tmp_stack <: (bool & usize & t_Slice (t_Array i32 (sz 263)))
+          in
+          if ~.done3
+          then
+            let tmp0, tmp1, out:(usize & t_Array i32 (sz 263) & bool) =
+              rejection_sample_less_than_field_modulus #v_SIMDUnit
+                (randomnesses._4 <: t_Slice u8)
+                sampled3
+                (tmp_stack.[ sz 3 ] <: t_Array i32 (sz 263))
+            in
+            let sampled3:usize = tmp0 in
+            let tmp_stack:t_Slice (t_Array i32 (sz 263)) =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp_stack (sz 3) tmp1
+            in
+            let done3:bool = out in
+            done0, done1, done2, done3, sampled0, sampled1, sampled2, sampled3, state, tmp_stack
+            <:
+            (bool & bool & bool & bool & usize & usize & usize & usize & v_Shake128 &
+              t_Slice (t_Array i32 (sz 263)))
+          else
+            done0, done1, done2, done3, sampled0, sampled1, sampled2, sampled3, state, tmp_stack
+            <:
+            (bool & bool & bool & bool & usize & usize & usize & usize & v_Shake128 &
+              t_Slice (t_Array i32 (sz 263))))
+  in
+  let matrix:t_Array
+    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+    v_ROWS_IN_A =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      elements_requested
+      (fun matrix temp_1_ ->
+          let matrix:t_Array
+            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+            v_ROWS_IN_A =
+            matrix
+          in
+          let _:usize = temp_1_ in
+          true)
+      matrix
+      (fun matrix k ->
+          let matrix:t_Array
+            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+            v_ROWS_IN_A =
+            matrix
+          in
+          let k:usize = k in
+          let i, j:(u8 & u8) = indices.[ k ] in
+          let matrix:t_Array
+            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+            v_ROWS_IN_A =
+            update_matrix #v_SIMDUnit
+              v_ROWS_IN_A
+              v_COLUMNS_IN_A
+              matrix
+              (cast (i <: u8) <: usize)
+              (cast (j <: u8) <: usize)
+              (Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit
+                  (tmp_stack.[ k ] <: t_Slice i32)
+                <:
+                Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+          in
+          matrix)
+  in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
+  matrix, rand_stack0, rand_stack1, rand_stack2, rand_stack3, tmp_stack
+  <:
+  (t_Array (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+      v_ROWS_IN_A &
+    t_Array u8 (sz 840) &
+    t_Array u8 (sz 840) &
+    t_Array u8 (sz 840) &
+    t_Array u8 (sz 840) &
+    t_Slice (t_Array i32 (sz 263)))
