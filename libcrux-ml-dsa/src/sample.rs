@@ -37,13 +37,14 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
 #[inline(always)]
 fn generate_domain_separator((row, column): (u8, u8)) -> u16 {
     (column as u16) | ((row as u16) << 8)
-} // Doing deep updates like `a[1][1] = 3` causes a memory blowup in F*
-  // https://github.com/hacspec/hax/issues/1098
-  // So we are instead using a matrix abstraction with a custom update function here.
+}
 
-type Matrix<SIMDUnit, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize> =
+pub(crate) type Matrix<SIMDUnit, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize> =
     [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A];
 
+// Doing deep updates like `a[1][1] = 3` causes a memory blowup in F*
+// https://github.com/hacspec/hax/issues/1098
+// So we are instead using a matrix abstraction with a custom update function here.
 fn update_matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
     m: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
     i: usize,

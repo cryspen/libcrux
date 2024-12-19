@@ -1,7 +1,7 @@
 use crate::{
     hash_functions::{shake128, shake256},
     polynomial::PolynomialRingElement,
-    sample::{sample_four_error_ring_elements, sample_up_to_four_ring_elements},
+    sample::{sample_four_error_ring_elements, sample_up_to_four_ring_elements, Matrix},
     simd::traits::Operations,
 };
 
@@ -12,27 +12,6 @@ pub(crate) trait X4Sampler {
     fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
         seed: [u8; 34],
     ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A];
-}
-
-type Matrix<SIMDUnit, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize> =
-    [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A];
-
-/// A call to sample four ring elements from $seed into $memory at indices $a, $b
-/// $c, $d.
-macro_rules! sample_four_ring_elements_into {
-    ($seed:ident, $matrix:ident, $rand_stack0:ident, $rand_stack1:ident, $rand_stack2:ident, $rand_stack3:ident, $tmp_stack:ident, $a:expr, $b:expr, $c:expr, $d:expr) => {
-        sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
-            $seed,
-            &mut $matrix,
-            &mut $rand_stack0,
-            &mut $rand_stack1,
-            &mut $rand_stack2,
-            &mut $rand_stack3,
-            &mut $tmp_stack,
-            &[$a, $b, $c, $d],
-            4,
-        );
-    };
 }
 
 #[allow(non_snake_case)]
@@ -55,57 +34,49 @@ pub(crate) fn matrix_A_4_by_4<
     let mut rand_stack3 = [0u8; shake128::FIVE_BLOCKS_SIZE];
     let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
 
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (0, 0),
-        (0, 1),
-        (0, 2),
-        (0, 3)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(0, 0), (0, 1), (0, 2), (0, 3)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (1, 0),
-        (1, 1),
-        (1, 2),
-        (1, 3)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(1, 0), (1, 1), (1, 2), (1, 3)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (2, 0),
-        (2, 1),
-        (2, 2),
-        (2, 3)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(2, 0), (2, 1), (2, 2), (2, 3)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (3, 0),
-        (3, 1),
-        (3, 2),
-        (3, 3)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(3, 0), (3, 1), (3, 2), (3, 3)],
+        4,
     );
 
     A
@@ -130,96 +101,82 @@ pub(crate) fn matrix_A_6_by_5<
     let mut rand_stack3 = [0u8; shake128::FIVE_BLOCKS_SIZE];
     let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
 
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (0, 0),
-        (0, 1),
-        (0, 2),
-        (0, 3)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(0, 0), (0, 1), (0, 2), (0, 3)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (0, 4),
-        (1, 0),
-        (1, 1),
-        (1, 2)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(0, 4), (1, 0), (1, 1), (1, 2)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (1, 3),
-        (1, 4),
-        (2, 0),
-        (2, 1)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(1, 3), (1, 4), (2, 0), (2, 1)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (2, 2),
-        (2, 3),
-        (2, 4),
-        (3, 0)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(2, 2), (2, 3), (2, 4), (3, 0)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (3, 1),
-        (3, 2),
-        (3, 3),
-        (3, 4)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(3, 1), (3, 2), (3, 3), (3, 4)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (4, 0),
-        (4, 1),
-        (4, 2),
-        (4, 3)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(4, 0), (4, 1), (4, 2), (4, 3)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (4, 4),
-        (5, 0),
-        (5, 1),
-        (5, 2)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(4, 4), (5, 0), (5, 1), (5, 2)],
+        4,
     );
 
     // The last 2 sampled ring elements are discarded here.
@@ -257,187 +214,159 @@ pub(crate) fn matrix_A_8_by_7<
     let mut rand_stack3 = [0u8; shake128::FIVE_BLOCKS_SIZE];
     let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
 
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (0, 0),
-        (0, 1),
-        (0, 2),
-        (0, 3)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(0, 0), (0, 1), (0, 2), (0, 3)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (0, 4),
-        (0, 5),
-        (0, 6),
-        (1, 0)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(0, 4), (0, 5), (0, 6), (1, 0)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (1, 1),
-        (1, 2),
-        (1, 3),
-        (1, 4)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(1, 1), (1, 2), (1, 3), (1, 4)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (1, 5),
-        (1, 6),
-        (2, 0),
-        (2, 1)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(1, 5), (1, 6), (2, 0), (2, 1)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (2, 2),
-        (2, 3),
-        (2, 4),
-        (2, 5)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(2, 2), (2, 3), (2, 4), (2, 5)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (2, 6),
-        (3, 0),
-        (3, 1),
-        (3, 2)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(2, 6), (3, 0), (3, 1), (3, 2)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (3, 3),
-        (3, 4),
-        (3, 5),
-        (3, 6)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(3, 3), (3, 4), (3, 5), (3, 6)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (4, 0),
-        (4, 1),
-        (4, 2),
-        (4, 3)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(4, 0), (4, 1), (4, 2), (4, 3)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (4, 4),
-        (4, 5),
-        (4, 6),
-        (5, 0)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(4, 4), (4, 5), (4, 6), (5, 0)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (5, 1),
-        (5, 2),
-        (5, 3),
-        (5, 4)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(5, 1), (5, 2), (5, 3), (5, 4)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (5, 5),
-        (5, 6),
-        (6, 0),
-        (6, 1)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(5, 5), (5, 6), (6, 0), (6, 1)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (6, 2),
-        (6, 3),
-        (6, 4),
-        (6, 5)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(6, 2), (6, 3), (6, 4), (6, 5)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (6, 6),
-        (7, 0),
-        (7, 1),
-        (7, 2)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(6, 6), (7, 0), (7, 1), (7, 2)],
+        4,
     );
-    sample_four_ring_elements_into!(
+    sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        A,
-        rand_stack0,
-        rand_stack1,
-        rand_stack2,
-        rand_stack3,
-        tmp_stack,
-        (7, 3),
-        (7, 4),
-        (7, 5),
-        (7, 6)
+        &mut A,
+        &mut rand_stack0,
+        &mut rand_stack1,
+        &mut rand_stack2,
+        &mut rand_stack3,
+        &mut tmp_stack,
+        &[(7, 3), (7, 4), (7, 5), (7, 6)],
+        4,
     );
 
     A
