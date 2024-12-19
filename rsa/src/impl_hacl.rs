@@ -8,9 +8,25 @@ pub struct PublicKey<const LEN: usize> {
     n: [u8; LEN],
 }
 
+impl<const LEN: usize> From<[u8; LEN]> for PublicKey<LEN> {
+    fn from(n: [u8; LEN]) -> Self {
+        Self { n }
+    }
+}
+
 pub struct PrivateKey<const LEN: usize> {
     pk: PublicKey<LEN>,
     d: [u8; LEN],
+}
+
+impl<const LEN: usize> PrivateKey<LEN> {
+    pub fn from_components(n: [u8; LEN], d: [u8; LEN]) -> Self {
+        Self { pk: n.into(), d }
+    }
+
+    pub fn pk(&self) -> &PublicKey<LEN> {
+        &self.pk
+    }
 }
 
 const E_BITS: u32 = 17;
@@ -28,6 +44,26 @@ fn hacl_hash_alg(alg: crate::DigestAlgorithm) -> libcrux_hacl_rs::streaming_type
 
 macro_rules! impl_rsapss {
     ($sign_fn:ident, $verify_fn:ident, $bits:literal, $bytes:literal) => {
+        /// Computes a signature over `msg` using `sk` and writes it to `sig`.
+        /// Returns `Ok(())` on success.
+        ///
+        /// Returns an error in any of the following cases:
+        /// - the secret key is invalid
+        /// - the length of `msg` exceeds `u32::MAX`
+        /// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
+        ///
+        /// Ensures that the preconditions to hacl functions hold:
+        ///
+        /// - `sLen + Hash.hash_length a + 8 <= max_size_t`
+        ///   - checked explicitly
+        /// - `(sLen + Hash.hash_length a + 8) less_than_max_input_length a`
+        ///   - `max_input_length` is at least `2^62 - 1`, can't be reached since everyting
+        ///     is less than `u32::MAX`.
+        /// - `sLen + Hash.hash_length a + 2 <= blocks (modBits - 1) 8`
+        ///   - `blocks a b = (a - 1) / b + 1`, i.e. `ceil(div(a, b))`
+        ///   - checked explicitly
+        /// - `msgLen `less_than_max_input_length` a`
+        ///   - follows from the check that messages are shorter than `u32::MAX`.
         pub fn $sign_fn(
             alg: crate::DigestAlgorithm,
             sk: &PrivateKey<$bytes>,
@@ -38,11 +74,23 @@ macro_rules! impl_rsapss {
             let salt_len = salt.len().try_into().map_err(|_| Error::SaltTooLarge)?;
             let msg_len = msg.len().try_into().map_err(|_| Error::MessageTooLarge)?;
 
+            // required by precondition to verify, see
+            // https://github.com/hacl-star/hacl-star/blob/efbf82f29190e2aecdac8899e4f42c8cb9defc98/code/rsapss/Hacl.Spec.RSAPSS.fst#L162
+            if (salt_len as u64) + alg.hash_len() as u64 + 8 > u32::MAX as u64 {
+                return Err(Error::SaltTooLarge);
+            }
+
             let a = hacl_hash_alg(alg);
             let mod_bits = $bits;
             let e_bits = E_BITS;
             let d_bits = $bits;
             let sgnt = &mut sig.0;
+
+            // required by precondition to verify, see
+            // https://github.com/hacl-star/hacl-star/blob/main/code/rsapss/Hacl.Spec.RSAPSS.fst#L164
+            if salt_len as u64 + alg.hash_len() as u64 + 2 > (mod_bits as u64 - 1) / 8 + 1 {
+                return Err(Error::SaltTooLarge);
+            }
 
             match crate::hacl::rsapss::rsapss_skey_sign(
                 a, mod_bits, e_bits, d_bits, &sk.pk.n, &E, &sk.d, salt_len, salt, msg_len, msg,
@@ -53,6 +101,23 @@ macro_rules! impl_rsapss {
             }
         }
 
+        /// Returns `Ok(())` if the provided signature is valid.
+        ///
+        /// Returns an error in any of the following cases:
+        /// - the public key is invalid
+        /// - the signature verification fails
+        /// - the length of `msg` exceeds `u32::MAX`
+        /// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
+        ///
+        /// Ensures that the preconditions to hacl functions hold:
+        ///
+        /// - `sLen + Hash.hash_length a + 8 <= max_size_t`
+        ///   - checked explicitly
+        /// - `(sLen + Hash.hash_length a + 8) less_than_max_input_length a`
+        ///   - `max_input_length` is at least `2^62 - 1`, can't be reached since everyting
+        ///     is less than `u32::MAX`.
+        /// - `msgLen less_than_max_input_length a`
+        ///   - follows from the check that messages are shorter than `u32::MAX`.
         pub fn $verify_fn(
             alg: crate::DigestAlgorithm,
             pk: &PublicKey<$bytes>,
@@ -60,6 +125,12 @@ macro_rules! impl_rsapss {
             salt_len: u32,
             sig: &Signature<$bytes>,
         ) -> Result<(), Error> {
+            // required by precondition to verify, see
+            // https://github.com/hacl-star/hacl-star/blob/efbf82f29190e2aecdac8899e4f42c8cb9defc98/code/rsapss/Hacl.Spec.RSAPSS.fst#L236
+            if (salt_len as u64) + alg.hash_len() as u64 + 8 > u32::MAX as u64 {
+                return Err(Error::SaltTooLarge);
+            }
+
             let msg_len = msg.len().try_into().map_err(|_| Error::MessageTooLarge)?;
 
             let a = hacl_hash_alg(alg);
