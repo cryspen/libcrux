@@ -40,7 +40,6 @@ mod hacl {
 
     pub(crate) mod aead_chacha20poly1305;
     pub(crate) mod chacha20;
-    pub(crate) mod chacha20_vec32;
 }
 
 mod impl_hacl;

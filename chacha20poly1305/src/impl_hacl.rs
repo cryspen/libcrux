@@ -19,8 +19,8 @@ pub fn encrypt<'a>(
 
     let aad_len: u32 = aad.len().try_into().map_err(|_| AeadError::AadTooLarge)?;
 
-    // we already knwo that ptxt.len() < u32::MAX, so we can safely add here.
-    if ctxt.len() < ptxt.len() + TAG_LEN {
+    // we already knwo that ptxt.len() < u32::MAX, so we can safely add if we use u64.
+    if (ctxt.len() as u64) < (ptxt.len() as u64) + (TAG_LEN as u64) {
         return Err(AeadError::CiphertextTooShort);
     }
 

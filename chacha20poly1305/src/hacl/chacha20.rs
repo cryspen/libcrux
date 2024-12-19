@@ -183,6 +183,7 @@ pub fn chacha20_encrypt(len: u32, out: &mut [u8], text: &[u8], key: &[u8], n: &[
     crate::hacl::chacha20::chacha20_update(&ctx, len, out, text)
 }
 
+#[allow(dead_code)]
 pub fn chacha20_decrypt(len: u32, out: &mut [u8], cipher: &[u8], key: &[u8], n: &[u8], ctr: u32) {
     let mut ctx: [u32; 16] = [0u32; 16usize];
     crate::hacl::chacha20::chacha20_init(&mut ctx, key, n, ctr);

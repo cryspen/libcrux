@@ -532,6 +532,7 @@ Note: Encryption and decryption can be executed in-place, i.e., `input` and `out
 @param key Pointer to 32 bytes of memory where the AEAD key is read from.
 @param nonce Pointer to 12 bytes of memory where the AEAD nonce is read from.
 */
+#[allow(clippy::too_many_arguments)]
 pub fn encrypt(
     output: &mut [u8],
     tag: &mut [u8],
@@ -572,6 +573,7 @@ If decryption fails, the array `output` remains unchanged and the function retur
 
 @returns 0 on succeess; 1 on failure.
 */
+#[allow(clippy::too_many_arguments)]
 pub fn decrypt(
     output: &mut [u8],
     input: &[u8],
