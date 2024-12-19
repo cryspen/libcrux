@@ -1,3 +1,5 @@
+//! This module contains code from HACL.
+
 use proc_macro::{Delimiter, TokenStream, TokenTree};
 
 fn skip_comma<T: Iterator<Item = TokenTree>>(ts: &mut T) {

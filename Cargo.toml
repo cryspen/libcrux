@@ -23,6 +23,9 @@ members = [
     "sha2",
     "ed25519",
     "curve25519",
+    "poly1305",
+    "chacha20poly1305",
+    "rsa",
 ]
 
 [workspace.package]
