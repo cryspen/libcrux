@@ -11,11 +11,9 @@ repository.workspace = true
 readme.workspace = true
 
 [features]
-default = ["hacl"]
-hacl = ["dep:libcrux-hacl-rs"]
-expose-hacl = ["hacl"]
+expose-hacl = []
 
 [dependencies]
-libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "../hacl-rs", optional = true }
+libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "../hacl-rs" }
 libcrux-traits = { version = "=0.0.2-beta.2", path = "../traits/" }
 libcrux-macros = { version = "=0.0.2-beta.2", path = "../macros" }

@@ -13,13 +13,11 @@ description = "Libcrux HMAC implementation"
 path = "src/hmac.rs"
 
 [features]
-default = ["hacl"]
-hacl = ["dep:libcrux-sha2", "dep:libcrux-hacl-rs", "dep:libcrux-macros"]
-expose-hacl = ["hacl"]
+expose-hacl = []
 
 [dependencies]
-libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "../hacl-rs/", optional = true }
-libcrux-sha2 = { version = "=0.0.2-beta.2", path = "../sha2", optional = true, features = [
+libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "../hacl-rs/" }
+libcrux-sha2 = { version = "=0.0.2-beta.2", path = "../sha2", features = [
     "expose-hacl",
 ] }
-libcrux-macros = { version = "=0.0.2-beta.2", path = "../macros", optional = true }
+libcrux-macros = { version = "=0.0.2-beta.2", path = "../macros" }

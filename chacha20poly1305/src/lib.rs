@@ -35,7 +35,6 @@ pub enum MacError {
     InvalidMacTag,
 }
 
-#[cfg(feature = "hacl")]
 mod hacl {
     pub(crate) use libcrux_poly1305::hacl::mac_poly1305;
 
@@ -44,8 +43,6 @@ mod hacl {
     pub(crate) mod chacha20_vec32;
 }
 
-#[cfg(feature = "hacl")]
 mod impl_hacl;
 
-#[cfg(feature = "hacl")]
 pub use impl_hacl::*;

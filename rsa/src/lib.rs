@@ -1,6 +1,6 @@
 #![no_std]
 
-#[cfg(all(feature = "hacl", not(feature = "expose-hacl")))]
+#[cfg(not(feature = "expose-hacl"))]
 mod hacl {
     pub(crate) mod rsapss;
 
@@ -38,12 +38,10 @@ impl DigestAlgorithm {
 pub enum Error {
     SaltTooLarge,
     MessageTooLarge,
-    SigningFailed,
     VerificationFailed,
+    SigningFailed,
 }
 
-#[cfg(feature = "hacl")]
 mod impl_hacl;
 
-#[cfg(feature = "hacl")]
 pub use impl_hacl::*;

@@ -1,4 +1,4 @@
-use crate::{AeadError, MacError, KEY_LEN, NONCE_LEN, TAG_LEN};
+use crate::{AeadError, KEY_LEN, NONCE_LEN, TAG_LEN};
 
 /// The ChaCha20-Poly1305 AEAD encryption function. Writes the concatenation of the ciphertexoft
 /// produced by ChaCha20 and the MAC tag into `ctxt` and returns the two pieces separately.
@@ -24,9 +24,6 @@ pub fn encrypt<'a>(
     }
 
     // ensure destination slice has just the right length
-    let ctxt_len = ptxt.len() + TAG_LEN;
-    let ctxtu32 = &mut ctxt[..ctxt_len];
-
     let (ctxt_cpa, tag) = ctxt.split_at_mut(ptxt.len());
     let tag: &mut [u8; TAG_LEN] = tag.try_into().unwrap();
 

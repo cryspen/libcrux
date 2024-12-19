@@ -7,7 +7,7 @@ extern crate alloc;
 
 use alloc::vec::Vec;
 
-#[cfg(all(feature = "hacl", not(feature = "expose-hacl")))]
+#[cfg(not(feature = "expose-hacl"))]
 mod hacl {
     pub(crate) mod hash_sha1;
     pub(crate) mod hmac;
@@ -19,10 +19,8 @@ pub mod hacl {
     pub mod hmac;
 }
 
-#[cfg(feature = "hacl")]
 mod impl_hacl;
 
-#[cfg(feature = "hacl")]
 pub use impl_hacl::*;
 
 /// The HMAC algorithm defining the used hash function.

@@ -1,12 +1,9 @@
 #![no_std]
 
-#[cfg(feature = "hacl")]
 pub use libcrux_hacl_rs::curve25519_51 as hacl;
 
-#[cfg(feature = "hacl")]
 mod impl_hacl;
 
-#[cfg(feature = "hacl")]
 pub use impl_hacl::{ecdh, secret_to_public};
 
 /// The length of Curve25519 secret keys.
@@ -22,8 +19,9 @@ pub const SHK_LEN: usize = 32;
 pub struct Error;
 
 /// This trait is implemented by the backing implementations.
-/// Only used for implementation agility.
-pub trait Curve25519 {
+/// Only used for ensuring implementations follow the same interface, not really consumed.
+#[allow(dead_code)]
+trait Curve25519 {
     /// Computes a public key from a secret key.
     fn secret_to_public(pk: &mut [u8; PK_LEN], sk: &[u8; SK_LEN]);
 

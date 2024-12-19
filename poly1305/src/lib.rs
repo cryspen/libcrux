@@ -15,7 +15,7 @@ pub enum Error {
     InvalidMacTag,
 }
 
-#[cfg(all(feature = "hacl", not(feature = "expose-hacl")))]
+#[cfg(not(feature = "expose-hacl"))]
 mod hacl {
     pub(crate) mod mac_poly1305;
 }
@@ -25,8 +25,6 @@ pub mod hacl {
     pub mod mac_poly1305;
 }
 
-#[cfg(feature = "hacl")]
 mod impl_hacl;
 
-#[cfg(feature = "hacl")]
 pub use impl_hacl::*;
