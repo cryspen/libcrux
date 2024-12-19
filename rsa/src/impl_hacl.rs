@@ -1,8 +1,10 @@
 use crate::Error;
 
+/// An RSA Signature that is `LEN` bytes long.
 #[derive(Debug)]
 pub struct Signature<const LEN: usize>([u8; LEN]);
 
+/// An RSA Public Key that is `LEN` bytes long.
 #[derive(Debug, Clone)]
 pub struct PublicKey<const LEN: usize> {
     n: [u8; LEN],
@@ -14,16 +16,19 @@ impl<const LEN: usize> From<[u8; LEN]> for PublicKey<LEN> {
     }
 }
 
+/// An RSA Private Key that is `LEN` bytes long.
 pub struct PrivateKey<const LEN: usize> {
     pk: PublicKey<LEN>,
     d: [u8; LEN],
 }
 
 impl<const LEN: usize> PrivateKey<LEN> {
+    /// Constructor for the private key based on `n` and `d`.
     pub fn from_components(n: [u8; LEN], d: [u8; LEN]) -> Self {
         Self { pk: n.into(), d }
     }
 
+    /// Returns the public key of the private key.
     pub fn pk(&self) -> &PublicKey<LEN> {
         &self.pk
     }
@@ -76,6 +81,7 @@ macro_rules! impl_rsapss {
 
             // required by precondition to verify, see
             // https://github.com/hacl-star/hacl-star/blob/efbf82f29190e2aecdac8899e4f42c8cb9defc98/code/rsapss/Hacl.Spec.RSAPSS.fst#L162
+            // all operands are at most u32, so coercing to u64 and then adding is safe.
             if (salt_len as u64) + alg.hash_len() as u64 + 8 > u32::MAX as u64 {
                 return Err(Error::SaltTooLarge);
             }
@@ -87,7 +93,8 @@ macro_rules! impl_rsapss {
             let sgnt = &mut sig.0;
 
             // required by precondition to verify, see
-            // https://github.com/hacl-star/hacl-star/blob/main/code/rsapss/Hacl.Spec.RSAPSS.fst#L164
+            // https://github.com/hacl-star/hacl-star/blob/efbf82f29190e2aecdac8899e4f42c8cb9defc98/code/rsapss/Hacl.Spec.RSAPSS.fst#L164
+            // all operands are at most u32, so coercing to u64 and then adding is safe.
             if salt_len as u64 + alg.hash_len() as u64 + 2 > (mod_bits as u64 - 1) / 8 + 1 {
                 return Err(Error::SaltTooLarge);
             }
@@ -127,6 +134,7 @@ macro_rules! impl_rsapss {
         ) -> Result<(), Error> {
             // required by precondition to verify, see
             // https://github.com/hacl-star/hacl-star/blob/efbf82f29190e2aecdac8899e4f42c8cb9defc98/code/rsapss/Hacl.Spec.RSAPSS.fst#L236
+            // all operands are at most u32, so coercing to u64 and then adding is safe.
             if (salt_len as u64) + alg.hash_len() as u64 + 8 > u32::MAX as u64 {
                 return Err(Error::SaltTooLarge);
             }

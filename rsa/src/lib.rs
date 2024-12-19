@@ -8,14 +8,17 @@ mod hacl {
     use libcrux_sha2::hacl as hash_sha2;
 }
 
+/// The hacl-rs code for RSA signatures
 #[cfg(feature = "expose-hacl")]
 pub mod hacl {
+    /// The RSA-PSS signature code.
     pub mod rsapss;
 
     use libcrux_hacl_rs::streaming_types;
     use libcrux_sha2::hacl as hash_sha2;
 }
 
+/// The hash algorithm used for signing or verifying.
 #[derive(Clone, Copy, Debug)]
 pub enum DigestAlgorithm {
     Sha2_256,
@@ -34,11 +37,19 @@ impl DigestAlgorithm {
     }
 }
 
+/// Represents errors that occurred during signing or verifying.
 #[derive(Debug)]
 pub enum Error {
+    /// Indicates that the salt is too large.
     SaltTooLarge,
+
+    /// Indicates that the message is too large.
     MessageTooLarge,
+
+    /// Indicates that the verification of a signature failed.
     VerificationFailed,
+
+    /// Indicates that signing a message failed.
     SigningFailed,
 }
 
