@@ -85,14 +85,14 @@ jobs:
       - name: 🔨 Build
         run: |
           rustc --print=cfg
-          cargo build --verbose $RUST_TARGET_FLAG --features pre-verification
+          cargo build --verbose $RUST_TARGET_FLAG
 
       - name: 🔨 Build Release
-        run: cargo build --verbose --release $RUST_TARGET_FLAG --features pre-verification
+        run: cargo build --verbose --release $RUST_TARGET_FLAG
 
       - name: 🏃🏻 Asan MacOS
         if: ${{ matrix.os == 'macos-latest' }}
-        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin --features pre-verification
+        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
 
       # - name: ⬆ Upload build
       #   uses: ./.github/actions/upload_artifacts
@@ -135,27 +135,27 @@ jobs:
       - name: 🏃🏻‍♀️ Test
         run: |
           cargo clean
-          cargo test --verbose $RUST_TARGET_FLAG --features pre-verification
+          cargo test --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Test Release
         run: |
           cargo clean
-          cargo test --verbose --release $RUST_TARGET_FLAG --features pre-verification
+          cargo test --verbose --release $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Test Portable
         run: |
           cargo clean
-          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose $RUST_TARGET_FLAG --features pre-verification
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Test Portable Release
         run: |
           cargo clean
-          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG --features pre-verification
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Test Kyber
         run: |
           cargo clean
-          cargo test --features pre-verification,kyber --verbose $RUST_TARGET_FLAG
+          cargo test ,kyber --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Cargo Check Features
         if: ${{ matrix.bits == 64 }}

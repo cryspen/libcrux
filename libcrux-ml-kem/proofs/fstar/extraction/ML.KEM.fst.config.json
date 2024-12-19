@@ -14,9 +14,11 @@
     ],
     "include_dirs": [
         "${HACL_HOME}/lib",
+        "${HACL_HOME}/specs",
         "${HAX_HOME}/proof-libs/fstar/rust_primitives",
         "${HAX_HOME}/proof-libs/fstar/core",
         "${HAX_HOME}/hax-lib/proofs/fstar/extraction",
+        "../spec",
         "../../../../sys/platform/proofs/fstar/extraction",
         "../../../../libcrux-sha3/proofs/fstar/extraction",
         "../../../../libcrux-intrinsics/proofs/fstar/extraction"

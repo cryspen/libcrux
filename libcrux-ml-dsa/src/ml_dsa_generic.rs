@@ -4,10 +4,7 @@ use crate::{
     },
     constants::*,
     encoding::{self, signature::Signature},
-    hash_functions::{
-        portable::{shake256_absorb, shake256_absorb_final, shake256_init, shake256_squeeze},
-        shake128, shake256,
-    },
+    hash_functions::{shake128, shake256},
     matrix::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
         vector_times_ring_element,
@@ -15,7 +12,7 @@ use crate::{
     ntt::ntt,
     pre_hash::{DomainSeparationContext, PreHash},
     sample::{sample_challenge_ring_element, sample_mask_vector},
-    samplex4,
+    samplex4::{self, X4Sampler},
     simd::traits::Operations,
     types::{SigningError, VerificationError},
     utils::into_padded_array,
@@ -31,8 +28,10 @@ pub(crate) mod multiplexing;
 #[inline(always)]
 pub(crate) fn generate_key_pair<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
@@ -45,17 +44,19 @@ pub(crate) fn generate_key_pair<
 ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
     let mut seed_expanded = [0; 128];
-    let mut shake = shake256_init();
-    shake256_absorb(&mut shake, &randomness);
-    let mut shake = shake256_absorb_final(shake, &[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
-    shake256_squeeze(&mut shake, &mut seed_expanded);
+    {
+        let mut shake = Shake256Xof::init();
+        shake.absorb(&randomness);
+        shake.absorb_final(&[ROWS_IN_A as u8, COLUMNS_IN_A as u8]);
+        shake.squeeze(&mut seed_expanded);
+    }
 
     let (seed_for_a, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
     let a_as_ntt =
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_a));
+        Sampler::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_a));
 
     let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
         into_padded_array(seed_for_error_vectors),
@@ -95,8 +96,11 @@ pub(crate) fn generate_key_pair<
 #[inline(always)]
 pub(crate) fn sign_pre_hashed<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
+    Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     Shake256X4: shake256::XofX4,
     PH: PreHash<PH_DIGEST_LEN>,
     const PH_DIGEST_LEN: usize,
@@ -123,11 +127,17 @@ pub(crate) fn sign_pre_hashed<
     if context.len() > CONTEXT_MAX_LEN {
         return Err(SigningError::ContextTooLongError);
     }
-    let pre_hashed_message = PH::hash(message);
+    let pre_hashed_message = PH::hash::<Shake128>(message);
+    let domain_separation_context = match DomainSeparationContext::new(context, Some(PH::oid())) {
+        Ok(dsc) => dsc,
+        Err(_) => return Err(SigningError::ContextTooLongError),
+    };
     sign_internal::<
         SIMDUnit,
+        Sampler,
         Shake128X4,
         Shake256,
+        Shake256Xof,
         Shake256X4,
         ROWS_IN_A,
         COLUMNS_IN_A,
@@ -146,7 +156,7 @@ pub(crate) fn sign_pre_hashed<
     >(
         &signing_key,
         &pre_hashed_message,
-        Some(DomainSeparationContext::new(context, Some(&PH::oid()))?),
+        Some(domain_separation_context),
         randomness,
     )
 }
@@ -155,8 +165,10 @@ pub(crate) fn sign_pre_hashed<
 #[inline(always)]
 pub(crate) fn sign<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
@@ -178,11 +190,16 @@ pub(crate) fn sign<
     context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-    // TODO: Support implicit into() in ? so that this match becomes unnecessary
+    let domain_separation_context = match DomainSeparationContext::new(context, None) {
+        Ok(dsc) => dsc,
+        Err(_) => return Err(SigningError::ContextTooLongError),
+    };
     sign_internal::<
         SIMDUnit,
+        Sampler,
         Shake128X4,
         Shake256,
+        Shake256Xof,
         Shake256X4,
         ROWS_IN_A,
         COLUMNS_IN_A,
@@ -201,7 +218,7 @@ pub(crate) fn sign<
     >(
         &signing_key,
         message,
-        Some(DomainSeparationContext::new(context, None)?),
+        Some(domain_separation_context),
         randomness,
     )
 }
@@ -214,8 +231,10 @@ pub(crate) fn sign<
 #[inline(always)]
 pub(crate) fn sign_internal<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
@@ -248,10 +267,10 @@ pub(crate) fn sign_internal<
         >(signing_key);
 
     let A_as_ntt =
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+        Sampler::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
-    derive_message_representative(
+    derive_message_representative::<Shake256Xof>(
         verification_key_hash,
         domain_separation_context,
         message,
@@ -260,12 +279,12 @@ pub(crate) fn sign_internal<
 
     let mut mask_seed = [0; MASK_SEED_SIZE];
     {
-        let mut shake = shake256_init();
-        shake256_absorb(&mut shake, &seed_for_signing);
-        shake256_absorb(&mut shake, &randomness);
-        let mut shake = shake256_absorb_final(shake, &message_representative);
+        let mut shake = Shake256Xof::init();
+        shake.absorb(&seed_for_signing);
+        shake.absorb(&randomness);
+        shake.absorb_final(&message_representative);
 
-        shake256_squeeze(&mut shake, &mut mask_seed);
+        shake.squeeze(&mut mask_seed);
     }
 
     let mut domain_separator_for_mask: u16 = 0;
@@ -306,11 +325,11 @@ pub(crate) fn sign_internal<
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
-            let mut shake = shake256_init();
-            shake256_absorb(&mut shake, &message_representative);
-            let mut shake = shake256_absorb_final(shake, &commitment_serialized);
+            let mut shake = Shake256Xof::init();
+            shake.absorb(&message_representative);
+            shake.absorb_final(&commitment_serialized);
 
-            shake256_squeeze(&mut shake, &mut commitment_hash_candidate);
+            shake.squeeze(&mut commitment_hash_candidate);
         }
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
@@ -339,17 +358,23 @@ pub(crate) fn sign_internal<
             signer_response_candidate,
             (1 << GAMMA1_EXPONENT) - BETA,
         ) {
+            // XXX: https://github.com/hacspec/hax/issues/1171
+            // continue;
         } else {
             if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(
                 w0_minus_challenge_times_s2,
                 GAMMA2 - BETA,
             ) {
+                // XXX: https://github.com/hacspec/hax/issues/1171
+                // continue;
             } else {
                 let challenge_times_t0 = vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
                     &t0_as_ntt,
                     &verifier_challenge_as_ntt,
                 );
                 if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(challenge_times_t0, GAMMA2) {
+                    // XXX: https://github.com/hacspec/hax/issues/1171
+                    // continue;
                 } else {
                     let w0_minus_c_times_s2_plus_c_times_t0 = add_vectors::<SIMDUnit, ROWS_IN_A>(
                         &w0_minus_challenge_times_s2,
@@ -361,6 +386,8 @@ pub(crate) fn sign_internal<
                     );
 
                     if ones_in_hint > MAX_ONES_IN_HINT {
+                        // XXX: https://github.com/hacspec/hax/issues/1171
+                        // continue;
                     } else {
                         attempt = REJECTION_SAMPLE_BOUND_SIGN; // exit loop now
                         commitment_hash = Some(commitment_hash_candidate);
@@ -373,19 +400,19 @@ pub(crate) fn sign_internal<
     }
 
     let commitment_hash = match commitment_hash {
-        Some(commitment_hash) => Ok(commitment_hash),
-        None => Err(SigningError::RejectionSamplingError),
-    }?;
+        Some(commitment_hash) => commitment_hash,
+        None => return Err(SigningError::RejectionSamplingError),
+    };
 
     let signer_response = match signer_response {
-        Some(signer_response) => Ok(signer_response),
-        None => Err(SigningError::RejectionSamplingError),
-    }?;
+        Some(signer_response) => signer_response,
+        None => return Err(SigningError::RejectionSamplingError),
+    };
 
     let hint = match hint {
-        Some(hint) => Ok(hint),
-        None => Err(SigningError::RejectionSamplingError),
-    }?;
+        Some(hint) => hint,
+        None => return Err(SigningError::RejectionSamplingError),
+    };
 
     let signature = Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A> {
         commitment_hash,
@@ -418,31 +445,25 @@ pub(crate) fn sign_internal<
 /// 23 of Algorithm 4 (and line 18 of Algorithm 5,resp.) describe domain separation for the HashMl-DSA
 /// variant.
 #[inline(always)]
-fn derive_message_representative(
+fn derive_message_representative<Shake256Xof: shake256::Xof>(
     verification_key_hash: [u8; 64],
     domain_separation_context: Option<DomainSeparationContext>,
     message: &[u8],
     message_representative: &mut [u8; 64],
 ) {
-    let mut shake = shake256_init();
-    shake256_absorb(&mut shake, &verification_key_hash);
+    let mut shake = Shake256Xof::init();
+    shake.absorb(&verification_key_hash);
     if let Some(domain_separation_context) = domain_separation_context {
-        shake256_absorb(
-            &mut shake,
-            &[domain_separation_context.pre_hash_oid().is_some() as u8],
-        );
-        shake256_absorb(
-            &mut shake,
-            &[domain_separation_context.context().len() as u8],
-        );
-        shake256_absorb(&mut shake, domain_separation_context.context());
+        shake.absorb(&[domain_separation_context.pre_hash_oid().is_some() as u8]);
+        shake.absorb(&[domain_separation_context.context().len() as u8]);
+        shake.absorb(domain_separation_context.context());
         if let Some(pre_hash_oid) = domain_separation_context.pre_hash_oid() {
-            shake256_absorb(&mut shake, pre_hash_oid)
+            shake.absorb(pre_hash_oid)
         }
     }
 
-    let mut shake = shake256_absorb_final(shake, message);
-    shake256_squeeze(&mut shake, message_representative);
+    shake.absorb_final(message);
+    shake.squeeze(message_representative);
 }
 
 /// The internal verification API.
@@ -453,8 +474,10 @@ fn derive_message_representative(
 #[inline(always)]
 pub(crate) fn verify_internal<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const SIGNATURE_SIZE: usize,
@@ -480,81 +503,86 @@ pub(crate) fn verify_internal<
         );
 
     let signature =
-        Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
+        match Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
             GAMMA1_EXPONENT,
             GAMMA1_RING_ELEMENT_SIZE,
             MAX_ONES_IN_HINT,
             SIGNATURE_SIZE,
-        >(signature_serialized)?;
+        >(signature_serialized)
+        {
+            Ok(s) => s,
+            Err(e) => return Err(e),
+        };
 
     // We use if-else branches because early returns will not go through hax.
-    if !vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
+    if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
         signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
-        let A_as_ntt =
-            samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
-
-        let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
-        Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
-            verification_key_serialized,
-            &mut verification_key_hash,
-        );
-        let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
-        derive_message_representative(
-            verification_key_hash,
-            domain_separation_context,
-            message,
-            &mut message_representative,
-        );
-
-        let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
-            SIMDUnit,
-            Shake256,
-            ONES_IN_VERIFIER_CHALLENGE,
-            COMMITMENT_HASH_SIZE,
-        >(signature.commitment_hash));
-
-        let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
-            &A_as_ntt,
-            signature.signer_response,
-            verifier_challenge_as_ntt,
-            t1,
-        );
-
-        let mut commitment_hash = [0; COMMITMENT_HASH_SIZE];
-        {
-            let commitment = use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
-            let commitment_serialized = encoding::commitment::serialize_vector::<
-                SIMDUnit,
-                ROWS_IN_A,
-                COMMITMENT_RING_ELEMENT_SIZE,
-                COMMITMENT_VECTOR_SIZE,
-            >(commitment);
-
-            let mut shake = shake256_init();
-            shake256_absorb(&mut shake, &message_representative);
-            let mut shake = shake256_absorb_final(shake, &commitment_serialized);
-
-            shake256_squeeze(&mut shake, &mut commitment_hash);
-        }
-
-        if signature.commitment_hash != commitment_hash {
-            Err(VerificationError::CommitmentHashesDontMatchError)
-        } else {
-            Ok(())
-        }
-    } else {
-        Err(VerificationError::SignerResponseExceedsBoundError)
+        return Err(VerificationError::SignerResponseExceedsBoundError);
     }
+    let A_as_ntt =
+        Sampler::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+
+    let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
+    Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
+        verification_key_serialized,
+        &mut verification_key_hash,
+    );
+    let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
+    derive_message_representative::<Shake256Xof>(
+        verification_key_hash,
+        domain_separation_context,
+        message,
+        &mut message_representative,
+    );
+
+    let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
+        SIMDUnit,
+        Shake256,
+        ONES_IN_VERIFIER_CHALLENGE,
+        COMMITMENT_HASH_SIZE,
+    >(signature.commitment_hash));
+
+    let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
+        &A_as_ntt,
+        signature.signer_response,
+        verifier_challenge_as_ntt,
+        t1,
+    );
+
+    let mut commitment_hash = [0; COMMITMENT_HASH_SIZE];
+    {
+        let commitment = use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
+        let commitment_serialized = encoding::commitment::serialize_vector::<
+            SIMDUnit,
+            ROWS_IN_A,
+            COMMITMENT_RING_ELEMENT_SIZE,
+            COMMITMENT_VECTOR_SIZE,
+        >(commitment);
+
+        let mut shake = Shake256Xof::init();
+        shake.absorb(&message_representative);
+        shake.absorb_final(&commitment_serialized);
+
+        shake.squeeze(&mut commitment_hash);
+    }
+
+    if signature.commitment_hash == commitment_hash {
+        return Ok(());
+    }
+
+    return Err(VerificationError::CommitmentHashesDontMatchError);
 }
 
 #[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn verify<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const SIGNATURE_SIZE: usize,
@@ -574,11 +602,17 @@ pub(crate) fn verify<
     context: &[u8],
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    // TODO: Support implicit into() in ? so that this match becomes unnecessary
+    // We manually do the matching here to make Eurydice happy.
+    let domain_separation_context = match DomainSeparationContext::new(context, None) {
+        Ok(dsc) => dsc,
+        Err(_) => return Err(VerificationError::VerificationContextTooLongError),
+    };
     verify_internal::<
         SIMDUnit,
+        Sampler,
         Shake128X4,
         Shake256,
+        Shake256Xof,
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
@@ -595,7 +629,7 @@ pub(crate) fn verify<
     >(
         &verification_key_serialized,
         message,
-        Some(DomainSeparationContext::new(context, None)?),
+        Some(domain_separation_context),
         &signature_serialized,
     )
 }
@@ -604,8 +638,11 @@ pub(crate) fn verify<
 #[inline(always)]
 pub(crate) fn verify_pre_hashed<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
+    Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
-    Shake256: shake256::Xof,
+    Shake256: shake256::DsaXof,
+    Shake256Xof: shake256::Xof,
     PH: PreHash<PH_DIGEST_LEN>,
     const PH_DIGEST_LEN: usize,
     const ROWS_IN_A: usize,
@@ -627,12 +664,18 @@ pub(crate) fn verify_pre_hashed<
     context: &[u8],
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    let pre_hashed_message = PH::hash(message);
+    let pre_hashed_message = PH::hash::<Shake128>(message);
+    let domain_separation_context = match DomainSeparationContext::new(context, Some(PH::oid())) {
+        Ok(dsc) => dsc,
+        Err(_) => return Err(VerificationError::VerificationContextTooLongError),
+    };
 
     verify_internal::<
         SIMDUnit,
+        Sampler,
         Shake128X4,
         Shake256,
+        Shake256Xof,
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
@@ -649,7 +692,7 @@ pub(crate) fn verify_pre_hashed<
     >(
         &verification_key_serialized,
         &pre_hashed_message,
-        Some(DomainSeparationContext::new(context, Some(&PH::oid()))?),
+        Some(domain_separation_context),
         &signature_serialized,
     )
 }

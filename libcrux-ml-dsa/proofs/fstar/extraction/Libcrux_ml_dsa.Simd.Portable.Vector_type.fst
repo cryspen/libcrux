@@ -25,5 +25,17 @@ let from_coefficient_array (array: t_Slice i32) =
 
 let to_coefficient_array (x: t_PortableSIMDUnit) = x.f_coefficients
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl': Core.Clone.t_Clone t_PortableSIMDUnit
+
+let impl = impl'
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_1': Core.Marker.t_Copy t_PortableSIMDUnit
+
+let impl_1 = impl_1'
+
 let v_ZERO (_: Prims.unit) =
   { f_coefficients = Rust_primitives.Hax.repeat 0l (sz 8) } <: t_PortableSIMDUnit

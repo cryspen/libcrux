@@ -1,5 +1,5 @@
 macro_rules! instantiate {
-    ($modp:ident, $simdunit:path, $shake128x4:path, $shake256:path, $shake256x4:path) => {
+    ($modp:ident, $simdunit:path, $shake128:path, $shake128x4:path, $shake256:path, $shake256xof:path, $shake256x4:path, $sampler:path) => {
         pub mod $modp {
             use crate::{
                 constants::*,
@@ -21,8 +21,10 @@ macro_rules! instantiate {
             ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
                 crate::ml_dsa_generic::generate_key_pair::<
                     $simdunit,
+                    $sampler,
                     $shake128x4,
                     $shake256,
+                    $shake256xof,
                     $shake256x4,
                     ROWS_IN_A,
                     COLUMNS_IN_A,
@@ -57,8 +59,10 @@ macro_rules! instantiate {
             ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
                 crate::ml_dsa_generic::sign::<
                     $simdunit,
+                    $sampler,
                     $shake128x4,
                     $shake256,
+                    $shake256xof,
                     $shake256x4,
                     ROWS_IN_A,
                     COLUMNS_IN_A,
@@ -101,8 +105,10 @@ macro_rules! instantiate {
             ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
                 crate::ml_dsa_generic::sign_internal::<
                     $simdunit,
+                    $sampler,
                     $shake128x4,
                     $shake256,
+                    $shake256xof,
                     $shake256x4,
                     ROWS_IN_A,
                     COLUMNS_IN_A,
@@ -145,8 +151,11 @@ macro_rules! instantiate {
             ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
                 crate::ml_dsa_generic::sign_pre_hashed::<
                     $simdunit,
+                    $sampler,
+                    $shake128,
                     $shake128x4,
                     $shake256,
+                    $shake256xof,
                     $shake256x4,
                     SHAKE128_PH,
                     256,
@@ -190,8 +199,10 @@ macro_rules! instantiate {
             ) -> Result<(), VerificationError> {
                 crate::ml_dsa_generic::verify::<
                     $simdunit,
+                    $sampler,
                     $shake128x4,
                     $shake256,
+                    $shake256xof,
                     ROWS_IN_A,
                     COLUMNS_IN_A,
                     SIGNATURE_SIZE,
@@ -231,8 +242,10 @@ macro_rules! instantiate {
             ) -> Result<(), VerificationError> {
                 crate::ml_dsa_generic::verify_internal::<
                     $simdunit,
+                    $sampler,
                     $shake128x4,
                     $shake256,
+                    $shake256xof,
                     ROWS_IN_A,
                     COLUMNS_IN_A,
                     SIGNATURE_SIZE,
@@ -272,8 +285,11 @@ macro_rules! instantiate {
             ) -> Result<(), VerificationError> {
                 crate::ml_dsa_generic::verify_pre_hashed::<
                     $simdunit,
+                    $sampler,
+                    $shake128,
                     $shake128x4,
                     $shake256,
+                    $shake256xof,
                     SHAKE128_PH,
                     256,
                     ROWS_IN_A,
@@ -298,9 +314,12 @@ macro_rules! instantiate {
 // Portable generic implementations.
 instantiate! {portable,
     crate::simd::portable::PortableSIMDUnit,
+    crate::hash_functions::portable::Shake128,
     crate::hash_functions::portable::Shake128X4,
     crate::hash_functions::portable::Shake256,
-    crate::hash_functions::portable::Shake256X4
+    crate::hash_functions::portable::Shake256Xof,
+    crate::hash_functions::portable::Shake256X4,
+    crate::samplex4::portable::PortableSampler
 }
 
 // AVX2 generic implementation.
@@ -311,7 +330,10 @@ pub mod avx2;
 #[cfg(feature = "simd128")]
 instantiate! {neon,
     crate::simd::portable::PortableSIMDUnit,
+    crate::hash_functions::portable::Shake128,
     crate::hash_functions::neon::Shake128x4,
     crate::hash_functions::portable::Shake256,
-    crate::hash_functions::neon::Shake256x4
+    crate::hash_functions::portable::Shake256Xof,
+    crate::hash_functions::neon::Shake256x4,
+    crate::samplex4::neon::NeonSampler
 }

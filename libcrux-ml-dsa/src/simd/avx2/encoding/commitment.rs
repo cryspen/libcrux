@@ -1,10 +1,10 @@
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-pub fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
+pub(in crate::simd::avx2) fn serialize(simd_unit: Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 19];
 
-    match OUTPUT_SIZE as u8 {
+    match out.len() as u8 {
         4 => {
             let adjacent_2_combined =
                 mm256_sllv_epi32(simd_unit, mm256_set_epi32(0, 28, 0, 28, 0, 28, 0, 28));
@@ -25,7 +25,7 @@ pub fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZ
 
             mm_storeu_bytes_si128(&mut serialized[0..16], adjacent_4_combined);
 
-            serialized[0..4].try_into().unwrap()
+            out.copy_from_slice(&serialized[0..4]);
         }
 
         6 => {
@@ -56,7 +56,7 @@ pub fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZ
             let upper_3 = mm256_extracti128_si256::<1>(adjacent_3_combined);
             mm_storeu_bytes_si128(&mut serialized[3..19], upper_3);
 
-            serialized[0..6].try_into().unwrap()
+            out.copy_from_slice(&serialized[0..6]);
         }
 
         _ => unreachable!(),

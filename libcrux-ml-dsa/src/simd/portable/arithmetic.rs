@@ -1,6 +1,7 @@
 use super::vector_type::{FieldElement, PortableSIMDUnit, ZERO};
 use crate::{
     constants::BITS_IN_LOWER_PART_OF_T,
+    helper::cloop,
     simd::traits::{
         FieldElementTimesMontgomeryR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
     },
@@ -115,11 +116,13 @@ pub fn power2round(simd_unit: PortableSIMDUnit) -> (PortableSIMDUnit, PortableSI
     let mut t0_simd_unit = ZERO();
     let mut t1_simd_unit = ZERO();
 
-    for (i, t) in simd_unit.coefficients.into_iter().enumerate() {
-        let (t0, t1) = power2round_element(t);
+    cloop! {
+        for (i, t) in simd_unit.coefficients.into_iter().enumerate() {
+            let (t0, t1) = power2round_element(t);
 
-        t0_simd_unit.coefficients[i] = t0;
-        t1_simd_unit.coefficients[i] = t1;
+            t0_simd_unit.coefficients[i] = t0;
+            t1_simd_unit.coefficients[i] = t1;
+        }
     }
 
     (t0_simd_unit, t1_simd_unit)
@@ -138,19 +141,21 @@ pub fn infinity_norm_exceeds(simd_unit: PortableSIMDUnit, bound: i32) -> bool {
     // TODO: We can break out of this loop early if need be, but the most
     // straightforward way to do so (returning false) will not go through hax;
     // revisit if performance is impacted.
-    for coefficient in simd_unit.coefficients.into_iter() {
-        debug_assert!(coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS);
-        // This norm is calculated using the absolute value of the
-        // signed representative in the range:
-        //
-        // -FIELD_MODULUS / 2 < r <= FIELD_MODULUS / 2.
-        //
-        // So if the coefficient is negative, get its absolute value, but
-        // don't convert it into a different representation.
-        let sign = coefficient >> 31;
-        let normalized = coefficient - (sign & (2 * coefficient));
+    cloop! {
+        for coefficient in simd_unit.coefficients.into_iter() {
+            debug_assert!(coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS);
+            // This norm is calculated using the absolute value of the
+            // signed representative in the range:
+            //
+            // -FIELD_MODULUS / 2 < r <= FIELD_MODULUS / 2.
+            //
+            // So if the coefficient is negative, get its absolute value, but
+            // don't convert it into a different representation.
+            let sign = coefficient >> 31;
+            let normalized = coefficient - (sign & (2 * coefficient));
 
-        exceeds = exceeds || normalized >= bound;
+            exceeds = exceeds || normalized >= bound;
+        }
     }
 
     exceeds

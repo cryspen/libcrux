@@ -34,7 +34,6 @@ macro_rules! impl_consistency {
     };
 }
 
-#[cfg(all(feature = "pre-verification",))]
 macro_rules! impl_consistency_unpacked {
     ($name:ident, $modp:path) => {
         #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -293,79 +292,55 @@ impl_consistency!(
     libcrux_ml_kem::mlkem1024::decapsulate
 );
 
-#[cfg(all(feature = "mlkem512", feature = "pre-verification",))]
+#[cfg(all(feature = "mlkem512"))]
 impl_consistency_unpacked!(
     consistency_unpacked_512_portable,
     libcrux_ml_kem::mlkem512::portable
 );
 
-#[cfg(all(
-    feature = "mlkem512",
-    feature = "pre-verification",
-    feature = "simd128",
-))]
+#[cfg(all(feature = "mlkem512", feature = "simd128",))]
 impl_consistency_unpacked!(
     consistency_unpacked_512_neon,
     libcrux_ml_kem::mlkem512::neon
 );
 
-#[cfg(all(
-    feature = "mlkem512",
-    feature = "pre-verification",
-    feature = "simd256",
-))]
+#[cfg(all(feature = "mlkem512", feature = "simd256",))]
 impl_consistency_unpacked!(
     consistency_unpacked_512_avx2,
     libcrux_ml_kem::mlkem512::avx2
 );
 
-#[cfg(all(feature = "mlkem1024", feature = "pre-verification",))]
+#[cfg(all(feature = "mlkem1024"))]
 impl_consistency_unpacked!(
     consistency_unpacked_1024_portable,
     libcrux_ml_kem::mlkem1024::portable
 );
 
-#[cfg(all(
-    feature = "mlkem1024",
-    feature = "pre-verification",
-    feature = "simd128",
-))]
+#[cfg(all(feature = "mlkem1024", feature = "simd128",))]
 impl_consistency_unpacked!(
     consistency_unpacked_1024_neon,
     libcrux_ml_kem::mlkem1024::neon
 );
 
-#[cfg(all(
-    feature = "mlkem1024",
-    feature = "pre-verification",
-    feature = "simd256",
-))]
+#[cfg(all(feature = "mlkem1024", feature = "simd256",))]
 impl_consistency_unpacked!(
     consistency_unpacked_1024_avx2,
     libcrux_ml_kem::mlkem1024::avx2
 );
 
-#[cfg(all(feature = "mlkem768", feature = "pre-verification",))]
+#[cfg(all(feature = "mlkem768",))]
 impl_consistency_unpacked!(
     consistency_unpacked_768_portable,
     libcrux_ml_kem::mlkem768::portable
 );
 
-#[cfg(all(
-    feature = "mlkem768",
-    feature = "pre-verification",
-    feature = "simd128",
-))]
+#[cfg(all(feature = "mlkem768", feature = "simd128",))]
 impl_consistency_unpacked!(
     consistency_unpacked_768_neon,
     libcrux_ml_kem::mlkem768::neon
 );
 
-#[cfg(all(
-    feature = "mlkem768",
-    feature = "pre-verification",
-    feature = "simd256",
-))]
+#[cfg(all(feature = "mlkem768", feature = "simd256",))]
 impl_consistency_unpacked!(
     consistency_unpacked_768_avx2,
     libcrux_ml_kem::mlkem768::avx2

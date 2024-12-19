@@ -1,7 +1,7 @@
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
+fn serialize_when_eta_is_2(simd_unit: Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
     const ETA: i32 = 2;
@@ -34,10 +34,11 @@ fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; 
 
     mm_storeu_bytes_si128(&mut serialized[0..16], adjacent_6_combined);
 
-    serialized[0..3].try_into().unwrap()
+    out.copy_from_slice(&serialized[0..3]);
 }
+
 #[inline(always)]
-fn serialize_when_eta_is_4<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
+fn serialize_when_eta_is_4(simd_unit: Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
     const ETA: i32 = 4;
@@ -61,13 +62,14 @@ fn serialize_when_eta_is_4<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; 
 
     mm_storeu_bytes_si128(&mut serialized[0..16], adjacent_4_combined);
 
-    serialized[0..4].try_into().unwrap()
+    out.copy_from_slice(&serialized[0..4])
 }
+
 #[inline(always)]
-pub fn serialize<const OUTPUT_SIZE: usize>(simd_unit: Vec256) -> [u8; OUTPUT_SIZE] {
-    match OUTPUT_SIZE as u8 {
-        3 => serialize_when_eta_is_2::<OUTPUT_SIZE>(simd_unit),
-        4 => serialize_when_eta_is_4::<OUTPUT_SIZE>(simd_unit),
+pub fn serialize<const ETA: usize>(simd_unit: Vec256, serialized: &mut [u8]) {
+    match ETA as u8 {
+        2 => serialize_when_eta_is_2(simd_unit, serialized),
+        4 => serialize_when_eta_is_4(simd_unit, serialized),
         _ => unreachable!(),
     }
 }
@@ -94,6 +96,7 @@ fn deserialize_to_unsigned_when_eta_is_2(bytes: &[u8]) -> Vec256 {
 
     mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK))
 }
+
 #[inline(always)]
 fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
     debug_assert!(bytes.len() == 4);

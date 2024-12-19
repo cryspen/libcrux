@@ -10,6 +10,8 @@ let _ =
   let open Libcrux_ml_dsa.Hash_functions.Shake128 in
   let open Libcrux_ml_dsa.Hash_functions.Shake256 in
   let open Libcrux_ml_dsa.Pre_hash in
+  let open Libcrux_ml_dsa.Samplex4 in
+  let open Libcrux_ml_dsa.Samplex4.Portable in
   let open Libcrux_ml_dsa.Simd.Portable in
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
