@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Mlkem768.Neon.Unpacked
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -12,21 +12,63 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-let encapsulate
-      (public_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+let key_pair_serialized_private_key
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-      (randomness: t_Array u8 (sz 32))
      =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked.encapsulate (sz 3) (sz 1088) (sz 1184)
-    (sz 1152) (sz 960) (sz 128) (sz 10) (sz 4) (sz 320) (sz 2) (sz 128) (sz 2) (sz 128) public_key
-    randomness
+  Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_private_key (sz 3)
+    #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+    (sz 1152)
+    (sz 2400)
+    (sz 1184)
+    (sz 1152)
+    key_pair
 
-let init_public_key (_: Prims.unit) =
-  Core.Default.f_default #(Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
-        Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-    #FStar.Tactics.Typeclasses.solve
-    ()
+let key_pair_serialized_private_key_mut
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
+     =
+  let serialized:Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400) =
+    Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_private_key_mut (sz 3)
+      #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+      (sz 1152)
+      (sz 2400)
+      (sz 1184)
+      (sz 1152)
+      key_pair
+      serialized
+  in
+  serialized
+
+let key_pair_serialized_public_key
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+     =
+  Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_public_key (sz 3)
+    #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+    (sz 1152)
+    (sz 1184)
+    key_pair
+
+let key_pair_serialized_public_key_mut
+      (key_pair:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+     =
+  let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184) =
+    Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_public_key_mut (sz 3)
+      #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+      (sz 1152)
+      (sz 1184)
+      key_pair
+      serialized
+  in
+  serialized
 
 let serialized_public_key
       (public_key:
@@ -35,7 +77,7 @@ let serialized_public_key
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
      =
   let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184) =
-    Libcrux_ml_kem.Ind_cca.Unpacked.impl__serialized_mut (sz 3)
+    Libcrux_ml_kem.Ind_cca.Unpacked.impl_3__serialized_mut (sz 3)
       #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
       (sz 1152)
       (sz 1184)
@@ -43,29 +85,6 @@ let serialized_public_key
       serialized
   in
   serialized
-
-let unpacked_public_key
-      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-      (unpacked_public_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
-            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-     =
-  let hax_temp_output, unpacked_public_key:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
-      Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
-    (),
-    Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked.unpack_public_key (sz 3)
-      (sz 1152)
-      (sz 1152)
-      (sz 1184)
-      public_key
-      unpacked_public_key
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
-        Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-  in
-  unpacked_public_key
 
 let decapsulate
       (private_key:
@@ -76,6 +95,16 @@ let decapsulate
   Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked.decapsulate (sz 3) (sz 2400) (sz 1152)
     (sz 1184) (sz 1088) (sz 1152) (sz 960) (sz 128) (sz 10) (sz 4) (sz 320) (sz 2) (sz 128) (sz 2)
     (sz 128) (sz 1120) private_key ciphertext
+
+let encapsulate
+      (public_key:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+      (randomness: t_Array u8 (sz 32))
+     =
+  Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked.encapsulate (sz 3) (sz 1088) (sz 1184)
+    (sz 1152) (sz 960) (sz 128) (sz 10) (sz 4) (sz 320) (sz 2) (sz 128) (sz 2) (sz 128) public_key
+    randomness
 
 let generate_key_pair_mut
       (randomness: t_Array u8 (sz 64))
@@ -117,6 +146,12 @@ let init_key_pair (_: Prims.unit) =
     #FStar.Tactics.Typeclasses.solve
     ()
 
+let init_public_key (_: Prims.unit) =
+  Core.Default.f_default #(Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+        Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+    #FStar.Tactics.Typeclasses.solve
+    ()
+
 let key_pair_from_private_mut
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
       (key_pair:
@@ -136,64 +171,6 @@ let key_pair_from_private_mut
   in
   key_pair
 
-let key_pair_serialized_private_key
-      (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
-            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-     =
-  Libcrux_ml_kem.Ind_cca.Unpacked.impl_2__serialized_private_key (sz 3)
-    #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-    (sz 1152)
-    (sz 2400)
-    (sz 1184)
-    (sz 1152)
-    key_pair
-
-let key_pair_serialized_private_key_mut
-      (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
-            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-      (serialized: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
-     =
-  let serialized:Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400) =
-    Libcrux_ml_kem.Ind_cca.Unpacked.impl_2__serialized_private_key_mut (sz 3)
-      #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-      (sz 1152)
-      (sz 2400)
-      (sz 1184)
-      (sz 1152)
-      key_pair
-      serialized
-  in
-  serialized
-
-let key_pair_serialized_public_key
-      (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
-            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-     =
-  Libcrux_ml_kem.Ind_cca.Unpacked.impl_2__serialized_public_key (sz 3)
-    #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-    (sz 1152)
-    (sz 1184)
-    key_pair
-
-let key_pair_serialized_public_key_mut
-      (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
-            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-     =
-  let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184) =
-    Libcrux_ml_kem.Ind_cca.Unpacked.impl_2__serialized_public_key_mut (sz 3)
-      #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-      (sz 1152)
-      (sz 1184)
-      key_pair
-      serialized
-  in
-  serialized
-
 let public_key
       (key_pair:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
@@ -207,7 +184,7 @@ let public_key
     Core.Clone.f_clone #(Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
           Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       #FStar.Tactics.Typeclasses.solve
-      (Libcrux_ml_kem.Ind_cca.Unpacked.impl_2__public_key (sz 3)
+      (Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__public_key (sz 3)
           #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
           key_pair
         <:
@@ -215,3 +192,26 @@ let public_key
           Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
   in
   pk
+
+let unpacked_public_key
+      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+      (unpacked_public_key:
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+     =
+  let hax_temp_output, unpacked_public_key:(Prims.unit &
+    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+      Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
+    (),
+    Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked.unpack_public_key (sz 3)
+      (sz 1152)
+      (sz 1152)
+      (sz 1184)
+      public_key
+      unpacked_public_key
+    <:
+    (Prims.unit &
+      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+        Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+  in
+  unpacked_public_key

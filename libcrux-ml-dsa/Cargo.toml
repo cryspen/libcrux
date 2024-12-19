@@ -19,8 +19,6 @@ bench = false # so libtest doesn't eat the arguments to criterion
 libcrux-sha3 = { version = "0.0.2-beta.2", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-beta.2", path = "../libcrux-intrinsics" }
 libcrux-platform = { version = "0.0.2-beta.2", path = "../sys/platform" }
-
-[target.'cfg(hax)'.dependencies]
 hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
 
 [dev-dependencies]
@@ -32,9 +30,18 @@ criterion = "0.5"
 pqcrypto-dilithium = { version = "0.5.0" }         #, default-features = false
 
 [features]
+default = ["std", "mldsa44", "mldsa65", "mldsa87"]
 simd128 = ["libcrux-sha3/simd128", "libcrux-intrinsics/simd128"]
 simd256 = ["libcrux-sha3/simd256", "libcrux-intrinsics/simd256"]
-acvp = [] # expose internal API for ACVP testing
+acvp = []                                                        # expose internal API for ACVP testing
+
+# Features for the different key sizes of ML-DSA
+mldsa44 = []
+mldsa65 = []
+mldsa87 = []
+
+# std support
+std = []
 
 [[bench]]
 name = "manual44"
@@ -53,6 +60,4 @@ name = "ml-dsa"
 harness = false
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = [
-    'cfg(hax)',
-] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)'] }

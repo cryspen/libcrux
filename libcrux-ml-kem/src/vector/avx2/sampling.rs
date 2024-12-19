@@ -5,6 +5,11 @@ use super::{
 };
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(input.len() == 24 && output.len() == 16)]
+#[hax_lib::ensures(|res|
+        fstar!(r#"Seq.length $output_future == Seq.length $output /\ v $res <= 16"#)
+    )]
 pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
 
@@ -26,6 +31,16 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     // each lane in the register to tell us what coefficients to keep and what
     // to throw-away. Combine all the bits (there are 16) into two bytes.
     let good = serialize_1(compare_with_field_modulus);
+    hax_lib::fstar!(
+        r#"assert (v (cast (${good}.[ sz 0 ] <: u8) <: usize) < 256);
+        assert (v (cast (${good}.[ sz 1 ] <: u8) <: usize) < 256);
+        // We need to provide a definition or post-condition for Core.Num.impl__u8__count_ones
+        assume (v (cast (Core.Num.impl__u8__count_ones ${good}.[ sz 0 ]) <: usize) <= 8);
+        assume (v (cast (Core.Num.impl__u8__count_ones ${good}.[ sz 1 ]) <: usize) <= 8);
+        assume (Core.Ops.Index.f_index_pre output ({
+                    Core.Ops.Range.f_start = cast (Core.Num.impl__u8__count_ones ${good}.[ sz 0 ]) <: usize;
+                    Core.Ops.Range.f_end = (cast (Core.Num.impl__u8__count_ones ${good}.[ sz 0 ]) <: usize) +! sz 8 }))"#
+    );
 
     // Each bit (and its corresponding position) represents an element we
     // want to sample. We'd like all such elements to be next to each other starting

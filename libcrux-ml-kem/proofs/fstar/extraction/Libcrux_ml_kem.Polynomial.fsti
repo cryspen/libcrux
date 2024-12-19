@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Polynomial
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -10,6 +10,7 @@ let _ =
   ()
 
 let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
+  let _:Prims.unit = assert_norm (pow2 16 == 65536) in
   let list =
     [
       (-1044s); (-758s); (-359s); (-1517s); 1493s; 1422s; 287s; 202s; (-171s); 622s; 1577s; 182s;
@@ -28,52 +29,142 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
   Rust_primitives.Hax.array_of_list 128 list
 
-let v_VECTORS_IN_RING_ELEMENT: usize =
-  Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!
-  Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+val zeta (i: usize)
+    : Prims.Pure i16
+      (requires i <. sz 128)
+      (ensures
+        fun result ->
+          let result:i16 = result in
+          Spec.Utils.is_i16b 1664 result)
 
 type t_PolynomialRingElement
   (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
   = { f_coefficients:t_Array v_Vector (sz 16) }
 
-val impl__ZERO:
+let to_spec_poly_t (#v_Vector: Type0)
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
+    createi (sz 256) (fun i -> Spec.MLKEM.Math.to_spec_fe 
+                                (Seq.index (i2._super_8706949974463268012.f_repr 
+                                    (Seq.index p.f_coefficients (v i / 16))) (v i % 16)))
+
+let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (m:t_Array (t_PolynomialRingElement v_Vector) r) : Spec.MLKEM.vector r =
+    createi r (fun i -> to_spec_poly_t #v_Vector (m.[i]))
+
+let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r =
+    createi r (fun i -> to_spec_vector_t #r #v_Vector (m.[i]))
+
+let v_VECTORS_IN_RING_ELEMENT: usize =
+  Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!
+  Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl
+      (#v_Vector: Type0)
+      {| i1: Core.Clone.t_Clone v_Vector |}
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    : Core.Clone.t_Clone (t_PolynomialRingElement v_Vector)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_1
+      (#v_Vector: Type0)
+      {| i1: Core.Marker.t_Copy v_Vector |}
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    : Core.Marker.t_Copy (t_PolynomialRingElement v_Vector)
+
+val add_error_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (myself error: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl_2__add_error_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self error: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val add_message_error_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (myself message result: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl_2__add_message_error_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self message result: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val add_standard_error_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (myself error: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl_2__add_standard_error_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self error: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val poly_barrett_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (myself: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl_2__poly_barrett_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val subtract_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (myself b: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl_2__subtract_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self b: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl_2__ZERO:
     #v_Vector: Type0 ->
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
     Prims.unit
   -> Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl__add_error_reduce
-      (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self error: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+val v_ZERO:
+    #v_Vector: Type0 ->
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
+    Prims.unit
+  -> Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl__add_message_error_reduce
+val from_i16_array
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self message result: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
-val impl__add_standard_error_reduce
-      (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self error: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
-/// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
-/// sum of their constituent coefficients.
-val impl__add_to_ring_element
-      (#v_Vector: Type0)
-      (v_K: usize)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self rhs: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
-val impl__from_i16_array
-      (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (a: t_Slice i16)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        (v_VECTORS_IN_RING_ELEMENT *! sz 16 <: usize) <=. (Core.Slice.impl__len #i16 a <: usize))
+      (fun _ -> Prims.l_True)
+
+val impl_2__from_i16_array
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (a: t_Slice i16)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        (v_VECTORS_IN_RING_ELEMENT *! sz 16 <: usize) <=. (Core.Slice.impl__len #i16 a <: usize))
+      (fun _ -> Prims.l_True)
 
 /// Given two `KyberPolynomialRingElement`s in their NTT representations,
 /// compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
@@ -95,20 +186,32 @@ val impl__from_i16_array
 /// this function are in the Montgomery domain.
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-val impl__ntt_multiply
+val ntt_multiply
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (myself rhs: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl_2__ntt_multiply
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self rhs: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl__poly_barrett_reduce
+/// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
+/// sum of their constituent coefficients.
+val add_to_ring_element
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self: t_PolynomialRingElement v_Vector)
+      (v_K: usize)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (myself rhs: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl__subtract_reduce
+/// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
+/// sum of their constituent coefficients.
+val impl_2__add_to_ring_element
       (#v_Vector: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self b: t_PolynomialRingElement v_Vector)
+      (v_K: usize)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self rhs: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)

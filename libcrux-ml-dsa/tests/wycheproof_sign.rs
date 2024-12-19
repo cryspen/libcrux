@@ -51,7 +51,7 @@ macro_rules! wycheproof_sign_test {
 
                     continue;
                 }
-                let signing_key = MLDSASigningKey(signing_key_bytes.try_into().unwrap());
+                let signing_key = MLDSASigningKey::new(signing_key_bytes.try_into().unwrap());
 
                 for test in test_group.tests {
                     let message = hex::decode(test.msg).unwrap();
@@ -65,7 +65,7 @@ macro_rules! wycheproof_sign_test {
 
                     if test.result == Result::Valid {
                         assert_eq!(
-                            signature.unwrap().0.as_slice(),
+                            signature.unwrap().as_slice(),
                             hex::decode(test.sig).unwrap().as_slice()
                         );
                     }

@@ -1,7 +1,4 @@
-#![cfg(all(
-    feature = "pre-verification",
-    any(feature = "mlkem512", feature = "mlkem768", feature = "mlkem1024",)
-))]
+#![cfg(any(feature = "mlkem512", feature = "mlkem768", feature = "mlkem1024",))]
 
 use serde::{de::DeserializeOwned, Deserialize};
 use std::{fs::File, io::BufReader, path::Path};
@@ -114,12 +111,23 @@ fn keygen() {
                 .unwrap();
 
             match parameter_set.as_str() {
-                #[cfg(feature = "mlkem512")]
-                "ML-KEM-512" => check(mlkem512::generate_key_pair(seed), expected_result),
-                #[cfg(feature = "mlkem768")]
-                "ML-KEM-768" => check(mlkem768::generate_key_pair(seed), expected_result),
-                #[cfg(feature = "mlkem1024")]
-                "ML-KEM-1024" => check(mlkem1024::generate_key_pair(seed), expected_result),
+                "ML-KEM-512" =>
+                {
+                    #[cfg(feature = "mlkem512")]
+                    check(mlkem512::generate_key_pair(seed), expected_result)
+                }
+
+                "ML-KEM-768" =>
+                {
+                    #[cfg(feature = "mlkem768")]
+                    check(mlkem768::generate_key_pair(seed), expected_result)
+                }
+
+                "ML-KEM-1024" =>
+                {
+                    #[cfg(feature = "mlkem1024")]
+                    check(mlkem1024::generate_key_pair(seed), expected_result)
+                }
                 _ => unimplemented!(),
             }
         }
@@ -255,32 +263,39 @@ fn encap_decap() {
                     let ek = test.ek;
                     let randomness = test.m;
                     match parameter_set.as_str() {
-                        #[cfg(feature = "mlkem512")]
                         "ML-KEM-512" => {
-                            let (actual_ct, actual_k) = mlkem512::encapsulate(
-                                &mlkem512::MlKem512PublicKey::try_from(ek.as_slice()).unwrap(),
-                                randomness,
-                            );
-                            assert_eq!(actual_ct.as_ref(), c);
-                            assert_eq!(actual_k.as_ref(), k);
+                            #[cfg(feature = "mlkem512")]
+                            {
+                                let (actual_ct, actual_k) = mlkem512::encapsulate(
+                                    &mlkem512::MlKem512PublicKey::try_from(ek.as_slice()).unwrap(),
+                                    randomness,
+                                );
+                                assert_eq!(actual_ct.as_ref(), c);
+                                assert_eq!(actual_k.as_ref(), k);
+                            }
                         }
-                        #[cfg(feature = "mlkem768")]
                         "ML-KEM-768" => {
-                            let (actual_ct, actual_k) = mlkem768::encapsulate(
-                                &mlkem768::MlKem768PublicKey::try_from(ek.as_slice()).unwrap(),
-                                randomness,
-                            );
-                            assert_eq!(actual_ct.as_ref(), c);
-                            assert_eq!(actual_k.as_ref(), k);
+                            #[cfg(feature = "mlkem768")]
+                            {
+                                let (actual_ct, actual_k) = mlkem768::encapsulate(
+                                    &mlkem768::MlKem768PublicKey::try_from(ek.as_slice()).unwrap(),
+                                    randomness,
+                                );
+                                assert_eq!(actual_ct.as_ref(), c);
+                                assert_eq!(actual_k.as_ref(), k);
+                            }
                         }
-                        #[cfg(feature = "mlkem1024")]
                         "ML-KEM-1024" => {
-                            let (actual_ct, actual_k) = mlkem1024::encapsulate(
-                                &mlkem1024::MlKem1024PublicKey::try_from(ek.as_slice()).unwrap(),
-                                randomness,
-                            );
-                            assert_eq!(actual_ct.as_ref(), c);
-                            assert_eq!(actual_k.as_ref(), k);
+                            #[cfg(feature = "mlkem1024")]
+                            {
+                                let (actual_ct, actual_k) = mlkem1024::encapsulate(
+                                    &mlkem1024::MlKem1024PublicKey::try_from(ek.as_slice())
+                                        .unwrap(),
+                                    randomness,
+                                );
+                                assert_eq!(actual_ct.as_ref(), c);
+                                assert_eq!(actual_k.as_ref(), k);
+                            }
                         }
                         _ => unimplemented!(),
                     }
@@ -310,27 +325,38 @@ fn encap_decap() {
 
                     let c = test.c;
                     match parameter_set.as_str() {
-                        #[cfg(feature = "mlkem512")]
                         "ML-KEM-512" => {
-                            let dk = mlkem512::MlKem512PrivateKey::try_from(dk.as_slice()).unwrap();
-                            let c = mlkem512::MlKem512Ciphertext::try_from(c.as_slice()).unwrap();
-                            let actual_k = mlkem512::decapsulate(&dk, &c);
-                            assert_eq!(actual_k.as_ref(), k);
+                            #[cfg(feature = "mlkem512")]
+                            {
+                                let dk =
+                                    mlkem512::MlKem512PrivateKey::try_from(dk.as_slice()).unwrap();
+                                let c =
+                                    mlkem512::MlKem512Ciphertext::try_from(c.as_slice()).unwrap();
+                                let actual_k = mlkem512::decapsulate(&dk, &c);
+                                assert_eq!(actual_k.as_ref(), k);
+                            }
                         }
-                        #[cfg(feature = "mlkem768")]
                         "ML-KEM-768" => {
-                            let dk = mlkem768::MlKem768PrivateKey::try_from(dk.as_slice()).unwrap();
-                            let c = mlkem768::MlKem768Ciphertext::try_from(c.as_slice()).unwrap();
-                            let actual_k = mlkem768::decapsulate(&dk, &c);
-                            assert_eq!(actual_k.as_ref(), k);
+                            #[cfg(feature = "mlkem768")]
+                            {
+                                let dk =
+                                    mlkem768::MlKem768PrivateKey::try_from(dk.as_slice()).unwrap();
+                                let c =
+                                    mlkem768::MlKem768Ciphertext::try_from(c.as_slice()).unwrap();
+                                let actual_k = mlkem768::decapsulate(&dk, &c);
+                                assert_eq!(actual_k.as_ref(), k);
+                            }
                         }
-                        #[cfg(feature = "mlkem1024")]
                         "ML-KEM-1024" => {
-                            let dk =
-                                mlkem1024::MlKem1024PrivateKey::try_from(dk.as_slice()).unwrap();
-                            let c = mlkem1024::MlKem1024Ciphertext::try_from(c.as_slice()).unwrap();
-                            let actual_k = mlkem1024::decapsulate(&dk, &c);
-                            assert_eq!(actual_k.as_ref(), k);
+                            #[cfg(feature = "mlkem1024")]
+                            {
+                                let dk = mlkem1024::MlKem1024PrivateKey::try_from(dk.as_slice())
+                                    .unwrap();
+                                let c =
+                                    mlkem1024::MlKem1024Ciphertext::try_from(c.as_slice()).unwrap();
+                                let actual_k = mlkem1024::decapsulate(&dk, &c);
+                                assert_eq!(actual_k.as_ref(), k);
+                            }
                         }
 
                         _ => unimplemented!(),

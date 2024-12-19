@@ -17,15 +17,15 @@ fn test_invalid_modulus(p: &str) {
         #[allow(unused_variables)]
         let pk = pk.as_slice();
         match p {
-            #[cfg(all(feature = "mlkem512", feature = "pre-verification"))]
+            #[cfg(feature = "mlkem512")]
             "512" => assert!(!libcrux_ml_kem::mlkem512::validate_public_key(
                 &pk.try_into().unwrap()
             )),
-            #[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+            #[cfg(feature = "mlkem768")]
             "768" => assert!(!libcrux_ml_kem::mlkem768::validate_public_key(
                 &pk.try_into().unwrap()
             )),
-            #[cfg(all(feature = "mlkem1024", feature = "pre-verification"))]
+            #[cfg(feature = "mlkem1024")]
             "1024" => assert!(!libcrux_ml_kem::mlkem1024::validate_public_key(
                 &pk.try_into().unwrap()
             )),
@@ -35,19 +35,19 @@ fn test_invalid_modulus(p: &str) {
 }
 
 #[test]
-#[cfg(all(feature = "mlkem512", feature = "pre-verification"))]
+#[cfg(feature = "mlkem512")]
 fn invalid_modulus_512() {
     test_invalid_modulus("512");
 }
 
 #[test]
-#[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+#[cfg(feature = "mlkem768")]
 fn invalid_modulus_768() {
     test_invalid_modulus("768");
 }
 
 #[test]
-#[cfg(all(feature = "mlkem1024", feature = "pre-verification"))]
+#[cfg(feature = "mlkem1024")]
 fn invalid_modulus_1024() {
     test_invalid_modulus("1024");
 }
@@ -85,17 +85,17 @@ fn test_invalid_dk(p: &str) {
         #[allow(unused_variables)]
         let ct = ct.as_slice();
         match p {
-            #[cfg(all(feature = "mlkem512", feature = "pre-verification"))]
+            #[cfg(feature = "mlkem512")]
             "512" => assert!(!libcrux_ml_kem::mlkem512::validate_private_key(
                 &dk.try_into().unwrap(),
                 &ct.try_into().unwrap(),
             )),
-            #[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+            #[cfg(feature = "mlkem768")]
             "768" => assert!(!libcrux_ml_kem::mlkem768::validate_private_key(
                 &dk.try_into().unwrap(),
                 &ct.try_into().unwrap(),
             )),
-            #[cfg(all(feature = "mlkem1024", feature = "pre-verification"))]
+            #[cfg(feature = "mlkem1024")]
             "1024" => assert!(!libcrux_ml_kem::mlkem1024::validate_private_key(
                 &dk.try_into().unwrap(),
                 &ct.try_into().unwrap(),
@@ -106,19 +106,19 @@ fn test_invalid_dk(p: &str) {
 }
 
 #[test]
-#[cfg(all(feature = "mlkem512", feature = "pre-verification"))]
+#[cfg(feature = "mlkem512")]
 fn invalid_dk_512() {
     test_invalid_dk("512");
 }
 
 #[test]
-#[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+#[cfg(feature = "mlkem768")]
 fn invalid_dk_768() {
     test_invalid_dk("768");
 }
 
 #[test]
-#[cfg(all(feature = "mlkem1024", feature = "pre-verification"))]
+#[cfg(feature = "mlkem1024")]
 fn invalid_dk_1024() {
     test_invalid_dk("1024");
 }

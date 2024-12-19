@@ -6,10 +6,13 @@ open FStar.Mul
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_dsa.Hash_functions.Portable in
   let open Libcrux_ml_dsa.Hash_functions.Shake128 in
   let open Libcrux_ml_dsa.Hash_functions.Shake256 in
   let open Libcrux_ml_dsa.Hash_functions.Simd256 in
   let open Libcrux_ml_dsa.Pre_hash in
+  let open Libcrux_ml_dsa.Samplex4 in
+  let open Libcrux_ml_dsa.Samplex4.Avx2 in
   let open Libcrux_ml_dsa.Simd.Avx2 in
   let open Libcrux_ml_dsa.Simd.Traits in
   ()

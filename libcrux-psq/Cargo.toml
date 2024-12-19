@@ -14,9 +14,7 @@ publish = false
 bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
-libcrux-kem = { version = "0.0.2-beta.2", path = "../libcrux-kem", features = [
-    "pre-verification",
-] }
+libcrux-kem = { version = "0.0.2-beta.2", path = "../libcrux-kem" }
 libcrux-hkdf = { version = "=0.0.2-beta.2", path = "../libcrux-hkdf" }
 libcrux-hmac = { version = "=0.0.2-beta.2", path = "../libcrux-hmac" }
 classic-mceliece-rust = { version = "2.0.0", features = [

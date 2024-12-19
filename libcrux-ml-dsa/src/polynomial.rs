@@ -1,9 +1,13 @@
-use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
+use crate::{
+    helper::cloop,
+    simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT},
+};
 
 #[derive(Clone, Copy)]
 pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
     pub(crate) simd_units: [SIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
 }
+
 impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
@@ -17,9 +21,11 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     pub(crate) fn to_i32_array(&self) -> [i32; 256] {
         let mut result = [0i32; 256];
 
-        for (i, simd_unit) in self.simd_units.iter().enumerate() {
-            result[i * COEFFICIENTS_IN_SIMD_UNIT..(i + 1) * COEFFICIENTS_IN_SIMD_UNIT]
-                .copy_from_slice(&simd_unit.to_coefficient_array());
+        cloop! {
+            for (i, simd_unit) in self.simd_units.iter().enumerate() {
+                result[i * COEFFICIENTS_IN_SIMD_UNIT..(i + 1) * COEFFICIENTS_IN_SIMD_UNIT]
+                    .copy_from_slice(&simd_unit.to_coefficient_array());
+            }
         }
 
         result
@@ -30,12 +36,11 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     pub(crate) fn from_i32_array(array: &[i32]) -> Self {
         debug_assert!(array.len() >= 256);
 
-        let mut array_chunks = array.chunks(COEFFICIENTS_IN_SIMD_UNIT);
-
         let mut result = Self::ZERO();
-
         for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
-            result.simd_units[i] = SIMDUnit::from_coefficient_array(&array_chunks.next().unwrap());
+            result.simd_units[i] = SIMDUnit::from_coefficient_array(
+                &array[i * COEFFICIENTS_IN_SIMD_UNIT..(i + 1) * COEFFICIENTS_IN_SIMD_UNIT],
+            );
         }
         result
     }
@@ -43,8 +48,8 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     pub(crate) fn infinity_norm_exceeds(&self, bound: i32) -> bool {
         let mut exceeds = false;
 
-        for simd_unit in self.simd_units {
-            exceeds = exceeds || SIMDUnit::infinity_norm_exceeds(simd_unit, bound);
+        for i in 0..self.simd_units.len() {
+            exceeds = exceeds || SIMDUnit::infinity_norm_exceeds(self.simd_units[i], bound);
         }
 
         exceeds
