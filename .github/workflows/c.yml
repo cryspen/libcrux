@@ -117,8 +117,8 @@ jobs:
       - name: Diff Extraction
         run: |
           libcrux-ml-kem/headers_kill_revs.sh libcrux-ml-kem/cg
-          libcrux-ml-kem/headers_kill_revs.sh ~/c-extraction
-          diff -r libcrux-ml-kem/cg ~/c-extraction
+          libcrux-ml-kem/headers_kill_revs.sh ~/mlkem-c-extraction
+          diff -r libcrux-ml-kem/cg ~/mlkem-c-extraction
 
   diff-header-only-ml-dsa:
     needs: [extract-header-only-ml-dsa]
@@ -129,7 +129,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: header-only-c-extraction-ml-kem
+          name: header-only-c-extraction-ml-dsa
           path: ~/mldsa-c-extraction
 
       - uses: actions/checkout@v4
@@ -137,8 +137,8 @@ jobs:
       - name: Diff Extraction
         run: |
           libcrux-ml-kem/headers_kill_revs.sh libcrux-ml-dsa/cg
-          libcrux-ml-kem/headers_kill_revs.sh ~/c-extraction
-          diff -r libcrux-ml-dsa/cg ~/c-extraction
+          libcrux-ml-kem/headers_kill_revs.sh ~/mldsa-c-extraction
+          diff -r libcrux-ml-dsa/cg ~/mldsa-c-extraction
 
 
   build:
@@ -158,7 +158,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: c-extraction
+          name: mlkem-c-extraction
           
       - name: 🔨 Build
         run: |
@@ -196,7 +196,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: header-only-c-extraction
+          name: header-only-c-extraction-ml-kem
 
       - name: 🔨 Build
         run: |
@@ -224,7 +224,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: header-only-c-extraction
+          name: header-only-c-extraction-ml-dsa
 
       - name: 🔨 Build
         run: |
