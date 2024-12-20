@@ -14,6 +14,7 @@ mod avx2_feature {
     pub(super) unsafe fn generate_key_pair<
         const ROWS_IN_A: usize,
         const COLUMNS_IN_A: usize,
+        const ROW_COLUMN: usize,
         const ETA: usize,
         const ERROR_RING_ELEMENT_SIZE: usize,
         const SIGNING_KEY_SIZE: usize,
@@ -32,6 +33,7 @@ mod avx2_feature {
             crate::hash_functions::simd256::Shake256x4,
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROW_COLUMN,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             SIGNING_KEY_SIZE,
@@ -346,6 +348,7 @@ mod avx2_feature {
 pub(crate) fn generate_key_pair<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROW_COLUMN: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
     const SIGNING_KEY_SIZE: usize,
@@ -357,6 +360,7 @@ pub(crate) fn generate_key_pair<
         avx2_feature::generate_key_pair::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROW_COLUMN,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             SIGNING_KEY_SIZE,

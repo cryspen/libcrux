@@ -15,28 +15,24 @@ pub(crate) fn compute_As1_plus_s2<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
-    A_as_ntt: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    s1: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
-    s2: &[PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
-) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
-    let s1_ntt = s1.map(|s| ntt::<SIMDUnit>(s));
+    a_as_ntt: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+    s1_s2: &[PolynomialRingElement<SIMDUnit>],
+    result: &mut [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+) {
+    let s1_ntt: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A] =
+        core::array::from_fn(|i| ntt::<SIMDUnit>(s1_s2[i]));
 
-    cloop! {
-        for (i, row) in A_as_ntt.iter().enumerate() {
-            cloop!{
-                for (j, ring_element) in row.iter().enumerate() {
-                    let product = ntt_multiply_montgomery::<SIMDUnit>(ring_element, &s1_ntt[j]);
-                    result[i] = PolynomialRingElement::add(&result[i], &product);
-                }
-            }
-
-            result[i] = invert_ntt_montgomery::<SIMDUnit>(result[i]);
-            result[i] = PolynomialRingElement::add(&result[i], &s2[i]);
+    for i in 0..ROWS_IN_A {
+        for j in 0..COLUMNS_IN_A {
+            let product = ntt_multiply_montgomery::<SIMDUnit>(&a_as_ntt[i][j], &s1_ntt[j]);
+            result[i] = PolynomialRingElement::add(&result[i], &product);
         }
     }
 
-    result
+    for i in 0..result.len() {
+        result[i] = invert_ntt_montgomery::<SIMDUnit>(result[i]);
+        result[i] = PolynomialRingElement::add(&result[i], &s1_s2[COLUMNS_IN_A + i]);
+    }
 }
 
 /// Compute InvertNTT(Â ◦ ŷ)

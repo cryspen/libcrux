@@ -36,6 +36,7 @@ pub(crate) fn generate_key_pair<
     Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROW_COLUMN: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
     const SIGNING_KEY_SIZE: usize,
@@ -59,11 +60,14 @@ pub(crate) fn generate_key_pair<
     let mut a_as_ntt = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
     Sampler::matrix::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(seed_for_a, &mut a_as_ntt);
 
-    let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
-        into_padded_array(seed_for_error_vectors),
+    let mut s1_s2 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROW_COLUMN];
+    samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, ROW_COLUMN>(
+        seed_for_error_vectors,
+        &mut s1_s2,
     );
 
-    let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1, &s2);
+    let mut t = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1_s2, &mut t);
 
     let (t0, t1) = power2round_vector::<SIMDUnit, ROWS_IN_A>(t);
 
@@ -85,8 +89,7 @@ pub(crate) fn generate_key_pair<
         seed_for_a,
         seed_for_signing,
         &verification_key_serialized,
-        s1,
-        s2,
+        &s1_s2,
         t0,
     );
 

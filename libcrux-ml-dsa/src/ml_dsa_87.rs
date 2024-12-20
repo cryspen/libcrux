@@ -7,6 +7,7 @@ use crate::{constants::*, ml_dsa_generic, types::*, SigningError, VerificationEr
 
 const ROWS_IN_A: usize = 8;
 const COLUMNS_IN_A: usize = 7;
+const ROW_COLUMN: usize = ROWS_IN_A + COLUMNS_IN_A;
 
 const ETA: usize = 2;
 
@@ -80,6 +81,7 @@ macro_rules! instantiate {
                 let (signing_key, verification_key) = p::generate_key_pair::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROW_COLUMN,
                     ETA,
                     ERROR_RING_ELEMENT_SIZE,
                     SIGNING_KEY_SIZE,
@@ -291,6 +293,7 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> ML
     let (signing_key, verification_key) = ml_dsa_generic::multiplexing::generate_key_pair::<
         ROWS_IN_A,
         COLUMNS_IN_A,
+        ROW_COLUMN,
         ETA,
         ERROR_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
