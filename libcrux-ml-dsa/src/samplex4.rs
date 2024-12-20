@@ -1,7 +1,7 @@
 use crate::{
     hash_functions::{shake128, shake256},
     polynomial::PolynomialRingElement,
-    sample::{sample_four_error_ring_elements, sample_up_to_four_ring_elements, Matrix},
+    sample::{sample_four_error_ring_elements, sample_up_to_four_ring_elements},
     simd::traits::Operations,
 };
 
@@ -9,25 +9,24 @@ use crate::{
 pub(crate) trait X4Sampler {
     /// Sample the matrix A using platform specific implementation.
     #[allow(non_snake_case)]
-    fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
-        seed: [u8; 34],
-    ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A];
+    fn matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+        seed: &[u8],
+        matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+    );
 }
 
 #[allow(non_snake_case)]
 #[inline(always)]
 #[cfg(feature = "mldsa44")]
-pub(crate) fn matrix_A_4_by_4<
+pub(crate) fn matrix_4_by_4<
     SIMDUnit: Operations,
     Shake128: shake128::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
-    seed: [u8; 34],
-) -> Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A> {
-    let mut A: Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A> =
-        [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
-
+    seed: &[u8],
+    matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+) {
     let mut rand_stack0 = [0u8; shake128::FIVE_BLOCKS_SIZE];
     let mut rand_stack1 = [0u8; shake128::FIVE_BLOCKS_SIZE];
     let mut rand_stack2 = [0u8; shake128::FIVE_BLOCKS_SIZE];
@@ -36,7 +35,7 @@ pub(crate) fn matrix_A_4_by_4<
 
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -47,7 +46,7 @@ pub(crate) fn matrix_A_4_by_4<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -58,7 +57,7 @@ pub(crate) fn matrix_A_4_by_4<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -69,7 +68,7 @@ pub(crate) fn matrix_A_4_by_4<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -78,23 +77,20 @@ pub(crate) fn matrix_A_4_by_4<
         &[(3, 0), (3, 1), (3, 2), (3, 3)],
         4,
     );
-
-    A
 }
 
 #[allow(non_snake_case)]
 #[inline(always)]
 #[cfg(feature = "mldsa65")]
-pub(crate) fn matrix_A_6_by_5<
+pub(crate) fn matrix_6_by_5<
     SIMDUnit: Operations,
     Shake128: shake128::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
-    seed: [u8; 34],
-) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
-    let mut A = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
-
+    seed: &[u8],
+    matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+) {
     let mut rand_stack0 = [0u8; shake128::FIVE_BLOCKS_SIZE];
     let mut rand_stack1 = [0u8; shake128::FIVE_BLOCKS_SIZE];
     let mut rand_stack2 = [0u8; shake128::FIVE_BLOCKS_SIZE];
@@ -103,7 +99,7 @@ pub(crate) fn matrix_A_6_by_5<
 
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -114,7 +110,7 @@ pub(crate) fn matrix_A_6_by_5<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -125,7 +121,7 @@ pub(crate) fn matrix_A_6_by_5<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -136,7 +132,7 @@ pub(crate) fn matrix_A_6_by_5<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -147,7 +143,7 @@ pub(crate) fn matrix_A_6_by_5<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -158,7 +154,7 @@ pub(crate) fn matrix_A_6_by_5<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -169,7 +165,7 @@ pub(crate) fn matrix_A_6_by_5<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -182,7 +178,7 @@ pub(crate) fn matrix_A_6_by_5<
     // The last 2 sampled ring elements are discarded here.
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -191,23 +187,20 @@ pub(crate) fn matrix_A_6_by_5<
         &[(5, 3), (5, 4), (5, 5), (5, 6)],
         2,
     );
-
-    A
 }
 
 #[allow(non_snake_case)]
 #[inline(always)]
 #[cfg(feature = "mldsa87")]
-pub(crate) fn matrix_A_8_by_7<
+pub(crate) fn matrix_8_by_7<
     SIMDUnit: Operations,
     Shake128: shake128::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
-    seed: [u8; 34],
-) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
-    let mut A = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
-
+    seed: &[u8],
+    matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+) {
     let mut rand_stack0 = [0u8; shake128::FIVE_BLOCKS_SIZE];
     let mut rand_stack1 = [0u8; shake128::FIVE_BLOCKS_SIZE];
     let mut rand_stack2 = [0u8; shake128::FIVE_BLOCKS_SIZE];
@@ -216,7 +209,7 @@ pub(crate) fn matrix_A_8_by_7<
 
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -227,7 +220,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -238,7 +231,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -249,7 +242,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -260,7 +253,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -271,7 +264,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -282,7 +275,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -293,7 +286,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -304,7 +297,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -315,7 +308,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -326,7 +319,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -337,7 +330,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -348,7 +341,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -359,7 +352,7 @@ pub(crate) fn matrix_A_8_by_7<
     );
     sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
         seed,
-        &mut A,
+        matrix,
         &mut rand_stack0,
         &mut rand_stack1,
         &mut rand_stack2,
@@ -368,8 +361,6 @@ pub(crate) fn matrix_A_8_by_7<
         &[(7, 3), (7, 4), (7, 5), (7, 6)],
         4,
     );
-
-    A
 }
 
 pub(crate) mod portable {
@@ -378,15 +369,16 @@ pub(crate) mod portable {
     pub(crate) struct PortableSampler {}
     impl X4Sampler for PortableSampler {
         #[inline(always)]
-        fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
-            seed: [u8; 34],
-        ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
-            matrix_A_generic::<
+        fn matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+            seed: &[u8],
+            matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+        ) {
+            matrix_generic::<
                 SIMDUnit,
                 crate::hash_functions::portable::Shake128X4,
                 ROWS_IN_A,
                 COLUMNS_IN_A,
-            >(seed)
+            >(seed, matrix)
         }
     }
 }
@@ -401,7 +393,7 @@ pub(crate) mod neon {
         fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
             seed: [u8; 34],
         ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
-            matrix_A_generic::<
+            matrix_generic::<
                 SIMDUnit,
                 crate::hash_functions::neon::Shake128x4,
                 ROWS_IN_A,
@@ -419,66 +411,69 @@ pub(crate) mod avx2 {
     impl X4Sampler for AVX2Sampler {
         #[inline(always)]
         #[allow(unsafe_code)]
-        fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
-            seed: [u8; 34],
-        ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
-            unsafe { matrix_A_avx2(seed) }
+        fn matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+            seed: &[u8],
+            matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+        ) {
+            unsafe { matrix_avx2(seed, matrix) }
         }
     }
 
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
     #[allow(non_snake_case)]
-    pub(crate) unsafe fn matrix_A_avx2<
+    pub(crate) unsafe fn matrix_avx2<
         SIMDUnit: Operations,
         const ROWS_IN_A: usize,
         const COLUMNS_IN_A: usize,
     >(
-        seed: [u8; 34],
-    ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
+        seed: &[u8],
+        matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+    ) {
         match (ROWS_IN_A as u8, COLUMNS_IN_A as u8) {
             #[cfg(feature = "mldsa44")]
-            (4, 4) => matrix_A_4_by_4::<
+            (4, 4) => matrix_4_by_4::<
                 SIMDUnit,
                 crate::hash_functions::simd256::Shake128x4,
                 ROWS_IN_A,
                 COLUMNS_IN_A,
-            >(seed),
+            >(seed, matrix),
             #[cfg(feature = "mldsa65")]
-            (6, 5) => matrix_A_6_by_5::<
+            (6, 5) => matrix_6_by_5::<
                 SIMDUnit,
                 crate::hash_functions::simd256::Shake128x4,
                 ROWS_IN_A,
                 COLUMNS_IN_A,
-            >(seed),
+            >(seed, matrix),
             #[cfg(feature = "mldsa87")]
-            (8, 7) => matrix_A_8_by_7::<
+            (8, 7) => matrix_8_by_7::<
                 SIMDUnit,
                 crate::hash_functions::simd256::Shake128x4,
                 ROWS_IN_A,
                 COLUMNS_IN_A,
-            >(seed),
+            >(seed, matrix),
             _ => unreachable!(),
         }
     }
 }
 
 #[allow(non_snake_case)]
-pub(crate) fn matrix_A_generic<
+pub(crate) fn matrix_generic<
     SIMDUnit: Operations,
     Shake128: shake128::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
-    seed: [u8; 34],
-) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
+    seed: &[u8],
+    matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+) {
     match (ROWS_IN_A as u8, COLUMNS_IN_A as u8) {
         #[cfg(feature = "mldsa44")]
-        (4, 4) => matrix_A_4_by_4::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(seed),
+        (4, 4) => matrix_4_by_4::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(seed, matrix),
         #[cfg(feature = "mldsa65")]
-        (6, 5) => matrix_A_6_by_5::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(seed),
+        (6, 5) => matrix_6_by_5::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(seed, matrix),
         #[cfg(feature = "mldsa87")]
-        (8, 7) => matrix_A_8_by_7::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(seed),
+        (8, 7) => matrix_8_by_7::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(seed, matrix),
         _ => unreachable!(),
     }
 }

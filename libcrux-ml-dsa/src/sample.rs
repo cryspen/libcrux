@@ -54,6 +54,19 @@ fn update_matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_
     m[i][j] = v;
 }
 
+#[inline(always)]
+pub(crate) fn add_domain_separator(slice: &[u8], indices: (u8, u8)) -> [u8; 34] {
+    let mut out = [0u8; 34];
+
+    out[0..slice.len()].copy_from_slice(slice);
+
+    let domain_separator = generate_domain_separator(indices);
+    out[32] = domain_separator as u8;
+    out[33] = (domain_separator >> 8) as u8;
+
+    out
+}
+
 /// Sample and write out up to four ring elements.
 ///
 /// If i <= `elements_requested`, a field element with domain separated
@@ -69,7 +82,7 @@ pub(crate) fn sample_up_to_four_ring_elements<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
-    mut seed0: [u8; 34],
+    seed: &[u8],
     matrix: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
     rand_stack0: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
     rand_stack1: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
@@ -81,26 +94,11 @@ pub(crate) fn sample_up_to_four_ring_elements<
 ) {
     debug_assert!(elements_requested <= 4);
 
-    let domain_separator0 = generate_domain_separator(indices[0]);
-    let domain_separator1 = generate_domain_separator(indices[1]);
-    let domain_separator2 = generate_domain_separator(indices[2]);
-    let domain_separator3 = generate_domain_separator(indices[3]);
-
     // Prepare the seeds
-    seed0[32] = domain_separator0 as u8;
-    seed0[33] = (domain_separator0 >> 8) as u8;
-
-    let mut seed1 = seed0;
-    seed1[32] = domain_separator1 as u8;
-    seed1[33] = (domain_separator1 >> 8) as u8;
-
-    let mut seed2 = seed0;
-    seed2[32] = domain_separator2 as u8;
-    seed2[33] = (domain_separator2 >> 8) as u8;
-
-    let mut seed3 = seed0;
-    seed3[32] = domain_separator3 as u8;
-    seed3[33] = (domain_separator3 >> 8) as u8;
+    let seed0 = add_domain_separator(seed, indices[0]);
+    let seed1 = add_domain_separator(seed, indices[1]);
+    let seed2 = add_domain_separator(seed, indices[2]);
+    let seed3 = add_domain_separator(seed, indices[3]);
 
     let mut state = Shake128::init_absorb(&seed0, &seed1, &seed2, &seed3);
 

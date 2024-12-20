@@ -10,6 +10,7 @@ use crate::{
         vector_times_ring_element,
     },
     ntt::ntt,
+    polynomial::PolynomialRingElement,
     pre_hash::{DomainSeparationContext, PreHash},
     sample::{sample_challenge_ring_element, sample_mask_vector},
     samplex4::{self, X4Sampler},
@@ -55,8 +56,8 @@ pub(crate) fn generate_key_pair<
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-    let a_as_ntt =
-        Sampler::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_a));
+    let mut a_as_ntt = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+    Sampler::matrix::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(seed_for_a, &mut a_as_ntt);
 
     let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
         into_padded_array(seed_for_error_vectors),
@@ -256,7 +257,7 @@ pub(crate) fn sign_internal<
     domain_separation_context: Option<DomainSeparationContext>,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-    let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
+    let (seed_for_a, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
         encoding::signing_key::deserialize_then_ntt::<
             SIMDUnit,
             ROWS_IN_A,
@@ -266,8 +267,8 @@ pub(crate) fn sign_internal<
             SIGNING_KEY_SIZE,
         >(signing_key);
 
-    let A_as_ntt =
-        Sampler::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+    let mut matrix = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+    Sampler::matrix::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&seed_for_a, &mut matrix);
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative::<Shake256Xof>(
@@ -312,7 +313,7 @@ pub(crate) fn sign_internal<
             );
 
         let A_times_mask =
-            compute_A_times_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, &mask);
+            compute_A_times_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&matrix, &mask);
 
         let (w0, commitment) = decompose_vector::<SIMDUnit, ROWS_IN_A, GAMMA2>(A_times_mask);
 
@@ -497,7 +498,7 @@ pub(crate) fn verify_internal<
     domain_separation_context: Option<DomainSeparationContext>,
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    let (seed_for_A, t1) =
+    let (seed_for_a, t1) =
         encoding::verification_key::deserialize::<SIMDUnit, ROWS_IN_A, VERIFICATION_KEY_SIZE>(
             verification_key_serialized,
         );
@@ -521,8 +522,8 @@ pub(crate) fn verify_internal<
     ) {
         return Err(VerificationError::SignerResponseExceedsBoundError);
     }
-    let A_as_ntt =
-        Sampler::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+    let mut matrix = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+    Sampler::matrix::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&seed_for_a, &mut matrix);
 
     let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
     Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
@@ -545,7 +546,7 @@ pub(crate) fn verify_internal<
     >(signature.commitment_hash));
 
     let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
-        &A_as_ntt,
+        &matrix,
         signature.signer_response,
         verifier_challenge_as_ntt,
         t1,
