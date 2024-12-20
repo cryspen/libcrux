@@ -8,7 +8,7 @@
  * Eurydice: b665364a6d86749566ce2d650d13fa12c8fab2c5
  * Karamel: 96572bc631fde691a2aea7bce5a5a3838b3a5968
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 87497297c8d9a6be6127d9daae13a942b5439e74
+ * Libcrux: 00424f6ff03ac7c79f2922ed628bf6a5b8723be3
  */
 
 #ifndef __libcrux_core_H
@@ -139,11 +139,11 @@ typedef struct libcrux_ml_dsa_ml_dsa_65_MLDSA65Signature_s {
 This function found in impl {libcrux_ml_dsa::types::MLDSASignature<SIZE>#4}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.types.as_raw_8f
+A monomorphic instance of libcrux_ml_dsa.types.as_ref_8f
 with const generics
 - SIZE= 3309
 */
-static inline uint8_t *libcrux_ml_dsa_types_as_raw_8f_fa(
+static inline uint8_t *libcrux_ml_dsa_types_as_ref_8f_fa(
     libcrux_ml_dsa_ml_dsa_65_MLDSA65Signature *self) {
   return self->value;
 }
@@ -216,11 +216,11 @@ This function found in impl
 {libcrux_ml_dsa::types::MLDSAVerificationKey<SIZE>#2}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.types.as_raw_66
+A monomorphic instance of libcrux_ml_dsa.types.as_ref_66
 with const generics
 - SIZE= 1952
 */
-static inline uint8_t *libcrux_ml_dsa_types_as_raw_66_97(
+static inline uint8_t *libcrux_ml_dsa_types_as_ref_66_97(
     libcrux_ml_dsa_types_MLDSAVerificationKey_ea *self) {
   return self->value;
 }
@@ -369,11 +369,11 @@ typedef struct libcrux_ml_dsa_types_MLDSASigningKey_22_s {
 This function found in impl {libcrux_ml_dsa::types::MLDSASigningKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.types.as_raw_9b
+A monomorphic instance of libcrux_ml_dsa.types.as_ref_9b
 with const generics
 - SIZE= 4032
 */
-static inline uint8_t *libcrux_ml_dsa_types_as_raw_9b_09(
+static inline uint8_t *libcrux_ml_dsa_types_as_ref_9b_09(
     libcrux_ml_dsa_types_MLDSASigningKey_22 *self) {
   return self->value;
 }

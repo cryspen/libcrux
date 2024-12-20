@@ -8,7 +8,7 @@
  * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
- * Libcrux: 2009b0d205f3d27e1762f7e2b8a21bc47705b2c9
+ * Libcrux: da72c141597b1db012f3bc23a96330f6de112770
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -1797,7 +1797,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_3_79(
     size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
-    size_t _layer, size_t _initial_coefficient_bound) {
+    size_t _initial_coefficient_bound) {
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t round = i;
     zeta_i[0U] = zeta_i[0U] + (size_t)1U;
@@ -1815,7 +1815,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_2_79(
     size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
-    size_t _layer, size_t _initial_coefficient_bound) {
+    size_t _initial_coefficient_bound) {
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t round = i;
     zeta_i[0U] = zeta_i[0U] + (size_t)1U;
@@ -1835,7 +1835,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_at_layer_1_79(
     size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
-    size_t _layer, size_t _initial_coefficient_bound) {
+    size_t _initial_coefficient_bound) {
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t round = i;
     zeta_i[0U] = zeta_i[0U] + (size_t)1U;
@@ -1900,12 +1900,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ntt_ntt_vector_u_ee(
                                             (size_t)3U * (size_t)3328U);
   libcrux_ml_kem_ntt_ntt_at_layer_4_plus_79(&zeta_i, re, (size_t)4U,
                                             (size_t)4U * (size_t)3328U);
-  libcrux_ml_kem_ntt_ntt_at_layer_3_79(&zeta_i, re, (size_t)3U,
-                                       (size_t)5U * (size_t)3328U);
-  libcrux_ml_kem_ntt_ntt_at_layer_2_79(&zeta_i, re, (size_t)2U,
-                                       (size_t)6U * (size_t)3328U);
-  libcrux_ml_kem_ntt_ntt_at_layer_1_79(&zeta_i, re, (size_t)1U,
-                                       (size_t)7U * (size_t)3328U);
+  libcrux_ml_kem_ntt_ntt_at_layer_3_79(&zeta_i, re, (size_t)5U * (size_t)3328U);
+  libcrux_ml_kem_ntt_ntt_at_layer_2_79(&zeta_i, re, (size_t)6U * (size_t)3328U);
+  libcrux_ml_kem_ntt_ntt_at_layer_1_79(&zeta_i, re, (size_t)7U * (size_t)3328U);
   libcrux_ml_kem_polynomial_poly_barrett_reduce_ef_79(re);
 }
 
@@ -2308,8 +2305,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_1_79(
-    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
-    size_t _layer) {
+    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t round = i;
     zeta_i[0U] = zeta_i[0U] - (size_t)1U;
@@ -2331,8 +2327,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_2_79(
-    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
-    size_t _layer) {
+    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t round = i;
     zeta_i[0U] = zeta_i[0U] - (size_t)1U;
@@ -2352,8 +2347,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_3_79(
-    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re,
-    size_t _layer) {
+    size_t *zeta_i, libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
     size_t round = i;
     zeta_i[0U] = zeta_i[0U] - (size_t)1U;
@@ -2428,9 +2422,9 @@ static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_montgomery_ab(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re) {
   size_t zeta_i =
       LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT / (size_t)2U;
-  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_1_79(&zeta_i, re, (size_t)1U);
-  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_2_79(&zeta_i, re, (size_t)2U);
-  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_3_79(&zeta_i, re, (size_t)3U);
+  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_1_79(&zeta_i, re);
+  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_2_79(&zeta_i, re);
+  libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_3_79(&zeta_i, re);
   libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_79(&zeta_i, re,
                                                           (size_t)4U);
   libcrux_ml_kem_invert_ntt_invert_ntt_at_layer_4_plus_79(&zeta_i, re,
@@ -3617,11 +3611,11 @@ libcrux_ml_kem_ntt_ntt_binomially_sampled_ring_element_79(
   libcrux_ml_kem_ntt_ntt_at_layer_4_plus_79(
       &zeta_i, re, (size_t)4U, (size_t)11207U + (size_t)2U * (size_t)3328U);
   libcrux_ml_kem_ntt_ntt_at_layer_3_79(
-      &zeta_i, re, (size_t)3U, (size_t)11207U + (size_t)3U * (size_t)3328U);
+      &zeta_i, re, (size_t)11207U + (size_t)3U * (size_t)3328U);
   libcrux_ml_kem_ntt_ntt_at_layer_2_79(
-      &zeta_i, re, (size_t)2U, (size_t)11207U + (size_t)4U * (size_t)3328U);
+      &zeta_i, re, (size_t)11207U + (size_t)4U * (size_t)3328U);
   libcrux_ml_kem_ntt_ntt_at_layer_1_79(
-      &zeta_i, re, (size_t)1U, (size_t)11207U + (size_t)5U * (size_t)3328U);
+      &zeta_i, re, (size_t)11207U + (size_t)5U * (size_t)3328U);
   libcrux_ml_kem_polynomial_poly_barrett_reduce_ef_79(re);
 }
 

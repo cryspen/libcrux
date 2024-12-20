@@ -12,7 +12,7 @@ use crate::{
     ntt::ntt,
     pre_hash::{DomainSeparationContext, PreHash},
     sample::{sample_challenge_ring_element, sample_mask_vector},
-    samplex4,
+    samplex4::{self, X4Sampler},
     simd::traits::Operations,
     types::{SigningError, VerificationError},
     utils::into_padded_array,
@@ -28,6 +28,7 @@ pub(crate) mod multiplexing;
 #[inline(always)]
 pub(crate) fn generate_key_pair<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
@@ -55,7 +56,7 @@ pub(crate) fn generate_key_pair<
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
     let a_as_ntt =
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_a));
+        Sampler::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_a));
 
     let (s1, s2) = samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, COLUMNS_IN_A, ROWS_IN_A>(
         into_padded_array(seed_for_error_vectors),
@@ -95,6 +96,7 @@ pub(crate) fn generate_key_pair<
 #[inline(always)]
 pub(crate) fn sign_pre_hashed<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
@@ -132,6 +134,7 @@ pub(crate) fn sign_pre_hashed<
     };
     sign_internal::<
         SIMDUnit,
+        Sampler,
         Shake128X4,
         Shake256,
         Shake256Xof,
@@ -162,6 +165,7 @@ pub(crate) fn sign_pre_hashed<
 #[inline(always)]
 pub(crate) fn sign<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
@@ -192,6 +196,7 @@ pub(crate) fn sign<
     };
     sign_internal::<
         SIMDUnit,
+        Sampler,
         Shake128X4,
         Shake256,
         Shake256Xof,
@@ -226,6 +231,7 @@ pub(crate) fn sign<
 #[inline(always)]
 pub(crate) fn sign_internal<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
@@ -261,7 +267,7 @@ pub(crate) fn sign_internal<
         >(signing_key);
 
     let A_as_ntt =
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+        Sampler::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative::<Shake256Xof>(
@@ -468,6 +474,7 @@ fn derive_message_representative<Shake256Xof: shake256::Xof>(
 #[inline(always)]
 pub(crate) fn verify_internal<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
@@ -515,7 +522,7 @@ pub(crate) fn verify_internal<
         return Err(VerificationError::SignerResponseExceedsBoundError);
     }
     let A_as_ntt =
-        samplex4::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+        Sampler::matrix_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
     let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
     Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
@@ -572,6 +579,7 @@ pub(crate) fn verify_internal<
 #[inline(always)]
 pub(crate) fn verify<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
@@ -601,6 +609,7 @@ pub(crate) fn verify<
     };
     verify_internal::<
         SIMDUnit,
+        Sampler,
         Shake128X4,
         Shake256,
         Shake256Xof,
@@ -629,6 +638,7 @@ pub(crate) fn verify<
 #[inline(always)]
 pub(crate) fn verify_pre_hashed<
     SIMDUnit: Operations,
+    Sampler: X4Sampler,
     Shake128: shake128::Xof,
     Shake128X4: shake128::XofX4,
     Shake256: shake256::DsaXof,
@@ -662,6 +672,7 @@ pub(crate) fn verify_pre_hashed<
 
     verify_internal::<
         SIMDUnit,
+        Sampler,
         Shake128X4,
         Shake256,
         Shake256Xof,

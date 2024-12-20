@@ -23,6 +23,7 @@ mod avx2_feature {
     ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
         crate::ml_dsa_generic::generate_key_pair::<
             crate::simd::avx2::AVX2SIMDUnit,
+            crate::samplex4::avx2::AVX2Sampler,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
             // We use the portable version here.
@@ -64,6 +65,7 @@ mod avx2_feature {
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
         crate::ml_dsa_generic::sign::<
             crate::simd::avx2::AVX2SIMDUnit,
+            crate::samplex4::avx2::AVX2Sampler,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
             // We use the portable version here.
@@ -113,6 +115,7 @@ mod avx2_feature {
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
         crate::ml_dsa_generic::sign_internal::<
             crate::simd::avx2::AVX2SIMDUnit,
+            crate::samplex4::avx2::AVX2Sampler,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
             // We use the portable version here.
@@ -162,6 +165,7 @@ mod avx2_feature {
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
         crate::ml_dsa_generic::sign_pre_hashed::<
             crate::simd::avx2::AVX2SIMDUnit,
+            crate::samplex4::avx2::AVX2Sampler,
             // We use the portable version here.
             // It doesn' make sense to do these in parallel.
             crate::hash_functions::portable::Shake128,
@@ -215,6 +219,7 @@ mod avx2_feature {
     ) -> Result<(), VerificationError> {
         crate::ml_dsa_generic::verify::<
             crate::simd::avx2::AVX2SIMDUnit,
+            crate::samplex4::avx2::AVX2Sampler,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
             // We use the portable version here.
@@ -261,6 +266,7 @@ mod avx2_feature {
     ) -> Result<(), VerificationError> {
         crate::ml_dsa_generic::verify_internal::<
             crate::simd::avx2::AVX2SIMDUnit,
+            crate::samplex4::avx2::AVX2Sampler,
             crate::hash_functions::simd256::Shake128x4,
             crate::hash_functions::simd256::Shake256,
             // We use the portable version here.
@@ -307,6 +313,7 @@ mod avx2_feature {
     ) -> Result<(), VerificationError> {
         crate::ml_dsa_generic::verify_pre_hashed::<
             crate::simd::avx2::AVX2SIMDUnit,
+            crate::samplex4::avx2::AVX2Sampler,
             // We use the portable version here.
             // It doesn' make sense to do these in parallel.
             crate::hash_functions::portable::Shake128,
