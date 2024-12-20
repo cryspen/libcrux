@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a68994d00017b76a805d0115ca06c1f2c1805e79
- * Eurydice: b665364a6d86749566ce2d650d13fa12c8fab2c5
- * Karamel: 96572bc631fde691a2aea7bce5a5a3838b3a5968
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 00424f6ff03ac7c79f2922ed628bf6a5b8723be3
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
+ * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: 50cacf4549aef718804fae5c1750e0952a651c13
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -653,9 +653,6 @@ static inline void libcrux_ml_dsa_pre_hash_oid_bd(uint8_t ret[11U]) {
   memcpy(ret, libcrux_ml_dsa_pre_hash_SHAKE128_OID,
          (size_t)11U * sizeof(uint8_t));
 }
-
-typedef struct libcrux_ml_dsa_pre_hash_SHAKE128_PH_s {
-} libcrux_ml_dsa_pre_hash_SHAKE128_PH;
 
 typedef struct libcrux_ml_dsa_simd_portable_vector_type_PortableSIMDUnit_s {
   int32_t coefficients[8U];
@@ -4162,9 +4159,6 @@ static inline void libcrux_ml_dsa_simd_portable_invert_ntt_montgomery_36(
          (size_t)32U *
              sizeof(libcrux_ml_dsa_simd_portable_vector_type_PortableSIMDUnit));
 }
-
-typedef struct libcrux_ml_dsa_samplex4_portable_PortableSampler_s {
-} libcrux_ml_dsa_samplex4_portable_PortableSampler;
 
 /**
 A monomorphic instance of K.
@@ -8951,9 +8945,6 @@ typedef int32_t libcrux_ml_dsa_simd_traits_FieldElementTimesMontgomeryR;
 typedef int32_t libcrux_ml_dsa_simd_portable_vector_type_FieldElement;
 
 typedef Result_a8 libcrux_ml_dsa_pre_hash_PreHashResult;
-
-typedef struct libcrux_ml_dsa_hash_functions_portable_Shake128_s {
-} libcrux_ml_dsa_hash_functions_portable_Shake128;
 
 #if defined(__cplusplus)
 }
