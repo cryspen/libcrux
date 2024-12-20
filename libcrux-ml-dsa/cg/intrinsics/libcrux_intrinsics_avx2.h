@@ -8,23 +8,21 @@
 #define __libcrux_intrinsics_avx2_H
 
 #if defined(__cplusplus)
-extern "C"
-{
+extern "C" {
 #endif
 
 #include "../eurydice_glue.h"
 #include "immintrin.h"
 
-  typedef __m128i core_core_arch_x86___m128i;
-  typedef __m256i core_core_arch_x86___m256i;
+typedef __m128i core_core_arch_x86___m128i;
+typedef __m256i core_core_arch_x86___m256i;
 
-  // Cast and Convert
+// Cast and Convert
 
 #define libcrux_intrinsics_avx2_mm256_castsi256_si128(a) \
   (_mm256_castsi256_si128(a))
 
-#define libcrux_intrinsics_avx2_mm256_castsi256_ps(a) \
-  (_mm256_castsi256_ps(a))
+#define libcrux_intrinsics_avx2_mm256_castsi256_ps(a) (_mm256_castsi256_ps(a))
 
 #define libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(a) \
   (_mm256_cvtepi16_epi32(a))
@@ -32,7 +30,7 @@ extern "C"
 #define libcrux_intrinsics_avx2_mm256_castsi128_si256(a) \
   (_mm256_castsi128_si256(a))
 
-  // Initialize, Load, Store
+// Initialize, Load, Store
 
 #define libcrux_intrinsics_avx2_mm256_setzero_si256(void) \
   (_mm256_setzero_si256())
@@ -69,8 +67,7 @@ extern "C"
 #define libcrux_intrinsics_avx2_mm256_set_epi64x(x0, x1, x2, x3) \
   (_mm256_set_epi64x(x0, x1, x2, x3))
 
-#define libcrux_intrinsics_avx2_mm256_set_m128i(h, l) \
-  (_mm256_set_m128i(h, l))
+#define libcrux_intrinsics_avx2_mm256_set_m128i(h, l) (_mm256_set_m128i(h, l))
 
 #define libcrux_intrinsics_avx2_mm_set_epi32(x0, x1, x2, x3) \
   (_mm_set_epi32(x0, x1, x2, x3))
@@ -105,7 +102,7 @@ extern "C"
 #define libcrux_intrinsics_avx2_mm_storeu_si128_i32(a, b) \
   (_mm_storeu_si128((__m128i *)a.ptr, b))
 
-  // Arithmetic: Add, Sub
+// Arithmetic: Add, Sub
 
 #define libcrux_intrinsics_avx2_mm256_add_epi16(a, b) (_mm256_add_epi16(a, b))
 
@@ -123,7 +120,7 @@ extern "C"
 
 #define libcrux_intrinsics_avx2_mm256_abs_epi32(a) (_mm256_abs_epi32(a))
 
-  // Arithmetic: Mul low and high, Mul-Add combinations
+// Arithmetic: Mul low and high, Mul-Add combinations
 
 #define libcrux_intrinsics_avx2_mm256_mullo_epi16(a, b) \
   (_mm256_mullo_epi16(a, b))
@@ -146,7 +143,7 @@ extern "C"
 
 #define libcrux_intrinsics_avx2_mm256_sign_epi32(a, b) (_mm256_sign_epi32(a, b))
 
-  // Comparison
+// Comparison
 
 #define libcrux_intrinsics_avx2_mm256_cmpgt_epi16(a, b) \
   (_mm256_cmpgt_epi16(a, b))
@@ -160,7 +157,7 @@ extern "C"
 #define libcrux_intrinsics_avx2_mm256_cmpeq_epi32(a, b) \
   (_mm256_cmpeq_epi32(a, b))
 
-  // Bitwise operations
+// Bitwise operations
 
 #define libcrux_intrinsics_avx2_mm256_and_si256(a, b) (_mm256_and_si256(a, b))
 
@@ -204,8 +201,7 @@ extern "C"
 
 #define libcrux_intrinsics_avx2_mm_sllv_epi32(a, b) (_mm_sllv_epi32(a, b))
 
-#define libcrux_intrinsics_avx2_mm_srli_epi64(a, b, _t) \
-  (_mm_srli_epi64(b, a))
+#define libcrux_intrinsics_avx2_mm_srli_epi64(a, b, _t) (_mm_srli_epi64(b, a))
 
 #define libcrux_intrinsics_avx2_mm256_srli_epi64_(a, b) \
   (_mm256_srli_epi64(b, a))
@@ -213,16 +209,14 @@ extern "C"
 #define libcrux_intrinsics_avx2_mm256_srli_epi64(a, b, c) \
   (libcrux_intrinsics_avx2_mm256_srli_epi64_(a, b))
 
-#define libcrux_intrinsics_avx2_mm256_srlv_epi32(a, b) \
-  (_mm256_srlv_epi32(a, b))
+#define libcrux_intrinsics_avx2_mm256_srlv_epi32(a, b) (_mm256_srlv_epi32(a, b))
 
 #define libcrux_intrinsics_avx2_mm256_bsrli_epi128(a, b, _t) \
   (_mm256_bsrli_epi128(b, a))
 
-#define libcrux_intrinsics_avx2_mm256_srlv_epi64(a, b) \
-  (_mm256_srlv_epi64(a, b))
+#define libcrux_intrinsics_avx2_mm256_srlv_epi64(a, b) (_mm256_srlv_epi64(a, b))
 
-  // Shuffle and Vector Interleaving
+// Shuffle and Vector Interleaving
 
 #define libcrux_intrinsics_avx2_mm256_unpacklo_epi32(a, b) \
   (_mm256_unpacklo_epi32(a, b))
@@ -263,10 +257,9 @@ extern "C"
   (_mm256_blend_epi32(b, c, a))
 
 #define libcrux_intrinsics_avx2_vec256_blendv_epi32(a, b, mask) \
-  (_mm256_castps_si256(_mm256_blendv_ps(                        \
-      _mm256_castsi256_ps(a),                                   \
-      _mm256_castsi256_ps(b),                                   \
-      _mm256_castsi256_ps(mask))))
+  (_mm256_castps_si256(_mm256_blendv_ps(_mm256_castsi256_ps(a), \
+                                        _mm256_castsi256_ps(b), \
+                                        _mm256_castsi256_ps(mask))))
 
 #define libcrux_intrinsics_avx2_mm256_shuffle_epi8(a, b) \
   (_mm256_shuffle_epi8(a, b))

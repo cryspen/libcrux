@@ -8,7 +8,7 @@
  * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 50cacf4549aef718804fae5c1750e0952a651c13
+ * Libcrux: c32123f22d4781d63b90bf061f62d6986f5cbcc1
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -4979,7 +4979,8 @@ libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_ac(
       libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned_ac(
           serialized);
   return libcrux_intrinsics_avx2_mm256_sub_epi32(
-      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)(size_t)4U), deserialized);
+      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)(size_t)4U),
+      deserialized);
 }
 
 /**
