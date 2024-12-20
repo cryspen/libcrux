@@ -158,7 +158,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: mlkem-c-extraction
+          name: c-extraction
           
       - name: 🔨 Build
         run: |
