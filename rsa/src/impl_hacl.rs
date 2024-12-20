@@ -4,6 +4,18 @@ use crate::Error;
 #[derive(Debug)]
 pub struct Signature<const LEN: usize>([u8; LEN]);
 
+impl<const LEN: usize> Signature<LEN> {
+    pub fn new() -> Self {
+        Self([0u8; LEN])
+    }
+}
+
+impl<const LEN: usize> From<[u8; LEN]> for Signature<LEN> {
+    fn from(value: [u8; LEN]) -> Self {
+        Self(value)
+    }
+}
+
 /// An RSA Public Key that is `LEN` bytes long.
 #[derive(Debug, Clone)]
 pub struct PublicKey<const LEN: usize> {
