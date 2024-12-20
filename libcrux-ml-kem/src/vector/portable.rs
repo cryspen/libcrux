@@ -171,14 +171,18 @@ impl Operations for PortableVector {
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque 28296 (impl.f_repr ${v})"#))]
     fn barrett_reduce(v: Self) -> Self {
-        hax_lib::fstar!(r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque"#);
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque"#
+        );
         barrett_reduce(v)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $r"#))]
     #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     fn montgomery_multiply_by_constant(v: Self, r: i16) -> Self {
-        hax_lib::fstar!(r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque"#);
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque"#
+        );
         montgomery_multiply_by_constant(v, r)
     }
 
@@ -271,7 +275,9 @@ impl Operations for PortableVector {
         zeta2: i16,
         zeta3: i16,
     ) -> Self {
-        hax_lib::fstar!(r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque"#);
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque"#
+        );
         ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
     }
 

@@ -16,8 +16,9 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
 };
 
 #[inline(always)]
-#[hax_lib::fstar::before(interface,
-r#"[@@ "opaque_to_smt"]
+#[hax_lib::fstar::before(
+    interface,
+    r#"[@@ "opaque_to_smt"]
 let add_vector_post (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (result lhs rhs: v_Vector) =
@@ -38,18 +39,16 @@ let add_vector_pre (#v_Vector: Type0)
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"add_vector_pre $lhs $rhs"#))]
 #[hax_lib::ensures(|result| fstar!(r#"add_vector_post $result $lhs $rhs"#))]
-fn add_vector<Vector: Operations>(
-    lhs: Vector,
-    rhs: &Vector,
-) -> Vector {
+fn add_vector<Vector: Operations>(lhs: Vector, rhs: &Vector) -> Vector {
     hax_lib::fstar!(r#"reveal_opaque (`%add_vector_pre) (add_vector_pre #$:Vector)"#);
     hax_lib::fstar!(r#"reveal_opaque (`%add_vector_post) (add_vector_post #$:Vector)"#);
     Vector::add(lhs, rhs)
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(interface,
-r#"[@@ "opaque_to_smt"]
+#[hax_lib::fstar::before(
+    interface,
+    r#"[@@ "opaque_to_smt"]
 let sub_vector_post (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (result lhs rhs: v_Vector) =
@@ -69,10 +68,7 @@ let sub_vector_pre (#v_Vector: Type0)
 )]
 #[hax_lib::requires(fstar!(r#"sub_vector_pre $lhs $rhs"#))]
 #[hax_lib::ensures(|result| fstar!(r#"sub_vector_post $result $lhs $rhs"#))]
-fn sub_vector<Vector: Operations>(
-    lhs: Vector,
-    rhs: &Vector,
-) -> Vector {
+fn sub_vector<Vector: Operations>(lhs: Vector, rhs: &Vector) -> Vector {
     hax_lib::fstar!(r#"reveal_opaque (`%sub_vector_pre) (sub_vector_pre #$:Vector)"#);
     hax_lib::fstar!(r#"reveal_opaque (`%sub_vector_post) (sub_vector_post #$:Vector)"#);
     Vector::sub(lhs, rhs)
@@ -162,13 +158,15 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..myself.coefficients.len() {
-        hax_lib::loop_invariant!(|i: usize| { fstar!(
-            r#"(v $i < v (Core.Slice.impl__len myself.f_coefficients) ==>
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"(v $i < v (Core.Slice.impl__len myself.f_coefficients) ==>
                 (forall (j:nat). (j >= v $i /\ j < v (Core.Slice.impl__len myself.f_coefficients)) ==>
                     myself.f_coefficients.[ sz j ] == ${_myself}.[ sz j ] /\
                     add_vector_pre myself.f_coefficients.[ sz j ] ${rhs}.f_coefficients.[ sz j ])) /\
             (forall (j:nat). j < v $i ==>
-                add_vector_post myself.f_coefficients.[ sz j ] ${_myself}.[ sz j ] ${rhs}.f_coefficients.[ sz j ])"#)
+                add_vector_post myself.f_coefficients.[ sz j ] ${_myself}.[ sz j ] ${rhs}.f_coefficients.[ sz j ])"#
+            )
         });
         myself.coefficients[i] = add_vector(myself.coefficients[i], &rhs.coefficients[i]);
     }
@@ -183,11 +181,13 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
     // The semicolon and parentheses at the end of loop are a workaround
     // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        hax_lib::loop_invariant!(|i: usize| { fstar!(
-            r#"v $i < v $VECTORS_IN_RING_ELEMENT ==>
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"v $i < v $VECTORS_IN_RING_ELEMENT ==>
                 (forall (j:nat). (j >= v $i /\ j < v $VECTORS_IN_RING_ELEMENT) ==>
                     Spec.Utils.is_i16b_array_opaque 28296
-                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.f_coefficients.[ sz j ]))"#)
+                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.f_coefficients.[ sz j ]))"#
+            )
         });
         myself.coefficients[i] = Vector::barrett_reduce(myself.coefficients[i]);
     }
@@ -235,19 +235,19 @@ fn subtract_reduce<Vector: Operations>(
 ) -> PolynomialRingElement<Vector> {
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient_normal_form =
-        Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
+            Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
         hax_lib::fstar!(
-            r#"subtract_reduce_helper ${myself}.f_coefficients $coefficient_normal_form"#);
-        b.coefficients[i] = Vector::barrett_reduce(sub_vector(
-            myself.coefficients[i],
-            &coefficient_normal_form,
-        ));
+            r#"subtract_reduce_helper ${myself}.f_coefficients $coefficient_normal_form"#
+        );
+        b.coefficients[i] =
+            Vector::barrett_reduce(sub_vector(myself.coefficients[i], &coefficient_normal_form));
     }
     b
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(r#"let add_message_error_reduce_helper (#v_Vector: Type0)
+#[hax_lib::fstar::before(
+    r#"let add_message_error_reduce_helper (#v_Vector: Type0)
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     (result coefficient_normal_form: v_Vector) : Lemma
     (requires (Spec.Utils.is_i16b_array_opaque (28296 - 3328)
@@ -261,7 +261,8 @@ fn subtract_reduce<Vector: Operations>(
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
     reveal_opaque (`%add_vector_pre) (add_vector_pre #v_Vector);
     reveal_opaque (`%add_vector_post) (add_vector_post #v_Vector);
-    assert_norm (pow2 15 == 32768)"#)]
+    assert_norm (pow2 15 == 32768)"#
+)]
 #[hax_lib::requires(fstar!(r#"(forall (i:nat). i < 16 ==>
     add_vector_pre ${myself}.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ] /\
     Spec.Utils.is_i16b_array_opaque (28296 - 3328) (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
@@ -292,8 +293,7 @@ fn add_message_error_reduce<Vector: Operations>(
         // ```
 
         let tmp = add_vector(myself.coefficients[i], &message.coefficients[i]);
-        hax_lib::fstar!(
-            r#"add_message_error_reduce_helper $tmp $coefficient_normal_form"#);
+        hax_lib::fstar!(r#"add_message_error_reduce_helper $tmp $coefficient_normal_form"#);
         let tmp = add_vector(coefficient_normal_form, &tmp);
         result.coefficients[i] = Vector::barrett_reduce(tmp);
     }
@@ -301,7 +301,8 @@ fn add_message_error_reduce<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(r#"#push-options "--max_fuel 3 --z3rlimit 200 --ext context_pruning --z3refresh"
+#[hax_lib::fstar::before(
+    r#"#push-options "--max_fuel 3 --z3rlimit 200 --ext context_pruning --z3refresh"
 
 let add_error_reduce_helper (#v_Vector: Type0)
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -333,7 +334,8 @@ let add_error_reduce_helper (#v_Vector: Type0)
             (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
                 v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.[ sz i ]) j))))
 
-#pop-options"#)]
+#pop-options"#
+)]
 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (28296 - 3328)
     (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${error}.f_coefficients.[ sz i ])"#))]
 fn add_error_reduce<Vector: Operations>(
@@ -347,7 +349,8 @@ fn add_error_reduce<Vector: Operations>(
             Vector::montgomery_multiply_by_constant(myself.coefficients[j], 1441);
 
         hax_lib::fstar!(
-            r#"add_error_reduce_helper ${error}.f_coefficients $coefficient_normal_form"#);
+            r#"add_error_reduce_helper ${error}.f_coefficients $coefficient_normal_form"#
+        );
         myself.coefficients[j] =
             Vector::barrett_reduce(add_vector(coefficient_normal_form, &error.coefficients[j]));
     }
@@ -369,7 +372,8 @@ fn add_standard_error_reduce<Vector: Operations>(
         let coefficient_normal_form = to_standard_domain::<Vector>(myself.coefficients[j]);
 
         hax_lib::fstar!(
-            r#"add_error_reduce_helper ${error}.f_coefficients $coefficient_normal_form"#);
+            r#"add_error_reduce_helper ${error}.f_coefficients $coefficient_normal_form"#
+        );
         myself.coefficients[j] =
             Vector::barrett_reduce(add_vector(coefficient_normal_form, &error.coefficients[j]));
     }

@@ -8,7 +8,7 @@
  * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
  * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
  * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
- * Libcrux: da72c141597b1db012f3bc23a96330f6de112770
+ * Libcrux: 2505360d54e1bcdd7165398ad6ada928ae8b568b
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -3853,6 +3853,18 @@ ntt_multiply_ef_96(libcrux_ml_kem_polynomial_PolynomialRingElement_1d *self,
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.polynomial.add_vector
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
+add_vector_96(libcrux_ml_kem_vector_portable_vector_type_PortableVector lhs,
+              libcrux_ml_kem_vector_portable_vector_type_PortableVector *rhs) {
+  return libcrux_ml_kem_vector_portable_add_2c(lhs, rhs);
+}
+
+/**
  Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
  sum of their constituent coefficients.
 */
@@ -3865,6 +3877,10 @@ with const generics
 static KRML_MUSTINLINE void add_to_ring_element_d0(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *myself,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *rhs) {
+  libcrux_ml_kem_vector_portable_vector_type_PortableVector _myself[16U];
+  memcpy(_myself, myself->coefficients,
+         (size_t)16U *
+             sizeof(libcrux_ml_kem_vector_portable_vector_type_PortableVector));
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(
                Eurydice_array_to_slice(
@@ -3874,8 +3890,7 @@ static KRML_MUSTINLINE void add_to_ring_element_d0(
        i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_add_2c(myself->coefficients[i0],
-                                              &rhs->coefficients[i0]);
+        add_vector_96(myself->coefficients[i0], &rhs->coefficients[i0]);
     myself->coefficients[i0] = uu____0;
   }
 }
@@ -3927,8 +3942,7 @@ static KRML_MUSTINLINE void add_standard_error_reduce_96(
             to_standard_domain_96(myself->coefficients[j]);
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
         libcrux_ml_kem_vector_portable_barrett_reduce_2c(
-            libcrux_ml_kem_vector_portable_add_2c(coefficient_normal_form,
-                                                  &error->coefficients[j]));
+            add_vector_96(coefficient_normal_form, &error->coefficients[j]));
     myself->coefficients[j] = uu____0;
   }
 }
@@ -4547,8 +4561,7 @@ static KRML_MUSTINLINE void add_error_reduce_96(
                 myself->coefficients[j], (int16_t)1441);
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
         libcrux_ml_kem_vector_portable_barrett_reduce_2c(
-            libcrux_ml_kem_vector_portable_add_2c(coefficient_normal_form,
-                                                  &error->coefficients[j]));
+            add_vector_96(coefficient_normal_form, &error->coefficients[j]));
     myself->coefficients[j] = uu____0;
   }
 }
@@ -4677,10 +4690,9 @@ add_message_error_reduce_96(
             libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_2c(
                 result.coefficients[i0], (int16_t)1441);
     libcrux_ml_kem_vector_portable_vector_type_PortableVector tmp =
-        libcrux_ml_kem_vector_portable_add_2c(myself->coefficients[i0],
-                                              &message->coefficients[i0]);
+        add_vector_96(myself->coefficients[i0], &message->coefficients[i0]);
     libcrux_ml_kem_vector_portable_vector_type_PortableVector tmp0 =
-        libcrux_ml_kem_vector_portable_add_2c(coefficient_normal_form, &tmp);
+        add_vector_96(coefficient_normal_form, &tmp);
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
         libcrux_ml_kem_vector_portable_barrett_reduce_2c(tmp0);
     result.coefficients[i0] = uu____0;
@@ -5610,6 +5622,18 @@ deserialize_then_decompress_ring_element_v_ff(Eurydice_slice serialized) {
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.polynomial.sub_vector
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
+sub_vector_96(libcrux_ml_kem_vector_portable_vector_type_PortableVector lhs,
+              libcrux_ml_kem_vector_portable_vector_type_PortableVector *rhs) {
+  return libcrux_ml_kem_vector_portable_sub_2c(lhs, rhs);
+}
+
+/**
 A monomorphic instance of libcrux_ml_kem.polynomial.subtract_reduce
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -5627,8 +5651,7 @@ subtract_reduce_96(libcrux_ml_kem_polynomial_PolynomialRingElement_1d *myself,
                 b.coefficients[i0], (int16_t)1441);
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
         libcrux_ml_kem_vector_portable_barrett_reduce_2c(
-            libcrux_ml_kem_vector_portable_sub_2c(myself->coefficients[i0],
-                                                  &coefficient_normal_form));
+            sub_vector_96(myself->coefficients[i0], &coefficient_normal_form));
     b.coefficients[i0] = uu____0;
   }
   return b;
@@ -6740,6 +6763,10 @@ with const generics
 static KRML_MUSTINLINE void add_to_ring_element_a0(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *myself,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *rhs) {
+  libcrux_ml_kem_vector_portable_vector_type_PortableVector _myself[16U];
+  memcpy(_myself, myself->coefficients,
+         (size_t)16U *
+             sizeof(libcrux_ml_kem_vector_portable_vector_type_PortableVector));
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(
                Eurydice_array_to_slice(
@@ -6749,8 +6776,7 @@ static KRML_MUSTINLINE void add_to_ring_element_a0(
        i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_add_2c(myself->coefficients[i0],
-                                              &rhs->coefficients[i0]);
+        add_vector_96(myself->coefficients[i0], &rhs->coefficients[i0]);
     myself->coefficients[i0] = uu____0;
   }
 }
@@ -8820,6 +8846,10 @@ with const generics
 static KRML_MUSTINLINE void add_to_ring_element_1b(
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *myself,
     libcrux_ml_kem_polynomial_PolynomialRingElement_1d *rhs) {
+  libcrux_ml_kem_vector_portable_vector_type_PortableVector _myself[16U];
+  memcpy(_myself, myself->coefficients,
+         (size_t)16U *
+             sizeof(libcrux_ml_kem_vector_portable_vector_type_PortableVector));
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(
                Eurydice_array_to_slice(
@@ -8829,8 +8859,7 @@ static KRML_MUSTINLINE void add_to_ring_element_1b(
        i++) {
     size_t i0 = i;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_add_2c(myself->coefficients[i0],
-                                              &rhs->coefficients[i0]);
+        add_vector_96(myself->coefficients[i0], &rhs->coefficients[i0]);
     myself->coefficients[i0] = uu____0;
   }
 }
