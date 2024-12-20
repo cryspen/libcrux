@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a68994d00017b76a805d0115ca06c1f2c1805e79
- * Eurydice: b665364a6d86749566ce2d650d13fa12c8fab2c5
- * Karamel: 96572bc631fde691a2aea7bce5a5a3838b3a5968
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 00424f6ff03ac7c79f2922ed628bf6a5b8723be3
+ * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
+ * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
+ * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: 50cacf4549aef718804fae5c1750e0952a651c13
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -2111,10 +2111,7 @@ libcrux_ml_dsa::simd::avx2::vector_type::AVX2SIMDUnit)}
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline __m256i libcrux_ml_dsa_simd_avx2_ntt_closure_a2(__m256i **state,
                                                               size_t i) {
-  KRML_HOST_EPRINTF(
-      "KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-      "Eurydice error: Failure(\"unexpected / ill-typed projection\")\n");
-  KRML_HOST_EXIT(255U);
+  return state[0U][i];
 }
 
 /**
@@ -2140,9 +2137,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_a2(
   libcrux_ml_dsa_simd_avx2_ntt_ntt(copy_of_re, result);
   __m256i ret0[32U];
   for (size_t i = (size_t)0U; i < (size_t)32U; i++) {
-    ret0[i] = KRML_EABORT(
-        __m256i,
-        "Eurydice error: Failure(\"unexpected / ill-typed projection\")\n");
+    ret0[i] = result[i];
   }
   memcpy(ret, ret0, (size_t)32U * sizeof(__m256i));
 }
@@ -3194,10 +3189,7 @@ libcrux_ml_dsa::simd::avx2::vector_type::AVX2SIMDUnit)}
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline __m256i libcrux_ml_dsa_simd_avx2_invert_ntt_montgomery_closure_a2(
     __m256i **state, size_t i) {
-  KRML_HOST_EPRINTF(
-      "KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-      "Eurydice error: Failure(\"unexpected / ill-typed projection\")\n");
-  KRML_HOST_EXIT(255U);
+  return state[0U][i];
 }
 
 /**
@@ -3223,15 +3215,10 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invert_ntt_montgomery_a2(
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_montgomery(copy_of_re, result);
   __m256i ret0[32U];
   for (size_t i = (size_t)0U; i < (size_t)32U; i++) {
-    ret0[i] = KRML_EABORT(
-        __m256i,
-        "Eurydice error: Failure(\"unexpected / ill-typed projection\")\n");
+    ret0[i] = result[i];
   }
   memcpy(ret, ret0, (size_t)32U * sizeof(__m256i));
 }
-
-typedef struct libcrux_ml_dsa_samplex4_avx2_AVX2Sampler_s {
-} libcrux_ml_dsa_samplex4_avx2_AVX2Sampler;
 
 /**
 A monomorphic instance of libcrux_ml_dsa.polynomial.PolynomialRingElement
@@ -4988,11 +4975,11 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_ac(
     Eurydice_slice serialized) {
-  __m256i unsigned =
+  __m256i deserialized =
       libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned_ac(
           serialized);
   return libcrux_intrinsics_avx2_mm256_sub_epi32(
-      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)(size_t)4U), unsigned);
+      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)(size_t)4U), deserialized);
 }
 
 /**
