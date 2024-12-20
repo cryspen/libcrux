@@ -341,17 +341,20 @@ impl Operations for SIMD256Vector {
         cond_subtract_3329(vector)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (impl.f_repr ${vector})"#))]
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque 28296 (impl.f_repr ${vector})"#))]
     #[inline(always)]
     fn barrett_reduce(vector: Self) -> Self {
+        hax_lib::fstar!(r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque"#);
         Self {
             elements: arithmetic::barrett_reduce(vector.elements),
         }
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
     fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
+        hax_lib::fstar!(r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque"#);
         Self {
             elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),
         }
@@ -448,9 +451,9 @@ impl Operations for SIMD256Vector {
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${lhs}) /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${rhs})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${lhs}) /\
+                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${rhs})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
     fn ntt_multiply(
         lhs: &Self,
@@ -460,6 +463,7 @@ impl Operations for SIMD256Vector {
         zeta2: i16,
         zeta3: i16,
     ) -> Self {
+        hax_lib::fstar!(r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque"#);
         ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
     }
 

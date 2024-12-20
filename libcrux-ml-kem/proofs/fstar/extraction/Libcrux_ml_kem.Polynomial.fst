@@ -14,6 +14,30 @@ let zeta (i: usize) =
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+[@@ "opaque_to_smt"]
+
+let add_vector
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (lhs rhs: v_Vector)
+     =
+  let _:Prims.unit = reveal_opaque (`%add_vector_pre) (add_vector_pre #v_Vector) in
+  let _:Prims.unit = reveal_opaque (`%add_vector_post) (add_vector_post #v_Vector) in
+  Libcrux_ml_kem.Vector.Traits.f_add #v_Vector #FStar.Tactics.Typeclasses.solve lhs rhs
+
+let sub_vector
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (lhs rhs: v_Vector)
+     =
+  let _:Prims.unit = reveal_opaque (`%sub_vector_pre) (sub_vector_pre #v_Vector) in
+  let _:Prims.unit = reveal_opaque (`%sub_vector_post) (sub_vector_post #v_Vector) in
+  Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector #FStar.Tactics.Typeclasses.solve lhs rhs
+
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 assume
 val impl':
@@ -46,7 +70,39 @@ let impl_1
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
      = impl_1' #v_Vector #i1 #i2
 
-#push-options "--admit_smt_queries true"
+#push-options "--max_fuel 3 --z3rlimit 200 --ext context_pruning --z3refresh"
+
+let add_error_reduce_helper (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (error: t_Array v_Vector (sz 16))
+    (coefficient_normal_form: v_Vector) : Lemma
+    (requires (forall (i:nat). i < 16 ==>
+        Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.[ sz i ])) /\
+        Spec.Utils.is_i16b_array_opaque 3328
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form))
+    (ensures (forall (i:nat). i < 16 ==> add_vector_pre coefficient_normal_form error.[ sz i ] /\
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (add_vector coefficient_normal_form error.[ sz i ]))))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    reveal_opaque (`%add_vector_pre) (add_vector_pre #v_Vector);
+    reveal_opaque (`%add_vector_post) (add_vector_post #v_Vector);
+    reveal_opaque (`%add_vector) (add_vector #v_Vector);
+    assert_norm (pow2 15 == 32768);
+    assert (forall (i:nat). i < 16 ==>
+            Spec.Utils.is_i16b_array (28296 - 3328)
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.[ sz i ]));
+    assert (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
+            Spec.Utils.is_intb 28296
+            (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.[ sz i ]) j))));
+    assert (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
+            Spec.Utils.is_intb (pow2 15 - 1)
+            (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.[ sz i ]) j))))
+
+#pop-options
 
 let add_error_reduce
       (#v_Vector: Type0)
@@ -72,6 +128,7 @@ let add_error_reduce
               (myself.f_coefficients.[ j ] <: v_Vector)
               1441s
           in
+          let _:Prims.unit = add_error_reduce_helper error.f_coefficients coefficient_normal_form in
           let myself:t_PolynomialRingElement v_Vector =
             {
               myself with
@@ -81,8 +138,7 @@ let add_error_reduce
                 j
                 (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
                     #FStar.Tactics.Typeclasses.solve
-                    (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
-                        #FStar.Tactics.Typeclasses.solve
+                    (add_vector #v_Vector
                         coefficient_normal_form
                         (error.f_coefficients.[ j ] <: v_Vector)
                       <:
@@ -98,8 +154,6 @@ let add_error_reduce
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   myself
 
-#pop-options
-
 let impl_2__add_error_reduce
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -110,7 +164,21 @@ let impl_2__add_error_reduce
   let self:t_PolynomialRingElement v_Vector = add_error_reduce #v_Vector self error in
   self
 
-#push-options "--admit_smt_queries true"
+let add_message_error_reduce_helper (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (result coefficient_normal_form: v_Vector) : Lemma
+    (requires (Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+          (Libcrux_ml_kem.Vector.Traits.f_to_i16_array result) /\
+        Spec.Utils.is_i16b_array_opaque 3328
+          (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form)))
+    (ensures (add_vector_pre coefficient_normal_form result /\
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+          (add_vector coefficient_normal_form result))))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    reveal_opaque (`%add_vector_pre) (add_vector_pre #v_Vector);
+    reveal_opaque (`%add_vector_post) (add_vector_post #v_Vector);
+    assert_norm (pow2 15 == 32768)
 
 let add_message_error_reduce
       (#v_Vector: Type0)
@@ -137,17 +205,12 @@ let add_message_error_reduce
               1441s
           in
           let tmp:v_Vector =
-            Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
-              #FStar.Tactics.Typeclasses.solve
+            add_vector #v_Vector
               (myself.f_coefficients.[ i ] <: v_Vector)
               (message.f_coefficients.[ i ] <: v_Vector)
           in
-          let tmp:v_Vector =
-            Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
-              #FStar.Tactics.Typeclasses.solve
-              coefficient_normal_form
-              tmp
-          in
+          let _:Prims.unit = add_message_error_reduce_helper tmp coefficient_normal_form in
+          let tmp:v_Vector = add_vector #v_Vector coefficient_normal_form tmp in
           let result:t_PolynomialRingElement v_Vector =
             {
               result with
@@ -168,8 +231,6 @@ let add_message_error_reduce
   in
   result
 
-#pop-options
-
 let impl_2__add_message_error_reduce
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -177,8 +238,6 @@ let impl_2__add_message_error_reduce
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self message result: t_PolynomialRingElement v_Vector)
      = add_message_error_reduce #v_Vector self message result
-
-#push-options "--admit_smt_queries true"
 
 let add_standard_error_reduce
       (#v_Vector: Type0)
@@ -202,6 +261,7 @@ let add_standard_error_reduce
             Libcrux_ml_kem.Vector.Traits.to_standard_domain #v_Vector
               (myself.f_coefficients.[ j ] <: v_Vector)
           in
+          let _:Prims.unit = add_error_reduce_helper error.f_coefficients coefficient_normal_form in
           let myself:t_PolynomialRingElement v_Vector =
             {
               myself with
@@ -211,8 +271,7 @@ let add_standard_error_reduce
                 j
                 (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
                     #FStar.Tactics.Typeclasses.solve
-                    (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
-                        #FStar.Tactics.Typeclasses.solve
+                    (add_vector #v_Vector
                         coefficient_normal_form
                         (error.f_coefficients.[ j ] <: v_Vector)
                       <:
@@ -228,8 +287,6 @@ let add_standard_error_reduce
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   myself
 
-#pop-options
-
 let impl_2__add_standard_error_reduce
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -239,8 +296,6 @@ let impl_2__add_standard_error_reduce
      =
   let self:t_PolynomialRingElement v_Vector = add_standard_error_reduce #v_Vector self error in
   self
-
-#push-options "--admit_smt_queries true"
 
 let poly_barrett_reduce
       (#v_Vector: Type0)
@@ -252,35 +307,38 @@ let poly_barrett_reduce
   let myself:t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       v_VECTORS_IN_RING_ELEMENT
-      (fun myself temp_1_ ->
+      (fun myself i ->
           let myself:t_PolynomialRingElement v_Vector = myself in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          v i < v v_VECTORS_IN_RING_ELEMENT ==>
+          (forall (j: nat).
+              (j >= v i /\ j < v v_VECTORS_IN_RING_ELEMENT) ==>
+              Spec.Utils.is_i16b_array_opaque 28296
+                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.f_coefficients.[ sz j ])))
       myself
       (fun myself i ->
           let myself:t_PolynomialRingElement v_Vector = myself in
           let i:usize = i in
-          {
-            myself with
-            f_coefficients
-            =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize myself.f_coefficients
-              i
-              (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
-                  #FStar.Tactics.Typeclasses.solve
-                  (myself.f_coefficients.[ i ] <: v_Vector)
-                <:
-                v_Vector)
+          let myself:t_PolynomialRingElement v_Vector =
+            {
+              myself with
+              f_coefficients
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize myself.f_coefficients
+                i
+                (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
+                    (myself.f_coefficients.[ i ] <: v_Vector)
+                  <:
+                  v_Vector)
+            }
             <:
-            t_Array v_Vector (sz 16)
-          }
-          <:
-          t_PolynomialRingElement v_Vector)
+            t_PolynomialRingElement v_Vector
+          in
+          myself)
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   myself
-
-#pop-options
 
 let impl_2__poly_barrett_reduce
       (#v_Vector: Type0)
@@ -292,7 +350,38 @@ let impl_2__poly_barrett_reduce
   let self:t_PolynomialRingElement v_Vector = poly_barrett_reduce #v_Vector self in
   self
 
-#push-options "--admit_smt_queries true"
+#push-options "--z3rlimit 200 --ext context_pruning"
+
+let subtract_reduce_helper (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (myself: t_Array v_Vector (sz 16))
+    (coefficient_normal_form: v_Vector) : Lemma
+    (requires (forall (i:nat). i < 16 ==>
+        Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ])) /\
+        Spec.Utils.is_i16b_array_opaque 3328
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form))
+    (ensures (forall (i:nat). i < 16 ==> sub_vector_pre myself.[ sz i ] coefficient_normal_form /\
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (sub_vector myself.[ sz i ] coefficient_normal_form))))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    reveal_opaque (`%sub_vector_pre) (sub_vector_pre #v_Vector);
+    reveal_opaque (`%sub_vector_post) (sub_vector_post #v_Vector);
+    assert_norm (pow2 15 == 32768);
+    assert (forall (i:nat). i < 16 ==>
+            Spec.Utils.is_i16b_array (28296 - 3328)
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]));
+    assert (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
+            Spec.Utils.is_intb 28296
+            (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j) -
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j))));
+    assert (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
+            Spec.Utils.is_intb (pow2 15 - 1)
+            (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j) -
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j))))
+
+#pop-options
 
 let subtract_reduce
       (#v_Vector: Type0)
@@ -318,6 +407,7 @@ let subtract_reduce
               (b.f_coefficients.[ i ] <: v_Vector)
               1441s
           in
+          let _:Prims.unit = subtract_reduce_helper myself.f_coefficients coefficient_normal_form in
           let b:t_PolynomialRingElement v_Vector =
             {
               b with
@@ -327,8 +417,7 @@ let subtract_reduce
                 i
                 (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
                     #FStar.Tactics.Typeclasses.solve
-                    (Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector
-                        #FStar.Tactics.Typeclasses.solve
+                    (sub_vector #v_Vector
                         (myself.f_coefficients.[ i ] <: v_Vector)
                         coefficient_normal_form
                       <:
@@ -342,8 +431,6 @@ let subtract_reduce
           b)
   in
   b
-
-#pop-options
 
 let impl_2__subtract_reduce
       (#v_Vector: Type0)
@@ -446,7 +533,7 @@ let impl_2__from_i16_array
       (a: t_Slice i16)
      = from_i16_array #v_Vector a
 
-#push-options "--admit_smt_queries true"
+#push-options "--z3rlimit 200 --ext context_pruning"
 
 let ntt_multiply
       (#v_Vector: Type0)
@@ -501,8 +588,6 @@ let impl_2__ntt_multiply
       (self rhs: t_PolynomialRingElement v_Vector)
      = ntt_multiply #v_Vector self rhs
 
-#push-options "--admit_smt_queries true"
-
 let add_to_ring_element
       (#v_Vector: Type0)
       (v_K: usize)
@@ -511,39 +596,47 @@ let add_to_ring_element
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (myself rhs: t_PolynomialRingElement v_Vector)
      =
+  let v__myself:t_Array v_Vector (sz 16) = myself.f_coefficients in
   let myself:t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (Core.Slice.impl__len #v_Vector (myself.f_coefficients <: t_Slice v_Vector) <: usize)
-      (fun myself temp_1_ ->
+      (fun myself i ->
           let myself:t_PolynomialRingElement v_Vector = myself in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          (v i < v (Core.Slice.impl__len myself.f_coefficients) ==>
+            (forall (j: nat).
+                (j >= v i /\ j < v (Core.Slice.impl__len myself.f_coefficients)) ==>
+                myself.f_coefficients.[ sz j ] == v__myself.[ sz j ] /\
+                add_vector_pre myself.f_coefficients.[ sz j ] rhs.f_coefficients.[ sz j ])) /\
+          (forall (j: nat).
+              j < v i ==>
+              add_vector_post myself.f_coefficients.[ sz j ]
+                v__myself.[ sz j ]
+                rhs.f_coefficients.[ sz j ]))
       myself
       (fun myself i ->
           let myself:t_PolynomialRingElement v_Vector = myself in
           let i:usize = i in
-          {
-            myself with
-            f_coefficients
-            =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize myself.f_coefficients
-              i
-              (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
-                  #FStar.Tactics.Typeclasses.solve
-                  (myself.f_coefficients.[ i ] <: v_Vector)
-                  (rhs.f_coefficients.[ i ] <: v_Vector)
-                <:
-                v_Vector)
+          let myself:t_PolynomialRingElement v_Vector =
+            {
+              myself with
+              f_coefficients
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize myself.f_coefficients
+                i
+                (add_vector #v_Vector
+                    (myself.f_coefficients.[ i ] <: v_Vector)
+                    (rhs.f_coefficients.[ i ] <: v_Vector)
+                  <:
+                  v_Vector)
+            }
             <:
-            t_Array v_Vector (sz 16)
-          }
-          <:
-          t_PolynomialRingElement v_Vector)
+            t_PolynomialRingElement v_Vector
+          in
+          myself)
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   myself
-
-#pop-options
 
 let impl_2__add_to_ring_element
       (#v_Vector: Type0)

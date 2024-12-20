@@ -66,10 +66,11 @@ pub trait Operations: Copy + Clone + Repr {
     #[ensures(|result| fstar!(r#"f_repr $result == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (f_repr $v)"#))]
     fn cond_subtract_3329(v: Self) -> Self;
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (f_repr $vector)"#))]
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque 28296 (f_repr $vector)"#))]
     fn barrett_reduce(vector: Self) -> Self;
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 c"#))]
+    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (f_repr $result)"#))]
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
 
     // Compression
@@ -128,9 +129,9 @@ pub trait Operations: Copy + Clone + Repr {
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                       Spec.Utils.is_i16b_array 3328 (f_repr ${lhs}) /\
-                       Spec.Utils.is_i16b_array 3328 (f_repr ${rhs}) "#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque 3328 (f_repr ${lhs}) /\
+                       Spec.Utils.is_i16b_array_opaque 3328 (f_repr ${rhs}) "#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (f_repr $out)"#))]
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
         -> Self;
 
@@ -228,6 +229,7 @@ pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
 }
 
 #[inline(always)]
+#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (i1._super_8706949974463268012.f_repr $result)"#))]
 pub fn to_standard_domain<T: Operations>(v: T) -> T {
     T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
