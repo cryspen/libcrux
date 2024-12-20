@@ -242,7 +242,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_barrett_reduce_pre
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Spec.Utils.is_i16b_array 28296 (impl.f_repr v));
+        Spec.Utils.is_i16b_array_opaque 28296 (impl.f_repr v));
     f_barrett_reduce_post
     =
     (fun
@@ -253,6 +253,9 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_barrett_reduce
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        let _:Prims.unit =
+          reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque
+        in
         Libcrux_ml_kem.Vector.Portable.Arithmetic.barrett_reduce v);
     f_montgomery_multiply_by_constant_pre
     =
@@ -265,10 +268,13 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (r: i16)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr out));
     f_montgomery_multiply_by_constant
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (r: i16) ->
+        let _:Prims.unit =
+          reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque
+        in
         Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_by_constant v r);
     f_compress_1_pre
     =
@@ -505,8 +511,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         ->
         Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
         Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-        Spec.Utils.is_i16b_array 3328 (impl.f_repr lhs) /\
-        Spec.Utils.is_i16b_array 3328 (impl.f_repr rhs));
+        Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr lhs) /\
+        Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr rhs));
     f_ntt_multiply_post
     =
     (fun
@@ -518,7 +524,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (zeta3: i16)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        Spec.Utils.is_i16b_array 3328 (impl.f_repr out));
+        Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr out));
     f_ntt_multiply
     =
     (fun
@@ -529,6 +535,9 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (zeta2: i16)
         (zeta3: i16)
         ->
+        let _:Prims.unit =
+          reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque
+        in
         Libcrux_ml_kem.Vector.Portable.Ntt.ntt_multiply lhs rhs zeta0 zeta1 zeta2 zeta3);
     f_serialize_1_pre
     =

@@ -3,17 +3,19 @@ module Libcrux_ml_kem.Vector.Portable.Sampling
 open Core
 open FStar.Mul
 
-#push-options "--admit_smt_queries true"
-
 let rej_sample (a: t_Slice u8) (result: t_Slice i16) =
+  let _:Prims.unit =
+    assert (v (Core.Slice.impl__len a) == 24);
+    assert (v (Core.Slice.impl__len result) == 16)
+  in
   let sampled:usize = sz 0 in
   let result, sampled:(t_Slice i16 & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       ((Core.Slice.impl__len #u8 a <: usize) /! sz 3 <: usize)
-      (fun temp_0_ temp_1_ ->
+      (fun temp_0_ i ->
           let result, sampled:(t_Slice i16 & usize) = temp_0_ in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          Seq.length result == 16 /\ v sampled <= v i * 2)
       (result, sampled <: (t_Slice i16 & usize))
       (fun temp_0_ i ->
           let result, sampled:(t_Slice i16 & usize) = temp_0_ in
@@ -42,5 +44,3 @@ let rej_sample (a: t_Slice u8) (result: t_Slice i16) =
   in
   let hax_temp_output:usize = sampled in
   result, hax_temp_output <: (t_Slice i16 & usize)
-
-#pop-options
