@@ -78,39 +78,6 @@ fn sub_vector<Vector: Operations>(
     Vector::sub(lhs, rhs)
 }
 
-// #[inline(always)]
-// #[hax_lib::fstar::before(interface,
-// r#"[@@ "opaque_to_smt"]
-// let montgomery_multiply_by_constant_vector_post (#v_Vector: Type0)
-//       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-//       (result: v_Vector) =
-//     Spec.Utils.is_i16b_array 3328 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array result)"#
-// )]
-// #[hax_lib::ensures(|result| fstar!(r#"sub_vector_post $result"#))]
-// fn montgomery_multiply_by_constant_vector<Vector: Operations>(
-//     vec: Vector,
-//     c: i16,
-// ) -> Vector {
-//     hax_lib::fstar!(r#"reveal_opaque (`%montgomery_multiply_by_constant_vector_post)
-//         (montgomery_multiply_by_constant_vector_post #$:Vector)"#);
-//     Vector::montgomery_multiply_by_constant(vec, c)
-// }
-
-// #[hax_lib::fstar::before(interface,
-// r#"[@@ "opaque_to_smt"]
-// let barrett_reduce_vector_pre (#v_Vector: Type0)
-//       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-//       (vec: v_Vector) =
-//     Spec.Utils.is_i16b_array 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array vec)"#
-// )]
-// #[hax_lib::requires(fstar!(r#"barrett_reduce_vector_pre $vec"#))]
-// fn barrett_reduce_vector<Vector: Operations>(
-//     vec: Vector,
-// ) -> Vector {
-//     hax_lib::fstar!(r#"reveal_opaque (`%barrett_reduce_vector_pre) (barrett_reduce_vector_pre #$:Vector)"#);
-//     Vector::barrett_reduce(vec)
-// }
-
 // A function to retrieve zetas so that we can add a post-condition
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
