@@ -7,10 +7,8 @@ extern crate alloc;
 
 use alloc::vec::Vec;
 
-#[cfg(feature = "hacl")]
 pub mod hacl;
 
-#[cfg(feature = "hacl")]
 mod impl_hacl;
 
 pub use impl_hacl::{HkdfSha2_256, HkdfSha2_384, HkdfSha2_512};
@@ -56,6 +54,7 @@ pub trait HkdfMode<const HASH_LEN: usize> {
     /// Returns [`Error::OkmTooLarge`] if the requested `OKM_LEN` is too large.
     /// Returns [`Error::ArgumentsTooLarge`] if one of `ikm`, `salt` or `info` is longer than
     /// [`u32::MAX`] bytes.
+    #[inline(always)]
     fn hkdf<const OKM_LEN: usize>(
         okm: &mut [u8; OKM_LEN],
         salt: &[u8],
@@ -74,6 +73,7 @@ pub trait HkdfMode<const HASH_LEN: usize> {
     /// Returns the key material in a [`Vec<u8>`] of length `okm_len` on success.
     /// Returns [`Error::OkmTooLarge`] if the requested `okm_len` is too large.
     /// Returns [`Error::ArgumentsTooLarge`] if `salt`, `ikm` or `info` is longer than [`u32::MAX`] bytes.
+    #[inline(always)]
     fn hkdf_vec(salt: &[u8], ikm: &[u8], info: &[u8], okm_len: usize) -> Result<Vec<u8>, Error> {
         let mut prk = [0u8; HASH_LEN];
         Self::extract(&mut prk, salt, ikm)?;
@@ -112,6 +112,7 @@ pub enum Error {
 
 /// HKDF extract using hash function `mode`, `salt`, and the input key material `ikm`.
 /// Returns the pre-key material in a vector of tag length.
+#[inline(always)]
 pub fn extract(
     alg: Algorithm,
     salt: impl AsRef<[u8]>,
@@ -129,6 +130,7 @@ pub fn extract(
 /// HKDF expand using hash function `mode`, pre-key material `prk`, `info`, and output length `okm_len`.
 /// Returns the key material in a vector of length `okm_len` or [`Error::OkmLengthTooLarge`]
 /// if the requested output length is too large.
+#[inline(always)]
 pub fn expand(
     alg: Algorithm,
     prk: impl AsRef<[u8]>,
@@ -148,6 +150,7 @@ pub fn expand(
 /// Calls `extract` and `expand` with the given input.
 /// Returns the key material in a vector of length `okm_len` or [`Error::OkmLengthTooLarge`]
 /// if the requested output length is too large.
+#[inline(always)]
 pub fn hkdf(
     mode: Algorithm,
     salt: impl AsRef<[u8]>,
@@ -166,6 +169,7 @@ pub fn hkdf(
     }
 }
 
+#[inline(always)]
 fn allocbuf<const N: usize, T, E, F: Fn(&mut [u8; N]) -> Result<T, E>>(f: F) -> Result<Vec<u8>, E> {
     let mut buf = [0u8; N];
 
