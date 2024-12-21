@@ -67,7 +67,7 @@ mod tests {
             -391807, 392057, -132521, -441664, -349459, -373059, -296519, 274235, 42417, 47385,
             -104540, 142532, 246380, -515363, -422665,
         ];
-        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array_test(&coefficients);
 
         let expected_coefficients = [
             -17129289, -17188287, -11027856, -7293060, -14589541, -12369669, -1420304, -9409026,
@@ -136,7 +136,7 @@ mod tests {
             -3881813, 2536840, -2924666, 2425664, 2635292, 2752536, -136653, 4057087, -633680,
             3039079, -2733512, 1734173, -2109687,
         ];
-        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array_test(&coefficients);
 
         let expected_coefficients = [
             3966085, -2067161, 579114, -3597478, 2232818, -17588, 1194752, -1205114, -4058138,

@@ -473,54 +473,6 @@ pub(crate) fn matrix_generic<
     }
 }
 
-#[cfg(feature = "mldsa44")]
-#[inline(always)]
-fn sample_s1_and_s2_4_by_4<
-    SIMDUnit: Operations,
-    Shake256X4: shake256::XofX4,
-    const ETA: usize,
-    const ROW_COLUMN: usize,
->(
-    seed: &[u8],
-    s1_s2: &mut [PolynomialRingElement<SIMDUnit>; ROW_COLUMN],
-) {
-    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed, 0, s1_s2);
-    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed, 4, s1_s2);
-}
-
-#[cfg(feature = "mldsa65")]
-#[inline(always)]
-fn sample_s1_and_s2_5_by_6<
-    SIMDUnit: Operations,
-    Shake256X4: shake256::XofX4,
-    const ETA: usize,
-    const ROW_COLUMN: usize,
->(
-    seed_base: &[u8],
-    s1_s2: &mut [PolynomialRingElement<SIMDUnit>; ROW_COLUMN],
-) {
-    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 0, s1_s2);
-    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 4, s1_s2);
-    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed_base, 8, s1_s2);
-}
-
-#[cfg(feature = "mldsa87")]
-#[inline(always)]
-fn sample_s1_and_s2_7_by_8<
-    SIMDUnit: Operations,
-    Shake256X4: shake256::XofX4,
-    const ETA: usize,
-    const ROW_COLUMN: usize,
->(
-    seed: &[u8],
-    s1_s2: &mut [PolynomialRingElement<SIMDUnit>; ROW_COLUMN],
-) {
-    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed, 0, s1_s2);
-    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed, 4, s1_s2);
-    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed, 8, s1_s2);
-    sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed, 12, s1_s2);
-}
-
 #[inline(always)]
 pub(crate) fn sample_s1_and_s2<
     SIMDUnit: Operations,
@@ -531,13 +483,7 @@ pub(crate) fn sample_s1_and_s2<
     seed: &[u8],
     s1_s2: &mut [PolynomialRingElement<SIMDUnit>; ROW_COLUMN],
 ) {
-    match ROW_COLUMN as u8 {
-        #[cfg(feature = "mldsa44")]
-        8 => sample_s1_and_s2_4_by_4::<SIMDUnit, Shake256X4, ETA, ROW_COLUMN>(seed, s1_s2),
-        #[cfg(feature = "mldsa65")]
-        11 => sample_s1_and_s2_5_by_6::<SIMDUnit, Shake256X4, ETA, ROW_COLUMN>(seed, s1_s2),
-        #[cfg(feature = "mldsa87")]
-        15 => sample_s1_and_s2_7_by_8::<SIMDUnit, Shake256X4, ETA, ROW_COLUMN>(seed, s1_s2),
-        _ => unreachable!(),
+    for i in 0..ROW_COLUMN.div_ceil(4) {
+        sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed, 4 * i as u16, s1_s2);
     }
 }

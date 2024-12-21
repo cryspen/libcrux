@@ -65,7 +65,7 @@ mod tests {
             302917, 307866, -446103, 225168, -438314, 393602, 409392, 155141, 43252, -178437,
             -248017, 250774, 33014,
         ];
-        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array_test(&coefficients);
 
         let expected_bytes = [
             191, 20, 228, 197, 78, 59, 42, 5, 166, 19, 40, 225, 25, 56, 6, 144, 123, 201, 223, 58,

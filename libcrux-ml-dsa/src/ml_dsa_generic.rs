@@ -336,12 +336,14 @@ pub(crate) fn sign_internal<
             shake.squeeze(&mut commitment_hash_candidate);
         }
 
-        let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
+        let mut verifier_challenge = PolynomialRingElement::ZERO();
+        sample_challenge_ring_element::<
             SIMDUnit,
             Shake256,
             ONES_IN_VERIFIER_CHALLENGE,
             COMMITMENT_HASH_SIZE,
-        >(commitment_hash_candidate));
+        >(commitment_hash_candidate, &mut verifier_challenge);
+        let verifier_challenge_as_ntt = ntt(verifier_challenge);
 
         let challenge_times_s1 = vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(
             &s1_as_ntt,
@@ -541,12 +543,14 @@ pub(crate) fn verify_internal<
         &mut message_representative,
     );
 
-    let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
+    let mut verifier_challenge = PolynomialRingElement::ZERO();
+    sample_challenge_ring_element::<
         SIMDUnit,
         Shake256,
         ONES_IN_VERIFIER_CHALLENGE,
         COMMITMENT_HASH_SIZE,
-    >(signature.commitment_hash));
+    >(signature.commitment_hash, &mut verifier_challenge);
+    let verifier_challenge_as_ntt = ntt(verifier_challenge);
 
     let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
         &matrix,

@@ -60,6 +60,8 @@ static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
 
+static inline size_t core_num__usize_11__div_ceil(size_t x0, size_t x1);
+
 /**
 A monomorphic instance of core.result.Result
 with types uint8_t[10size_t], core_array_TryFromSliceError
@@ -286,6 +288,25 @@ libcrux_ml_dsa_types_new_8f_fa(uint8_t value[3309U]) {
 }
 
 /**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_dsa.utils.into_padded_array
+with const generics
+- LEN= 66
+*/
+static KRML_MUSTINLINE void libcrux_ml_dsa_utils_into_padded_array_20(
+    Eurydice_slice slice, uint8_t ret[66U]) {
+  uint8_t out[66U] = {0U};
+  uint8_t *uu____0 = out;
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
+                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
+      slice, uint8_t);
+  memcpy(ret, out, (size_t)66U * sizeof(uint8_t));
+}
+
+/**
 A monomorphic instance of core.result.Result
 with types uint8_t[64size_t], core_array_TryFromSliceError
 
@@ -419,44 +440,6 @@ libcrux_ml_dsa_types_new_9b_09(uint8_t value[4032U]) {
   libcrux_ml_dsa_types_MLDSASigningKey_22 lit;
   memcpy(lit.value, copy_of_value, (size_t)4032U * sizeof(uint8_t));
   return lit;
-}
-
-/**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_dsa.utils.into_padded_array
-with const generics
-- LEN= 66
-*/
-static KRML_MUSTINLINE void libcrux_ml_dsa_utils_into_padded_array_20(
-    Eurydice_slice slice, uint8_t ret[66U]) {
-  uint8_t out[66U] = {0U};
-  uint8_t *uu____0 = out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
-                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
-      slice, uint8_t);
-  memcpy(ret, out, (size_t)66U * sizeof(uint8_t));
-}
-
-/**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_dsa.utils.into_padded_array
-with const generics
-- LEN= 34
-*/
-static KRML_MUSTINLINE void libcrux_ml_dsa_utils_into_padded_array_b6(
-    Eurydice_slice slice, uint8_t ret[34U]) {
-  uint8_t out[34U] = {0U};
-  uint8_t *uu____0 = out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
-                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
-      slice, uint8_t);
-  memcpy(ret, out, (size_t)34U * sizeof(uint8_t));
 }
 
 /**

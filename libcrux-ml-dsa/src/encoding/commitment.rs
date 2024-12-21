@@ -62,7 +62,7 @@ mod tests {
             43, 32, 27, 34, 27, 15, 24, 4, 2, 42, 15, 9, 3, 17, 35, 0, 22, 43, 13, 15, 6, 38, 10,
             20, 37,
         ];
-        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array_test(&coefficients);
 
         let serialized = [
             170, 57, 148, 37, 42, 144, 203, 90, 162, 193, 73, 165, 38, 150, 130, 135, 82, 85, 217,
@@ -95,7 +95,7 @@ mod tests {
             12, 5, 3, 7, 15, 12, 13, 3, 4, 10, 1, 13, 3, 9, 6, 10, 13, 4, 4, 2, 9, 0, 4, 5, 7, 14,
             11, 2, 6, 3, 11, 6, 2, 0, 5, 8, 5, 9, 5, 9, 0, 2, 2, 3, 15, 0, 8, 11, 13, 2, 6, 11, 0,
         ];
-        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array_test(&coefficients);
 
         let serialized = [
             66, 56, 62, 122, 244, 61, 33, 201, 184, 76, 231, 73, 36, 245, 190, 182, 218, 211, 249,

@@ -118,11 +118,11 @@ pub(crate) fn use_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA
     let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for i in 0..DIMENSION {
-        let hint_simd = PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i]);
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i], &mut result[i]);
 
         for j in 0..result[0].simd_units.len() {
             result[i].simd_units[j] =
-                SIMDUnit::use_hint::<GAMMA2>(re_vector[i].simd_units[j], hint_simd.simd_units[j]);
+                SIMDUnit::use_hint::<GAMMA2>(re_vector[i].simd_units[j], result[i].simd_units[j]);
         }
     }
 

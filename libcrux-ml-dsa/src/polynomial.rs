@@ -31,17 +31,19 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         result
     }
 
-    // This is useful for debugging.
-    #[allow(dead_code)]
-    pub(crate) fn from_i32_array(array: &[i32]) -> Self {
+    pub(crate) fn from_i32_array(array: &[i32], result: &mut Self) {
         debug_assert!(array.len() >= 256);
-
-        let mut result = Self::ZERO();
         for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
             result.simd_units[i] = SIMDUnit::from_coefficient_array(
                 &array[i * COEFFICIENTS_IN_SIMD_UNIT..(i + 1) * COEFFICIENTS_IN_SIMD_UNIT],
             );
         }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn from_i32_array_test(array: &[i32]) -> Self {
+        let mut result = PolynomialRingElement::ZERO();
+        Self::from_i32_array(array, &mut result);
         result
     }
 
