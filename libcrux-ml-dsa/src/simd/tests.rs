@@ -11,7 +11,8 @@ fn test_decompose_generic<SIMDUnit: Operations>() {
     ]);
     let expected_high = SIMDUnit::from_coefficient_array(&[29, 28, 1, 43, 27, 29, 18, 21]);
 
-    let (low, high) = SIMDUnit::decompose::<95_232>(input);
+    let (mut low, mut high) = (SIMDUnit::ZERO(), SIMDUnit::ZERO());
+    SIMDUnit::decompose::<95_232>(input, &mut low, &mut high);
 
     assert_eq!(
         low.to_coefficient_array(),
@@ -32,7 +33,7 @@ fn test_decompose_generic<SIMDUnit: Operations>() {
     ]);
     let expected_high = SIMDUnit::from_coefficient_array(&[4, 14, 12, 15, 4, 0, 1, 4]);
 
-    let (low, high) = SIMDUnit::decompose::<261_888>(input);
+    SIMDUnit::decompose::<261_888>(input, &mut low, &mut high);
 
     assert_eq!(
         low.to_coefficient_array(),

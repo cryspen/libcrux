@@ -5,6 +5,8 @@ use crate::{
 
 use libcrux_intrinsics::avx2::*;
 
+use super::vector_type::ZERO;
+
 fn to_unsigned_representatives(t: Vec256) -> Vec256 {
     let signs = mm256_srai_epi32::<31>(t);
     let conditional_add_field_modulus = mm256_and_si256(signs, mm256_set1_epi32(FIELD_MODULUS));
@@ -125,7 +127,7 @@ pub fn power2round(r: Vec256) -> (Vec256, Vec256) {
 
 #[allow(non_snake_case)]
 #[inline(always)]
-pub fn decompose<const GAMMA2: i32>(r: Vec256) -> (Vec256, Vec256) {
+pub fn decompose<const GAMMA2: i32>(r: Vec256, r0: &mut Vec256, r1: &mut Vec256) {
     let r = to_unsigned_representatives(r);
 
     let field_modulus_halved = mm256_set1_epi32((FIELD_MODULUS - 1) / 2);
@@ -134,7 +136,7 @@ pub fn decompose<const GAMMA2: i32>(r: Vec256) -> (Vec256, Vec256) {
     // const value.
     let ALPHA: i32 = GAMMA2 * 2;
 
-    let r1 = {
+    *r1 = {
         let ceil_of_r_by_128 = mm256_add_epi32(r, mm256_set1_epi32(127));
         let ceil_of_r_by_128 = mm256_srai_epi32::<7>(ceil_of_r_by_128);
 
@@ -173,17 +175,15 @@ pub fn decompose<const GAMMA2: i32>(r: Vec256) -> (Vec256, Vec256) {
     // In the corner-case, when we set a₁=0, we will incorrectly
     // have a₀ > (q-1)/2 and we'll need to subtract q.  As we
     // return a₀ + q, that comes down to adding q if a₀ < (q-1)/2.
-    let r0 = mm256_mullo_epi32(r1, mm256_set1_epi32(ALPHA));
-    let r0 = mm256_sub_epi32(r, r0);
+    *r0 = mm256_mullo_epi32(*r1, mm256_set1_epi32(ALPHA));
+    *r0 = mm256_sub_epi32(r, *r0);
 
-    let mask = mm256_sub_epi32(field_modulus_halved, r0);
+    let mask = mm256_sub_epi32(field_modulus_halved, *r0);
     let mask = mm256_srai_epi32::<31>(mask);
 
     let field_modulus_and_mask = mm256_and_si256(mask, mm256_set1_epi32(FIELD_MODULUS));
 
-    let r0 = mm256_sub_epi32(r0, field_modulus_and_mask);
-
-    (r0, r1)
+    *r0 = mm256_sub_epi32(*r0, field_modulus_and_mask);
 }
 
 #[inline(always)]
@@ -214,7 +214,8 @@ pub fn compute_hint<const GAMMA2: i32>(low: Vec256, high: Vec256) -> (usize, Vec
 
 #[inline(always)]
 pub(crate) fn use_hint<const GAMMA2: i32>(r: Vec256, hint: Vec256) -> Vec256 {
-    let (r0, r1) = decompose::<GAMMA2>(r);
+    let (mut r0, mut r1) = (ZERO(), ZERO());
+    decompose::<GAMMA2>(r, &mut r0.coefficients, &mut r1.coefficients);
 
     let all_zeros = mm256_setzero_si256();
 
@@ -223,7 +224,7 @@ pub(crate) fn use_hint<const GAMMA2: i32>(r: Vec256, hint: Vec256) -> Vec256 {
     //
     // With this step, |negate_hints| will match |hint| in only those lanes in
     // which the corresponding r0 value is negative, and will be 0 elsewhere.
-    let negate_hints = vec256_blendv_epi32(all_zeros, hint, r0);
+    let negate_hints = vec256_blendv_epi32(all_zeros, hint, r0.coefficients);
 
     // If a lane in |negate_hints| is 1, it means the corresponding hint was 1,
     // and the lane value will be doubled. It will remain 0 otherwise.
@@ -234,7 +235,7 @@ pub(crate) fn use_hint<const GAMMA2: i32>(r: Vec256, hint: Vec256) -> Vec256 {
     let hints = mm256_sub_epi32(hint, negate_hints);
 
     // Now add the hints to r1
-    let mut r1_plus_hints = mm256_add_epi32(r1, hints);
+    let mut r1_plus_hints = mm256_add_epi32(r1.coefficients, hints);
 
     match GAMMA2 {
         95_232 => {

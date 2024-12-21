@@ -223,7 +223,7 @@ pub fn compute_hint<const GAMMA2: i32>(
 // Note that 0 ≤ r₁ < (q-1)/α.
 #[allow(non_snake_case)]
 #[inline(always)]
-fn decompose_element<const GAMMA2: i32>(r: i32) -> (i32, i32) {
+fn decompose_element<const GAMMA2: i32>(r: i32, r0: &mut i32, r1: &mut i32) {
     debug_assert!(r > -FIELD_MODULUS && r < FIELD_MODULUS);
 
     // Convert the signed representative to the standard unsigned one.
@@ -231,7 +231,7 @@ fn decompose_element<const GAMMA2: i32>(r: i32) -> (i32, i32) {
 
     let ALPHA = GAMMA2 * 2;
 
-    let r1 = {
+    *r1 = {
         // Compute ⌈r / 128⌉
         let ceil_of_r_by_128 = (r + 127) >> 7;
 
@@ -256,19 +256,18 @@ fn decompose_element<const GAMMA2: i32>(r: i32) -> (i32, i32) {
         }
     };
 
-    let mut r0 = r - (r1 * ALPHA);
+    *r0 = r - (*r1 * ALPHA);
 
     // In the corner-case, when we set a₁=0, we will incorrectly
     // have a₀ > (q-1)/2 and we'll need to subtract q.  As we
     // return a₀ + q, that comes down to adding q if a₀ < (q-1)/2.
-    r0 -= (((FIELD_MODULUS - 1) / 2 - r0) >> 31) & FIELD_MODULUS;
-
-    (r0, r1)
+    *r0 -= (((FIELD_MODULUS - 1) / 2 - *r0) >> 31) & FIELD_MODULUS;
 }
 
 #[inline(always)]
 pub(crate) fn use_one_hint<const GAMMA2: i32>(r: i32, hint: i32) -> i32 {
-    let (r0, r1) = decompose_element::<GAMMA2>(r);
+    let (mut r0, mut r1) = (0, 0);
+    decompose_element::<GAMMA2>(r, &mut r0, &mut r1);
 
     if hint == 0 {
         return r1;
@@ -304,17 +303,16 @@ pub(crate) fn use_one_hint<const GAMMA2: i32>(r: i32, hint: i32) -> i32 {
 #[inline(always)]
 pub fn decompose<const GAMMA2: i32>(
     simd_unit: PortableSIMDUnit,
-) -> (PortableSIMDUnit, PortableSIMDUnit) {
-    let mut low = ZERO();
-    let mut high = ZERO();
-
+    low: &mut PortableSIMDUnit,
+    high: &mut PortableSIMDUnit,
+) {
     for i in 0..low.coefficients.len() {
-        let (low_part, high_part) = decompose_element::<GAMMA2>(simd_unit.coefficients[i]);
-        low.coefficients[i] = low_part;
-        high.coefficients[i] = high_part;
+        decompose_element::<GAMMA2>(
+            simd_unit.coefficients[i],
+            &mut low.coefficients[i],
+            &mut high.coefficients[i],
+        );
     }
-
-    (low, high)
 }
 
 #[inline(always)]

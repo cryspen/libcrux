@@ -55,10 +55,8 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn decompose<const GAMMA2: i32>(simd_unit: Self) -> (Self, Self) {
-        let (lower, upper) = arithmetic::decompose::<GAMMA2>(simd_unit.coefficients);
-
-        (lower.into(), upper.into())
+    fn decompose<const GAMMA2: i32>(simd_unit: Self, low: &mut Self, high: &mut Self) {
+        arithmetic::decompose::<GAMMA2>(simd_unit.coefficients, &mut low.coefficients, &mut high.coefficients);
     }
 
     #[inline(always)]

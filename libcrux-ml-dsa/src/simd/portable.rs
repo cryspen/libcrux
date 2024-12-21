@@ -48,8 +48,8 @@ impl Operations for PortableSIMDUnit {
         arithmetic::infinity_norm_exceeds(simd_unit, bound)
     }
 
-    fn decompose<const GAMMA2: i32>(simd_unit: Self) -> (Self, Self) {
-        arithmetic::decompose::<GAMMA2>(simd_unit)
+    fn decompose<const GAMMA2: i32>(simd_unit: Self, low: &mut Self, high: &mut Self) {
+        arithmetic::decompose::<GAMMA2>(simd_unit, low, high)
     }
 
     fn compute_hint<const GAMMA2: i32>(low: Self, high: Self) -> (usize, Self) {

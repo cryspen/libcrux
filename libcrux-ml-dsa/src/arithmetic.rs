@@ -66,23 +66,18 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations, const DIMENSION: usize>(
 #[inline(always)]
 pub(crate) fn decompose_vector<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
     t: [PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> (
-    [PolynomialRingElement<SIMDUnit>; DIMENSION],
-    [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    low: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    high: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) {
-    let mut vector_low = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-    let mut vector_high = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
     for i in 0..DIMENSION {
-        for j in 0..vector_low[0].simd_units.len() {
-            let (low, high) = SIMDUnit::decompose::<GAMMA2>(t[i].simd_units[j]);
-
-            vector_low[i].simd_units[j] = low;
-            vector_high[i].simd_units[j] = high;
+        for j in 0..low[0].simd_units.len() {
+            SIMDUnit::decompose::<GAMMA2>(
+                t[i].simd_units[j],
+                &mut low[i].simd_units[j],
+                &mut high[i].simd_units[j],
+            );
         }
     }
-
-    (vector_low, vector_high)
 }
 
 #[inline(always)]

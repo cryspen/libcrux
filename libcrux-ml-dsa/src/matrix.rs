@@ -36,21 +36,20 @@ pub(crate) fn compute_As1_plus_s2<
 }
 
 /// Compute InvertNTT(Â ◦ ŷ)
-#[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn compute_A_times_mask<
+pub(crate) fn compute_matrix_x_mask<
     SIMDUnit: Operations,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
-    A_as_ntt: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+    matrix: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
     mask: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
-) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    result: &mut [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+) {
     let mask_ntt = mask.map(|s| ntt::<SIMDUnit>(s));
 
     cloop! {
-        for (i, row) in A_as_ntt.iter().enumerate() {
+        for (i, row) in matrix.iter().enumerate() {
             cloop! {
                 for (j, ring_element) in row.iter().enumerate() {
                     let product = ntt_multiply_montgomery(&ring_element, &mask_ntt[j]);
@@ -61,8 +60,6 @@ pub(crate) fn compute_A_times_mask<
             result[i] = invert_ntt_montgomery(result[i]);
         }
     }
-
-    result
 }
 
 #[allow(non_snake_case)]

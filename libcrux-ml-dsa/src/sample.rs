@@ -396,9 +396,8 @@ pub(crate) fn sample_mask_vector<
 >(
     mut seed: [u8; 66],
     domain_separator: &mut u16,
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut mask = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
+    mask: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+) {
     // DIMENSION is COLUMNS_IN_A
     debug_assert!(DIMENSION == 4 || DIMENSION == 5 || DIMENSION == 7);
     // So we can always sample 4 elements in one go first.
@@ -447,8 +446,6 @@ pub(crate) fn sample_mask_vector<
         // TODO: For 87 we may want to do another 4 and discard 1.
         sample_mask_ring_element::<SIMDUnit, Shake256, GAMMA1_EXPONENT>(seed, &mut mask[i]);
     }
-
-    mask
 }
 
 #[inline(always)]
@@ -479,6 +476,7 @@ fn inside_out_shuffle(
 
     done
 }
+
 #[inline(always)]
 pub(crate) fn sample_challenge_ring_element<
     SIMDUnit: Operations,

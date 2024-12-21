@@ -6,8 +6,8 @@ use crate::{
     encoding::{self, signature::Signature},
     hash_functions::{shake128, shake256},
     matrix::{
-        add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, subtract_vectors,
-        vector_times_ring_element,
+        add_vectors, compute_As1_plus_s2, compute_matrix_x_mask, compute_w_approx,
+        subtract_vectors, vector_times_ring_element,
     },
     ntt::ntt,
     polynomial::PolynomialRingElement,
@@ -309,16 +309,25 @@ pub(crate) fn sign_internal<
     while attempt < REJECTION_SAMPLE_BOUND_SIGN {
         attempt += 1;
 
-        let mask =
-            sample_mask_vector::<SIMDUnit, Shake256, Shake256X4, COLUMNS_IN_A, GAMMA1_EXPONENT>(
-                into_padded_array(&mask_seed),
-                &mut domain_separator_for_mask,
+        let mut mask = [PolynomialRingElement::ZERO(); COLUMNS_IN_A];
+
+        sample_mask_vector::<SIMDUnit, Shake256, Shake256X4, COLUMNS_IN_A, GAMMA1_EXPONENT>(
+            into_padded_array(&mask_seed),
+            &mut domain_separator_for_mask,
+            &mut mask,
+        );
+
+        let mut w0 = [PolynomialRingElement::ZERO(); ROWS_IN_A];
+        let mut commitment = [PolynomialRingElement::ZERO(); ROWS_IN_A];
+        {
+            let mut a_x_mask = [PolynomialRingElement::ZERO(); ROWS_IN_A];
+            compute_matrix_x_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
+                &matrix,
+                &mask,
+                &mut a_x_mask,
             );
-
-        let A_times_mask =
-            compute_A_times_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&matrix, &mask);
-
-        let (w0, commitment) = decompose_vector::<SIMDUnit, ROWS_IN_A, GAMMA2>(A_times_mask);
+            decompose_vector::<SIMDUnit, ROWS_IN_A, GAMMA2>(a_x_mask, &mut w0, &mut commitment);
+        }
 
         let mut commitment_hash_candidate = [0; COMMITMENT_HASH_SIZE];
         {
