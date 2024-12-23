@@ -34,6 +34,7 @@ default = ["std", "mldsa44", "mldsa65", "mldsa87"]
 simd128 = ["libcrux-sha3/simd128", "libcrux-intrinsics/simd128"]
 simd256 = ["libcrux-sha3/simd256", "libcrux-intrinsics/simd256"]
 acvp = []                                                        # expose internal API for ACVP testing
+test-utils = []                                                  # exposing internal functions for testing
 
 # Features for the different key sizes of ML-DSA
 mldsa44 = []

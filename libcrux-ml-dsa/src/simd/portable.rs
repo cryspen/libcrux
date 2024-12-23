@@ -27,6 +27,15 @@ impl Operations for PortableSIMDUnit {
         vector_type::to_coefficient_array(value, out)
     }
 
+    #[cfg(any(test, feature = "test-utils"))]
+    fn to_coefficient_array_test(
+        value: &Self::Coefficient,
+    ) -> [i32; super::traits::COEFFICIENTS_IN_SIMD_UNIT] {
+        let mut out = [0i32; super::traits::COEFFICIENTS_IN_SIMD_UNIT];
+        out.copy_from_slice(value);
+        out
+    }
+
     fn add(lhs: &Coefficients, rhs: &Coefficients) -> Coefficients {
         arithmetic::add(lhs, rhs)
     }
@@ -51,7 +60,11 @@ impl Operations for PortableSIMDUnit {
         arithmetic::infinity_norm_exceeds(simd_unit, bound)
     }
 
-    fn decompose<const GAMMA2: i32>(simd_unit: &Self::Coefficient, low: &mut Self::Coefficient, high: &mut Self::Coefficient) {
+    fn decompose<const GAMMA2: i32>(
+        simd_unit: &Self::Coefficient,
+        low: &mut Self::Coefficient,
+        high: &mut Self::Coefficient,
+    ) {
         arithmetic::decompose::<GAMMA2>(simd_unit, low, high)
     }
 
@@ -75,7 +88,10 @@ impl Operations for PortableSIMDUnit {
         sample::rejection_sample_less_than_eta_equals_4(randomness, out)
     }
 
-    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(simd_unit: &Coefficients, serialized: &mut [u8]) {
+    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(
+        simd_unit: &Coefficients,
+        serialized: &mut [u8],
+    ) {
         encoding::gamma1::serialize::<GAMMA1_EXPONENT>(simd_unit, serialized)
     }
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8], out: &mut Coefficients) {
@@ -93,7 +109,7 @@ impl Operations for PortableSIMDUnit {
         encoding::error::deserialize::<ETA>(serialized, out);
     }
 
-    fn t0_serialize(simd_unit: &Coefficients, out: &mut [u8])  {
+    fn t0_serialize(simd_unit: &Coefficients, out: &mut [u8]) {
         encoding::t0::serialize(simd_unit, out)
     }
     fn t0_deserialize(serialized: &[u8], out: &mut Coefficients) {

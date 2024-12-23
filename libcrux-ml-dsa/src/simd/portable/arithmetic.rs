@@ -102,7 +102,7 @@ fn power2round_element(t: i32) -> (i32, i32) {
 #[inline(always)]
 pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
     for i in 0..t0.len() {
-        (t0[i], t1[1]) = power2round_element(t0[i]);
+        (t0[i], t1[i]) = power2round_element(t0[i]);
     }
 }
 
@@ -132,6 +132,7 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
             let sign = coefficient >> 31;
             let normalized = coefficient - (sign & (2 * coefficient));
 
+            // FIXME: return
             exceeds = exceeds || normalized >= bound;
         }
     }
@@ -192,7 +193,6 @@ pub(super) fn compute_hint<const GAMMA2: i32>(
 // - α/2 ≤ r₀ < 0.
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
-#[allow(non_snake_case)]
 #[inline(always)]
 fn decompose_element<const GAMMA2: i32>(r: i32) -> (i32, i32) {
     debug_assert!(r > -FIELD_MODULUS && r < FIELD_MODULUS);
@@ -200,13 +200,13 @@ fn decompose_element<const GAMMA2: i32>(r: i32) -> (i32, i32) {
     // Convert the signed representative to the standard unsigned one.
     let r = r + ((r >> 31) & FIELD_MODULUS);
 
-    let ALPHA = GAMMA2 * 2;
+    let alpha = GAMMA2 * 2;
 
     let r1 = {
         // Compute ⌈r / 128⌉
         let ceil_of_r_by_128 = (r + 127) >> 7;
 
-        match ALPHA {
+        match alpha {
             190_464 => {
                 // We approximate 1 / 1488 as:
                 // ⌊2²⁴ / 1488⌋ / 2²⁴ = 11,275 / 2²⁴
@@ -227,7 +227,7 @@ fn decompose_element<const GAMMA2: i32>(r: i32) -> (i32, i32) {
         }
     };
 
-    let mut r0 = r - (r1 * ALPHA);
+    let mut r0 = r - (r1 * alpha);
 
     // In the corner-case, when we set a₁=0, we will incorrectly
     // have a₀ > (q-1)/2 and we'll need to subtract q.  As we
