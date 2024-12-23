@@ -1,7 +1,7 @@
 use crate::{helper::cloop, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-fn serialize<SIMDUnit: Operations>(re: PolynomialRingElement<SIMDUnit>, serialized: &mut [u8]) {
+fn serialize<SIMDUnit: Operations>(re: &PolynomialRingElement<SIMDUnit>, serialized: &mut [u8]) {
     let output_bytes_per_simd_unit = serialized.len() / (8 * 4);
 
     cloop! {
@@ -22,19 +22,17 @@ pub(crate) fn serialize_vector<
     const RING_ELEMENT_SIZE: usize,
     const OUTPUT_SIZE: usize,
 >(
-    vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
+    vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+    serialized: &mut [u8; OUTPUT_SIZE],
+) {
     let mut offset: usize = 0;
 
     cloop! {
         for ring_element in vector.iter() {
-            serialize::<SIMDUnit>(*ring_element, &mut serialized[offset..offset + RING_ELEMENT_SIZE]);
+            serialize::<SIMDUnit>(ring_element, &mut serialized[offset..offset + RING_ELEMENT_SIZE]);
             offset += RING_ELEMENT_SIZE;
         }
     }
-
-    serialized
 }
 
 #[cfg(test)]
@@ -79,7 +77,7 @@ mod tests {
         ];
 
         let mut result = [0u8; 192];
-        serialize::<SIMDUnit>(re, &mut result);
+        serialize::<SIMDUnit>(&re, &mut result);
         assert_eq!(result, serialized);
 
         // Test serialization when LOW_ORDER_ROUNDING_RANGE = 261,888
@@ -108,7 +106,7 @@ mod tests {
         ];
 
         let mut result = [0u8; 128];
-        serialize::<SIMDUnit>(re, &mut result);
+        serialize::<SIMDUnit>(&re, &mut result);
         assert_eq!(result, serialized);
     }
 

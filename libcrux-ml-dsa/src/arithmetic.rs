@@ -86,18 +86,15 @@ pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMM
 #[inline(always)]
 pub(crate) fn use_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
     hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION],
-    re_vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::zero(); DIMENSION];
-
+    re_vector: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+) {
     for i in 0..DIMENSION {
-        // XXX: Why can't we keep the hint as simd units?
-        PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i], &mut result[i]);
+        let mut tmp = PolynomialRingElement::zero();
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i], &mut tmp);
 
-        for j in 0..result[0].simd_units.len() {
-            SIMDUnit::use_hint::<GAMMA2>(&re_vector[i].simd_units[j], &mut result[i].simd_units[j]);
+        for j in 0..re_vector[0].simd_units.len() {
+            SIMDUnit::use_hint::<GAMMA2>(&re_vector[i].simd_units[j], &mut tmp.simd_units[j]);
         }
+        re_vector[i] = tmp;
     }
-
-    result
 }

@@ -30,7 +30,6 @@ pub(crate) fn generate_serialized<
     verification_key_serialized
 }
 
-#[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn deserialize<
     SIMDUnit: Operations,
@@ -43,7 +42,7 @@ pub(crate) fn deserialize<
     [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) {
     let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
-    let (seed_for_A, serialized_remaining) = serialized.split_at(SEED_FOR_A_SIZE);
+    let (seed_for_a, serialized_remaining) = serialized.split_at(SEED_FOR_A_SIZE);
 
     for i in 0..ROWS_IN_A {
         t1::deserialize::<SIMDUnit>(
@@ -52,5 +51,5 @@ pub(crate) fn deserialize<
         );
     }
 
-    (seed_for_A.try_into().unwrap(), t1)
+    (seed_for_a.try_into().unwrap(), t1)
 }

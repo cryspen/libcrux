@@ -60,20 +60,18 @@ static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
 
-static inline size_t core_num__usize_11__div_ceil(size_t x0, size_t x1);
-
 /**
 A monomorphic instance of core.result.Result
-with types uint8_t[10size_t], core_array_TryFromSliceError
+with types int32_t[8size_t], core_array_TryFromSliceError
 
 */
-typedef struct Result_9d_s {
+typedef struct Result_6c_s {
   Result_a9_tags tag;
   union {
-    uint8_t case_Ok[10U];
+    int32_t case_Ok[8U];
     TryFromSliceError case_Err;
   } val;
-} Result_9d;
+} Result_6c;
 
 /**
 This function found in impl {core::result::Result<T, E>[TraitClause@0,
@@ -81,14 +79,14 @@ TraitClause@1]}
 */
 /**
 A monomorphic instance of core.result.unwrap_26
-with types uint8_t[10size_t], core_array_TryFromSliceError
+with types int32_t[8size_t], core_array_TryFromSliceError
 
 */
-static inline void unwrap_26_ce(Result_9d self, uint8_t ret[10U]) {
+static inline void unwrap_26_55(Result_6c self, int32_t ret[8U]) {
   if (self.tag == Ok) {
-    uint8_t f0[10U];
-    memcpy(f0, self.val.case_Ok, (size_t)10U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)10U * sizeof(uint8_t));
+    int32_t f0[8U];
+    memcpy(f0, self.val.case_Ok, (size_t)8U * sizeof(int32_t));
+    memcpy(ret, f0, (size_t)8U * sizeof(int32_t));
   } else {
     KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                       "unwrap not Ok");
@@ -97,38 +95,14 @@ static inline void unwrap_26_ce(Result_9d self, uint8_t ret[10U]) {
 }
 
 /**
-A monomorphic instance of core.result.Result
-with types uint8_t[13size_t], core_array_TryFromSliceError
+A monomorphic instance of core.option.Option
+with types uint8_t[11size_t]
 
 */
-typedef struct Result_b0_s {
-  Result_a9_tags tag;
-  union {
-    uint8_t case_Ok[13U];
-    TryFromSliceError case_Err;
-  } val;
-} Result_b0;
-
-/**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_26
-with types uint8_t[13size_t], core_array_TryFromSliceError
-
-*/
-static inline void unwrap_26_23(Result_b0 self, uint8_t ret[13U]) {
-  if (self.tag == Ok) {
-    uint8_t f0[13U];
-    memcpy(f0, self.val.case_Ok, (size_t)13U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)13U * sizeof(uint8_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
+typedef struct Option_30_s {
+  Option_d8_tags tag;
+  uint8_t f0[11U];
+} Option_30;
 
 typedef struct libcrux_ml_dsa_ml_dsa_65_MLDSA65Signature_s {
   uint8_t value[3309U];
@@ -166,40 +140,6 @@ typedef struct Result_41_s {
   Result_a9_tags tag;
   libcrux_ml_dsa_types_VerificationError f0;
 } Result_41;
-
-/**
-A monomorphic instance of core.result.Result
-with types uint8_t[48size_t], core_array_TryFromSliceError
-
-*/
-typedef struct Result_ae_s {
-  Result_a9_tags tag;
-  union {
-    uint8_t case_Ok[48U];
-    TryFromSliceError case_Err;
-  } val;
-} Result_ae;
-
-/**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_26
-with types uint8_t[48size_t], core_array_TryFromSliceError
-
-*/
-static inline void unwrap_26_28(Result_ae self, uint8_t ret[48U]) {
-  if (self.tag == Ok) {
-    uint8_t f0[48U];
-    memcpy(f0, self.val.case_Ok, (size_t)48U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)48U * sizeof(uint8_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
 
 /**
 A monomorphic instance of libcrux_ml_dsa.types.MLDSAVerificationKey
@@ -265,114 +205,6 @@ typedef struct Result_2e_s {
     libcrux_ml_dsa_types_SigningError case_Err;
   } val;
 } Result_2e;
-
-/**
- Build
-*/
-/**
-This function found in impl {libcrux_ml_dsa::types::MLDSASignature<SIZE>#4}
-*/
-/**
-A monomorphic instance of libcrux_ml_dsa.types.new_8f
-with const generics
-- SIZE= 3309
-*/
-static inline libcrux_ml_dsa_ml_dsa_65_MLDSA65Signature
-libcrux_ml_dsa_types_new_8f_fa(uint8_t value[3309U]) {
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_value[3309U];
-  memcpy(copy_of_value, value, (size_t)3309U * sizeof(uint8_t));
-  libcrux_ml_dsa_ml_dsa_65_MLDSA65Signature lit;
-  memcpy(lit.value, copy_of_value, (size_t)3309U * sizeof(uint8_t));
-  return lit;
-}
-
-/**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_dsa.utils.into_padded_array
-with const generics
-- LEN= 66
-*/
-static KRML_MUSTINLINE void libcrux_ml_dsa_utils_into_padded_array_20(
-    Eurydice_slice slice, uint8_t ret[66U]) {
-  uint8_t out[66U] = {0U};
-  uint8_t *uu____0 = out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
-                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
-      slice, uint8_t);
-  memcpy(ret, out, (size_t)66U * sizeof(uint8_t));
-}
-
-/**
-A monomorphic instance of core.result.Result
-with types uint8_t[64size_t], core_array_TryFromSliceError
-
-*/
-typedef struct Result_f2_s {
-  Result_a9_tags tag;
-  union {
-    uint8_t case_Ok[64U];
-    TryFromSliceError case_Err;
-  } val;
-} Result_f2;
-
-/**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_26
-with types uint8_t[64size_t], core_array_TryFromSliceError
-
-*/
-static inline void unwrap_26_4b(Result_f2 self, uint8_t ret[64U]) {
-  if (self.tag == Ok) {
-    uint8_t f0[64U];
-    memcpy(f0, self.val.case_Ok, (size_t)64U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)64U * sizeof(uint8_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
-
-/**
-A monomorphic instance of core.result.Result
-with types uint8_t[32size_t], core_array_TryFromSliceError
-
-*/
-typedef struct Result_fb_s {
-  Result_a9_tags tag;
-  union {
-    uint8_t case_Ok[32U];
-    TryFromSliceError case_Err;
-  } val;
-} Result_fb;
-
-/**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_26
-with types uint8_t[32size_t], core_array_TryFromSliceError
-
-*/
-static inline void unwrap_26_b3(Result_fb self, uint8_t ret[32U]) {
-  if (self.tag == Ok) {
-    uint8_t f0[32U];
-    memcpy(f0, self.val.case_Ok, (size_t)32U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)32U * sizeof(uint8_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
 
 /**
 A monomorphic instance of libcrux_ml_dsa.types.MLDSASigningKey
@@ -441,50 +273,6 @@ libcrux_ml_dsa_types_new_9b_09(uint8_t value[4032U]) {
   memcpy(lit.value, copy_of_value, (size_t)4032U * sizeof(uint8_t));
   return lit;
 }
-
-/**
-A monomorphic instance of core.result.Result
-with types int32_t[8size_t], core_array_TryFromSliceError
-
-*/
-typedef struct Result_6c_s {
-  Result_a9_tags tag;
-  union {
-    int32_t case_Ok[8U];
-    TryFromSliceError case_Err;
-  } val;
-} Result_6c;
-
-/**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_26
-with types int32_t[8size_t], core_array_TryFromSliceError
-
-*/
-static inline void unwrap_26_55(Result_6c self, int32_t ret[8U]) {
-  if (self.tag == Ok) {
-    int32_t f0[8U];
-    memcpy(f0, self.val.case_Ok, (size_t)8U * sizeof(int32_t));
-    memcpy(ret, f0, (size_t)8U * sizeof(int32_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
-
-/**
-A monomorphic instance of core.option.Option
-with types uint8_t[11size_t]
-
-*/
-typedef struct Option_30_s {
-  Option_d8_tags tag;
-  uint8_t f0[11U];
-} Option_30;
 
 typedef struct libcrux_ml_dsa_ml_dsa_65_MLDSA65KeyPair_s {
   libcrux_ml_dsa_types_MLDSASigningKey_22 signing_key;

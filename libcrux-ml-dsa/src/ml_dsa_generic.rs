@@ -357,12 +357,13 @@ pub(crate) fn sign_internal<
 
         let mut commitment_hash_candidate = [0; COMMITMENT_HASH_SIZE];
         {
-            let commitment_serialized = encoding::commitment::serialize_vector::<
+            let mut commitment_serialized = [0u8; COMMITMENT_VECTOR_SIZE];
+            encoding::commitment::serialize_vector::<
                 SIMDUnit,
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
                 COMMITMENT_VECTOR_SIZE,
-            >(commitment);
+            >(&commitment, &mut commitment_serialized);
 
             let mut shake = Shake256Xof::init();
             shake.absorb(&message_representative);
@@ -603,13 +604,14 @@ pub(crate) fn verify_internal<
 
     let mut commitment_hash = [0; COMMITMENT_HASH_SIZE];
     {
-        let commitment = use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(signature.hint, t1);
-        let commitment_serialized = encoding::commitment::serialize_vector::<
+        use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(signature.hint, &mut t1);
+        let mut commitment_serialized = [0u8; COMMITMENT_VECTOR_SIZE];
+        encoding::commitment::serialize_vector::<
             SIMDUnit,
             ROWS_IN_A,
             COMMITMENT_RING_ELEMENT_SIZE,
             COMMITMENT_VECTOR_SIZE,
-        >(commitment);
+        >(&t1, &mut commitment_serialized);
 
         let mut shake = Shake256Xof::init();
         shake.absorb(&message_representative);
