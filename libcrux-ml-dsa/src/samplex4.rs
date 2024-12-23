@@ -386,15 +386,16 @@ pub(crate) mod neon {
     pub(crate) struct NeonSampler {}
     impl X4Sampler for NeonSampler {
         #[inline(always)]
-        fn matrix_A<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
-            seed: [u8; 34],
-        ) -> [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A] {
+        fn matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+            seed: &[u8],
+            matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+        ) {
             matrix_generic::<
                 SIMDUnit,
                 crate::hash_functions::neon::Shake128x4,
                 ROWS_IN_A,
                 COLUMNS_IN_A,
-            >(seed)
+            >(seed, matrix)
         }
     }
 }
