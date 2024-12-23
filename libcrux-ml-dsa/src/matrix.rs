@@ -19,7 +19,7 @@ pub(crate) fn compute_as1_plus_s2<
     result: &mut [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) {
     // XXX: Make this better
-    let mut s1_ntt = [PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A];
+    let mut s1_ntt = [PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A];
     for i in 0..s1_ntt.len() {
         s1_ntt[i] = s1_s2[i];
         ntt(&mut s1_ntt[i]);
@@ -130,7 +130,7 @@ pub(crate) fn compute_w_approx<
 
     cloop! {
         for (i, row) in A_as_ntt.iter().enumerate() {
-            let mut inner_result = PolynomialRingElement::<SIMDUnit>::ZERO();
+            let mut inner_result = PolynomialRingElement::<SIMDUnit>::zero();
             cloop! {
                 for (j, ring_element) in row.iter().enumerate() {
                     // XXX: make nicer

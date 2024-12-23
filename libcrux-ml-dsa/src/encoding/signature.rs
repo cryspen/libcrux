@@ -83,7 +83,7 @@ impl<
         let (signer_response_serialized, hint_serialized) =
             rest_of_serialized.split_at(GAMMA1_RING_ELEMENT_SIZE * COLUMNS_IN_A);
 
-        let mut signer_response = [PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A];
+        let mut signer_response = [PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A];
 
         for i in 0..COLUMNS_IN_A {
             encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(

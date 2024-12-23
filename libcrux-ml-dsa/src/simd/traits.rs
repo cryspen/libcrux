@@ -18,7 +18,7 @@ pub(crate) trait Operations: Copy + Clone {
     type Coefficient: Copy; // XXX: make generic? drop copy?
 
     #[allow(non_snake_case)]
-    fn ZERO() -> Self::Coefficient;
+    fn zero() -> Self::Coefficient;
 
     fn from_coefficient_array(array: &[i32]) -> Self::Coefficient;
     fn to_coefficient_array(value: &Self::Coefficient, out: &mut [i32]);

@@ -15,7 +15,7 @@ pub(crate) use vector_type::PortableSIMDUnit;
 impl Operations for PortableSIMDUnit {
     type Coefficient = Coefficients;
 
-    fn ZERO() -> Coefficients {
+    fn zero() -> Coefficients {
         vector_type::zero()
     }
 

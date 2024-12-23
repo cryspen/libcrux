@@ -615,7 +615,7 @@ mod tests {
             703698, 5147821, 7632328, 5993194, 6329638, 5959986, 3073141, 675737, 7364844, 4124952,
         ];
 
-        let mut re = PolynomialRingElement::ZERO();
+        let mut re = PolynomialRingElement::zero();
         sample_ring_element_uniform::<SIMDUnit, Shake128>(seed, &mut re);
         assert_eq!(re.to_i32_array(), expected_coefficients);
 
@@ -629,7 +629,7 @@ mod tests {
             0xB1, 0x83, 0x9B, 0x86, 0x06, 0xF5, 0x94, 0x8B, 0x9D, 0x72, 0xA9, 0x56, 0xDC, 0xF1,
             0x01, 0x16, 0xDA, 0x9E, 0x01, 0x00,
         ];
-        let mut re = PolynomialRingElement::ZERO();
+        let mut re = PolynomialRingElement::zero();
         sample_ring_element_uniform::<SIMDUnit, Shake128>(seed, &mut re);
         let actual_coefficients = re.to_i32_array();
 
@@ -751,7 +751,7 @@ mod tests {
             0,
         ];
 
-        let mut re = PolynomialRingElement::ZERO();
+        let mut re = PolynomialRingElement::zero();
         sample_challenge_ring_element::<SIMDUnit, Shake256, 39, 32>(seed, &mut re);
         assert_eq!(re.to_i32_array(), expected_coefficients);
 
@@ -774,7 +774,7 @@ mod tests {
             0, -1, 0, 0, 0,
         ];
 
-        let mut re = PolynomialRingElement::ZERO();
+        let mut re = PolynomialRingElement::zero();
         sample_challenge_ring_element::<SIMDUnit, Shake256, 49, 32>(seed, &mut re);
         assert_eq!(re.to_i32_array(), expected_coefficients);
 
@@ -797,7 +797,7 @@ mod tests {
             0, 0, 0, 1, -1, 0,
         ];
 
-        let mut re = PolynomialRingElement::ZERO();
+        let mut re = PolynomialRingElement::zero();
         sample_challenge_ring_element::<SIMDUnit, Shake256, 60, 32>(seed, &mut re);
         assert_eq!(re.to_i32_array(), expected_coefficients);
     }

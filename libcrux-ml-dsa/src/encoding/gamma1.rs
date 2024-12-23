@@ -172,7 +172,7 @@ mod tests {
             -69944, -100373, 94602,
         ];
 
-        let mut result = PolynomialRingElement::<SIMDUnit>::ZERO();
+        let mut result = PolynomialRingElement::<SIMDUnit>::zero();
         deserialize::<SIMDUnit, 17>(&bytes, &mut result);
         assert_eq!(result.to_i32_array(), expected_coefficients);
 
@@ -242,7 +242,7 @@ mod tests {
             -138892, -414002, 42982,
         ];
 
-        let mut result = PolynomialRingElement::<SIMDUnit>::ZERO();
+        let mut result = PolynomialRingElement::<SIMDUnit>::zero();
         deserialize::<SIMDUnit, 19>(&bytes, &mut result);
         assert_eq!(result.to_i32_array(), expected_coefficients);
     }

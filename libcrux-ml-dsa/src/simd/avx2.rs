@@ -14,7 +14,7 @@ impl Operations for AVX2SIMDUnit {
     type Coefficient = Vec256;
 
     #[inline(always)]
-    fn ZERO() -> Vec256 {
+    fn zero() -> Vec256 {
         vector_type::zero()
     }
 

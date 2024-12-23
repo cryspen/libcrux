@@ -57,19 +57,19 @@ pub(crate) fn generate_key_pair<
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-    let mut a_as_ntt = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+    let mut a_as_ntt = [[PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A]; ROWS_IN_A];
     Sampler::matrix::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(seed_for_a, &mut a_as_ntt);
 
-    let mut s1_s2 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROW_COLUMN];
+    let mut s1_s2 = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_COLUMN];
     samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, ROW_COLUMN>(
         seed_for_error_vectors,
         &mut s1_s2,
     );
 
-    let mut t0 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    let mut t0 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
     compute_as1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1_s2, &mut t0);
 
-    let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
     power2round_vector::<SIMDUnit, ROWS_IN_A>(&mut t0, &mut t1);
 
     let verification_key_serialized = encoding::verification_key::generate_serialized::<
@@ -261,17 +261,42 @@ pub(crate) fn sign_internal<
     domain_separation_context: Option<DomainSeparationContext>,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-    let (seed_for_a, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
-        encoding::signing_key::deserialize_then_ntt::<
-            SIMDUnit,
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-            ETA,
-            ERROR_RING_ELEMENT_SIZE,
-            SIGNING_KEY_SIZE,
-        >(signing_key);
+    // Split the signing key into its parts.
+    let (seed_for_a, remaining_serialized) = signing_key.split_at(SEED_FOR_A_SIZE);
+    let (seed_for_signing, remaining_serialized) =
+        remaining_serialized.split_at(SEED_FOR_SIGNING_SIZE);
+    let (verification_key_hash, remaining_serialized) =
+        remaining_serialized.split_at(BYTES_FOR_VERIFICATION_KEY_HASH);
 
-    let mut matrix = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+    let (s1_serialized, remaining_serialized) =
+        remaining_serialized.split_at(ERROR_RING_ELEMENT_SIZE * COLUMNS_IN_A);
+    let (s2_serialized, t0_serialized) =
+        remaining_serialized.split_at(ERROR_RING_ELEMENT_SIZE * ROWS_IN_A);
+
+    // Deserialize s1, s2, and t0.
+    let mut s1_as_ntt = [PolynomialRingElement::zero(); COLUMNS_IN_A];
+    let mut s2_as_ntt = [PolynomialRingElement::zero(); ROWS_IN_A];
+    let mut t0_as_ntt = [PolynomialRingElement::zero(); ROWS_IN_A];
+
+    encoding::error::deserialize_to_vector_then_ntt::<
+        SIMDUnit,
+        COLUMNS_IN_A,
+        ETA,
+        ERROR_RING_ELEMENT_SIZE,
+    >(s1_serialized, &mut s1_as_ntt);
+    encoding::error::deserialize_to_vector_then_ntt::<
+        SIMDUnit,
+        ROWS_IN_A,
+        ETA,
+        ERROR_RING_ELEMENT_SIZE,
+    >(s2_serialized, &mut s2_as_ntt);
+    encoding::t0::deserialize_to_vector_then_ntt::<SIMDUnit, ROWS_IN_A>(
+        t0_serialized,
+        &mut t0_as_ntt,
+    );
+
+    // Sample matrix A.
+    let mut matrix = [[PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A]; ROWS_IN_A];
     Sampler::matrix::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&seed_for_a, &mut matrix);
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
@@ -293,11 +318,12 @@ pub(crate) fn sign_internal<
     }
 
     let mut domain_separator_for_mask: u16 = 0;
-
-    let BETA = (ONES_IN_VERIFIER_CHALLENGE * ETA) as i32;
-
+    let beta = (ONES_IN_VERIFIER_CHALLENGE * ETA) as i32;
     let mut attempt = 0;
 
+    // Return values.
+    // Required because we can't return early.
+    // See https://github.com/hacspec/hax/issues/1171
     let mut commitment_hash = None;
     let mut signer_response = None;
     let mut hint = None;
@@ -310,7 +336,7 @@ pub(crate) fn sign_internal<
     while attempt < REJECTION_SAMPLE_BOUND_SIGN {
         attempt += 1;
 
-        let mut mask = [PolynomialRingElement::ZERO(); COLUMNS_IN_A];
+        let mut mask = [PolynomialRingElement::zero(); COLUMNS_IN_A];
 
         sample_mask_vector::<SIMDUnit, Shake256, Shake256X4, COLUMNS_IN_A, GAMMA1_EXPONENT>(
             into_padded_array(&mask_seed),
@@ -318,10 +344,10 @@ pub(crate) fn sign_internal<
             &mut mask,
         );
 
-        let mut w0 = [PolynomialRingElement::ZERO(); ROWS_IN_A];
-        let mut commitment = [PolynomialRingElement::ZERO(); ROWS_IN_A];
+        let mut w0 = [PolynomialRingElement::zero(); ROWS_IN_A];
+        let mut commitment = [PolynomialRingElement::zero(); ROWS_IN_A];
         {
-            let mut a_x_mask = [PolynomialRingElement::ZERO(); ROWS_IN_A];
+            let mut a_x_mask = [PolynomialRingElement::zero(); ROWS_IN_A];
             compute_matrix_x_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
                 &matrix,
                 &mask,
@@ -346,7 +372,7 @@ pub(crate) fn sign_internal<
             shake.squeeze(&mut commitment_hash_candidate);
         }
 
-        let mut verifier_challenge = PolynomialRingElement::ZERO();
+        let mut verifier_challenge = PolynomialRingElement::zero();
         sample_challenge_ring_element::<
             SIMDUnit,
             Shake256,
@@ -365,12 +391,12 @@ pub(crate) fn sign_internal<
 
         if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
             &mask,
-            (1 << GAMMA1_EXPONENT) - BETA,
+            (1 << GAMMA1_EXPONENT) - beta,
         ) {
             // XXX: https://github.com/hacspec/hax/issues/1171
             // continue;
         } else {
-            if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(&w0, GAMMA2 - BETA) {
+            if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(&w0, GAMMA2 - beta) {
                 // XXX: https://github.com/hacspec/hax/issues/1171
                 // continue;
             } else {
@@ -448,11 +474,13 @@ pub(crate) fn sign_internal<
 /// variant.
 #[inline(always)]
 fn derive_message_representative<Shake256Xof: shake256::Xof>(
-    verification_key_hash: [u8; 64],
+    verification_key_hash: &[u8],
     domain_separation_context: Option<DomainSeparationContext>,
     message: &[u8],
     message_representative: &mut [u8; 64],
 ) {
+    debug_assert!(verification_key_hash.len() == 64);
+
     let mut shake = Shake256Xof::init();
     shake.absorb(&verification_key_hash);
     if let Some(domain_separation_context) = domain_separation_context {
@@ -523,7 +551,7 @@ pub(crate) fn verify_internal<
     ) {
         return Err(VerificationError::SignerResponseExceedsBoundError);
     }
-    let mut matrix = [[PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A]; ROWS_IN_A];
+    let mut matrix = [[PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A]; ROWS_IN_A];
     Sampler::matrix::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&seed_for_a, &mut matrix);
 
     let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
@@ -533,13 +561,13 @@ pub(crate) fn verify_internal<
     );
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative::<Shake256Xof>(
-        verification_key_hash,
+        &verification_key_hash,
         domain_separation_context,
         message,
         &mut message_representative,
     );
 
-    let mut verifier_challenge = PolynomialRingElement::ZERO();
+    let mut verifier_challenge = PolynomialRingElement::zero();
     sample_challenge_ring_element::<
         SIMDUnit,
         Shake256,

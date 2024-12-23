@@ -125,7 +125,7 @@ mod tests {
             226, 479, 381, 932, 464, 451, 915, 206, 410, 402, 900,
         ];
 
-        let mut deserialized = PolynomialRingElement::<SIMDUnit>::ZERO();
+        let mut deserialized = PolynomialRingElement::<SIMDUnit>::zero();
         deserialize::<SIMDUnit>(&serialized, &mut deserialized);
         assert_eq!(deserialized.to_i32_array(), expected_coefficients);
     }

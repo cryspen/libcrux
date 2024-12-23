@@ -42,7 +42,7 @@ pub(crate) fn deserialize<
     [u8; SEED_FOR_A_SIZE],
     [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) {
-    let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
     let (seed_for_A, serialized_remaining) = serialized.split_at(SEED_FOR_A_SIZE);
 
     for i in 0..ROWS_IN_A {

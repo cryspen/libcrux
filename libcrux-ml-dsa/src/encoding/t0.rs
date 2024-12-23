@@ -39,17 +39,14 @@ fn deserialize<SIMDUnit: Operations>(
 #[inline(always)]
 pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations, const DIMENSION: usize>(
     serialized: &[u8],
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut ring_elements = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
+    ring_elements: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+) {
     cloop! {
         for (i, bytes) in serialized.chunks_exact(RING_ELEMENT_OF_T0S_SIZE).enumerate() {
             deserialize::<SIMDUnit>(bytes, &mut ring_elements[i]);
             ntt(&mut ring_elements[i]);
         }
     }
-
-    ring_elements
 }
 
 #[cfg(test)]
@@ -159,7 +156,7 @@ mod tests {
             2487, -1527, 2834, -3089, 1724, 3858, -2130, 3301, -1565,
         ];
 
-        let mut deserialized = PolynomialRingElement::<SIMDUnit>::ZERO();
+        let mut deserialized = PolynomialRingElement::<SIMDUnit>::zero();
         deserialize::<SIMDUnit>(&serialized, &mut deserialized);
         assert_eq!(deserialized.to_i32_array(), expected_coefficients);
     }

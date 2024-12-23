@@ -102,15 +102,9 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
 // additional KATs.
 #[inline(always)]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
-    let mut exceeds = false;
-
     // It is ok to leak which coefficient violates the bound since
     // the probability for each coefficient is independent of secret
     // data but we must not leak the sign of the centralized representative.
-    //
-    // TODO: We can break out of this loop early if need be, but the most
-    // straightforward way to do so (returning false) will not go through hax;
-    // revisit if performance is impacted.
     cloop! {
         for coefficient in simd_unit.iter() {
             debug_assert!(*coefficient > -FIELD_MODULUS && *coefficient < FIELD_MODULUS);
@@ -125,11 +119,13 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
             let normalized = coefficient - (sign & (2 * coefficient));
 
             // FIXME: return
-            exceeds = exceeds || normalized >= bound;
+            if normalized >= bound {
+                return true;
+            }
         }
     }
 
-    exceeds
+    false
 }
 
 #[inline(always)]

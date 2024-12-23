@@ -8,18 +8,15 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations, const DIMENSION
     vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
     bound: i32,
 ) -> bool {
-    let mut exceeds = false;
-
-    // TODO: We can break out of this loop early if need be, but the most
-    // straightforward way to do so (returning false) will not go through hax;
-    // revisit if performance is impacted.
     cloop! {
         for ring_element in vector.iter() {
-            exceeds = exceeds || ring_element.infinity_norm_exceeds(bound);
+            if ring_element.infinity_norm_exceeds(bound) {
+                return true;
+            }
         }
     }
 
-    exceeds
+    false
 }
 
 #[inline(always)]
@@ -69,7 +66,7 @@ pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMM
     let mut true_hints = 0;
 
     for i in 0..DIMENSION {
-        let mut hint_simd = PolynomialRingElement::<SIMDUnit>::ZERO();
+        let mut hint_simd = PolynomialRingElement::<SIMDUnit>::zero();
 
         for j in 0..hint_simd.simd_units.len() {
             let (one_hints_count, current_hint) =
@@ -90,7 +87,7 @@ pub(crate) fn use_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA
     hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION],
     re_vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut result = [PolynomialRingElement::<SIMDUnit>::zero(); DIMENSION];
 
     for i in 0..DIMENSION {
         // XXX: Why can't we keep the hint as simd units?

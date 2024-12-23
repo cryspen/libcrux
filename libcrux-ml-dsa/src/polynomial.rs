@@ -9,10 +9,9 @@ pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
 }
 
 impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
-    #[allow(non_snake_case)]
-    pub(crate) fn ZERO() -> Self {
+    pub(crate) fn zero() -> Self {
         Self {
-            simd_units: [SIMDUnit::ZERO(); SIMD_UNITS_IN_RING_ELEMENT],
+            simd_units: [SIMDUnit::zero(); SIMD_UNITS_IN_RING_ELEMENT],
         }
     }
 
@@ -41,19 +40,20 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
 
     #[cfg(test)]
     pub(crate) fn from_i32_array_test(array: &[i32]) -> Self {
-        let mut result = PolynomialRingElement::ZERO();
+        let mut result = PolynomialRingElement::zero();
         Self::from_i32_array(array, &mut result);
         result
     }
 
+    #[inline(always)]
     pub(crate) fn infinity_norm_exceeds(&self, bound: i32) -> bool {
-        let mut exceeds = false;
-
         for i in 0..self.simd_units.len() {
-            exceeds = exceeds || SIMDUnit::infinity_norm_exceeds(&self.simd_units[i], bound);
+            if SIMDUnit::infinity_norm_exceeds(&self.simd_units[i], bound) {
+                return true;
+            }
         }
 
-        exceeds
+        false
     }
 
     #[inline(always)]

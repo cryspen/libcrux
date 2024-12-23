@@ -9,7 +9,7 @@ fn test_decompose_generic<SIMDUnit: Operations>() {
     let expected_low = [-2687, 83861, -10009, -62531, 17322, 30530, -37072, -31454];
     let expected_high = [29, 28, 1, 43, 27, 29, 18, 21];
 
-    let (mut low, mut high) = (SIMDUnit::ZERO(), SIMDUnit::ZERO());
+    let (mut low, mut high) = (SIMDUnit::zero(), SIMDUnit::zero());
     SIMDUnit::decompose::<95_232>(&input, &mut low, &mut high);
 
     let mut out = [0i32; COEFFICIENTS_IN_SIMD_UNIT];
