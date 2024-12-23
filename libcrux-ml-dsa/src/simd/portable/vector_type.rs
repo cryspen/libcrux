@@ -4,9 +4,7 @@ use crate::simd::traits::COEFFICIENTS_IN_SIMD_UNIT;
 pub(crate) type FieldElement = i32;
 
 #[derive(Clone, Copy)]
-pub(crate) struct PortableSIMDUnit {
-    pub(crate) coefficients: Coefficients,
-}
+pub(crate) struct PortableSIMDUnit {}
 
 pub(super) type Coefficients = [FieldElement; COEFFICIENTS_IN_SIMD_UNIT];
 
@@ -14,15 +12,8 @@ pub(crate) fn zero() -> Coefficients {
     [0i32; COEFFICIENTS_IN_SIMD_UNIT]
 }
 
-#[allow(non_snake_case)]
-pub(crate) fn ZERO() -> PortableSIMDUnit {
-    PortableSIMDUnit {
-        coefficients: [0i32; COEFFICIENTS_IN_SIMD_UNIT],
-    }
-}
-
 pub(crate) fn from_coefficient_array(array: &[i32]) -> Coefficients {
-    array[0..8].try_into().unwrap()
+    array[0..COEFFICIENTS_IN_SIMD_UNIT].try_into().unwrap()
 }
 
 #[inline(always)]

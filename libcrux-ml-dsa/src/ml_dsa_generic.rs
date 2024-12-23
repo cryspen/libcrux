@@ -69,7 +69,6 @@ pub(crate) fn generate_key_pair<
     let mut t0 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
     compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1_s2, &mut t0);
 
-    // let (t0, t1) =
     let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
     power2round_vector::<SIMDUnit, ROWS_IN_A>(&mut t0, &mut t1);
 

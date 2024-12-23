@@ -9,6 +9,8 @@ fn change_t0_interval(t0: i32) -> i32 {
 
 #[inline(always)]
 pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
+    debug_assert!(serialized.len() == 13);
+    
     let coefficient0 = change_t0_interval(simd_unit[0]);
     let coefficient1 = change_t0_interval(simd_unit[1]);
     let coefficient2 = change_t0_interval(simd_unit[2]);

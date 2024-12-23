@@ -1,5 +1,5 @@
 use super::arithmetic::{self, montgomery_multiply_by_constant, montgomery_multiply_fe_by_fer};
-use super::vector_type::{Coefficients, PortableSIMDUnit};
+use super::vector_type::Coefficients;
 use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
 #[inline(always)]

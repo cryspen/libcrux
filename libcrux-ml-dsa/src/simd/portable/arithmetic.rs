@@ -1,4 +1,4 @@
-use super::vector_type::{zero, Coefficients, FieldElement, PortableSIMDUnit, ZERO};
+use super::vector_type::{zero, Coefficients, FieldElement};
 use crate::{
     constants::BITS_IN_LOWER_PART_OF_T,
     helper::cloop,
@@ -194,7 +194,7 @@ pub(super) fn compute_hint<const GAMMA2: i32>(
 // Note that 0 ≤ r₁ < (q-1)/α.
 #[allow(non_snake_case)]
 #[inline(always)]
-fn decompose_element<const GAMMA2: i32>(r: i32, r0: &mut i32, r1: &mut i32) {
+fn decompose_element<const GAMMA2: i32>(r: i32) -> (i32, i32) {
     debug_assert!(r > -FIELD_MODULUS && r < FIELD_MODULUS);
 
     // Convert the signed representative to the standard unsigned one.
@@ -202,7 +202,7 @@ fn decompose_element<const GAMMA2: i32>(r: i32, r0: &mut i32, r1: &mut i32) {
 
     let ALPHA = GAMMA2 * 2;
 
-    *r1 = {
+    let r1 = {
         // Compute ⌈r / 128⌉
         let ceil_of_r_by_128 = (r + 127) >> 7;
 
@@ -227,18 +227,19 @@ fn decompose_element<const GAMMA2: i32>(r: i32, r0: &mut i32, r1: &mut i32) {
         }
     };
 
-    *r0 = r - (*r1 * ALPHA);
+    let mut r0 = r - (r1 * ALPHA);
 
     // In the corner-case, when we set a₁=0, we will incorrectly
     // have a₀ > (q-1)/2 and we'll need to subtract q.  As we
     // return a₀ + q, that comes down to adding q if a₀ < (q-1)/2.
-    *r0 -= (((FIELD_MODULUS - 1) / 2 - *r0) >> 31) & FIELD_MODULUS;
+    r0 -= (((FIELD_MODULUS - 1) / 2 - r0) >> 31) & FIELD_MODULUS;
+
+    (r0, r1)
 }
 
 #[inline(always)]
 pub(crate) fn use_one_hint<const GAMMA2: i32>(r: i32, hint: i32) -> i32 {
-    let (mut r0, mut r1) = (0, 0);
-    decompose_element::<GAMMA2>(r, &mut r0, &mut r1);
+    let (r0, r1) = decompose_element::<GAMMA2>(r);
 
     if hint == 0 {
         return r1;
@@ -278,7 +279,7 @@ pub fn decompose<const GAMMA2: i32>(
     high: &mut Coefficients,
 ) {
     for i in 0..low.len() {
-        decompose_element::<GAMMA2>(simd_unit[i], &mut low[i], &mut high[i]);
+        (low[i], high[i]) = decompose_element::<GAMMA2>(simd_unit[i]);
     }
 }
 

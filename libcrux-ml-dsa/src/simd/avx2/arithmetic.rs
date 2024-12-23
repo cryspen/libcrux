@@ -5,7 +5,7 @@ use crate::{
 
 use libcrux_intrinsics::avx2::*;
 
-use super::vector_type::ZERO;
+use super::vector_type::zero;
 
 #[inline(always)]
 fn to_unsigned_representatives(t: &mut Vec256) {
@@ -102,11 +102,7 @@ pub fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
     // If every lane of |result| is 0, all coefficients are <= bound - 1
     let result = mm256_testz_si256(compare_with_bound, compare_with_bound);
 
-    if result == 1 {
-        false
-    } else {
-        true
-    }
+    result != 1
 }
 
 #[inline(always)]
@@ -213,8 +209,8 @@ pub fn compute_hint<const GAMMA2: i32>(low: &Vec256, high: &Vec256) -> (usize, V
 
 #[inline(always)]
 pub(crate) fn use_hint<const GAMMA2: i32>(r: &Vec256, hint: &mut Vec256) {
-    let (mut r0, mut r1) = (ZERO(), ZERO());
-    decompose::<GAMMA2>(r, &mut r0.coefficients, &mut r1.coefficients);
+    let (mut r0, mut r1) = (zero(), zero());
+    decompose::<GAMMA2>(r, &mut r0, &mut r1);
 
     let all_zeros = mm256_setzero_si256();
 
@@ -223,7 +219,7 @@ pub(crate) fn use_hint<const GAMMA2: i32>(r: &Vec256, hint: &mut Vec256) {
     //
     // With this step, |negate_hints| will match |hint| in only those lanes in
     // which the corresponding r0 value is negative, and will be 0 elsewhere.
-    let negate_hints = vec256_blendv_epi32(all_zeros, *hint, r0.coefficients);
+    let negate_hints = vec256_blendv_epi32(all_zeros, *hint, r0);
 
     // If a lane in |negate_hints| is 1, it means the corresponding hint was 1,
     // and the lane value will be doubled. It will remain 0 otherwise.
@@ -234,7 +230,7 @@ pub(crate) fn use_hint<const GAMMA2: i32>(r: &Vec256, hint: &mut Vec256) {
     let hints = mm256_sub_epi32(*hint, negate_hints);
 
     // Now add the hints to r1
-    let mut r1_plus_hints = mm256_add_epi32(r1.coefficients, hints);
+    let mut r1_plus_hints = mm256_add_epi32(r1, hints);
 
     match GAMMA2 {
         95_232 => {

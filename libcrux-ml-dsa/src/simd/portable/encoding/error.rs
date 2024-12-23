@@ -1,9 +1,9 @@
 use crate::{helper::cloop, simd::portable::vector_type::Coefficients};
 
-use super::super::vector_type::{PortableSIMDUnit, ZERO};
-
 #[inline(always)]
 fn serialize_when_eta_is_2(simd_unit: &Coefficients, serialized: &mut [u8]) {
+    debug_assert!(serialized.len() == 3);
+    
     const ETA: i32 = 2;
 
     let coefficient0 = (ETA - simd_unit[0]) as u8;

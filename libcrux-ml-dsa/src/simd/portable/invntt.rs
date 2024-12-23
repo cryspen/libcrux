@@ -1,5 +1,5 @@
 use super::arithmetic::{self, montgomery_multiply_fe_by_fer};
-use super::vector_type::{Coefficients, PortableSIMDUnit};
+use super::vector_type::Coefficients;
 use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
 #[inline(always)]
@@ -204,8 +204,10 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
 ) {
     for j in OFFSET..OFFSET + STEP_BY {
-        re[j + STEP_BY] = arithmetic::subtract(&re[j + STEP_BY], &re[j]);
+        // XXX: make nicer
+        let a_minus_b = arithmetic::subtract(&re[j + STEP_BY], &re[j]);
         re[j] = arithmetic::add(&re[j], &re[j + STEP_BY]);
+        re[j + STEP_BY] = a_minus_b;
         arithmetic::montgomery_multiply_by_constant(&mut re[j + STEP_BY], ZETA);
     }
     ()
