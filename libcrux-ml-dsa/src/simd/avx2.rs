@@ -62,8 +62,8 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn compute_hint<const GAMMA2: i32>(low: &Vec256, high: &Vec256) -> (usize, Vec256) {
-        arithmetic::compute_hint::<GAMMA2>(low, high)
+    fn compute_hint<const GAMMA2: i32>(low: &Vec256, high: &Vec256,hint: &mut Self::Coefficient,) -> usize {
+        arithmetic::compute_hint::<GAMMA2>(low, high, hint)
     }
     #[inline(always)]
     fn use_hint<const GAMMA2: i32>(simd_unit: &Vec256, hint: &mut Vec256) {

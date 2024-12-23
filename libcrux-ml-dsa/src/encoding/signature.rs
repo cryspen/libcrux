@@ -24,7 +24,6 @@ impl<
         const ROWS_IN_A: usize,
     > Signature<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>
 {
-    #[allow(non_snake_case)]
     #[inline(always)]
     pub(crate) fn serialize<
         const GAMMA1_EXPONENT: usize,
@@ -33,8 +32,8 @@ impl<
         const SIGNATURE_SIZE: usize,
     >(
         &self,
-    ) -> [u8; SIGNATURE_SIZE] {
-        let mut signature = [0u8; SIGNATURE_SIZE];
+        signature: &mut [u8; SIGNATURE_SIZE],
+    ) {
         let mut offset = 0;
 
         signature[offset..offset + COMMITMENT_HASH_SIZE].copy_from_slice(&self.commitment_hash);
@@ -65,8 +64,6 @@ impl<
             }
             signature[offset + MAX_ONES_IN_HINT + i] = true_hints_seen as u8;
         }
-
-        signature
     }
 
     #[allow(non_snake_case)]

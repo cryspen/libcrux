@@ -62,8 +62,9 @@ impl Operations for PortableSIMDUnit {
     fn compute_hint<const GAMMA2: i32>(
         low: &Coefficients,
         high: &Coefficients,
-    ) -> (usize, Coefficients) {
-        arithmetic::compute_hint::<GAMMA2>(low, high)
+        hint: &mut Self::Coefficient,
+    ) -> usize {
+        arithmetic::compute_hint::<GAMMA2>(low, high, hint)
     }
     fn use_hint<const GAMMA2: i32>(simd_unit: &Coefficients, hint: &mut Coefficients) {
         arithmetic::use_hint::<GAMMA2>(simd_unit, hint)

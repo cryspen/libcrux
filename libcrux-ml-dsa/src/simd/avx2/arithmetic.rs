@@ -182,7 +182,7 @@ pub fn decompose<const GAMMA2: i32>(r: &Vec256, r0: &mut Vec256, r1: &mut Vec256
 }
 
 #[inline(always)]
-pub fn compute_hint<const GAMMA2: i32>(low: &Vec256, high: &Vec256) -> (usize, Vec256) {
+pub fn compute_hint<const GAMMA2: i32>(low: &Vec256, high: &Vec256, hint: &mut Vec256) -> usize {
     let gamma2 = mm256_set1_epi32(GAMMA2);
     let minus_gamma2 = mm256_set1_epi32(-GAMMA2);
 
@@ -194,17 +194,15 @@ pub fn compute_hint<const GAMMA2: i32>(low: &Vec256, high: &Vec256) -> (usize, V
     let low_equals_minus_gamma2_and_high_is_nonzero =
         mm256_sign_epi32(low_equals_minus_gamma2, *high);
 
-    let hints = mm256_or_si256(
+    *hint = mm256_or_si256(
         low_within_bound,
         low_equals_minus_gamma2_and_high_is_nonzero,
     );
 
-    let hints_mask = mm256_movemask_ps(mm256_castsi256_ps(hints));
+    let hints_mask = mm256_movemask_ps(mm256_castsi256_ps(*hint));
+    *hint = mm256_and_si256(*hint, mm256_set1_epi32(0x1));
 
-    (
-        hints_mask.count_ones() as usize,
-        mm256_and_si256(hints, mm256_set1_epi32(0x1)),
-    )
+    hints_mask.count_ones() as usize
 }
 
 #[inline(always)]

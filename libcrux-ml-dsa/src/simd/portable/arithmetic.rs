@@ -1,4 +1,4 @@
-use super::vector_type::{zero, Coefficients, FieldElement};
+use super::vector_type::{Coefficients, FieldElement};
 use crate::{
     constants::BITS_IN_LOWER_PART_OF_T,
     helper::cloop,
@@ -155,8 +155,8 @@ fn compute_one_hint<const GAMMA2: i32>(low: i32, high: i32) -> i32 {
 pub(super) fn compute_hint<const GAMMA2: i32>(
     low: &Coefficients,
     high: &Coefficients,
-) -> (usize, Coefficients) {
-    let mut hint = zero();
+    hint: &mut Coefficients,
+) -> usize {
     let mut one_hints_count = 0;
 
     for i in 0..hint.len() {
@@ -164,7 +164,7 @@ pub(super) fn compute_hint<const GAMMA2: i32>(
         one_hints_count += hint[i] as usize;
     }
 
-    (one_hints_count, hint)
+    one_hints_count
 }
 
 // Take a representative -q < r < q and convert it

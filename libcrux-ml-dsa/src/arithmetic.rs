@@ -61,17 +61,18 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations, const DIMENSION: usize, con
 pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
     low: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
     high: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> ([[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION], usize) {
-    let mut hint = [[0; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION];
+    hint: &mut [[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION],
+) -> usize {
     let mut true_hints = 0;
+    let mut hint_simd = PolynomialRingElement::<SIMDUnit>::zero();
 
     for i in 0..DIMENSION {
-        let mut hint_simd = PolynomialRingElement::<SIMDUnit>::zero();
-
         for j in 0..hint_simd.simd_units.len() {
-            let (one_hints_count, current_hint) =
-                SIMDUnit::compute_hint::<GAMMA2>(&low[i].simd_units[j], &high[i].simd_units[j]);
-            hint_simd.simd_units[j] = current_hint;
+            let one_hints_count = SIMDUnit::compute_hint::<GAMMA2>(
+                &low[i].simd_units[j],
+                &high[i].simd_units[j],
+                &mut hint_simd.simd_units[j],
+            );
 
             true_hints += one_hints_count;
         }
@@ -79,7 +80,7 @@ pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMM
         hint[i] = hint_simd.to_i32_array();
     }
 
-    (hint, true_hints)
+    true_hints
 }
 
 #[inline(always)]

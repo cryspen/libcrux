@@ -421,8 +421,12 @@ pub(crate) fn sign_internal<
                     // continue;
                 } else {
                     add_vectors::<SIMDUnit, ROWS_IN_A>(&mut w0, &challenge_times_t0);
-                    let (hint_candidate, ones_in_hint) =
-                        make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(&w0, &commitment);
+                    let mut hint_candidate = [[0; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A];
+                    let ones_in_hint = make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(
+                        &w0,
+                        &commitment,
+                        &mut hint_candidate,
+                    );
 
                     if ones_in_hint > MAX_ONES_IN_HINT {
                         // XXX: https://github.com/hacspec/hax/issues/1171
@@ -453,12 +457,15 @@ pub(crate) fn sign_internal<
         None => return Err(SigningError::RejectionSamplingError),
     };
 
-    let signature = Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A> {
+    let mut signature = [0u8; SIGNATURE_SIZE];
+    Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A> {
         commitment_hash,
         signer_response,
         hint,
     }
-    .serialize::<GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE, MAX_ONES_IN_HINT, SIGNATURE_SIZE>();
+    .serialize::<GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE, MAX_ONES_IN_HINT, SIGNATURE_SIZE>(
+        &mut signature,
+    );
 
     Ok(MLDSASignature::new(signature))
 }

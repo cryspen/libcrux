@@ -35,7 +35,8 @@ pub(crate) trait Operations: Copy + Clone {
     fn compute_hint<const GAMMA2: i32>(
         low: &Self::Coefficient,
         high: &Self::Coefficient,
-    ) -> (usize, Self::Coefficient);
+        hint: &mut Self::Coefficient,
+    ) -> usize;
     fn use_hint<const GAMMA2: i32>(simd_unit: &Self::Coefficient, hint: &mut Self::Coefficient);
 
     // Modular operations
