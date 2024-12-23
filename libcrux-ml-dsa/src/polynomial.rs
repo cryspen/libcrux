@@ -57,20 +57,9 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     }
 
     #[inline(always)]
-    pub(crate) fn add(&self, rhs: &Self) -> Self {
-        let mut sum = Self::ZERO();
-
-        for i in 0..sum.simd_units.len() {
-            sum.simd_units[i] = SIMDUnit::add(&self.simd_units[i], &rhs.simd_units[i]);
-        }
-
-        sum
-    }
-
-    #[inline(always)]
-    pub(crate) fn add_mut(&mut self, rhs: &Self) {
+    pub(crate) fn add(&mut self, rhs: &Self) {
         for i in 0..self.simd_units.len() {
-            self.simd_units[i] = SIMDUnit::add(&self.simd_units[i], &rhs.simd_units[i]);
+            SIMDUnit::add(&mut self.simd_units[i], &rhs.simd_units[i]);
         }
     }
 

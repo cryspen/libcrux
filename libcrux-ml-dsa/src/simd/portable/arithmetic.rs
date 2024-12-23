@@ -10,14 +10,10 @@ use crate::{
 pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 
 #[inline(always)]
-pub fn add(lhs: &Coefficients, rhs: &Coefficients) -> Coefficients {
-    let mut sum = zero();
-
-    for i in 0..sum.len() {
-        sum[i] = lhs[i] + rhs[i];
+pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
+    for i in 0..lhs.len() {
+        lhs[i] += rhs[i];
     }
-
-    sum
 }
 
 #[inline(always)]

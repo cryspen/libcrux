@@ -8,9 +8,8 @@ use crate::{
 };
 
 /// Compute InvertNTT(Â ◦ ŝ₁) + s₂
-#[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn compute_As1_plus_s2<
+pub(crate) fn compute_as1_plus_s2<
     SIMDUnit: Operations,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
@@ -31,13 +30,13 @@ pub(crate) fn compute_As1_plus_s2<
             // XXX: Make this better
             let mut product = a_as_ntt[i][j];
             ntt_multiply_montgomery::<SIMDUnit>(&mut product, &s1_ntt[j]);
-            result[i] = PolynomialRingElement::add(&result[i], &product);
+            PolynomialRingElement::add(&mut result[i], &product);
         }
     }
 
     for i in 0..result.len() {
         invert_ntt_montgomery::<SIMDUnit>(&mut result[i]);
-        result[i] = PolynomialRingElement::add(&result[i], &s1_s2[COLUMNS_IN_A + i]);
+        PolynomialRingElement::add(&mut result[i], &s1_s2[COLUMNS_IN_A + i]);
     }
 }
 
@@ -65,7 +64,7 @@ pub(crate) fn compute_matrix_x_mask<
                     // XXX: Make this better
                     let mut product = mask_ntt[j];
                     ntt_multiply_montgomery(&mut product, &ring_element);
-                    result[i] = PolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
+                    PolynomialRingElement::<SIMDUnit>::add(&mut result[i], &product);
                 }
             }
 
@@ -91,22 +90,16 @@ pub(crate) fn vector_times_ring_element<SIMDUnit: Operations, const DIMENSION: u
     result
 }
 
-#[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn add_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
-    lhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+    lhs: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
     rhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
+) {
     for i in 0..DIMENSION {
-        result[i] = PolynomialRingElement::<SIMDUnit>::add(&lhs[i], &rhs[i]);
+        PolynomialRingElement::<SIMDUnit>::add(&mut lhs[i], &rhs[i]);
     }
-
-    result
 }
 
-#[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn subtract_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
     lhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
@@ -147,8 +140,7 @@ pub(crate) fn compute_w_approx<
                     // XXX: make nicer
                     let mut product = ring_element.clone();
                     ntt_multiply_montgomery(&mut product, &signer_response[j]);
-
-                     PolynomialRingElement::<SIMDUnit>::add_mut(&mut inner_result, &product);
+                    PolynomialRingElement::<SIMDUnit>::add(&mut inner_result, &product);
                 }
             }
 

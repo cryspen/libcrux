@@ -27,16 +27,7 @@ impl Operations for PortableSIMDUnit {
         vector_type::to_coefficient_array(value, out)
     }
 
-    #[cfg(any(test, feature = "test-utils"))]
-    fn to_coefficient_array_test(
-        value: &Self::Coefficient,
-    ) -> [i32; super::traits::COEFFICIENTS_IN_SIMD_UNIT] {
-        let mut out = [0i32; super::traits::COEFFICIENTS_IN_SIMD_UNIT];
-        out.copy_from_slice(value);
-        out
-    }
-
-    fn add(lhs: &Coefficients, rhs: &Coefficients) -> Coefficients {
+    fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
         arithmetic::add(lhs, rhs)
     }
 

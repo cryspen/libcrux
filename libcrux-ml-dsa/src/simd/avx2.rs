@@ -28,17 +28,8 @@ impl Operations for AVX2SIMDUnit {
         vector_type::to_coefficient_array(value, out)
     }
 
-    #[cfg(any(test, feature = "test-utils"))]
-    fn to_coefficient_array_test(
-        value: &Self::Coefficient,
-    ) -> [i32; super::traits::COEFFICIENTS_IN_SIMD_UNIT] {
-        let mut out = [0i32; super::traits::COEFFICIENTS_IN_SIMD_UNIT];
-        libcrux_intrinsics::avx2::mm256_storeu_si256_i32(&mut out, *value);
-        out
-    }
-
     #[inline(always)]
-    fn add(lhs: &Vec256, rhs: &Vec256) -> Vec256 {
+    fn add(lhs: &mut Vec256, rhs: &Vec256) {
         arithmetic::add(lhs, rhs)
     }
     #[inline(always)]

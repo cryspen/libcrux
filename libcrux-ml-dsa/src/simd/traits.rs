@@ -22,11 +22,9 @@ pub(crate) trait Operations: Copy + Clone {
 
     fn from_coefficient_array(array: &[i32]) -> Self::Coefficient;
     fn to_coefficient_array(value: &Self::Coefficient, out: &mut [i32]);
-    #[cfg(any(test, feature = "test-utils"))]
-    fn to_coefficient_array_test(value: &Self::Coefficient) -> [i32; COEFFICIENTS_IN_SIMD_UNIT];
 
     // Arithmetic
-    fn add(lhs: &Self::Coefficient, rhs: &Self::Coefficient) -> Self::Coefficient;
+    fn add(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient);
     fn subtract(lhs: &Self::Coefficient, rhs: &Self::Coefficient) -> Self::Coefficient;
     fn infinity_norm_exceeds(simd_unit: &Self::Coefficient, bound: i32) -> bool;
     fn decompose<const GAMMA2: i32>(

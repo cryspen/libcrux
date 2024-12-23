@@ -44,11 +44,12 @@ fn simd_unit_invert_ntt_at_layer_0(
     let a_shuffled = mm256_shuffle_epi32::<SHUFFLE>(simd_unit0);
     let b_shuffled = mm256_shuffle_epi32::<SHUFFLE>(simd_unit1);
 
-    let lo_values = mm256_unpacklo_epi64(a_shuffled, b_shuffled);
+    let mut lo_values = mm256_unpacklo_epi64(a_shuffled, b_shuffled);
     let hi_values = mm256_unpackhi_epi64(a_shuffled, b_shuffled);
 
-    let sums = arithmetic::add(&lo_values, &hi_values);
     let mut differences = arithmetic::subtract(&hi_values, &lo_values);
+    arithmetic::add(&mut lo_values, &hi_values);
+    let sums = lo_values;
 
     let zetas = mm256_set_epi32(
         zeta13, zeta12, zeta03, zeta02, zeta11, zeta10, zeta01, zeta00,
@@ -73,11 +74,12 @@ fn simd_unit_invert_ntt_at_layer_1(
     zeta10: i32,
     zeta11: i32,
 ) -> (Vec256, Vec256) {
-    let lo_values = mm256_unpacklo_epi64(simd_unit0, simd_unit1);
+    let mut lo_values = mm256_unpacklo_epi64(simd_unit0, simd_unit1);
     let hi_values = mm256_unpackhi_epi64(simd_unit0, simd_unit1);
 
-    let sums = arithmetic::add(&lo_values, &hi_values);
     let mut differences = arithmetic::subtract(&hi_values, &lo_values);
+    arithmetic::add(&mut lo_values, &hi_values);
+    let sums = lo_values;
 
     let zetas = mm256_set_epi32(
         zeta11, zeta11, zeta01, zeta01, zeta10, zeta10, zeta00, zeta00,
@@ -97,11 +99,12 @@ fn simd_unit_invert_ntt_at_layer_2(
     zeta0: i32,
     zeta1: i32,
 ) -> (Vec256, Vec256) {
-    let lo_values = mm256_permute2x128_si256::<0x20>(simd_unit0, simd_unit1);
+    let mut lo_values = mm256_permute2x128_si256::<0x20>(simd_unit0, simd_unit1);
     let hi_values = mm256_permute2x128_si256::<0x31>(simd_unit0, simd_unit1);
 
-    let sums = arithmetic::add(&lo_values, &hi_values);
     let mut differences = arithmetic::subtract(&hi_values, &lo_values);
+    arithmetic::add(&mut lo_values, &hi_values);
+    let sums = lo_values;
 
     let zetas = mm256_set_epi32(zeta1, zeta1, zeta1, zeta1, zeta0, zeta0, zeta0, zeta0);
     arithmetic::montgomery_multiply(&mut differences, &zetas);
@@ -264,8 +267,10 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
 ) {
     for j in OFFSET..OFFSET + STEP_BY {
-        let a_minus_b = arithmetic::subtract(&re[j + STEP_BY], &re[j]);
-        re[j] = arithmetic::add(&re[j], &re[j + STEP_BY]);
+        // XXX: make nicer
+        let rejs = re[j + STEP_BY];
+        let a_minus_b = arithmetic::subtract(&rejs, &re[j]);
+        arithmetic::add(&mut re[j], &rejs);
         re[j + STEP_BY] = arithmetic::montgomery_multiply_by_constant(a_minus_b, ZETA);
     }
     ()

@@ -6,7 +6,7 @@ use crate::{
     encoding::{self, signature::Signature},
     hash_functions::{shake128, shake256},
     matrix::{
-        add_vectors, compute_As1_plus_s2, compute_matrix_x_mask, compute_w_approx,
+        add_vectors, compute_as1_plus_s2, compute_matrix_x_mask, compute_w_approx,
         subtract_vectors, vector_times_ring_element,
     },
     ntt::ntt,
@@ -67,7 +67,7 @@ pub(crate) fn generate_key_pair<
     );
 
     let mut t0 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
-    compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1_s2, &mut t0);
+    compute_as1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1_s2, &mut t0);
 
     let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
     power2round_vector::<SIMDUnit, ROWS_IN_A>(&mut t0, &mut t1);
@@ -360,21 +360,20 @@ pub(crate) fn sign_internal<
         let challenge_times_s2 =
             vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(&s2_as_ntt, &verifier_challenge);
 
-        let signer_response_candidate =
-            add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mask, &challenge_times_s1);
+        add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mut mask, &challenge_times_s1);
 
-        let w0_minus_challenge_times_s2 =
+        let mut w0_minus_challenge_times_s2 =
             subtract_vectors::<SIMDUnit, ROWS_IN_A>(&w0, &challenge_times_s2);
 
         if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
-            signer_response_candidate,
+            &mask,
             (1 << GAMMA1_EXPONENT) - BETA,
         ) {
             // XXX: https://github.com/hacspec/hax/issues/1171
             // continue;
         } else {
             if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(
-                w0_minus_challenge_times_s2,
+                &w0_minus_challenge_times_s2,
                 GAMMA2 - BETA,
             ) {
                 // XXX: https://github.com/hacspec/hax/issues/1171
@@ -384,17 +383,18 @@ pub(crate) fn sign_internal<
                     &t0_as_ntt,
                     &verifier_challenge,
                 );
-                if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(challenge_times_t0, GAMMA2) {
+                if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(&challenge_times_t0, GAMMA2)
+                {
                     // XXX: https://github.com/hacspec/hax/issues/1171
                     // continue;
                 } else {
-                    let w0_minus_c_times_s2_plus_c_times_t0 = add_vectors::<SIMDUnit, ROWS_IN_A>(
-                        &w0_minus_challenge_times_s2,
+                    add_vectors::<SIMDUnit, ROWS_IN_A>(
+                        &mut w0_minus_challenge_times_s2,
                         &challenge_times_t0,
                     );
                     let (hint_candidate, ones_in_hint) = make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(
-                        w0_minus_c_times_s2_plus_c_times_t0,
-                        commitment,
+                        &w0_minus_challenge_times_s2,
+                        &commitment,
                     );
 
                     if ones_in_hint > MAX_ONES_IN_HINT {
@@ -403,7 +403,7 @@ pub(crate) fn sign_internal<
                     } else {
                         attempt = REJECTION_SAMPLE_BOUND_SIGN; // exit loop now
                         commitment_hash = Some(commitment_hash_candidate);
-                        signer_response = Some(signer_response_candidate);
+                        signer_response = Some(mask);
                         hint = Some(hint_candidate);
                     }
                 }
@@ -528,7 +528,7 @@ pub(crate) fn verify_internal<
 
     // We use if-else branches because early returns will not go through hax.
     if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
-        signature.signer_response,
+        &signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
         return Err(VerificationError::SignerResponseExceedsBoundError);

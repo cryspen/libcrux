@@ -5,7 +5,7 @@ use crate::{
 
 #[inline(always)]
 pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations, const DIMENSION: usize>(
-    vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
     bound: i32,
 ) -> bool {
     let mut exceeds = false;
@@ -62,8 +62,8 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations, const DIMENSION: usize, con
 
 #[inline(always)]
 pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
-    low: [PolynomialRingElement<SIMDUnit>; DIMENSION],
-    high: [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    low: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+    high: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> ([[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION], usize) {
     let mut hint = [[0; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION];
     let mut true_hints = 0;

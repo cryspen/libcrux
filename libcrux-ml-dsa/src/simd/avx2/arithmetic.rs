@@ -16,8 +16,8 @@ fn to_unsigned_representatives(t: &mut Vec256) {
 }
 
 #[inline(always)]
-pub fn add(lhs: &Vec256, rhs: &Vec256) -> Vec256 {
-    mm256_add_epi32(*lhs, *rhs)
+pub fn add(lhs: &mut Vec256, rhs: &Vec256) {
+    *lhs = mm256_add_epi32(*lhs, *rhs)
 }
 
 #[inline(always)]
