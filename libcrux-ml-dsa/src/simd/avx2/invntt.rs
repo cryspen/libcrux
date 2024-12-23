@@ -47,7 +47,8 @@ fn simd_unit_invert_ntt_at_layer_0(
     let mut lo_values = mm256_unpacklo_epi64(a_shuffled, b_shuffled);
     let hi_values = mm256_unpackhi_epi64(a_shuffled, b_shuffled);
 
-    let mut differences = arithmetic::subtract(&hi_values, &lo_values);
+    let mut differences = hi_values;
+    arithmetic::subtract(&mut differences, &lo_values);
     arithmetic::add(&mut lo_values, &hi_values);
     let sums = lo_values;
 
@@ -77,7 +78,8 @@ fn simd_unit_invert_ntt_at_layer_1(
     let mut lo_values = mm256_unpacklo_epi64(simd_unit0, simd_unit1);
     let hi_values = mm256_unpackhi_epi64(simd_unit0, simd_unit1);
 
-    let mut differences = arithmetic::subtract(&hi_values, &lo_values);
+    let mut differences = hi_values;
+    arithmetic::subtract(&mut differences, &lo_values);
     arithmetic::add(&mut lo_values, &hi_values);
     let sums = lo_values;
 
@@ -102,7 +104,8 @@ fn simd_unit_invert_ntt_at_layer_2(
     let mut lo_values = mm256_permute2x128_si256::<0x20>(simd_unit0, simd_unit1);
     let hi_values = mm256_permute2x128_si256::<0x31>(simd_unit0, simd_unit1);
 
-    let mut differences = arithmetic::subtract(&hi_values, &lo_values);
+    let mut differences = hi_values;
+    arithmetic::subtract(&mut differences, &lo_values);
     arithmetic::add(&mut lo_values, &hi_values);
     let sums = lo_values;
 
@@ -269,7 +272,8 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     for j in OFFSET..OFFSET + STEP_BY {
         // XXX: make nicer
         let rejs = re[j + STEP_BY];
-        let a_minus_b = arithmetic::subtract(&rejs, &re[j]);
+        let mut a_minus_b = rejs;
+        arithmetic::subtract(&mut a_minus_b, &re[j]);
         arithmetic::add(&mut re[j], &rejs);
         re[j + STEP_BY] = arithmetic::montgomery_multiply_by_constant(a_minus_b, ZETA);
     }

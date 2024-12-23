@@ -21,8 +21,8 @@ pub fn add(lhs: &mut Vec256, rhs: &Vec256) {
 }
 
 #[inline(always)]
-pub fn subtract(lhs: &Vec256, rhs: &Vec256) -> Vec256 {
-    mm256_sub_epi32(*lhs, *rhs)
+pub fn subtract(lhs: &mut Vec256, rhs: &Vec256) {
+    *lhs = mm256_sub_epi32(*lhs, *rhs)
 }
 
 #[inline(always)]

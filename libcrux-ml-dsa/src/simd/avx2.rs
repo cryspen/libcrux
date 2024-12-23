@@ -33,7 +33,7 @@ impl Operations for AVX2SIMDUnit {
         arithmetic::add(lhs, rhs)
     }
     #[inline(always)]
-    fn subtract(lhs: &Vec256, rhs: &Vec256) -> Vec256 {
+    fn subtract(lhs: &mut Vec256, rhs: &Vec256) {
         arithmetic::subtract(lhs, rhs)
     }
 

@@ -25,7 +25,7 @@ pub(crate) trait Operations: Copy + Clone {
 
     // Arithmetic
     fn add(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient);
-    fn subtract(lhs: &Self::Coefficient, rhs: &Self::Coefficient) -> Self::Coefficient;
+    fn subtract(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient);
     fn infinity_norm_exceeds(simd_unit: &Self::Coefficient, bound: i32) -> bool;
     fn decompose<const GAMMA2: i32>(
         simd_unit: &Self::Coefficient,

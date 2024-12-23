@@ -31,7 +31,7 @@ impl Operations for PortableSIMDUnit {
         arithmetic::add(lhs, rhs)
     }
 
-    fn subtract(lhs: &Coefficients, rhs: &Coefficients) -> Coefficients {
+    fn subtract(lhs: &mut Coefficients, rhs: &Coefficients) {
         arithmetic::subtract(lhs, rhs)
     }
 

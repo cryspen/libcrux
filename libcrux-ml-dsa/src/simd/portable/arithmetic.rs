@@ -17,14 +17,10 @@ pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
 }
 
 #[inline(always)]
-pub fn subtract(lhs: &Coefficients, rhs: &Coefficients) -> Coefficients {
-    let mut difference = zero();
-
-    for i in 0..difference.len() {
-        difference[i] = lhs[i] - rhs[i];
+pub fn subtract(lhs: &mut Coefficients, rhs: &Coefficients) {
+    for i in 0..lhs.len() {
+        lhs[i] -= rhs[i];
     }
-
-    difference
 }
 
 #[inline(always)]

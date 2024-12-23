@@ -205,8 +205,9 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
 ) {
     for j in OFFSET..OFFSET + STEP_BY {
         // XXX: make nicer
-        let rejs = &re[j + STEP_BY].clone();
-        let a_minus_b = arithmetic::subtract(&rejs, &re[j]);
+        let rejs = re[j + STEP_BY].clone();
+        let mut a_minus_b = rejs.clone();
+        arithmetic::subtract(&mut a_minus_b, &re[j]);
         arithmetic::add(&mut re[j], &rejs);
         re[j + STEP_BY] = a_minus_b;
         arithmetic::montgomery_multiply_by_constant(&mut re[j + STEP_BY], ZETA);

@@ -106,7 +106,7 @@ pub(crate) fn subtract_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
     rhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) {
     for i in 0..DIMENSION {
-        PolynomialRingElement::<SIMDUnit>::subtract_mut(&mut lhs[i], &rhs[i]);
+        PolynomialRingElement::<SIMDUnit>::subtract(&mut lhs[i], &rhs[i]);
     }
 }
 
@@ -143,10 +143,8 @@ pub(crate) fn compute_w_approx<
             shift_left_then_reduce::<SIMDUnit, { BITS_IN_LOWER_PART_OF_T as i32 }>(&mut t1[i]);
             ntt(&mut t1[i]);
             ntt_multiply_montgomery(&mut t1[i], verifier_challenge_as_ntt);
-            t1[i] = PolynomialRingElement::<SIMDUnit>::subtract(
-                &inner_result,
-                &t1[i],
-            );
+            PolynomialRingElement::<SIMDUnit>::subtract(&mut inner_result, &t1[i]);
+            t1[i] = inner_result;
             invert_ntt_montgomery(&mut t1[i]);
         }
     }

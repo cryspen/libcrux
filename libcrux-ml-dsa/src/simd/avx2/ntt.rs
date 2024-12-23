@@ -37,7 +37,8 @@ fn butterfly_2(
 
     arithmetic::montgomery_multiply(&mut zeta_products, &zetas);
 
-    let sub_terms = arithmetic::subtract(&summands, &zeta_products);
+    let mut sub_terms = summands;
+    arithmetic::subtract(&mut sub_terms, &zeta_products);
     arithmetic::add(&mut summands, &zeta_products);
     let add_terms = summands;
 
@@ -69,7 +70,8 @@ fn butterfly_4(
     );
     arithmetic::montgomery_multiply(&mut zeta_products, &zetas);
 
-    let sub_terms = arithmetic::subtract(&summands, &zeta_products);
+    let mut sub_terms = summands;
+    arithmetic::subtract(&mut sub_terms, &zeta_products);
     arithmetic::add(&mut summands, &zeta_products);
     let add_terms = summands;
 
@@ -90,7 +92,8 @@ fn butterfly_8(a: Vec256, b: Vec256, zeta0: i32, zeta1: i32) -> (Vec256, Vec256)
     let zetas = mm256_set_epi32(zeta1, zeta1, zeta1, zeta1, zeta0, zeta0, zeta0, zeta0);
     arithmetic::montgomery_multiply(&mut zeta_products, &zetas);
 
-    let sub_terms = arithmetic::subtract(&summands, &zeta_products);
+    let mut sub_terms = summands;
+    arithmetic::subtract(&mut sub_terms, &zeta_products);
     arithmetic::add(&mut summands, &zeta_products);
     let add_terms = summands;
 
@@ -289,7 +292,8 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
         let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02); // 0xF5
         let t = mm256_blend_epi32::<0b10101010>(res02_shifted, res13); // 0xAA
 
-        re[index + step_by] = arithmetic::subtract(&re[index], &t);
+        re[index + step_by] = re[index];
+        arithmetic::subtract(&mut re[index + step_by], &t);
         arithmetic::add(&mut re[index], &t);
     }
 
@@ -368,7 +372,8 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
             let mut t = re[j + STEP_BY];
             arithmetic::montgomery_multiply(&mut t, &rhs);
 
-            re[j + STEP_BY] = arithmetic::subtract(&re[j], &t);
+            re[j + STEP_BY] = re[j];
+            arithmetic::subtract(&mut re[j + STEP_BY], &t);
             arithmetic::add(&mut re[j], &t);
         }
         () // Needed because of https://github.com/hacspec/hax/issues/720

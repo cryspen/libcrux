@@ -208,7 +208,8 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
         let mut tmp = re[j + STEP_BY];
         montgomery_multiply_by_constant(&mut tmp, ZETA);
 
-        re[j + STEP_BY] = arithmetic::subtract(&re[j], &tmp);
+        re[j + STEP_BY] = re[j];
+        arithmetic::subtract(&mut re[j + STEP_BY], &tmp);
         arithmetic::add(&mut re[j], &tmp);
     }
     () // Needed because of https://github.com/hacspec/hax/issues/720
