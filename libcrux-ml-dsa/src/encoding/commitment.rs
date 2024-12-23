@@ -7,7 +7,7 @@ fn serialize<SIMDUnit: Operations>(re: PolynomialRingElement<SIMDUnit>, serializ
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
             SIMDUnit::commitment_serialize(
-                *simd_unit,
+                simd_unit,
                 &mut serialized[i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit],
             );
         }

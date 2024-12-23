@@ -119,13 +119,14 @@ pub fn power2round(r0: &mut Vec256, r1: &mut Vec256) {
     );
     *r1 = mm256_srai_epi32::<{ BITS_IN_LOWER_PART_OF_T as i32 }>(*r1);
 
-    *r0 = mm256_slli_epi32::<{ BITS_IN_LOWER_PART_OF_T as i32 }>(*r1);
-    *r0 = mm256_sub_epi32(*r0, *r0);
+    let tmp = mm256_slli_epi32::<{ BITS_IN_LOWER_PART_OF_T as i32 }>(*r1);
+    *r0 = mm256_sub_epi32(*r0, tmp);
 }
 
 #[allow(non_snake_case)]
 #[inline(always)]
-pub fn decompose<const GAMMA2: i32>(mut r: Vec256, r0: &mut Vec256, r1: &mut Vec256) {
+pub fn decompose<const GAMMA2: i32>(r: &Vec256, r0: &mut Vec256, r1: &mut Vec256) {
+    let mut r = r.clone();
     to_unsigned_representatives(&mut r);
 
     let field_modulus_halved = mm256_set1_epi32((FIELD_MODULUS - 1) / 2);
@@ -213,7 +214,7 @@ pub fn compute_hint<const GAMMA2: i32>(low: &Vec256, high: &Vec256) -> (usize, V
 #[inline(always)]
 pub(crate) fn use_hint<const GAMMA2: i32>(r: &Vec256, hint: &mut Vec256) {
     let (mut r0, mut r1) = (ZERO(), ZERO());
-    decompose::<GAMMA2>(r.clone(), &mut r0.coefficients, &mut r1.coefficients);
+    decompose::<GAMMA2>(r, &mut r0.coefficients, &mut r1.coefficients);
 
     let all_zeros = mm256_setzero_si256();
 

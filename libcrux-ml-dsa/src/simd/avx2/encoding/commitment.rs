@@ -1,13 +1,13 @@
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-pub(in crate::simd::avx2) fn serialize(simd_unit: Vec256, out: &mut [u8]) {
+pub(in crate::simd::avx2) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 19];
 
     match out.len() as u8 {
         4 => {
             let adjacent_2_combined =
-                mm256_sllv_epi32(simd_unit, mm256_set_epi32(0, 28, 0, 28, 0, 28, 0, 28));
+                mm256_sllv_epi32(*simd_unit, mm256_set_epi32(0, 28, 0, 28, 0, 28, 0, 28));
             let adjacent_2_combined = mm256_srli_epi64::<28>(adjacent_2_combined);
 
             let adjacent_4_combined = mm256_permutevar8x32_epi32(
@@ -30,7 +30,7 @@ pub(in crate::simd::avx2) fn serialize(simd_unit: Vec256, out: &mut [u8]) {
 
         6 => {
             let adjacent_2_combined =
-                mm256_sllv_epi32(simd_unit, mm256_set_epi32(0, 26, 0, 26, 0, 26, 0, 26));
+                mm256_sllv_epi32(*simd_unit, mm256_set_epi32(0, 26, 0, 26, 0, 26, 0, 26));
             let adjacent_2_combined = mm256_srli_epi64::<26>(adjacent_2_combined);
 
             let adjacent_3_combined = mm256_shuffle_epi8(

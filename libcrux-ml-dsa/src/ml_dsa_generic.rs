@@ -66,10 +66,12 @@ pub(crate) fn generate_key_pair<
         &mut s1_s2,
     );
 
-    let mut t = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
-    compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1_s2, &mut t);
+    let mut t0 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1_s2, &mut t0);
 
-    let (t0, t1) = power2round_vector::<SIMDUnit, ROWS_IN_A>(t);
+    // let (t0, t1) =
+    let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    power2round_vector::<SIMDUnit, ROWS_IN_A>(&mut t0, &mut t1);
 
     let verification_key_serialized = encoding::verification_key::generate_serialized::<
         SIMDUnit,
@@ -352,16 +354,12 @@ pub(crate) fn sign_internal<
             ONES_IN_VERIFIER_CHALLENGE,
             COMMITMENT_HASH_SIZE,
         >(commitment_hash_candidate, &mut verifier_challenge);
-        let verifier_challenge_as_ntt = ntt(verifier_challenge);
+        ntt(&mut verifier_challenge);
 
-        let challenge_times_s1 = vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(
-            &s1_as_ntt,
-            &verifier_challenge_as_ntt,
-        );
-        let challenge_times_s2 = vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
-            &s2_as_ntt,
-            &verifier_challenge_as_ntt,
-        );
+        let challenge_times_s1 =
+            vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(&s1_as_ntt, &verifier_challenge);
+        let challenge_times_s2 =
+            vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(&s2_as_ntt, &verifier_challenge);
 
         let signer_response_candidate =
             add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mask, &challenge_times_s1);
@@ -385,7 +383,7 @@ pub(crate) fn sign_internal<
             } else {
                 let challenge_times_t0 = vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
                     &t0_as_ntt,
-                    &verifier_challenge_as_ntt,
+                    &verifier_challenge,
                 );
                 if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(challenge_times_t0, GAMMA2) {
                     // XXX: https://github.com/hacspec/hax/issues/1171
@@ -512,7 +510,7 @@ pub(crate) fn verify_internal<
     domain_separation_context: Option<DomainSeparationContext>,
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    let (seed_for_a, t1) =
+    let (seed_for_a, mut t1) =
         encoding::verification_key::deserialize::<SIMDUnit, ROWS_IN_A, VERIFICATION_KEY_SIZE>(
             verification_key_serialized,
         );
@@ -559,18 +557,18 @@ pub(crate) fn verify_internal<
         ONES_IN_VERIFIER_CHALLENGE,
         COMMITMENT_HASH_SIZE,
     >(signature.commitment_hash, &mut verifier_challenge);
-    let verifier_challenge_as_ntt = ntt(verifier_challenge);
+    ntt(&mut verifier_challenge);
 
-    let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
+    compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
         &matrix,
         signature.signer_response,
-        verifier_challenge_as_ntt,
-        t1,
+        &verifier_challenge,
+        &mut t1,
     );
 
     let mut commitment_hash = [0; COMMITMENT_HASH_SIZE];
     {
-        let commitment = use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
+        let commitment = use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(signature.hint, t1);
         let commitment_serialized = encoding::commitment::serialize_vector::<
             SIMDUnit,
             ROWS_IN_A,

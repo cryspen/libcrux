@@ -8,7 +8,7 @@ pub(crate) fn serialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
             SIMDUnit::gamma1_serialize::<GAMMA1_EXPONENT>(
-                *simd_unit,
+                simd_unit,
                 &mut serialized[i * (GAMMA1_EXPONENT + 1)..(i + 1) * (GAMMA1_EXPONENT + 1)],
             );
         }
@@ -22,8 +22,9 @@ pub(crate) fn deserialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
     result: &mut PolynomialRingElement<SIMDUnit>,
 ) {
     for i in 0..result.simd_units.len() {
-        result.simd_units[i] = SIMDUnit::gamma1_deserialize::<GAMMA1_EXPONENT>(
+        SIMDUnit::gamma1_deserialize::<GAMMA1_EXPONENT>(
             &serialized[i * (GAMMA1_EXPONENT + 1)..(i + 1) * (GAMMA1_EXPONENT + 1)],
+            &mut result.simd_units[i],
         );
     }
     ()

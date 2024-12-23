@@ -1,11 +1,11 @@
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-fn serialize_when_eta_is_2(simd_unit: Vec256, out: &mut [u8]) {
+fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
     const ETA: i32 = 2;
-    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA), simd_unit);
+    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA), *simd_unit);
 
     let adjacent_2_combined = mm256_sllv_epi32(
         simd_unit_shifted,
@@ -38,11 +38,11 @@ fn serialize_when_eta_is_2(simd_unit: Vec256, out: &mut [u8]) {
 }
 
 #[inline(always)]
-fn serialize_when_eta_is_4(simd_unit: Vec256, out: &mut [u8]) {
+fn serialize_when_eta_is_4(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
     const ETA: i32 = 4;
-    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA), simd_unit);
+    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA), *simd_unit);
 
     let adjacent_2_combined = mm256_sllv_epi32(
         simd_unit_shifted,
@@ -66,7 +66,7 @@ fn serialize_when_eta_is_4(simd_unit: Vec256, out: &mut [u8]) {
 }
 
 #[inline(always)]
-pub fn serialize<const ETA: usize>(simd_unit: Vec256, serialized: &mut [u8]) {
+pub fn serialize<const ETA: usize>(simd_unit: &Vec256, serialized: &mut [u8]) {
     match ETA as u8 {
         2 => serialize_when_eta_is_2(simd_unit, serialized),
         4 => serialize_when_eta_is_4(simd_unit, serialized),

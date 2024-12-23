@@ -16,9 +16,7 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 ) {
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
-            // XXX: make t0_deserialize take &mut serialized?
-            serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                .copy_from_slice(&SIMDUnit::t0_serialize(*simd_unit));
+            SIMDUnit::t0_serialize(simd_unit, &mut serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]);
         }
     }
     ()
@@ -30,8 +28,9 @@ fn deserialize<SIMDUnit: Operations>(
     result: &mut PolynomialRingElement<SIMDUnit>,
 ) {
     for i in 0..result.simd_units.len() {
-        result.simd_units[i] = SIMDUnit::t0_deserialize(
+        SIMDUnit::t0_deserialize(
             &serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT],
+            &mut result.simd_units[i],
         );
     }
     ()
@@ -46,7 +45,7 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations, const DIMENSI
     cloop! {
         for (i, bytes) in serialized.chunks_exact(RING_ELEMENT_OF_T0S_SIZE).enumerate() {
             deserialize::<SIMDUnit>(bytes, &mut ring_elements[i]);
-            ring_elements[i] = ntt(ring_elements[i]);
+            ntt(&mut ring_elements[i]);
         }
     }
 

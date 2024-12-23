@@ -52,7 +52,7 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations, const DIMENSION: usize, con
     for i in 0..DIMENSION {
         for j in 0..low[0].simd_units.len() {
             SIMDUnit::decompose::<GAMMA2>(
-                t[i].simd_units[j],
+                &t[i].simd_units[j],
                 &mut low[i].simd_units[j],
                 &mut high[i].simd_units[j],
             );

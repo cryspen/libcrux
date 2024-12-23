@@ -56,12 +56,8 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn decompose<const GAMMA2: i32>(simd_unit: Self, low: &mut Self, high: &mut Self) {
-        arithmetic::decompose::<GAMMA2>(
-            simd_unit.coefficients,
-            &mut low.coefficients,
-            &mut high.coefficients,
-        );
+    fn decompose<const GAMMA2: i32>(simd_unit: &Vec256, low: &mut Vec256, high: &mut Vec256) {
+        arithmetic::decompose::<GAMMA2>(simd_unit, low, high);
     }
 
     #[inline(always)]
@@ -87,44 +83,45 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(simd_unit: Self, serialized: &mut [u8]) {
-        encoding::gamma1::serialize::<GAMMA1_EXPONENT>(simd_unit.coefficients, serialized)
+    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(simd_unit: &Vec256, serialized: &mut [u8]) {
+        encoding::gamma1::serialize::<GAMMA1_EXPONENT>(simd_unit, serialized)
     }
     #[inline(always)]
-    fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self {
-        encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized).into()
-    }
-
-    #[inline(always)]
-    fn commitment_serialize(simd_unit: Self, serialized: &mut [u8]) {
-        encoding::commitment::serialize(simd_unit.coefficients, serialized)
+    fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8], out: &mut Vec256) {
+        encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized, out);
     }
 
     #[inline(always)]
-    fn error_serialize<const ETA: usize>(simd_unit: Self, serialized: &mut [u8]) {
-        encoding::error::serialize::<ETA>(simd_unit.coefficients, serialized)
-    }
-    #[inline(always)]
-    fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self {
-        encoding::error::deserialize::<ETA>(serialized).into()
+    fn commitment_serialize(simd_unit: &Vec256, serialized: &mut [u8]) {
+        encoding::commitment::serialize(simd_unit, serialized)
     }
 
     #[inline(always)]
-    fn t0_serialize(simd_unit: Self) -> [u8; 13] {
-        encoding::t0::serialize(simd_unit.coefficients)
+    fn error_serialize<const ETA: usize>(simd_unit: &Vec256, serialized: &mut [u8]) {
+        encoding::error::serialize::<ETA>(simd_unit, serialized)
     }
     #[inline(always)]
-    fn t0_deserialize(serialized: &[u8]) -> Self {
-        encoding::t0::deserialize(serialized).into()
+    fn error_deserialize<const ETA: usize>(serialized: &[u8], out: &mut Self::Coefficient) {
+        encoding::error::deserialize::<ETA>(serialized, out);
     }
 
     #[inline(always)]
-    fn t1_serialize(simd_unit: Self) -> [u8; 10] {
-        encoding::t1::serialize(simd_unit.coefficients)
+    fn t0_serialize(simd_unit: &Self::Coefficient, out: &mut [u8]) {
+        // out len 13
+        encoding::t0::serialize(simd_unit, out);
     }
     #[inline(always)]
-    fn t1_deserialize(serialized: &[u8]) -> Self {
-        encoding::t1::deserialize(serialized).into()
+    fn t0_deserialize(serialized: &[u8], out: &mut Self::Coefficient) {
+        encoding::t0::deserialize(serialized, out);
+    }
+
+    #[inline(always)]
+    fn t1_serialize(simd_unit: &Self::Coefficient, out: &mut [u8]) {
+        encoding::t1::serialize(simd_unit, out);
+    }
+    #[inline(always)]
+    fn t1_deserialize(serialized: &[u8], out: &mut Self::Coefficient) {
+        encoding::t1::deserialize(serialized, out);
     }
 
     #[inline(always)]

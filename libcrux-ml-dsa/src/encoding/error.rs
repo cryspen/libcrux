@@ -11,7 +11,8 @@ pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZ
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
             SIMDUnit::error_serialize::<ETA>(
-                    *simd_unit,&mut serialized[i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit]
+                    simd_unit,
+                    &mut serialized[i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit]
                 );
         }
     }
@@ -26,8 +27,10 @@ fn deserialize<SIMDUnit: Operations, const ETA: usize>(
     let chunk_size = if ETA == 2 { 3 } else { 4 };
 
     for i in 0..result.simd_units.len() {
-        result.simd_units[i] =
-            SIMDUnit::error_deserialize::<ETA>(&serialized[i * chunk_size..(i + 1) * chunk_size]);
+        SIMDUnit::error_deserialize::<ETA>(
+            &serialized[i * chunk_size..(i + 1) * chunk_size],
+            &mut result.simd_units[i],
+        );
     }
     ()
 }
@@ -46,7 +49,7 @@ pub(crate) fn deserialize_to_vector_then_ntt<
     cloop! {
         for (i, bytes) in serialized.chunks_exact(RING_ELEMENT_SIZE).enumerate() {
             deserialize::<SIMDUnit, ETA>(bytes, &mut ring_elements[i]);
-            ring_elements[i] = ntt(ring_elements[i]);
+            ntt(&mut ring_elements[i]);
         }
     }
 

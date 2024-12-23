@@ -1,13 +1,11 @@
-use crate::helper::cloop;
-
-use super::super::vector_type::{PortableSIMDUnit, ZERO};
+use crate::{helper::cloop, simd::portable::vector_type::Coefficients};
 
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_17(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
+fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Coefficients, serialized: &mut [u8]) {
     const GAMMA1: i32 = 1 << 17;
 
     cloop! {
-        for (i, coefficients) in simd_unit.coefficients.chunks_exact(4).enumerate() {
+        for (i, coefficients) in simd_unit.chunks_exact(4).enumerate() {
             let coefficient0 = GAMMA1 - coefficients[0];
             let coefficient1 = GAMMA1 - coefficients[1];
             let coefficient2 = GAMMA1 - coefficients[2];
@@ -37,11 +35,11 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: PortableSIMDUnit, serialized: &m
 }
 
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_19(simd_unit: PortableSIMDUnit, serialized: &mut [u8]) {
+fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Coefficients, serialized: &mut [u8]) {
     const GAMMA1: i32 = 1 << 19;
 
     cloop! {
-        for (i, coefficients) in simd_unit.coefficients.chunks_exact(2).enumerate() {
+        for (i, coefficients) in simd_unit.chunks_exact(2).enumerate() {
             let coefficient0 = GAMMA1 - coefficients[0];
             let coefficient1 = GAMMA1 - coefficients[1];
 
@@ -60,7 +58,7 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: PortableSIMDUnit, serialized: &m
 
 #[inline(always)]
 pub(crate) fn serialize<const GAMMA1_EXPONENT: usize>(
-    simd_unit: PortableSIMDUnit,
+    simd_unit: &Coefficients,
     serialized: &mut [u8],
 ) {
     match GAMMA1_EXPONENT as u8 {
@@ -71,15 +69,13 @@ pub(crate) fn serialize<const GAMMA1_EXPONENT: usize>(
 }
 
 #[inline(always)]
-fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8]) -> PortableSIMDUnit {
+fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], simd_unit: &mut Coefficients) {
     // Each set of 9 bytes deserializes to 4 elements, and since each PortableSIMDUnit
     // can hold 8, we process 18 bytes in this function.
     debug_assert!(serialized.len() == 18);
 
     const GAMMA1: i32 = 1 << 17;
     const GAMMA1_TIMES_2_BITMASK: i32 = (GAMMA1 << 1) - 1;
-
-    let mut simd_unit = ZERO();
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(9).enumerate() {
@@ -103,26 +99,22 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8]) -> PortableSIMDUnit {
             coefficient3 |= (bytes[8] as i32) << 10;
             coefficient3 &= GAMMA1_TIMES_2_BITMASK;
 
-            simd_unit.coefficients[4 * i] = GAMMA1 - coefficient0;
-            simd_unit.coefficients[4 * i + 1] = GAMMA1 - coefficient1;
-            simd_unit.coefficients[4 * i + 2] = GAMMA1 - coefficient2;
-            simd_unit.coefficients[4 * i + 3] = GAMMA1 - coefficient3;
+            simd_unit[4 * i] = GAMMA1 - coefficient0;
+            simd_unit[4 * i + 1] = GAMMA1 - coefficient1;
+            simd_unit[4 * i + 2] = GAMMA1 - coefficient2;
+            simd_unit[4 * i + 3] = GAMMA1 - coefficient3;
         }
     }
-
-    simd_unit
 }
 
 #[inline(always)]
-fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8]) -> PortableSIMDUnit {
+fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], simd_unit: &mut Coefficients) {
     // Each set of 5 bytes deserializes to 2 elements, and since each PortableSIMDUnit
     // can hold 8, we process 5 * (8 / 2) = 20 bytes in this function.
     debug_assert!(serialized.len() == 20);
 
     const GAMMA1: i32 = 1 << 19;
     const GAMMA1_TIMES_2_BITMASK: i32 = (GAMMA1 << 1) - 1;
-
-    let mut simd_unit = ZERO();
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(5).enumerate() {
@@ -135,18 +127,16 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8]) -> PortableSIMDUnit {
             coefficient1 |= (bytes[3] as i32) << 4;
             coefficient1 |= (bytes[4] as i32) << 12;
 
-            simd_unit.coefficients[2 * i] = GAMMA1 - coefficient0;
-            simd_unit.coefficients[2 * i + 1] = GAMMA1 - coefficient1;
+            simd_unit[2 * i] = GAMMA1 - coefficient0;
+            simd_unit[2 * i + 1] = GAMMA1 - coefficient1;
         }
     }
-
-    simd_unit
 }
 #[inline(always)]
-pub(crate) fn deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> PortableSIMDUnit {
+pub(crate) fn deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8], out: &mut Coefficients) {
     match GAMMA1_EXPONENT as u8 {
-        17 => deserialize_when_gamma1_is_2_pow_17(serialized),
-        19 => deserialize_when_gamma1_is_2_pow_19(serialized),
+        17 => deserialize_when_gamma1_is_2_pow_17(serialized, out),
+        19 => deserialize_when_gamma1_is_2_pow_19(serialized, out),
         _ => unreachable!(),
     }
 }

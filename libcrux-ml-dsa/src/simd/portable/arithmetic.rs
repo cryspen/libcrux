@@ -273,16 +273,12 @@ pub(crate) fn use_one_hint<const GAMMA2: i32>(r: i32, hint: i32) -> i32 {
 
 #[inline(always)]
 pub fn decompose<const GAMMA2: i32>(
-    simd_unit: PortableSIMDUnit,
-    low: &mut PortableSIMDUnit,
-    high: &mut PortableSIMDUnit,
+    simd_unit: &Coefficients,
+    low: &mut Coefficients,
+    high: &mut Coefficients,
 ) {
-    for i in 0..low.coefficients.len() {
-        decompose_element::<GAMMA2>(
-            simd_unit.coefficients[i],
-            &mut low.coefficients[i],
-            &mut high.coefficients[i],
-        );
+    for i in 0..low.len() {
+        decompose_element::<GAMMA2>(simd_unit[i], &mut low[i], &mut high[i]);
     }
 }
 

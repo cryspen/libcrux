@@ -68,6 +68,13 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     }
 
     #[inline(always)]
+    pub(crate) fn add_mut(&mut self, rhs: &Self) {
+        for i in 0..self.simd_units.len() {
+            self.simd_units[i] = SIMDUnit::add(&self.simd_units[i], &rhs.simd_units[i]);
+        }
+    }
+
+    #[inline(always)]
     pub(crate) fn subtract(&self, rhs: &Self) -> Self {
         let mut difference = Self::ZERO();
 
@@ -76,5 +83,12 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         }
 
         difference
+    }
+
+    #[inline(always)]
+    pub(crate) fn subtract_mut(&mut self, rhs: &Self) {
+        for i in 0..self.simd_units.len() {
+            self.simd_units[i] = SIMDUnit::subtract(&self.simd_units[i], &rhs.simd_units[i]);
+        }
     }
 }

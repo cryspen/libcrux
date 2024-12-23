@@ -15,8 +15,7 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
-            serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                .copy_from_slice(&SIMDUnit::t1_serialize(*simd_unit));
+            SIMDUnit::t1_serialize(simd_unit, &mut serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]);
         }
     }
 
@@ -29,7 +28,10 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
 ) {
     const WINDOW: usize = 10;
     for i in 0..result.simd_units.len() {
-        result.simd_units[i] = SIMDUnit::t1_deserialize(&serialized[i * WINDOW..(i + 1) * WINDOW]);
+        SIMDUnit::t1_deserialize(
+            &serialized[i * WINDOW..(i + 1) * WINDOW],
+            &mut result.simd_units[i],
+        );
     }
     ()
 }

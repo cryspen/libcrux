@@ -27,7 +27,11 @@ pub(crate) trait Operations: Copy + Clone {
     fn add(lhs: &Self::Coefficient, rhs: &Self::Coefficient) -> Self::Coefficient;
     fn subtract(lhs: &Self::Coefficient, rhs: &Self::Coefficient) -> Self::Coefficient;
     fn infinity_norm_exceeds(simd_unit: &Self::Coefficient, bound: i32) -> bool;
-    fn decompose<const GAMMA2: i32>(simd_unit: Self, low: &mut Self, high: &mut Self);
+    fn decompose<const GAMMA2: i32>(
+        simd_unit: &Self::Coefficient,
+        low: &mut Self::Coefficient,
+        high: &mut Self::Coefficient,
+    );
     fn compute_hint<const GAMMA2: i32>(
         low: &Self::Coefficient,
         high: &Self::Coefficient,
@@ -58,23 +62,29 @@ pub(crate) trait Operations: Copy + Clone {
     // Encoding operations
 
     // Gamma1
-    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(simd_unit: Self, serialized: &mut [u8]);
-    fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self;
+    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(
+        simd_unit: &Self::Coefficient,
+        serialized: &mut [u8],
+    );
+    fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(
+        serialized: &[u8],
+        out: &mut Self::Coefficient,
+    );
 
     // Commitment
-    fn commitment_serialize(simd_unit: Self, serialized: &mut [u8]);
+    fn commitment_serialize(simd_unit: &Self::Coefficient, serialized: &mut [u8]);
 
     // Error
-    fn error_serialize<const ETA: usize>(simd_unit: Self, serialized: &mut [u8]);
-    fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self;
+    fn error_serialize<const ETA: usize>(simd_unit: &Self::Coefficient, serialized: &mut [u8]);
+    fn error_deserialize<const ETA: usize>(serialized: &[u8], out: &mut Self::Coefficient);
 
     // t0
-    fn t0_serialize(simd_unit: Self) -> [u8; 13];
-    fn t0_deserialize(serialized: &[u8]) -> Self;
+    fn t0_serialize(simd_unit: &Self::Coefficient, out: &mut [u8]); // out len 13
+    fn t0_deserialize(serialized: &[u8], out: &mut Self::Coefficient);
 
     // t1
-    fn t1_serialize(simd_unit: Self) -> [u8; 10];
-    fn t1_deserialize(serialized: &[u8]) -> Self;
+    fn t1_serialize(simd_unit: &Self::Coefficient, out: &mut [u8]); // out len 10
+    fn t1_deserialize(serialized: &[u8], out: &mut Self::Coefficient);
 
     // NTT
     fn ntt(simd_units: &mut [Self::Coefficient; SIMD_UNITS_IN_RING_ELEMENT]);
