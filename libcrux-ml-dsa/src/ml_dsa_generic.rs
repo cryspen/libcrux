@@ -16,7 +16,6 @@ use crate::{
     samplex4::{self, X4Sampler},
     simd::traits::Operations,
     types::{SigningError, VerificationError},
-    utils::into_padded_array,
     MLDSASignature,
 };
 
@@ -337,15 +336,15 @@ pub(crate) fn sign_internal<
         attempt += 1;
 
         let mut mask = [PolynomialRingElement::zero(); COLUMNS_IN_A];
+        let mut w0 = [PolynomialRingElement::zero(); ROWS_IN_A];
+        let mut commitment = [PolynomialRingElement::zero(); ROWS_IN_A];
 
         sample_mask_vector::<SIMDUnit, Shake256, Shake256X4, COLUMNS_IN_A, GAMMA1_EXPONENT>(
-            into_padded_array(&mask_seed),
+            &mask_seed,
             &mut domain_separator_for_mask,
             &mut mask,
         );
 
-        let mut w0 = [PolynomialRingElement::zero(); ROWS_IN_A];
-        let mut commitment = [PolynomialRingElement::zero(); ROWS_IN_A];
         {
             let mut a_x_mask = [PolynomialRingElement::zero(); ROWS_IN_A];
             compute_matrix_x_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(

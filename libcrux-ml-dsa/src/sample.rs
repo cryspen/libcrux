@@ -261,6 +261,14 @@ pub(crate) fn add_error_domain_separator(slice: &[u8], domain_separator: u16) ->
     out
 }
 
+// #[inline(always)]
+// fn update_seed(mut seed: [u8; 66], domain_separator: &mut u16) -> [u8; 66] {
+//     seed[64] = *domain_separator as u8;
+//     seed[65] = (*domain_separator >> 8) as u8;
+//     *domain_separator += 1;
+//     seed
+// }
+
 #[inline(always)]
 pub(crate) fn sample_four_error_ring_elements<
     SIMDUnit: Operations,
@@ -355,31 +363,23 @@ pub(crate) fn sample_four_error_ring_elements<
 }
 
 #[inline(always)]
-fn update_seed(mut seed: [u8; 66], domain_separator: &mut u16) -> [u8; 66] {
-    seed[64] = *domain_separator as u8;
-    seed[65] = (*domain_separator >> 8) as u8;
-    *domain_separator += 1;
-    seed
-}
-
-#[inline(always)]
 fn sample_mask_ring_element<
     SIMDUnit: Operations,
     Shake256: shake256::DsaXof,
     const GAMMA1_EXPONENT: usize,
 >(
-    seed: [u8; 66],
+    seed: &[u8; 66],
     result: &mut PolynomialRingElement<SIMDUnit>,
 ) {
     match GAMMA1_EXPONENT as u8 {
         17 => {
             let mut out = [0u8; 576];
-            Shake256::shake256::<576>(&seed, &mut out);
+            Shake256::shake256::<576>(seed, &mut out);
             encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out, result);
         }
         19 => {
             let mut out = [0u8; 640];
-            Shake256::shake256::<640>(&seed, &mut out);
+            Shake256::shake256::<640>(seed, &mut out);
             encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out, result);
         }
         _ => unreachable!(),
@@ -394,7 +394,7 @@ pub(crate) fn sample_mask_vector<
     const DIMENSION: usize,
     const GAMMA1_EXPONENT: usize,
 >(
-    mut seed: [u8; 66],
+    seed: &[u8; 64],
     domain_separator: &mut u16,
     mask: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) {
@@ -402,10 +402,11 @@ pub(crate) fn sample_mask_vector<
     debug_assert!(DIMENSION == 4 || DIMENSION == 5 || DIMENSION == 7);
     // So we can always sample 4 elements in one go first.
 
-    let seed0 = update_seed(seed, domain_separator);
-    let seed1 = update_seed(seed, domain_separator);
-    let seed2 = update_seed(seed, domain_separator);
-    let seed3 = update_seed(seed, domain_separator);
+    let seed0 = add_error_domain_separator(seed, *domain_separator);
+    let seed1 = add_error_domain_separator(seed, *domain_separator + 1);
+    let seed2 = add_error_domain_separator(seed, *domain_separator + 2);
+    let seed3 = add_error_domain_separator(seed, *domain_separator + 3);
+    *domain_separator += 4;
 
     match GAMMA1_EXPONENT as u8 {
         17 => {
@@ -439,12 +440,11 @@ pub(crate) fn sample_mask_vector<
 
     #[allow(clippy::needless_range_loop)]
     for i in 4..DIMENSION {
-        seed[64] = *domain_separator as u8;
-        seed[65] = (*domain_separator >> 8) as u8;
+        let seed = add_error_domain_separator(seed, *domain_separator);
         *domain_separator += 1;
 
         // TODO: For 87 we may want to do another 4 and discard 1.
-        sample_mask_ring_element::<SIMDUnit, Shake256, GAMMA1_EXPONENT>(seed, &mut mask[i]);
+        sample_mask_ring_element::<SIMDUnit, Shake256, GAMMA1_EXPONENT>(&seed, &mut mask[i]);
     }
 }
 
