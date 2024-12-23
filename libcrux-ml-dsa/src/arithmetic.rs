@@ -42,7 +42,7 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations, const DIMENSION: usize>(
 
 #[inline(always)]
 pub(crate) fn decompose_vector<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
-    t: [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    t: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
     low: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
     high: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) {

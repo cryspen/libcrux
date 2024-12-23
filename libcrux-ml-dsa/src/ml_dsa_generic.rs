@@ -352,7 +352,7 @@ pub(crate) fn sign_internal<
                 &mask,
                 &mut a_x_mask,
             );
-            decompose_vector::<SIMDUnit, ROWS_IN_A, GAMMA2>(a_x_mask, &mut w0, &mut commitment);
+            decompose_vector::<SIMDUnit, ROWS_IN_A, GAMMA2>(&a_x_mask, &mut w0, &mut commitment);
         }
 
         let mut commitment_hash_candidate = [0; COMMITMENT_HASH_SIZE];
@@ -380,10 +380,19 @@ pub(crate) fn sign_internal<
         >(commitment_hash_candidate, &mut verifier_challenge);
         ntt(&mut verifier_challenge);
 
-        let challenge_times_s1 =
-            vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(&s1_as_ntt, &verifier_challenge);
-        let challenge_times_s2 =
-            vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(&s2_as_ntt, &verifier_challenge);
+        // We need to clone here in case we need s1_as_ntt or s2_as_ntt again in
+        // another iteration of the loop.
+        let mut challenge_times_s1 = s1_as_ntt.clone();
+        let mut challenge_times_s2 = s2_as_ntt.clone();
+
+        vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(
+            &mut challenge_times_s1,
+            &verifier_challenge,
+        );
+        vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
+            &mut challenge_times_s2,
+            &verifier_challenge,
+        );
 
         add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mut mask, &challenge_times_s1);
         subtract_vectors::<SIMDUnit, ROWS_IN_A>(&mut w0, &challenge_times_s2);
@@ -399,8 +408,11 @@ pub(crate) fn sign_internal<
                 // XXX: https://github.com/hacspec/hax/issues/1171
                 // continue;
             } else {
-                let challenge_times_t0 = vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
-                    &t0_as_ntt,
+                // We need to clone here in case we need t0_as_ntt again in another iteration
+                // of the loop.
+                let mut challenge_times_t0 = t0_as_ntt.clone();
+                vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
+                    &mut challenge_times_t0,
                     &verifier_challenge,
                 );
                 if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(&challenge_times_t0, GAMMA2)

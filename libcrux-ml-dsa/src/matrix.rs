@@ -73,21 +73,15 @@ pub(crate) fn compute_matrix_x_mask<
     }
 }
 
-#[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn vector_times_ring_element<SIMDUnit: Operations, const DIMENSION: usize>(
-    vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+    vector: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
     ring_element: &PolynomialRingElement<SIMDUnit>,
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    // XXX: pull out the result to dsa generic
-    let mut result = vector.clone();
-
+) {
     for i in 0..vector.len() {
-        ntt_multiply_montgomery(&mut result[i], ring_element);
-        invert_ntt_montgomery(&mut result[i]);
+        ntt_multiply_montgomery(&mut vector[i], ring_element);
+        invert_ntt_montgomery(&mut vector[i]);
     }
-
-    result
 }
 
 #[inline(always)]
