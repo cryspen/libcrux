@@ -6,7 +6,9 @@ use libcrux_intrinsics::avx2::*;
 #[inline(always)]
 #[allow(unsafe_code)]
 pub(crate) fn invert_ntt_montgomery(re: &mut AVX2RingElement) {
-    unsafe {
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+    #[allow(unsafe_code)]
+    unsafe fn inv_inner(re: &mut AVX2RingElement) {
         invert_ntt_at_layer_0(re);
         invert_ntt_at_layer_1(re);
         invert_ntt_at_layer_2(re);
@@ -15,16 +17,19 @@ pub(crate) fn invert_ntt_montgomery(re: &mut AVX2RingElement) {
         invert_ntt_at_layer_5(re);
         invert_ntt_at_layer_6(re);
         invert_ntt_at_layer_7(re);
+
+        for i in 0..re.len() {
+            // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}
+            // we multiply by (MONTGOMERY_R^2) * (1/2^8) mod Q = 41,978 to both:
+            //
+            // - Divide the elements by 256 and
+            // - Convert the elements form montgomery domain to the standard domain.
+            const FACTOR: i32 = 41_978;
+            re[i] = arithmetic::montgomery_multiply_by_constant(re[i], FACTOR);
+        }
     }
-    for i in 0..re.len() {
-        // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}
-        // we multiply by (MONTGOMERY_R^2) * (1/2^8) mod Q = 41,978 to both:
-        //
-        // - Divide the elements by 256 and
-        // - Convert the elements form montgomery domain to the standard domain.
-        const FACTOR: i32 = 41_978;
-        re[i] = arithmetic::montgomery_multiply_by_constant(re[i], FACTOR);
-    }
+
+    unsafe { inv_inner(re) };
 }
 
 #[inline(always)]
@@ -270,11 +275,8 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
 ) {
     for j in OFFSET..OFFSET + STEP_BY {
-        // XXX: make nicer
-        let rejs = re[j + STEP_BY];
-        let mut a_minus_b = rejs;
-        arithmetic::subtract(&mut a_minus_b, &re[j]);
-        arithmetic::add(&mut re[j], &rejs);
+        let a_minus_b = mm256_sub_epi32(re[j + STEP_BY], re[j]);
+        re[j] = mm256_add_epi32(re[j], re[j + STEP_BY]);
         re[j + STEP_BY] = arithmetic::montgomery_multiply_by_constant(a_minus_b, ZETA);
     }
     ()

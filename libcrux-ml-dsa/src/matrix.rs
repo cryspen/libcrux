@@ -113,10 +113,11 @@ pub(crate) fn compute_w_approx<
     const COLUMNS_IN_A: usize,
 >(
     A_as_ntt: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    mut signer_response: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
+    signer_response: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
     verifier_challenge_as_ntt: &PolynomialRingElement<SIMDUnit>,
     t1: &mut [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) {
+    let mut signer_response = signer_response.clone();
     // Move signer response into NTT
     for i in 0..signer_response.len() {
         ntt(&mut signer_response[i]);

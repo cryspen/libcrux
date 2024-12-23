@@ -66,7 +66,6 @@ impl<
         }
     }
 
-    #[allow(non_snake_case)]
     #[inline(always)]
     pub(crate) fn deserialize<
         const GAMMA1_EXPONENT: usize,
@@ -75,7 +74,8 @@ impl<
         const SIGNATURE_SIZE: usize,
     >(
         serialized: &[u8; SIGNATURE_SIZE],
-    ) -> Result<Self, VerificationError> {
+        signature: &mut Self,
+    ) -> Result<(), VerificationError> {
         let (commitment_hash, rest_of_serialized) = serialized.split_at(COMMITMENT_HASH_SIZE);
         let (signer_response_serialized, hint_serialized) =
             rest_of_serialized.split_at(GAMMA1_RING_ELEMENT_SIZE * COLUMNS_IN_A);
@@ -141,10 +141,11 @@ impl<
             return Err(VerificationError::MalformedHintError);
         }
 
-        Ok(Signature {
-            commitment_hash: commitment_hash.try_into().unwrap(),
-            signer_response,
-            hint,
-        })
+        // Set output
+        signature.commitment_hash = commitment_hash.try_into().unwrap();
+        signature.signer_response = signer_response;
+        signature.hint = hint;
+
+        Ok(())
     }
 }

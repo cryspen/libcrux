@@ -5,8 +5,8 @@ use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
 fn butterfly_2(
-    a: Vec256,
-    b: Vec256,
+    re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
+    index: usize,
     zeta_a0: i32,
     zeta_a1: i32,
     zeta_a2: i32,
@@ -15,7 +15,7 @@ fn butterfly_2(
     zeta_b1: i32,
     zeta_b2: i32,
     zeta_b3: i32,
-) -> (Vec256, Vec256) {
+) {
     // We shuffle the terms to group those that need to be multiplied
     // with zetas in the high QWORDS of the vectors, i.e. if the inputs are
     //   a = (a7, a6, a5, a4, a3, a2, a1, a0)
@@ -24,166 +24,133 @@ fn butterfly_2(
     //   a_shuffled = ( a7, a5, a6, a4, a3, a1, a2, a0)
     //   b_shuffled = ( b7, b5, b6, b4, b3, b1, b2, b0)
     const SHUFFLE: i32 = 0b11_01_10_00;
-    let a_shuffled = mm256_shuffle_epi32::<SHUFFLE>(a);
-    let b_shuffled = mm256_shuffle_epi32::<SHUFFLE>(b);
+    let a = mm256_shuffle_epi32::<SHUFFLE>(re[index]);
+    let b = mm256_shuffle_epi32::<SHUFFLE>(re[index + 1]);
 
     // Now we can use the same approach as for `butterfly_4`, only
     // zetas need to be adjusted.
-    let mut summands = mm256_unpacklo_epi64(a_shuffled, b_shuffled);
-    let mut zeta_products = mm256_unpackhi_epi64(a_shuffled, b_shuffled);
+    let summands = mm256_unpacklo_epi64(a, b);
+    let mut zeta_products = mm256_unpackhi_epi64(a, b);
     let zetas = mm256_set_epi32(
         zeta_b3, zeta_b2, zeta_a3, zeta_a2, zeta_b1, zeta_b0, zeta_a1, zeta_a0,
     );
 
     arithmetic::montgomery_multiply(&mut zeta_products, &zetas);
 
-    let mut sub_terms = summands;
-    arithmetic::subtract(&mut sub_terms, &zeta_products);
-    arithmetic::add(&mut summands, &zeta_products);
-    let add_terms = summands;
+    let sub_terms = mm256_sub_epi32(summands, zeta_products);
+    let add_terms = mm256_add_epi32(summands, zeta_products);
 
     let a_terms_shuffled = mm256_unpacklo_epi64(add_terms, sub_terms);
     let b_terms_shuffled = mm256_unpackhi_epi64(add_terms, sub_terms);
 
     // Here, we undo the initial shuffle (it's self-inverse).
-    let a_out = mm256_shuffle_epi32::<SHUFFLE>(a_terms_shuffled);
-    let b_out = mm256_shuffle_epi32::<SHUFFLE>(b_terms_shuffled);
-
-    (a_out, b_out)
+    re[index] = mm256_shuffle_epi32::<SHUFFLE>(a_terms_shuffled);
+    re[index + 1] = mm256_shuffle_epi32::<SHUFFLE>(b_terms_shuffled);
 }
 
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 1 for 2 SIMD Units in one go.
 #[inline(always)]
 fn butterfly_4(
-    a: Vec256,
-    b: Vec256,
+    re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
+    index: usize,
     zeta_a0: i32,
     zeta_a1: i32,
     zeta_b0: i32,
     zeta_b1: i32,
-) -> (Vec256, Vec256) {
-    let mut summands = mm256_unpacklo_epi64(a, b);
-    let mut zeta_products = mm256_unpackhi_epi64(a, b);
+) {
+    let summands = mm256_unpacklo_epi64(re[index], re[index + 1]);
+    let mut zeta_products = mm256_unpackhi_epi64(re[index], re[index + 1]);
 
     let zetas = mm256_set_epi32(
         zeta_b1, zeta_b1, zeta_a1, zeta_a1, zeta_b0, zeta_b0, zeta_a0, zeta_a0,
     );
     arithmetic::montgomery_multiply(&mut zeta_products, &zetas);
 
-    let mut sub_terms = summands;
-    arithmetic::subtract(&mut sub_terms, &zeta_products);
-    arithmetic::add(&mut summands, &zeta_products);
-    let add_terms = summands;
+    let sub_terms = mm256_sub_epi32(summands, zeta_products);
+    let add_terms = mm256_add_epi32(summands, zeta_products);
 
     // Results are shuffled across the two SIMD registers.
     // We need to bring them in the right order.
-    let a_out = mm256_unpacklo_epi64(add_terms, sub_terms);
-    let b_out = mm256_unpackhi_epi64(add_terms, sub_terms);
-
-    (a_out, b_out)
+    re[index] = mm256_unpacklo_epi64(add_terms, sub_terms);
+    re[index + 1] = mm256_unpackhi_epi64(add_terms, sub_terms);
 }
 
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 2 for 2 SIMD Units in one go.
 #[inline(always)]
-fn butterfly_8(a: Vec256, b: Vec256, zeta0: i32, zeta1: i32) -> (Vec256, Vec256) {
-    let mut summands = mm256_set_m128i(mm256_castsi256_si128(b), mm256_castsi256_si128(a));
-    let mut zeta_products = mm256_permute2x128_si256::<0b0001_0011>(b, a);
+fn butterfly_8(
+    re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
+    index: usize,
+    zeta0: i32,
+    zeta1: i32,
+) {
+    let summands = mm256_set_m128i(
+        mm256_castsi256_si128(re[index + 1]),
+        mm256_castsi256_si128(re[index]),
+    );
+    let mut zeta_products = mm256_permute2x128_si256::<0b0001_0011>(re[index + 1], re[index]);
 
     let zetas = mm256_set_epi32(zeta1, zeta1, zeta1, zeta1, zeta0, zeta0, zeta0, zeta0);
     arithmetic::montgomery_multiply(&mut zeta_products, &zetas);
 
-    let mut sub_terms = summands;
-    arithmetic::subtract(&mut sub_terms, &zeta_products);
-    arithmetic::add(&mut summands, &zeta_products);
-    let add_terms = summands;
+    let sub_terms = mm256_sub_epi32(summands, zeta_products);
+    let add_terms = mm256_add_epi32(summands, zeta_products);
 
-    let a_out = mm256_set_m128i(
+    re[index] = mm256_set_m128i(
         mm256_castsi256_si128(sub_terms),
         mm256_castsi256_si128(add_terms),
     );
-    let b_out = mm256_permute2x128_si256::<0b0001_0011>(sub_terms, add_terms);
-
-    (a_out, b_out)
+    re[index + 1] = mm256_permute2x128_si256::<0b0001_0011>(sub_terms, add_terms);
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
-    #[inline(always)]
-    fn round(
-        re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
-        index: usize,
-        zeta_0: i32,
-        zeta_1: i32,
-        zeta_2: i32,
-        zeta_3: i32,
-        zeta_4: i32,
-        zeta_5: i32,
-        zeta_6: i32,
-        zeta_7: i32,
-    ) {
-        let (a, b) = butterfly_2(
-            re[index],
-            re[index + 1],
-            zeta_0,
-            zeta_1,
-            zeta_2,
-            zeta_3,
-            zeta_4,
-            zeta_5,
-            zeta_6,
-            zeta_7,
-        );
-        re[index] = a;
-        re[index + 1] = b;
-    }
-
-    round(
+    butterfly_2(
         re, 0, 2091667, 3407706, 2316500, 3817976, -3342478, 2244091, -2446433, -3562462,
     );
-    round(
+    butterfly_2(
         re, 2, 266997, 2434439, -1235728, 3513181, -3520352, -3759364, -1197226, -3193378,
     );
-    round(
+    butterfly_2(
         re, 4, 900702, 1859098, 909542, 819034, 495491, -1613174, -43260, -522500,
     );
-    round(
+    butterfly_2(
         re, 6, -655327, -3122442, 2031748, 3207046, -3556995, -525098, -768622, -3595838,
     );
-    round(
+    butterfly_2(
         re, 8, 342297, 286988, -2437823, 4108315, 3437287, -3342277, 1735879, 203044,
     );
-    round(
+    butterfly_2(
         re, 10, 2842341, 2691481, -2590150, 1265009, 4055324, 1247620, 2486353, 1595974,
     );
-    round(
+    butterfly_2(
         re, 12, -3767016, 1250494, 2635921, -3548272, -2994039, 1869119, 1903435, -1050970,
     );
-    round(
+    butterfly_2(
         re, 14, -1333058, 1237275, -3318210, -1430225, -451100, 1312455, 3306115, -1962642,
     );
-    round(
+    butterfly_2(
         re, 16, -1279661, 1917081, -2546312, -1374803, 1500165, 777191, 2235880, 3406031,
     );
-    round(
+    butterfly_2(
         re, 18, -542412, -2831860, -1671176, -1846953, -2584293, -3724270, 594136, -3776993,
     );
-    round(
+    butterfly_2(
         re, 20, -2013608, 2432395, 2454455, -164721, 1957272, 3369112, 185531, -1207385,
     );
-    round(
+    butterfly_2(
         re, 22, -3183426, 162844, 1616392, 3014001, 810149, 1652634, -3694233, -1799107,
     );
-    round(
+    butterfly_2(
         re, 24, -3038916, 3523897, 3866901, 269760, 2213111, -975884, 1717735, 472078,
     );
-    round(
+    butterfly_2(
         re, 26, -426683, 1723600, -1803090, 1910376, -1667432, -1104333, -260646, -3833893,
     );
-    round(
+    butterfly_2(
         re, 28, -2939036, -2235985, -420899, -2286327, 183443, -976891, 1612842, -3545687,
     );
-    round(
+    butterfly_2(
         re, 30, -554416, 3919660, -48306, -1362209, 3937738, 1400424, -846154, 1976782,
     );
 }
@@ -191,69 +158,43 @@ unsafe fn ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
-    #[inline(always)]
-    fn round(
-        re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
-        index: usize,
-        zeta_0: i32,
-        zeta_1: i32,
-        zeta_2: i32,
-        zeta_3: i32,
-    ) {
-        let (a, b) = butterfly_4(re[index], re[index + 1], zeta_0, zeta_1, zeta_2, zeta_3);
-        re[index] = a;
-        re[index + 1] = b;
-    }
-
-    round(re, 0, -3930395, -1528703, -3677745, -3041255);
-    round(re, 2, -1452451, 3475950, 2176455, -1585221);
-    round(re, 4, -1257611, 1939314, -4083598, -1000202);
-    round(re, 6, -3190144, -3157330, -3632928, 126922);
-    round(re, 8, 3412210, -983419, 2147896, 2715295);
-    round(re, 10, -2967645, -3693493, -411027, -2477047);
-    round(re, 12, -671102, -1228525, -22981, -1308169);
-    round(re, 14, -381987, 1349076, 1852771, -1430430);
-    round(re, 16, -3343383, 264944, 508951, 3097992);
-    round(re, 18, 44288, -1100098, 904516, 3958618);
-    round(re, 20, -3724342, -8578, 1653064, -3249728);
-    round(re, 22, 2389356, -210977, 759969, -1316856);
-    round(re, 24, 189548, -3553272, 3159746, -1851402);
-    round(re, 26, -2409325, -177440, 1315589, 1341330);
-    round(re, 28, 1285669, -1584928, -812732, -1439742);
-    round(re, 30, -3019102, -3881060, -3628969, 3839961);
+    butterfly_4(re, 0, -3930395, -1528703, -3677745, -3041255);
+    butterfly_4(re, 2, -1452451, 3475950, 2176455, -1585221);
+    butterfly_4(re, 4, -1257611, 1939314, -4083598, -1000202);
+    butterfly_4(re, 6, -3190144, -3157330, -3632928, 126922);
+    butterfly_4(re, 8, 3412210, -983419, 2147896, 2715295);
+    butterfly_4(re, 10, -2967645, -3693493, -411027, -2477047);
+    butterfly_4(re, 12, -671102, -1228525, -22981, -1308169);
+    butterfly_4(re, 14, -381987, 1349076, 1852771, -1430430);
+    butterfly_4(re, 16, -3343383, 264944, 508951, 3097992);
+    butterfly_4(re, 18, 44288, -1100098, 904516, 3958618);
+    butterfly_4(re, 20, -3724342, -8578, 1653064, -3249728);
+    butterfly_4(re, 22, 2389356, -210977, 759969, -1316856);
+    butterfly_4(re, 24, 189548, -3553272, 3159746, -1851402);
+    butterfly_4(re, 26, -2409325, -177440, 1315589, 1341330);
+    butterfly_4(re, 28, 1285669, -1584928, -812732, -1439742);
+    butterfly_4(re, 30, -3019102, -3881060, -3628969, 3839961);
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 unsafe fn ntt_at_layer_2(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
-    #[inline(always)]
-    fn round(
-        re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
-        index: usize,
-        zeta_0: i32,
-        zeta_1: i32,
-    ) {
-        let (a, b) = butterfly_8(re[index], re[index + 1], zeta_0, zeta_1);
-        re[index] = a;
-        re[index + 1] = b;
-    }
-
-    round(re, 0, 2706023, 95776);
-    round(re, 2, 3077325, 3530437);
-    round(re, 4, -1661693, -3592148);
-    round(re, 6, -2537516, 3915439);
-    round(re, 8, -3861115, -3043716);
-    round(re, 10, 3574422, -2867647);
-    round(re, 12, 3539968, -300467);
-    round(re, 14, 2348700, -539299);
-    round(re, 16, -1699267, -1643818);
-    round(re, 18, 3505694, -3821735);
-    round(re, 20, 3507263, -2140649);
-    round(re, 22, -1600420, 3699596);
-    round(re, 24, 811944, 531354);
-    round(re, 26, 954230, 3881043);
-    round(re, 28, 3900724, -2556880);
-    round(re, 30, 2071892, -2797779);
+    butterfly_8(re, 0, 2706023, 95776);
+    butterfly_8(re, 2, 3077325, 3530437);
+    butterfly_8(re, 4, -1661693, -3592148);
+    butterfly_8(re, 6, -2537516, 3915439);
+    butterfly_8(re, 8, -3861115, -3043716);
+    butterfly_8(re, 10, 3574422, -2867647);
+    butterfly_8(re, 12, 3539968, -300467);
+    butterfly_8(re, 14, 2348700, -539299);
+    butterfly_8(re, 16, -1699267, -1643818);
+    butterfly_8(re, 18, 3505694, -3821735);
+    butterfly_8(re, 20, 3507263, -2140649);
+    butterfly_8(re, 22, -1600420, 3699596);
+    butterfly_8(re, 24, 811944, 531354);
+    butterfly_8(re, 26, 954230, 3881043);
+    butterfly_8(re, 28, 3900724, -2556880);
+    butterfly_8(re, 30, 2071892, -2797779);
 }
 
 /// This is equivalent to the pqclean 0 and 1
@@ -369,12 +310,11 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
         let offset = (index * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT;
 
         for j in offset..offset + STEP_BY {
-            let mut t = re[j + STEP_BY];
-            arithmetic::montgomery_multiply(&mut t, &rhs);
+            arithmetic::montgomery_multiply(&mut re[j + STEP_BY], &rhs);
 
-            re[j + STEP_BY] = re[j];
-            arithmetic::subtract(&mut re[j + STEP_BY], &t);
-            arithmetic::add(&mut re[j], &t);
+            let tmp = mm256_sub_epi32(re[j], re[j + STEP_BY]);
+            re[j] = mm256_add_epi32(re[j], re[j + STEP_BY]);
+            re[j + STEP_BY] = tmp;
         }
         () // Needed because of https://github.com/hacspec/hax/issues/720
     }
@@ -446,11 +386,14 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
 #[allow(unsafe_code)]
 #[inline(always)]
 pub(crate) fn ntt(re: &mut AVX2RingElement) {
-    unsafe {
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+    unsafe fn avx2_ntt(re: &mut AVX2RingElement) {
         ntt_at_layer_7_and_6(re);
         ntt_at_layer_5_to_3(re);
         ntt_at_layer_2(re);
         ntt_at_layer_1(re);
         ntt_at_layer_0(re);
     }
+
+    unsafe { avx2_ntt(re) }
 }

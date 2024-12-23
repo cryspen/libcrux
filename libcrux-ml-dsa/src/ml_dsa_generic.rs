@@ -301,7 +301,7 @@ pub(crate) fn sign_internal<
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative::<Shake256Xof>(
         verification_key_hash,
-        domain_separation_context,
+        &domain_separation_context,
         message,
         &mut message_representative,
     );
@@ -494,7 +494,7 @@ pub(crate) fn sign_internal<
 #[inline(always)]
 fn derive_message_representative<Shake256Xof: shake256::Xof>(
     verification_key_hash: &[u8],
-    domain_separation_context: Option<DomainSeparationContext>,
+    domain_separation_context: &Option<DomainSeparationContext>,
     message: &[u8],
     message_representative: &mut [u8; 64],
 ) {
@@ -553,22 +553,21 @@ pub(crate) fn verify_internal<
         &mut t1,
     );
 
-    // let (seed_for_a, mut t1) =
-    //     encoding::verification_key::deserialize::<SIMDUnit, ROWS_IN_A, VERIFICATION_KEY_SIZE>(
-    //         verification_key_serialized,
-    //     );
-
-    let signature =
-        match Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
-            GAMMA1_EXPONENT,
-            GAMMA1_RING_ELEMENT_SIZE,
-            MAX_ONES_IN_HINT,
-            SIGNATURE_SIZE,
-        >(signature_serialized)
-        {
-            Ok(s) => s,
-            Err(e) => return Err(e),
-        };
+    let mut signature = Signature {
+        commitment_hash: [0u8; COMMITMENT_HASH_SIZE],
+        signer_response: [PolynomialRingElement::zero(); COLUMNS_IN_A],
+        hint: [[0i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
+    };
+    match Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        MAX_ONES_IN_HINT,
+        SIGNATURE_SIZE,
+    >(signature_serialized, &mut signature)
+    {
+        Ok(_) => (),
+        Err(e) => return Err(e),
+    };
 
     // We use if-else branches because early returns will not go through hax.
     if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
@@ -588,7 +587,7 @@ pub(crate) fn verify_internal<
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative::<Shake256Xof>(
         &verification_key_hash,
-        domain_separation_context,
+        &domain_separation_context,
         message,
         &mut message_representative,
     );
@@ -604,7 +603,7 @@ pub(crate) fn verify_internal<
 
     compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
         &matrix,
-        signature.signer_response,
+        &signature.signer_response,
         &verifier_challenge,
         &mut t1,
     );
