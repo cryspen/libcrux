@@ -1,6 +1,6 @@
 [package]
-name = "libcrux-ed25519"
-description = "Formally verified ed25519 signature library"
+name = "libcrux-poly1305"
+description = "Formally verified Poly1305 MAC library"
 
 version.workspace = true
 authors.workspace = true
@@ -10,9 +10,9 @@ edition.workspace = true
 repository.workspace = true
 readme.workspace = true
 
+[features]
+expose-hacl = []
+
 [dependencies]
 libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "../hacl-rs/" }
-libcrux-sha2 = { version = "=0.0.2-beta.2", path = "../sha2", features = [
-    "expose-hacl",
-] }
 libcrux-macros = { version = "=0.0.2-beta.2", path = "../macros" }
