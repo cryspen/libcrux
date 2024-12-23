@@ -9,42 +9,45 @@ mod invntt;
 mod ntt;
 mod sample;
 
+use vector_type::Coefficients;
 pub(crate) use vector_type::PortableSIMDUnit;
 
 impl Operations for PortableSIMDUnit {
-    fn ZERO() -> Self {
-        vector_type::ZERO()
+    type Coefficient = Coefficients;
+
+    fn ZERO() -> Coefficients {
+        vector_type::zero()
     }
 
-    fn from_coefficient_array(array: &[i32]) -> Self {
+    fn from_coefficient_array(array: &[i32]) -> Coefficients {
         vector_type::from_coefficient_array(array)
     }
 
-    fn to_coefficient_array(&self) -> [i32; 8] {
-        vector_type::to_coefficient_array(&self)
+    fn to_coefficient_array(value: &Coefficients, out: &mut [i32]) {
+        vector_type::to_coefficient_array(value, out)
     }
 
-    fn add(lhs: &Self, rhs: &Self) -> Self {
+    fn add(lhs: &Coefficients, rhs: &Coefficients) -> Coefficients {
         arithmetic::add(lhs, rhs)
     }
 
-    fn subtract(lhs: &Self, rhs: &Self) -> Self {
+    fn subtract(lhs: &Coefficients, rhs: &Coefficients) -> Coefficients {
         arithmetic::subtract(lhs, rhs)
     }
 
-    fn montgomery_multiply(lhs: Self, rhs: Self) -> Self {
-        arithmetic::montgomery_multiply(&lhs, &rhs)
+    fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
+        arithmetic::montgomery_multiply(lhs, rhs);
     }
 
-    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Self) -> Self {
-        arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit)
+    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
+        arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit);
     }
 
-    fn power2round(simd_unit: Self) -> (Self, Self) {
-        arithmetic::power2round(simd_unit)
+    fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
+        arithmetic::power2round(t0, t1)
     }
 
-    fn infinity_norm_exceeds(simd_unit: Self, bound: i32) -> bool {
+    fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
         arithmetic::infinity_norm_exceeds(simd_unit, bound)
     }
 
@@ -52,10 +55,13 @@ impl Operations for PortableSIMDUnit {
         arithmetic::decompose::<GAMMA2>(simd_unit, low, high)
     }
 
-    fn compute_hint<const GAMMA2: i32>(low: Self, high: Self) -> (usize, Self) {
+    fn compute_hint<const GAMMA2: i32>(
+        low: &Coefficients,
+        high: &Coefficients,
+    ) -> (usize, Coefficients) {
         arithmetic::compute_hint::<GAMMA2>(low, high)
     }
-    fn use_hint<const GAMMA2: i32>(simd_unit: Self, hint: Self) -> Self {
+    fn use_hint<const GAMMA2: i32>(simd_unit: &Coefficients, hint: &mut Coefficients) {
         arithmetic::use_hint::<GAMMA2>(simd_unit, hint)
     }
 
@@ -101,13 +107,11 @@ impl Operations for PortableSIMDUnit {
         encoding::t1::deserialize(serialized)
     }
 
-    fn ntt(simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT]) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
+    fn ntt(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         ntt::ntt(simd_units)
     }
 
-    fn invert_ntt_montgomery(
-        simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT],
-    ) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
+    fn invert_ntt_montgomery(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         invntt::invert_ntt_montgomery(simd_units)
     }
 }

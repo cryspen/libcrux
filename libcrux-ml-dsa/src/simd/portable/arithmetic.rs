@@ -1,4 +1,4 @@
-use super::vector_type::{FieldElement, PortableSIMDUnit, ZERO};
+use super::vector_type::{zero, Coefficients, FieldElement, PortableSIMDUnit, ZERO};
 use crate::{
     constants::BITS_IN_LOWER_PART_OF_T,
     helper::cloop,
@@ -10,22 +10,22 @@ use crate::{
 pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 
 #[inline(always)]
-pub fn add(lhs: &PortableSIMDUnit, rhs: &PortableSIMDUnit) -> PortableSIMDUnit {
-    let mut sum = ZERO();
+pub fn add(lhs: &Coefficients, rhs: &Coefficients) -> Coefficients {
+    let mut sum = zero();
 
-    for i in 0..sum.coefficients.len() {
-        sum.coefficients[i] = lhs.coefficients[i] + rhs.coefficients[i];
+    for i in 0..sum.len() {
+        sum[i] = lhs[i] + rhs[i];
     }
 
     sum
 }
 
 #[inline(always)]
-pub fn subtract(lhs: &PortableSIMDUnit, rhs: &PortableSIMDUnit) -> PortableSIMDUnit {
-    let mut difference = ZERO();
+pub fn subtract(lhs: &Coefficients, rhs: &Coefficients) -> Coefficients {
+    let mut difference = zero();
 
-    for i in 0..difference.coefficients.len() {
-        difference.coefficients[i] = lhs.coefficients[i] - rhs.coefficients[i];
+    for i in 0..difference.len() {
+        difference[i] = lhs[i] - rhs[i];
     }
 
     difference
@@ -35,6 +35,7 @@ pub fn subtract(lhs: &PortableSIMDUnit, rhs: &PortableSIMDUnit) -> PortableSIMDU
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u64) -> u64 {
     value & ((1 << n) - 1)
 }
+
 #[inline(always)]
 pub(crate) fn montgomery_reduce_element(value: i64) -> FieldElementTimesMontgomeryR {
     let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u64)
@@ -58,31 +59,17 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 }
 
 #[inline(always)]
-pub(crate) fn montgomery_multiply_by_constant(
-    mut simd_unit: PortableSIMDUnit,
-    c: i32,
-) -> PortableSIMDUnit {
-    for i in 0..simd_unit.coefficients.len() {
-        simd_unit.coefficients[i] =
-            montgomery_reduce_element((simd_unit.coefficients[i] as i64) * (c as i64))
+pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i32) {
+    for i in 0..simd_unit.len() {
+        simd_unit[i] = montgomery_reduce_element((simd_unit[i] as i64) * (c as i64))
     }
-
-    simd_unit
 }
 
 #[inline(always)]
-pub(crate) fn montgomery_multiply(
-    lhs: &PortableSIMDUnit,
-    rhs: &PortableSIMDUnit,
-) -> PortableSIMDUnit {
-    let mut product = ZERO();
-
-    for i in 0..product.coefficients.len() {
-        product.coefficients[i] =
-            montgomery_reduce_element((lhs.coefficients[i] as i64) * (rhs.coefficients[i] as i64))
+pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
+    for i in 0..lhs.len() {
+        lhs[i] = montgomery_reduce_element((lhs[i] as i64) * (rhs[i] as i64))
     }
-
-    product
 }
 
 // Splits t ∈ {0, ..., q-1} into t0 and t1 with a = t1*2ᴰ + t0
@@ -112,26 +99,17 @@ fn power2round_element(t: i32) -> (i32, i32) {
     (t0, t1)
 }
 
-pub fn power2round(simd_unit: PortableSIMDUnit) -> (PortableSIMDUnit, PortableSIMDUnit) {
-    let mut t0_simd_unit = ZERO();
-    let mut t1_simd_unit = ZERO();
-
-    cloop! {
-        for (i, t) in simd_unit.coefficients.into_iter().enumerate() {
-            let (t0, t1) = power2round_element(t);
-
-            t0_simd_unit.coefficients[i] = t0;
-            t1_simd_unit.coefficients[i] = t1;
-        }
+#[inline(always)]
+pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
+    for i in 0..t0.len() {
+        (t0[i], t1[1]) = power2round_element(t0[i]);
     }
-
-    (t0_simd_unit, t1_simd_unit)
 }
 
 // TODO: Revisit this function when doing the range analysis and testing
 // additional KATs.
 #[inline(always)]
-pub fn infinity_norm_exceeds(simd_unit: PortableSIMDUnit, bound: i32) -> bool {
+pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
     let mut exceeds = false;
 
     // It is ok to leak which coefficient violates the bound since
@@ -142,8 +120,8 @@ pub fn infinity_norm_exceeds(simd_unit: PortableSIMDUnit, bound: i32) -> bool {
     // straightforward way to do so (returning false) will not go through hax;
     // revisit if performance is impacted.
     cloop! {
-        for coefficient in simd_unit.coefficients.into_iter() {
-            debug_assert!(coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS);
+        for coefficient in simd_unit.iter() {
+            debug_assert!(*coefficient > -FIELD_MODULUS && *coefficient < FIELD_MODULUS);
             // This norm is calculated using the absolute value of the
             // signed representative in the range:
             //
@@ -169,16 +147,10 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
 }
 
 #[inline(always)]
-pub fn shift_left_then_reduce<const SHIFT_BY: i32>(
-    simd_unit: PortableSIMDUnit,
-) -> PortableSIMDUnit {
-    let mut out = ZERO();
-
-    for i in 0..simd_unit.coefficients.len() {
-        out.coefficients[i] = reduce_element(simd_unit.coefficients[i] << SHIFT_BY);
+pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
+    for i in 0..simd_unit.len() {
+        simd_unit[i] = reduce_element(simd_unit[i] << SHIFT_BY);
     }
-
-    out
 }
 
 #[inline(always)]
@@ -191,17 +163,16 @@ fn compute_one_hint<const GAMMA2: i32>(low: i32, high: i32) -> i32 {
 }
 
 #[inline(always)]
-pub fn compute_hint<const GAMMA2: i32>(
-    low: PortableSIMDUnit,
-    high: PortableSIMDUnit,
-) -> (usize, PortableSIMDUnit) {
-    let mut hint = ZERO();
+pub(super) fn compute_hint<const GAMMA2: i32>(
+    low: &Coefficients,
+    high: &Coefficients,
+) -> (usize, Coefficients) {
+    let mut hint = zero();
     let mut one_hints_count = 0;
 
-    for i in 0..hint.coefficients.len() {
-        hint.coefficients[i] =
-            compute_one_hint::<GAMMA2>(low.coefficients[i], high.coefficients[i]);
-        one_hints_count += hint.coefficients[i] as usize;
+    for i in 0..hint.len() {
+        hint[i] = compute_one_hint::<GAMMA2>(low[i], high[i]);
+        one_hints_count += hint[i] as usize;
     }
 
     (one_hints_count, hint)
@@ -316,18 +287,10 @@ pub fn decompose<const GAMMA2: i32>(
 }
 
 #[inline(always)]
-pub fn use_hint<const GAMMA2: i32>(
-    simd_unit: PortableSIMDUnit,
-    hint: PortableSIMDUnit,
-) -> PortableSIMDUnit {
-    let mut result = ZERO();
-
-    for i in 0..result.coefficients.len() {
-        result.coefficients[i] =
-            use_one_hint::<GAMMA2>(simd_unit.coefficients[i], hint.coefficients[i]);
+pub fn use_hint<const GAMMA2: i32>(simd_unit: &Coefficients, hint: &mut Coefficients) {
+    for i in 0..hint.len() {
+        hint[i] = use_one_hint::<GAMMA2>(simd_unit[i], hint[i]);
     }
-
-    result
 }
 
 #[cfg(test)]

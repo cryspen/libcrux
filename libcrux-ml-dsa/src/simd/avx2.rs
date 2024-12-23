@@ -7,67 +7,70 @@ mod ntt;
 mod rejection_sample;
 mod vector_type;
 
-pub(crate) use vector_type::AVX2SIMDUnit;
+use vector_type::Vec256;
+pub(crate) use vector_type::{AVX2RingElement, AVX2SIMDUnit};
 
 impl Operations for AVX2SIMDUnit {
+    type Coefficient = Vec256;
+
     #[inline(always)]
-    fn ZERO() -> Self {
-        vector_type::ZERO()
+    fn ZERO() -> Vec256 {
+        vector_type::zero()
     }
 
     #[inline(always)]
-    fn from_coefficient_array(coefficient_array: &[i32]) -> Self {
+    fn from_coefficient_array(coefficient_array: &[i32]) -> Vec256 {
         vector_type::from_coefficient_array(coefficient_array)
     }
 
     #[inline(always)]
-    fn to_coefficient_array(&self) -> [i32; 8] {
-        vector_type::to_coefficient_array(&self)
+    fn to_coefficient_array(value: &Vec256, out: &mut [i32]) {
+        vector_type::to_coefficient_array(value, out)
     }
     #[inline(always)]
-    fn add(lhs: &Self, rhs: &Self) -> Self {
-        arithmetic::add(lhs.coefficients, rhs.coefficients).into()
+    fn add(lhs: &Vec256, rhs: &Vec256) -> Vec256 {
+        arithmetic::add(lhs, rhs)
     }
     #[inline(always)]
-    fn subtract(lhs: &Self, rhs: &Self) -> Self {
-        arithmetic::subtract(lhs.coefficients, rhs.coefficients).into()
-    }
-
-    #[inline(always)]
-    fn montgomery_multiply(lhs: Self, rhs: Self) -> Self {
-        arithmetic::montgomery_multiply(lhs.coefficients, rhs.coefficients).into()
-    }
-    #[inline(always)]
-    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Self) -> Self {
-        arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit.coefficients).into()
+    fn subtract(lhs: &Vec256, rhs: &Vec256) -> Vec256 {
+        arithmetic::subtract(lhs, rhs)
     }
 
     #[inline(always)]
-    fn power2round(simd_unit: Self) -> (Self, Self) {
-        let (lower, upper) = arithmetic::power2round(simd_unit.coefficients);
-
-        (lower.into(), upper.into())
+    fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
+        arithmetic::montgomery_multiply(lhs, rhs);
+    }
+    #[inline(always)]
+    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256) {
+        arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit)
     }
 
     #[inline(always)]
-    fn infinity_norm_exceeds(simd_unit: Self, bound: i32) -> bool {
-        arithmetic::infinity_norm_exceeds(simd_unit.coefficients, bound)
+    fn power2round(t0: &mut Vec256, t1: &mut Vec256) {
+        arithmetic::power2round(t0, t1);
+    }
+
+    #[inline(always)]
+    fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
+        arithmetic::infinity_norm_exceeds(simd_unit, bound)
     }
 
     #[inline(always)]
     fn decompose<const GAMMA2: i32>(simd_unit: Self, low: &mut Self, high: &mut Self) {
-        arithmetic::decompose::<GAMMA2>(simd_unit.coefficients, &mut low.coefficients, &mut high.coefficients);
+        arithmetic::decompose::<GAMMA2>(
+            simd_unit.coefficients,
+            &mut low.coefficients,
+            &mut high.coefficients,
+        );
     }
 
     #[inline(always)]
-    fn compute_hint<const GAMMA2: i32>(low: Self, high: Self) -> (usize, Self) {
-        let (count, hint) = arithmetic::compute_hint::<GAMMA2>(low.coefficients, high.coefficients);
-
-        (count, hint.into())
+    fn compute_hint<const GAMMA2: i32>(low: &Vec256, high: &Vec256) -> (usize, Vec256) {
+        arithmetic::compute_hint::<GAMMA2>(low, high)
     }
     #[inline(always)]
-    fn use_hint<const GAMMA2: i32>(simd_unit: Self, hint: Self) -> Self {
-        arithmetic::use_hint::<GAMMA2>(simd_unit.coefficients, hint.coefficients).into()
+    fn use_hint<const GAMMA2: i32>(simd_unit: &Vec256, hint: &mut Vec256) {
+        arithmetic::use_hint::<GAMMA2>(simd_unit, hint);
     }
 
     #[inline(always)]

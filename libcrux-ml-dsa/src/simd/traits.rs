@@ -15,26 +15,31 @@ pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449;
 pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 pub(crate) trait Operations: Copy + Clone {
-    #[allow(non_snake_case)]
-    fn ZERO() -> Self;
+    type Coefficient: Copy; // XXX: make generic? drop copy?
 
-    fn from_coefficient_array(array: &[i32]) -> Self;
-    fn to_coefficient_array(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT];
+    #[allow(non_snake_case)]
+    fn ZERO() -> Self::Coefficient;
+
+    fn from_coefficient_array(array: &[i32]) -> Self::Coefficient;
+    fn to_coefficient_array(value: &Self::Coefficient, out: &mut [i32]);
 
     // Arithmetic
-    fn add(lhs: &Self, rhs: &Self) -> Self;
-    fn subtract(lhs: &Self, rhs: &Self) -> Self;
-    fn infinity_norm_exceeds(simd_unit: Self, bound: i32) -> bool;
+    fn add(lhs: &Self::Coefficient, rhs: &Self::Coefficient) -> Self::Coefficient;
+    fn subtract(lhs: &Self::Coefficient, rhs: &Self::Coefficient) -> Self::Coefficient;
+    fn infinity_norm_exceeds(simd_unit: &Self::Coefficient, bound: i32) -> bool;
     fn decompose<const GAMMA2: i32>(simd_unit: Self, low: &mut Self, high: &mut Self);
-    fn compute_hint<const GAMMA2: i32>(low: Self, high: Self) -> (usize, Self);
-    fn use_hint<const GAMMA2: i32>(simd_unit: Self, hint: Self) -> Self;
+    fn compute_hint<const GAMMA2: i32>(
+        low: &Self::Coefficient,
+        high: &Self::Coefficient,
+    ) -> (usize, Self::Coefficient);
+    fn use_hint<const GAMMA2: i32>(simd_unit: &Self::Coefficient, hint: &mut Self::Coefficient);
 
     // Modular operations
-    fn montgomery_multiply(lhs: Self, rhs: Self) -> Self;
-    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Self) -> Self;
+    fn montgomery_multiply(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient);
+    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self::Coefficient);
 
     // Decomposition operations
-    fn power2round(simd_unit: Self) -> (Self, Self);
+    fn power2round(t0: &mut Self::Coefficient, t1: &mut Self::Coefficient);
 
     // Sampling
     //
@@ -72,10 +77,8 @@ pub(crate) trait Operations: Copy + Clone {
     fn t1_deserialize(serialized: &[u8]) -> Self;
 
     // NTT
-    fn ntt(simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT]) -> [Self; SIMD_UNITS_IN_RING_ELEMENT];
+    fn ntt(simd_units: &mut [Self::Coefficient; SIMD_UNITS_IN_RING_ELEMENT]);
 
     // invert NTT and convert to standard domain
-    fn invert_ntt_montgomery(
-        simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT],
-    ) -> [Self; SIMD_UNITS_IN_RING_ELEMENT];
+    fn invert_ntt_montgomery(simd_units: &mut [Self::Coefficient; SIMD_UNITS_IN_RING_ELEMENT]);
 }

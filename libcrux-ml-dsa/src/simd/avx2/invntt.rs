@@ -1,22 +1,20 @@
-use super::arithmetic;
+use super::{arithmetic, AVX2RingElement};
 use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
 #[allow(unsafe_code)]
-pub(crate) fn invert_ntt_montgomery(
-    mut re: [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
-) -> [Vec256; SIMD_UNITS_IN_RING_ELEMENT] {
+pub(crate) fn invert_ntt_montgomery(re: &mut AVX2RingElement) {
     unsafe {
-        invert_ntt_at_layer_0(&mut re);
-        invert_ntt_at_layer_1(&mut re);
-        invert_ntt_at_layer_2(&mut re);
-        invert_ntt_at_layer_3(&mut re);
-        invert_ntt_at_layer_4(&mut re);
-        invert_ntt_at_layer_5(&mut re);
-        invert_ntt_at_layer_6(&mut re);
-        invert_ntt_at_layer_7(&mut re);
+        invert_ntt_at_layer_0(re);
+        invert_ntt_at_layer_1(re);
+        invert_ntt_at_layer_2(re);
+        invert_ntt_at_layer_3(re);
+        invert_ntt_at_layer_4(re);
+        invert_ntt_at_layer_5(re);
+        invert_ntt_at_layer_6(re);
+        invert_ntt_at_layer_7(re);
     }
     for i in 0..re.len() {
         // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}
@@ -24,10 +22,9 @@ pub(crate) fn invert_ntt_montgomery(
         //
         // - Divide the elements by 256 and
         // - Convert the elements form montgomery domain to the standard domain.
-        re[i] = arithmetic::montgomery_multiply_by_constant(re[i], 41_978);
+        const FACTOR: i32 = 41_978;
+        re[i] = arithmetic::montgomery_multiply_by_constant(re[i], FACTOR);
     }
-
-    re
 }
 
 #[inline(always)]
@@ -50,16 +47,16 @@ fn simd_unit_invert_ntt_at_layer_0(
     let lo_values = mm256_unpacklo_epi64(a_shuffled, b_shuffled);
     let hi_values = mm256_unpackhi_epi64(a_shuffled, b_shuffled);
 
-    let sums = arithmetic::add(lo_values, hi_values);
-    let differences = arithmetic::subtract(hi_values, lo_values);
+    let sums = arithmetic::add(&lo_values, &hi_values);
+    let mut differences = arithmetic::subtract(&hi_values, &lo_values);
 
     let zetas = mm256_set_epi32(
         zeta13, zeta12, zeta03, zeta02, zeta11, zeta10, zeta01, zeta00,
     );
-    let products = arithmetic::montgomery_multiply(differences, zetas);
+    arithmetic::montgomery_multiply(&mut differences, &zetas);
 
-    let a_shuffled = mm256_unpacklo_epi64(sums, products);
-    let b_shuffled = mm256_unpackhi_epi64(sums, products);
+    let a_shuffled = mm256_unpacklo_epi64(sums, differences);
+    let b_shuffled = mm256_unpackhi_epi64(sums, differences);
 
     let a = mm256_shuffle_epi32::<SHUFFLE>(a_shuffled);
     let b = mm256_shuffle_epi32::<SHUFFLE>(b_shuffled);
@@ -79,16 +76,16 @@ fn simd_unit_invert_ntt_at_layer_1(
     let lo_values = mm256_unpacklo_epi64(simd_unit0, simd_unit1);
     let hi_values = mm256_unpackhi_epi64(simd_unit0, simd_unit1);
 
-    let sums = arithmetic::add(lo_values, hi_values);
-    let differences = arithmetic::subtract(hi_values, lo_values);
+    let sums = arithmetic::add(&lo_values, &hi_values);
+    let mut differences = arithmetic::subtract(&hi_values, &lo_values);
 
     let zetas = mm256_set_epi32(
         zeta11, zeta11, zeta01, zeta01, zeta10, zeta10, zeta00, zeta00,
     );
-    let products = arithmetic::montgomery_multiply(differences, zetas);
+    arithmetic::montgomery_multiply(&mut differences, &zetas);
 
-    let a = mm256_unpacklo_epi64(sums, products);
-    let b = mm256_unpackhi_epi64(sums, products);
+    let a = mm256_unpacklo_epi64(sums, differences);
+    let b = mm256_unpackhi_epi64(sums, differences);
 
     (a, b)
 }
@@ -103,14 +100,14 @@ fn simd_unit_invert_ntt_at_layer_2(
     let lo_values = mm256_permute2x128_si256::<0x20>(simd_unit0, simd_unit1);
     let hi_values = mm256_permute2x128_si256::<0x31>(simd_unit0, simd_unit1);
 
-    let sums = arithmetic::add(lo_values, hi_values);
-    let differences = arithmetic::subtract(hi_values, lo_values);
+    let sums = arithmetic::add(&lo_values, &hi_values);
+    let mut differences = arithmetic::subtract(&hi_values, &lo_values);
 
     let zetas = mm256_set_epi32(zeta1, zeta1, zeta1, zeta1, zeta0, zeta0, zeta0, zeta0);
-    let products = arithmetic::montgomery_multiply(differences, zetas);
+    arithmetic::montgomery_multiply(&mut differences, &zetas);
 
-    let a = mm256_permute2x128_si256::<0x20>(sums, products);
-    let b = mm256_permute2x128_si256::<0x31>(sums, products);
+    let a = mm256_permute2x128_si256::<0x20>(sums, differences);
+    let b = mm256_permute2x128_si256::<0x31>(sums, differences);
 
     (a, b)
 }
@@ -267,8 +264,8 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
 ) {
     for j in OFFSET..OFFSET + STEP_BY {
-        let a_minus_b = arithmetic::subtract(re[j + STEP_BY], re[j]);
-        re[j] = arithmetic::add(re[j], re[j + STEP_BY]);
+        let a_minus_b = arithmetic::subtract(&re[j + STEP_BY], &re[j]);
+        re[j] = arithmetic::add(&re[j], &re[j + STEP_BY]);
         re[j + STEP_BY] = arithmetic::montgomery_multiply_by_constant(a_minus_b, ZETA);
     }
     ()

@@ -5,7 +5,7 @@ use crate::{
 
 #[derive(Clone, Copy)]
 pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
-    pub(crate) simd_units: [SIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
+    pub(crate) simd_units: [SIMDUnit::Coefficient; SIMD_UNITS_IN_RING_ELEMENT],
 }
 
 impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
@@ -17,14 +17,13 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     }
 
     // This is useful for debugging.
-    #[allow(dead_code)]
+    // XXX: Used in `make_int`
     pub(crate) fn to_i32_array(&self) -> [i32; 256] {
         let mut result = [0i32; 256];
 
         cloop! {
             for (i, simd_unit) in self.simd_units.iter().enumerate() {
-                result[i * COEFFICIENTS_IN_SIMD_UNIT..(i + 1) * COEFFICIENTS_IN_SIMD_UNIT]
-                    .copy_from_slice(&simd_unit.to_coefficient_array());
+                SIMDUnit::to_coefficient_array(&simd_unit, &mut result[i * COEFFICIENTS_IN_SIMD_UNIT..(i + 1) * COEFFICIENTS_IN_SIMD_UNIT]);
             }
         }
 
@@ -51,7 +50,7 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         let mut exceeds = false;
 
         for i in 0..self.simd_units.len() {
-            exceeds = exceeds || SIMDUnit::infinity_norm_exceeds(self.simd_units[i], bound);
+            exceeds = exceeds || SIMDUnit::infinity_norm_exceeds(&self.simd_units[i], bound);
         }
 
         exceeds
