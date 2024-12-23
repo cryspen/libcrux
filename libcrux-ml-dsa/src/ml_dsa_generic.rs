@@ -541,15 +541,22 @@ pub(crate) fn verify_internal<
     const ONES_IN_VERIFIER_CHALLENGE: usize,
     const MAX_ONES_IN_HINT: usize,
 >(
-    verification_key_serialized: &[u8; VERIFICATION_KEY_SIZE],
+    verification_key: &[u8; VERIFICATION_KEY_SIZE],
     message: &[u8],
     domain_separation_context: Option<DomainSeparationContext>,
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    let (seed_for_a, mut t1) =
-        encoding::verification_key::deserialize::<SIMDUnit, ROWS_IN_A, VERIFICATION_KEY_SIZE>(
-            verification_key_serialized,
-        );
+    let (seed_for_a, t1_serialized) = verification_key.split_at(SEED_FOR_A_SIZE);
+    let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
+    encoding::verification_key::deserialize::<SIMDUnit, ROWS_IN_A, VERIFICATION_KEY_SIZE>(
+        t1_serialized,
+        &mut t1,
+    );
+
+    // let (seed_for_a, mut t1) =
+    //     encoding::verification_key::deserialize::<SIMDUnit, ROWS_IN_A, VERIFICATION_KEY_SIZE>(
+    //         verification_key_serialized,
+    //     );
 
     let signature =
         match Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
@@ -575,7 +582,7 @@ pub(crate) fn verify_internal<
 
     let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
     Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
-        verification_key_serialized,
+        verification_key,
         &mut verification_key_hash,
     );
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
