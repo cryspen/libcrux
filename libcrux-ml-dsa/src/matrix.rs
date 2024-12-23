@@ -102,16 +102,12 @@ pub(crate) fn add_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
 
 #[inline(always)]
 pub(crate) fn subtract_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
-    lhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+    lhs: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
     rhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
+) {
     for i in 0..DIMENSION {
-        result[i] = PolynomialRingElement::<SIMDUnit>::subtract(&lhs[i], &rhs[i]);
+        PolynomialRingElement::<SIMDUnit>::subtract_mut(&mut lhs[i], &rhs[i]);
     }
-
-    result
 }
 
 /// Compute InvertNTT(Â ◦ ẑ - ĉ ◦ NTT(t₁2ᵈ))

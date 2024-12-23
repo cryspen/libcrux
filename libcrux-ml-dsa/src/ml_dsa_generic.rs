@@ -361,9 +361,7 @@ pub(crate) fn sign_internal<
             vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(&s2_as_ntt, &verifier_challenge);
 
         add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mut mask, &challenge_times_s1);
-
-        let mut w0_minus_challenge_times_s2 =
-            subtract_vectors::<SIMDUnit, ROWS_IN_A>(&w0, &challenge_times_s2);
+        subtract_vectors::<SIMDUnit, ROWS_IN_A>(&mut w0, &challenge_times_s2);
 
         if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
             &mask,
@@ -372,10 +370,7 @@ pub(crate) fn sign_internal<
             // XXX: https://github.com/hacspec/hax/issues/1171
             // continue;
         } else {
-            if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(
-                &w0_minus_challenge_times_s2,
-                GAMMA2 - BETA,
-            ) {
+            if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(&w0, GAMMA2 - BETA) {
                 // XXX: https://github.com/hacspec/hax/issues/1171
                 // continue;
             } else {
@@ -388,14 +383,9 @@ pub(crate) fn sign_internal<
                     // XXX: https://github.com/hacspec/hax/issues/1171
                     // continue;
                 } else {
-                    add_vectors::<SIMDUnit, ROWS_IN_A>(
-                        &mut w0_minus_challenge_times_s2,
-                        &challenge_times_t0,
-                    );
-                    let (hint_candidate, ones_in_hint) = make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(
-                        &w0_minus_challenge_times_s2,
-                        &commitment,
-                    );
+                    add_vectors::<SIMDUnit, ROWS_IN_A>(&mut w0, &challenge_times_t0);
+                    let (hint_candidate, ones_in_hint) =
+                        make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(&w0, &commitment);
 
                     if ones_in_hint > MAX_ONES_IN_HINT {
                         // XXX: https://github.com/hacspec/hax/issues/1171
