@@ -80,14 +80,14 @@ let deserialize_to_unsigned (v_ETA: usize) (serialized: t_Slice u8) =
         Rust_primitives.Hax.t_Never)
 
 let deserialize (v_ETA: usize) (serialized: t_Slice u8) =
-  let unsigned:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let deserialized:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     deserialize_to_unsigned v_ETA serialized
   in
   Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (
           cast (v_ETA <: usize) <: i32)
       <:
       Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    unsigned
+    deserialized
 
 let serialize_when_eta_is_2_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8) =
   let serialized:t_Array u8 (sz 16) = Rust_primitives.Hax.repeat 0uy (sz 16) in
