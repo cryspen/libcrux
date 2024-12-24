@@ -208,6 +208,10 @@ jobs:
         run: ./build/ml_kem_test
         if: ${{ matrix.os != 'windows-latest' }}
 
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/Debug/ml_kem_test
+        if: ${{ matrix.os == 'windows-latest' }}
+
   build-header-only-ml-dsa:
     needs: [extract-header-only-ml-dsa]
     strategy:
@@ -233,3 +237,8 @@ jobs:
 
       - name: 🏃🏻‍♀️ Test
         run: ./build/ml_dsa_test
+        if: ${{ matrix.os != 'windows-latest' }}
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/Debug/ml_dsa_test
+        if: ${{ matrix.os == 'windows-latest' }}
