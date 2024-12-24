@@ -9,7 +9,7 @@ opam init --bare --disable-sandboxing --shell-setup --yes
 opam switch create 4.14.1
 
 # Get F*, HACL*, Charon, Karamel, Eurydice for running proofs and extraction
-curl -L https://github.com/FStarLang/FStar/releases/download/v2024.09.05/fstar_2024.09.05_Linux_x86_64.tar.gz \
+curl -L https://github.com/FStarLang/FStar/releases/download/v2024.12.03/fstar_2024.12.03_Linux_x86_64.tar.gz \
     --output Fstar.tar.gz
 tar --extract --file Fstar.tar.gz
 rm -f Fstar.tar.gz
@@ -32,5 +32,5 @@ echo "export PATH=\"${PATH}:$HOME/fstar/bin:$HOME/z3/bin\"" >>$HOME/.profile
 echo "[[ ! -r /home/$USER/.opam/opam-init/init.sh ]] || source /home/$USER/.opam/opam-init/init.sh  > /dev/null 2> /dev/null" >>$HOME/.profile
 
 source $HOME/.profile
-opam install --yes ocamlfind visitors menhir ppx_deriving_yojson core_unix sedlex wasm fix process pprint zarith yaml easy_logging terminal
+opam install --yes ocamlfind visitors menhir ppx_deriving_yojson core_unix sedlex wasm fix process pprint zarith yaml easy_logging terminal unionFind
 eval $(opam env)

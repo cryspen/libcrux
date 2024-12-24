@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
- * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
- * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: c32123f22d4781d63b90bf061f62d6986f5cbcc1
+ * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
+ * Eurydice: 83ab5654d49df0603797bf510475d52d67ca24d8
+ * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: eb80bb89b0a5fc54d9c40357cdfb9b21cb9ff941
  */
 
 #ifndef __libcrux_core_H
@@ -148,10 +148,10 @@ static inline uint8_t *libcrux_ml_dsa_types_as_ref_8f_fa(
   return self->value;
 }
 
-#define libcrux_ml_dsa_types_MalformedHintError 0
-#define libcrux_ml_dsa_types_SignerResponseExceedsBoundError 1
-#define libcrux_ml_dsa_types_CommitmentHashesDontMatchError 2
-#define libcrux_ml_dsa_types_VerificationContextTooLongError 3
+#define libcrux_ml_dsa_types_VerificationError_MalformedHintError 0
+#define libcrux_ml_dsa_types_VerificationError_SignerResponseExceedsBoundError 1
+#define libcrux_ml_dsa_types_VerificationError_CommitmentHashesDontMatchError 2
+#define libcrux_ml_dsa_types_VerificationError_VerificationContextTooLongError 3
 
 typedef uint8_t libcrux_ml_dsa_types_VerificationError;
 
@@ -245,8 +245,8 @@ typedef struct Option_67_s {
   uint8_t f0[48U];
 } Option_67;
 
-#define libcrux_ml_dsa_types_RejectionSamplingError 0
-#define libcrux_ml_dsa_types_ContextTooLongError 1
+#define libcrux_ml_dsa_types_SigningError_RejectionSamplingError 0
+#define libcrux_ml_dsa_types_SigningError_ContextTooLongError 1
 
 typedef uint8_t libcrux_ml_dsa_types_SigningError;
 

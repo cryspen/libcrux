@@ -4,23 +4,23 @@ set -v -e -x
 
 source $HOME/.profile
 
-curl -L https://github.com/AeneasVerif/charon/archive/45f5a34f336e35c6cc2253bc90cbdb8d812cefa9.zip \
+curl -L https://github.com/AeneasVerif/charon/archive/db4e045d4597d06d854ce7a2c10e8dcfda6ecd25.zip \
     --output charon.zip
 unzip charon.zip
 rm -rf charon.zip
-mv charon-45f5a34f336e35c6cc2253bc90cbdb8d812cefa9/ charon
+mv charon-db4e045d4597d06d854ce7a2c10e8dcfda6ecd25/ charon
 
-curl -L https://github.com/FStarLang/karamel/archive/8c3612018c25889288da6857771be3ad03b75bcd.zip \
+curl -L https://github.com/FStarLang/karamel/archive/3823e3d82fa0b271d799b61c59ffb4742ddc1e65.zip \
     --output karamel.zip
 unzip karamel.zip
 rm -rf karamel.zip
-mv karamel-8c3612018c25889288da6857771be3ad03b75bcd/ karamel
+mv karamel-3823e3d82fa0b271d799b61c59ffb4742ddc1e65/ karamel
 
-curl -L https://github.com/AeneasVerif/eurydice/archive/e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20.zip \
+curl -L https://github.com/AeneasVerif/eurydice/archive/83ab5654d49df0603797bf510475d52d67ca24d8.zip \
     --output eurydice.zip
 unzip eurydice.zip
 rm -rf eurydice.zip
-mv eurydice-e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20/ eurydice
+mv eurydice-83ab5654d49df0603797bf510475d52d67ca24d8/ eurydice
 
 echo "export KRML_HOME=$HOME/karamel" >>$HOME/.profile
 echo "export EURYDICE_HOME=$HOME/eurydice" >>$HOME/.profile
@@ -39,7 +39,7 @@ cd -
 
 cd eurydice/lib
 rm -f charon
-ln -s $CHARON_HOME/charon-ml charon
+ln -s $CHARON_HOME charon
 rm -f krml
 ln -s $KRML_HOME/lib krml
 cd ../

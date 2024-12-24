@@ -137,9 +137,13 @@ impl Operations for AVX2SIMDUnit {
         }
         let result = ntt::ntt(re);
 
-        core::array::from_fn(|i| Self {
-            coefficients: result[i],
-        })
+        let mut out = [Self::ZERO(); SIMD_UNITS_IN_RING_ELEMENT];
+        for i in 0..result.len() {
+            out[i] = Self {
+                coefficients: result[i],
+            };
+        }
+        out
     }
 
     #[inline(always)]
@@ -154,8 +158,12 @@ impl Operations for AVX2SIMDUnit {
         }
         let result = invntt::invert_ntt_montgomery(re);
 
-        core::array::from_fn(|i| Self {
-            coefficients: result[i],
-        })
+        let mut out = [Self::ZERO(); SIMD_UNITS_IN_RING_ELEMENT];
+        for i in 0..result.len() {
+            out[i] = Self {
+                coefficients: result[i],
+            };
+        }
+        out
     }
 }
