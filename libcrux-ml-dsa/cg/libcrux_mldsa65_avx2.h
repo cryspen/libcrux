@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
- * Eurydice: 83ab5654d49df0603797bf510475d52d67ca24d8
+ * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
  * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: eb80bb89b0a5fc54d9c40357cdfb9b21cb9ff941
+ * Libcrux: 834b7f51701fa4e8695a784c138ed230f49f0c4e
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -2127,7 +2127,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_a2(
   libcrux_ml_dsa_simd_avx2_ntt_ntt(copy_of_re, result);
   __m256i out[32U];
   for (size_t i = (size_t)0U; i < (size_t)32U; i++) {
-    out[i] = libcrux_ml_dsa_simd_avx2_ZERO_a2();
+    out[i] = libcrux_ml_dsa_simd_avx2_vector_type_ZERO();
   }
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(
@@ -3202,7 +3202,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invert_ntt_montgomery_a2(
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_montgomery(copy_of_re, result);
   __m256i out[32U];
   for (size_t i = (size_t)0U; i < (size_t)32U; i++) {
-    out[i] = libcrux_ml_dsa_simd_avx2_ZERO_a2();
+    out[i] = libcrux_ml_dsa_simd_avx2_vector_type_ZERO();
   }
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(
