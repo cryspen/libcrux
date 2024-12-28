@@ -7,7 +7,6 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_dsa.Simd.Avx2.Vector_type in
-  let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -576,9 +575,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
           Libcrux_ml_dsa.Simd.Avx2.Ntt.ntt re
         in
         let out:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32) =
-          Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Simd.Traits.f_ZERO #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-                #FStar.Tactics.Typeclasses.solve
-                ()
+          Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Simd.Avx2.Vector_type.v_ZERO ()
               <:
               Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
             (sz 32)
@@ -651,9 +648,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
         Libcrux_ml_dsa.Simd.Avx2.Invntt.invert_ntt_montgomery re
       in
       let out:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit (sz 32) =
-        Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Simd.Traits.f_ZERO #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
-              #FStar.Tactics.Typeclasses.solve
-              ()
+        Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Simd.Avx2.Vector_type.v_ZERO ()
             <:
             Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit)
           (sz 32)
