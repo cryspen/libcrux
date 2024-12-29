@@ -22,6 +22,8 @@ typedef __m256i core_core_arch_x86___m256i;
 #define libcrux_intrinsics_avx2_mm256_castsi256_si128(a) \
   (_mm256_castsi256_si128(a))
 
+#define libcrux_intrinsics_avx2_mm256_castsi256_ps(a) (_mm256_castsi256_ps(a))
+
 #define libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(a) \
   (_mm256_cvtepi16_epi32(a))
 
@@ -62,10 +64,21 @@ typedef __m256i core_core_arch_x86___m256i;
                                                 x7)                         \
   (_mm256_set_epi32(x0, x1, x2, x3, x4, x5, x6, x7))
 
+#define libcrux_intrinsics_avx2_mm256_set_epi64x(x0, x1, x2, x3) \
+  (_mm256_set_epi64x(x0, x1, x2, x3))
+
+#define libcrux_intrinsics_avx2_mm256_set_m128i(h, l) (_mm256_set_m128i(h, l))
+
+#define libcrux_intrinsics_avx2_mm_set_epi32(x0, x1, x2, x3) \
+  (_mm_set_epi32(x0, x1, x2, x3))
+
 #define libcrux_intrinsics_avx2_mm256_loadu_si256_i16(a) \
   (_mm256_loadu_si256((const __m256i *)a.ptr))
 
 #define libcrux_intrinsics_avx2_mm256_loadu_si256_u8(a) \
+  (_mm256_loadu_si256((const __m256i *)a.ptr))
+
+#define libcrux_intrinsics_avx2_mm256_loadu_si256_i32(a) \
   (_mm256_loadu_si256((const __m256i *)a.ptr))
 
 #define libcrux_intrinsics_avx2_mm_loadu_si128(a) \
@@ -83,17 +96,29 @@ typedef __m256i core_core_arch_x86___m256i;
 #define libcrux_intrinsics_avx2_mm_storeu_si128(a, b) \
   (_mm_storeu_si128((__m128i *)a.ptr, b))
 
+#define libcrux_intrinsics_avx2_mm256_storeu_si256_i32(a, b) \
+  (_mm256_storeu_si256((__m256i *)a.ptr, b))
+
+#define libcrux_intrinsics_avx2_mm_storeu_si128_i32(a, b) \
+  (_mm_storeu_si128((__m128i *)a.ptr, b))
+
 // Arithmetic: Add, Sub
 
 #define libcrux_intrinsics_avx2_mm256_add_epi16(a, b) (_mm256_add_epi16(a, b))
 
 #define libcrux_intrinsics_avx2_mm256_add_epi32(a, b) (_mm256_add_epi32(a, b))
 
+#define libcrux_intrinsics_avx2_mm256_add_epi64(a, b) (_mm256_add_epi64(a, b))
+
 #define libcrux_intrinsics_avx2_mm_add_epi16(a, b) (_mm_add_epi16(a, b))
 
 #define libcrux_intrinsics_avx2_mm256_sub_epi16(a, b) (_mm256_sub_epi16(a, b))
 
+#define libcrux_intrinsics_avx2_mm256_sub_epi32(a, b) (_mm256_sub_epi32(a, b))
+
 #define libcrux_intrinsics_avx2_mm_sub_epi16(a, b) (_mm_sub_epi16(a, b))
+
+#define libcrux_intrinsics_avx2_mm256_abs_epi32(a) (_mm256_abs_epi32(a))
 
 // Arithmetic: Mul low and high, Mul-Add combinations
 
@@ -105,6 +130,8 @@ typedef __m256i core_core_arch_x86___m256i;
 
 #define libcrux_intrinsics_avx2_mm256_mul_epu32(a, b) (_mm256_mul_epu32(a, b))
 
+#define libcrux_intrinsics_avx2_mm256_mul_epi32(a, b) (_mm256_mul_epi32(a, b))
+
 #define libcrux_intrinsics_avx2_mm256_mullo_epi32(a, b) \
   (_mm256_mullo_epi32(a, b))
 
@@ -114,10 +141,21 @@ typedef __m256i core_core_arch_x86___m256i;
 
 #define libcrux_intrinsics_avx2_mm256_madd_epi16(a, b) (_mm256_madd_epi16(a, b))
 
+#define libcrux_intrinsics_avx2_mm256_sign_epi32(a, b) (_mm256_sign_epi32(a, b))
+
 // Comparison
 
 #define libcrux_intrinsics_avx2_mm256_cmpgt_epi16(a, b) \
   (_mm256_cmpgt_epi16(a, b))
+
+#define libcrux_intrinsics_avx2_mm256_cmpgt_epi32(a, b) \
+  (_mm256_cmpgt_epi32(a, b))
+
+#define libcrux_intrinsics_avx2_mm256_testz_si256(a, b) \
+  (_mm256_testz_si256(a, b))
+
+#define libcrux_intrinsics_avx2_mm256_cmpeq_epi32(a, b) \
+  (_mm256_cmpeq_epi32(a, b))
 
 // Bitwise operations
 
@@ -129,6 +167,10 @@ typedef __m256i core_core_arch_x86___m256i;
 #define libcrux_intrinsics_avx2_mm256_xor_si256(a, b) (_mm256_xor_si256(a, b))
 
 #define libcrux_intrinsics_avx2_mm_movemask_epi8(a) (_mm_movemask_epi8(a))
+
+#define libcrux_intrinsics_avx2_mm256_movemask_ps(a) (_mm256_movemask_ps(a))
+
+#define libcrux_intrinsics_avx2_mm256_or_si256(a, b) (_mm256_or_si256(a, b))
 
 // Shift operations
 #define libcrux_intrinsics_avx2_mm256_srai_epi16(a, b, _) \
@@ -157,11 +199,22 @@ typedef __m256i core_core_arch_x86___m256i;
 
 #define libcrux_intrinsics_avx2_mm256_sllv_epi32(a, b) (_mm256_sllv_epi32(a, b))
 
+#define libcrux_intrinsics_avx2_mm_sllv_epi32(a, b) (_mm_sllv_epi32(a, b))
+
+#define libcrux_intrinsics_avx2_mm_srli_epi64(a, b, _t) (_mm_srli_epi64(b, a))
+
 #define libcrux_intrinsics_avx2_mm256_srli_epi64_(a, b) \
   (_mm256_srli_epi64(b, a))
 
 #define libcrux_intrinsics_avx2_mm256_srli_epi64(a, b, c) \
   (libcrux_intrinsics_avx2_mm256_srli_epi64_(a, b))
+
+#define libcrux_intrinsics_avx2_mm256_srlv_epi32(a, b) (_mm256_srlv_epi32(a, b))
+
+#define libcrux_intrinsics_avx2_mm256_bsrli_epi128(a, b, _t) \
+  (_mm256_bsrli_epi128(b, a))
+
+#define libcrux_intrinsics_avx2_mm256_srlv_epi64(a, b) (_mm256_srlv_epi64(a, b))
 
 // Shuffle and Vector Interleaving
 
@@ -199,6 +252,14 @@ typedef __m256i core_core_arch_x86___m256i;
 
 #define libcrux_intrinsics_avx2_mm256_blend_epi16(a, b, c, _) \
   (_mm256_blend_epi16(b, c, a))
+
+#define libcrux_intrinsics_avx2_mm256_blend_epi32(a, b, c, _) \
+  (_mm256_blend_epi32(b, c, a))
+
+#define libcrux_intrinsics_avx2_vec256_blendv_epi32(a, b, mask) \
+  (_mm256_castps_si256(_mm256_blendv_ps(_mm256_castsi256_ps(a), \
+                                        _mm256_castsi256_ps(b), \
+                                        _mm256_castsi256_ps(mask))))
 
 #define libcrux_intrinsics_avx2_mm256_shuffle_epi8(a, b) \
   (_mm256_shuffle_epi8(a, b))
