@@ -129,8 +129,8 @@ pub(crate) fn deserialize_to_unsigned<const ETA: usize>(serialized: &[u8]) -> Ve
 }
 
 #[inline(always)]
-pub(crate) fn deserialize<const ETA: usize>(serialized: &[u8]) -> Vec256 {
-    let deserialized = deserialize_to_unsigned::<ETA>(serialized);
+pub(crate) fn deserialize<const ETA: usize>(serialized: &[u8], out: &mut Vec256) {
+    let unsigned = deserialize_to_unsigned::<ETA>(serialized);
 
-    mm256_sub_epi32(mm256_set1_epi32(ETA as i32), deserialized)
+    *out = mm256_sub_epi32(mm256_set1_epi32(ETA as i32), unsigned);
 }

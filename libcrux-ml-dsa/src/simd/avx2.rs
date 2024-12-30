@@ -32,6 +32,7 @@ impl Operations for AVX2SIMDUnit {
     fn add(lhs: &mut Vec256, rhs: &Vec256) {
         arithmetic::add(lhs, rhs)
     }
+
     #[inline(always)]
     fn subtract(lhs: &mut Vec256, rhs: &Vec256) {
         arithmetic::subtract(lhs, rhs)
@@ -41,6 +42,7 @@ impl Operations for AVX2SIMDUnit {
     fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
         arithmetic::montgomery_multiply(lhs, rhs);
     }
+
     #[inline(always)]
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256) {
         arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit)
@@ -62,9 +64,14 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn compute_hint<const GAMMA2: i32>(low: &Vec256, high: &Vec256,hint: &mut Self::Coefficient,) -> usize {
+    fn compute_hint<const GAMMA2: i32>(
+        low: &Vec256,
+        high: &Vec256,
+        hint: &mut Self::Coefficient,
+    ) -> usize {
         arithmetic::compute_hint::<GAMMA2>(low, high, hint)
     }
+
     #[inline(always)]
     fn use_hint<const GAMMA2: i32>(simd_unit: &Vec256, hint: &mut Vec256) {
         arithmetic::use_hint::<GAMMA2>(simd_unit, hint);
@@ -74,10 +81,12 @@ impl Operations for AVX2SIMDUnit {
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
         rejection_sample::less_than_field_modulus::sample(randomness, out)
     }
+
     #[inline(always)]
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
         rejection_sample::less_than_eta::sample::<2>(randomness, out)
     }
+
     #[inline(always)]
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
         rejection_sample::less_than_eta::sample::<4>(randomness, out)
@@ -101,6 +110,7 @@ impl Operations for AVX2SIMDUnit {
     fn error_serialize<const ETA: usize>(simd_unit: &Vec256, serialized: &mut [u8]) {
         encoding::error::serialize::<ETA>(simd_unit, serialized)
     }
+
     #[inline(always)]
     fn error_deserialize<const ETA: usize>(serialized: &[u8], out: &mut Self::Coefficient) {
         encoding::error::deserialize::<ETA>(serialized, out);
@@ -120,49 +130,19 @@ impl Operations for AVX2SIMDUnit {
     fn t1_serialize(simd_unit: &Self::Coefficient, out: &mut [u8]) {
         encoding::t1::serialize(simd_unit, out);
     }
+
     #[inline(always)]
     fn t1_deserialize(serialized: &[u8], out: &mut Self::Coefficient) {
         encoding::t1::deserialize(serialized, out);
     }
 
     #[inline(always)]
-    fn ntt(simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT]) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
-        // XXX: We can't use from_fn or map here because of Eurydice.
-        //      But this should be rewritten anyway to avoid having to do the map.
-        //      See linked Eurydice issues in #706
-        let mut re = [libcrux_intrinsics::avx2::mm256_setzero_si256(); SIMD_UNITS_IN_RING_ELEMENT];
-        for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
-            re[i] = simd_units[i].coefficients;
-        }
-        let result = ntt::ntt(re);
-
-        let mut out = [vector_type::ZERO(); SIMD_UNITS_IN_RING_ELEMENT];
-        for i in 0..result.len() {
-            out[i] = Self {
-                coefficients: result[i],
-            };
-        }
-        out
+    fn ntt(simd_units: &mut AVX2RingElement) {
+        ntt::ntt(simd_units);
     }
 
     #[inline(always)]
-    fn invert_ntt_montgomery(
-        simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT],
-    ) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
-        // XXX: We can't use from_fn or map here because of Eurydice.
-        //      But this should be rewritten anyway to avoid having to do the map.
-        let mut re = [libcrux_intrinsics::avx2::mm256_setzero_si256(); SIMD_UNITS_IN_RING_ELEMENT];
-        for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
-            re[i] = simd_units[i].coefficients;
-        }
-        let result = invntt::invert_ntt_montgomery(re);
-
-        let mut out = [vector_type::ZERO(); SIMD_UNITS_IN_RING_ELEMENT];
-        for i in 0..result.len() {
-            out[i] = Self {
-                coefficients: result[i],
-            };
-        }
-        out
+    fn invert_ntt_montgomery(simd_units: &mut AVX2RingElement) {
+        invntt::invert_ntt_montgomery(simd_units);
     }
 }

@@ -66,6 +66,7 @@ impl Operations for PortableSIMDUnit {
     ) -> usize {
         arithmetic::compute_hint::<GAMMA2>(low, high, hint)
     }
+
     fn use_hint<const GAMMA2: i32>(simd_unit: &Coefficients, hint: &mut Coefficients) {
         arithmetic::use_hint::<GAMMA2>(simd_unit, hint)
     }
@@ -73,9 +74,11 @@ impl Operations for PortableSIMDUnit {
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
         sample::rejection_sample_less_than_field_modulus(randomness, out)
     }
+
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
         sample::rejection_sample_less_than_eta_equals_2(randomness, out)
     }
+
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
         sample::rejection_sample_less_than_eta_equals_4(randomness, out)
     }
@@ -86,6 +89,7 @@ impl Operations for PortableSIMDUnit {
     ) {
         encoding::gamma1::serialize::<GAMMA1_EXPONENT>(simd_unit, serialized)
     }
+
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8], out: &mut Coefficients) {
         encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized, out)
     }
@@ -97,6 +101,7 @@ impl Operations for PortableSIMDUnit {
     fn error_serialize<const ETA: usize>(simd_unit: &Coefficients, serialized: &mut [u8]) {
         encoding::error::serialize::<ETA>(simd_unit, serialized)
     }
+
     fn error_deserialize<const ETA: usize>(serialized: &[u8], out: &mut Coefficients) {
         encoding::error::deserialize::<ETA>(serialized, out);
     }
@@ -104,6 +109,7 @@ impl Operations for PortableSIMDUnit {
     fn t0_serialize(simd_unit: &Coefficients, out: &mut [u8]) {
         encoding::t0::serialize(simd_unit, out)
     }
+
     fn t0_deserialize(serialized: &[u8], out: &mut Coefficients) {
         encoding::t0::deserialize(serialized, out)
     }
@@ -111,6 +117,7 @@ impl Operations for PortableSIMDUnit {
     fn t1_serialize(simd_unit: &Self::Coefficient, out: &mut [u8]) {
         encoding::t1::serialize(simd_unit, out);
     }
+
     fn t1_deserialize(serialized: &[u8], out: &mut Self::Coefficient) {
         encoding::t1::deserialize(serialized, out);
     }
