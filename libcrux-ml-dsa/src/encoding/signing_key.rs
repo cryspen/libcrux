@@ -10,7 +10,6 @@ use crate::{
     simd::traits::Operations,
 };
 
-#[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn generate_serialized<
     SIMDUnit: Operations,
@@ -21,8 +20,8 @@ pub(crate) fn generate_serialized<
     const ERROR_RING_ELEMENT_SIZE: usize,
     const SIGNING_KEY_SIZE: usize,
 >(
-    seed_for_A: &[u8],
-    seed_for_signing: &[u8],
+    seed_matrix: &[u8],
+    seed_signing: &[u8],
     verification_key: &[u8],
     s1_2: &[PolynomialRingElement<SIMDUnit>],
     t0: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
@@ -30,11 +29,10 @@ pub(crate) fn generate_serialized<
     let mut signing_key_serialized = [0u8; SIGNING_KEY_SIZE];
     let mut offset = 0;
 
-    signing_key_serialized[offset..offset + SEED_FOR_A_SIZE].copy_from_slice(seed_for_A);
+    signing_key_serialized[offset..offset + SEED_FOR_A_SIZE].copy_from_slice(seed_matrix);
     offset += SEED_FOR_A_SIZE;
 
-    signing_key_serialized[offset..offset + SEED_FOR_SIGNING_SIZE]
-        .copy_from_slice(seed_for_signing);
+    signing_key_serialized[offset..offset + SEED_FOR_SIGNING_SIZE].copy_from_slice(seed_signing);
     offset += SEED_FOR_SIGNING_SIZE;
 
     let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];

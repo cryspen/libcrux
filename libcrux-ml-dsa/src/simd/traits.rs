@@ -20,7 +20,7 @@ pub(crate) trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn zero() -> Self::Coefficient;
 
-    fn from_coefficient_array(array: &[i32]) -> Self::Coefficient;
+    fn from_coefficient_array(array: &[i32], out: &mut Self::Coefficient);
     fn to_coefficient_array(value: &Self::Coefficient, out: &mut [i32]);
 
     // Arithmetic

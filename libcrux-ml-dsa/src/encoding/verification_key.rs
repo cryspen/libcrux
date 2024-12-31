@@ -6,18 +6,17 @@ use crate::{
     simd::traits::Operations,
 };
 
-#[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn generate_serialized<
     SIMDUnit: Operations,
     const ROWS_IN_A: usize,
     const VERIFICATION_KEY_SIZE: usize,
 >(
-    seed_for_A: &[u8],
+    seed: &[u8],
     t1: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) -> [u8; VERIFICATION_KEY_SIZE] {
     let mut verification_key_serialized = [0u8; VERIFICATION_KEY_SIZE];
-    verification_key_serialized[0..SEED_FOR_A_SIZE].copy_from_slice(seed_for_A);
+    verification_key_serialized[0..SEED_FOR_A_SIZE].copy_from_slice(seed);
 
     cloop! {
         for (i, ring_element) in t1.iter().enumerate() {

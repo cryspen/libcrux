@@ -8,15 +8,16 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations, const DIMENSION
     vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
     bound: i32,
 ) -> bool {
+    let mut result = false;
     cloop! {
         for ring_element in vector.iter() {
-            if ring_element.infinity_norm_exceeds(bound) {
-                return true;
+            if !result && ring_element.infinity_norm_exceeds(bound) {
+                result = result || true;
             }
         }
     }
 
-    false
+    result
 }
 
 #[inline(always)]

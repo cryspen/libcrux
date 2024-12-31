@@ -32,8 +32,9 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     pub(crate) fn from_i32_array(array: &[i32], result: &mut Self) {
         debug_assert!(array.len() >= 256);
         for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
-            result.simd_units[i] = SIMDUnit::from_coefficient_array(
+            SIMDUnit::from_coefficient_array(
                 &array[i * COEFFICIENTS_IN_SIMD_UNIT..(i + 1) * COEFFICIENTS_IN_SIMD_UNIT],
+                &mut result.simd_units[i],
             );
         }
     }
@@ -47,13 +48,14 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
 
     #[inline(always)]
     pub(crate) fn infinity_norm_exceeds(&self, bound: i32) -> bool {
+        let mut result = false;
         for i in 0..self.simd_units.len() {
-            if SIMDUnit::infinity_norm_exceeds(&self.simd_units[i], bound) {
-                return true;
+            if !result && SIMDUnit::infinity_norm_exceeds(&self.simd_units[i], bound) {
+                result = result || true;
             }
         }
 
-        false
+        result
     }
 
     #[inline(always)]

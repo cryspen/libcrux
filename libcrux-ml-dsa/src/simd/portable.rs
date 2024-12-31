@@ -19,8 +19,8 @@ impl Operations for PortableSIMDUnit {
         vector_type::zero()
     }
 
-    fn from_coefficient_array(array: &[i32]) -> Coefficients {
-        vector_type::from_coefficient_array(array)
+    fn from_coefficient_array(array: &[i32], out: &mut Coefficients) {
+        vector_type::from_coefficient_array(array, out)
     }
 
     fn to_coefficient_array(value: &Coefficients, out: &mut [i32]) {

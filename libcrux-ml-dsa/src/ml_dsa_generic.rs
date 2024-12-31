@@ -601,6 +601,10 @@ pub(crate) fn verify_internal<
     >(signature.commitment_hash, &mut verifier_challenge);
     ntt(&mut verifier_challenge);
 
+    // Move signer response into ntt
+    for i in 0..signature.signer_response.len() {
+        ntt(&mut signature.signer_response[i]);
+    }
     compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
         &matrix,
         &signature.signer_response,

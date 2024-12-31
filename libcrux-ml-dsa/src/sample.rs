@@ -491,7 +491,6 @@ pub(crate) fn sample_challenge_ring_element<
     let randomness = state.squeeze_first_block();
 
     let mut signs = u64::from_le_bytes(randomness[0..8].try_into().unwrap());
-
     let mut result = [0i32; 256];
 
     let mut out_index = result.len() - NUMBER_OF_ONES;

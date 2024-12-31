@@ -364,7 +364,6 @@ pub(crate) mod portable {
 
     pub(crate) struct PortableSampler {}
     impl X4Sampler for PortableSampler {
-        #[inline(always)]
         fn matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
             seed: &[u8],
             matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
@@ -406,7 +405,6 @@ pub(crate) mod avx2 {
 
     pub(crate) struct AVX2Sampler {}
     impl X4Sampler for AVX2Sampler {
-        #[inline(always)]
         #[allow(unsafe_code)]
         fn matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
             seed: &[u8],
@@ -418,8 +416,7 @@ pub(crate) mod avx2 {
 
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
-
-    pub(crate) unsafe fn matrix_avx2<
+    unsafe fn matrix_avx2<
         SIMDUnit: Operations,
         const ROWS_IN_A: usize,
         const COLUMNS_IN_A: usize,

@@ -8,7 +8,6 @@ use crate::{
 };
 
 /// Compute InvertNTT(Â ◦ ŝ₁) + s₂
-#[inline(always)]
 pub(crate) fn compute_as1_plus_s2<
     SIMDUnit: Operations,
     const ROWS_IN_A: usize,
@@ -105,26 +104,25 @@ pub(crate) fn subtract_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
 }
 
 /// Compute InvertNTT(Â ◦ ẑ - ĉ ◦ NTT(t₁2ᵈ))
-#[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn compute_w_approx<
     SIMDUnit: Operations,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
-    A_as_ntt: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+    matrix: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
     signer_response: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
     verifier_challenge_as_ntt: &PolynomialRingElement<SIMDUnit>,
     t1: &mut [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) {
-    let mut signer_response = signer_response.clone();
-    // Move signer response into NTT
-    for i in 0..signer_response.len() {
-        ntt(&mut signer_response[i]);
-    }
+    // let mut signer_response = signer_response.clone();
+    // // Move signer response into NTT
+    // for i in 0..signer_response.len() {
+    //     ntt(&mut signer_response[i]);
+    // }
 
     cloop! {
-        for (i, row) in A_as_ntt.iter().enumerate() {
+        for (i, row) in matrix.iter().enumerate() {
             let mut inner_result = PolynomialRingElement::<SIMDUnit>::zero();
             cloop! {
                 for (j, ring_element) in row.iter().enumerate() {

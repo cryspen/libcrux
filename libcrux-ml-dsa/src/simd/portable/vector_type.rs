@@ -12,8 +12,8 @@ pub(crate) fn zero() -> Coefficients {
     [0i32; COEFFICIENTS_IN_SIMD_UNIT]
 }
 
-pub(crate) fn from_coefficient_array(array: &[i32]) -> Coefficients {
-    array[0..COEFFICIENTS_IN_SIMD_UNIT].try_into().unwrap()
+pub(crate) fn from_coefficient_array(array: &[i32], out: &mut Coefficients) {
+    out.copy_from_slice(&array[0..COEFFICIENTS_IN_SIMD_UNIT])
 }
 
 #[inline(always)]

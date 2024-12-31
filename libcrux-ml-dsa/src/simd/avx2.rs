@@ -7,73 +7,76 @@ mod ntt;
 mod rejection_sample;
 mod vector_type;
 
-use vector_type::Vec256;
 pub(crate) use vector_type::{AVX2RingElement, AVX2SIMDUnit};
 
 impl Operations for AVX2SIMDUnit {
-    type Coefficient = Vec256;
+    type Coefficient = vector_type::Vec256;
 
     #[inline(always)]
-    fn zero() -> Vec256 {
+    fn zero() -> Self::Coefficient {
         vector_type::zero()
     }
 
     #[inline(always)]
-    fn from_coefficient_array(coefficient_array: &[i32]) -> Vec256 {
-        vector_type::from_coefficient_array(coefficient_array)
+    fn from_coefficient_array(coefficient_array: &[i32], out: &mut Self::Coefficient) {
+        vector_type::from_coefficient_array(coefficient_array, out)
     }
 
     #[inline(always)]
-    fn to_coefficient_array(value: &Vec256, out: &mut [i32]) {
+    fn to_coefficient_array(value: &Self::Coefficient, out: &mut [i32]) {
         vector_type::to_coefficient_array(value, out)
     }
 
     #[inline(always)]
-    fn add(lhs: &mut Vec256, rhs: &Vec256) {
+    fn add(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient) {
         arithmetic::add(lhs, rhs)
     }
 
     #[inline(always)]
-    fn subtract(lhs: &mut Vec256, rhs: &Vec256) {
+    fn subtract(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient) {
         arithmetic::subtract(lhs, rhs)
     }
 
     #[inline(always)]
-    fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
+    fn montgomery_multiply(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient) {
         arithmetic::montgomery_multiply(lhs, rhs);
     }
 
     #[inline(always)]
-    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256) {
+    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self::Coefficient) {
         arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit)
     }
 
     #[inline(always)]
-    fn power2round(t0: &mut Vec256, t1: &mut Vec256) {
+    fn power2round(t0: &mut Self::Coefficient, t1: &mut Self::Coefficient) {
         arithmetic::power2round(t0, t1);
     }
 
     #[inline(always)]
-    fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
+    fn infinity_norm_exceeds(simd_unit: &Self::Coefficient, bound: i32) -> bool {
         arithmetic::infinity_norm_exceeds(simd_unit, bound)
     }
 
     #[inline(always)]
-    fn decompose<const GAMMA2: i32>(simd_unit: &Vec256, low: &mut Vec256, high: &mut Vec256) {
+    fn decompose<const GAMMA2: i32>(
+        simd_unit: &Self::Coefficient,
+        low: &mut Self::Coefficient,
+        high: &mut Self::Coefficient,
+    ) {
         arithmetic::decompose::<GAMMA2>(simd_unit, low, high);
     }
 
     #[inline(always)]
     fn compute_hint<const GAMMA2: i32>(
-        low: &Vec256,
-        high: &Vec256,
+        low: &Self::Coefficient,
+        high: &Self::Coefficient,
         hint: &mut Self::Coefficient,
     ) -> usize {
         arithmetic::compute_hint::<GAMMA2>(low, high, hint)
     }
 
     #[inline(always)]
-    fn use_hint<const GAMMA2: i32>(simd_unit: &Vec256, hint: &mut Vec256) {
+    fn use_hint<const GAMMA2: i32>(simd_unit: &Self::Coefficient, hint: &mut Self::Coefficient) {
         arithmetic::use_hint::<GAMMA2>(simd_unit, hint);
     }
 
@@ -93,21 +96,27 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(simd_unit: &Vec256, serialized: &mut [u8]) {
+    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(
+        simd_unit: &Self::Coefficient,
+        serialized: &mut [u8],
+    ) {
         encoding::gamma1::serialize::<GAMMA1_EXPONENT>(simd_unit, serialized)
     }
     #[inline(always)]
-    fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8], out: &mut Vec256) {
+    fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(
+        serialized: &[u8],
+        out: &mut Self::Coefficient,
+    ) {
         encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized, out);
     }
 
     #[inline(always)]
-    fn commitment_serialize(simd_unit: &Vec256, serialized: &mut [u8]) {
+    fn commitment_serialize(simd_unit: &Self::Coefficient, serialized: &mut [u8]) {
         encoding::commitment::serialize(simd_unit, serialized)
     }
 
     #[inline(always)]
-    fn error_serialize<const ETA: usize>(simd_unit: &Vec256, serialized: &mut [u8]) {
+    fn error_serialize<const ETA: usize>(simd_unit: &Self::Coefficient, serialized: &mut [u8]) {
         encoding::error::serialize::<ETA>(simd_unit, serialized)
     }
 
