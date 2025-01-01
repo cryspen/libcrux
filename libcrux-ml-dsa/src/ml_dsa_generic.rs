@@ -145,6 +145,7 @@ pub(crate) fn sign_pre_hashed<
     const PH_DIGEST_LEN: usize,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -180,6 +181,7 @@ pub(crate) fn sign_pre_hashed<
         Shake256X4,
         ROWS_IN_A,
         COLUMNS_IN_A,
+        ROWS_X_COLUMNS,
         ETA,
         ERROR_RING_ELEMENT_SIZE,
         GAMMA1_EXPONENT,
@@ -200,7 +202,6 @@ pub(crate) fn sign_pre_hashed<
     )
 }
 
-#[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn sign<
     SIMDUnit: Operations,
@@ -211,6 +212,7 @@ pub(crate) fn sign<
     Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -242,6 +244,7 @@ pub(crate) fn sign<
         Shake256X4,
         ROWS_IN_A,
         COLUMNS_IN_A,
+        ROWS_X_COLUMNS,
         ETA,
         ERROR_RING_ELEMENT_SIZE,
         GAMMA1_EXPONENT,
@@ -266,7 +269,6 @@ pub(crate) fn sign<
 ///
 /// If no `domain_separation_context` is supplied, it is assumed that
 /// `message` already contains the domain separation.
-#[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn sign_internal<
     SIMDUnit: Operations,
@@ -277,6 +279,7 @@ pub(crate) fn sign_internal<
     Shake256X4: shake256::XofX4,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -330,7 +333,7 @@ pub(crate) fn sign_internal<
     );
 
     // Sample matrix A.
-    let mut matrix = [PolynomialRingElement::<SIMDUnit>::zero(); 56]; // FIXME
+    let mut matrix = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_X_COLUMNS];
     Sampler::matrix_flat::<SIMDUnit>(ROWS_IN_A, COLUMNS_IN_A, &seed_for_a, &mut matrix);
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
@@ -417,9 +420,7 @@ pub(crate) fn sign_internal<
         sample_challenge_ring_element::<
             SIMDUnit,
             Shake256,
-            ONES_IN_VERIFIER_CHALLENGE,
-            COMMITMENT_HASH_SIZE,
-        >(commitment_hash_candidate, &mut verifier_challenge);
+        >(&commitment_hash_candidate,ONES_IN_VERIFIER_CHALLENGE, &mut verifier_challenge);
         ntt(&mut verifier_challenge);
 
         // We need to clone here in case we need s1_as_ntt or s2_as_ntt again in
@@ -637,9 +638,7 @@ pub(crate) fn verify_internal<
     sample_challenge_ring_element::<
         SIMDUnit,
         Shake256,
-        ONES_IN_VERIFIER_CHALLENGE,
-        COMMITMENT_HASH_SIZE,
-    >(signature.commitment_hash, &mut verifier_challenge);
+    >(&signature.commitment_hash,ONES_IN_VERIFIER_CHALLENGE, &mut verifier_challenge);
     ntt(&mut verifier_challenge);
 
     // Move signer response into ntt

@@ -74,6 +74,7 @@ mod avx2_feature {
     pub(super) unsafe fn sign<
         const ROWS_IN_A: usize,
         const COLUMNS_IN_A: usize,
+        const ROWS_X_COLUMNS: usize,
         const ETA: usize,
         const ERROR_RING_ELEMENT_SIZE: usize,
         const GAMMA1_EXPONENT: usize,
@@ -103,6 +104,7 @@ mod avx2_feature {
             crate::hash_functions::simd256::Shake256x4,
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -125,6 +127,7 @@ mod avx2_feature {
     pub(super) unsafe fn sign_internal<
         const ROWS_IN_A: usize,
         const COLUMNS_IN_A: usize,
+        const ROWS_X_COLUMNS: usize,
         const ETA: usize,
         const ERROR_RING_ELEMENT_SIZE: usize,
         const GAMMA1_EXPONENT: usize,
@@ -153,6 +156,7 @@ mod avx2_feature {
             crate::hash_functions::simd256::Shake256x4,
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -174,6 +178,7 @@ mod avx2_feature {
     pub(super) unsafe fn sign_pre_hashed_shake128<
         const ROWS_IN_A: usize,
         const COLUMNS_IN_A: usize,
+        const ROWS_X_COLUMNS: usize,
         const ETA: usize,
         const ERROR_RING_ELEMENT_SIZE: usize,
         const GAMMA1_EXPONENT: usize,
@@ -208,6 +213,7 @@ mod avx2_feature {
             256,
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -406,6 +412,7 @@ pub(crate) fn generate_key_pair_v87(
 pub(crate) fn sign<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -428,6 +435,7 @@ pub(crate) fn sign<
         avx2_feature::sign::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -450,6 +458,7 @@ pub(crate) fn sign<
 pub(crate) fn sign_internal<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -471,6 +480,7 @@ pub(crate) fn sign_internal<
         avx2_feature::sign_internal::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -492,6 +502,7 @@ pub(crate) fn sign_internal<
 pub(crate) fn sign_pre_hashed_shake128<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -514,6 +525,7 @@ pub(crate) fn sign_pre_hashed_shake128<
         avx2_feature::sign_pre_hashed_shake128::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,

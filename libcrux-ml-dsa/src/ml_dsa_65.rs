@@ -4,6 +4,7 @@ use crate::{constants::*, ml_dsa_generic, types::*, SigningError, VerificationEr
 
 const ROWS_IN_A: usize = 6;
 const COLUMNS_IN_A: usize = 5;
+const ROWS_X_COLUMNS: usize = ROWS_IN_A * COLUMNS_IN_A;
 
 const ETA: usize = 4;
 
@@ -95,6 +96,7 @@ macro_rules! instantiate {
                 p::sign_internal::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROWS_X_COLUMNS,
                     ETA,
                     ERROR_RING_ELEMENT_SIZE,
                     GAMMA1_EXPONENT,
@@ -150,6 +152,7 @@ macro_rules! instantiate {
                 p::sign::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROWS_X_COLUMNS,
                     ETA,
                     ERROR_RING_ELEMENT_SIZE,
                     GAMMA1_EXPONENT,
@@ -179,6 +182,7 @@ macro_rules! instantiate {
                 p::sign_pre_hashed_shake128::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROWS_X_COLUMNS,
                     ETA,
                     ERROR_RING_ELEMENT_SIZE,
                     GAMMA1_EXPONENT,
@@ -312,6 +316,7 @@ pub fn sign(
     ml_dsa_generic::multiplexing::sign::<
         ROWS_IN_A,
         COLUMNS_IN_A,
+        ROWS_X_COLUMNS,
         ETA,
         ERROR_RING_ELEMENT_SIZE,
         GAMMA1_EXPONENT,
@@ -384,6 +389,7 @@ pub fn sign_pre_hashed_shake128(
     ml_dsa_generic::multiplexing::sign_pre_hashed_shake128::<
         ROWS_IN_A,
         COLUMNS_IN_A,
+        ROWS_X_COLUMNS,
         ETA,
         ERROR_RING_ELEMENT_SIZE,
         GAMMA1_EXPONENT,
@@ -449,6 +455,7 @@ pub fn sign_internal(
     ml_dsa_generic::multiplexing::sign_internal::<
         ROWS_IN_A,
         COLUMNS_IN_A,
+        ROWS_X_COLUMNS,
         ETA,
         ERROR_RING_ELEMENT_SIZE,
         GAMMA1_EXPONENT,

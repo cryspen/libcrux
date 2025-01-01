@@ -103,6 +103,7 @@ pub(crate) fn generate_key_pair_v87(
 pub(crate) fn sign_internal<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -124,6 +125,7 @@ pub(crate) fn sign_internal<
         sign_internal_avx2::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -141,6 +143,7 @@ pub(crate) fn sign_internal<
         sign_internal_neon::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -158,6 +161,7 @@ pub(crate) fn sign_internal<
         instantiations::portable::sign_internal::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -177,6 +181,7 @@ pub(crate) fn sign_internal<
 pub(crate) fn sign<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -199,6 +204,7 @@ pub(crate) fn sign<
         sign_avx2::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -216,6 +222,7 @@ pub(crate) fn sign<
         sign_neon::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -233,6 +240,7 @@ pub(crate) fn sign<
         instantiations::portable::sign::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -252,6 +260,7 @@ pub(crate) fn sign<
 pub(crate) fn sign_pre_hashed_shake128<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -274,6 +283,7 @@ pub(crate) fn sign_pre_hashed_shake128<
         sign_pre_hashed_shake128_avx2::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -291,6 +301,7 @@ pub(crate) fn sign_pre_hashed_shake128<
         sign_pre_hashed_shake128_neon::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,
@@ -308,6 +319,7 @@ pub(crate) fn sign_pre_hashed_shake128<
         instantiations::portable::sign_pre_hashed_shake128::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             ETA,
             ERROR_RING_ELEMENT_SIZE,
             GAMMA1_EXPONENT,

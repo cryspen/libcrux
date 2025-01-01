@@ -36,6 +36,7 @@ macro_rules! instantiate {
             pub(crate) fn sign<
                 const ROWS_IN_A: usize,
                 const COLUMNS_IN_A: usize,
+                const ROWS_X_COLUMNS: usize,
                 const ETA: usize,
                 const ERROR_RING_ELEMENT_SIZE: usize,
                 const GAMMA1_EXPONENT: usize,
@@ -63,6 +64,7 @@ macro_rules! instantiate {
                     $shake256x4,
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROWS_X_COLUMNS,
                     ETA,
                     ERROR_RING_ELEMENT_SIZE,
                     GAMMA1_EXPONENT,
@@ -83,6 +85,7 @@ macro_rules! instantiate {
             pub(crate) fn sign_internal<
                 const ROWS_IN_A: usize,
                 const COLUMNS_IN_A: usize,
+                const ROWS_X_COLUMNS: usize,
                 const ETA: usize,
                 const ERROR_RING_ELEMENT_SIZE: usize,
                 const GAMMA1_EXPONENT: usize,
@@ -109,6 +112,7 @@ macro_rules! instantiate {
                     $shake256x4,
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROWS_X_COLUMNS,
                     ETA,
                     ERROR_RING_ELEMENT_SIZE,
                     GAMMA1_EXPONENT,
@@ -128,6 +132,7 @@ macro_rules! instantiate {
             pub(crate) fn sign_pre_hashed_shake128<
                 const ROWS_IN_A: usize,
                 const COLUMNS_IN_A: usize,
+                const ROWS_X_COLUMNS: usize,
                 const ETA: usize,
                 const ERROR_RING_ELEMENT_SIZE: usize,
                 const GAMMA1_EXPONENT: usize,
@@ -158,6 +163,7 @@ macro_rules! instantiate {
                     256,
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROWS_X_COLUMNS,
                     ETA,
                     ERROR_RING_ELEMENT_SIZE,
                     GAMMA1_EXPONENT,

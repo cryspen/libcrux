@@ -381,7 +381,7 @@ pub(crate) fn sample_mask_vector<
 >(
     seed: &[u8; 64],
     domain_separator: &mut u16,
-    mask: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    mask: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
     // DIMENSION is COLUMNS_IN_A
     debug_assert!(DIMENSION == 4 || DIMENSION == 5 || DIMENSION == 7);
@@ -463,22 +463,18 @@ fn inside_out_shuffle(
 }
 
 #[inline(always)]
-pub(crate) fn sample_challenge_ring_element<
-    SIMDUnit: Operations,
-    Shake256: shake256::DsaXof,
-    const NUMBER_OF_ONES: usize,
-    const SEED_SIZE: usize,
->(
-    seed: [u8; SEED_SIZE],
+pub(crate) fn sample_challenge_ring_element<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
+    seed: &[u8],
+    number_of_ones: usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
-    let mut state = Shake256::init_absorb_final(&seed);
+    let mut state = Shake256::init_absorb_final(seed);
     let randomness = state.squeeze_first_block();
 
     let mut signs = u64::from_le_bytes(randomness[0..8].try_into().unwrap());
     let mut result = [0i32; 256];
 
-    let mut out_index = result.len() - NUMBER_OF_ONES;
+    let mut out_index = result.len() - number_of_ones;
     let mut done = inside_out_shuffle(&randomness[8..], &mut out_index, &mut signs, &mut result);
 
     while !done {
@@ -736,7 +732,7 @@ mod tests {
         ];
 
         let mut re = PolynomialRingElement::zero();
-        sample_challenge_ring_element::<SIMDUnit, Shake256, 39, 32>(seed, &mut re);
+        sample_challenge_ring_element::<SIMDUnit, Shake256>(&seed, 39, &mut re);
         assert_eq!(re.to_i32_array(), expected_coefficients);
 
         // When TAU = 49
@@ -759,7 +755,7 @@ mod tests {
         ];
 
         let mut re = PolynomialRingElement::zero();
-        sample_challenge_ring_element::<SIMDUnit, Shake256, 49, 32>(seed, &mut re);
+        sample_challenge_ring_element::<SIMDUnit, Shake256>(&seed, 49, &mut re);
         assert_eq!(re.to_i32_array(), expected_coefficients);
 
         // When TAU = 60
@@ -782,7 +778,7 @@ mod tests {
         ];
 
         let mut re = PolynomialRingElement::zero();
-        sample_challenge_ring_element::<SIMDUnit, Shake256, 60, 32>(seed, &mut re);
+        sample_challenge_ring_element::<SIMDUnit, Shake256>(&seed, 60, &mut re);
         assert_eq!(re.to_i32_array(), expected_coefficients);
     }
 
