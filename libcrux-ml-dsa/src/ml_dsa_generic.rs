@@ -45,17 +45,6 @@ pub(crate) mod multiplexing;
         const ETA: Eta = constants::v87::ETA;
         const BITS_PER_ERROR_COEFFICIENT: usize = constants::v87::BITS_PER_ERROR_COEFFICIENT;
     },
-
-    // Derived constants
-    derived {
-        const ROW_COLUMN: usize = ROWS_IN_A + COLUMNS_IN_A;
-        const ROW_X_COLUMN: usize = ROWS_IN_A * COLUMNS_IN_A;
-        const ERROR_RING_ELEMENT_SIZE: usize = error_ring_element_size(BITS_PER_ERROR_COEFFICIENT);
-        const SIGNING_KEY_SIZE: usize = signing_key_size(
-            ROWS_IN_A, COLUMNS_IN_A, ERROR_RING_ELEMENT_SIZE);
-        const VERIFICATION_KEY_SIZE: usize = verification_key_size(ROWS_IN_A);
-        
-    }
 )]
 #[inline(always)]
 pub(crate) fn generate_key_pair<
@@ -70,6 +59,14 @@ pub(crate) fn generate_key_pair<
     signing_key: &mut [u8],
     verification_key: &mut [u8],
 ) {
+    // Derived constants
+    const ROW_COLUMN: usize = ROWS_IN_A + COLUMNS_IN_A;
+    const ROW_X_COLUMN: usize = ROWS_IN_A * COLUMNS_IN_A;
+    const ERROR_RING_ELEMENT_SIZE: usize = error_ring_element_size(BITS_PER_ERROR_COEFFICIENT);
+    const SIGNING_KEY_SIZE: usize =
+        signing_key_size(ROWS_IN_A, COLUMNS_IN_A, ERROR_RING_ELEMENT_SIZE);
+    const VERIFICATION_KEY_SIZE: usize = verification_key_size(ROWS_IN_A);
+
     // Check key sizes
     debug_assert!(signing_key.len() == SIGNING_KEY_SIZE);
     debug_assert!(verification_key.len() == VERIFICATION_KEY_SIZE);
@@ -88,14 +85,10 @@ pub(crate) fn generate_key_pair<
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
     let mut a_as_ntt = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_X_COLUMN];
-    Sampler::matrix_flat::<SIMDUnit>(ROWS_IN_A, COLUMNS_IN_A, seed_for_a, &mut a_as_ntt);
+    Sampler::matrix_flat::<SIMDUnit>(COLUMNS_IN_A, seed_for_a, &mut a_as_ntt);
 
     let mut s1_s2 = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_COLUMN];
-    samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4>(
-        ETA,
-        seed_for_error_vectors,
-        &mut s1_s2,
-    );
+    samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4>(ETA, seed_for_error_vectors, &mut s1_s2);
 
     let mut t0 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
     {
@@ -104,22 +97,22 @@ pub(crate) fn generate_key_pair<
         for i in 0..s1_ntt.len() {
             ntt(&mut s1_ntt[i]);
         }
-        compute_as1_plus_s2::<SIMDUnit>( ROWS_IN_A, COLUMNS_IN_A,  &a_as_ntt,&s1_ntt, &s1_s2, &mut t0);
+        compute_as1_plus_s2::<SIMDUnit>(
+            ROWS_IN_A,
+            COLUMNS_IN_A,
+            &a_as_ntt,
+            &s1_ntt,
+            &s1_s2,
+            &mut t0,
+        );
     }
 
     let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
     power2round_vector::<SIMDUnit>(&mut t0, &mut t1);
 
-    encoding::verification_key::generate_serialized::<SIMDUnit>(
-        seed_for_a,
-        &t1,
-        verification_key,
-    );
+    encoding::verification_key::generate_serialized::<SIMDUnit>(seed_for_a, &t1, verification_key);
 
-    encoding::signing_key::generate_serialized::<
-        SIMDUnit,
-        Shake256,
-    >(
+    encoding::signing_key::generate_serialized::<SIMDUnit, Shake256>(
         ETA,
         ERROR_RING_ELEMENT_SIZE,
         seed_for_a,
@@ -334,7 +327,7 @@ pub(crate) fn sign_internal<
 
     // Sample matrix A.
     let mut matrix = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_X_COLUMNS];
-    Sampler::matrix_flat::<SIMDUnit>(ROWS_IN_A, COLUMNS_IN_A, &seed_for_a, &mut matrix);
+    Sampler::matrix_flat::<SIMDUnit>(COLUMNS_IN_A, &seed_for_a, &mut matrix);
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative::<Shake256Xof>(
@@ -417,10 +410,11 @@ pub(crate) fn sign_internal<
         }
 
         let mut verifier_challenge = PolynomialRingElement::zero();
-        sample_challenge_ring_element::<
-            SIMDUnit,
-            Shake256,
-        >(&commitment_hash_candidate,ONES_IN_VERIFIER_CHALLENGE, &mut verifier_challenge);
+        sample_challenge_ring_element::<SIMDUnit, Shake256>(
+            &commitment_hash_candidate,
+            ONES_IN_VERIFIER_CHALLENGE,
+            &mut verifier_challenge,
+        );
         ntt(&mut verifier_challenge);
 
         // We need to clone here in case we need s1_as_ntt or s2_as_ntt again in
@@ -571,6 +565,7 @@ pub(crate) fn verify_internal<
     Shake256Xof: shake256::Xof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const SIGNATURE_SIZE: usize,
     const VERIFICATION_KEY_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -618,8 +613,8 @@ pub(crate) fn verify_internal<
     ) {
         return Err(VerificationError::SignerResponseExceedsBoundError);
     }
-    let mut matrix = [PolynomialRingElement::<SIMDUnit>::zero(); 56]; // FIXME
-    Sampler::matrix_flat::<SIMDUnit>(ROWS_IN_A, COLUMNS_IN_A, &seed_for_a, &mut matrix);
+    let mut matrix = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_X_COLUMNS];
+    Sampler::matrix_flat::<SIMDUnit>(COLUMNS_IN_A, &seed_for_a, &mut matrix);
 
     let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
     Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
@@ -635,17 +630,20 @@ pub(crate) fn verify_internal<
     );
 
     let mut verifier_challenge = PolynomialRingElement::zero();
-    sample_challenge_ring_element::<
-        SIMDUnit,
-        Shake256,
-    >(&signature.commitment_hash,ONES_IN_VERIFIER_CHALLENGE, &mut verifier_challenge);
+    sample_challenge_ring_element::<SIMDUnit, Shake256>(
+        &signature.commitment_hash,
+        ONES_IN_VERIFIER_CHALLENGE,
+        &mut verifier_challenge,
+    );
     ntt(&mut verifier_challenge);
 
     // Move signer response into ntt
     for i in 0..signature.signer_response.len() {
         ntt(&mut signature.signer_response[i]);
     }
-    compute_w_approx::<SIMDUnit>(ROWS_IN_A, COLUMNS_IN_A,
+    compute_w_approx::<SIMDUnit>(
+        ROWS_IN_A,
+        COLUMNS_IN_A,
         &matrix,
         &signature.signer_response,
         &verifier_challenge,
@@ -687,6 +685,7 @@ pub(crate) fn verify<
     Shake256Xof: shake256::Xof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const SIGNATURE_SIZE: usize,
     const VERIFICATION_KEY_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -717,6 +716,7 @@ pub(crate) fn verify<
         Shake256Xof,
         ROWS_IN_A,
         COLUMNS_IN_A,
+        ROWS_X_COLUMNS,
         SIGNATURE_SIZE,
         VERIFICATION_KEY_SIZE,
         GAMMA1_EXPONENT,
@@ -749,6 +749,7 @@ pub(crate) fn verify_pre_hashed<
     const PH_DIGEST_LEN: usize,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const SIGNATURE_SIZE: usize,
     const VERIFICATION_KEY_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -780,6 +781,7 @@ pub(crate) fn verify_pre_hashed<
         Shake256Xof,
         ROWS_IN_A,
         COLUMNS_IN_A,
+        ROWS_X_COLUMNS,
         SIGNATURE_SIZE,
         VERIFICATION_KEY_SIZE,
         GAMMA1_EXPONENT,

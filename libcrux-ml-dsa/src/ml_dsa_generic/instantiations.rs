@@ -183,6 +183,7 @@ macro_rules! instantiate {
             pub(crate) fn verify<
                 const ROWS_IN_A: usize,
                 const COLUMNS_IN_A: usize,
+                const ROWS_X_COLUMNS: usize,
                 const SIGNATURE_SIZE: usize,
                 const VERIFICATION_KEY_SIZE: usize,
                 const GAMMA1_EXPONENT: usize,
@@ -208,6 +209,7 @@ macro_rules! instantiate {
                     $shake256xof,
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROWS_X_COLUMNS,
                     SIGNATURE_SIZE,
                     VERIFICATION_KEY_SIZE,
                     GAMMA1_EXPONENT,
@@ -227,6 +229,7 @@ macro_rules! instantiate {
             pub(crate) fn verify_internal<
                 const ROWS_IN_A: usize,
                 const COLUMNS_IN_A: usize,
+                const ROWS_X_COLUMNS: usize,
                 const SIGNATURE_SIZE: usize,
                 const VERIFICATION_KEY_SIZE: usize,
                 const GAMMA1_EXPONENT: usize,
@@ -251,6 +254,7 @@ macro_rules! instantiate {
                     $shake256xof,
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROWS_X_COLUMNS,
                     SIGNATURE_SIZE,
                     VERIFICATION_KEY_SIZE,
                     GAMMA1_EXPONENT,
@@ -269,6 +273,7 @@ macro_rules! instantiate {
             pub(crate) fn verify_pre_hashed_shake128<
                 const ROWS_IN_A: usize,
                 const COLUMNS_IN_A: usize,
+                const ROWS_X_COLUMNS: usize,
                 const SIGNATURE_SIZE: usize,
                 const VERIFICATION_KEY_SIZE: usize,
                 const GAMMA1_EXPONENT: usize,
@@ -297,6 +302,7 @@ macro_rules! instantiate {
                     256,
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROWS_X_COLUMNS,
                     SIGNATURE_SIZE,
                     VERIFICATION_KEY_SIZE,
                     GAMMA1_EXPONENT,

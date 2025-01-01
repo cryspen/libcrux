@@ -10,7 +10,6 @@ use crate::{
 pub(crate) trait X4Sampler {
     /// Sample the matrix A using platform specific implementation.
     fn matrix_flat<SIMDUnit: Operations>(
-        rows: usize,
         columns: usize,
         seed: &[u8],
         matrix: &mut [PolynomialRingElement<SIMDUnit>],
@@ -19,7 +18,6 @@ pub(crate) trait X4Sampler {
 
 #[inline(always)]
 pub(crate) fn matrix_flat<SIMDUnit: Operations, Shake128: shake128::XofX4>(
-    rows: usize,
     columns: usize,
     seed: &[u8],
     matrix: &mut [PolynomialRingElement<SIMDUnit>],
@@ -37,7 +35,6 @@ pub(crate) fn matrix_flat<SIMDUnit: Operations, Shake128: shake128::XofX4>(
             matrix.len() - start_index
         };
         sample_up_to_four_ring_elements_flat::<SIMDUnit, Shake128>(
-            rows,
             columns,
             seed,
             matrix,
@@ -59,13 +56,12 @@ pub(crate) mod portable {
     pub(crate) struct PortableSampler {}
     impl X4Sampler for PortableSampler {
         fn matrix_flat<SIMDUnit: Operations>(
-            rows: usize,
             columns: usize,
             seed: &[u8],
             matrix: &mut [PolynomialRingElement<SIMDUnit>],
         ) {
             matrix_flat::<SIMDUnit, crate::hash_functions::portable::Shake128X4>(
-                rows, columns, seed, matrix,
+                columns, seed, matrix,
             )
         }
     }
@@ -80,14 +76,11 @@ pub(crate) mod neon {
     impl X4Sampler for NeonSampler {
         #[inline(always)]
         fn matrix_flat<SIMDUnit: Operations>(
-            rows: usize,
             columns: usize,
             seed: &[u8],
             matrix: &mut [PolynomialRingElement<SIMDUnit>],
         ) {
-            matrix_flat::<SIMDUnit, crate::hash_functions::neon::Shake128x4>(
-                rows, columns, seed, matrix,
-            )
+            matrix_flat::<SIMDUnit, crate::hash_functions::neon::Shake128x4>(columns, seed, matrix)
         }
     }
 }
@@ -101,7 +94,6 @@ pub(crate) mod avx2 {
     impl X4Sampler for AVX2Sampler {
         #[allow(unsafe_code)]
         fn matrix_flat<SIMDUnit: Operations>(
-            rows: usize,
             columns: usize,
             seed: &[u8],
             matrix: &mut [PolynomialRingElement<SIMDUnit>],
@@ -109,16 +101,15 @@ pub(crate) mod avx2 {
             #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
             #[allow(unsafe_code)]
             unsafe fn inner<SIMDUnit: Operations>(
-                rows: usize,
                 columns: usize,
                 seed: &[u8],
                 matrix: &mut [PolynomialRingElement<SIMDUnit>],
             ) {
                 matrix_flat::<SIMDUnit, crate::hash_functions::simd256::Shake128x4>(
-                    rows, columns, seed, matrix,
+                    columns, seed, matrix,
                 )
             }
-            unsafe { inner(rows, columns, seed, matrix) };
+            unsafe { inner(columns, seed, matrix) };
         }
     }
 }

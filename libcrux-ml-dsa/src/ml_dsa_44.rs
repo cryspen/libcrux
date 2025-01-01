@@ -153,6 +153,7 @@ macro_rules! instantiate {
                 p::verify_internal::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROWS_X_COLUMNS,
                     SIGNATURE_SIZE,
                     VERIFICATION_KEY_SIZE,
                     GAMMA1_EXPONENT,
@@ -211,6 +212,7 @@ macro_rules! instantiate {
                 p::verify::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROWS_X_COLUMNS,
                     SIGNATURE_SIZE,
                     VERIFICATION_KEY_SIZE,
                     GAMMA1_EXPONENT,
@@ -244,6 +246,7 @@ macro_rules! instantiate {
                 p::verify_pre_hashed_shake128::<
                     ROWS_IN_A,
                     COLUMNS_IN_A,
+                    ROWS_X_COLUMNS,
                     SIGNATURE_SIZE,
                     VERIFICATION_KEY_SIZE,
                     GAMMA1_EXPONENT,
@@ -374,6 +377,7 @@ pub fn verify_internal(
     ml_dsa_generic::multiplexing::verify_internal::<
         ROWS_IN_A,
         COLUMNS_IN_A,
+        ROWS_X_COLUMNS,
         SIGNATURE_SIZE,
         VERIFICATION_KEY_SIZE,
         GAMMA1_EXPONENT,
@@ -406,6 +410,7 @@ pub fn verify(
     ml_dsa_generic::multiplexing::verify::<
         ROWS_IN_A,
         COLUMNS_IN_A,
+        ROWS_X_COLUMNS,
         SIGNATURE_SIZE,
         VERIFICATION_KEY_SIZE,
         GAMMA1_EXPONENT,
@@ -479,6 +484,7 @@ pub fn verify_pre_hashed_shake128(
     ml_dsa_generic::multiplexing::verify_pre_hashed_shake128::<
         ROWS_IN_A,
         COLUMNS_IN_A,
+        ROWS_X_COLUMNS,
         SIGNATURE_SIZE,
         VERIFICATION_KEY_SIZE,
         GAMMA1_EXPONENT,

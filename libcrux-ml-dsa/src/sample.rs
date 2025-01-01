@@ -65,7 +65,6 @@ pub(crate) fn sample_up_to_four_ring_elements_flat<
     SIMDUnit: Operations,
     Shake128: shake128::XofX4,
 >(
-    rows: usize,
     columns: usize,
     seed: &[u8],
     matrix: &mut [PolynomialRingElement<SIMDUnit>],

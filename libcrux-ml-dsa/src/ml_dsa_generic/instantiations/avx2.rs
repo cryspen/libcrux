@@ -235,6 +235,7 @@ mod avx2_feature {
     pub(super) unsafe fn verify<
         const ROWS_IN_A: usize,
         const COLUMNS_IN_A: usize,
+        const ROWS_X_COLUMNS: usize,
         const SIGNATURE_SIZE: usize,
         const VERIFICATION_KEY_SIZE: usize,
         const GAMMA1_EXPONENT: usize,
@@ -262,6 +263,7 @@ mod avx2_feature {
             crate::hash_functions::portable::Shake256Xof,
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             SIGNATURE_SIZE,
             VERIFICATION_KEY_SIZE,
             GAMMA1_EXPONENT,
@@ -283,6 +285,7 @@ mod avx2_feature {
     pub(super) unsafe fn verify_internal<
         const ROWS_IN_A: usize,
         const COLUMNS_IN_A: usize,
+        const ROWS_X_COLUMNS: usize,
         const SIGNATURE_SIZE: usize,
         const VERIFICATION_KEY_SIZE: usize,
         const GAMMA1_EXPONENT: usize,
@@ -309,6 +312,7 @@ mod avx2_feature {
             crate::hash_functions::portable::Shake256Xof,
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             SIGNATURE_SIZE,
             VERIFICATION_KEY_SIZE,
             GAMMA1_EXPONENT,
@@ -329,6 +333,7 @@ mod avx2_feature {
     pub(super) unsafe fn verify_pre_hashed_shake128<
         const ROWS_IN_A: usize,
         const COLUMNS_IN_A: usize,
+        const ROWS_X_COLUMNS: usize,
         const SIGNATURE_SIZE: usize,
         const VERIFICATION_KEY_SIZE: usize,
         const GAMMA1_EXPONENT: usize,
@@ -361,6 +366,7 @@ mod avx2_feature {
             256,
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             SIGNATURE_SIZE,
             VERIFICATION_KEY_SIZE,
             GAMMA1_EXPONENT,
@@ -547,6 +553,7 @@ pub(crate) fn sign_pre_hashed_shake128<
 pub(crate) fn verify<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const SIGNATURE_SIZE: usize,
     const VERIFICATION_KEY_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -568,6 +575,7 @@ pub(crate) fn verify<
         avx2_feature::verify::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             SIGNATURE_SIZE,
             VERIFICATION_KEY_SIZE,
             GAMMA1_EXPONENT,
@@ -589,6 +597,7 @@ pub(crate) fn verify<
 pub(crate) fn verify_internal<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const SIGNATURE_SIZE: usize,
     const VERIFICATION_KEY_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -609,6 +618,7 @@ pub(crate) fn verify_internal<
         avx2_feature::verify_internal::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             SIGNATURE_SIZE,
             VERIFICATION_KEY_SIZE,
             GAMMA1_EXPONENT,
@@ -629,6 +639,7 @@ pub(crate) fn verify_internal<
 pub(crate) fn verify_pre_hashed_shake128<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ROWS_X_COLUMNS: usize,
     const SIGNATURE_SIZE: usize,
     const VERIFICATION_KEY_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
@@ -650,6 +661,7 @@ pub(crate) fn verify_pre_hashed_shake128<
         avx2_feature::verify_pre_hashed_shake128::<
             ROWS_IN_A,
             COLUMNS_IN_A,
+            ROWS_X_COLUMNS,
             SIGNATURE_SIZE,
             VERIFICATION_KEY_SIZE,
             GAMMA1_EXPONENT,
