@@ -14,6 +14,12 @@ pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449;
 /// We use 'fer' as a shorthand for this type.
 pub(crate) type FieldElementTimesMontgomeryR = i32;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Eta {
+    Two = 2,
+    Four = 4,
+}
+
 pub(crate) trait Operations: Copy + Clone {
     type Coefficient: Copy; // XXX: make generic? drop copy?
 
@@ -76,8 +82,8 @@ pub(crate) trait Operations: Copy + Clone {
     fn commitment_serialize(simd_unit: &Self::Coefficient, serialized: &mut [u8]);
 
     // Error
-    fn error_serialize<const ETA: usize>(simd_unit: &Self::Coefficient, serialized: &mut [u8]);
-    fn error_deserialize<const ETA: usize>(serialized: &[u8], out: &mut Self::Coefficient);
+    fn error_serialize(eta: Eta, simd_unit: &Self::Coefficient, serialized: &mut [u8]);
+    fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self::Coefficient);
 
     // t0
     fn t0_serialize(simd_unit: &Self::Coefficient, out: &mut [u8]); // out len 13

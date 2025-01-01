@@ -7,9 +7,9 @@ use crate::{
 };
 
 #[inline(always)]
-pub(crate) fn generate_serialized<SIMDUnit: Operations, const ROWS_IN_A: usize>(
+pub(crate) fn generate_serialized<SIMDUnit: Operations>(
     seed: &[u8],
-    t1: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+    t1: &[PolynomialRingElement<SIMDUnit>],
     verification_key_serialized: &mut [u8],
 ) {
     verification_key_serialized[0..SEED_FOR_A_SIZE].copy_from_slice(seed);

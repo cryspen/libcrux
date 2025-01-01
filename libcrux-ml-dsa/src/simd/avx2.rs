@@ -9,6 +9,8 @@ mod vector_type;
 
 pub(crate) use vector_type::{AVX2RingElement, AVX2SIMDUnit};
 
+use super::traits::Eta;
+
 impl Operations for AVX2SIMDUnit {
     type Coefficient = vector_type::Vec256;
 
@@ -116,13 +118,13 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn error_serialize<const ETA: usize>(simd_unit: &Self::Coefficient, serialized: &mut [u8]) {
-        encoding::error::serialize::<ETA>(simd_unit, serialized)
+    fn error_serialize(eta: Eta, simd_unit: &Self::Coefficient, serialized: &mut [u8]) {
+        encoding::error::serialize(eta, simd_unit, serialized)
     }
 
     #[inline(always)]
-    fn error_deserialize<const ETA: usize>(serialized: &[u8], out: &mut Self::Coefficient) {
-        encoding::error::deserialize::<ETA>(serialized, out);
+    fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self::Coefficient) {
+        encoding::error::deserialize(eta, serialized, out);
     }
 
     #[inline(always)]

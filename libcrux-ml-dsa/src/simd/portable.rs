@@ -12,6 +12,8 @@ mod sample;
 use vector_type::Coefficients;
 pub(crate) use vector_type::PortableSIMDUnit;
 
+use super::traits::Eta;
+
 impl Operations for PortableSIMDUnit {
     type Coefficient = Coefficients;
 
@@ -98,12 +100,12 @@ impl Operations for PortableSIMDUnit {
         encoding::commitment::serialize(simd_unit, serialized)
     }
 
-    fn error_serialize<const ETA: usize>(simd_unit: &Coefficients, serialized: &mut [u8]) {
-        encoding::error::serialize::<ETA>(simd_unit, serialized)
+    fn error_serialize(eta: Eta, simd_unit: &Coefficients, serialized: &mut [u8]) {
+        encoding::error::serialize(eta, simd_unit, serialized)
     }
 
-    fn error_deserialize<const ETA: usize>(serialized: &[u8], out: &mut Coefficients) {
-        encoding::error::deserialize::<ETA>(serialized, out);
+    fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Coefficients) {
+        encoding::error::deserialize(eta, serialized, out);
     }
 
     fn t0_serialize(simd_unit: &Coefficients, out: &mut [u8]) {

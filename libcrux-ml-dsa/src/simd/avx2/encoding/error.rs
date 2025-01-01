@@ -1,5 +1,7 @@
 use libcrux_intrinsics::avx2::*;
 
+use crate::simd::avx2::Eta;
+
 #[inline(always)]
 fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
@@ -66,11 +68,10 @@ fn serialize_when_eta_is_4(simd_unit: &Vec256, out: &mut [u8]) {
 }
 
 #[inline(always)]
-pub fn serialize<const ETA: usize>(simd_unit: &Vec256, serialized: &mut [u8]) {
-    match ETA as u8 {
-        2 => serialize_when_eta_is_2(simd_unit, serialized),
-        4 => serialize_when_eta_is_4(simd_unit, serialized),
-        _ => unreachable!(),
+pub fn serialize(eta: Eta, simd_unit: &Vec256, serialized: &mut [u8]) {
+    match eta {
+        Eta::Two => serialize_when_eta_is_2(simd_unit, serialized),
+        Eta::Four => serialize_when_eta_is_4(simd_unit, serialized),
     }
 }
 
@@ -120,17 +121,16 @@ fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
     mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK))
 }
 #[inline(always)]
-pub(crate) fn deserialize_to_unsigned<const ETA: usize>(serialized: &[u8]) -> Vec256 {
-    match ETA as u8 {
-        2 => deserialize_to_unsigned_when_eta_is_2(serialized),
-        4 => deserialize_to_unsigned_when_eta_is_4(serialized),
-        _ => unreachable!(),
+pub(crate) fn deserialize_to_unsigned(eta: Eta, serialized: &[u8]) -> Vec256 {
+    match eta {
+        Eta::Two => deserialize_to_unsigned_when_eta_is_2(serialized),
+        Eta::Four => deserialize_to_unsigned_when_eta_is_4(serialized),
     }
 }
 
 #[inline(always)]
-pub(crate) fn deserialize<const ETA: usize>(serialized: &[u8], out: &mut Vec256) {
-    let unsigned = deserialize_to_unsigned::<ETA>(serialized);
+pub(crate) fn deserialize(eta: Eta, serialized: &[u8], out: &mut Vec256) {
+    let unsigned = deserialize_to_unsigned(eta, serialized);
 
-    *out = mm256_sub_epi32(mm256_set1_epi32(ETA as i32), unsigned);
+    *out = mm256_sub_epi32(mm256_set1_epi32(eta as i32), unsigned);
 }

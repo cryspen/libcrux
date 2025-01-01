@@ -2,7 +2,7 @@ use crate::{
     hash_functions::{shake128, shake256},
     polynomial::PolynomialRingElement,
     sample::{sample_four_error_ring_elements, sample_up_to_four_ring_elements},
-    simd::traits::Operations,
+    simd::traits::{Eta, Operations},
 };
 
 /// The x4 sampling implementation that is selected during multiplexing.
@@ -508,16 +508,12 @@ pub(crate) fn matrix_generic<
 }
 
 #[inline(always)]
-pub(crate) fn sample_s1_and_s2<
-    SIMDUnit: Operations,
-    Shake256X4: shake256::XofX4,
-    const ETA: usize,
-    const ROW_COLUMN: usize,
->(
+pub(crate) fn sample_s1_and_s2<SIMDUnit: Operations, Shake256X4: shake256::XofX4>(
+    eta: Eta,
     seed: &[u8],
-    s1_s2: &mut [PolynomialRingElement<SIMDUnit>; ROW_COLUMN],
+    s1_s2: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    for i in 0..ROW_COLUMN.div_ceil(4) {
-        sample_four_error_ring_elements::<SIMDUnit, Shake256X4, ETA>(seed, 4 * i as u16, s1_s2);
+    for i in 0..s1_s2.len().div_ceil(4) {
+        sample_four_error_ring_elements::<SIMDUnit, Shake256X4>(eta, seed, 4 * i as u16, s1_s2);
     }
 }

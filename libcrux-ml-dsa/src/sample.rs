@@ -4,7 +4,7 @@ use crate::{
     hash_functions::{shake128, shake256},
     helper::cloop,
     polynomial::PolynomialRingElement,
-    simd::traits::Operations,
+    simd::traits::{Eta, Operations},
 };
 
 #[inline(always)]
@@ -238,15 +238,15 @@ fn rejection_sample_less_than_eta_equals_4<SIMDUnit: Operations>(
     done
 }
 #[inline(always)]
-pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: usize>(
+pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations>(
+    eta: Eta,
     randomness: &[u8],
     sampled: &mut usize,
     out: &mut [i32; 263],
 ) -> bool {
-    match ETA as u8 {
-        2 => rejection_sample_less_than_eta_equals_2::<SIMDUnit>(randomness, sampled, out),
-        4 => rejection_sample_less_than_eta_equals_4::<SIMDUnit>(randomness, sampled, out),
-        _ => unreachable!(),
+    match eta {
+        Eta::Two => rejection_sample_less_than_eta_equals_2::<SIMDUnit>(randomness, sampled, out),
+        Eta::Four => rejection_sample_less_than_eta_equals_4::<SIMDUnit>(randomness, sampled, out),
     }
 }
 
@@ -261,20 +261,9 @@ pub(crate) fn add_error_domain_separator(slice: &[u8], domain_separator: u16) ->
     out
 }
 
-// #[inline(always)]
-// fn update_seed(mut seed: [u8; 66], domain_separator: &mut u16) -> [u8; 66] {
-//     seed[64] = *domain_separator as u8;
-//     seed[65] = (*domain_separator >> 8) as u8;
-//     *domain_separator += 1;
-//     seed
-// }
-
 #[inline(always)]
-pub(crate) fn sample_four_error_ring_elements<
-    SIMDUnit: Operations,
-    Shake256: shake256::XofX4,
-    const ETA: usize,
->(
+pub(crate) fn sample_four_error_ring_elements<SIMDUnit: Operations, Shake256: shake256::XofX4>(
+    eta: Eta,
     seed: &[u8],
     start_index: u16,
     re: &mut [PolynomialRingElement<SIMDUnit>],
@@ -303,22 +292,26 @@ pub(crate) fn sample_four_error_ring_elements<
     let mut sampled2 = 0;
     let mut sampled3 = 0;
 
-    let mut done0 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+    let mut done0 = rejection_sample_less_than_eta::<SIMDUnit>(
+        eta,
         &randomnesses.0,
         &mut sampled0,
         &mut out[0],
     );
-    let mut done1 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+    let mut done1 = rejection_sample_less_than_eta::<SIMDUnit>(
+        eta,
         &randomnesses.1,
         &mut sampled1,
         &mut out[1],
     );
-    let mut done2 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+    let mut done2 = rejection_sample_less_than_eta::<SIMDUnit>(
+        eta,
         &randomnesses.2,
         &mut sampled2,
         &mut out[2],
     );
-    let mut done3 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+    let mut done3 = rejection_sample_less_than_eta::<SIMDUnit>(
+        eta,
         &randomnesses.3,
         &mut sampled3,
         &mut out[3],
@@ -328,28 +321,32 @@ pub(crate) fn sample_four_error_ring_elements<
         // Always sample another 4, but we only use it if we actually need it.
         let randomnesses = state.squeeze_next_block_x4();
         if !done0 {
-            done0 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+            done0 = rejection_sample_less_than_eta::<SIMDUnit>(
+                eta,
                 &randomnesses.0,
                 &mut sampled0,
                 &mut out[0],
             );
         }
         if !done1 {
-            done1 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+            done1 = rejection_sample_less_than_eta::<SIMDUnit>(
+                eta,
                 &randomnesses.1,
                 &mut sampled1,
                 &mut out[1],
             );
         }
         if !done2 {
-            done2 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+            done2 = rejection_sample_less_than_eta::<SIMDUnit>(
+                eta,
                 &randomnesses.2,
                 &mut sampled2,
                 &mut out[2],
             );
         }
         if !done3 {
-            done3 = rejection_sample_less_than_eta::<SIMDUnit, ETA>(
+            done3 = rejection_sample_less_than_eta::<SIMDUnit>(
+                eta,
                 &randomnesses.3,
                 &mut sampled3,
                 &mut out[3],

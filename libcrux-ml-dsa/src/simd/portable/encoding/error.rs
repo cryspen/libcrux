@@ -1,9 +1,12 @@
-use crate::{helper::cloop, simd::portable::vector_type::Coefficients};
+use crate::{
+    helper::cloop,
+    simd::{portable::vector_type::Coefficients, traits::Eta},
+};
 
 #[inline(always)]
 fn serialize_when_eta_is_2(simd_unit: &Coefficients, serialized: &mut [u8]) {
     debug_assert!(serialized.len() == 3);
-    
+
     const ETA: i32 = 2;
 
     let coefficient0 = (ETA - simd_unit[0]) as u8;
@@ -37,11 +40,10 @@ fn serialize_when_eta_is_4(simd_unit: &Coefficients, serialized: &mut [u8]) {
 }
 
 #[inline(always)]
-pub(crate) fn serialize<const ETA: usize>(simd_unit: &Coefficients, serialized: &mut [u8]) {
-    match ETA as u8 {
-        2 => serialize_when_eta_is_2(simd_unit, serialized),
-        4 => serialize_when_eta_is_4(simd_unit, serialized),
-        _ => unreachable!(),
+pub(crate) fn serialize(eta: Eta, simd_unit: &Coefficients, serialized: &mut [u8]) {
+    match eta {
+        Eta::Two => serialize_when_eta_is_2(simd_unit, serialized),
+        Eta::Four => serialize_when_eta_is_4(simd_unit, serialized),
     }
 }
 
@@ -79,10 +81,9 @@ fn deserialize_when_eta_is_4(serialized: &[u8], simd_units: &mut Coefficients) {
     }
 }
 #[inline(always)]
-pub(crate) fn deserialize<const ETA: usize>(serialized: &[u8], out: &mut Coefficients) {
-    match ETA as u8 {
-        2 => deserialize_when_eta_is_2(serialized, out),
-        4 => deserialize_when_eta_is_4(serialized, out),
-        _ => unreachable!(),
+pub(crate) fn deserialize(eta: Eta, serialized: &[u8], out: &mut Coefficients) {
+    match eta {
+        Eta::Two => deserialize_when_eta_is_2(serialized, out),
+        Eta::Four => deserialize_when_eta_is_4(serialized, out),
     }
 }

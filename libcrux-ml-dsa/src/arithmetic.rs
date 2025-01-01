@@ -30,9 +30,9 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
 }
 
 #[inline(always)]
-pub(crate) fn power2round_vector<SIMDUnit: Operations, const DIMENSION: usize>(
-    t: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
-    t1: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+pub(crate) fn power2round_vector<SIMDUnit: Operations>(
+    t: &mut [PolynomialRingElement<SIMDUnit>],
+    t1: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
     for i in 0..t.len() {
         for j in 0..t[i].simd_units.len() {

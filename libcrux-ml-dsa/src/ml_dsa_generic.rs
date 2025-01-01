@@ -14,7 +14,7 @@ use crate::{
     pre_hash::{DomainSeparationContext, PreHash},
     sample::{sample_challenge_ring_element, sample_mask_vector},
     samplex4::{self, X4Sampler},
-    simd::traits::Operations,
+    simd::traits::{Eta, Operations},
     types::{SigningError, VerificationError},
     MLDSASignature,
 };
@@ -30,19 +30,19 @@ pub(crate) mod multiplexing;
     v44 {
         const ROWS_IN_A: usize = constants::v44::ROWS_IN_A;
         const COLUMNS_IN_A: usize = constants::v44::COLUMNS_IN_A;
-        const ETA: usize = constants::v44::ETA;
+        const ETA: Eta = Eta::Two; // constants::v44::ETA;
         const BITS_PER_ERROR_COEFFICIENT: usize = constants::v44::BITS_PER_ERROR_COEFFICIENT;
     },
     v65 {
         const ROWS_IN_A: usize = constants::v65::ROWS_IN_A;
         const COLUMNS_IN_A: usize = constants::v65::COLUMNS_IN_A;
-        const ETA: usize = constants::v65::ETA;
+        const ETA: Eta = Eta::Four; // constants::v65::ETA;
         const BITS_PER_ERROR_COEFFICIENT: usize = constants::v65::BITS_PER_ERROR_COEFFICIENT;
     },
     v87 {
         const ROWS_IN_A: usize = constants::v87::ROWS_IN_A;
         const COLUMNS_IN_A: usize = constants::v87::COLUMNS_IN_A;
-        const ETA: usize = constants::v87::ETA;
+        const ETA: Eta = Eta::Two; // constants::v87::ETA;
         const BITS_PER_ERROR_COEFFICIENT: usize = constants::v87::BITS_PER_ERROR_COEFFICIENT;
     },
 
@@ -91,7 +91,8 @@ pub(crate) fn generate_key_pair<
     Sampler::matrix::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(seed_for_a, &mut a_as_ntt);
 
     let mut s1_s2 = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_COLUMN];
-    samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4, ETA, ROW_COLUMN>(
+    samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4>(
+        ETA,
         seed_for_error_vectors,
         &mut s1_s2,
     );
@@ -100,27 +101,25 @@ pub(crate) fn generate_key_pair<
     compute_as1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1_s2, &mut t0);
 
     let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
-    power2round_vector::<SIMDUnit, ROWS_IN_A>(&mut t0, &mut t1);
+    power2round_vector::<SIMDUnit>(&mut t0, &mut t1);
 
-    encoding::verification_key::generate_serialized::<SIMDUnit, ROWS_IN_A>(
+    encoding::verification_key::generate_serialized::<SIMDUnit>(
         seed_for_a,
-        t1,
+        &t1,
         verification_key,
     );
 
     encoding::signing_key::generate_serialized::<
         SIMDUnit,
         Shake256,
-        ROWS_IN_A,
-        COLUMNS_IN_A,
+    >(
         ETA,
         ERROR_RING_ELEMENT_SIZE,
-    >(
         seed_for_a,
         seed_for_signing,
         &verification_key,
         &s1_s2,
-        t0,
+        &t0,
         signing_key,
     );
 }

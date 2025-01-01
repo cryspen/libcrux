@@ -7,23 +7,18 @@ use crate::{
     hash_functions::shake256,
     helper::cloop,
     polynomial::PolynomialRingElement,
-    simd::traits::Operations,
+    simd::traits::{Eta, Operations},
 };
 
 #[inline(always)]
-pub(crate) fn generate_serialized<
-    SIMDUnit: Operations,
-    Shake256: shake256::DsaXof,
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
-    const ETA: usize,
-    const ERROR_RING_ELEMENT_SIZE: usize,
->(
+pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
+    eta: Eta,
+    error_ring_element_size: usize,
     seed_matrix: &[u8],
     seed_signing: &[u8],
     verification_key: &[u8],
     s1_2: &[PolynomialRingElement<SIMDUnit>],
-    t0: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+    t0: &[PolynomialRingElement<SIMDUnit>],
     signing_key_serialized: &mut [u8],
 ) {
     let mut offset = 0;
@@ -44,11 +39,12 @@ pub(crate) fn generate_serialized<
     offset += BYTES_FOR_VERIFICATION_KEY_HASH;
 
     for i in 0..s1_2.len() {
-        encoding::error::serialize::<SIMDUnit, ETA>(
+        encoding::error::serialize::<SIMDUnit>(
+            eta,
             &s1_2[i],
-            &mut signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE],
+            &mut signing_key_serialized[offset..offset + error_ring_element_size],
         );
-        offset += ERROR_RING_ELEMENT_SIZE;
+        offset += error_ring_element_size;
     }
 
     cloop! {
