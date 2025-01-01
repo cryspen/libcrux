@@ -44,7 +44,7 @@ pub(crate) fn generate_serialized<
     offset += BYTES_FOR_VERIFICATION_KEY_HASH;
 
     for i in 0..s1_2.len() {
-        encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(
+        encoding::error::serialize::<SIMDUnit, ETA>(
             &s1_2[i],
             &mut signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE],
         );

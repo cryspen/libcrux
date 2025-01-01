@@ -3,9 +3,9 @@
 use crate::{helper::cloop, ntt::ntt, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZE: usize>(
+pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize>(
     re: &PolynomialRingElement<SIMDUnit>,
-    serialized: &mut [u8], //OUTPUT_SIZE
+    serialized: &mut [u8], // OUTPUT_SIZE
 ) {
     let output_bytes_per_simd_unit = if ETA == 2 { 3 } else { 4 };
     cloop! {

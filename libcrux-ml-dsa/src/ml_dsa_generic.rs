@@ -2,7 +2,7 @@ use crate::{
     arithmetic::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
     },
-    constants::*,
+    constants::{self, *},
     encoding::{self, signature::Signature},
     hash_functions::{shake128, shake256},
     matrix::{
@@ -28,39 +28,32 @@ pub(crate) mod multiplexing;
 #[libcrux_macros::consts(
     // Key size specific constants
     v44 {
-        const ROWS_IN_A: usize = 4;
-        const COLUMNS_IN_A: usize = 4;
-        const ETA: usize = 2;
-        const BITS_PER_ERROR_COEFFICIENT: usize = 3;
+        const ROWS_IN_A: usize = constants::v44::ROWS_IN_A;
+        const COLUMNS_IN_A: usize = constants::v44::COLUMNS_IN_A;
+        const ETA: usize = constants::v44::ETA;
+        const BITS_PER_ERROR_COEFFICIENT: usize = constants::v44::BITS_PER_ERROR_COEFFICIENT;
     },
     v65 {
-        const ROWS_IN_A: usize = 6;
-        const COLUMNS_IN_A: usize = 5;
-        const ETA: usize = 4;
-        const BITS_PER_ERROR_COEFFICIENT: usize = 4;
+        const ROWS_IN_A: usize = constants::v65::ROWS_IN_A;
+        const COLUMNS_IN_A: usize = constants::v65::COLUMNS_IN_A;
+        const ETA: usize = constants::v65::ETA;
+        const BITS_PER_ERROR_COEFFICIENT: usize = constants::v65::BITS_PER_ERROR_COEFFICIENT;
     },
     v87 {
-        const ROWS_IN_A: usize = 8;
-        const COLUMNS_IN_A: usize = 7;
-        const ETA: usize = 2;
-        const BITS_PER_ERROR_COEFFICIENT: usize = 3;
+        const ROWS_IN_A: usize = constants::v87::ROWS_IN_A;
+        const COLUMNS_IN_A: usize = constants::v87::COLUMNS_IN_A;
+        const ETA: usize = constants::v87::ETA;
+        const BITS_PER_ERROR_COEFFICIENT: usize = constants::v87::BITS_PER_ERROR_COEFFICIENT;
     },
 
     // Derived constants
     derived {
         const ROW_COLUMN: usize = ROWS_IN_A + COLUMNS_IN_A;
-        const ERROR_RING_ELEMENT_SIZE: usize =
-            (BITS_PER_ERROR_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
-        const SIGNING_KEY_SIZE: usize = SEED_FOR_A_SIZE
-            + SEED_FOR_SIGNING_SIZE
-            + BYTES_FOR_VERIFICATION_KEY_HASH
-            + (ROWS_IN_A + COLUMNS_IN_A) * ERROR_RING_ELEMENT_SIZE
-            + ROWS_IN_A * RING_ELEMENT_OF_T0S_SIZE;
-        const VERIFICATION_KEY_SIZE: usize = SEED_FOR_A_SIZE
-            + (COEFFICIENTS_IN_RING_ELEMENT
-                * ROWS_IN_A
-                * (FIELD_MODULUS_MINUS_ONE_BIT_LENGTH - BITS_IN_LOWER_PART_OF_T))
-                / 8;
+        // const ROW_X_COLUMN: usize = ROWS_IN_A * COLUMNS_IN_A;
+        const ERROR_RING_ELEMENT_SIZE: usize = error_ring_element_size(BITS_PER_ERROR_COEFFICIENT);
+        const SIGNING_KEY_SIZE: usize = signing_key_size(
+            ROWS_IN_A, COLUMNS_IN_A, ERROR_RING_ELEMENT_SIZE);
+        const VERIFICATION_KEY_SIZE: usize = verification_key_size(ROWS_IN_A);
         
     }
 )]

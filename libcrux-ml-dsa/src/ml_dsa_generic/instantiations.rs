@@ -8,53 +8,29 @@ macro_rules! instantiate {
                 types::{SigningError, VerificationError},
             };
 
-            /// Generate key pair.
-            pub(crate) fn generate_key_pair_v87(
-                randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
-                signing_key: &mut [u8],
-                verification_key: &mut [u8],
-            ) {
-                crate::ml_dsa_generic::generate_key_pair_v87::<
-                    $simdunit,
-                    $sampler,
-                    $shake128x4,
-                    $shake256,
-                    $shake256xof,
-                    $shake256x4,
-                >(randomness, signing_key, verification_key)
+            macro_rules! generate_key_pair {
+                ($name:ident) => {
+                    /// Generate key pair.
+                    pub(crate) fn $name(
+                        randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+                        signing_key: &mut [u8],
+                        verification_key: &mut [u8],
+                    ) {
+                        crate::ml_dsa_generic::$name::<
+                            $simdunit,
+                            $sampler,
+                            $shake128x4,
+                            $shake256,
+                            $shake256xof,
+                            $shake256x4,
+                        >(randomness, signing_key, verification_key)
+                    }
+                };
             }
 
-            /// Generate key pair.
-            pub(crate) fn generate_key_pair_v65(
-                randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
-                signing_key: &mut [u8],
-                verification_key: &mut [u8],
-            ) {
-                crate::ml_dsa_generic::generate_key_pair_v65::<
-                    $simdunit,
-                    $sampler,
-                    $shake128x4,
-                    $shake256,
-                    $shake256xof,
-                    $shake256x4,
-                >(randomness, signing_key, verification_key)
-            }
-
-            /// Generate key pair.
-            pub(crate) fn generate_key_pair_v44(
-                randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
-                signing_key: &mut [u8],
-                verification_key: &mut [u8],
-            ) {
-                crate::ml_dsa_generic::generate_key_pair_v44::<
-                    $simdunit,
-                    $sampler,
-                    $shake128x4,
-                    $shake256,
-                    $shake256xof,
-                    $shake256x4,
-                >(randomness, signing_key, verification_key)
-            }
+            generate_key_pair!(generate_key_pair_v44);
+            generate_key_pair!(generate_key_pair_v65);
+            generate_key_pair!(generate_key_pair_v87);
 
             /// Sign.
             pub(crate) fn sign<

@@ -15,6 +15,42 @@ pub(crate) trait X4Sampler {
 }
 
 #[inline(always)]
+pub(crate) fn _matrix<
+    SIMDUnit: Operations,
+    Shake128: shake128::XofX4,
+    const ROWS_IN_A: usize,
+    const COLUMNS_IN_A: usize,
+    const ROW_X_COLUMN: usize,
+>(
+    seed: &[u8],
+    matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+) {
+    let mut rand_stack0 = [0u8; shake128::FIVE_BLOCKS_SIZE];
+    let mut rand_stack1 = [0u8; shake128::FIVE_BLOCKS_SIZE];
+    let mut rand_stack2 = [0u8; shake128::FIVE_BLOCKS_SIZE];
+    let mut rand_stack3 = [0u8; shake128::FIVE_BLOCKS_SIZE];
+    let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
+
+    let mut x = 0;
+    let mut y = 0;
+    for _ in 0..ROW_X_COLUMN.div_ceil(4) {
+        sample_up_to_four_ring_elements::<SIMDUnit, Shake128, ROWS_IN_A, COLUMNS_IN_A>(
+            seed,
+            matrix,
+            &mut rand_stack0,
+            &mut rand_stack1,
+            &mut rand_stack2,
+            &mut rand_stack3,
+            &mut tmp_stack,
+            &[(x, y), (x + 1, y + 1), (x + 2, y + 2), (x + 3, y + 3)],
+            4,
+        );
+        x = ((x as usize + 4) % ROWS_IN_A) as u8;
+        y = ((y as usize + 4) % COLUMNS_IN_A) as u8;
+    }
+}
+
+#[inline(always)]
 #[cfg(feature = "mldsa44")]
 pub(crate) fn matrix_4_by_4<
     SIMDUnit: Operations,
@@ -410,7 +446,7 @@ pub(crate) mod avx2 {
             seed: &[u8],
             matrix: &mut [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
         ) {
-            unsafe { matrix_avx2(seed, matrix) }
+            unsafe { matrix_avx2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(seed, matrix) }
         }
     }
 

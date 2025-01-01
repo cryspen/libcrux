@@ -30,3 +30,69 @@ pub(crate) const REJECTION_SAMPLE_BOUND_SIGN: usize = 814;
 
 /// The length of `context` is serialized to a single `u8`.
 pub(crate) const CONTEXT_MAX_LEN: usize = 255;
+
+/// ML-DSA-44-specific parameters
+#[cfg(feature = "mldsa44")]
+pub(crate) mod v44 {
+    pub(crate) const ROWS_IN_A: usize = 4;
+    pub(crate) const COLUMNS_IN_A: usize = 4;
+
+    pub(crate) const ETA: usize = 2;
+
+    // To sample a value in the interval [-ETA, ETA], we can sample a value (say 'v')
+    // in the interval [0, 2 * ETA] and then compute ETA - v. This can be done in
+    // 3 bits when ETA is 2.
+    pub(crate) const BITS_PER_ERROR_COEFFICIENT: usize = 3;
+}
+
+/// ML-DSA-65-specific parameters
+#[cfg(feature = "mldsa65")]
+pub(crate) mod v65 {
+    pub(crate) const ROWS_IN_A: usize = 6;
+    pub(crate) const COLUMNS_IN_A: usize = 5;
+
+    pub(crate) const ETA: usize = 4;
+
+    // To sample a value in the interval [-ETA, ETA], we can sample a value (say 'v')
+    // in the interval [0, 2 * ETA] and then compute ETA - v. This can be done in
+    // 4 bits when ETA is 4.
+    pub(crate) const BITS_PER_ERROR_COEFFICIENT: usize = 4;
+}
+
+/// ML-DSA-87-specific parameters
+#[cfg(feature = "mldsa87")]
+pub(crate) mod v87 {
+    pub(crate) const ROWS_IN_A: usize = 8;
+    pub(crate) const COLUMNS_IN_A: usize = 7;
+
+    pub(crate) const ETA: usize = 2;
+
+    // To sample a value in the interval [-ETA, ETA], we can sample a value (say 'v')
+    // in the interval [0, 2 * ETA] and then compute ETA - v. This can be done in
+    // 3 bits when ETA is 2.
+    pub(crate) const BITS_PER_ERROR_COEFFICIENT: usize = 3;
+}
+
+pub(crate) const fn error_ring_element_size(bits_per_error_coefficient: usize) -> usize {
+    (bits_per_error_coefficient * COEFFICIENTS_IN_RING_ELEMENT) / 8
+}
+
+pub(crate) const fn signing_key_size(
+    rows_in_a: usize,
+    columns_in_a: usize,
+    error_ring_element_size: usize,
+) -> usize {
+    SEED_FOR_A_SIZE
+        + SEED_FOR_SIGNING_SIZE
+        + BYTES_FOR_VERIFICATION_KEY_HASH
+        + (rows_in_a + columns_in_a) * error_ring_element_size
+        + rows_in_a * RING_ELEMENT_OF_T0S_SIZE
+}
+
+pub(crate) const fn verification_key_size(rows_in_a: usize) -> usize {
+    SEED_FOR_A_SIZE
+        + (COEFFICIENTS_IN_RING_ELEMENT
+            * rows_in_a
+            * (FIELD_MODULUS_MINUS_ONE_BIT_LENGTH - BITS_IN_LOWER_PART_OF_T))
+            / 8
+}
