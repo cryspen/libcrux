@@ -4,12 +4,11 @@ use crate::{constants::*, ml_dsa_generic, types::*, SigningError, VerificationEr
 
 const ROWS_IN_A: usize = 4;
 const COLUMNS_IN_A: usize = 4;
-const ROW_COLUMN: usize = ROWS_IN_A + COLUMNS_IN_A;
 
 const ETA: usize = 2;
 // To sample a value in the interval [-ETA, ETA], we can sample a value (say 'v')
 // in the interval [0, 2 * ETA] and then compute ETA - v. This can be done in
-// 3 bits when ETA is 3.
+// 3 bits when ETA is 2.
 const BITS_PER_ERROR_COEFFICIENT: usize = 3;
 
 const ERROR_RING_ELEMENT_SIZE: usize =
@@ -73,15 +72,9 @@ macro_rules! instantiate {
             pub fn generate_key_pair(
                 randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
             ) -> MLDSA44KeyPair {
-                let (signing_key, verification_key) = p::generate_key_pair::<
-                    ROWS_IN_A,
-                    COLUMNS_IN_A,
-                    ROW_COLUMN,
-                    ETA,
-                    ERROR_RING_ELEMENT_SIZE,
-                    SIGNING_KEY_SIZE,
-                    VERIFICATION_KEY_SIZE,
-                >(randomness);
+                let mut signing_key = [0u8; SIGNING_KEY_SIZE];
+                let mut verification_key = [0u8; VERIFICATION_KEY_SIZE];
+                p::generate_key_pair_v44(randomness, &mut signing_key, &mut verification_key);
 
                 MLDSA44KeyPair {
                     signing_key: MLDSASigningKey::new(signing_key),
@@ -285,15 +278,13 @@ instantiate! {neon, ml_dsa_generic::instantiations::neon, "Neon Optimised ML-DSA
 /// This function returns an [`MLDSA44KeyPair`].
 #[cfg(not(eurydice))]
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> MLDSA44KeyPair {
-    let (signing_key, verification_key) = ml_dsa_generic::multiplexing::generate_key_pair::<
-        ROWS_IN_A,
-        COLUMNS_IN_A,
-        ROW_COLUMN,
-        ETA,
-        ERROR_RING_ELEMENT_SIZE,
-        SIGNING_KEY_SIZE,
-        VERIFICATION_KEY_SIZE,
-    >(randomness);
+    let mut signing_key = [0u8; SIGNING_KEY_SIZE];
+    let mut verification_key = [0u8; VERIFICATION_KEY_SIZE];
+    ml_dsa_generic::multiplexing::generate_key_pair_v44(
+        randomness,
+        &mut signing_key,
+        &mut verification_key,
+    );
 
     MLDSA44KeyPair {
         signing_key: MLDSASigningKey::new(signing_key),

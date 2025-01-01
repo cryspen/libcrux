@@ -7,15 +7,11 @@ use crate::{
 };
 
 #[inline(always)]
-pub(crate) fn generate_serialized<
-    SIMDUnit: Operations,
-    const ROWS_IN_A: usize,
-    const VERIFICATION_KEY_SIZE: usize,
->(
+pub(crate) fn generate_serialized<SIMDUnit: Operations, const ROWS_IN_A: usize>(
     seed: &[u8],
     t1: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
-) -> [u8; VERIFICATION_KEY_SIZE] {
-    let mut verification_key_serialized = [0u8; VERIFICATION_KEY_SIZE];
+    verification_key_serialized: &mut [u8],
+) {
     verification_key_serialized[0..SEED_FOR_A_SIZE].copy_from_slice(seed);
 
     cloop! {
@@ -25,8 +21,6 @@ pub(crate) fn generate_serialized<
                 .copy_from_slice(&t1::serialize::<SIMDUnit>(*ring_element));
         }
     }
-
-    verification_key_serialized
 }
 
 #[inline(always)]

@@ -7,7 +7,9 @@ use libcrux_platform;
 
 #[cfg(feature = "simd256")]
 use instantiations::avx2::{
-    generate_key_pair as generate_key_pair_avx2, sign as sign_avx2,
+    generate_key_pair_v44 as generate_key_pair_v44_avx2,
+    generate_key_pair_v65 as generate_key_pair_v65_avx2,
+    generate_key_pair_v87 as generate_key_pair_v87_avx2, sign as sign_avx2,
     sign_pre_hashed_shake128 as sign_pre_hashed_shake128_avx2, verify as verify_avx2,
     verify_pre_hashed_shake128 as verify_pre_hashed_shake128_avx2,
 };
@@ -48,52 +50,52 @@ use instantiations::portable::{
 
 #[cfg(not(feature = "simd128"))]
 use instantiations::portable::{
-    generate_key_pair as generate_key_pair_neon, sign as sign_neon,
+    generate_key_pair_v44 as generate_key_pair_v44_neon,
+    generate_key_pair_v65 as generate_key_pair_v65_neon,
+    generate_key_pair_v87 as generate_key_pair_v87_neon, sign as sign_neon,
     sign_pre_hashed_shake128 as sign_pre_hashed_shake128_neon, verify as verify_neon,
     verify_pre_hashed_shake128 as verify_pre_hashed_shake128_neon,
 };
 
-pub(crate) fn generate_key_pair<
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
-    const ROW_COLUMN: usize,
-    const ETA: usize,
-    const ERROR_RING_ELEMENT_SIZE: usize,
-    const SIGNING_KEY_SIZE: usize,
-    const VERIFICATION_KEY_SIZE: usize,
->(
+pub(crate) fn generate_key_pair_v44(
     randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
-) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
+    signing_key: &mut [u8],
+    verification_key: &mut [u8],
+) {
     if libcrux_platform::simd256_support() {
-        generate_key_pair_avx2::<
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-            ROW_COLUMN,
-            ETA,
-            ERROR_RING_ELEMENT_SIZE,
-            SIGNING_KEY_SIZE,
-            VERIFICATION_KEY_SIZE,
-        >(randomness)
+        generate_key_pair_v44_avx2(randomness, signing_key, verification_key);
     } else if libcrux_platform::simd128_support() {
-        generate_key_pair_neon::<
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-            ROW_COLUMN,
-            ETA,
-            ERROR_RING_ELEMENT_SIZE,
-            SIGNING_KEY_SIZE,
-            VERIFICATION_KEY_SIZE,
-        >(randomness)
+        generate_key_pair_v44_neon(randomness, signing_key, verification_key);
     } else {
-        instantiations::portable::generate_key_pair::<
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-            ROW_COLUMN,
-            ETA,
-            ERROR_RING_ELEMENT_SIZE,
-            SIGNING_KEY_SIZE,
-            VERIFICATION_KEY_SIZE,
-        >(randomness)
+        instantiations::portable::generate_key_pair_v44(randomness, signing_key, verification_key);
+    }
+}
+
+pub(crate) fn generate_key_pair_v65(
+    randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+    signing_key: &mut [u8],
+    verification_key: &mut [u8],
+) {
+    if libcrux_platform::simd256_support() {
+        generate_key_pair_v65_avx2(randomness, signing_key, verification_key);
+    } else if libcrux_platform::simd128_support() {
+        generate_key_pair_v65_neon(randomness, signing_key, verification_key);
+    } else {
+        instantiations::portable::generate_key_pair_v65(randomness, signing_key, verification_key);
+    }
+}
+
+pub(crate) fn generate_key_pair_v87(
+    randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+    signing_key: &mut [u8],
+    verification_key: &mut [u8],
+) {
+    if libcrux_platform::simd256_support() {
+        generate_key_pair_v87_avx2(randomness, signing_key, verification_key);
+    } else if libcrux_platform::simd128_support() {
+        generate_key_pair_v87_neon(randomness, signing_key, verification_key);
+    } else {
+        instantiations::portable::generate_key_pair_v87(randomness, signing_key, verification_key);
     }
 }
 

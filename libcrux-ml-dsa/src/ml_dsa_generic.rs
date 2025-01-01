@@ -25,6 +25,45 @@ pub(crate) mod instantiations;
 pub(crate) mod multiplexing;
 
 /// Generate a key pair.
+#[libcrux_macros::consts(
+    // Key size specific constants
+    v44 {
+        const ROWS_IN_A: usize = 4;
+        const COLUMNS_IN_A: usize = 4;
+        const ETA: usize = 2;
+        const BITS_PER_ERROR_COEFFICIENT: usize = 3;
+    },
+    v65 {
+        const ROWS_IN_A: usize = 6;
+        const COLUMNS_IN_A: usize = 5;
+        const ETA: usize = 4;
+        const BITS_PER_ERROR_COEFFICIENT: usize = 4;
+    },
+    v87 {
+        const ROWS_IN_A: usize = 8;
+        const COLUMNS_IN_A: usize = 7;
+        const ETA: usize = 2;
+        const BITS_PER_ERROR_COEFFICIENT: usize = 3;
+    },
+
+    // Derived constants
+    derived {
+        const ROW_COLUMN: usize = ROWS_IN_A + COLUMNS_IN_A;
+        const ERROR_RING_ELEMENT_SIZE: usize =
+            (BITS_PER_ERROR_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
+        const SIGNING_KEY_SIZE: usize = SEED_FOR_A_SIZE
+            + SEED_FOR_SIGNING_SIZE
+            + BYTES_FOR_VERIFICATION_KEY_HASH
+            + (ROWS_IN_A + COLUMNS_IN_A) * ERROR_RING_ELEMENT_SIZE
+            + ROWS_IN_A * RING_ELEMENT_OF_T0S_SIZE;
+        const VERIFICATION_KEY_SIZE: usize = SEED_FOR_A_SIZE
+            + (COEFFICIENTS_IN_RING_ELEMENT
+                * ROWS_IN_A
+                * (FIELD_MODULUS_MINUS_ONE_BIT_LENGTH - BITS_IN_LOWER_PART_OF_T))
+                / 8;
+        
+    }
+)]
 #[inline(always)]
 pub(crate) fn generate_key_pair<
     SIMDUnit: Operations,
@@ -33,16 +72,15 @@ pub(crate) fn generate_key_pair<
     Shake256: shake256::DsaXof,
     Shake256Xof: shake256::Xof,
     Shake256X4: shake256::XofX4,
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
-    const ROW_COLUMN: usize,
-    const ETA: usize,
-    const ERROR_RING_ELEMENT_SIZE: usize,
-    const SIGNING_KEY_SIZE: usize,
-    const VERIFICATION_KEY_SIZE: usize,
 >(
     randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
-) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
+    signing_key: &mut [u8],
+    verification_key: &mut [u8],
+) {
+    // Check key sizes
+    debug_assert!(signing_key.len() == SIGNING_KEY_SIZE);
+    debug_assert!(verification_key.len() == VERIFICATION_KEY_SIZE);
+
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
     let mut seed_expanded = [0; 128];
     {
@@ -71,29 +109,27 @@ pub(crate) fn generate_key_pair<
     let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
     power2round_vector::<SIMDUnit, ROWS_IN_A>(&mut t0, &mut t1);
 
-    let verification_key_serialized = encoding::verification_key::generate_serialized::<
-        SIMDUnit,
-        ROWS_IN_A,
-        VERIFICATION_KEY_SIZE,
-    >(seed_for_a, t1);
+    encoding::verification_key::generate_serialized::<SIMDUnit, ROWS_IN_A>(
+        seed_for_a,
+        t1,
+        verification_key,
+    );
 
-    let signing_key_serialized = encoding::signing_key::generate_serialized::<
+    encoding::signing_key::generate_serialized::<
         SIMDUnit,
         Shake256,
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
         ERROR_RING_ELEMENT_SIZE,
-        SIGNING_KEY_SIZE,
     >(
         seed_for_a,
         seed_for_signing,
-        &verification_key_serialized,
+        &verification_key,
         &s1_s2,
         t0,
+        signing_key,
     );
-
-    (signing_key_serialized, verification_key_serialized)
 }
 
 #[allow(non_snake_case)]

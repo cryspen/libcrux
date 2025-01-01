@@ -18,15 +18,14 @@ pub(crate) fn generate_serialized<
     const COLUMNS_IN_A: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
-    const SIGNING_KEY_SIZE: usize,
 >(
     seed_matrix: &[u8],
     seed_signing: &[u8],
     verification_key: &[u8],
     s1_2: &[PolynomialRingElement<SIMDUnit>],
     t0: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
-) -> [u8; SIGNING_KEY_SIZE] {
-    let mut signing_key_serialized = [0u8; SIGNING_KEY_SIZE];
+    signing_key_serialized: &mut [u8],
+) {
     let mut offset = 0;
 
     signing_key_serialized[offset..offset + SEED_FOR_A_SIZE].copy_from_slice(seed_matrix);
@@ -61,6 +60,4 @@ pub(crate) fn generate_serialized<
             offset += RING_ELEMENT_OF_T0S_SIZE;
         }
     }
-
-    signing_key_serialized
 }

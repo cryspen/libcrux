@@ -11,18 +11,12 @@ mod avx2_feature {
     /// Generate key pair.
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
-    pub(super) unsafe fn generate_key_pair<
-        const ROWS_IN_A: usize,
-        const COLUMNS_IN_A: usize,
-        const ROW_COLUMN: usize,
-        const ETA: usize,
-        const ERROR_RING_ELEMENT_SIZE: usize,
-        const SIGNING_KEY_SIZE: usize,
-        const VERIFICATION_KEY_SIZE: usize,
-    >(
+    pub(super) unsafe fn generate_key_pair_v44(
         randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
-    ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
-        crate::ml_dsa_generic::generate_key_pair::<
+        signing_key: &mut [u8],
+        verification_key: &mut [u8],
+    ) {
+        crate::ml_dsa_generic::generate_key_pair_v44::<
             crate::simd::avx2::AVX2SIMDUnit,
             crate::samplex4::avx2::AVX2Sampler,
             crate::hash_functions::simd256::Shake128x4,
@@ -31,14 +25,47 @@ mod avx2_feature {
             // It doesn' make sense to do these in parallel.
             crate::hash_functions::portable::Shake256Xof,
             crate::hash_functions::simd256::Shake256x4,
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-            ROW_COLUMN,
-            ETA,
-            ERROR_RING_ELEMENT_SIZE,
-            SIGNING_KEY_SIZE,
-            VERIFICATION_KEY_SIZE,
-        >(randomness)
+        >(randomness, signing_key, verification_key)
+    }
+
+    /// Generate key pair.
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+    #[allow(unsafe_code)]
+    pub(super) unsafe fn generate_key_pair_v65(
+        randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+        signing_key: &mut [u8],
+        verification_key: &mut [u8],
+    ) {
+        crate::ml_dsa_generic::generate_key_pair_v65::<
+            crate::simd::avx2::AVX2SIMDUnit,
+            crate::samplex4::avx2::AVX2Sampler,
+            crate::hash_functions::simd256::Shake128x4,
+            crate::hash_functions::simd256::Shake256,
+            // We use the portable version here.
+            // It doesn' make sense to do these in parallel.
+            crate::hash_functions::portable::Shake256Xof,
+            crate::hash_functions::simd256::Shake256x4,
+        >(randomness, signing_key, verification_key)
+    }
+
+    /// Generate key pair.
+    #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+    #[allow(unsafe_code)]
+    pub(super) unsafe fn generate_key_pair_v87(
+        randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+        signing_key: &mut [u8],
+        verification_key: &mut [u8],
+    ) {
+        crate::ml_dsa_generic::generate_key_pair_v87::<
+            crate::simd::avx2::AVX2SIMDUnit,
+            crate::samplex4::avx2::AVX2Sampler,
+            crate::hash_functions::simd256::Shake128x4,
+            crate::hash_functions::simd256::Shake256,
+            // We use the portable version here.
+            // It doesn' make sense to do these in parallel.
+            crate::hash_functions::portable::Shake256Xof,
+            crate::hash_functions::simd256::Shake256x4,
+        >(randomness, signing_key, verification_key)
     }
 
     /// Sign.
@@ -345,28 +372,32 @@ mod avx2_feature {
 
 /// Generate key pair.
 #[allow(unsafe_code)]
-pub(crate) fn generate_key_pair<
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
-    const ROW_COLUMN: usize,
-    const ETA: usize,
-    const ERROR_RING_ELEMENT_SIZE: usize,
-    const SIGNING_KEY_SIZE: usize,
-    const VERIFICATION_KEY_SIZE: usize,
->(
+pub(crate) fn generate_key_pair_v44(
     randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
-) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
-    unsafe {
-        avx2_feature::generate_key_pair::<
-            ROWS_IN_A,
-            COLUMNS_IN_A,
-            ROW_COLUMN,
-            ETA,
-            ERROR_RING_ELEMENT_SIZE,
-            SIGNING_KEY_SIZE,
-            VERIFICATION_KEY_SIZE,
-        >(randomness)
-    }
+    signing_key: &mut [u8],
+    verification_key: &mut [u8],
+) {
+    unsafe { avx2_feature::generate_key_pair_v44(randomness, signing_key, verification_key) }
+}
+
+/// Generate key pair.
+#[allow(unsafe_code)]
+pub(crate) fn generate_key_pair_v65(
+    randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+    signing_key: &mut [u8],
+    verification_key: &mut [u8],
+) {
+    unsafe { avx2_feature::generate_key_pair_v65(randomness, signing_key, verification_key) }
+}
+
+/// Generate key pair.
+#[allow(unsafe_code)]
+pub(crate) fn generate_key_pair_v87(
+    randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+    signing_key: &mut [u8],
+    verification_key: &mut [u8],
+) {
+    unsafe { avx2_feature::generate_key_pair_v87(randomness, signing_key, verification_key) }
 }
 
 /// Sign.

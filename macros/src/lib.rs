@@ -1,6 +1,11 @@
-//! This module contains code from HACL.
+//! This is a collection of libcrux internal proc macros.
 
 use proc_macro::{Delimiter, TokenStream, TokenTree};
+use quote::quote;
+use std::collections::HashMap;
+use syn::{
+    parse_macro_input, Ident, ItemFn, Stmt
+};
 
 fn skip_comma<T: Iterator<Item = TokenTree>>(ts: &mut T) {
     match ts.next() {
@@ -45,4 +50,77 @@ pub fn unroll_for(ts: TokenStream) -> TokenStream {
     });
     TokenStream::from(brace(TokenStream::from_iter(chunks.into_iter().flatten())))
     // "{ let i = 0; println!(\"FROM MACRO{}\", i); }".parse().unwrap()
+}
+
+#[proc_macro_attribute]
+pub fn consts(args: TokenStream, item: TokenStream) -> TokenStream {
+    let ItemFn {
+        attrs,
+        vis,
+        sig,
+        block,
+        ..
+    } = parse_macro_input!(item as ItemFn);
+
+    let mut variants_map: HashMap<String, _> = HashMap::new();
+    let mut derived_const_vec = Vec::new();
+
+    // Parse an attribute list of the type
+    // #[my_consts(
+    //   v4x4{const X: usize = 4; const Y: usize = 4;},
+    //   v6x5{const X: usize = 5; const Y: usize = 6;},
+    //   derived {
+    //      const Z: usize = X + Y;
+    //   }
+    // )]
+    let parser = syn::meta::parser(|meta| {
+        let ident = meta.path.clone();
+
+        if ident.get_ident().unwrap().to_string() == "derived" {
+            let content;
+            syn::braced!(content in meta.input);
+
+            while !content.is_empty() {
+                derived_const_vec.push(content.parse::<Stmt>().unwrap());
+            }
+
+            return Ok(());
+        }
+
+        let content;
+        syn::braced!(content in meta.input);
+
+        let mut const_vec = Vec::new();
+        while !content.is_empty() {
+            const_vec.push(content.parse::<Stmt>().unwrap());
+        }
+
+        variants_map.insert(quote! {#ident}.to_string(), const_vec);
+        Ok(())
+    });
+    parse_macro_input!(args with parser);
+
+    let mut expanded = quote! {};
+
+    for (variant, consts) in variants_map.iter() {
+        // add the variant at the end of the function name
+        let mut this_sig = sig.clone();
+        this_sig.ident = Ident::new(
+            &format!("{}_{}", this_sig.ident, variant),
+            this_sig.ident.span(),
+        );
+
+        let fun = quote! {
+                #(#attrs)*
+                #vis #this_sig {
+                    #(#consts)*
+                    #(#derived_const_vec)*
+
+                    #block
+                }
+        };
+        expanded.extend(fun);
+    }
+
+    expanded.into()
 }
