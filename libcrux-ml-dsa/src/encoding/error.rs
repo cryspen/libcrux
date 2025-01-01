@@ -1,10 +1,8 @@
 // Functions for serializing and deserializing an error ring element.
 
 use crate::{
-    helper::cloop,
-    ntt::ntt,
-    polynomial::PolynomialRingElement,
-    simd::traits::{Eta, Operations},
+    constants::Eta, helper::cloop, ntt::ntt, polynomial::PolynomialRingElement,
+    simd::traits::Operations,
 };
 
 #[inline(always)]

@@ -1,4 +1,4 @@
-use crate::simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT};
+use crate::{constants::Eta, simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT}};
 
 mod arithmetic;
 mod vector_type;
@@ -11,8 +11,6 @@ mod sample;
 
 use vector_type::Coefficients;
 pub(crate) use vector_type::PortableSIMDUnit;
-
-use super::traits::Eta;
 
 impl Operations for PortableSIMDUnit {
     type Coefficient = Coefficients;

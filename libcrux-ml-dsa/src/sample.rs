@@ -1,10 +1,10 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
+    constants::{Eta, COEFFICIENTS_IN_RING_ELEMENT},
     encoding,
     hash_functions::{shake128, shake256},
     helper::cloop,
     polynomial::PolynomialRingElement,
-    simd::traits::{Eta, Operations},
+    simd::traits::Operations,
 };
 
 #[inline(always)]
@@ -39,21 +39,6 @@ fn generate_domain_separator((row, column): (u8, u8)) -> u16 {
     (column as u16) | ((row as u16) << 8)
 }
 
-pub(crate) type Matrix<SIMDUnit, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize> =
-    [[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A];
-
-// Doing deep updates like `a[1][1] = 3` causes a memory blowup in F*
-// https://github.com/hacspec/hax/issues/1098
-// So we are instead using a matrix abstraction with a custom update function here.
-fn update_matrix<SIMDUnit: Operations, const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
-    m: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
-    i: usize,
-    j: usize,
-    v: PolynomialRingElement<SIMDUnit>,
-) {
-    m[i][j] = v;
-}
-
 #[inline(always)]
 pub(crate) fn add_domain_separator(slice: &[u8], indices: (u8, u8)) -> [u8; 34] {
     let mut out = [0u8; 34];
@@ -76,29 +61,33 @@ pub(crate) fn add_domain_separator(slice: &[u8], indices: (u8, u8)) -> [u8; 34] 
 /// provided index in `indices[i]`.
 /// `rand_stack` is a working buffer that holds initial Shake output.
 #[inline(always)]
-pub(crate) fn sample_up_to_four_ring_elements<
+pub(crate) fn sample_up_to_four_ring_elements_flat<
     SIMDUnit: Operations,
     Shake128: shake128::XofX4,
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
 >(
+    rows: usize,
+    columns: usize,
     seed: &[u8],
-    matrix: &mut Matrix<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>,
+    matrix: &mut [PolynomialRingElement<SIMDUnit>],
     rand_stack0: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
     rand_stack1: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
     rand_stack2: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
     rand_stack3: &mut [u8; shake128::FIVE_BLOCKS_SIZE],
     tmp_stack: &mut [[i32; 263]],
-    indices: &[(u8, u8); 4],
+    start_index: usize,
     elements_requested: usize,
 ) {
     debug_assert!(elements_requested <= 4);
 
     // Prepare the seeds
-    let seed0 = add_domain_separator(seed, indices[0]);
-    let seed1 = add_domain_separator(seed, indices[1]);
-    let seed2 = add_domain_separator(seed, indices[2]);
-    let seed3 = add_domain_separator(seed, indices[3]);
+    fn xy(index: usize, width: usize) -> (u8, u8) {
+        ((index / width) as u8, (index % width) as u8)
+    }
+
+    let seed0 = add_domain_separator(seed, xy(start_index, columns));
+    let seed1 = add_domain_separator(seed, xy(start_index + 1, columns));
+    let seed2 = add_domain_separator(seed, xy(start_index + 2, columns));
+    let seed3 = add_domain_separator(seed, xy(start_index + 3, columns));
 
     let mut state = Shake128::init_absorb(&seed0, &seed1, &seed2, &seed3);
 
@@ -171,10 +160,9 @@ pub(crate) fn sample_up_to_four_ring_elements<
     }
 
     for k in 0..elements_requested {
-        let (i, j) = indices[k];
         PolynomialRingElement::<SIMDUnit>::from_i32_array(
             &tmp_stack[k],
-            &mut matrix[i as usize][j as usize],
+            &mut matrix[start_index + k],
         );
     }
 

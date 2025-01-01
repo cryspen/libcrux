@@ -1,7 +1,4 @@
-use crate::{
-    helper::cloop,
-    simd::{portable::vector_type::Coefficients, traits::Eta},
-};
+use crate::{constants::Eta, helper::cloop, simd::portable::vector_type::Coefficients};
 
 #[inline(always)]
 fn serialize_when_eta_is_2(simd_unit: &Coefficients, serialized: &mut [u8]) {

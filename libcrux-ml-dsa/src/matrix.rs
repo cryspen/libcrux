@@ -1,33 +1,23 @@
 use crate::{
     arithmetic::shift_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
-    helper::cloop,
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
 /// Compute InvertNTT(Â ◦ ŝ₁) + s₂
-pub(crate) fn compute_as1_plus_s2<
-    SIMDUnit: Operations,
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
->(
-    a_as_ntt: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
+pub(crate) fn compute_as1_plus_s2<SIMDUnit: Operations>(
+    rows_in_a: usize,
+    columns_in_a: usize,
+    a_as_ntt: &[PolynomialRingElement<SIMDUnit>],
+    s1_ntt: &[PolynomialRingElement<SIMDUnit>],
     s1_s2: &[PolynomialRingElement<SIMDUnit>],
-    result: &mut [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+    result: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    // XXX: Make this better
-    let mut s1_ntt = [PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A];
-    for i in 0..s1_ntt.len() {
-        s1_ntt[i] = s1_s2[i];
-        ntt(&mut s1_ntt[i]);
-    }
-
-    for i in 0..ROWS_IN_A {
-        for j in 0..COLUMNS_IN_A {
-            // XXX: Make this better
-            let mut product = a_as_ntt[i][j];
+    for i in 0..rows_in_a {
+        for j in 0..columns_in_a {
+            let mut product = a_as_ntt[i * columns_in_a + j];
             ntt_multiply_montgomery::<SIMDUnit>(&mut product, &s1_ntt[j]);
             PolynomialRingElement::add(&mut result[i], &product);
         }
@@ -35,40 +25,26 @@ pub(crate) fn compute_as1_plus_s2<
 
     for i in 0..result.len() {
         invert_ntt_montgomery::<SIMDUnit>(&mut result[i]);
-        PolynomialRingElement::add(&mut result[i], &s1_s2[COLUMNS_IN_A + i]);
+        PolynomialRingElement::add(&mut result[i], &s1_s2[columns_in_a + i]);
     }
 }
 
 /// Compute InvertNTT(Â ◦ ŷ)
 #[inline(always)]
-pub(crate) fn compute_matrix_x_mask<
-    SIMDUnit: Operations,
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
->(
-    matrix: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    mask: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
-    result: &mut [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+pub(crate) fn compute_matrix_x_mask<SIMDUnit: Operations>(
+    rows_in_a: usize,
+    columns_in_a: usize,
+    matrix: &[PolynomialRingElement<SIMDUnit>],
+    mask: &[PolynomialRingElement<SIMDUnit>],
+    result: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    // XXX: Make this better
-    let mut mask_ntt = mask.clone();
-    for i in 0..mask_ntt.len() {
-        ntt(&mut mask_ntt[i]);
-    }
-
-    cloop! {
-        for (i, row) in matrix.iter().enumerate() {
-            cloop! {
-                for (j, ring_element) in row.iter().enumerate() {
-                    // XXX: Make this better
-                    let mut product = mask_ntt[j];
-                    ntt_multiply_montgomery(&mut product, &ring_element);
-                    PolynomialRingElement::<SIMDUnit>::add(&mut result[i], &product);
-                }
-            }
-
-            invert_ntt_montgomery(&mut result[i]);
+    for i in 0..rows_in_a {
+        for j in 0..columns_in_a {
+            let mut product = mask[j];
+            ntt_multiply_montgomery(&mut product, &matrix[i * columns_in_a + j]);
+            PolynomialRingElement::<SIMDUnit>::add(&mut result[i], &product);
         }
+        invert_ntt_montgomery(&mut result[i]);
     }
 }
 
@@ -105,40 +81,27 @@ pub(crate) fn subtract_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
 
 /// Compute InvertNTT(Â ◦ ẑ - ĉ ◦ NTT(t₁2ᵈ))
 #[inline(always)]
-pub(crate) fn compute_w_approx<
-    SIMDUnit: Operations,
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
->(
-    matrix: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    signer_response: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
+pub(crate) fn compute_w_approx<SIMDUnit: Operations>(
+    rows_in_a: usize,
+    columns_in_a: usize,
+    matrix: &[PolynomialRingElement<SIMDUnit>],
+    signer_response: &[PolynomialRingElement<SIMDUnit>],
     verifier_challenge_as_ntt: &PolynomialRingElement<SIMDUnit>,
-    t1: &mut [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+    t1: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    // let mut signer_response = signer_response.clone();
-    // // Move signer response into NTT
-    // for i in 0..signer_response.len() {
-    //     ntt(&mut signer_response[i]);
-    // }
-
-    cloop! {
-        for (i, row) in matrix.iter().enumerate() {
-            let mut inner_result = PolynomialRingElement::<SIMDUnit>::zero();
-            cloop! {
-                for (j, ring_element) in row.iter().enumerate() {
-                    // XXX: make nicer
-                    let mut product = ring_element.clone();
-                    ntt_multiply_montgomery(&mut product, &signer_response[j]);
-                    PolynomialRingElement::<SIMDUnit>::add(&mut inner_result, &product);
-                }
-            }
-
-            shift_left_then_reduce::<SIMDUnit, { BITS_IN_LOWER_PART_OF_T as i32 }>(&mut t1[i]);
-            ntt(&mut t1[i]);
-            ntt_multiply_montgomery(&mut t1[i], verifier_challenge_as_ntt);
-            PolynomialRingElement::<SIMDUnit>::subtract(&mut inner_result, &t1[i]);
-            t1[i] = inner_result;
-            invert_ntt_montgomery(&mut t1[i]);
+    for i in 0..rows_in_a {
+        let mut inner_result = PolynomialRingElement::<SIMDUnit>::zero();
+        for j in 0..columns_in_a {
+            let mut product = matrix[i * columns_in_a + j];
+            ntt_multiply_montgomery(&mut product, &signer_response[j]);
+            PolynomialRingElement::<SIMDUnit>::add(&mut inner_result, &product);
         }
+
+        shift_left_then_reduce::<SIMDUnit, { BITS_IN_LOWER_PART_OF_T as i32 }>(&mut t1[i]);
+        ntt(&mut t1[i]);
+        ntt_multiply_montgomery(&mut t1[i], verifier_challenge_as_ntt);
+        PolynomialRingElement::<SIMDUnit>::subtract(&mut inner_result, &t1[i]);
+        t1[i] = inner_result;
+        invert_ntt_montgomery(&mut t1[i]);
     }
 }

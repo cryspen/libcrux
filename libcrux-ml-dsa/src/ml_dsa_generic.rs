@@ -14,7 +14,7 @@ use crate::{
     pre_hash::{DomainSeparationContext, PreHash},
     sample::{sample_challenge_ring_element, sample_mask_vector},
     samplex4::{self, X4Sampler},
-    simd::traits::{Eta, Operations},
+    simd::traits::Operations,
     types::{SigningError, VerificationError},
     MLDSASignature,
 };
@@ -30,26 +30,26 @@ pub(crate) mod multiplexing;
     v44 {
         const ROWS_IN_A: usize = constants::v44::ROWS_IN_A;
         const COLUMNS_IN_A: usize = constants::v44::COLUMNS_IN_A;
-        const ETA: Eta = Eta::Two; // constants::v44::ETA;
+        const ETA: Eta =  constants::v44::ETA;
         const BITS_PER_ERROR_COEFFICIENT: usize = constants::v44::BITS_PER_ERROR_COEFFICIENT;
     },
     v65 {
         const ROWS_IN_A: usize = constants::v65::ROWS_IN_A;
         const COLUMNS_IN_A: usize = constants::v65::COLUMNS_IN_A;
-        const ETA: Eta = Eta::Four; // constants::v65::ETA;
+        const ETA: Eta = constants::v65::ETA;
         const BITS_PER_ERROR_COEFFICIENT: usize = constants::v65::BITS_PER_ERROR_COEFFICIENT;
     },
     v87 {
         const ROWS_IN_A: usize = constants::v87::ROWS_IN_A;
         const COLUMNS_IN_A: usize = constants::v87::COLUMNS_IN_A;
-        const ETA: Eta = Eta::Two; // constants::v87::ETA;
+        const ETA: Eta = constants::v87::ETA;
         const BITS_PER_ERROR_COEFFICIENT: usize = constants::v87::BITS_PER_ERROR_COEFFICIENT;
     },
 
     // Derived constants
     derived {
         const ROW_COLUMN: usize = ROWS_IN_A + COLUMNS_IN_A;
-        // const ROW_X_COLUMN: usize = ROWS_IN_A * COLUMNS_IN_A;
+        const ROW_X_COLUMN: usize = ROWS_IN_A * COLUMNS_IN_A;
         const ERROR_RING_ELEMENT_SIZE: usize = error_ring_element_size(BITS_PER_ERROR_COEFFICIENT);
         const SIGNING_KEY_SIZE: usize = signing_key_size(
             ROWS_IN_A, COLUMNS_IN_A, ERROR_RING_ELEMENT_SIZE);
@@ -87,8 +87,8 @@ pub(crate) fn generate_key_pair<
     let (seed_for_error_vectors, seed_for_signing) =
         seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-    let mut a_as_ntt = [[PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A]; ROWS_IN_A];
-    Sampler::matrix::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(seed_for_a, &mut a_as_ntt);
+    let mut a_as_ntt = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_X_COLUMN];
+    Sampler::matrix_flat::<SIMDUnit>(ROWS_IN_A, COLUMNS_IN_A, seed_for_a, &mut a_as_ntt);
 
     let mut s1_s2 = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_COLUMN];
     samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4>(
@@ -98,7 +98,14 @@ pub(crate) fn generate_key_pair<
     );
 
     let mut t0 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
-    compute_as1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&a_as_ntt, &s1_s2, &mut t0);
+    {
+        let mut s1_ntt = [PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A];
+        s1_ntt.copy_from_slice(&s1_s2[0..COLUMNS_IN_A]);
+        for i in 0..s1_ntt.len() {
+            ntt(&mut s1_ntt[i]);
+        }
+        compute_as1_plus_s2::<SIMDUnit>( ROWS_IN_A, COLUMNS_IN_A,  &a_as_ntt,&s1_ntt, &s1_s2, &mut t0);
+    }
 
     let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
     power2round_vector::<SIMDUnit>(&mut t0, &mut t1);
@@ -323,8 +330,8 @@ pub(crate) fn sign_internal<
     );
 
     // Sample matrix A.
-    let mut matrix = [[PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A]; ROWS_IN_A];
-    Sampler::matrix::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&seed_for_a, &mut matrix);
+    let mut matrix = [PolynomialRingElement::<SIMDUnit>::zero(); 56]; // FIXME
+    Sampler::matrix_flat::<SIMDUnit>(ROWS_IN_A, COLUMNS_IN_A, &seed_for_a, &mut matrix);
 
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative::<Shake256Xof>(
@@ -375,9 +382,15 @@ pub(crate) fn sign_internal<
 
         {
             let mut a_x_mask = [PolynomialRingElement::zero(); ROWS_IN_A];
-            compute_matrix_x_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
+            let mut mask_ntt = mask.clone();
+            for i in 0..mask_ntt.len() {
+                ntt(&mut mask_ntt[i]);
+            }
+            compute_matrix_x_mask::<SIMDUnit>(
+                ROWS_IN_A,
+                COLUMNS_IN_A,
                 &matrix,
-                &mask,
+                &mask_ntt,
                 &mut a_x_mask,
             );
             decompose_vector::<SIMDUnit, ROWS_IN_A, GAMMA2>(&a_x_mask, &mut w0, &mut commitment);
@@ -604,8 +617,8 @@ pub(crate) fn verify_internal<
     ) {
         return Err(VerificationError::SignerResponseExceedsBoundError);
     }
-    let mut matrix = [[PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A]; ROWS_IN_A];
-    Sampler::matrix::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&seed_for_a, &mut matrix);
+    let mut matrix = [PolynomialRingElement::<SIMDUnit>::zero(); 56]; // FIXME
+    Sampler::matrix_flat::<SIMDUnit>(ROWS_IN_A, COLUMNS_IN_A, &seed_for_a, &mut matrix);
 
     let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
     Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
@@ -633,7 +646,7 @@ pub(crate) fn verify_internal<
     for i in 0..signature.signer_response.len() {
         ntt(&mut signature.signer_response[i]);
     }
-    compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
+    compute_w_approx::<SIMDUnit>(ROWS_IN_A, COLUMNS_IN_A,
         &matrix,
         &signature.signer_response,
         &verifier_challenge,

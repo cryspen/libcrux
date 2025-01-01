@@ -31,13 +31,22 @@ pub(crate) const REJECTION_SAMPLE_BOUND_SIGN: usize = 814;
 /// The length of `context` is serialized to a single `u8`.
 pub(crate) const CONTEXT_MAX_LEN: usize = 255;
 
+/// Eta values
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Eta {
+    Two = 2,
+    Four = 4,
+}
+
 /// ML-DSA-44-specific parameters
 #[cfg(feature = "mldsa44")]
 pub(crate) mod v44 {
+    use super::Eta;
+
     pub(crate) const ROWS_IN_A: usize = 4;
     pub(crate) const COLUMNS_IN_A: usize = 4;
 
-    pub(crate) const ETA: usize = 2;
+    pub(crate) const ETA: Eta = Eta::Two;
 
     // To sample a value in the interval [-ETA, ETA], we can sample a value (say 'v')
     // in the interval [0, 2 * ETA] and then compute ETA - v. This can be done in
@@ -48,10 +57,12 @@ pub(crate) mod v44 {
 /// ML-DSA-65-specific parameters
 #[cfg(feature = "mldsa65")]
 pub(crate) mod v65 {
+    use super::Eta;
+
     pub(crate) const ROWS_IN_A: usize = 6;
     pub(crate) const COLUMNS_IN_A: usize = 5;
 
-    pub(crate) const ETA: usize = 4;
+    pub(crate) const ETA: Eta = Eta::Four;
 
     // To sample a value in the interval [-ETA, ETA], we can sample a value (say 'v')
     // in the interval [0, 2 * ETA] and then compute ETA - v. This can be done in
@@ -62,10 +73,12 @@ pub(crate) mod v65 {
 /// ML-DSA-87-specific parameters
 #[cfg(feature = "mldsa87")]
 pub(crate) mod v87 {
+    use super::Eta;
+
     pub(crate) const ROWS_IN_A: usize = 8;
     pub(crate) const COLUMNS_IN_A: usize = 7;
 
-    pub(crate) const ETA: usize = 2;
+    pub(crate) const ETA: Eta = Eta::Two;
 
     // To sample a value in the interval [-ETA, ETA], we can sample a value (say 'v')
     // in the interval [0, 2 * ETA] and then compute ETA - v. This can be done in

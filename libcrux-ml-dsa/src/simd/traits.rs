@@ -1,3 +1,5 @@
+use crate::constants::Eta;
+
 // Each field element occupies 32 bits and the size of a simd_unit is 256 bits.
 pub(crate) const COEFFICIENTS_IN_SIMD_UNIT: usize = 8;
 
@@ -13,12 +15,6 @@ pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449;
 /// representative y ≡ x·MONTGOMERY_R (mod FIELD_MODULUS).
 /// We use 'fer' as a shorthand for this type.
 pub(crate) type FieldElementTimesMontgomeryR = i32;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Eta {
-    Two = 2,
-    Four = 4,
-}
 
 pub(crate) trait Operations: Copy + Clone {
     type Coefficient: Copy; // XXX: make generic? drop copy?
