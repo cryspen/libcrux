@@ -1,4 +1,7 @@
-use crate::{constants::Eta, simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT}};
+use crate::{
+    constants::Eta,
+    simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT},
+};
 
 mod arithmetic;
 mod encoding;
@@ -58,12 +61,13 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn decompose<const GAMMA2: i32>(
+    fn decompose(
+        gamma2: i32,
         simd_unit: &Self::Coefficient,
         low: &mut Self::Coefficient,
         high: &mut Self::Coefficient,
     ) {
-        arithmetic::decompose::<GAMMA2>(simd_unit, low, high);
+        arithmetic::decompose(gamma2, simd_unit, low, high);
     }
 
     #[inline(always)]
@@ -96,18 +100,16 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(
+    fn gamma1_serialize(
         simd_unit: &Self::Coefficient,
         serialized: &mut [u8],
+        gamma1_exponent: usize,
     ) {
-        encoding::gamma1::serialize::<GAMMA1_EXPONENT>(simd_unit, serialized)
+        encoding::gamma1::serialize(simd_unit, serialized, gamma1_exponent)
     }
     #[inline(always)]
-    fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(
-        serialized: &[u8],
-        out: &mut Self::Coefficient,
-    ) {
-        encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized, out);
+    fn gamma1_deserialize(serialized: &[u8], out: &mut Self::Coefficient, gamma1_exponent: usize) {
+        encoding::gamma1::deserialize(serialized, out, gamma1_exponent);
     }
 
     #[inline(always)]

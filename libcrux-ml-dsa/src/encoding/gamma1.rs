@@ -1,15 +1,17 @@
 use crate::{helper::cloop, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-pub(crate) fn serialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
+pub(crate) fn serialize<SIMDUnit: Operations>(
     re: PolynomialRingElement<SIMDUnit>,
     serialized: &mut [u8], // OUTPUT_BYTES
+    gamma1_exponent: usize,
 ) {
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
-            SIMDUnit::gamma1_serialize::<GAMMA1_EXPONENT>(
+            SIMDUnit::gamma1_serialize(
                 simd_unit,
-                &mut serialized[i * (GAMMA1_EXPONENT + 1)..(i + 1) * (GAMMA1_EXPONENT + 1)],
+                &mut serialized[i * (gamma1_exponent + 1)..(i + 1) * (gamma1_exponent + 1)],
+                gamma1_exponent
             );
         }
     }
@@ -17,14 +19,16 @@ pub(crate) fn serialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
 }
 
 #[inline(always)]
-pub(crate) fn deserialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
+pub(crate) fn deserialize<SIMDUnit: Operations>(
+    gamma1_exponent: usize,
     serialized: &[u8],
     result: &mut PolynomialRingElement<SIMDUnit>,
 ) {
     for i in 0..result.simd_units.len() {
-        SIMDUnit::gamma1_deserialize::<GAMMA1_EXPONENT>(
-            &serialized[i * (GAMMA1_EXPONENT + 1)..(i + 1) * (GAMMA1_EXPONENT + 1)],
+        SIMDUnit::gamma1_deserialize(
+            &serialized[i * (gamma1_exponent + 1)..(i + 1) * (gamma1_exponent + 1)],
             &mut result.simd_units[i],
+            gamma1_exponent,
         );
     }
     ()
@@ -106,7 +110,7 @@ mod tests {
         ];
 
         let mut result = [0u8; 640];
-        serialize::<SIMDUnit, 19>(re, &mut result);
+        serialize::<SIMDUnit>(re, &mut result, 19);
         assert_eq!(result, expected_bytes);
     }
 
@@ -173,7 +177,7 @@ mod tests {
         ];
 
         let mut result = PolynomialRingElement::<SIMDUnit>::zero();
-        deserialize::<SIMDUnit, 17>(&bytes, &mut result);
+        deserialize::<SIMDUnit>(17, &bytes, &mut result);
         assert_eq!(result.to_i32_array(), expected_coefficients);
 
         let bytes: [u8; 640] = [
@@ -243,7 +247,7 @@ mod tests {
         ];
 
         let mut result = PolynomialRingElement::<SIMDUnit>::zero();
-        deserialize::<SIMDUnit, 19>(&bytes, &mut result);
+        deserialize::<SIMDUnit>(19, &bytes, &mut result);
         assert_eq!(result.to_i32_array(), expected_coefficients);
     }
 

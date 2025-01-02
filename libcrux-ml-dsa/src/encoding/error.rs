@@ -52,23 +52,14 @@ fn deserialize<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_to_vector_then_ntt<
-    SIMDUnit: Operations,
-    const DIMENSION: usize,
-    const ETA: usize,
-    const RING_ELEMENT_SIZE: usize,
->(
+pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
+    eta: Eta,
+    ring_element_size: usize,
     serialized: &[u8],
-    ring_elements: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    ring_elements: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    let eta = match ETA {
-        2 => Eta::Two,
-        4 => Eta::Four,
-        _ => unreachable!(),
-    };
-
     cloop! {
-        for (i, bytes) in serialized.chunks_exact(RING_ELEMENT_SIZE).enumerate() {
+        for (i, bytes) in serialized.chunks_exact(ring_element_size).enumerate() {
             deserialize::<SIMDUnit>(eta, bytes, &mut ring_elements[i]);
             ntt(&mut ring_elements[i]);
         }

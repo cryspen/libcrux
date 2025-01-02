@@ -121,7 +121,7 @@ pub(super) fn power2round(r0: &mut Vec256, r1: &mut Vec256) {
 
 #[allow(non_snake_case)]
 #[inline(always)]
-pub(super) fn decompose<const GAMMA2: i32>(r: &Vec256, r0: &mut Vec256, r1: &mut Vec256) {
+pub(super) fn decompose(gamma2: i32, r: &Vec256, r0: &mut Vec256, r1: &mut Vec256) {
     let mut r = r.clone();
     to_unsigned_representatives(&mut r);
 
@@ -129,7 +129,7 @@ pub(super) fn decompose<const GAMMA2: i32>(r: &Vec256, r0: &mut Vec256, r1: &mut
 
     // When const-generic expressions are available, this could be turned into a
     // const value.
-    let ALPHA: i32 = GAMMA2 * 2;
+    let ALPHA: i32 = gamma2 * 2;
 
     *r1 = {
         let ceil_of_r_by_128 = mm256_add_epi32(r, mm256_set1_epi32(127));
@@ -212,7 +212,7 @@ pub(super) fn compute_hint<const GAMMA2: i32>(
 #[inline(always)]
 pub(super) fn use_hint<const GAMMA2: i32>(r: &Vec256, hint: &mut Vec256) {
     let (mut r0, mut r1) = (zero(), zero());
-    decompose::<GAMMA2>(r, &mut r0, &mut r1);
+    decompose(GAMMA2, r, &mut r0, &mut r1);
 
     let all_zeros = mm256_setzero_si256();
 

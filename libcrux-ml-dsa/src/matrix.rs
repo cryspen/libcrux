@@ -49,8 +49,8 @@ pub(crate) fn compute_matrix_x_mask<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-pub(crate) fn vector_times_ring_element<SIMDUnit: Operations, const DIMENSION: usize>(
-    vector: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+pub(crate) fn vector_times_ring_element<SIMDUnit: Operations>(
+    vector: &mut [PolynomialRingElement<SIMDUnit>],
     ring_element: &PolynomialRingElement<SIMDUnit>,
 ) {
     for i in 0..vector.len() {
@@ -60,21 +60,23 @@ pub(crate) fn vector_times_ring_element<SIMDUnit: Operations, const DIMENSION: u
 }
 
 #[inline(always)]
-pub(crate) fn add_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
-    lhs: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
-    rhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+pub(crate) fn add_vectors<SIMDUnit: Operations>(
+    dimension: usize,
+    lhs: &mut [PolynomialRingElement<SIMDUnit>],
+    rhs: &[PolynomialRingElement<SIMDUnit>],
 ) {
-    for i in 0..DIMENSION {
+    for i in 0..dimension {
         PolynomialRingElement::<SIMDUnit>::add(&mut lhs[i], &rhs[i]);
     }
 }
 
 #[inline(always)]
-pub(crate) fn subtract_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
-    lhs: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
-    rhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+pub(crate) fn subtract_vectors<SIMDUnit: Operations>(
+    dimension: usize,
+    lhs: &mut [PolynomialRingElement<SIMDUnit>],
+    rhs: &[PolynomialRingElement<SIMDUnit>],
 ) {
-    for i in 0..DIMENSION {
+    for i in 0..dimension {
         PolynomialRingElement::<SIMDUnit>::subtract(&mut lhs[i], &rhs[i]);
     }
 }

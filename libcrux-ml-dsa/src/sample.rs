@@ -347,24 +347,21 @@ pub(crate) fn sample_four_error_ring_elements<SIMDUnit: Operations, Shake256: sh
 }
 
 #[inline(always)]
-fn sample_mask_ring_element<
-    SIMDUnit: Operations,
-    Shake256: shake256::DsaXof,
-    const GAMMA1_EXPONENT: usize,
->(
+fn sample_mask_ring_element<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
     seed: &[u8; 66],
     result: &mut PolynomialRingElement<SIMDUnit>,
+    gamma1_exponent: usize,
 ) {
-    match GAMMA1_EXPONENT as u8 {
+    match gamma1_exponent as u8 {
         17 => {
             let mut out = [0u8; 576];
             Shake256::shake256::<576>(seed, &mut out);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out, result);
+            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out, result);
         }
         19 => {
             let mut out = [0u8; 640];
             Shake256::shake256::<640>(seed, &mut out);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out, result);
+            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out, result);
         }
         _ => unreachable!(),
     }
@@ -375,15 +372,15 @@ pub(crate) fn sample_mask_vector<
     SIMDUnit: Operations,
     Shake256: shake256::DsaXof,
     Shake256X4: shake256::XofX4,
-    const DIMENSION: usize,
-    const GAMMA1_EXPONENT: usize,
 >(
+    dimension: usize,
+    gamma1_exponent: usize,
     seed: &[u8; 64],
     domain_separator: &mut u16,
     mask: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
     // DIMENSION is COLUMNS_IN_A
-    debug_assert!(DIMENSION == 4 || DIMENSION == 5 || DIMENSION == 7);
+    debug_assert!(dimension == 4 || dimension == 5 || dimension == 7);
     // So we can always sample 4 elements in one go first.
 
     let seed0 = add_error_domain_separator(seed, *domain_separator);
@@ -392,7 +389,7 @@ pub(crate) fn sample_mask_vector<
     let seed3 = add_error_domain_separator(seed, *domain_separator + 3);
     *domain_separator += 4;
 
-    match GAMMA1_EXPONENT as u8 {
+    match gamma1_exponent as u8 {
         17 => {
             let mut out0 = [0; 576];
             let mut out1 = [0; 576];
@@ -401,10 +398,10 @@ pub(crate) fn sample_mask_vector<
             Shake256X4::shake256_x4(
                 &seed0, &seed1, &seed2, &seed3, &mut out0, &mut out1, &mut out2, &mut out3,
             );
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0, &mut mask[0]);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1, &mut mask[1]);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2, &mut mask[2]);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3, &mut mask[3]);
+            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out0, &mut mask[0]);
+            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out1, &mut mask[1]);
+            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out2, &mut mask[2]);
+            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out3, &mut mask[3]);
         }
         19 => {
             let mut out0 = [0; 640];
@@ -414,21 +411,21 @@ pub(crate) fn sample_mask_vector<
             Shake256X4::shake256_x4(
                 &seed0, &seed1, &seed2, &seed3, &mut out0, &mut out1, &mut out2, &mut out3,
             );
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out0, &mut mask[0]);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out1, &mut mask[1]);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out2, &mut mask[2]);
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&out3, &mut mask[3]);
+            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out0, &mut mask[0]);
+            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out1, &mut mask[1]);
+            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out2, &mut mask[2]);
+            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out3, &mut mask[3]);
         }
         _ => unreachable!(),
     }
 
     #[allow(clippy::needless_range_loop)]
-    for i in 4..DIMENSION {
+    for i in 4..dimension {
         let seed = add_error_domain_separator(seed, *domain_separator);
         *domain_separator += 1;
 
         // TODO: For 87 we may want to do another 4 and discard 1.
-        sample_mask_ring_element::<SIMDUnit, Shake256, GAMMA1_EXPONENT>(&seed, &mut mask[i]);
+        sample_mask_ring_element::<SIMDUnit, Shake256>(&seed, &mut mask[i], gamma1_exponent);
     }
 }
 

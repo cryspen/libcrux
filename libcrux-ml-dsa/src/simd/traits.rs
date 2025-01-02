@@ -29,7 +29,8 @@ pub(crate) trait Operations: Copy + Clone {
     fn add(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient);
     fn subtract(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient);
     fn infinity_norm_exceeds(simd_unit: &Self::Coefficient, bound: i32) -> bool;
-    fn decompose<const GAMMA2: i32>(
+    fn decompose(
+        gamma2: i32,
         simd_unit: &Self::Coefficient,
         low: &mut Self::Coefficient,
         high: &mut Self::Coefficient,
@@ -65,14 +66,12 @@ pub(crate) trait Operations: Copy + Clone {
     // Encoding operations
 
     // Gamma1
-    fn gamma1_serialize<const GAMMA1_EXPONENT: usize>(
+    fn gamma1_serialize(
         simd_unit: &Self::Coefficient,
         serialized: &mut [u8],
+        gamma1_exponent: usize,
     );
-    fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(
-        serialized: &[u8],
-        out: &mut Self::Coefficient,
-    );
+    fn gamma1_deserialize(serialized: &[u8], out: &mut Self::Coefficient, gamma1_exponent: usize);
 
     // Commitment
     fn commitment_serialize(simd_unit: &Self::Coefficient, serialized: &mut [u8]);

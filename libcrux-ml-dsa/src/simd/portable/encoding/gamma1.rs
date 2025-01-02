@@ -57,11 +57,8 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Coefficients, serialized: &mut 
 }
 
 #[inline(always)]
-pub(crate) fn serialize<const GAMMA1_EXPONENT: usize>(
-    simd_unit: &Coefficients,
-    serialized: &mut [u8],
-) {
-    match GAMMA1_EXPONENT as u8 {
+pub(crate) fn serialize(simd_unit: &Coefficients, serialized: &mut [u8], gamma1_exponent: usize) {
+    match gamma1_exponent as u8 {
         17 => serialize_when_gamma1_is_2_pow_17(simd_unit, serialized),
         19 => serialize_when_gamma1_is_2_pow_19(simd_unit, serialized),
         _ => unreachable!(),
@@ -133,8 +130,8 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], simd_unit: &mut Coeffi
     }
 }
 #[inline(always)]
-pub(crate) fn deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8], out: &mut Coefficients) {
-    match GAMMA1_EXPONENT as u8 {
+pub(crate) fn deserialize(serialized: &[u8], out: &mut Coefficients, gamma1_exponent: usize) {
+    match gamma1_exponent as u8 {
         17 => deserialize_when_gamma1_is_2_pow_17(serialized, out),
         19 => deserialize_when_gamma1_is_2_pow_19(serialized, out),
         _ => unreachable!(),

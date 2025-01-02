@@ -265,6 +265,7 @@ pub(crate) fn sign<
 ///
 /// If no `domain_separation_context` is supplied, it is assumed that
 /// `message` already contains the domain separation.
+
 #[inline(always)]
 pub(crate) fn sign_internal<
     SIMDUnit: Operations,
@@ -294,6 +295,11 @@ pub(crate) fn sign_internal<
     domain_separation_context: Option<DomainSeparationContext>,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
+    let eta = match ETA {
+        2 => Eta::Two,
+        4 => Eta::Four,
+        _ => unreachable!(),
+    };
     // Split the signing key into its parts.
     let (seed_for_a, remaining_serialized) = signing_key.split_at(SEED_FOR_A_SIZE);
     let (seed_for_signing, remaining_serialized) =
@@ -311,22 +317,19 @@ pub(crate) fn sign_internal<
     let mut s2_as_ntt = [PolynomialRingElement::zero(); ROWS_IN_A];
     let mut t0_as_ntt = [PolynomialRingElement::zero(); ROWS_IN_A];
 
-    encoding::error::deserialize_to_vector_then_ntt::<
-        SIMDUnit,
-        COLUMNS_IN_A,
-        ETA,
+    encoding::error::deserialize_to_vector_then_ntt::<SIMDUnit>(
+        eta,
         ERROR_RING_ELEMENT_SIZE,
-    >(s1_serialized, &mut s1_as_ntt);
-    encoding::error::deserialize_to_vector_then_ntt::<
-        SIMDUnit,
-        ROWS_IN_A,
-        ETA,
-        ERROR_RING_ELEMENT_SIZE,
-    >(s2_serialized, &mut s2_as_ntt);
-    encoding::t0::deserialize_to_vector_then_ntt::<SIMDUnit, ROWS_IN_A>(
-        t0_serialized,
-        &mut t0_as_ntt,
+        s1_serialized,
+        &mut s1_as_ntt,
     );
+    encoding::error::deserialize_to_vector_then_ntt::<SIMDUnit>(
+        eta,
+        ERROR_RING_ELEMENT_SIZE,
+        s2_serialized,
+        &mut s2_as_ntt,
+    );
+    encoding::t0::deserialize_to_vector_then_ntt::<SIMDUnit>(t0_serialized, &mut t0_as_ntt);
 
     // Sample matrix A.
     let mut matrix = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_X_COLUMNS];
@@ -373,7 +376,9 @@ pub(crate) fn sign_internal<
         let mut w0 = [PolynomialRingElement::zero(); ROWS_IN_A];
         let mut commitment = [PolynomialRingElement::zero(); ROWS_IN_A];
 
-        sample_mask_vector::<SIMDUnit, Shake256, Shake256X4, COLUMNS_IN_A, GAMMA1_EXPONENT>(
+        sample_mask_vector::<SIMDUnit, Shake256, Shake256X4>(
+            COLUMNS_IN_A,
+            GAMMA1_EXPONENT,
             &mask_seed,
             &mut domain_separator_for_mask,
             &mut mask,
@@ -392,18 +397,17 @@ pub(crate) fn sign_internal<
                 &mask_ntt,
                 &mut a_x_mask,
             );
-            decompose_vector::<SIMDUnit, ROWS_IN_A, GAMMA2>(&a_x_mask, &mut w0, &mut commitment);
+            decompose_vector::<SIMDUnit>(ROWS_IN_A, GAMMA2, &a_x_mask, &mut w0, &mut commitment);
         }
 
         let mut commitment_hash_candidate = [0; COMMITMENT_HASH_SIZE];
         {
             let mut commitment_serialized = [0u8; COMMITMENT_VECTOR_SIZE];
-            encoding::commitment::serialize_vector::<
-                SIMDUnit,
-                ROWS_IN_A,
+            encoding::commitment::serialize_vector::<SIMDUnit>(
                 COMMITMENT_RING_ELEMENT_SIZE,
-                COMMITMENT_VECTOR_SIZE,
-            >(&commitment, &mut commitment_serialized);
+                &commitment,
+                &mut commitment_serialized,
+            );
 
             let mut shake = Shake256Xof::init();
             shake.absorb(&message_representative);
@@ -425,42 +429,29 @@ pub(crate) fn sign_internal<
         let mut challenge_times_s1 = s1_as_ntt.clone();
         let mut challenge_times_s2 = s2_as_ntt.clone();
 
-        vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(
-            &mut challenge_times_s1,
-            &verifier_challenge,
-        );
-        vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
-            &mut challenge_times_s2,
-            &verifier_challenge,
-        );
+        vector_times_ring_element::<SIMDUnit>(&mut challenge_times_s1, &verifier_challenge);
+        vector_times_ring_element::<SIMDUnit>(&mut challenge_times_s2, &verifier_challenge);
 
-        add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mut mask, &challenge_times_s1);
-        subtract_vectors::<SIMDUnit, ROWS_IN_A>(&mut w0, &challenge_times_s2);
+        add_vectors::<SIMDUnit>(COLUMNS_IN_A, &mut mask, &challenge_times_s1);
+        subtract_vectors::<SIMDUnit>(ROWS_IN_A, &mut w0, &challenge_times_s2);
 
-        if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
-            &mask,
-            (1 << GAMMA1_EXPONENT) - beta,
-        ) {
+        if vector_infinity_norm_exceeds::<SIMDUnit>(&mask, (1 << GAMMA1_EXPONENT) - beta) {
             // XXX: https://github.com/hacspec/hax/issues/1171
             // continue;
         } else {
-            if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(&w0, GAMMA2 - beta) {
+            if vector_infinity_norm_exceeds::<SIMDUnit>(&w0, GAMMA2 - beta) {
                 // XXX: https://github.com/hacspec/hax/issues/1171
                 // continue;
             } else {
                 // We need to clone here in case we need t0_as_ntt again in another iteration
                 // of the loop.
                 let mut challenge_times_t0 = t0_as_ntt.clone();
-                vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
-                    &mut challenge_times_t0,
-                    &verifier_challenge,
-                );
-                if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(&challenge_times_t0, GAMMA2)
-                {
+                vector_times_ring_element::<SIMDUnit>(&mut challenge_times_t0, &verifier_challenge);
+                if vector_infinity_norm_exceeds::<SIMDUnit>(&challenge_times_t0, GAMMA2) {
                     // XXX: https://github.com/hacspec/hax/issues/1171
                     // continue;
                 } else {
-                    add_vectors::<SIMDUnit, ROWS_IN_A>(&mut w0, &challenge_times_t0);
+                    add_vectors::<SIMDUnit>(ROWS_IN_A, &mut w0, &challenge_times_t0);
                     let mut hint_candidate = [[0; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A];
                     let ones_in_hint = make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(
                         &w0,
@@ -498,12 +489,17 @@ pub(crate) fn sign_internal<
     };
 
     let mut signature = [0u8; SIGNATURE_SIZE];
-    Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A> {
-        commitment_hash,
-        signer_response,
-        hint,
-    }
-    .serialize::<GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE, MAX_ONES_IN_HINT, SIGNATURE_SIZE>(
+
+    encoding::signature::serialize::<SIMDUnit>(
+        &commitment_hash,
+        &signer_response,
+        &hint,
+        COMMITMENT_HASH_SIZE,
+        COLUMNS_IN_A,
+        ROWS_IN_A,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        MAX_ONES_IN_HINT,
         &mut signature,
     );
 
@@ -610,7 +606,7 @@ pub(crate) fn verify_internal<
     };
 
     // We use if-else branches because early returns will not go through hax.
-    if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
+    if vector_infinity_norm_exceeds::<SIMDUnit>(
         &signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
@@ -657,12 +653,11 @@ pub(crate) fn verify_internal<
     {
         use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(signature.hint, &mut t1);
         let mut commitment_serialized = [0u8; COMMITMENT_VECTOR_SIZE];
-        encoding::commitment::serialize_vector::<
-            SIMDUnit,
-            ROWS_IN_A,
+        encoding::commitment::serialize_vector::<SIMDUnit>(
             COMMITMENT_RING_ELEMENT_SIZE,
-            COMMITMENT_VECTOR_SIZE,
-        >(&t1, &mut commitment_serialized);
+            &t1,
+            &mut commitment_serialized,
+        );
 
         let mut shake = Shake256Xof::init();
         shake.absorb(&message_representative);

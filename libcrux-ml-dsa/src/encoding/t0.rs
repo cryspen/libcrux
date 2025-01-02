@@ -37,9 +37,9 @@ fn deserialize<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations, const DIMENSION: usize>(
+pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     serialized: &[u8],
-    ring_elements: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    ring_elements: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
     cloop! {
         for (i, bytes) in serialized.chunks_exact(RING_ELEMENT_OF_T0S_SIZE).enumerate() {

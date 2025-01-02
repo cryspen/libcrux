@@ -4,8 +4,8 @@ use crate::{
 };
 
 #[inline(always)]
-pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations, const DIMENSION: usize>(
-    vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
+    vector: &[PolynomialRingElement<SIMDUnit>],
     bound: i32,
 ) -> bool {
     let mut result = false;
@@ -42,14 +42,17 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-pub(crate) fn decompose_vector<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
-    t: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
-    low: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
-    high: &mut [PolynomialRingElement<SIMDUnit>; DIMENSION],
+pub(crate) fn decompose_vector<SIMDUnit: Operations>(
+    dimension: usize,
+    gamma2: i32,
+    t: &[PolynomialRingElement<SIMDUnit>],
+    low: &mut [PolynomialRingElement<SIMDUnit>],
+    high: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    for i in 0..DIMENSION {
+    for i in 0..dimension {
         for j in 0..low[0].simd_units.len() {
-            SIMDUnit::decompose::<GAMMA2>(
+            SIMDUnit::decompose(
+                gamma2,
                 &t[i].simd_units[j],
                 &mut low[i].simd_units[j],
                 &mut high[i].simd_units[j],

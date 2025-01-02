@@ -16,21 +16,17 @@ fn serialize<SIMDUnit: Operations>(re: &PolynomialRingElement<SIMDUnit>, seriali
 }
 
 #[inline(always)]
-pub(crate) fn serialize_vector<
-    SIMDUnit: Operations,
-    const DIMENSION: usize,
-    const RING_ELEMENT_SIZE: usize,
-    const OUTPUT_SIZE: usize,
->(
-    vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
-    serialized: &mut [u8; OUTPUT_SIZE],
+pub(crate) fn serialize_vector<SIMDUnit: Operations>(
+    ring_element_size: usize,
+    vector: &[PolynomialRingElement<SIMDUnit>],
+    serialized: &mut [u8],
 ) {
     let mut offset: usize = 0;
 
     cloop! {
         for ring_element in vector.iter() {
-            serialize::<SIMDUnit>(ring_element, &mut serialized[offset..offset + RING_ELEMENT_SIZE]);
-            offset += RING_ELEMENT_SIZE;
+            serialize::<SIMDUnit>(ring_element, &mut serialized[offset..offset + ring_element_size]);
+            offset += ring_element_size;
         }
     }
 }

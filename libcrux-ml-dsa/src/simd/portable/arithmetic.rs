@@ -182,13 +182,13 @@ pub(super) fn compute_hint<const GAMMA2: i32>(
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
 #[inline(always)]
-fn decompose_element<const GAMMA2: i32>(r: i32) -> (i32, i32) {
+fn decompose_element(gamma2: i32, r: i32) -> (i32, i32) {
     debug_assert!(r > -FIELD_MODULUS && r < FIELD_MODULUS);
 
     // Convert the signed representative to the standard unsigned one.
     let r = r + ((r >> 31) & FIELD_MODULUS);
 
-    let alpha = GAMMA2 * 2;
+    let alpha = gamma2 * 2;
 
     let r1 = {
         // Compute ⌈r / 128⌉
@@ -227,7 +227,7 @@ fn decompose_element<const GAMMA2: i32>(r: i32) -> (i32, i32) {
 
 #[inline(always)]
 pub(crate) fn use_one_hint<const GAMMA2: i32>(r: i32, hint: i32) -> i32 {
-    let (r0, r1) = decompose_element::<GAMMA2>(r);
+    let (r0, r1) = decompose_element(GAMMA2, r);
 
     if hint == 0 {
         return r1;
@@ -261,13 +261,14 @@ pub(crate) fn use_one_hint<const GAMMA2: i32>(r: i32, hint: i32) -> i32 {
 }
 
 #[inline(always)]
-pub fn decompose<const GAMMA2: i32>(
+pub fn decompose(
+    gamma2: i32,
     simd_unit: &Coefficients,
     low: &mut Coefficients,
     high: &mut Coefficients,
 ) {
     for i in 0..low.len() {
-        (low[i], high[i]) = decompose_element::<GAMMA2>(simd_unit[i]);
+        (low[i], high[i]) = decompose_element(gamma2, simd_unit[i]);
     }
 }
 

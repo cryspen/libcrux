@@ -3,6 +3,52 @@ use crate::{
     simd::traits::Operations, VerificationError,
 };
 
+#[inline(always)]
+pub(crate) fn serialize<SIMDUnit: Operations>(
+    commitment_hash: &[u8],
+    signer_response: &[PolynomialRingElement<SIMDUnit>],
+    hint: &[[i32; COEFFICIENTS_IN_RING_ELEMENT]],
+    commitment_hash_size: usize,
+    columns_in_a: usize,
+    rows_in_a: usize,
+    gamma1_exponent: usize,
+    gamma1_ring_element_size: usize,
+    max_ones_in_hint: usize,
+    signature: &mut [u8],
+) {
+    let mut offset = 0;
+
+    signature[offset..offset + commitment_hash_size].copy_from_slice(commitment_hash);
+    offset += commitment_hash_size;
+
+    for i in 0..columns_in_a {
+        encoding::gamma1::serialize::<SIMDUnit>(
+            signer_response[i],
+            &mut signature[offset..offset + gamma1_ring_element_size],
+            gamma1_exponent,
+        );
+        offset += gamma1_ring_element_size;
+    }
+
+    let mut true_hints_seen = 0;
+
+    // Unfortunately the following does not go through hax:
+    //
+    //     let hint_serialized = &mut signature[offset..];
+    //
+    // Instead, we have to mutate signature[offset + ..] directly.
+    for i in 0..rows_in_a {
+        // for (j, hint) in self.hint[i].into_iter().enumerate() {
+        for j in 0..hint[i].len() {
+            if hint[i][j] == 1 {
+                signature[offset + true_hints_seen] = j as u8;
+                true_hints_seen += 1;
+            }
+        }
+        signature[offset + max_ones_in_hint + i] = true_hints_seen as u8;
+    }
+}
+
 /// A signature
 ///
 /// This is only an internal type.
@@ -25,48 +71,6 @@ impl<
     > Signature<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>
 {
     #[inline(always)]
-    pub(crate) fn serialize<
-        const GAMMA1_EXPONENT: usize,
-        const GAMMA1_RING_ELEMENT_SIZE: usize,
-        const MAX_ONES_IN_HINT: usize,
-        const SIGNATURE_SIZE: usize,
-    >(
-        &self,
-        signature: &mut [u8; SIGNATURE_SIZE],
-    ) {
-        let mut offset = 0;
-
-        signature[offset..offset + COMMITMENT_HASH_SIZE].copy_from_slice(&self.commitment_hash);
-        offset += COMMITMENT_HASH_SIZE;
-
-        for i in 0..COLUMNS_IN_A {
-            encoding::gamma1::serialize::<SIMDUnit, GAMMA1_EXPONENT>(
-                self.signer_response[i],
-                &mut signature[offset..offset + GAMMA1_RING_ELEMENT_SIZE],
-            );
-            offset += GAMMA1_RING_ELEMENT_SIZE;
-        }
-
-        let mut true_hints_seen = 0;
-
-        // Unfortunately the following does not go through hax:
-        //
-        //     let hint_serialized = &mut signature[offset..];
-        //
-        // Instead, we have to mutate signature[offset + ..] directly.
-        for i in 0..ROWS_IN_A {
-            // for (j, hint) in self.hint[i].into_iter().enumerate() {
-            for j in 0..self.hint[i].len() {
-                if self.hint[i][j] == 1 {
-                    signature[offset + true_hints_seen] = j as u8;
-                    true_hints_seen += 1;
-                }
-            }
-            signature[offset + MAX_ONES_IN_HINT + i] = true_hints_seen as u8;
-        }
-    }
-
-    #[inline(always)]
     pub(crate) fn deserialize<
         const GAMMA1_EXPONENT: usize,
         const GAMMA1_RING_ELEMENT_SIZE: usize,
@@ -83,7 +87,8 @@ impl<
         let mut signer_response = [PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A];
 
         for i in 0..COLUMNS_IN_A {
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(
+            encoding::gamma1::deserialize::<SIMDUnit>(
+                GAMMA1_EXPONENT,
                 &signer_response_serialized
                     [i * GAMMA1_RING_ELEMENT_SIZE..(i + 1) * GAMMA1_RING_ELEMENT_SIZE],
                 &mut signer_response[i],
