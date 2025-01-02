@@ -19,7 +19,7 @@ done
 if [[ "$no_clean" = 0 ]]; then
     cargo clean
 fi
-# TODO: add feature flags for mldsa65
+
 ./c.sh --config cg.yaml --out cg --mldsa65\
     --no-glue --no-unrolling --no-karamel_include --no-karamel_include
 

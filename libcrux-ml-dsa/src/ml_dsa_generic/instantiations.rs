@@ -28,8 +28,11 @@ macro_rules! instantiate {
                 };
             }
 
+            #[cfg(feature = "mldsa44")]
             generate_key_pair!(generate_key_pair_v44);
+            #[cfg(feature = "mldsa65")]
             generate_key_pair!(generate_key_pair_v65);
+            #[cfg(feature = "mldsa87")]
             generate_key_pair!(generate_key_pair_v87);
 
             /// Sign.

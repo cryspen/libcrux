@@ -3,9 +3,7 @@
 use proc_macro::{Delimiter, TokenStream, TokenTree};
 use quote::quote;
 use std::collections::HashMap;
-use syn::{
-    parse_macro_input, Ident, ItemFn, Stmt
-};
+use syn::{parse_macro_input, Attribute, Ident, ItemFn, Stmt};
 
 fn skip_comma<T: Iterator<Item = TokenTree>>(ts: &mut T) {
     match ts.next() {
@@ -69,7 +67,7 @@ pub fn consts(args: TokenStream, item: TokenStream) -> TokenStream {
     // #[my_consts(
     //   v4x4{const X: usize = 4; const Y: usize = 4;},
     //   v6x5{const X: usize = 5; const Y: usize = 6;},
-    //   derived {
+    //   derived { // optional - shold be in function
     //      const Z: usize = X + Y;
     //   }
     // )]
@@ -91,18 +89,28 @@ pub fn consts(args: TokenStream, item: TokenStream) -> TokenStream {
         syn::braced!(content in meta.input);
 
         let mut const_vec = Vec::new();
+        let mut attributes: Option<Vec<Attribute>> = None;
         while !content.is_empty() {
+            // There may be a config flag here.
+            if let Ok(new_attributes) = Attribute::parse_outer(&content) {
+                if let Some(attributes) = &mut attributes {
+                    attributes.extend(new_attributes);
+                } else {
+                    attributes = Some(new_attributes);
+                }
+            }
+
             const_vec.push(content.parse::<Stmt>().unwrap());
         }
 
-        variants_map.insert(quote! {#ident}.to_string(), const_vec);
+        variants_map.insert(quote! {#ident}.to_string(), (attributes, const_vec));
         Ok(())
     });
     parse_macro_input!(args with parser);
 
     let mut expanded = quote! {};
 
-    for (variant, consts) in variants_map.iter() {
+    for (variant, (attributes, consts)) in variants_map.iter() {
         // add the variant at the end of the function name
         let mut this_sig = sig.clone();
         this_sig.ident = Ident::new(
@@ -110,10 +118,23 @@ pub fn consts(args: TokenStream, item: TokenStream) -> TokenStream {
             this_sig.ident.span(),
         );
 
+        let mut attribute_tokens = quote! {};
+        if let Some(av) = attributes {
+            for a in av {
+                attribute_tokens.extend(quote! {
+                    #a
+                });
+            }
+        }
+
         let fun = quote! {
+                #attribute_tokens
                 #(#attrs)*
                 #vis #this_sig {
-                    #(#consts)*
+                    #(
+                        #attribute_tokens
+                        #consts
+                    )*
                     #(#derived_const_vec)*
 
                     #block

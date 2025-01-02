@@ -4,7 +4,7 @@ open Core
 open FStar.Mul
 
 let t_Feature_cast_to_repr (x: t_Feature) =
-  match x with
+  match x <: t_Feature with
   | Feature_mmx  -> isz 0
   | Feature_sse  -> isz 1
   | Feature_sse2  -> isz 3

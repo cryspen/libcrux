@@ -28,18 +28,21 @@ pub(crate) mod multiplexing;
 #[libcrux_macros::consts(
     // Key size specific constants
     v44 {
+        #[cfg(feature = "mldsa44")]
         const ROWS_IN_A: usize = constants::v44::ROWS_IN_A;
         const COLUMNS_IN_A: usize = constants::v44::COLUMNS_IN_A;
         const ETA: Eta =  constants::v44::ETA;
         const BITS_PER_ERROR_COEFFICIENT: usize = constants::v44::BITS_PER_ERROR_COEFFICIENT;
     },
     v65 {
+        #[cfg(feature = "mldsa65")]
         const ROWS_IN_A: usize = constants::v65::ROWS_IN_A;
         const COLUMNS_IN_A: usize = constants::v65::COLUMNS_IN_A;
         const ETA: Eta = constants::v65::ETA;
         const BITS_PER_ERROR_COEFFICIENT: usize = constants::v65::BITS_PER_ERROR_COEFFICIENT;
     },
     v87 {
+        #[cfg(feature = "mldsa87")]
         const ROWS_IN_A: usize = constants::v87::ROWS_IN_A;
         const COLUMNS_IN_A: usize = constants::v87::COLUMNS_IN_A;
         const ETA: Eta = constants::v87::ETA;

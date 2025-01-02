@@ -7,12 +7,16 @@ use libcrux_platform;
 
 #[cfg(feature = "simd256")]
 use instantiations::avx2::{
-    generate_key_pair_v44 as generate_key_pair_v44_avx2,
-    generate_key_pair_v65 as generate_key_pair_v65_avx2,
-    generate_key_pair_v87 as generate_key_pair_v87_avx2, sign as sign_avx2,
-    sign_pre_hashed_shake128 as sign_pre_hashed_shake128_avx2, verify as verify_avx2,
-    verify_pre_hashed_shake128 as verify_pre_hashed_shake128_avx2,
+    sign as sign_avx2, sign_pre_hashed_shake128 as sign_pre_hashed_shake128_avx2,
+    verify as verify_avx2, verify_pre_hashed_shake128 as verify_pre_hashed_shake128_avx2,
 };
+
+#[cfg(all(feature = "simd256", feature = "mldsa44"))]
+use instantiations::portable::generate_key_pair_v44 as generate_key_pair_v44_avx2;
+#[cfg(all(feature = "simd256", feature = "mldsa65"))]
+use instantiations::portable::generate_key_pair_v65 as generate_key_pair_v65_avx2;
+#[cfg(all(feature = "simd256", feature = "mldsa87"))]
+use instantiations::portable::generate_key_pair_v87 as generate_key_pair_v87_avx2;
 
 #[cfg(all(feature = "simd256", feature = "acvp"))]
 use instantiations::avx2::{
@@ -50,13 +54,18 @@ use instantiations::portable::{
 
 #[cfg(not(feature = "simd128"))]
 use instantiations::portable::{
-    generate_key_pair_v44 as generate_key_pair_v44_neon,
-    generate_key_pair_v65 as generate_key_pair_v65_neon,
-    generate_key_pair_v87 as generate_key_pair_v87_neon, sign as sign_neon,
-    sign_pre_hashed_shake128 as sign_pre_hashed_shake128_neon, verify as verify_neon,
-    verify_pre_hashed_shake128 as verify_pre_hashed_shake128_neon,
+    sign as sign_neon, sign_pre_hashed_shake128 as sign_pre_hashed_shake128_neon,
+    verify as verify_neon, verify_pre_hashed_shake128 as verify_pre_hashed_shake128_neon,
 };
 
+#[cfg(all(not(feature = "simd128"), feature = "mldsa44"))]
+use instantiations::portable::generate_key_pair_v44 as generate_key_pair_v44_neon;
+#[cfg(all(not(feature = "simd128"), feature = "mldsa65"))]
+use instantiations::portable::generate_key_pair_v65 as generate_key_pair_v65_neon;
+#[cfg(all(not(feature = "simd128"), feature = "mldsa87"))]
+use instantiations::portable::generate_key_pair_v87 as generate_key_pair_v87_neon;
+
+#[cfg(feature = "mldsa44")]
 pub(crate) fn generate_key_pair_v44(
     randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
     signing_key: &mut [u8],
@@ -71,6 +80,7 @@ pub(crate) fn generate_key_pair_v44(
     }
 }
 
+#[cfg(feature = "mldsa65")]
 pub(crate) fn generate_key_pair_v65(
     randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
     signing_key: &mut [u8],
@@ -85,6 +95,7 @@ pub(crate) fn generate_key_pair_v65(
     }
 }
 
+#[cfg(feature = "mldsa87")]
 pub(crate) fn generate_key_pair_v87(
     randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
     signing_key: &mut [u8],
