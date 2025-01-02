@@ -24,17 +24,15 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-pub(crate) fn deserialize<
-    SIMDUnit: Operations,
-    const ROWS_IN_A: usize,
-    const VERIFICATION_KEY_SIZE: usize,
->(
+pub(crate) fn deserialize<SIMDUnit: Operations>(
+    rows_in_a: usize,
+    verification_key_size: usize,
     serialized: &[u8],
-    t1: &mut [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+    t1: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    debug_assert!(serialized.len() == VERIFICATION_KEY_SIZE - SEED_FOR_A_SIZE);
+    debug_assert!(serialized.len() == verification_key_size - SEED_FOR_A_SIZE);
 
-    for i in 0..ROWS_IN_A {
+    for i in 0..rows_in_a {
         t1::deserialize::<SIMDUnit>(
             &serialized[i * RING_ELEMENT_OF_T1S_SIZE..(i + 1) * RING_ELEMENT_OF_T1S_SIZE],
             &mut t1[i],
