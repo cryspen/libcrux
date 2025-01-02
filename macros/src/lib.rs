@@ -50,6 +50,19 @@ pub fn unroll_for(ts: TokenStream) -> TokenStream {
     // "{ let i = 0; println!(\"FROM MACRO{}\", i); }".parse().unwrap()
 }
 
+/// For an annotated function `f`, parse an attribute list of the type
+/// ```
+/// #[consts(
+///   variant_a{const X: usize = 4; const Y: usize = 4;},
+///   variant_b{const X: usize = 5; const Y: usize = 6;},
+///   ...
+/// )]
+/// ```
+/// and generate variants `f_variant_a`, `f_variant_b` of `f` with the given
+/// constants injected into the function as constants. The variant
+/// attribute lists can in turn contain attributes,
+/// e.g. `#[cfg(feature = "variant_a")]`, which will be applied to the
+/// generated function variant.
 #[proc_macro_attribute]
 pub fn consts(args: TokenStream, item: TokenStream) -> TokenStream {
     let ItemFn {
@@ -61,29 +74,14 @@ pub fn consts(args: TokenStream, item: TokenStream) -> TokenStream {
     } = parse_macro_input!(item as ItemFn);
 
     let mut variants_map: HashMap<String, _> = HashMap::new();
-    let mut derived_const_vec = Vec::new();
 
     // Parse an attribute list of the type
-    // #[my_consts(
-    //   v4x4{const X: usize = 4; const Y: usize = 4;},
-    //   v6x5{const X: usize = 5; const Y: usize = 6;},
-    //   derived { // optional - shold be in function
-    //      const Z: usize = X + Y;
-    //   }
+    // #[consts(
+    //   v44{const X: usize = 4; const Y: usize = 4;},
+    //   v44{const X: usize = 4; const Y: usize = 4;},
     // )]
     let parser = syn::meta::parser(|meta| {
         let ident = meta.path.clone();
-
-        if ident.get_ident().unwrap().to_string() == "derived" {
-            let content;
-            syn::braced!(content in meta.input);
-
-            while !content.is_empty() {
-                derived_const_vec.push(content.parse::<Stmt>().unwrap());
-            }
-
-            return Ok(());
-        }
 
         let content;
         syn::braced!(content in meta.input);
@@ -131,11 +129,7 @@ pub fn consts(args: TokenStream, item: TokenStream) -> TokenStream {
                 #attribute_tokens
                 #(#attrs)*
                 #vis #this_sig {
-                    #(
-                        #attribute_tokens
-                        #consts
-                    )*
-                    #(#derived_const_vec)*
+                    #(#consts)*
 
                     #block
                 }
