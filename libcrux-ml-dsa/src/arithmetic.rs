@@ -14,7 +14,7 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
     cloop! {
         for ring_element in vector.iter() {
             if !result && ring_element.infinity_norm_exceeds(bound) {
-                result = result || true;
+                result = true;
             }
         }
     }

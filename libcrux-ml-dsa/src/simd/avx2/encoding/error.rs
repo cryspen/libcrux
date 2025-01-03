@@ -132,5 +132,10 @@ pub(crate) fn deserialize_to_unsigned(eta: Eta, serialized: &[u8]) -> Vec256 {
 pub(crate) fn deserialize(eta: Eta, serialized: &[u8], out: &mut Vec256) {
     let unsigned = deserialize_to_unsigned(eta, serialized);
 
-    *out = mm256_sub_epi32(mm256_set1_epi32(eta as i32), unsigned);
+    // [eurydice]: https://github.com/AeneasVerif/eurydice/issues/122
+    let eta = match eta {
+        Eta::Two => 2,
+        Eta::Four => 4,
+    };
+    *out = mm256_sub_epi32(mm256_set1_epi32(eta), unsigned);
 }

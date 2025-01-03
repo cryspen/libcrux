@@ -31,19 +31,23 @@ pub(crate) const REJECTION_SAMPLE_BOUND_SIGN: usize = 814;
 /// The length of `context` is serialized to a single `u8`.
 pub(crate) const CONTEXT_MAX_LEN: usize = 255;
 
+// Handling of enums in eurydice is very limited.
+// We therefore don't sue them here in all the places we could.
+// See
+// - https://github.com/AeneasVerif/eurydice/issues/123
+// - https://github.com/AeneasVerif/eurydice/issues/122
+
 /// Eta values
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub(crate) enum Eta {
     Two = 2,
     Four = 4,
 }
 
 /// Gamma2 values
-#[derive(Debug, Clone, Copy)]
-pub(crate) enum Gamma2 {
-    V95_232 = 95_232,
-    V261_888 = 261_888,
-}
+pub(crate) type Gamma2 = i32;
+pub(crate) const GAMMA2_V261_888: Gamma2 = 261_888;
+pub(crate) const GAMMA2_V95_232: Gamma2 = 95_232;
 
 /// ML-DSA-44-specific parameters
 #[cfg(feature = "mldsa44")]

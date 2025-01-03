@@ -1,5 +1,14 @@
 macro_rules! instantiate {
-    ($modp:ident, $simdunit:path, $shake128:path, $shake128x4:path, $shake256:path, $shake256xof:path, $shake256x4:path, $sampler:path) => {
+    (
+        $modp:ident, // name for the module
+        $simdunit:path, // paths to the platform specific implementations ...
+        $shake128:path,
+        $shake128x4:path,
+        $shake256:path,
+        $shake256xof:path,
+        $shake256x4:path,
+        $sampler:path
+    ) => {
         pub mod $modp {
             use crate::{
                 constants::*,

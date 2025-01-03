@@ -8,37 +8,6 @@ use crate::{
 mod avx2_feature {
     use super::*;
 
-    macro_rules! generate_key_pair {
-        ($name:ident) => {
-            /// Generate key pair.
-            #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-            #[allow(unsafe_code)]
-            pub(super) unsafe fn $name(
-                randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
-                signing_key: &mut [u8],
-                verification_key: &mut [u8],
-            ) {
-                crate::ml_dsa_generic::$name::<
-                    crate::simd::avx2::AVX2SIMDUnit,
-                    crate::samplex4::avx2::AVX2Sampler,
-                    crate::hash_functions::simd256::Shake128x4,
-                    crate::hash_functions::simd256::Shake256,
-                    // We use the portable version here.
-                    // It doesn' make sense to do these in parallel.
-                    crate::hash_functions::portable::Shake256Xof,
-                    crate::hash_functions::simd256::Shake256x4,
-                >(randomness, signing_key, verification_key)
-            }
-        };
-    }
-
-    #[cfg(feature = "mldsa44")]
-    generate_key_pair!(generate_key_pair_v44);
-    #[cfg(feature = "mldsa65")]
-    generate_key_pair!(generate_key_pair_v65);
-    #[cfg(feature = "mldsa87")]
-    generate_key_pair!(generate_key_pair_v87);
-
     /// Sign.
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
@@ -353,38 +322,45 @@ mod avx2_feature {
     }
 }
 
+macro_rules! impl_generate_key_pair {
+    ($name:ident) => {
+        /// Generate key pair.
+        #[allow(unsafe_code)]
+        pub(crate) fn $name(
+            randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+            signing_key: &mut [u8],
+            verification_key: &mut [u8],
+        ) {
+            #[allow(unsafe_code)]
+            #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+            unsafe fn _inner(
+                randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+                signing_key: &mut [u8],
+                verification_key: &mut [u8],
+            ) {
+                crate::ml_dsa_generic::$name::<
+                    crate::simd::avx2::AVX2SIMDUnit,
+                    crate::samplex4::avx2::AVX2Sampler,
+                    crate::hash_functions::simd256::Shake128x4,
+                    crate::hash_functions::simd256::Shake256,
+                    crate::hash_functions::portable::Shake256Xof,
+                    crate::hash_functions::simd256::Shake256x4,
+                >(randomness, signing_key, verification_key);
+            }
+
+            unsafe {
+                _inner(randomness, signing_key, verification_key);
+            }
+        }
+    };
+}
+
 #[cfg(feature = "mldsa44")]
-/// Generate key pair.
-#[allow(unsafe_code)]
-pub(crate) fn generate_key_pair_v44(
-    randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
-    signing_key: &mut [u8],
-    verification_key: &mut [u8],
-) {
-    unsafe { avx2_feature::generate_key_pair_v44(randomness, signing_key, verification_key) }
-}
-
+impl_generate_key_pair!(generate_key_pair_v44);
 #[cfg(feature = "mldsa65")]
-/// Generate key pair.
-#[allow(unsafe_code)]
-pub(crate) fn generate_key_pair_v65(
-    randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
-    signing_key: &mut [u8],
-    verification_key: &mut [u8],
-) {
-    unsafe { avx2_feature::generate_key_pair_v65(randomness, signing_key, verification_key) }
-}
-
+impl_generate_key_pair!(generate_key_pair_v65);
 #[cfg(feature = "mldsa87")]
-/// Generate key pair.
-#[allow(unsafe_code)]
-pub(crate) fn generate_key_pair_v87(
-    randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
-    signing_key: &mut [u8],
-    verification_key: &mut [u8],
-) {
-    unsafe { avx2_feature::generate_key_pair_v87(randomness, signing_key, verification_key) }
-}
+impl_generate_key_pair!(generate_key_pair_v87);
 
 /// Sign.
 #[allow(unsafe_code)]

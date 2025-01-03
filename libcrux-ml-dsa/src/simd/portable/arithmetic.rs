@@ -1,6 +1,6 @@
 use super::vector_type::{Coefficients, FieldElement};
 use crate::{
-    constants::{Gamma2, BITS_IN_LOWER_PART_OF_T},
+    constants::{Gamma2, BITS_IN_LOWER_PART_OF_T, GAMMA2_V261_888, GAMMA2_V95_232},
     helper::cloop,
     simd::traits::{
         FieldElementTimesMontgomeryR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
@@ -213,7 +213,7 @@ fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
         let ceil_of_r_by_128 = (r + 127) >> 7;
 
         match gamma2 {
-            Gamma2::V95_232 => {
+            GAMMA2_V95_232 => {
                 // We approximate 1 / 1488 as:
                 // ⌊2²⁴ / 1488⌋ / 2²⁴ = 11,275 / 2²⁴
                 let result = ((ceil_of_r_by_128 * 11_275) + (1 << 23)) >> 24;
@@ -221,7 +221,7 @@ fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
                 // For the corner-case a₁ = (q-1)/α = 44, we have to set a₁=0.
                 (result ^ (43 - result) >> 31) & result
             }
-            Gamma2::V261_888 => {
+            GAMMA2_V261_888 => {
                 // We approximate 1 / 4092 as:
                 // ⌊2²² / 4092⌋ / 2²² = 1025 / 2²²
                 let result = (ceil_of_r_by_128 * 1025 + (1 << 21)) >> 22;
@@ -229,10 +229,12 @@ fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
                 // For the corner-case a₁ = (q-1)/α = 16, we have to set a₁=0.
                 result & 15
             }
+
+            _ => unreachable!(),
         }
     };
 
-    let alpha = gamma2 as i32 * 2;
+    let alpha = gamma2 * 2;
     let mut r0 = r - (r1 * alpha);
 
     // In the corner-case, when we set a₁=0, we will incorrectly
@@ -252,7 +254,7 @@ pub(crate) fn use_one_hint(gamma2: Gamma2, r: i32, hint: i32) -> i32 {
     }
 
     match gamma2 {
-        Gamma2::V95_232 => {
+        GAMMA2_V95_232 => {
             if r0 > 0 {
                 if r1 == 43 {
                     0
@@ -266,13 +268,15 @@ pub(crate) fn use_one_hint(gamma2: Gamma2, r: i32, hint: i32) -> i32 {
             }
         }
 
-        Gamma2::V261_888 => {
+        GAMMA2_V261_888 => {
             if r0 > 0 {
                 (r1 + hint) & 15
             } else {
                 (r1 - hint) & 15
             }
         }
+
+        _ => unreachable!(),
     }
 }
 
@@ -315,10 +319,10 @@ mod tests {
 
     #[test]
     fn test_use_one_hint() {
-        assert_eq!(use_one_hint(Gamma2::V95_232, 7622170, 0), 40);
-        assert_eq!(use_one_hint(Gamma2::V95_232, 2332762, 1), 13);
+        assert_eq!(use_one_hint(GAMMA2_V95_232, 7622170, 0), 40);
+        assert_eq!(use_one_hint(GAMMA2_V95_232, 2332762, 1), 13);
 
-        assert_eq!(use_one_hint(Gamma2::V261_888, 7691572, 0), 15);
-        assert_eq!(use_one_hint(Gamma2::V261_888, 6635697, 1), 12);
+        assert_eq!(use_one_hint(GAMMA2_V261_888, 7691572, 0), 15);
+        assert_eq!(use_one_hint(GAMMA2_V261_888, 6635697, 1), 12);
     }
 }

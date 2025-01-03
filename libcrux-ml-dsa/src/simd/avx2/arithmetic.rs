@@ -1,5 +1,5 @@
 use crate::{
-    constants::BITS_IN_LOWER_PART_OF_T,
+    constants::{BITS_IN_LOWER_PART_OF_T, GAMMA2_V261_888, GAMMA2_V95_232},
     simd::traits::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R},
 };
 
@@ -8,11 +8,16 @@ use libcrux_intrinsics::avx2::*;
 use super::{vector_type::zero, Gamma2};
 
 #[inline(always)]
-fn to_unsigned_representatives(t: &mut Vec256) {
+fn to_unsigned_representatives_ret(t: &Vec256) -> Vec256 {
     let signs = mm256_srai_epi32::<31>(*t);
     let conditional_add_field_modulus = mm256_and_si256(signs, mm256_set1_epi32(FIELD_MODULUS));
 
-    *t = mm256_add_epi32(*t, conditional_add_field_modulus);
+    mm256_add_epi32(*t, conditional_add_field_modulus)
+}
+
+#[inline(always)]
+fn to_unsigned_representatives(t: &mut Vec256) {
+    *t = to_unsigned_representatives_ret(t);
 }
 
 #[inline(always)]
@@ -119,61 +124,59 @@ pub(super) fn power2round(r0: &mut Vec256, r1: &mut Vec256) {
     *r0 = mm256_sub_epi32(*r0, tmp);
 }
 
-#[allow(non_snake_case)]
 #[inline(always)]
 pub(super) fn decompose(gamma2: Gamma2, r: &Vec256, r0: &mut Vec256, r1: &mut Vec256) {
-    let mut r = r.clone();
-    to_unsigned_representatives(&mut r);
+    let r = to_unsigned_representatives_ret(r);
 
-    let field_modulus_halved = mm256_set1_epi32((FIELD_MODULUS - 1) / 2);
+    let ceil_of_r_by_128 = mm256_add_epi32(r, mm256_set1_epi32(127));
+    let ceil_of_r_by_128 = mm256_srai_epi32::<7>(ceil_of_r_by_128);
 
-    *r1 = {
-        let ceil_of_r_by_128 = mm256_add_epi32(r, mm256_set1_epi32(127));
-        let ceil_of_r_by_128 = mm256_srai_epi32::<7>(ceil_of_r_by_128);
+    match gamma2 {
+        GAMMA2_V95_232 => {
+            // We approximate 1 / 1488 as:
+            // ⌊2²⁴ / 1488⌋ / 2²⁴ = 11,275 / 2²⁴
+            let result = mm256_mullo_epi32(ceil_of_r_by_128, mm256_set1_epi32(11_275));
+            let result = mm256_add_epi32(result, mm256_set1_epi32(1 << 23));
+            let result = mm256_srai_epi32::<24>(result);
 
-        match gamma2 {
-            Gamma2::V95_232 => {
-                // We approximate 1 / 1488 as:
-                // ⌊2²⁴ / 1488⌋ / 2²⁴ = 11,275 / 2²⁴
-                let result = mm256_mullo_epi32(ceil_of_r_by_128, mm256_set1_epi32(11_275));
-                let result = mm256_add_epi32(result, mm256_set1_epi32(1 << 23));
-                let result = mm256_srai_epi32::<24>(result);
+            // For the corner-case a₁ = (q-1)/α = 44, we have to set a₁=0.
+            let mask = mm256_sub_epi32(mm256_set1_epi32(43), result);
+            let mask = mm256_srai_epi32::<31>(mask);
 
-                // For the corner-case a₁ = (q-1)/α = 44, we have to set a₁=0.
-                let mask = mm256_sub_epi32(mm256_set1_epi32(43), result);
-                let mask = mm256_srai_epi32::<31>(mask);
+            let not_result = mm256_xor_si256(result, mask);
 
-                let not_result = mm256_xor_si256(result, mask);
-
-                mm256_and_si256(result, not_result)
-            }
-
-            Gamma2::V261_888 => {
-                // We approximate 1 / 4092 as:
-                // ⌊2²² / 4092⌋ / 2²² = 1025 / 2²²
-                let result = mm256_mullo_epi32(ceil_of_r_by_128, mm256_set1_epi32(1025));
-                let result = mm256_add_epi32(result, mm256_set1_epi32(1 << 21));
-                let result = mm256_srai_epi32::<22>(result);
-
-                // For the corner-case a₁ = (q-1)/α = 16, we have to set a₁=0.
-                mm256_and_si256(result, mm256_set1_epi32(15))
-            }
+            *r1 = mm256_and_si256(result, not_result);
         }
-    };
+
+        GAMMA2_V261_888 => {
+            // We approximate 1 / 4092 as:
+            // ⌊2²² / 4092⌋ / 2²² = 1025 / 2²²
+            let result = mm256_mullo_epi32(ceil_of_r_by_128, mm256_set1_epi32(1025));
+            let result = mm256_add_epi32(result, mm256_set1_epi32(1 << 21));
+            let result = mm256_srai_epi32::<22>(result);
+
+            // For the corner-case a₁ = (q-1)/α = 16, we have to set a₁=0.
+            *r1 = mm256_and_si256(result, mm256_set1_epi32(15));
+        }
+
+        _ => unreachable!(),
+    }
 
     // In the corner-case, when we set a₁=0, we will incorrectly
     // have a₀ > (q-1)/2 and we'll need to subtract q.  As we
     // return a₀ + q, that comes down to adding q if a₀ < (q-1)/2.
-    let alpha = gamma2 as i32 * 2;
-    *r0 = mm256_mullo_epi32(*r1, mm256_set1_epi32(alpha));
-    *r0 = mm256_sub_epi32(r, *r0);
 
-    let mask = mm256_sub_epi32(field_modulus_halved, *r0);
+    let alpha = gamma2 * 2;
+    let r0_tmp = mm256_mullo_epi32(*r1, mm256_set1_epi32(alpha));
+    let r0_tmp = mm256_sub_epi32(r, r0_tmp);
+
+    let field_modulus_halved = mm256_set1_epi32((FIELD_MODULUS - 1) / 2);
+    let mask = mm256_sub_epi32(field_modulus_halved, r0_tmp);
     let mask = mm256_srai_epi32::<31>(mask);
 
     let field_modulus_and_mask = mm256_and_si256(mask, mm256_set1_epi32(FIELD_MODULUS));
 
-    *r0 = mm256_sub_epi32(*r0, field_modulus_and_mask);
+    *r0 = mm256_sub_epi32(r0_tmp, field_modulus_and_mask);
 }
 
 #[inline(always)]
@@ -230,7 +233,7 @@ pub(super) fn use_hint(gamma2: Gamma2, r: &Vec256, hint: &mut Vec256) {
     let mut r1_plus_hints = mm256_add_epi32(r1, hints);
 
     match gamma2 {
-        Gamma2::V95_232 => {
+        GAMMA2_V95_232 => {
             let max = mm256_set1_epi32(43);
 
             // If |r1_plus_hints[i]| is negative, it must be that |r1[i]| is
@@ -242,8 +245,10 @@ pub(super) fn use_hint(gamma2: Gamma2, r: &Vec256, hint: &mut Vec256) {
             // If r1 is greater than equal to 43, we need to set the result to 0.
             *hint = vec256_blendv_epi32(r1_plus_hints, all_zeros, greater_than_or_equal_to_max);
         }
-        Gamma2::V261_888 => {
+        GAMMA2_V261_888 => {
             *hint = mm256_and_si256(r1_plus_hints, mm256_set1_epi32(15));
         }
+
+        _ => unreachable!(),
     }
 }

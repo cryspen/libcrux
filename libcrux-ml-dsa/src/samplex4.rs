@@ -1,6 +1,7 @@
 use crate::{
     constants::Eta,
     hash_functions::{shake128, shake256},
+    helper::cloop,
     polynomial::PolynomialRingElement,
     sample::{sample_four_error_ring_elements, sample_up_to_four_ring_elements_flat},
     simd::traits::Operations,
@@ -28,24 +29,26 @@ pub(crate) fn matrix_flat<SIMDUnit: Operations, Shake128: shake128::XofX4>(
     let mut rand_stack3 = [0u8; shake128::FIVE_BLOCKS_SIZE];
     let mut tmp_stack = [[0i32; 263], [0i32; 263], [0i32; 263], [0i32; 263]];
 
-    for start_index in (0..matrix.len()).step_by(4) {
-        let elements_requested = if start_index + 4 <= matrix.len() {
-            4
-        } else {
-            matrix.len() - start_index
-        };
-        sample_up_to_four_ring_elements_flat::<SIMDUnit, Shake128>(
-            columns,
-            seed,
-            matrix,
-            &mut rand_stack0,
-            &mut rand_stack1,
-            &mut rand_stack2,
-            &mut rand_stack3,
-            &mut tmp_stack,
-            start_index,
-            elements_requested,
-        );
+    cloop! {
+        for start_index in (0..matrix.len()).step_by(4) {
+            let elements_requested = if start_index + 4 <= matrix.len() {
+                4
+            } else {
+                matrix.len() - start_index
+            };
+            sample_up_to_four_ring_elements_flat::<SIMDUnit, Shake128>(
+                columns,
+                seed,
+                matrix,
+                &mut rand_stack0,
+                &mut rand_stack1,
+                &mut rand_stack2,
+                &mut rand_stack3,
+                &mut tmp_stack,
+                start_index,
+                elements_requested,
+            );
+        }
     }
 
     // [hax] https://github.com/hacspec/hax/issues/720
