@@ -1,5 +1,5 @@
 use crate::{
-    constants::Eta,
+    constants::{Eta, Gamma2},
     simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT},
 };
 
@@ -55,7 +55,7 @@ impl Operations for PortableSIMDUnit {
     }
 
     fn decompose(
-        gamma2: i32,
+        gamma2: Gamma2,
         simd_unit: &Self::Coefficient,
         low: &mut Self::Coefficient,
         high: &mut Self::Coefficient,
@@ -71,8 +71,8 @@ impl Operations for PortableSIMDUnit {
         arithmetic::compute_hint::<GAMMA2>(low, high, hint)
     }
 
-    fn use_hint<const GAMMA2: i32>(simd_unit: &Coefficients, hint: &mut Coefficients) {
-        arithmetic::use_hint::<GAMMA2>(simd_unit, hint)
+    fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {
+        arithmetic::use_hint(gamma2, simd_unit, hint)
     }
 
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {

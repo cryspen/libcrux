@@ -113,8 +113,8 @@ pub(crate) fn generate_key_pair<
     let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
     power2round_vector::<SIMDUnit>(&mut t0, &mut t1);
 
+    // Write out the keys
     encoding::verification_key::generate_serialized::<SIMDUnit>(seed_for_a, &t1, verification_key);
-
     encoding::signing_key::generate_serialized::<SIMDUnit, Shake256>(
         ETA,
         ERROR_RING_ELEMENT_SIZE,
@@ -295,11 +295,19 @@ pub(crate) fn sign_internal<
     domain_separation_context: Option<DomainSeparationContext>,
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
+    // FIXME: pass these in as enums instead
     let eta = match ETA {
         2 => Eta::Two,
         4 => Eta::Four,
         _ => unreachable!(),
     };
+
+    let gamma2 = match GAMMA2 {
+        95_232 => Gamma2::V95_232,
+        261_888 => Gamma2::V261_888,
+        _ => unreachable!(),
+    };
+
     // Split the signing key into its parts.
     let (seed_for_a, remaining_serialized) = signing_key.split_at(SEED_FOR_A_SIZE);
     let (seed_for_signing, remaining_serialized) =
@@ -397,7 +405,7 @@ pub(crate) fn sign_internal<
                 &mask_ntt,
                 &mut a_x_mask,
             );
-            decompose_vector::<SIMDUnit>(ROWS_IN_A, GAMMA2, &a_x_mask, &mut w0, &mut commitment);
+            decompose_vector::<SIMDUnit>(ROWS_IN_A, gamma2, &a_x_mask, &mut w0, &mut commitment);
         }
 
         let mut commitment_hash_candidate = [0; COMMITMENT_HASH_SIZE];
@@ -582,6 +590,13 @@ pub(crate) fn verify_internal<
     domain_separation_context: Option<DomainSeparationContext>,
     signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
+    let gamma2 = match GAMMA2 {
+        // FIXME: pass this in as enum instead
+        95_232 => Gamma2::V95_232,
+        261_888 => Gamma2::V261_888,
+        _ => unreachable!(),
+    };
+
     let (seed_for_a, t1_serialized) = verification_key.split_at(SEED_FOR_A_SIZE);
     let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
     encoding::verification_key::deserialize::<SIMDUnit>(
@@ -595,7 +610,9 @@ pub(crate) fn verify_internal<
     let mut deserialized_signer_response = [PolynomialRingElement::zero(); COLUMNS_IN_A];
     let mut deserialized_hint = [[0i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A];
 
-    match encoding::signature::deserialize::<SIMDUnit, COLUMNS_IN_A, ROWS_IN_A>(
+    match encoding::signature::deserialize::<SIMDUnit>(
+        COLUMNS_IN_A,
+        ROWS_IN_A,
         COMMITMENT_HASH_SIZE,
         GAMMA1_EXPONENT,
         GAMMA1_RING_ELEMENT_SIZE,
@@ -621,10 +638,8 @@ pub(crate) fn verify_internal<
     Sampler::matrix_flat::<SIMDUnit>(COLUMNS_IN_A, &seed_for_a, &mut matrix);
 
     let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
-    Shake256::shake256::<BYTES_FOR_VERIFICATION_KEY_HASH>(
-        verification_key,
-        &mut verification_key_hash,
-    );
+    Shake256::shake256(verification_key, &mut verification_key_hash);
+
     let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
     derive_message_representative::<Shake256Xof>(
         &verification_key_hash,
@@ -654,9 +669,10 @@ pub(crate) fn verify_internal<
         &mut t1,
     );
 
+    // Compute the commitment hash again to validate the signature.
     let mut recomputed_commitment_hash = [0; COMMITMENT_HASH_SIZE];
     {
-        use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(deserialized_hint, &mut t1);
+        use_hint::<SIMDUnit>(gamma2, &deserialized_hint, &mut t1);
         let mut commitment_serialized = [0u8; COMMITMENT_VECTOR_SIZE];
         encoding::commitment::serialize_vector::<SIMDUnit>(
             COMMITMENT_RING_ELEMENT_SIZE,
@@ -671,6 +687,7 @@ pub(crate) fn verify_internal<
         shake.squeeze(&mut recomputed_commitment_hash);
     }
 
+    // Check if this is a valid signature by comparing the hashes.
     if deserialized_commitment_hash == recomputed_commitment_hash {
         return Ok(());
     }

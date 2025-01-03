@@ -114,6 +114,7 @@ pub(crate) mod avx2 {
     }
 }
 
+// Not inling this causes a 10x slow-down
 #[inline(always)]
 pub(crate) fn sample_s1_and_s2<SIMDUnit: Operations, Shake256X4: shake256::XofX4>(
     eta: Eta,

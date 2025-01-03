@@ -15,7 +15,7 @@ fn main() {
 
     let keypair = ml_dsa_65::generate_key_pair(key_generation_seed);
 
-    for _i in 0..100_000 {
+    for _i in 0..10_000 {
         let _ = ml_dsa_65::sign(&keypair.signing_key, &message, b"", signing_randomness);
     }
 }

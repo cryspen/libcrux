@@ -1,5 +1,5 @@
 use crate::{
-    constants::Eta,
+    constants::{Eta, Gamma2},
     simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT},
 };
 
@@ -62,7 +62,7 @@ impl Operations for AVX2SIMDUnit {
 
     #[inline(always)]
     fn decompose(
-        gamma2: i32,
+        gamma2: Gamma2,
         simd_unit: &Self::Coefficient,
         low: &mut Self::Coefficient,
         high: &mut Self::Coefficient,
@@ -80,8 +80,8 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn use_hint<const GAMMA2: i32>(simd_unit: &Self::Coefficient, hint: &mut Self::Coefficient) {
-        arithmetic::use_hint::<GAMMA2>(simd_unit, hint);
+    fn use_hint(gamma2: Gamma2, simd_unit: &Self::Coefficient, hint: &mut Self::Coefficient) {
+        arithmetic::use_hint(gamma2, simd_unit, hint);
     }
 
     #[inline(always)]

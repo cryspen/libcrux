@@ -1,4 +1,4 @@
-use crate::constants::Eta;
+use crate::constants::{Eta, Gamma2};
 
 // Each field element occupies 32 bits and the size of a simd_unit is 256 bits.
 pub(crate) const COEFFICIENTS_IN_SIMD_UNIT: usize = 8;
@@ -30,7 +30,7 @@ pub(crate) trait Operations: Copy + Clone {
     fn subtract(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient);
     fn infinity_norm_exceeds(simd_unit: &Self::Coefficient, bound: i32) -> bool;
     fn decompose(
-        gamma2: i32,
+        gamma2: Gamma2,
         simd_unit: &Self::Coefficient,
         low: &mut Self::Coefficient,
         high: &mut Self::Coefficient,
@@ -40,7 +40,7 @@ pub(crate) trait Operations: Copy + Clone {
         high: &Self::Coefficient,
         hint: &mut Self::Coefficient,
     ) -> usize;
-    fn use_hint<const GAMMA2: i32>(simd_unit: &Self::Coefficient, hint: &mut Self::Coefficient);
+    fn use_hint(gamma2: Gamma2, simd_unit: &Self::Coefficient, hint: &mut Self::Coefficient);
 
     // Modular operations
     fn montgomery_multiply(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient);

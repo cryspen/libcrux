@@ -50,11 +50,9 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-pub(crate) fn deserialize<
-    SIMDUnit: Operations,
-    const COLUMNS_IN_A: usize,
-    const ROWS_IN_A: usize,
->(
+pub(crate) fn deserialize<SIMDUnit: Operations>(
+    columns_in_a: usize,
+    rows_in_a: usize,
     commitment_hash_size: usize,
     gamma1_exponent: usize,
     gamma1_ring_element_size: usize,
@@ -71,9 +69,9 @@ pub(crate) fn deserialize<
     out_commitment_hash[0..commitment_hash_size].copy_from_slice(commitment_hash);
 
     let (signer_response_serialized, hint_serialized) =
-        rest_of_serialized.split_at(gamma1_ring_element_size * COLUMNS_IN_A);
+        rest_of_serialized.split_at(gamma1_ring_element_size * columns_in_a);
 
-    for i in 0..COLUMNS_IN_A {
+    for i in 0..columns_in_a {
         encoding::gamma1::deserialize::<SIMDUnit>(
             gamma1_exponent,
             &signer_response_serialized
@@ -89,7 +87,7 @@ pub(crate) fn deserialize<
     let mut i = 0;
     let mut malformed_hint = false;
 
-    while i < ROWS_IN_A && !malformed_hint {
+    while i < rows_in_a && !malformed_hint {
         let current_true_hints_seen = hint_serialized[max_ones_in_hint + i] as usize;
 
         if (current_true_hints_seen < previous_true_hints_seen)

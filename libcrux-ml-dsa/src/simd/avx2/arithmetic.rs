@@ -5,7 +5,7 @@ use crate::{
 
 use libcrux_intrinsics::avx2::*;
 
-use super::vector_type::zero;
+use super::{vector_type::zero, Gamma2};
 
 #[inline(always)]
 fn to_unsigned_representatives(t: &mut Vec256) {
@@ -121,22 +121,18 @@ pub(super) fn power2round(r0: &mut Vec256, r1: &mut Vec256) {
 
 #[allow(non_snake_case)]
 #[inline(always)]
-pub(super) fn decompose(gamma2: i32, r: &Vec256, r0: &mut Vec256, r1: &mut Vec256) {
+pub(super) fn decompose(gamma2: Gamma2, r: &Vec256, r0: &mut Vec256, r1: &mut Vec256) {
     let mut r = r.clone();
     to_unsigned_representatives(&mut r);
 
     let field_modulus_halved = mm256_set1_epi32((FIELD_MODULUS - 1) / 2);
 
-    // When const-generic expressions are available, this could be turned into a
-    // const value.
-    let ALPHA: i32 = gamma2 * 2;
-
     *r1 = {
         let ceil_of_r_by_128 = mm256_add_epi32(r, mm256_set1_epi32(127));
         let ceil_of_r_by_128 = mm256_srai_epi32::<7>(ceil_of_r_by_128);
 
-        match ALPHA {
-            190_464 => {
+        match gamma2 {
+            Gamma2::V95_232 => {
                 // We approximate 1 / 1488 as:
                 // ⌊2²⁴ / 1488⌋ / 2²⁴ = 11,275 / 2²⁴
                 let result = mm256_mullo_epi32(ceil_of_r_by_128, mm256_set1_epi32(11_275));
@@ -152,7 +148,7 @@ pub(super) fn decompose(gamma2: i32, r: &Vec256, r0: &mut Vec256, r1: &mut Vec25
                 mm256_and_si256(result, not_result)
             }
 
-            523_776 => {
+            Gamma2::V261_888 => {
                 // We approximate 1 / 4092 as:
                 // ⌊2²² / 4092⌋ / 2²² = 1025 / 2²²
                 let result = mm256_mullo_epi32(ceil_of_r_by_128, mm256_set1_epi32(1025));
@@ -162,15 +158,14 @@ pub(super) fn decompose(gamma2: i32, r: &Vec256, r0: &mut Vec256, r1: &mut Vec25
                 // For the corner-case a₁ = (q-1)/α = 16, we have to set a₁=0.
                 mm256_and_si256(result, mm256_set1_epi32(15))
             }
-
-            _ => unreachable!(),
         }
     };
 
     // In the corner-case, when we set a₁=0, we will incorrectly
     // have a₀ > (q-1)/2 and we'll need to subtract q.  As we
     // return a₀ + q, that comes down to adding q if a₀ < (q-1)/2.
-    *r0 = mm256_mullo_epi32(*r1, mm256_set1_epi32(ALPHA));
+    let alpha = gamma2 as i32 * 2;
+    *r0 = mm256_mullo_epi32(*r1, mm256_set1_epi32(alpha));
     *r0 = mm256_sub_epi32(r, *r0);
 
     let mask = mm256_sub_epi32(field_modulus_halved, *r0);
@@ -210,9 +205,9 @@ pub(super) fn compute_hint<const GAMMA2: i32>(
 }
 
 #[inline(always)]
-pub(super) fn use_hint<const GAMMA2: i32>(r: &Vec256, hint: &mut Vec256) {
+pub(super) fn use_hint(gamma2: Gamma2, r: &Vec256, hint: &mut Vec256) {
     let (mut r0, mut r1) = (zero(), zero());
-    decompose(GAMMA2, r, &mut r0, &mut r1);
+    decompose(gamma2, r, &mut r0, &mut r1);
 
     let all_zeros = mm256_setzero_si256();
 
@@ -234,8 +229,8 @@ pub(super) fn use_hint<const GAMMA2: i32>(r: &Vec256, hint: &mut Vec256) {
     // Now add the hints to r1
     let mut r1_plus_hints = mm256_add_epi32(r1, hints);
 
-    match GAMMA2 {
-        95_232 => {
+    match gamma2 {
+        Gamma2::V95_232 => {
             let max = mm256_set1_epi32(43);
 
             // If |r1_plus_hints[i]| is negative, it must be that |r1[i]| is
@@ -247,10 +242,8 @@ pub(super) fn use_hint<const GAMMA2: i32>(r: &Vec256, hint: &mut Vec256) {
             // If r1 is greater than equal to 43, we need to set the result to 0.
             *hint = vec256_blendv_epi32(r1_plus_hints, all_zeros, greater_than_or_equal_to_max);
         }
-        261_888 => {
+        Gamma2::V261_888 => {
             *hint = mm256_and_si256(r1_plus_hints, mm256_set1_epi32(15));
         }
-
-        _ => unreachable!(),
     }
 }

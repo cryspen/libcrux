@@ -38,6 +38,13 @@ pub(crate) enum Eta {
     Four = 4,
 }
 
+/// Gamma2 values
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Gamma2 {
+    V95_232 = 95_232,
+    V261_888 = 261_888,
+}
+
 /// ML-DSA-44-specific parameters
 #[cfg(feature = "mldsa44")]
 pub(crate) mod v44 {

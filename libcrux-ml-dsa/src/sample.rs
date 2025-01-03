@@ -196,6 +196,7 @@ fn rejection_sample_less_than_eta_equals_2<SIMDUnit: Operations>(
 
     done
 }
+
 #[inline(always)]
 fn rejection_sample_less_than_eta_equals_4<SIMDUnit: Operations>(
     randomness: &[u8],
@@ -224,6 +225,7 @@ fn rejection_sample_less_than_eta_equals_4<SIMDUnit: Operations>(
 
     done
 }
+
 #[inline(always)]
 pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations>(
     eta: Eta,

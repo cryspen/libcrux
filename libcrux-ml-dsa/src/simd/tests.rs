@@ -1,4 +1,4 @@
-use crate::simd::traits::*;
+use crate::{constants::Gamma2, simd::traits::*};
 
 fn test_decompose_generic<SIMDUnit: Operations>() {
     // When GAMMA2 = 95,232
@@ -14,7 +14,7 @@ fn test_decompose_generic<SIMDUnit: Operations>() {
     let expected_high = [29, 28, 1, 43, 27, 29, 18, 21];
 
     let (mut low, mut high) = (SIMDUnit::zero(), SIMDUnit::zero());
-    SIMDUnit::decompose(95_232, &input, &mut low, &mut high);
+    SIMDUnit::decompose(Gamma2::V95_232, &input, &mut low, &mut high);
 
     let mut out = [0i32; COEFFICIENTS_IN_SIMD_UNIT];
     SIMDUnit::to_coefficient_array(&low, &mut out);
@@ -38,7 +38,7 @@ fn test_decompose_generic<SIMDUnit: Operations>() {
     ];
     let expected_high = [4, 14, 12, 15, 4, 0, 1, 4];
 
-    SIMDUnit::decompose(261_888, &input, &mut low, &mut high);
+    SIMDUnit::decompose(Gamma2::V261_888, &input, &mut low, &mut high);
 
     let mut out = [0i32; COEFFICIENTS_IN_SIMD_UNIT];
     SIMDUnit::to_coefficient_array(&low, &mut out);
