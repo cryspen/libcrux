@@ -14,7 +14,7 @@ let impl_1__context (self: t_DomainSeparationContext) = self.f_context
 let impl_1__pre_hash_oid (self: t_DomainSeparationContext) = self.f_pre_hash_oid
 
 let t_DomainSeparationError_cast_to_repr (x: t_DomainSeparationError) =
-  match x with | DomainSeparationError_ContextTooLongError  -> isz 0
+  match x <: t_DomainSeparationError with | DomainSeparationError_ContextTooLongError  -> isz 0
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_2: Core.Convert.t_From Libcrux_ml_dsa.Types.t_SigningError t_DomainSeparationError =
@@ -26,7 +26,7 @@ let impl_2: Core.Convert.t_From Libcrux_ml_dsa.Types.t_SigningError t_DomainSepa
     f_from
     =
     fun (e: t_DomainSeparationError) ->
-      match e with
+      match e <: t_DomainSeparationError with
       | DomainSeparationError_ContextTooLongError  ->
         Libcrux_ml_dsa.Types.SigningError_ContextTooLongError <: Libcrux_ml_dsa.Types.t_SigningError
   }
@@ -41,7 +41,7 @@ let impl_3: Core.Convert.t_From Libcrux_ml_dsa.Types.t_VerificationError t_Domai
     f_from
     =
     fun (e: t_DomainSeparationError) ->
-      match e with
+      match e <: t_DomainSeparationError with
       | DomainSeparationError_ContextTooLongError  ->
         Libcrux_ml_dsa.Types.VerificationError_VerificationContextTooLongError
         <:

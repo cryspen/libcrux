@@ -11,19 +11,18 @@ let _ =
 
 val deserialize
       (#v_SIMDUnit: Type0)
-      (v_ROWS_IN_A v_VERIFICATION_KEY_SIZE: usize)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (serialized: t_Array u8 v_VERIFICATION_KEY_SIZE)
-    : Prims.Pure
-      (t_Array u8 (sz 32) &
-        t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
+      (rows_in_a verification_key_size: usize)
+      (serialized: t_Slice u8)
+      (t1: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : Prims.Pure (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 val generate_serialized
       (#v_SIMDUnit: Type0)
-      (v_ROWS_IN_A v_VERIFICATION_KEY_SIZE: usize)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (seed_for_A: t_Slice u8)
-      (t1: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
-    : Prims.Pure (t_Array u8 v_VERIFICATION_KEY_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+      (seed: t_Slice u8)
+      (t1: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+      (verification_key_serialized: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)

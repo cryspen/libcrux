@@ -23,6 +23,8 @@ let invert_ntt_at_layer_7___STEP: usize = sz 128
 
 let invert_ntt_at_layer_7___STEP_BY: usize = sz 16
 
+let invert_ntt_montgomery__inv_inner__FACTOR: i32 = 41978l
+
 let simd_unit_invert_ntt_at_layer_0___SHUFFLE: i32 = 216l
 
 val simd_unit_invert_ntt_at_layer_0_
@@ -117,6 +119,11 @@ val invert_ntt_at_layer_6_ (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256
       (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer_7_ (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
+    : Prims.Pure (t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val invert_ntt_montgomery__inv_inner (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
     : Prims.Pure (t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)

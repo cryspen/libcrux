@@ -3,7 +3,15 @@ module Libcrux_ml_dsa.Simd.Avx2.Encoding.T1
 open Core
 open FStar.Mul
 
-let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8) =
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        Hax_lib.v_assert ((Core.Slice.impl__len #u8 out <: usize) =. sz 10 <: bool)
+      in
+      ()
+  in
   let serialized:t_Array u8 (sz 24) = Rust_primitives.Hax.repeat 0uy (sz 24) in
   let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 simd_unit
@@ -69,20 +77,18 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
         <:
         t_Slice u8)
   in
-  Core.Result.impl__unwrap #(t_Array u8 (sz 10))
-    #Core.Array.t_TryFromSliceError
-    (Core.Convert.f_try_into #(t_Slice u8)
-        #(t_Array u8 (sz 10))
-        #FStar.Tactics.Typeclasses.solve
-        (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 10 }
-            <:
-            Core.Ops.Range.t_Range usize ]
+  let out:t_Slice u8 =
+    Core.Slice.impl__copy_from_slice #u8
+      out
+      (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 10 }
           <:
-          t_Slice u8)
-      <:
-      Core.Result.t_Result (t_Array u8 (sz 10)) Core.Array.t_TryFromSliceError)
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  out
 
-let deserialize (bytes: t_Slice u8) =
+let deserialize (bytes: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let _:Prims.unit =
     if true
     then
@@ -128,7 +134,10 @@ let deserialize (bytes: t_Slice u8) =
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
-    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize__COEFFICIENT_MASK
-      <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
+      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize__COEFFICIENT_MASK
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  out

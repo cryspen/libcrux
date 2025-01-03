@@ -44,6 +44,8 @@ let v_ROWS_IN_A: usize = sz 8
 
 let v_COMMITMENT_VECTOR_SIZE: usize = v_COMMITMENT_RING_ELEMENT_SIZE *! v_ROWS_IN_A
 
+let v_ROWS_X_COLUMNS: usize = v_ROWS_IN_A *! v_COLUMNS_IN_A
+
 let v_SIGNATURE_SIZE: usize =
   ((v_COMMITMENT_HASH_SIZE +! (v_COLUMNS_IN_A *! v_GAMMA1_RING_ELEMENT_SIZE <: usize) <: usize) +!
     v_MAX_ONES_IN_HINT

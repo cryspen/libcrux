@@ -25,12 +25,12 @@ let impl_2__new (v_SIZE: usize) (value: t_Array u8 v_SIZE) =
   { f_value = value } <: t_MLDSAVerificationKey v_SIZE
 
 let t_SigningError_cast_to_repr (x: t_SigningError) =
-  match x with
+  match x <: t_SigningError with
   | SigningError_RejectionSamplingError  -> isz 0
   | SigningError_ContextTooLongError  -> isz 1
 
 let t_VerificationError_cast_to_repr (x: t_VerificationError) =
-  match x with
+  match x <: t_VerificationError with
   | VerificationError_MalformedHintError  -> isz 0
   | VerificationError_SignerResponseExceedsBoundError  -> isz 1
   | VerificationError_CommitmentHashesDontMatchError  -> isz 3

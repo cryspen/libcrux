@@ -69,25 +69,25 @@ let deserialize_to_unsigned_when_eta_is_4_ (bytes: t_Slice u8) =
       <:
       Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
-let deserialize_to_unsigned (v_ETA: usize) (serialized: t_Slice u8) =
-  match cast (v_ETA <: usize) <: u8 with
-  | 2uy -> deserialize_to_unsigned_when_eta_is_2_ serialized
-  | 4uy -> deserialize_to_unsigned_when_eta_is_4_ serialized
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+let deserialize_to_unsigned (eta: Libcrux_ml_dsa.Constants.t_Eta) (serialized: t_Slice u8) =
+  match eta <: Libcrux_ml_dsa.Constants.t_Eta with
+  | Libcrux_ml_dsa.Constants.Eta_Two  -> deserialize_to_unsigned_when_eta_is_2_ serialized
+  | Libcrux_ml_dsa.Constants.Eta_Four  -> deserialize_to_unsigned_when_eta_is_4_ serialized
 
+let deserialize
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
+      (serialized: t_Slice u8)
+      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+     =
+  let unsigned:Libcrux_intrinsics.Avx2_extract.t_Vec256 = deserialize_to_unsigned eta serialized in
+  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
+          (cast (Libcrux_ml_dsa.Constants.t_Eta_cast_to_repr eta <: isize) <: i32)
         <:
-        Rust_primitives.Hax.t_Never)
-
-let deserialize (v_ETA: usize) (serialized: t_Slice u8) =
-  let deserialized:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    deserialize_to_unsigned v_ETA serialized
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      unsigned
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (
-          cast (v_ETA <: usize) <: i32)
-      <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    deserialized
+  out
 
 let serialize_when_eta_is_2_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8) =
   let serialized:t_Array u8 (sz 16) = Rust_primitives.Hax.repeat 0uy (sz 16) in
@@ -234,21 +234,15 @@ let serialize_when_eta_is_4_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec25
   out
 
 let serialize
-      (v_ETA: usize)
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
       (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
       (serialized: t_Slice u8)
      =
   let serialized, hax_temp_output:(t_Slice u8 & Prims.unit) =
-    match cast (v_ETA <: usize) <: u8 with
-    | 2uy -> serialize_when_eta_is_2_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
-    | 4uy -> serialize_when_eta_is_4_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
-    | _ ->
-      serialized,
-      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-          <:
-          Rust_primitives.Hax.t_Never)
-      <:
-      (t_Slice u8 & Prims.unit)
+    match eta <: Libcrux_ml_dsa.Constants.t_Eta with
+    | Libcrux_ml_dsa.Constants.Eta_Two  ->
+      serialize_when_eta_is_2_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
+    | Libcrux_ml_dsa.Constants.Eta_Four  ->
+      serialize_when_eta_is_4_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
   in
   serialized

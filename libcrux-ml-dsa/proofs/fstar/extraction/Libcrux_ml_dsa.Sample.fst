@@ -14,48 +14,129 @@ let _ =
 let generate_domain_separator (row, column: (u8 & u8)) =
   (cast (column <: u8) <: u16) |. ((cast (row <: u8) <: u16) <<! 8l <: u16)
 
-let update_seed (seed: t_Array u8 (sz 66)) (domain_separator: u16) =
-  let seed:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed
+let sample_up_to_four_ring_elements_flat__xy (index width: usize) =
+  (cast (index /! width <: usize) <: u8), (cast (index %! width <: usize) <: u8) <: (u8 & u8)
+
+let add_domain_separator (slice: t_Slice u8) (indices: (u8 & u8)) =
+  let out:t_Array u8 (sz 34) = Rust_primitives.Hax.repeat 0uy (sz 34) in
+  let out:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({
+          Core.Ops.Range.f_start = sz 0;
+          Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice #u8
+          (out.[ {
+                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          slice
+        <:
+        t_Slice u8)
+  in
+  let domain_separator:u16 = generate_domain_separator indices in
+  let out:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+      (sz 32)
+      (cast (domain_separator <: u16) <: u8)
+  in
+  let out:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+      (sz 33)
+      (cast (domain_separator >>! 8l <: u16) <: u8)
+  in
+  out
+
+let add_error_domain_separator (slice: t_Slice u8) (domain_separator: u16) =
+  let out:t_Array u8 (sz 66) = Rust_primitives.Hax.repeat 0uy (sz 66) in
+  let out:t_Array u8 (sz 66) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({
+          Core.Ops.Range.f_start = sz 0;
+          Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice #u8
+          (out.[ {
+                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          slice
+        <:
+        t_Slice u8)
+  in
+  let out:t_Array u8 (sz 66) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
       (sz 64)
       (cast (domain_separator <: u16) <: u8)
   in
-  let seed:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed
+  let out:t_Array u8 (sz 66) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
       (sz 65)
       (cast (domain_separator >>! 8l <: u16) <: u8)
   in
-  let domain_separator:u16 = domain_separator +! 1us in
-  let hax_temp_output:t_Array u8 (sz 66) = seed in
-  domain_separator, hax_temp_output <: (u16 & t_Array u8 (sz 66))
+  out
 
-let update_matrix
-      (#v_SIMDUnit: Type0)
-      (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (m:
-          t_Array
-            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-            v_ROWS_IN_A)
-      (i j: usize)
-      (v: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+let inside_out_shuffle
+      (randomness: t_Slice u8)
+      (out_index: usize)
+      (signs: u64)
+      (result: t_Array i32 (sz 256))
      =
-  let m:t_Array
-    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-    v_ROWS_IN_A =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize m
-      i
-      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (m.[ i ]
-            <:
-            t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          j
-          v
+  let done:bool = false in
+  let done, out_index, result, signs:(bool & usize & t_Array i32 (sz 256) & u64) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
+            u8)
+          #FStar.Tactics.Typeclasses.solve
+          (Core.Slice.impl__iter #u8 randomness <: Core.Slice.Iter.t_Iter u8)
         <:
-        t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
+        Core.Slice.Iter.t_Iter u8)
+      (done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64))
+      (fun temp_0_ byte ->
+          let done, out_index, result, signs:(bool & usize & t_Array i32 (sz 256) & u64) =
+            temp_0_
+          in
+          let byte:u8 = byte in
+          if ~.done <: bool
+          then
+            let sample_at:usize = cast (byte <: u8) <: usize in
+            let out_index, result, signs:(usize & t_Array i32 (sz 256) & u64) =
+              if sample_at <=. out_index
+              then
+                let result:t_Array i32 (sz 256) =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
+                    out_index
+                    (result.[ sample_at ] <: i32)
+                in
+                let out_index:usize = out_index +! sz 1 in
+                let result:t_Array i32 (sz 256) =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
+                    sample_at
+                    (1l -! (2l *! (cast (signs &. 1uL <: u64) <: i32) <: i32) <: i32)
+                in
+                let signs:u64 = signs >>! 1l in
+                out_index, result, signs <: (usize & t_Array i32 (sz 256) & u64)
+              else out_index, result, signs <: (usize & t_Array i32 (sz 256) & u64)
+            in
+            let done:bool =
+              out_index =. (Core.Slice.impl__len #i32 (result <: t_Slice i32) <: usize)
+            in
+            done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64)
+          else done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64))
   in
-  m
+  let hax_temp_output:bool = done in
+  out_index, signs, result, hax_temp_output <: (usize & u64 & t_Array i32 (sz 256) & bool)
 
 let rejection_sample_less_than_eta_equals_2_
       (#v_SIMDUnit: Type0)
@@ -163,17 +244,17 @@ let rejection_sample_less_than_eta_equals_4_
 
 let rejection_sample_less_than_eta
       (#v_SIMDUnit: Type0)
-      (v_ETA: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
       (randomness: t_Slice u8)
       (sampled: usize)
       (out: t_Array i32 (sz 263))
      =
   let (out, sampled), hax_temp_output:((t_Array i32 (sz 263) & usize) & bool) =
-    match cast (v_ETA <: usize) <: u8 with
-    | 2uy ->
+    match eta <: Libcrux_ml_dsa.Constants.t_Eta with
+    | Libcrux_ml_dsa.Constants.Eta_Two  ->
       let tmp0, tmp1, out1:(usize & t_Array i32 (sz 263) & bool) =
         rejection_sample_less_than_eta_equals_2_ #v_SIMDUnit randomness sampled out
       in
@@ -182,21 +263,13 @@ let rejection_sample_less_than_eta
       (out, sampled <: (t_Array i32 (sz 263) & usize)), out1
       <:
       ((t_Array i32 (sz 263) & usize) & bool)
-    | 4uy ->
+    | Libcrux_ml_dsa.Constants.Eta_Four  ->
       let tmp0, tmp1, out1:(usize & t_Array i32 (sz 263) & bool) =
         rejection_sample_less_than_eta_equals_4_ #v_SIMDUnit randomness sampled out
       in
       let sampled:usize = tmp0 in
       let out:t_Array i32 (sz 263) = tmp1 in
       (out, sampled <: (t_Array i32 (sz 263) & usize)), out1
-      <:
-      ((t_Array i32 (sz 263) & usize) & bool)
-    | _ ->
-      (out, sampled <: (t_Array i32 (sz 263) & usize)),
-      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-          <:
-          Rust_primitives.Hax.t_Never)
       <:
       ((t_Array i32 (sz 263) & usize) & bool)
   in
@@ -254,71 +327,22 @@ let rejection_sample_less_than_field_modulus
   let hax_temp_output:bool = done in
   sampled_coefficients, out, hax_temp_output <: (usize & t_Array i32 (sz 263) & bool)
 
-let inside_out_shuffle
-      (randomness: t_Slice u8)
-      (out_index: usize)
-      (signs: u64)
-      (result: t_Array i32 (sz 256))
-     =
-  let done:bool = false in
-  let done, out_index, result, signs:(bool & usize & t_Array i32 (sz 256) & u64) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
-            u8)
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__iter #u8 randomness <: Core.Slice.Iter.t_Iter u8)
-        <:
-        Core.Slice.Iter.t_Iter u8)
-      (done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64))
-      (fun temp_0_ byte ->
-          let done, out_index, result, signs:(bool & usize & t_Array i32 (sz 256) & u64) =
-            temp_0_
-          in
-          let byte:u8 = byte in
-          if ~.done <: bool
-          then
-            let sample_at:usize = cast (byte <: u8) <: usize in
-            let out_index, result, signs:(usize & t_Array i32 (sz 256) & u64) =
-              if sample_at <=. out_index
-              then
-                let result:t_Array i32 (sz 256) =
-                  Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-                    out_index
-                    (result.[ sample_at ] <: i32)
-                in
-                let out_index:usize = out_index +! sz 1 in
-                let result:t_Array i32 (sz 256) =
-                  Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-                    sample_at
-                    (1l -! (2l *! (cast (signs &. 1uL <: u64) <: i32) <: i32) <: i32)
-                in
-                let signs:u64 = signs >>! 1l in
-                out_index, result, signs <: (usize & t_Array i32 (sz 256) & u64)
-              else out_index, result, signs <: (usize & t_Array i32 (sz 256) & u64)
-            in
-            let done:bool =
-              out_index =. (Core.Slice.impl__len #i32 (result <: t_Slice i32) <: usize)
-            in
-            done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64)
-          else done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64))
-  in
-  let hax_temp_output:bool = done in
-  out_index, signs, result, hax_temp_output <: (usize & u64 & t_Array i32 (sz 256) & bool)
-
 let sample_challenge_ring_element
       (#v_SIMDUnit #v_Shake256: Type0)
-      (v_NUMBER_OF_ONES v_SEED_SIZE: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
-      (seed: t_Array u8 v_SEED_SIZE)
+      (seed: t_Slice u8)
+      (number_of_ones: usize)
+      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
   let state:v_Shake256 =
     Libcrux_ml_dsa.Hash_functions.Shake256.f_init_absorb_final #v_Shake256
       #FStar.Tactics.Typeclasses.solve
-      (seed <: t_Slice u8)
+      seed
   in
   let tmp0, out:(v_Shake256 & t_Array u8 (sz 136)) =
     Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze_first_block #v_Shake256
@@ -345,7 +369,7 @@ let sample_challenge_ring_element
   in
   let result:t_Array i32 (sz 256) = Rust_primitives.Hax.repeat 0l (sz 256) in
   let out_index:usize =
-    (Core.Slice.impl__len #i32 (result <: t_Slice i32) <: usize) -! v_NUMBER_OF_ONES
+    (Core.Slice.impl__len #i32 (result <: t_Slice i32) <: usize) -! number_of_ones
   in
   let tmp0, tmp1, tmp2, out:(usize & u64 & t_Array i32 (sz 256) & bool) =
     inside_out_shuffle (randomness.[ { Core.Ops.Range.f_start = sz 8 }
@@ -395,64 +419,28 @@ let sample_challenge_ring_element
           <:
           (bool & usize & t_Array i32 (sz 256) & u64 & v_Shake256))
   in
-  Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (result <: t_Slice i32)
+  let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
+    Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (result <: t_Slice i32) re
+  in
+  re
 
 let sample_four_error_ring_elements
       (#v_SIMDUnit #v_Shake256: Type0)
-      (v_ETA: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256)
-      (seed_base: t_Array u8 (sz 66))
-      (domain_separator0 domain_separator1 domain_seperator2 domain_separator3: u16)
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
+      (seed: t_Slice u8)
+      (start_index: u16)
+      (re: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
      =
-  let seed0:t_Array u8 (sz 66) = seed_base in
-  let seed0:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed0
-      (sz 64)
-      (cast (domain_separator0 <: u16) <: u8)
-  in
-  let seed0:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed0
-      (sz 65)
-      (cast (domain_separator0 >>! 8l <: u16) <: u8)
-  in
-  let seed1:t_Array u8 (sz 66) = seed0 in
-  let seed1:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed1
-      (sz 64)
-      (cast (domain_separator1 <: u16) <: u8)
-  in
-  let seed1:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed1
-      (sz 65)
-      (cast (domain_separator1 >>! 8l <: u16) <: u8)
-  in
-  let seed2:t_Array u8 (sz 66) = seed0 in
-  let seed2:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed2
-      (sz 64)
-      (cast (domain_seperator2 <: u16) <: u8)
-  in
-  let seed2:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed2
-      (sz 65)
-      (cast (domain_seperator2 >>! 8l <: u16) <: u8)
-  in
-  let seed3:t_Array u8 (sz 66) = seed0 in
-  let seed3:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed3
-      (sz 64)
-      (cast (domain_separator3 <: u16) <: u8)
-  in
-  let seed3:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed3
-      (sz 65)
-      (cast (domain_separator3 >>! 8l <: u16) <: u8)
-  in
+  let seed0:t_Array u8 (sz 66) = add_error_domain_separator seed start_index in
+  let seed1:t_Array u8 (sz 66) = add_error_domain_separator seed (start_index +! 1us <: u16) in
+  let seed2:t_Array u8 (sz 66) = add_error_domain_separator seed (start_index +! 2us <: u16) in
+  let seed3:t_Array u8 (sz 66) = add_error_domain_separator seed (start_index +! 3us <: u16) in
   let state:v_Shake256 =
     Libcrux_ml_dsa.Hash_functions.Shake256.f_init_absorb_x4 #v_Shake256
       #FStar.Tactics.Typeclasses.solve
@@ -461,7 +449,7 @@ let sample_four_error_ring_elements
       (seed2 <: t_Slice u8)
       (seed3 <: t_Slice u8)
   in
-  let tmp0, out4:(v_Shake256 &
+  let tmp0, out1:(v_Shake256 &
     (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136))) =
     Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze_first_block_x4 #v_Shake256
       #FStar.Tactics.Typeclasses.solve
@@ -470,66 +458,79 @@ let sample_four_error_ring_elements
   let state:v_Shake256 = tmp0 in
   let randomnesses:(t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) &
     t_Array u8 (sz 136)) =
-    out4
+    out1
   in
-  let out0:t_Array i32 (sz 263) = Rust_primitives.Hax.repeat 0l (sz 263) in
-  let out1:t_Array i32 (sz 263) = Rust_primitives.Hax.repeat 0l (sz 263) in
-  let out2:t_Array i32 (sz 263) = Rust_primitives.Hax.repeat 0l (sz 263) in
-  let out3:t_Array i32 (sz 263) = Rust_primitives.Hax.repeat 0l (sz 263) in
+  let out:t_Array (t_Array i32 (sz 263)) (sz 4) =
+    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0l (sz 263) <: t_Array i32 (sz 263))
+      (sz 4)
+  in
   let sampled0:usize = sz 0 in
   let sampled1:usize = sz 0 in
   let sampled2:usize = sz 0 in
   let sampled3:usize = sz 0 in
-  let tmp0, tmp1, out4:(usize & t_Array i32 (sz 263) & bool) =
-    rejection_sample_less_than_eta #v_SIMDUnit v_ETA (randomnesses._1 <: t_Slice u8) sampled0 out0
+  let tmp0, tmp1, out1:(usize & t_Array i32 (sz 263) & bool) =
+    rejection_sample_less_than_eta #v_SIMDUnit
+      eta
+      (randomnesses._1 <: t_Slice u8)
+      sampled0
+      (out.[ sz 0 ] <: t_Array i32 (sz 263))
   in
   let sampled0:usize = tmp0 in
-  let out0:t_Array i32 (sz 263) = tmp1 in
-  let done0:bool = out4 in
-  let tmp0, tmp1, out4:(usize & t_Array i32 (sz 263) & bool) =
-    rejection_sample_less_than_eta #v_SIMDUnit v_ETA (randomnesses._2 <: t_Slice u8) sampled1 out1
+  let out:t_Array (t_Array i32 (sz 263)) (sz 4) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) tmp1
+  in
+  let done0:bool = out1 in
+  let tmp0, tmp1, out1:(usize & t_Array i32 (sz 263) & bool) =
+    rejection_sample_less_than_eta #v_SIMDUnit
+      eta
+      (randomnesses._2 <: t_Slice u8)
+      sampled1
+      (out.[ sz 1 ] <: t_Array i32 (sz 263))
   in
   let sampled1:usize = tmp0 in
-  let out1:t_Array i32 (sz 263) = tmp1 in
-  let done1:bool = out4 in
-  let tmp0, tmp1, out4:(usize & t_Array i32 (sz 263) & bool) =
-    rejection_sample_less_than_eta #v_SIMDUnit v_ETA (randomnesses._3 <: t_Slice u8) sampled2 out2
+  let out:t_Array (t_Array i32 (sz 263)) (sz 4) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) tmp1
+  in
+  let done1:bool = out1 in
+  let tmp0, tmp1, out1:(usize & t_Array i32 (sz 263) & bool) =
+    rejection_sample_less_than_eta #v_SIMDUnit
+      eta
+      (randomnesses._3 <: t_Slice u8)
+      sampled2
+      (out.[ sz 2 ] <: t_Array i32 (sz 263))
   in
   let sampled2:usize = tmp0 in
-  let out2:t_Array i32 (sz 263) = tmp1 in
-  let done2:bool = out4 in
-  let tmp0, tmp1, out4:(usize & t_Array i32 (sz 263) & bool) =
-    rejection_sample_less_than_eta #v_SIMDUnit v_ETA (randomnesses._4 <: t_Slice u8) sampled3 out3
+  let out:t_Array (t_Array i32 (sz 263)) (sz 4) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 2) tmp1
+  in
+  let done2:bool = out1 in
+  let tmp0, tmp1, out1:(usize & t_Array i32 (sz 263) & bool) =
+    rejection_sample_less_than_eta #v_SIMDUnit
+      eta
+      (randomnesses._4 <: t_Slice u8)
+      sampled3
+      (out.[ sz 3 ] <: t_Array i32 (sz 263))
   in
   let sampled3:usize = tmp0 in
-  let out3:t_Array i32 (sz 263) = tmp1 in
-  let done3:bool = out4 in
-  let
-  done0, done1, done2, done3, out0, out1, out2, out3, sampled0, sampled1, sampled2, sampled3, state:(
-    bool & bool & bool & bool & t_Array i32 (sz 263) & t_Array i32 (sz 263) & t_Array i32 (sz 263) &
-    t_Array i32 (sz 263) &
+  let out:t_Array (t_Array i32 (sz 263)) (sz 4) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 3) tmp1
+  in
+  let done3:bool = out1 in
+  let done0, done1, done2, done3, out, sampled0, sampled1, sampled2, sampled3, state:(bool & bool &
+    bool &
+    bool &
+    t_Array (t_Array i32 (sz 263)) (sz 4) &
     usize &
     usize &
     usize &
     usize &
     v_Shake256) =
     Rust_primitives.f_while_loop (fun temp_0_ ->
-          let
-          done0,
-          done1,
-          done2,
-          done3,
-          out0,
-          out1,
-          out2,
-          out3,
-          sampled0,
-          sampled1,
-          sampled2,
-          sampled3,
-          state:(bool & bool & bool & bool & t_Array i32 (sz 263) & t_Array i32 (sz 263) &
-            t_Array i32 (sz 263) &
-            t_Array i32 (sz 263) &
+          let done0, done1, done2, done3, out, sampled0, sampled1, sampled2, sampled3, state:(bool &
+            bool &
+            bool &
+            bool &
+            t_Array (t_Array i32 (sz 263)) (sz 4) &
             usize &
             usize &
             usize &
@@ -538,45 +539,17 @@ let sample_four_error_ring_elements
             temp_0_
           in
           (~.done0 <: bool) || (~.done1 <: bool) || (~.done2 <: bool) || (~.done3 <: bool))
-      (done0,
-        done1,
-        done2,
-        done3,
-        out0,
-        out1,
-        out2,
-        out3,
-        sampled0,
-        sampled1,
-        sampled2,
-        sampled3,
-        state
+      (done0, done1, done2, done3, out, sampled0, sampled1, sampled2, sampled3, state
         <:
-        (bool & bool & bool & bool & t_Array i32 (sz 263) & t_Array i32 (sz 263) &
-          t_Array i32 (sz 263) &
-          t_Array i32 (sz 263) &
-          usize &
-          usize &
-          usize &
+        (bool & bool & bool & bool & t_Array (t_Array i32 (sz 263)) (sz 4) & usize & usize & usize &
           usize &
           v_Shake256))
       (fun temp_0_ ->
-          let
-          done0,
-          done1,
-          done2,
-          done3,
-          out0,
-          out1,
-          out2,
-          out3,
-          sampled0,
-          sampled1,
-          sampled2,
-          sampled3,
-          state:(bool & bool & bool & bool & t_Array i32 (sz 263) & t_Array i32 (sz 263) &
-            t_Array i32 (sz 263) &
-            t_Array i32 (sz 263) &
+          let done0, done1, done2, done3, out, sampled0, sampled1, sampled2, sampled3, state:(bool &
+            bool &
+            bool &
+            bool &
+            t_Array (t_Array i32 (sz 263)) (sz 4) &
             usize &
             usize &
             usize &
@@ -584,7 +557,7 @@ let sample_four_error_ring_elements
             v_Shake256) =
             temp_0_
           in
-          let tmp0, out4:(v_Shake256 &
+          let tmp0, out1:(v_Shake256 &
             (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
           =
             Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze_next_block_x4 #v_Shake256
@@ -594,127 +567,126 @@ let sample_four_error_ring_elements
           let state:v_Shake256 = tmp0 in
           let randomnesses:(t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) &
             t_Array u8 (sz 136)) =
-            out4
+            out1
           in
-          let done0, out0, sampled0:(bool & t_Array i32 (sz 263) & usize) =
+          let done0, out, sampled0:(bool & t_Array (t_Array i32 (sz 263)) (sz 4) & usize) =
             if ~.done0
             then
-              let tmp0, tmp1, out4:(usize & t_Array i32 (sz 263) & bool) =
+              let tmp0, tmp1, out1:(usize & t_Array i32 (sz 263) & bool) =
                 rejection_sample_less_than_eta #v_SIMDUnit
-                  v_ETA
+                  eta
                   (randomnesses._1 <: t_Slice u8)
                   sampled0
-                  out0
+                  (out.[ sz 0 ] <: t_Array i32 (sz 263))
               in
               let sampled0:usize = tmp0 in
-              let out0:t_Array i32 (sz 263) = tmp1 in
-              let done0:bool = out4 in
-              done0, out0, sampled0 <: (bool & t_Array i32 (sz 263) & usize)
-            else done0, out0, sampled0 <: (bool & t_Array i32 (sz 263) & usize)
+              let out:t_Array (t_Array i32 (sz 263)) (sz 4) =
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) tmp1
+              in
+              let done0:bool = out1 in
+              done0, out, sampled0 <: (bool & t_Array (t_Array i32 (sz 263)) (sz 4) & usize)
+            else done0, out, sampled0 <: (bool & t_Array (t_Array i32 (sz 263)) (sz 4) & usize)
           in
-          let done1, out1, sampled1:(bool & t_Array i32 (sz 263) & usize) =
+          let done1, out, sampled1:(bool & t_Array (t_Array i32 (sz 263)) (sz 4) & usize) =
             if ~.done1
             then
-              let tmp0, tmp1, out4:(usize & t_Array i32 (sz 263) & bool) =
+              let tmp0, tmp1, out1:(usize & t_Array i32 (sz 263) & bool) =
                 rejection_sample_less_than_eta #v_SIMDUnit
-                  v_ETA
+                  eta
                   (randomnesses._2 <: t_Slice u8)
                   sampled1
-                  out1
+                  (out.[ sz 1 ] <: t_Array i32 (sz 263))
               in
               let sampled1:usize = tmp0 in
-              let out1:t_Array i32 (sz 263) = tmp1 in
-              let done1:bool = out4 in
-              done1, out1, sampled1 <: (bool & t_Array i32 (sz 263) & usize)
-            else done1, out1, sampled1 <: (bool & t_Array i32 (sz 263) & usize)
+              let out:t_Array (t_Array i32 (sz 263)) (sz 4) =
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) tmp1
+              in
+              let done1:bool = out1 in
+              done1, out, sampled1 <: (bool & t_Array (t_Array i32 (sz 263)) (sz 4) & usize)
+            else done1, out, sampled1 <: (bool & t_Array (t_Array i32 (sz 263)) (sz 4) & usize)
           in
-          let done2, out2, sampled2:(bool & t_Array i32 (sz 263) & usize) =
+          let done2, out, sampled2:(bool & t_Array (t_Array i32 (sz 263)) (sz 4) & usize) =
             if ~.done2
             then
-              let tmp0, tmp1, out4:(usize & t_Array i32 (sz 263) & bool) =
+              let tmp0, tmp1, out1:(usize & t_Array i32 (sz 263) & bool) =
                 rejection_sample_less_than_eta #v_SIMDUnit
-                  v_ETA
+                  eta
                   (randomnesses._3 <: t_Slice u8)
                   sampled2
-                  out2
+                  (out.[ sz 2 ] <: t_Array i32 (sz 263))
               in
               let sampled2:usize = tmp0 in
-              let out2:t_Array i32 (sz 263) = tmp1 in
-              let done2:bool = out4 in
-              done2, out2, sampled2 <: (bool & t_Array i32 (sz 263) & usize)
-            else done2, out2, sampled2 <: (bool & t_Array i32 (sz 263) & usize)
+              let out:t_Array (t_Array i32 (sz 263)) (sz 4) =
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 2) tmp1
+              in
+              let done2:bool = out1 in
+              done2, out, sampled2 <: (bool & t_Array (t_Array i32 (sz 263)) (sz 4) & usize)
+            else done2, out, sampled2 <: (bool & t_Array (t_Array i32 (sz 263)) (sz 4) & usize)
           in
           if ~.done3
           then
-            let tmp0, tmp1, out4:(usize & t_Array i32 (sz 263) & bool) =
+            let tmp0, tmp1, out1:(usize & t_Array i32 (sz 263) & bool) =
               rejection_sample_less_than_eta #v_SIMDUnit
-                v_ETA
+                eta
                 (randomnesses._4 <: t_Slice u8)
                 sampled3
-                out3
+                (out.[ sz 3 ] <: t_Array i32 (sz 263))
             in
             let sampled3:usize = tmp0 in
-            let out3:t_Array i32 (sz 263) = tmp1 in
-            let done3:bool = out4 in
-            done0,
-            done1,
-            done2,
-            done3,
-            out0,
-            out1,
-            out2,
-            out3,
-            sampled0,
-            sampled1,
-            sampled2,
-            sampled3,
-            state
+            let out:t_Array (t_Array i32 (sz 263)) (sz 4) =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 3) tmp1
+            in
+            let done3:bool = out1 in
+            done0, done1, done2, done3, out, sampled0, sampled1, sampled2, sampled3, state
             <:
-            (bool & bool & bool & bool & t_Array i32 (sz 263) & t_Array i32 (sz 263) &
-              t_Array i32 (sz 263) &
-              t_Array i32 (sz 263) &
-              usize &
-              usize &
+            (bool & bool & bool & bool & t_Array (t_Array i32 (sz 263)) (sz 4) & usize & usize &
               usize &
               usize &
               v_Shake256)
           else
-            done0,
-            done1,
-            done2,
-            done3,
-            out0,
-            out1,
-            out2,
-            out3,
-            sampled0,
-            sampled1,
-            sampled2,
-            sampled3,
-            state
+            done0, done1, done2, done3, out, sampled0, sampled1, sampled2, sampled3, state
             <:
-            (bool & bool & bool & bool & t_Array i32 (sz 263) & t_Array i32 (sz 263) &
-              t_Array i32 (sz 263) &
-              t_Array i32 (sz 263) &
-              usize &
-              usize &
+            (bool & bool & bool & bool & t_Array (t_Array i32 (sz 263)) (sz 4) & usize & usize &
               usize &
               usize &
               v_Shake256))
   in
-  Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (out0 <: t_Slice i32),
-  Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (out1 <: t_Slice i32),
-  Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (out2 <: t_Slice i32),
-  Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit (out3 <: t_Slice i32)
-  <:
-  (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
-    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
-    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
-    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+  let max:usize = (cast (start_index <: u16) <: usize) +! sz 4 in
+  let max:usize =
+    if
+      (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) re
+        <:
+        usize) <.
+      max
+    then Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) re
+    else max
+  in
+  let re:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
+    Rust_primitives.Hax.Folds.fold_range (cast (start_index <: u16) <: usize)
+      max
+      (fun re temp_1_ ->
+          let re:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) = re in
+          let _:usize = temp_1_ in
+          true)
+      re
+      (fun re i ->
+          let re:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) = re in
+          let i:usize = i in
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+            i
+            (Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit
+                (out.[ i %! sz 4 <: usize ] <: t_Slice i32)
+                (re.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+              <:
+              Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+          <:
+          t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+  in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
+  re
 
 let sample_mask_ring_element
       (#v_SIMDUnit #v_Shake256: Type0)
-      (v_GAMMA1_EXPONENT: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
@@ -723,10 +695,11 @@ let sample_mask_ring_element
           Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
       (seed: t_Array u8 (sz 66))
       (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      (gamma1_exponent: usize)
      =
   let result, hax_temp_output:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     Prims.unit) =
-    match cast (v_GAMMA1_EXPONENT <: usize) <: u8 with
+    match cast (gamma1_exponent <: usize) <: u8 with
     | 17uy ->
       let out:t_Array u8 (sz 576) = Rust_primitives.Hax.repeat 0uy (sz 576) in
       let out:t_Array u8 (sz 576) =
@@ -738,7 +711,7 @@ let sample_mask_ring_element
       in
       let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
         Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
-          v_GAMMA1_EXPONENT
+          gamma1_exponent
           (out <: t_Slice u8)
           result
       in
@@ -754,7 +727,7 @@ let sample_mask_ring_element
       in
       let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
         Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
-          v_GAMMA1_EXPONENT
+          gamma1_exponent
           (out <: t_Slice u8)
           result
       in
@@ -772,7 +745,6 @@ let sample_mask_ring_element
 
 let sample_mask_vector
       (#v_SIMDUnit #v_Shake256 #v_Shake256X4: Type0)
-      (v_DIMENSION v_GAMMA1_EXPONENT: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
@@ -782,38 +754,33 @@ let sample_mask_vector
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i5:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
-      (seed: t_Array u8 (sz 66))
+      (dimension gamma1_exponent: usize)
+      (seed: t_Array u8 (sz 64))
       (domain_separator: u16)
+      (mask: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
      =
-  let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
-    Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
-        <:
-        Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      v_DIMENSION
-  in
   let _:Prims.unit =
     if true
     then
       let _:Prims.unit =
-        Hax_lib.v_assert ((v_DIMENSION =. sz 4 <: bool) || (v_DIMENSION =. sz 5 <: bool) ||
-            (v_DIMENSION =. sz 7 <: bool))
+        Hax_lib.v_assert ((dimension =. sz 4 <: bool) || (dimension =. sz 5 <: bool) ||
+            (dimension =. sz 7 <: bool))
       in
       ()
   in
-  let tmp0, out4:(u16 & t_Array u8 (sz 66)) = update_seed seed domain_separator in
-  let domain_separator:u16 = tmp0 in
-  let seed0:t_Array u8 (sz 66) = out4 in
-  let tmp0, out4:(u16 & t_Array u8 (sz 66)) = update_seed seed domain_separator in
-  let domain_separator:u16 = tmp0 in
-  let seed1:t_Array u8 (sz 66) = out4 in
-  let tmp0, out4:(u16 & t_Array u8 (sz 66)) = update_seed seed domain_separator in
-  let domain_separator:u16 = tmp0 in
-  let seed2:t_Array u8 (sz 66) = out4 in
-  let tmp0, out4:(u16 & t_Array u8 (sz 66)) = update_seed seed domain_separator in
-  let domain_separator:u16 = tmp0 in
-  let seed3:t_Array u8 (sz 66) = out4 in
-  let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
-    match cast (v_GAMMA1_EXPONENT <: usize) <: u8 with
+  let seed0:t_Array u8 (sz 66) = add_error_domain_separator (seed <: t_Slice u8) domain_separator in
+  let seed1:t_Array u8 (sz 66) =
+    add_error_domain_separator (seed <: t_Slice u8) (domain_separator +! 1us <: u16)
+  in
+  let seed2:t_Array u8 (sz 66) =
+    add_error_domain_separator (seed <: t_Slice u8) (domain_separator +! 2us <: u16)
+  in
+  let seed3:t_Array u8 (sz 66) =
+    add_error_domain_separator (seed <: t_Slice u8) (domain_separator +! 3us <: u16)
+  in
+  let domain_separator:u16 = domain_separator +! 4us in
+  let mask:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
+    match cast (gamma1_exponent <: usize) <: u8 with
     | 17uy ->
       let out0:t_Array u8 (sz 576) = Rust_primitives.Hax.repeat 0uy (sz 576) in
       let out1:t_Array u8 (sz 576) = Rust_primitives.Hax.repeat 0uy (sz 576) in
@@ -830,41 +797,41 @@ let sample_mask_vector
       let out2:t_Array u8 (sz 576) = tmp2 in
       let out3:t_Array u8 (sz 576) = tmp3 in
       let _:Prims.unit = () in
-      let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
+      let mask:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize mask
           (sz 0)
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
-              v_GAMMA1_EXPONENT
+              gamma1_exponent
               (out0 <: t_Slice u8)
               (mask.[ sz 0 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
-      let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
+      let mask:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize mask
           (sz 1)
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
-              v_GAMMA1_EXPONENT
+              gamma1_exponent
               (out1 <: t_Slice u8)
               (mask.[ sz 1 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
-      let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
+      let mask:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize mask
           (sz 2)
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
-              v_GAMMA1_EXPONENT
+              gamma1_exponent
               (out2 <: t_Slice u8)
               (mask.[ sz 2 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
-      let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
+      let mask:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize mask
           (sz 3)
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
-              v_GAMMA1_EXPONENT
+              gamma1_exponent
               (out3 <: t_Slice u8)
               (mask.[ sz 3 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
@@ -887,41 +854,41 @@ let sample_mask_vector
       let out2:t_Array u8 (sz 640) = tmp2 in
       let out3:t_Array u8 (sz 640) = tmp3 in
       let _:Prims.unit = () in
-      let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
+      let mask:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize mask
           (sz 0)
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
-              v_GAMMA1_EXPONENT
+              gamma1_exponent
               (out0 <: t_Slice u8)
               (mask.[ sz 0 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
-      let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
+      let mask:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize mask
           (sz 1)
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
-              v_GAMMA1_EXPONENT
+              gamma1_exponent
               (out1 <: t_Slice u8)
               (mask.[ sz 1 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
-      let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
+      let mask:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize mask
           (sz 2)
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
-              v_GAMMA1_EXPONENT
+              gamma1_exponent
               (out2 <: t_Slice u8)
               (mask.[ sz 2 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       in
-      let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION =
+      let mask:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize mask
           (sz 3)
           (Libcrux_ml_dsa.Encoding.Gamma1.deserialize #v_SIMDUnit
-              v_GAMMA1_EXPONENT
+              gamma1_exponent
               (out3 <: t_Slice u8)
               (mask.[ sz 3 ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
             <:
@@ -930,84 +897,64 @@ let sample_mask_vector
       mask
     | _ -> mask
   in
-  let domain_separator, mask, seed:(u16 &
-    t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION &
-    t_Array u8 (sz 66)) =
+  let domain_separator, mask:(u16 &
+    t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)) =
     Rust_primitives.Hax.Folds.fold_range (sz 4)
-      v_DIMENSION
+      dimension
       (fun temp_0_ temp_1_ ->
-          let domain_separator, mask, seed:(u16 &
-            t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION &
-            t_Array u8 (sz 66)) =
+          let domain_separator, mask:(u16 &
+            t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)) =
             temp_0_
           in
           let _:usize = temp_1_ in
           true)
-      (domain_separator, mask, seed
+      (domain_separator, mask
         <:
-        (u16 & t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION &
-          t_Array u8 (sz 66)))
+        (u16 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)))
       (fun temp_0_ i ->
-          let domain_separator, mask, seed:(u16 &
-            t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION &
-            t_Array u8 (sz 66)) =
+          let domain_separator, mask:(u16 &
+            t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)) =
             temp_0_
           in
           let i:usize = i in
           let seed:t_Array u8 (sz 66) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed
-              (sz 64)
-              (cast (domain_separator <: u16) <: u8)
-          in
-          let seed:t_Array u8 (sz 66) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed
-              (sz 65)
-              (cast (domain_separator >>! 8l <: u16) <: u8)
+            add_error_domain_separator (seed <: t_Slice u8) domain_separator
           in
           let domain_separator:u16 = domain_separator +! 1us in
-          let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-            v_DIMENSION =
+          let mask:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize mask
               i
               (sample_mask_ring_element #v_SIMDUnit
                   #v_Shake256
-                  v_GAMMA1_EXPONENT
                   seed
                   (mask.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+                  gamma1_exponent
                 <:
                 Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
           in
-          domain_separator, mask, seed
+          domain_separator, mask
           <:
-          (u16 & t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION &
-            t_Array u8 (sz 66)))
+          (u16 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)))
   in
-  let hax_temp_output:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    v_DIMENSION =
-    mask
-  in
-  domain_separator, hax_temp_output
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
+  domain_separator, mask
   <:
-  (u16 & t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
+  (u16 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
 
-let sample_up_to_four_ring_elements
+let sample_up_to_four_ring_elements_flat
       (#v_SIMDUnit #v_Shake128: Type0)
-      (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128)
-      (seed0: t_Array u8 (sz 34))
-      (matrix:
-          t_Array
-            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-            v_ROWS_IN_A)
+      (columns: usize)
+      (seed: t_Slice u8)
+      (matrix: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       (rand_stack0 rand_stack1 rand_stack2 rand_stack3: t_Array u8 (sz 840))
       (tmp_stack: t_Slice (t_Array i32 (sz 263)))
-      (indices: t_Array (u8 & u8) (sz 4))
-      (elements_requested: usize)
+      (start_index elements_requested: usize)
      =
   let _:Prims.unit =
     if true
@@ -1015,52 +962,21 @@ let sample_up_to_four_ring_elements
       let _:Prims.unit = Hax_lib.v_assert (elements_requested <=. sz 4 <: bool) in
       ()
   in
-  let domain_separator0:u16 = generate_domain_separator (indices.[ sz 0 ] <: (u8 & u8)) in
-  let domain_separator1:u16 = generate_domain_separator (indices.[ sz 1 ] <: (u8 & u8)) in
-  let domain_separator2:u16 = generate_domain_separator (indices.[ sz 2 ] <: (u8 & u8)) in
-  let domain_separator3:u16 = generate_domain_separator (indices.[ sz 3 ] <: (u8 & u8)) in
   let seed0:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed0
-      (sz 32)
-      (cast (domain_separator0 <: u16) <: u8)
-  in
-  let seed0:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed0
-      (sz 33)
-      (cast (domain_separator0 >>! 8l <: u16) <: u8)
-  in
-  let seed1:t_Array u8 (sz 34) = seed0 in
-  let seed1:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed1
-      (sz 32)
-      (cast (domain_separator1 <: u16) <: u8)
+    add_domain_separator seed
+      (sample_up_to_four_ring_elements_flat__xy start_index columns <: (u8 & u8))
   in
   let seed1:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed1
-      (sz 33)
-      (cast (domain_separator1 >>! 8l <: u16) <: u8)
-  in
-  let seed2:t_Array u8 (sz 34) = seed0 in
-  let seed2:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed2
-      (sz 32)
-      (cast (domain_separator2 <: u16) <: u8)
+    add_domain_separator seed
+      (sample_up_to_four_ring_elements_flat__xy (start_index +! sz 1 <: usize) columns <: (u8 & u8))
   in
   let seed2:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed2
-      (sz 33)
-      (cast (domain_separator2 >>! 8l <: u16) <: u8)
-  in
-  let seed3:t_Array u8 (sz 34) = seed0 in
-  let seed3:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed3
-      (sz 32)
-      (cast (domain_separator3 <: u16) <: u8)
+    add_domain_separator seed
+      (sample_up_to_four_ring_elements_flat__xy (start_index +! sz 2 <: usize) columns <: (u8 & u8))
   in
   let seed3:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize seed3
-      (sz 33)
-      (cast (domain_separator3 >>! 8l <: u16) <: u8)
+    add_domain_separator seed
+      (sample_up_to_four_ring_elements_flat__xy (start_index +! sz 3 <: usize) columns <: (u8 & u8))
   in
   let state:v_Shake128 =
     Libcrux_ml_dsa.Hash_functions.Shake128.f_init_absorb #v_Shake128
@@ -1262,50 +1178,37 @@ let sample_up_to_four_ring_elements
             (bool & bool & bool & bool & usize & usize & usize & usize & v_Shake128 &
               t_Slice (t_Array i32 (sz 263))))
   in
-  let matrix:t_Array
-    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-    v_ROWS_IN_A =
+  let matrix:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       elements_requested
       (fun matrix temp_1_ ->
-          let matrix:t_Array
-            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-            v_ROWS_IN_A =
+          let matrix:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
             matrix
           in
           let _:usize = temp_1_ in
           true)
       matrix
       (fun matrix k ->
-          let matrix:t_Array
-            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-            v_ROWS_IN_A =
+          let matrix:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
             matrix
           in
           let k:usize = k in
-          let i, j:(u8 & u8) = indices.[ k ] in
-          let matrix:t_Array
-            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-            v_ROWS_IN_A =
-            update_matrix #v_SIMDUnit
-              v_ROWS_IN_A
-              v_COLUMNS_IN_A
-              matrix
-              (cast (i <: u8) <: usize)
-              (cast (j <: u8) <: usize)
-              (Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit
-                  (tmp_stack.[ k ] <: t_Slice i32)
-                <:
-                Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-          in
-          matrix)
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize matrix
+            (start_index +! k <: usize)
+            (Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit
+                (tmp_stack.[ k ] <: t_Slice i32)
+                (matrix.[ start_index +! k <: usize ]
+                  <:
+                  Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+              <:
+              Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+          <:
+          t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   matrix, rand_stack0, rand_stack1, rand_stack2, rand_stack3, tmp_stack
   <:
-  (t_Array (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-      v_ROWS_IN_A &
-    t_Array u8 (sz 840) &
+  (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) & t_Array u8 (sz 840) &
     t_Array u8 (sz 840) &
     t_Array u8 (sz 840) &
     t_Array u8 (sz 840) &

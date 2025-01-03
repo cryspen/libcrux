@@ -19,12 +19,14 @@ let simd_unit_invert_ntt_at_layer_0_
   let hi_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 a_shuffled b_shuffled
   in
-  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 = hi_values in
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract differences lo_values
+  in
+  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lo_values hi_values
   in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract hi_values lo_values
-  in
+  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 = lo_values in
   let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta13
       zeta12
@@ -35,14 +37,14 @@ let simd_unit_invert_ntt_at_layer_0_
       zeta01
       zeta00
   in
-  let products:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply differences zetas
   in
   let a_shuffled:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 sums products
+    Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 sums differences
   in
   let b_shuffled:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 sums products
+    Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 sums differences
   in
   let a:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 216l a_shuffled
@@ -149,12 +151,14 @@ let simd_unit_invert_ntt_at_layer_1_
   let hi_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 simd_unit0 simd_unit1
   in
-  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 = hi_values in
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract differences lo_values
+  in
+  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lo_values hi_values
   in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract hi_values lo_values
-  in
+  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 = lo_values in
   let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta11
       zeta11
@@ -165,14 +169,14 @@ let simd_unit_invert_ntt_at_layer_1_
       zeta00
       zeta00
   in
-  let products:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply differences zetas
   in
   let a:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 sums products
+    Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 sums differences
   in
   let b:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 sums products
+    Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 sums differences
   in
   a, b <: (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
@@ -260,23 +264,25 @@ let simd_unit_invert_ntt_at_layer_2_
   let hi_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 49l simd_unit0 simd_unit1
   in
-  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 = hi_values in
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract differences lo_values
+  in
+  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lo_values hi_values
   in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract hi_values lo_values
-  in
+  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 = lo_values in
   let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta1 zeta1 zeta1 zeta1 zeta0 zeta0 zeta0 zeta0
   in
-  let products:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply differences zetas
   in
   let a:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 32l sums products
+    Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 32l sums differences
   in
   let b:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 49l sums products
+    Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 49l sums differences
   in
   a, b <: (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
@@ -369,7 +375,7 @@ let outer_3_plus
           let re:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) = re in
           let j:usize = j in
           let a_minus_b:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-            Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract (re.[ j +! v_STEP_BY <: usize ]
+            Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (re.[ j +! v_STEP_BY <: usize ]
                 <:
                 Libcrux_intrinsics.Avx2_extract.t_Vec256)
               (re.[ j ] <: Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -377,7 +383,7 @@ let outer_3_plus
           let re:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
               j
-              (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add (re.[ j ]
+              (Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 (re.[ j ]
                     <:
                     Libcrux_intrinsics.Avx2_extract.t_Vec256)
                   (re.[ j +! v_STEP_BY <: usize ] <: Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -504,7 +510,7 @@ let invert_ntt_at_layer_7_ (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256
   in
   re
 
-let invert_ntt_montgomery (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32)) =
+let invert_ntt_montgomery__inv_inner (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32)) =
   let re:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) = invert_ntt_at_layer_0_ re in
   let re:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) = invert_ntt_at_layer_1_ re in
   let re:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) = invert_ntt_at_layer_2_ re in
@@ -513,7 +519,6 @@ let invert_ntt_montgomery (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 
   let re:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) = invert_ntt_at_layer_5_ re in
   let re:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) = invert_ntt_at_layer_6_ re in
   let re:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) = invert_ntt_at_layer_7_ re in
-  let _:Prims.unit = () in
   let re:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (Core.Slice.impl__len #Libcrux_intrinsics.Avx2_extract.t_Vec256
@@ -533,10 +538,17 @@ let invert_ntt_montgomery (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 
             (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_by_constant (re.[ i ]
                   <:
                   Libcrux_intrinsics.Avx2_extract.t_Vec256)
-                41978l
+                invert_ntt_montgomery__inv_inner__FACTOR
               <:
               Libcrux_intrinsics.Avx2_extract.t_Vec256)
           <:
           t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32))
+  in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
+  re
+
+let invert_ntt_montgomery (re: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32)) =
+  let re:t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (sz 32) =
+    invert_ntt_montgomery__inv_inner re
   in
   re

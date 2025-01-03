@@ -3,16 +3,13 @@ module Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment
 open Core
 open FStar.Mul
 
-let serialize
-      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit)
-      (serialized: t_Slice u8)
-     =
+let serialize (simd_unit: t_Array i32 (sz 8)) (serialized: t_Slice u8) =
   let serialized, hax_temp_output:(t_Slice u8 & Prims.unit) =
     match cast (Core.Slice.impl__len #u8 serialized <: usize) <: u8 with
     | 4uy ->
       let serialized:t_Slice u8 =
         Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 2)
-          (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients <: t_Slice i32)
+          (simd_unit <: t_Slice i32)
           (fun serialized temp_1_ ->
               let serialized:t_Slice u8 = serialized in
               let _:usize = temp_1_ in
@@ -34,7 +31,7 @@ let serialize
     | 6uy ->
       let serialized:t_Slice u8 =
         Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 4)
-          (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_coefficients <: t_Slice i32)
+          (simd_unit <: t_Slice i32)
           (fun serialized temp_1_ ->
               let serialized:t_Slice u8 = serialized in
               let _:usize = temp_1_ in

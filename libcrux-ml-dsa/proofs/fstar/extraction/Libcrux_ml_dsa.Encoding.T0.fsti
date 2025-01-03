@@ -20,19 +20,18 @@ val deserialize
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val deserialize_to_vector_then_ntt
-      (#v_SIMDUnit: Type0)
-      (v_DIMENSION: usize)
-      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (serialized: t_Slice u8)
-    : Prims.Pure
-      (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 val serialize
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (serialized: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+val deserialize_to_vector_then_ntt
+      (#v_SIMDUnit: Type0)
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (serialized: t_Slice u8)
+      (ring_elements: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : Prims.Pure (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+      Prims.l_True
+      (fun _ -> Prims.l_True)

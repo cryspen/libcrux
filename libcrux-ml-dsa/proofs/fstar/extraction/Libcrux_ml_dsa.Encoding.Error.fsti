@@ -9,30 +9,34 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
+val chunk_size (eta: Libcrux_ml_dsa.Constants.t_Eta)
+    : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
+
 val deserialize
       (#v_SIMDUnit: Type0)
-      (v_ETA: usize)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
       (serialized: t_Slice u8)
       (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
     : Prims.Pure (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val deserialize_to_vector_then_ntt
-      (#v_SIMDUnit: Type0)
-      (v_DIMENSION v_ETA v_RING_ELEMENT_SIZE: usize)
-      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (serialized: t_Slice u8)
-    : Prims.Pure
-      (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 val serialize
       (#v_SIMDUnit: Type0)
-      (v_ETA v_OUTPUT_SIZE: usize)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (serialized: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+val deserialize_to_vector_then_ntt
+      (#v_SIMDUnit: Type0)
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
+      (ring_element_size: usize)
+      (serialized: t_Slice u8)
+      (ring_elements: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : Prims.Pure (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+      Prims.l_True
+      (fun _ -> Prims.l_True)

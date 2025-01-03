@@ -11,17 +11,17 @@ let _ =
 
 let deserialize
       (#v_SIMDUnit: Type0)
-      (v_GAMMA1_EXPONENT: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (gamma1_exponent: usize)
       (serialized: t_Slice u8)
       (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
   let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (Core.Slice.impl__len #v_SIMDUnit
-          (result.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
+      (Core.Slice.impl__len #i1.f_Coefficient
+          (result.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice i1.f_Coefficient)
         <:
         usize)
       (fun result temp_1_ ->
@@ -41,21 +41,22 @@ let deserialize
               i
               (Libcrux_ml_dsa.Simd.Traits.f_gamma1_deserialize #v_SIMDUnit
                   #FStar.Tactics.Typeclasses.solve
-                  v_GAMMA1_EXPONENT
                   (serialized.[ {
-                        Core.Ops.Range.f_start = i *! (v_GAMMA1_EXPONENT +! sz 1 <: usize) <: usize;
+                        Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
                         Core.Ops.Range.f_end
                         =
-                        (i +! sz 1 <: usize) *! (v_GAMMA1_EXPONENT +! sz 1 <: usize) <: usize
+                        (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
                       }
                       <:
                       Core.Ops.Range.t_Range usize ]
                     <:
                     t_Slice u8)
+                  (result.Libcrux_ml_dsa.Polynomial.f_simd_units.[ i ] <: i1.f_Coefficient)
+                  gamma1_exponent
                 <:
-                v_SIMDUnit)
+                i1.f_Coefficient)
             <:
-            t_Array v_SIMDUnit (sz 32)
+            t_Array i1.f_Coefficient (sz 32)
           }
           <:
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -65,17 +66,17 @@ let deserialize
 
 let serialize
       (#v_SIMDUnit: Type0)
-      (v_GAMMA1_EXPONENT: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (serialized: t_Slice u8)
+      (gamma1_exponent: usize)
      =
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_enumerated_slice (re.Libcrux_ml_dsa.Polynomial.f_simd_units
         <:
-        t_Slice v_SIMDUnit)
+        t_Slice i1.f_Coefficient)
       (fun serialized temp_1_ ->
           let serialized:t_Slice u8 = serialized in
           let _:usize = temp_1_ in
@@ -83,30 +84,30 @@ let serialize
       serialized
       (fun serialized temp_1_ ->
           let serialized:t_Slice u8 = serialized in
-          let i, simd_unit:(usize & v_SIMDUnit) = temp_1_ in
+          let i, simd_unit:(usize & i1.f_Coefficient) = temp_1_ in
           Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
             ({
-                Core.Ops.Range.f_start = i *! (v_GAMMA1_EXPONENT +! sz 1 <: usize) <: usize;
+                Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
                 Core.Ops.Range.f_end
                 =
-                (i +! sz 1 <: usize) *! (v_GAMMA1_EXPONENT +! sz 1 <: usize) <: usize
+                (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
               }
               <:
               Core.Ops.Range.t_Range usize)
             (Libcrux_ml_dsa.Simd.Traits.f_gamma1_serialize #v_SIMDUnit
                 #FStar.Tactics.Typeclasses.solve
-                v_GAMMA1_EXPONENT
                 simd_unit
                 (serialized.[ {
-                      Core.Ops.Range.f_start = i *! (v_GAMMA1_EXPONENT +! sz 1 <: usize) <: usize;
+                      Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
                       Core.Ops.Range.f_end
                       =
-                      (i +! sz 1 <: usize) *! (v_GAMMA1_EXPONENT +! sz 1 <: usize) <: usize
+                      (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
                     }
                     <:
                     Core.Ops.Range.t_Range usize ]
                   <:
                   t_Slice u8)
+                gamma1_exponent
               <:
               t_Slice u8)
           <:

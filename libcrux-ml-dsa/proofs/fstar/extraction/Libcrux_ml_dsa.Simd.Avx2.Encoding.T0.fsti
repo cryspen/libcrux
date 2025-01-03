@@ -8,8 +8,8 @@ val change_interval (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
 let deserialize__COEFFICIENT_MASK: i32 = (1l <<! 13l <: i32) -! 1l
 
-val deserialize (serialized: t_Slice u8)
+val deserialize (serialized: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure (t_Array u8 (sz 13)) Prims.l_True (fun _ -> Prims.l_True)
+val serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)

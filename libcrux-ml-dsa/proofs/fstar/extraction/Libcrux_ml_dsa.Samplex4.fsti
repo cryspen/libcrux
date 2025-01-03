@@ -13,125 +13,50 @@ let _ =
 
 /// The x4 sampling implementation that is selected during multiplexing.
 class t_X4Sampler (v_Self: Type0) = {
-  f_matrix_A_pre:
+  f_matrix_flat_pre:
       #v_SIMDUnit: Type0 ->
-      v_ROWS_IN_A: usize ->
-      v_COLUMNS_IN_A: usize ->
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
-      t_Array u8 (sz 34)
+      usize ->
+      t_Slice u8 ->
+      t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
     -> Type0;
-  f_matrix_A_post:
+  f_matrix_flat_post:
       #v_SIMDUnit: Type0 ->
-      v_ROWS_IN_A: usize ->
-      v_COLUMNS_IN_A: usize ->
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
-      t_Array u8 (sz 34) ->
-      t_Array
-          (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          v_ROWS_IN_A
+      usize ->
+      t_Slice u8 ->
+      t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) ->
+      t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
     -> Type0;
-  f_matrix_A:
+  f_matrix_flat:
       #v_SIMDUnit: Type0 ->
-      v_ROWS_IN_A: usize ->
-      v_COLUMNS_IN_A: usize ->
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
-      x0: t_Array u8 (sz 34)
-    -> Prims.Pure
-        (t_Array
-            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-            v_ROWS_IN_A)
-        (f_matrix_A_pre #v_SIMDUnit v_ROWS_IN_A v_COLUMNS_IN_A #i1 x0)
-        (fun result -> f_matrix_A_post #v_SIMDUnit v_ROWS_IN_A v_COLUMNS_IN_A #i1 x0 result)
+      x0: usize ->
+      x1: t_Slice u8 ->
+      x2: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+    -> Prims.Pure (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+        (f_matrix_flat_pre #v_SIMDUnit #i1 x0 x1 x2)
+        (fun result -> f_matrix_flat_post #v_SIMDUnit #i1 x0 x1 x2 result)
 }
 
-val matrix_A_4_by_4_
+val matrix_flat
       (#v_SIMDUnit #v_Shake128: Type0)
-      (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128 |}
-      (seed: t_Array u8 (sz 34))
-    : Prims.Pure
-      (t_Array
-          (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          v_ROWS_IN_A) Prims.l_True (fun _ -> Prims.l_True)
-
-val matrix_A_6_by_5_
-      (#v_SIMDUnit #v_Shake128: Type0)
-      (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128 |}
-      (seed: t_Array u8 (sz 34))
-    : Prims.Pure
-      (t_Array
-          (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          v_ROWS_IN_A) Prims.l_True (fun _ -> Prims.l_True)
-
-val matrix_A_8_by_7_
-      (#v_SIMDUnit #v_Shake128: Type0)
-      (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128 |}
-      (seed: t_Array u8 (sz 34))
-    : Prims.Pure
-      (t_Array
-          (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          v_ROWS_IN_A) Prims.l_True (fun _ -> Prims.l_True)
-
-val matrix_A_generic
-      (#v_SIMDUnit #v_Shake128: Type0)
-      (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128 |}
-      (seed: t_Array u8 (sz 34))
-    : Prims.Pure
-      (t_Array
-          (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          v_ROWS_IN_A) Prims.l_True (fun _ -> Prims.l_True)
-
-val sample_s1_and_s2_4_by_4_
-      (#v_SIMDUnit #v_Shake256X4: Type0)
-      (v_ETA v_S1_DIMENSION v_S2_DIMENSION: usize)
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
-      (seed_base: t_Array u8 (sz 66))
-    : Prims.Pure
-      (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION &
-        t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val sample_s1_and_s2_5_by_6_
-      (#v_SIMDUnit #v_Shake256X4: Type0)
-      (v_ETA v_S1_DIMENSION v_S2_DIMENSION: usize)
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
-      (seed_base: t_Array u8 (sz 66))
-    : Prims.Pure
-      (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION &
-        t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val sample_s1_and_s2_7_by_8_
-      (#v_SIMDUnit #v_Shake256X4: Type0)
-      (v_ETA v_S1_DIMENSION v_S2_DIMENSION: usize)
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
-      (seed_base: t_Array u8 (sz 66))
-    : Prims.Pure
-      (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION &
-        t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION)
+      (columns: usize)
+      (seed: t_Slice u8)
+      (matrix: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : Prims.Pure (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 val sample_s1_and_s2
       (#v_SIMDUnit #v_Shake256X4: Type0)
-      (v_ETA v_S1_DIMENSION v_S2_DIMENSION: usize)
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       {| i3: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
-      (seed: t_Array u8 (sz 66))
-    : Prims.Pure
-      (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S1_DIMENSION &
-        t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_S2_DIMENSION)
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
+      (seed: t_Slice u8)
+      (s1_s2: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : Prims.Pure (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       Prims.l_True
       (fun _ -> Prims.l_True)

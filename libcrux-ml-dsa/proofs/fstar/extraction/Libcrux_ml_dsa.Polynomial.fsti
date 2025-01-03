@@ -11,38 +11,19 @@ let _ =
 
 type t_PolynomialRingElement
   (v_SIMDUnit: Type0) {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-  = { f_simd_units:t_Array v_SIMDUnit (sz 32) }
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl_1
-      (#v_SIMDUnit: Type0)
-      {| i1: Core.Clone.t_Clone v_SIMDUnit |}
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-    : Core.Clone.t_Clone (t_PolynomialRingElement v_SIMDUnit)
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl_2
-      (#v_SIMDUnit: Type0)
-      {| i1: Core.Marker.t_Copy v_SIMDUnit |}
-      {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-    : Core.Marker.t_Copy (t_PolynomialRingElement v_SIMDUnit)
-
-val impl__ZERO:
-    #v_SIMDUnit: Type0 ->
-    {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
-    Prims.unit
-  -> Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
-
-val impl__from_i32_array
-      (#v_SIMDUnit: Type0)
-      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (array: t_Slice i32)
-    : Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
+  = { f_simd_units:t_Array i1.f_Coefficient (sz 32) }
 
 val impl__add
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (self rhs: t_PolynomialRingElement v_SIMDUnit)
+    : Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl__from_i32_array
+      (#v_SIMDUnit: Type0)
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (array: t_Slice i32)
+      (result: t_PolynomialRingElement v_SIMDUnit)
     : Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
 
 val impl__infinity_norm_exceeds
@@ -63,3 +44,25 @@ val impl__to_i32_array
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (self: t_PolynomialRingElement v_SIMDUnit)
     : Prims.Pure (t_Array i32 (sz 256)) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl__zero:
+    #v_SIMDUnit: Type0 ->
+    {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
+    Prims.unit
+  -> Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
+
+// [@@ FStar.Tactics.Typeclasses.tcinstance]
+// val impl_1
+//       (#v_SIMDUnit: Type0)
+//       {| i1: Core.Clone.t_Clone v_SIMDUnit |}
+//       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+//       {| i3: Core.Clone.t_Clone v_7494601369702794077.f_Coefficient |}
+//     : Core.Clone.t_Clone (t_PolynomialRingElement v_SIMDUnit)
+
+// [@@ FStar.Tactics.Typeclasses.tcinstance]
+// val impl_2
+//       (#v_SIMDUnit: Type0)
+//       {| i1: Core.Marker.t_Copy v_SIMDUnit |}
+//       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+//       {| i3: Core.Marker.t_Copy v_7494601369702794077.f_Coefficient |}
+//     : Core.Marker.t_Copy (t_PolynomialRingElement v_SIMDUnit)
