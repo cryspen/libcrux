@@ -251,7 +251,6 @@ mod tests {
         assert_eq!(result.to_i32_array(), expected_coefficients);
     }
 
-    #[cfg(not(feature = "simd256"))]
     mod portable {
         use super::*;
 

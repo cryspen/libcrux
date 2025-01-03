@@ -52,9 +52,7 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     pub(crate) fn infinity_norm_exceeds(&self, bound: i32) -> bool {
         let mut result = false;
         for i in 0..self.simd_units.len() {
-            if !result && SIMDUnit::infinity_norm_exceeds(&self.simd_units[i], bound) {
-                result = result || true;
-            }
+            result = result || SIMDUnit::infinity_norm_exceeds(&self.simd_units[i], bound);
         }
 
         result

@@ -134,7 +134,6 @@ mod tests {
         assert_eq!(deserialized.to_i32_array(), expected_coefficients);
     }
 
-    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_deserialize_portable() {
         test_deserialize_generic::<simd::portable::PortableSIMDUnit>();

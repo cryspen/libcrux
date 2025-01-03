@@ -109,7 +109,6 @@ mod tests {
         assert_eq!(result, serialized);
     }
 
-    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_serialize_portable() {
         test_serialize_generic::<simd::portable::PortableSIMDUnit>();

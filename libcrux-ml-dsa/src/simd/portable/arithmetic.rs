@@ -136,9 +136,7 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
 
             // FIXME: return
             // [hax] https://github.com/hacspec/hax/issues/1204
-            if normalized >= bound {
-                result = true;
-            }
+            result = result ||normalized >= bound;
         }
     }
 
