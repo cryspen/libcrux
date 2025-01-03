@@ -47,6 +47,9 @@ pub(crate) fn matrix_flat<SIMDUnit: Operations, Shake128: shake128::XofX4>(
             elements_requested,
         );
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 /// Portable sampling
@@ -121,7 +124,21 @@ pub(crate) fn sample_s1_and_s2<SIMDUnit: Operations, Shake256X4: shake256::XofX4
     seed: &[u8],
     s1_s2: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    for i in 0..s1_s2.len().div_ceil(4) {
+    let len = s1_s2.len();
+
+    // XXX: div_ceil is not implemented in F*.
+    for i in 0..len / 4 {
         sample_four_error_ring_elements::<SIMDUnit, Shake256X4>(eta, seed, 4 * i as u16, s1_s2);
+    }
+
+    // Do it another time if needed.
+    let remainder = len % 4;
+    if remainder != 0 {
+        sample_four_error_ring_elements::<SIMDUnit, Shake256X4>(
+            eta,
+            seed,
+            (len - remainder) as u16,
+            s1_s2,
+        );
     }
 }

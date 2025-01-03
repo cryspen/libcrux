@@ -165,6 +165,7 @@ pub(crate) fn sample_up_to_four_ring_elements_flat<
         );
     }
 
+    // [hax] https://github.com/hacspec/hax/issues/720
     ()
 }
 
@@ -343,9 +344,15 @@ pub(crate) fn sample_four_error_ring_elements<SIMDUnit: Operations, Shake256: sh
         }
     }
 
-    for i in start_index as usize..re.len().min((start_index + 4) as usize) {
+    // XXX: Core.Cmp.f_min is not implemented
+    let max = start_index as usize + 4;
+    let max = if re.len() < max { re.len() } else { max };
+    for i in start_index as usize..max {
         PolynomialRingElement::<SIMDUnit>::from_i32_array(&out[i % 4], &mut re[i]);
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[inline(always)]
@@ -429,6 +436,9 @@ pub(crate) fn sample_mask_vector<
         // TODO: For 87 we may want to do another 4 and discard 1.
         sample_mask_ring_element::<SIMDUnit, Shake256>(&seed, &mut mask[i], gamma1_exponent);
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[inline(always)]

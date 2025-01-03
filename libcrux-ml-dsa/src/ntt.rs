@@ -20,6 +20,8 @@ pub(crate) fn ntt_multiply_montgomery<SIMDUnit: Operations>(
     for i in 0..lhs.simd_units.len() {
         SIMDUnit::montgomery_multiply(&mut lhs.simd_units[i], &rhs.simd_units[i]);
     }
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[cfg(test)]

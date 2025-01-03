@@ -18,9 +18,11 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations>(
         for (i, ring_element) in t1.iter().enumerate() {
             let offset = SEED_FOR_A_SIZE + (i * RING_ELEMENT_OF_T1S_SIZE);
             verification_key_serialized[offset..offset + RING_ELEMENT_OF_T1S_SIZE]
-                .copy_from_slice(&t1::serialize::<SIMDUnit>(*ring_element));
+                .copy_from_slice(&t1::serialize::<SIMDUnit>(ring_element));
         }
     }
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[inline(always)]
@@ -38,4 +40,6 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
             &mut t1[i],
         );
     }
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }

@@ -37,6 +37,8 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
                 &mut result.simd_units[i],
             );
         }
+        // [hax] https://github.com/hacspec/hax/issues/720
+        ()
     }
 
     #[cfg(test)]
@@ -63,6 +65,8 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         for i in 0..self.simd_units.len() {
             SIMDUnit::add(&mut self.simd_units[i], &rhs.simd_units[i]);
         }
+        // [hax] https://github.com/hacspec/hax/issues/720
+        ()
     }
 
     #[inline(always)]
@@ -70,5 +74,7 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         for i in 0..self.simd_units.len() {
             SIMDUnit::subtract(&mut self.simd_units[i], &rhs.simd_units[i]);
         }
+        // [hax] https://github.com/hacspec/hax/issues/720
+        ()
     }
 }

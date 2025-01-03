@@ -12,6 +12,7 @@ fn serialize<SIMDUnit: Operations>(re: &PolynomialRingElement<SIMDUnit>, seriali
             );
         }
     }
+    // [hax] https://github.com/hacspec/hax/issues/720
     ()
 }
 
@@ -29,6 +30,8 @@ pub(crate) fn serialize_vector<SIMDUnit: Operations>(
             offset += ring_element_size;
         }
     }
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[cfg(test)]

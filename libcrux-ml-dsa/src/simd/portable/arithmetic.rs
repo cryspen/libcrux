@@ -14,6 +14,9 @@ pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
     for i in 0..lhs.len() {
         lhs[i] += rhs[i];
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[inline(always)]
@@ -21,6 +24,9 @@ pub fn subtract(lhs: &mut Coefficients, rhs: &Coefficients) {
     for i in 0..lhs.len() {
         lhs[i] -= rhs[i];
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[inline(always)]
@@ -55,6 +61,9 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
     for i in 0..simd_unit.len() {
         simd_unit[i] = montgomery_reduce_element((simd_unit[i] as i64) * (c as i64))
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[inline(always)]
@@ -62,6 +71,9 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
     for i in 0..lhs.len() {
         lhs[i] = montgomery_reduce_element((lhs[i] as i64) * (rhs[i] as i64))
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 // Splits t ∈ {0, ..., q-1} into t0 and t1 with a = t1*2ᴰ + t0
@@ -96,12 +108,16 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
     for i in 0..t0.len() {
         (t0[i], t1[i]) = power2round_element(t0[i]);
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 // TODO: Revisit this function when doing the range analysis and testing
 // additional KATs.
 #[inline(always)]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
+    let mut result = false;
     // It is ok to leak which coefficient violates the bound since
     // the probability for each coefficient is independent of secret
     // data but we must not leak the sign of the centralized representative.
@@ -119,13 +135,14 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
             let normalized = coefficient - (sign & (2 * coefficient));
 
             // FIXME: return
+            // [hax] https://github.com/hacspec/hax/issues/1204
             if normalized >= bound {
-                return true;
+                result = true;
             }
         }
     }
 
-    false
+    result
 }
 
 #[inline(always)]
@@ -140,6 +157,9 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coeffi
     for i in 0..simd_unit.len() {
         simd_unit[i] = reduce_element(simd_unit[i] << SHIFT_BY);
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[inline(always)]
@@ -266,6 +286,9 @@ pub fn decompose(
     for i in 0..low.len() {
         (low[i], high[i]) = decompose_element(gamma2, simd_unit[i]);
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[inline(always)]
@@ -273,6 +296,9 @@ pub fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficient
     for i in 0..hint.len() {
         hint[i] = use_one_hint(gamma2, simd_unit[i], hint[i]);
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[cfg(test)]

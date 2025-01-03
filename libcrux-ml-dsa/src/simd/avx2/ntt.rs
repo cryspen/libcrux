@@ -316,7 +316,9 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
             re[j] = mm256_add_epi32(re[j], re[j + STEP_BY]);
             re[j + STEP_BY] = tmp;
         }
-        () // Needed because of https://github.com/hacspec/hax/issues/720
+
+        // [hax] https://github.com/hacspec/hax/issues/720
+        ()
     }
 
     // Layer 5

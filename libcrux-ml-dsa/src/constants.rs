@@ -32,14 +32,14 @@ pub(crate) const REJECTION_SAMPLE_BOUND_SIGN: usize = 814;
 pub(crate) const CONTEXT_MAX_LEN: usize = 255;
 
 /// Eta values
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy)]
 pub(crate) enum Eta {
     Two = 2,
     Four = 4,
 }
 
 /// Gamma2 values
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy)]
 pub(crate) enum Gamma2 {
     V95_232 = 95_232,
     V261_888 = 261_888,

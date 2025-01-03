@@ -2,7 +2,7 @@ use crate::{helper::cloop, polynomial::PolynomialRingElement, simd::traits::Oper
 
 #[inline(always)]
 pub(crate) fn serialize<SIMDUnit: Operations>(
-    re: PolynomialRingElement<SIMDUnit>,
+    re: &PolynomialRingElement<SIMDUnit>,
     serialized: &mut [u8], // OUTPUT_BYTES
     gamma1_exponent: usize,
 ) {
@@ -110,7 +110,7 @@ mod tests {
         ];
 
         let mut result = [0u8; 640];
-        serialize::<SIMDUnit>(re, &mut result, 19);
+        serialize::<SIMDUnit>(&re, &mut result, 19);
         assert_eq!(result, expected_bytes);
     }
 

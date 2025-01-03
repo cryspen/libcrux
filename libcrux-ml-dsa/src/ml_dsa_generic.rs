@@ -120,7 +120,7 @@ pub(crate) fn generate_key_pair<
         ERROR_RING_ELEMENT_SIZE,
         seed_for_a,
         seed_for_signing,
-        &verification_key,
+        verification_key,
         &s1_s2,
         &t0,
         signing_key,
@@ -296,7 +296,7 @@ pub(crate) fn sign_internal<
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
     // FIXME: pass these in as enums instead
-    let eta = match ETA {
+    let eta = match ETA as u8 {
         2 => Eta::Two,
         4 => Eta::Four,
         _ => unreachable!(),

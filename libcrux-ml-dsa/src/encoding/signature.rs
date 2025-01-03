@@ -23,7 +23,7 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 
     for i in 0..columns_in_a {
         encoding::gamma1::serialize::<SIMDUnit>(
-            signer_response[i],
+            &signer_response[i],
             &mut signature[offset..offset + gamma1_ring_element_size],
             gamma1_exponent,
         );
@@ -47,6 +47,9 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
         }
         signature[offset + max_ones_in_hint + i] = true_hints_seen as u8;
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[inline(always)]

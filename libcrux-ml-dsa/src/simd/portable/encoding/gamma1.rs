@@ -31,6 +31,8 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Coefficients, serialized: &mut 
             serialized[9 * i + 8] = (coefficient3 >> 10) as u8;
         }
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
     ()
 }
 
@@ -53,6 +55,8 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Coefficients, serialized: &mut 
             serialized[5 * i + 4] = (coefficient1 >> 12) as u8;
         }
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
     ()
 }
 
@@ -102,6 +106,9 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], simd_unit: &mut Coeffi
             simd_unit[4 * i + 3] = GAMMA1 - coefficient3;
         }
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[inline(always)]
@@ -128,7 +135,11 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], simd_unit: &mut Coeffi
             simd_unit[2 * i + 1] = GAMMA1 - coefficient1;
         }
     }
+
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
+
 #[inline(always)]
 pub(crate) fn deserialize(serialized: &[u8], out: &mut Coefficients, gamma1_exponent: usize) {
     match gamma1_exponent as u8 {

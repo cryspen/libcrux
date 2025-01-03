@@ -12,6 +12,7 @@ mod vector_type;
 
 pub(crate) use vector_type::{AVX2RingElement, AVX2SIMDUnit};
 
+/// Implementing the [`Operations`] for AVX2.
 impl Operations for AVX2SIMDUnit {
     type Coefficient = vector_type::Vec256;
 

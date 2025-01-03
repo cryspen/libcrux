@@ -19,7 +19,6 @@ pub(crate) type FieldElementTimesMontgomeryR = i32;
 pub(crate) trait Operations: Copy + Clone {
     type Coefficient: Copy; // XXX: make generic? drop copy?
 
-    #[allow(non_snake_case)]
     fn zero() -> Self::Coefficient;
 
     fn from_coefficient_array(array: &[i32], out: &mut Self::Coefficient);
@@ -52,14 +51,14 @@ pub(crate) trait Operations: Copy + Clone {
     // Sampling
     //
     // In the sampling functions, since each SIMD unit can hold 8 coefficients,
-    // we expect that |out| has the capacity for up to 8 coefficients.
+    // we expect that `out` has the capacity for up to 8 coefficients.
 
     // Since each coefficient could potentially be sampled with 3 bytes, we expect
-    // |randomness| to hold 24 bytes.
+    // `randomness` to hold 24 bytes.
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize;
 
     // Since each coefficient could potentially be sampled with half a byte,
-    // we expect |randomness| to hold 4 bytes.
+    // we expect `randomness` to hold 4 bytes.
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize;
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize;
 

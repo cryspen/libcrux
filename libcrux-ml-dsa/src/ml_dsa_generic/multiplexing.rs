@@ -25,10 +25,16 @@ use instantiations::avx2::{
 
 #[cfg(feature = "simd128")]
 use instantiations::neon::{
-    generate_key_pair as generate_key_pair_neon, sign as sign_neon,
-    sign_pre_hashed_shake128 as sign_pre_hashed_shake128_neon, verify as verify_neon,
-    verify_pre_hashed_shake128 as verify_pre_hashed_shake128_neon,
+    sign as sign_neon, sign_pre_hashed_shake128 as sign_pre_hashed_shake128_neon,
+    verify as verify_neon, verify_pre_hashed_shake128 as verify_pre_hashed_shake128_neon,
 };
+
+#[cfg(all(feature = "simd128", feature = "mldsa44"))]
+use instantiations::neon::generate_key_pair_v44 as generate_key_pair_v44_neon;
+#[cfg(all(feature = "simd128", feature = "mldsa65"))]
+use instantiations::neon::generate_key_pair_v65 as generate_key_pair_v65_neon;
+#[cfg(all(feature = "simd128", feature = "mldsa87"))]
+use instantiations::neon::generate_key_pair_v87 as generate_key_pair_v87_neon;
 
 #[cfg(all(feature = "simd128", feature = "acvp"))]
 use instantiations::neon::{

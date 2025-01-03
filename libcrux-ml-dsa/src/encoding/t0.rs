@@ -11,7 +11,7 @@ const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 13;
 
 #[inline(always)]
 pub(crate) fn serialize<SIMDUnit: Operations>(
-    re: PolynomialRingElement<SIMDUnit>,
+    re: &PolynomialRingElement<SIMDUnit>,
     serialized: &mut [u8], // RING_ELEMENT_OF_T0S_SIZE
 ) {
     cloop! {
@@ -19,6 +19,7 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
             SIMDUnit::t0_serialize(simd_unit, &mut serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]);
         }
     }
+    // [hax] https://github.com/hacspec/hax/issues/720
     ()
 }
 
@@ -33,6 +34,7 @@ fn deserialize<SIMDUnit: Operations>(
             &mut result.simd_units[i],
         );
     }
+    // [hax] https://github.com/hacspec/hax/issues/720
     ()
 }
 
@@ -47,6 +49,8 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
             ntt(&mut ring_elements[i]);
         }
     }
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[cfg(test)]
@@ -105,7 +109,7 @@ mod tests {
         ];
 
         let mut result = [0u8; RING_ELEMENT_OF_T0S_SIZE];
-        serialize::<SIMDUnit>(re, &mut result);
+        serialize::<SIMDUnit>(&re, &mut result);
         assert_eq!(result, expected_bytes);
     }
     fn test_deserialize_generic<SIMDUnit: Operations>() {
