@@ -9,6 +9,11 @@ macro_rules! impl_struct {
         }
 
         impl<const SIZE: usize> $name<SIZE> {
+            /// Init with zero
+            pub fn zero() -> Self {
+                Self { value: [0u8; SIZE] }
+            }
+
             /// Build
             pub fn new(value: [u8; SIZE]) -> Self {
                 Self { value }

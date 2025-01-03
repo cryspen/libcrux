@@ -17,7 +17,7 @@ pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449;
 pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 pub(crate) trait Operations: Copy + Clone {
-    type Coefficient: Copy; // XXX: make generic? drop copy?
+    type Coefficient: Copy; // XXX: make generic?
 
     fn zero() -> Self::Coefficient;
 

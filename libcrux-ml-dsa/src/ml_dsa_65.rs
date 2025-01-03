@@ -75,14 +75,18 @@ macro_rules! instantiate {
             pub fn generate_key_pair(
                 randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
             ) -> MLDSA65KeyPair {
-                let mut signing_key = [0u8; SIGNING_KEY_SIZE];
-                let mut verification_key = [0u8; VERIFICATION_KEY_SIZE];
-                p::generate_key_pair_v65(randomness, &mut signing_key, &mut verification_key);
+                let mut kp = MLDSA65KeyPair {
+                    signing_key: MLDSASigningKey::zero(),
+                    verification_key: MLDSAVerificationKey::zero(),
+                };
 
-                MLDSA65KeyPair {
-                    signing_key: MLDSASigningKey::new(signing_key),
-                    verification_key: MLDSAVerificationKey::new(verification_key),
-                }
+                p::generate_key_pair_v65(
+                    randomness,
+                    &mut kp.signing_key.value,
+                    &mut kp.verification_key.value,
+                );
+
+                kp
             }
             /// Generate an ML-DSA-65 Signature (Algorithm 7 in FIPS 204)
             ///
