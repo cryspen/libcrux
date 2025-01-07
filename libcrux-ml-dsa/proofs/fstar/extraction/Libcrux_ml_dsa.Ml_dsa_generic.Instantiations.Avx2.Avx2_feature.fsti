@@ -17,24 +17,6 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-/// Generate key pair.
-val generate_key_pair_v44
-      (randomness: t_Array u8 (sz 32))
-      (signing_key verification_key: t_Slice u8)
-    : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
-
-/// Generate key pair.
-val generate_key_pair_v65
-      (randomness: t_Array u8 (sz 32))
-      (signing_key verification_key: t_Slice u8)
-    : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
-
-/// Generate key pair.
-val generate_key_pair_v87
-      (randomness: t_Array u8 (sz 32))
-      (signing_key verification_key: t_Slice u8)
-    : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
-
 /// Sign.
 val sign
       (v_ROWS_IN_A v_COLUMNS_IN_A v_ROWS_X_COLUMNS v_ETA v_ERROR_RING_ELEMENT_SIZE v_GAMMA1_EXPONENT:

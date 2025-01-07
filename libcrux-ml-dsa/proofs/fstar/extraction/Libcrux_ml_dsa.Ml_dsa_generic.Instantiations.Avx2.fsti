@@ -3,14 +3,42 @@ module Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_dsa.Hash_functions.Portable in
+  let open Libcrux_ml_dsa.Hash_functions.Shake128 in
+  let open Libcrux_ml_dsa.Hash_functions.Shake256 in
+  let open Libcrux_ml_dsa.Hash_functions.Simd256 in
+  let open Libcrux_ml_dsa.Samplex4 in
+  let open Libcrux_ml_dsa.Samplex4.Avx2 in
+  let open Libcrux_ml_dsa.Simd.Avx2 in
+  let open Libcrux_ml_dsa.Simd.Traits in
+  ()
+
+val generate_key_pair_v44___inner
+      (randomness: t_Array u8 (sz 32))
+      (signing_key verification_key: t_Slice u8)
+    : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
 /// Generate key pair.
 val generate_key_pair_v44
       (randomness: t_Array u8 (sz 32))
       (signing_key verification_key: t_Slice u8)
     : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
+val generate_key_pair_v65___inner
+      (randomness: t_Array u8 (sz 32))
+      (signing_key verification_key: t_Slice u8)
+    : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
 /// Generate key pair.
 val generate_key_pair_v65
+      (randomness: t_Array u8 (sz 32))
+      (signing_key verification_key: t_Slice u8)
+    : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+val generate_key_pair_v87___inner
       (randomness: t_Array u8 (sz 32))
       (signing_key verification_key: t_Slice u8)
     : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)

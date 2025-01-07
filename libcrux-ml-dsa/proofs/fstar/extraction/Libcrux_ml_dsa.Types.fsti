@@ -84,6 +84,18 @@ val impl_6:Core.Fmt.t_Debug t_VerificationError
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl_7:Core.Fmt.t_Debug t_SigningError
 
+/// Init with zero
+val impl__zero: v_SIZE: usize -> Prims.unit
+  -> Prims.Pure (t_MLDSASigningKey v_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Init with zero
+val impl_2__zero: v_SIZE: usize -> Prims.unit
+  -> Prims.Pure (t_MLDSAVerificationKey v_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Init with zero
+val impl_4__zero: v_SIZE: usize -> Prims.unit
+  -> Prims.Pure (t_MLDSASignature v_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+
 /// A reference to the raw byte slice.
 val impl__as_slice (v_SIZE: usize) (self: t_MLDSASigningKey v_SIZE)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)

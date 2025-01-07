@@ -14,17 +14,6 @@ let discriminant_Eta_Two: isize = isz 2
 
 val t_Eta_cast_to_repr (x: t_Eta) : Prims.Pure isize Prims.l_True (fun _ -> Prims.l_True)
 
-let discriminant_Gamma2_V261_888_: isize = isz 261888
-
-/// Gamma2 values
-type t_Gamma2 =
-  | Gamma2_V95_232_ : t_Gamma2
-  | Gamma2_V261_888_ : t_Gamma2
-
-let discriminant_Gamma2_V95_232_: isize = isz 95232
-
-val t_Gamma2_cast_to_repr (x: t_Gamma2) : Prims.Pure isize Prims.l_True (fun _ -> Prims.l_True)
-
 let v_BITS_IN_LOWER_PART_OF_T: usize = sz 13
 
 let v_BYTES_FOR_VERIFICATION_KEY_HASH: usize = sz 64
@@ -40,6 +29,10 @@ let v_FIELD_MODULUS_MINUS_ONE_BIT_LENGTH: usize = sz 23
 
 let v_BITS_IN_UPPER_PART_OF_T: usize =
   v_FIELD_MODULUS_MINUS_ONE_BIT_LENGTH -! v_BITS_IN_LOWER_PART_OF_T
+
+let v_GAMMA2_V261_888_: i32 = 261888l
+
+let v_GAMMA2_V95_232_: i32 = 95232l
 
 /// Number of bytes of entropy required for key generation.
 let v_KEY_GENERATION_RANDOMNESS_SIZE: usize = sz 32
@@ -74,19 +67,7 @@ val signing_key_size (rows_in_a columns_in_a error_ring_element_size: usize)
 val verification_key_size (rows_in_a: usize) : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl:Core.Fmt.t_Debug t_Eta
+val impl:Core.Clone.t_Clone t_Eta
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl_1:Core.Clone.t_Clone t_Eta
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl_2:Core.Marker.t_Copy t_Eta
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl_3:Core.Fmt.t_Debug t_Gamma2
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl_4:Core.Clone.t_Clone t_Gamma2
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl_5:Core.Marker.t_Copy t_Gamma2
+val impl_1:Core.Marker.t_Copy t_Eta

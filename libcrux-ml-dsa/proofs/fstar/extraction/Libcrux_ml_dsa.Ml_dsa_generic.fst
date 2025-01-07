@@ -167,16 +167,6 @@ let sign_internal
           <:
           Rust_primitives.Hax.t_Never)
   in
-  let gamma2:Libcrux_ml_dsa.Constants.t_Gamma2 =
-    match v_GAMMA2 <: i32 with
-    | 95232l -> Libcrux_ml_dsa.Constants.Gamma2_V95_232_ <: Libcrux_ml_dsa.Constants.t_Gamma2
-    | 261888l -> Libcrux_ml_dsa.Constants.Gamma2_V261_888_ <: Libcrux_ml_dsa.Constants.t_Gamma2
-    | _ ->
-      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-          <:
-          Rust_primitives.Hax.t_Never)
-  in
   let seed_for_a, remaining_serialized:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
       (signing_key <: t_Slice u8)
@@ -446,7 +436,7 @@ let sign_internal
             t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A) =
             Libcrux_ml_dsa.Arithmetic.decompose_vector #v_SIMDUnit
               v_ROWS_IN_A
-              gamma2
+              v_GAMMA2
               (a_x_mask <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
               w0
               commitment
@@ -888,16 +878,6 @@ let verify_internal
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
       (signature_serialized: t_Array u8 v_SIGNATURE_SIZE)
      =
-  let gamma2:Libcrux_ml_dsa.Constants.t_Gamma2 =
-    match v_GAMMA2 <: i32 with
-    | 95232l -> Libcrux_ml_dsa.Constants.Gamma2_V95_232_ <: Libcrux_ml_dsa.Constants.t_Gamma2
-    | 261888l -> Libcrux_ml_dsa.Constants.Gamma2_V261_888_ <: Libcrux_ml_dsa.Constants.t_Gamma2
-    | _ ->
-      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-          <:
-          Rust_primitives.Hax.t_Never)
-  in
   let seed_for_a, t1_serialized:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
       (verification_key <: t_Slice u8)
@@ -1057,7 +1037,7 @@ let verify_internal
       in
       let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
         Libcrux_ml_dsa.Arithmetic.use_hint #v_SIMDUnit
-          gamma2
+          v_GAMMA2
           (deserialized_hint <: t_Slice (t_Array i32 (sz 256)))
           t1
       in

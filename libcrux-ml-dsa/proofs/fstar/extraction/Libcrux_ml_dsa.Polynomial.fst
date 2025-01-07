@@ -134,18 +134,13 @@ let impl__infinity_norm_exceeds
       (fun result i ->
           let result:bool = result in
           let i:usize = i in
-          if
-            (~.result <: bool) &&
-            (Libcrux_ml_dsa.Simd.Traits.f_infinity_norm_exceeds #v_SIMDUnit
-                #FStar.Tactics.Typeclasses.solve
-                (self.f_simd_units.[ i ] <: i1.f_Coefficient)
-                bound
-              <:
-              bool)
-          then
-            let result:bool = result || true in
-            result
-          else result)
+          result ||
+          (Libcrux_ml_dsa.Simd.Traits.f_infinity_norm_exceeds #v_SIMDUnit
+              #FStar.Tactics.Typeclasses.solve
+              (self.f_simd_units.[ i ] <: i1.f_Coefficient)
+              bound
+            <:
+            bool))
   in
   result
 
@@ -265,42 +260,38 @@ let impl__zero
   <:
   t_PolynomialRingElement v_SIMDUnit
 
-// [@@ FStar.Tactics.Typeclasses.tcinstance]
-// assume
-// val impl_1':
-//     #v_SIMDUnit: Type0 ->
-//     {| i1: Core.Clone.t_Clone v_SIMDUnit |} ->
-//     {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
-//     {| i3: Core.Clone.t_Clone v_7494601369702794077.f_Coefficient |}
-//   -> Core.Clone.t_Clone (t_PolynomialRingElement v_SIMDUnit)
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_1':
+    #v_SIMDUnit: Type0 ->
+    {| i1: Core.Clone.t_Clone v_SIMDUnit |} ->
+    {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
+    {| i3: Core.Clone.t_Clone i2.f_Coefficient |}
+  -> Core.Clone.t_Clone (t_PolynomialRingElement v_SIMDUnit)
 
-// let impl_1
-//       (#v_SIMDUnit: Type0)
-//       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Core.Clone.t_Clone v_SIMDUnit)
-//       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-//           i2:
-//           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-//       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-//           i3:
-//           Core.Clone.t_Clone v_7494601369702794077.f_Coefficient)
-//      = impl_1' #v_SIMDUnit #i1 #i2 #i3
+let impl_1
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Core.Clone.t_Clone v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i3: Core.Clone.t_Clone i2.f_Coefficient)
+     = impl_1' #v_SIMDUnit #i1 #i2 #i3
 
-// [@@ FStar.Tactics.Typeclasses.tcinstance]
-// assume
-// val impl_2':
-//     #v_SIMDUnit: Type0 ->
-//     {| i1: Core.Marker.t_Copy v_SIMDUnit |} ->
-//     {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
-//     {| i3: Core.Marker.t_Copy v_7494601369702794077.f_Coefficient |}
-//   -> Core.Marker.t_Copy (t_PolynomialRingElement v_SIMDUnit)
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_2':
+    #v_SIMDUnit: Type0 ->
+    {| i1: Core.Marker.t_Copy v_SIMDUnit |} ->
+    {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
+    {| i3: Core.Marker.t_Copy i2.f_Coefficient |}
+  -> Core.Marker.t_Copy (t_PolynomialRingElement v_SIMDUnit)
 
-// let impl_2
-//       (#v_SIMDUnit: Type0)
-//       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Core.Marker.t_Copy v_SIMDUnit)
-//       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-//           i2:
-//           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-//       (#[FStar.Tactics.Typeclasses.tcresolve ()]
-//           i3:
-//           Core.Marker.t_Copy v_7494601369702794077.f_Coefficient)
-//      = impl_2' #v_SIMDUnit #i1 #i2 #i3
+let impl_2
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Core.Marker.t_Copy v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i3: Core.Marker.t_Copy i2.f_Coefficient)
+     = impl_2' #v_SIMDUnit #i1 #i2 #i3

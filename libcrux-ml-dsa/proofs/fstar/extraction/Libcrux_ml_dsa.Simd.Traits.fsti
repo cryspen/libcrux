@@ -13,10 +13,10 @@ let v_SIMD_UNITS_IN_RING_ELEMENT: usize =
   Libcrux_ml_dsa.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! v_COEFFICIENTS_IN_SIMD_UNIT
 
 class t_Operations (v_Self: Type0) = {
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
   f_Coefficient:Type0;
-  f_Coefficient_11316922548682728705:Core.Marker.t_Copy f_Coefficient;
+  f_Coefficient_2030105210046411076:Core.Marker.t_Copy f_Coefficient;
   f_zero_pre:Prims.unit -> Type0;
   f_zero_post:Prims.unit -> f_Coefficient -> Type0;
   f_zero:x0: Prims.unit
@@ -47,24 +47,15 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure bool
         (f_infinity_norm_exceeds_pre x0 x1)
         (fun result -> f_infinity_norm_exceeds_post x0 x1 result);
-  f_decompose_pre:
-      Libcrux_ml_dsa.Constants.t_Gamma2 ->
-      f_Coefficient ->
-      f_Coefficient ->
-      f_Coefficient
-    -> Type0;
+  f_decompose_pre:i32 -> f_Coefficient -> f_Coefficient -> f_Coefficient -> Type0;
   f_decompose_post:
-      Libcrux_ml_dsa.Constants.t_Gamma2 ->
+      i32 ->
       f_Coefficient ->
       f_Coefficient ->
       f_Coefficient ->
       (f_Coefficient & f_Coefficient)
     -> Type0;
-  f_decompose:
-      x0: Libcrux_ml_dsa.Constants.t_Gamma2 ->
-      x1: f_Coefficient ->
-      x2: f_Coefficient ->
-      x3: f_Coefficient
+  f_decompose:x0: i32 -> x1: f_Coefficient -> x2: f_Coefficient -> x3: f_Coefficient
     -> Prims.Pure (f_Coefficient & f_Coefficient)
         (f_decompose_pre x0 x1 x2 x3)
         (fun result -> f_decompose_post x0 x1 x2 x3 result);
@@ -80,14 +71,9 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure (f_Coefficient & usize)
         (f_compute_hint_pre v_GAMMA2 x0 x1 x2)
         (fun result -> f_compute_hint_post v_GAMMA2 x0 x1 x2 result);
-  f_use_hint_pre:Libcrux_ml_dsa.Constants.t_Gamma2 -> f_Coefficient -> f_Coefficient -> Type0;
-  f_use_hint_post:
-      Libcrux_ml_dsa.Constants.t_Gamma2 ->
-      f_Coefficient ->
-      f_Coefficient ->
-      f_Coefficient
-    -> Type0;
-  f_use_hint:x0: Libcrux_ml_dsa.Constants.t_Gamma2 -> x1: f_Coefficient -> x2: f_Coefficient
+  f_use_hint_pre:i32 -> f_Coefficient -> f_Coefficient -> Type0;
+  f_use_hint_post:i32 -> f_Coefficient -> f_Coefficient -> f_Coefficient -> Type0;
+  f_use_hint:x0: i32 -> x1: f_Coefficient -> x2: f_Coefficient
     -> Prims.Pure f_Coefficient
         (f_use_hint_pre x0 x1 x2)
         (fun result -> f_use_hint_post x0 x1 x2 result);

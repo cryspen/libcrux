@@ -13,7 +13,7 @@ val decompose_vector
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (dimension: usize)
-      (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+      (gamma2: i32)
       (t low high: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
     : Prims.Pure
       (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
@@ -61,7 +61,7 @@ val make_hint
 val use_hint
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+      (gamma2: i32)
       (hint: t_Slice (t_Array i32 (sz 256)))
       (re_vector: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
     : Prims.Pure (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))

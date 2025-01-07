@@ -15,7 +15,7 @@ let decompose_vector
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (dimension: usize)
-      (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+      (gamma2: i32)
       (t low high: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
      =
   let high, low:(t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
@@ -323,7 +323,7 @@ let vector_infinity_norm_exceeds
               <:
               bool)
           then
-            let result:bool = result || true in
+            let result:bool = true in
             result
           else result)
   in
@@ -447,7 +447,7 @@ let use_hint
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+      (gamma2: i32)
       (hint: t_Slice (t_Array i32 (sz 256)))
       (re_vector: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
      =

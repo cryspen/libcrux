@@ -17,13 +17,11 @@ val montgomery_reduce_element (value: i64) : Prims.Pure i32 Prims.l_True (fun _ 
 val montgomery_multiply_fe_by_fer (fe fer: i32)
     : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
 
-val decompose_element (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2) (r: i32)
-    : Prims.Pure (i32 & i32) Prims.l_True (fun _ -> Prims.l_True)
+val decompose_element (gamma2 r: i32) : Prims.Pure (i32 & i32) Prims.l_True (fun _ -> Prims.l_True)
 
 val power2round_element (t: i32) : Prims.Pure (i32 & i32) Prims.l_True (fun _ -> Prims.l_True)
 
-val use_one_hint (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2) (r hint: i32)
-    : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
+val use_one_hint (gamma2 r hint: i32) : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
 
 val add (lhs rhs: t_Array i32 (sz 8))
     : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
@@ -31,7 +29,7 @@ val add (lhs rhs: t_Array i32 (sz 8))
 val compute_hint (v_GAMMA2: i32) (low high hint: t_Array i32 (sz 8))
     : Prims.Pure (t_Array i32 (sz 8) & usize) Prims.l_True (fun _ -> Prims.l_True)
 
-val decompose (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2) (simd_unit low high: t_Array i32 (sz 8))
+val decompose (gamma2: i32) (simd_unit low high: t_Array i32 (sz 8))
     : Prims.Pure (t_Array i32 (sz 8) & t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
 
 val infinity_norm_exceeds (simd_unit: t_Array i32 (sz 8)) (bound: i32)
@@ -52,5 +50,5 @@ val shift_left_then_reduce (v_SHIFT_BY: i32) (simd_unit: t_Array i32 (sz 8))
 val subtract (lhs rhs: t_Array i32 (sz 8))
     : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
 
-val use_hint (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2) (simd_unit hint: t_Array i32 (sz 8))
+val use_hint (gamma2: i32) (simd_unit hint: t_Array i32 (sz 8))
     : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)

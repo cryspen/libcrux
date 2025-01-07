@@ -15,10 +15,10 @@ let _ =
 let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations
 Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
   {
-    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
-    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
+    _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
     f_Coefficient = Libcrux_intrinsics.Avx2_extract.t_Vec256;
-    f_Coefficient_11316922548682728705 = FStar.Tactics.Typeclasses.solve;
+    f_Coefficient_2030105210046411076 = FStar.Tactics.Typeclasses.solve;
     f_zero_pre = (fun (_: Prims.unit) -> true);
     f_zero_post = (fun (_: Prims.unit) (out: Libcrux_intrinsics.Avx2_extract.t_Vec256) -> true);
     f_zero = (fun (_: Prims.unit) -> Libcrux_ml_dsa.Simd.Avx2.Vector_type.zero ());
@@ -201,7 +201,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_decompose_pre
     =
     (fun
-        (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+        (gamma2: i32)
         (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         (low: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         (high: Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -210,7 +210,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_decompose_post
     =
     (fun
-        (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+        (gamma2: i32)
         (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         (low: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         (high: Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -220,7 +220,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_decompose
     =
     (fun
-        (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+        (gamma2: i32)
         (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         (low: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         (high: Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -271,7 +271,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_use_hint_pre
     =
     (fun
-        (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+        (gamma2: i32)
         (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         (hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         ->
@@ -279,7 +279,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_use_hint_post
     =
     (fun
-        (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+        (gamma2: i32)
         (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         (hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -288,7 +288,7 @@ Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit =
     f_use_hint
     =
     (fun
-        (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+        (gamma2: i32)
         (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         (hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
         ->

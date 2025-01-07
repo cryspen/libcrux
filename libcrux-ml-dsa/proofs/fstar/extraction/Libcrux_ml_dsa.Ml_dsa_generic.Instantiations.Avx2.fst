@@ -3,18 +3,70 @@ module Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2
 open Core
 open FStar.Mul
 
-let generate_key_pair_v44
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_dsa.Hash_functions.Portable in
+  let open Libcrux_ml_dsa.Hash_functions.Shake128 in
+  let open Libcrux_ml_dsa.Hash_functions.Shake256 in
+  let open Libcrux_ml_dsa.Hash_functions.Simd256 in
+  let open Libcrux_ml_dsa.Samplex4 in
+  let open Libcrux_ml_dsa.Samplex4.Avx2 in
+  let open Libcrux_ml_dsa.Simd.Avx2 in
+  let open Libcrux_ml_dsa.Simd.Traits in
+  ()
+
+let generate_key_pair_v44___inner
       (randomness: t_Array u8 (sz 32))
       (signing_key verification_key: t_Slice u8)
      =
   let tmp0, tmp1:(t_Slice u8 & t_Slice u8) =
-    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Avx2_feature.generate_key_pair_v44 randomness
+    Libcrux_ml_dsa.Ml_dsa_generic.generate_key_pair_v44 #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
+      #Libcrux_ml_dsa.Samplex4.Avx2.t_AVX2Sampler
+      #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
+      #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256
+      #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Xof
+      #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256x4
+      randomness
       signing_key
       verification_key
   in
   let signing_key:t_Slice u8 = tmp0 in
   let verification_key:t_Slice u8 = tmp1 in
+  let _:Prims.unit = () in
+  signing_key, verification_key <: (t_Slice u8 & t_Slice u8)
+
+let generate_key_pair_v44
+      (randomness: t_Array u8 (sz 32))
+      (signing_key verification_key: t_Slice u8)
+     =
+  let tmp0, tmp1:(t_Slice u8 & t_Slice u8) =
+    generate_key_pair_v44___inner randomness signing_key verification_key
+  in
+  let signing_key:t_Slice u8 = tmp0 in
+  let verification_key:t_Slice u8 = tmp1 in
+  let _:Prims.unit = () in
   let hax_temp_output:Prims.unit = () in
+  signing_key, verification_key <: (t_Slice u8 & t_Slice u8)
+
+let generate_key_pair_v65___inner
+      (randomness: t_Array u8 (sz 32))
+      (signing_key verification_key: t_Slice u8)
+     =
+  let tmp0, tmp1:(t_Slice u8 & t_Slice u8) =
+    Libcrux_ml_dsa.Ml_dsa_generic.generate_key_pair_v65 #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
+      #Libcrux_ml_dsa.Samplex4.Avx2.t_AVX2Sampler
+      #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
+      #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256
+      #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Xof
+      #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256x4
+      randomness
+      signing_key
+      verification_key
+  in
+  let signing_key:t_Slice u8 = tmp0 in
+  let verification_key:t_Slice u8 = tmp1 in
+  let _:Prims.unit = () in
   signing_key, verification_key <: (t_Slice u8 & t_Slice u8)
 
 let generate_key_pair_v65
@@ -22,13 +74,32 @@ let generate_key_pair_v65
       (signing_key verification_key: t_Slice u8)
      =
   let tmp0, tmp1:(t_Slice u8 & t_Slice u8) =
-    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Avx2_feature.generate_key_pair_v65 randomness
+    generate_key_pair_v65___inner randomness signing_key verification_key
+  in
+  let signing_key:t_Slice u8 = tmp0 in
+  let verification_key:t_Slice u8 = tmp1 in
+  let _:Prims.unit = () in
+  let hax_temp_output:Prims.unit = () in
+  signing_key, verification_key <: (t_Slice u8 & t_Slice u8)
+
+let generate_key_pair_v87___inner
+      (randomness: t_Array u8 (sz 32))
+      (signing_key verification_key: t_Slice u8)
+     =
+  let tmp0, tmp1:(t_Slice u8 & t_Slice u8) =
+    Libcrux_ml_dsa.Ml_dsa_generic.generate_key_pair_v87 #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
+      #Libcrux_ml_dsa.Samplex4.Avx2.t_AVX2Sampler
+      #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
+      #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256
+      #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Xof
+      #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256x4
+      randomness
       signing_key
       verification_key
   in
   let signing_key:t_Slice u8 = tmp0 in
   let verification_key:t_Slice u8 = tmp1 in
-  let hax_temp_output:Prims.unit = () in
+  let _:Prims.unit = () in
   signing_key, verification_key <: (t_Slice u8 & t_Slice u8)
 
 let generate_key_pair_v87
@@ -36,12 +107,11 @@ let generate_key_pair_v87
       (signing_key verification_key: t_Slice u8)
      =
   let tmp0, tmp1:(t_Slice u8 & t_Slice u8) =
-    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Avx2_feature.generate_key_pair_v87 randomness
-      signing_key
-      verification_key
+    generate_key_pair_v87___inner randomness signing_key verification_key
   in
   let signing_key:t_Slice u8 = tmp0 in
   let verification_key:t_Slice u8 = tmp1 in
+  let _:Prims.unit = () in
   let hax_temp_output:Prims.unit = () in
   signing_key, verification_key <: (t_Slice u8 & t_Slice u8)
 

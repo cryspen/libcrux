@@ -80,9 +80,14 @@ let deserialize
       (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
      =
   let unsigned:Libcrux_intrinsics.Avx2_extract.t_Vec256 = deserialize_to_unsigned eta serialized in
+  let eta:i32 =
+    match eta <: Libcrux_ml_dsa.Constants.t_Eta with
+    | Libcrux_ml_dsa.Constants.Eta_Two  -> 2l
+    | Libcrux_ml_dsa.Constants.Eta_Four  -> 4l
+  in
   let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
-          (cast (Libcrux_ml_dsa.Constants.t_Eta_cast_to_repr eta <: isize) <: i32)
+          eta
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
       unsigned

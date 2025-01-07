@@ -32,7 +32,7 @@ let montgomery_reduce_element (value: i64) =
 let montgomery_multiply_fe_by_fer (fe fer: i32) =
   montgomery_reduce_element ((cast (fe <: i32) <: i64) *! (cast (fer <: i32) <: i64) <: i64)
 
-let decompose_element (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2) (r: i32) =
+let decompose_element (gamma2 r: i32) =
   let _:Prims.unit =
     if true
     then
@@ -48,21 +48,24 @@ let decompose_element (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2) (r: i32) =
   let r:i32 = r +! ((r >>! 31l <: i32) &. Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32) in
   let ceil_of_r_by_128_:i32 = (r +! 127l <: i32) >>! 7l in
   let r1:i32 =
-    match gamma2 <: Libcrux_ml_dsa.Constants.t_Gamma2 with
-    | Libcrux_ml_dsa.Constants.Gamma2_V95_232_  ->
+    match gamma2 <: i32 with
+    | 95232l ->
       let result:i32 =
         ((ceil_of_r_by_128_ *! 11275l <: i32) +! (1l <<! 23l <: i32) <: i32) >>! 24l
       in
       (result ^. ((43l -! result <: i32) >>! 31l <: i32) <: i32) &. result
-    | Libcrux_ml_dsa.Constants.Gamma2_V261_888_  ->
+    | 261888l ->
       let result:i32 =
         ((ceil_of_r_by_128_ *! 1025l <: i32) +! (1l <<! 21l <: i32) <: i32) >>! 22l
       in
       result &. 15l
+    | _ ->
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+          <:
+          Rust_primitives.Hax.t_Never)
   in
-  let alpha:i32 =
-    (cast (Libcrux_ml_dsa.Constants.t_Gamma2_cast_to_repr gamma2 <: isize) <: i32) *! 2l
-  in
+  let alpha:i32 = gamma2 *! 2l in
   let r0:i32 = r -! (r1 *! alpha <: i32) in
   let r0:i32 =
     r0 -!
@@ -100,18 +103,22 @@ let power2round_element (t: i32) =
   let t0:i32 = t -! (t1 <<! Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T <: i32) in
   t0, t1 <: (i32 & i32)
 
-let use_one_hint (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2) (r hint: i32) =
+let use_one_hint (gamma2 r hint: i32) =
   let r0, r1:(i32 & i32) = decompose_element gamma2 r in
   if hint =. 0l
   then r1
   else
-    match gamma2 <: Libcrux_ml_dsa.Constants.t_Gamma2 with
-    | Libcrux_ml_dsa.Constants.Gamma2_V95_232_  ->
+    match gamma2 <: i32 with
+    | 95232l ->
       if r0 >. 0l
       then if r1 =. 43l then 0l else r1 +! hint
       else if r1 =. 0l then 43l else r1 -! hint
-    | Libcrux_ml_dsa.Constants.Gamma2_V261_888_  ->
-      if r0 >. 0l then (r1 +! hint <: i32) &. 15l else (r1 -! hint <: i32) &. 15l
+    | 261888l -> if r0 >. 0l then (r1 +! hint <: i32) &. 15l else (r1 -! hint <: i32) &. 15l
+    | _ ->
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+          <:
+          Rust_primitives.Hax.t_Never)
 
 let add (lhs rhs: t_Array i32 (sz 8)) =
   let lhs:t_Array i32 (sz 8) =
@@ -158,7 +165,7 @@ let compute_hint (v_GAMMA2: i32) (low high hint: t_Array i32 (sz 8)) =
   let hax_temp_output:usize = one_hints_count in
   hint, hax_temp_output <: (t_Array i32 (sz 8) & usize)
 
-let decompose (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2) (simd_unit low high: t_Array i32 (sz 8)) =
+let decompose (gamma2: i32) (simd_unit low high: t_Array i32 (sz 8)) =
   let high, low:(t_Array i32 (sz 8) & t_Array i32 (sz 8)) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (Core.Slice.impl__len #i32 (low <: t_Slice i32) <: usize)
@@ -209,11 +216,8 @@ let infinity_norm_exceeds (simd_unit: t_Array i32 (sz 8)) (bound: i32) =
           in
           let sign:i32 = coefficient >>! 31l in
           let normalized:i32 = coefficient -! (sign &. (2l *! coefficient <: i32) <: i32) in
-          if normalized >=. bound
-          then
-            let result:bool = true in
-            result
-          else result)
+          let result:bool = result || normalized >=. bound in
+          result)
   in
   result
 
@@ -335,7 +339,7 @@ let subtract (lhs rhs: t_Array i32 (sz 8)) =
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   lhs
 
-let use_hint (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2) (simd_unit hint: t_Array i32 (sz 8)) =
+let use_hint (gamma2: i32) (simd_unit hint: t_Array i32 (sz 8)) =
   let hint:t_Array i32 (sz 8) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (Core.Slice.impl__len #i32 (hint <: t_Slice i32) <: usize)

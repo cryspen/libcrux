@@ -13,10 +13,10 @@ let _ =
 let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations
 Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
   {
-    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
-    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
+    _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
     f_Coefficient = t_Array i32 (sz 8);
-    f_Coefficient_11316922548682728705 = FStar.Tactics.Typeclasses.solve;
+    f_Coefficient_2030105210046411076 = FStar.Tactics.Typeclasses.solve;
     f_zero_pre = (fun (_: Prims.unit) -> true);
     f_zero_post = (fun (_: Prims.unit) (out: t_Array i32 (sz 8)) -> true);
     f_zero = (fun (_: Prims.unit) -> Libcrux_ml_dsa.Simd.Portable.Vector_type.zero ());
@@ -124,7 +124,7 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
     f_decompose_pre
     =
     (fun
-        (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+        (gamma2: i32)
         (simd_unit: t_Array i32 (sz 8))
         (low: t_Array i32 (sz 8))
         (high: t_Array i32 (sz 8))
@@ -133,7 +133,7 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
     f_decompose_post
     =
     (fun
-        (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+        (gamma2: i32)
         (simd_unit: t_Array i32 (sz 8))
         (low: t_Array i32 (sz 8))
         (high: t_Array i32 (sz 8))
@@ -143,7 +143,7 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
     f_decompose
     =
     (fun
-        (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+        (gamma2: i32)
         (simd_unit: t_Array i32 (sz 8))
         (low: t_Array i32 (sz 8))
         (high: t_Array i32 (sz 8))
@@ -190,16 +190,11 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
         hint, hax_temp_output <: (t_Array i32 (sz 8) & usize));
     f_use_hint_pre
     =
-    (fun
-        (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
-        (simd_unit: t_Array i32 (sz 8))
-        (hint: t_Array i32 (sz 8))
-        ->
-        true);
+    (fun (gamma2: i32) (simd_unit: t_Array i32 (sz 8)) (hint: t_Array i32 (sz 8)) -> true);
     f_use_hint_post
     =
     (fun
-        (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
+        (gamma2: i32)
         (simd_unit: t_Array i32 (sz 8))
         (hint: t_Array i32 (sz 8))
         (out: t_Array i32 (sz 8))
@@ -207,11 +202,7 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit =
         true);
     f_use_hint
     =
-    (fun
-        (gamma2: Libcrux_ml_dsa.Constants.t_Gamma2)
-        (simd_unit: t_Array i32 (sz 8))
-        (hint: t_Array i32 (sz 8))
-        ->
+    (fun (gamma2: i32) (simd_unit: t_Array i32 (sz 8)) (hint: t_Array i32 (sz 8)) ->
         let hax_temp_output, hint:(Prims.unit & t_Array i32 (sz 8)) =
           (), Libcrux_ml_dsa.Simd.Portable.Arithmetic.use_hint gamma2 simd_unit hint
           <:

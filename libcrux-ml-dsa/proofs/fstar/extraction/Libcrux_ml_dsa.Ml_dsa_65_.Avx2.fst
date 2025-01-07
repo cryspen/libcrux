@@ -4,24 +4,45 @@ open Core
 open FStar.Mul
 
 let generate_key_pair (randomness: t_Array u8 (sz 32)) =
-  let signing_key:t_Array u8 (sz 4032) = Rust_primitives.Hax.repeat 0uy (sz 4032) in
-  let verification_key:t_Array u8 (sz 1952) = Rust_primitives.Hax.repeat 0uy (sz 1952) in
+  let kp:Libcrux_ml_dsa.Types.t_MLDSAKeyPair (sz 1952) (sz 4032) =
+    {
+      Libcrux_ml_dsa.Types.f_signing_key = Libcrux_ml_dsa.Types.impl__zero (sz 4032) ();
+      Libcrux_ml_dsa.Types.f_verification_key = Libcrux_ml_dsa.Types.impl_2__zero (sz 1952) ()
+    }
+    <:
+    Libcrux_ml_dsa.Types.t_MLDSAKeyPair (sz 1952) (sz 4032)
+  in
   let tmp0, tmp1:(t_Array u8 (sz 4032) & t_Array u8 (sz 1952)) =
     Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.generate_key_pair_v65 randomness
-      signing_key
-      verification_key
+      kp.Libcrux_ml_dsa.Types.f_signing_key.Libcrux_ml_dsa.Types.f_value
+      kp.Libcrux_ml_dsa.Types.f_verification_key.Libcrux_ml_dsa.Types.f_value
   in
-  let signing_key:t_Array u8 (sz 4032) = tmp0 in
-  let verification_key:t_Array u8 (sz 1952) = tmp1 in
+  let kp:Libcrux_ml_dsa.Types.t_MLDSAKeyPair (sz 1952) (sz 4032) =
+    {
+      kp with
+      Libcrux_ml_dsa.Types.f_signing_key
+      =
+      { kp.Libcrux_ml_dsa.Types.f_signing_key with Libcrux_ml_dsa.Types.f_value = tmp0 }
+      <:
+      Libcrux_ml_dsa.Types.t_MLDSASigningKey (sz 4032)
+    }
+    <:
+    Libcrux_ml_dsa.Types.t_MLDSAKeyPair (sz 1952) (sz 4032)
+  in
+  let kp:Libcrux_ml_dsa.Types.t_MLDSAKeyPair (sz 1952) (sz 4032) =
+    {
+      kp with
+      Libcrux_ml_dsa.Types.f_verification_key
+      =
+      { kp.Libcrux_ml_dsa.Types.f_verification_key with Libcrux_ml_dsa.Types.f_value = tmp1 }
+      <:
+      Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (sz 1952)
+    }
+    <:
+    Libcrux_ml_dsa.Types.t_MLDSAKeyPair (sz 1952) (sz 4032)
+  in
   let _:Prims.unit = () in
-  {
-    Libcrux_ml_dsa.Types.f_signing_key = Libcrux_ml_dsa.Types.impl__new (sz 4032) signing_key;
-    Libcrux_ml_dsa.Types.f_verification_key
-    =
-    Libcrux_ml_dsa.Types.impl_2__new (sz 1952) verification_key
-  }
-  <:
-  Libcrux_ml_dsa.Types.t_MLDSAKeyPair (sz 1952) (sz 4032)
+  kp
 
 let sign
       (signing_key: Libcrux_ml_dsa.Types.t_MLDSASigningKey (sz 4032))

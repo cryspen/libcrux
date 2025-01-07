@@ -66,6 +66,15 @@ val impl_7': Core.Fmt.t_Debug t_SigningError
 
 let impl_7 = impl_7'
 
+let impl__zero (v_SIZE: usize) (_: Prims.unit) =
+  { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MLDSASigningKey v_SIZE
+
+let impl_2__zero (v_SIZE: usize) (_: Prims.unit) =
+  { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MLDSAVerificationKey v_SIZE
+
+let impl_4__zero (v_SIZE: usize) (_: Prims.unit) =
+  { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MLDSASignature v_SIZE
+
 let impl__as_slice (v_SIZE: usize) (self: t_MLDSASigningKey v_SIZE) = self.f_value <: t_Slice u8
 
 let impl_2__as_slice (v_SIZE: usize) (self: t_MLDSAVerificationKey v_SIZE) =
