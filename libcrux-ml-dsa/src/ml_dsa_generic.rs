@@ -485,18 +485,18 @@ pub(crate) mod generic {
         Shake256: shake256::DsaXof,
         Shake256Xof: shake256::Xof,
         Shake256X4: shake256::XofX4,
-        PH: PreHash<PH_DIGEST_LEN>,
-        const PH_DIGEST_LEN: usize,
+        PH: PreHash,
     >(
         signing_key: &[u8],
         message: &[u8],
         context: &[u8],
+        pre_hash_buffer: &mut [u8],
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
         if context.len() > CONTEXT_MAX_LEN {
             return Err(SigningError::ContextTooLongError);
         }
-        let pre_hashed_message = PH::hash::<Shake128>(message);
+        PH::hash::<Shake128>(message, pre_hash_buffer);
         let domain_separation_context = match DomainSeparationContext::new(context, Some(PH::oid()))
         {
             Ok(dsc) => dsc,
@@ -504,7 +504,7 @@ pub(crate) mod generic {
         };
         sign_internal::<SIMDUnit, Sampler, Shake128X4, Shake256, Shake256Xof, Shake256X4>(
             signing_key,
-            &pre_hashed_message,
+            pre_hash_buffer,
             Some(domain_separation_context),
             randomness,
         )
@@ -570,15 +570,15 @@ pub(crate) mod generic {
         Shake128X4: shake128::XofX4,
         Shake256: shake256::DsaXof,
         Shake256Xof: shake256::Xof,
-        PH: PreHash<PH_DIGEST_LEN>,
-        const PH_DIGEST_LEN: usize,
+        PH: PreHash,
     >(
         verification_key_serialized: &[u8; VERIFICATION_KEY_SIZE],
         message: &[u8],
         context: &[u8],
+        pre_hash_buffer: &mut [u8],
         signature_serialized: &[u8; SIGNATURE_SIZE],
     ) -> Result<(), VerificationError> {
-        let pre_hashed_message = PH::hash::<Shake128>(message);
+        PH::hash::<Shake128>(message, pre_hash_buffer);
         let domain_separation_context = match DomainSeparationContext::new(context, Some(PH::oid()))
         {
             Ok(dsc) => dsc,
@@ -586,7 +586,7 @@ pub(crate) mod generic {
         };
         verify_internal::<SIMDUnit, Sampler, Shake128X4, Shake256, Shake256Xof>(
             verification_key_serialized,
-            &pre_hashed_message,
+            pre_hash_buffer,
             Some(domain_separation_context),
             signature_serialized,
         )

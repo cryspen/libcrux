@@ -67,7 +67,7 @@ pub(crate) mod shake128 {
     pub(crate) const FIVE_BLOCKS_SIZE: usize = BLOCK_SIZE * 5;
 
     pub(crate) trait Xof {
-        fn shake128<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]);
+        fn shake128(input: &[u8], out: &mut [u8]);
     }
 
     /// When sampling matrix A we always want to do 4 absorb/squeeze calls in
@@ -203,13 +203,13 @@ pub(crate) mod portable {
     pub(crate) struct Shake128 {}
 
     #[inline(always)]
-    fn shake128<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
+    fn shake128(input: &[u8], out: &mut [u8]) {
         libcrux_sha3::portable::shake128(out, input);
     }
 
     impl shake128::Xof for Shake128 {
         #[inline(always)]
-        fn shake128<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
+        fn shake128(input: &[u8], out: &mut [u8]) {
             shake128(input, out);
         }
     }

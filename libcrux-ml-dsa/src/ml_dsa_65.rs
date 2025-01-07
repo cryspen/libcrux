@@ -92,10 +92,12 @@ macro_rules! instantiate {
                 context: &[u8],
                 randomness: [u8; SIGNING_RANDOMNESS_SIZE],
             ) -> Result<MLDSA65Signature, SigningError> {
+                let mut pre_hash_buffer = [0u8; 256];
                 crate::ml_dsa_generic::instantiations::$modp::ml_dsa_65::sign_pre_hashed_shake128(
                     signing_key.as_ref(),
                     message,
                     context,
+                    &mut pre_hash_buffer,
                     randomness,
                 )
             }
@@ -130,10 +132,12 @@ macro_rules! instantiate {
                 context: &[u8],
                 signature: &MLDSA65Signature,
             ) -> Result<(), VerificationError> {
+                let mut pre_hash_buffer = [0u8; 256];
                 crate::ml_dsa_generic::instantiations::$modp::ml_dsa_65::verify_pre_hashed_shake128(
                     verification_key.as_ref(),
                     message,
                     context,
+                    &mut pre_hash_buffer,
                     signature.as_ref(),
                 )
             }
@@ -269,10 +273,12 @@ pub fn sign_pre_hashed_shake128(
     context: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> Result<MLDSA65Signature, SigningError> {
+    let mut pre_hash_buffer = [0u8; 256];
     crate::ml_dsa_generic::multiplexing::ml_dsa_65::sign_pre_hashed_shake128(
         signing_key.as_ref(),
         message,
         context,
+        &mut pre_hash_buffer,
         randomness,
     )
 }
@@ -292,10 +298,12 @@ pub fn verify_pre_hashed_shake128(
     context: &[u8],
     signature: &MLDSA65Signature,
 ) -> Result<(), VerificationError> {
+    let mut pre_hash_buffer = [0u8; 256];
     crate::ml_dsa_generic::multiplexing::ml_dsa_65::verify_pre_hashed_shake128(
         verification_key.as_ref(),
         message,
         context,
+        &mut pre_hash_buffer,
         signature.as_ref(),
     )
 }

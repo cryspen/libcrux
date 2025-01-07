@@ -106,6 +106,7 @@ macro_rules! parameter_set {
                 signing_key: &[u8; SIGNING_KEY_SIZE],
                 message: &[u8],
                 context: &[u8],
+                pre_hash_buffer: &mut [u8],
                 randomness: [u8; SIGNING_RANDOMNESS_SIZE],
             ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
                 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
@@ -114,6 +115,7 @@ macro_rules! parameter_set {
                     signing_key: &[u8; SIGNING_KEY_SIZE],
                     message: &[u8],
                     context: &[u8],
+                    pre_hash_buffer: &mut [u8],
                     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
                 ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
                     crate::ml_dsa_generic::$parameter_module::sign_pre_hashed::<
@@ -129,10 +131,9 @@ macro_rules! parameter_set {
                         crate::hash_functions::portable::Shake256Xof,
                         crate::hash_functions::simd256::Shake256x4,
                         SHAKE128_PH,
-                        256,
-                    >(signing_key, message, context, randomness)
+                    >(signing_key, message, context, pre_hash_buffer, randomness)
                 }
-                unsafe { _inner(signing_key, message, context, randomness) }
+                unsafe { _inner(signing_key, message, context, pre_hash_buffer, randomness) }
             }
 
             /// Verify.
@@ -198,6 +199,7 @@ macro_rules! parameter_set {
                 verification_key: &[u8; VERIFICATION_KEY_SIZE],
                 message: &[u8],
                 context: &[u8],
+                pre_hash_buffer: &mut [u8],
                 signature: &[u8; SIGNATURE_SIZE],
             ) -> Result<(), VerificationError> {
                 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
@@ -206,6 +208,7 @@ macro_rules! parameter_set {
                     verification_key: &[u8; VERIFICATION_KEY_SIZE],
                     message: &[u8],
                     context: &[u8],
+                    pre_hash_buffer: &mut [u8],
                     signature: &[u8; SIGNATURE_SIZE],
                 ) -> Result<(), VerificationError> {
                     crate::ml_dsa_generic::$parameter_module::verify_pre_hashed::<
@@ -220,10 +223,23 @@ macro_rules! parameter_set {
                         // It doesn' make sense to do these in parallel.
                         crate::hash_functions::portable::Shake256Xof,
                         SHAKE128_PH,
-                        256,
-                    >(verification_key, message, context, signature)
+                    >(
+                        verification_key,
+                        message,
+                        context,
+                        pre_hash_buffer,
+                        signature,
+                    )
                 }
-                unsafe { _inner(verification_key, message, context, signature) }
+                unsafe {
+                    _inner(
+                        verification_key,
+                        message,
+                        context,
+                        pre_hash_buffer,
+                        signature,
+                    )
+                }
             }
         }
     };

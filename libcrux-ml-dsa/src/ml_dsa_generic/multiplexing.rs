@@ -121,17 +121,31 @@ macro_rules! parameter_set {
                 signing_key: &[u8; SIGNING_KEY_SIZE],
                 message: &[u8],
                 context: &[u8],
+                pre_hash_buffer: &mut [u8],
                 randomness: [u8; SIGNING_RANDOMNESS_SIZE],
             ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
                 if libcrux_platform::simd256_support() {
-                    sign_pre_hashed_shake128_avx2(signing_key, message, context, randomness)
+                    sign_pre_hashed_shake128_avx2(
+                        signing_key,
+                        message,
+                        context,
+                        pre_hash_buffer,
+                        randomness,
+                    )
                 } else if libcrux_platform::simd128_support() {
-                    sign_pre_hashed_shake128_neon(signing_key, message, context, randomness)
+                    sign_pre_hashed_shake128_neon(
+                        signing_key,
+                        message,
+                        context,
+                        pre_hash_buffer,
+                        randomness,
+                    )
                 } else {
                     instantiations::portable::$parameter_module::sign_pre_hashed_shake128(
                         signing_key,
                         message,
                         context,
+                        pre_hash_buffer,
                         randomness,
                     )
                 }
@@ -190,6 +204,7 @@ macro_rules! parameter_set {
                 verification_key_serialized: &[u8; VERIFICATION_KEY_SIZE],
                 message: &[u8],
                 context: &[u8],
+                pre_hash_buffer: &mut [u8],
                 signature_serialized: &[u8; SIGNATURE_SIZE],
             ) -> Result<(), VerificationError> {
                 if libcrux_platform::simd256_support() {
@@ -197,6 +212,7 @@ macro_rules! parameter_set {
                         verification_key_serialized,
                         message,
                         context,
+                        pre_hash_buffer,
                         signature_serialized,
                     )
                 } else if libcrux_platform::simd128_support() {
@@ -204,6 +220,7 @@ macro_rules! parameter_set {
                         verification_key_serialized,
                         message,
                         context,
+                        pre_hash_buffer,
                         signature_serialized,
                     )
                 } else {
@@ -211,6 +228,7 @@ macro_rules! parameter_set {
                         verification_key_serialized,
                         message,
                         context,
+                        pre_hash_buffer,
                         signature_serialized,
                     )
                 }

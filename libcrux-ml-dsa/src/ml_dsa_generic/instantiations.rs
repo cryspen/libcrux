@@ -80,6 +80,7 @@ macro_rules! instantiate {
                             signing_key: &[u8; SIGNING_KEY_SIZE],
                             message: &[u8],
                             context: &[u8],
+                            pre_hash_buffer: &mut [u8],
                             randomness: [u8; SIGNING_RANDOMNESS_SIZE],
                         ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
                             crate::ml_dsa_generic::$parameter_module::sign_pre_hashed::<
@@ -91,8 +92,7 @@ macro_rules! instantiate {
                                 $shake256xof,
                                 $shake256x4,
                                 SHAKE128_PH,
-                                256,
-                            >(signing_key, message, context, randomness)
+                            >(signing_key, message, context, pre_hash_buffer, randomness)
                         }
 
                         /// Verify.
@@ -132,6 +132,7 @@ macro_rules! instantiate {
                             verification_key: &[u8; VERIFICATION_KEY_SIZE],
                             message: &[u8],
                             context: &[u8],
+                            pre_hash_buffer: &mut [u8],
                             signature: &[u8; SIGNATURE_SIZE],
                         ) -> Result<(), VerificationError> {
                             crate::ml_dsa_generic::$parameter_module::verify_pre_hashed::<
@@ -142,8 +143,13 @@ macro_rules! instantiate {
                                 $shake256,
                                 $shake256xof,
                                 SHAKE128_PH,
-                                256,
-                            >(verification_key, message, context, signature)
+                            >(
+                                verification_key,
+                                message,
+                                context,
+                                pre_hash_buffer,
+                                signature,
+                            )
                         }
                     }
                 };
