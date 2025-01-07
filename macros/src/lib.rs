@@ -1,9 +1,8 @@
 //! This is a collection of libcrux internal proc macros.
 
 use proc_macro::{Delimiter, TokenStream, TokenTree};
-use quote::quote;
-use std::collections::HashMap;
-use syn::{parse_macro_input, Attribute, Ident, ItemFn, Stmt};
+use quote::{format_ident, quote};
+use syn::{parse::Parser, parse_macro_input, ItemMod, LitInt, Token};
 
 fn skip_comma<T: Iterator<Item = TokenTree>>(ts: &mut T) {
     match ts.next() {
@@ -50,92 +49,59 @@ pub fn unroll_for(ts: TokenStream) -> TokenStream {
     // "{ let i = 0; println!(\"FROM MACRO{}\", i); }".parse().unwrap()
 }
 
-/// For an annotated function `f`, parse an attribute list of the type
-/// ```
-/// #[consts(
-///   variant_a{const X: usize = 4; const Y: usize = 4;},
-///   variant_b{const X: usize = 5; const Y: usize = 6;},
-///   ...
-/// )]
-/// ```
-/// and generate variants `f_variant_a`, `f_variant_b` of `f` with the given
-/// constants injected into the function as constants. The variant
-/// attribute lists can in turn contain attributes,
-/// e.g. `#[cfg(feature = "variant_a")]`, which will be applied to the
-/// generated function variant.
+/// Annotation for a generic ML-DSA implementation, which pulls in
+/// parameter-set specific constants.
+///
+/// Given a list of parameter set identifiers, i.e. `44,65,87`, for
+/// each identifier $id a feature-gated module `ml_dsa_$id` is generated, which
+/// pulls in the parameter specific constants, assumed to be specified
+/// in `crate::constants::ml_dsa_$id`. Further, type aliases for for
+/// signing, and verification keys, whole keypairs and signatures are
+/// created.
 #[proc_macro_attribute]
-pub fn consts(args: TokenStream, item: TokenStream) -> TokenStream {
-    let ItemFn {
+pub fn ml_dsa_parameter_sets(args: TokenStream, item: TokenStream) -> TokenStream {
+    let ItemMod {
         attrs,
         vis,
-        sig,
-        block,
+        content,
+        semi,
         ..
-    } = parse_macro_input!(item as ItemFn);
+    } = parse_macro_input!(item as ItemMod);
 
-    let mut variants_map: HashMap<String, _> = HashMap::new();
-
-    // Parse an attribute list of the type
-    // #[consts(
-    //   v44{const X: usize = 4; const Y: usize = 4;},
-    //   v44{const X: usize = 4; const Y: usize = 4;},
-    // )]
-    let parser = syn::meta::parser(|meta| {
-        let ident = meta.path.clone();
-
-        let content;
-        syn::braced!(content in meta.input);
-
-        let mut const_vec = Vec::new();
-        let mut attributes: Option<Vec<Attribute>> = None;
-        while !content.is_empty() {
-            // There may be a config flag here.
-            if let Ok(new_attributes) = Attribute::parse_outer(&content) {
-                if let Some(attributes) = &mut attributes {
-                    attributes.extend(new_attributes);
-                } else {
-                    attributes = Some(new_attributes);
-                }
-            }
-
-            const_vec.push(content.parse::<Stmt>().unwrap());
-        }
-
-        variants_map.insert(quote! {#ident}.to_string(), (attributes, const_vec));
-        Ok(())
-    });
-    parse_macro_input!(args with parser);
-
+    let variants_vec = syn::punctuated::Punctuated::<LitInt, Token![,]>::parse_terminated
+        .parse(args)
+        .unwrap();
     let mut expanded = quote! {};
 
-    for (variant, (attributes, consts)) in variants_map.iter() {
+    for parameter_set in variants_vec {
+        let parameter_set_string = quote! {#parameter_set}.to_string();
+        let feature_name = format!("mldsa{}", parameter_set_string);
+        let modpath = format_ident!("ml_dsa_{}", parameter_set_string);
+
+        let sk_ident = format_ident!("MLDSA{}SigningKey", parameter_set_string);
+        let vk_ident = format_ident!("MLDSA{}VerificationKey", parameter_set_string);
+        let keypair_ident = format_ident!("MLDSA{}KeyPair", parameter_set_string);
+        let sig_ident = format_ident!("MLDSA{}Signature", parameter_set_string);
+
         // add the variant at the end of the function name
-        let mut this_sig = sig.clone();
-        this_sig.ident = Ident::new(
-            &format!("{}_{}", this_sig.ident, variant),
-            this_sig.ident.span(),
-        );
-
-        let mut attribute_tokens = quote! {};
-        if let Some(av) = attributes {
-            for a in av {
-                attribute_tokens.extend(quote! {
-                    #a
-                });
-            }
-        }
-
-        let fun = quote! {
-                #attribute_tokens
+        if let Some((_, ref content)) = content {
+            let this_content = content.clone();
+            let fun = quote! {
                 #(#attrs)*
-                #vis #this_sig {
-                    #(#consts)*
+                #[cfg(feature = #feature_name)]
+                #vis mod #modpath {
+                    use crate::constants::#modpath::*;
 
-                    #block
-                }
-        };
-        expanded.extend(fun);
+                    pub type #sk_ident = MLDSASigningKey<SIGNING_KEY_SIZE>;
+                    pub type #vk_ident = MLDSAVerificationKey<VERIFICATION_KEY_SIZE>;
+                    pub type #keypair_ident = MLDSAKeyPair<VERIFICATION_KEY_SIZE, SIGNING_KEY_SIZE>;
+                    pub type #sig_ident = MLDSASignature<SIGNATURE_SIZE>;
+
+                    #(#this_content)*
+                } #semi
+            };
+            expanded.extend(fun);
+        }
     }
-
     expanded.into()
 }
