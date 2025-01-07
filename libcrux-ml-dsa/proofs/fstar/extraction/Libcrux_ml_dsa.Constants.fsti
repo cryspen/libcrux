@@ -58,7 +58,24 @@ let v_SEED_FOR_SIGNING_SIZE: usize = sz 32
 /// Number of bytes of entropy required for signing.
 let v_SIGNING_RANDOMNESS_SIZE: usize = sz 32
 
+val beta (ones_in_verifier_challenge: usize) (eta: t_Eta)
+    : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
+
+val commitment_ring_element_size (bits_per_commitment_coefficient: usize)
+    : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
+
+val commitment_vector_size (bits_per_commitment_coefficient rows_in_a: usize)
+    : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
+
 val error_ring_element_size (bits_per_error_coefficient: usize)
+    : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
+
+val gamma1_ring_element_size (bits_per_gamma1_coefficient: usize)
+    : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
+
+val signature_size
+      (rows_in_a columns_in_a max_ones_in_hint commitment_hash_size bits_per_gamma1_coefficient:
+          usize)
     : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
 
 val signing_key_size (rows_in_a columns_in_a error_ring_element_size: usize)

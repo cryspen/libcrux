@@ -8,8 +8,35 @@ let t_Eta_cast_to_repr (x: t_Eta) =
   | Eta_Two  -> discriminant_Eta_Two
   | Eta_Four  -> discriminant_Eta_Four
 
+let beta (ones_in_verifier_challenge: usize) (eta: t_Eta) =
+  cast (ones_in_verifier_challenge *! (cast (t_Eta_cast_to_repr eta <: isize) <: usize) <: usize)
+  <:
+  i32
+
+let commitment_ring_element_size (bits_per_commitment_coefficient: usize) =
+  (bits_per_commitment_coefficient *! v_COEFFICIENTS_IN_RING_ELEMENT <: usize) /! sz 8
+
+let commitment_vector_size (bits_per_commitment_coefficient rows_in_a: usize) =
+  (commitment_ring_element_size bits_per_commitment_coefficient <: usize) *! rows_in_a
+
 let error_ring_element_size (bits_per_error_coefficient: usize) =
   (bits_per_error_coefficient *! v_COEFFICIENTS_IN_RING_ELEMENT <: usize) /! sz 8
+
+let gamma1_ring_element_size (bits_per_gamma1_coefficient: usize) =
+  (bits_per_gamma1_coefficient *! v_COEFFICIENTS_IN_RING_ELEMENT <: usize) /! sz 8
+
+let signature_size
+      (rows_in_a columns_in_a max_ones_in_hint commitment_hash_size bits_per_gamma1_coefficient:
+          usize)
+     =
+  ((commitment_hash_size +!
+      (columns_in_a *! (gamma1_ring_element_size bits_per_gamma1_coefficient <: usize) <: usize)
+      <:
+      usize) +!
+    max_ones_in_hint
+    <:
+    usize) +!
+  rows_in_a
 
 let signing_key_size (rows_in_a columns_in_a error_ring_element_size: usize) =
   (((v_SEED_FOR_A_SIZE +! v_SEED_FOR_SIGNING_SIZE <: usize) +! v_BYTES_FOR_VERIFICATION_KEY_HASH
