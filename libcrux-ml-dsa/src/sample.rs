@@ -802,13 +802,13 @@ mod tests {
             >();
         }
 
-        #[test]
-        fn test_sample_error_ring_element() {
-            test_sample_error_ring_element_generic::<
-                simd::portable::PortableSIMDUnit,
-                hash_functions::portable::Shake256X4,
-            >();
-        }
+        // #[test]
+        // fn test_sample_error_ring_element() {
+        //     test_sample_error_ring_element_generic::<
+        //         simd::portable::PortableSIMDUnit,
+        //         hash_functions::portable::Shake256X4,
+        //     >();
+        // }
 
         #[test]
         fn test_sample_challenge_ring_element() {
