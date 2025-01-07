@@ -28,11 +28,10 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 
 #[inline(always)]
 fn chunk_size(eta: Eta) -> usize {
-    let output_bytes_per_simd_unit = match eta {
+    match eta {
         Eta::Two => 3,
         Eta::Four => 4,
-    };
-    output_bytes_per_simd_unit
+    }
 }
 
 #[inline(always)]

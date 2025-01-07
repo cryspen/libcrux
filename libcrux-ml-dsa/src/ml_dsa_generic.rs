@@ -178,7 +178,7 @@ pub(crate) mod generic {
 
         // Sample matrix A.
         let mut matrix = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_X_COLUMN];
-        Sampler::matrix_flat::<SIMDUnit>(COLUMNS_IN_A, &seed_for_a, &mut matrix);
+        Sampler::matrix_flat::<SIMDUnit>(COLUMNS_IN_A, seed_for_a, &mut matrix);
 
         let mut message_representative = [0; MESSAGE_REPRESENTATIVE_SIZE];
         derive_message_representative::<Shake256Xof>(
@@ -191,7 +191,7 @@ pub(crate) mod generic {
         let mut mask_seed = [0; MASK_SEED_SIZE];
         {
             let mut shake = Shake256Xof::init();
-            shake.absorb(&seed_for_signing);
+            shake.absorb(seed_for_signing);
             shake.absorb(&randomness);
             shake.absorb_final(&message_representative);
 
@@ -415,7 +415,7 @@ pub(crate) mod generic {
             return Err(VerificationError::SignerResponseExceedsBoundError);
         }
         let mut matrix = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_X_COLUMN];
-        Sampler::matrix_flat::<SIMDUnit>(COLUMNS_IN_A, &seed_for_a, &mut matrix);
+        Sampler::matrix_flat::<SIMDUnit>(COLUMNS_IN_A, seed_for_a, &mut matrix);
 
         let mut verification_key_hash = [0; BYTES_FOR_VERIFICATION_KEY_HASH];
         Shake256::shake256(verification_key, &mut verification_key_hash);
@@ -554,10 +554,10 @@ pub(crate) mod generic {
             Err(_) => return Err(VerificationError::VerificationContextTooLongError),
         };
         verify_internal::<SIMDUnit, Sampler, Shake128X4, Shake256, Shake256Xof>(
-            &verification_key_serialized,
+            verification_key_serialized,
             message,
             Some(domain_separation_context),
-            &signature_serialized,
+            signature_serialized,
         )
     }
 
@@ -585,10 +585,10 @@ pub(crate) mod generic {
             Err(_) => return Err(VerificationError::VerificationContextTooLongError),
         };
         verify_internal::<SIMDUnit, Sampler, Shake128X4, Shake256, Shake256Xof>(
-            &verification_key_serialized,
+            verification_key_serialized,
             &pre_hashed_message,
             Some(domain_separation_context),
-            &signature_serialized,
+            signature_serialized,
         )
     }
 }
@@ -623,7 +623,7 @@ fn derive_message_representative<Shake256Xof: shake256::Xof>(
     debug_assert!(verification_key_hash.len() == 64);
 
     let mut shake = Shake256Xof::init();
-    shake.absorb(&verification_key_hash);
+    shake.absorb(verification_key_hash);
     if let Some(domain_separation_context) = domain_separation_context {
         shake.absorb(&[domain_separation_context.pre_hash_oid().is_some() as u8]);
         shake.absorb(&[domain_separation_context.context().len() as u8]);

@@ -114,16 +114,16 @@ pub(crate) mod portable {
     #[inline(always)]
     fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Shake128X4 {
         let mut state0 = incremental::shake128_init();
-        incremental::shake128_absorb_final(&mut state0, &input0);
+        incremental::shake128_absorb_final(&mut state0, input0);
 
         let mut state1 = incremental::shake128_init();
-        incremental::shake128_absorb_final(&mut state1, &input1);
+        incremental::shake128_absorb_final(&mut state1, input1);
 
         let mut state2 = incremental::shake128_init();
-        incremental::shake128_absorb_final(&mut state2, &input2);
+        incremental::shake128_absorb_final(&mut state2, input2);
 
         let mut state3 = incremental::shake128_init();
-        incremental::shake128_absorb_final(&mut state3, &input3);
+        incremental::shake128_absorb_final(&mut state3, input3);
 
         Shake128X4 {
             state0,
@@ -437,7 +437,7 @@ pub(crate) mod simd256 {
     #[inline(always)]
     fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Shake128x4 {
         let mut state = x4::incremental::init();
-        x4::incremental::shake128_absorb_final(&mut state, &input0, &input1, &input2, &input3);
+        x4::incremental::shake128_absorb_final(&mut state, input0, input1, input2, input3);
         Shake128x4 { state }
     }
 
@@ -583,7 +583,7 @@ pub(crate) mod simd256 {
     #[inline(always)]
     fn init_absorb_x4(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Shake256x4 {
         let mut state = x4::incremental::init();
-        x4::incremental::shake256_absorb_final(&mut state, &input0, &input1, &input2, &input3);
+        x4::incremental::shake256_absorb_final(&mut state, input0, input1, input2, input3);
         Shake256x4 { state }
     }
 

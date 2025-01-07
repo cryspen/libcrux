@@ -1,5 +1,4 @@
 use super::*;
-use libcrux_platform;
 
 macro_rules! parameter_set {
     ($parameter_module:ident, $feature:literal) => {
