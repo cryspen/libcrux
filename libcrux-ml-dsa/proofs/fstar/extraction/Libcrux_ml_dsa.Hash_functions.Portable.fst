@@ -85,10 +85,10 @@ val init_absorb_x4':
 let init_absorb_x4 = init_absorb_x4'
 
 assume
-val shake128': v_OUTPUT_LENGTH: usize -> input: t_Slice u8 -> out: t_Array u8 v_OUTPUT_LENGTH
-  -> Prims.Pure (t_Array u8 v_OUTPUT_LENGTH) Prims.l_True (fun _ -> Prims.l_True)
+val shake128': input: t_Slice u8 -> out: t_Slice u8
+  -> Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
-let shake128 (v_OUTPUT_LENGTH: usize) = shake128' v_OUTPUT_LENGTH
+let shake128 = shake128'
 
 assume
 val shake256': v_OUTPUT_LENGTH: usize -> input: t_Slice u8 -> out: t_Array u8 v_OUTPUT_LENGTH

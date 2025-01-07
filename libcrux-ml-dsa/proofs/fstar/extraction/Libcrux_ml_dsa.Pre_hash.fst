@@ -48,20 +48,8 @@ let impl_3: Core.Convert.t_From Libcrux_ml_dsa.Types.t_VerificationError t_Domai
         Libcrux_ml_dsa.Types.t_VerificationError
   }
 
-let impl_1__new (context: t_Slice u8) (pre_hash_oid: Core.Option.t_Option (t_Array u8 (sz 11))) =
-  if (Core.Slice.impl__len #u8 context <: usize) >. Libcrux_ml_dsa.Constants.v_CONTEXT_MAX_LEN
-  then
-    Core.Result.Result_Err (DomainSeparationError_ContextTooLongError <: t_DomainSeparationError)
-    <:
-    Core.Result.t_Result t_DomainSeparationContext t_DomainSeparationError
-  else
-    Core.Result.Result_Ok
-    ({ f_context = context; f_pre_hash_oid = pre_hash_oid } <: t_DomainSeparationContext)
-    <:
-    Core.Result.t_Result t_DomainSeparationContext t_DomainSeparationError
-
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: t_PreHash t_SHAKE128_PH (sz 256) =
+let impl: t_PreHash t_SHAKE128_PH =
   {
     f_oid_pre = (fun (_: Prims.unit) -> true);
     f_oid_post = (fun (_: Prims.unit) (out: t_Array u8 (sz 11)) -> true);
@@ -74,6 +62,7 @@ let impl: t_PreHash t_SHAKE128_PH (sz 256) =
           i1:
           Libcrux_ml_dsa.Hash_functions.Shake128.t_Xof v_Shake128)
         (message: t_Slice u8)
+        (output: t_Slice u8)
         ->
         true);
     f_hash_post
@@ -84,7 +73,8 @@ let impl: t_PreHash t_SHAKE128_PH (sz 256) =
           i1:
           Libcrux_ml_dsa.Hash_functions.Shake128.t_Xof v_Shake128)
         (message: t_Slice u8)
-        (out: t_Array u8 (sz 256))
+        (output: t_Slice u8)
+        (out: t_Slice u8)
         ->
         true);
     f_hash
@@ -95,14 +85,34 @@ let impl: t_PreHash t_SHAKE128_PH (sz 256) =
         i1:
         Libcrux_ml_dsa.Hash_functions.Shake128.t_Xof v_Shake128)
       (message: t_Slice u8)
+      (output: t_Slice u8)
       ->
-      let output:t_Array u8 (sz 256) = Rust_primitives.Hax.repeat 0uy (sz 256) in
-      let output:t_Array u8 (sz 256) =
+      let _:Prims.unit =
+        if true
+        then
+          let _:Prims.unit =
+            match Core.Slice.impl__len #u8 output, sz 256 <: (usize & usize) with
+            | left_val, right_val -> Hax_lib.v_assert (left_val =. right_val <: bool)
+          in
+          ()
+      in
+      let output:t_Slice u8 =
         Libcrux_ml_dsa.Hash_functions.Shake128.f_shake128 #v_Shake128
           #FStar.Tactics.Typeclasses.solve
-          (sz 256)
           message
           output
       in
       output
   }
+
+let impl_1__new (context: t_Slice u8) (pre_hash_oid: Core.Option.t_Option (t_Array u8 (sz 11))) =
+  if (Core.Slice.impl__len #u8 context <: usize) >. Libcrux_ml_dsa.Constants.v_CONTEXT_MAX_LEN
+  then
+    Core.Result.Result_Err (DomainSeparationError_ContextTooLongError <: t_DomainSeparationError)
+    <:
+    Core.Result.t_Result t_DomainSeparationContext t_DomainSeparationError
+  else
+    Core.Result.Result_Ok
+    ({ f_context = context; f_pre_hash_oid = pre_hash_oid } <: t_DomainSeparationContext)
+    <:
+    Core.Result.t_Result t_DomainSeparationContext t_DomainSeparationError

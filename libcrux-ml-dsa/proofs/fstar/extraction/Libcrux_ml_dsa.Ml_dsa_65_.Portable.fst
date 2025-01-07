@@ -42,14 +42,22 @@ let sign_pre_hashed_shake128
       (message context: t_Slice u8)
       (randomness: t_Array u8 (sz 32))
      =
-  Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.Ml_dsa_65_.sign_pre_hashed_shake128 (Libcrux_ml_dsa.Types.impl__as_ref
-        (sz 4032)
-        signing_key
-      <:
-      t_Array u8 (sz 4032))
-    message
-    context
-    randomness
+  let pre_hash_buffer:t_Array u8 (sz 256) = Rust_primitives.Hax.repeat 0uy (sz 256) in
+  let tmp0, out:(t_Array u8 (sz 256) &
+    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
+      Libcrux_ml_dsa.Types.t_SigningError) =
+    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.Ml_dsa_65_.sign_pre_hashed_shake128 (Libcrux_ml_dsa.Types.impl__as_ref
+          (sz 4032)
+          signing_key
+        <:
+        t_Array u8 (sz 4032))
+      message
+      context
+      pre_hash_buffer
+      randomness
+  in
+  let pre_hash_buffer:t_Array u8 (sz 256) = tmp0 in
+  out
 
 let verify
       (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (sz 1952))
@@ -70,11 +78,18 @@ let verify_pre_hashed_shake128
       (message context: t_Slice u8)
       (signature: Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
      =
-  Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.Ml_dsa_65_.verify_pre_hashed_shake128 (Libcrux_ml_dsa.Types.impl_2__as_ref
-        (sz 1952)
-        verification_key
-      <:
-      t_Array u8 (sz 1952))
-    message
-    context
-    (Libcrux_ml_dsa.Types.impl_4__as_ref (sz 3309) signature <: t_Array u8 (sz 3309))
+  let pre_hash_buffer:t_Array u8 (sz 256) = Rust_primitives.Hax.repeat 0uy (sz 256) in
+  let tmp0, out:(t_Array u8 (sz 256) &
+    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
+    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.Ml_dsa_65_.verify_pre_hashed_shake128 (Libcrux_ml_dsa.Types.impl_2__as_ref
+          (sz 1952)
+          verification_key
+        <:
+        t_Array u8 (sz 1952))
+      message
+      context
+      pre_hash_buffer
+      (Libcrux_ml_dsa.Types.impl_4__as_ref (sz 3309) signature <: t_Array u8 (sz 3309))
+  in
+  let pre_hash_buffer:t_Array u8 (sz 256) = tmp0 in
+  out
