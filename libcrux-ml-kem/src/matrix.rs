@@ -1,6 +1,7 @@
 use crate::{
     hash_functions::Hash, helper::cloop, invert_ntt::invert_ntt_montgomery,
-    polynomial::PolynomialRingElement, sampling::sample_from_xof, vector::Operations,
+    polynomial::PolynomialRingElement, sampling::sample_from_xof, utils::into_padded_array,
+    vector::Operations,
 };
 
 #[inline(always)]
@@ -144,6 +145,18 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
 
     result
 }
+
+// pub(crate) fn compute_vector_u_from_seed<const K: usize, Vector: Operations, Hasher: Hash<K>>(
+//     a_as_ntt: &[[PolynomialRingElement<Vector>; K]; K],
+//     r_as_ntt: &[PolynomialRingElement<Vector>; K],
+//     error_1: &[PolynomialRingElement<Vector>; K],
+//     seed: &[u8; 34],
+// ) -> [PolynomialRingElement<Vector>; K] {
+//     let mut matrix = [[PolynomialRingElement::<Vector>::ZERO(); K]; K];
+
+//     sample_matrix_A::<K, Vector, Hasher>(&mut matrix, into_padded_array(seed), false);
+//     compute_vector_u(a_as_ntt, r_as_ntt, error_1)
+// }
 
 /// Compute Â ◦ ŝ + ê
 #[inline(always)]

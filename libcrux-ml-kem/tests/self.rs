@@ -131,6 +131,66 @@ macro_rules! impl_consistency_unpacked {
     };
 }
 
+macro_rules! impl_consistency_incremental {
+    ($name:ident, $modp:path) => {
+        #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+        #[test]
+        fn $name() {
+            use $modp as p;
+
+            let randomness = random_array();
+
+            // Generate unpacked key
+            let key_pair = p::unpacked::generate_key_pair(randomness);
+            let key_pair_serialized = p::generate_key_pair(randomness);
+
+            use libcrux_ml_kem::mlkem768::portable::incremental::*;
+
+            let randomness = random_array();
+            let pk1 = PublicKey1::from(key_pair.public_key());
+
+            let (c1, state) =
+                libcrux_ml_kem::mlkem768::portable::incremental::encapsulate1(&pk1, randomness);
+
+            let pk2 = PublicKey2::from(key_pair.public_key());
+            let c2 = libcrux_ml_kem::mlkem768::portable::incremental::encapsulate2(&state, &pk2);
+
+            // Compute comparison shared secrets and ciphertexts with the other APIs
+            let (ciphertext_unpacked, shared_secret_unpacked) =
+                p::unpacked::encapsulate(&key_pair.public_key, randomness);
+            let (ciphertext_regular, shared_secret_regular) =
+                p::encapsulate(key_pair_serialized.public_key(), randomness);
+
+            // Check c1 and c2
+            assert_eq!(&ciphertext_unpacked[..960], &c1.value, "Invalid c1");
+            assert_eq!(&ciphertext_unpacked[960..], &c2.value, "Invalid c2");
+
+            // Check API consistency
+            assert_eq!(
+                shared_secret_unpacked, state.shared_secret,
+                "Invalid encaps shared secret"
+            );
+            assert_eq!(
+                shared_secret_unpacked, shared_secret_regular,
+                "Inconsistent shared secrets"
+            );
+            assert_eq!(
+                ciphertext_regular.as_slice(),
+                ciphertext_unpacked.as_slice(),
+                "Inconsistent ciphertexts"
+            );
+
+            // Decaps
+            let ct_decaps = libcrux_ml_kem::mlkem768::portable::incremental::decapsulate(
+                key_pair_serialized.private_key(),
+                &c1,
+                &c2,
+            );
+            assert_eq!(ct_decaps, state.shared_secret, "Invalid ct decaps");
+        }
+    };
+}
+
 fn modify_ciphertext<const LEN: usize>(ciphertext: MlKemCiphertext<LEN>) -> MlKemCiphertext<LEN> {
     let mut raw_ciphertext = [0u8; LEN];
     raw_ciphertext.copy_from_slice(ciphertext.as_ref());
@@ -331,6 +391,12 @@ impl_consistency_unpacked!(
 #[cfg(all(feature = "mlkem768",))]
 impl_consistency_unpacked!(
     consistency_unpacked_768_portable,
+    libcrux_ml_kem::mlkem768::portable
+);
+
+#[cfg(all(feature = "mlkem768",))]
+impl_consistency_incremental!(
+    consistency_incremental_768_portable,
     libcrux_ml_kem::mlkem768::portable
 );
 

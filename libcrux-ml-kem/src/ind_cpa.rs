@@ -22,7 +22,7 @@ use crate::{
 
 /// Types for the unpacked API.
 #[allow(non_snake_case)]
-pub mod unpacked {
+pub(crate) mod unpacked {
     use crate::{polynomial::PolynomialRingElement, vector::traits::Operations};
 
     /// An unpacked ML-KEM IND-CPA Private Key
@@ -38,7 +38,7 @@ pub mod unpacked {
         }
     }
 
-    /// An unpacked ML-KEM IND-CPA Private Key
+    /// An unpacked ML-KEM IND-CPA Public Key
     #[derive(Clone)]
     pub(crate) struct IndCpaPublicKeyUnpacked<const K: usize, Vector: Operations> {
         pub(crate) t_as_ntt: [PolynomialRingElement<Vector>; K],
@@ -767,6 +767,52 @@ pub(crate) fn encrypt_unpacked<
     message: [u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
+    let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
+
+    let (r_as_ntt, error_2) = encrypt_c1::<
+        K,
+        C1_LEN,
+        U_COMPRESSION_FACTOR,
+        BLOCK_LEN,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        Vector,
+        Hasher,
+    >(randomness, &public_key.A, &mut ciphertext[0..C1_LEN]);
+
+    encrypt_c2::<K, V_COMPRESSION_FACTOR, C2_LEN, Vector>(
+        &public_key.t_as_ntt,
+        &r_as_ntt,
+        &error_2,
+        message,
+        &mut ciphertext[C1_LEN..],
+    );
+
+    ciphertext
+}
+
+#[inline(always)]
+pub(crate) fn encrypt_c1<
+    const K: usize,
+    const C1_LEN: usize,
+    const U_COMPRESSION_FACTOR: usize,
+    const BLOCK_LEN: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+    const ETA2: usize,
+    const ETA2_RANDOMNESS_SIZE: usize,
+    Vector: Operations,
+    Hasher: Hash<K>,
+>(
+    randomness: &[u8],
+    matrix: &[[PolynomialRingElement<Vector>; K]; K],
+    ciphertext: &mut [u8], // C1_LEN
+) -> (
+    [PolynomialRingElement<Vector>; K],
+    PolynomialRingElement<Vector>,
+) {
     // for i from 0 to k−1 do
     //     r[i] := CBD{η1}(PRF(r, N))
     //     N := N + 1
@@ -802,16 +848,30 @@ pub(crate) fn encrypt_unpacked<
     let error_2 = sample_from_binomial_distribution::<ETA2, Vector>(&prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-    let u = compute_vector_u(&public_key.A, &r_as_ntt, &error_1);
+    let u = compute_vector_u(matrix, &r_as_ntt, &error_1);
 
+    // c_1 := Encode_{du}(Compress_q(u,d_u))
+    compress_then_serialize_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN, Vector>(u, ciphertext);
+
+    (r_as_ntt, error_2)
+}
+
+#[inline(always)]
+pub(crate) fn encrypt_c2<
+    const K: usize,
+    const V_COMPRESSION_FACTOR: usize,
+    const C2_LEN: usize,
+    Vector: Operations,
+>(
+    t_as_ntt: &[PolynomialRingElement<Vector>; K],
+    r_as_ntt: &[PolynomialRingElement<Vector>; K],
+    error_2: &PolynomialRingElement<Vector>,
+    message: [u8; SHARED_SECRET_SIZE],
+    ciphertext: &mut [u8],
+) {
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
     let message_as_ring_element = deserialize_then_decompress_message(message);
-    let v = compute_ring_element_v(
-        &public_key.t_as_ntt,
-        &r_as_ntt,
-        &error_2,
-        &message_as_ring_element,
-    );
+    let v = compute_ring_element_v(t_as_ntt, r_as_ntt, error_2, &message_as_ring_element);
     hax_lib::fstar!(
         "assert ($C1_LEN = Spec.MLKEM.v_C1_SIZE v_K);
         assert ($C2_LEN = Spec.MLKEM.v_C2_SIZE v_K);
@@ -819,25 +879,14 @@ pub(crate) fn encrypt_unpacked<
         assert ($C1_LEN <=. $CIPHERTEXT_SIZE)"
     );
 
-    let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
-
-    // c_1 := Encode_{du}(Compress_q(u,d_u))
-    compress_then_serialize_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN, Vector>(
-        u,
-        &mut ciphertext[0..C1_LEN],
-    );
-
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
     compress_then_serialize_ring_element_v::<K, V_COMPRESSION_FACTOR, C2_LEN, Vector>(
-        v,
-        &mut ciphertext[C1_LEN..],
+        v, ciphertext,
     );
     hax_lib::fstar!(
         "lemma_slice_append $ciphertext (Seq.slice $ciphertext 0 (Rust_primitives.v $C1_LEN))
         (Seq.slice $ciphertext (Rust_primitives.v $C1_LEN) (Seq.length $ciphertext))"
     );
-
-    ciphertext
 }
 
 #[allow(non_snake_case)]

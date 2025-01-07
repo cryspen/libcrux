@@ -12,7 +12,7 @@ use ntt::*;
 use sampling::*;
 use vector_type::*;
 
-pub(crate) use vector_type::PortableVector;
+pub use vector_type::PortableVector;
 
 impl crate::vector::traits::Repr for PortableVector {
     fn repr(x: Self) -> [i16; 16] {

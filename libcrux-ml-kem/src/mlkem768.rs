@@ -403,6 +403,77 @@ macro_rules! instantiate {
                     >(private_key, ciphertext)
                 }
             }
+
+            /// Incremental APIs.
+            /// XXX: Only portable for now here. Needs plumbing
+            pub mod incremental {
+                use super::*;
+                pub use ind_cca::incremental::*;
+
+                /// Encapsulate with `PublicKey1` to get `c1`.
+                pub fn encapsulate1
+                (
+                    public_key_part: &PublicKey1,
+                    randomness: [u8; SHARED_SECRET_SIZE],
+                ) -> (Ciphertext1<C1_SIZE_768>, EncapsState<RANK_768, crate::vector::portable::PortableVector>) {
+                    crate::ind_cca::incremental::encapsulate1::<
+                    RANK_768,
+                    CPA_PKE_CIPHERTEXT_SIZE_768,
+                    C1_SIZE_768,
+                    VECTOR_U_COMPRESSION_FACTOR_768,
+                    C1_BLOCK_SIZE_768,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                    crate::vector::portable::PortableVector,
+                    crate::hash_functions::portable::PortableHash<RANK_768>
+                    >(public_key_part, randomness)
+                }
+
+                /// Encapsulate with `PublicKey2` to get `c2`.
+                pub fn encapsulate2
+                (
+                    state: &EncapsState<RANK_768, crate::vector::portable::PortableVector>,
+                    public_key_part: &PublicKey2<RANK_768, crate::vector::portable::PortableVector>,
+                ) -> Ciphertext2<C2_SIZE_768> {
+                    crate::ind_cca::incremental::encapsulate2::<
+                    RANK_768,
+                    C2_SIZE_768,
+                    VECTOR_V_COMPRESSION_FACTOR_768,
+                    crate::vector::portable::PortableVector,
+                    >(state, public_key_part)
+                }
+
+                /// Decapsulate `c1` and `c2`.
+                pub fn decapsulate(
+                    private_key: &MlKem768PrivateKey,
+                    ciphertext1: &Ciphertext1<C1_SIZE_768>,
+                    ciphertext2: &Ciphertext2<C2_SIZE_768>,
+                ) -> MlKemSharedSecret {
+                    crate::ind_cca::incremental::decapsulate::<
+                        RANK_768,
+                        SECRET_KEY_SIZE_768,
+                        CPA_PKE_SECRET_KEY_SIZE_768,
+                        CPA_PKE_PUBLIC_KEY_SIZE_768,
+                        CPA_PKE_CIPHERTEXT_SIZE_768,
+                        T_AS_NTT_ENCODED_SIZE_768,
+                        C1_SIZE_768,
+                        C2_SIZE_768,
+                        VECTOR_U_COMPRESSION_FACTOR_768,
+                        VECTOR_V_COMPRESSION_FACTOR_768,
+                        C1_BLOCK_SIZE_768,
+                        ETA1,
+                        ETA1_RANDOMNESS_SIZE,
+                        ETA2,
+                        ETA2_RANDOMNESS_SIZE,
+                        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                        crate::vector::portable::PortableVector,
+                        crate::hash_functions::portable::PortableHash<RANK_768>,
+                        crate::variant::MlKem,
+                    >(private_key, ciphertext1, ciphertext2)
+                }
+            }
         }
     };
 }

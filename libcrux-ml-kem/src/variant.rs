@@ -17,9 +17,11 @@ pub(crate) trait Variant {
         shared_secret: &[u8],
         ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
     ) -> [u8; 32];
+
     #[requires(randomness.len() == 32)]
     #[ensures(|res| fstar!(r#"$res == $randomness"#))] // We only have post-conditions for ML-KEM, not Kyber
     fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32];
+
     #[requires(seed.len() == 32)]
     #[ensures(|res| fstar!(r#"Seq.length $seed == 32 ==> $res == Spec.Utils.v_G
         (Seq.append $seed (Seq.create 1 (cast $K <: u8)))"#)

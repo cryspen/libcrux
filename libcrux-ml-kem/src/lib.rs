@@ -106,7 +106,7 @@ mod serialize;
 mod types;
 mod utils;
 mod variant;
-mod vector;
+pub mod vector;
 
 #[cfg(feature = "mlkem512")]
 #[cfg_attr(docsrs, doc(cfg(feature = "mlkem512")))]
