@@ -319,7 +319,6 @@ pub mod portable {
         /// Shake256 XOF in absorb state
         impl Xof<136> for Shake256Xof {
             /// Shake256 new state
-            #[inline(always)]
             fn new() -> Self {
                 Self {
                     state: KeccakXofState::<1, 136, u64>::new(),
@@ -327,19 +326,16 @@ pub mod portable {
             }
 
             /// Shake256 absorb
-            #[inline(always)]
             fn absorb(&mut self, input: &[u8]) {
                 self.state.absorb([input]);
             }
 
             /// Shake256 absorb final
-            #[inline(always)]
             fn absorb_final(&mut self, input: &[u8]) {
                 self.state.absorb_final::<0x1fu8>([input]);
             }
 
             /// Shake256 squeeze
-            #[inline(always)]
             fn squeeze(&mut self, out: &mut [u8]) {
                 self.state.squeeze([out]);
             }
