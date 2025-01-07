@@ -55,7 +55,7 @@ pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
     createi (sz 256) (fun i -> Spec.MLKEM.Math.to_spec_fe 
-                                (Seq.index (i2._super_8706949974463268012.f_repr 
+                                (Seq.index (i2._super_12682756204189288427.f_repr 
                                     (Seq.index p.f_coefficients (v i / 16))) (v i % 16)))"
     )
 )]
