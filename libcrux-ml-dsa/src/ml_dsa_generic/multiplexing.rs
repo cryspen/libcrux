@@ -44,7 +44,7 @@ macro_rules! parameter_set {
             };
 
             #[cfg(all(not(feature = "simd256"), feature = "acvp", feature = $feature))]
-            use instantiations::portable::{
+            use instantiations::portable::$parameter_module::{
                 sign_internal as sign_internal_avx2, verify_internal as verify_internal_avx2,
             };
 
