@@ -347,7 +347,8 @@ let decompose (gamma2: i32) (r r0 r1: Libcrux_intrinsics.Avx2_extract.t_Vec256) 
 
 let use_hint (gamma2: i32) (r hint: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let r0, r1:(Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-    Libcrux_ml_dsa.Simd.Avx2.Vector_type.zero (), Libcrux_ml_dsa.Simd.Avx2.Vector_type.zero ()
+    Libcrux_intrinsics.Avx2_extract.mm256_setzero_si256 (),
+    Libcrux_intrinsics.Avx2_extract.mm256_setzero_si256 ()
     <:
     (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in

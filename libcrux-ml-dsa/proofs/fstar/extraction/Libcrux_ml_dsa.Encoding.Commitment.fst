@@ -23,7 +23,7 @@ let serialize
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_enumerated_slice (re.Libcrux_ml_dsa.Polynomial.f_simd_units
         <:
-        t_Slice i1.f_Coefficient)
+        t_Slice v_SIMDUnit)
       (fun serialized temp_1_ ->
           let serialized:t_Slice u8 = serialized in
           let _:usize = temp_1_ in
@@ -31,7 +31,7 @@ let serialize
       serialized
       (fun serialized temp_1_ ->
           let serialized:t_Slice u8 = serialized in
-          let i, simd_unit:(usize & i1.f_Coefficient) = temp_1_ in
+          let i, simd_unit:(usize & v_SIMDUnit) = temp_1_ in
           Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
             ({
                 Core.Ops.Range.f_start = i *! output_bytes_per_simd_unit <: usize;

@@ -22,7 +22,7 @@ let generate_key_pair___inner
       (signing_key verification_key: t_Slice u8)
      =
   let tmp0, tmp1:(t_Slice u8 & t_Slice u8) =
-    Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_.generate_key_pair #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
+    Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_.generate_key_pair #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
       #Libcrux_ml_dsa.Samplex4.Avx2.t_AVX2Sampler
       #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
       #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256
@@ -51,7 +51,7 @@ let sign___inner
       (message context: t_Slice u8)
       (randomness: t_Array u8 (sz 32))
      =
-  Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_.sign #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
+  Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_.sign #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
     #Libcrux_ml_dsa.Samplex4.Avx2.t_AVX2Sampler #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
     #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256
     #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Xof
@@ -72,7 +72,7 @@ let sign_pre_hashed_shake128___inner
   let tmp0, out:(t_Slice u8 &
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420))
       Libcrux_ml_dsa.Types.t_SigningError) =
-    Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_.sign_pre_hashed #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
+    Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_.sign_pre_hashed #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
       #Libcrux_ml_dsa.Samplex4.Avx2.t_AVX2Sampler #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128
       #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
       #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256
@@ -117,7 +117,7 @@ let verify___inner
       (message context: t_Slice u8)
       (signature: t_Array u8 (sz 2420))
      =
-  Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_.verify #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
+  Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_.verify #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
     #Libcrux_ml_dsa.Samplex4.Avx2.t_AVX2Sampler
     #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
     #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256
@@ -140,7 +140,7 @@ let verify_pre_hashed_shake128___inner
      =
   let tmp0, out:(t_Slice u8 &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
-    Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_.verify_pre_hashed #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
+    Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_.verify_pre_hashed #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
       #Libcrux_ml_dsa.Samplex4.Avx2.t_AVX2Sampler #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128
       #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
       #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256

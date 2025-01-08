@@ -48,15 +48,6 @@ val compute_matrix_x_mask
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val subtract_vectors
-      (#v_SIMDUnit: Type0)
-      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (dimension: usize)
-      (lhs rhs: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-    : Prims.Pure (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 /// Compute InvertNTT(Â ◦ ẑ - ĉ ◦ NTT(t₁2ᵈ))
 val compute_w_approx
       (#v_SIMDUnit: Type0)
@@ -66,6 +57,15 @@ val compute_w_approx
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       (verifier_challenge_as_ntt: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (t1: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : Prims.Pure (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val subtract_vectors
+      (#v_SIMDUnit: Type0)
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (dimension: usize)
+      (lhs rhs: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
     : Prims.Pure (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       Prims.l_True
       (fun _ -> Prims.l_True)

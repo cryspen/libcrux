@@ -17,20 +17,40 @@ let serialize_when_gamma1_is_2_pow_17___GAMMA1: i32 = 1l <<! 17l
 
 let serialize_when_gamma1_is_2_pow_19___GAMMA1: i32 = 1l <<! 19l
 
-val deserialize_when_gamma1_is_2_pow_17_ (serialized: t_Slice u8) (simd_unit: t_Array i32 (sz 8))
-    : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+val deserialize_when_gamma1_is_2_pow_17_
+      (serialized: t_Slice u8)
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val deserialize_when_gamma1_is_2_pow_19_ (serialized: t_Slice u8) (simd_unit: t_Array i32 (sz 8))
-    : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+val deserialize_when_gamma1_is_2_pow_19_
+      (serialized: t_Slice u8)
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val deserialize (serialized: t_Slice u8) (out: t_Array i32 (sz 8)) (gamma1_exponent: usize)
-    : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+val deserialize
+      (serialized: t_Slice u8)
+      (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (gamma1_exponent: usize)
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val serialize_when_gamma1_is_2_pow_17_ (simd_unit: t_Array i32 (sz 8)) (serialized: t_Slice u8)
+val serialize_when_gamma1_is_2_pow_17_
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (serialized: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize_when_gamma1_is_2_pow_19_ (simd_unit: t_Array i32 (sz 8)) (serialized: t_Slice u8)
+val serialize_when_gamma1_is_2_pow_19_
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (serialized: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
-val serialize (simd_unit: t_Array i32 (sz 8)) (serialized: t_Slice u8) (gamma1_exponent: usize)
+val serialize
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (serialized: t_Slice u8)
+      (gamma1_exponent: usize)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)

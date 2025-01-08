@@ -23,32 +23,64 @@ val power2round_element (t: i32) : Prims.Pure (i32 & i32) Prims.l_True (fun _ ->
 
 val use_one_hint (gamma2 r hint: i32) : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
 
-val add (lhs rhs: t_Array i32 (sz 8))
-    : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+val add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val compute_hint (v_GAMMA2: i32) (low high hint: t_Array i32 (sz 8))
-    : Prims.Pure (t_Array i32 (sz 8) & usize) Prims.l_True (fun _ -> Prims.l_True)
+val compute_hint
+      (v_GAMMA2: i32)
+      (low high hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+    : Prims.Pure (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val decompose (gamma2: i32) (simd_unit low high: t_Array i32 (sz 8))
-    : Prims.Pure (t_Array i32 (sz 8) & t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+val decompose
+      (gamma2: i32)
+      (simd_unit low high: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+    : Prims.Pure
+      (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+        Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val infinity_norm_exceeds (simd_unit: t_Array i32 (sz 8)) (bound: i32)
+val infinity_norm_exceeds
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (bound: i32)
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
-val montgomery_multiply (lhs rhs: t_Array i32 (sz 8))
-    : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+val montgomery_multiply (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val montgomery_multiply_by_constant (simd_unit: t_Array i32 (sz 8)) (c: i32)
-    : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+val montgomery_multiply_by_constant
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (c: i32)
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val power2round (t0 t1: t_Array i32 (sz 8))
-    : Prims.Pure (t_Array i32 (sz 8) & t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+val power2round (t0 t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+    : Prims.Pure
+      (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+        Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val shift_left_then_reduce (v_SHIFT_BY: i32) (simd_unit: t_Array i32 (sz 8))
-    : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+val shift_left_then_reduce
+      (v_SHIFT_BY: i32)
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val subtract (lhs rhs: t_Array i32 (sz 8))
-    : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+val subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val use_hint (gamma2: i32) (simd_unit hint: t_Array i32 (sz 8))
-    : Prims.Pure (t_Array i32 (sz 8)) Prims.l_True (fun _ -> Prims.l_True)
+val use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+    : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      Prims.l_True
+      (fun _ -> Prims.l_True)

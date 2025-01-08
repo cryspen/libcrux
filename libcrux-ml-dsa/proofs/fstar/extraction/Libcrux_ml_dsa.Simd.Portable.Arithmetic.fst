@@ -120,88 +120,182 @@ let use_one_hint (gamma2 r hint: i32) =
           <:
           Rust_primitives.Hax.t_Never)
 
-let add (lhs rhs: t_Array i32 (sz 8)) =
-  let lhs:t_Array i32 (sz 8) =
+let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+  let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (Core.Slice.impl__len #i32 (lhs <: t_Slice i32) <: usize)
+      (Core.Slice.impl__len #i32
+          (lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
+        <:
+        usize)
       (fun lhs temp_1_ ->
-          let lhs:t_Array i32 (sz 8) = lhs in
+          let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let _:usize = temp_1_ in
           true)
       lhs
       (fun lhs i ->
-          let lhs:t_Array i32 (sz 8) = lhs in
+          let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
-            i
-            ((lhs.[ i ] <: i32) +! (rhs.[ i ] <: i32) <: i32)
+          {
+            lhs with
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+            =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
+                .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              i
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32) +!
+                (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
+                <:
+                i32)
+            <:
+            t_Array i32 (sz 8)
+          }
           <:
-          t_Array i32 (sz 8))
+          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   lhs
 
-let compute_hint (v_GAMMA2: i32) (low high hint: t_Array i32 (sz 8)) =
+let compute_hint
+      (v_GAMMA2: i32)
+      (low high hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+     =
   let one_hints_count:usize = sz 0 in
-  let hint, one_hints_count:(t_Array i32 (sz 8) & usize) =
+  let hint, one_hints_count:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (Core.Slice.impl__len #i32 (hint <: t_Slice i32) <: usize)
+      (Core.Slice.impl__len #i32
+          (hint.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
+        <:
+        usize)
       (fun temp_0_ temp_1_ ->
-          let hint, one_hints_count:(t_Array i32 (sz 8) & usize) = temp_0_ in
+          let hint, one_hints_count:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize
+          ) =
+            temp_0_
+          in
           let _:usize = temp_1_ in
           true)
-      (hint, one_hints_count <: (t_Array i32 (sz 8) & usize))
+      (hint, one_hints_count <: (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize))
       (fun temp_0_ i ->
-          let hint, one_hints_count:(t_Array i32 (sz 8) & usize) = temp_0_ in
-          let i:usize = i in
-          let hint:t_Array i32 (sz 8) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize hint
-              i
-              (compute_one_hint v_GAMMA2 (low.[ i ] <: i32) (high.[ i ] <: i32) <: i32)
+          let hint, one_hints_count:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize
+          ) =
+            temp_0_
           in
-          let one_hints_count:usize = one_hints_count +! (cast (hint.[ i ] <: i32) <: usize) in
-          hint, one_hints_count <: (t_Array i32 (sz 8) & usize))
+          let i:usize = i in
+          let hint:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+            {
+              hint with
+              Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize hint
+                  .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+                i
+                (compute_one_hint v_GAMMA2
+                    (low.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
+                    (high.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
+                  <:
+                  i32)
+            }
+            <:
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+          in
+          let one_hints_count:usize =
+            one_hints_count +!
+            (cast (hint.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32) <: usize)
+          in
+          hint, one_hints_count <: (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize)
+      )
   in
   let hax_temp_output:usize = one_hints_count in
-  hint, hax_temp_output <: (t_Array i32 (sz 8) & usize)
+  hint, hax_temp_output <: (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize)
 
-let decompose (gamma2: i32) (simd_unit low high: t_Array i32 (sz 8)) =
-  let high, low:(t_Array i32 (sz 8) & t_Array i32 (sz 8)) =
+let decompose
+      (gamma2: i32)
+      (simd_unit low high: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+     =
+  let high, low:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (Core.Slice.impl__len #i32 (low <: t_Slice i32) <: usize)
+      (Core.Slice.impl__len #i32
+          (low.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
+        <:
+        usize)
       (fun temp_0_ temp_1_ ->
-          let high, low:(t_Array i32 (sz 8) & t_Array i32 (sz 8)) = temp_0_ in
+          let high, low:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+            temp_0_
+          in
           let _:usize = temp_1_ in
           true)
-      (high, low <: (t_Array i32 (sz 8) & t_Array i32 (sz 8)))
+      (high, low
+        <:
+        (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients))
       (fun temp_0_ i ->
-          let high, low:(t_Array i32 (sz 8) & t_Array i32 (sz 8)) = temp_0_ in
+          let high, low:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+            temp_0_
+          in
           let i:usize = i in
-          let lhs, lhs_1_:(i32 & i32) = decompose_element gamma2 (simd_unit.[ i ] <: i32) in
-          let low:t_Array i32 (sz 8) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low i lhs
+          let lhs, lhs_1_:(i32 & i32) =
+            decompose_element gamma2
+              (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
           in
-          let high:t_Array i32 (sz 8) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high i lhs_1_
+          let low:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+            {
+              low with
+              Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
+                  .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+                i
+                lhs
+            }
+            <:
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
           in
-          high, low <: (t_Array i32 (sz 8) & t_Array i32 (sz 8)))
+          let high:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+            {
+              high with
+              Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
+                  .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+                i
+                lhs_1_
+            }
+            <:
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+          in
+          high, low
+          <:
+          (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients))
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
-  low, high <: (t_Array i32 (sz 8) & t_Array i32 (sz 8))
+  low, high
+  <:
+  (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
 
-let infinity_norm_exceeds (simd_unit: t_Array i32 (sz 8)) (bound: i32) =
+let infinity_norm_exceeds
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (bound: i32)
+     =
   let result:bool = false in
   let result:bool =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
-            i32)
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__iter #i32 (simd_unit <: t_Slice i32) <: Core.Slice.Iter.t_Iter i32)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (Core.Slice.impl__len #i32
+          (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
         <:
-        Core.Slice.Iter.t_Iter i32)
-      result
-      (fun result coefficient ->
+        usize)
+      (fun result temp_1_ ->
           let result:bool = result in
-          let coefficient:i32 = coefficient in
+          let _:usize = temp_1_ in
+          true)
+      result
+      (fun result i ->
+          let result:bool = result in
+          let i:usize = i in
+          let coefficient:i32 = simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] in
           let _:Prims.unit =
             if true
             then
@@ -221,141 +315,269 @@ let infinity_norm_exceeds (simd_unit: t_Array i32 (sz 8)) (bound: i32) =
   in
   result
 
-let montgomery_multiply (lhs rhs: t_Array i32 (sz 8)) =
-  let lhs:t_Array i32 (sz 8) =
+let montgomery_multiply (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+  let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (Core.Slice.impl__len #i32 (lhs <: t_Slice i32) <: usize)
+      (Core.Slice.impl__len #i32
+          (lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
+        <:
+        usize)
       (fun lhs temp_1_ ->
-          let lhs:t_Array i32 (sz 8) = lhs in
+          let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let _:usize = temp_1_ in
           true)
       lhs
       (fun lhs i ->
-          let lhs:t_Array i32 (sz 8) = lhs in
+          let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
-            i
-            (montgomery_reduce_element ((cast (lhs.[ i ] <: i32) <: i64) *!
-                  (cast (rhs.[ i ] <: i32) <: i64)
-                  <:
-                  i64)
-              <:
-              i32)
+          {
+            lhs with
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+            =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
+                .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              i
+              (montgomery_reduce_element ((cast (lhs
+                            .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ]
+                          <:
+                          i32)
+                      <:
+                      i64) *!
+                    (cast (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
+                      <:
+                      i64)
+                    <:
+                    i64)
+                <:
+                i32)
+            <:
+            t_Array i32 (sz 8)
+          }
           <:
-          t_Array i32 (sz 8))
+          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   lhs
 
-let montgomery_multiply_by_constant (simd_unit: t_Array i32 (sz 8)) (c: i32) =
-  let simd_unit:t_Array i32 (sz 8) =
+let montgomery_multiply_by_constant
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (c: i32)
+     =
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (Core.Slice.impl__len #i32 (simd_unit <: t_Slice i32) <: usize)
+      (Core.Slice.impl__len #i32
+          (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
+        <:
+        usize)
       (fun simd_unit temp_1_ ->
-          let simd_unit:t_Array i32 (sz 8) = simd_unit in
+          let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = simd_unit in
           let _:usize = temp_1_ in
           true)
       simd_unit
       (fun simd_unit i ->
-          let simd_unit:t_Array i32 (sz 8) = simd_unit in
+          let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = simd_unit in
           let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-            i
-            (montgomery_reduce_element ((cast (simd_unit.[ i ] <: i32) <: i64) *!
-                  (cast (c <: i32) <: i64)
-                  <:
-                  i64)
-              <:
-              i32)
+          {
+            simd_unit with
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+            =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+                .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              i
+              (montgomery_reduce_element ((cast (simd_unit
+                            .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ]
+                          <:
+                          i32)
+                      <:
+                      i64) *!
+                    (cast (c <: i32) <: i64)
+                    <:
+                    i64)
+                <:
+                i32)
+            <:
+            t_Array i32 (sz 8)
+          }
           <:
-          t_Array i32 (sz 8))
+          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   simd_unit
 
-let power2round (t0 t1: t_Array i32 (sz 8)) =
-  let t0, t1:(t_Array i32 (sz 8) & t_Array i32 (sz 8)) =
+let power2round (t0 t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+  let t0, t1:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (Core.Slice.impl__len #i32 (t0 <: t_Slice i32) <: usize)
+      (Core.Slice.impl__len #i32
+          (t0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
+        <:
+        usize)
       (fun temp_0_ temp_1_ ->
-          let t0, t1:(t_Array i32 (sz 8) & t_Array i32 (sz 8)) = temp_0_ in
+          let t0, t1:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+            temp_0_
+          in
           let _:usize = temp_1_ in
           true)
-      (t0, t1 <: (t_Array i32 (sz 8) & t_Array i32 (sz 8)))
+      (t0, t1
+        <:
+        (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients))
       (fun temp_0_ i ->
-          let t0, t1:(t_Array i32 (sz 8) & t_Array i32 (sz 8)) = temp_0_ in
+          let t0, t1:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+            temp_0_
+          in
           let i:usize = i in
-          let lhs, lhs_1_:(i32 & i32) = power2round_element (t0.[ i ] <: i32) in
-          let t0:t_Array i32 (sz 8) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize t0 i lhs
+          let lhs, lhs_1_:(i32 & i32) =
+            power2round_element (t0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
           in
-          let t1:t_Array i32 (sz 8) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize t1 i lhs_1_
+          let t0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+            {
+              t0 with
+              Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize t0
+                  .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+                i
+                lhs
+            }
+            <:
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
           in
-          t0, t1 <: (t_Array i32 (sz 8) & t_Array i32 (sz 8)))
+          let t1:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+            {
+              t1 with
+              Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize t1
+                  .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+                i
+                lhs_1_
+            }
+            <:
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+          in
+          t0, t1
+          <:
+          (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients))
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
-  t0, t1 <: (t_Array i32 (sz 8) & t_Array i32 (sz 8))
+  t0, t1
+  <:
+  (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
 
-let shift_left_then_reduce (v_SHIFT_BY: i32) (simd_unit: t_Array i32 (sz 8)) =
-  let simd_unit:t_Array i32 (sz 8) =
+let shift_left_then_reduce
+      (v_SHIFT_BY: i32)
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+     =
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (Core.Slice.impl__len #i32 (simd_unit <: t_Slice i32) <: usize)
+      (Core.Slice.impl__len #i32
+          (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
+        <:
+        usize)
       (fun simd_unit temp_1_ ->
-          let simd_unit:t_Array i32 (sz 8) = simd_unit in
+          let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = simd_unit in
           let _:usize = temp_1_ in
           true)
       simd_unit
       (fun simd_unit i ->
-          let simd_unit:t_Array i32 (sz 8) = simd_unit in
+          let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = simd_unit in
           let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-            i
-            (reduce_element ((simd_unit.[ i ] <: i32) <<! v_SHIFT_BY <: i32) <: i32)
+          {
+            simd_unit with
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+            =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+                .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              i
+              (reduce_element ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ]
+                      <:
+                      i32) <<!
+                    v_SHIFT_BY
+                    <:
+                    i32)
+                <:
+                i32)
+            <:
+            t_Array i32 (sz 8)
+          }
           <:
-          t_Array i32 (sz 8))
+          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   simd_unit
 
-let subtract (lhs rhs: t_Array i32 (sz 8)) =
-  let lhs:t_Array i32 (sz 8) =
+let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+  let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (Core.Slice.impl__len #i32 (lhs <: t_Slice i32) <: usize)
+      (Core.Slice.impl__len #i32
+          (lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
+        <:
+        usize)
       (fun lhs temp_1_ ->
-          let lhs:t_Array i32 (sz 8) = lhs in
+          let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let _:usize = temp_1_ in
           true)
       lhs
       (fun lhs i ->
-          let lhs:t_Array i32 (sz 8) = lhs in
+          let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
-            i
-            ((lhs.[ i ] <: i32) -! (rhs.[ i ] <: i32) <: i32)
+          {
+            lhs with
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+            =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
+                .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              i
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32) -!
+                (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
+                <:
+                i32)
+            <:
+            t_Array i32 (sz 8)
+          }
           <:
-          t_Array i32 (sz 8))
+          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   lhs
 
-let use_hint (gamma2: i32) (simd_unit hint: t_Array i32 (sz 8)) =
-  let hint:t_Array i32 (sz 8) =
+let use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+  let hint:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (Core.Slice.impl__len #i32 (hint <: t_Slice i32) <: usize)
+      (Core.Slice.impl__len #i32
+          (hint.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
+        <:
+        usize)
       (fun hint temp_1_ ->
-          let hint:t_Array i32 (sz 8) = hint in
+          let hint:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = hint in
           let _:usize = temp_1_ in
           true)
       hint
       (fun hint i ->
-          let hint:t_Array i32 (sz 8) = hint in
+          let hint:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = hint in
           let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize hint
-            i
-            (use_one_hint gamma2 (simd_unit.[ i ] <: i32) (hint.[ i ] <: i32) <: i32)
+          {
+            hint with
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+            =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize hint
+                .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              i
+              (use_one_hint gamma2
+                  (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
+                  (hint.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
+                <:
+                i32)
+            <:
+            t_Array i32 (sz 8)
+          }
           <:
-          t_Array i32 (sz 8))
+          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   hint
