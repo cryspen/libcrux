@@ -361,12 +361,16 @@ pub fn mm256_xor_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     // Local testing seems to indicate that it's a little more stable in
     // benchmarks though.
     // See https://stackoverflow.com/questions/27804476/difference-between-mm256-xor-si256-and-mm256-xor-ps
-    unsafe {
-        _mm256_castps_si256(_mm256_xor_ps(
-            _mm256_castsi256_ps(lhs),
-            _mm256_castsi256_ps(rhs),
-        ))
-    }
+    //
+    // However, using this pushes the doc test in ml-kem over the limit for
+    // stack size on Windows.
+    // unsafe {
+    //     _mm256_castps_si256(_mm256_xor_ps(
+    //         _mm256_castsi256_ps(lhs),
+    //         _mm256_castsi256_ps(rhs),
+    //     ))
+    // }
+    unsafe { _mm256_xor_si256(lhs, rhs) }
 }
 
 #[inline(always)]
