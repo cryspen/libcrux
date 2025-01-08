@@ -66,19 +66,19 @@ let serialize
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      (serialized: t_Slice u8)
      =
-  let serialized:t_Array u8 (sz 320) = Rust_primitives.Hax.repeat 0uy (sz 320) in
-  let serialized:t_Array u8 (sz 320) =
+  let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_enumerated_slice (re.Libcrux_ml_dsa.Polynomial.f_simd_units
         <:
         t_Slice v_SIMDUnit)
       (fun serialized temp_1_ ->
-          let serialized:t_Array u8 (sz 320) = serialized in
+          let serialized:t_Slice u8 = serialized in
           let _:usize = temp_1_ in
           true)
       serialized
       (fun serialized temp_1_ ->
-          let serialized:t_Array u8 (sz 320) = serialized in
+          let serialized:t_Slice u8 = serialized in
           let i, simd_unit:(usize & v_SIMDUnit) = temp_1_ in
           Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
             ({
@@ -105,6 +105,7 @@ let serialize
               <:
               t_Slice u8)
           <:
-          t_Array u8 (sz 320))
+          t_Slice u8)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized

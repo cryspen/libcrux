@@ -3,10 +3,10 @@ module Libcrux_ml_dsa.Simd.Portable.Arithmetic
 open Core
 open FStar.Mul
 
-let compute_one_hint (v_GAMMA2 low high: i32) =
+let compute_one_hint (low high gamma2: i32) =
   if
-    low >. v_GAMMA2 || low <. (Core.Ops.Arith.Neg.neg v_GAMMA2 <: i32) ||
-    low =. (Core.Ops.Arith.Neg.neg v_GAMMA2 <: i32) && high <>. 0l
+    low >. gamma2 || low <. (Core.Ops.Arith.Neg.neg gamma2 <: i32) ||
+    low =. (Core.Ops.Arith.Neg.neg gamma2 <: i32) && high <>. 0l
   then 1l
   else 0l
 
@@ -156,8 +156,9 @@ let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
   lhs
 
 let compute_hint
-      (v_GAMMA2: i32)
-      (low high hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (low high: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (gamma2: i32)
+      (hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
      =
   let one_hints_count:usize = sz 0 in
   let hint, one_hints_count:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize) =
@@ -188,9 +189,11 @@ let compute_hint
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize hint
                   .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
                 i
-                (compute_one_hint v_GAMMA2
-                    (low.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
+                (compute_one_hint (low.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ]
+                      <:
+                      i32)
                     (high.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
+                    gamma2
                   <:
                   i32)
             }

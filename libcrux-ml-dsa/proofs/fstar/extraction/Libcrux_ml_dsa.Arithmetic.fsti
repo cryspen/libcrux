@@ -59,11 +59,8 @@ val vector_infinity_norm_exceeds
 
 val make_hint
       (#v_SIMDUnit: Type0)
-      (v_DIMENSION: usize)
-      (v_GAMMA2: i32)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (low high: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
-      (hint: t_Array (t_Array i32 (sz 256)) v_DIMENSION)
-    : Prims.Pure (t_Array (t_Array i32 (sz 256)) v_DIMENSION & usize)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (low high: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+      (gamma2: i32)
+      (hint: t_Slice (t_Array i32 (sz 256)))
+    : Prims.Pure (t_Slice (t_Array i32 (sz 256)) & usize) Prims.l_True (fun _ -> Prims.l_True)

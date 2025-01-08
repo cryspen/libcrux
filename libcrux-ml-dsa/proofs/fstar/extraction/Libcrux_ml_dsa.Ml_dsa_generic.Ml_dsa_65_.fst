@@ -820,10 +820,11 @@ let sign_internal
                 in
                 let tmp0, out:(t_Array (t_Array i32 (sz 256)) (sz 6) & usize) =
                   Libcrux_ml_dsa.Arithmetic.make_hint #v_SIMDUnit
-                    (sz 6)
-                    261888l
-                    w0
-                    commitment
+                    (w0 <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+                    (commitment
+                      <:
+                      t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+                    Libcrux_ml_dsa.Constants.Ml_dsa_65_.v_GAMMA2
                     hint_candidate
                 in
                 let hint_candidate:t_Array (t_Array i32 (sz 256)) (sz 6) = tmp0 in

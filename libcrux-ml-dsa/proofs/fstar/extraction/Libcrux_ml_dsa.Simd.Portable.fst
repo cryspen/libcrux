@@ -255,18 +255,18 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     f_compute_hint_pre
     =
     (fun
-        (v_GAMMA2: i32)
         (low: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         (high: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (gamma2: i32)
         (hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         ->
         true);
     f_compute_hint_post
     =
     (fun
-        (v_GAMMA2: i32)
         (low: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         (high: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (gamma2: i32)
         (hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         (out2: (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize))
         ->
@@ -274,13 +274,13 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     f_compute_hint
     =
     (fun
-        (v_GAMMA2: i32)
         (low: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         (high: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (gamma2: i32)
         (hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         ->
         let tmp0, out1:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize) =
-          Libcrux_ml_dsa.Simd.Portable.Arithmetic.compute_hint v_GAMMA2 low high hint
+          Libcrux_ml_dsa.Simd.Portable.Arithmetic.compute_hint low high gamma2 hint
         in
         let hint:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = tmp0 in
         let hax_temp_output:usize = out1 in

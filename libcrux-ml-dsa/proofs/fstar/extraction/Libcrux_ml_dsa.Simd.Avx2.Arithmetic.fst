@@ -11,12 +11,16 @@ let add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   in
   lhs
 
-let compute_hint (v_GAMMA2: i32) (low high hint: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let gamma2:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 v_GAMMA2
-  in
+let compute_hint
+      (low high: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (gamma2: i32)
+      (hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+     =
   let minus_gamma2:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (Core.Ops.Arith.Neg.neg v_GAMMA2 <: i32)
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (Core.Ops.Arith.Neg.neg gamma2 <: i32)
+  in
+  let gamma2:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 gamma2
   in
   let low_within_bound:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_cmpgt_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_abs_epi32

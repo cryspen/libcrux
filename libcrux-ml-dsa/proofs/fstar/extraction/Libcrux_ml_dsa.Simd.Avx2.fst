@@ -307,18 +307,18 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
     f_compute_hint_pre
     =
     (fun
-        (v_GAMMA2: i32)
         (low: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         (high: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        (gamma2: i32)
         (hint: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         ->
         true);
     f_compute_hint_post
     =
     (fun
-        (v_GAMMA2: i32)
         (low: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         (high: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        (gamma2: i32)
         (hint: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         (out2: (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 & usize))
         ->
@@ -326,15 +326,16 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
     f_compute_hint
     =
     (fun
-        (v_GAMMA2: i32)
         (low: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         (high: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        (gamma2: i32)
         (hint: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         ->
         let tmp0, out1:(Libcrux_intrinsics.Avx2_extract.t_Vec256 & usize) =
-          Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint v_GAMMA2
-            low.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+          Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint low
+              .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
             high.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+            gamma2
             hint.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
         in
         let hint:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =

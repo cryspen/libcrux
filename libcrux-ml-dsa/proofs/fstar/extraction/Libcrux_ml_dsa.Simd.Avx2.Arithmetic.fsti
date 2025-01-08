@@ -6,7 +6,10 @@ open FStar.Mul
 val add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val compute_hint (v_GAMMA2: i32) (low high hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+val compute_hint
+      (low high: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (gamma2: i32)
+      (hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure (Libcrux_intrinsics.Avx2_extract.t_Vec256 & usize)
       Prims.l_True
       (fun _ -> Prims.l_True)

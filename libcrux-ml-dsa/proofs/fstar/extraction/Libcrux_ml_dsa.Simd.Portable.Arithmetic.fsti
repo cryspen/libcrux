@@ -5,7 +5,7 @@ open FStar.Mul
 
 let v_MONTGOMERY_SHIFT: u8 = 32uy
 
-val compute_one_hint (v_GAMMA2 low high: i32) : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
+val compute_one_hint (low high gamma2: i32) : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
 
 val get_n_least_significant_bits (n: u8) (value: u64)
     : Prims.Pure u64 Prims.l_True (fun _ -> Prims.l_True)
@@ -29,8 +29,9 @@ val add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (fun _ -> Prims.l_True)
 
 val compute_hint
-      (v_GAMMA2: i32)
-      (low high hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (low high: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (gamma2: i32)
+      (hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize)
       Prims.l_True
       (fun _ -> Prims.l_True)

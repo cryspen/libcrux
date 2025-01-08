@@ -123,7 +123,8 @@ let generate_serialized
                 }
                 <:
                 Core.Ops.Range.t_Range usize)
-              (Core.Slice.impl__copy_from_slice #u8
+              (Libcrux_ml_dsa.Encoding.T1.serialize #v_SIMDUnit
+                  ring_element
                   (verification_key_serialized.[ {
                         Core.Ops.Range.f_start = offset;
                         Core.Ops.Range.f_end
@@ -134,7 +135,6 @@ let generate_serialized
                       Core.Ops.Range.t_Range usize ]
                     <:
                     t_Slice u8)
-                  (Libcrux_ml_dsa.Encoding.T1.serialize #v_SIMDUnit ring_element <: t_Slice u8)
                 <:
                 t_Slice u8)
           in

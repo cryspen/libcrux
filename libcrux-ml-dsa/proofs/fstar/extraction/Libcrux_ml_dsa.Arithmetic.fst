@@ -400,39 +400,35 @@ let vector_infinity_norm_exceeds
           let ring_element:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
             ring_element
           in
-          if
-            (~.result <: bool) &&
-            (Libcrux_ml_dsa.Polynomial.impl__infinity_norm_exceeds #v_SIMDUnit ring_element bound
-              <:
-              bool)
-          then
-            let result:bool = true in
-            result
-          else result)
+          result ||
+          (Libcrux_ml_dsa.Polynomial.impl__infinity_norm_exceeds #v_SIMDUnit ring_element bound
+            <:
+            bool))
   in
   result
 
 let make_hint
       (#v_SIMDUnit: Type0)
-      (v_DIMENSION: usize)
-      (v_GAMMA2: i32)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (low high: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_DIMENSION)
-      (hint: t_Array (t_Array i32 (sz 256)) v_DIMENSION)
+      (low high: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+      (gamma2: i32)
+      (hint: t_Slice (t_Array i32 (sz 256)))
      =
   let true_hints:usize = sz 0 in
   let hint_simd:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
     Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
   in
-  let hint, hint_simd, true_hints:(t_Array (t_Array i32 (sz 256)) v_DIMENSION &
+  let hint, hint_simd, true_hints:(t_Slice (t_Array i32 (sz 256)) &
     Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
     usize) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
-      v_DIMENSION
+      (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) low
+        <:
+        usize)
       (fun temp_0_ temp_1_ ->
-          let hint, hint_simd, true_hints:(t_Array (t_Array i32 (sz 256)) v_DIMENSION &
+          let hint, hint_simd, true_hints:(t_Slice (t_Array i32 (sz 256)) &
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
             usize) =
             temp_0_
@@ -441,11 +437,11 @@ let make_hint
           true)
       (hint, hint_simd, true_hints
         <:
-        (t_Array (t_Array i32 (sz 256)) v_DIMENSION &
+        (t_Slice (t_Array i32 (sz 256)) &
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
           usize))
       (fun temp_0_ i ->
-          let hint, hint_simd, true_hints:(t_Array (t_Array i32 (sz 256)) v_DIMENSION &
+          let hint, hint_simd, true_hints:(t_Slice (t_Array i32 (sz 256)) &
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
             usize) =
             temp_0_
@@ -479,7 +475,6 @@ let make_hint
                   let tmp0, out:(v_SIMDUnit & usize) =
                     Libcrux_ml_dsa.Simd.Traits.f_compute_hint #v_SIMDUnit
                       #FStar.Tactics.Typeclasses.solve
-                      v_GAMMA2
                       ((low.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                           .Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ]
                         <:
@@ -488,6 +483,7 @@ let make_hint
                           .Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ]
                         <:
                         v_SIMDUnit)
+                      gamma2
                       (hint_simd.Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ] <: v_SIMDUnit)
                   in
                   let hint_simd:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
@@ -509,7 +505,7 @@ let make_hint
                   <:
                   (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & usize))
           in
-          let hint:t_Array (t_Array i32 (sz 256)) v_DIMENSION =
+          let hint:t_Slice (t_Array i32 (sz 256)) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize hint
               i
               (Libcrux_ml_dsa.Polynomial.impl__to_i32_array #v_SIMDUnit hint_simd
@@ -518,9 +514,9 @@ let make_hint
           in
           hint, hint_simd, true_hints
           <:
-          (t_Array (t_Array i32 (sz 256)) v_DIMENSION &
+          (t_Slice (t_Array i32 (sz 256)) &
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
             usize))
   in
   let hax_temp_output:usize = true_hints in
-  hint, hax_temp_output <: (t_Array (t_Array i32 (sz 256)) v_DIMENSION & usize)
+  hint, hax_temp_output <: (t_Slice (t_Array i32 (sz 256)) & usize)

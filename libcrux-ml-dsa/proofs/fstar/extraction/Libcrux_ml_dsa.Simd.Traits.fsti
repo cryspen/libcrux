@@ -41,12 +41,12 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure (v_Self & v_Self)
         (f_decompose_pre x0 x1 x2 x3)
         (fun result -> f_decompose_post x0 x1 x2 x3 result);
-  f_compute_hint_pre:v_GAMMA2: i32 -> v_Self -> v_Self -> v_Self -> Type0;
-  f_compute_hint_post:v_GAMMA2: i32 -> v_Self -> v_Self -> v_Self -> (v_Self & usize) -> Type0;
-  f_compute_hint:v_GAMMA2: i32 -> x0: v_Self -> x1: v_Self -> x2: v_Self
+  f_compute_hint_pre:v_Self -> v_Self -> i32 -> v_Self -> Type0;
+  f_compute_hint_post:v_Self -> v_Self -> i32 -> v_Self -> (v_Self & usize) -> Type0;
+  f_compute_hint:x0: v_Self -> x1: v_Self -> x2: i32 -> x3: v_Self
     -> Prims.Pure (v_Self & usize)
-        (f_compute_hint_pre v_GAMMA2 x0 x1 x2)
-        (fun result -> f_compute_hint_post v_GAMMA2 x0 x1 x2 result);
+        (f_compute_hint_pre x0 x1 x2 x3)
+        (fun result -> f_compute_hint_post x0 x1 x2 x3 result);
   f_use_hint_pre:i32 -> v_Self -> v_Self -> Type0;
   f_use_hint_post:i32 -> v_Self -> v_Self -> v_Self -> Type0;
   f_use_hint:x0: i32 -> x1: v_Self -> x2: v_Self
