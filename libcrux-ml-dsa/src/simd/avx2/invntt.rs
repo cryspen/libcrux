@@ -297,8 +297,7 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
             value: mm256_add_epi32(re[j].value, re[j + STEP_BY].value),
         };
         re[j + STEP_BY] = AVX2SIMDUnit {
-            value: arithmetic::montgomery_multiply_by_constant(a_minus_b
-                , ZETA),
+            value: arithmetic::montgomery_multiply_by_constant(a_minus_b, ZETA),
         };
     }
 
