@@ -1,7 +1,6 @@
 use super::vector_type::{Coefficients, FieldElement};
 use crate::{
     constants::{Gamma2, BITS_IN_LOWER_PART_OF_T, GAMMA2_V261_888, GAMMA2_V95_232},
-    helper::cloop,
     simd::traits::{
         FieldElementTimesMontgomeryR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
     },
@@ -11,8 +10,8 @@ pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 
 #[inline(always)]
 pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
-    for i in 0..lhs.len() {
-        lhs[i] += rhs[i];
+    for i in 0..lhs.values.len() {
+        lhs.values[i] += rhs.values[i];
     }
 
     // [hax] https://github.com/hacspec/hax/issues/720
@@ -21,8 +20,8 @@ pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
 
 #[inline(always)]
 pub fn subtract(lhs: &mut Coefficients, rhs: &Coefficients) {
-    for i in 0..lhs.len() {
-        lhs[i] -= rhs[i];
+    for i in 0..lhs.values.len() {
+        lhs.values[i] -= rhs.values[i];
     }
 
     // [hax] https://github.com/hacspec/hax/issues/720
@@ -58,8 +57,8 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 
 #[inline(always)]
 pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i32) {
-    for i in 0..simd_unit.len() {
-        simd_unit[i] = montgomery_reduce_element((simd_unit[i] as i64) * (c as i64))
+    for i in 0..simd_unit.values.len() {
+        simd_unit.values[i] = montgomery_reduce_element((simd_unit.values[i] as i64) * (c as i64))
     }
 
     // [hax] https://github.com/hacspec/hax/issues/720
@@ -68,8 +67,8 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
 
 #[inline(always)]
 pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
-    for i in 0..lhs.len() {
-        lhs[i] = montgomery_reduce_element((lhs[i] as i64) * (rhs[i] as i64))
+    for i in 0..lhs.values.len() {
+        lhs.values[i] = montgomery_reduce_element((lhs.values[i] as i64) * (rhs.values[i] as i64))
     }
 
     // [hax] https://github.com/hacspec/hax/issues/720
@@ -105,8 +104,8 @@ fn power2round_element(t: i32) -> (i32, i32) {
 
 #[inline(always)]
 pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
-    for i in 0..t0.len() {
-        (t0[i], t1[i]) = power2round_element(t0[i]);
+    for i in 0..t0.values.len() {
+        (t0.values[i], t1.values[i]) = power2round_element(t0.values[i]);
     }
 
     // [hax] https://github.com/hacspec/hax/issues/720
@@ -121,23 +120,22 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
     // It is ok to leak which coefficient violates the bound since
     // the probability for each coefficient is independent of secret
     // data but we must not leak the sign of the centralized representative.
-    cloop! {
-        for coefficient in simd_unit.iter() {
-            debug_assert!(*coefficient > -FIELD_MODULUS && *coefficient < FIELD_MODULUS);
-            // This norm is calculated using the absolute value of the
-            // signed representative in the range:
-            //
-            // -FIELD_MODULUS / 2 < r <= FIELD_MODULUS / 2.
-            //
-            // So if the coefficient is negative, get its absolute value, but
-            // don't convert it into a different representation.
-            let sign = coefficient >> 31;
-            let normalized = coefficient - (sign & (2 * coefficient));
+    for i in 0..simd_unit.values.len() {
+        let coefficient = simd_unit.values[i];
+        debug_assert!(coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS);
+        // This norm is calculated using the absolute value of the
+        // signed representative in the range:
+        //
+        // -FIELD_MODULUS / 2 < r <= FIELD_MODULUS / 2.
+        //
+        // So if the coefficient is negative, get its absolute value, but
+        // don't convert it into a different representation.
+        let sign = coefficient >> 31;
+        let normalized = coefficient - (sign & (2 * coefficient));
 
-            // FIXME: return
-            // [hax] https://github.com/hacspec/hax/issues/1204
-            result = result ||normalized >= bound;
-        }
+        // FIXME: return
+        // [hax] https://github.com/hacspec/hax/issues/1204
+        result = result || normalized >= bound;
     }
 
     result
@@ -152,8 +150,8 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
 
 #[inline(always)]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
-    for i in 0..simd_unit.len() {
-        simd_unit[i] = reduce_element(simd_unit[i] << SHIFT_BY);
+    for i in 0..simd_unit.values.len() {
+        simd_unit.values[i] = reduce_element(simd_unit.values[i] << SHIFT_BY);
     }
 
     // [hax] https://github.com/hacspec/hax/issues/720
@@ -177,9 +175,9 @@ pub(super) fn compute_hint<const GAMMA2: i32>(
 ) -> usize {
     let mut one_hints_count = 0;
 
-    for i in 0..hint.len() {
-        hint[i] = compute_one_hint::<GAMMA2>(low[i], high[i]);
-        one_hints_count += hint[i] as usize;
+    for i in 0..hint.values.len() {
+        hint.values[i] = compute_one_hint::<GAMMA2>(low.values[i], high.values[i]);
+        one_hints_count += hint.values[i] as usize;
     }
 
     one_hints_count
@@ -285,8 +283,8 @@ pub fn decompose(
     low: &mut Coefficients,
     high: &mut Coefficients,
 ) {
-    for i in 0..low.len() {
-        (low[i], high[i]) = decompose_element(gamma2, simd_unit[i]);
+    for i in 0..low.values.len() {
+        (low.values[i], high.values[i]) = decompose_element(gamma2, simd_unit.values[i]);
     }
 
     // [hax] https://github.com/hacspec/hax/issues/720
@@ -295,8 +293,8 @@ pub fn decompose(
 
 #[inline(always)]
 pub fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {
-    for i in 0..hint.len() {
-        hint[i] = use_one_hint(gamma2, simd_unit[i], hint[i]);
+    for i in 0..hint.values.len() {
+        hint.values[i] = use_one_hint(gamma2, simd_unit.values[i], hint.values[i]);
     }
 
     // [hax] https://github.com/hacspec/hax/issues/720

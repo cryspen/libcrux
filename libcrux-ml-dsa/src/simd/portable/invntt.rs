@@ -10,59 +10,59 @@ pub fn simd_unit_invert_ntt_at_layer_0(
     zeta2: i32,
     zeta3: i32,
 ) {
-    let a_minus_b = simd_unit[1] - simd_unit[0];
-    simd_unit[0] = simd_unit[0] + simd_unit[1];
-    simd_unit[1] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
+    let a_minus_b = simd_unit.values[1] - simd_unit.values[0];
+    simd_unit.values[0] = simd_unit.values[0] + simd_unit.values[1];
+    simd_unit.values[1] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
 
-    let a_minus_b = simd_unit[3] - simd_unit[2];
-    simd_unit[2] = simd_unit[2] + simd_unit[3];
-    simd_unit[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+    let a_minus_b = simd_unit.values[3] - simd_unit.values[2];
+    simd_unit.values[2] = simd_unit.values[2] + simd_unit.values[3];
+    simd_unit.values[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 
-    let a_minus_b = simd_unit[5] - simd_unit[4];
-    simd_unit[4] = simd_unit[4] + simd_unit[5];
-    simd_unit[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
+    let a_minus_b = simd_unit.values[5] - simd_unit.values[4];
+    simd_unit.values[4] = simd_unit.values[4] + simd_unit.values[5];
+    simd_unit.values[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
 
-    let a_minus_b = simd_unit[7] - simd_unit[6];
-    simd_unit[6] = simd_unit[6] + simd_unit[7];
-    simd_unit[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta3);
+    let a_minus_b = simd_unit.values[7] - simd_unit.values[6];
+    simd_unit.values[6] = simd_unit.values[6] + simd_unit.values[7];
+    simd_unit.values[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta3);
 }
 
 #[inline(always)]
 pub fn simd_unit_invert_ntt_at_layer_1(simd_unit: &mut Coefficients, zeta0: i32, zeta1: i32) {
-    let a_minus_b = simd_unit[2] - simd_unit[0];
-    simd_unit[0] = simd_unit[0] + simd_unit[2];
-    simd_unit[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
+    let a_minus_b = simd_unit.values[2] - simd_unit.values[0];
+    simd_unit.values[0] = simd_unit.values[0] + simd_unit.values[2];
+    simd_unit.values[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
 
-    let a_minus_b = simd_unit[3] - simd_unit[1];
-    simd_unit[1] = simd_unit[1] + simd_unit[3];
-    simd_unit[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
+    let a_minus_b = simd_unit.values[3] - simd_unit.values[1];
+    simd_unit.values[1] = simd_unit.values[1] + simd_unit.values[3];
+    simd_unit.values[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
 
-    let a_minus_b = simd_unit[6] - simd_unit[4];
-    simd_unit[4] = simd_unit[4] + simd_unit[6];
-    simd_unit[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+    let a_minus_b = simd_unit.values[6] - simd_unit.values[4];
+    simd_unit.values[4] = simd_unit.values[4] + simd_unit.values[6];
+    simd_unit.values[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 
-    let a_minus_b = simd_unit[7] - simd_unit[5];
-    simd_unit[5] = simd_unit[5] + simd_unit[7];
-    simd_unit[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+    let a_minus_b = simd_unit.values[7] - simd_unit.values[5];
+    simd_unit.values[5] = simd_unit.values[5] + simd_unit.values[7];
+    simd_unit.values[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 }
 
 #[inline(always)]
 pub fn simd_unit_invert_ntt_at_layer_2(simd_unit: &mut Coefficients, zeta: i32) {
-    let a_minus_b = simd_unit[4] - simd_unit[0];
-    simd_unit[0] = simd_unit[0] + simd_unit[4];
-    simd_unit[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let a_minus_b = simd_unit.values[4] - simd_unit.values[0];
+    simd_unit.values[0] = simd_unit.values[0] + simd_unit.values[4];
+    simd_unit.values[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = simd_unit[5] - simd_unit[1];
-    simd_unit[1] = simd_unit[1] + simd_unit[5];
-    simd_unit[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let a_minus_b = simd_unit.values[5] - simd_unit.values[1];
+    simd_unit.values[1] = simd_unit.values[1] + simd_unit.values[5];
+    simd_unit.values[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = simd_unit[6] - simd_unit[2];
-    simd_unit[2] = simd_unit[2] + simd_unit[6];
-    simd_unit[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let a_minus_b = simd_unit.values[6] - simd_unit.values[2];
+    simd_unit.values[2] = simd_unit.values[2] + simd_unit.values[6];
+    simd_unit.values[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = simd_unit[7] - simd_unit[3];
-    simd_unit[3] = simd_unit[3] + simd_unit[7];
-    simd_unit[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let a_minus_b = simd_unit.values[7] - simd_unit.values[3];
+    simd_unit.values[3] = simd_unit.values[3] + simd_unit.values[7];
+    simd_unit.values[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 }
 
 #[inline(always)]

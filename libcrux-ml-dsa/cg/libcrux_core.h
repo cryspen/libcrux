@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
- * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
- * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
+ * Charon: 0de54092afb546bf53cd8261c79499f3cae2c24b
+ * Eurydice: 8e112cd3065d2c1eb6c023cd37111300dbf9fc9a
+ * Karamel: f82ecfe9b99edd64642d47b4e3fb6314a8e2320b
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 834b7f51701fa4e8695a784c138ed230f49f0c4e
+ * Libcrux: b895bda560d248ec1373c7ad6c27192090ff3311
  */
 
 #ifndef __libcrux_core_H
@@ -61,52 +61,13 @@ static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
 
 /**
-A monomorphic instance of core.result.Result
-with types int32_t[8size_t], core_array_TryFromSliceError
-
+A monomorphic instance of libcrux_ml_dsa.types.MLDSASignature
+with const generics
+- $3309size_t
 */
-typedef struct Result_6c_s {
-  Result_a9_tags tag;
-  union {
-    int32_t case_Ok[8U];
-    TryFromSliceError case_Err;
-  } val;
-} Result_6c;
-
-/**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_26
-with types int32_t[8size_t], core_array_TryFromSliceError
-
-*/
-static inline void unwrap_26_55(Result_6c self, int32_t ret[8U]) {
-  if (self.tag == Ok) {
-    int32_t f0[8U];
-    memcpy(f0, self.val.case_Ok, (size_t)8U * sizeof(int32_t));
-    memcpy(ret, f0, (size_t)8U * sizeof(int32_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
-
-/**
-A monomorphic instance of core.option.Option
-with types uint8_t[11size_t]
-
-*/
-typedef struct Option_30_s {
-  Option_d8_tags tag;
-  uint8_t f0[11U];
-} Option_30;
-
-typedef struct libcrux_ml_dsa_ml_dsa_65_MLDSA65Signature_s {
+typedef struct libcrux_ml_dsa_types_MLDSASignature_8f_s {
   uint8_t value[3309U];
-} libcrux_ml_dsa_ml_dsa_65_MLDSA65Signature;
+} libcrux_ml_dsa_types_MLDSASignature_8f;
 
 /**
  A reference to the raw byte array.
@@ -120,26 +81,9 @@ with const generics
 - SIZE= 3309
 */
 static inline uint8_t *libcrux_ml_dsa_types_as_ref_8f_fa(
-    libcrux_ml_dsa_ml_dsa_65_MLDSA65Signature *self) {
+    libcrux_ml_dsa_types_MLDSASignature_8f *self) {
   return self->value;
 }
-
-#define libcrux_ml_dsa_types_VerificationError_MalformedHintError 0
-#define libcrux_ml_dsa_types_VerificationError_SignerResponseExceedsBoundError 1
-#define libcrux_ml_dsa_types_VerificationError_CommitmentHashesDontMatchError 2
-#define libcrux_ml_dsa_types_VerificationError_VerificationContextTooLongError 3
-
-typedef uint8_t libcrux_ml_dsa_types_VerificationError;
-
-/**
-A monomorphic instance of core.result.Result
-with types (), libcrux_ml_dsa_types_VerificationError
-
-*/
-typedef struct Result_41_s {
-  Result_a9_tags tag;
-  libcrux_ml_dsa_types_VerificationError f0;
-} Result_41;
 
 /**
 A monomorphic instance of libcrux_ml_dsa.types.MLDSAVerificationKey
@@ -164,6 +108,48 @@ with const generics
 */
 static inline uint8_t *libcrux_ml_dsa_types_as_ref_66_97(
     libcrux_ml_dsa_types_MLDSAVerificationKey_ea *self) {
+  return self->value;
+}
+
+#define libcrux_ml_dsa_types_VerificationError_MalformedHintError 0
+#define libcrux_ml_dsa_types_VerificationError_SignerResponseExceedsBoundError 1
+#define libcrux_ml_dsa_types_VerificationError_CommitmentHashesDontMatchError 2
+#define libcrux_ml_dsa_types_VerificationError_VerificationContextTooLongError 3
+
+typedef uint8_t libcrux_ml_dsa_types_VerificationError;
+
+/**
+A monomorphic instance of core.result.Result
+with types (), libcrux_ml_dsa_types_VerificationError
+
+*/
+typedef struct Result_41_s {
+  Result_a9_tags tag;
+  libcrux_ml_dsa_types_VerificationError f0;
+} Result_41;
+
+/**
+A monomorphic instance of libcrux_ml_dsa.types.MLDSASigningKey
+with const generics
+- $4032size_t
+*/
+typedef struct libcrux_ml_dsa_types_MLDSASigningKey_22_s {
+  uint8_t value[4032U];
+} libcrux_ml_dsa_types_MLDSASigningKey_22;
+
+/**
+ A reference to the raw byte array.
+*/
+/**
+This function found in impl {libcrux_ml_dsa::types::MLDSASigningKey<SIZE>}
+*/
+/**
+A monomorphic instance of libcrux_ml_dsa.types.as_ref_9b
+with const generics
+- SIZE= 4032
+*/
+static inline uint8_t *libcrux_ml_dsa_types_as_ref_9b_09(
+    libcrux_ml_dsa_types_MLDSASigningKey_22 *self) {
   return self->value;
 }
 
@@ -201,35 +187,42 @@ libcrux_ml_dsa_types_SigningError
 typedef struct Result_2e_s {
   Result_a9_tags tag;
   union {
-    libcrux_ml_dsa_ml_dsa_65_MLDSA65Signature case_Ok;
+    libcrux_ml_dsa_types_MLDSASignature_8f case_Ok;
     libcrux_ml_dsa_types_SigningError case_Err;
   } val;
 } Result_2e;
 
 /**
-A monomorphic instance of libcrux_ml_dsa.types.MLDSASigningKey
-with const generics
-- $4032size_t
+ Build
 */
-typedef struct libcrux_ml_dsa_types_MLDSASigningKey_22_s {
-  uint8_t value[4032U];
-} libcrux_ml_dsa_types_MLDSASigningKey_22;
+/**
+This function found in impl {libcrux_ml_dsa::types::MLDSASignature<SIZE>#4}
+*/
+/**
+A monomorphic instance of libcrux_ml_dsa.types.new_8f
+with const generics
+- SIZE= 3309
+*/
+static inline libcrux_ml_dsa_types_MLDSASignature_8f
+libcrux_ml_dsa_types_new_8f_fa(uint8_t value[3309U]) {
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_value[3309U];
+  memcpy(copy_of_value, value, (size_t)3309U * sizeof(uint8_t));
+  libcrux_ml_dsa_types_MLDSASignature_8f lit;
+  memcpy(lit.value, copy_of_value, (size_t)3309U * sizeof(uint8_t));
+  return lit;
+}
 
 /**
- A reference to the raw byte array.
-*/
-/**
-This function found in impl {libcrux_ml_dsa::types::MLDSASigningKey<SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_dsa.types.as_ref_9b
+A monomorphic instance of libcrux_ml_dsa.types.MLDSAKeyPair
 with const generics
-- SIZE= 4032
+- $1952size_t
+- $4032size_t
 */
-static inline uint8_t *libcrux_ml_dsa_types_as_ref_9b_09(
-    libcrux_ml_dsa_types_MLDSASigningKey_22 *self) {
-  return self->value;
-}
+typedef struct libcrux_ml_dsa_types_MLDSAKeyPair_06_s {
+  libcrux_ml_dsa_types_MLDSASigningKey_22 signing_key;
+  libcrux_ml_dsa_types_MLDSAVerificationKey_ea verification_key;
+} libcrux_ml_dsa_types_MLDSAKeyPair_06;
 
 /**
  Build
@@ -274,10 +267,15 @@ libcrux_ml_dsa_types_new_9b_09(uint8_t value[4032U]) {
   return lit;
 }
 
-typedef struct libcrux_ml_dsa_ml_dsa_65_MLDSA65KeyPair_s {
-  libcrux_ml_dsa_types_MLDSASigningKey_22 signing_key;
-  libcrux_ml_dsa_types_MLDSAVerificationKey_ea verification_key;
-} libcrux_ml_dsa_ml_dsa_65_MLDSA65KeyPair;
+/**
+A monomorphic instance of core.option.Option
+with types uint8_t[11size_t]
+
+*/
+typedef struct Option_30_s {
+  Option_d8_tags tag;
+  uint8_t f0[11U];
+} Option_30;
 
 typedef struct Eurydice_slice_uint8_t_4size_t__x2_s {
   Eurydice_slice fst[4U];

@@ -138,13 +138,6 @@ pub(crate) mod generic {
         domain_separation_context: Option<DomainSeparationContext>,
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-        // FIXME: pass these in as enums instead
-        let eta = match ETA as u8 {
-            2 => Eta::Two,
-            4 => Eta::Four,
-            _ => unreachable!(),
-        };
-
         // Split the signing key into its parts.
         let (seed_for_a, remaining_serialized) = signing_key.split_at(SEED_FOR_A_SIZE);
         let (seed_for_signing, remaining_serialized) =
@@ -163,13 +156,13 @@ pub(crate) mod generic {
         let mut t0_as_ntt = [PolynomialRingElement::zero(); ROWS_IN_A];
 
         encoding::error::deserialize_to_vector_then_ntt::<SIMDUnit>(
-            eta,
+            ETA,
             ERROR_RING_ELEMENT_SIZE,
             s1_serialized,
             &mut s1_as_ntt,
         );
         encoding::error::deserialize_to_vector_then_ntt::<SIMDUnit>(
-            eta,
+            ETA,
             ERROR_RING_ELEMENT_SIZE,
             s2_serialized,
             &mut s2_as_ntt,

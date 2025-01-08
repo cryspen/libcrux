@@ -12,12 +12,11 @@ mod invntt;
 mod ntt;
 mod sample;
 
+/// Portable SIMD coefficients
+pub(crate) use vector_type::Coefficients as PortableSIMDUnit;
 use vector_type::Coefficients;
-pub(crate) use vector_type::PortableSIMDUnit;
 
-impl Operations for PortableSIMDUnit {
-    type Coefficient = Coefficients;
-
+impl Operations for Coefficients {
     fn zero() -> Coefficients {
         vector_type::zero()
     }
@@ -54,19 +53,14 @@ impl Operations for PortableSIMDUnit {
         arithmetic::infinity_norm_exceeds(simd_unit, bound)
     }
 
-    fn decompose(
-        gamma2: Gamma2,
-        simd_unit: &Self::Coefficient,
-        low: &mut Self::Coefficient,
-        high: &mut Self::Coefficient,
-    ) {
+    fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self) {
         arithmetic::decompose(gamma2, simd_unit, low, high)
     }
 
     fn compute_hint<const GAMMA2: i32>(
         low: &Coefficients,
         high: &Coefficients,
-        hint: &mut Self::Coefficient,
+        hint: &mut Self,
     ) -> usize {
         arithmetic::compute_hint::<GAMMA2>(low, high, hint)
     }
@@ -115,11 +109,11 @@ impl Operations for PortableSIMDUnit {
         encoding::t0::deserialize(serialized, out)
     }
 
-    fn t1_serialize(simd_unit: &Self::Coefficient, out: &mut [u8]) {
+    fn t1_serialize(simd_unit: &Self, out: &mut [u8]) {
         encoding::t1::serialize(simd_unit, out);
     }
 
-    fn t1_deserialize(serialized: &[u8], out: &mut Self::Coefficient) {
+    fn t1_deserialize(serialized: &[u8], out: &mut Self) {
         encoding::t1::deserialize(serialized, out);
     }
 

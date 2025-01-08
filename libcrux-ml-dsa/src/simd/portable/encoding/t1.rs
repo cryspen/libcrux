@@ -7,7 +7,7 @@ pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
     debug_assert!(serialized.len() == 10);
 
     cloop! {
-        for (i, coefficients) in simd_unit.chunks_exact(4).enumerate() {
+        for (i, coefficients) in simd_unit.values.chunks_exact(4).enumerate() {
             serialized[5 * i] = (coefficients[0] & 0xFF) as u8;
             serialized[5 * i + 1] =
                 ((coefficients[1] & 0x3F) as u8) << 2 | ((coefficients[0] >> 8) & 0x03) as u8;
@@ -37,10 +37,10 @@ pub fn deserialize(serialized: &[u8], simd_unit: &mut Coefficients) {
             let byte3 = bytes[3] as i32;
             let byte4 = bytes[4] as i32;
 
-            simd_unit[4 * i] = (byte0 | (byte1 << 8)) & mask;
-            simd_unit[4 * i + 1] = ((byte1 >> 2) | (byte2 << 6)) & mask;
-            simd_unit[4 * i + 2] = ((byte2 >> 4) | (byte3 << 4)) & mask;
-            simd_unit[4 * i + 3] = ((byte3 >> 6) | (byte4 << 2)) & mask;
+            simd_unit.values[4 * i] = (byte0 | (byte1 << 8)) & mask;
+            simd_unit.values[4 * i + 1] = ((byte1 >> 2) | (byte2 << 6)) & mask;
+            simd_unit.values[4 * i + 2] = ((byte2 >> 4) | (byte3 << 4)) & mask;
+            simd_unit.values[4 * i + 3] = ((byte3 >> 6) | (byte4 << 2)) & mask;
         }
     }
 

@@ -17,127 +17,6 @@ let generate_domain_separator (row, column: (u8 & u8)) =
 let sample_up_to_four_ring_elements_flat__xy (index width: usize) =
   (cast (index /! width <: usize) <: u8), (cast (index %! width <: usize) <: u8) <: (u8 & u8)
 
-let add_domain_separator (slice: t_Slice u8) (indices: (u8 & u8)) =
-  let out:t_Array u8 (sz 34) = Rust_primitives.Hax.repeat 0uy (sz 34) in
-  let out:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
-      ({
-          Core.Ops.Range.f_start = sz 0;
-          Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
-        }
-        <:
-        Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice #u8
-          (out.[ {
-                Core.Ops.Range.f_start = sz 0;
-                Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-          slice
-        <:
-        t_Slice u8)
-  in
-  let domain_separator:u16 = generate_domain_separator indices in
-  let out:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
-      (sz 32)
-      (cast (domain_separator <: u16) <: u8)
-  in
-  let out:t_Array u8 (sz 34) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
-      (sz 33)
-      (cast (domain_separator >>! 8l <: u16) <: u8)
-  in
-  out
-
-let add_error_domain_separator (slice: t_Slice u8) (domain_separator: u16) =
-  let out:t_Array u8 (sz 66) = Rust_primitives.Hax.repeat 0uy (sz 66) in
-  let out:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
-      ({
-          Core.Ops.Range.f_start = sz 0;
-          Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
-        }
-        <:
-        Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice #u8
-          (out.[ {
-                Core.Ops.Range.f_start = sz 0;
-                Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-          slice
-        <:
-        t_Slice u8)
-  in
-  let out:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
-      (sz 64)
-      (cast (domain_separator <: u16) <: u8)
-  in
-  let out:t_Array u8 (sz 66) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
-      (sz 65)
-      (cast (domain_separator >>! 8l <: u16) <: u8)
-  in
-  out
-
-let inside_out_shuffle
-      (randomness: t_Slice u8)
-      (out_index: usize)
-      (signs: u64)
-      (result: t_Array i32 (sz 256))
-     =
-  let done:bool = false in
-  let done, out_index, result, signs:(bool & usize & t_Array i32 (sz 256) & u64) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
-            u8)
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__iter #u8 randomness <: Core.Slice.Iter.t_Iter u8)
-        <:
-        Core.Slice.Iter.t_Iter u8)
-      (done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64))
-      (fun temp_0_ byte ->
-          let done, out_index, result, signs:(bool & usize & t_Array i32 (sz 256) & u64) =
-            temp_0_
-          in
-          let byte:u8 = byte in
-          if ~.done <: bool
-          then
-            let sample_at:usize = cast (byte <: u8) <: usize in
-            let out_index, result, signs:(usize & t_Array i32 (sz 256) & u64) =
-              if sample_at <=. out_index
-              then
-                let result:t_Array i32 (sz 256) =
-                  Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-                    out_index
-                    (result.[ sample_at ] <: i32)
-                in
-                let out_index:usize = out_index +! sz 1 in
-                let result:t_Array i32 (sz 256) =
-                  Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-                    sample_at
-                    (1l -! (2l *! (cast (signs &. 1uL <: u64) <: i32) <: i32) <: i32)
-                in
-                let signs:u64 = signs >>! 1l in
-                out_index, result, signs <: (usize & t_Array i32 (sz 256) & u64)
-              else out_index, result, signs <: (usize & t_Array i32 (sz 256) & u64)
-            in
-            let done:bool =
-              out_index =. (Core.Slice.impl__len #i32 (result <: t_Slice i32) <: usize)
-            in
-            done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64)
-          else done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64))
-  in
-  let hax_temp_output:bool = done in
-  out_index, signs, result, hax_temp_output <: (usize & u64 & t_Array i32 (sz 256) & bool)
-
 let rejection_sample_less_than_eta_equals_2_
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -326,6 +205,127 @@ let rejection_sample_less_than_field_modulus
   in
   let hax_temp_output:bool = done in
   sampled_coefficients, out, hax_temp_output <: (usize & t_Array i32 (sz 263) & bool)
+
+let add_domain_separator (slice: t_Slice u8) (indices: (u8 & u8)) =
+  let out:t_Array u8 (sz 34) = Rust_primitives.Hax.repeat 0uy (sz 34) in
+  let out:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({
+          Core.Ops.Range.f_start = sz 0;
+          Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice #u8
+          (out.[ {
+                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          slice
+        <:
+        t_Slice u8)
+  in
+  let domain_separator:u16 = generate_domain_separator indices in
+  let out:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+      (sz 32)
+      (cast (domain_separator <: u16) <: u8)
+  in
+  let out:t_Array u8 (sz 34) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+      (sz 33)
+      (cast (domain_separator >>! 8l <: u16) <: u8)
+  in
+  out
+
+let add_error_domain_separator (slice: t_Slice u8) (domain_separator: u16) =
+  let out:t_Array u8 (sz 66) = Rust_primitives.Hax.repeat 0uy (sz 66) in
+  let out:t_Array u8 (sz 66) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({
+          Core.Ops.Range.f_start = sz 0;
+          Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice #u8
+          (out.[ {
+                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          slice
+        <:
+        t_Slice u8)
+  in
+  let out:t_Array u8 (sz 66) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+      (sz 64)
+      (cast (domain_separator <: u16) <: u8)
+  in
+  let out:t_Array u8 (sz 66) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+      (sz 65)
+      (cast (domain_separator >>! 8l <: u16) <: u8)
+  in
+  out
+
+let inside_out_shuffle
+      (randomness: t_Slice u8)
+      (out_index: usize)
+      (signs: u64)
+      (result: t_Array i32 (sz 256))
+     =
+  let done:bool = false in
+  let done, out_index, result, signs:(bool & usize & t_Array i32 (sz 256) & u64) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
+            u8)
+          #FStar.Tactics.Typeclasses.solve
+          (Core.Slice.impl__iter #u8 randomness <: Core.Slice.Iter.t_Iter u8)
+        <:
+        Core.Slice.Iter.t_Iter u8)
+      (done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64))
+      (fun temp_0_ byte ->
+          let done, out_index, result, signs:(bool & usize & t_Array i32 (sz 256) & u64) =
+            temp_0_
+          in
+          let byte:u8 = byte in
+          if ~.done <: bool
+          then
+            let sample_at:usize = cast (byte <: u8) <: usize in
+            let out_index, result, signs:(usize & t_Array i32 (sz 256) & u64) =
+              if sample_at <=. out_index
+              then
+                let result:t_Array i32 (sz 256) =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
+                    out_index
+                    (result.[ sample_at ] <: i32)
+                in
+                let out_index:usize = out_index +! sz 1 in
+                let result:t_Array i32 (sz 256) =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
+                    sample_at
+                    (1l -! (2l *! (cast (signs &. 1uL <: u64) <: i32) <: i32) <: i32)
+                in
+                let signs:u64 = signs >>! 1l in
+                out_index, result, signs <: (usize & t_Array i32 (sz 256) & u64)
+              else out_index, result, signs <: (usize & t_Array i32 (sz 256) & u64)
+            in
+            let done:bool =
+              out_index =. (Core.Slice.impl__len #i32 (result <: t_Slice i32) <: usize)
+            in
+            done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64)
+          else done, out_index, result, signs <: (bool & usize & t_Array i32 (sz 256) & u64))
+  in
+  let hax_temp_output:bool = done in
+  out_index, signs, result, hax_temp_output <: (usize & u64 & t_Array i32 (sz 256) & bool)
 
 let sample_challenge_ring_element
       (#v_SIMDUnit #v_Shake256: Type0)

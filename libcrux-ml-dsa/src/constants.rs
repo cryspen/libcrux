@@ -158,7 +158,12 @@ pub(crate) mod ml_dsa_87 {
 }
 
 pub(crate) const fn beta(ones_in_verifier_challenge: usize, eta: Eta) -> i32 {
-    (ones_in_verifier_challenge * (eta as usize)) as i32
+    // [eurydice] can't handle conversion of enum into a usize
+    let eta_val: usize = match eta {
+        Eta::Two => 2,
+        Eta::Four => 4,
+    };
+    (ones_in_verifier_challenge * eta_val) as i32
 }
 
 pub(crate) const fn error_ring_element_size(bits_per_error_coefficient: usize) -> usize {

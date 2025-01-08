@@ -5,7 +5,7 @@ use crate::{
 
 use libcrux_intrinsics::avx2::*;
 
-use super::{vector_type::zero, Gamma2};
+use super::Gamma2;
 
 #[inline(always)]
 fn to_unsigned_representatives_ret(t: &Vec256) -> Vec256 {
@@ -209,7 +209,7 @@ pub(super) fn compute_hint<const GAMMA2: i32>(
 
 #[inline(always)]
 pub(super) fn use_hint(gamma2: Gamma2, r: &Vec256, hint: &mut Vec256) {
-    let (mut r0, mut r1) = (zero(), zero());
+    let (mut r0, mut r1) = (mm256_setzero_si256(), mm256_setzero_si256());
     decompose(gamma2, r, &mut r0, &mut r1);
 
     let all_zeros = mm256_setzero_si256();

@@ -7,7 +7,7 @@ pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
             // The commitment has coefficients in [0,15] => each coefficient occupies
             // 4 bits.
             cloop! {
-                for (i, coefficients) in simd_unit.chunks_exact(2).enumerate() {
+                for (i, coefficients) in simd_unit.values.chunks_exact(2).enumerate() {
                     let coefficient0 = coefficients[0] as u8;
                     let coefficient1 = coefficients[1] as u8;
 
@@ -21,7 +21,7 @@ pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
             // The commitment has coefficients in [0,43] => each coefficient occupies
             // 6 bits.
             cloop! {
-                for (i, coefficients) in simd_unit.chunks_exact(4).enumerate() {
+                for (i, coefficients) in simd_unit.values.chunks_exact(4).enumerate() {
                     let coefficient0 = coefficients[0] as u8;
                     let coefficient1 = coefficients[1] as u8;
                     let coefficient2 = coefficients[2] as u8;

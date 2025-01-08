@@ -9,9 +9,12 @@ let t_Eta_cast_to_repr (x: t_Eta) =
   | Eta_Four  -> discriminant_Eta_Four
 
 let beta (ones_in_verifier_challenge: usize) (eta: t_Eta) =
-  cast (ones_in_verifier_challenge *! (cast (t_Eta_cast_to_repr eta <: isize) <: usize) <: usize)
-  <:
-  i32
+  let (eta_val: usize):usize =
+    match eta <: t_Eta with
+    | Eta_Two  -> sz 2
+    | Eta_Four  -> sz 4
+  in
+  cast (ones_in_verifier_challenge *! eta_val <: usize) <: i32
 
 let commitment_ring_element_size (bits_per_commitment_coefficient: usize) =
   (bits_per_commitment_coefficient *! v_COEFFICIENTS_IN_RING_ELEMENT <: usize) /! sz 8

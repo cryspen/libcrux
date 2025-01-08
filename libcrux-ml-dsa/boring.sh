@@ -17,7 +17,8 @@ done
 
 # Extract the C code
 if [[ "$no_clean" = 0 ]]; then
-    cargo clean
+    # It's enough to clean sha3 to work around the charon bug.
+    cargo clean -p libcrux-sha3
 fi
 
 ./c.sh --config cg.yaml --out cg --mldsa65\

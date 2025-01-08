@@ -6,7 +6,10 @@ open FStar.Mul
 let change_t0_interval (t0: i32) =
   (1l <<! (Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T -! sz 1 <: usize) <: i32) -! t0
 
-let deserialize (serialized: t_Slice u8) (simd_unit: t_Array i32 (sz 8)) =
+let deserialize
+      (serialized: t_Slice u8)
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+     =
   let _:Prims.unit =
     if true
     then
@@ -56,49 +59,116 @@ let deserialize (serialized: t_Slice u8) (simd_unit: t_Array i32 (sz 8)) =
   let coefficient7:i32 = byte11 >>! 3l in
   let coefficient7:i32 = coefficient7 |. (byte12 <<! 5l <: i32) in
   let coefficient7:i32 = coefficient7 &. deserialize__BITS_IN_LOWER_PART_OF_T_MASK in
-  let simd_unit:t_Array i32 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-      (sz 0)
-      (change_t0_interval coefficient0 <: i32)
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (sz 0)
+        (change_t0_interval coefficient0 <: i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
   in
-  let simd_unit:t_Array i32 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-      (sz 1)
-      (change_t0_interval coefficient1 <: i32)
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (sz 1)
+        (change_t0_interval coefficient1 <: i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
   in
-  let simd_unit:t_Array i32 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-      (sz 2)
-      (change_t0_interval coefficient2 <: i32)
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (sz 2)
+        (change_t0_interval coefficient2 <: i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
   in
-  let simd_unit:t_Array i32 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-      (sz 3)
-      (change_t0_interval coefficient3 <: i32)
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (sz 3)
+        (change_t0_interval coefficient3 <: i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
   in
-  let simd_unit:t_Array i32 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-      (sz 4)
-      (change_t0_interval coefficient4 <: i32)
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (sz 4)
+        (change_t0_interval coefficient4 <: i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
   in
-  let simd_unit:t_Array i32 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-      (sz 5)
-      (change_t0_interval coefficient5 <: i32)
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (sz 5)
+        (change_t0_interval coefficient5 <: i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
   in
-  let simd_unit:t_Array i32 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-      (sz 6)
-      (change_t0_interval coefficient6 <: i32)
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (sz 6)
+        (change_t0_interval coefficient6 <: i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
   in
-  let simd_unit:t_Array i32 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-      (sz 7)
-      (change_t0_interval coefficient7 <: i32)
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (sz 7)
+        (change_t0_interval coefficient7 <: i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
   in
   simd_unit
 
-let serialize (simd_unit: t_Array i32 (sz 8)) (serialized: t_Slice u8) =
+let serialize
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (serialized: t_Slice u8)
+     =
   let _:Prims.unit =
     if true
     then
@@ -107,14 +177,30 @@ let serialize (simd_unit: t_Array i32 (sz 8)) (serialized: t_Slice u8) =
       in
       ()
   in
-  let coefficient0:i32 = change_t0_interval (simd_unit.[ sz 0 ] <: i32) in
-  let coefficient1:i32 = change_t0_interval (simd_unit.[ sz 1 ] <: i32) in
-  let coefficient2:i32 = change_t0_interval (simd_unit.[ sz 2 ] <: i32) in
-  let coefficient3:i32 = change_t0_interval (simd_unit.[ sz 3 ] <: i32) in
-  let coefficient4:i32 = change_t0_interval (simd_unit.[ sz 4 ] <: i32) in
-  let coefficient5:i32 = change_t0_interval (simd_unit.[ sz 5 ] <: i32) in
-  let coefficient6:i32 = change_t0_interval (simd_unit.[ sz 6 ] <: i32) in
-  let coefficient7:i32 = change_t0_interval (simd_unit.[ sz 7 ] <: i32) in
+  let coefficient0:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ sz 0 ] <: i32)
+  in
+  let coefficient1:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ sz 1 ] <: i32)
+  in
+  let coefficient2:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ sz 2 ] <: i32)
+  in
+  let coefficient3:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ sz 3 ] <: i32)
+  in
+  let coefficient4:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ sz 4 ] <: i32)
+  in
+  let coefficient5:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ sz 5 ] <: i32)
+  in
+  let coefficient6:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ sz 6 ] <: i32)
+  in
+  let coefficient7:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ sz 7 ] <: i32)
+  in
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
       (sz 0)

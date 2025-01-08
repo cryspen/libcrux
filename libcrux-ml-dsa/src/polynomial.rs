@@ -5,7 +5,7 @@ use crate::{
 
 #[derive(Clone, Copy)]
 pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
-    pub(crate) simd_units: [SIMDUnit::Coefficient; SIMD_UNITS_IN_RING_ELEMENT],
+    pub(crate) simd_units: [SIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
 }
 
 impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
@@ -15,8 +15,7 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         }
     }
 
-    // This is useful for debugging.
-    // XXX: Used in `make_int`
+    // This is used in `make_hint` and for tests
     pub(crate) fn to_i32_array(&self) -> [i32; 256] {
         let mut result = [0i32; 256];
 

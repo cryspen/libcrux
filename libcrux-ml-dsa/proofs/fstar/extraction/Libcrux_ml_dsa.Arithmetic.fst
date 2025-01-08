@@ -40,8 +40,8 @@ let decompose_vector
           in
           let i:usize = i in
           Rust_primitives.Hax.Folds.fold_range (sz 0)
-            (Core.Slice.impl__len #i1.f_Coefficient
-                ((low.[ sz 0 ]).Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice i1.f_Coefficient)
+            (Core.Slice.impl__len #v_SIMDUnit
+                ((low.[ sz 0 ]).Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
               <:
               usize)
             (fun temp_0_ temp_1_ ->
@@ -63,22 +63,22 @@ let decompose_vector
                   temp_0_
                 in
                 let j:usize = j in
-                let tmp0, tmp1:(i1.f_Coefficient & i1.f_Coefficient) =
+                let tmp0, tmp1:(v_SIMDUnit & v_SIMDUnit) =
                   Libcrux_ml_dsa.Simd.Traits.f_decompose #v_SIMDUnit
                     #FStar.Tactics.Typeclasses.solve
                     gamma2
                     ((t.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                         .Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ]
                       <:
-                      i1.f_Coefficient)
+                      v_SIMDUnit)
                     ((low.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                         .Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ]
                       <:
-                      i1.f_Coefficient)
+                      v_SIMDUnit)
                     ((high.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                         .Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ]
                       <:
-                      i1.f_Coefficient)
+                      v_SIMDUnit)
                 in
                 let low:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
                   Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
@@ -94,7 +94,7 @@ let decompose_vector
                           j
                           tmp0
                         <:
-                        t_Array i1.f_Coefficient (sz 32)
+                        t_Array v_SIMDUnit (sz 32)
                       }
                       <:
                       Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -113,7 +113,7 @@ let decompose_vector
                           j
                           tmp1
                         <:
-                        t_Array i1.f_Coefficient (sz 32)
+                        t_Array v_SIMDUnit (sz 32)
                       }
                       <:
                       Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -163,8 +163,8 @@ let power2round_vector
           in
           let i:usize = i in
           Rust_primitives.Hax.Folds.fold_range (sz 0)
-            (Core.Slice.impl__len #i1.f_Coefficient
-                ((t.[ i ]).Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice i1.f_Coefficient)
+            (Core.Slice.impl__len #v_SIMDUnit
+                ((t.[ i ]).Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
               <:
               usize)
             (fun temp_0_ temp_1_ ->
@@ -184,17 +184,17 @@ let power2round_vector
                   temp_0_
                 in
                 let j:usize = j in
-                let tmp0, tmp1:(i1.f_Coefficient & i1.f_Coefficient) =
+                let tmp0, tmp1:(v_SIMDUnit & v_SIMDUnit) =
                   Libcrux_ml_dsa.Simd.Traits.f_power2round #v_SIMDUnit
                     #FStar.Tactics.Typeclasses.solve
                     ((t.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                         .Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ]
                       <:
-                      i1.f_Coefficient)
+                      v_SIMDUnit)
                     ((t1.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                         .Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ]
                       <:
-                      i1.f_Coefficient)
+                      v_SIMDUnit)
                 in
                 let t:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
                   Rust_primitives.Hax.Monomorphized_update_at.update_at_usize t
@@ -210,7 +210,7 @@ let power2round_vector
                           j
                           tmp0
                         <:
-                        t_Array i1.f_Coefficient (sz 32)
+                        t_Array v_SIMDUnit (sz 32)
                       }
                       <:
                       Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -229,7 +229,7 @@ let power2round_vector
                           j
                           tmp1
                         <:
-                        t_Array i1.f_Coefficient (sz 32)
+                        t_Array v_SIMDUnit (sz 32)
                       }
                       <:
                       Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -258,8 +258,8 @@ let shift_left_then_reduce
      =
   let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (Core.Slice.impl__len #i1.f_Coefficient
-          (re.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice i1.f_Coefficient)
+      (Core.Slice.impl__len #v_SIMDUnit
+          (re.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
         <:
         usize)
       (fun re temp_1_ ->
@@ -280,17 +280,100 @@ let shift_left_then_reduce
               (Libcrux_ml_dsa.Simd.Traits.f_shift_left_then_reduce #v_SIMDUnit
                   #FStar.Tactics.Typeclasses.solve
                   v_SHIFT_BY
-                  (re.Libcrux_ml_dsa.Polynomial.f_simd_units.[ i ] <: i1.f_Coefficient)
+                  (re.Libcrux_ml_dsa.Polynomial.f_simd_units.[ i ] <: v_SIMDUnit)
                 <:
-                i1.f_Coefficient)
+                v_SIMDUnit)
             <:
-            t_Array i1.f_Coefficient (sz 32)
+            t_Array v_SIMDUnit (sz 32)
           }
           <:
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
   in
   let hax_temp_output:Prims.unit = () <: Prims.unit in
   re
+
+let use_hint
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (gamma2: i32)
+      (hint: t_Slice (t_Array i32 (sz 256)))
+      (re_vector: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+     =
+  let re_vector:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+          re_vector
+        <:
+        usize)
+      (fun re_vector temp_1_ ->
+          let re_vector:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
+            re_vector
+          in
+          let _:usize = temp_1_ in
+          true)
+      re_vector
+      (fun re_vector i ->
+          let re_vector:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
+            re_vector
+          in
+          let i:usize = i in
+          let tmp:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
+            Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
+          in
+          let tmp:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
+            Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit
+              (hint.[ i ] <: t_Slice i32)
+              tmp
+          in
+          let tmp:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
+            Rust_primitives.Hax.Folds.fold_range (sz 0)
+              (Core.Slice.impl__len #v_SIMDUnit
+                  ((re_vector.[ sz 0 ]).Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit
+                  )
+                <:
+                usize)
+              (fun tmp temp_1_ ->
+                  let tmp:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = tmp in
+                  let _:usize = temp_1_ in
+                  true)
+              tmp
+              (fun tmp j ->
+                  let tmp:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = tmp in
+                  let j:usize = j in
+                  {
+                    tmp with
+                    Libcrux_ml_dsa.Polynomial.f_simd_units
+                    =
+                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp
+                        .Libcrux_ml_dsa.Polynomial.f_simd_units
+                      j
+                      (Libcrux_ml_dsa.Simd.Traits.f_use_hint #v_SIMDUnit
+                          #FStar.Tactics.Typeclasses.solve
+                          gamma2
+                          ((re_vector.[ i ]
+                              <:
+                              Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+                              .Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ]
+                            <:
+                            v_SIMDUnit)
+                          (tmp.Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ] <: v_SIMDUnit)
+                        <:
+                        v_SIMDUnit)
+                    <:
+                    t_Array v_SIMDUnit (sz 32)
+                  }
+                  <:
+                  Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+          in
+          let re_vector:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re_vector i tmp
+          in
+          re_vector)
+  in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
+  re_vector
 
 let vector_infinity_norm_exceeds
       (#v_SIMDUnit: Type0)
@@ -371,8 +454,8 @@ let make_hint
           let hint_simd, true_hints:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
             usize) =
             Rust_primitives.Hax.Folds.fold_range (sz 0)
-              (Core.Slice.impl__len #i1.f_Coefficient
-                  (hint_simd.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice i1.f_Coefficient)
+              (Core.Slice.impl__len #v_SIMDUnit
+                  (hint_simd.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
                 <:
                 usize)
               (fun temp_0_ temp_1_ ->
@@ -393,19 +476,19 @@ let make_hint
                     temp_0_
                   in
                   let j:usize = j in
-                  let tmp0, out:(i1.f_Coefficient & usize) =
+                  let tmp0, out:(v_SIMDUnit & usize) =
                     Libcrux_ml_dsa.Simd.Traits.f_compute_hint #v_SIMDUnit
                       #FStar.Tactics.Typeclasses.solve
                       v_GAMMA2
                       ((low.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                           .Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ]
                         <:
-                        i1.f_Coefficient)
+                        v_SIMDUnit)
                       ((high.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                           .Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ]
                         <:
-                        i1.f_Coefficient)
-                      (hint_simd.Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ] <: i1.f_Coefficient)
+                        v_SIMDUnit)
+                      (hint_simd.Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ] <: v_SIMDUnit)
                   in
                   let hint_simd:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
                     {
@@ -441,87 +524,3 @@ let make_hint
   in
   let hax_temp_output:usize = true_hints in
   hint, hax_temp_output <: (t_Array (t_Array i32 (sz 256)) v_DIMENSION & usize)
-
-let use_hint
-      (#v_SIMDUnit: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (gamma2: i32)
-      (hint: t_Slice (t_Array i32 (sz 256)))
-      (re_vector: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-     =
-  let re_vector:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
-      (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-          re_vector
-        <:
-        usize)
-      (fun re_vector temp_1_ ->
-          let re_vector:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-            re_vector
-          in
-          let _:usize = temp_1_ in
-          true)
-      re_vector
-      (fun re_vector i ->
-          let re_vector:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-            re_vector
-          in
-          let i:usize = i in
-          let tmp:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-            Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
-          in
-          let tmp:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-            Libcrux_ml_dsa.Polynomial.impl__from_i32_array #v_SIMDUnit
-              (hint.[ i ] <: t_Slice i32)
-              tmp
-          in
-          let tmp:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-            Rust_primitives.Hax.Folds.fold_range (sz 0)
-              (Core.Slice.impl__len #i1.f_Coefficient
-                  ((re_vector.[ sz 0 ]).Libcrux_ml_dsa.Polynomial.f_simd_units
-                    <:
-                    t_Slice i1.f_Coefficient)
-                <:
-                usize)
-              (fun tmp temp_1_ ->
-                  let tmp:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = tmp in
-                  let _:usize = temp_1_ in
-                  true)
-              tmp
-              (fun tmp j ->
-                  let tmp:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = tmp in
-                  let j:usize = j in
-                  {
-                    tmp with
-                    Libcrux_ml_dsa.Polynomial.f_simd_units
-                    =
-                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp
-                        .Libcrux_ml_dsa.Polynomial.f_simd_units
-                      j
-                      (Libcrux_ml_dsa.Simd.Traits.f_use_hint #v_SIMDUnit
-                          #FStar.Tactics.Typeclasses.solve
-                          gamma2
-                          ((re_vector.[ i ]
-                              <:
-                              Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-                              .Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ]
-                            <:
-                            i1.f_Coefficient)
-                          (tmp.Libcrux_ml_dsa.Polynomial.f_simd_units.[ j ] <: i1.f_Coefficient)
-                        <:
-                        i1.f_Coefficient)
-                    <:
-                    t_Array i1.f_Coefficient (sz 32)
-                  }
-                  <:
-                  Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-          in
-          let re_vector:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re_vector i tmp
-          in
-          re_vector)
-  in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
-  re_vector

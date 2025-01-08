@@ -17,36 +17,25 @@ pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449;
 pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 pub(crate) trait Operations: Copy + Clone {
-    type Coefficient: Copy; // XXX: make generic?
+    fn zero() -> Self;
 
-    fn zero() -> Self::Coefficient;
-
-    fn from_coefficient_array(array: &[i32], out: &mut Self::Coefficient);
-    fn to_coefficient_array(value: &Self::Coefficient, out: &mut [i32]);
+    fn from_coefficient_array(array: &[i32], out: &mut Self);
+    fn to_coefficient_array(value: &Self, out: &mut [i32]);
 
     // Arithmetic
-    fn add(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient);
-    fn subtract(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient);
-    fn infinity_norm_exceeds(simd_unit: &Self::Coefficient, bound: i32) -> bool;
-    fn decompose(
-        gamma2: Gamma2,
-        simd_unit: &Self::Coefficient,
-        low: &mut Self::Coefficient,
-        high: &mut Self::Coefficient,
-    );
-    fn compute_hint<const GAMMA2: i32>(
-        low: &Self::Coefficient,
-        high: &Self::Coefficient,
-        hint: &mut Self::Coefficient,
-    ) -> usize;
-    fn use_hint(gamma2: Gamma2, simd_unit: &Self::Coefficient, hint: &mut Self::Coefficient);
+    fn add(lhs: &mut Self, rhs: &Self);
+    fn subtract(lhs: &mut Self, rhs: &Self);
+    fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool;
+    fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self);
+    fn compute_hint<const GAMMA2: i32>(low: &Self, high: &Self, hint: &mut Self) -> usize;
+    fn use_hint(gamma2: Gamma2, simd_unit: &Self, hint: &mut Self);
 
     // Modular operations
-    fn montgomery_multiply(lhs: &mut Self::Coefficient, rhs: &Self::Coefficient);
-    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self::Coefficient);
+    fn montgomery_multiply(lhs: &mut Self, rhs: &Self);
+    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self);
 
     // Decomposition operations
-    fn power2round(t0: &mut Self::Coefficient, t1: &mut Self::Coefficient);
+    fn power2round(t0: &mut Self, t1: &mut Self);
 
     // Sampling
     //
@@ -65,31 +54,27 @@ pub(crate) trait Operations: Copy + Clone {
     // Encoding operations
 
     // Gamma1
-    fn gamma1_serialize(
-        simd_unit: &Self::Coefficient,
-        serialized: &mut [u8],
-        gamma1_exponent: usize,
-    );
-    fn gamma1_deserialize(serialized: &[u8], out: &mut Self::Coefficient, gamma1_exponent: usize);
+    fn gamma1_serialize(simd_unit: &Self, serialized: &mut [u8], gamma1_exponent: usize);
+    fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize);
 
     // Commitment
-    fn commitment_serialize(simd_unit: &Self::Coefficient, serialized: &mut [u8]);
+    fn commitment_serialize(simd_unit: &Self, serialized: &mut [u8]);
 
     // Error
-    fn error_serialize(eta: Eta, simd_unit: &Self::Coefficient, serialized: &mut [u8]);
-    fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self::Coefficient);
+    fn error_serialize(eta: Eta, simd_unit: &Self, serialized: &mut [u8]);
+    fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self);
 
     // t0
-    fn t0_serialize(simd_unit: &Self::Coefficient, out: &mut [u8]); // out len 13
-    fn t0_deserialize(serialized: &[u8], out: &mut Self::Coefficient);
+    fn t0_serialize(simd_unit: &Self, out: &mut [u8]); // out len 13
+    fn t0_deserialize(serialized: &[u8], out: &mut Self);
 
     // t1
-    fn t1_serialize(simd_unit: &Self::Coefficient, out: &mut [u8]); // out len 10
-    fn t1_deserialize(serialized: &[u8], out: &mut Self::Coefficient);
+    fn t1_serialize(simd_unit: &Self, out: &mut [u8]); // out len 10
+    fn t1_deserialize(serialized: &[u8], out: &mut Self);
 
     // NTT
-    fn ntt(simd_units: &mut [Self::Coefficient; SIMD_UNITS_IN_RING_ELEMENT]);
+    fn ntt(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]);
 
     // invert NTT and convert to standard domain
-    fn invert_ntt_montgomery(simd_units: &mut [Self::Coefficient; SIMD_UNITS_IN_RING_ELEMENT]);
+    fn invert_ntt_montgomery(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]);
 }
