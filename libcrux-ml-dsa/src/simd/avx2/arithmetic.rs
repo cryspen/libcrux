@@ -3,7 +3,7 @@ use crate::{
     simd::traits::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R},
 };
 
-use libcrux_intrinsics::avx2::{mm256_setzero_si256, *};
+use libcrux_intrinsics::avx2::*;
 
 use super::Gamma2;
 
