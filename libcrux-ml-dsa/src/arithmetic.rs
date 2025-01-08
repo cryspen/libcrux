@@ -13,9 +13,7 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
     let mut result = false;
     cloop! {
         for ring_element in vector.iter() {
-            if !result && ring_element.infinity_norm_exceeds(bound) {
-                result = true;
-            }
+            result = result || ring_element.infinity_norm_exceeds(bound);
         }
     }
 
@@ -70,19 +68,21 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
-    low: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
-    high: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
-    hint: &mut [[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION],
+pub(crate) fn make_hint<SIMDUnit: Operations>(
+    low: &[PolynomialRingElement<SIMDUnit>],
+    high: &[PolynomialRingElement<SIMDUnit>],
+    gamma2: i32,
+    hint: &mut [[i32; COEFFICIENTS_IN_RING_ELEMENT]],
 ) -> usize {
     let mut true_hints = 0;
     let mut hint_simd = PolynomialRingElement::<SIMDUnit>::zero();
 
-    for i in 0..DIMENSION {
+    for i in 0..low.len() {
         for j in 0..hint_simd.simd_units.len() {
-            let one_hints_count = SIMDUnit::compute_hint::<GAMMA2>(
+            let one_hints_count = SIMDUnit::compute_hint(
                 &low[i].simd_units[j],
                 &high[i].simd_units[j],
+                gamma2,
                 &mut hint_simd.simd_units[j],
             );
 

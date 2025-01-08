@@ -17,8 +17,10 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations>(
     cloop! {
         for (i, ring_element) in t1.iter().enumerate() {
             let offset = SEED_FOR_A_SIZE + (i * RING_ELEMENT_OF_T1S_SIZE);
-            verification_key_serialized[offset..offset + RING_ELEMENT_OF_T1S_SIZE]
-                .copy_from_slice(&t1::serialize::<SIMDUnit>(ring_element));
+            t1::serialize::<SIMDUnit>(
+                ring_element,
+                &mut verification_key_serialized[offset..offset + RING_ELEMENT_OF_T1S_SIZE],
+            );
         }
     }
     // [hax] https://github.com/hacspec/hax/issues/720

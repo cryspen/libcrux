@@ -180,13 +180,9 @@ pub(super) fn decompose(gamma2: Gamma2, r: &Vec256, r0: &mut Vec256, r1: &mut Ve
 }
 
 #[inline(always)]
-pub(super) fn compute_hint<const GAMMA2: i32>(
-    low: &Vec256,
-    high: &Vec256,
-    hint: &mut Vec256,
-) -> usize {
-    let gamma2 = mm256_set1_epi32(GAMMA2);
-    let minus_gamma2 = mm256_set1_epi32(-GAMMA2);
+pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut Vec256) -> usize {
+    let minus_gamma2 = mm256_set1_epi32(-gamma2);
+    let gamma2 = mm256_set1_epi32(gamma2);
 
     let low_within_bound = mm256_cmpgt_epi32(mm256_abs_epi32(*low), gamma2);
     let low_equals_minus_gamma2 = mm256_cmpeq_epi32(*low, minus_gamma2);

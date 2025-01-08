@@ -65,8 +65,8 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn compute_hint<const GAMMA2: i32>(low: &Self, high: &Self, hint: &mut Self) -> usize {
-        arithmetic::compute_hint::<GAMMA2>(&low.value, &high.value, &mut hint.value)
+    fn compute_hint(low: &Self, high: &Self, gamma2: i32, hint: &mut Self) -> usize {
+        arithmetic::compute_hint(&low.value, &high.value, gamma2, &mut hint.value)
     }
 
     #[inline(always)]

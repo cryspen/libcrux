@@ -57,12 +57,13 @@ impl Operations for Coefficients {
         arithmetic::decompose(gamma2, simd_unit, low, high)
     }
 
-    fn compute_hint<const GAMMA2: i32>(
+    fn compute_hint(
         low: &Coefficients,
         high: &Coefficients,
-        hint: &mut Self,
+        gamma2: i32,
+        hint: &mut Coefficients,
     ) -> usize {
-        arithmetic::compute_hint::<GAMMA2>(low, high, hint)
+        arithmetic::compute_hint(low, high, gamma2, hint)
     }
 
     fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {

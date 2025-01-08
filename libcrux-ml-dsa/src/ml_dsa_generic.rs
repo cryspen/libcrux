@@ -299,11 +299,8 @@ pub(crate) mod generic {
                     } else {
                         add_vectors::<SIMDUnit>(ROWS_IN_A, &mut w0, &challenge_times_t0);
                         let mut hint_candidate = [[0; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A];
-                        let ones_in_hint = make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(
-                            &w0,
-                            &commitment,
-                            &mut hint_candidate,
-                        );
+                        let ones_in_hint =
+                            make_hint::<SIMDUnit>(&w0, &commitment, GAMMA2, &mut hint_candidate);
 
                         if ones_in_hint > MAX_ONES_IN_HINT {
                             // XXX: https://github.com/hacspec/hax/issues/1171

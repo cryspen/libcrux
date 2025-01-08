@@ -159,8 +159,8 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coeffi
 }
 
 #[inline(always)]
-fn compute_one_hint<const GAMMA2: i32>(low: i32, high: i32) -> i32 {
-    if (low > GAMMA2) || (low < -GAMMA2) || (low == -GAMMA2 && high != 0) {
+fn compute_one_hint(low: i32, high: i32, gamma2: i32) -> i32 {
+    if (low > gamma2) || (low < -gamma2) || (low == -gamma2 && high != 0) {
         1
     } else {
         0
@@ -168,15 +168,16 @@ fn compute_one_hint<const GAMMA2: i32>(low: i32, high: i32) -> i32 {
 }
 
 #[inline(always)]
-pub(super) fn compute_hint<const GAMMA2: i32>(
+pub(super) fn compute_hint(
     low: &Coefficients,
     high: &Coefficients,
+    gamma2: i32,
     hint: &mut Coefficients,
 ) -> usize {
     let mut one_hints_count = 0;
 
     for i in 0..hint.values.len() {
-        hint.values[i] = compute_one_hint::<GAMMA2>(low.values[i], high.values[i]);
+        hint.values[i] = compute_one_hint(low.values[i], high.values[i], gamma2);
         one_hints_count += hint.values[i] as usize;
     }
 

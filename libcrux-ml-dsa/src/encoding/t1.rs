@@ -1,16 +1,12 @@
-use crate::{
-    constants::RING_ELEMENT_OF_T1S_SIZE, helper::cloop, polynomial::PolynomialRingElement,
-    simd::traits::Operations,
-};
+use crate::{helper::cloop, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 // Each coefficient takes up 10 bits.
 
 #[inline(always)]
 pub(crate) fn serialize<SIMDUnit: Operations>(
     re: &PolynomialRingElement<SIMDUnit>,
-) -> [u8; RING_ELEMENT_OF_T1S_SIZE] {
-    let mut serialized = [0u8; RING_ELEMENT_OF_T1S_SIZE];
-
+    serialized: &mut [u8], // len RING_ELEMENT_OF_T1S_SIZE
+) {
     const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 10;
 
     cloop! {
@@ -18,8 +14,6 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
             SIMDUnit::t1_serialize(simd_unit, &mut serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]);
         }
     }
-
-    serialized
 }
 
 pub(crate) fn deserialize<SIMDUnit: Operations>(
@@ -40,7 +34,10 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
 mod tests {
     use super::*;
 
-    use crate::simd::{self, traits::Operations};
+    use crate::{
+        constants::RING_ELEMENT_OF_T1S_SIZE,
+        simd::{self, traits::Operations},
+    };
 
     fn test_serialize_generic<SIMDUnit: Operations>() {
         let coefficients = [
@@ -83,7 +80,9 @@ mod tests {
             122,
         ];
 
-        assert_eq!(serialize::<SIMDUnit>(&re), expected_bytes);
+        let mut result = [0u8; RING_ELEMENT_OF_T1S_SIZE];
+        serialize::<SIMDUnit>(&re, &mut result);
+        assert_eq!(result, expected_bytes);
     }
 
     fn test_deserialize_generic<SIMDUnit: Operations>() {

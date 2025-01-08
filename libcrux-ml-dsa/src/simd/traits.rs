@@ -27,7 +27,7 @@ pub(crate) trait Operations: Copy + Clone {
     fn subtract(lhs: &mut Self, rhs: &Self);
     fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool;
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self);
-    fn compute_hint<const GAMMA2: i32>(low: &Self, high: &Self, hint: &mut Self) -> usize;
+    fn compute_hint(low: &Self, high: &Self, gamma2: i32, hint: &mut Self) -> usize;
     fn use_hint(gamma2: Gamma2, simd_unit: &Self, hint: &mut Self);
 
     // Modular operations
