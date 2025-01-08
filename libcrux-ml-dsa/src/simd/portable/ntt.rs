@@ -10,59 +10,59 @@ pub fn simd_unit_ntt_at_layer_0(
     zeta2: i32,
     zeta3: i32,
 ) {
-    let t = montgomery_multiply_fe_by_fer(simd_unit[1], zeta0);
-    simd_unit[1] = simd_unit[0] - t;
-    simd_unit[0] = simd_unit[0] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[1], zeta0);
+    simd_unit.values[1] = simd_unit.values[0] - t;
+    simd_unit.values[0] = simd_unit.values[0] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit[3], zeta1);
-    simd_unit[3] = simd_unit[2] - t;
-    simd_unit[2] = simd_unit[2] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[3], zeta1);
+    simd_unit.values[3] = simd_unit.values[2] - t;
+    simd_unit.values[2] = simd_unit.values[2] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit[5], zeta2);
-    simd_unit[5] = simd_unit[4] - t;
-    simd_unit[4] = simd_unit[4] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[5], zeta2);
+    simd_unit.values[5] = simd_unit.values[4] - t;
+    simd_unit.values[4] = simd_unit.values[4] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit[7], zeta3);
-    simd_unit[7] = simd_unit[6] - t;
-    simd_unit[6] = simd_unit[6] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[7], zeta3);
+    simd_unit.values[7] = simd_unit.values[6] - t;
+    simd_unit.values[6] = simd_unit.values[6] + t;
 }
 
 #[inline(always)]
 pub fn simd_unit_ntt_at_layer_1(simd_unit: &mut Coefficients, zeta1: i32, zeta2: i32) {
-    let t = montgomery_multiply_fe_by_fer(simd_unit[2], zeta1);
-    simd_unit[2] = simd_unit[0] - t;
-    simd_unit[0] = simd_unit[0] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[2], zeta1);
+    simd_unit.values[2] = simd_unit.values[0] - t;
+    simd_unit.values[0] = simd_unit.values[0] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit[3], zeta1);
-    simd_unit[3] = simd_unit[1] - t;
-    simd_unit[1] = simd_unit[1] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[3], zeta1);
+    simd_unit.values[3] = simd_unit.values[1] - t;
+    simd_unit.values[1] = simd_unit.values[1] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit[6], zeta2);
-    simd_unit[6] = simd_unit[4] - t;
-    simd_unit[4] = simd_unit[4] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[6], zeta2);
+    simd_unit.values[6] = simd_unit.values[4] - t;
+    simd_unit.values[4] = simd_unit.values[4] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit[7], zeta2);
-    simd_unit[7] = simd_unit[5] - t;
-    simd_unit[5] = simd_unit[5] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[7], zeta2);
+    simd_unit.values[7] = simd_unit.values[5] - t;
+    simd_unit.values[5] = simd_unit.values[5] + t;
 }
 
 #[inline(always)]
 pub fn simd_unit_ntt_at_layer_2(simd_unit: &mut Coefficients, zeta: i32) {
-    let t = montgomery_multiply_fe_by_fer(simd_unit[4], zeta);
-    simd_unit[4] = simd_unit[0] - t;
-    simd_unit[0] = simd_unit[0] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[4], zeta);
+    simd_unit.values[4] = simd_unit.values[0] - t;
+    simd_unit.values[0] = simd_unit.values[0] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit[5], zeta);
-    simd_unit[5] = simd_unit[1] - t;
-    simd_unit[1] = simd_unit[1] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[5], zeta);
+    simd_unit.values[5] = simd_unit.values[1] - t;
+    simd_unit.values[1] = simd_unit.values[1] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit[6], zeta);
-    simd_unit[6] = simd_unit[2] - t;
-    simd_unit[2] = simd_unit[2] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[6], zeta);
+    simd_unit.values[6] = simd_unit.values[2] - t;
+    simd_unit.values[2] = simd_unit.values[2] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit[7], zeta);
-    simd_unit[7] = simd_unit[3] - t;
-    simd_unit[3] = simd_unit[3] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[7], zeta);
+    simd_unit.values[7] = simd_unit.values[3] - t;
+    simd_unit.values[3] = simd_unit.values[3] + t;
 }
 
 #[inline(always)]

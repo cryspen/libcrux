@@ -1,11 +1,11 @@
-use super::{arithmetic, AVX2RingElement};
-use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
+use super::{arithmetic, AVX2RingElement, AVX2SIMDUnit};
+use crate::simd::traits::COEFFICIENTS_IN_SIMD_UNIT;
 
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
 fn butterfly_2(
-    re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
+    re: &mut AVX2RingElement,
     index: usize,
     zeta_a0: i32,
     zeta_a1: i32,
@@ -24,8 +24,8 @@ fn butterfly_2(
     //   a_shuffled = ( a7, a5, a6, a4, a3, a1, a2, a0)
     //   b_shuffled = ( b7, b5, b6, b4, b3, b1, b2, b0)
     const SHUFFLE: i32 = 0b11_01_10_00;
-    let a = mm256_shuffle_epi32::<SHUFFLE>(re[index]);
-    let b = mm256_shuffle_epi32::<SHUFFLE>(re[index + 1]);
+    let a = mm256_shuffle_epi32::<SHUFFLE>(re[index].value);
+    let b = mm256_shuffle_epi32::<SHUFFLE>(re[index + 1].value);
 
     // Now we can use the same approach as for `butterfly_4`, only
     // zetas need to be adjusted.
@@ -44,22 +44,26 @@ fn butterfly_2(
     let b_terms_shuffled = mm256_unpackhi_epi64(add_terms, sub_terms);
 
     // Here, we undo the initial shuffle (it's self-inverse).
-    re[index] = mm256_shuffle_epi32::<SHUFFLE>(a_terms_shuffled);
-    re[index + 1] = mm256_shuffle_epi32::<SHUFFLE>(b_terms_shuffled);
+    re[index] = AVX2SIMDUnit {
+        value: mm256_shuffle_epi32::<SHUFFLE>(a_terms_shuffled),
+    };
+    re[index + 1] = AVX2SIMDUnit {
+        value: mm256_shuffle_epi32::<SHUFFLE>(b_terms_shuffled),
+    };
 }
 
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 1 for 2 SIMD Units in one go.
 #[inline(always)]
 fn butterfly_4(
-    re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
+    re: &mut AVX2RingElement,
     index: usize,
     zeta_a0: i32,
     zeta_a1: i32,
     zeta_b0: i32,
     zeta_b1: i32,
 ) {
-    let summands = mm256_unpacklo_epi64(re[index], re[index + 1]);
-    let mut zeta_products = mm256_unpackhi_epi64(re[index], re[index + 1]);
+    let summands = mm256_unpacklo_epi64(re[index].value, re[index + 1].value);
+    let mut zeta_products = mm256_unpackhi_epi64(re[index].value, re[index + 1].value);
 
     let zetas = mm256_set_epi32(
         zeta_b1, zeta_b1, zeta_a1, zeta_a1, zeta_b0, zeta_b0, zeta_a0, zeta_a0,
@@ -71,23 +75,23 @@ fn butterfly_4(
 
     // Results are shuffled across the two SIMD registers.
     // We need to bring them in the right order.
-    re[index] = mm256_unpacklo_epi64(add_terms, sub_terms);
-    re[index + 1] = mm256_unpackhi_epi64(add_terms, sub_terms);
+    re[index] = AVX2SIMDUnit {
+        value: mm256_unpacklo_epi64(add_terms, sub_terms),
+    };
+    re[index + 1] = AVX2SIMDUnit {
+        value: mm256_unpackhi_epi64(add_terms, sub_terms),
+    };
 }
 
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 2 for 2 SIMD Units in one go.
 #[inline(always)]
-fn butterfly_8(
-    re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
-    index: usize,
-    zeta0: i32,
-    zeta1: i32,
-) {
+fn butterfly_8(re: &mut AVX2RingElement, index: usize, zeta0: i32, zeta1: i32) {
     let summands = mm256_set_m128i(
-        mm256_castsi256_si128(re[index + 1]),
-        mm256_castsi256_si128(re[index]),
+        mm256_castsi256_si128(re[index + 1].value),
+        mm256_castsi256_si128(re[index].value),
     );
-    let mut zeta_products = mm256_permute2x128_si256::<0b0001_0011>(re[index + 1], re[index]);
+    let mut zeta_products =
+        mm256_permute2x128_si256::<0b0001_0011>(re[index + 1].value, re[index].value);
 
     let zetas = mm256_set_epi32(zeta1, zeta1, zeta1, zeta1, zeta0, zeta0, zeta0, zeta0);
     arithmetic::montgomery_multiply(&mut zeta_products, &zetas);
@@ -95,16 +99,20 @@ fn butterfly_8(
     let sub_terms = mm256_sub_epi32(summands, zeta_products);
     let add_terms = mm256_add_epi32(summands, zeta_products);
 
-    re[index] = mm256_set_m128i(
-        mm256_castsi256_si128(sub_terms),
-        mm256_castsi256_si128(add_terms),
-    );
-    re[index + 1] = mm256_permute2x128_si256::<0b0001_0011>(sub_terms, add_terms);
+    re[index] = AVX2SIMDUnit {
+        value: mm256_set_m128i(
+            mm256_castsi256_si128(sub_terms),
+            mm256_castsi256_si128(add_terms),
+        ),
+    };
+    re[index + 1] = AVX2SIMDUnit {
+        value: mm256_permute2x128_si256::<0b0001_0011>(sub_terms, add_terms),
+    };
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
-unsafe fn ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+unsafe fn ntt_at_layer_0(re: &mut AVX2RingElement) {
     butterfly_2(
         re, 0, 2091667, 3407706, 2316500, 3817976, -3342478, 2244091, -2446433, -3562462,
     );
@@ -157,7 +165,7 @@ unsafe fn ntt_at_layer_0(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
-unsafe fn ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+unsafe fn ntt_at_layer_1(re: &mut AVX2RingElement) {
     butterfly_4(re, 0, -3930395, -1528703, -3677745, -3041255);
     butterfly_4(re, 2, -1452451, 3475950, 2176455, -1585221);
     butterfly_4(re, 4, -1257611, 1939314, -4083598, -1000202);
@@ -178,7 +186,7 @@ unsafe fn ntt_at_layer_1(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
-unsafe fn ntt_at_layer_2(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+unsafe fn ntt_at_layer_2(re: &mut AVX2RingElement) {
     butterfly_8(re, 0, 2706023, 95776);
     butterfly_8(re, 2, 3077325, 3530437);
     butterfly_8(re, 4, -1661693, -3592148);
@@ -203,24 +211,24 @@ unsafe fn ntt_at_layer_2(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
 /// This is the same as in pqclean. The only difference is locality of registers.
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
-unsafe fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
     let field_modulus = mm256_set1_epi32(crate::simd::traits::FIELD_MODULUS);
     let inverse_of_modulus_mod_montgomery_r =
         mm256_set1_epi32(crate::simd::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
 
     #[inline(always)]
     fn mul(
-        re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
+        re: &mut AVX2RingElement,
         index: usize,
         zeta: Vec256,
         step_by: usize,
         field_modulus: Vec256,
         inverse_of_modulus_mod_montgomery_r: Vec256,
     ) {
-        let prod02 = mm256_mul_epi32(re[index + step_by], zeta);
+        let prod02 = mm256_mul_epi32(re[index + step_by].value, zeta);
         let prod13 = mm256_mul_epi32(
-            mm256_shuffle_epi32::<0b11_11_01_01>(re[index + step_by]), // 0xF5
-            mm256_shuffle_epi32::<0b11_11_01_01>(zeta),                // 0xF5
+            mm256_shuffle_epi32::<0b11_11_01_01>(re[index + step_by].value), // 0xF5
+            mm256_shuffle_epi32::<0b11_11_01_01>(zeta),                      // 0xF5
         );
         let k02 = mm256_mul_epi32(prod02, inverse_of_modulus_mod_montgomery_r);
         let k13 = mm256_mul_epi32(prod13, inverse_of_modulus_mod_montgomery_r);
@@ -234,8 +242,8 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
         let t = mm256_blend_epi32::<0b10101010>(res02_shifted, res13); // 0xAA
 
         re[index + step_by] = re[index];
-        arithmetic::subtract(&mut re[index + step_by], &t);
-        arithmetic::add(&mut re[index], &t);
+        arithmetic::subtract(&mut re[index + step_by].value, &t);
+        arithmetic::add(&mut re[index].value, &t);
     }
 
     macro_rules! layer {
@@ -299,10 +307,10 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
 /// pqclean does 4 * 4 on each layer -> 48 total | plus 4 * 4 shuffles every time (48)
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
-unsafe fn ntt_at_layer_5_to_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
+unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
     #[inline(always)]
     fn round<const STEP: usize, const STEP_BY: usize>(
-        re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT],
+        re: &mut AVX2RingElement,
         index: usize,
         zeta: i32,
     ) {
@@ -310,11 +318,13 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut [Vec256; SIMD_UNITS_IN_RING_ELEMENT]) {
         let offset = (index * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT;
 
         for j in offset..offset + STEP_BY {
-            arithmetic::montgomery_multiply(&mut re[j + STEP_BY], &rhs);
+            arithmetic::montgomery_multiply(&mut re[j + STEP_BY].value, &rhs);
 
-            let tmp = mm256_sub_epi32(re[j], re[j + STEP_BY]);
-            re[j] = mm256_add_epi32(re[j], re[j + STEP_BY]);
-            re[j + STEP_BY] = tmp;
+            let tmp = mm256_sub_epi32(re[j].value, re[j + STEP_BY].value);
+            re[j] = AVX2SIMDUnit {
+                value: mm256_add_epi32(re[j].value, re[j + STEP_BY].value),
+            };
+            re[j + STEP_BY] = AVX2SIMDUnit { value: tmp };
         }
 
         // [hax] https://github.com/hacspec/hax/issues/720

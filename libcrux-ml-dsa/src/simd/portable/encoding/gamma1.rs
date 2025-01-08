@@ -5,7 +5,7 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Coefficients, serialized: &mut 
     const GAMMA1: i32 = 1 << 17;
 
     cloop! {
-        for (i, coefficients) in simd_unit.chunks_exact(4).enumerate() {
+        for (i, coefficients) in simd_unit.values.chunks_exact(4).enumerate() {
             let coefficient0 = GAMMA1 - coefficients[0];
             let coefficient1 = GAMMA1 - coefficients[1];
             let coefficient2 = GAMMA1 - coefficients[2];
@@ -41,7 +41,7 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Coefficients, serialized: &mut 
     const GAMMA1: i32 = 1 << 19;
 
     cloop! {
-        for (i, coefficients) in simd_unit.chunks_exact(2).enumerate() {
+        for (i, coefficients) in simd_unit.values.chunks_exact(2).enumerate() {
             let coefficient0 = GAMMA1 - coefficients[0];
             let coefficient1 = GAMMA1 - coefficients[1];
 
@@ -100,10 +100,10 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], simd_unit: &mut Coeffi
             coefficient3 |= (bytes[8] as i32) << 10;
             coefficient3 &= GAMMA1_TIMES_2_BITMASK;
 
-            simd_unit[4 * i] = GAMMA1 - coefficient0;
-            simd_unit[4 * i + 1] = GAMMA1 - coefficient1;
-            simd_unit[4 * i + 2] = GAMMA1 - coefficient2;
-            simd_unit[4 * i + 3] = GAMMA1 - coefficient3;
+            simd_unit.values[4 * i] = GAMMA1 - coefficient0;
+            simd_unit.values[4 * i + 1] = GAMMA1 - coefficient1;
+            simd_unit.values[4 * i + 2] = GAMMA1 - coefficient2;
+            simd_unit.values[4 * i + 3] = GAMMA1 - coefficient3;
         }
     }
 
@@ -131,8 +131,8 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], simd_unit: &mut Coeffi
             coefficient1 |= (bytes[3] as i32) << 4;
             coefficient1 |= (bytes[4] as i32) << 12;
 
-            simd_unit[2 * i] = GAMMA1 - coefficient0;
-            simd_unit[2 * i + 1] = GAMMA1 - coefficient1;
+            simd_unit.values[2 * i] = GAMMA1 - coefficient0;
+            simd_unit.values[2 * i + 1] = GAMMA1 - coefficient1;
         }
     }
 

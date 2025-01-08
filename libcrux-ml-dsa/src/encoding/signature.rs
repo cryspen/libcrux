@@ -66,6 +66,7 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     out_signer_response: &mut [PolynomialRingElement<SIMDUnit>],
     out_hint: &mut [[i32; COEFFICIENTS_IN_RING_ELEMENT]],
 ) -> Result<(), VerificationError> {
+    // [eurydice] generates an unused variable pointing to out_hint here.
     debug_assert!(serialized.len() == signature_size);
 
     let (commitment_hash, rest_of_serialized) = serialized.split_at(commitment_hash_size);

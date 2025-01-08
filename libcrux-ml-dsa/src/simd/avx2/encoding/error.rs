@@ -69,6 +69,7 @@ fn serialize_when_eta_is_4(simd_unit: &Vec256, out: &mut [u8]) {
 
 #[inline(always)]
 pub fn serialize(eta: Eta, simd_unit: &Vec256, serialized: &mut [u8]) {
+    // [eurydice] injects an unused variable here in the C code for some reason.
     match eta {
         Eta::Two => serialize_when_eta_is_2(simd_unit, serialized),
         Eta::Four => serialize_when_eta_is_4(simd_unit, serialized),

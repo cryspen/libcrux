@@ -11,14 +11,14 @@ fn change_t0_interval(t0: i32) -> i32 {
 pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
     debug_assert!(serialized.len() == 13);
 
-    let coefficient0 = change_t0_interval(simd_unit[0]);
-    let coefficient1 = change_t0_interval(simd_unit[1]);
-    let coefficient2 = change_t0_interval(simd_unit[2]);
-    let coefficient3 = change_t0_interval(simd_unit[3]);
-    let coefficient4 = change_t0_interval(simd_unit[4]);
-    let coefficient5 = change_t0_interval(simd_unit[5]);
-    let coefficient6 = change_t0_interval(simd_unit[6]);
-    let coefficient7 = change_t0_interval(simd_unit[7]);
+    let coefficient0 = change_t0_interval(simd_unit.values[0]);
+    let coefficient1 = change_t0_interval(simd_unit.values[1]);
+    let coefficient2 = change_t0_interval(simd_unit.values[2]);
+    let coefficient3 = change_t0_interval(simd_unit.values[3]);
+    let coefficient4 = change_t0_interval(simd_unit.values[4]);
+    let coefficient5 = change_t0_interval(simd_unit.values[5]);
+    let coefficient6 = change_t0_interval(simd_unit.values[6]);
+    let coefficient7 = change_t0_interval(simd_unit.values[7]);
 
     serialized[0] = coefficient0 as u8;
 
@@ -110,12 +110,12 @@ pub fn deserialize(serialized: &[u8], simd_unit: &mut Coefficients) {
     coefficient7 |= byte12 << 5;
     coefficient7 &= BITS_IN_LOWER_PART_OF_T_MASK;
 
-    simd_unit[0] = change_t0_interval(coefficient0);
-    simd_unit[1] = change_t0_interval(coefficient1);
-    simd_unit[2] = change_t0_interval(coefficient2);
-    simd_unit[3] = change_t0_interval(coefficient3);
-    simd_unit[4] = change_t0_interval(coefficient4);
-    simd_unit[5] = change_t0_interval(coefficient5);
-    simd_unit[6] = change_t0_interval(coefficient6);
-    simd_unit[7] = change_t0_interval(coefficient7);
+    simd_unit.values[0] = change_t0_interval(coefficient0);
+    simd_unit.values[1] = change_t0_interval(coefficient1);
+    simd_unit.values[2] = change_t0_interval(coefficient2);
+    simd_unit.values[3] = change_t0_interval(coefficient3);
+    simd_unit.values[4] = change_t0_interval(coefficient4);
+    simd_unit.values[5] = change_t0_interval(coefficient5);
+    simd_unit.values[6] = change_t0_interval(coefficient6);
+    simd_unit.values[7] = change_t0_interval(coefficient7);
 }
