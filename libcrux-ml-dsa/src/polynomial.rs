@@ -15,7 +15,7 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         }
     }
 
-    // This is used in `make_int` and for tests
+    // This is used in `make_hint` and for tests
     pub(crate) fn to_i32_array(&self) -> [i32; 256] {
         let mut result = [0i32; 256];
 
