@@ -68,6 +68,7 @@
            , cmake
            , mold-wrapped
            , ninja
+           , git
            , python3
            , runCommand
            , craneLib
@@ -98,7 +99,9 @@
                 cmake
                 mold-wrapped
                 ninja
+                git
                 python3
+                inputs.fstar.packages.${system}.default
               ] ++ lib.optional checkHax [
                 hax
               ];
