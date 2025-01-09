@@ -14,7 +14,7 @@
       url = "github:aeneasverif/eurydice";
       inputs.charon.follows = "charon";
     };
-    fstar.follows = "eurydice/fstar";
+    fstar.follows = "karamel/fstar";
     karamel.follows = "eurydice/karamel";
     hax.url = "github:hacspec/hax";
   };
