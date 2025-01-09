@@ -91,7 +91,7 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     let mut i = 0;
     let mut malformed_hint = false;
 
-    while i < rows_in_a && !malformed_hint {
+    while !malformed_hint && i < rows_in_a {
         let current_true_hints_seen = hint_serialized[max_ones_in_hint + i] as usize;
 
         if (current_true_hints_seen < previous_true_hints_seen)
@@ -108,8 +108,9 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
                 // increasing
                 malformed_hint = true;
             }
+
             if !malformed_hint {
-                out_hint[i][hint_serialized[j] as usize] = 1;
+                set_hint(out_hint, i, hint_serialized[j] as usize);
                 j += 1;
             }
         }
@@ -121,12 +122,13 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     }
 
     i = previous_true_hints_seen;
-    while i < max_ones_in_hint && !malformed_hint {
-        if hint_serialized[i] != 0 {
+
+    for j in i..max_ones_in_hint {
+        if hint_serialized[j] != 0 {
             // ensures padding indices are zero
             malformed_hint = true;
+            break;
         }
-        i += 1;
     }
 
     if malformed_hint {
@@ -134,4 +136,9 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     }
 
     Ok(())
+}
+
+#[inline(always)]
+fn set_hint(out_hint: &mut [[i32; 256]], i: usize, j: usize) {
+    out_hint[i][j] = 1
 }

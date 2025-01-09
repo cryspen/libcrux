@@ -9,6 +9,13 @@ val generate_key_pair (randomness: t_Array u8 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Generate an ML-DSA-65 Key Pair
+val generate_key_pair_mut
+      (randomness: t_Array u8 (sz 32))
+      (signing_key: t_Array u8 (sz 4032))
+      (verification_key: t_Array u8 (sz 1952))
+    : Prims.Pure (t_Array u8 (sz 4032) & t_Array u8 (sz 1952)) Prims.l_True (fun _ -> Prims.l_True)
+
 /// Generate an ML-DSA-65 Signature
 /// The parameter `context` is used for domain separation
 /// and is a byte string of length at most 255 bytes. It
@@ -20,6 +27,20 @@ val sign
     : Prims.Pure
       (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Generate an ML-DSA-65 Signature
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
+val sign_mut
+      (signing_key: t_Array u8 (sz 4032))
+      (message context: t_Slice u8)
+      (randomness: t_Array u8 (sz 32))
+      (signature: t_Array u8 (sz 3309))
+    : Prims.Pure
+      (t_Array u8 (sz 3309) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 /// Generate a HashML-DSA-65 Signature, with a SHAKE128 pre-hashing
 /// The parameter `context` is used for domain separation

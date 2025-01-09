@@ -71,6 +71,38 @@ macro_rules! parameter_set {
                 unsafe { _inner(signing_key, message, context, randomness) }
             }
 
+            #[allow(unsafe_code)]
+            /// Sign.
+            pub fn sign_mut(
+                signing_key: &[u8; SIGNING_KEY_SIZE],
+                message: &[u8],
+                context: &[u8],
+                randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+                signature: &mut [u8; SIGNATURE_SIZE],
+            ) -> Result<(), SigningError> {
+                #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+                #[allow(unsafe_code)]
+                unsafe fn _inner(
+                    signing_key: &[u8; SIGNING_KEY_SIZE],
+                    message: &[u8],
+                    context: &[u8],
+                    randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+                    signature: &mut [u8; SIGNATURE_SIZE],
+                ) -> Result<(), SigningError> {
+                    crate::ml_dsa_generic::$parameter_module::sign_mut::<
+                        crate::simd::avx2::AVX2SIMDUnit,
+                        crate::samplex4::avx2::AVX2Sampler,
+                        crate::hash_functions::simd256::Shake128x4,
+                        crate::hash_functions::simd256::Shake256,
+                        // We use the portable version here.
+                        // It doesn' make sense to do these in parallel.
+                        crate::hash_functions::portable::Shake256Xof,
+                        crate::hash_functions::simd256::Shake256x4,
+                    >(signing_key, message, context, randomness, signature)
+                }
+                unsafe { _inner(signing_key, message, context, randomness, signature) }
+            }
+
             /// Sign (internal API)
             #[allow(unsafe_code)]
             #[cfg(feature = "acvp")]
@@ -85,7 +117,8 @@ macro_rules! parameter_set {
                     signing_key: &[u8; SIGNING_KEY_SIZE],
                     message: &[u8],
                     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-                ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
+                    signature: &mut [u8; SIGNATURE_SIZE],
+                ) -> Result<(), SigningError> {
                     crate::ml_dsa_generic::$parameter_module::sign_internal::<
                         crate::simd::avx2::AVX2SIMDUnit,
                         crate::samplex4::avx2::AVX2Sampler,
@@ -95,9 +128,15 @@ macro_rules! parameter_set {
                         // It doesn' make sense to do these in parallel.
                         crate::hash_functions::portable::Shake256Xof,
                         crate::hash_functions::simd256::Shake256x4,
-                    >(signing_key, message, None, randomness)
+                    >(signing_key, message, None, randomness, signature)
                 }
-                unsafe { _inner(&signing_key, message, randomness) }
+
+                let mut signature = MLDSASignature::zero();
+                unsafe {
+                    _inner(&signing_key, message, randomness, &mut signature.value)?;
+                }
+
+                Ok(signature)
             }
 
             /// Sign (pre-hashed).

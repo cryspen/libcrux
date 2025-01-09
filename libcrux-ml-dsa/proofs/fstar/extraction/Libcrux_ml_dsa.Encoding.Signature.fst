@@ -9,6 +9,23 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
+let set_hint (out_hint: t_Slice (t_Array i32 (sz 256))) (i j: usize) =
+  let hax_temp_output, out_hint:(Prims.unit & t_Slice (t_Array i32 (sz 256))) =
+    (),
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out_hint
+      i
+      (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (out_hint.[ i ]
+            <:
+            t_Array i32 (sz 256))
+          j
+          1l
+        <:
+        t_Array i32 (sz 256))
+    <:
+    (Prims.unit & t_Slice (t_Array i32 (sz 256)))
+  in
+  out_hint
+
 let deserialize
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -105,7 +122,7 @@ let deserialize
             usize) =
             temp_0_
           in
-          (i <. rows_in_a <: bool) && (~.malformed_hint <: bool))
+          (~.malformed_hint <: bool) && (i <. rows_in_a <: bool))
       (i, malformed_hint, out_hint, previous_true_hints_seen
         <:
         (usize & bool & t_Slice (t_Array i32 (sz 256)) & usize))
@@ -152,15 +169,7 @@ let deserialize
                   if ~.malformed_hint
                   then
                     let out_hint:t_Slice (t_Array i32 (sz 256)) =
-                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out_hint
-                        i
-                        (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (out_hint.[ i ]
-                              <:
-                              t_Array i32 (sz 256))
-                            (cast (hint_serialized.[ j ] <: u8) <: usize)
-                            1l
-                          <:
-                          t_Array i32 (sz 256))
+                      set_hint out_hint i (cast (hint_serialized.[ j ] <: u8) <: usize)
                     in
                     let j:usize = j +! sz 1 in
                     j, malformed_hint, out_hint <: (usize & bool & t_Slice (t_Array i32 (sz 256)))
@@ -180,22 +189,27 @@ let deserialize
             (usize & bool & t_Slice (t_Array i32 (sz 256)) & usize))
   in
   let i:usize = previous_true_hints_seen in
-  let i, malformed_hint:(usize & bool) =
-    Rust_primitives.f_while_loop (fun temp_0_ ->
-          let i, malformed_hint:(usize & bool) = temp_0_ in
-          (i <. max_ones_in_hint <: bool) && (~.malformed_hint <: bool))
-      (i, malformed_hint <: (usize & bool))
-      (fun temp_0_ ->
-          let i, malformed_hint:(usize & bool) = temp_0_ in
-          let malformed_hint:bool =
-            if (hint_serialized.[ i ] <: u8) <>. 0uy
-            then
-              let malformed_hint:bool = true in
-              malformed_hint
-            else malformed_hint
-          in
-          let i:usize = i +! sz 1 in
-          i, malformed_hint <: (usize & bool))
+  let malformed_hint:bool =
+    Rust_primitives.Hax.Folds.fold_range_cf i
+      max_ones_in_hint
+      (fun malformed_hint temp_1_ ->
+          let malformed_hint:bool = malformed_hint in
+          let _:usize = temp_1_ in
+          true)
+      malformed_hint
+      (fun malformed_hint j ->
+          let malformed_hint:bool = malformed_hint in
+          let j:usize = j in
+          if (hint_serialized.[ j ] <: u8) <>. 0uy <: bool
+          then
+            let malformed_hint:bool = true in
+            Core.Ops.Control_flow.ControlFlow_Break ((), malformed_hint <: (Prims.unit & bool))
+            <:
+            Core.Ops.Control_flow.t_ControlFlow (Prims.unit & bool) bool
+          else
+            Core.Ops.Control_flow.ControlFlow_Continue malformed_hint
+            <:
+            Core.Ops.Control_flow.t_ControlFlow (Prims.unit & bool) bool)
   in
   if malformed_hint
   then

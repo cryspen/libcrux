@@ -32,6 +32,17 @@ val sign
       (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Sign.
+val sign_mut
+      (signing_key: t_Array u8 (sz 4032))
+      (message context: t_Slice u8)
+      (randomness: t_Array u8 (sz 32))
+      (signature: t_Array u8 (sz 3309))
+    : Prims.Pure
+      (t_Array u8 (sz 3309) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 /// Sign (pre-hashed).
 val sign_pre_hashed_shake128
       (signing_key: t_Array u8 (sz 4032))

@@ -50,6 +50,27 @@ let sign
     #Libcrux_ml_dsa.Hash_functions.Neon.t_Shake256x4 (signing_key <: t_Slice u8) message context
     randomness
 
+let sign_mut
+      (signing_key: t_Array u8 (sz 4032))
+      (message context: t_Slice u8)
+      (randomness: t_Array u8 (sz 32))
+      (signature: t_Array u8 (sz 3309))
+     =
+  let tmp0, out:(t_Array u8 (sz 3309) &
+    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
+    Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_65_.sign_mut #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      #Libcrux_ml_dsa.Samplex4.Neon.t_NeonSampler #Libcrux_ml_dsa.Hash_functions.Neon.t_Shake128x4
+      #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256
+      #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256Xof
+      #Libcrux_ml_dsa.Hash_functions.Neon.t_Shake256x4 (signing_key <: t_Slice u8) message context
+      randomness signature
+  in
+  let signature:t_Array u8 (sz 3309) = tmp0 in
+  let hax_temp_output:Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError = out in
+  signature, hax_temp_output
+  <:
+  (t_Array u8 (sz 3309) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+
 let sign_pre_hashed_shake128
       (signing_key: t_Array u8 (sz 4032))
       (message context pre_hash_buffer: t_Slice u8)

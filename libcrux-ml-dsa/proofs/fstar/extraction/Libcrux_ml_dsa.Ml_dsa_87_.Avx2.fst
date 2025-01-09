@@ -37,6 +37,30 @@ let sign
     context
     randomness
 
+let sign_mut
+      (signing_key: Libcrux_ml_dsa.Types.t_MLDSASigningKey (sz 4896))
+      (message context: t_Slice u8)
+      (randomness: t_Array u8 (sz 32))
+      (signature: t_Array u8 (sz 4627))
+     =
+  let tmp0, out:(t_Array u8 (sz 4627) &
+    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
+    Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign_mut (Libcrux_ml_dsa.Types.impl__as_ref
+          (sz 4896)
+          signing_key
+        <:
+        t_Array u8 (sz 4896))
+      message
+      context
+      randomness
+      signature
+  in
+  let signature:t_Array u8 (sz 4627) = tmp0 in
+  let hax_temp_output:Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError = out in
+  signature, hax_temp_output
+  <:
+  (t_Array u8 (sz 4627) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+
 let sign_pre_hashed_shake128
       (signing_key: Libcrux_ml_dsa.Types.t_MLDSASigningKey (sz 4896))
       (message context: t_Slice u8)

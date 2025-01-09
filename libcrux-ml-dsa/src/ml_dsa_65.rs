@@ -30,6 +30,19 @@ macro_rules! instantiate {
                 }
             }
 
+            /// Generate an ML-DSA-65 Key Pair
+            pub fn generate_key_pair_mut(
+                randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
+                signing_key: &mut [u8; SIGNING_KEY_SIZE],
+                verification_key: &mut [u8; VERIFICATION_KEY_SIZE],
+            ) {
+                crate::ml_dsa_generic::instantiations::$modp::ml_dsa_65::generate_key_pair(
+                    randomness,
+                    signing_key,
+                    verification_key,
+                );
+            }
+
             /// Generate an ML-DSA-65 Signature
             ///
             /// The parameter `context` is used for domain separation
@@ -46,6 +59,27 @@ macro_rules! instantiate {
                     message,
                     context,
                     randomness,
+                )
+            }
+
+            /// Generate an ML-DSA-65 Signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
+            pub fn sign_mut(
+                signing_key: &[u8; SIGNING_KEY_SIZE],
+                message: &[u8],
+                context: &[u8],
+                randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+                signature: &mut [u8; SIGNATURE_SIZE],
+            ) -> Result<(), SigningError> {
+                crate::ml_dsa_generic::instantiations::$modp::ml_dsa_65::sign_mut(
+                    signing_key,
+                    message,
+                    context,
+                    randomness,
+                    signature,
                 )
             }
 

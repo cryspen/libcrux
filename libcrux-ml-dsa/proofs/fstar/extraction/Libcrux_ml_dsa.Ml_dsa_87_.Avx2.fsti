@@ -21,6 +21,20 @@ val sign
       (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 4627))
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Generate an ML-DSA-87 Signature
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
+val sign_mut
+      (signing_key: Libcrux_ml_dsa.Types.t_MLDSASigningKey (sz 4896))
+      (message context: t_Slice u8)
+      (randomness: t_Array u8 (sz 32))
+      (signature: t_Array u8 (sz 4627))
+    : Prims.Pure
+      (t_Array u8 (sz 4627) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 /// Generate a HashML-DSA-87 Signature, with a SHAKE128 pre-hashing
 /// The parameter `context` is used for domain separation
 /// and is a byte string of length at most 255 bytes. It

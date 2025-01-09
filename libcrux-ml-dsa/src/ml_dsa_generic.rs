@@ -137,7 +137,8 @@ pub(crate) mod generic {
         message: &[u8],
         domain_separation_context: Option<DomainSeparationContext>,
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-    ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
+        signature: &mut [u8; SIGNATURE_SIZE],
+    ) -> Result<(), SigningError> {
         // Split the signing key into its parts.
         let (seed_for_a, remaining_serialized) = signing_key.split_at(SEED_FOR_A_SIZE);
         let (seed_for_signing, remaining_serialized) =
@@ -331,8 +332,6 @@ pub(crate) mod generic {
             None => return Err(SigningError::RejectionSamplingError),
         };
 
-        let mut signature = [0u8; SIGNATURE_SIZE];
-
         encoding::signature::serialize::<SIMDUnit>(
             &commitment_hash,
             &signer_response,
@@ -343,10 +342,10 @@ pub(crate) mod generic {
             GAMMA1_EXPONENT,
             GAMMA1_RING_ELEMENT_SIZE,
             MAX_ONES_IN_HINT,
-            &mut signature,
+            signature,
         );
 
-        Ok(MLDSASignature::new(signature))
+        Ok(())
     }
 
     /// The internal verification API.
@@ -465,7 +464,42 @@ pub(crate) mod generic {
         return Err(VerificationError::CommitmentHashesDontMatchError);
     }
 
-    #[allow(non_snake_case)]
+    #[inline(always)]
+    pub(crate) fn sign_pre_hashed_mut<
+        SIMDUnit: Operations,
+        Sampler: X4Sampler,
+        Shake128: shake128::Xof,
+        Shake128X4: shake128::XofX4,
+        Shake256: shake256::DsaXof,
+        Shake256Xof: shake256::Xof,
+        Shake256X4: shake256::XofX4,
+        PH: PreHash,
+    >(
+        signing_key: &[u8],
+        message: &[u8],
+        context: &[u8],
+        pre_hash_buffer: &mut [u8],
+        randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+        signature: &mut [u8; SIGNATURE_SIZE],
+    ) -> Result<(), SigningError> {
+        if context.len() > CONTEXT_MAX_LEN {
+            return Err(SigningError::ContextTooLongError);
+        }
+        PH::hash::<Shake128>(message, pre_hash_buffer);
+        let domain_separation_context = match DomainSeparationContext::new(context, Some(PH::oid()))
+        {
+            Ok(dsc) => dsc,
+            Err(_) => return Err(SigningError::ContextTooLongError),
+        };
+        sign_internal::<SIMDUnit, Sampler, Shake128X4, Shake256, Shake256Xof, Shake256X4>(
+            signing_key,
+            pre_hash_buffer,
+            Some(domain_separation_context),
+            randomness,
+            signature,
+        )
+    }
+
     #[inline(always)]
     pub(crate) fn sign_pre_hashed<
         SIMDUnit: Operations,
@@ -483,22 +517,60 @@ pub(crate) mod generic {
         pre_hash_buffer: &mut [u8],
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-        if context.len() > CONTEXT_MAX_LEN {
-            return Err(SigningError::ContextTooLongError);
+        let mut signature = MLDSASignature::zero();
+
+        // [eurydice] doesn't support ?
+        // https://github.com/AeneasVerif/eurydice/issues/105
+        match sign_pre_hashed_mut::<
+            SIMDUnit,
+            Sampler,
+            Shake128,
+            Shake128X4,
+            Shake256,
+            Shake256Xof,
+            Shake256X4,
+            PH,
+        >(
+            signing_key,
+            message,
+            context,
+            pre_hash_buffer,
+            randomness,
+            &mut signature.value,
+        ) {
+            Ok(_) => Ok(signature),
+            Err(e) => Err(e),
         }
-        PH::hash::<Shake128>(message, pre_hash_buffer);
-        let domain_separation_context = match DomainSeparationContext::new(context, Some(PH::oid()))
-        {
+    }
+
+    #[inline(always)]
+    pub(crate) fn sign_mut<
+        SIMDUnit: Operations,
+        Sampler: X4Sampler,
+        Shake128X4: shake128::XofX4,
+        Shake256: shake256::DsaXof,
+        Shake256Xof: shake256::Xof,
+        Shake256X4: shake256::XofX4,
+    >(
+        signing_key: &[u8],
+        message: &[u8],
+        context: &[u8],
+        randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+        signature: &mut [u8; SIGNATURE_SIZE],
+    ) -> Result<(), SigningError> {
+        let domain_separation_context = match DomainSeparationContext::new(context, None) {
             Ok(dsc) => dsc,
             Err(_) => return Err(SigningError::ContextTooLongError),
         };
         sign_internal::<SIMDUnit, Sampler, Shake128X4, Shake256, Shake256Xof, Shake256X4>(
             signing_key,
-            pre_hash_buffer,
+            message,
             Some(domain_separation_context),
             randomness,
+            signature,
         )
     }
+
     #[inline(always)]
     pub(crate) fn sign<
         SIMDUnit: Operations,
@@ -513,18 +585,22 @@ pub(crate) mod generic {
         context: &[u8],
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-        let domain_separation_context = match DomainSeparationContext::new(context, None) {
-            Ok(dsc) => dsc,
-            Err(_) => return Err(SigningError::ContextTooLongError),
-        };
-        sign_internal::<SIMDUnit, Sampler, Shake128X4, Shake256, Shake256Xof, Shake256X4>(
+        let mut signature = MLDSASignature::zero();
+
+        // [eurydice] doesn't support ?
+        // https://github.com/AeneasVerif/eurydice/issues/105
+        match sign_mut::<SIMDUnit, Sampler, Shake128X4, Shake256, Shake256Xof, Shake256X4>(
             signing_key,
             message,
-            Some(domain_separation_context),
+            context,
             randomness,
-        )
+            &mut signature.value,
+        ) {
+            Ok(_) => Ok(signature),
+            Err(e) => Err(e),
+        }
     }
-    #[allow(non_snake_case)]
+
     #[inline(always)]
     pub(crate) fn verify<
         SIMDUnit: Operations,
@@ -551,7 +627,6 @@ pub(crate) mod generic {
         )
     }
 
-    #[allow(non_snake_case)]
     #[inline(always)]
     pub(crate) fn verify_pre_hashed<
         SIMDUnit: Operations,

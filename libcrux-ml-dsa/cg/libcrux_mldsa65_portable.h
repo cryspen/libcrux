@@ -8,7 +8,7 @@
  * Eurydice: 8e112cd3065d2c1eb6c023cd37111300dbf9fc9a
  * Karamel: f82ecfe9b99edd64642d47b4e3fb6314a8e2320b
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: a09987d066ac254dbc0e455cbc83aa5bbe096741
+ * Libcrux: 66afce2b7d2b86febb97fb1fc5de2fbba7419d74
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -186,6 +186,12 @@ libcrux_ml_dsa_encoding_error_chunk_size(libcrux_ml_dsa_constants_Eta eta) {
     return (size_t)4U;
   }
   return (size_t)3U;
+}
+
+static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_signature_set_hint(
+    Eurydice_slice out_hint, size_t i, size_t j) {
+  Eurydice_slice_index(out_hint, i, int32_t[256U], int32_t(*)[256U])[j] =
+      (int32_t)1;
 }
 
 #define LIBCRUX_ML_DSA_ENCODING_T0_OUTPUT_BYTES_PER_SIMD_UNIT ((size_t)13U)
@@ -5775,6 +5781,18 @@ libcrux_ml_dsa_ml_dsa_65_portable_generate_key_pair(uint8_t randomness[32U]) {
 }
 
 /**
+ Generate an ML-DSA-65 Key Pair
+*/
+static inline void libcrux_ml_dsa_ml_dsa_65_portable_generate_key_pair_mut(
+    uint8_t randomness[32U], uint8_t *signing_key, uint8_t *verification_key) {
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_randomness[32U];
+  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+  libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_generate_key_pair(
+      copy_of_randomness, signing_key, verification_key);
+}
+
+/**
 A monomorphic instance of core.option.Option
 with types libcrux_ml_dsa_pre_hash_DomainSeparationContext
 
@@ -6770,10 +6788,11 @@ libcrux_ml_dsa_hash_functions_portable_Shake256Xof,
 libcrux_ml_dsa_hash_functions_portable_Shake256X4 with const generics
 
 */
-static KRML_MUSTINLINE Result_2e
+static KRML_MUSTINLINE Result_53
 libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
     Eurydice_slice signing_key, Eurydice_slice message,
-    Option_84 domain_separation_context, uint8_t randomness[32U]) {
+    Option_84 domain_separation_context, uint8_t randomness[32U],
+    uint8_t *signature) {
   Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
       signing_key, LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_A_SIZE, uint8_t,
       Eurydice_slice_uint8_t_x2);
@@ -7071,12 +7090,11 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
       }
     }
   }
-  Result_2e uu____8;
+  Result_53 uu____8;
   if (commitment_hash0.tag == None) {
-    uu____8 = (CLITERAL(Result_2e){
+    uu____8 = (CLITERAL(Result_53){
         .tag = Err,
-        .val = {.case_Err =
-                    libcrux_ml_dsa_types_SigningError_RejectionSamplingError}});
+        .f0 = libcrux_ml_dsa_types_SigningError_RejectionSamplingError});
   } else {
     uint8_t commitment_hash1[48U];
     memcpy(commitment_hash1, commitment_hash0.f0,
@@ -7084,11 +7102,9 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
     uint8_t commitment_hash[48U];
     memcpy(commitment_hash, commitment_hash1, (size_t)48U * sizeof(uint8_t));
     if (signer_response0.tag == None) {
-      uu____8 = (CLITERAL(Result_2e){
+      uu____8 = (CLITERAL(Result_53){
           .tag = Err,
-          .val = {
-              .case_Err =
-                  libcrux_ml_dsa_types_SigningError_RejectionSamplingError}});
+          .f0 = libcrux_ml_dsa_types_SigningError_RejectionSamplingError});
     } else {
       libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 signer_response1[5U];
       memcpy(signer_response1, signer_response0.f0,
@@ -7099,17 +7115,14 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
              (size_t)5U *
                  sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
       if (hint0.tag == None) {
-        uu____8 = (CLITERAL(Result_2e){
+        uu____8 = (CLITERAL(Result_53){
             .tag = Err,
-            .val = {
-                .case_Err =
-                    libcrux_ml_dsa_types_SigningError_RejectionSamplingError}});
+            .f0 = libcrux_ml_dsa_types_SigningError_RejectionSamplingError});
       } else {
         int32_t hint1[6U][256U];
         memcpy(hint1, hint0.f0, (size_t)6U * sizeof(int32_t[256U]));
         int32_t hint[6U][256U];
         memcpy(hint, hint1, (size_t)6U * sizeof(int32_t[256U]));
-        uint8_t signature[3309U] = {0U};
         libcrux_ml_dsa_encoding_signature_serialize_5b(
             Eurydice_array_to_slice((size_t)48U, commitment_hash, uint8_t),
             Eurydice_array_to_slice(
@@ -7123,17 +7136,47 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
             LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_GAMMA1_RING_ELEMENT_SIZE,
             LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_MAX_ONES_IN_HINT,
             Eurydice_array_to_slice((size_t)3309U, signature, uint8_t));
-        /* Passing arrays by value in Rust generates a copy in C */
-        uint8_t copy_of_signature[3309U];
-        memcpy(copy_of_signature, signature, (size_t)3309U * sizeof(uint8_t));
-        Result_2e lit;
-        lit.tag = Ok;
-        lit.val.case_Ok = libcrux_ml_dsa_types_new_8f_fa(copy_of_signature);
-        return lit;
+        return (CLITERAL(Result_53){.tag = Ok});
       }
     }
   }
   return uu____8;
+}
+
+/**
+A monomorphic instance of libcrux_ml_dsa.ml_dsa_generic.ml_dsa_65.sign_mut
+with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients,
+libcrux_ml_dsa_samplex4_portable_PortableSampler,
+libcrux_ml_dsa_hash_functions_portable_Shake128X4,
+libcrux_ml_dsa_hash_functions_portable_Shake256,
+libcrux_ml_dsa_hash_functions_portable_Shake256Xof,
+libcrux_ml_dsa_hash_functions_portable_Shake256X4 with const generics
+
+*/
+static KRML_MUSTINLINE Result_53
+libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_mut_5a(Eurydice_slice signing_key,
+                                                    Eurydice_slice message,
+                                                    Eurydice_slice context,
+                                                    uint8_t randomness[32U],
+                                                    uint8_t *signature) {
+  Result_a8 uu____0 = libcrux_ml_dsa_pre_hash_new_45(
+      context, (CLITERAL(Option_30){.tag = None}));
+  if (!(uu____0.tag == Ok)) {
+    return (CLITERAL(Result_53){
+        .tag = Err,
+        .f0 = libcrux_ml_dsa_types_SigningError_ContextTooLongError});
+  }
+  libcrux_ml_dsa_pre_hash_DomainSeparationContext dsc = uu____0.val.case_Ok;
+  libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context =
+      dsc;
+  Eurydice_slice uu____1 = signing_key;
+  Eurydice_slice uu____2 = message;
+  Option_84 uu____3 = {.tag = Some, .f0 = domain_separation_context};
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_randomness[32U];
+  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+  return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
+      uu____1, uu____2, uu____3, copy_of_randomness, signature);
 }
 
 /**
@@ -7151,25 +7194,24 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_5a(Eurydice_slice signing_key,
                                                 Eurydice_slice message,
                                                 Eurydice_slice context,
                                                 uint8_t randomness[32U]) {
-  Result_a8 uu____0 = libcrux_ml_dsa_pre_hash_new_45(
-      context, (CLITERAL(Option_30){.tag = None}));
-  if (!(uu____0.tag == Ok)) {
-    return (CLITERAL(Result_2e){
-        .tag = Err,
-        .val = {.case_Err =
-                    libcrux_ml_dsa_types_SigningError_ContextTooLongError}});
-  }
-  libcrux_ml_dsa_pre_hash_DomainSeparationContext dsc = uu____0.val.case_Ok;
-  libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context =
-      dsc;
-  Eurydice_slice uu____1 = signing_key;
-  Eurydice_slice uu____2 = message;
-  Option_84 uu____3 = {.tag = Some, .f0 = domain_separation_context};
+  libcrux_ml_dsa_types_MLDSASignature_8f signature =
+      libcrux_ml_dsa_types_zero_8f_fa();
+  Eurydice_slice uu____0 = signing_key;
+  Eurydice_slice uu____1 = message;
+  Eurydice_slice uu____2 = context;
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[32U];
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
-      uu____1, uu____2, uu____3, copy_of_randomness);
+  Result_53 uu____4 = libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_mut_5a(
+      uu____0, uu____1, uu____2, copy_of_randomness, signature.value);
+  Result_2e uu____5;
+  if (uu____4.tag == Ok) {
+    uu____5 = (CLITERAL(Result_2e){.tag = Ok, .val = {.case_Ok = signature}});
+  } else {
+    libcrux_ml_dsa_types_SigningError e = uu____4.f0;
+    uu____5 = (CLITERAL(Result_2e){.tag = Err, .val = {.case_Err = e}});
+  }
+  return uu____5;
 }
 
 /**
@@ -7211,6 +7253,44 @@ static inline Result_2e libcrux_ml_dsa_ml_dsa_65_portable_sign(
 }
 
 /**
+ Sign.
+*/
+static inline Result_53
+libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_sign_mut(
+    uint8_t *signing_key, Eurydice_slice message, Eurydice_slice context,
+    uint8_t randomness[32U], uint8_t *signature) {
+  Eurydice_slice uu____0 =
+      Eurydice_array_to_slice((size_t)4032U, signing_key, uint8_t);
+  Eurydice_slice uu____1 = message;
+  Eurydice_slice uu____2 = context;
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_randomness[32U];
+  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+  return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_mut_5a(
+      uu____0, uu____1, uu____2, copy_of_randomness, signature);
+}
+
+/**
+ Generate an ML-DSA-65 Signature
+
+ The parameter `context` is used for domain separation
+ and is a byte string of length at most 255 bytes. It
+ may also be empty.
+*/
+static inline Result_53 libcrux_ml_dsa_ml_dsa_65_portable_sign_mut(
+    uint8_t *signing_key, Eurydice_slice message, Eurydice_slice context,
+    uint8_t randomness[32U], uint8_t *signature) {
+  uint8_t *uu____0 = signing_key;
+  Eurydice_slice uu____1 = message;
+  Eurydice_slice uu____2 = context;
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_randomness[32U];
+  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+  return libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_sign_mut(
+      uu____0, uu____1, uu____2, copy_of_randomness, signature);
+}
+
+/**
 This function found in impl {(libcrux_ml_dsa::pre_hash::PreHash for
 libcrux_ml_dsa::pre_hash::SHAKE128_PH)}
 */
@@ -7223,6 +7303,55 @@ with const generics
 static KRML_MUSTINLINE void libcrux_ml_dsa_pre_hash_hash_3e_cc(
     Eurydice_slice message, Eurydice_slice output) {
   libcrux_ml_dsa_hash_functions_portable_shake128_a0(message, output);
+}
+
+/**
+A monomorphic instance of
+libcrux_ml_dsa.ml_dsa_generic.ml_dsa_65.sign_pre_hashed_mut with types
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients,
+libcrux_ml_dsa_samplex4_portable_PortableSampler,
+libcrux_ml_dsa_hash_functions_portable_Shake128,
+libcrux_ml_dsa_hash_functions_portable_Shake128X4,
+libcrux_ml_dsa_hash_functions_portable_Shake256,
+libcrux_ml_dsa_hash_functions_portable_Shake256Xof,
+libcrux_ml_dsa_hash_functions_portable_Shake256X4,
+libcrux_ml_dsa_pre_hash_SHAKE128_PH with const generics
+
+*/
+static KRML_MUSTINLINE Result_53
+libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_pre_hashed_mut_3f(
+    Eurydice_slice signing_key, Eurydice_slice message, Eurydice_slice context,
+    Eurydice_slice pre_hash_buffer, uint8_t randomness[32U],
+    uint8_t *signature) {
+  if (!(Eurydice_slice_len(context, uint8_t) >
+        LIBCRUX_ML_DSA_CONSTANTS_CONTEXT_MAX_LEN)) {
+    libcrux_ml_dsa_pre_hash_hash_3e_cc(message, pre_hash_buffer);
+    Eurydice_slice uu____0 = context;
+    Option_30 lit;
+    lit.tag = Some;
+    uint8_t ret[11U];
+    libcrux_ml_dsa_pre_hash_oid_3e(ret);
+    memcpy(lit.f0, ret, (size_t)11U * sizeof(uint8_t));
+    Result_a8 uu____1 = libcrux_ml_dsa_pre_hash_new_45(uu____0, lit);
+    if (!(uu____1.tag == Ok)) {
+      return (CLITERAL(Result_53){
+          .tag = Err,
+          .f0 = libcrux_ml_dsa_types_SigningError_ContextTooLongError});
+    }
+    libcrux_ml_dsa_pre_hash_DomainSeparationContext dsc = uu____1.val.case_Ok;
+    libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context =
+        dsc;
+    Eurydice_slice uu____2 = signing_key;
+    Eurydice_slice uu____3 = pre_hash_buffer;
+    Option_84 uu____4 = {.tag = Some, .f0 = domain_separation_context};
+    /* Passing arrays by value in Rust generates a copy in C */
+    uint8_t copy_of_randomness[32U];
+    memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+    return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
+        uu____2, uu____3, uu____4, copy_of_randomness, signature);
+  }
+  return (CLITERAL(Result_53){
+      .tag = Err, .f0 = libcrux_ml_dsa_types_SigningError_ContextTooLongError});
 }
 
 /**
@@ -7242,38 +7371,27 @@ static KRML_MUSTINLINE Result_2e
 libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_pre_hashed_3f(
     Eurydice_slice signing_key, Eurydice_slice message, Eurydice_slice context,
     Eurydice_slice pre_hash_buffer, uint8_t randomness[32U]) {
-  if (!(Eurydice_slice_len(context, uint8_t) >
-        LIBCRUX_ML_DSA_CONSTANTS_CONTEXT_MAX_LEN)) {
-    libcrux_ml_dsa_pre_hash_hash_3e_cc(message, pre_hash_buffer);
-    Eurydice_slice uu____0 = context;
-    Option_30 lit;
-    lit.tag = Some;
-    uint8_t ret[11U];
-    libcrux_ml_dsa_pre_hash_oid_3e(ret);
-    memcpy(lit.f0, ret, (size_t)11U * sizeof(uint8_t));
-    Result_a8 uu____1 = libcrux_ml_dsa_pre_hash_new_45(uu____0, lit);
-    if (!(uu____1.tag == Ok)) {
-      return (CLITERAL(Result_2e){
-          .tag = Err,
-          .val = {.case_Err =
-                      libcrux_ml_dsa_types_SigningError_ContextTooLongError}});
-    }
-    libcrux_ml_dsa_pre_hash_DomainSeparationContext dsc = uu____1.val.case_Ok;
-    libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context =
-        dsc;
-    Eurydice_slice uu____2 = signing_key;
-    Eurydice_slice uu____3 = pre_hash_buffer;
-    Option_84 uu____4 = {.tag = Some, .f0 = domain_separation_context};
-    /* Passing arrays by value in Rust generates a copy in C */
-    uint8_t copy_of_randomness[32U];
-    memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-    return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
-        uu____2, uu____3, uu____4, copy_of_randomness);
+  libcrux_ml_dsa_types_MLDSASignature_8f signature =
+      libcrux_ml_dsa_types_zero_8f_fa();
+  Eurydice_slice uu____0 = signing_key;
+  Eurydice_slice uu____1 = message;
+  Eurydice_slice uu____2 = context;
+  Eurydice_slice uu____3 = pre_hash_buffer;
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_randomness[32U];
+  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+  Result_53 uu____5 =
+      libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_pre_hashed_mut_3f(
+          uu____0, uu____1, uu____2, uu____3, copy_of_randomness,
+          signature.value);
+  Result_2e uu____6;
+  if (uu____5.tag == Ok) {
+    uu____6 = (CLITERAL(Result_2e){.tag = Ok, .val = {.case_Ok = signature}});
+  } else {
+    libcrux_ml_dsa_types_SigningError e = uu____5.f0;
+    uu____6 = (CLITERAL(Result_2e){.tag = Err, .val = {.case_Err = e}});
   }
-  return (CLITERAL(Result_2e){
-      .tag = Err,
-      .val = {.case_Err =
-                  libcrux_ml_dsa_types_SigningError_ContextTooLongError}});
+  return uu____6;
 }
 
 /**
@@ -7407,14 +7525,14 @@ libcrux_ml_dsa_encoding_signature_deserialize_5b(
             libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
   }
   size_t previous_true_hints_seen = (size_t)0U;
-  size_t i = (size_t)0U;
+  size_t i0 = (size_t)0U;
   bool malformed_hint = false;
-  while (i < rows_in_a) {
+  while (true) {
     if (malformed_hint) {
       break;
-    } else {
+    } else if (i0 < rows_in_a) {
       size_t current_true_hints_seen = (size_t)Eurydice_slice_index(
-          hint_serialized, max_ones_in_hint + i, uint8_t, uint8_t *);
+          hint_serialized, max_ones_in_hint + i0, uint8_t, uint8_t *);
       size_t j;
       bool uu____2;
       bool uu____3;
@@ -7430,8 +7548,8 @@ libcrux_ml_dsa_encoding_signature_deserialize_5b(
       size_t uu____13;
       size_t uu____14;
       bool uu____15;
-      size_t uu____16;
-      Eurydice_slice *uu____17;
+      Eurydice_slice uu____16;
+      size_t uu____17;
       size_t uu____18;
       uint8_t uu____19;
       size_t uu____20;
@@ -7465,15 +7583,14 @@ libcrux_ml_dsa_encoding_signature_deserialize_5b(
                     malformed_hint = true;
                     uu____15 = malformed_hint;
                     if (!uu____15) {
-                      uu____16 = i;
-                      uu____17 = &out_hint;
+                      uu____16 = out_hint;
+                      uu____17 = i0;
                       uu____20 = j;
                       uu____19 = Eurydice_slice_index(hint_serialized, uu____20,
                                                       uint8_t, uint8_t *);
                       uu____18 = (size_t)uu____19;
-                      Eurydice_slice_index(out_hint, uu____16, int32_t[256U],
-                                           int32_t(*)[256U])[uu____18] =
-                          (int32_t)1;
+                      libcrux_ml_dsa_encoding_signature_set_hint(
+                          uu____16, uu____17, uu____18);
                       j++;
                     }
                     continue;
@@ -7481,14 +7598,14 @@ libcrux_ml_dsa_encoding_signature_deserialize_5b(
                 }
                 uu____15 = malformed_hint;
                 if (!uu____15) {
-                  uu____16 = i;
-                  uu____17 = &out_hint;
+                  uu____16 = out_hint;
+                  uu____17 = i0;
                   uu____20 = j;
                   uu____19 = Eurydice_slice_index(hint_serialized, uu____20,
                                                   uint8_t, uint8_t *);
                   uu____18 = (size_t)uu____19;
-                  Eurydice_slice_index(out_hint, uu____16, int32_t[256U],
-                                       int32_t(*)[256U])[uu____18] = (int32_t)1;
+                  libcrux_ml_dsa_encoding_signature_set_hint(uu____16, uu____17,
+                                                             uu____18);
                   j++;
                 }
               } else {
@@ -7500,7 +7617,7 @@ libcrux_ml_dsa_encoding_signature_deserialize_5b(
           if (!uu____21) {
             uu____22 = current_true_hints_seen;
             previous_true_hints_seen = uu____22;
-            i++;
+            i0++;
           }
           continue;
         }
@@ -7532,14 +7649,14 @@ libcrux_ml_dsa_encoding_signature_deserialize_5b(
                 malformed_hint = true;
                 uu____15 = malformed_hint;
                 if (!uu____15) {
-                  uu____16 = i;
-                  uu____17 = &out_hint;
+                  uu____16 = out_hint;
+                  uu____17 = i0;
                   uu____20 = j;
                   uu____19 = Eurydice_slice_index(hint_serialized, uu____20,
                                                   uint8_t, uint8_t *);
                   uu____18 = (size_t)uu____19;
-                  Eurydice_slice_index(out_hint, uu____16, int32_t[256U],
-                                       int32_t(*)[256U])[uu____18] = (int32_t)1;
+                  libcrux_ml_dsa_encoding_signature_set_hint(uu____16, uu____17,
+                                                             uu____18);
                   j++;
                 }
                 continue;
@@ -7547,14 +7664,14 @@ libcrux_ml_dsa_encoding_signature_deserialize_5b(
             }
             uu____15 = malformed_hint;
             if (!uu____15) {
-              uu____16 = i;
-              uu____17 = &out_hint;
+              uu____16 = out_hint;
+              uu____17 = i0;
               uu____20 = j;
               uu____19 = Eurydice_slice_index(hint_serialized, uu____20,
                                               uint8_t, uint8_t *);
               uu____18 = (size_t)uu____19;
-              Eurydice_slice_index(out_hint, uu____16, int32_t[256U],
-                                   int32_t(*)[256U])[uu____18] = (int32_t)1;
+              libcrux_ml_dsa_encoding_signature_set_hint(uu____16, uu____17,
+                                                         uu____18);
               j++;
             }
           } else {
@@ -7566,19 +7683,18 @@ libcrux_ml_dsa_encoding_signature_deserialize_5b(
       if (!uu____21) {
         uu____22 = current_true_hints_seen;
         previous_true_hints_seen = uu____22;
-        i++;
+        i0++;
       }
+    } else {
+      break;
     }
   }
-  i = previous_true_hints_seen;
-  while (i < max_ones_in_hint) {
-    if (malformed_hint) {
+  i0 = previous_true_hints_seen;
+  for (size_t i = i0; i < max_ones_in_hint; i++) {
+    size_t j = i;
+    if (Eurydice_slice_index(hint_serialized, j, uint8_t, uint8_t *) != 0U) {
+      malformed_hint = true;
       break;
-    } else {
-      if (Eurydice_slice_index(hint_serialized, i, uint8_t, uint8_t *) != 0U) {
-        malformed_hint = true;
-      }
-      i++;
     }
   }
   if (!malformed_hint) {

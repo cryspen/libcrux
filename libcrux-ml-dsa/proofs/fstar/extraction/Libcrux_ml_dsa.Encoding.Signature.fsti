@@ -9,6 +9,9 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
+val set_hint (out_hint: t_Slice (t_Array i32 (sz 256))) (i j: usize)
+    : Prims.Pure (t_Slice (t_Array i32 (sz 256))) Prims.l_True (fun _ -> Prims.l_True)
+
 val deserialize
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}

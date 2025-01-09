@@ -387,6 +387,7 @@ let sign_internal
       (domain_separation_context:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
       (randomness: t_Array u8 (sz 32))
+      (signature: t_Array u8 (sz 3309))
      =
   let seed_for_a, remaining_serialized:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8 signing_key Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE
@@ -881,7 +882,6 @@ let sign_internal
         (match hint <: Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 6)) with
           | Core.Option.Option_Some hint ->
             let hint:t_Array (t_Array i32 (sz 256)) (sz 6) = hint in
-            let signature:t_Array u8 (sz 3309) = Rust_primitives.Hax.repeat 0uy (sz 3309) in
             let signature:t_Array u8 (sz 3309) =
               Libcrux_ml_dsa.Encoding.Signature.serialize #v_SIMDUnit
                 (commitment_hash <: t_Slice u8)
@@ -895,33 +895,102 @@ let sign_internal
                 Libcrux_ml_dsa.Constants.Ml_dsa_65_.v_GAMMA1_EXPONENT v_GAMMA1_RING_ELEMENT_SIZE
                 Libcrux_ml_dsa.Constants.Ml_dsa_65_.v_MAX_ONES_IN_HINT signature
             in
-            Core.Result.Result_Ok (Libcrux_ml_dsa.Types.impl_4__new (sz 3309) signature)
-            <:
-            Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
-              Libcrux_ml_dsa.Types.t_SigningError
-          | Core.Option.Option_None  ->
-            Core.Result.Result_Err
-            (Libcrux_ml_dsa.Types.SigningError_RejectionSamplingError
+            let hax_temp_output:Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError
+            =
+              Core.Result.Result_Ok (() <: Prims.unit)
               <:
-              Libcrux_ml_dsa.Types.t_SigningError)
+              Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError
+            in
+            signature, hax_temp_output
             <:
-            Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
-              Libcrux_ml_dsa.Types.t_SigningError)
+            (t_Array u8 (sz 3309) &
+              Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+          | Core.Option.Option_None  ->
+            signature,
+            (Core.Result.Result_Err
+              (Libcrux_ml_dsa.Types.SigningError_RejectionSamplingError
+                <:
+                Libcrux_ml_dsa.Types.t_SigningError)
+              <:
+              Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+            <:
+            (t_Array u8 (sz 3309) &
+              Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError))
       | Core.Option.Option_None  ->
-        Core.Result.Result_Err
-        (Libcrux_ml_dsa.Types.SigningError_RejectionSamplingError
+        signature,
+        (Core.Result.Result_Err
+          (Libcrux_ml_dsa.Types.SigningError_RejectionSamplingError
+            <:
+            Libcrux_ml_dsa.Types.t_SigningError)
           <:
-          Libcrux_ml_dsa.Types.t_SigningError)
+          Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
         <:
-        Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
-          Libcrux_ml_dsa.Types.t_SigningError)
-  | Core.Option.Option_None  ->
-    Core.Result.Result_Err
-    (Libcrux_ml_dsa.Types.SigningError_RejectionSamplingError <: Libcrux_ml_dsa.Types.t_SigningError
+        (t_Array u8 (sz 3309) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
     )
+  | Core.Option.Option_None  ->
+    signature,
+    (Core.Result.Result_Err
+      (Libcrux_ml_dsa.Types.SigningError_RejectionSamplingError
+        <:
+        Libcrux_ml_dsa.Types.t_SigningError)
+      <:
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
     <:
-    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
-      Libcrux_ml_dsa.Types.t_SigningError
+    (t_Array u8 (sz 3309) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+
+let sign_mut
+      (#v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i6:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i7: Libcrux_ml_dsa.Samplex4.t_X4Sampler v_Sampler)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i8:
+          Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i9:
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i10:
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256Xof)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i11:
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
+      (signing_key message context: t_Slice u8)
+      (randomness: t_Array u8 (sz 32))
+      (signature: t_Array u8 (sz 3309))
+     =
+  match
+    Libcrux_ml_dsa.Pre_hash.impl_1__new context
+      (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (sz 11)))
+    <:
+    Core.Result.t_Result Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext
+      Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
+  with
+  | Core.Result.Result_Ok dsc ->
+    let domain_separation_context:Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext = dsc in
+    let tmp0, out:(t_Array u8 (sz 3309) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
+      sign_internal #v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4
+        signing_key message
+        (Core.Option.Option_Some domain_separation_context
+          <:
+          Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
+        signature
+    in
+    let signature:t_Array u8 (sz 3309) = tmp0 in
+    let hax_temp_output:Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError = out in
+    signature, hax_temp_output
+    <:
+    (t_Array u8 (sz 3309) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+  | Core.Result.Result_Err _ ->
+    signature,
+    (Core.Result.Result_Err
+      (Libcrux_ml_dsa.Types.SigningError_ContextTooLongError <: Libcrux_ml_dsa.Types.t_SigningError)
+      <:
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+    <:
+    (t_Array u8 (sz 3309) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
 
 let sign
       (#v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4: Type0)
@@ -944,26 +1013,120 @@ let sign
       (signing_key message context: t_Slice u8)
       (randomness: t_Array u8 (sz 32))
      =
-  match
-    Libcrux_ml_dsa.Pre_hash.impl_1__new context
-      (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (sz 11)))
+  let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309) =
+    Libcrux_ml_dsa.Types.impl_4__zero (sz 3309) ()
+  in
+  let tmp0, out:(t_Array u8 (sz 3309) &
+    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
+    sign_mut #v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4
+      signing_key message context randomness signature.Libcrux_ml_dsa.Types.f_value
+  in
+  let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309) =
+    { signature with Libcrux_ml_dsa.Types.f_value = tmp0 }
     <:
-    Core.Result.t_Result Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext
-      Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
-  with
-  | Core.Result.Result_Ok dsc ->
-    let domain_separation_context:Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext = dsc in
-    sign_internal #v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4
-      signing_key message
-      (Core.Option.Option_Some domain_separation_context
-        <:
-        Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
-  | Core.Result.Result_Err _ ->
-    Core.Result.Result_Err
-    (Libcrux_ml_dsa.Types.SigningError_ContextTooLongError <: Libcrux_ml_dsa.Types.t_SigningError)
+    Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309)
+  in
+  match out <: Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError with
+  | Core.Result.Result_Ok _ ->
+    Core.Result.Result_Ok signature
     <:
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
       Libcrux_ml_dsa.Types.t_SigningError
+  | Core.Result.Result_Err e ->
+    Core.Result.Result_Err e
+    <:
+    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
+      Libcrux_ml_dsa.Types.t_SigningError
+
+let sign_pre_hashed_mut
+      (#v_SIMDUnit #v_Sampler #v_Shake128 #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4 #v_PH:
+          Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i8:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i9: Libcrux_ml_dsa.Samplex4.t_X4Sampler v_Sampler)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i10:
+          Libcrux_ml_dsa.Hash_functions.Shake128.t_Xof v_Shake128)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i11:
+          Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i12:
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i13:
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256Xof)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i14:
+          Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i15: Libcrux_ml_dsa.Pre_hash.t_PreHash v_PH)
+      (signing_key message context pre_hash_buffer: t_Slice u8)
+      (randomness: t_Array u8 (sz 32))
+      (signature: t_Array u8 (sz 3309))
+     =
+  if (Core.Slice.impl__len #u8 context <: usize) >. Libcrux_ml_dsa.Constants.v_CONTEXT_MAX_LEN
+  then
+    pre_hash_buffer,
+    signature,
+    (Core.Result.Result_Err
+      (Libcrux_ml_dsa.Types.SigningError_ContextTooLongError <: Libcrux_ml_dsa.Types.t_SigningError)
+      <:
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+    <:
+    (t_Slice u8 & t_Array u8 (sz 3309) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+  else
+    let pre_hash_buffer:t_Slice u8 =
+      Libcrux_ml_dsa.Pre_hash.f_hash #v_PH
+        #FStar.Tactics.Typeclasses.solve
+        #v_Shake128
+        message
+        pre_hash_buffer
+    in
+    match
+      Libcrux_ml_dsa.Pre_hash.impl_1__new context
+        (Core.Option.Option_Some
+          (Libcrux_ml_dsa.Pre_hash.f_oid #v_PH #FStar.Tactics.Typeclasses.solve ()
+            <:
+            t_Array u8 (sz 11))
+          <:
+          Core.Option.t_Option (t_Array u8 (sz 11)))
+      <:
+      Core.Result.t_Result Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext
+        Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
+    with
+    | Core.Result.Result_Ok dsc ->
+      let domain_separation_context:Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext = dsc in
+      let tmp0, out:(t_Array u8 (sz 3309) &
+        Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
+        sign_internal #v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4
+          signing_key pre_hash_buffer
+          (Core.Option.Option_Some domain_separation_context
+            <:
+            Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
+          signature
+      in
+      let signature:t_Array u8 (sz 3309) = tmp0 in
+      let hax_temp_output:Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError =
+        out
+      in
+      pre_hash_buffer, signature, hax_temp_output
+      <:
+      (t_Slice u8 & t_Array u8 (sz 3309) &
+        Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+    | Core.Result.Result_Err _ ->
+      pre_hash_buffer,
+      signature,
+      (Core.Result.Result_Err
+        (Libcrux_ml_dsa.Types.SigningError_ContextTooLongError
+          <:
+          Libcrux_ml_dsa.Types.t_SigningError)
+        <:
+        Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+      <:
+      (t_Slice u8 & t_Array u8 (sz 3309) &
+        Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
 
 let sign_pre_hashed
       (#v_SIMDUnit #v_Sampler #v_Shake128 #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4 #v_PH:
@@ -991,66 +1154,40 @@ let sign_pre_hashed
       (signing_key message context pre_hash_buffer: t_Slice u8)
       (randomness: t_Array u8 (sz 32))
      =
-  if (Core.Slice.impl__len #u8 context <: usize) >. Libcrux_ml_dsa.Constants.v_CONTEXT_MAX_LEN
-  then
-    pre_hash_buffer,
-    (Core.Result.Result_Err
-      (Libcrux_ml_dsa.Types.SigningError_ContextTooLongError <: Libcrux_ml_dsa.Types.t_SigningError)
-      <:
-      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
-        Libcrux_ml_dsa.Types.t_SigningError)
+  let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309) =
+    Libcrux_ml_dsa.Types.impl_4__zero (sz 3309) ()
+  in
+  let tmp0, tmp1, out:(t_Slice u8 & t_Array u8 (sz 3309) &
+    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
+    sign_pre_hashed_mut #v_SIMDUnit #v_Sampler #v_Shake128 #v_Shake128X4 #v_Shake256 #v_Shake256Xof
+      #v_Shake256X4 #v_PH signing_key message context pre_hash_buffer randomness
+      signature.Libcrux_ml_dsa.Types.f_value
+  in
+  let pre_hash_buffer:t_Slice u8 = tmp0 in
+  let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309) =
+    { signature with Libcrux_ml_dsa.Types.f_value = tmp1 }
     <:
-    (t_Slice u8 &
+    Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309)
+  in
+  let hax_temp_output:Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
+    Libcrux_ml_dsa.Types.t_SigningError =
+    match out <: Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError with
+    | Core.Result.Result_Ok _ ->
+      Core.Result.Result_Ok signature
+      <:
       Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
-        Libcrux_ml_dsa.Types.t_SigningError)
-  else
-    let pre_hash_buffer:t_Slice u8 =
-      Libcrux_ml_dsa.Pre_hash.f_hash #v_PH
-        #FStar.Tactics.Typeclasses.solve
-        #v_Shake128
-        message
-        pre_hash_buffer
-    in
-    match
-      Libcrux_ml_dsa.Pre_hash.impl_1__new context
-        (Core.Option.Option_Some
-          (Libcrux_ml_dsa.Pre_hash.f_oid #v_PH #FStar.Tactics.Typeclasses.solve ()
-            <:
-            t_Array u8 (sz 11))
-          <:
-          Core.Option.t_Option (t_Array u8 (sz 11)))
+        Libcrux_ml_dsa.Types.t_SigningError
+    | Core.Result.Result_Err e ->
+      Core.Result.Result_Err e
       <:
-      Core.Result.t_Result Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext
-        Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
-    with
-    | Core.Result.Result_Ok dsc ->
-      let domain_separation_context:Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext = dsc in
-      let hax_temp_output:Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
-        Libcrux_ml_dsa.Types.t_SigningError =
-        sign_internal #v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4
-          signing_key pre_hash_buffer
-          (Core.Option.Option_Some domain_separation_context
-            <:
-            Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
-      in
-      pre_hash_buffer, hax_temp_output
-      <:
-      (t_Slice u8 &
-        Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
-          Libcrux_ml_dsa.Types.t_SigningError)
-    | Core.Result.Result_Err _ ->
-      pre_hash_buffer,
-      (Core.Result.Result_Err
-        (Libcrux_ml_dsa.Types.SigningError_ContextTooLongError
-          <:
-          Libcrux_ml_dsa.Types.t_SigningError)
-        <:
-        Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
-          Libcrux_ml_dsa.Types.t_SigningError)
-      <:
-      (t_Slice u8 &
-        Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
-          Libcrux_ml_dsa.Types.t_SigningError)
+      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
+        Libcrux_ml_dsa.Types.t_SigningError
+  in
+  pre_hash_buffer, hax_temp_output
+  <:
+  (t_Slice u8 &
+    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
+      Libcrux_ml_dsa.Types.t_SigningError)
 
 let generate_key_pair
       (#v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4: Type0)

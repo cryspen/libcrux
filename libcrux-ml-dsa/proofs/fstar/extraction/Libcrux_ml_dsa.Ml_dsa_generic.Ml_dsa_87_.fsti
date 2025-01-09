@@ -116,9 +116,27 @@ val sign_internal
       (domain_separation_context:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
       (randomness: t_Array u8 (sz 32))
+      (signature: t_Array u8 (sz 4627))
     : Prims.Pure
-      (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 4627))
-          Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
+      (t_Array u8 (sz 4627) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val sign_mut
+      (#v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4: Type0)
+      {| i6: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      {| i7: Libcrux_ml_dsa.Samplex4.t_X4Sampler v_Sampler |}
+      {| i8: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4 |}
+      {| i9: Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256 |}
+      {| i10: Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256Xof |}
+      {| i11: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
+      (signing_key message context: t_Slice u8)
+      (randomness: t_Array u8 (sz 32))
+      (signature: t_Array u8 (sz 4627))
+    : Prims.Pure
+      (t_Array u8 (sz 4627) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 val sign
       (#v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4: Type0)
@@ -133,6 +151,26 @@ val sign
     : Prims.Pure
       (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 4627))
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
+
+val sign_pre_hashed_mut
+      (#v_SIMDUnit #v_Sampler #v_Shake128 #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4 #v_PH:
+          Type0)
+      {| i8: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      {| i9: Libcrux_ml_dsa.Samplex4.t_X4Sampler v_Sampler |}
+      {| i10: Libcrux_ml_dsa.Hash_functions.Shake128.t_Xof v_Shake128 |}
+      {| i11: Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 v_Shake128X4 |}
+      {| i12: Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256 |}
+      {| i13: Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256Xof |}
+      {| i14: Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4 |}
+      {| i15: Libcrux_ml_dsa.Pre_hash.t_PreHash v_PH |}
+      (signing_key message context pre_hash_buffer: t_Slice u8)
+      (randomness: t_Array u8 (sz 32))
+      (signature: t_Array u8 (sz 4627))
+    : Prims.Pure
+      (t_Slice u8 & t_Array u8 (sz 4627) &
+        Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 val sign_pre_hashed
       (#v_SIMDUnit #v_Sampler #v_Shake128 #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4 #v_PH:

@@ -49,6 +49,27 @@ macro_rules! instantiate {
                 )
             }
 
+            /// Generate an ML-DSA-44 Signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
+            pub fn sign_mut(
+                signing_key: &MLDSA44SigningKey,
+                message: &[u8],
+                context: &[u8],
+                randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+                signature: &mut [u8; SIGNATURE_SIZE],
+            ) -> Result<(), SigningError> {
+                crate::ml_dsa_generic::instantiations::$modp::ml_dsa_44::sign_mut(
+                    signing_key.as_ref(),
+                    message,
+                    context,
+                    randomness,
+                    signature,
+                )
+            }
+
             /// Generate an ML-DSA-44 Signature (Algorithm 7 in FIPS204)
             ///
             /// The message is assumed to be domain-separated.
