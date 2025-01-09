@@ -7,8 +7,13 @@
  */
 
 #include <gtest/gtest.h>
+#include <vector>
 
 #include "libcrux_mldsa65_portable.h"
+
+using namespace std;
+
+typedef vector<uint8_t> bytes;
 
 template <typename T>
 Eurydice_slice mk_slice(T *x, size_t len)
@@ -27,7 +32,13 @@ TEST(MlDsa65TestPortable, ConsistencyTest)
     {
         randomness[i] = 13;
     }
-    auto key_pair = libcrux_ml_dsa_ml_dsa_65_portable_generate_key_pair(randomness);
+
+    bytes signing_key(LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_SIGNING_KEY_SIZE);
+    bytes verification_key(LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_VERIFICATION_KEY_SIZE);
+    libcrux_ml_dsa_ml_dsa_65_portable_generate_key_pair_mut(
+        randomness,
+        signing_key.data(),
+        verification_key.data());
 
     // Sign
     uint8_t msg[79] = {0};
@@ -39,19 +50,27 @@ TEST(MlDsa65TestPortable, ConsistencyTest)
 
     auto msg_slice = mk_slice(&msg, 79);
     auto context_slice = mk_slice(&context, 3);
-    auto signature_result = libcrux_ml_dsa_ml_dsa_65_portable_sign(
-        &key_pair.signing_key, msg_slice,
-        context_slice,
-        randomness);
-    EXPECT_EQ(signature_result.tag, Ok);
-    auto signature = signature_result.val.case_Ok;
-
-    // Verify
-    auto result = libcrux_ml_dsa_ml_dsa_65_portable_verify(
-        &key_pair.verification_key,
+    bytes signature(LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_SIGNATURE_SIZE);
+    auto signature_result = libcrux_ml_dsa_ml_dsa_65_portable_sign_mut(
+        signing_key.data(),
         msg_slice,
         context_slice,
-        &signature);
+        randomness,
+        signature.data());
+    EXPECT_EQ(signature_result.tag, Ok);
+
+    // Verify
+    // XXX: Make better APIs so we don't have to copy the values here.
+    libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_MLDSA65VerificationKey verification_key_struct;
+    memcpy(verification_key_struct.value, verification_key.data(), verification_key.size());
+    libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_MLDSA65Signature signature_struct;
+    memcpy(signature_struct.value, signature.data(), signature.size());
+
+    auto result = libcrux_ml_dsa_ml_dsa_65_portable_verify(
+        &verification_key_struct,
+        msg_slice,
+        context_slice,
+        &signature_struct);
 
     EXPECT_EQ(result.tag, Ok);
 }

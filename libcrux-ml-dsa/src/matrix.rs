@@ -1,163 +1,121 @@
 use crate::{
     arithmetic::shift_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
-    helper::cloop,
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
 /// Compute InvertNTT(Â ◦ ŝ₁) + s₂
-#[allow(non_snake_case)]
-#[inline(always)]
-pub(crate) fn compute_As1_plus_s2<
-    SIMDUnit: Operations,
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
->(
-    A_as_ntt: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    s1: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
-    s2: &[PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
-) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
-    let s1_ntt = s1.map(|s| ntt::<SIMDUnit>(s));
-
-    cloop! {
-        for (i, row) in A_as_ntt.iter().enumerate() {
-            cloop!{
-                for (j, ring_element) in row.iter().enumerate() {
-                    let product = ntt_multiply_montgomery::<SIMDUnit>(ring_element, &s1_ntt[j]);
-                    result[i] = PolynomialRingElement::add(&result[i], &product);
-                }
-            }
-
-            result[i] = invert_ntt_montgomery::<SIMDUnit>(result[i]);
-            result[i] = PolynomialRingElement::add(&result[i], &s2[i]);
+pub(crate) fn compute_as1_plus_s2<SIMDUnit: Operations>(
+    rows_in_a: usize,
+    columns_in_a: usize,
+    a_as_ntt: &[PolynomialRingElement<SIMDUnit>],
+    s1_ntt: &[PolynomialRingElement<SIMDUnit>],
+    s1_s2: &[PolynomialRingElement<SIMDUnit>],
+    result: &mut [PolynomialRingElement<SIMDUnit>],
+) {
+    for i in 0..rows_in_a {
+        for j in 0..columns_in_a {
+            let mut product = a_as_ntt[i * columns_in_a + j];
+            ntt_multiply_montgomery::<SIMDUnit>(&mut product, &s1_ntt[j]);
+            PolynomialRingElement::add(&mut result[i], &product);
         }
     }
 
-    result
+    for i in 0..result.len() {
+        invert_ntt_montgomery::<SIMDUnit>(&mut result[i]);
+        PolynomialRingElement::add(&mut result[i], &s1_s2[columns_in_a + i]);
+    }
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 /// Compute InvertNTT(Â ◦ ŷ)
-#[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn compute_A_times_mask<
-    SIMDUnit: Operations,
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
->(
-    A_as_ntt: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    mask: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
-) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
-    let mask_ntt = mask.map(|s| ntt::<SIMDUnit>(s));
-
-    cloop! {
-        for (i, row) in A_as_ntt.iter().enumerate() {
-            cloop! {
-                for (j, ring_element) in row.iter().enumerate() {
-                    let product = ntt_multiply_montgomery(&ring_element, &mask_ntt[j]);
-                    result[i] = PolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
-                }
-            }
-
-            result[i] = invert_ntt_montgomery(result[i]);
+pub(crate) fn compute_matrix_x_mask<SIMDUnit: Operations>(
+    rows_in_a: usize,
+    columns_in_a: usize,
+    matrix: &[PolynomialRingElement<SIMDUnit>],
+    mask: &[PolynomialRingElement<SIMDUnit>],
+    result: &mut [PolynomialRingElement<SIMDUnit>],
+) {
+    for i in 0..rows_in_a {
+        for j in 0..columns_in_a {
+            let mut product = mask[j];
+            ntt_multiply_montgomery(&mut product, &matrix[i * columns_in_a + j]);
+            PolynomialRingElement::<SIMDUnit>::add(&mut result[i], &product);
         }
+        invert_ntt_montgomery(&mut result[i]);
     }
-
-    result
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
-#[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn vector_times_ring_element<SIMDUnit: Operations, const DIMENSION: usize>(
-    vector: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
+pub(crate) fn vector_times_ring_element<SIMDUnit: Operations>(
+    vector: &mut [PolynomialRingElement<SIMDUnit>],
     ring_element: &PolynomialRingElement<SIMDUnit>,
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
-    cloop! {
-        for (i, vector_ring_element) in vector.iter().enumerate() {
-            result[i] =
-                invert_ntt_montgomery(ntt_multiply_montgomery(vector_ring_element, ring_element));
-        }
+) {
+    for i in 0..vector.len() {
+        ntt_multiply_montgomery(&mut vector[i], ring_element);
+        invert_ntt_montgomery(&mut vector[i]);
     }
-
-    result
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
-#[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn add_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
-    lhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
-    rhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
-    for i in 0..DIMENSION {
-        result[i] = PolynomialRingElement::<SIMDUnit>::add(&lhs[i], &rhs[i]);
+pub(crate) fn add_vectors<SIMDUnit: Operations>(
+    dimension: usize,
+    lhs: &mut [PolynomialRingElement<SIMDUnit>],
+    rhs: &[PolynomialRingElement<SIMDUnit>],
+) {
+    for i in 0..dimension {
+        PolynomialRingElement::<SIMDUnit>::add(&mut lhs[i], &rhs[i]);
     }
-
-    result
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
-#[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn subtract_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
-    lhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
-    rhs: &[PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
-    for i in 0..DIMENSION {
-        result[i] = PolynomialRingElement::<SIMDUnit>::subtract(&lhs[i], &rhs[i]);
+pub(crate) fn subtract_vectors<SIMDUnit: Operations>(
+    dimension: usize,
+    lhs: &mut [PolynomialRingElement<SIMDUnit>],
+    rhs: &[PolynomialRingElement<SIMDUnit>],
+) {
+    for i in 0..dimension {
+        PolynomialRingElement::<SIMDUnit>::subtract(&mut lhs[i], &rhs[i]);
     }
-
-    result
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 /// Compute InvertNTT(Â ◦ ẑ - ĉ ◦ NTT(t₁2ᵈ))
-#[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn compute_w_approx<
-    SIMDUnit: Operations,
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
->(
-    A_as_ntt: &[[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    mut signer_response: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
-    verifier_challenge_as_ntt: PolynomialRingElement<SIMDUnit>,
-    t1: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
-) -> [PolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
-
-    // Move signer response into NTT
-    for i in 0..signer_response.len() {
-        signer_response[i] = ntt(signer_response[i]);
-    }
-
-    cloop! {
-        for (i, row) in A_as_ntt.iter().enumerate() {
-            cloop! {
-                for (j, ring_element) in row.iter().enumerate() {
-                    let product = ntt_multiply_montgomery(&ring_element, &signer_response[j]);
-
-                    result[i] = PolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
-                }
-            }
-
-            let t1_shifted =
-                shift_left_then_reduce::<SIMDUnit, { BITS_IN_LOWER_PART_OF_T as i32 }>(t1[i]);
-            let t1_shifted = ntt(t1_shifted);
-            let challenge_times_t1_shifted =
-                ntt_multiply_montgomery(&verifier_challenge_as_ntt, &t1_shifted);
-            result[i] = invert_ntt_montgomery(PolynomialRingElement::<SIMDUnit>::subtract(
-                &result[i],
-                &challenge_times_t1_shifted,
-            ));
+pub(crate) fn compute_w_approx<SIMDUnit: Operations>(
+    rows_in_a: usize,
+    columns_in_a: usize,
+    matrix: &[PolynomialRingElement<SIMDUnit>],
+    signer_response: &[PolynomialRingElement<SIMDUnit>],
+    verifier_challenge_as_ntt: &PolynomialRingElement<SIMDUnit>,
+    t1: &mut [PolynomialRingElement<SIMDUnit>],
+) {
+    for i in 0..rows_in_a {
+        let mut inner_result = PolynomialRingElement::<SIMDUnit>::zero();
+        for j in 0..columns_in_a {
+            let mut product = matrix[i * columns_in_a + j];
+            ntt_multiply_montgomery(&mut product, &signer_response[j]);
+            PolynomialRingElement::<SIMDUnit>::add(&mut inner_result, &product);
         }
-    }
 
-    result
+        shift_left_then_reduce::<SIMDUnit, { BITS_IN_LOWER_PART_OF_T as i32 }>(&mut t1[i]);
+        ntt(&mut t1[i]);
+        ntt_multiply_montgomery(&mut t1[i], verifier_challenge_as_ntt);
+        PolynomialRingElement::<SIMDUnit>::subtract(&mut inner_result, &t1[i]);
+        t1[i] = inner_result;
+        invert_ntt_montgomery(&mut t1[i]);
+    }
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }

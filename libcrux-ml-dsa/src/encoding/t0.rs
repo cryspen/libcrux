@@ -11,16 +11,15 @@ const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 13;
 
 #[inline(always)]
 pub(crate) fn serialize<SIMDUnit: Operations>(
-    re: PolynomialRingElement<SIMDUnit>,
+    re: &PolynomialRingElement<SIMDUnit>,
     serialized: &mut [u8], // RING_ELEMENT_OF_T0S_SIZE
 ) {
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
-            // XXX: make t0_deserialize take &mut serialized?
-            serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                .copy_from_slice(&SIMDUnit::t0_serialize(*simd_unit));
+            SIMDUnit::t0_serialize(simd_unit, &mut serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]);
         }
     }
+    // [hax] https://github.com/hacspec/hax/issues/720
     ()
 }
 
@@ -30,27 +29,28 @@ fn deserialize<SIMDUnit: Operations>(
     result: &mut PolynomialRingElement<SIMDUnit>,
 ) {
     for i in 0..result.simd_units.len() {
-        result.simd_units[i] = SIMDUnit::t0_deserialize(
+        SIMDUnit::t0_deserialize(
             &serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT],
+            &mut result.simd_units[i],
         );
     }
+    // [hax] https://github.com/hacspec/hax/issues/720
     ()
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations, const DIMENSION: usize>(
+pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     serialized: &[u8],
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut ring_elements = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
+    ring_elements: &mut [PolynomialRingElement<SIMDUnit>],
+) {
     cloop! {
         for (i, bytes) in serialized.chunks_exact(RING_ELEMENT_OF_T0S_SIZE).enumerate() {
             deserialize::<SIMDUnit>(bytes, &mut ring_elements[i]);
-            ring_elements[i] = ntt(ring_elements[i]);
+            ntt(&mut ring_elements[i]);
         }
     }
-
-    ring_elements
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[cfg(test)]
@@ -81,7 +81,7 @@ mod tests {
             2683, 2743, 2888, -2104, 874, -1150, -2453, -125, -2561, -2011, -2384, 2259, -10, 836,
             -2773, 2487, -2292, -201, -3235, 1232, -3197,
         ];
-        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array_test(&coefficients);
 
         let expected_bytes = [
             48, 20, 208, 127, 245, 13, 88, 131, 180, 130, 230, 20, 9, 204, 230, 36, 180, 218, 74,
@@ -109,7 +109,7 @@ mod tests {
         ];
 
         let mut result = [0u8; RING_ELEMENT_OF_T0S_SIZE];
-        serialize::<SIMDUnit>(re, &mut result);
+        serialize::<SIMDUnit>(&re, &mut result);
         assert_eq!(result, expected_bytes);
     }
     fn test_deserialize_generic<SIMDUnit: Operations>() {
@@ -160,17 +160,16 @@ mod tests {
             2487, -1527, 2834, -3089, 1724, 3858, -2130, 3301, -1565,
         ];
 
-        let mut deserialized = PolynomialRingElement::<SIMDUnit>::ZERO();
+        let mut deserialized = PolynomialRingElement::<SIMDUnit>::zero();
         deserialize::<SIMDUnit>(&serialized, &mut deserialized);
         assert_eq!(deserialized.to_i32_array(), expected_coefficients);
     }
 
-    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_serialize_portable() {
         test_serialize_generic::<simd::portable::PortableSIMDUnit>();
     }
-    #[cfg(not(feature = "simd256"))]
+
     #[test]
     fn test_deserialize_portable() {
         test_deserialize_generic::<simd::portable::PortableSIMDUnit>();

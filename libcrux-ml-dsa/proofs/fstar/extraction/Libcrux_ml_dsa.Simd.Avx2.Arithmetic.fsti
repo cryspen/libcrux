@@ -6,8 +6,11 @@ open FStar.Mul
 val add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val compute_hint (v_GAMMA2: i32) (low high: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure (usize & Libcrux_intrinsics.Avx2_extract.t_Vec256)
+val compute_hint
+      (low high: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (gamma2: i32)
+      (hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+    : Prims.Pure (Libcrux_intrinsics.Avx2_extract.t_Vec256 & usize)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
@@ -20,10 +23,13 @@ val subtract (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
 val shift_left_then_reduce (v_SHIFT_BY: i32) (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
+val to_unsigned_representatives_ret (t: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+
 val to_unsigned_representatives (t: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val power2round (r: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+val power2round (r0 r1: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure
       (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)
       Prims.l_True
@@ -35,11 +41,11 @@ val montgomery_multiply (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256)
 val montgomery_multiply_by_constant (lhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) (constant: i32)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-val decompose (v_GAMMA2: i32) (r: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+val decompose (gamma2: i32) (r r0 r1: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure
       (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val use_hint (v_GAMMA2: i32) (r hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+val use_hint (gamma2: i32) (r hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)

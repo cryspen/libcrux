@@ -12,7 +12,7 @@ let change_interval (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   in
   Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 interval_end simd_unit
 
-let deserialize (serialized: t_Slice u8) =
+let deserialize (serialized: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let _:Prims.unit =
     if true
     then
@@ -64,9 +64,10 @@ let deserialize (serialized: t_Slice u8) =
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
-  change_interval coefficients
+  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 = change_interval coefficients in
+  out
 
-let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8) =
   let serialized:t_Array u8 (sz 16) = Rust_primitives.Hax.repeat 0uy (sz 16) in
   let simd_unit:Libcrux_intrinsics.Avx2_extract.t_Vec256 = change_interval simd_unit in
   let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -114,15 +115,16 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let serialized:t_Array u8 (sz 16) =
     Libcrux_intrinsics.Avx2_extract.mm_storeu_bytes_si128 serialized bits_sequential
   in
-  Core.Result.impl__unwrap #(t_Array u8 (sz 13))
-    #Core.Array.t_TryFromSliceError
-    (Core.Convert.f_try_into #(t_Slice u8)
-        #(t_Array u8 (sz 13))
-        #FStar.Tactics.Typeclasses.solve
-        (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 13 }
-            <:
-            Core.Ops.Range.t_Range usize ]
+  let hax_temp_output, out:(Prims.unit & t_Slice u8) =
+    (),
+    Core.Slice.impl__copy_from_slice #u8
+      out
+      (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 13 }
           <:
-          t_Slice u8)
-      <:
-      Core.Result.t_Result (t_Array u8 (sz 13)) Core.Array.t_TryFromSliceError)
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+    <:
+    (Prims.unit & t_Slice u8)
+  in
+  out

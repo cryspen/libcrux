@@ -11,4 +11,4 @@ let _ =
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl:Libcrux_ml_dsa.Simd.Traits.t_Operations
-Libcrux_ml_dsa.Simd.Portable.Vector_type.t_PortableSIMDUnit
+Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients

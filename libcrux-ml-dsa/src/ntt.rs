@@ -1,35 +1,27 @@
 use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-pub(crate) fn ntt<SIMDUnit: Operations>(
-    re: PolynomialRingElement<SIMDUnit>,
-) -> PolynomialRingElement<SIMDUnit> {
-    PolynomialRingElement {
-        simd_units: SIMDUnit::ntt(re.simd_units),
-    }
+pub(crate) fn ntt<SIMDUnit: Operations>(re: &mut PolynomialRingElement<SIMDUnit>) {
+    SIMDUnit::ntt(&mut re.simd_units);
 }
 
 #[inline(always)]
 pub(crate) fn invert_ntt_montgomery<SIMDUnit: Operations>(
-    re: PolynomialRingElement<SIMDUnit>,
-) -> PolynomialRingElement<SIMDUnit> {
-    PolynomialRingElement {
-        simd_units: SIMDUnit::invert_ntt_montgomery(re.simd_units),
-    }
+    re: &mut PolynomialRingElement<SIMDUnit>,
+) {
+    SIMDUnit::invert_ntt_montgomery(&mut re.simd_units);
 }
 
 #[inline(always)]
 pub(crate) fn ntt_multiply_montgomery<SIMDUnit: Operations>(
-    lhs: &PolynomialRingElement<SIMDUnit>,
+    lhs: &mut PolynomialRingElement<SIMDUnit>,
     rhs: &PolynomialRingElement<SIMDUnit>,
-) -> PolynomialRingElement<SIMDUnit> {
-    let mut out = PolynomialRingElement::ZERO();
-
-    for i in 0..out.simd_units.len() {
-        out.simd_units[i] = SIMDUnit::montgomery_multiply(lhs.simd_units[i], rhs.simd_units[i]);
+) {
+    for i in 0..lhs.simd_units.len() {
+        SIMDUnit::montgomery_multiply(&mut lhs.simd_units[i], &rhs.simd_units[i]);
     }
-
-    out
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[cfg(test)]
@@ -67,7 +59,7 @@ mod tests {
             -391807, 392057, -132521, -441664, -349459, -373059, -296519, 274235, 42417, 47385,
             -104540, 142532, 246380, -515363, -422665,
         ];
-        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+        let mut re = PolynomialRingElement::<SIMDUnit>::from_i32_array_test(&coefficients);
 
         let expected_coefficients = [
             -17129289, -17188287, -11027856, -7293060, -14589541, -12369669, -1420304, -9409026,
@@ -101,7 +93,8 @@ mod tests {
             15979738, 1459696, 8351548, 3335586, 1150210, -2462074, -4642922, 4538634, 1858098,
         ];
 
-        assert_eq!(ntt(re).to_i32_array(), expected_coefficients);
+        ntt(&mut re);
+        assert_eq!(re.to_i32_array(), expected_coefficients);
     }
 
     fn test_invert_ntt_montgomery_generic<SIMDUnit: Operations>() {
@@ -136,7 +129,7 @@ mod tests {
             -3881813, 2536840, -2924666, 2425664, 2635292, 2752536, -136653, 4057087, -633680,
             3039079, -2733512, 1734173, -2109687,
         ];
-        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+        let mut re = PolynomialRingElement::<SIMDUnit>::from_i32_array_test(&coefficients);
 
         let expected_coefficients = [
             3966085, -2067161, 579114, -3597478, 2232818, -17588, 1194752, -1205114, -4058138,
@@ -170,10 +163,8 @@ mod tests {
             -3909173, 1453538, -4079655,
         ];
 
-        assert_eq!(
-            invert_ntt_montgomery(re).to_i32_array(),
-            expected_coefficients
-        );
+        invert_ntt_montgomery(&mut re);
+        assert_eq!(re.to_i32_array(), expected_coefficients);
     }
 
     #[cfg(not(feature = "simd256"))]

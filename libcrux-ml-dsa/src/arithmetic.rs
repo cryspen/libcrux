@@ -1,105 +1,90 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT, helper::cloop, polynomial::PolynomialRingElement,
+    constants::{Gamma2, COEFFICIENTS_IN_RING_ELEMENT},
+    helper::cloop,
+    polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
 #[inline(always)]
-pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations, const DIMENSION: usize>(
-    vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
+pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
+    vector: &[PolynomialRingElement<SIMDUnit>],
     bound: i32,
 ) -> bool {
-    let mut exceeds = false;
-
-    // TODO: We can break out of this loop early if need be, but the most
-    // straightforward way to do so (returning false) will not go through hax;
-    // revisit if performance is impacted.
+    let mut result = false;
     cloop! {
         for ring_element in vector.iter() {
-            exceeds = exceeds || ring_element.infinity_norm_exceeds(bound);
+            result = result || ring_element.infinity_norm_exceeds(bound);
         }
     }
 
-    exceeds
+    result
 }
 
 #[inline(always)]
 pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
-    re: PolynomialRingElement<SIMDUnit>,
-) -> PolynomialRingElement<SIMDUnit> {
-    let mut out = PolynomialRingElement::ZERO();
-
-    cloop! {
-        for (i, simd_unit) in re.simd_units.iter().enumerate() {
-            out.simd_units[i] = SIMDUnit::shift_left_then_reduce::<SHIFT_BY>(*simd_unit);
-        }
-    }
-
-    out
-}
-
-#[inline(always)]
-pub(crate) fn power2round_vector<SIMDUnit: Operations, const DIMENSION: usize>(
-    t: [PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> (
-    [PolynomialRingElement<SIMDUnit>; DIMENSION],
-    [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
-    let mut t0 = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-    let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
-    cloop! {
-        for (i, ring_element) in t.iter().enumerate() {
-            cloop!{
-                for (j, simd_unit) in ring_element.simd_units.iter().enumerate() {
-                    let (t0_unit, t1_unit) = SIMDUnit::power2round(*simd_unit);
-
-                    t0[i].simd_units[j] = t0_unit;
-                    t1[i].simd_units[j] = t1_unit;
-                }
-            }
-        }
+    for i in 0..re.simd_units.len() {
+        SIMDUnit::shift_left_then_reduce::<SHIFT_BY>(&mut re.simd_units[i]);
     }
-
-    (t0, t1)
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[inline(always)]
-pub(crate) fn decompose_vector<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
-    t: [PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> (
-    [PolynomialRingElement<SIMDUnit>; DIMENSION],
-    [PolynomialRingElement<SIMDUnit>; DIMENSION],
+pub(crate) fn power2round_vector<SIMDUnit: Operations>(
+    t: &mut [PolynomialRingElement<SIMDUnit>],
+    t1: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    let mut vector_low = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-    let mut vector_high = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
-    for i in 0..DIMENSION {
-        for j in 0..vector_low[0].simd_units.len() {
-            let (low, high) = SIMDUnit::decompose::<GAMMA2>(t[i].simd_units[j]);
-
-            vector_low[i].simd_units[j] = low;
-            vector_high[i].simd_units[j] = high;
+    for i in 0..t.len() {
+        for j in 0..t[i].simd_units.len() {
+            SIMDUnit::power2round(&mut t[i].simd_units[j], &mut t1[i].simd_units[j]);
         }
     }
-
-    (vector_low, vector_high)
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }
 
 #[inline(always)]
-pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
-    low: [PolynomialRingElement<SIMDUnit>; DIMENSION],
-    high: [PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> ([[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION], usize) {
-    let mut hint = [[0; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION];
+pub(crate) fn decompose_vector<SIMDUnit: Operations>(
+    dimension: usize,
+    gamma2: Gamma2,
+    t: &[PolynomialRingElement<SIMDUnit>],
+    low: &mut [PolynomialRingElement<SIMDUnit>],
+    high: &mut [PolynomialRingElement<SIMDUnit>],
+) {
+    for i in 0..dimension {
+        for j in 0..low[0].simd_units.len() {
+            SIMDUnit::decompose(
+                gamma2,
+                &t[i].simd_units[j],
+                &mut low[i].simd_units[j],
+                &mut high[i].simd_units[j],
+            );
+        }
+    }
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
+}
+
+#[inline(always)]
+pub(crate) fn make_hint<SIMDUnit: Operations>(
+    low: &[PolynomialRingElement<SIMDUnit>],
+    high: &[PolynomialRingElement<SIMDUnit>],
+    gamma2: i32,
+    hint: &mut [[i32; COEFFICIENTS_IN_RING_ELEMENT]],
+) -> usize {
     let mut true_hints = 0;
+    let mut hint_simd = PolynomialRingElement::<SIMDUnit>::zero();
 
-    for i in 0..DIMENSION {
-        let mut hint_simd = PolynomialRingElement::ZERO();
-
+    for i in 0..low.len() {
         for j in 0..hint_simd.simd_units.len() {
-            let (one_hints_count, current_hint) =
-                SIMDUnit::compute_hint::<GAMMA2>(low[i].simd_units[j], high[i].simd_units[j]);
-            hint_simd.simd_units[j] = current_hint;
+            let one_hints_count = SIMDUnit::compute_hint(
+                &low[i].simd_units[j],
+                &high[i].simd_units[j],
+                gamma2,
+                &mut hint_simd.simd_units[j],
+            );
 
             true_hints += one_hints_count;
         }
@@ -107,24 +92,24 @@ pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMM
         hint[i] = hint_simd.to_i32_array();
     }
 
-    (hint, true_hints)
+    true_hints
 }
 
 #[inline(always)]
-pub(crate) fn use_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
-    hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION],
-    re_vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+pub(crate) fn use_hint<SIMDUnit: Operations>(
+    gamma2: Gamma2,
+    hint: &[[i32; COEFFICIENTS_IN_RING_ELEMENT]],
+    re_vector: &mut [PolynomialRingElement<SIMDUnit>],
+) {
+    for i in 0..re_vector.len() {
+        let mut tmp = PolynomialRingElement::zero();
+        PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i], &mut tmp);
 
-    for i in 0..DIMENSION {
-        let hint_simd = PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i]);
-
-        for j in 0..result[0].simd_units.len() {
-            result[i].simd_units[j] =
-                SIMDUnit::use_hint::<GAMMA2>(re_vector[i].simd_units[j], hint_simd.simd_units[j]);
+        for j in 0..re_vector[0].simd_units.len() {
+            SIMDUnit::use_hint(gamma2, &re_vector[i].simd_units[j], &mut tmp.simd_units[j]);
         }
+        re_vector[i] = tmp;
     }
-
-    result
+    // [hax] https://github.com/hacspec/hax/issues/720
+    ()
 }

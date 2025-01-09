@@ -1,92 +1,82 @@
 use super::arithmetic::{self, montgomery_multiply_by_constant, montgomery_multiply_fe_by_fer};
-use super::vector_type::PortableSIMDUnit;
+use super::vector_type::Coefficients;
 use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
 #[inline(always)]
 pub fn simd_unit_ntt_at_layer_0(
-    mut simd_unit: PortableSIMDUnit,
+    simd_unit: &mut Coefficients,
     zeta0: i32,
     zeta1: i32,
     zeta2: i32,
     zeta3: i32,
-) -> PortableSIMDUnit {
-    let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[1], zeta0);
-    simd_unit.coefficients[1] = simd_unit.coefficients[0] - t;
-    simd_unit.coefficients[0] = simd_unit.coefficients[0] + t;
+) {
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[1], zeta0);
+    simd_unit.values[1] = simd_unit.values[0] - t;
+    simd_unit.values[0] = simd_unit.values[0] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[3], zeta1);
-    simd_unit.coefficients[3] = simd_unit.coefficients[2] - t;
-    simd_unit.coefficients[2] = simd_unit.coefficients[2] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[3], zeta1);
+    simd_unit.values[3] = simd_unit.values[2] - t;
+    simd_unit.values[2] = simd_unit.values[2] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[5], zeta2);
-    simd_unit.coefficients[5] = simd_unit.coefficients[4] - t;
-    simd_unit.coefficients[4] = simd_unit.coefficients[4] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[5], zeta2);
+    simd_unit.values[5] = simd_unit.values[4] - t;
+    simd_unit.values[4] = simd_unit.values[4] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[7], zeta3);
-    simd_unit.coefficients[7] = simd_unit.coefficients[6] - t;
-    simd_unit.coefficients[6] = simd_unit.coefficients[6] + t;
-
-    simd_unit
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[7], zeta3);
+    simd_unit.values[7] = simd_unit.values[6] - t;
+    simd_unit.values[6] = simd_unit.values[6] + t;
 }
 
 #[inline(always)]
-pub fn simd_unit_ntt_at_layer_1(
-    mut simd_unit: PortableSIMDUnit,
-    zeta1: i32,
-    zeta2: i32,
-) -> PortableSIMDUnit {
-    let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[2], zeta1);
-    simd_unit.coefficients[2] = simd_unit.coefficients[0] - t;
-    simd_unit.coefficients[0] = simd_unit.coefficients[0] + t;
+pub fn simd_unit_ntt_at_layer_1(simd_unit: &mut Coefficients, zeta1: i32, zeta2: i32) {
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[2], zeta1);
+    simd_unit.values[2] = simd_unit.values[0] - t;
+    simd_unit.values[0] = simd_unit.values[0] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[3], zeta1);
-    simd_unit.coefficients[3] = simd_unit.coefficients[1] - t;
-    simd_unit.coefficients[1] = simd_unit.coefficients[1] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[3], zeta1);
+    simd_unit.values[3] = simd_unit.values[1] - t;
+    simd_unit.values[1] = simd_unit.values[1] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[6], zeta2);
-    simd_unit.coefficients[6] = simd_unit.coefficients[4] - t;
-    simd_unit.coefficients[4] = simd_unit.coefficients[4] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[6], zeta2);
+    simd_unit.values[6] = simd_unit.values[4] - t;
+    simd_unit.values[4] = simd_unit.values[4] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[7], zeta2);
-    simd_unit.coefficients[7] = simd_unit.coefficients[5] - t;
-    simd_unit.coefficients[5] = simd_unit.coefficients[5] + t;
-
-    simd_unit
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[7], zeta2);
+    simd_unit.values[7] = simd_unit.values[5] - t;
+    simd_unit.values[5] = simd_unit.values[5] + t;
 }
 
 #[inline(always)]
-pub fn simd_unit_ntt_at_layer_2(mut simd_unit: PortableSIMDUnit, zeta: i32) -> PortableSIMDUnit {
-    let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[4], zeta);
-    simd_unit.coefficients[4] = simd_unit.coefficients[0] - t;
-    simd_unit.coefficients[0] = simd_unit.coefficients[0] + t;
+pub fn simd_unit_ntt_at_layer_2(simd_unit: &mut Coefficients, zeta: i32) {
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[4], zeta);
+    simd_unit.values[4] = simd_unit.values[0] - t;
+    simd_unit.values[0] = simd_unit.values[0] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[5], zeta);
-    simd_unit.coefficients[5] = simd_unit.coefficients[1] - t;
-    simd_unit.coefficients[1] = simd_unit.coefficients[1] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[5], zeta);
+    simd_unit.values[5] = simd_unit.values[1] - t;
+    simd_unit.values[1] = simd_unit.values[1] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[6], zeta);
-    simd_unit.coefficients[6] = simd_unit.coefficients[2] - t;
-    simd_unit.coefficients[2] = simd_unit.coefficients[2] + t;
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[6], zeta);
+    simd_unit.values[6] = simd_unit.values[2] - t;
+    simd_unit.values[2] = simd_unit.values[2] + t;
 
-    let t = montgomery_multiply_fe_by_fer(simd_unit.coefficients[7], zeta);
-    simd_unit.coefficients[7] = simd_unit.coefficients[3] - t;
-    simd_unit.coefficients[3] = simd_unit.coefficients[3] + t;
-
-    simd_unit
+    let t = montgomery_multiply_fe_by_fer(simd_unit.values[7], zeta);
+    simd_unit.values[7] = simd_unit.values[3] - t;
+    simd_unit.values[3] = simd_unit.values[3] + t;
 }
 
 #[inline(always)]
-fn ntt_at_layer_0(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[inline(always)]
     fn round(
-        re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
+        re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
         index: usize,
         zeta_0: i32,
         zeta_1: i32,
         zeta_2: i32,
         zeta_3: i32,
     ) {
-        re[index] = simd_unit_ntt_at_layer_0(re[index], zeta_0, zeta_1, zeta_2, zeta_3);
+        simd_unit_ntt_at_layer_0(&mut re[index], zeta_0, zeta_1, zeta_2, zeta_3);
     }
 
     round(re, 0, 2091667, 3407706, 2316500, 3817976);
@@ -124,15 +114,15 @@ fn ntt_at_layer_0(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
-fn ntt_at_layer_1(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[inline(always)]
     fn round(
-        re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
+        re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
         index: usize,
         zeta_0: i32,
         zeta_1: i32,
     ) {
-        re[index] = simd_unit_ntt_at_layer_1(re[index], zeta_0, zeta_1);
+        simd_unit_ntt_at_layer_1(&mut re[index], zeta_0, zeta_1);
     }
 
     round(re, 0, -3930395, -1528703);
@@ -170,10 +160,10 @@ fn ntt_at_layer_1(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
-fn ntt_at_layer_2(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[inline(always)]
-    fn round(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT], index: usize, zeta: i32) {
-        re[index] = simd_unit_ntt_at_layer_2(re[index], zeta);
+    fn round(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT], index: usize, zeta: i32) {
+        simd_unit_ntt_at_layer_2(&mut re[index], zeta);
     }
 
     round(re, 0, 2706023);
@@ -212,19 +202,21 @@ fn ntt_at_layer_2(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
 
 #[inline(always)]
 fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
-    re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
+    re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
 ) {
     for j in OFFSET..OFFSET + STEP_BY {
-        let t = montgomery_multiply_by_constant(re[j + STEP_BY], ZETA);
+        let mut tmp = re[j + STEP_BY];
+        montgomery_multiply_by_constant(&mut tmp, ZETA);
 
-        re[j + STEP_BY] = arithmetic::subtract(&re[j], &t);
-        re[j] = arithmetic::add(&re[j], &t);
+        re[j + STEP_BY] = re[j];
+        arithmetic::subtract(&mut re[j + STEP_BY], &tmp);
+        arithmetic::add(&mut re[j], &tmp);
     }
     () // Needed because of https://github.com/hacspec/hax/issues/720
 }
 
 #[inline(always)]
-fn ntt_at_layer_3(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn ntt_at_layer_3(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 8; // 1 << LAYER;
     const STEP_BY: usize = 1; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -247,7 +239,7 @@ fn ntt_at_layer_3(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
-fn ntt_at_layer_4(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn ntt_at_layer_4(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 16; // 1 << LAYER;
     const STEP_BY: usize = 2; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -262,7 +254,7 @@ fn ntt_at_layer_4(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
-fn ntt_at_layer_5(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn ntt_at_layer_5(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 32; // 1 << LAYER;
     const STEP_BY: usize = 4; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -273,7 +265,7 @@ fn ntt_at_layer_5(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
-fn ntt_at_layer_6(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn ntt_at_layer_6(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 64; // 1 << LAYER;
     const STEP_BY: usize = 8; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -282,7 +274,7 @@ fn ntt_at_layer_6(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
-fn ntt_at_layer_7(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn ntt_at_layer_7(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 128; // 1 << LAYER;
     const STEP_BY: usize = 16; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -290,17 +282,13 @@ fn ntt_at_layer_7(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
-pub(crate) fn ntt(
-    mut re: [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
-) -> [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT] {
-    ntt_at_layer_7(&mut re);
-    ntt_at_layer_6(&mut re);
-    ntt_at_layer_5(&mut re);
-    ntt_at_layer_4(&mut re);
-    ntt_at_layer_3(&mut re);
-    ntt_at_layer_2(&mut re);
-    ntt_at_layer_1(&mut re);
-    ntt_at_layer_0(&mut re);
-
-    re
+pub(crate) fn ntt(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
+    ntt_at_layer_7(re);
+    ntt_at_layer_6(re);
+    ntt_at_layer_5(re);
+    ntt_at_layer_4(re);
+    ntt_at_layer_3(re);
+    ntt_at_layer_2(re);
+    ntt_at_layer_1(re);
+    ntt_at_layer_0(re);
 }

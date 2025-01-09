@@ -10,108 +10,22 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let deserialize_then_ntt
-      (#v_SIMDUnit: Type0)
-      (v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE: usize)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (serialized: t_Array u8 v_SIGNING_KEY_SIZE)
-     =
-  let seed_for_A, remaining_serialized:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8
-      (serialized <: t_Slice u8)
-      Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE
-  in
-  let seed_for_signing, remaining_serialized:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8
-      remaining_serialized
-      Libcrux_ml_dsa.Constants.v_SEED_FOR_SIGNING_SIZE
-  in
-  let verification_key_hash, remaining_serialized:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8
-      remaining_serialized
-      Libcrux_ml_dsa.Constants.v_BYTES_FOR_VERIFICATION_KEY_HASH
-  in
-  let s1_serialized, remaining_serialized:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8
-      remaining_serialized
-      (v_ERROR_RING_ELEMENT_SIZE *! v_COLUMNS_IN_A <: usize)
-  in
-  let s2_serialized, t0_serialized:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at #u8
-      remaining_serialized
-      (v_ERROR_RING_ELEMENT_SIZE *! v_ROWS_IN_A <: usize)
-  in
-  let s1_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    v_COLUMNS_IN_A =
-    Libcrux_ml_dsa.Encoding.Error.deserialize_to_vector_then_ntt #v_SIMDUnit
-      v_COLUMNS_IN_A
-      v_ETA
-      v_ERROR_RING_ELEMENT_SIZE
-      s1_serialized
-  in
-  let s2_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
-    Libcrux_ml_dsa.Encoding.Error.deserialize_to_vector_then_ntt #v_SIMDUnit
-      v_ROWS_IN_A
-      v_ETA
-      v_ERROR_RING_ELEMENT_SIZE
-      s2_serialized
-  in
-  let t0_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A =
-    Libcrux_ml_dsa.Encoding.T0.deserialize_to_vector_then_ntt #v_SIMDUnit v_ROWS_IN_A t0_serialized
-  in
-  Core.Result.impl__unwrap #(t_Array u8 (sz 32))
-    #Core.Array.t_TryFromSliceError
-    (Core.Convert.f_try_into #(t_Slice u8)
-        #(t_Array u8 (sz 32))
-        #FStar.Tactics.Typeclasses.solve
-        seed_for_A
-      <:
-      Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError),
-  Core.Result.impl__unwrap #(t_Array u8 (sz 32))
-    #Core.Array.t_TryFromSliceError
-    (Core.Convert.f_try_into #(t_Slice u8)
-        #(t_Array u8 (sz 32))
-        #FStar.Tactics.Typeclasses.solve
-        seed_for_signing
-      <:
-      Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError),
-  Core.Result.impl__unwrap #(t_Array u8 (sz 64))
-    #Core.Array.t_TryFromSliceError
-    (Core.Convert.f_try_into #(t_Slice u8)
-        #(t_Array u8 (sz 64))
-        #FStar.Tactics.Typeclasses.solve
-        verification_key_hash
-      <:
-      Core.Result.t_Result (t_Array u8 (sz 64)) Core.Array.t_TryFromSliceError),
-  s1_as_ntt,
-  s2_as_ntt,
-  t0_as_ntt
-  <:
-  (t_Array u8 (sz 32) & t_Array u8 (sz 32) & t_Array u8 (sz 64) &
-    t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A &
-    t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A &
-    t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
-
 let generate_serialized
       (#v_SIMDUnit #v_Shake256: Type0)
-      (v_ROWS_IN_A v_COLUMNS_IN_A v_ETA v_ERROR_RING_ELEMENT_SIZE v_SIGNING_KEY_SIZE: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_DsaXof v_Shake256)
-      (seed_for_A seed_for_signing verification_key: t_Slice u8)
-      (s1: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-      (s2 t0: t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_ROWS_IN_A)
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
+      (error_ring_element_size: usize)
+      (seed_matrix seed_signing verification_key: t_Slice u8)
+      (s1_2_ t0: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+      (signing_key_serialized: t_Slice u8)
      =
-  let signing_key_serialized:t_Array u8 v_SIGNING_KEY_SIZE =
-    Rust_primitives.Hax.repeat 0uy v_SIGNING_KEY_SIZE
-  in
   let offset:usize = sz 0 in
-  let signing_key_serialized:t_Array u8 v_SIGNING_KEY_SIZE =
+  let signing_key_serialized:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range signing_key_serialized
       ({
           Core.Ops.Range.f_start = offset;
@@ -128,12 +42,12 @@ let generate_serialized
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice u8)
-          seed_for_A
+          seed_matrix
         <:
         t_Slice u8)
   in
   let offset:usize = offset +! Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE in
-  let signing_key_serialized:t_Array u8 v_SIGNING_KEY_SIZE =
+  let signing_key_serialized:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range signing_key_serialized
       ({
           Core.Ops.Range.f_start = offset;
@@ -152,7 +66,7 @@ let generate_serialized
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice u8)
-          seed_for_signing
+          seed_signing
         <:
         t_Slice u8)
   in
@@ -165,7 +79,7 @@ let generate_serialized
       verification_key
       verification_key_hash
   in
-  let signing_key_serialized:t_Array u8 v_SIGNING_KEY_SIZE =
+  let signing_key_serialized:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range signing_key_serialized
       ({
           Core.Ops.Range.f_start = offset;
@@ -191,37 +105,33 @@ let generate_serialized
         t_Slice u8)
   in
   let offset:usize = offset +! Libcrux_ml_dsa.Constants.v_BYTES_FOR_VERIFICATION_KEY_HASH in
-  let offset, signing_key_serialized:(usize & t_Array u8 v_SIGNING_KEY_SIZE) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
-            (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__iter #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-              (s1 <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-            <:
-            Core.Slice.Iter.t_Iter (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+  let offset, signing_key_serialized:(usize & t_Slice u8) =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) s1_2_
         <:
-        Core.Slice.Iter.t_Iter (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-      (offset, signing_key_serialized <: (usize & t_Array u8 v_SIGNING_KEY_SIZE))
-      (fun temp_0_ ring_element ->
-          let offset, signing_key_serialized:(usize & t_Array u8 v_SIGNING_KEY_SIZE) = temp_0_ in
-          let ring_element:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-            ring_element
-          in
-          let signing_key_serialized:t_Array u8 v_SIGNING_KEY_SIZE =
+        usize)
+      (fun temp_0_ temp_1_ ->
+          let offset, signing_key_serialized:(usize & t_Slice u8) = temp_0_ in
+          let _:usize = temp_1_ in
+          true)
+      (offset, signing_key_serialized <: (usize & t_Slice u8))
+      (fun temp_0_ i ->
+          let offset, signing_key_serialized:(usize & t_Slice u8) = temp_0_ in
+          let i:usize = i in
+          let signing_key_serialized:t_Slice u8 =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range signing_key_serialized
               ({
                   Core.Ops.Range.f_start = offset;
-                  Core.Ops.Range.f_end = offset +! v_ERROR_RING_ELEMENT_SIZE <: usize
+                  Core.Ops.Range.f_end = offset +! error_ring_element_size <: usize
                 }
                 <:
                 Core.Ops.Range.t_Range usize)
               (Libcrux_ml_dsa.Encoding.Error.serialize #v_SIMDUnit
-                  v_ETA
-                  v_ERROR_RING_ELEMENT_SIZE
-                  ring_element
+                  eta
+                  (s1_2_.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                   (signing_key_serialized.[ {
                         Core.Ops.Range.f_start = offset;
-                        Core.Ops.Range.f_end = offset +! v_ERROR_RING_ELEMENT_SIZE <: usize
+                        Core.Ops.Range.f_end = offset +! error_ring_element_size <: usize
                       }
                       <:
                       Core.Ops.Range.t_Range usize ]
@@ -230,68 +140,25 @@ let generate_serialized
                 <:
                 t_Slice u8)
           in
-          let offset:usize = offset +! v_ERROR_RING_ELEMENT_SIZE in
-          offset, signing_key_serialized <: (usize & t_Array u8 v_SIGNING_KEY_SIZE))
+          let offset:usize = offset +! error_ring_element_size in
+          offset, signing_key_serialized <: (usize & t_Slice u8))
   in
-  let offset, signing_key_serialized:(usize & t_Array u8 v_SIGNING_KEY_SIZE) =
+  let offset, signing_key_serialized:(usize & t_Slice u8) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
             (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
           #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__iter #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-              (s2 <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+          (Core.Slice.impl__iter #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) t0
             <:
             Core.Slice.Iter.t_Iter (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
         <:
         Core.Slice.Iter.t_Iter (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-      (offset, signing_key_serialized <: (usize & t_Array u8 v_SIGNING_KEY_SIZE))
+      (offset, signing_key_serialized <: (usize & t_Slice u8))
       (fun temp_0_ ring_element ->
-          let offset, signing_key_serialized:(usize & t_Array u8 v_SIGNING_KEY_SIZE) = temp_0_ in
+          let offset, signing_key_serialized:(usize & t_Slice u8) = temp_0_ in
           let ring_element:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
             ring_element
           in
-          let signing_key_serialized:t_Array u8 v_SIGNING_KEY_SIZE =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_range signing_key_serialized
-              ({
-                  Core.Ops.Range.f_start = offset;
-                  Core.Ops.Range.f_end = offset +! v_ERROR_RING_ELEMENT_SIZE <: usize
-                }
-                <:
-                Core.Ops.Range.t_Range usize)
-              (Libcrux_ml_dsa.Encoding.Error.serialize #v_SIMDUnit
-                  v_ETA
-                  v_ERROR_RING_ELEMENT_SIZE
-                  ring_element
-                  (signing_key_serialized.[ {
-                        Core.Ops.Range.f_start = offset;
-                        Core.Ops.Range.f_end = offset +! v_ERROR_RING_ELEMENT_SIZE <: usize
-                      }
-                      <:
-                      Core.Ops.Range.t_Range usize ]
-                    <:
-                    t_Slice u8)
-                <:
-                t_Slice u8)
-          in
-          let offset:usize = offset +! v_ERROR_RING_ELEMENT_SIZE in
-          offset, signing_key_serialized <: (usize & t_Array u8 v_SIGNING_KEY_SIZE))
-  in
-  let offset, signing_key_serialized:(usize & t_Array u8 v_SIGNING_KEY_SIZE) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
-            (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__iter #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-              (t0 <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-            <:
-            Core.Slice.Iter.t_Iter (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-        <:
-        Core.Slice.Iter.t_Iter (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-      (offset, signing_key_serialized <: (usize & t_Array u8 v_SIGNING_KEY_SIZE))
-      (fun temp_0_ ring_element ->
-          let offset, signing_key_serialized:(usize & t_Array u8 v_SIGNING_KEY_SIZE) = temp_0_ in
-          let ring_element:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-            ring_element
-          in
-          let signing_key_serialized:t_Array u8 v_SIGNING_KEY_SIZE =
+          let signing_key_serialized:t_Slice u8 =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range signing_key_serialized
               ({
                   Core.Ops.Range.f_start = offset;
@@ -317,6 +184,7 @@ let generate_serialized
                 t_Slice u8)
           in
           let offset:usize = offset +! Libcrux_ml_dsa.Constants.v_RING_ELEMENT_OF_T0S_SIZE in
-          offset, signing_key_serialized <: (usize & t_Array u8 v_SIGNING_KEY_SIZE))
+          offset, signing_key_serialized <: (usize & t_Slice u8))
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   signing_key_serialized

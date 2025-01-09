@@ -9,16 +9,21 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
+let chunk_size (eta: Libcrux_ml_dsa.Constants.t_Eta) =
+  match eta <: Libcrux_ml_dsa.Constants.t_Eta with
+  | Libcrux_ml_dsa.Constants.Eta_Two  -> sz 3
+  | Libcrux_ml_dsa.Constants.Eta_Four  -> sz 4
+
 let deserialize
       (#v_SIMDUnit: Type0)
-      (v_ETA: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
       (serialized: t_Slice u8)
       (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
-  let chunk_size:usize = if v_ETA =. sz 2 then sz 3 else sz 4 in
+  let chunk_size:usize = chunk_size eta in
   let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       (Core.Slice.impl__len #v_SIMDUnit
@@ -42,7 +47,7 @@ let deserialize
               i
               (Libcrux_ml_dsa.Simd.Traits.f_error_deserialize #v_SIMDUnit
                   #FStar.Tactics.Typeclasses.solve
-                  v_ETA
+                  eta
                   (serialized.[ {
                         Core.Ops.Range.f_start = i *! chunk_size <: usize;
                         Core.Ops.Range.f_end = (i +! sz 1 <: usize) *! chunk_size <: usize
@@ -51,6 +56,7 @@ let deserialize
                       Core.Ops.Range.t_Range usize ]
                     <:
                     t_Slice u8)
+                  (result.Libcrux_ml_dsa.Polynomial.f_simd_units.[ i ] <: v_SIMDUnit)
                 <:
                 v_SIMDUnit)
             <:
@@ -64,43 +70,34 @@ let deserialize
 
 let deserialize_to_vector_then_ntt
       (#v_SIMDUnit: Type0)
-      (v_DIMENSION v_ETA v_RING_ELEMENT_SIZE: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
+      (ring_element_size: usize)
       (serialized: t_Slice u8)
+      (ring_elements: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
      =
-  let ring_elements:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    v_DIMENSION =
-    Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__ZERO #v_SIMDUnit ()
-        <:
-        Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      v_DIMENSION
-  in
-  let ring_elements:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    v_DIMENSION =
-    Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice v_RING_ELEMENT_SIZE
+  let ring_elements:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
+    Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice ring_element_size
       serialized
       (fun ring_elements temp_1_ ->
-          let ring_elements:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-            v_DIMENSION =
+          let ring_elements:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
             ring_elements
           in
           let _:usize = temp_1_ in
           true)
       ring_elements
       (fun ring_elements temp_1_ ->
-          let ring_elements:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-            v_DIMENSION =
+          let ring_elements:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
             ring_elements
           in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          let ring_elements:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-            v_DIMENSION =
+          let ring_elements:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize ring_elements
               i
               (deserialize #v_SIMDUnit
-                  v_ETA
+                  eta
                   bytes
                   (ring_elements.[ i ]
                     <:
@@ -108,8 +105,7 @@ let deserialize_to_vector_then_ntt
                 <:
                 Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
           in
-          let ring_elements:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-            v_DIMENSION =
+          let ring_elements:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize ring_elements
               i
               (Libcrux_ml_dsa.Ntt.ntt #v_SIMDUnit
@@ -121,18 +117,19 @@ let deserialize_to_vector_then_ntt
           in
           ring_elements)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   ring_elements
 
 let serialize
       (#v_SIMDUnit: Type0)
-      (v_ETA v_OUTPUT_SIZE: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (serialized: t_Slice u8)
      =
-  let output_bytes_per_simd_unit:usize = if v_ETA =. sz 2 then sz 3 else sz 4 in
+  let output_bytes_per_simd_unit:usize = chunk_size eta in
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_enumerated_slice (re.Libcrux_ml_dsa.Polynomial.f_simd_units
         <:
@@ -154,7 +151,7 @@ let serialize
               Core.Ops.Range.t_Range usize)
             (Libcrux_ml_dsa.Simd.Traits.f_error_serialize #v_SIMDUnit
                 #FStar.Tactics.Typeclasses.solve
-                v_ETA
+                eta
                 simd_unit
                 (serialized.[ {
                       Core.Ops.Range.f_start = i *! output_bytes_per_simd_unit <: usize;

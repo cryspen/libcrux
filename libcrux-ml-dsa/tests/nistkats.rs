@@ -120,6 +120,7 @@ macro_rules! impl_nist_known_answer_tests {
 
 // 44
 
+#[cfg(feature = "mldsa44")]
 impl_nist_known_answer_tests!(
     nist_known_answer_tests_44,
     nist_known_answer_tests_pre_hashed_44,
@@ -131,6 +132,7 @@ impl_nist_known_answer_tests!(
     libcrux_ml_dsa::ml_dsa_44::verify_pre_hashed_shake128
 );
 
+#[cfg(feature = "mldsa44")]
 impl_nist_known_answer_tests!(
     nist_known_answer_tests_44_portable,
     nist_known_answer_tests_pre_hashed_44_portable,
@@ -142,7 +144,7 @@ impl_nist_known_answer_tests!(
     libcrux_ml_dsa::ml_dsa_44::verify_pre_hashed_shake128
 );
 
-#[cfg(feature = "simd128")]
+#[cfg(all(feature = "simd128", feature = "mldsa44"))]
 impl_nist_known_answer_tests!(
     nist_known_answer_tests_44_simd128,
     nist_known_answer_tests_pre_hashed_44_simd128,
@@ -154,7 +156,7 @@ impl_nist_known_answer_tests!(
     libcrux_ml_dsa::ml_dsa_44::verify_pre_hashed_shake128
 );
 
-#[cfg(feature = "simd256")]
+#[cfg(all(feature = "simd256", feature = "mldsa44"))]
 impl_nist_known_answer_tests!(
     nist_known_answer_tests_44_simd256,
     nist_known_answer_tests_pre_hashed_44_simd256,
@@ -167,7 +169,7 @@ impl_nist_known_answer_tests!(
 );
 
 // 65
-
+#[cfg(feature = "mldsa65")]
 impl_nist_known_answer_tests!(
     nist_known_answer_tests_65,
     nist_known_answer_tests_pre_hashed_65,
@@ -180,7 +182,7 @@ impl_nist_known_answer_tests!(
 );
 
 // 87
-
+#[cfg(feature = "mldsa87")]
 impl_nist_known_answer_tests!(
     nist_known_answer_tests_87,
     nist_known_answer_tests_pre_hashed_87,

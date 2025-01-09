@@ -13,15 +13,15 @@ let _ =
 
 type t_AVX2Sampler = | AVX2Sampler : t_AVX2Sampler
 
-val matrix_A_avx2
+val matrix_flat__inner
       (#v_SIMDUnit: Type0)
-      (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (seed: t_Array u8 (sz 34))
-    : Prims.Pure
-      (t_Array
-          (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-          v_ROWS_IN_A) Prims.l_True (fun _ -> Prims.l_True)
+      (columns: usize)
+      (seed: t_Slice u8)
+      (matrix: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : Prims.Pure (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl:Libcrux_ml_dsa.Samplex4.t_X4Sampler t_AVX2Sampler

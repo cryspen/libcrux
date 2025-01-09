@@ -9,13 +9,13 @@ use crate::{constants::CONTEXT_MAX_LEN, hash_functions, SigningError, Verificati
 pub(crate) const PRE_HASH_OID_LEN: usize = 11;
 pub(crate) type PreHashOID = [u8; PRE_HASH_OID_LEN];
 
-pub(crate) trait PreHash<const DIGEST_LEN: usize> {
+pub(crate) trait PreHash {
     /// The object identifier (OID) of the hash function or XOF used
     /// to perform the pre-hashing of the message.
     fn oid() -> PreHashOID;
 
     /// Used to derive the pre-hash PH of the message before signing.
-    fn hash<Shake128: hash_functions::shake128::Xof>(message: &[u8]) -> [u8; DIGEST_LEN];
+    fn hash<Shake128: hash_functions::shake128::Xof>(message: &[u8], output: &mut [u8]);
 }
 
 #[allow(non_camel_case_types)]
@@ -27,17 +27,15 @@ const SHAKE128_OID: PreHashOID = [
     0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x0b,
 ];
 
-impl PreHash<256> for SHAKE128_PH {
+impl PreHash for SHAKE128_PH {
     fn oid() -> PreHashOID {
         SHAKE128_OID
     }
 
     #[inline(always)]
-    fn hash<Shake128: hash_functions::shake128::Xof>(message: &[u8]) -> [u8; 256] {
-        let mut output = [0u8; 256];
-        Shake128::shake128(message, &mut output);
-
-        output
+    fn hash<Shake128: hash_functions::shake128::Xof>(message: &[u8], output: &mut [u8]) {
+        debug_assert_eq!(output.len(), 256);
+        Shake128::shake128(message, output);
     }
 }
 
