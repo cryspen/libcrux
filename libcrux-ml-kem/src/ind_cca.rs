@@ -127,7 +127,7 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
-fn validate_public_key<
+pub(crate) fn validate_public_key<
     const K: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -157,7 +157,7 @@ fn validate_public_key<
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"#))]
-fn validate_private_key<
+pub(crate) fn validate_private_key<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -176,7 +176,11 @@ fn validate_private_key<
 #[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K"#))]
-fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize, Hasher: Hash<K>>(
+pub(crate) fn validate_private_key_only<
+    const K: usize,
+    const SECRET_KEY_SIZE: usize,
+    Hasher: Hash<K>,
+>(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
 ) -> bool {
     // Eurydice can't access values directly on the types. We need to go to the
@@ -204,7 +208,7 @@ fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize, Hashe
 #[hax_lib::ensures(|result| fstar!(r#"let (expected, valid) = Spec.MLKEM.ind_cca_generate_keypair $K $randomness in
                                     valid ==> (${result}.f_sk.f_value, ${result}.f_pk.f_value) == expected"#))]
 #[inline(always)]
-fn generate_keypair<
+pub(crate) fn generate_keypair<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
@@ -261,7 +265,7 @@ fn generate_keypair<
 #[hax_lib::ensures(|result| fstar!(r#"let (expected, valid) = Spec.MLKEM.ind_cca_encapsulate $K ${public_key}.f_value $randomness in
                                     valid ==> (${result}._1.f_value, ${result}._2) == expected"#))]
 #[inline(always)]
-fn encapsulate<
+pub(crate) fn encapsulate<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,

@@ -99,6 +99,7 @@ mod ind_cca;
 mod ind_cpa;
 mod invert_ntt;
 mod matrix;
+mod mlkem;
 mod ntt;
 mod polynomial;
 mod sampling;
