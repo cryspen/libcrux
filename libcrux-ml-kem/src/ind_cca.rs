@@ -24,14 +24,10 @@ pub const ENCAPS_SEED_SIZE: usize = SHARED_SECRET_SIZE;
 /// A byte array of size [`SHARED_SECRET_SIZE`].
 pub type MlKemSharedSecret = [u8; SHARED_SECRET_SIZE];
 
-/// This module instantiates the functions in this file and multiplexes between
-/// different implementations at runtime.
-#[cfg(not(eurydice))]
-pub(crate) mod multiplexing;
-
-/// This module instantiates the functions in this file for each platform.
-/// To use these, runtime checks must be performed before calling them.
-pub(crate) mod instantiations;
+// /// This module instantiates the functions in this file and multiplexes between
+// /// different implementations at runtime.
+// #[cfg(not(eurydice))]
+// pub(crate) mod multiplexing;
 
 pub(crate) mod incremental;
 

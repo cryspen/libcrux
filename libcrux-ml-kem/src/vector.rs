@@ -25,12 +25,12 @@ pub(crate) mod rej_sample_table;
 // The consumer needs to use runtime feature detection and the appropriate vector
 // in each case.
 #[cfg(feature = "simd128")]
-mod neon;
+pub(crate) mod neon;
 #[cfg(feature = "simd128")]
 pub(crate) use neon::SIMD128Vector;
 #[cfg(feature = "simd256")]
-mod avx2;
+pub(crate) mod avx2;
 #[cfg(feature = "simd256")]
 pub(crate) use avx2::SIMD256Vector;
 
-pub mod portable;
+pub(crate) mod portable;

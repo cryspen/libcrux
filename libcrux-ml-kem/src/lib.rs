@@ -109,17 +109,20 @@ mod utils;
 mod variant;
 pub mod vector;
 
-#[cfg(feature = "mlkem512")]
-#[cfg_attr(docsrs, doc(cfg(feature = "mlkem512")))]
-pub mod mlkem512;
+/// Public ML-KEM API.
+pub use mlkem::*;
 
-#[cfg(feature = "mlkem768")]
-#[cfg_attr(docsrs, doc(cfg(feature = "mlkem768")))]
-pub mod mlkem768;
+// #[cfg(feature = "mlkem512")]
+// #[cfg_attr(docsrs, doc(cfg(feature = "mlkem512")))]
+// pub mod mlkem512;
 
-#[cfg(feature = "mlkem1024")]
-#[cfg_attr(docsrs, doc(cfg(feature = "mlkem1024")))]
-pub mod mlkem1024;
+// #[cfg(feature = "mlkem768")]
+// #[cfg_attr(docsrs, doc(cfg(feature = "mlkem768")))]
+// pub mod mlkem768;
+
+// #[cfg(feature = "mlkem1024")]
+// #[cfg_attr(docsrs, doc(cfg(feature = "mlkem1024")))]
+// pub mod mlkem1024;
 
 pub use constants::SHARED_SECRET_SIZE;
 
@@ -128,43 +131,43 @@ pub use ind_cca::{MlKemSharedSecret, ENCAPS_SEED_SIZE, KEY_GENERATION_SEED_SIZE}
 // These types all have type aliases for the different variants.
 pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
 
-cfg_kyber! {
-    #[cfg(feature = "mlkem512")]
-    #[cfg_attr(docsrs, doc(cfg(all(feature = "kyber", feature = "mlkem512"))))]
-    pub mod kyber512 {
-        //! Kyber 512 (NIST PQC Round 3)
-        cfg_no_eurydice! {
-            pub use crate::mlkem512::kyber::generate_key_pair;
-            pub use crate::mlkem512::kyber::decapsulate;
-            pub use crate::mlkem512::kyber::encapsulate;
-            pub use crate::mlkem512::validate_public_key;
-            pub use crate::mlkem512::validate_private_key;
-        }
-    }
+// cfg_kyber! {
+//     #[cfg(feature = "mlkem512")]
+//     #[cfg_attr(docsrs, doc(cfg(all(feature = "kyber", feature = "mlkem512"))))]
+//     pub mod kyber512 {
+//         //! Kyber 512 (NIST PQC Round 3)
+//         cfg_no_eurydice! {
+//             pub use crate::mlkem512::kyber::generate_key_pair;
+//             pub use crate::mlkem512::kyber::decapsulate;
+//             pub use crate::mlkem512::kyber::encapsulate;
+//             pub use crate::mlkem512::validate_public_key;
+//             pub use crate::mlkem512::validate_private_key;
+//         }
+//     }
 
-    #[cfg(feature = "mlkem768")]
-    #[cfg_attr(docsrs, doc(cfg(all(feature = "kyber", feature = "mlkem768"))))]
-    pub mod kyber768 {
-        //! Kyber 768 (NIST PQC Round 3)
-        cfg_no_eurydice! {
-            pub use crate::mlkem768::kyber::generate_key_pair;
-            pub use crate::mlkem768::kyber::decapsulate;
-            pub use crate::mlkem768::kyber::encapsulate;
-            pub use crate::mlkem768::validate_public_key;
-            pub use crate::mlkem768::validate_private_key;
-        }
-    }
+//     #[cfg(feature = "mlkem768")]
+//     #[cfg_attr(docsrs, doc(cfg(all(feature = "kyber", feature = "mlkem768"))))]
+//     pub mod kyber768 {
+//         //! Kyber 768 (NIST PQC Round 3)
+//         cfg_no_eurydice! {
+//             pub use crate::mlkem768::kyber::generate_key_pair;
+//             pub use crate::mlkem768::kyber::decapsulate;
+//             pub use crate::mlkem768::kyber::encapsulate;
+//             pub use crate::mlkem768::validate_public_key;
+//             pub use crate::mlkem768::validate_private_key;
+//         }
+//     }
 
-    #[cfg(feature = "mlkem1024")]
-    #[cfg_attr(docsrs, doc(cfg(all(feature = "kyber", feature = "mlkem1024"))))]
-    pub mod kyber1024 {
-        //! Kyber 1024 (NIST PQC Round 3)
-        cfg_no_eurydice! {
-            pub use crate::mlkem1024::kyber::generate_key_pair;
-            pub use crate::mlkem1024::kyber::decapsulate;
-            pub use crate::mlkem1024::kyber::encapsulate;
-            pub use crate::mlkem1024::validate_public_key;
-            pub use crate::mlkem1024::validate_private_key;
-        }
-    }
-}
+//     #[cfg(feature = "mlkem1024")]
+//     #[cfg_attr(docsrs, doc(cfg(all(feature = "kyber", feature = "mlkem1024"))))]
+//     pub mod kyber1024 {
+//         //! Kyber 1024 (NIST PQC Round 3)
+//         cfg_no_eurydice! {
+//             pub use crate::mlkem1024::kyber::generate_key_pair;
+//             pub use crate::mlkem1024::kyber::decapsulate;
+//             pub use crate::mlkem1024::kyber::encapsulate;
+//             pub use crate::mlkem1024::validate_public_key;
+//             pub use crate::mlkem1024::validate_private_key;
+//         }
+//     }
+// }

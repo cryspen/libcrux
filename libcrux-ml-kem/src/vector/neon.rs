@@ -14,6 +14,7 @@ use compress::*;
 use ntt::*;
 use serialize::*;
 pub(crate) use vector_type::SIMD128Vector;
+pub(crate) use vector_type::SIMD128Vector as Vector;
 use vector_type::*;
 
 impl crate::vector::traits::Repr for SIMD128Vector {

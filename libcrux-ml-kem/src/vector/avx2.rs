@@ -14,6 +14,8 @@ pub struct SIMD256Vector {
     elements: Vec256,
 }
 
+pub(crate) use SIMD256Vector as Vector;
+
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!(r#"repr ${result} == Seq.create 16 0s"#))]
