@@ -60,7 +60,8 @@
           FSTAR_REV = inputs.fstar.rev;
         };
 
-        craneLib = inputs.crane.mkLib pkgs;
+        rustToolchain = inputs.charon.packages.${system}.rustToolchain;
+        craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustToolchain;
 
         ml-kem = pkgs.callPackage
           ({ lib
