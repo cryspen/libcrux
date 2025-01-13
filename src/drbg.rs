@@ -5,6 +5,11 @@
 use crate::hacl::drbg;
 // re-export here for convenience
 pub use rand::{CryptoRng, RngCore};
+#[cfg(feature = "std")]
+use std::{fmt, vec, vec::Vec};
+
+#[cfg(not(feature = "std"))]
+use alloc::{fmt, vec, vec::Vec};
 
 #[derive(Debug)]
 pub enum Error {
@@ -16,13 +21,13 @@ pub enum Error {
     UnableToGenerate,
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_fmt(format_args!("{self:?}"))
     }
 }
 
-impl std::error::Error for Error {}
+impl core::error::Error for Error {}
 
 pub struct Drbg {
     state: drbg::Drbg,

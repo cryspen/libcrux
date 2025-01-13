@@ -16,6 +16,11 @@
 use crate::hacl::{blake2, sha3};
 
 use libcrux_platform::{simd128_support, simd256_support};
+#[cfg(feature = "std")]
+use std::vec::Vec;
+
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
 
 #[derive(Debug)]
 pub enum Error {

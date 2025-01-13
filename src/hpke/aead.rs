@@ -34,6 +34,11 @@ use crate::{
     aead::{self, *},
     hmac::tag_size,
 };
+#[cfg(feature = "std")]
+use std::{vec, vec::Vec};
+
+#[cfg(not(feature = "std"))]
+use alloc::{vec, vec::Vec};
 
 use super::errors::*;
 

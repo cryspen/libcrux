@@ -107,6 +107,8 @@ wasm-bindgen-test = "0.3"
 getrandom = { version = "0.2", features = ["js"] }
 
 [features]
+default = ["std"]
+std = []
 hacspec = []                         # TODO: #7 Use specs instead of efficient implementations
 rand = []
 wasm = ["wasm-bindgen", "getrandom"]

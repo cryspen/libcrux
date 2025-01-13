@@ -2,6 +2,14 @@
 //!
 //! The unified, formally verified, cryptography library.
 
+#![no_std]
+
+#[cfg(feature = "std")]
+extern crate std;
+
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+
 pub use libcrux_platform::aes_ni_support;
 
 // Jasmin
