@@ -1,115 +1,18 @@
 //! Instantiating the ML-KEM variants for both key sizes, and platforms.
 
-use libcrux_macros::ml_kem_variants;
+use libcrux_macros::{ml_kem_instantiations, ml_kem_multiplexing};
 
 /// ML-KEM 512
-mod mlkem512_constants {
-    use crate::constants::*;
-
-    pub(super) const RANK: usize = 2;
-    pub(super) const RANKED_BYTES_PER_RING_ELEMENT: usize = RANK * BITS_PER_RING_ELEMENT / 8;
-    pub(super) const T_AS_NTT_ENCODED_SIZE: usize =
-        (RANK * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
-    pub(super) const VECTOR_U_COMPRESSION_FACTOR: usize = 10;
-    pub(super) const C1_BLOCK_SIZE: usize =
-        (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8;
-    pub(super) const C1_SIZE: usize = C1_BLOCK_SIZE * RANK;
-    pub(super) const VECTOR_V_COMPRESSION_FACTOR: usize = 4;
-    pub(super) const C2_SIZE: usize =
-        (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_V_COMPRESSION_FACTOR) / 8;
-    pub(super) const CPA_PKE_SECRET_KEY_SIZE: usize =
-        (RANK * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
-    pub(crate) const CPA_PKE_PUBLIC_KEY_SIZE: usize = T_AS_NTT_ENCODED_SIZE + 32;
-    pub(super) const CPA_PKE_CIPHERTEXT_SIZE: usize = C1_SIZE + C2_SIZE;
-
-    pub(crate) const SECRET_KEY_SIZE: usize =
-        CPA_PKE_SECRET_KEY_SIZE + CPA_PKE_PUBLIC_KEY_SIZE + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
-
-    pub(super) const ETA1: usize = 3;
-    pub(super) const ETA1_RANDOMNESS_SIZE: usize = ETA1 * 64;
-    pub(super) const ETA2: usize = 2;
-    pub(super) const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
-
-    pub(super) const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize =
-        SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE;
-}
+mod mlkem512_constants;
 
 /// ML-KEM 768
-mod mlkem768_constants {
-    use crate::constants::*;
-
-    pub(super) const RANK: usize = 3;
-    pub(super) const RANKED_BYTES_PER_RING_ELEMENT: usize = RANK * BITS_PER_RING_ELEMENT / 8;
-    pub(super) const T_AS_NTT_ENCODED_SIZE: usize =
-        (RANK * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
-    pub(super) const VECTOR_U_COMPRESSION_FACTOR: usize = 10;
-    // [hax]: hacspec/hacspec-v2#27 stealing error
-    // block_len::<VECTOR_U_COMPRESSION_FACTOR>()
-    pub(super) const C1_BLOCK_SIZE: usize =
-        (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8;
-    // [hax]: hacspec/hacspec-v2#27 stealing error
-    //  serialized_len::<RANK, C1_BLOCK_SIZE>();
-    pub(super) const C1_SIZE: usize = C1_BLOCK_SIZE * RANK;
-    pub(super) const VECTOR_V_COMPRESSION_FACTOR: usize = 4;
-    // [hax]: hacspec/hacspec-v2#27 stealing error
-    //  block_len::<VECTOR_V_COMPRESSION_FACTOR>()
-    pub(super) const C2_SIZE: usize =
-        (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_V_COMPRESSION_FACTOR) / 8;
-    pub(super) const CPA_PKE_SECRET_KEY_SIZE: usize =
-        (RANK * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
-    pub(crate) const CPA_PKE_PUBLIC_KEY_SIZE: usize = T_AS_NTT_ENCODED_SIZE + 32;
-    // These two are used in the hybrid kem. This could probably be improved.
-    pub(super) const CPA_PKE_CIPHERTEXT_SIZE: usize = C1_SIZE + C2_SIZE;
-    pub(super) const SECRET_KEY_SIZE: usize =
-        CPA_PKE_SECRET_KEY_SIZE + CPA_PKE_PUBLIC_KEY_SIZE + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
-
-    pub(super) const ETA1: usize = 2;
-    pub(super) const ETA1_RANDOMNESS_SIZE: usize = ETA1 * 64;
-    pub(super) const ETA2: usize = 2;
-    pub(super) const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
-
-    pub(super) const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize =
-        SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE;
-}
+mod mlkem768_constants;
 
 /// ML-KEM 1024
-mod mlkem1024_constants {
-    use crate::constants::*;
+mod mlkem1024_constants;
 
-    pub(super) const RANK: usize = 4;
-    pub(super) const RANKED_BYTES_PER_RING_ELEMENT: usize = RANK * BITS_PER_RING_ELEMENT / 8;
-    pub(super) const T_AS_NTT_ENCODED_SIZE: usize =
-        (RANK * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
-    pub(super) const VECTOR_U_COMPRESSION_FACTOR: usize = 11;
-    // [hax]: hacspec/hacspec-v2#27 stealing error
-    // block_len::<VECTOR_U_COMPRESSION_FACTOR>();
-    pub(super) const C1_BLOCK_SIZE: usize =
-        (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8;
-    // [hax]: hacspec/hacspec-v2#27 stealing error
-    // serialized_len::<RANK, C1_BLOCK_SIZE>();
-    pub(super) const C1_SIZE: usize = C1_BLOCK_SIZE * RANK;
-    pub(super) const VECTOR_V_COMPRESSION_FACTOR: usize = 5;
-    // [hax]: hacspec/hacspec-v2#27 stealing error
-    // block_len::<VECTOR_V_COMPRESSION_FACTOR>()
-    pub(super) const C2_SIZE: usize =
-        (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_V_COMPRESSION_FACTOR) / 8;
-    pub(super) const CPA_PKE_SECRET_KEY_SIZE: usize =
-        (RANK * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
-    pub(crate) const CPA_PKE_PUBLIC_KEY_SIZE: usize = T_AS_NTT_ENCODED_SIZE + 32;
-    pub(super) const CPA_PKE_CIPHERTEXT_SIZE: usize = C1_SIZE + C2_SIZE;
-    pub(crate) const SECRET_KEY_SIZE: usize =
-        CPA_PKE_SECRET_KEY_SIZE + CPA_PKE_PUBLIC_KEY_SIZE + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
-
-    pub(super) const ETA1: usize = 2;
-    pub(super) const ETA1_RANDOMNESS_SIZE: usize = ETA1 * 64;
-    pub(super) const ETA2: usize = 2;
-    pub(super) const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
-
-    pub(super) const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize =
-        SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE;
-}
-
-#[ml_kem_variants(
+/// Instantiate ML-KEM key sizes and optimizations.
+#[ml_kem_instantiations(
     keys(512, 768, 1024),
     platforms(
         portable(
@@ -367,8 +270,8 @@ pub mod mlkem {
 
         /// Get the serialized public key.
         #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 3 ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
-                ${public_key}.f_ind_cpa_public_key.f_t_as_ntt i)"#))]
+                Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
+                    ${public_key}.f_ind_cpa_public_key.f_t_as_ntt i)"#))]
         pub fn serialized_public_key(
             public_key: &MlKemPublicKeyUnpacked,
             serialized: &mut MlKemPublicKey,
@@ -393,8 +296,8 @@ pub mod mlkem {
 
         /// Get the serialized public key.
         #[hax_lib::requires(fstar!(r#"(forall (i:nat). i < 3 ==>
-                Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
-                    ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i))"#))]
+                    Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
+                        ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i))"#))]
         pub fn key_pair_serialized_public_key_mut(
             key_pair: &MlKemKeyPairUnpacked,
             serialized: &mut MlKemPublicKey,
@@ -404,8 +307,8 @@ pub mod mlkem {
 
         /// Get the serialized public key.
         #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 3 ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
-                ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"#))]
+                Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
+                    ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"#))]
         pub fn key_pair_serialized_public_key(key_pair: &MlKemKeyPairUnpacked) -> MlKemPublicKey {
             key_pair
                 .serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT, CPA_PKE_PUBLIC_KEY_SIZE>()
@@ -485,12 +388,12 @@ pub mod mlkem {
             hax_lib::fstar::before(
                 interface,
                 "
-        let _ =
-        (* This module has implicit dependencies, here we make them explicit. *)
-        (* The implicit dependencies arise from typeclasses instances. *)
-        let open Libcrux_ml_kem.Vector.Portable in
-        let open Libcrux_ml_kem.Vector.Neon in
-        ()"
+            let _ =
+            (* This module has implicit dependencies, here we make them explicit. *)
+            (* The implicit dependencies arise from typeclasses instances. *)
+            let open Libcrux_ml_kem.Vector.Portable in
+            let open Libcrux_ml_kem.Vector.Neon in
+            ()"
             )
         )]
         pub fn encapsulate(
@@ -621,55 +524,56 @@ pub mod mlkem {
 }
 
 /// The Rust API with runtime CPU feature detection.
+#[ml_kem_multiplexing(keys(512, 768, 1024), platforms(portable, avx2, neon))]
 pub mod mlkem {
     // For the case where we didn't compile with the simd128/simd256 features but
     // have a CPU that has it and thus tries to call the simd128/simd256 version,
     // we fall back to the portable version in this case.
 
     #[cfg(feature = "simd256")]
-    use instantiations::avx2::{
+    use avx2_instantiation::{
         decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
         generate_keypair as generate_keypair_avx2,
     };
 
     #[cfg(feature = "simd128")]
-    use instantiations::neon::{
+    use neon_instantiation::{
         decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
         generate_keypair as generate_keypair_neon,
     };
 
     #[cfg(not(feature = "simd256"))]
-    use instantiations::portable::{
+    use portable_instantiation::{
         decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
         generate_keypair as generate_keypair_avx2,
     };
 
     #[cfg(not(feature = "simd128"))]
-    use instantiations::portable::{
+    use portable_instantiation::{
         decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
         generate_keypair as generate_keypair_neon,
     };
 
     #[cfg(all(feature = "simd256", feature = "kyber"))]
-    use instantiations::avx2::{
+    use avx2_instantiation::{
         kyber_decapsulate as kyber_decapsulate_avx2, kyber_encapsulate as kyber_encapsulate_avx2,
         kyber_generate_keypair as kyber_generate_keypair_avx2,
     };
 
     #[cfg(all(feature = "simd128", feature = "kyber"))]
-    use instantiations::neon::{
+    use neon_instantiation::{
         kyber_decapsulate as kyber_decapsulate_neon, kyber_encapsulate as kyber_encapsulate_neon,
         kyber_generate_keypair as kyber_generate_keypair_neon,
     };
 
     #[cfg(all(not(feature = "simd256"), feature = "kyber"))]
-    use instantiations::portable::{
+    use portable_instantiation::{
         kyber_decapsulate as kyber_decapsulate_avx2, kyber_encapsulate as kyber_encapsulate_avx2,
         kyber_generate_keypair as kyber_generate_keypair_avx2,
     };
 
     #[cfg(all(not(feature = "simd128"), feature = "kyber"))]
-    use instantiations::portable::{
+    use portable_instantiation::{
         kyber_decapsulate as kyber_decapsulate_neon, kyber_encapsulate as kyber_encapsulate_neon,
         kyber_generate_keypair as kyber_generate_keypair_neon,
     };
@@ -685,7 +589,7 @@ pub mod mlkem {
     >(
         public_key: &[u8; PUBLIC_KEY_SIZE],
     ) -> bool {
-        instantiations::portable::validate_public_key::<
+        portable_instantiation::validate_public_key::<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
             PUBLIC_KEY_SIZE,

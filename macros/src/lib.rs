@@ -5,8 +5,13 @@ use std::collections::HashMap;
 use proc_macro::{Delimiter, TokenStream, TokenTree};
 use quote::{format_ident, quote};
 use syn::{
-    parenthesized, parse::Parser, parse_macro_input, punctuated::Punctuated, Attribute, Ident,
-    ItemMod, LitInt, Meta, MetaList, Path, Token,
+    parenthesized,
+    parse::Parser,
+    parse_macro_input, parse_quote,
+    punctuated::Punctuated,
+    token::{Comma, Dot, Unsafe},
+    Attribute, ExprMethodCall, FnArg, Ident, ItemFn, ItemMod, LitInt, Meta, MetaList, Pat, Path,
+    Stmt, Token,
 };
 
 fn skip_comma<T: Iterator<Item = TokenTree>>(ts: &mut T) {
@@ -111,8 +116,11 @@ pub fn ml_dsa_parameter_sets(args: TokenStream, item: TokenStream) -> TokenStrea
     expanded.into()
 }
 
+/// Instantiate ML-KEM variants.
+///
+/// This instantiates key sizes and platform versions.
 #[proc_macro_attribute]
-pub fn ml_kem_variants(args: TokenStream, item: TokenStream) -> TokenStream {
+pub fn ml_kem_instantiations(args: TokenStream, item: TokenStream) -> TokenStream {
     let ItemMod {
         attrs,
         vis,
@@ -121,7 +129,7 @@ pub fn ml_kem_variants(args: TokenStream, item: TokenStream) -> TokenStream {
         ..
     } = parse_macro_input!(item as ItemMod);
 
-    // #[ml_kem_variants(keys(512, 768, 1024), platforms(portable, avx2, neon))]
+    // #[ml_kem_variants(keys(512, 768, 1024), platforms(portable(..), avx2(..), neon(..)))]
     let nested = Punctuated::<Meta, Token![,]>::parse_terminated
         .parse(args)
         .unwrap();
@@ -141,17 +149,14 @@ pub fn ml_kem_variants(args: TokenStream, item: TokenStream) -> TokenStream {
                 let nested_platforms = Punctuated::<Meta, Token![,]>::parse_terminated
                     .parse(list.tokens.into())
                     .unwrap();
-                // eprintln!(
-                //     "nested_platforms: {:?}",
-                //     quote! {#nested_platforms}.to_string()
-                // );
+
                 for meta in nested_platforms {
                     match meta {
                         Meta::List(list) => {
                             let paths = Punctuated::<Path, Token![,]>::parse_terminated
                                 .parse(list.tokens.into())
                                 .unwrap();
-                            platforms.push((list.path, paths));
+                            platforms.push((list.path.get_ident().unwrap().clone(), paths));
                         }
                         _ => panic!("Expected a list for platforms with paths"),
                     }
@@ -163,28 +168,17 @@ pub fn ml_kem_variants(args: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut expanded = quote! {};
 
-    eprintln!("keys: {:?}", quote! {#keys}.to_string());
-    for (k, v) in platforms.iter() {
-        eprintln!(
-            "platforms: {:?} | {:?}",
-            quote! {#k}.to_string(),
-            quote! {#v}.to_string()
-        );
-    }
+    // Write the modules for each key and platform combination
     for parameter_set in keys {
         for (platform, paths) in platforms.clone() {
-            let params = quote! {#parameter_set}.to_string();
-            let parameter_set_string = format!("{}_{}", params, quote! {#platform}.to_string());
-            let feature_name = format!("mlkem{}", params);
-            let platform_string = quote! {#platform}.to_string();
-            let feature_platform = match platform_string.as_str() {
-                "portable" => quote! {},
-                "avx2" => quote! {#[cfg(feature = "simd256")]},
-                "neon" => quote! {#[cfg(feature = "simd128")]},
-                _ => panic!("Unexpected platform {}", platform_string),
-            };
-            let const_mod = format_ident!("mlkem{}_constants", params);
-            let modpath = format_ident!("ml_kem_{}", parameter_set_string);
+            let MlkemNamesResult {
+                params,
+                feature_name,
+                const_mod,
+                ..
+            } = mlkem_names(&parameter_set);
+            let (platform_string, feature_platform, modpath) =
+                mlkem_platform_names(&platform, &params);
 
             // Build platform dependent types
             let mut platform_types = quote! {};
@@ -201,8 +195,15 @@ pub fn ml_kem_variants(args: TokenStream, item: TokenStream) -> TokenStream {
 
             // add the variant at the end of the function name
             if let Some((_, ref content)) = content {
-                let this_content = content.clone();
-                let fun = quote! {
+                let mut this_content = content.clone();
+
+                if platform_string == "avx2" {
+                    // For AVX2 we add an inner unsafe function that we annotate
+                    // with the avx2 target feature.
+                    make_avx2(&mut this_content);
+                }
+
+                let module = quote! {
                     #[doc = #mod_comment]
                     #(#attrs)*
                     #[cfg(feature = #feature_name)]
@@ -214,9 +215,180 @@ pub fn ml_kem_variants(args: TokenStream, item: TokenStream) -> TokenStream {
                         #(#this_content)*
                     } #semi
                 };
-                expanded.extend(fun);
+                expanded.extend(module);
             }
         }
     }
+    expanded.into()
+}
+
+struct MlkemNamesResult {
+    params: String,
+    feature_name: String,
+    const_mod: Ident,
+    multiplex_mod: Ident,
+}
+
+fn mlkem_names(parameter_set: &LitInt) -> MlkemNamesResult {
+    let params = quote! {#parameter_set}.to_string();
+    let feature_name = format!("mlkem{}", params);
+    let const_mod = format_ident!("mlkem{}_constants", params);
+    let multiplex_mod = format_ident!("ml_kem_{}", params);
+
+    MlkemNamesResult {
+        params,
+        feature_name,
+        const_mod,
+        multiplex_mod,
+    }
+}
+
+type PlatformNames = (String, proc_macro2::TokenStream, Ident);
+
+fn mlkem_platform_names(platform: &Ident, params: &String) -> PlatformNames {
+    let parameter_set_string = format!("{}_{}", params, quote! {#platform}.to_string());
+    let platform_string = quote! {#platform}.to_string();
+    let feature_platform = match platform_string.as_str() {
+        "portable" => quote! {},
+        "avx2" => quote! {#[cfg(feature = "simd256")]},
+        "neon" => quote! {#[cfg(feature = "simd128")]},
+        _ => panic!("Unexpected platform {}", platform_string),
+    }
+    .into();
+    let modpath = format_ident!("ml_kem_{}", parameter_set_string);
+    (platform_string, feature_platform, modpath)
+}
+
+/// Annotate avx2 function with the target attribute
+fn make_avx2(items: &mut Vec<syn::Item>) {
+    for item in items {
+        if let syn::Item::Fn(ref mut fun) = item {
+            fun.attrs.push(parse_quote! {
+                #[allow(unsafe_code)]
+            });
+            let ItemFn {
+                attrs: _,
+                vis: _,
+                sig,
+                block,
+            } = fun;
+            let mut inner_sig = sig.clone();
+            inner_sig.ident = Ident::new(
+                &format!("_inner_{}", inner_sig.ident),
+                inner_sig.ident.span(),
+            );
+            inner_sig.unsafety = Some(Unsafe::default());
+            let inner: ItemFn = parse_quote! {
+                #[allow(unsafe_code)]
+                #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+                #inner_sig
+                #block
+            };
+
+            let inner_name = inner_sig.ident;
+            let generic_params = &sig.generics;
+
+            // Extract the idents from the function arguments.
+            let inner_args: Punctuated<syn::Ident, Comma> = sig
+                .inputs
+                .iter()
+                .filter_map(|a| match a {
+                    FnArg::Typed(arg) => match arg.pat.as_ref() {
+                        Pat::Ident(i) => Some(i.ident.clone()),
+                        _ => None,
+                    },
+                    _ => None,
+                })
+                .collect();
+
+            // Build the function with the inner and the call to it.
+            block.stmts = Vec::new();
+            block.stmts.push(parse_quote! {
+                #inner
+            });
+            block
+                .stmts
+                .push(parse_quote! {unsafe {#inner_name #generic_params (#inner_args)}});
+        }
+        if let syn::Item::Mod(ref mut module) = item {
+            if let Some((_, mod_items)) = &mut module.content {
+                make_avx2(mod_items);
+            }
+        }
+    }
+}
+
+#[proc_macro_attribute]
+pub fn ml_kem_multiplexing(args: TokenStream, item: TokenStream) -> TokenStream {
+    let ItemMod {
+        attrs,
+        vis,
+        content,
+        semi,
+        ..
+    } = parse_macro_input!(item as ItemMod);
+
+    let nested = Punctuated::<Meta, Token![,]>::parse_terminated
+        .parse(args)
+        .unwrap();
+
+    let mut keys = Punctuated::default();
+    let mut platforms = Punctuated::default();
+
+    // Read the nested meta data
+    for meta in nested {
+        match meta {
+            Meta::List(list) if list.path.is_ident("keys") => {
+                keys = Punctuated::<LitInt, Token![,]>::parse_terminated
+                    .parse(list.tokens.into())
+                    .unwrap();
+            }
+            Meta::List(list) if list.path.is_ident("platforms") => {
+                platforms = Punctuated::<Ident, Token![,]>::parse_terminated
+                    .parse(list.tokens.into())
+                    .unwrap();
+            }
+            _ => panic!("Expected a list for keys and platforms"),
+        }
+    }
+
+    let mut expanded = quote! {};
+
+    for parameter_set in keys {
+        let MlkemNamesResult {
+            params,
+            feature_name,
+            const_mod,
+            multiplex_mod,
+        } = mlkem_names(&parameter_set);
+
+        let mut inst = quote! {};
+        for platform in platforms.clone() {
+            // Get all platform modules for the parameter set.
+            let (platform_string, feature_platform, modpath) =
+                mlkem_platform_names(&platform, &params);
+            let platform_string = format_ident!("{}_instantiation", platform_string);
+            inst.extend(quote! {
+                #feature_platform
+                use #modpath as #platform_string;
+            });
+        }
+
+        // add the variant at the end of the function name
+        if let Some((_, ref content)) = content {
+            let this_content = content.clone();
+            let fun = quote! {
+                #(#attrs)*
+                #[cfg(feature = #feature_name)]
+                #vis mod #multiplex_mod {
+                    #inst
+
+                    #(#this_content)*
+                } #semi
+            };
+            expanded.extend(fun);
+        }
+    }
+
     expanded.into()
 }
