@@ -111,132 +111,247 @@ let deserialize
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
   in
   let previous_true_hints_seen:usize = sz 0 in
-  let i:usize = sz 0 in
-  let malformed_hint:bool = false in
-  let i, malformed_hint, out_hint, previous_true_hints_seen:(usize & bool &
-    t_Slice (t_Array i32 (sz 256)) &
-    usize) =
-    Rust_primitives.f_while_loop (fun temp_0_ ->
-          let i, malformed_hint, out_hint, previous_true_hints_seen:(usize & bool &
-            t_Slice (t_Array i32 (sz 256)) &
-            usize) =
+  match
+    Rust_primitives.Hax.Folds.fold_range_return (sz 0)
+      rows_in_a
+      (fun temp_0_ temp_1_ ->
+          let out_hint, previous_true_hints_seen:(t_Slice (t_Array i32 (sz 256)) & usize) =
             temp_0_
           in
-          (~.malformed_hint <: bool) && (i <. rows_in_a <: bool))
-      (i, malformed_hint, out_hint, previous_true_hints_seen
-        <:
-        (usize & bool & t_Slice (t_Array i32 (sz 256)) & usize))
-      (fun temp_0_ ->
-          let i, malformed_hint, out_hint, previous_true_hints_seen:(usize & bool &
-            t_Slice (t_Array i32 (sz 256)) &
-            usize) =
+          let _:usize = temp_1_ in
+          true)
+      (out_hint, previous_true_hints_seen <: (t_Slice (t_Array i32 (sz 256)) & usize))
+      (fun temp_0_ i ->
+          let out_hint, previous_true_hints_seen:(t_Slice (t_Array i32 (sz 256)) & usize) =
             temp_0_
           in
+          let i:usize = i in
           let current_true_hints_seen:usize =
             cast (hint_serialized.[ max_ones_in_hint +! i <: usize ] <: u8) <: usize
           in
-          let malformed_hint:bool =
-            if
-              current_true_hints_seen <. previous_true_hints_seen ||
-              previous_true_hints_seen >. max_ones_in_hint
-            then
-              let malformed_hint:bool = true in
-              malformed_hint
-            else malformed_hint
-          in
-          let j:usize = previous_true_hints_seen in
-          let j, malformed_hint, out_hint:(usize & bool & t_Slice (t_Array i32 (sz 256))) =
-            Rust_primitives.f_while_loop (fun temp_0_ ->
-                  let j, malformed_hint, out_hint:(usize & bool & t_Slice (t_Array i32 (sz 256))) =
-                    temp_0_
-                  in
-                  (~.malformed_hint <: bool) && (j <. current_true_hints_seen <: bool))
-              (j, malformed_hint, out_hint <: (usize & bool & t_Slice (t_Array i32 (sz 256))))
-              (fun temp_0_ ->
-                  let j, malformed_hint, out_hint:(usize & bool & t_Slice (t_Array i32 (sz 256))) =
-                    temp_0_
-                  in
-                  let malformed_hint:bool =
+          if
+            current_true_hints_seen <. previous_true_hints_seen ||
+            previous_true_hints_seen >. max_ones_in_hint
+          then
+            Core.Ops.Control_flow.ControlFlow_Break
+            (Core.Ops.Control_flow.ControlFlow_Break
+              (out_commitment_hash,
+                out_signer_response,
+                out_hint,
+                (Core.Result.Result_Err
+                  (Libcrux_ml_dsa.Types.VerificationError_MalformedHintError
+                    <:
+                    Libcrux_ml_dsa.Types.t_VerificationError)
+                  <:
+                  Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+                <:
+                (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                  t_Slice (t_Array i32 (sz 256)) &
+                  Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError))
+              <:
+              Core.Ops.Control_flow.t_ControlFlow
+                (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                  t_Slice (t_Array i32 (sz 256)) &
+                  Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+                (Prims.unit & (t_Slice (t_Array i32 (sz 256)) & usize)))
+            <:
+            Core.Ops.Control_flow.t_ControlFlow
+              (Core.Ops.Control_flow.t_ControlFlow
+                  (t_Slice u8 &
+                    t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                    t_Slice (t_Array i32 (sz 256)) &
+                    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+                  (Prims.unit & (t_Slice (t_Array i32 (sz 256)) & usize)))
+              (t_Slice (t_Array i32 (sz 256)) & usize)
+          else
+            match
+              Rust_primitives.Hax.Folds.fold_range_return previous_true_hints_seen
+                current_true_hints_seen
+                (fun out_hint temp_1_ ->
+                    let out_hint:t_Slice (t_Array i32 (sz 256)) = out_hint in
+                    let _:usize = temp_1_ in
+                    true)
+                out_hint
+                (fun out_hint j ->
+                    let out_hint:t_Slice (t_Array i32 (sz 256)) = out_hint in
+                    let j:usize = j in
                     if
-                      j >. previous_true_hints_seen &&
-                      (hint_serialized.[ j ] <: u8) <=.
-                      (hint_serialized.[ j -! sz 1 <: usize ] <: u8)
+                      (j >. previous_true_hints_seen <: bool) &&
+                      ((hint_serialized.[ j ] <: u8) <=.
+                        (hint_serialized.[ j -! sz 1 <: usize ] <: u8)
+                        <:
+                        bool)
                     then
-                      let malformed_hint:bool = true in
-                      malformed_hint
-                    else malformed_hint
-                  in
-                  if ~.malformed_hint
-                  then
-                    let out_hint:t_Slice (t_Array i32 (sz 256)) =
-                      set_hint out_hint i (cast (hint_serialized.[ j ] <: u8) <: usize)
-                    in
-                    let j:usize = j +! sz 1 in
-                    j, malformed_hint, out_hint <: (usize & bool & t_Slice (t_Array i32 (sz 256)))
-                  else
-                    j, malformed_hint, out_hint <: (usize & bool & t_Slice (t_Array i32 (sz 256))))
-          in
-          if ~.malformed_hint
-          then
-            let previous_true_hints_seen:usize = current_true_hints_seen in
-            let i:usize = i +! sz 1 in
-            i, malformed_hint, out_hint, previous_true_hints_seen
-            <:
-            (usize & bool & t_Slice (t_Array i32 (sz 256)) & usize)
-          else
-            i, malformed_hint, out_hint, previous_true_hints_seen
-            <:
-            (usize & bool & t_Slice (t_Array i32 (sz 256)) & usize))
-  in
-  let i:usize = previous_true_hints_seen in
-  let malformed_hint:bool =
-    Rust_primitives.Hax.Folds.fold_range_cf i
-      max_ones_in_hint
-      (fun malformed_hint temp_1_ ->
-          let malformed_hint:bool = malformed_hint in
-          let _:usize = temp_1_ in
-          true)
-      malformed_hint
-      (fun malformed_hint j ->
-          let malformed_hint:bool = malformed_hint in
-          let j:usize = j in
-          if (hint_serialized.[ j ] <: u8) <>. 0uy <: bool
-          then
-            let malformed_hint:bool = true in
-            Core.Ops.Control_flow.ControlFlow_Break ((), malformed_hint <: (Prims.unit & bool))
-            <:
-            Core.Ops.Control_flow.t_ControlFlow (Prims.unit & bool) bool
-          else
-            Core.Ops.Control_flow.ControlFlow_Continue malformed_hint
-            <:
-            Core.Ops.Control_flow.t_ControlFlow (Prims.unit & bool) bool)
-  in
-  if malformed_hint
-  then
-    out_commitment_hash,
-    out_signer_response,
-    out_hint,
-    (Core.Result.Result_Err
-      (Libcrux_ml_dsa.Types.VerificationError_MalformedHintError
+                      Core.Ops.Control_flow.ControlFlow_Break
+                      (Core.Ops.Control_flow.ControlFlow_Break
+                        (out_commitment_hash,
+                          out_signer_response,
+                          out_hint,
+                          (Core.Result.Result_Err
+                            (Libcrux_ml_dsa.Types.VerificationError_MalformedHintError
+                              <:
+                              Libcrux_ml_dsa.Types.t_VerificationError)
+                            <:
+                            Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
+                          )
+                          <:
+                          (t_Slice u8 &
+                            t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                            t_Slice (t_Array i32 (sz 256)) &
+                            Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
+                          ))
+                        <:
+                        Core.Ops.Control_flow.t_ControlFlow
+                          (t_Slice u8 &
+                            t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                            t_Slice (t_Array i32 (sz 256)) &
+                            Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
+                          ) (Prims.unit & t_Slice (t_Array i32 (sz 256))))
+                      <:
+                      Core.Ops.Control_flow.t_ControlFlow
+                        (Core.Ops.Control_flow.t_ControlFlow
+                            (t_Slice u8 &
+                              t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                              t_Slice (t_Array i32 (sz 256)) &
+                              Core.Result.t_Result Prims.unit
+                                Libcrux_ml_dsa.Types.t_VerificationError)
+                            (Prims.unit & t_Slice (t_Array i32 (sz 256))))
+                        (t_Slice (t_Array i32 (sz 256)))
+                    else
+                      Core.Ops.Control_flow.ControlFlow_Continue
+                      (set_hint out_hint i (cast (hint_serialized.[ j ] <: u8) <: usize)
+                        <:
+                        t_Slice (t_Array i32 (sz 256)))
+                      <:
+                      Core.Ops.Control_flow.t_ControlFlow
+                        (Core.Ops.Control_flow.t_ControlFlow
+                            (t_Slice u8 &
+                              t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                              t_Slice (t_Array i32 (sz 256)) &
+                              Core.Result.t_Result Prims.unit
+                                Libcrux_ml_dsa.Types.t_VerificationError)
+                            (Prims.unit & t_Slice (t_Array i32 (sz 256))))
+                        (t_Slice (t_Array i32 (sz 256))))
+              <:
+              Core.Ops.Control_flow.t_ControlFlow
+                (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                  t_Slice (t_Array i32 (sz 256)) &
+                  Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+                (t_Slice (t_Array i32 (sz 256)))
+            with
+            | Core.Ops.Control_flow.ControlFlow_Break ret ->
+              Core.Ops.Control_flow.ControlFlow_Break
+              (Core.Ops.Control_flow.ControlFlow_Break ret
+                <:
+                Core.Ops.Control_flow.t_ControlFlow
+                  (t_Slice u8 &
+                    t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                    t_Slice (t_Array i32 (sz 256)) &
+                    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+                  (Prims.unit & (t_Slice (t_Array i32 (sz 256)) & usize)))
+              <:
+              Core.Ops.Control_flow.t_ControlFlow
+                (Core.Ops.Control_flow.t_ControlFlow
+                    (t_Slice u8 &
+                      t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                      t_Slice (t_Array i32 (sz 256)) &
+                      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+                    (Prims.unit & (t_Slice (t_Array i32 (sz 256)) & usize)))
+                (t_Slice (t_Array i32 (sz 256)) & usize)
+            | Core.Ops.Control_flow.ControlFlow_Continue out_hint ->
+              let previous_true_hints_seen:usize = current_true_hints_seen in
+              Core.Ops.Control_flow.ControlFlow_Continue
+              (out_hint, previous_true_hints_seen <: (t_Slice (t_Array i32 (sz 256)) & usize))
+              <:
+              Core.Ops.Control_flow.t_ControlFlow
+                (Core.Ops.Control_flow.t_ControlFlow
+                    (t_Slice u8 &
+                      t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                      t_Slice (t_Array i32 (sz 256)) &
+                      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+                    (Prims.unit & (t_Slice (t_Array i32 (sz 256)) & usize)))
+                (t_Slice (t_Array i32 (sz 256)) & usize))
+    <:
+    Core.Ops.Control_flow.t_ControlFlow
+      (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+        t_Slice (t_Array i32 (sz 256)) &
+        Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+      (t_Slice (t_Array i32 (sz 256)) & usize)
+  with
+  | Core.Ops.Control_flow.ControlFlow_Break ret -> ret
+  | Core.Ops.Control_flow.ControlFlow_Continue (out_hint, previous_true_hints_seen) ->
+    match
+      Rust_primitives.Hax.Folds.fold_range_return previous_true_hints_seen
+        max_ones_in_hint
+        (fun temp_0_ temp_1_ ->
+            let _:Prims.unit = temp_0_ in
+            let _:usize = temp_1_ in
+            true)
+        ()
+        (fun temp_0_ j ->
+            let _:Prims.unit = temp_0_ in
+            let j:usize = j in
+            if (hint_serialized.[ j ] <: u8) <>. 0uy <: bool
+            then
+              Core.Ops.Control_flow.ControlFlow_Break
+              (Core.Ops.Control_flow.ControlFlow_Break
+                (out_commitment_hash,
+                  out_signer_response,
+                  out_hint,
+                  (Core.Result.Result_Err
+                    (Libcrux_ml_dsa.Types.VerificationError_MalformedHintError
+                      <:
+                      Libcrux_ml_dsa.Types.t_VerificationError)
+                    <:
+                    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+                  <:
+                  (t_Slice u8 &
+                    t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                    t_Slice (t_Array i32 (sz 256)) &
+                    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError))
+                <:
+                Core.Ops.Control_flow.t_ControlFlow
+                  (t_Slice u8 &
+                    t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                    t_Slice (t_Array i32 (sz 256)) &
+                    Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+                  (Prims.unit & Prims.unit))
+              <:
+              Core.Ops.Control_flow.t_ControlFlow
+                (Core.Ops.Control_flow.t_ControlFlow
+                    (t_Slice u8 &
+                      t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                      t_Slice (t_Array i32 (sz 256)) &
+                      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+                    (Prims.unit & Prims.unit)) Prims.unit
+            else
+              Core.Ops.Control_flow.ControlFlow_Continue ()
+              <:
+              Core.Ops.Control_flow.t_ControlFlow
+                (Core.Ops.Control_flow.t_ControlFlow
+                    (t_Slice u8 &
+                      t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+                      t_Slice (t_Array i32 (sz 256)) &
+                      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+                    (Prims.unit & Prims.unit)) Prims.unit)
+      <:
+      Core.Ops.Control_flow.t_ControlFlow
+        (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+          t_Slice (t_Array i32 (sz 256)) &
+          Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) Prims.unit
+    with
+    | Core.Ops.Control_flow.ControlFlow_Break ret -> ret
+    | Core.Ops.Control_flow.ControlFlow_Continue _ ->
+      let hax_temp_output:Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError =
+        Core.Result.Result_Ok (() <: Prims.unit)
         <:
-        Libcrux_ml_dsa.Types.t_VerificationError)
+        Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
+      in
+      out_commitment_hash, out_signer_response, out_hint, hax_temp_output
       <:
-      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
-    <:
-    (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-      t_Slice (t_Array i32 (sz 256)) &
-      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
-  else
-    let hax_temp_output:Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError =
-      Core.Result.Result_Ok (() <: Prims.unit)
-      <:
-      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
-    in
-    out_commitment_hash, out_signer_response, out_hint, hax_temp_output
-    <:
-    (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-      t_Slice (t_Array i32 (sz 256)) &
-      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+      (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+        t_Slice (t_Array i32 (sz 256)) &
+        Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
 
 let serialize
       (#v_SIMDUnit: Type0)
