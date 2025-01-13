@@ -160,7 +160,7 @@ pub mod mlkem {
         public_key: &MlKemPublicKey,
         randomness: [u8; SHARED_SECRET_SIZE],
     ) -> (MlKemCiphertext, MlKemSharedSecret) {
-        ind_cca::kyber_encapsulate::<
+        ind_cca::encapsulate::<
             RANK,
             CPA_PKE_CIPHERTEXT_SIZE,
             CPA_PKE_PUBLIC_KEY_SIZE,
@@ -225,7 +225,7 @@ pub mod mlkem {
         private_key: &MlKemPrivateKey,
         ciphertext: &MlKemCiphertext,
     ) -> MlKemSharedSecret {
-        ind_cca::kyber_decapsulate::<
+        ind_cca::decapsulate::<
             RANK,
             SECRET_KEY_SIZE,
             CPA_PKE_SECRET_KEY_SIZE,
@@ -530,136 +530,63 @@ pub mod mlkem {
     // have a CPU that has it and thus tries to call the simd128/simd256 version,
     // we fall back to the portable version in this case.
 
+    /// An ML-KEM Ciphertext
+    pub type MlKemCiphertext = crate::types::MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE>;
+    /// An ML-KEM Private key
+    pub type MlKemPrivateKey = crate::types::MlKemPrivateKey<SECRET_KEY_SIZE>;
+    /// An ML-KEM Public key
+    pub type MlKemPublicKey = crate::types::MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE>;
+    /// An ML-KEM Key pair
+    pub type MlKemKeyPair = crate::types::MlKemKeyPair<SECRET_KEY_SIZE, CPA_PKE_PUBLIC_KEY_SIZE>;
+
     #[cfg(feature = "simd256")]
     use avx2_instantiation::{
         decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
-        generate_keypair as generate_keypair_avx2,
+        generate_key_pair as generate_keypair_avx2,
     };
 
     #[cfg(feature = "simd128")]
     use neon_instantiation::{
         decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
-        generate_keypair as generate_keypair_neon,
+        generate_key_pair as generate_keypair_neon,
     };
 
     #[cfg(not(feature = "simd256"))]
     use portable_instantiation::{
         decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
-        generate_keypair as generate_keypair_avx2,
+        generate_key_pair as generate_keypair_avx2,
     };
 
     #[cfg(not(feature = "simd128"))]
     use portable_instantiation::{
         decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
-        generate_keypair as generate_keypair_neon,
+        generate_key_pair as generate_keypair_neon,
     };
 
-    #[cfg(all(feature = "simd256", feature = "kyber"))]
-    use avx2_instantiation::{
-        kyber_decapsulate as kyber_decapsulate_avx2, kyber_encapsulate as kyber_encapsulate_avx2,
-        kyber_generate_keypair as kyber_generate_keypair_avx2,
-    };
+    use crate::{MlKemSharedSecret, KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE};
 
-    #[cfg(all(feature = "simd128", feature = "kyber"))]
-    use neon_instantiation::{
-        kyber_decapsulate as kyber_decapsulate_neon, kyber_encapsulate as kyber_encapsulate_neon,
-        kyber_generate_keypair as kyber_generate_keypair_neon,
-    };
-
-    #[cfg(all(not(feature = "simd256"), feature = "kyber"))]
-    use portable_instantiation::{
-        kyber_decapsulate as kyber_decapsulate_avx2, kyber_encapsulate as kyber_encapsulate_avx2,
-        kyber_generate_keypair as kyber_generate_keypair_avx2,
-    };
-
-    #[cfg(all(not(feature = "simd128"), feature = "kyber"))]
-    use portable_instantiation::{
-        kyber_decapsulate as kyber_decapsulate_neon, kyber_encapsulate as kyber_encapsulate_neon,
-        kyber_generate_keypair as kyber_generate_keypair_neon,
-    };
-
+    /// Validate a public key.
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
     #[inline(always)]
-    pub(crate) fn validate_public_key<
-        const K: usize,
-        const RANKED_BYTES_PER_RING_ELEMENT: usize,
-        const PUBLIC_KEY_SIZE: usize,
-    >(
-        public_key: &[u8; PUBLIC_KEY_SIZE],
-    ) -> bool {
-        portable_instantiation::validate_public_key::<
-            K,
-            RANKED_BYTES_PER_RING_ELEMENT,
-            PUBLIC_KEY_SIZE,
-        >(public_key)
+    pub fn validate_public_key(public_key: &MlKemPublicKey) -> bool {
+        portable_instantiation::validate_public_key(public_key)
     }
 
+    /// Validate a private key.
     #[inline(always)]
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
                 $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
                 $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"#))]
-    pub(crate) fn validate_private_key<
-        const K: usize,
-        const SECRET_KEY_SIZE: usize,
-        const CIPHERTEXT_SIZE: usize,
-    >(
-        private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
-        ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+    pub fn validate_private_key(
+        private_key: &MlKemPrivateKey,
+        ciphertext: &MlKemCiphertext,
     ) -> bool {
-        instantiations::portable::validate_private_key::<K, SECRET_KEY_SIZE, CIPHERTEXT_SIZE>(
-            private_key,
-            ciphertext,
-        )
+        portable_instantiation::validate_private_key(private_key, ciphertext)
     }
 
-    #[cfg(feature = "kyber")]
-    pub(crate) fn kyber_generate_keypair<
-        const K: usize,
-        const CPA_PRIVATE_KEY_SIZE: usize,
-        const PRIVATE_KEY_SIZE: usize,
-        const PUBLIC_KEY_SIZE: usize,
-        const BYTES_PER_RING_ELEMENT: usize,
-        const ETA1: usize,
-        const ETA1_RANDOMNESS_SIZE: usize,
-    >(
-        randomness: [u8; KEY_GENERATION_SEED_SIZE],
-    ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
-        // Runtime feature detection.
-        if libcrux_platform::simd256_support() {
-            kyber_generate_keypair_avx2::<
-                K,
-                CPA_PRIVATE_KEY_SIZE,
-                PRIVATE_KEY_SIZE,
-                PUBLIC_KEY_SIZE,
-                BYTES_PER_RING_ELEMENT,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-            >(randomness)
-        } else if libcrux_platform::simd128_support() {
-            kyber_generate_keypair_neon::<
-                K,
-                CPA_PRIVATE_KEY_SIZE,
-                PRIVATE_KEY_SIZE,
-                PUBLIC_KEY_SIZE,
-                BYTES_PER_RING_ELEMENT,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-            >(randomness)
-        } else {
-            instantiations::portable::kyber_generate_keypair::<
-                K,
-                CPA_PRIVATE_KEY_SIZE,
-                PRIVATE_KEY_SIZE,
-                PUBLIC_KEY_SIZE,
-                BYTES_PER_RING_ELEMENT,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-            >(randomness)
-        }
-    }
-
+    /// Generate a new key pair based on the `randomness`.
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
@@ -667,121 +594,18 @@ pub mod mlkem {
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
-    pub(crate) fn generate_keypair<
-        const K: usize,
-        const CPA_PRIVATE_KEY_SIZE: usize,
-        const PRIVATE_KEY_SIZE: usize,
-        const PUBLIC_KEY_SIZE: usize,
-        const RANKED_BYTES_PER_RING_ELEMENT: usize,
-        const ETA1: usize,
-        const ETA1_RANDOMNESS_SIZE: usize,
-    >(
-        randomness: [u8; KEY_GENERATION_SEED_SIZE],
-    ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
+    pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKemKeyPair {
         // Runtime feature detection.
         if libcrux_platform::simd256_support() {
-            generate_keypair_avx2::<
-                K,
-                CPA_PRIVATE_KEY_SIZE,
-                PRIVATE_KEY_SIZE,
-                PUBLIC_KEY_SIZE,
-                RANKED_BYTES_PER_RING_ELEMENT,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-            >(randomness)
+            generate_keypair_avx2(randomness)
         } else if libcrux_platform::simd128_support() {
-            generate_keypair_neon::<
-                K,
-                CPA_PRIVATE_KEY_SIZE,
-                PRIVATE_KEY_SIZE,
-                PUBLIC_KEY_SIZE,
-                RANKED_BYTES_PER_RING_ELEMENT,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-            >(randomness)
+            generate_keypair_neon(randomness)
         } else {
-            instantiations::portable::generate_keypair::<
-                K,
-                CPA_PRIVATE_KEY_SIZE,
-                PRIVATE_KEY_SIZE,
-                PUBLIC_KEY_SIZE,
-                RANKED_BYTES_PER_RING_ELEMENT,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-            >(randomness)
+            portable_instantiation::generate_key_pair(randomness)
         }
     }
 
-    #[cfg(feature = "kyber")]
-    pub(crate) fn kyber_encapsulate<
-        const K: usize,
-        const CIPHERTEXT_SIZE: usize,
-        const PUBLIC_KEY_SIZE: usize,
-        const T_AS_NTT_ENCODED_SIZE: usize,
-        const C1_SIZE: usize,
-        const C2_SIZE: usize,
-        const VECTOR_U_COMPRESSION_FACTOR: usize,
-        const VECTOR_V_COMPRESSION_FACTOR: usize,
-        const VECTOR_U_BLOCK_LEN: usize,
-        const ETA1: usize,
-        const ETA1_RANDOMNESS_SIZE: usize,
-        const ETA2: usize,
-        const ETA2_RANDOMNESS_SIZE: usize,
-    >(
-        public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-        randomness: [u8; SHARED_SECRET_SIZE],
-    ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-        if libcrux_platform::simd256_support() {
-            kyber_encapsulate_avx2::<
-                K,
-                CIPHERTEXT_SIZE,
-                PUBLIC_KEY_SIZE,
-                T_AS_NTT_ENCODED_SIZE,
-                C1_SIZE,
-                C2_SIZE,
-                VECTOR_U_COMPRESSION_FACTOR,
-                VECTOR_V_COMPRESSION_FACTOR,
-                VECTOR_U_BLOCK_LEN,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-                ETA2,
-                ETA2_RANDOMNESS_SIZE,
-            >(public_key, randomness)
-        } else if libcrux_platform::simd128_support() {
-            kyber_encapsulate_neon::<
-                K,
-                CIPHERTEXT_SIZE,
-                PUBLIC_KEY_SIZE,
-                T_AS_NTT_ENCODED_SIZE,
-                C1_SIZE,
-                C2_SIZE,
-                VECTOR_U_COMPRESSION_FACTOR,
-                VECTOR_V_COMPRESSION_FACTOR,
-                VECTOR_U_BLOCK_LEN,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-                ETA2,
-                ETA2_RANDOMNESS_SIZE,
-            >(public_key, randomness)
-        } else {
-            instantiations::portable::kyber_encapsulate::<
-                K,
-                CIPHERTEXT_SIZE,
-                PUBLIC_KEY_SIZE,
-                T_AS_NTT_ENCODED_SIZE,
-                C1_SIZE,
-                C2_SIZE,
-                VECTOR_U_COMPRESSION_FACTOR,
-                VECTOR_V_COMPRESSION_FACTOR,
-                VECTOR_U_BLOCK_LEN,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-                ETA2,
-                ETA2_RANDOMNESS_SIZE,
-            >(public_key, randomness)
-        }
-    }
-
+    /// Encapsulate to the `public_key` using the `randomness`.
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
@@ -795,157 +619,20 @@ pub mod mlkem {
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
     $ETA2 == Spec.MLKEM.v_ETA2 $K /\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K"#))]
-    pub(crate) fn encapsulate<
-        const K: usize,
-        const CIPHERTEXT_SIZE: usize,
-        const PUBLIC_KEY_SIZE: usize,
-        const T_AS_NTT_ENCODED_SIZE: usize,
-        const C1_SIZE: usize,
-        const C2_SIZE: usize,
-        const VECTOR_U_COMPRESSION_FACTOR: usize,
-        const VECTOR_V_COMPRESSION_FACTOR: usize,
-        const C1_BLOCK_SIZE: usize,
-        const ETA1: usize,
-        const ETA1_RANDOMNESS_SIZE: usize,
-        const ETA2: usize,
-        const ETA2_RANDOMNESS_SIZE: usize,
-    >(
-        public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
+    pub fn encapsulate(
+        public_key: &MlKemPublicKey,
         randomness: [u8; SHARED_SECRET_SIZE],
-    ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
+    ) -> (MlKemCiphertext, MlKemSharedSecret) {
         if libcrux_platform::simd256_support() {
-            encapsulate_avx2::<
-                K,
-                CIPHERTEXT_SIZE,
-                PUBLIC_KEY_SIZE,
-                T_AS_NTT_ENCODED_SIZE,
-                C1_SIZE,
-                C2_SIZE,
-                VECTOR_U_COMPRESSION_FACTOR,
-                VECTOR_V_COMPRESSION_FACTOR,
-                C1_BLOCK_SIZE,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-                ETA2,
-                ETA2_RANDOMNESS_SIZE,
-            >(public_key, randomness)
+            encapsulate_avx2(public_key, randomness)
         } else if libcrux_platform::simd128_support() {
-            encapsulate_neon::<
-                K,
-                CIPHERTEXT_SIZE,
-                PUBLIC_KEY_SIZE,
-                T_AS_NTT_ENCODED_SIZE,
-                C1_SIZE,
-                C2_SIZE,
-                VECTOR_U_COMPRESSION_FACTOR,
-                VECTOR_V_COMPRESSION_FACTOR,
-                C1_BLOCK_SIZE,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-                ETA2,
-                ETA2_RANDOMNESS_SIZE,
-            >(public_key, randomness)
+            encapsulate_neon(public_key, randomness)
         } else {
-            instantiations::portable::encapsulate::<
-                K,
-                CIPHERTEXT_SIZE,
-                PUBLIC_KEY_SIZE,
-                T_AS_NTT_ENCODED_SIZE,
-                C1_SIZE,
-                C2_SIZE,
-                VECTOR_U_COMPRESSION_FACTOR,
-                VECTOR_V_COMPRESSION_FACTOR,
-                C1_BLOCK_SIZE,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-                ETA2,
-                ETA2_RANDOMNESS_SIZE,
-            >(public_key, randomness)
+            portable_instantiation::encapsulate(public_key, randomness)
         }
     }
 
-    #[cfg(feature = "kyber")]
-    pub(crate) fn kyber_decapsulate<
-        const K: usize,
-        const SECRET_KEY_SIZE: usize,
-        const CPA_SECRET_KEY_SIZE: usize,
-        const PUBLIC_KEY_SIZE: usize,
-        const CIPHERTEXT_SIZE: usize,
-        const T_AS_NTT_ENCODED_SIZE: usize,
-        const C1_SIZE: usize,
-        const C2_SIZE: usize,
-        const VECTOR_U_COMPRESSION_FACTOR: usize,
-        const VECTOR_V_COMPRESSION_FACTOR: usize,
-        const C1_BLOCK_SIZE: usize,
-        const ETA1: usize,
-        const ETA1_RANDOMNESS_SIZE: usize,
-        const ETA2: usize,
-        const ETA2_RANDOMNESS_SIZE: usize,
-        const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
-    >(
-        private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
-        ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
-    ) -> MlKemSharedSecret {
-        if libcrux_platform::simd256_support() {
-            kyber_decapsulate_avx2::<
-                K,
-                SECRET_KEY_SIZE,
-                CPA_SECRET_KEY_SIZE,
-                PUBLIC_KEY_SIZE,
-                CIPHERTEXT_SIZE,
-                T_AS_NTT_ENCODED_SIZE,
-                C1_SIZE,
-                C2_SIZE,
-                VECTOR_U_COMPRESSION_FACTOR,
-                VECTOR_V_COMPRESSION_FACTOR,
-                C1_BLOCK_SIZE,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-                ETA2,
-                ETA2_RANDOMNESS_SIZE,
-                IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            >(private_key, ciphertext)
-        } else if libcrux_platform::simd128_support() {
-            kyber_decapsulate_neon::<
-                K,
-                SECRET_KEY_SIZE,
-                CPA_SECRET_KEY_SIZE,
-                PUBLIC_KEY_SIZE,
-                CIPHERTEXT_SIZE,
-                T_AS_NTT_ENCODED_SIZE,
-                C1_SIZE,
-                C2_SIZE,
-                VECTOR_U_COMPRESSION_FACTOR,
-                VECTOR_V_COMPRESSION_FACTOR,
-                C1_BLOCK_SIZE,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-                ETA2,
-                ETA2_RANDOMNESS_SIZE,
-                IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            >(private_key, ciphertext)
-        } else {
-            instantiations::portable::kyber_decapsulate::<
-                K,
-                SECRET_KEY_SIZE,
-                CPA_SECRET_KEY_SIZE,
-                PUBLIC_KEY_SIZE,
-                CIPHERTEXT_SIZE,
-                T_AS_NTT_ENCODED_SIZE,
-                C1_SIZE,
-                C2_SIZE,
-                VECTOR_U_COMPRESSION_FACTOR,
-                VECTOR_V_COMPRESSION_FACTOR,
-                C1_BLOCK_SIZE,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-                ETA2,
-                ETA2_RANDOMNESS_SIZE,
-                IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            >(private_key, ciphertext)
-        }
-    }
-
+    /// Decapsulate a `ciphertext` with a `private_key`.
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
     $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
@@ -962,84 +649,90 @@ pub mod mlkem {
     $ETA2 == Spec.MLKEM.v_ETA2 $K /\
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\
     $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
-    pub(crate) fn decapsulate<
-        const K: usize,
-        const SECRET_KEY_SIZE: usize,
-        const CPA_SECRET_KEY_SIZE: usize,
-        const PUBLIC_KEY_SIZE: usize,
-        const CIPHERTEXT_SIZE: usize,
-        const T_AS_NTT_ENCODED_SIZE: usize,
-        const C1_SIZE: usize,
-        const C2_SIZE: usize,
-        const VECTOR_U_COMPRESSION_FACTOR: usize,
-        const VECTOR_V_COMPRESSION_FACTOR: usize,
-        const C1_BLOCK_SIZE: usize,
-        const ETA1: usize,
-        const ETA1_RANDOMNESS_SIZE: usize,
-        const ETA2: usize,
-        const ETA2_RANDOMNESS_SIZE: usize,
-        const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
-    >(
-        private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
-        ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+    pub fn decapsulate(
+        private_key: &MlKemPrivateKey,
+        ciphertext: &MlKemCiphertext,
     ) -> MlKemSharedSecret {
         if libcrux_platform::simd256_support() {
-            decapsulate_avx2::<
-                K,
-                SECRET_KEY_SIZE,
-                CPA_SECRET_KEY_SIZE,
-                PUBLIC_KEY_SIZE,
-                CIPHERTEXT_SIZE,
-                T_AS_NTT_ENCODED_SIZE,
-                C1_SIZE,
-                C2_SIZE,
-                VECTOR_U_COMPRESSION_FACTOR,
-                VECTOR_V_COMPRESSION_FACTOR,
-                C1_BLOCK_SIZE,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-                ETA2,
-                ETA2_RANDOMNESS_SIZE,
-                IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            >(private_key, ciphertext)
+            decapsulate_avx2(private_key, ciphertext)
         } else if libcrux_platform::simd128_support() {
-            decapsulate_neon::<
-                K,
-                SECRET_KEY_SIZE,
-                CPA_SECRET_KEY_SIZE,
-                PUBLIC_KEY_SIZE,
-                CIPHERTEXT_SIZE,
-                T_AS_NTT_ENCODED_SIZE,
-                C1_SIZE,
-                C2_SIZE,
-                VECTOR_U_COMPRESSION_FACTOR,
-                VECTOR_V_COMPRESSION_FACTOR,
-                C1_BLOCK_SIZE,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-                ETA2,
-                ETA2_RANDOMNESS_SIZE,
-                IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            >(private_key, ciphertext)
+            decapsulate_neon(private_key, ciphertext)
         } else {
-            instantiations::portable::decapsulate::<
-                K,
-                SECRET_KEY_SIZE,
-                CPA_SECRET_KEY_SIZE,
-                PUBLIC_KEY_SIZE,
-                CIPHERTEXT_SIZE,
-                T_AS_NTT_ENCODED_SIZE,
-                C1_SIZE,
-                C2_SIZE,
-                VECTOR_U_COMPRESSION_FACTOR,
-                VECTOR_V_COMPRESSION_FACTOR,
-                C1_BLOCK_SIZE,
-                ETA1,
-                ETA1_RANDOMNESS_SIZE,
-                ETA2,
-                ETA2_RANDOMNESS_SIZE,
-                IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            >(private_key, ciphertext)
+            portable_instantiation::decapsulate(private_key, ciphertext)
+        }
+    }
+
+    /// Round 3 Kyber variant.
+    #[cfg(feature = "kyber")]
+    pub mod kyber {
+        use super::*;
+
+        #[cfg(feature = "simd256")]
+        use avx2_instantiation::{
+            kyber_decapsulate as kyber_decapsulate_avx2,
+            kyber_encapsulate as kyber_encapsulate_avx2,
+            kyber_generate_key_pair as kyber_generate_keypair_avx2,
+        };
+
+        #[cfg(feature = "simd128")]
+        use neon_instantiation::{
+            kyber_decapsulate as kyber_decapsulate_neon,
+            kyber_encapsulate as kyber_encapsulate_neon,
+            kyber_generate_key_pair as kyber_generate_keypair_neon,
+        };
+
+        #[cfg(not(feature = "simd256"))]
+        use portable_instantiation::{
+            kyber_decapsulate as kyber_decapsulate_avx2,
+            kyber_encapsulate as kyber_encapsulate_avx2,
+            kyber_generate_key_pair as kyber_generate_keypair_avx2,
+        };
+
+        #[cfg(not(feature = "simd128"))]
+        use portable_instantiation::{
+            kyber_decapsulate as kyber_decapsulate_neon,
+            kyber_encapsulate as kyber_encapsulate_neon,
+            kyber_generate_key_pair as kyber_generate_keypair_neon,
+        };
+
+        /// Generate a new key pair.
+        pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKemKeyPair {
+            // Runtime feature detection.
+            if libcrux_platform::simd256_support() {
+                kyber_generate_keypair_avx2(randomness)
+            } else if libcrux_platform::simd128_support() {
+                kyber_generate_keypair_neon(randomness)
+            } else {
+                portable_instantiation::kyber_generate_key_pair(randomness)
+            }
+        }
+
+        /// Encapsulate `randomness` to the `public_key`.
+        pub fn encapsulate(
+            public_key: &MlKemPublicKey,
+            randomness: [u8; SHARED_SECRET_SIZE],
+        ) -> (MlKemCiphertext, MlKemSharedSecret) {
+            if libcrux_platform::simd256_support() {
+                kyber_encapsulate_avx2(public_key, randomness)
+            } else if libcrux_platform::simd128_support() {
+                kyber_encapsulate_neon(public_key, randomness)
+            } else {
+                portable_instantiation::kyber_encapsulate(public_key, randomness)
+            }
+        }
+
+        /// Decapsulate the `ciphertext` using the `private_key`.
+        pub fn decapsulate(
+            private_key: &MlKemPrivateKey,
+            ciphertext: &MlKemCiphertext,
+        ) -> MlKemSharedSecret {
+            if libcrux_platform::simd256_support() {
+                kyber_decapsulate_avx2(private_key, ciphertext)
+            } else if libcrux_platform::simd128_support() {
+                kyber_decapsulate_neon(private_key, ciphertext)
+            } else {
+                portable_instantiation::kyber_decapsulate(private_key, ciphertext)
+            }
         }
     }
 }

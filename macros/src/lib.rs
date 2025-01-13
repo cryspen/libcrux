@@ -233,7 +233,7 @@ fn mlkem_names(parameter_set: &LitInt) -> MlkemNamesResult {
     let params = quote! {#parameter_set}.to_string();
     let feature_name = format!("mlkem{}", params);
     let const_mod = format_ident!("mlkem{}_constants", params);
-    let multiplex_mod = format_ident!("ml_kem_{}", params);
+    let multiplex_mod = format_ident!("mlkem{}", params);
 
     MlkemNamesResult {
         params,
@@ -255,7 +255,7 @@ fn mlkem_platform_names(platform: &Ident, params: &String) -> PlatformNames {
         _ => panic!("Unexpected platform {}", platform_string),
     }
     .into();
-    let modpath = format_ident!("ml_kem_{}", parameter_set_string);
+    let modpath = format_ident!("mlkem{}", parameter_set_string);
     (platform_string, feature_platform, modpath)
 }
 
@@ -370,7 +370,7 @@ pub fn ml_kem_multiplexing(args: TokenStream, item: TokenStream) -> TokenStream 
             let platform_string = format_ident!("{}_instantiation", platform_string);
             inst.extend(quote! {
                 #feature_platform
-                use #modpath as #platform_string;
+                use super::#modpath as #platform_string;
             });
         }
 
@@ -382,6 +382,7 @@ pub fn ml_kem_multiplexing(args: TokenStream, item: TokenStream) -> TokenStream 
                 #[cfg(feature = #feature_name)]
                 #vis mod #multiplex_mod {
                     #inst
+                    use super::#const_mod::*;
 
                     #(#this_content)*
                 } #semi

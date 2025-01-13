@@ -43,6 +43,7 @@ macro_rules! impl_nist_known_answer_tests {
             for kat in nist_kats {
                 let key_pair = generate_key_pair(kat.key_generation_seed);
 
+                #[cfg(not(feature = "kyber"))]
                 assert!(validate_public_key(key_pair.public_key()));
 
                 #[cfg(not(feature = "kyber"))]
@@ -73,7 +74,7 @@ macro_rules! impl_nist_known_answer_tests {
                 assert_eq!(ciphertext_hash, kat.sha3_256_hash_of_ciphertext, "lhs: computed ciphertext hash, rhs: hash from akt");
                 assert_eq!(shared_secret.as_ref(), kat.shared_secret, "lhs: computed shared secret from encapsulate, rhs: shared secret from kat");
 
-
+                #[cfg(not(feature = "kyber"))]
                 assert!(validate_private_key(key_pair.private_key(), &ciphertext));
 
                 let shared_secret_from_decapsulate =
@@ -89,7 +90,7 @@ impl_nist_known_answer_tests!(
     mlkem512_nist_kats_portable,
     "mlkem",
     512,
-    libcrux_ml_kem::mlkem512::portable
+    libcrux_ml_kem::mlkem512_portable
 );
 
 #[cfg(all(feature = "mlkem768"))]
@@ -97,7 +98,7 @@ impl_nist_known_answer_tests!(
     mlkem768_nist_kats_portable,
     "mlkem",
     768,
-    libcrux_ml_kem::mlkem768::portable
+    libcrux_ml_kem::mlkem768_portable
 );
 
 #[cfg(all(feature = "mlkem1024"))]
@@ -105,7 +106,7 @@ impl_nist_known_answer_tests!(
     mlkem1024_nist_kats_portable,
     "mlkem",
     1024,
-    libcrux_ml_kem::mlkem1024::portable
+    libcrux_ml_kem::mlkem1024_portable
 );
 
 #[cfg(all(feature = "mlkem512", feature = "kyber"))]
@@ -113,7 +114,7 @@ impl_nist_known_answer_tests!(
     kyber512_nist_kats_portable,
     "kyber",
     512,
-    libcrux_ml_kem::kyber512
+    libcrux_ml_kem::mlkem512::kyber
 );
 
 #[cfg(all(feature = "mlkem768", feature = "kyber"))]
@@ -121,7 +122,7 @@ impl_nist_known_answer_tests!(
     kyber768_nist_kats_portable,
     "kyber",
     768,
-    libcrux_ml_kem::kyber768
+    libcrux_ml_kem::mlkem768::kyber
 );
 
 #[cfg(all(feature = "mlkem1024", feature = "kyber"))]
@@ -129,5 +130,5 @@ impl_nist_known_answer_tests!(
     kyber1024_nist_kats_portable,
     "kyber",
     1024,
-    libcrux_ml_kem::kyber1024
+    libcrux_ml_kem::mlkem1024::kyber
 );
