@@ -3,8 +3,6 @@ use libcrux_ml_dsa::{
     KEY_GENERATION_RANDOMNESS_SIZE, SIGNING_RANDOMNESS_SIZE,
 };
 
-use pqcrypto_mldsa;
-
 mod bench_utils;
 
 fn main() {
@@ -28,5 +26,7 @@ fn main() {
         MLDSA87KeyPair,
         MLDSA87Signature
     );
+
+    #[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
     bench_group_pqclean!("87", mldsa87);
 }

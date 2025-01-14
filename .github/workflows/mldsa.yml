@@ -101,8 +101,6 @@ jobs:
 
       # Benchmarks
       - name: 🔨 Build Benchmarks
-        # Comparison benchmarks don't work on intel mac. Re-enable if we think it's worthwhile.
-        if: ${{ matrix.os != 'macos-13' }}
         run: |
           cargo clean
           cargo bench --no-run

@@ -129,6 +129,7 @@ macro_rules! bench_group_libcrux {
     }};
 }
 
+#[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
 #[macro_export]
 macro_rules! bench_group_pqclean {
     ($variant:literal, $mod:ident) => {{
