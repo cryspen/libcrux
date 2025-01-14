@@ -6,6 +6,8 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
+use libcrux_secrets::{AsSecret, U8};
+
 pub mod simd;
 
 mod generic_keccak;
@@ -75,7 +77,12 @@ pub const fn digest_size(mode: Algorithm) -> usize {
 }
 
 /// SHA3
-pub fn hash<const LEN: usize>(algorithm: Algorithm, payload: &[u8]) -> [u8; LEN] {
+pub fn hash_unclassified<const LEN: usize>(algorithm: Algorithm, payload: &[u8]) -> [u8; LEN] {
+    sha3(algorithm, payload.as_secret())
+}
+
+/// SHA3
+pub fn hash<const LEN: usize>(algorithm: Algorithm, payload: &[U8]) -> [u8; LEN] {
     debug_assert!(payload.len() <= u32::MAX as usize);
 
     let mut out = [0u8; LEN];
@@ -90,10 +97,11 @@ pub fn hash<const LEN: usize>(algorithm: Algorithm, payload: &[u8]) -> [u8; LEN]
 
 /// SHA3
 pub use hash as sha3;
+pub use hash_unclassified as sha3_unclassified;
 
 /// SHA3 224
 #[inline(always)]
-pub fn sha224(data: &[u8]) -> Sha3_224Digest {
+pub fn sha224(data: &[U8]) -> Sha3_224Digest {
     let mut out = [0u8; 28];
     sha224_ema(&mut out, data);
     out
@@ -104,7 +112,7 @@ pub fn sha224(data: &[u8]) -> Sha3_224Digest {
 /// Preconditions:
 /// - `digest.len() == 28`
 #[inline(always)]
-pub fn sha224_ema(digest: &mut [u8], payload: &[u8]) {
+pub fn sha224_ema(digest: &mut [u8], payload: &[U8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 28);
 
@@ -113,7 +121,7 @@ pub fn sha224_ema(digest: &mut [u8], payload: &[u8]) {
 
 /// SHA3 256
 #[inline(always)]
-pub fn sha256(data: &[u8]) -> Sha3_256Digest {
+pub fn sha256(data: &[U8]) -> Sha3_256Digest {
     let mut out = [0u8; 32];
     sha256_ema(&mut out, data);
     out
@@ -121,7 +129,7 @@ pub fn sha256(data: &[u8]) -> Sha3_256Digest {
 
 /// SHA3 256
 #[inline(always)]
-pub fn sha256_ema(digest: &mut [u8], payload: &[u8]) {
+pub fn sha256_ema(digest: &mut [u8], payload: &[U8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 32);
 
@@ -130,7 +138,7 @@ pub fn sha256_ema(digest: &mut [u8], payload: &[u8]) {
 
 /// SHA3 384
 #[inline(always)]
-pub fn sha384(data: &[u8]) -> Sha3_384Digest {
+pub fn sha384(data: &[U8]) -> Sha3_384Digest {
     let mut out = [0u8; 48];
     sha384_ema(&mut out, data);
     out
@@ -138,7 +146,7 @@ pub fn sha384(data: &[u8]) -> Sha3_384Digest {
 
 /// SHA3 384
 #[inline(always)]
-pub fn sha384_ema(digest: &mut [u8], payload: &[u8]) {
+pub fn sha384_ema(digest: &mut [u8], payload: &[U8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 48);
 
@@ -147,7 +155,7 @@ pub fn sha384_ema(digest: &mut [u8], payload: &[u8]) {
 
 /// SHA3 512
 #[inline(always)]
-pub fn sha512(data: &[u8]) -> Sha3_512Digest {
+pub fn sha512(data: &[U8]) -> Sha3_512Digest {
     let mut out = [0u8; 64];
     sha512_ema(&mut out, data);
     out
@@ -155,7 +163,7 @@ pub fn sha512(data: &[u8]) -> Sha3_512Digest {
 
 /// SHA3 512
 #[inline(always)]
-pub fn sha512_ema(digest: &mut [u8], payload: &[u8]) {
+pub fn sha512_ema(digest: &mut [u8], payload: &[U8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 64);
 
@@ -167,7 +175,7 @@ pub fn sha512_ema(digest: &mut [u8], payload: &[u8]) {
 /// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
 /// the output will only return `u32::MAX` bytes.
 #[inline(always)]
-pub fn shake128<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
+pub fn shake128<const BYTES: usize>(data: &[U8]) -> [u8; BYTES] {
     let mut out = [0u8; BYTES];
     portable::shake128(&mut out, data);
     out
@@ -177,7 +185,7 @@ pub fn shake128<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
 ///
 /// Writes `out.len()` bytes.
 #[inline(always)]
-pub fn shake128_ema(out: &mut [u8], data: &[u8]) {
+pub fn shake128_ema(out: &mut [u8], data: &[U8]) {
     portable::shake128(out, data);
 }
 
@@ -186,7 +194,7 @@ pub fn shake128_ema(out: &mut [u8], data: &[u8]) {
 /// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
 /// the output will only return `u32::MAX` bytes.
 #[inline(always)]
-pub fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
+pub fn shake256<const BYTES: usize>(data: &[U8]) -> [u8; BYTES] {
     let mut out = [0u8; BYTES];
     portable::shake256(&mut out, data);
     out
@@ -196,7 +204,7 @@ pub fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
 ///
 /// Writes `out.len()` bytes.
 #[inline(always)]
-pub fn shake256_ema(out: &mut [u8], data: &[u8]) {
+pub fn shake256_ema(out: &mut [u8], data: &[U8]) {
     portable::shake256(out, data);
 }
 
@@ -214,7 +222,7 @@ pub mod portable {
     }
 
     #[inline(always)]
-    fn keccakx1<const RATE: usize, const DELIM: u8>(data: [&[u8]; 1], out: [&mut [u8]; 1]) {
+    fn keccakx1<const RATE: usize, const DELIM: u8>(data: [&[U8]; 1], out: [&mut [u8]; 1]) {
         // generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out);
         // or
         generic_keccak::keccak::<1, u64, RATE, DELIM>(data, out);
@@ -222,37 +230,37 @@ pub mod portable {
 
     /// A portable SHA3 224 implementation.
     #[inline(always)]
-    pub fn sha224(digest: &mut [u8], data: &[u8]) {
+    pub fn sha224(digest: &mut [u8], data: &[U8]) {
         keccakx1::<144, 0x06u8>([data], [digest]);
     }
 
     /// A portable SHA3 256 implementation.
     #[inline(always)]
-    pub fn sha256(digest: &mut [u8], data: &[u8]) {
+    pub fn sha256(digest: &mut [u8], data: &[U8]) {
         keccakx1::<136, 0x06u8>([data], [digest]);
     }
 
     /// A portable SHA3 384 implementation.
     #[inline(always)]
-    pub fn sha384(digest: &mut [u8], data: &[u8]) {
+    pub fn sha384(digest: &mut [u8], data: &[U8]) {
         keccakx1::<104, 0x06u8>([data], [digest]);
     }
 
     /// A portable SHA3 512 implementation.
     #[inline(always)]
-    pub fn sha512(digest: &mut [u8], data: &[u8]) {
+    pub fn sha512(digest: &mut [u8], data: &[U8]) {
         keccakx1::<72, 0x06u8>([data], [digest]);
     }
 
     /// A portable SHAKE128 implementation.
     #[inline(always)]
-    pub fn shake128(digest: &mut [u8], data: &[u8]) {
+    pub fn shake128(digest: &mut [u8], data: &[U8]) {
         keccakx1::<168, 0x1fu8>([data], [digest]);
     }
 
     /// A portable SHAKE256 implementation.
     #[inline(always)]
-    pub fn shake256(digest: &mut [u8], data: &[u8]) {
+    pub fn shake256(digest: &mut [u8], data: &[U8]) {
         keccakx1::<136, 0x1fu8>([data], [digest]);
     }
 
@@ -286,10 +294,10 @@ pub mod portable {
             fn new() -> Self;
 
             /// Absorb input
-            fn absorb(&mut self, input: &[u8]);
+            fn absorb(&mut self, input: &[U8]);
 
             /// Absorb final input (may be empty)
-            fn absorb_final(&mut self, input: &[u8]);
+            fn absorb_final(&mut self, input: &[U8]);
 
             /// Squeeze output bytes
             fn squeeze(&mut self, out: &mut [u8]);
@@ -302,11 +310,11 @@ pub mod portable {
                 }
             }
 
-            fn absorb(&mut self, input: &[u8]) {
+            fn absorb(&mut self, input: &[U8]) {
                 self.state.absorb([input]);
             }
 
-            fn absorb_final(&mut self, input: &[u8]) {
+            fn absorb_final(&mut self, input: &[U8]) {
                 self.state.absorb_final::<0x1fu8>([input]);
             }
 
@@ -326,12 +334,12 @@ pub mod portable {
             }
 
             /// Shake256 absorb
-            fn absorb(&mut self, input: &[u8]) {
+            fn absorb(&mut self, input: &[U8]) {
                 self.state.absorb([input]);
             }
 
             /// Shake256 absorb final
-            fn absorb_final(&mut self, input: &[u8]) {
+            fn absorb_final(&mut self, input: &[U8]) {
                 self.state.absorb_final::<0x1fu8>([input]);
             }
 
@@ -351,7 +359,7 @@ pub mod portable {
 
         /// Absorb
         #[inline(always)]
-        pub fn shake128_absorb_final(s: &mut KeccakState, data0: &[u8]) {
+        pub fn shake128_absorb_final(s: &mut KeccakState, data0: &[U8]) {
             absorb_final::<1, u64, 168, 0x1fu8>(&mut s.state, [data0]);
         }
 
@@ -383,7 +391,7 @@ pub mod portable {
 
         /// Absorb some data for SHAKE-256 for the last time
         #[inline(always)]
-        pub fn shake256_absorb_final(s: &mut KeccakState, data: &[u8]) {
+        pub fn shake256_absorb_final(s: &mut KeccakState, data: &[U8]) {
             absorb_final::<1, u64, 136, 0x1fu8>(&mut s.state, [data]);
         }
 
@@ -409,19 +417,21 @@ pub mod portable {
 ///
 /// Feature `simd128` enables the implementations in this module.
 pub mod neon {
+    use super::*;
+
     #[cfg(feature = "simd128")]
     use crate::generic_keccak::keccak;
 
     #[cfg(feature = "simd128")]
     #[inline(always)]
-    fn keccakx2<const RATE: usize, const DELIM: u8>(data: [&[u8]; 2], out: [&mut [u8]; 2]) {
+    fn keccakx2<const RATE: usize, const DELIM: u8>(data: [&[U8]; 2], out: [&mut [u8]; 2]) {
         keccak::<2, crate::simd::arm64::uint64x2_t, RATE, DELIM>(data, out)
     }
 
     /// A portable SHA3 224 implementation.
     #[allow(unused_variables)]
     #[inline(always)]
-    pub fn sha224(digest: &mut [u8], data: &[u8]) {
+    pub fn sha224(digest: &mut [u8], data: &[U8]) {
         #[cfg(not(feature = "simd128"))]
         unimplemented!();
         #[cfg(feature = "simd128")]
@@ -434,7 +444,7 @@ pub mod neon {
     /// A portable SHA3 256 implementation.
     #[allow(unused_variables)]
     #[inline(always)]
-    pub fn sha256(digest: &mut [u8], data: &[u8]) {
+    pub fn sha256(digest: &mut [u8], data: &[U8]) {
         #[cfg(not(feature = "simd128"))]
         unimplemented!();
         #[cfg(feature = "simd128")]
@@ -447,7 +457,7 @@ pub mod neon {
     /// A portable SHA3 384 implementation.
     #[allow(unused_variables)]
     #[inline(always)]
-    pub fn sha384(digest: &mut [u8], data: &[u8]) {
+    pub fn sha384(digest: &mut [u8], data: &[U8]) {
         #[cfg(not(feature = "simd128"))]
         unimplemented!();
         #[cfg(feature = "simd128")]
@@ -460,7 +470,7 @@ pub mod neon {
     /// A portable SHA3 512 implementation.
     #[allow(unused_variables)]
     #[inline(always)]
-    pub fn sha512(digest: &mut [u8], data: &[u8]) {
+    pub fn sha512(digest: &mut [u8], data: &[U8]) {
         #[cfg(not(feature = "simd128"))]
         unimplemented!();
         #[cfg(feature = "simd128")]
@@ -473,7 +483,7 @@ pub mod neon {
     /// A portable SHAKE128 implementation.
     #[allow(unused_variables)]
     #[inline(always)]
-    pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
+    pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[U8]) {
         #[cfg(not(feature = "simd128"))]
         unimplemented!();
         #[cfg(feature = "simd128")]
@@ -486,7 +496,7 @@ pub mod neon {
     /// A portable SHAKE256 implementation.
     #[allow(unused_variables)]
     #[inline(always)]
-    pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
+    pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[U8]) {
         #[cfg(not(feature = "simd128"))]
         unimplemented!();
         #[cfg(feature = "simd128")]
@@ -506,7 +516,7 @@ pub mod neon {
         /// Writes the two results into `out0` and `out1`
         #[allow(unused_variables)]
         #[inline(always)]
-        pub fn shake256(input0: &[u8], input1: &[u8], out0: &mut [u8], out1: &mut [u8]) {
+        pub fn shake256(input0: &[U8], input1: &[U8], out0: &mut [u8], out1: &mut [u8]) {
             // TODO: make argument ordering consistent
             #[cfg(not(feature = "simd128"))]
             unimplemented!();
@@ -519,7 +529,7 @@ pub mod neon {
         /// **PANICS** when `N` is not 2, 3, or 4.
         #[allow(non_snake_case)]
         #[inline(always)]
-        fn _shake256xN<const LEN: usize, const N: usize>(input: &[[u8; 33]; N]) -> [[u8; LEN]; N] {
+        fn _shake256xN<const LEN: usize, const N: usize>(input: &[[U8; 33]; N]) -> [[u8; LEN]; N] {
             debug_assert!(N == 2 || N == 3 || N == 4);
 
             let mut out = [[0u8; LEN]; N];
@@ -549,6 +559,8 @@ pub mod neon {
 
         /// An incremental API to perform 2 operations in parallel
         pub mod incremental {
+            use libcrux_secrets::U8;
+
             #[cfg(feature = "simd128")]
             use crate::generic_keccak::{
                 absorb_final, squeeze_first_block, squeeze_first_five_blocks,
@@ -592,7 +604,7 @@ pub mod neon {
             /// Shake128 absorb `data0` and `data1` in the [`KeccakState`] `s`.
             #[inline(always)]
             #[allow(unused_variables)]
-            pub fn shake128_absorb_final(s: &mut KeccakState, data0: &[u8], data1: &[u8]) {
+            pub fn shake128_absorb_final(s: &mut KeccakState, data0: &[U8], data1: &[U8]) {
                 #[cfg(not(feature = "simd128"))]
                 unimplemented!();
                 // XXX: These functions could alternatively implement the same with
@@ -612,7 +624,7 @@ pub mod neon {
             /// Shake256 absorb `data0` and `data1` in the [`KeccakState`] `s`.
             #[inline(always)]
             #[allow(unused_variables)]
-            pub fn shake256_absorb_final(s: &mut KeccakState, data0: &[u8], data1: &[u8]) {
+            pub fn shake256_absorb_final(s: &mut KeccakState, data0: &[U8], data1: &[U8]) {
                 #[cfg(not(feature = "simd128"))]
                 unimplemented!();
                 // XXX: These functions could alternatively implement the same with
@@ -635,7 +647,7 @@ pub mod neon {
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[allow(unused_variables, non_snake_case)]
             #[inline(always)]
-            fn _shake128_absorb_finalxN<const N: usize>(input: [[u8; 34]; N]) -> [KeccakState; 2] {
+            fn _shake128_absorb_finalxN<const N: usize>(input: [[U8; 34]; N]) -> [KeccakState; 2] {
                 debug_assert!(N == 2 || N == 3 || N == 4);
                 let mut state = [init(), init()];
 

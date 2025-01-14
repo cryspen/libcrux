@@ -179,6 +179,16 @@ pub type U64 = Secret<u64>;
 pub type I128 = Secret<i128>;
 pub type U128 = Secret<u128>;
 
+#[allow(non_snake_case)]
+pub const fn U8(v: u8) -> U8 {
+    Secret(v)
+}
+
+#[allow(non_snake_case)]
+pub const fn U64(v: u64) -> U64 {
+    Secret(v)
+}
+
 impl IntOps for Secret<u32> {
     fn wrapping_add<T: Into<Secret<u32>>>(self, rhs: T) -> Self {
         self.declassify()
@@ -218,26 +228,6 @@ impl EncodeOps<U8, 4> for U32 {
     }
 }
 
-/*
-impl<const N: usize, const B: usize> TryEncodeOps<U8, B> for [U32; N] {
-    fn try_to_le_bytes(&self) -> Result<[U8; B], ()> {
-        try_to_le_bytes(self)
-    }
-    fn try_to_be_bytes(&self) -> Result<[U8; B], ()> {
-        try_to_be_bytes(self)
-    }
-}
-
-impl<const N: usize> TryDecodeOps<U8> for [U32; N] {
-    fn try_from_le_bytes(x: &[U8]) -> Result<Self, ()> {
-        try_from_le_bytes(x)
-    }
-    fn try_from_be_bytes(x: &[U8]) -> Result<Self, ()> {
-        try_from_be_bytes(x)
-    }
-}
-*/
-
 impl IntOps for Secret<u64> {
     fn wrapping_add<T: Into<Secret<u64>>>(self, rhs: T) -> Self {
         self.declassify()
@@ -276,23 +266,3 @@ impl EncodeOps<U8, 8> for U64 {
         u64::from_be_bytes(x.declassify()).classify()
     }
 }
-
-/*
-impl<const N: usize, const B: usize> TryEncodeOps<U8, B> for [U64; N] {
-    fn try_to_le_bytes(&self) -> Result<[U8; B], ()> {
-        try_to_le_bytes(self)
-    }
-    fn try_to_be_bytes(&self) -> Result<[U8; B], ()> {
-        try_to_be_bytes(self)
-    }
-}
-
-impl<const N: usize> TryDecodeOps<U8> for [U64; N] {
-    fn try_from_le_bytes(x: &[U8]) -> Result<Self, ()> {
-        try_from_le_bytes(x)
-    }
-    fn try_from_be_bytes(x: &[U8]) -> Result<Self, ()> {
-        try_from_be_bytes(x)
-    }
-}
-*/

@@ -1,5 +1,7 @@
 //! A portable SHA3 implementation using the generic implementation.
 
+use libcrux_secrets::{Declassify, EncodeOps, U64, U8};
+
 use crate::traits::internal::*;
 
 #[inline(always)]
@@ -38,16 +40,18 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 }
 
 #[inline(always)]
-pub(crate) fn load_block<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: [&[u8]; 1]) {
+pub(crate) fn load_block<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: [&[U8]; 1]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0);
     for i in 0..RATE / 8 {
-        s[i / 5][i % 5] ^= u64::from_le_bytes(blocks[0][8 * i..8 * i + 8].try_into().unwrap());
+        // FIXME: make everything secret integers.
+        s[i / 5][i % 5] ^=
+            U64::from_le_bytes(blocks[0][8 * i..8 * i + 8].try_into().unwrap()).declassify();
     }
 }
 
 #[inline(always)]
-pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: [[u8; 200]; 1]) {
-    load_block::<RATE>(s, [&blocks[0] as &[u8]]);
+pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: [[U8; 200]; 1]) {
+    load_block::<RATE>(s, [&blocks[0] as &[U8]]);
 }
 
 #[inline(always)]
@@ -65,7 +69,7 @@ pub(crate) fn store_block_full<const RATE: usize>(s: &[[u64; 5]; 5]) -> [[u8; 20
 }
 
 #[inline(always)]
-fn slice_1(a: [&[u8]; 1], start: usize, len: usize) -> [&[u8]; 1] {
+fn slice_1(a: [&[U8]; 1], start: usize, len: usize) -> [&[U8]; 1] {
     [&a[0][start..start + len]]
 }
 
@@ -105,7 +109,7 @@ impl KeccakItem<1> for u64 {
         a ^ b
     }
     #[inline(always)]
-    fn load_block<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; 1]) {
+    fn load_block<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [&[U8]; 1]) {
         load_block::<RATE>(a, b)
     }
     #[inline(always)]
@@ -113,7 +117,7 @@ impl KeccakItem<1> for u64 {
         store_block::<RATE>(a, b)
     }
     #[inline(always)]
-    fn load_block_full<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; 1]) {
+    fn load_block_full<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [[U8; 200]; 1]) {
         load_block_full::<RATE>(a, b)
     }
     #[inline(always)]
@@ -121,7 +125,7 @@ impl KeccakItem<1> for u64 {
         store_block_full::<RATE>(a)
     }
     #[inline(always)]
-    fn slice_n(a: [&[u8]; 1], start: usize, len: usize) -> [&[u8]; 1] {
+    fn slice_n(a: [&[U8]; 1], start: usize, len: usize) -> [&[U8]; 1] {
         slice_1(a, start, len)
     }
     #[inline(always)]

@@ -1,4 +1,5 @@
 use libcrux_intrinsics::arm64::*;
+use libcrux_secrets::{Declassify, EncodeOps, U64, U8};
 
 use crate::traits::internal::KeccakItem;
 
@@ -63,11 +64,11 @@ fn _veorq_n_u64(a: uint64x2_t, c: u64) -> uint64x2_t {
 }
 
 #[inline(always)]
-pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks: [&[u8]; 2]) {
+pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks: [&[U8]; 2]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0);
     for i in 0..RATE / 16 {
-        let v0 = _vld1q_bytes_u64(&blocks[0][16 * i..16 * (i + 1)]);
-        let v1 = _vld1q_bytes_u64(&blocks[1][16 * i..16 * (i + 1)]);
+        let v0 = _vld1q_bytes_u64(blocks[0][16 * i..16 * (i + 1)].declassify());
+        let v1 = _vld1q_bytes_u64(blocks[1][16 * i..16 * (i + 1)].declassify());
         s[(2 * i) / 5][(2 * i) % 5] = _veorq_u64(s[(2 * i) / 5][(2 * i) % 5], _vtrn1q_u64(v0, v1));
         s[(2 * i + 1) / 5][(2 * i + 1) % 5] =
             _veorq_u64(s[(2 * i + 1) / 5][(2 * i + 1) % 5], _vtrn2q_u64(v0, v1));
@@ -75,10 +76,10 @@ pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks
     if RATE % 16 != 0 {
         let i = (RATE / 8 - 1) / 5;
         let j = (RATE / 8 - 1) % 5;
-        let mut u = [0u64; 2];
-        u[0] = u64::from_le_bytes(blocks[0][RATE - 8..RATE].try_into().unwrap());
-        u[1] = u64::from_le_bytes(blocks[1][RATE - 8..RATE].try_into().unwrap());
-        let uvec = _vld1q_u64(&u);
+        let mut u = [U64(0); 2];
+        u[0] = U64::from_le_bytes(blocks[0][RATE - 8..RATE].try_into().unwrap());
+        u[1] = U64::from_le_bytes(blocks[1][RATE - 8..RATE].try_into().unwrap());
+        let uvec = _vld1q_u64(u.declassify());
         s[i][j] = _veorq_u64(s[i][j], uvec);
     }
 }
@@ -86,9 +87,9 @@ pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks
 #[inline(always)]
 pub(crate) fn load_block_full<const RATE: usize>(
     s: &mut [[uint64x2_t; 5]; 5],
-    blocks: [[u8; 200]; 2],
+    blocks: [[U8; 200]; 2],
 ) {
-    load_block::<RATE>(s, [&blocks[0] as &[u8], &blocks[1] as &[u8]]);
+    load_block::<RATE>(s, [&blocks[0] as &[U8], &blocks[1] as &[U8]]);
 }
 
 #[inline(always)]
@@ -125,7 +126,7 @@ pub(crate) fn store_block_full<const RATE: usize>(s: &[[uint64x2_t; 5]; 5]) -> [
 }
 
 #[inline(always)]
-fn slice_2(a: [&[u8]; 2], start: usize, len: usize) -> [&[u8]; 2] {
+fn slice_2(a: [&[U8]; 2], start: usize, len: usize) -> [&[U8]; 2] {
     [&a[0][start..start + len], &a[1][start..start + len]]
 }
 
@@ -167,7 +168,7 @@ impl KeccakItem<2> for uint64x2_t {
         _veorq_u64(a, b)
     }
     #[inline(always)]
-    fn load_block<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; 2]) {
+    fn load_block<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [&[U8]; 2]) {
         load_block::<RATE>(a, b)
     }
     #[inline(always)]
@@ -175,7 +176,7 @@ impl KeccakItem<2> for uint64x2_t {
         store_block::<RATE>(a, b)
     }
     #[inline(always)]
-    fn load_block_full<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; 2]) {
+    fn load_block_full<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [[U8; 200]; 2]) {
         load_block_full::<RATE>(a, b)
     }
     #[inline(always)]
@@ -183,7 +184,7 @@ impl KeccakItem<2> for uint64x2_t {
         store_block_full::<RATE>(a)
     }
     #[inline(always)]
-    fn slice_n(a: [&[u8]; 2], start: usize, len: usize) -> [&[u8]; 2] {
+    fn slice_n(a: [&[U8]; 2], start: usize, len: usize) -> [&[U8]; 2] {
         slice_2(a, start, len)
     }
     #[inline(always)]

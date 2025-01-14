@@ -3,6 +3,8 @@
 
 use core::ops::Index;
 
+use libcrux_secrets::{Classify, U8};
+
 use crate::traits::*;
 
 #[cfg_attr(hax, hax_lib::opaque)]
@@ -40,7 +42,7 @@ pub(crate) struct KeccakXofState<
     inner: KeccakState<PARALLEL_LANES, STATE>,
 
     // Buffer inputs on absorb.
-    buf: [[u8; RATE]; PARALLEL_LANES],
+    buf: [[U8; RATE]; PARALLEL_LANES],
 
     // Buffered length.
     buf_len: usize,
@@ -53,8 +55,8 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     KeccakXofState<PARALLEL_LANES, RATE, STATE>
 {
     /// An all zero block
-    pub(crate) const fn zero_block() -> [u8; RATE] {
-        [0u8; RATE]
+    pub(crate) const fn zero_block() -> [U8; RATE] {
+        [U8(0); RATE]
     }
 
     /// Generate a new keccak xof state.
@@ -77,7 +79,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     ///
     /// This works best with relatively small `inputs`.
     #[inline(always)]
-    pub(crate) fn absorb(&mut self, inputs: [&[u8]; PARALLEL_LANES]) {
+    pub(crate) fn absorb(&mut self, inputs: [&[U8]; PARALLEL_LANES]) {
         let input_remainder_len = self.absorb_full(inputs);
 
         // ... buffer the rest if there's not enough input (left).
@@ -96,7 +98,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         }
     }
 
-    fn absorb_full(&mut self, inputs: [&[u8]; PARALLEL_LANES]) -> usize {
+    fn absorb_full(&mut self, inputs: [&[U8]; PARALLEL_LANES]) -> usize {
         debug_assert!(PARALLEL_LANES > 0);
         debug_assert!(self.buf_len < RATE);
         #[cfg(debug_assertions)]
@@ -110,7 +112,9 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         let input_consumed = self.fill_buffer(inputs);
 
         if input_consumed > 0 {
-            let mut borrowed = [[0u8; RATE].as_slice(); PARALLEL_LANES];
+            // FIXME
+            let tmp = [U8(0); RATE];
+            let mut borrowed = [tmp.as_slice(); PARALLEL_LANES];
             // We have a full block in the local buffer now.
             for i in 0..PARALLEL_LANES {
                 borrowed[i] = &self.buf[i];
@@ -147,7 +151,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     /// content to consume, and `0` otherwise.
     /// If `consumed > 0` is returned, `self.buf` contains a full block to be
     /// loaded.
-    fn fill_buffer(&mut self, inputs: [&[u8]; PARALLEL_LANES]) -> usize {
+    fn fill_buffer(&mut self, inputs: [&[U8]; PARALLEL_LANES]) -> usize {
         let input_len = inputs[0].len();
         let mut consumed = 0;
         if self.buf_len > 0 {
@@ -170,13 +174,13 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     /// The `inputs` block may be empty. Everything in the `inputs` block beyond
     /// `RATE` bytes is ignored.
     #[inline(always)]
-    pub(crate) fn absorb_final<const DELIMITER: u8>(&mut self, inputs: [&[u8]; PARALLEL_LANES]) {
+    pub(crate) fn absorb_final<const DELIMITER: u8>(&mut self, inputs: [&[U8]; PARALLEL_LANES]) {
         let input_remainder_len = self.absorb_full(inputs);
 
         // Consume the remaining bytes.
         // This may be in the local buffer or in the input.
         let input_len = inputs[0].len();
-        let mut blocks = [[0u8; 200]; PARALLEL_LANES];
+        let mut blocks = [[U8(0); 200]; PARALLEL_LANES];
         for i in 0..PARALLEL_LANES {
             if self.buf_len > 0 {
                 blocks[i][0..self.buf_len].copy_from_slice(&self.buf[i][0..self.buf_len]);
@@ -185,7 +189,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
                 blocks[i][self.buf_len..self.buf_len + input_remainder_len]
                     .copy_from_slice(&inputs[i][input_len - input_remainder_len..]);
             }
-            blocks[i][self.buf_len + input_remainder_len] = DELIMITER;
+            blocks[i][self.buf_len + input_remainder_len] = DELIMITER.classify();
             blocks[i][RATE - 1] |= 0x80;
         }
 
@@ -379,7 +383,7 @@ pub(crate) fn keccakf1600<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakS
 #[inline(always)]
 pub(crate) fn absorb_block<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
     s: &mut KeccakState<N, T>,
-    blocks: [&[u8]; N],
+    blocks: [&[U8]; N],
 ) {
     T::load_block::<RATE>(&mut s.st, blocks);
     keccakf1600(s)
@@ -393,16 +397,16 @@ pub(crate) fn absorb_final<
     const DELIM: u8,
 >(
     s: &mut KeccakState<N, T>,
-    last: [&[u8]; N],
+    last: [&[U8]; N],
 ) {
     debug_assert!(N > 0 && last[0].len() < RATE);
     let last_len = last[0].len();
-    let mut blocks = [[0u8; 200]; N];
+    let mut blocks = [[U8(0); 200]; N];
     for i in 0..N {
         if last_len > 0 {
             blocks[i][0..last_len].copy_from_slice(last[i]);
         }
-        blocks[i][last_len] = DELIM;
+        blocks[i][last_len] = DELIM.classify();
         blocks[i][RATE - 1] |= 0x80;
     }
     T::load_block_full::<RATE>(&mut s.st, blocks);
@@ -490,7 +494,7 @@ pub(crate) fn squeeze_first_and_last<const N: usize, T: KeccakStateItem<N>, cons
 
 #[inline(always)]
 pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, const DELIM: u8>(
-    data: [&[u8]; N],
+    data: [&[U8]; N],
     out: [&mut [u8]; N],
 ) {
     let mut s = KeccakState::<N, T>::new();

@@ -10,10 +10,32 @@ pub trait AsSecret {
     fn as_secret(&self) -> &[Self::Item];
 }
 
+pub trait AsSecretRef<const N: usize> {
+    type Item: Declassify;
+
+    fn as_secret(&self) -> &[Self::Item; N];
+}
+
 impl<T: Scalar> AsSecret for &[T] {
     type Item = Secret<T>;
 
     fn as_secret(&self) -> &[Self::Item] {
+        unsafe { core::mem::transmute(*self) }
+    }
+}
+
+impl<T: Scalar> AsSecret for Vec<T> {
+    type Item = Secret<T>;
+
+    fn as_secret(&self) -> &[Self::Item] {
+        unsafe { core::mem::transmute(self.as_slice()) }
+    }
+}
+
+impl<T: Scalar, const N: usize> AsSecretRef<N> for &[T; N] {
+    type Item = Secret<T>;
+
+    fn as_secret(&self) -> &[Self::Item; N] {
         unsafe { core::mem::transmute(*self) }
     }
 }
