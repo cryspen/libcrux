@@ -1,0 +1,15 @@
+[package]
+name = "librux-ecdsa"
+description = "Formally verified ECDSA signature library"
+
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[dependencies]
+libcrux-p256 = { version = "=0.0.2-beta.2", path = "../p256" }
+rand = { version = "0.8" }
