@@ -28,7 +28,10 @@ hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 criterion = "0.5"
-pqcrypto-dilithium = { version = "0.5.0" }         #, default-features = false
+
+# This doesn't build on intel macos.
+[target.'cfg(not(all(target_os = "macos", target_arch = "x86_64")))'.dev-dependencies]
+pqcrypto-mldsa = { version = "0.1.0" } #, default-features = false
 
 [features]
 default = ["std", "mldsa44", "mldsa65", "mldsa87"]
