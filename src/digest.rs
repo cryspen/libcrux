@@ -17,6 +17,8 @@ use crate::hacl::{blake2, sha3};
 
 use libcrux_platform::{simd128_support, simd256_support};
 
+use crate::std::vec::Vec;
+
 #[derive(Debug)]
 pub enum Error {
     InvalidStateFinished,

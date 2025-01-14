@@ -52,6 +52,11 @@ libcrux uses the following configurations for its hardware abstractions
 libcrux provides a DRBG implementation that can be used standalone (`drbg::Drbg`)
 or through the `Rng` traits.
 
+## `no_std` support
+`libcrux` and the individual primitive crates it depends on support
+`no_std` environments given a global allocator for the target
+platform.
+
 ## Verification status
 
 As a quick indicator of overall verification status, subcrates in this workspace include the following badges:
