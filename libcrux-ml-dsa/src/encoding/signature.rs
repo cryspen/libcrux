@@ -66,7 +66,6 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     out_signer_response: &mut [PolynomialRingElement<SIMDUnit>],
     out_hint: &mut [[i32; COEFFICIENTS_IN_RING_ELEMENT]],
 ) -> Result<(), VerificationError> {
-    // [eurydice] generates an unused variable pointing to out_hint here.
     debug_assert!(serialized.len() == signature_size);
 
     let (commitment_hash, rest_of_serialized) = serialized.split_at(commitment_hash_size);
@@ -88,51 +87,34 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     // allow only one such encoding, to ensure strong unforgeability.
     let mut previous_true_hints_seen = 0usize;
 
-    let mut i = 0;
-    let mut malformed_hint = false;
-
-    while !malformed_hint && i < rows_in_a {
+    for i in 0..rows_in_a {
         let current_true_hints_seen = hint_serialized[max_ones_in_hint + i] as usize;
 
         if (current_true_hints_seen < previous_true_hints_seen)
             || (previous_true_hints_seen > max_ones_in_hint)
         {
             // the true hints seen should be increasing
-            malformed_hint = true;
+            return Err(VerificationError::MalformedHintError);
         }
 
-        let mut j = previous_true_hints_seen;
-        while !malformed_hint && j < current_true_hints_seen {
+        for j in previous_true_hints_seen..current_true_hints_seen {
             if j > previous_true_hints_seen && hint_serialized[j] <= hint_serialized[j - 1] {
                 // indices of true hints for a specific polynomial should be
                 // increasing
-                malformed_hint = true;
+                return Err(VerificationError::MalformedHintError);
             }
 
-            if !malformed_hint {
-                set_hint(out_hint, i, hint_serialized[j] as usize);
-                j += 1;
-            }
+            set_hint(out_hint, i, hint_serialized[j] as usize);
         }
 
-        if !malformed_hint {
-            previous_true_hints_seen = current_true_hints_seen;
-            i += 1;
-        }
+        previous_true_hints_seen = current_true_hints_seen;
     }
 
-    i = previous_true_hints_seen;
-
-    for j in i..max_ones_in_hint {
+    for j in previous_true_hints_seen..max_ones_in_hint {
         if hint_serialized[j] != 0 {
             // ensures padding indices are zero
-            malformed_hint = true;
-            break;
+            return Err(VerificationError::MalformedHintError);
         }
-    }
-
-    if malformed_hint {
-        return Err(VerificationError::MalformedHintError);
     }
 
     Ok(())
