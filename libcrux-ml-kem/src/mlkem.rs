@@ -451,76 +451,80 @@ pub mod mlkem {
         }
     }
 
-    // // /// Incremental APIs.
-    // // /// XXX: Only portable for now here. Needs plumbing
-    // // pub mod incremental {
-    // //     use super::*;
-    // //     pub use ind_cca::incremental::*;
+    /// Incremental APIs.
+    ///
+    /// **NOTE:** This is a non-standard API and must be used with care.
+    pub mod incremental {
+        use super::*;
+        use crate::ind_cca::incremental::{
+            self, Ciphertext1, Ciphertext2, EncapsState, PublicKey1, PublicKey2,
+        };
 
-    // //     /// Encapsulate with `PublicKey1` to get `c1`.
-    // //     pub fn encapsulate1
-    // //     (
-    // //         public_key_part: &PublicKey1,
-    // //         randomness: [u8; SHARED_SECRET_SIZE],
-    // //     ) -> (Ciphertext1<C1_SIZE>, EncapsState<RANK, crate::vector::portable::PortableVector>) {
-    // //         crate::ind_cca::incremental::encapsulate1::<
-    // //         RANK,
-    // //         CPA_PKE_CIPHERTEXT_SIZE,
-    // //         C1_SIZE,
-    // //         VECTOR_U_COMPRESSION_FACTOR,
-    // //         C1_BLOCK_SIZE,
-    // //         ETA1,
-    // //         ETA1_RANDOMNESS_SIZE,
-    // //         ETA2,
-    // //         ETA2_RANDOMNESS_SIZE,
-    // //         crate::vector::portable::PortableVector,
-    // //         crate::hash_functions::portable::PortableHash<RANK>
-    // //         >(public_key_part, randomness)
-    // //     }
+        /// Encapsulate with `PublicKey1` to get `c1`.
+        pub fn encapsulate1(
+            public_key_part: &PublicKey1,
+            randomness: [u8; SHARED_SECRET_SIZE],
+        ) -> (
+            Ciphertext1<C1_SIZE>,
+            EncapsState<RANK, crate::vector::portable::PortableVector>,
+        ) {
+            incremental::encapsulate1::<
+                RANK,
+                CPA_PKE_CIPHERTEXT_SIZE,
+                C1_SIZE,
+                VECTOR_U_COMPRESSION_FACTOR,
+                C1_BLOCK_SIZE,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                ETA2,
+                ETA2_RANDOMNESS_SIZE,
+                crate::vector::portable::PortableVector,
+                crate::hash_functions::portable::PortableHash<RANK>,
+            >(public_key_part, randomness)
+        }
 
-    // //     /// Encapsulate with `PublicKey2` to get `c2`.
-    // //     pub fn encapsulate2
-    // //     (
-    // //         state: &EncapsState<RANK, crate::vector::portable::PortableVector>,
-    // //         public_key_part: &PublicKey2<RANK, crate::vector::portable::PortableVector>,
-    // //     ) -> Ciphertext2<C2_SIZE> {
-    // //         crate::ind_cca::incremental::encapsulate2::<
-    // //         RANK,
-    // //         C2_SIZE,
-    // //         VECTOR_V_COMPRESSION_FACTOR,
-    // //         crate::vector::portable::PortableVector,
-    // //         >(state, public_key_part)
-    // //     }
+        /// Encapsulate with `PublicKey2` to get `c2`.
+        pub fn encapsulate2(
+            state: &EncapsState<RANK, crate::vector::portable::PortableVector>,
+            public_key_part: &PublicKey2<RANK, crate::vector::portable::PortableVector>,
+        ) -> Ciphertext2<C2_SIZE> {
+            incremental::encapsulate2::<
+                RANK,
+                C2_SIZE,
+                VECTOR_V_COMPRESSION_FACTOR,
+                crate::vector::portable::PortableVector,
+            >(state, public_key_part)
+        }
 
-    // //     /// Decapsulate `c1` and `c2`.
-    // //     pub fn decapsulate(
-    // //         private_key: &MlKemPrivateKey,
-    // //         ciphertext1: &Ciphertext1<C1_SIZE>,
-    // //         ciphertext2: &Ciphertext2<C2_SIZE>,
-    // //     ) -> MlKemSharedSecret {
-    // //         crate::ind_cca::incremental::decapsulate::<
-    // //             RANK,
-    // //             SECRET_KEY_SIZE,
-    // //             CPA_PKE_SECRET_KEY_SIZE,
-    // //             CPA_PKE_PUBLIC_KEY_SIZE,
-    // //             CPA_PKE_CIPHERTEXT_SIZE,
-    // //             T_AS_NTT_ENCODED_SIZE,
-    // //             C1_SIZE,
-    // //             C2_SIZE,
-    // //             VECTOR_U_COMPRESSION_FACTOR,
-    // //             VECTOR_V_COMPRESSION_FACTOR,
-    // //             C1_BLOCK_SIZE,
-    // //             ETA1,
-    // //             ETA1_RANDOMNESS_SIZE,
-    // //             ETA2,
-    // //             ETA2_RANDOMNESS_SIZE,
-    // //             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-    // //             crate::vector::portable::PortableVector,
-    // //             crate::hash_functions::portable::PortableHash<RANK>,
-    // //             crate::variant::MlKem,
-    // //         >(private_key, ciphertext1, ciphertext2)
-    // //     }
-    // // }
+        /// Decapsulate `c1` and `c2`.
+        pub fn decapsulate(
+            private_key: &MlKemPrivateKey,
+            ciphertext1: &Ciphertext1<C1_SIZE>,
+            ciphertext2: &Ciphertext2<C2_SIZE>,
+        ) -> MlKemSharedSecret {
+            incremental::decapsulate::<
+                RANK,
+                SECRET_KEY_SIZE,
+                CPA_PKE_SECRET_KEY_SIZE,
+                CPA_PKE_PUBLIC_KEY_SIZE,
+                CPA_PKE_CIPHERTEXT_SIZE,
+                T_AS_NTT_ENCODED_SIZE,
+                C1_SIZE,
+                C2_SIZE,
+                VECTOR_U_COMPRESSION_FACTOR,
+                VECTOR_V_COMPRESSION_FACTOR,
+                C1_BLOCK_SIZE,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                ETA2,
+                ETA2_RANDOMNESS_SIZE,
+                IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                crate::vector::portable::PortableVector,
+                crate::hash_functions::portable::PortableHash<RANK>,
+                crate::variant::MlKem,
+            >(private_key, ciphertext1, ciphertext2)
+        }
+    }
 }
 
 /// The Rust API with runtime CPU feature detection.
@@ -732,6 +736,103 @@ pub mod mlkem {
                 kyber_decapsulate_neon(private_key, ciphertext)
             } else {
                 portable_instantiation::kyber_decapsulate(private_key, ciphertext)
+            }
+        }
+    }
+
+    /// Incremental API.
+    ///
+    /// **NOTE:** Use with caution.
+    pub mod incremental {
+        use super::*;
+        use crate::{
+            ind_cca::incremental::{
+                Ciphertext1, Ciphertext2, EncapsObject, EncapsState, PublicKey1, PublicKey2,
+            },
+            vector::Operations,
+        };
+
+        #[cfg(feature = "simd256")]
+        use avx2_instantiation::{
+            incremental::{
+                decapsulate as decapsulate_avx2, encapsulate1 as encapsulate1_avx2,
+                encapsulate2 as encapsulate2_avx2,
+            },
+            Vector as Avx2Vector,
+        };
+
+        #[cfg(feature = "simd128")]
+        use neon_instantiation::{
+            incremental::{
+                decapsulate as decapsulate_neon, encapsulate1 as encapsulate1_neon,
+                encapsulate2 as encapsulate2_neon,
+            },
+            Vector as NeonVector,
+        };
+
+        #[cfg(not(feature = "simd256"))]
+        use portable_instantiation::{
+            incremental::{
+                decapsulate as decapsulate_avx2, encapsulate1 as encapsulate1_avx2,
+                encapsulate2 as encapsulate2_avx2,
+            },
+            Vector as Avx2Vector,
+        };
+
+        #[cfg(not(feature = "simd128"))]
+        use portable_instantiation::{
+            incremental::{
+                decapsulate as decapsulate_neon, encapsulate1 as encapsulate1_neon,
+                encapsulate2 as encapsulate2_neon,
+            },
+            Vector as NeonVector,
+        };
+
+        /// Encapsulate with `PublicKey1` to get `c1`.
+        pub fn encapsulate1(
+            public_key_part: &PublicKey1,
+            randomness: [u8; SHARED_SECRET_SIZE],
+        ) -> (Ciphertext1<C1_SIZE>, EncapsState<RANK, impl Operations>) {
+            if libcrux_platform::simd256_support() {
+                encapsulate1_avx2(public_key_part, randomness)
+            } else if libcrux_platform::simd128_support() {
+                encapsulate1_neon(public_key_part, randomness)
+            } else {
+                portable_instantiation::incremental::encapsulate1(public_key_part, randomness)
+            }
+        }
+
+        /// Encapsulate with `PublicKey2` to get `c2`.
+        pub fn encapsulate2(
+            state: &Box<dyn EncapsObject>,
+            public_key_part: &Box<PublicKey2<RANK, impl Operations>>,
+        ) -> Ciphertext2<C2_SIZE> {
+            if libcrux_platform::simd256_support() {
+                let avx2_state = state.downcast_ref().unwrap();
+                encapsulate2_avx2(state, public_key_part)
+            } else if libcrux_platform::simd128_support() {
+                encapsulate2_neon(state, public_key_part)
+            } else {
+                portable_instantiation::incremental::encapsulate1(public_key_part, randomness)
+            }
+        }
+
+        /// Decapsulate `c1` and `c2`.
+        pub fn decapsulate(
+            private_key: &MlKemPrivateKey,
+            ciphertext1: &Ciphertext1<C1_SIZE>,
+            ciphertext2: &Ciphertext2<C2_SIZE>,
+        ) -> MlKemSharedSecret {
+            if libcrux_platform::simd256_support() {
+                decapsulate_avx2(private_key, ciphertext1, ciphertext2)
+            } else if libcrux_platform::simd128_support() {
+                decapsulate_neon(private_key, ciphertext1, ciphertext2)
+            } else {
+                portable_instantiation::incremental::decapsulate(
+                    private_key,
+                    ciphertext1,
+                    ciphertext2,
+                )
             }
         }
     }

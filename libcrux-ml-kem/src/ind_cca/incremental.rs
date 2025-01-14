@@ -3,14 +3,20 @@
 //! **WARNING:** This API is not standard compliant and may lead to insecure
 //! usage. Use at your own risk.
 
+use core::any::Any;
+
 use crate::{
-    hash_functions::Hash, ind_cca::H_DIGEST_SIZE, ind_cpa, matrix::sample_matrix_A,
-    polynomial::PolynomialRingElement, utils::into_padded_array, SHARED_SECRET_SIZE,
+    hash_functions::Hash,
+    ind_cpa::{self, deserialize_secret_key, serialize_secret_key},
+    matrix::sample_matrix_A,
+    polynomial::PolynomialRingElement,
+    utils::into_padded_array,
+    SHARED_SECRET_SIZE,
 };
 
 use super::{
     unpacked::{encaps_prepare, MlKemPublicKeyUnpacked},
-    MlKemCiphertext, MlKemPrivateKey, MlKemSharedSecret, Operations, Variant,
+    MlKemPrivateKey, MlKemSharedSecret, Operations, Variant,
 };
 
 /// The incremental public key that allows generating [`Ciphertext1`].
@@ -34,8 +40,26 @@ pub struct Ciphertext1<const LEN: usize> {
 }
 
 /// The incremental public key that allows generating [`Ciphertext2`].
+#[repr(transparent)]
 pub struct PublicKey2<const K: usize, Vector: Operations> {
     t_as_ntt: [PolynomialRingElement<Vector>; K],
+}
+
+/// The incremental public key that allows generating [`Ciphertext2`].
+#[repr(transparent)]
+pub struct VectorBytes<const LEN: usize> {
+    // LEN = K * 512
+    bytes: [u8; LEN],
+}
+
+impl<const LEN: usize> VectorBytes<LEN> {
+    pub fn from_unpacked<const K: usize, Vector: Operations>(
+        pk: &MlKemPublicKeyUnpacked<K, Vector>,
+    ) -> Self {
+        Self {
+            bytes: serialize_secret_key(&pk.ind_cpa_public_key.t_as_ntt),
+        }
+    }
 }
 
 impl<const K: usize, Vector: Operations> From<&MlKemPublicKeyUnpacked<K, Vector>>
@@ -48,18 +72,28 @@ impl<const K: usize, Vector: Operations> From<&MlKemPublicKeyUnpacked<K, Vector>
     }
 }
 
+impl<const LEN: usize, const K: usize, Vector: Operations> From<&VectorBytes<LEN>>
+    for PublicKey2<K, Vector>
+{
+    fn from(pk: &VectorBytes<LEN>) -> Self {
+        Self {
+            t_as_ntt: deserialize_secret_key(&pk.bytes),
+        }
+    }
+}
+
 /// The partial ciphertext c2 - second part.
 pub struct Ciphertext2<const LEN: usize> {
     pub value: [u8; LEN],
 }
 
 /// The incremental state for encapsulate.
-pub struct EncapsState<const K: usize, Vector: Operations> {
-    pub shared_secret: MlKemSharedSecret,
-    pub rho: [u8; 32],
-    pub r_as_ntt: [PolynomialRingElement<Vector>; K],
-    pub error2: PolynomialRingElement<Vector>,
-    pub randomness: [u8; 32],
+pub struct EncapsState<const VEC_LEN: usize, const RE_LEN: usize> {
+    shared_secret: MlKemSharedSecret,
+    rho: [u8; 32],
+    r_as_ntt: [u8; VEC_LEN],
+    error2: [u8; RE_LEN],
+    randomness: [u8; 32],
 }
 
 pub(crate) fn encapsulate1<

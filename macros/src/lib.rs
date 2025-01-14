@@ -184,11 +184,11 @@ pub fn ml_kem_instantiations(args: TokenStream, item: TokenStream) -> TokenStrea
             let mut platform_types = quote! {};
             let vec_type = paths.first().unwrap();
             platform_types.extend(quote! {
-                type Vector = #vec_type;
+                pub(super) type Vector = #vec_type;
             });
             let hash_type = paths.get(1).unwrap();
             platform_types.extend(quote! {
-                type Hash = #hash_type;
+                pub(super) type Hash = #hash_type;
             });
 
             let mod_comment = format!("ML-KEM {} {}", params, platform_string);
