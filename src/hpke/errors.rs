@@ -63,11 +63,7 @@
 //! - `CryptoError`: An opaque error happened in a crypto operation outside of this code.
 
 use crate::aead::InvalidArgumentError;
-#[cfg(feature = "std")]
-use std::vec::Vec;
-
-#[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
+use crate::std::vec::Vec;
 
 /// Explicit errors generated throughout this specification.
 #[derive(Debug, Copy, Clone, PartialEq)]

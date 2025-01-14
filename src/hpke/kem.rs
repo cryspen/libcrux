@@ -3,11 +3,8 @@
 #![allow(non_camel_case_types, non_snake_case)]
 
 use libcrux_ecdh::{X25519PrivateKey, X25519PublicKey};
-#[cfg(feature = "std")]
-use std::{vec, vec::Vec};
 
-#[cfg(not(feature = "std"))]
-use alloc::{vec, vec::Vec};
+use crate::std::{vec, vec::Vec};
 
 use super::errors::*;
 use super::kdf::*;

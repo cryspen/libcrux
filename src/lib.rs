@@ -10,6 +10,9 @@ extern crate std;
 #[cfg(not(feature = "std"))]
 extern crate alloc;
 
+#[cfg(not(feature = "std"))]
+use alloc as std;
+
 pub use libcrux_platform::aes_ni_support;
 
 // Jasmin

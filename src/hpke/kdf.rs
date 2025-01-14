@@ -3,11 +3,8 @@
 
 use super::errors::*;
 use crate::hkdf::Algorithm;
-#[cfg(feature = "std")]
-use std::{vec, vec::Vec};
 
-#[cfg(not(feature = "std"))]
-use alloc::{vec, vec::Vec};
+use crate::std::{vec, vec::Vec};
 
 /// ## Key Derivation Functions (KDFs)
 ///

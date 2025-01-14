@@ -5,11 +5,8 @@
 use crate::hacl::drbg;
 // re-export here for convenience
 pub use rand::{CryptoRng, RngCore};
-#[cfg(feature = "std")]
-use std::{fmt, vec, vec::Vec};
 
-#[cfg(not(feature = "std"))]
-use alloc::{fmt, vec, vec::Vec};
+use crate::std::{fmt, vec, vec::Vec};
 
 #[derive(Debug)]
 pub enum Error {

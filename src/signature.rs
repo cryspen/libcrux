@@ -4,11 +4,7 @@
 //! * EdDSA 25519
 //! * RSA PSS
 
-#[cfg(feature = "std")]
-use std::{vec, vec::Vec};
-
-#[cfg(not(feature = "std"))]
-use alloc::{vec, vec::Vec};
+use crate::std::{vec, vec::Vec};
 
 use crate::{
     ecdh,
