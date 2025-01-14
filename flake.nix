@@ -14,7 +14,7 @@
       url = "github:aeneasverif/eurydice";
       inputs.charon.follows = "charon";
     };
-    fstar.follows = "eurydice/fstar";
+    fstar.follows = "karamel/fstar";
     karamel.follows = "eurydice/karamel";
     hax.url = "github:hacspec/hax";
   };
@@ -60,7 +60,8 @@
           FSTAR_REV = inputs.fstar.rev;
         };
 
-        craneLib = inputs.crane.mkLib pkgs;
+        rustToolchain = inputs.charon.packages.${system}.rustToolchain;
+        craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustToolchain;
 
         ml-kem = pkgs.callPackage
           ({ lib
@@ -68,6 +69,7 @@
            , cmake
            , mold-wrapped
            , ninja
+           , git
            , python3
            , runCommand
            , craneLib
@@ -98,7 +100,9 @@
                 cmake
                 mold-wrapped
                 ninja
+                git
                 python3
+                inputs.fstar.packages.${system}.default
               ] ++ lib.optional checkHax [
                 hax
               ];
