@@ -45,7 +45,7 @@ pub(crate) fn load_block<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: [&[U8
     for i in 0..RATE / 8 {
         // FIXME: make everything secret integers.
         s[i / 5][i % 5] ^=
-            U64::from_le_bytes(blocks[0][8 * i..8 * i + 8].try_into().unwrap()).declassify();
+            u64::from_le_bytes(blocks[0][8 * i..8 * i + 8].declassify().try_into().unwrap());
     }
 }
 
