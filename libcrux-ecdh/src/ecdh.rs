@@ -1,12 +1,7 @@
 //! # ECDH
 //!
-//! Depending on the platform and available features the most efficient implementation
-//! is chosen.
-//!
 //! ## x25519
-//! For x25519 the portable HACL implementation is used unless running on an x64
-//! CPU with BMI2 and ADX support. In this case the libjade implementation is
-//! used.
+//! For x25519 the portable HACL implementation is used.
 //!
 //! ## P256
 //! For P256 the portable HACL implementation is used.
