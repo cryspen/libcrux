@@ -53,7 +53,6 @@ let vector_times_ring_element
           in
           vector)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   vector
 
 let add_vectors
@@ -85,7 +84,6 @@ let add_vectors
           <:
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   lhs
 
 let compute_as1_plus_s2
@@ -187,7 +185,6 @@ let compute_as1_plus_s2
           in
           result)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   result
 
 let compute_matrix_x_mask
@@ -264,7 +261,6 @@ let compute_matrix_x_mask
           in
           result)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   result
 
 let compute_w_approx
@@ -366,7 +362,6 @@ let compute_w_approx
           in
           t1)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   t1
 
 let subtract_vectors
@@ -398,5 +393,4 @@ let subtract_vectors
           <:
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   lhs

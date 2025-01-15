@@ -8,9 +8,7 @@ let generate_key_pair
       (signing_key: t_Array u8 (sz 4032))
       (verification_key: t_Array u8 (sz 1952))
      =
-  let (signing_key, verification_key), hax_temp_output:((t_Array u8 (sz 4032) & t_Array u8 (sz 1952)
-    ) &
-    Prims.unit) =
+  let signing_key, verification_key:(t_Array u8 (sz 4032) & t_Array u8 (sz 1952)) =
     if Libcrux_platform.Platform.simd256_support ()
     then
       let tmp0, tmp1:(t_Array u8 (sz 4032) & t_Array u8 (sz 1952)) =
@@ -21,9 +19,7 @@ let generate_key_pair
       let signing_key:t_Array u8 (sz 4032) = tmp0 in
       let verification_key:t_Array u8 (sz 1952) = tmp1 in
       let _:Prims.unit = () in
-      (signing_key, verification_key <: (t_Array u8 (sz 4032) & t_Array u8 (sz 1952))), ()
-      <:
-      ((t_Array u8 (sz 4032) & t_Array u8 (sz 1952)) & Prims.unit)
+      signing_key, verification_key <: (t_Array u8 (sz 4032) & t_Array u8 (sz 1952))
     else
       if Libcrux_platform.Platform.simd128_support ()
       then
@@ -35,9 +31,7 @@ let generate_key_pair
         let signing_key:t_Array u8 (sz 4032) = tmp0 in
         let verification_key:t_Array u8 (sz 1952) = tmp1 in
         let _:Prims.unit = () in
-        (signing_key, verification_key <: (t_Array u8 (sz 4032) & t_Array u8 (sz 1952))), ()
-        <:
-        ((t_Array u8 (sz 4032) & t_Array u8 (sz 1952)) & Prims.unit)
+        signing_key, verification_key <: (t_Array u8 (sz 4032) & t_Array u8 (sz 1952))
       else
         let tmp0, tmp1:(t_Array u8 (sz 4032) & t_Array u8 (sz 1952)) =
           Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.Ml_dsa_65_.generate_key_pair randomness
@@ -47,9 +41,7 @@ let generate_key_pair
         let signing_key:t_Array u8 (sz 4032) = tmp0 in
         let verification_key:t_Array u8 (sz 1952) = tmp1 in
         let _:Prims.unit = () in
-        (signing_key, verification_key <: (t_Array u8 (sz 4032) & t_Array u8 (sz 1952))), ()
-        <:
-        ((t_Array u8 (sz 4032) & t_Array u8 (sz 1952)) & Prims.unit)
+        signing_key, verification_key <: (t_Array u8 (sz 4032) & t_Array u8 (sz 1952))
   in
   signing_key, verification_key <: (t_Array u8 (sz 4032) & t_Array u8 (sz 1952))
 

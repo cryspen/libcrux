@@ -682,7 +682,6 @@ let sample_four_error_ring_elements
           <:
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   re
 
 let sample_mask_ring_element
@@ -697,8 +696,7 @@ let sample_mask_ring_element
       (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (gamma1_exponent: usize)
      =
-  let result, hax_temp_output:(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit &
-    Prims.unit) =
+  let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
     match cast (gamma1_exponent <: usize) <: u8 with
     | 17uy ->
       let out:t_Array u8 (sz 576) = Rust_primitives.Hax.repeat 0uy (sz 576) in
@@ -715,7 +713,7 @@ let sample_mask_ring_element
           (out <: t_Slice u8)
           result
       in
-      result, () <: (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & Prims.unit)
+      result
     | 19uy ->
       let out:t_Array u8 (sz 640) = Rust_primitives.Hax.repeat 0uy (sz 640) in
       let out:t_Array u8 (sz 640) =
@@ -731,15 +729,8 @@ let sample_mask_ring_element
           (out <: t_Slice u8)
           result
       in
-      result, () <: (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & Prims.unit)
-    | _ ->
-      result,
-      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-          <:
-          Rust_primitives.Hax.t_Never)
-      <:
-      (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit & Prims.unit)
+      result
+    | _ -> result
   in
   result
 
@@ -936,7 +927,6 @@ let sample_mask_vector
           <:
           (u16 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   domain_separator, mask
   <:
   (u16 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
@@ -1205,7 +1195,6 @@ let sample_up_to_four_ring_elements_flat
           <:
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   matrix, rand_stack0, rand_stack1, rand_stack2, rand_stack3, tmp_stack
   <:
   (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) & t_Array u8 (sz 840) &

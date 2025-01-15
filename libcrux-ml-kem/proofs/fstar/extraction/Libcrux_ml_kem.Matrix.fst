@@ -134,7 +134,7 @@ let sample_matrix_A
   in
   let result:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = admit () (* Panic freedom *) in
-  let hax_temp_output:Prims.unit = result in
+  let _:Prims.unit = result in
   v_A_transpose
 
 let compute_As_plus_e
@@ -229,7 +229,7 @@ let compute_As_plus_e
   in
   let result:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = admit () (* Panic freedom *) in
-  let hax_temp_output:Prims.unit = result in
+  let _:Prims.unit = result in
   tt_as_ntt
 
 #push-options "--admit_smt_queries true"

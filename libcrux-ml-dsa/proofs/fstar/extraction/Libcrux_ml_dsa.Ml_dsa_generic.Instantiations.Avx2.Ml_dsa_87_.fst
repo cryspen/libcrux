@@ -43,7 +43,7 @@ let generate_key_pair (randomness: t_Array u8 (sz 32)) (signing_key verification
   in
   let signing_key:t_Slice u8 = tmp0 in
   let verification_key:t_Slice u8 = tmp1 in
-  let hax_temp_output:Prims.unit = () in
+  let _:Prims.unit = () in
   signing_key, verification_key <: (t_Slice u8 & t_Slice u8)
 
 let sign___inner

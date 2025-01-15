@@ -23,8 +23,6 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations>(
             );
         }
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -42,6 +40,4 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
             &mut t1[i],
         );
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }

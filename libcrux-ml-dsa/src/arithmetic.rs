@@ -27,8 +27,6 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
     for i in 0..re.simd_units.len() {
         SIMDUnit::shift_left_then_reduce::<SHIFT_BY>(&mut re.simd_units[i]);
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -41,8 +39,6 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
             SIMDUnit::power2round(&mut t[i].simd_units[j], &mut t1[i].simd_units[j]);
         }
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -63,8 +59,6 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
             );
         }
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -110,6 +104,4 @@ pub(crate) fn use_hint<SIMDUnit: Operations>(
         }
         re_vector[i] = tmp;
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }

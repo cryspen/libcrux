@@ -27,8 +27,6 @@ pub(crate) fn compute_as1_plus_s2<SIMDUnit: Operations>(
         invert_ntt_montgomery::<SIMDUnit>(&mut result[i]);
         PolynomialRingElement::add(&mut result[i], &s1_s2[columns_in_a + i]);
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 /// Compute InvertNTT(Â ◦ ŷ)
@@ -48,8 +46,6 @@ pub(crate) fn compute_matrix_x_mask<SIMDUnit: Operations>(
         }
         invert_ntt_montgomery(&mut result[i]);
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -61,8 +57,6 @@ pub(crate) fn vector_times_ring_element<SIMDUnit: Operations>(
         ntt_multiply_montgomery(&mut vector[i], ring_element);
         invert_ntt_montgomery(&mut vector[i]);
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -74,8 +68,6 @@ pub(crate) fn add_vectors<SIMDUnit: Operations>(
     for i in 0..dimension {
         PolynomialRingElement::<SIMDUnit>::add(&mut lhs[i], &rhs[i]);
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -87,8 +79,6 @@ pub(crate) fn subtract_vectors<SIMDUnit: Operations>(
     for i in 0..dimension {
         PolynomialRingElement::<SIMDUnit>::subtract(&mut lhs[i], &rhs[i]);
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 /// Compute InvertNTT(Â ◦ ẑ - ĉ ◦ NTT(t₁2ᵈ))
@@ -116,6 +106,4 @@ pub(crate) fn compute_w_approx<SIMDUnit: Operations>(
         t1[i] = inner_result;
         invert_ntt_montgomery(&mut t1[i]);
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }

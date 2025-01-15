@@ -152,7 +152,6 @@ let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
           <:
           Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   lhs
 
 let compute_hint
@@ -273,7 +272,6 @@ let decompose
           (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   low, high
   <:
   (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
@@ -359,7 +357,6 @@ let montgomery_multiply (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coe
           <:
           Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   lhs
 
 let montgomery_multiply_by_constant
@@ -404,7 +401,6 @@ let montgomery_multiply_by_constant
           <:
           Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   simd_unit
 
 let power2round (t0 t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
@@ -466,7 +462,6 @@ let power2round (t0 t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
           (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   t0, t1
   <:
   (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
@@ -511,7 +506,6 @@ let shift_left_then_reduce
           <:
           Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   simd_unit
 
 let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
@@ -546,7 +540,6 @@ let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) 
           <:
           Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   lhs
 
 let use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
@@ -582,5 +575,4 @@ let use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_
           <:
           Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   hint

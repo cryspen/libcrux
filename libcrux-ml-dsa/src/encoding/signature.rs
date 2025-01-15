@@ -47,9 +47,6 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
         }
         signature[offset + max_ones_in_hint + i] = true_hints_seen as u8;
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]

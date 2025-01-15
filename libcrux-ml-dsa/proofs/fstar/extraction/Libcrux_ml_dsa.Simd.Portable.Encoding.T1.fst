@@ -86,7 +86,6 @@ let deserialize
           in
           simd_unit)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   simd_unit
 
 let serialize
@@ -148,5 +147,4 @@ let serialize
           in
           serialized)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized

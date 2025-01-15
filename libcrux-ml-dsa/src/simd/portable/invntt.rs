@@ -212,9 +212,6 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
         re[j + STEP_BY] = a_minus_b;
         arithmetic::montgomery_multiply_by_constant(&mut re[j + STEP_BY], ZETA);
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -301,7 +298,4 @@ pub(crate) fn invert_ntt_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_E
         // - Convert the elements form montgomery domain to the standard domain.
         arithmetic::montgomery_multiply_by_constant(&mut re[i], 41_978);
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }

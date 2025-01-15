@@ -126,7 +126,6 @@ let matrix_flat
             t_Array u8 (sz 840) &
             t_Array (t_Array i32 (sz 263)) (sz 4)))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   matrix
 
 let sample_s1_and_s2
@@ -169,8 +168,7 @@ let sample_s1_and_s2
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
   in
   let remainder:usize = len %! sz 4 in
-  let s1_s2, hax_temp_output:(t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-    Prims.unit) =
+  let s1_s2:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     if remainder <>. sz 0
     then
       let s1_s2:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
@@ -181,12 +179,7 @@ let sample_s1_and_s2
           (cast (len -! remainder <: usize) <: u16)
           s1_s2
       in
-      s1_s2, ()
-      <:
-      (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) & Prims.unit)
-    else
-      s1_s2, ()
-      <:
-      (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) & Prims.unit)
+      s1_s2
+    else s1_s2
   in
   s1_s2

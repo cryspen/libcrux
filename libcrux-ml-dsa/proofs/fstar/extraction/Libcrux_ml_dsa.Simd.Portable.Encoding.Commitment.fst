@@ -7,7 +7,7 @@ let serialize
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
      =
-  let serialized, hax_temp_output:(t_Slice u8 & Prims.unit) =
+  let serialized:t_Slice u8 =
     match cast (Core.Slice.impl__len #u8 serialized <: usize) <: u8 with
     | 4uy ->
       let serialized:t_Slice u8 =
@@ -30,7 +30,7 @@ let serialize
               in
               serialized)
       in
-      serialized, (() <: Prims.unit) <: (t_Slice u8 & Prims.unit)
+      serialized
     | 6uy ->
       let serialized:t_Slice u8 =
         Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 4)
@@ -64,14 +64,7 @@ let serialize
               in
               serialized)
       in
-      serialized, (() <: Prims.unit) <: (t_Slice u8 & Prims.unit)
-    | _ ->
-      serialized,
-      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-          <:
-          Rust_primitives.Hax.t_Never)
-      <:
-      (t_Slice u8 & Prims.unit)
+      serialized
+    | _ -> serialized
   in
   serialized

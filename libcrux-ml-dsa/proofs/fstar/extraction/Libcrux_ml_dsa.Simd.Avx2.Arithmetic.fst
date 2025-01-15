@@ -4,10 +4,8 @@ open Core
 open FStar.Mul
 
 let add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let hax_temp_output, lhs:(Prims.unit & Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-    (), Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 lhs rhs
-    <:
-    (Prims.unit & Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 lhs rhs
   in
   lhs
 
@@ -70,10 +68,8 @@ let infinity_norm_exceeds (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) 
   result <>. 1l
 
 let subtract (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let hax_temp_output, lhs:(Prims.unit & Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-    (), Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 lhs rhs
-    <:
-    (Prims.unit & Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 lhs rhs
   in
   lhs
 
@@ -378,9 +374,8 @@ let use_hint (gamma2: i32) (r hint: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let r1_plus_hints:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 r1 hints
   in
-  let (hint, r1_plus_hints), hax_temp_output:((Libcrux_intrinsics.Avx2_extract.t_Vec256 &
-      Libcrux_intrinsics.Avx2_extract.t_Vec256) &
-    Prims.unit) =
+  let hint, r1_plus_hints:(Libcrux_intrinsics.Avx2_extract.t_Vec256 &
+    Libcrux_intrinsics.Avx2_extract.t_Vec256) =
     match gamma2 <: i32 with
     | 95232l ->
       let max:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -397,13 +392,9 @@ let use_hint (gamma2: i32) (r hint: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
           all_zeros
           greater_than_or_equal_to_max
       in
-      (hint, r1_plus_hints
-        <:
-        (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)),
-      ()
+      hint, r1_plus_hints
       <:
-      ((Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256) &
-        Prims.unit)
+      (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)
     | 261888l ->
       let hint:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
         Libcrux_intrinsics.Avx2_extract.mm256_and_si256 r1_plus_hints
@@ -411,23 +402,12 @@ let use_hint (gamma2: i32) (r hint: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
             <:
             Libcrux_intrinsics.Avx2_extract.t_Vec256)
       in
-      (hint, r1_plus_hints
-        <:
-        (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)),
-      ()
+      hint, r1_plus_hints
       <:
-      ((Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256) &
-        Prims.unit)
+      (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)
     | _ ->
-      (hint, r1_plus_hints
-        <:
-        (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)),
-      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-          <:
-          Rust_primitives.Hax.t_Never)
+      hint, r1_plus_hints
       <:
-      ((Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256) &
-        Prims.unit)
+      (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   hint

@@ -615,17 +615,13 @@ let impl_4__serialized_public_key_mut
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
      =
-  let hax_temp_output, serialized:(Prims.unit &
-    Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE) =
-    (),
+  let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE =
     impl_3__serialized_mut v_K
       #v_Vector
       v_RANKED_BYTES_PER_RING_ELEMENT
       v_PUBLIC_KEY_SIZE
       self.f_public_key
       serialized
-    <:
-    (Prims.unit & Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
   in
   serialized
 

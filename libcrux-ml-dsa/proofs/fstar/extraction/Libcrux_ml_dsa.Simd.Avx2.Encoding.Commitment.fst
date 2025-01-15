@@ -5,7 +5,7 @@ open FStar.Mul
 
 let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8) =
   let serialized:t_Array u8 (sz 19) = Rust_primitives.Hax.repeat 0uy (sz 19) in
-  let (out, serialized), hax_temp_output:((t_Slice u8 & t_Array u8 (sz 19)) & Prims.unit) =
+  let out, serialized:(t_Slice u8 & t_Array u8 (sz 19)) =
     match cast (Core.Slice.impl__len #u8 out <: usize) <: u8 with
     | 4uy ->
       let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -59,9 +59,7 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
             <:
             t_Slice u8)
       in
-      (out, serialized <: (t_Slice u8 & t_Array u8 (sz 19))), ()
-      <:
-      ((t_Slice u8 & t_Array u8 (sz 19)) & Prims.unit)
+      out, serialized <: (t_Slice u8 & t_Array u8 (sz 19))
     | 6uy ->
       let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
         Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 simd_unit
@@ -142,16 +140,7 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
             <:
             t_Slice u8)
       in
-      (out, serialized <: (t_Slice u8 & t_Array u8 (sz 19))), ()
-      <:
-      ((t_Slice u8 & t_Array u8 (sz 19)) & Prims.unit)
-    | _ ->
-      (out, serialized <: (t_Slice u8 & t_Array u8 (sz 19))),
-      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-          <:
-          Rust_primitives.Hax.t_Never)
-      <:
-      ((t_Slice u8 & t_Array u8 (sz 19)) & Prims.unit)
+      out, serialized <: (t_Slice u8 & t_Array u8 (sz 19))
+    | _ -> out, serialized <: (t_Slice u8 & t_Array u8 (sz 19))
   in
   out

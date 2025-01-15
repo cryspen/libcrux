@@ -212,7 +212,6 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
         arithmetic::subtract(&mut re[j + STEP_BY], &tmp);
         arithmetic::add(&mut re[j], &tmp);
     }
-    () // Needed because of https://github.com/hacspec/hax/issues/720
 }
 
 #[inline(always)]

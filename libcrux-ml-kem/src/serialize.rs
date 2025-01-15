@@ -297,8 +297,6 @@ fn compress_then_serialize_4<Vector: Operations>(
     serialized: &mut [u8],
 ) {
     hax_lib::fstar!(r#"assert_norm (pow2 4 == 16)"#);
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..VECTORS_IN_RING_ELEMENT {
         // NOTE: Using `$serialized` in loop_invariant doesn't work here
         hax_lib::loop_invariant!(|i: usize| {
@@ -317,7 +315,6 @@ fn compress_then_serialize_4<Vector: Operations>(
         let bytes = Vector::serialize_4(coefficient);
         serialized[8 * i..8 * i + 8].copy_from_slice(&bytes);
     }
-    ()
 }
 
 #[inline(always)]
@@ -332,8 +329,6 @@ fn compress_then_serialize_5<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
     serialized: &mut [u8],
 ) {
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficients =
             Vector::compress::<5>(to_unsigned_representative::<Vector>(re.coefficients[i]));
@@ -341,7 +336,6 @@ fn compress_then_serialize_5<Vector: Operations>(
         let bytes = Vector::serialize_5(coefficients);
         serialized[10 * i..10 * i + 10].copy_from_slice(&bytes);
     }
-    ()
 }
 
 #[inline(always)]

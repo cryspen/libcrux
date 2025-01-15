@@ -91,5 +91,4 @@ let ntt_multiply_montgomery
           <:
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   lhs

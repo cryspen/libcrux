@@ -649,8 +649,6 @@ fn compress_then_serialize_u<
         assert (v ($OUT_LEN /! $K) == v $OUT_LEN / v $K);
         assert (v $OUT_LEN / v $K == 32 * v $COMPRESSION_FACTOR)"
     );
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     cloop! {
         for (i, re) in input.into_iter().enumerate() {
             hax_lib::loop_invariant!(|i: usize| { fstar!(r#"(v $i < v $K ==> Seq.length out == v $OUT_LEN /\
@@ -684,8 +682,7 @@ fn compress_then_serialize_u<
         "Lib.Sequence.eq_intro #u8 #(v $OUT_LEN) out
         (Spec.MLKEM.compress_then_encode_u #$K
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $input))"
-    );
-    ()
+    )
 }
 
 /// This function implements <strong>Algorithm 13</strong> of the

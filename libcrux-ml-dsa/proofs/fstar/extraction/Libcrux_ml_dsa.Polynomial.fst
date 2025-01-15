@@ -100,7 +100,6 @@ let impl__from_i32_array
           <:
           t_PolynomialRingElement v_SIMDUnit)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   result
 
 let impl__zero
@@ -159,7 +158,6 @@ let impl__add
           <:
           t_PolynomialRingElement v_SIMDUnit)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   self
 
 let impl__infinity_norm_exceeds
@@ -228,7 +226,6 @@ let impl__subtract
           <:
           t_PolynomialRingElement v_SIMDUnit)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   self
 
 let impl__to_i32_array

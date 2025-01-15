@@ -95,7 +95,6 @@ let add_error_reduce
           in
           myself)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   myself
 
 #pop-options
@@ -225,7 +224,6 @@ let add_standard_error_reduce
           in
           myself)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   myself
 
 #pop-options
@@ -277,7 +275,6 @@ let poly_barrett_reduce
           <:
           t_PolynomialRingElement v_Vector)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   myself
 
 #pop-options
@@ -540,7 +537,6 @@ let add_to_ring_element
           <:
           t_PolynomialRingElement v_Vector)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   myself
 
 #pop-options

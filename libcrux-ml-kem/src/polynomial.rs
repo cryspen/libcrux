@@ -92,24 +92,18 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
     myself: &mut PolynomialRingElement<Vector>,
     rhs: &PolynomialRingElement<Vector>,
 ) {
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..myself.coefficients.len() {
         myself.coefficients[i] = Vector::add(myself.coefficients[i], &rhs.coefficients[i]);
     }
-    ()
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>) {
     // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..VECTORS_IN_RING_ELEMENT {
         myself.coefficients[i] = Vector::barrett_reduce(myself.coefficients[i]);
     }
-    ()
 }
 
 #[inline(always)]
@@ -172,8 +166,6 @@ fn add_error_reduce<Vector: Operations>(
     error: &PolynomialRingElement<Vector>,
 ) {
     // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for j in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(myself.coefficients[j], 1441);
@@ -181,7 +173,6 @@ fn add_error_reduce<Vector: Operations>(
         myself.coefficients[j] =
             Vector::barrett_reduce(Vector::add(coefficient_normal_form, &error.coefficients[j]));
     }
-    ()
 }
 
 #[inline(always)]
@@ -191,8 +182,6 @@ fn add_standard_error_reduce<Vector: Operations>(
     error: &PolynomialRingElement<Vector>,
 ) {
     // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for j in 0..VECTORS_IN_RING_ELEMENT {
         // The coefficients are of the form aR^{-1} mod q, which means
         // calling to_montgomery_domain() on them should return a mod q.
@@ -201,7 +190,6 @@ fn add_standard_error_reduce<Vector: Operations>(
         myself.coefficients[j] =
             Vector::barrett_reduce(Vector::add(coefficient_normal_form, &error.coefficients[j]));
     }
-    ()
 }
 
 /// Given two `KyberPolynomialRingElement`s in their NTT representations,

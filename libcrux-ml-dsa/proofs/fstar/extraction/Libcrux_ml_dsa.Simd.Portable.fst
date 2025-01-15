@@ -35,11 +35,8 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     f_from_coefficient_array
     =
     (fun (array: t_Slice i32) (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) ->
-        let hax_temp_output, out:(Prims.unit &
-          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-          (), Libcrux_ml_dsa.Simd.Portable.Vector_type.from_coefficient_array array out
-          <:
-          (Prims.unit & Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        let out:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+          Libcrux_ml_dsa.Simd.Portable.Vector_type.from_coefficient_array array out
         in
         out);
     f_to_coefficient_array_pre
@@ -57,10 +54,8 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     f_to_coefficient_array
     =
     (fun (value: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) (out: t_Slice i32) ->
-        let hax_temp_output, out:(Prims.unit & t_Slice i32) =
-          (), Libcrux_ml_dsa.Simd.Portable.Vector_type.to_coefficient_array value out
-          <:
-          (Prims.unit & t_Slice i32)
+        let out:t_Slice i32 =
+          Libcrux_ml_dsa.Simd.Portable.Vector_type.to_coefficient_array value out
         in
         out);
     f_add_pre
@@ -84,11 +79,8 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         (lhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         (rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         ->
-        let hax_temp_output, lhs:(Prims.unit &
-          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-          (), Libcrux_ml_dsa.Simd.Portable.Arithmetic.add lhs rhs
-          <:
-          (Prims.unit & Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+          Libcrux_ml_dsa.Simd.Portable.Arithmetic.add lhs rhs
         in
         lhs);
     f_subtract_pre
@@ -112,11 +104,8 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         (lhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         (rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         ->
-        let hax_temp_output, lhs:(Prims.unit &
-          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-          (), Libcrux_ml_dsa.Simd.Portable.Arithmetic.subtract lhs rhs
-          <:
-          (Prims.unit & Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+          Libcrux_ml_dsa.Simd.Portable.Arithmetic.subtract lhs rhs
         in
         lhs);
     f_montgomery_multiply_pre
@@ -192,7 +181,7 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         in
         let t0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = tmp0 in
         let t1:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = tmp1 in
-        let hax_temp_output:Prims.unit = () in
+        let _:Prims.unit = () in
         t0, t1
         <:
         (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
@@ -247,7 +236,7 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         in
         let low:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = tmp0 in
         let high:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = tmp1 in
-        let hax_temp_output:Prims.unit = () in
+        let _:Prims.unit = () in
         low, high
         <:
         (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
@@ -309,11 +298,8 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         (hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         ->
-        let hax_temp_output, hint:(Prims.unit &
-          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-          (), Libcrux_ml_dsa.Simd.Portable.Arithmetic.use_hint gamma2 simd_unit hint
-          <:
-          (Prims.unit & Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        let hint:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+          Libcrux_ml_dsa.Simd.Portable.Arithmetic.use_hint gamma2 simd_unit hint
         in
         hint);
     f_rejection_sample_less_than_field_modulus_pre
@@ -388,13 +374,10 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         (serialized: t_Slice u8)
         (gamma1_exponent: usize)
         ->
-        let hax_temp_output, serialized:(Prims.unit & t_Slice u8) =
-          (),
+        let serialized:t_Slice u8 =
           Libcrux_ml_dsa.Simd.Portable.Encoding.Gamma1.serialize simd_unit
             serialized
             gamma1_exponent
-          <:
-          (Prims.unit & t_Slice u8)
         in
         serialized);
     f_gamma1_deserialize_pre
@@ -421,12 +404,8 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         (gamma1_exponent: usize)
         ->
-        let hax_temp_output, out:(Prims.unit &
-          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-          (),
+        let out:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
           Libcrux_ml_dsa.Simd.Portable.Encoding.Gamma1.deserialize serialized out gamma1_exponent
-          <:
-          (Prims.unit & Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         in
         out);
     f_commitment_serialize_pre
@@ -450,10 +429,8 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         (serialized: t_Slice u8)
         ->
-        let hax_temp_output, serialized:(Prims.unit & t_Slice u8) =
-          (), Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.serialize simd_unit serialized
-          <:
-          (Prims.unit & t_Slice u8)
+        let serialized:t_Slice u8 =
+          Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.serialize simd_unit serialized
         in
         serialized);
     f_error_serialize_pre
@@ -480,10 +457,8 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         (serialized: t_Slice u8)
         ->
-        let hax_temp_output, serialized:(Prims.unit & t_Slice u8) =
-          (), Libcrux_ml_dsa.Simd.Portable.Encoding.Error.serialize eta simd_unit serialized
-          <:
-          (Prims.unit & t_Slice u8)
+        let serialized:t_Slice u8 =
+          Libcrux_ml_dsa.Simd.Portable.Encoding.Error.serialize eta simd_unit serialized
         in
         serialized);
     f_error_deserialize_pre
@@ -529,11 +504,7 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     f_t0_serialize
     =
     (fun (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) (out: t_Slice u8) ->
-        let hax_temp_output, out:(Prims.unit & t_Slice u8) =
-          (), Libcrux_ml_dsa.Simd.Portable.Encoding.T0.serialize simd_unit out
-          <:
-          (Prims.unit & t_Slice u8)
-        in
+        let out:t_Slice u8 = Libcrux_ml_dsa.Simd.Portable.Encoding.T0.serialize simd_unit out in
         out);
     f_t0_deserialize_pre
     =
@@ -550,11 +521,8 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     f_t0_deserialize
     =
     (fun (serialized: t_Slice u8) (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) ->
-        let hax_temp_output, out:(Prims.unit &
-          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-          (), Libcrux_ml_dsa.Simd.Portable.Encoding.T0.deserialize serialized out
-          <:
-          (Prims.unit & Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        let out:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+          Libcrux_ml_dsa.Simd.Portable.Encoding.T0.deserialize serialized out
         in
         out);
     f_t1_serialize_pre
@@ -607,11 +575,8 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     f_ntt
     =
     (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) ->
-        let hax_temp_output, simd_units:(Prims.unit &
-          t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) =
-          (), Libcrux_ml_dsa.Simd.Portable.Ntt.ntt simd_units
-          <:
-          (Prims.unit & t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
+        let simd_units:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32) =
+          Libcrux_ml_dsa.Simd.Portable.Ntt.ntt simd_units
         in
         simd_units);
     f_invert_ntt_montgomery_pre
@@ -628,11 +593,8 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     f_invert_ntt_montgomery
     =
     fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) ->
-      let hax_temp_output, simd_units:(Prims.unit &
-        t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) =
-        (), Libcrux_ml_dsa.Simd.Portable.Invntt.invert_ntt_montgomery simd_units
-        <:
-        (Prims.unit & t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
+      let simd_units:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32) =
+        Libcrux_ml_dsa.Simd.Portable.Invntt.invert_ntt_montgomery simd_units
       in
       simd_units
   }

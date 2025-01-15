@@ -21,9 +21,6 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
                 );
         }
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -49,9 +46,6 @@ fn deserialize<SIMDUnit: Operations>(
             &mut result.simd_units[i],
         );
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -67,8 +61,6 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
             ntt(&mut ring_elements[i]);
         }
     }
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[cfg(test)]

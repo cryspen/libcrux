@@ -5,62 +5,62 @@ open FStar.Mul
 
 val deserialize_10_int (bytes: t_Slice u8)
     : Prims.Pure (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
-      (requires Core.Slice.impl__len #u8 bytes =. sz 10)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 10)
       (fun _ -> Prims.l_True)
 
 val deserialize_11_int (bytes: t_Slice u8)
     : Prims.Pure (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
-      (requires Core.Slice.impl__len #u8 bytes =. sz 11)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 11)
       (fun _ -> Prims.l_True)
 
 val deserialize_12_int (bytes: t_Slice u8)
     : Prims.Pure (i16 & i16)
-      (requires Core.Slice.impl__len #u8 bytes =. sz 3)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 3)
       (fun _ -> Prims.l_True)
 
 val deserialize_4_int (bytes: t_Slice u8)
     : Prims.Pure (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
-      (requires Core.Slice.impl__len #u8 bytes =. sz 4)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 4)
       (fun _ -> Prims.l_True)
 
 val deserialize_5_int (bytes: t_Slice u8)
     : Prims.Pure (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
-      (requires Core.Slice.impl__len #u8 bytes =. sz 5)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 5)
       (fun _ -> Prims.l_True)
 
 val serialize_10_int (v: t_Slice i16)
     : Prims.Pure (u8 & u8 & u8 & u8 & u8)
-      (requires Core.Slice.impl__len #i16 v =. sz 4)
+      (requires (Core.Slice.impl__len #i16 v <: usize) =. sz 4)
       (fun _ -> Prims.l_True)
 
 val serialize_11_int (v: t_Slice i16)
     : Prims.Pure (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8)
-      (requires Core.Slice.impl__len #i16 v =. sz 8)
+      (requires (Core.Slice.impl__len #i16 v <: usize) =. sz 8)
       (fun _ -> Prims.l_True)
 
 val serialize_12_int (v: t_Slice i16)
     : Prims.Pure (u8 & u8 & u8)
-      (requires Core.Slice.impl__len #i16 v =. sz 2)
+      (requires (Core.Slice.impl__len #i16 v <: usize) =. sz 2)
       (fun _ -> Prims.l_True)
 
 val serialize_4_int (v: t_Slice i16)
     : Prims.Pure (u8 & u8 & u8 & u8)
-      (requires Core.Slice.impl__len #i16 v =. sz 8)
+      (requires (Core.Slice.impl__len #i16 v <: usize) =. sz 8)
       (fun _ -> Prims.l_True)
 
 val serialize_5_int (v: t_Slice i16)
     : Prims.Pure (u8 & u8 & u8 & u8 & u8)
-      (requires Core.Slice.impl__len #i16 v =. sz 8)
+      (requires (Core.Slice.impl__len #i16 v <: usize) =. sz 8)
       (fun _ -> Prims.l_True)
 
 val deserialize_11_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires Core.Slice.impl__len #u8 bytes =. sz 22)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 22)
       (fun _ -> Prims.l_True)
 
 val deserialize_5_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires Core.Slice.impl__len #u8 bytes =. sz 10)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 10)
       (fun _ -> Prims.l_True)
 
 val serialize_11_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -71,7 +71,7 @@ val serialize_5_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
 val deserialize_1_ (v: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires Core.Slice.impl__len #u8 v =. sz 2)
+      (requires (Core.Slice.impl__len #u8 v <: usize) =. sz 2)
       (fun _ -> Prims.l_True)
 
 val deserialize_1_lemma (inputs: t_Array u8 (sz 2)) : Lemma
@@ -82,7 +82,7 @@ val deserialize_1_bounded_lemma (inputs: t_Array u8 (sz 2)) : Lemma
 
 val deserialize_10_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires Core.Slice.impl__len #u8 bytes =. sz 20)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 20)
       (fun _ -> Prims.l_True)
 
 val deserialize_10_lemma (inputs: t_Array u8 (sz 20)) : Lemma
@@ -93,7 +93,7 @@ val deserialize_10_bounded_lemma (inputs: t_Array u8 (sz 20)) : Lemma
 
 val deserialize_12_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires Core.Slice.impl__len #u8 bytes =. sz 24)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 24)
       (fun _ -> Prims.l_True)
 
 val deserialize_12_lemma (inputs: t_Array u8 (sz 24)) : Lemma
@@ -104,7 +104,7 @@ val deserialize_12_bounded_lemma (inputs: t_Array u8 (sz 24)) : Lemma
 
 val deserialize_4_ (bytes: t_Slice u8)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires Core.Slice.impl__len #u8 bytes =. sz 8)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 8)
       (fun _ -> Prims.l_True)
 
 val deserialize_4_lemma (inputs: t_Array u8 (sz 8)) : Lemma

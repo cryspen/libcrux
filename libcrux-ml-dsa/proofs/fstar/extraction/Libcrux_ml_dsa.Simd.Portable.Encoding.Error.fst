@@ -180,7 +180,6 @@ let deserialize_when_eta_is_4_
           in
           simd_units)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   simd_units
 
 let deserialize
@@ -188,16 +187,10 @@ let deserialize
       (serialized: t_Slice u8)
       (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
      =
-  let out, hax_temp_output:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & Prims.unit) =
+  let out:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     match eta <: Libcrux_ml_dsa.Constants.t_Eta with
-    | Libcrux_ml_dsa.Constants.Eta_Two  ->
-      deserialize_when_eta_is_2_ serialized out, ()
-      <:
-      (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & Prims.unit)
-    | Libcrux_ml_dsa.Constants.Eta_Four  ->
-      deserialize_when_eta_is_4_ serialized out, ()
-      <:
-      (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & Prims.unit)
+    | Libcrux_ml_dsa.Constants.Eta_Two  -> deserialize_when_eta_is_2_ serialized out
+    | Libcrux_ml_dsa.Constants.Eta_Four  -> deserialize_when_eta_is_4_ serialized out
   in
   out
 
@@ -331,7 +324,6 @@ let serialize_when_eta_is_4_
           in
           serialized)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized
 
 let serialize
@@ -339,11 +331,9 @@ let serialize
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
      =
-  let serialized, hax_temp_output:(t_Slice u8 & Prims.unit) =
+  let serialized:t_Slice u8 =
     match eta <: Libcrux_ml_dsa.Constants.t_Eta with
-    | Libcrux_ml_dsa.Constants.Eta_Two  ->
-      serialize_when_eta_is_2_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
-    | Libcrux_ml_dsa.Constants.Eta_Four  ->
-      serialize_when_eta_is_4_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
+    | Libcrux_ml_dsa.Constants.Eta_Two  -> serialize_when_eta_is_2_ simd_unit serialized
+    | Libcrux_ml_dsa.Constants.Eta_Four  -> serialize_when_eta_is_4_ simd_unit serialized
   in
   serialized

@@ -122,15 +122,12 @@ let deserialize_when_gamma1_is_2_pow_19_
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
-  let hax_temp_output, out:(Prims.unit & Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-    (),
+  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           deserialize_when_gamma1_is_2_pow_19___GAMMA1
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
       coefficients
-    <:
-    (Prims.unit & Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   out
 
@@ -139,24 +136,11 @@ let deserialize
       (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
       (gamma1_exponent: usize)
      =
-  let out, hax_temp_output:(Libcrux_intrinsics.Avx2_extract.t_Vec256 & Prims.unit) =
+  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     match cast (gamma1_exponent <: usize) <: u8 with
-    | 17uy ->
-      deserialize_when_gamma1_is_2_pow_17_ serialized out, ()
-      <:
-      (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Prims.unit)
-    | 19uy ->
-      deserialize_when_gamma1_is_2_pow_19_ serialized out, ()
-      <:
-      (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Prims.unit)
-    | _ ->
-      out,
-      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-          <:
-          Rust_primitives.Hax.t_Never)
-      <:
-      (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Prims.unit)
+    | 17uy -> deserialize_when_gamma1_is_2_pow_17_ serialized out
+    | 19uy -> deserialize_when_gamma1_is_2_pow_19_ serialized out
+    | _ -> out
   in
   out
 
@@ -316,8 +300,7 @@ let serialize_when_gamma1_is_2_pow_19_
         <:
         t_Slice u8)
   in
-  let hax_temp_output, out:(Prims.unit & t_Slice u8) =
-    (),
+  let out:t_Slice u8 =
     Core.Slice.impl__copy_from_slice #u8
       out
       (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 20 }
@@ -325,8 +308,6 @@ let serialize_when_gamma1_is_2_pow_19_
           Core.Ops.Range.t_Range usize ]
         <:
         t_Slice u8)
-    <:
-    (Prims.unit & t_Slice u8)
   in
   out
 
@@ -335,19 +316,10 @@ let serialize
       (serialized: t_Slice u8)
       (gamma1_exponent: usize)
      =
-  let serialized, hax_temp_output:(t_Slice u8 & Prims.unit) =
+  let serialized:t_Slice u8 =
     match cast (gamma1_exponent <: usize) <: u8 with
-    | 17uy ->
-      serialize_when_gamma1_is_2_pow_17_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
-    | 19uy ->
-      serialize_when_gamma1_is_2_pow_19_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
-    | _ ->
-      serialized,
-      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-          <:
-          Rust_primitives.Hax.t_Never)
-      <:
-      (t_Slice u8 & Prims.unit)
+    | 17uy -> serialize_when_gamma1_is_2_pow_17_ simd_unit serialized
+    | 19uy -> serialize_when_gamma1_is_2_pow_19_ simd_unit serialized
+    | _ -> serialized
   in
   serialized

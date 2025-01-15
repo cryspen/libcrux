@@ -10,8 +10,7 @@ let _ =
   ()
 
 let set_hint (out_hint: t_Slice (t_Array i32 (sz 256))) (i j: usize) =
-  let hax_temp_output, out_hint:(Prims.unit & t_Slice (t_Array i32 (sz 256))) =
-    (),
+  let out_hint:t_Slice (t_Array i32 (sz 256)) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out_hint
       i
       (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (out_hint.[ i ]
@@ -21,8 +20,6 @@ let set_hint (out_hint: t_Slice (t_Array i32 (sz 256))) (i j: usize) =
           1l
         <:
         t_Array i32 (sz 256))
-    <:
-    (Prims.unit & t_Slice (t_Array i32 (sz 256)))
   in
   out_hint
 
@@ -467,5 +464,4 @@ let serialize
           in
           signature, true_hints_seen <: (t_Slice u8 & usize))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   signature

@@ -13,9 +13,6 @@ pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
     for i in 0..lhs.values.len() {
         lhs.values[i] += rhs.values[i];
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -23,9 +20,6 @@ pub fn subtract(lhs: &mut Coefficients, rhs: &Coefficients) {
     for i in 0..lhs.values.len() {
         lhs.values[i] -= rhs.values[i];
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -60,9 +54,6 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
     for i in 0..simd_unit.values.len() {
         simd_unit.values[i] = montgomery_reduce_element((simd_unit.values[i] as i64) * (c as i64))
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -70,9 +61,6 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
     for i in 0..lhs.values.len() {
         lhs.values[i] = montgomery_reduce_element((lhs.values[i] as i64) * (rhs.values[i] as i64))
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 // Splits t ∈ {0, ..., q-1} into t0 and t1 with a = t1*2ᴰ + t0
@@ -107,9 +95,6 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
     for i in 0..t0.values.len() {
         (t0.values[i], t1.values[i]) = power2round_element(t0.values[i]);
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 // TODO: Revisit this function when doing the range analysis and testing
@@ -153,9 +138,6 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coeffi
     for i in 0..simd_unit.values.len() {
         simd_unit.values[i] = reduce_element(simd_unit.values[i] << SHIFT_BY);
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -287,9 +269,6 @@ pub fn decompose(
     for i in 0..low.values.len() {
         (low.values[i], high.values[i]) = decompose_element(gamma2, simd_unit.values[i]);
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -297,9 +276,6 @@ pub fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficient
     for i in 0..hint.values.len() {
         hint.values[i] = use_one_hint(gamma2, simd_unit.values[i], hint.values[i]);
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[cfg(test)]

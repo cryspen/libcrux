@@ -4,13 +4,10 @@ open Core
 open FStar.Mul
 
 let from_coefficient_array (coefficient_array: t_Slice i32) (out: t_Vec256) =
-  let hax_temp_output, out:(Prims.unit & t_Vec256) =
-    (),
-    ({ out with f_value = Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_i32 coefficient_array }
-      <:
-      t_Vec256)
+  let out:t_Vec256 =
+    { out with f_value = Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_i32 coefficient_array }
     <:
-    (Prims.unit & t_Vec256)
+    t_Vec256
   in
   out
 

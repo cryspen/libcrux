@@ -3,6 +3,12 @@ module Libcrux_ml_kem.Hash_functions
 open Core
 open FStar.Mul
 
+/// The SHA3 block size.
+let v_BLOCK_SIZE: usize = sz 168
+
+/// The size of 3 SHA3 blocks.
+let v_THREE_BLOCKS: usize = v_BLOCK_SIZE *! sz 3
+
 /// Abstraction for the hashing, to pick the fastest version depending on the
 /// platform features available.
 /// There are 3 instantiations of this trait right now, using the libcrux-sha3 crate.
@@ -61,9 +67,3 @@ class t_Hash (v_Self: Type0) (v_K: usize) = {
         (f_shake128_squeeze_next_block_pre x0)
         (fun result -> f_shake128_squeeze_next_block_post x0 result)
 }
-
-/// The SHA3 block size.
-let v_BLOCK_SIZE: usize = sz 168
-
-/// The size of 3 SHA3 blocks.
-let v_THREE_BLOCKS: usize = v_BLOCK_SIZE *! sz 3

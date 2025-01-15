@@ -111,10 +111,8 @@ let generate_key_pair_mut
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
-  let hax_temp_output, key_pair:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
-      Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-    (),
+  let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
+    Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.generate_keypair (sz 4)
       (sz 1536)
       (sz 3168)
@@ -124,10 +122,6 @@ let generate_key_pair_mut
       (sz 128)
       randomness
       key_pair
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
-        Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
   key_pair
 
@@ -182,19 +176,13 @@ let unpacked_public_key
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 4)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
-  let hax_temp_output, unpacked_public_key:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 4)
-      Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-    (),
+  let unpacked_public_key:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 4)
+    Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.unpack_public_key (sz 4)
       (sz 1536)
       (sz 1536)
       (sz 1568)
       public_key
       unpacked_public_key
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 4)
-        Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
   unpacked_public_key

@@ -57,7 +57,6 @@ let serialize
           <:
           t_Slice u8)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized
 
 let serialize_vector
@@ -110,5 +109,4 @@ let serialize_vector
           let offset:usize = offset +! ring_element_size in
           offset, serialized <: (usize & t_Slice u8))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized

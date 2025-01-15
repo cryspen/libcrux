@@ -862,7 +862,6 @@ let compress_then_serialize_u
       (Spec.MLKEM.compress_then_encode_u #v_K
           (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector input))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   out
 
 #pop-options

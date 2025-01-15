@@ -50,9 +50,6 @@ pub(crate) fn matrix_flat<SIMDUnit: Operations, Shake128: shake128::XofX4>(
             );
         }
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 /// Portable sampling
