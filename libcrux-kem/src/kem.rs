@@ -497,34 +497,18 @@ impl PrivateKey {
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)
                 .map(Self::MlKem768),
-            Algorithm::X25519MlKem768Draft00 => {
-                let key: [u8; MlKem768PrivateKey::len() + 32] =
-                    bytes.try_into().map_err(|_| Error::InvalidPrivateKey)?;
-                let (xsk, ksk) = key.split_at(32);
-                Ok(Self::X25519MlKem768Draft00(
-                    X25519MlKem768Draft00PrivateKey {
-                        mlkem: ksk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
-                        x25519: xsk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
-                    },
-                ))
-            }
+            Algorithm::X25519MlKem768Draft00 => X25519MlKem768Draft00PrivateKey::decode(bytes)
+                .map_err(|_| Error::InvalidPrivateKey)
+                .map(Self::X25519MlKem768Draft00),
             Algorithm::XWingKemDraft02 => {
                 let pk = XWingKemDraft02PrivateKey::decode(bytes)
                     .map_err(|_| Error::InvalidPrivateKey)?;
                 Ok(Self::XWingKemDraft02(pk))
             }
             #[cfg(feature = "kyber")]
-            Algorithm::X25519Kyber768Draft00 => {
-                let key: [u8; MlKem768PrivateKey::len() + 32] =
-                    bytes.try_into().map_err(|_| Error::InvalidPrivateKey)?;
-                let (xsk, ksk) = key.split_at(32);
-                Ok(Self::X25519Kyber768Draft00(
-                    X25519MlKem768Draft00PrivateKey {
-                        mlkem: ksk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
-                        x25519: xsk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
-                    },
-                ))
-            }
+            Algorithm::X25519Kyber768Draft00 => X25519MlKem768Draft00PrivateKey::decode(bytes)
+                .map_err(|_| Error::InvalidPrivateKey)
+                .map(Self::X25519Kyber768Draft00),
             #[cfg(feature = "kyber")]
             Algorithm::XWingKyberDraft02 => {
                 let pk = XWingKemDraft02PrivateKey::decode(bytes)
@@ -914,6 +898,7 @@ pub fn key_gen(
         Algorithm::X25519MlKem768Draft00 => {
             let (mlkem_private, mlkem_public) = gen_mlkem768(rng)?;
             let (x25519_private, x25519_public) = libcrux_ecdh::x25519_key_gen(rng)?;
+
             Ok((
                 PrivateKey::X25519MlKem768Draft00(X25519MlKem768Draft00PrivateKey {
                     mlkem: mlkem_private,
