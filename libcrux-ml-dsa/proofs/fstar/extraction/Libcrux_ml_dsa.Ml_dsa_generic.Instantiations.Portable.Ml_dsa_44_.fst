@@ -34,7 +34,7 @@ let generate_key_pair
   in
   let signing_key:t_Array u8 (sz 2560) = tmp0 in
   let verification_key:t_Array u8 (sz 1312) = tmp1 in
-  let hax_temp_output:Prims.unit = () in
+  let _:Prims.unit = () in
   signing_key, verification_key <: (t_Array u8 (sz 2560) & t_Array u8 (sz 1312))
 
 let sign

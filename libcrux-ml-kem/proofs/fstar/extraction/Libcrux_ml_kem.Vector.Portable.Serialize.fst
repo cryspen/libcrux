@@ -365,7 +365,7 @@ let serialize_5_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 10);
   Rust_primitives.Hax.array_of_list 10 list
 
-let deserialize_1_ (v: t_Slice u8) =
+let rec deserialize_1_ (v: t_Slice u8) =
   let result0:i16 = cast ((v.[ sz 0 ] <: u8) &. 1uy <: u8) <: i16 in
   let result1:i16 = cast (((v.[ sz 0 ] <: u8) >>! 1l <: u8) &. 1uy <: u8) <: i16 in
   let result2:i16 = cast (((v.[ sz 0 ] <: u8) >>! 2l <: u8) &. 1uy <: u8) <: i16 in
@@ -421,7 +421,7 @@ let deserialize_1_lemma inputs =
 let deserialize_1_bounded_lemma inputs =
   admit()
 
-let deserialize_10_ (bytes: t_Slice u8) =
+let rec deserialize_10_ (bytes: t_Slice u8) =
   let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
     deserialize_10_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 10 }
           <:
@@ -475,7 +475,7 @@ let deserialize_10_lemma inputs =
 let deserialize_10_bounded_lemma inputs =
   admit()
 
-let deserialize_12_ (bytes: t_Slice u8) =
+let rec deserialize_12_ (bytes: t_Slice u8) =
   let v0_1_:(i16 & i16) =
     deserialize_12_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 3 }
           <:
@@ -571,7 +571,7 @@ let deserialize_12_lemma inputs =
 let deserialize_12_bounded_lemma inputs =
   admit()
 
-let deserialize_4_ (bytes: t_Slice u8) =
+let rec deserialize_4_ (bytes: t_Slice u8) =
   let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
     deserialize_4_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 4 }
           <:
@@ -625,7 +625,7 @@ let deserialize_4_lemma inputs =
 let deserialize_4_bounded_lemma inputs =
   admit()
 
-let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+let rec serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let result0:u8 =
     (((((((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 0 ] <: i16) <: u8) |.
                 ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 1 ] <: i16)
@@ -742,7 +742,7 @@ let serialize_1_lemma inputs =
 
 #pop-options
 
-let serialize_10_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+let rec serialize_10_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let r0_4_:(u8 & u8 & u8 & u8 & u8) =
     serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
             Core.Ops.Range.f_start = sz 0;
@@ -815,7 +815,7 @@ let serialize_10_lemma inputs =
 
 #pop-options
 
-let serialize_12_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+let rec serialize_12_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let r0_2_:(u8 & u8 & u8) =
     serialize_12_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
             Core.Ops.Range.f_start = sz 0;
@@ -928,7 +928,7 @@ let serialize_12_lemma inputs =
 
 #pop-options
 
-let serialize_4_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+let rec serialize_4_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let result0_3_:(u8 & u8 & u8 & u8) =
     serialize_4_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
             Core.Ops.Range.f_start = sz 0;

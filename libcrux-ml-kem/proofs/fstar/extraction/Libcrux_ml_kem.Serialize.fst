@@ -435,7 +435,7 @@ let deserialize_ring_elements_reduced
   in
   let result:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = admit () (* Panic freedom *) in
-  let hax_temp_output:Prims.unit = result in
+  let _:Prims.unit = result in
   deserialized_pk
 
 let deserialize_ring_elements_reduced_out
@@ -647,7 +647,7 @@ let compress_then_serialize_4_
       (serialized: t_Slice u8)
      =
   let _:Prims.unit = assert_norm (pow2 4 == 16) in
-  let serialized:t_Slice u8 =
+  let serialized, result:(t_Slice u8 & Prims.unit) =
     Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
       (fun serialized i ->
@@ -699,11 +699,13 @@ let compress_then_serialize_4_
                 <:
                 t_Slice u8)
           in
-          serialized)
+          serialized),
+    ()
+    <:
+    (t_Slice u8 & Prims.unit)
   in
-  let result:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = admit () (* Panic freedom *) in
-  let hax_temp_output:Prims.unit = result in
+  let _:Prims.unit = result in
   serialized
 
 #push-options "--admit_smt_queries true"
@@ -764,7 +766,6 @@ let compress_then_serialize_5_
           in
           serialized)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized
 
 #pop-options
@@ -888,7 +889,7 @@ let compress_then_serialize_ring_element_v
       (t_Slice u8 & Prims.unit)
   in
   let _:Prims.unit = admit () (* Panic freedom *) in
-  let hax_temp_output:Prims.unit = result in
+  let _:Prims.unit = result in
   out
 
 let serialize_uncompressed_ring_element

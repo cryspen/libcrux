@@ -465,7 +465,6 @@ let outer_3_plus
           in
           re)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   re
 
 let invert_ntt_at_layer_3_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =
@@ -635,7 +634,6 @@ let invert_ntt_montgomery__inv_inner
           <:
           t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   re
 
 let invert_ntt_montgomery (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =

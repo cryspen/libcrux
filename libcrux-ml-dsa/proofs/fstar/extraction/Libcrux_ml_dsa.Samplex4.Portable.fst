@@ -50,16 +50,12 @@ let impl: Libcrux_ml_dsa.Samplex4.t_X4Sampler t_PortableSampler =
       (seed: t_Slice u8)
       (matrix: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       ->
-      let hax_temp_output, matrix:(Prims.unit &
-        t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)) =
-        (),
+      let matrix:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
         Libcrux_ml_dsa.Samplex4.matrix_flat #v_SIMDUnit
           #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4
           columns
           seed
           matrix
-        <:
-        (Prims.unit & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       in
       matrix
   }

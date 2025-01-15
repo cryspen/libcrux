@@ -59,7 +59,6 @@ let deserialize
           <:
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   result
 
 let deserialize_to_vector_then_ntt
@@ -108,7 +107,6 @@ let deserialize_to_vector_then_ntt
           in
           ring_elements)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   ring_elements
 
 let serialize
@@ -156,5 +154,4 @@ let serialize
           <:
           t_Slice u8)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized

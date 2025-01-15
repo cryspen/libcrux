@@ -842,7 +842,6 @@ let ntt_at_layer_5_to_3___round
           in
           re)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   re
 
 let ntt_at_layer_5_to_3_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =
@@ -933,7 +932,7 @@ let ntt_at_layer_5_to_3_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec
     ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 15) 280005l
   in
   let _:Prims.unit = () in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
+  let _:Prims.unit = () <: Prims.unit in
   re
 
 let ntt__avx2_ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =
@@ -945,10 +944,5 @@ let ntt__avx2_ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz
   re
 
 let ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =
-  let hax_temp_output, re:(Prims.unit &
-    t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =
-    (), ntt__avx2_ntt re
-    <:
-    (Prims.unit & t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
-  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) = ntt__avx2_ntt re in
   re

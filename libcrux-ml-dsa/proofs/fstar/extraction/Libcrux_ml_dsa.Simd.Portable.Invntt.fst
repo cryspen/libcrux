@@ -863,7 +863,6 @@ let outer_3_plus
           in
           re)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   re
 
 let invert_ntt_at_layer_3_
@@ -1036,5 +1035,4 @@ let invert_ntt_montgomery
           <:
           t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   re

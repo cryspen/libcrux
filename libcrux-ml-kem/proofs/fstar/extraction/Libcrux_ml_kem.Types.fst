@@ -342,6 +342,8 @@ let impl_3 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_MlKemCiphertext v_SIZE) (
           #(t_Array u8 v_SIZE)
           #FStar.Tactics.Typeclasses.solve
           value
+        <:
+        Core.Result.t_Result (t_Array u8 v_SIZE) Core.Array.t_TryFromSliceError
       with
       | Core.Result.Result_Ok value ->
         Core.Result.Result_Ok ({ f_value = value } <: t_MlKemCiphertext v_SIZE)
@@ -373,6 +375,8 @@ let impl_10 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_MlKemPrivateKey v_SIZE) 
           #(t_Array u8 v_SIZE)
           #FStar.Tactics.Typeclasses.solve
           value
+        <:
+        Core.Result.t_Result (t_Array u8 v_SIZE) Core.Array.t_TryFromSliceError
       with
       | Core.Result.Result_Ok value ->
         Core.Result.Result_Ok ({ f_value = value } <: t_MlKemPrivateKey v_SIZE)
@@ -404,6 +408,8 @@ let impl_17 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_MlKemPublicKey v_SIZE) (
           #(t_Array u8 v_SIZE)
           #FStar.Tactics.Typeclasses.solve
           value
+        <:
+        Core.Result.t_Result (t_Array u8 v_SIZE) Core.Array.t_TryFromSliceError
       with
       | Core.Result.Result_Ok value ->
         Core.Result.Result_Ok ({ f_value = value } <: t_MlKemPublicKey v_SIZE)

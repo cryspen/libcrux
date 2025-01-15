@@ -18,27 +18,24 @@ let impl_1 = impl_1'
 let zero (_: Prims.unit) = { f_values = Rust_primitives.Hax.repeat 0l (sz 8) } <: t_Coefficients
 
 let from_coefficient_array (array: t_Slice i32) (out: t_Coefficients) =
-  let hax_temp_output, out:(Prims.unit & t_Coefficients) =
-    (),
-    ({
-        out with
-        f_values
-        =
-        Core.Slice.impl__copy_from_slice #i32
-          out.f_values
-          (array.[ {
-                Core.Ops.Range.f_start = sz 0;
-                Core.Ops.Range.f_end = Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
+  let out:t_Coefficients =
+    {
+      out with
+      f_values
+      =
+      Core.Slice.impl__copy_from_slice #i32
+        out.f_values
+        (array.[ {
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+            }
             <:
-            t_Slice i32)
-      }
-      <:
-      t_Coefficients)
+            Core.Ops.Range.t_Range usize ]
+          <:
+          t_Slice i32)
+    }
     <:
-    (Prims.unit & t_Coefficients)
+    t_Coefficients
   in
   out
 

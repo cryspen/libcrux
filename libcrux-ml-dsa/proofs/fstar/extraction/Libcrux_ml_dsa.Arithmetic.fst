@@ -126,7 +126,6 @@ let decompose_vector
           (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
             t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   low, high
   <:
   (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
@@ -242,7 +241,6 @@ let power2round_vector
           (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
             t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   t, t1
   <:
   (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
@@ -289,7 +287,6 @@ let shift_left_then_reduce
           <:
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   re
 
 let use_hint
@@ -372,7 +369,6 @@ let use_hint
           in
           re_vector)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   re_vector
 
 let vector_infinity_norm_exceeds

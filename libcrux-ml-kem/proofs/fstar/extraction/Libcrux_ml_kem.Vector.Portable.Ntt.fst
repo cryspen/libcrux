@@ -317,7 +317,7 @@ let ntt_multiply_binomials
     assert (forall k.
           (k <> 2 * v i /\ k <> 2 * v i + 1) ==> Seq.index out.f_elements k == Seq.index v__out0 k)
   in
-  let hax_temp_output:Prims.unit = admit () (* Panic freedom *) in
+  let _:Prims.unit = admit () (* Panic freedom *) in
   out
 
 #pop-options

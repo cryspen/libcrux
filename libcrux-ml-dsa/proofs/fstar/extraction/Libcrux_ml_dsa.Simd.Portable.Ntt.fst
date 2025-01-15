@@ -818,7 +818,6 @@ let outer_3_plus
           in
           re)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   re
 
 let ntt_at_layer_3_ (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) =

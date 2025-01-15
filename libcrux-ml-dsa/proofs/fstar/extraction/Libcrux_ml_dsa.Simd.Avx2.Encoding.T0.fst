@@ -115,8 +115,7 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
   let serialized:t_Array u8 (sz 16) =
     Libcrux_intrinsics.Avx2_extract.mm_storeu_bytes_si128 serialized bits_sequential
   in
-  let hax_temp_output, out:(Prims.unit & t_Slice u8) =
-    (),
+  let out:t_Slice u8 =
     Core.Slice.impl__copy_from_slice #u8
       out
       (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 13 }
@@ -124,7 +123,5 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
           Core.Ops.Range.t_Range usize ]
         <:
         t_Slice u8)
-    <:
-    (Prims.unit & t_Slice u8)
   in
   out

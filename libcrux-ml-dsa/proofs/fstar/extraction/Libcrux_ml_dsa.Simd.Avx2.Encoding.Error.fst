@@ -224,8 +224,7 @@ let serialize_when_eta_is_4_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec25
         <:
         t_Slice u8)
   in
-  let hax_temp_output, out:(Prims.unit & t_Slice u8) =
-    (),
+  let out:t_Slice u8 =
     Core.Slice.impl__copy_from_slice #u8
       out
       (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 4 }
@@ -233,8 +232,6 @@ let serialize_when_eta_is_4_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec25
           Core.Ops.Range.t_Range usize ]
         <:
         t_Slice u8)
-    <:
-    (Prims.unit & t_Slice u8)
   in
   out
 
@@ -243,11 +240,9 @@ let serialize
       (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
       (serialized: t_Slice u8)
      =
-  let serialized, hax_temp_output:(t_Slice u8 & Prims.unit) =
+  let serialized:t_Slice u8 =
     match eta <: Libcrux_ml_dsa.Constants.t_Eta with
-    | Libcrux_ml_dsa.Constants.Eta_Two  ->
-      serialize_when_eta_is_2_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
-    | Libcrux_ml_dsa.Constants.Eta_Four  ->
-      serialize_when_eta_is_4_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
+    | Libcrux_ml_dsa.Constants.Eta_Two  -> serialize_when_eta_is_2_ simd_unit serialized
+    | Libcrux_ml_dsa.Constants.Eta_Four  -> serialize_when_eta_is_4_ simd_unit serialized
   in
   serialized

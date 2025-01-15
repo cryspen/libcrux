@@ -75,16 +75,13 @@ let serialized_public_key
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
      =
-  let hax_temp_output, serialized:(Prims.unit & Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800)) =
-    (),
+  let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800) =
     Libcrux_ml_kem.Ind_cca.Unpacked.impl_3__serialized_mut (sz 2)
       #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       (sz 768)
       (sz 800)
       public_key
       serialized
-    <:
-    (Prims.unit & Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
   in
   serialized
 
@@ -179,19 +176,13 @@ let unpacked_public_key
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
-  let hax_temp_output, unpacked_public_key:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
-      Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-    (),
+  let unpacked_public_key:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+    Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.unpack_public_key (sz 2)
       (sz 768)
       (sz 768)
       (sz 800)
       public_key
       unpacked_public_key
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
-        Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
   unpacked_public_key

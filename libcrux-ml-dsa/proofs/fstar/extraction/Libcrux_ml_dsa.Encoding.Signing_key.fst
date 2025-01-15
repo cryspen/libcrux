@@ -186,5 +186,4 @@ let generate_serialized
           let offset:usize = offset +! Libcrux_ml_dsa.Constants.v_RING_ELEMENT_OF_T0S_SIZE in
           offset, signing_key_serialized <: (usize & t_Slice u8))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   signing_key_serialized

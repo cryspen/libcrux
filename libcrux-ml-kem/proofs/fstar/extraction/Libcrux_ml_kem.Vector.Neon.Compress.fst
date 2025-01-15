@@ -17,7 +17,7 @@ let compress_int32x4_t (v_COEFFICIENT_BITS: i32) (v: u8) =
   Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 4l compressed
 
 let mask_n_least_significant_bits (coefficient_bits: i16) =
-  match coefficient_bits with
+  match coefficient_bits <: i16 with
   | 4s -> 15s
   | 5s -> 31s
   | 10s -> 1023s

@@ -75,18 +75,12 @@ let generate_keypair_avx2
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
      =
-  let hax_temp_output, out:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
-      Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) =
-    (),
+  let out:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
+    Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector =
     Libcrux_ml_kem.Ind_cca.Unpacked.generate_keypair v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE
       v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE
       #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector #Libcrux_ml_kem.Hash_functions.Avx2.t_Simd256Hash
       #Libcrux_ml_kem.Variant.t_MlKem randomness out
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
-        Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
   in
   out
 
@@ -98,10 +92,8 @@ let generate_keypair
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
      =
-  let hax_temp_output, out:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
-      Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) =
-    (),
+  let out:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
+    Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector =
     generate_keypair_avx2 v_K
       v_CPA_PRIVATE_KEY_SIZE
       v_PRIVATE_KEY_SIZE
@@ -111,10 +103,6 @@ let generate_keypair
       v_ETA1_RANDOMNESS_SIZE
       randomness
       out
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
-        Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
   in
   out
 
@@ -147,10 +135,8 @@ let unpack_public_key_avx2
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
      =
-  let hax_temp_output, unpacked_public_key:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
-      Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) =
-    (),
+  let unpacked_public_key:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
+    Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector =
     Libcrux_ml_kem.Ind_cca.Unpacked.unpack_public_key v_K
       v_T_AS_NTT_ENCODED_SIZE
       v_RANKED_BYTES_PER_RING_ELEMENT
@@ -159,10 +145,6 @@ let unpack_public_key_avx2
       #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
       public_key
       unpacked_public_key
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
-        Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
   in
   unpacked_public_key
 
@@ -173,19 +155,13 @@ let unpack_public_key
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
      =
-  let hax_temp_output, unpacked_public_key:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
-      Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) =
-    (),
+  let unpacked_public_key:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
+    Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector =
     unpack_public_key_avx2 v_K
       v_T_AS_NTT_ENCODED_SIZE
       v_RANKED_BYTES_PER_RING_ELEMENT
       v_PUBLIC_KEY_SIZE
       public_key
       unpacked_public_key
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
-        Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
   in
   unpacked_public_key

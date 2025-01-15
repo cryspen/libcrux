@@ -32,10 +32,8 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
     f_from_coefficient_array
     =
     (fun (coefficient_array: t_Slice i32) (out: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) ->
-        let hax_temp_output, out:(Prims.unit & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) =
-          (), Libcrux_ml_dsa.Simd.Avx2.Vector_type.from_coefficient_array coefficient_array out
-          <:
-          (Prims.unit & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        let out:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+          Libcrux_ml_dsa.Simd.Avx2.Vector_type.from_coefficient_array coefficient_array out
         in
         out);
     f_to_coefficient_array_pre
@@ -52,11 +50,7 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
     f_to_coefficient_array
     =
     (fun (value: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) (out: t_Slice i32) ->
-        let hax_temp_output, out:(Prims.unit & t_Slice i32) =
-          (), Libcrux_ml_dsa.Simd.Avx2.Vector_type.to_coefficient_array value out
-          <:
-          (Prims.unit & t_Slice i32)
-        in
+        let out:t_Slice i32 = Libcrux_ml_dsa.Simd.Avx2.Vector_type.to_coefficient_array value out in
         out);
     f_add_pre
     =
@@ -79,20 +73,16 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
         (lhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         (rhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         ->
-        let hax_temp_output, lhs:(Prims.unit & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) =
-          (),
-          ({
-              lhs with
-              Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-              =
-              Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lhs
-                  .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-                rhs.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-            }
-            <:
-            Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        let lhs:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+          {
+            lhs with
+            Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+            =
+            Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lhs.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+              rhs.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+          }
           <:
-          (Prims.unit & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
         in
         lhs);
     f_subtract_pre
@@ -116,20 +106,17 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
         (lhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         (rhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         ->
-        let hax_temp_output, lhs:(Prims.unit & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) =
-          (),
-          ({
-              lhs with
-              Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-              =
-              Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract lhs
-                  .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-                rhs.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-            }
-            <:
-            Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        let lhs:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+          {
+            lhs with
+            Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+            =
+            Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract lhs
+                .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+              rhs.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+          }
           <:
-          (Prims.unit & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
         in
         lhs);
     f_montgomery_multiply_pre
@@ -180,20 +167,16 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
     f_shift_left_then_reduce
     =
     (fun (v_SHIFT_BY: i32) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) ->
-        let hax_temp_output, simd_unit:(Prims.unit & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        =
-          (),
-          ({
-              simd_unit with
-              Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-              =
-              Libcrux_ml_dsa.Simd.Avx2.Arithmetic.shift_left_then_reduce v_SHIFT_BY
-                simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-            }
-            <:
-            Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        let simd_unit:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+          {
+            simd_unit with
+            Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+            =
+            Libcrux_ml_dsa.Simd.Avx2.Arithmetic.shift_left_then_reduce v_SHIFT_BY
+              simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+          }
           <:
-          (Prims.unit & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
         in
         simd_unit);
     f_power2round_pre
@@ -451,14 +434,11 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
         (serialized: t_Slice u8)
         (gamma1_exponent: usize)
         ->
-        let hax_temp_output, serialized:(Prims.unit & t_Slice u8) =
-          (),
+        let serialized:t_Slice u8 =
           Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1.serialize simd_unit
               .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
             serialized
             gamma1_exponent
-          <:
-          (Prims.unit & t_Slice u8)
         in
         serialized);
     f_gamma1_deserialize_pre
@@ -513,13 +493,10 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
     f_commitment_serialize
     =
     (fun (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) (serialized: t_Slice u8) ->
-        let hax_temp_output, serialized:(Prims.unit & t_Slice u8) =
-          (),
+        let serialized:t_Slice u8 =
           Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize simd_unit
               .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
             serialized
-          <:
-          (Prims.unit & t_Slice u8)
         in
         serialized);
     f_error_serialize_pre
@@ -546,13 +523,10 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
         (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         (serialized: t_Slice u8)
         ->
-        let hax_temp_output, serialized:(Prims.unit & t_Slice u8) =
-          (),
+        let serialized:t_Slice u8 =
           Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.serialize eta
             simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
             serialized
-          <:
-          (Prims.unit & t_Slice u8)
         in
         serialized);
     f_error_deserialize_pre

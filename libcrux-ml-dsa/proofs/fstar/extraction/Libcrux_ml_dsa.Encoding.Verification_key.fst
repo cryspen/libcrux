@@ -63,7 +63,6 @@ let deserialize
           <:
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   t1
 
 let generate_serialized
@@ -140,5 +139,4 @@ let generate_serialized
           in
           verification_key_serialized)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   verification_key_serialized
