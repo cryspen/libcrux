@@ -33,9 +33,6 @@ fn serialize_when_eta_is_4(simd_unit: &Coefficients, serialized: &mut [u8]) {
             serialized[i] = (coefficient1 << 4) | coefficient0;
         }
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -79,9 +76,6 @@ fn deserialize_when_eta_is_4(serialized: &[u8], simd_units: &mut Coefficients) {
             simd_units.values[2 * i + 1] = ETA - ((byte >> 4) as i32);
         }
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 #[inline(always)]
 pub(crate) fn deserialize(eta: Eta, serialized: &[u8], out: &mut Coefficients) {

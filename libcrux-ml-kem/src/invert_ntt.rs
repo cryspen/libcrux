@@ -35,8 +35,6 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_1) (invert_ntt_re_range_1 #$:Vector)"#);
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)"#);
     let _zeta_i_init = *zeta_i;
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
             fstar!(
@@ -72,7 +70,6 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
             (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))"
         );
     }
-    ()
 }
 
 #[inline(always)]
@@ -87,8 +84,6 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
 ) {
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)"#);
     let _zeta_i_init = *zeta_i;
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
             fstar!(
@@ -119,7 +114,6 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
             (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))"
         );
     }
-    ()
 }
 
 #[inline(always)]
@@ -134,8 +128,6 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
 ) {
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)"#);
     let _zeta_i_init = *zeta_i;
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
             fstar!(
@@ -165,7 +157,6 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
             (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))"
         );
     }
-    ()
 }
 
 #[inline(always)]
@@ -201,8 +192,6 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 ) {
     let step = 1 << layer;
 
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..(128 >> layer) {
         *zeta_i -= 1;
 
@@ -220,7 +209,6 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
             re.coefficients[j + step_vec] = y;
         }
     }
-    ()
 }
 
 #[inline(always)]

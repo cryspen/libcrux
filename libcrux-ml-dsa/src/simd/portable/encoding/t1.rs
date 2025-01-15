@@ -18,9 +18,6 @@ pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
             serialized[5 * i + 4] = ((coefficients[3] >> 2) & 0xFF) as u8;
         }
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[inline(always)]
@@ -43,7 +40,4 @@ pub fn deserialize(serialized: &[u8], simd_unit: &mut Coefficients) {
             simd_unit.values[4 * i + 3] = ((byte3 >> 6) | (byte4 << 2)) & mask;
         }
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }

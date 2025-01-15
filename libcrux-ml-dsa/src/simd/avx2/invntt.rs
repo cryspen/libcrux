@@ -29,9 +29,6 @@ pub(crate) fn invert_ntt_montgomery(re: &mut AVX2RingElement) {
                 value: arithmetic::montgomery_multiply_by_constant(re[i].value, FACTOR),
             };
         }
-
-        // [hax] https://github.com/hacspec/hax/issues/720
-        ()
     }
 
     unsafe { inv_inner(re) };
@@ -300,9 +297,6 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
             value: arithmetic::montgomery_multiply_by_constant(a_minus_b, ZETA),
         };
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]

@@ -326,9 +326,6 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
             };
             re[j + STEP_BY] = AVX2SIMDUnit { value: tmp };
         }
-
-        // [hax] https://github.com/hacspec/hax/issues/720
-        ()
     }
 
     // Layer 5

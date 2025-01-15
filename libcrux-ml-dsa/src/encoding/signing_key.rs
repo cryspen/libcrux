@@ -56,7 +56,4 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaX
             offset += RING_ELEMENT_OF_T0S_SIZE;
         }
     }
-
-    // [hax] https://github.com/hacspec/hax/issues/720
-    ()
 }
