@@ -1,4 +1,4 @@
-use crate::secret_sequences::array::SecretArray;
+use crate::sequences::array::SecretArray;
 
 pub trait Classify {
     type Classified;
@@ -17,6 +17,7 @@ pub trait ClassifyRefMut: ClassifyRef {
 pub trait Declassify {
     type Declassified;
     fn declassify(self) -> Self::Declassified;
+    fn declassify_slice(&self) -> &Self::Declassified;
 }
 
 pub trait Zeroize {
@@ -49,6 +50,7 @@ where
     fn rotate_right(self, rhs: u32) -> Self;
 }
 
+/// Encode secret arrays into secret integers.
 pub trait EncodeOps<T, const N: usize> {
     fn to_le_bytes(&self) -> SecretArray<u8, N>;
     fn to_be_bytes(&self) -> SecretArray<u8, N>;

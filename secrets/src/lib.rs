@@ -1,11 +1,11 @@
 mod traits;
 pub use traits::*;
 
-mod secret_sequences;
-pub use secret_sequences::*;
+mod sequences;
+pub use sequences::*;
 
-mod secret_integers;
-pub use secret_integers::*;
+mod integers;
+pub use integers::*;
 
 #[cfg(test)]
 mod tests {
