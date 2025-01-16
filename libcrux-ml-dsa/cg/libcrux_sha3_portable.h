@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a68994d00017b76a805d0115ca06c1f2c1805e79
- * Eurydice: b665364a6d86749566ce2d650d13fa12c8fab2c5
- * Karamel: 96572bc631fde691a2aea7bce5a5a3838b3a5968
+ * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
+ * Eurydice: 83ab5654d49df0603797bf510475d52d67ca24d8
+ * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 00424f6ff03ac7c79f2922ed628bf6a5b8723be3
+ * Libcrux: 31e77d0e773e3d025ffeb024f3f4742d9a2b2eec
  */
 
 #ifndef __libcrux_sha3_portable_H
@@ -2710,10 +2710,10 @@ static inline void libcrux_sha3_portable_incremental_squeeze_68(
   libcrux_sha3_generic_keccak_squeeze_8b_c6(self, buf);
 }
 
-#define libcrux_sha3_Sha224 0
-#define libcrux_sha3_Sha256 1
-#define libcrux_sha3_Sha384 2
-#define libcrux_sha3_Sha512 3
+#define libcrux_sha3_Algorithm_Sha224 1
+#define libcrux_sha3_Algorithm_Sha256 2
+#define libcrux_sha3_Algorithm_Sha384 3
+#define libcrux_sha3_Algorithm_Sha512 4
 
 typedef uint8_t libcrux_sha3_Algorithm;
 
@@ -2721,31 +2721,16 @@ typedef uint8_t libcrux_sha3_Algorithm;
  Returns the output size of a digest.
 */
 static inline size_t libcrux_sha3_digest_size(libcrux_sha3_Algorithm mode) {
-  size_t uu____0;
-  switch (mode) {
-    case libcrux_sha3_Sha224: {
-      uu____0 = (size_t)28U;
-      break;
-    }
-    case libcrux_sha3_Sha256: {
-      uu____0 = (size_t)32U;
-      break;
-    }
-    case libcrux_sha3_Sha384: {
-      uu____0 = (size_t)48U;
-      break;
-    }
-    case libcrux_sha3_Sha512: {
-      uu____0 = (size_t)64U;
-      break;
-    }
-    default: {
-      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
-                        __LINE__);
-      KRML_HOST_EXIT(253U);
+  if (!(mode == libcrux_sha3_Algorithm_Sha224)) {
+    if (mode == libcrux_sha3_Algorithm_Sha256) {
+      return (size_t)32U;
+    } else if (mode == libcrux_sha3_Algorithm_Sha384) {
+      return (size_t)48U;
+    } else {
+      return (size_t)64U;
     }
   }
-  return uu____0;
+  return (size_t)28U;
 }
 
 /**
@@ -4856,31 +4841,16 @@ This function found in impl {(core::convert::From<libcrux_sha3::Algorithm> for
 u32)#1}
 */
 static inline uint32_t libcrux_sha3_from_eb(libcrux_sha3_Algorithm v) {
-  uint32_t uu____0;
-  switch (v) {
-    case libcrux_sha3_Sha224: {
-      uu____0 = 1U;
-      break;
-    }
-    case libcrux_sha3_Sha256: {
-      uu____0 = 2U;
-      break;
-    }
-    case libcrux_sha3_Sha384: {
-      uu____0 = 3U;
-      break;
-    }
-    case libcrux_sha3_Sha512: {
-      uu____0 = 4U;
-      break;
-    }
-    default: {
-      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
-                        __LINE__);
-      KRML_HOST_EXIT(253U);
+  if (!(v == libcrux_sha3_Algorithm_Sha224)) {
+    if (v == libcrux_sha3_Algorithm_Sha256) {
+      return 2U;
+    } else if (v == libcrux_sha3_Algorithm_Sha384) {
+      return 3U;
+    } else {
+      return 4U;
     }
   }
-  return uu____0;
+  return 1U;
 }
 
 /**
@@ -4888,23 +4858,18 @@ This function found in impl {(core::convert::From<u32> for
 libcrux_sha3::Algorithm)}
 */
 static inline libcrux_sha3_Algorithm libcrux_sha3_from_2d(uint32_t v) {
-  libcrux_sha3_Algorithm uu____0;
   switch (v) {
     case 1U: {
-      uu____0 = libcrux_sha3_Sha224;
       break;
     }
     case 2U: {
-      uu____0 = libcrux_sha3_Sha256;
-      break;
+      return libcrux_sha3_Algorithm_Sha256;
     }
     case 3U: {
-      uu____0 = libcrux_sha3_Sha384;
-      break;
+      return libcrux_sha3_Algorithm_Sha384;
     }
     case 4U: {
-      uu____0 = libcrux_sha3_Sha512;
-      break;
+      return libcrux_sha3_Algorithm_Sha512;
     }
     default: {
       KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
@@ -4912,7 +4877,7 @@ static inline libcrux_sha3_Algorithm libcrux_sha3_from_2d(uint32_t v) {
       KRML_HOST_EXIT(255U);
     }
   }
-  return uu____0;
+  return libcrux_sha3_Algorithm_Sha224;
 }
 
 typedef uint8_t libcrux_sha3_Sha3_512Digest[64U];

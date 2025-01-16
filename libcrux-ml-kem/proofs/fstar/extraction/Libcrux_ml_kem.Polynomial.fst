@@ -151,7 +151,6 @@ let add_error_reduce
           in
           myself)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   myself
 
 let impl_2__add_error_reduce
@@ -284,7 +283,6 @@ let add_standard_error_reduce
           in
           myself)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   myself
 
 let impl_2__add_standard_error_reduce
@@ -337,7 +335,6 @@ let poly_barrett_reduce
           in
           myself)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   myself
 
 let impl_2__poly_barrett_reduce
@@ -635,7 +632,6 @@ let add_to_ring_element
           in
           myself)
   in
-  let hax_temp_output:Prims.unit = () <: Prims.unit in
   myself
 
 let impl_2__add_to_ring_element

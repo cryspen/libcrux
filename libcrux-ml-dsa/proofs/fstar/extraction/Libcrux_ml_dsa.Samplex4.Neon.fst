@@ -14,48 +14,48 @@ let _ =
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_ml_dsa.Samplex4.t_X4Sampler t_NeonSampler =
   {
-    f_matrix_A_pre
+    f_matrix_flat_pre
     =
     (fun
         (#v_SIMDUnit: Type0)
-        (v_ROWS_IN_A: usize)
-        (v_COLUMNS_IN_A: usize)
         (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-        (seed: t_Array u8 (sz 34))
+        (columns: usize)
+        (seed: t_Slice u8)
+        (matrix: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
         ->
         true);
-    f_matrix_A_post
+    f_matrix_flat_post
     =
     (fun
         (#v_SIMDUnit: Type0)
-        (v_ROWS_IN_A: usize)
-        (v_COLUMNS_IN_A: usize)
         (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-        (seed: t_Array u8 (sz 34))
-        (out:
-          t_Array
-            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-            v_ROWS_IN_A)
+        (columns: usize)
+        (seed: t_Slice u8)
+        (matrix: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+        (out: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
         ->
         true);
-    f_matrix_A
+    f_matrix_flat
     =
     fun
       (#v_SIMDUnit: Type0)
-      (v_ROWS_IN_A: usize)
-      (v_COLUMNS_IN_A: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
         i1:
         Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (seed: t_Array u8 (sz 34))
+      (columns: usize)
+      (seed: t_Slice u8)
+      (matrix: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       ->
-      Libcrux_ml_dsa.Samplex4.matrix_A_generic #v_SIMDUnit
-        #Libcrux_ml_dsa.Hash_functions.Neon.t_Shake128x4
-        v_ROWS_IN_A
-        v_COLUMNS_IN_A
-        seed
+      let matrix:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
+        Libcrux_ml_dsa.Samplex4.matrix_flat #v_SIMDUnit
+          #Libcrux_ml_dsa.Hash_functions.Neon.t_Shake128x4
+          columns
+          seed
+          matrix
+      in
+      matrix
   }

@@ -1,7 +1,7 @@
 //! This file does not contain correct function signatures!
 //! Replace with a hand-written file after extraction.
 
-#![allow(unused_variables, non_camel_case_types)]
+#![allow(unused_variables, non_camel_case_types, dead_code)]
 
 #[cfg(hax)]
 #[derive(Clone, Copy)]

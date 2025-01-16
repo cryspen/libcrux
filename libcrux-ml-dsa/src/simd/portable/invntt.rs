@@ -1,95 +1,82 @@
 use super::arithmetic::{self, montgomery_multiply_fe_by_fer};
-use super::vector_type::PortableSIMDUnit;
+use super::vector_type::Coefficients;
 use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
 #[inline(always)]
 pub fn simd_unit_invert_ntt_at_layer_0(
-    mut simd_unit: PortableSIMDUnit,
+    simd_unit: &mut Coefficients,
     zeta0: i32,
     zeta1: i32,
     zeta2: i32,
     zeta3: i32,
-) -> PortableSIMDUnit {
-    let a_minus_b = simd_unit.coefficients[1] - simd_unit.coefficients[0];
-    simd_unit.coefficients[0] = simd_unit.coefficients[0] + simd_unit.coefficients[1];
-    simd_unit.coefficients[1] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
+) {
+    let a_minus_b = simd_unit.values[1] - simd_unit.values[0];
+    simd_unit.values[0] = simd_unit.values[0] + simd_unit.values[1];
+    simd_unit.values[1] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
 
-    let a_minus_b = simd_unit.coefficients[3] - simd_unit.coefficients[2];
-    simd_unit.coefficients[2] = simd_unit.coefficients[2] + simd_unit.coefficients[3];
-    simd_unit.coefficients[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+    let a_minus_b = simd_unit.values[3] - simd_unit.values[2];
+    simd_unit.values[2] = simd_unit.values[2] + simd_unit.values[3];
+    simd_unit.values[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 
-    let a_minus_b = simd_unit.coefficients[5] - simd_unit.coefficients[4];
-    simd_unit.coefficients[4] = simd_unit.coefficients[4] + simd_unit.coefficients[5];
-    simd_unit.coefficients[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
+    let a_minus_b = simd_unit.values[5] - simd_unit.values[4];
+    simd_unit.values[4] = simd_unit.values[4] + simd_unit.values[5];
+    simd_unit.values[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
 
-    let a_minus_b = simd_unit.coefficients[7] - simd_unit.coefficients[6];
-    simd_unit.coefficients[6] = simd_unit.coefficients[6] + simd_unit.coefficients[7];
-    simd_unit.coefficients[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta3);
-
-    simd_unit
+    let a_minus_b = simd_unit.values[7] - simd_unit.values[6];
+    simd_unit.values[6] = simd_unit.values[6] + simd_unit.values[7];
+    simd_unit.values[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta3);
 }
 
 #[inline(always)]
-pub fn simd_unit_invert_ntt_at_layer_1(
-    mut simd_unit: PortableSIMDUnit,
-    zeta0: i32,
-    zeta1: i32,
-) -> PortableSIMDUnit {
-    let a_minus_b = simd_unit.coefficients[2] - simd_unit.coefficients[0];
-    simd_unit.coefficients[0] = simd_unit.coefficients[0] + simd_unit.coefficients[2];
-    simd_unit.coefficients[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
+pub fn simd_unit_invert_ntt_at_layer_1(simd_unit: &mut Coefficients, zeta0: i32, zeta1: i32) {
+    let a_minus_b = simd_unit.values[2] - simd_unit.values[0];
+    simd_unit.values[0] = simd_unit.values[0] + simd_unit.values[2];
+    simd_unit.values[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
 
-    let a_minus_b = simd_unit.coefficients[3] - simd_unit.coefficients[1];
-    simd_unit.coefficients[1] = simd_unit.coefficients[1] + simd_unit.coefficients[3];
-    simd_unit.coefficients[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
+    let a_minus_b = simd_unit.values[3] - simd_unit.values[1];
+    simd_unit.values[1] = simd_unit.values[1] + simd_unit.values[3];
+    simd_unit.values[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
 
-    let a_minus_b = simd_unit.coefficients[6] - simd_unit.coefficients[4];
-    simd_unit.coefficients[4] = simd_unit.coefficients[4] + simd_unit.coefficients[6];
-    simd_unit.coefficients[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+    let a_minus_b = simd_unit.values[6] - simd_unit.values[4];
+    simd_unit.values[4] = simd_unit.values[4] + simd_unit.values[6];
+    simd_unit.values[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 
-    let a_minus_b = simd_unit.coefficients[7] - simd_unit.coefficients[5];
-    simd_unit.coefficients[5] = simd_unit.coefficients[5] + simd_unit.coefficients[7];
-    simd_unit.coefficients[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
-
-    simd_unit
+    let a_minus_b = simd_unit.values[7] - simd_unit.values[5];
+    simd_unit.values[5] = simd_unit.values[5] + simd_unit.values[7];
+    simd_unit.values[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 }
 
 #[inline(always)]
-pub fn simd_unit_invert_ntt_at_layer_2(
-    mut simd_unit: PortableSIMDUnit,
-    zeta: i32,
-) -> PortableSIMDUnit {
-    let a_minus_b = simd_unit.coefficients[4] - simd_unit.coefficients[0];
-    simd_unit.coefficients[0] = simd_unit.coefficients[0] + simd_unit.coefficients[4];
-    simd_unit.coefficients[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+pub fn simd_unit_invert_ntt_at_layer_2(simd_unit: &mut Coefficients, zeta: i32) {
+    let a_minus_b = simd_unit.values[4] - simd_unit.values[0];
+    simd_unit.values[0] = simd_unit.values[0] + simd_unit.values[4];
+    simd_unit.values[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = simd_unit.coefficients[5] - simd_unit.coefficients[1];
-    simd_unit.coefficients[1] = simd_unit.coefficients[1] + simd_unit.coefficients[5];
-    simd_unit.coefficients[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let a_minus_b = simd_unit.values[5] - simd_unit.values[1];
+    simd_unit.values[1] = simd_unit.values[1] + simd_unit.values[5];
+    simd_unit.values[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = simd_unit.coefficients[6] - simd_unit.coefficients[2];
-    simd_unit.coefficients[2] = simd_unit.coefficients[2] + simd_unit.coefficients[6];
-    simd_unit.coefficients[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let a_minus_b = simd_unit.values[6] - simd_unit.values[2];
+    simd_unit.values[2] = simd_unit.values[2] + simd_unit.values[6];
+    simd_unit.values[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = simd_unit.coefficients[7] - simd_unit.coefficients[3];
-    simd_unit.coefficients[3] = simd_unit.coefficients[3] + simd_unit.coefficients[7];
-    simd_unit.coefficients[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-
-    simd_unit
+    let a_minus_b = simd_unit.values[7] - simd_unit.values[3];
+    simd_unit.values[3] = simd_unit.values[3] + simd_unit.values[7];
+    simd_unit.values[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 }
 
 #[inline(always)]
-fn invert_ntt_at_layer_0(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn invert_ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[inline(always)]
     fn round(
-        re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
+        re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
         index: usize,
         zeta0: i32,
         zeta1: i32,
         zeta2: i32,
         zeta3: i32,
     ) {
-        re[index] = simd_unit_invert_ntt_at_layer_0(re[index], zeta0, zeta1, zeta2, zeta3);
+        simd_unit_invert_ntt_at_layer_0(&mut re[index], zeta0, zeta1, zeta2, zeta3);
     }
 
     round(re, 0, 1976782, -846154, 1400424, 3937738);
@@ -127,15 +114,15 @@ fn invert_ntt_at_layer_0(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]
 }
 
 #[inline(always)]
-fn invert_ntt_at_layer_1(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn invert_ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[inline(always)]
     fn round(
-        re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
+        re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
         index: usize,
         zeta_00: i32,
         zeta_01: i32,
     ) {
-        re[index] = simd_unit_invert_ntt_at_layer_1(re[index], zeta_00, zeta_01);
+        simd_unit_invert_ntt_at_layer_1(&mut re[index], zeta_00, zeta_01);
     }
 
     round(re, 0, 3839961, -3628969);
@@ -173,9 +160,9 @@ fn invert_ntt_at_layer_1(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]
 }
 
 #[inline(always)]
-fn invert_ntt_at_layer_2(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
-    fn round(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT], index: usize, zeta1: i32) {
-        re[index] = simd_unit_invert_ntt_at_layer_2(re[index], zeta1);
+fn invert_ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
+    fn round(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT], index: usize, zeta1: i32) {
+        simd_unit_invert_ntt_at_layer_2(&mut re[index], zeta1);
     }
 
     round(re, 0, -2797779);
@@ -214,18 +201,21 @@ fn invert_ntt_at_layer_2(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]
 
 #[inline(always)]
 fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
-    re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
+    re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
 ) {
     for j in OFFSET..OFFSET + STEP_BY {
-        let a_minus_b = arithmetic::subtract(&re[j + STEP_BY], &re[j]);
-        re[j] = arithmetic::add(&re[j], &re[j + STEP_BY]);
-        re[j + STEP_BY] = arithmetic::montgomery_multiply_by_constant(a_minus_b, ZETA);
+        // XXX: make nicer
+        let rejs = re[j + STEP_BY].clone();
+        let mut a_minus_b = rejs.clone();
+        arithmetic::subtract(&mut a_minus_b, &re[j]);
+        arithmetic::add(&mut re[j], &rejs);
+        re[j + STEP_BY] = a_minus_b;
+        arithmetic::montgomery_multiply_by_constant(&mut re[j + STEP_BY], ZETA);
     }
-    ()
 }
 
 #[inline(always)]
-fn invert_ntt_at_layer_3(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn invert_ntt_at_layer_3(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 8; // 1 << LAYER;
     const STEP_BY: usize = 1; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -248,7 +238,7 @@ fn invert_ntt_at_layer_3(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]
 }
 
 #[inline(always)]
-fn invert_ntt_at_layer_4(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn invert_ntt_at_layer_4(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 16; // 1 << LAYER;
     const STEP_BY: usize = 2; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -263,7 +253,7 @@ fn invert_ntt_at_layer_4(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]
 }
 
 #[inline(always)]
-fn invert_ntt_at_layer_5(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn invert_ntt_at_layer_5(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 32; // 1 << LAYER;
     const STEP_BY: usize = 4; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -274,7 +264,7 @@ fn invert_ntt_at_layer_5(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]
 }
 
 #[inline(always)]
-fn invert_ntt_at_layer_6(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn invert_ntt_at_layer_6(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 64; // 1 << LAYER;
     const STEP_BY: usize = 8; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
@@ -283,24 +273,22 @@ fn invert_ntt_at_layer_6(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]
 }
 
 #[inline(always)]
-fn invert_ntt_at_layer_7(re: &mut [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT]) {
+fn invert_ntt_at_layer_7(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 128; // 1 << LAYER;
     const STEP_BY: usize = 16; // step / COEFFICIENTS_IN_SIMD_UNIT;
 
     outer_3_plus::<{ (0 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 25847>(re);
 }
 
-pub(crate) fn invert_ntt_montgomery(
-    mut re: [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
-) -> [PortableSIMDUnit; SIMD_UNITS_IN_RING_ELEMENT] {
-    invert_ntt_at_layer_0(&mut re);
-    invert_ntt_at_layer_1(&mut re);
-    invert_ntt_at_layer_2(&mut re);
-    invert_ntt_at_layer_3(&mut re);
-    invert_ntt_at_layer_4(&mut re);
-    invert_ntt_at_layer_5(&mut re);
-    invert_ntt_at_layer_6(&mut re);
-    invert_ntt_at_layer_7(&mut re);
+pub(crate) fn invert_ntt_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
+    invert_ntt_at_layer_0(re);
+    invert_ntt_at_layer_1(re);
+    invert_ntt_at_layer_2(re);
+    invert_ntt_at_layer_3(re);
+    invert_ntt_at_layer_4(re);
+    invert_ntt_at_layer_5(re);
+    invert_ntt_at_layer_6(re);
+    invert_ntt_at_layer_7(re);
 
     for i in 0..re.len() {
         // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}
@@ -308,8 +296,6 @@ pub(crate) fn invert_ntt_montgomery(
         //
         // - Divide the elements by 256 and
         // - Convert the elements form montgomery domain to the standard domain.
-        re[i] = arithmetic::montgomery_multiply_by_constant(re[i], 41_978);
+        arithmetic::montgomery_multiply_by_constant(&mut re[i], 41_978);
     }
-
-    re
 }

@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
- * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
- * F*: 8b6fce63ca91b16386d8f76e82ea87a3c109a208
- * Libcrux: 2505360d54e1bcdd7165398ad6ada928ae8b568b
+ * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
+ * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
+ * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: 834b7f51701fa4e8695a784c138ed230f49f0c4e
  */
 
 #include "internal/libcrux_core.h"
@@ -279,10 +279,10 @@ with const generics
 */
 uint8_t libcrux_ml_kem_utils_prf_input_inc_e0(uint8_t (*prf_inputs)[33U],
                                               uint8_t domain_separator) {
-  uint8_t ret[3U][33U];
+  uint8_t _prf_inputs_init[3U][33U];
   core_array___core__clone__Clone_for__Array_T__N___20__clone(
-      (size_t)3U, prf_inputs, ret, uint8_t[33U], void *);
-  LowStar_Ignore_ignore(ret, uint8_t[3U][33U], void *);
+      (size_t)3U, prf_inputs, _prf_inputs_init, uint8_t[33U], void *);
+  LowStar_Ignore_ignore(_prf_inputs_init, uint8_t[3U][33U], void *);
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
@@ -412,10 +412,10 @@ with const generics
 */
 uint8_t libcrux_ml_kem_utils_prf_input_inc_fd(uint8_t (*prf_inputs)[33U],
                                               uint8_t domain_separator) {
-  uint8_t ret[2U][33U];
+  uint8_t _prf_inputs_init[2U][33U];
   core_array___core__clone__Clone_for__Array_T__N___20__clone(
-      (size_t)2U, prf_inputs, ret, uint8_t[33U], void *);
-  LowStar_Ignore_ignore(ret, uint8_t[2U][33U], void *);
+      (size_t)2U, prf_inputs, _prf_inputs_init, uint8_t[33U], void *);
+  LowStar_Ignore_ignore(_prf_inputs_init, uint8_t[2U][33U], void *);
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
@@ -585,10 +585,10 @@ with const generics
 */
 uint8_t libcrux_ml_kem_utils_prf_input_inc_ac(uint8_t (*prf_inputs)[33U],
                                               uint8_t domain_separator) {
-  uint8_t ret[4U][33U];
+  uint8_t _prf_inputs_init[4U][33U];
   core_array___core__clone__Clone_for__Array_T__N___20__clone(
-      (size_t)4U, prf_inputs, ret, uint8_t[33U], void *);
-  LowStar_Ignore_ignore(ret, uint8_t[4U][33U], void *);
+      (size_t)4U, prf_inputs, _prf_inputs_init, uint8_t[33U], void *);
+  LowStar_Ignore_ignore(_prf_inputs_init, uint8_t[4U][33U], void *);
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);

@@ -1,5 +1,7 @@
 #![allow(non_camel_case_types, non_snake_case, unused_imports)]
 
+use crate::std::{vec, vec::Vec};
+
 use libcrux_ecdh::{self, secret_to_public, x25519_derive, X25519PublicKey};
 use libcrux_ml_kem::mlkem768;
 

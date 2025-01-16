@@ -1,40 +1,33 @@
 use crate::{helper::cloop, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-fn serialize<SIMDUnit: Operations>(re: PolynomialRingElement<SIMDUnit>, serialized: &mut [u8]) {
+fn serialize<SIMDUnit: Operations>(re: &PolynomialRingElement<SIMDUnit>, serialized: &mut [u8]) {
     let output_bytes_per_simd_unit = serialized.len() / (8 * 4);
 
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
             SIMDUnit::commitment_serialize(
-                *simd_unit,
+                simd_unit,
                 &mut serialized[i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit],
             );
         }
     }
-    ()
 }
 
 #[inline(always)]
-pub(crate) fn serialize_vector<
-    SIMDUnit: Operations,
-    const DIMENSION: usize,
-    const RING_ELEMENT_SIZE: usize,
-    const OUTPUT_SIZE: usize,
->(
-    vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
+pub(crate) fn serialize_vector<SIMDUnit: Operations>(
+    ring_element_size: usize,
+    vector: &[PolynomialRingElement<SIMDUnit>],
+    serialized: &mut [u8],
+) {
     let mut offset: usize = 0;
 
     cloop! {
         for ring_element in vector.iter() {
-            serialize::<SIMDUnit>(*ring_element, &mut serialized[offset..offset + RING_ELEMENT_SIZE]);
-            offset += RING_ELEMENT_SIZE;
+            serialize::<SIMDUnit>(ring_element, &mut serialized[offset..offset + ring_element_size]);
+            offset += ring_element_size;
         }
     }
-
-    serialized
 }
 
 #[cfg(test)]
@@ -62,7 +55,7 @@ mod tests {
             43, 32, 27, 34, 27, 15, 24, 4, 2, 42, 15, 9, 3, 17, 35, 0, 22, 43, 13, 15, 6, 38, 10,
             20, 37,
         ];
-        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array_test(&coefficients);
 
         let serialized = [
             170, 57, 148, 37, 42, 144, 203, 90, 162, 193, 73, 165, 38, 150, 130, 135, 82, 85, 217,
@@ -79,7 +72,7 @@ mod tests {
         ];
 
         let mut result = [0u8; 192];
-        serialize::<SIMDUnit>(re, &mut result);
+        serialize::<SIMDUnit>(&re, &mut result);
         assert_eq!(result, serialized);
 
         // Test serialization when LOW_ORDER_ROUNDING_RANGE = 261,888
@@ -95,7 +88,7 @@ mod tests {
             12, 5, 3, 7, 15, 12, 13, 3, 4, 10, 1, 13, 3, 9, 6, 10, 13, 4, 4, 2, 9, 0, 4, 5, 7, 14,
             11, 2, 6, 3, 11, 6, 2, 0, 5, 8, 5, 9, 5, 9, 0, 2, 2, 3, 15, 0, 8, 11, 13, 2, 6, 11, 0,
         ];
-        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array_test(&coefficients);
 
         let serialized = [
             66, 56, 62, 122, 244, 61, 33, 201, 184, 76, 231, 73, 36, 245, 190, 182, 218, 211, 249,
@@ -108,11 +101,10 @@ mod tests {
         ];
 
         let mut result = [0u8; 128];
-        serialize::<SIMDUnit>(re, &mut result);
+        serialize::<SIMDUnit>(&re, &mut result);
         assert_eq!(result, serialized);
     }
 
-    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_serialize_portable() {
         test_serialize_generic::<simd::portable::PortableSIMDUnit>();

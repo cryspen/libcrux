@@ -9,5 +9,6 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Avx2.Vector_type in
   ()
 
+/// Implementing the [`Operations`] for AVX2.
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl:Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_AVX2SIMDUnit
+val impl:Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256

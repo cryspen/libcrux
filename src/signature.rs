@@ -4,6 +4,8 @@
 //! * EdDSA 25519
 //! * RSA PSS
 
+use crate::std::{vec, vec::Vec};
+
 use crate::{
     ecdh,
     hacl::{self, ed25519},
@@ -84,7 +86,7 @@ pub mod rsa_pss {
         Hacl_RSAPSS_rsapss_sign, Hacl_RSAPSS_rsapss_verify,
     };
 
-    use super::{DigestAlgorithm, Error};
+    use super::{vec, DigestAlgorithm, Error, Vec};
 
     /// A [`Algorithm::RsaPss`](super::Algorithm::RsaPss) Signature
     #[derive(Debug, Clone, PartialEq, Eq)]

@@ -18,6 +18,8 @@ if(NOT MSVC)
         -Wall
         -fstack-usage
         -Wunused-function
+        # -Wno-unused-function
+        -Wno-unused-variable
         $<$<CONFIG:DEBUG>:-g>
         $<$<CONFIG:DEBUG>:-Og>
         $<$<CONFIG:RELEASE>:-g>

@@ -29,7 +29,7 @@ type t_DomainSeparationError = | DomainSeparationError_ContextTooLongError : t_D
 val t_DomainSeparationError_cast_to_repr (x: t_DomainSeparationError)
     : Prims.Pure isize Prims.l_True (fun _ -> Prims.l_True)
 
-class t_PreHash (v_Self: Type0) (v_DIGEST_LEN: usize) = {
+class t_PreHash (v_Self: Type0) = {
   f_oid_pre:Prims.unit -> Type0;
   f_oid_post:Prims.unit -> t_Array u8 (sz 11) -> Type0;
   f_oid:x0: Prims.unit
@@ -37,21 +37,24 @@ class t_PreHash (v_Self: Type0) (v_DIGEST_LEN: usize) = {
   f_hash_pre:
       #v_Shake128: Type0 ->
       {| i1: Libcrux_ml_dsa.Hash_functions.Shake128.t_Xof v_Shake128 |} ->
+      t_Slice u8 ->
       t_Slice u8
     -> Type0;
   f_hash_post:
       #v_Shake128: Type0 ->
       {| i1: Libcrux_ml_dsa.Hash_functions.Shake128.t_Xof v_Shake128 |} ->
       t_Slice u8 ->
-      t_Array u8 v_DIGEST_LEN
+      t_Slice u8 ->
+      t_Slice u8
     -> Type0;
   f_hash:
       #v_Shake128: Type0 ->
       {| i1: Libcrux_ml_dsa.Hash_functions.Shake128.t_Xof v_Shake128 |} ->
-      x0: t_Slice u8
-    -> Prims.Pure (t_Array u8 v_DIGEST_LEN)
-        (f_hash_pre #v_Shake128 #i1 x0)
-        (fun result -> f_hash_post #v_Shake128 #i1 x0 result)
+      x0: t_Slice u8 ->
+      x1: t_Slice u8
+    -> Prims.Pure (t_Slice u8)
+        (f_hash_pre #v_Shake128 #i1 x0 x1)
+        (fun result -> f_hash_post #v_Shake128 #i1 x0 x1 result)
 }
 
 /// An implementation of the pre-hash trait for the SHAKE-128 XOF with
@@ -71,11 +74,11 @@ val impl_2:Core.Convert.t_From Libcrux_ml_dsa.Types.t_SigningError t_DomainSepar
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl_3:Core.Convert.t_From Libcrux_ml_dsa.Types.t_VerificationError t_DomainSeparationError
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl:t_PreHash t_SHAKE128_PH
+
 /// `context` must be at most 255 bytes long.
 val impl_1__new (context: t_Slice u8) (pre_hash_oid: Core.Option.t_Option (t_Array u8 (sz 11)))
     : Prims.Pure (Core.Result.t_Result t_DomainSeparationContext t_DomainSeparationError)
       Prims.l_True
       (fun _ -> Prims.l_True)
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl:t_PreHash t_SHAKE128_PH (sz 256)

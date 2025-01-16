@@ -114,7 +114,7 @@ pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
     createi (sz 256) (fun i -> Spec.MLKEM.Math.to_spec_fe 
-                                (Seq.index (i2._super_8706949974463268012.f_repr 
+                                (Seq.index (i2._super_12682756204189288427.f_repr 
                                     (Seq.index p.f_coefficients (v i / 16))) (v i % 16)))"
     )
 )]
@@ -191,7 +191,6 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
         });
         myself.coefficients[i] = Vector::barrett_reduce(myself.coefficients[i]);
     }
-    ()
 }
 
 #[inline(always)]
@@ -354,7 +353,6 @@ fn add_error_reduce<Vector: Operations>(
         myself.coefficients[j] =
             Vector::barrett_reduce(add_vector(coefficient_normal_form, &error.coefficients[j]));
     }
-    ()
 }
 
 #[inline(always)]
@@ -377,7 +375,6 @@ fn add_standard_error_reduce<Vector: Operations>(
         myself.coefficients[j] =
             Vector::barrett_reduce(add_vector(coefficient_normal_form, &error.coefficients[j]));
     }
-    ()
 }
 
 /// Given two `KyberPolynomialRingElement`s in their NTT representations,

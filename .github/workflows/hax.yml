@@ -31,10 +31,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          source-tag: v0.32.3 # revert when https://github.com/DeterminateSystems/nix-installer-action/issues/133 is closed
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: ⤵ Install FStar
-        run: nix profile install github:FStarLang/FStar/v2024.09.05
+        run: nix profile install github:FStarLang/FStar/v2024.12.03
 
       - name: ⤵ Clone HACL-star repository
         uses: actions/checkout@v4

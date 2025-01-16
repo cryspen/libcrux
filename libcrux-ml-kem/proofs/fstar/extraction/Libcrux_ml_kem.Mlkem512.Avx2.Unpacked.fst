@@ -75,16 +75,13 @@ let serialized_public_key
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
      =
-  let hax_temp_output, serialized:(Prims.unit & Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800)) =
-    (),
+  let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800) =
     Libcrux_ml_kem.Ind_cca.Unpacked.impl_3__serialized_mut (sz 2)
       #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
       (sz 768)
       (sz 800)
       public_key
       serialized
-    <:
-    (Prims.unit & Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
   in
   serialized
 
@@ -178,19 +175,13 @@ let unpacked_public_key
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
      =
-  let hax_temp_output, unpacked_public_key:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
-      Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector) =
-    (),
+  let unpacked_public_key:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+    Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector =
     Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.Unpacked.unpack_public_key (sz 2)
       (sz 768)
       (sz 768)
       (sz 800)
       public_key
       unpacked_public_key
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
-        Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
   in
   unpacked_public_key

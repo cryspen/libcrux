@@ -19,9 +19,10 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         })
     });
 
+    #[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
     group.bench_function("pqclean (internal random)", move |b| {
         b.iter(|| {
-            let (_, _) = pqcrypto_dilithium::dilithium3::keypair();
+            let (_, _) = pqcrypto_mldsa::mldsa65::keypair();
         })
     });
 }
@@ -46,12 +47,15 @@ pub fn comparisons_signing(c: &mut Criterion) {
         })
     });
 
-    let (_, sk) = pqcrypto_dilithium::dilithium3::keypair();
-    group.bench_function("pqclean (internal random)", move |b| {
-        b.iter(|| {
-            let _ = pqcrypto_dilithium::dilithium3::detached_sign(&message, &sk);
-        })
-    });
+    #[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
+    {
+        let (_, sk) = pqcrypto_mldsa::mldsa65::keypair();
+        group.bench_function("pqclean (internal random)", move |b| {
+            b.iter(|| {
+                let _ = pqcrypto_mldsa::mldsa65::detached_sign(&message, &sk);
+            })
+        });
+    }
 }
 
 pub fn comparisons_verification(c: &mut Criterion) {
@@ -76,17 +80,19 @@ pub fn comparisons_verification(c: &mut Criterion) {
         })
     });
 
-    let (vk, sk) = pqcrypto_dilithium::dilithium3::keypair();
-    let signature = pqcrypto_dilithium::dilithium3::detached_sign(&message, &sk);
+    #[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
+    {
+        let (vk, sk) = pqcrypto_mldsa::mldsa65::keypair();
+        let signature = pqcrypto_mldsa::mldsa65::detached_sign(&message, &sk);
 
-    group.bench_function("pqclean", move |b| {
-        b.iter(|| {
-            let _ = pqcrypto_dilithium::dilithium3::verify_detached_signature(
-                &signature, &message, &vk,
-            )
-            .unwrap();
-        })
-    });
+        group.bench_function("pqclean", move |b| {
+            b.iter(|| {
+                let _ =
+                    pqcrypto_mldsa::mldsa65::verify_detached_signature(&signature, &message, &vk)
+                        .unwrap();
+            })
+        });
+    }
 }
 
 pub fn comparisons(c: &mut Criterion) {

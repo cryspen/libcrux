@@ -199,19 +199,13 @@ let unpacked_public_key
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
-  let hax_temp_output, unpacked_public_key:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
-      Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-    (),
+  let unpacked_public_key:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+    Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.unpack_public_key (sz 3)
       (sz 1152)
       (sz 1152)
       (sz 1184)
       public_key
       unpacked_public_key
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
-        Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
   unpacked_public_key

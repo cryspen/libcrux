@@ -3,7 +3,10 @@ module Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1
 open Core
 open FStar.Mul
 
-let deserialize_when_gamma1_is_2_pow_17_ (serialized: t_Slice u8) =
+let deserialize_when_gamma1_is_2_pow_17_
+      (serialized: t_Slice u8)
+      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+     =
   let _:Prims.unit =
     if true
     then
@@ -55,13 +58,19 @@ let deserialize_when_gamma1_is_2_pow_17_ (serialized: t_Slice u8) =
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_when_gamma1_is_2_pow_17___GAMMA1
+  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
+          deserialize_when_gamma1_is_2_pow_17___GAMMA1
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      coefficients
+  in
+  out
 
-      <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    coefficients
-
-let deserialize_when_gamma1_is_2_pow_19_ (serialized: t_Slice u8) =
+let deserialize_when_gamma1_is_2_pow_19_
+      (serialized: t_Slice u8)
+      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+     =
   let _:Prims.unit =
     if true
     then
@@ -113,21 +122,27 @@ let deserialize_when_gamma1_is_2_pow_19_ (serialized: t_Slice u8) =
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_when_gamma1_is_2_pow_19___GAMMA1
-
-      <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    coefficients
-
-let deserialize (v_GAMMA1_EXPONENT: usize) (serialized: t_Slice u8) =
-  match cast (v_GAMMA1_EXPONENT <: usize) <: u8 with
-  | 17uy -> deserialize_when_gamma1_is_2_pow_17_ serialized
-  | 19uy -> deserialize_when_gamma1_is_2_pow_19_ serialized
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
+  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
+          deserialize_when_gamma1_is_2_pow_19___GAMMA1
         <:
-        Rust_primitives.Hax.t_Never)
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      coefficients
+  in
+  out
+
+let deserialize
+      (serialized: t_Slice u8)
+      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (gamma1_exponent: usize)
+     =
+  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    match cast (gamma1_exponent <: usize) <: u8 with
+    | 17uy -> deserialize_when_gamma1_is_2_pow_17_ serialized out
+    | 19uy -> deserialize_when_gamma1_is_2_pow_19_ serialized out
+    | _ -> out
+  in
+  out
 
 let serialize_when_gamma1_is_2_pow_17_
       (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -285,8 +300,7 @@ let serialize_when_gamma1_is_2_pow_19_
         <:
         t_Slice u8)
   in
-  let hax_temp_output, out:(Prims.unit & t_Slice u8) =
-    (),
+  let out:t_Slice u8 =
     Core.Slice.impl__copy_from_slice #u8
       out
       (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 20 }
@@ -294,29 +308,18 @@ let serialize_when_gamma1_is_2_pow_19_
           Core.Ops.Range.t_Range usize ]
         <:
         t_Slice u8)
-    <:
-    (Prims.unit & t_Slice u8)
   in
   out
 
 let serialize
-      (v_GAMMA1_EXPONENT: usize)
       (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
       (serialized: t_Slice u8)
+      (gamma1_exponent: usize)
      =
-  let serialized, hax_temp_output:(t_Slice u8 & Prims.unit) =
-    match cast (v_GAMMA1_EXPONENT <: usize) <: u8 with
-    | 17uy ->
-      serialize_when_gamma1_is_2_pow_17_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
-    | 19uy ->
-      serialize_when_gamma1_is_2_pow_19_ simd_unit serialized, () <: (t_Slice u8 & Prims.unit)
-    | _ ->
-      serialized,
-      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-          <:
-          Rust_primitives.Hax.t_Never)
-      <:
-      (t_Slice u8 & Prims.unit)
+  let serialized:t_Slice u8 =
+    match cast (gamma1_exponent <: usize) <: u8 with
+    | 17uy -> serialize_when_gamma1_is_2_pow_17_ simd_unit serialized
+    | 19uy -> serialize_when_gamma1_is_2_pow_19_ simd_unit serialized
+    | _ -> serialized
   in
   serialized

@@ -107,6 +107,8 @@ wasm-bindgen-test = "0.3"
 getrandom = { version = "0.2", features = ["js"] }
 
 [features]
+default = ["std"]
+std = []
 hacspec = []                         # TODO: #7 Use specs instead of efficient implementations
 rand = []
 wasm = ["wasm-bindgen", "getrandom"]
@@ -119,8 +121,9 @@ lto = "fat"
 codegen-units = 1
 panic = "abort"
 
-[profile.dev.package."libcrux-ml-dsa"]
-opt-level = 1
+# XXX: Not needed anymore, but nice for test speed
+# [profile.dev.package."libcrux-ml-dsa"]
+# opt-level = 1
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

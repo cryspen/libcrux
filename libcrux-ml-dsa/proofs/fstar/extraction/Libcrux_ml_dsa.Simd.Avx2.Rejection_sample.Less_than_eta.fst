@@ -43,7 +43,10 @@ let shift_interval (v_ETA: usize) (coefficients: Libcrux_intrinsics.Avx2_extract
 
 let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
   let potential_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.deserialize_to_unsigned (sz 4) input
+    Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.deserialize_to_unsigned (Libcrux_ml_dsa.Constants.Eta_Four
+        <:
+        Libcrux_ml_dsa.Constants.t_Eta)
+      input
   in
   let (interval_boundary: i32):i32 =
     match cast (v_ETA <: usize) <: u8 with

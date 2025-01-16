@@ -43,8 +43,7 @@ val init_absorb_final_shake256 (input: t_Slice u8)
 val init_absorb_x4 (input0 input1 input2 input3: t_Slice u8)
     : Prims.Pure t_Shake256X4 Prims.l_True (fun _ -> Prims.l_True)
 
-val shake128 (v_OUTPUT_LENGTH: usize) (input: t_Slice u8) (out: t_Array u8 v_OUTPUT_LENGTH)
-    : Prims.Pure (t_Array u8 v_OUTPUT_LENGTH) Prims.l_True (fun _ -> Prims.l_True)
+val shake128 (input out: t_Slice u8) : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
 val shake256 (v_OUTPUT_LENGTH: usize) (input: t_Slice u8) (out: t_Array u8 v_OUTPUT_LENGTH)
     : Prims.Pure (t_Array u8 v_OUTPUT_LENGTH) Prims.l_True (fun _ -> Prims.l_True)

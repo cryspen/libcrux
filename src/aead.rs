@@ -17,6 +17,8 @@ use crate::hacl::chacha20_poly1305;
 
 use libcrux_platform::{aes_ni_support, simd128_support, simd256_support};
 
+use crate::std::vec::Vec;
+
 /// The caller has provided an invalid argument.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum InvalidArgumentError {

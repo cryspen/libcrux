@@ -35,6 +35,8 @@ use crate::{
     hmac::tag_size,
 };
 
+use crate::std::{vec, vec::Vec};
+
 use super::errors::*;
 
 type AeadAlgResult = Result<Algorithm, HpkeError>;

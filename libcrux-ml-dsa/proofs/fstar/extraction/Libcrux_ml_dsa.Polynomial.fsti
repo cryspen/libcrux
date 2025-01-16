@@ -27,17 +27,18 @@ val impl_2
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
     : Core.Marker.t_Copy (t_PolynomialRingElement v_SIMDUnit)
 
-val impl__ZERO:
-    #v_SIMDUnit: Type0 ->
-    {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
-    Prims.unit
-  -> Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
-
 val impl__from_i32_array
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (array: t_Slice i32)
+      (result: t_PolynomialRingElement v_SIMDUnit)
     : Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl__zero:
+    #v_SIMDUnit: Type0 ->
+    {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
+    Prims.unit
+  -> Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
 
 val impl__add
       (#v_SIMDUnit: Type0)

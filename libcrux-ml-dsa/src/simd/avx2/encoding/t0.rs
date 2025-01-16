@@ -3,14 +3,14 @@ use libcrux_intrinsics::avx2::*;
 use crate::constants::BITS_IN_LOWER_PART_OF_T;
 
 #[inline(always)]
-fn change_interval(simd_unit: Vec256) -> Vec256 {
+fn change_interval(simd_unit: &Vec256) -> Vec256 {
     let interval_end = mm256_set1_epi32(1 << (BITS_IN_LOWER_PART_OF_T - 1));
 
-    mm256_sub_epi32(interval_end, simd_unit)
+    mm256_sub_epi32(interval_end, *simd_unit)
 }
 
 #[inline(always)]
-pub(crate) fn serialize(simd_unit: Vec256) -> [u8; 13] {
+pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
     let simd_unit = change_interval(simd_unit);
@@ -34,11 +34,11 @@ pub(crate) fn serialize(simd_unit: Vec256) -> [u8; 13] {
     let bits_sequential = mm256_castsi256_si128(bits_sequential);
     mm_storeu_bytes_si128(&mut serialized, bits_sequential);
 
-    serialized[0..13].try_into().unwrap()
+    out.copy_from_slice(&serialized[0..13])
 }
 
 #[inline(always)]
-pub(crate) fn deserialize(serialized: &[u8]) -> Vec256 {
+pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256) {
     debug_assert_eq!(serialized.len(), 13);
 
     const COEFFICIENT_MASK: i32 = (1 << 13) - 1;
@@ -49,6 +49,7 @@ pub(crate) fn deserialize(serialized: &[u8]) -> Vec256 {
     let serialized = mm_loadu_si128(&serialized_extended);
     let serialized = mm256_set_m128i(serialized, serialized);
 
+    // XXX: re-use out variable
     let coefficients = mm256_shuffle_epi8(
         serialized,
         mm256_set_epi8(
@@ -60,5 +61,5 @@ pub(crate) fn deserialize(serialized: &[u8]) -> Vec256 {
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(3, 6, 1, 4, 7, 2, 5, 0));
     let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK));
 
-    change_interval(coefficients)
+    *out = change_interval(&coefficients);
 }

@@ -4,6 +4,8 @@
 
 use libcrux_ecdh::{X25519PrivateKey, X25519PublicKey};
 
+use crate::std::{vec, vec::Vec};
+
 use super::errors::*;
 use super::kdf::*;
 use libcrux_kem::{

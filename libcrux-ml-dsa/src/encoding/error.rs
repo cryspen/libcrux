@@ -1,56 +1,66 @@
 // Functions for serializing and deserializing an error ring element.
 
-use crate::{helper::cloop, ntt::ntt, polynomial::PolynomialRingElement, simd::traits::Operations};
+use crate::{
+    constants::Eta, helper::cloop, ntt::ntt, polynomial::PolynomialRingElement,
+    simd::traits::Operations,
+};
 
 #[inline(always)]
-pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement<SIMDUnit>,
-    serialized: &mut [u8], //OUTPUT_SIZE
+pub(crate) fn serialize<SIMDUnit: Operations>(
+    eta: Eta,
+    re: &PolynomialRingElement<SIMDUnit>,
+    serialized: &mut [u8], // OUTPUT_SIZE
 ) {
-    let output_bytes_per_simd_unit = if ETA == 2 { 3 } else { 4 };
+    let output_bytes_per_simd_unit = chunk_size(eta);
+
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
-            SIMDUnit::error_serialize::<ETA>(
-                    *simd_unit,&mut serialized[i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit]
+            SIMDUnit::error_serialize(eta,
+                    simd_unit,
+                    &mut serialized[i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit]
                 );
         }
     }
-    ()
 }
 
 #[inline(always)]
-fn deserialize<SIMDUnit: Operations, const ETA: usize>(
+fn chunk_size(eta: Eta) -> usize {
+    match eta {
+        Eta::Two => 3,
+        Eta::Four => 4,
+    }
+}
+
+#[inline(always)]
+fn deserialize<SIMDUnit: Operations>(
+    eta: Eta,
     serialized: &[u8],
     result: &mut PolynomialRingElement<SIMDUnit>,
 ) {
-    let chunk_size = if ETA == 2 { 3 } else { 4 };
+    let chunk_size = chunk_size(eta);
 
     for i in 0..result.simd_units.len() {
-        result.simd_units[i] =
-            SIMDUnit::error_deserialize::<ETA>(&serialized[i * chunk_size..(i + 1) * chunk_size]);
+        SIMDUnit::error_deserialize(
+            eta,
+            &serialized[i * chunk_size..(i + 1) * chunk_size],
+            &mut result.simd_units[i],
+        );
     }
-    ()
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_to_vector_then_ntt<
-    SIMDUnit: Operations,
-    const DIMENSION: usize,
-    const ETA: usize,
-    const RING_ELEMENT_SIZE: usize,
->(
+pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
+    eta: Eta,
+    ring_element_size: usize,
     serialized: &[u8],
-) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut ring_elements = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-
+    ring_elements: &mut [PolynomialRingElement<SIMDUnit>],
+) {
     cloop! {
-        for (i, bytes) in serialized.chunks_exact(RING_ELEMENT_SIZE).enumerate() {
-            deserialize::<SIMDUnit, ETA>(bytes, &mut ring_elements[i]);
-            ring_elements[i] = ntt(ring_elements[i]);
+        for (i, bytes) in serialized.chunks_exact(ring_element_size).enumerate() {
+            deserialize::<SIMDUnit>(eta, bytes, &mut ring_elements[i]);
+            ntt(&mut ring_elements[i]);
         }
     }
-
-    ring_elements
 }
 
 #[cfg(test)]
@@ -82,8 +92,8 @@ mod tests {
             0, 2, -1,
         ];
 
-        let mut deserialized = PolynomialRingElement::<SIMDUnit>::ZERO();
-        deserialize::<SIMDUnit, 2>(&serialized, &mut deserialized);
+        let mut deserialized = PolynomialRingElement::<SIMDUnit>::zero();
+        deserialize::<SIMDUnit>(Eta::Two, &serialized, &mut deserialized);
         assert_eq!(deserialized.to_i32_array(), expected_coefficients);
 
         let serialized = [
@@ -110,12 +120,11 @@ mod tests {
             1, 3,
         ];
 
-        let mut deserialized = PolynomialRingElement::<SIMDUnit>::ZERO();
-        deserialize::<SIMDUnit, 4>(&serialized, &mut deserialized);
+        let mut deserialized = PolynomialRingElement::<SIMDUnit>::zero();
+        deserialize::<SIMDUnit>(Eta::Four, &serialized, &mut deserialized);
         assert_eq!(deserialized.to_i32_array(), expected_coefficients);
     }
 
-    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_deserialize_portable() {
         test_deserialize_generic::<simd::portable::PortableSIMDUnit>();

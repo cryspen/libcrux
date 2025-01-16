@@ -50,19 +50,13 @@ let generate_keypair
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
      =
-  let hax_temp_output, out:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
-      Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
-    (),
+  let out:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     Libcrux_ml_kem.Ind_cca.Unpacked.generate_keypair v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE
       v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE
       #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
       #Libcrux_ml_kem.Hash_functions.Neon.t_Simd128Hash #Libcrux_ml_kem.Variant.t_MlKem randomness
       out
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
-        Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
   in
   out
 
@@ -95,10 +89,8 @@ let unpack_public_key
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
      =
-  let hax_temp_output, unpacked_public_key:(Prims.unit &
-    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
-      Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
-    (),
+  let unpacked_public_key:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     Libcrux_ml_kem.Ind_cca.Unpacked.unpack_public_key v_K
       v_T_AS_NTT_ENCODED_SIZE
       v_RANKED_BYTES_PER_RING_ELEMENT
@@ -107,9 +99,5 @@ let unpack_public_key
       #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
       public_key
       unpacked_public_key
-    <:
-    (Prims.unit &
-      Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
-        Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
   in
   unpacked_public_key

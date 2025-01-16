@@ -203,8 +203,8 @@ let vec_to_i16_array (v: t_SIMD256Vector) =
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector =
   {
-    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
-    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
+    _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
     f_repr_pre = (fun (x: t_SIMD256Vector) -> true);
     f_repr_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> true);
     f_repr = fun (x: t_SIMD256Vector) -> vec_to_i16_array x
@@ -227,9 +227,9 @@ let deserialize_12_ (bytes: t_Slice u8) =
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
   {
-    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
-    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
-    _super_8706949974463268012 = FStar.Tactics.Typeclasses.solve;
+    _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
+    _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
+    _super_12682756204189288427 = FStar.Tactics.Typeclasses.solve;
     f_ZERO_pre = (fun (_: Prims.unit) -> true);
     f_ZERO_post
     =

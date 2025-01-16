@@ -11,82 +11,65 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let matrix_A_avx2
+let matrix_flat__inner
       (#v_SIMDUnit: Type0)
-      (v_ROWS_IN_A v_COLUMNS_IN_A: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (seed: t_Array u8 (sz 34))
+      (columns: usize)
+      (seed: t_Slice u8)
+      (matrix: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
      =
-  match
-    (cast (v_ROWS_IN_A <: usize) <: u8), (cast (v_COLUMNS_IN_A <: usize) <: u8) <: (u8 & u8)
-  with
-  | 4uy, 4uy ->
-    Libcrux_ml_dsa.Samplex4.matrix_A_4_by_4_ #v_SIMDUnit
+  let matrix:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
+    Libcrux_ml_dsa.Samplex4.matrix_flat #v_SIMDUnit
       #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
-      v_ROWS_IN_A
-      v_COLUMNS_IN_A
+      columns
       seed
-  | 6uy, 5uy ->
-    Libcrux_ml_dsa.Samplex4.matrix_A_6_by_5_ #v_SIMDUnit
-      #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
-      v_ROWS_IN_A
-      v_COLUMNS_IN_A
-      seed
-  | 8uy, 7uy ->
-    Libcrux_ml_dsa.Samplex4.matrix_A_8_by_7_ #v_SIMDUnit
-      #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
-      v_ROWS_IN_A
-      v_COLUMNS_IN_A
-      seed
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-        <:
-        Rust_primitives.Hax.t_Never)
+      matrix
+  in
+  matrix
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_ml_dsa.Samplex4.t_X4Sampler t_AVX2Sampler =
   {
-    f_matrix_A_pre
+    f_matrix_flat_pre
     =
     (fun
         (#v_SIMDUnit: Type0)
-        (v_ROWS_IN_A: usize)
-        (v_COLUMNS_IN_A: usize)
         (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-        (seed: t_Array u8 (sz 34))
+        (columns: usize)
+        (seed: t_Slice u8)
+        (matrix: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
         ->
         true);
-    f_matrix_A_post
+    f_matrix_flat_post
     =
     (fun
         (#v_SIMDUnit: Type0)
-        (v_ROWS_IN_A: usize)
-        (v_COLUMNS_IN_A: usize)
         (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-        (seed: t_Array u8 (sz 34))
-        (out:
-          t_Array
-            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) v_COLUMNS_IN_A)
-            v_ROWS_IN_A)
+        (columns: usize)
+        (seed: t_Slice u8)
+        (matrix: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+        (out: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
         ->
         true);
-    f_matrix_A
+    f_matrix_flat
     =
     fun
       (#v_SIMDUnit: Type0)
-      (v_ROWS_IN_A: usize)
-      (v_COLUMNS_IN_A: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
         i1:
         Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (seed: t_Array u8 (sz 34))
+      (columns: usize)
+      (seed: t_Slice u8)
+      (matrix: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       ->
-      matrix_A_avx2 #v_SIMDUnit v_ROWS_IN_A v_COLUMNS_IN_A seed
+      let matrix:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
+        matrix_flat__inner #v_SIMDUnit columns seed matrix
+      in
+      matrix
   }

@@ -3,9 +3,21 @@ module Libcrux_ml_kem.Vector.Traits
 open Core
 open FStar.Mul
 
+let v_BARRETT_SHIFT: i32 = 26l
+
+let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
+
+let v_FIELD_ELEMENTS_IN_VECTOR: usize = sz 16
+
+let v_FIELD_MODULUS: i16 = 3329s
+
+let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209ul
+
+let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353s
+
 class t_Repr (v_Self: Type0) = {
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
   f_repr_pre:x: v_Self -> pred: Type0{true ==> pred};
   f_repr_post:v_Self -> t_Array i16 (sz 16) -> Type0;
   f_repr:x0: v_Self
@@ -13,9 +25,9 @@ class t_Repr (v_Self: Type0) = {
 }
 
 class t_Operations (v_Self: Type0) = {
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_8706949974463268012:t_Repr v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_12682756204189288427:t_Repr v_Self;
   f_ZERO_pre:x: Prims.unit
     -> pred:
       Type0
@@ -404,23 +416,11 @@ class t_Operations (v_Self: Type0) = {
         (fun result -> f_rej_sample_post x0 x1 result)
 }
 
-let v_BARRETT_SHIFT: i32 = 26l
-
-let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
-
-let v_FIELD_ELEMENTS_IN_VECTOR: usize = sz 16
-
-let v_FIELD_MODULUS: i16 = 3329s
-
-let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209ul
-
-let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353s
-
 val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (vec: v_T)
     : Prims.Pure v_T
       (requires
         forall i.
-          let x = Seq.index (i1._super_8706949974463268012.f_repr vec) i in
+          let x = Seq.index (i1._super_12682756204189288427.f_repr vec) i in
           (x == 0s \/ x == 1s))
       (fun _ -> Prims.l_True)
 
@@ -437,11 +437,11 @@ val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
 
 val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
     : Prims.Pure v_T
-      (requires Spec.Utils.is_i16b_array 3328 (i1._super_8706949974463268012.f_repr a))
+      (requires Spec.Utils.is_i16b_array 3328 (i1._super_12682756204189288427.f_repr a))
       (ensures
         fun result ->
           let result:v_T = result in
           forall i.
-            (let x = Seq.index (i1._super_8706949974463268012.f_repr a) i in
-              let y = Seq.index (i1._super_8706949974463268012.f_repr result) i in
+            (let x = Seq.index (i1._super_12682756204189288427.f_repr a) i in
+              let y = Seq.index (i1._super_12682756204189288427.f_repr result) i in
               (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))))

@@ -37,6 +37,10 @@ val zeta (i: usize)
           let result:i16 = result in
           Spec.Utils.is_i16b 1664 result)
 
+let v_VECTORS_IN_RING_ELEMENT: usize =
+  Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!
+  Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+
 type t_PolynomialRingElement
   (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
   = { f_coefficients:t_Array v_Vector (sz 16) }
@@ -45,7 +49,7 @@ let to_spec_poly_t (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
     createi (sz 256) (fun i -> Spec.MLKEM.Math.to_spec_fe 
-                                (Seq.index (i2._super_8706949974463268012.f_repr 
+                                (Seq.index (i2._super_12682756204189288427.f_repr 
                                     (Seq.index p.f_coefficients (v i / 16))) (v i % 16)))
 
 let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)

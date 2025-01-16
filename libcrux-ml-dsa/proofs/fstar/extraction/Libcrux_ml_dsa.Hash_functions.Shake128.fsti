@@ -4,17 +4,10 @@ open Core
 open FStar.Mul
 
 class t_Xof (v_Self: Type0) = {
-  f_shake128_pre:v_OUTPUT_LENGTH: usize -> t_Slice u8 -> t_Array u8 v_OUTPUT_LENGTH -> Type0;
-  f_shake128_post:
-      v_OUTPUT_LENGTH: usize ->
-      t_Slice u8 ->
-      t_Array u8 v_OUTPUT_LENGTH ->
-      t_Array u8 v_OUTPUT_LENGTH
-    -> Type0;
-  f_shake128:v_OUTPUT_LENGTH: usize -> x0: t_Slice u8 -> x1: t_Array u8 v_OUTPUT_LENGTH
-    -> Prims.Pure (t_Array u8 v_OUTPUT_LENGTH)
-        (f_shake128_pre v_OUTPUT_LENGTH x0 x1)
-        (fun result -> f_shake128_post v_OUTPUT_LENGTH x0 x1 result)
+  f_shake128_pre:t_Slice u8 -> t_Slice u8 -> Type0;
+  f_shake128_post:t_Slice u8 -> t_Slice u8 -> t_Slice u8 -> Type0;
+  f_shake128:x0: t_Slice u8 -> x1: t_Slice u8
+    -> Prims.Pure (t_Slice u8) (f_shake128_pre x0 x1) (fun result -> f_shake128_post x0 x1 result)
 }
 
 /// When sampling matrix A we always want to do 4 absorb/squeeze calls in
