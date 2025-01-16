@@ -14,8 +14,8 @@ path = "src/ecdh.rs"
 
 [dependencies]
 rand = { version = "0.8" }
-libcrux-hacl = { version = "=0.0.2-beta.2", path = "../sys/hacl" }
 libcrux-curve25519 = { version = "=0.0.2-beta.2", path = "../curve25519" }
+libcrux-p256 = { version = "=0.0.2-beta.2", path = "../p256" }
 
 [dev-dependencies]
 rand_core = { version = "0.6" }
@@ -23,6 +23,3 @@ hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 pretty_env_logger = "0.5"
-
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(adx)', 'cfg(bmi2)'] }
