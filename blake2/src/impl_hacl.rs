@@ -20,6 +20,9 @@ use libcrux_hacl_rs::streaming_types::error_code;
 const BLAKE2B_PARAM_LEN: usize = 16;
 const BLAKE2S_PARAM_LEN: usize = 8;
 
+const BLAKE2B_MAX_LEN: usize = 64;
+const BLAKE2S_MAX_LEN: usize = 32;
+
 /// Indicates an error has occurred
 #[derive(Debug)]
 pub enum Error {
@@ -63,7 +66,7 @@ impl<const OUT_LEN: usize> Blake2bBuilder<'_, 0, OUT_LEN> {
     /// Creates the builder for an unkeyed hasher and returns an error if the digest length
     /// `OUT_LEN` is not in the allowed range.
     pub fn new_unkeyed() -> Result<Self, Error> {
-        if OUT_LEN < 1 || OUT_LEN > 64 {
+        if OUT_LEN < 1 || OUT_LEN > BLAKE2B_MAX_LEN {
             return Err(Error::InvalidDigestLength);
         }
 
@@ -78,11 +81,11 @@ impl<'a, const KEY_LEN: usize, const OUT_LEN: usize> Blake2bBuilder<'a, KEY_LEN,
     /// Creates the builder and returns an error if the lengths `KEY_LEN` or `OUT_LEN` are not in
     /// the allowed range.
     pub fn new() -> Result<Self, Error> {
-        if KEY_LEN > 64 {
+        if KEY_LEN > BLAKE2B_MAX_LEN {
             return Err(Error::InvalidKeyLength);
         }
 
-        if OUT_LEN < 1 || OUT_LEN > 64 {
+        if OUT_LEN < 1 || OUT_LEN > BLAKE2B_MAX_LEN {
             return Err(Error::InvalidDigestLength);
         }
         Ok(Self {
@@ -175,11 +178,11 @@ impl<'a, const KEY_LEN: usize, const OUT_LEN: usize> Blake2sBuilder<'a, KEY_LEN,
     /// Creates the builder and returns an error if the lengths `KEY_LEN` or `OUT_LEN` are not in
     /// the allowed range.
     pub fn new() -> Result<Self, Error> {
-        if KEY_LEN > 64 {
+        if KEY_LEN > BLAKE2S_MAX_LEN {
             return Err(Error::InvalidKeyLength);
         }
 
-        if OUT_LEN < 1 || OUT_LEN > 64 {
+        if OUT_LEN < 1 || OUT_LEN > BLAKE2S_MAX_LEN {
             return Err(Error::InvalidDigestLength);
         }
         Ok(Self {
@@ -206,7 +209,7 @@ impl<'a, const KEY_LEN: usize, const OUT_LEN: usize> Blake2sBuilder<'a, KEY_LEN,
 
     /// Constructs the [`Blake2s`] hasher.
     pub fn build(self) -> Blake2s<KEY_LEN, OUT_LEN> {
-        // these are safe because they bot are at most 64
+        // these are safe because they bot are at most 32
         let key_length = KEY_LEN as u8;
         let digest_length = OUT_LEN as u8;
 
