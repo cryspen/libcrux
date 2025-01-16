@@ -1,10 +1,24 @@
+use crate::hacl::hash_blake2b::{blake2_params, index, params_and_key};
+
 use crate::hacl::hash_blake2b::{
-    blake2_params, digest, index, malloc_raw, params_and_key, reset, reset_with_key, update0,
+    digest as blake2b_digest, malloc_raw as blake2b_malloc_raw, reset as blake2b_reset,
+    reset_with_key as blake2b_reset_with_key, state_t as blake2b_state_t,
+    update0 as blake2b_update0,
+};
+
+use crate::hacl::hash_blake2s::{
+    digest as blake2s_digest, malloc_raw as blake2s_malloc_raw, reset as blake2s_reset,
+    reset_with_key as blake2s_reset_with_key, state_t as blake2s_state_t,
+    update0 as blake2s_update0,
 };
 
 extern crate alloc;
+
 use alloc::boxed::Box;
 use libcrux_hacl_rs::streaming_types::error_code;
+
+const BLAKE2B_PARAM_LEN: usize = 16;
+const BLAKE2S_PARAM_LEN: usize = 8;
 
 /// Indicates an error has occurred
 #[derive(Debug)]
@@ -41,8 +55,8 @@ impl core::error::Error for Error {}
 /// range `1..=64`.
 pub struct Blake2bBuilder<'a, const KEY_LEN: usize, const OUT_LEN: usize> {
     key: &'a [u8; KEY_LEN],
-    personal: &'a [u8; 16],
-    salt: &'a [u8; 16],
+    personal: &'a [u8; BLAKE2B_PARAM_LEN],
+    salt: &'a [u8; BLAKE2B_PARAM_LEN],
 }
 
 impl<const OUT_LEN: usize> Blake2bBuilder<'_, 0, OUT_LEN> {
@@ -55,8 +69,8 @@ impl<const OUT_LEN: usize> Blake2bBuilder<'_, 0, OUT_LEN> {
 
         Ok(Self {
             key: &[],
-            personal: &[0; 16],
-            salt: &[0; 16],
+            personal: &[0; BLAKE2B_PARAM_LEN],
+            salt: &[0; BLAKE2B_PARAM_LEN],
         })
     }
 }
@@ -73,8 +87,8 @@ impl<'a, const KEY_LEN: usize, const OUT_LEN: usize> Blake2bBuilder<'a, KEY_LEN,
         }
         Ok(Self {
             key: &[0; KEY_LEN],
-            personal: &[0; 16],
-            salt: &[0; 16],
+            personal: &[0; BLAKE2B_PARAM_LEN],
+            salt: &[0; BLAKE2B_PARAM_LEN],
         })
     }
 
@@ -84,12 +98,12 @@ impl<'a, const KEY_LEN: usize, const OUT_LEN: usize> Blake2bBuilder<'a, KEY_LEN,
     }
 
     /// Sets the personalization bytes to be used in the hasher.
-    pub fn with_personalization(self, personal: &'a [u8; 16]) -> Self {
+    pub fn with_personalization(self, personal: &'a [u8; BLAKE2B_PARAM_LEN]) -> Self {
         Self { personal, ..self }
     }
 
     /// Sets the salt to be used in the hasher.
-    pub fn with_salt(self, salt: &'a [u8; 16]) -> Self {
+    pub fn with_salt(self, salt: &'a [u8; BLAKE2B_PARAM_LEN]) -> Self {
         Self { salt, ..self }
     }
 
@@ -129,14 +143,111 @@ impl<'a, const KEY_LEN: usize, const OUT_LEN: usize> Blake2bBuilder<'a, KEY_LEN,
         };
 
         Blake2b {
-            state: malloc_raw(kk, key),
+            state: blake2b_malloc_raw(kk, key),
+        }
+    }
+}
+
+/// A builder for [`Blake2s`]. `KEY_LEN`` must be in the range `0..=64``, `OUT_LEN`` must be in the
+/// range `1..=64`.
+pub struct Blake2sBuilder<'a, const KEY_LEN: usize, const OUT_LEN: usize> {
+    key: &'a [u8; KEY_LEN],
+    personal: &'a [u8; BLAKE2S_PARAM_LEN],
+    salt: &'a [u8; BLAKE2S_PARAM_LEN],
+}
+
+impl<const OUT_LEN: usize> Blake2sBuilder<'_, 0, OUT_LEN> {
+    /// Creates the builder for an unkeyed hasher and returns an error if the digest length
+    /// `OUT_LEN` is not in the allowed range.
+    pub fn new_unkeyed() -> Result<Self, Error> {
+        if OUT_LEN < 1 || OUT_LEN > 64 {
+            return Err(Error::InvalidDigestLength);
+        }
+
+        Ok(Self {
+            key: &[],
+            personal: &[0; BLAKE2S_PARAM_LEN],
+            salt: &[0; BLAKE2S_PARAM_LEN],
+        })
+    }
+}
+impl<'a, const KEY_LEN: usize, const OUT_LEN: usize> Blake2sBuilder<'a, KEY_LEN, OUT_LEN> {
+    /// Creates the builder and returns an error if the lengths `KEY_LEN` or `OUT_LEN` are not in
+    /// the allowed range.
+    pub fn new() -> Result<Self, Error> {
+        if KEY_LEN > 64 {
+            return Err(Error::InvalidKeyLength);
+        }
+
+        if OUT_LEN < 1 || OUT_LEN > 64 {
+            return Err(Error::InvalidDigestLength);
+        }
+        Ok(Self {
+            key: &[0; KEY_LEN],
+            personal: &[0; BLAKE2S_PARAM_LEN],
+            salt: &[0; BLAKE2S_PARAM_LEN],
+        })
+    }
+
+    /// Sets the key to be used in the hasher.
+    pub fn with_key(self, key: &'a [u8; KEY_LEN]) -> Self {
+        Self { key, ..self }
+    }
+
+    /// Sets the personalization bytes to be used in the hasher.
+    pub fn with_personalization(self, personal: &'a [u8; BLAKE2S_PARAM_LEN]) -> Self {
+        Self { personal, ..self }
+    }
+
+    /// Sets the salt to be used in the hasher.
+    pub fn with_salt(self, salt: &'a [u8; BLAKE2S_PARAM_LEN]) -> Self {
+        Self { salt, ..self }
+    }
+
+    /// Constructs the [`Blake2s`] hasher.
+    pub fn build(self) -> Blake2s<KEY_LEN, OUT_LEN> {
+        // these are safe because they bot are at most 64
+        let key_length = KEY_LEN as u8;
+        let digest_length = OUT_LEN as u8;
+
+        // NOTE: I am not entirely sure that this is the correct value. From reading the spec I
+        // think it should be `true`, but when comparing with other implementations I only get the
+        // same values when using `false`.
+        let last_node = false;
+
+        let kk = index {
+            key_length,
+            digest_length,
+            last_node,
+        };
+
+        let params = blake2_params {
+            digest_length,
+            key_length,
+            fanout: 1,
+            depth: 1,
+            leaf_length: 0,
+            node_offset: 0,
+            node_depth: 0,
+            inner_length: 0,
+            salt: self.salt,
+            personal: self.personal,
+        };
+
+        let key = params_and_key {
+            fst: &[params],
+            snd: self.key,
+        };
+
+        Blake2s {
+            state: blake2s_malloc_raw(kk, key),
         }
     }
 }
 
 /// A hasher struct for the Blake2b (optionally keyed) hash function.
 pub struct Blake2b<const KEY_LEN: usize, const OUT_LEN: usize> {
-    state: Box<[crate::hacl::hash_blake2b::state_t]>,
+    state: Box<[blake2b_state_t]>,
 }
 
 impl<const KEY_LEN: usize, const OUT_LEN: usize> Blake2b<KEY_LEN, OUT_LEN> {
@@ -146,7 +257,7 @@ impl<const KEY_LEN: usize, const OUT_LEN: usize> Blake2b<KEY_LEN, OUT_LEN> {
             return Err(Error::InvalidChunkLength);
         }
 
-        match update0(self.state.as_mut(), chunk, chunk.len() as u32) {
+        match blake2b_update0(self.state.as_mut(), chunk, chunk.len() as u32) {
             error_code::Success => Ok(()),
             error_code::MaximumLengthExceeded => Err(Error::MaximumLengthExceeded),
             _ => Err(Error::Unexpected),
@@ -155,19 +266,56 @@ impl<const KEY_LEN: usize, const OUT_LEN: usize> Blake2b<KEY_LEN, OUT_LEN> {
 
     /// Compute the hash for the current hash state and write it to `dst`.
     pub fn finalize(&self, dst: &mut [u8; OUT_LEN]) {
-        digest(&self.state, dst);
+        blake2b_digest(&self.state, dst);
     }
 
     /// Reset the hash state and update the key to the contents of `key`.
     pub fn reset_with_key(&mut self, key: &[u8; KEY_LEN]) {
-        reset_with_key(&mut self.state, key);
+        blake2b_reset_with_key(&mut self.state, key);
     }
 }
 
 impl<const OUT_LEN: usize> Blake2b<0, OUT_LEN> {
     /// Reset the hash state.
     pub fn reset(&mut self) {
-        reset(&mut self.state)
+        blake2b_reset(&mut self.state)
+    }
+}
+
+/// A hasher struct for the Blake2s (optionally keyed) hash function.
+pub struct Blake2s<const KEY_LEN: usize, const OUT_LEN: usize> {
+    state: Box<[blake2s_state_t]>,
+}
+
+impl<const KEY_LEN: usize, const OUT_LEN: usize> Blake2s<KEY_LEN, OUT_LEN> {
+    /// Updates the hash state by adding the bytes from `chunk` to the hashed data.
+    pub fn update(&mut self, chunk: &[u8]) -> Result<(), Error> {
+        if chunk.len() > (u32::MAX as usize) {
+            return Err(Error::InvalidChunkLength);
+        }
+
+        match blake2s_update0(self.state.as_mut(), chunk, chunk.len() as u32) {
+            error_code::Success => Ok(()),
+            error_code::MaximumLengthExceeded => Err(Error::MaximumLengthExceeded),
+            _ => Err(Error::Unexpected),
+        }
+    }
+
+    /// Compute the hash for the current hash state and write it to `dst`.
+    pub fn finalize(&self, dst: &mut [u8; OUT_LEN]) {
+        blake2s_digest(&self.state, dst);
+    }
+
+    /// Reset the hash state and update the key to the contents of `key`.
+    pub fn reset_with_key(&mut self, key: &[u8; KEY_LEN]) {
+        blake2s_reset_with_key(&mut self.state, key);
+    }
+}
+
+impl<const OUT_LEN: usize> Blake2s<0, OUT_LEN> {
+    /// Reset the hash state.
+    pub fn reset(&mut self) {
+        blake2s_reset(&mut self.state)
     }
 }
 
