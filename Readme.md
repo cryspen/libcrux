@@ -47,6 +47,11 @@ libcrux uses the following configurations for its hardware abstractions
 - **simd256** assumes 256 bit SIMD instructions on the platform
   This implies AVX and AVX2 on x64 CPUs.
 
+## Minimum Supported Rust Version (MSRV)
+
+The default feature set has a MSRV of `1.78.0`. `no_std` environments
+are supported starting from Rust version `1.81.0`.
+
 ## Randomness
 
 libcrux provides a DRBG implementation that can be used standalone (`drbg::Drbg`)
