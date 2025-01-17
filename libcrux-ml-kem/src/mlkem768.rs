@@ -653,6 +653,36 @@ pub(crate) mod kyber {
         >(private_key, ciphertext)
     }
 }
+
+/// Incremental API.
+///
+/// **NOTE:** This is a non-standard API. Use with caution!
+pub mod incremental {
+    use super::*;
+
+    /// Generate a new key pair for incremental encapsulation.
+    pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPair {
+        if libcrux_platform::simd256_support() {
+            #[cfg(feature = "simd256")]
+            {
+                let mut key_pair = avx2::unpacked::MlKem768KeyPairUnpacked::new();
+                avx2::unpacked::generate_key_pair_mut(randomness, &mut key_pair);
+            }
+        } else if libcrux_platform::simd128_support() {
+            #[cfg(feature = "simd128")]
+            {
+                let mut key_pair = neon::unpacked::MlKem768KeyPairUnpacked::new();
+                neon::unpacked::generate_key_pair_mut(randomness, &mut key_pair);
+            }
+        } else {
+            let mut key_pair = portable::unpacked::MlKem768KeyPairUnpacked::new();
+            portable::unpacked::generate_key_pair_mut(randomness, &mut key_pair);
+        }
+
+        todo!()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use rand::{rngs::OsRng, RngCore};
