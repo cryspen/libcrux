@@ -1,3 +1,5 @@
+//! ECDSA on P-256
+
 use libcrux_p256::{
     compressed_to_raw, ecdsa_sign_p256_sha2, ecdsa_verif_p256_sha2, uncompressed_to_raw,
     validate_private_key, validate_public_key,
