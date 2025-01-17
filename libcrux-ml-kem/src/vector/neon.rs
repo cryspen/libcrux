@@ -41,6 +41,16 @@ impl Operations for SIMD128Vector {
         to_i16_array(x)
     }
 
+    #[requires(array.len() >= 32)]
+    fn from_bytes(array: &[u8]) -> Self {
+        from_bytes(array)
+    }
+
+    #[requires(bytes.len() >= 32)]
+    fn to_bytes(x: Self, bytes: &mut [u8]) {
+        to_bytes(x, bytes)
+    }
+
     fn add(lhs: Self, rhs: &Self) -> Self {
         add(lhs, rhs)
     }

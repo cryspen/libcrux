@@ -32,6 +32,11 @@ val from_i16_array (array: t_Slice i16)
           let result:t_SIMD128Vector = result in
           repr result == array)
 
+val to_bytes (v: t_SIMD128Vector) (bytes: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+val from_bytes (array: t_Slice u8) : Prims.Pure t_SIMD128Vector Prims.l_True (fun _ -> Prims.l_True)
+
 val v_ZERO: Prims.unit
   -> Prims.Pure t_SIMD128Vector
       Prims.l_True

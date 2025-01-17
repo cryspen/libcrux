@@ -21,7 +21,7 @@ val impl
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     : Core.Default.t_Default (t_IndCpaPrivateKeyUnpacked v_K v_Vector)
 
-/// An unpacked ML-KEM IND-CPA Private Key
+/// An unpacked ML-KEM IND-CPA Public Key
 type t_IndCpaPublicKeyUnpacked
   (v_K: usize) (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
   = {

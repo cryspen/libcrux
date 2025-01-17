@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 30cab88265206f4fa849736e704983e39a404d96
- * Eurydice: b8ea420ccde8db516ced5db9c097d77fa558fb94
- * Karamel: 97a06e07e7e423df192c40d5a88bf6c85fd4d278
+ * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
+ * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 15b22d1beea1cc7052b8a68b653b012241724664
+ * Libcrux: e2291b6e918559a4712b2a553f49ec92fdba1e42
  */
 
 #ifndef __libcrux_mlkem_avx2_H
@@ -50,6 +50,22 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
 */
 void libcrux_ml_kem_vector_avx2_to_i16_array_9a(__m256i x, int16_t ret[16U]);
+
+__m256i libcrux_ml_kem_vector_avx2_from_bytes(Eurydice_slice array);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
+*/
+__m256i libcrux_ml_kem_vector_avx2_from_bytes_9a(Eurydice_slice array);
+
+void libcrux_ml_kem_vector_avx2_to_bytes(__m256i x, Eurydice_slice bytes);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
+*/
+void libcrux_ml_kem_vector_avx2_to_bytes_9a(__m256i x, Eurydice_slice bytes);
 
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_add(__m256i lhs, __m256i rhs);
 

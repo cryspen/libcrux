@@ -224,6 +224,46 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector =
     f_repr = fun (x: t_SIMD256Vector) -> vec_to_i16_array x
   }
 
+let from_bytes (array: t_Slice u8) =
+  {
+    f_elements
+    =
+    Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_u8 (array.[ {
+            Core.Ops.Range.f_start = mk_usize 0;
+            Core.Ops.Range.f_end = mk_usize 32
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  }
+  <:
+  t_SIMD256Vector
+
+#push-options "--admit_smt_queries true"
+
+let to_bytes (x: t_SIMD256Vector) (bytes: t_Slice u8) =
+  let bytes:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range bytes
+      ({ Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = mk_usize 32 }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Libcrux_intrinsics.Avx2_extract.mm256_storeu_si256_u8 (bytes.[ {
+                Core.Ops.Range.f_start = mk_usize 0;
+                Core.Ops.Range.f_end = mk_usize 32
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          x.f_elements
+        <:
+        t_Slice u8)
+  in
+  bytes
+
+#pop-options
+
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
   {
@@ -247,6 +287,21 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     =
     (fun (x: t_SIMD256Vector) (out: t_Array i16 (mk_usize 16)) -> out == impl.f_repr x);
     f_to_i16_array = (fun (x: t_SIMD256Vector) -> vec_to_i16_array x);
+    f_from_bytes_pre
+    =
+    (fun (array: t_Slice u8) -> (Core.Slice.impl__len #u8 array <: usize) >=. mk_usize 32);
+    f_from_bytes_post = (fun (array: t_Slice u8) (out: t_SIMD256Vector) -> true);
+    f_from_bytes = (fun (array: t_Slice u8) -> from_bytes array);
+    f_to_bytes_pre
+    =
+    (fun (x: t_SIMD256Vector) (bytes: t_Slice u8) ->
+        (Core.Slice.impl__len #u8 bytes <: usize) >=. mk_usize 32);
+    f_to_bytes_post = (fun (x: t_SIMD256Vector) (bytes: t_Slice u8) (out: t_Slice u8) -> true);
+    f_to_bytes
+    =
+    (fun (x: t_SIMD256Vector) (bytes: t_Slice u8) ->
+        let bytes:t_Slice u8 = to_bytes x bytes in
+        bytes);
     f_add_pre
     =
     (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->

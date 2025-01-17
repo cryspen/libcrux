@@ -125,6 +125,16 @@ impl Operations for PortableVector {
         to_i16_array(x)
     }
 
+    #[requires(array.len() >= 32)]
+    fn from_bytes(array: &[u8]) -> Self {
+        from_bytes(array)
+    }
+
+    #[requires(bytes.len() >= 32)]
+    fn to_bytes(x: Self, bytes: &mut [u8]) {
+        to_bytes(x, bytes)
+    }
+
     #[requires(fstar!(r#"forall i. i < 16 ==> 
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"#))]
     #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 

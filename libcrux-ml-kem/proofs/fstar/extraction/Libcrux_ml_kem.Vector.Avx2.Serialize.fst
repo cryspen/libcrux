@@ -10,6 +10,8 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+#push-options "--admit_smt_queries true"
+
 #push-options "--ext context_pruning --compat_pre_core 0"
 
 let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
@@ -46,6 +48,8 @@ let serialize_1_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
           get_bit (bits_packed >>! (mk_i32 8) <: i32) (sz i) == get_bit bits_packed (sz (i + 8)))
   in
   result
+
+#pop-options
 
 #pop-options
 
