@@ -26,8 +26,8 @@ functions in the modules still need some proofs in that category.
 |          | multiplexing      | yes          | yes            | yes          |    
 |          | mlkem*            | yes          | yes            | needs proofs |    
 |          | invert_ntt        | yes          | yes            | needs proofs |    
-|          | ntt               | yes          | yes            | needs proofs |     
 |          | polynomial        | yes          | yes            | needs proofs |  
+|          | ntt               | yes          | needs proofs   | needs proofs |     
 |          | sampling          | yes          | needs proofs   | needs proofs |    
 |          | serialize         | yes          | needs proofs   | needs proofs |    
 |          | matrix            | yes          | needs proofs   | needs proofs |   
