@@ -433,7 +433,7 @@ val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
       (ensures
         fun result ->
           let result:v_T = result in
-          Spec.Utils.is_i16b_array_opaque 3328 (i1._super_8706949974463268012.f_repr result))
+          Spec.Utils.is_i16b_array_opaque 3328 (i1._super_12682756204189288427.f_repr result))
 
 val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
     : Prims.Pure v_T

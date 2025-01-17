@@ -229,7 +229,7 @@ pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
 }
 
 #[inline(always)]
-#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (i1._super_8706949974463268012.f_repr $result)"#))]
+#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (i1._super_12682756204189288427.f_repr $result)"#))]
 pub fn to_standard_domain<T: Operations>(v: T) -> T {
     T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }

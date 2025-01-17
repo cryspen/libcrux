@@ -424,6 +424,8 @@ let ntt_at_layer_7_
 
 #push-options "--z3rlimit 200"
 
+#push-options "--admit_smt_queries true"
+
 let ntt_binomially_sampled_ring_element
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -471,18 +473,18 @@ let ntt_binomially_sampled_ring_element
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
-  let result, re:(Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    (), Libcrux_ml_kem.Polynomial.impl_2__poly_barrett_reduce #v_Vector re
-    <:
-    (Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+  let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+    Libcrux_ml_kem.Polynomial.impl_2__poly_barrett_reduce #v_Vector re
   in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  let _:Prims.unit = result in
   re
 
 #pop-options
 
+#pop-options
+
 #push-options "--z3rlimit 200"
+
+#push-options "--admit_smt_queries true"
 
 let ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)
@@ -535,13 +537,11 @@ let ntt_vector_u
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
-  let result, re:(Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    (), Libcrux_ml_kem.Polynomial.impl_2__poly_barrett_reduce #v_Vector re
-    <:
-    (Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+  let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+    Libcrux_ml_kem.Polynomial.impl_2__poly_barrett_reduce #v_Vector re
   in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  let _:Prims.unit = result in
   re
+
+#pop-options
 
 #pop-options

@@ -118,10 +118,6 @@ val sub_vector
           let result:v_Vector = result in
           sub_vector_post result lhs rhs)
 
-let v_VECTORS_IN_RING_ELEMENT: usize =
-  Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!
-  Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl
       (#v_Vector: Type0)

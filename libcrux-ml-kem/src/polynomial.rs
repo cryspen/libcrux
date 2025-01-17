@@ -155,8 +155,6 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
     rhs: &PolynomialRingElement<Vector>,
 ) {
     let _myself = myself.coefficients;
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..myself.coefficients.len() {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -170,7 +168,6 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
         });
         myself.coefficients[i] = add_vector(myself.coefficients[i], &rhs.coefficients[i]);
     }
-    ()
 }
 
 #[inline(always)]
@@ -178,8 +175,6 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
     Spec.Utils.is_i16b_array_opaque 28296
         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${myself}.f_coefficients.[ sz i ])"#))]
 fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>) {
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..VECTORS_IN_RING_ELEMENT {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -341,8 +336,6 @@ fn add_error_reduce<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     error: &PolynomialRingElement<Vector>,
 ) {
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for j in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(myself.coefficients[j], 1441);
@@ -362,8 +355,6 @@ fn add_standard_error_reduce<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     error: &PolynomialRingElement<Vector>,
 ) {
-    // The semicolon and parentheses at the end of loop are a workaround
-    // for the following bug https://github.com/hacspec/hax/issues/720
     for j in 0..VECTORS_IN_RING_ELEMENT {
         // The coefficients are of the form aR^{-1} mod q, which means
         // calling to_montgomery_domain() on them should return a mod q.

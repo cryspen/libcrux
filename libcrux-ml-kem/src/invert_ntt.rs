@@ -177,6 +177,12 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     zeta_r: i16,
 ) -> (Vector, Vector) {
     let a_minus_b = Vector::sub(b, &a);
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                    (Spec.Utils.is_i16b_array_opaque 28296 
+                    (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+                        (Libcrux_ml_kem.Vector.Traits.f_add #$:Vector $a $b)))"#
+    );
     a = Vector::barrett_reduce(Vector::add(a, &b));
     b = montgomery_multiply_fe::<Vector>(a_minus_b, zeta_r);
     (a, b)
@@ -185,6 +191,9 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"v $layer >= 4 /\ v $layer <= 7"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
+    Spec.Utils.is_i16b_array_opaque 28296
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${re}_future.f_coefficients.[ sz i ])"#))]
 pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,

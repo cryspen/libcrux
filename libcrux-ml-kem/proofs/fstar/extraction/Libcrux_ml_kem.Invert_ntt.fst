@@ -20,6 +20,13 @@ let inv_ntt_layer_int_vec_step_reduce
   let a_minus_b:v_Vector =
     Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector #FStar.Tactics.Typeclasses.solve b a
   in
+  let _:Prims.unit =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque)
+      (Spec.Utils.is_i16b_array_opaque 28296
+          (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
+                  a
+                  b)))
+  in
   let a:v_Vector =
     Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
       #FStar.Tactics.Typeclasses.solve

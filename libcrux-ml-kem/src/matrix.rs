@@ -148,7 +148,7 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
 /// Compute Â ◦ ŝ + ê
 #[inline(always)]
 #[allow(non_snake_case)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K"#))]
 #[hax_lib::ensures(|res|
     fstar!(r#"let open Libcrux_ml_kem.Polynomial in

@@ -98,7 +98,16 @@ val invert_ntt_at_layer_4_plus
       (layer: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires v layer >= 4 /\ v layer <= 7)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun temp_0_ ->
+          let zeta_i_future, re_future:(usize &
+            Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
+            temp_0_
+          in
+          forall (i: nat).
+            i < 16 ==>
+            Spec.Utils.is_i16b_array_opaque 28296
+              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_future.f_coefficients.[ sz i ]))
 
 val invert_ntt_montgomery
       (v_K: usize)
