@@ -26,17 +26,17 @@ functions in the modules still need some proofs in that category.
 |          | multiplexing      | yes          | yes            | yes          |    
 |          | mlkem*            | yes          | yes            | needs proofs |    
 |          | invert_ntt        | yes          | yes            | needs proofs |    
-|          | ntt               | yes          | yes            | needs proofs |    
-|          | matrix            | yes          | needs proofs   | needs proofs |    
+|          | ntt               | yes          | yes            | needs proofs |     
+|          | polynomial        | yes          | yes            | needs proofs |  
 |          | sampling          | yes          | needs proofs   | needs proofs |    
-|          | polynomial        | yes          | needs proofs   | needs proofs |    
 |          | serialize         | yes          | needs proofs   | needs proofs |    
-| 	   |                   |              |                |              |
+|          | matrix            | yes          | needs proofs   | needs proofs |   
+| 	       |                   |              |                |              |
 | _Portable_ | arithmetic        | yes          | yes            | yes          |
 |          | ntt               | yes          | yes            | yes          |
 |          | compress          | yes          | yes            | yes          |
 |          | serialize         | yes          | yes            | yes          |
-|          | sampling          | yes          | needs proofs   | needs proofs |
+|          | sampling          | yes          | yes            | needs proofs |
 |          |                   |              |                |              |
 | _Avx2_     | arithmetic        | yes          | yes            | yes          |
 |          | ntt               | yes          | yes            | yes          |
