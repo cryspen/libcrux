@@ -440,7 +440,7 @@ let sample_vector_cbd_then_ntt_helper_2
       (Spec.MLKEM.sample_vector_cbd_then_ntt #v_K
         (Seq.slice prf_input 0 32) (sz (v domain_separator)))
 
-#push-options "--max_fuel 25 --z3rlimit 2500 --ext context_pruning --z3refresh --split_queries always"
+#push-options "--max_fuel 25 --z3rlimit 2800 --ext context_pruning --z3refresh --split_queries always"
 
 let sample_vector_cbd_then_ntt
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
