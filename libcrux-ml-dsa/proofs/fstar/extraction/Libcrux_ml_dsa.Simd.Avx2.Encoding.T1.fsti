@@ -3,7 +3,7 @@ module Libcrux_ml_dsa.Simd.Avx2.Encoding.T1
 open Core
 open FStar.Mul
 
-let deserialize__COEFFICIENT_MASK: i32 = (1l <<! 10l <: i32) -! 1l
+let deserialize__COEFFICIENT_MASK: i32 = (mk_i32 1 <<! mk_i32 10 <: i32) -! mk_i32 1
 
 val serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
