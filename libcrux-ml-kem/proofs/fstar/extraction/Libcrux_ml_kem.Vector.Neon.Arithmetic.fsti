@@ -3,7 +3,7 @@ module Libcrux_ml_kem.Vector.Neon.Arithmetic
 open Core
 open FStar.Mul
 
-let v_BARRETT_MULTIPLIER: i16 = 20159s
+let v_BARRETT_MULTIPLIER: i16 = mk_i16 20159
 
 val add (lhs rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
     : Prims.Pure Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector

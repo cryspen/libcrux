@@ -17,7 +17,7 @@ let repr (x:t_SIMD256Vector) : t_Array i16 (sz 16) = Libcrux_intrinsics.Avx2_ext
 
 val deserialize_1_ (bytes: t_Slice u8)
     : Prims.Pure t_SIMD256Vector
-      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 2)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. mk_usize 2)
       (ensures
         fun out ->
           let out:t_SIMD256Vector = out in
@@ -25,18 +25,18 @@ val deserialize_1_ (bytes: t_Slice u8)
 
 val deserialize_4_ (bytes: t_Slice u8)
     : Prims.Pure t_SIMD256Vector
-      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 8)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. mk_usize 8)
       (ensures
         fun out ->
           let out:t_SIMD256Vector = out in
           sz (Seq.length bytes) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 bytes (repr out))
 
 val serialize_1_ (vector: t_SIMD256Vector)
-    : Prims.Pure (t_Array u8 (sz 2))
+    : Prims.Pure (t_Array u8 (mk_usize 2))
       (requires Spec.MLKEM.serialize_pre 1 (repr vector))
       (ensures
         fun out ->
-          let out:t_Array u8 (sz 2) = out in
+          let out:t_Array u8 (mk_usize 2) = out in
           Spec.MLKEM.serialize_pre 1 (repr vector) ==> Spec.MLKEM.serialize_post 1 (repr vector) out
       )
 
@@ -54,7 +54,7 @@ val vec_zero: Prims.unit
       (ensures
         fun result ->
           let result:t_SIMD256Vector = result in
-          repr result == Seq.create 16 0s)
+          repr result == Seq.create 16 (mk_i16 0))
 
 val compress (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector)
     : Prims.Pure t_SIMD256Vector
@@ -87,7 +87,8 @@ val cond_subtract_3329_ (vector: t_SIMD256Vector)
         fun out ->
           let out:t_SIMD256Vector = out in
           repr out ==
-          Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (repr vector))
+          Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x)
+            (repr vector))
 
 val inv_ntt_layer_1_step (vector: t_SIMD256Vector) (zeta0 zeta1 zeta2 zeta3: i16)
     : Prims.Pure t_SIMD256Vector
@@ -166,38 +167,38 @@ val impl_1:Core.Clone.t_Clone t_SIMD256Vector
 val impl_2:Core.Marker.t_Copy t_SIMD256Vector
 
 val serialize_10_ (vector: t_SIMD256Vector)
-    : Prims.Pure (t_Array u8 (sz 20))
+    : Prims.Pure (t_Array u8 (mk_usize 20))
       (requires Spec.MLKEM.serialize_pre 10 (repr vector))
       (ensures
         fun out ->
-          let out:t_Array u8 (sz 20) = out in
+          let out:t_Array u8 (mk_usize 20) = out in
           Spec.MLKEM.serialize_pre 10 (repr vector) ==>
           Spec.MLKEM.serialize_post 10 (repr vector) out)
 
 val serialize_12_ (vector: t_SIMD256Vector)
-    : Prims.Pure (t_Array u8 (sz 24))
+    : Prims.Pure (t_Array u8 (mk_usize 24))
       (requires Spec.MLKEM.serialize_pre 12 (repr vector))
       (ensures
         fun out ->
-          let out:t_Array u8 (sz 24) = out in
+          let out:t_Array u8 (mk_usize 24) = out in
           Spec.MLKEM.serialize_pre 12 (repr vector) ==>
           Spec.MLKEM.serialize_post 12 (repr vector) out)
 
 val serialize_4_ (vector: t_SIMD256Vector)
-    : Prims.Pure (t_Array u8 (sz 8))
+    : Prims.Pure (t_Array u8 (mk_usize 8))
       (requires Spec.MLKEM.serialize_pre 4 (repr vector))
       (ensures
         fun out ->
-          let out:t_Array u8 (sz 8) = out in
+          let out:t_Array u8 (mk_usize 8) = out in
           Spec.MLKEM.serialize_pre 4 (repr vector) ==> Spec.MLKEM.serialize_post 4 (repr vector) out
       )
 
 val vec_to_i16_array (v: t_SIMD256Vector)
-    : Prims.Pure (t_Array i16 (sz 16))
+    : Prims.Pure (t_Array i16 (mk_usize 16))
       Prims.l_True
       (ensures
         fun result ->
-          let result:t_Array i16 (sz 16) = result in
+          let result:t_Array i16 (mk_usize 16) = result in
           result == repr v)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -205,7 +206,7 @@ val impl:Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector
 
 val deserialize_10_ (bytes: t_Slice u8)
     : Prims.Pure t_SIMD256Vector
-      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 20)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. mk_usize 20)
       (ensures
         fun out ->
           let out:t_SIMD256Vector = out in
@@ -213,7 +214,7 @@ val deserialize_10_ (bytes: t_Slice u8)
 
 val deserialize_12_ (bytes: t_Slice u8)
     : Prims.Pure t_SIMD256Vector
-      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. sz 24)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) =. mk_usize 24)
       (ensures
         fun out ->
           let out:t_SIMD256Vector = out in

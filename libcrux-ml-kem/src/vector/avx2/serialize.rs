@@ -67,7 +67,7 @@ let bits_packed' = BitVec.Intrinsics.mm_movemask_epi8_bv msbs in
 
     hax_lib::fstar!(
         r#"
-assert (forall (i: nat {i < 8}). get_bit ($bits_packed >>! 8l <: i32) (sz i) == get_bit $bits_packed (sz (i + 8)))
+assert (forall (i: nat {i < 8}). get_bit ($bits_packed >>! (mk_i32 8) <: i32) (sz i) == get_bit $bits_packed (sz (i + 8)))
 "#
     );
 

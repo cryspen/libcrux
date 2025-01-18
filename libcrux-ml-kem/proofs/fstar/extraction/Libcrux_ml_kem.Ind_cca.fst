@@ -22,13 +22,13 @@ let validate_private_key_only
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
      =
-  let t:t_Array u8 (sz 32) =
+  let t:t_Array u8 (mk_usize 32) =
     Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
       #v_K
       #FStar.Tactics.Typeclasses.solve
       (private_key.Libcrux_ml_kem.Types.f_value.[ {
-            Core.Ops.Range.f_start = sz 384 *! v_K <: usize;
-            Core.Ops.Range.f_end = (sz 768 *! v_K <: usize) +! sz 32 <: usize
+            Core.Ops.Range.f_start = mk_usize 384 *! v_K <: usize;
+            Core.Ops.Range.f_end = (mk_usize 768 *! v_K <: usize) +! mk_usize 32 <: usize
           }
           <:
           Core.Ops.Range.t_Range usize ]
@@ -37,8 +37,8 @@ let validate_private_key_only
   in
   let expected:t_Slice u8 =
     private_key.Libcrux_ml_kem.Types.f_value.[ {
-        Core.Ops.Range.f_start = (sz 768 *! v_K <: usize) +! sz 32 <: usize;
-        Core.Ops.Range.f_end = (sz 768 *! v_K <: usize) +! sz 64 <: usize
+        Core.Ops.Range.f_start = (mk_usize 768 *! v_K <: usize) +! mk_usize 32 <: usize;
+        Core.Ops.Range.f_end = (mk_usize 768 *! v_K <: usize) +! mk_usize 64 <: usize
       }
       <:
       Core.Ops.Range.t_Range usize ]
@@ -72,7 +72,7 @@ let serialize_kem_secret_key_mut
       (private_key public_key implicit_rejection_value: t_Slice u8)
       (serialized: t_Array u8 v_SERIALIZED_KEY_LEN)
      =
-  let pointer:usize = sz 0 in
+  let pointer:usize = mk_usize 0 in
   let serialized:t_Array u8 v_SERIALIZED_KEY_LEN =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
       ({
@@ -221,7 +221,9 @@ let serialize_kem_secret_key
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
       (private_key public_key implicit_rejection_value: t_Slice u8)
      =
-  let out:t_Array u8 v_SERIALIZED_KEY_LEN = Rust_primitives.Hax.repeat 0uy v_SERIALIZED_KEY_LEN in
+  let out:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.repeat (mk_u8 0) v_SERIALIZED_KEY_LEN
+  in
   let out:t_Array u8 v_SERIALIZED_KEY_LEN =
     serialize_kem_secret_key_mut v_K
       v_SERIALIZED_KEY_LEN
@@ -249,20 +251,20 @@ let encapsulate
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme)
       (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
-      (randomness: t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
      =
-  let randomness:t_Array u8 (sz 32) =
+  let randomness:t_Array u8 (mk_usize 32) =
     Libcrux_ml_kem.Variant.f_entropy_preprocess #v_Scheme
       #FStar.Tactics.Typeclasses.solve
       v_K
       #v_Hasher
       (randomness <: t_Slice u8)
   in
-  let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
-    Libcrux_ml_kem.Utils.into_padded_array (sz 64) (randomness <: t_Slice u8)
+  let (to_hash: t_Array u8 (mk_usize 64)):t_Array u8 (mk_usize 64) =
+    Libcrux_ml_kem.Utils.into_padded_array (mk_usize 64) (randomness <: t_Slice u8)
   in
   let _:Prims.unit = eq_intro (Seq.slice to_hash 0 32) randomness in
-  let to_hash:t_Array u8 (sz 64) =
+  let to_hash:t_Array u8 (mk_usize 64) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
       ({ Core.Ops.Range.f_start = Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE }
         <:
@@ -287,7 +289,7 @@ let encapsulate
     lemma_slice_append to_hash randomness (Spec.Utils.v_H public_key.f_value);
     assert (to_hash == concat randomness (Spec.Utils.v_H public_key.f_value))
   in
-  let hashed:t_Array u8 (sz 64) =
+  let hashed:t_Array u8 (mk_usize 64) =
     Libcrux_ml_kem.Hash_functions.f_G #v_Hasher
       #v_K
       #FStar.Tactics.Typeclasses.solve
@@ -311,7 +313,7 @@ let encapsulate
       #FStar.Tactics.Typeclasses.solve
       ciphertext
   in
-  let shared_secret_array:t_Array u8 (sz 32) =
+  let shared_secret_array:t_Array u8 (mk_usize 32) =
     Libcrux_ml_kem.Variant.f_kdf #v_Scheme
       #FStar.Tactics.Typeclasses.solve
       v_K
@@ -322,7 +324,7 @@ let encapsulate
   in
   ciphertext, shared_secret_array
   <:
-  (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+  (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (mk_usize 32))
 
 #pop-options
 
@@ -370,11 +372,11 @@ let generate_keypair
           i4:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme)
-      (randomness: t_Array u8 (sz 64))
+      (randomness: t_Array u8 (mk_usize 64))
      =
   let ind_cpa_keypair_randomness:t_Slice u8 =
     randomness.[ {
-        Core.Ops.Range.f_start = sz 0;
+        Core.Ops.Range.f_start = mk_usize 0;
         Core.Ops.Range.f_end = Libcrux_ml_kem.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE
       }
       <:
@@ -463,7 +465,7 @@ let decapsulate
           (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE +! Spec.MLKEM.v_H_DIGEST_SIZE)
           (length private_key.f_value))
   in
-  let decrypted:t_Array u8 (sz 32) =
+  let decrypted:t_Array u8 (mk_usize 32) =
     Libcrux_ml_kem.Ind_cpa.decrypt v_K
       v_CIPHERTEXT_SIZE
       v_C1_SIZE
@@ -473,11 +475,11 @@ let decapsulate
       ind_cpa_secret_key
       ciphertext.Libcrux_ml_kem.Types.f_value
   in
-  let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
-    Libcrux_ml_kem.Utils.into_padded_array (sz 64) (decrypted <: t_Slice u8)
+  let (to_hash: t_Array u8 (mk_usize 64)):t_Array u8 (mk_usize 64) =
+    Libcrux_ml_kem.Utils.into_padded_array (mk_usize 64) (decrypted <: t_Slice u8)
   in
   let _:Prims.unit = eq_intro (Seq.slice to_hash 0 32) decrypted in
-  let to_hash:t_Array u8 (sz 64) =
+  let to_hash:t_Array u8 (mk_usize 64) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
       ({ Core.Ops.Range.f_start = Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE }
         <:
@@ -497,7 +499,7 @@ let decapsulate
     assert (decrypted == Spec.MLKEM.ind_cpa_decrypt v_K ind_cpa_secret_key ciphertext.f_value);
     assert (to_hash == concat decrypted ind_cpa_public_key_hash)
   in
-  let hashed:t_Array u8 (sz 64) =
+  let hashed:t_Array u8 (mk_usize 64) =
     Libcrux_ml_kem.Hash_functions.f_G #v_Hasher
       #v_K
       #FStar.Tactics.Typeclasses.solve
@@ -549,11 +551,11 @@ let decapsulate
     assert (i4.f_PRF_pre (sz 32) to_hash);
     lemma_slice_append to_hash implicit_rejection_value ciphertext.f_value
   in
-  let (implicit_rejection_shared_secret: t_Array u8 (sz 32)):t_Array u8 (sz 32) =
+  let (implicit_rejection_shared_secret: t_Array u8 (mk_usize 32)):t_Array u8 (mk_usize 32) =
     Libcrux_ml_kem.Hash_functions.f_PRF #v_Hasher
       #v_K
       #FStar.Tactics.Typeclasses.solve
-      (sz 32)
+      (mk_usize 32)
       (to_hash <: t_Slice u8)
   in
   let _:Prims.unit =
@@ -566,7 +568,7 @@ let decapsulate
       v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE #v_Vector #v_Hasher ind_cpa_public_key
       decrypted pseudorandomness
   in
-  let implicit_rejection_shared_secret:t_Array u8 (sz 32) =
+  let implicit_rejection_shared_secret:t_Array u8 (mk_usize 32) =
     Libcrux_ml_kem.Variant.f_kdf #v_Scheme
       #FStar.Tactics.Typeclasses.solve
       v_K
@@ -575,7 +577,7 @@ let decapsulate
       (implicit_rejection_shared_secret <: t_Slice u8)
       ciphertext
   in
-  let shared_secret:t_Array u8 (sz 32) =
+  let shared_secret:t_Array u8 (mk_usize 32) =
     Libcrux_ml_kem.Variant.f_kdf #v_Scheme
       #FStar.Tactics.Typeclasses.solve
       v_K

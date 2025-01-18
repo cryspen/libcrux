@@ -15,28 +15,28 @@ let _ =
 /// Get the serialized private key.
 val key_pair_serialized_private_key
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey (mk_usize 2400))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 /// Get the serialized private key.
 val key_pair_serialized_private_key_mut
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-      (serialized: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPrivateKey (mk_usize 2400))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPrivateKey (mk_usize 2400))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 /// Get the serialized public key.
 val key_pair_serialized_public_key
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 1184))
       (requires
         forall (i: nat).
           i < 3 ==>
@@ -49,10 +49,10 @@ val key_pair_serialized_public_key
 /// Get the serialized public key.
 val key_pair_serialized_public_key_mut
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 1184))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 1184))
       (requires
         (forall (i: nat).
             i < 3 ==>
@@ -66,10 +66,10 @@ val key_pair_serialized_public_key_mut
 /// Get the serialized public key.
 val serialized_public_key
       (public_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 1184))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 1184))
       (requires
         forall (i: nat).
           i < 3 ==>
@@ -85,10 +85,10 @@ val serialized_public_key
 /// and an [`MlKem768Ciphertext`].
 val decapsulate
       (private_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088))
-    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (mk_usize 1088))
+    : Prims.Pure (t_Array u8 (mk_usize 32)) Prims.l_True (fun _ -> Prims.l_True)
 
 let _ =
                 (* This module has implicit dependencies, here we make them explicit. *)
@@ -103,29 +103,29 @@ let _ =
 /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
 val encapsulate
       (public_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-      (randomness: t_Array u8 (sz 32))
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1088) & t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext (mk_usize 1088) & t_Array u8 (mk_usize 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 /// Generate ML-KEM 768 Key Pair in "unpacked" form.
 val generate_key_pair_mut
-      (randomness: t_Array u8 (sz 64))
+      (randomness: t_Array u8 (mk_usize 64))
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
     : Prims.Pure
-      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 3)
           Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 /// Generate ML-KEM 768 Key Pair in "unpacked" form.
-val generate_key_pair (randomness: t_Array u8 (sz 64))
+val generate_key_pair (randomness: t_Array u8 (mk_usize 64))
     : Prims.Pure
-      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 3)
           Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
@@ -133,7 +133,7 @@ val generate_key_pair (randomness: t_Array u8 (sz 64))
 /// Create a new, empty unpacked key.
 val init_key_pair: Prims.unit
   -> Prims.Pure
-      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 3)
           Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
@@ -141,19 +141,19 @@ val init_key_pair: Prims.unit
 /// Create a new, empty unpacked public key.
 val init_public_key: Prims.unit
   -> Prims.Pure
-      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 3)
           Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 /// Get an unpacked key from a private key.
 val key_pair_from_private_mut
-      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 2400))
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (mk_usize 2400))
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
     : Prims.Pure
-      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 3)
           Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
@@ -161,25 +161,25 @@ val key_pair_from_private_mut
 /// Get the unpacked public key.
 val public_key
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 3)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (pk:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
     : Prims.Pure
-      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 3)
           Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 /// Get the unpacked public key.
 val unpacked_public_key
-      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 1184))
       (unpacked_public_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 3)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
     : Prims.Pure
-      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 3)
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 3)
           Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)

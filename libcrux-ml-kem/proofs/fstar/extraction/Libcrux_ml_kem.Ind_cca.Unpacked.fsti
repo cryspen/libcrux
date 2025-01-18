@@ -20,7 +20,7 @@ type t_MlKemPrivateKeyUnpacked
   (v_K: usize) (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
   = {
   f_ind_cpa_private_key:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector;
-  f_implicit_rejection_value:t_Array u8 (sz 32)
+  f_implicit_rejection_value:t_Array u8 (mk_usize 32)
 }
 
 /// An unpacked ML-KEM IND-CCA Private Key
@@ -28,7 +28,7 @@ type t_MlKemPublicKeyUnpacked
   (v_K: usize) (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
   = {
   f_ind_cpa_public_key:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector;
-  f_public_key_hash:t_Array u8 (sz 32)
+  f_public_key_hash:t_Array u8 (mk_usize 32)
 }
 
 /// An unpacked ML-KEM KeyPair
@@ -178,8 +178,9 @@ val encapsulate
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (public_key: t_MlKemPublicKeyUnpacked v_K v_Vector)
-      (randomness: t_Array u8 (sz 32))
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
+    : Prims.Pure
+      (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (mk_usize 32))
       (requires
         Spec.MLKEM.is_rank v_K /\ v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
         v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
@@ -194,7 +195,7 @@ val encapsulate
         fun temp_0_ ->
           let ciphertext_result, shared_secret_array:(Libcrux_ml_kem.Types.t_MlKemCiphertext
             v_CIPHERTEXT_SIZE &
-            t_Array u8 (sz 32)) =
+            t_Array u8 (mk_usize 32)) =
             temp_0_
           in
           let ciphertext, shared_secret =
@@ -336,7 +337,7 @@ val generate_keypair
       {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       {| i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme |}
-      (randomness: t_Array u8 (sz 64))
+      (randomness: t_Array u8 (mk_usize 64))
       (out: t_MlKemKeyPairUnpacked v_K v_Vector)
     : Prims.Pure (t_MlKemKeyPairUnpacked v_K v_Vector)
       (requires
@@ -398,7 +399,7 @@ val decapsulate
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (key_pair: t_MlKemKeyPairUnpacked v_K v_Vector)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32))
+    : Prims.Pure (t_Array u8 (mk_usize 32))
       (requires
         Spec.MLKEM.is_rank v_K /\ v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
         v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
@@ -412,7 +413,7 @@ val decapsulate
         v_IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE v_K)
       (ensures
         fun result ->
-          let result:t_Array u8 (sz 32) = result in
+          let result:t_Array u8 (mk_usize 32) = result in
           result ==
           Spec.MLKEM.ind_cca_unpack_decapsulate v_K
             key_pair.f_public_key.f_public_key_hash

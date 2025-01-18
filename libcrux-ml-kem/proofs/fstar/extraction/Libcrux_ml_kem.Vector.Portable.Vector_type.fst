@@ -7,18 +7,18 @@ let from_i16_array (array: t_Slice i16) =
   {
     f_elements
     =
-    Core.Result.impl__unwrap #(t_Array i16 (sz 16))
+    Core.Result.impl__unwrap #(t_Array i16 (mk_usize 16))
       #Core.Array.t_TryFromSliceError
       (Core.Convert.f_try_into #(t_Slice i16)
-          #(t_Array i16 (sz 16))
+          #(t_Array i16 (mk_usize 16))
           #FStar.Tactics.Typeclasses.solve
-          (array.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
+          (array.[ { Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = mk_usize 16 }
               <:
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice i16)
         <:
-        Core.Result.t_Result (t_Array i16 (sz 16)) Core.Array.t_TryFromSliceError)
+        Core.Result.t_Result (t_Array i16 (mk_usize 16)) Core.Array.t_TryFromSliceError)
   }
   <:
   t_PortableVector
@@ -38,4 +38,4 @@ val impl_1': Core.Marker.t_Copy t_PortableVector
 let impl_1 = impl_1'
 
 let zero (_: Prims.unit) =
-  { f_elements = Rust_primitives.Hax.repeat 0s (sz 16) } <: t_PortableVector
+  { f_elements = Rust_primitives.Hax.repeat (mk_i16 0) (mk_usize 16) } <: t_PortableVector

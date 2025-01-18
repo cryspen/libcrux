@@ -55,7 +55,7 @@ let encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
       (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
-      (randomness: t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
      =
   if Libcrux_platform.Platform.simd256_support ()
   then
@@ -79,7 +79,7 @@ let encapsulate
 let generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (randomness: t_Array u8 (sz 64))
+      (randomness: t_Array u8 (mk_usize 64))
      =
   if Libcrux_platform.Platform.simd256_support ()
   then
