@@ -199,7 +199,9 @@ pub(crate) fn montgomery_multiply_by_constant(vector: Vec256, constant: i16) -> 
         value_low,
         mm256_set1_epi16(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16),
     );
-    hax_lib::fstar!(r#"assert (forall i. get_lane $k i == get_lane $value_low i *. (neg (mk_i16 3327)))"#);
+    hax_lib::fstar!(
+        r#"assert (forall i. get_lane $k i == get_lane $value_low i *. (neg (mk_i16 3327)))"#
+    );
     let modulus = mm256_set1_epi16(FIELD_MODULUS);
     hax_lib::fstar!(r#"assert (forall i. get_lane $modulus i == (mk_i16 3329))"#);
     let k_times_modulus = mm256_mulhi_epi16(k, modulus);
@@ -250,7 +252,9 @@ pub(crate) fn montgomery_multiply_by_constants(vec: Vec256, constants: Vec256) -
         value_low,
         mm256_set1_epi16(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16),
     );
-    hax_lib::fstar!(r#"assert (forall i. get_lane $k i == get_lane $value_low i *. (neg (mk_i16 3327)))"#);
+    hax_lib::fstar!(
+        r#"assert (forall i. get_lane $k i == get_lane $value_low i *. (neg (mk_i16 3327)))"#
+    );
 
     let modulus = mm256_set1_epi16(FIELD_MODULUS);
     hax_lib::fstar!(r#"assert (forall i. get_lane $modulus i == (mk_i16 3329))"#);
