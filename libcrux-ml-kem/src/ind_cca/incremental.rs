@@ -2,6 +2,7 @@
 //!
 //! **WARNING:** This API is not standard compliant and may lead to insecure
 //! usage. Use at your own risk.
+use core::any::Any;
 
 use crate::{
     hash_functions::Hash,
@@ -18,8 +19,6 @@ use super::{
 };
 
 pub mod types {
-    use core::any::Any;
-
     use super::*;
     use crate::ind_cca::unpacked::MlKemKeyPairUnpacked;
 
@@ -194,8 +193,6 @@ pub mod types {
 use types::*;
 
 pub(crate) mod portable {
-    use core::any::Any;
-
     use super::*;
     type Vector = crate::vector::portable::PortableVector;
     type Hash<const K: usize> = crate::hash_functions::portable::PortableHash<K>;
@@ -334,6 +331,44 @@ pub(crate) mod neon {
     type Vector = crate::vector::SIMD128Vector;
     type Hash = crate::hash_functions::neon::Simd128Hash;
 
+    /// Downcast [`Keys`] to a neon [`MlKemKeyPairUnpacked`].
+    ///
+    /// **PANICS** is the cast fails
+    pub(super) fn as_neon_keypair<const K: usize>(k: &dyn Any) -> &MlKemKeyPairUnpacked<K, Vector> {
+        k.downcast_ref().unwrap()
+    }
+
+    /// Downcast [`State`] to a neon [`EncapsState`].
+    ///
+    /// **PANICS** is the cast fails
+    pub(super) fn as_neon_state<const K: usize>(s: &dyn Any) -> &EncapsState<K, Vector> {
+        s.downcast_ref().unwrap()
+    }
+
+    pub(crate) fn generate_keypair<
+        const K: usize,
+        const CPA_PRIVATE_KEY_SIZE: usize,
+        const PRIVATE_KEY_SIZE: usize,
+        const PUBLIC_KEY_SIZE: usize,
+        const BYTES_PER_RING_ELEMENT: usize,
+        const ETA1: usize,
+        const ETA1_RANDOMNESS_SIZE: usize,
+    >(
+        randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    ) -> MlKemKeyPairUnpacked<K, Vector> {
+        super::generate_keypair::<
+            K,
+            CPA_PRIVATE_KEY_SIZE,
+            PRIVATE_KEY_SIZE,
+            PUBLIC_KEY_SIZE,
+            BYTES_PER_RING_ELEMENT,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            Vector,
+            Hash,
+        >(randomness)
+    }
+
     pub(crate) fn encapsulate1<
         const K: usize,
         const CIPHERTEXT_SIZE: usize,
@@ -362,12 +397,68 @@ pub(crate) mod neon {
             Hash,
         >(public_key_part, randomness)
     }
+
+    pub(crate) fn encapsulate2<
+        const K: usize,
+        const C2_SIZE: usize,
+        const VECTOR_V_COMPRESSION_FACTOR: usize,
+    >(
+        state: &EncapsState<K, Vector>,
+        public_key_part: &PublicKey2<K, Vector>,
+    ) -> Ciphertext2<C2_SIZE> {
+        super::encapsulate2::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(
+            state,
+            public_key_part,
+        )
+    }
+
+    pub(crate) fn decapsulate<
+        const K: usize,
+        const SECRET_KEY_SIZE: usize,
+        const CPA_SECRET_KEY_SIZE: usize,
+        const PUBLIC_KEY_SIZE: usize,
+        const CIPHERTEXT_SIZE: usize,
+        const T_AS_NTT_ENCODED_SIZE: usize,
+        const C1_SIZE: usize,
+        const C2_SIZE: usize,
+        const VECTOR_U_COMPRESSION_FACTOR: usize,
+        const VECTOR_V_COMPRESSION_FACTOR: usize,
+        const C1_BLOCK_SIZE: usize,
+        const ETA1: usize,
+        const ETA1_RANDOMNESS_SIZE: usize,
+        const ETA2: usize,
+        const ETA2_RANDOMNESS_SIZE: usize,
+        const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
+    >(
+        private_key: &MlKemKeyPairUnpacked<K, Vector>,
+        ciphertext1: &Ciphertext1<C1_SIZE>,
+        ciphertext2: &Ciphertext2<C2_SIZE>,
+    ) -> MlKemSharedSecret {
+        super::decapsulate::<
+            K,
+            SECRET_KEY_SIZE,
+            CPA_SECRET_KEY_SIZE,
+            PUBLIC_KEY_SIZE,
+            CIPHERTEXT_SIZE,
+            T_AS_NTT_ENCODED_SIZE,
+            C1_SIZE,
+            C2_SIZE,
+            VECTOR_U_COMPRESSION_FACTOR,
+            VECTOR_V_COMPRESSION_FACTOR,
+            C1_BLOCK_SIZE,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+            Vector,
+            Hash,
+        >(private_key, ciphertext1, ciphertext2)
+    }
 }
 
 #[cfg(feature = "simd256")]
 pub(crate) mod avx2 {
-    use core::any::Any;
-
     use super::*;
     type Vector = crate::vector::SIMD256Vector;
     type Hash = crate::hash_functions::avx2::Simd256Hash;
@@ -515,17 +606,19 @@ pub(crate) mod multiplexing {
         generate_keypair as generate_keypair_avx2,
     };
 
-    // #[cfg(feature = "simd128")]
-    // use neon::{
-    //     decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
-    //     generate_keypair as generate_keypair_neon,
-    // };
+    #[cfg(feature = "simd128")]
+    use neon::{
+        as_neon_keypair, as_neon_state, decapsulate as decapsulate_neon,
+        encapsulate1 as encapsulate1_neon, encapsulate2 as encapsulate2_neon,
+        generate_keypair as generate_keypair_neon,
+    };
 
-    // #[cfg(not(feature = "simd256"))]
-    // use portable::{
-    //     decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
-    //     generate_keypair as generate_keypair_avx2,
-    // };
+    #[cfg(not(feature = "simd256"))]
+    use portable::{
+        as_portable_keypair as as_avx2_keypair, as_portable_state as as_avx2_state,
+        decapsulate as decapsulate_avx2, encapsulate1 as encapsulate1_avx2,
+        encapsulate2 as encapsulate2_avx2, generate_keypair as generate_keypair_avx2,
+    };
 
     #[cfg(not(feature = "simd128"))]
     use portable::{
