@@ -131,6 +131,80 @@ macro_rules! impl_consistency_unpacked {
     };
 }
 
+macro_rules! impl_consistency_incremental {
+    ($name:ident, $modp:path) => {
+        #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+        #[test]
+        fn $name() {
+            use $modp::{incremental::*, portable::unpacked};
+
+            let key_gen_randomness = random_array();
+
+            // Generate key pair.
+            let key_pair = generate_key_pair(key_gen_randomness);
+
+            // Get pk1 and pk2 to send out.
+            let mut pk1_bytes = [0u8; 64];
+            key_pair.pk1_bytes(&mut pk1_bytes);
+
+            let mut pk2_bytes = [0u8; pk2_len()];
+            key_pair.pk2_bytes(&mut pk2_bytes);
+
+            // The other party encapsulates to pk1 ...
+            let encaps_randomness = random_array();
+            let (ct1, ct2, shared_secret) = {
+                let pk1 = PublicKey1::try_from(&pk1_bytes as &[u8]).unwrap();
+                let (ct1, state) = encapsulate1(&pk1, encaps_randomness);
+
+                // ... and then to pk2.
+                // pk2 is passed in as bytes because the deserializaiton is runtime
+                // platform dependent.
+                let ct2 = encapsulate2(state.as_ref(), &pk2_bytes).unwrap();
+
+                let mut shared_secret = [0u8; 32];
+                shared_secret.copy_from_slice(state.shared_secret());
+                (ct1, ct2, shared_secret)
+            };
+
+            // The initiator decapsulates the two ciphertexts.
+            let shared_secret_decaps = decapsulate(key_pair.as_ref(), &ct1, &ct2);
+
+            // Check the shared secret.
+            assert_eq!(shared_secret_decaps, shared_secret);
+
+            // Compute comparison shared secrets and ciphertexts with the other APIs
+            let key_pair = unpacked::generate_key_pair(key_gen_randomness);
+            let (ciphertext_unpacked, shared_secret_unpacked) =
+                unpacked::encapsulate(&key_pair.public_key, encaps_randomness);
+
+            // Check c1 and c2
+            let mut combined_ct = vec![0u8; ciphertext_unpacked.as_ref().len()];
+            combined_ct[0..ct1.value.len()].copy_from_slice(&ct1.value);
+            combined_ct[ct1.value.len()..].copy_from_slice(&ct2.value);
+            assert_eq!(
+                ciphertext_unpacked.as_ref(),
+                &combined_ct,
+                "Invalid ciphertexts"
+            );
+
+            // Check API consistency
+            assert_eq!(
+                shared_secret_unpacked, shared_secret,
+                "Invalid encaps shared secret"
+            );
+        }
+    };
+}
+
+#[cfg(all(feature = "mlkem512"))]
+impl_consistency_incremental!(consistency_incremental_512, libcrux_ml_kem::mlkem512);
+
+#[cfg(all(feature = "mlkem768"))]
+impl_consistency_incremental!(consistency_incremental_768, libcrux_ml_kem::mlkem768);
+
+#[cfg(all(feature = "mlkem1024"))]
+impl_consistency_incremental!(consistency_incremental_1024, libcrux_ml_kem::mlkem1024);
+
 fn modify_ciphertext<const LEN: usize>(ciphertext: MlKemCiphertext<LEN>) -> MlKemCiphertext<LEN> {
     let mut raw_ciphertext = [0u8; LEN];
     raw_ciphertext.copy_from_slice(ciphertext.as_ref());

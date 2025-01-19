@@ -1,4 +1,5 @@
 use core::array::from_fn;
+use std::eprintln;
 
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
@@ -113,11 +114,8 @@ pub(crate) fn serialize_public_key_mut<
     seed_for_a: &[u8],
     serialized: &mut [u8; PUBLIC_KEY_SIZE],
 ) {
-    serialized[0..RANKED_BYTES_PER_RING_ELEMENT].copy_from_slice(&serialize_secret_key::<
-        K,
-        RANKED_BYTES_PER_RING_ELEMENT,
-        Vector,
-    >(t_as_ntt));
+    serialize_secret_key::<K, Vector>(t_as_ntt, &mut serialized[0..RANKED_BYTES_PER_RING_ELEMENT]);
+
     serialized[RANKED_BYTES_PER_RING_ELEMENT..].copy_from_slice(seed_for_a);
     hax_lib::fstar!(
         "Lib.Sequence.eq_intro #u8 #(v $PUBLIC_KEY_SIZE) serialized
@@ -137,11 +135,11 @@ pub(crate) fn serialize_public_key_mut<
     fstar!(r#"$res == Spec.MLKEM.vector_encode_12 #$K
                     (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $key)"#)
 )]
-pub(crate) fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector: Operations>(
+pub(crate) fn serialize_secret_key<const K: usize, Vector: Operations>(
     key: &[PolynomialRingElement<Vector>; K],
-) -> [u8; OUT_LEN] {
+    out: &mut [u8],
+) {
     hax_lib::fstar!(r#"assert_norm (Spec.MLKEM.polynomial_d 12 == Spec.MLKEM.polynomial)"#);
-    let mut out = [0u8; OUT_LEN];
 
     cloop! {
         for (i, re) in key.into_iter().enumerate() {
@@ -172,7 +170,6 @@ pub(crate) fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector:
         (Spec.MLKEM.vector_encode_12 #$K
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $key))"#
     );
-    out
 }
 
 /// Sample a vector of ring elements from a centered binomial distribution.
@@ -615,7 +612,8 @@ pub(crate) fn serialize_unpacked_secret_key<
         );
 
     // sk := Encode_12(sˆ mod^{+}q)
-    let secret_key_serialized = serialize_secret_key(&private_key.secret_as_ntt);
+    let mut secret_key_serialized = [0u8; PRIVATE_KEY_SIZE];
+    serialize_secret_key(&private_key.secret_as_ntt, &mut secret_key_serialized);
 
     (secret_key_serialized, public_key_serialized)
 }
@@ -1082,17 +1080,21 @@ pub(crate) fn deserialize_secret_key<const K: usize, Vector: Operations>(
 ) -> [PolynomialRingElement<Vector>; K] {
     hax_lib::fstar!(r#"assert_norm (Spec.MLKEM.polynomial_d 12 == Spec.MLKEM.polynomial)"#);
     let mut secret_as_ntt = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
-    cloop! {
-        for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
-            hax_lib::loop_invariant!(|i: usize| { fstar!(r#"forall (j: nat). j < v $i ==>
+    for i in 0..K {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"forall (j: nat). j < v $i ==>
                 j * v $BYTES_PER_RING_ELEMENT + v $BYTES_PER_RING_ELEMENT <=
                     v (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K) /\
                 Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector (Seq.index $secret_as_ntt j) ==
                     Spec.MLKEM.byte_decode 12 (Seq.slice $secret_key
                         (j * v $BYTES_PER_RING_ELEMENT)
-                        (j * v $BYTES_PER_RING_ELEMENT + v $BYTES_PER_RING_ELEMENT))"#) });
-            secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(secret_bytes);
-        }
+                        (j * v $BYTES_PER_RING_ELEMENT + v $BYTES_PER_RING_ELEMENT))"#
+            )
+        });
+        secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(
+            &secret_key[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT],
+        );
     }
     hax_lib::fstar!(
         "Lib.Sequence.eq_intro #Spec.MLKEM.polynomial #(v $K)

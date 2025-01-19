@@ -658,28 +658,90 @@ pub(crate) mod kyber {
 ///
 /// **NOTE:** This is a non-standard API. Use with caution!
 pub mod incremental {
+    use self::incremental::types::{Ciphertext1, Ciphertext2, Error, Key, State};
+    pub use self::incremental::types::{PublicKey1, PublicKey2};
+
     use super::*;
+    extern crate alloc;
+    use alloc::boxed::Box;
+    use ind_cca::incremental::{self, types::Keys};
+
+    /// Get the size of the second public key in bytes.
+    pub const fn pk2_len() -> usize {
+        RANK_768 * 16 * 32
+    }
 
     /// Generate a new key pair for incremental encapsulation.
-    pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPair {
-        if libcrux_platform::simd256_support() {
-            #[cfg(feature = "simd256")]
-            {
-                let mut key_pair = avx2::unpacked::MlKem768KeyPairUnpacked::new();
-                avx2::unpacked::generate_key_pair_mut(randomness, &mut key_pair);
-            }
-        } else if libcrux_platform::simd128_support() {
-            #[cfg(feature = "simd128")]
-            {
-                let mut key_pair = neon::unpacked::MlKem768KeyPairUnpacked::new();
-                neon::unpacked::generate_key_pair_mut(randomness, &mut key_pair);
-            }
-        } else {
-            let mut key_pair = portable::unpacked::MlKem768KeyPairUnpacked::new();
-            portable::unpacked::generate_key_pair_mut(randomness, &mut key_pair);
-        }
+    pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> Box<dyn Keys> {
+        incremental::multiplexing::generate_keypair::<
+            RANK_768,
+            CPA_PKE_SECRET_KEY_SIZE_768,
+            SECRET_KEY_SIZE_768,
+            CPA_PKE_PUBLIC_KEY_SIZE_768,
+            RANKED_BYTES_PER_RING_ELEMENT_768,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
+    }
 
-        todo!()
+    /// Encapsulate the first part of the ciphertext.
+    pub fn encapsulate1(
+        public_key_part: &PublicKey1,
+        randomness: [u8; SHARED_SECRET_SIZE],
+    ) -> (Ciphertext1<C1_SIZE_768>, Box<dyn State>) {
+        incremental::multiplexing::encapsulate1::<
+            RANK_768,
+            CPA_PKE_CIPHERTEXT_SIZE_768,
+            C1_SIZE_768,
+            VECTOR_U_COMPRESSION_FACTOR_768,
+            C1_BLOCK_SIZE_768,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+        >(public_key_part, randomness)
+    }
+
+    /// Encapsulate the second part of the ciphertext.
+    ///
+    /// The second part of the public key is passed in as byte slice.
+    /// [`Error::InvalidInputLength`] is returned if `public_key_part` is too
+    /// short.
+    pub fn encapsulate2(
+        state: &dyn State,
+        public_key_part: &[u8],
+    ) -> Result<Ciphertext2<C2_SIZE_768>, Error> {
+        incremental::multiplexing::encapsulate2::<
+            RANK_768,
+            C2_SIZE_768,
+            VECTOR_V_COMPRESSION_FACTOR_768,
+        >(state, public_key_part)
+    }
+
+    /// Decapsulate incremental ciphertexts.
+    pub fn decapsulate(
+        private_key: &dyn Keys,
+        ciphertext1: &Ciphertext1<C1_SIZE_768>,
+        ciphertext2: &Ciphertext2<C2_SIZE_768>,
+    ) -> MlKemSharedSecret {
+        incremental::multiplexing::decapsulate::<
+            RANK_768,
+            SECRET_KEY_SIZE_768,
+            CPA_PKE_SECRET_KEY_SIZE_768,
+            CPA_PKE_PUBLIC_KEY_SIZE_768,
+            CPA_PKE_CIPHERTEXT_SIZE_768,
+            T_AS_NTT_ENCODED_SIZE_768,
+            C1_SIZE_768,
+            C2_SIZE_768,
+            VECTOR_U_COMPRESSION_FACTOR_768,
+            VECTOR_V_COMPRESSION_FACTOR_768,
+            C1_BLOCK_SIZE_768,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+        >(private_key, ciphertext1, ciphertext2)
     }
 }
 
