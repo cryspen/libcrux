@@ -1,5 +1,4 @@
 use core::array::from_fn;
-use std::eprintln;
 
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},

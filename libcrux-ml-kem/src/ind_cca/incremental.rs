@@ -2,35 +2,6 @@
 //!
 //! **WARNING:** This API is not standard compliant and may lead to insecure
 //! usage. Use at your own risk.
-//!
-//! Usage
-//! ```ignore
-//! // Generate an unpacked key pair.
-//! // This key pair can be split into the two public keys and can be used for
-//! // decapsulation.
-//! let key_pair = generate_keypair(randomness);
-//!
-//! // Get the first part of the public key as bytes to send to the other party.
-//! let pk1_bytes = key_pair.pk1_bytes();
-//!
-//! {
-//!     // Receiver: recover `PublicKey1` and encapsulate to it.
-//!     let pk1 = PublicKey1::try_from(pk1_bytes).unwrap();
-//!     let (ct1, state) = encapsulate1(&pk1, randomness);
-//! }
-//!
-//! // Get the second part of the public key as bytes to send to the other party.
-//! let pk2_bytes = key_pair.pk2_bytes();
-//!
-//! {
-//!     // Receiver: recover `PublicKey2` and encapsulate to it.
-//!     let pk2 = PublicKey2::try_from(pk2_bytes).unwrap();
-//!     let ct2 = encapsulate2(&state, &pk2);
-//! }
-//!
-//! // After receiving the two ciphertexts for each public key, decapsulate them.
-//! let shared_seret = decapsulate(&key_pair, ct1, ct2);
-//! ```
 
 use crate::{
     hash_functions::Hash,
@@ -42,10 +13,8 @@ use crate::{
 };
 
 use super::{
-    unpacked::{
-        encaps_prepare, MlKemKeyPairUnpacked, MlKemPrivateKeyUnpacked, MlKemPublicKeyUnpacked,
-    },
-    MlKemPrivateKey, MlKemSharedSecret, Operations, Variant, KEY_GENERATION_SEED_SIZE,
+    unpacked::{encaps_prepare, MlKemKeyPairUnpacked, MlKemPublicKeyUnpacked},
+    MlKemSharedSecret, Operations, KEY_GENERATION_SEED_SIZE,
 };
 
 pub mod types {
@@ -53,7 +22,6 @@ pub mod types {
 
     use super::*;
     use crate::ind_cca::unpacked::MlKemKeyPairUnpacked;
-    use ind_cpa::unpacked::IndCpaPrivateKeyUnpacked;
 
     /// Errors
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -68,18 +36,12 @@ pub mod types {
     /// Incremental trait for unpacked key pairs.
     //<const K: usize, Vector: Operations>
     pub trait IncrementalKeyPair {
-        // /// Get a [`PublicKey1`] from this key pair.
-        // fn pk1(&self) -> PublicKey1;
-
         /// Get the [`PublicKey1`] from this key pair as bytes.
         ///
         /// The output `bytes` have to be at least 64 bytes long.
         ///
         /// **PANICS:** if the output `bytes` are too short.
         fn pk1_bytes(&self, bytes: &mut [u8]);
-
-        // /// Get a [`PublicKey2`] from this key pair.
-        // fn pk2(&self) -> PublicKey2<K, Vector>;
 
         /// Get the [`PublicKey2`] from this key pair as bytes.
         ///
@@ -90,18 +52,10 @@ pub mod types {
     }
 
     impl<const K: usize, Vector: Operations> IncrementalKeyPair for MlKemKeyPairUnpacked<K, Vector> {
-        // fn pk1(&self) -> PublicKey1 {
-        //     PublicKey1::from(self.public_key())
-        // }
-
         fn pk1_bytes(&self, bytes: &mut [u8]) {
             bytes[0..32].copy_from_slice(&self.public_key().ind_cpa_public_key.seed_for_A);
             bytes[32..64].copy_from_slice(&self.public_key().public_key_hash);
         }
-
-        // fn pk2(&self) -> PublicKey2<K, Vector> {
-        //     PublicKey2::from(self.public_key())
-        // }
 
         fn pk2_bytes(&self, bytes: &mut [u8]) {
             let len = K * 16 * 32;
@@ -151,58 +105,14 @@ pub mod types {
         pub(super) t_as_ntt: [PolynomialRingElement<Vector>; K],
     }
 
-    /// Trait container for multiplexing over platform dependent [`PublicKey2`].
-    pub trait Key {
-        fn as_any(&self) -> &dyn Any;
-    }
-    impl<const K: usize, Vector: Operations + 'static> Key for PublicKey2<K, Vector> {
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-    }
-
-    /// A key pair for incremental encapsulation.
-    pub struct KeyPair<const K: usize, Vector: Operations> {
-        pub(super) pk1: PublicKey1,
-        pub(super) pk2: PublicKey2<K, Vector>,
-        pub(super) sk: MlKemPrivateKeyUnpacked<K, Vector>,
-    }
-
     /// Trait container for multiplexing over platform dependent [`MlKemKeyPairUnpacked`].
     pub trait Keys: IncrementalKeyPair {
         fn as_any(&self) -> &dyn Any;
-        // /// Get a reference to the [`PublicKey1`].
-        // fn pk1(&self) -> &PublicKey1;
-
-        // /// Get a reference to the [`PublicKey2`].
-        // fn pk2(&self) -> &dyn Key;
-
-        // /// Get a reference to the [`MlKemPrivateKeyUnpacked`] and the public key
-        // /// hash for decapsulation.
-        // fn sk(&self) -> (&dyn PrivateKey, &[u8]);
     }
     impl<const K: usize, Vector: Operations + 'static> Keys for MlKemKeyPairUnpacked<K, Vector> {
         fn as_any(&self) -> &dyn Any {
             self
         }
-        // fn pk1(&self) -> &PublicKey1 {
-        //     &self.pk1
-        // }
-
-        // fn pk2(&self) -> &dyn Key {
-        //     &self.pk2
-        // }
-
-        // fn sk(&self) -> (&dyn PrivateKey, &[u8]) {
-        //     (&self.sk, &self.pk1.hash)
-        // }
-    }
-
-    /// Trait container for multiplexing over platform dependent [`MlKemPrivateKeyUnpacked`].
-    pub trait PrivateKey {}
-    impl<const K: usize, Vector: Operations + 'static> PrivateKey
-        for MlKemPrivateKeyUnpacked<K, Vector>
-    {
     }
 
     /// The partial ciphertext c1 - first part.
@@ -220,7 +130,6 @@ pub mod types {
     /// The incremental state for encapsulate.
     pub struct EncapsState<const K: usize, Vector: Operations> {
         pub(super) shared_secret: MlKemSharedSecret,
-        pub(super) rho: [u8; 32],
         pub(super) r_as_ntt: [PolynomialRingElement<Vector>; K],
         pub(super) error2: PolynomialRingElement<Vector>,
         pub(super) randomness: [u8; 32],
@@ -241,13 +150,6 @@ pub mod types {
         fn shared_secret(&self) -> &[u8] {
             &self.shared_secret
         }
-    }
-
-    /// A flat version of platform dependent types.
-    #[repr(transparent)]
-    pub struct FlatBytes<const LEN: usize> {
-        // LEN = K * 512
-        pub bytes: [u8; LEN],
     }
 
     // === Implementations
@@ -287,58 +189,6 @@ pub mod types {
             })
         }
     }
-
-    /// Convert [`MlKemKeyPairUnpacked`] to [`KeyPair`].
-    impl<const K: usize, Vector: Operations> From<MlKemKeyPairUnpacked<K, Vector>>
-        for KeyPair<K, Vector>
-    {
-        fn from(key: MlKemKeyPairUnpacked<K, Vector>) -> Self {
-            Self {
-                pk1: PublicKey1 {
-                    seed: key.public_key.ind_cpa_public_key.seed_for_A,
-                    hash: key.public_key.public_key_hash,
-                },
-                pk2: PublicKey2 {
-                    t_as_ntt: key.public_key.ind_cpa_public_key.t_as_ntt,
-                },
-                sk: key.private_key,
-            }
-        }
-    }
-
-    impl<const K: usize, Vector: Operations> KeyPair<K, Vector> {
-        /// Allocate a new, all-zero, key.
-        fn new() -> Self {
-            Self {
-                pk1: PublicKey1::default(),
-                pk2: PublicKey2 {
-                    t_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
-                },
-                sk: MlKemPrivateKeyUnpacked {
-                    ind_cpa_private_key: IndCpaPrivateKeyUnpacked::default(),
-                    implicit_rejection_value: [0u8; 32],
-                },
-            }
-        }
-
-        /// Convert a byte slice `&[u8]` into a [`KeyPair`] without copy.
-        /// Only use this function with `bytes` that were generated with
-        /// [`KeyPair::as_bytes`].
-        ///
-        /// **PANICS:** if the input `bytes` are not aligned properly.
-        #[allow(unsafe_code)]
-        fn from_bytes(bytes: &[u8]) -> &Self {
-            unsafe { core::ptr::read(bytes.as_ptr() as *const &Self) }
-        }
-
-        /// Convert this [`KeyPair`] into a byte slice `&[u8]` without copy.
-        #[allow(unsafe_code)]
-        fn as_bytes(&self) -> &[u8] {
-            unsafe {
-                core::slice::from_raw_parts((self as *const Self) as *const u8, size_of::<Self>())
-            }
-        }
-    }
 }
 
 use types::*;
@@ -363,13 +213,6 @@ pub(crate) mod portable {
     ///
     /// **PANICS** is the cast fails
     pub(super) fn as_portable_state<const K: usize>(s: &dyn Any) -> &EncapsState<K, Vector> {
-        s.downcast_ref().unwrap()
-    }
-
-    /// Downcast [`Key`] to a portable [`PublicKey2`].
-    ///
-    /// **PANICS** is the cast fails
-    pub(super) fn as_portable_pk2<const K: usize>(s: &dyn Any) -> &PublicKey2<K, Vector> {
         s.downcast_ref().unwrap()
     }
 
@@ -543,13 +386,6 @@ pub(crate) mod avx2 {
         s.downcast_ref().unwrap()
     }
 
-    /// Downcast [`Key`] to an AVX2 [`PublicKey2`].
-    ///
-    /// **PANICS** is the cast fails
-    pub(super) fn as_avx2_pk2<const K: usize>(s: &dyn Any) -> &PublicKey2<K, Vector> {
-        s.downcast_ref().unwrap()
-    }
-
     pub(crate) fn generate_keypair<
         const K: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
@@ -667,8 +503,6 @@ pub(crate) mod avx2 {
 /// Note that this requires alloc support and is not `no_std` compatible
 #[cfg(feature = "alloc")]
 pub(crate) mod multiplexing {
-    use core::any::Any;
-
     use super::*;
 
     extern crate alloc;
@@ -676,7 +510,7 @@ pub(crate) mod multiplexing {
 
     #[cfg(feature = "simd256")]
     use avx2::{
-        as_avx2_keypair, as_avx2_pk2, as_avx2_state, decapsulate as decapsulate_avx2,
+        as_avx2_keypair, as_avx2_state, decapsulate as decapsulate_avx2,
         encapsulate1 as encapsulate1_avx2, encapsulate2 as encapsulate2_avx2,
         generate_keypair as generate_keypair_avx2,
     };
@@ -695,10 +529,9 @@ pub(crate) mod multiplexing {
 
     #[cfg(not(feature = "simd128"))]
     use portable::{
-        as_portable_keypair as as_neon_keypair, as_portable_pk2 as as_neon_pk2,
-        as_portable_state as as_neon_state, decapsulate as decapsulate_neon,
-        encapsulate1 as encapsulate1_neon, encapsulate2 as encapsulate2_neon,
-        generate_keypair as generate_keypair_neon,
+        as_portable_keypair as as_neon_keypair, as_portable_state as as_neon_state,
+        decapsulate as decapsulate_neon, encapsulate1 as encapsulate1_neon,
+        encapsulate2 as encapsulate2_neon, generate_keypair as generate_keypair_neon,
     };
 
     pub(crate) fn generate_keypair<
@@ -1000,7 +833,6 @@ pub(crate) fn encapsulate1<
     let state = EncapsState {
         randomness,
         shared_secret: shared_secret.try_into().unwrap(),
-        rho: pseudorandomness.try_into().unwrap(),
         r_as_ntt,
         error2,
     };

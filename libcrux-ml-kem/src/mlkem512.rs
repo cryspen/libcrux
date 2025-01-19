@@ -664,7 +664,7 @@ pub(crate) mod kyber {
 ///
 /// **NOTE:** This is a non-standard API. Use with caution!
 pub mod incremental {
-    use self::incremental::types::{Ciphertext1, Ciphertext2, Error, Key, State};
+    use self::incremental::types::{Ciphertext1, Ciphertext2, Error, State};
     pub use self::incremental::types::{PublicKey1, PublicKey2};
 
     use super::*;

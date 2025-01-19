@@ -658,8 +658,8 @@ pub(crate) mod kyber {
 ///
 /// **NOTE:** This is a non-standard API. Use with caution!
 pub mod incremental {
-    use self::incremental::types::{Ciphertext1, Ciphertext2, Error, Key, State};
-    pub use self::incremental::types::{PublicKey1, PublicKey2};
+    pub use self::incremental::types::PublicKey1;
+    use self::incremental::types::{Ciphertext1, Ciphertext2, Error, State};
 
     use super::*;
     extern crate alloc;
