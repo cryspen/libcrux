@@ -766,7 +766,7 @@ let decrypt
     secret_key_unpacked
     ciphertext
 
-#push-options "--z3rlimit 800 --ext context_pruning --z3refresh"
+#push-options "--z3rlimit 1500 --ext context_pruning --z3refresh"
 
 let compress_then_serialize_u
       (v_K v_OUT_LEN v_COMPRESSION_FACTOR v_BLOCK_LEN: usize)
@@ -866,7 +866,7 @@ let compress_then_serialize_u
 
 #pop-options
 
-#push-options "--z3rlimit 200"
+#push-options "--z3rlimit 800 --ext context_pruning --z3refresh"
 
 let encrypt_unpacked
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
