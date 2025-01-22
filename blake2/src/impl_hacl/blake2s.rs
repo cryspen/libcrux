@@ -26,7 +26,7 @@ impl<'a> Blake2sBuilder<'a, &'a ()> {
         })
     }
 
-    /// Constructs the [`Blake2sK`] hasher.
+    /// Constructs the [`Blake2s`] hasher for unkeyed hashes and dynamic digest length.
     pub fn build(self, digest_length: u8) -> Result<Blake2s<Blake2sStaticKey<0>>, Error> {
         if digest_length < 1 || digest_length as usize > MAX_LEN {
             return Err(Error::InvalidDigestLength);
@@ -64,7 +64,7 @@ impl<'a> Blake2sBuilder<'a, &'a ()> {
         })
     }
 
-    /// Constructs the [`Blake2s`] hasher.
+    /// Constructs the [`Blake2s`] hasher for unkeyed hashes and static digest length.
     pub fn build_static<const OUT_LEN: usize>(
         self,
     ) -> Result<Blake2s<Blake2sStaticKeyStaticOut<0, OUT_LEN>>, Error> {
@@ -123,8 +123,8 @@ impl<'a, const KEY_LEN: usize> Blake2sBuilder<'a, &'a [u8; KEY_LEN]> {
         })
     }
 
-    /// Constructs the [`Blake2sK`] hasher.
-    pub fn build(self, digest_length: u8) -> Result<Blake2s<Blake2sDynamic>, Error> {
+    /// Constructs the [`Blake2s`] hasher for hashes with static key length and dynamic digest length.
+    pub fn build(self, digest_length: u8) -> Result<Blake2s<Blake2sStaticKey<KEY_LEN>>, Error> {
         if digest_length < 1 || digest_length as usize > MAX_LEN {
             return Err(Error::InvalidDigestLength);
         }
@@ -162,7 +162,7 @@ impl<'a, const KEY_LEN: usize> Blake2sBuilder<'a, &'a [u8; KEY_LEN]> {
         })
     }
 
-    /// Constructs the [`Blake2s`] hasher.
+    /// Constructs the [`Blake2s`] hasher for hashes with static key length and static digest length.
     pub fn build_static<const OUT_LEN: usize>(
         self,
     ) -> Result<Blake2s<Blake2sStaticKeyStaticOut<KEY_LEN, OUT_LEN>>, Error> {
@@ -221,7 +221,7 @@ impl<'a> Blake2sBuilder<'a, &'a [u8]> {
         })
     }
 
-    /// Constructs the [`Blake2sK`] hasher.
+    /// Constructs the fully dynamic [`Blake2s`] hasher.
     pub fn build(self, digest_length: u8) -> Result<Blake2s<Blake2sDynamic>, Error> {
         if digest_length < 1 || digest_length as usize > MAX_LEN {
             return Err(Error::InvalidDigestLength);
@@ -260,7 +260,7 @@ impl<'a> Blake2sBuilder<'a, &'a [u8]> {
         })
     }
 
-    /// Constructs the [`Blake2s`] hasher.
+    /// Constructs the [`Blake2s`] hasher with dynamic key length and static digest length.
     pub fn build_static<const OUT_LEN: usize>(
         self,
     ) -> Result<Blake2s<Blake2sStaticOut<OUT_LEN>>, Error> {
