@@ -9,7 +9,7 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-val invert_ntt_montgomery
+val ntt
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -17,7 +17,7 @@ val invert_ntt_montgomery
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val ntt
+val invert_ntt_montgomery
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)

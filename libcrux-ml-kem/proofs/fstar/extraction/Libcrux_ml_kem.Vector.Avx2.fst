@@ -9,33 +9,17 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-#push-options "--admit_smt_queries true"
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_1': Core.Clone.t_Clone t_SIMD256Vector
 
-let deserialize_1_ (bytes: t_Slice u8) =
-  { f_elements = Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_1_ bytes } <: t_SIMD256Vector
+let impl_1 = impl_1'
 
-#pop-options
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_2': Core.Marker.t_Copy t_SIMD256Vector
 
-#push-options "--admit_smt_queries true"
-
-let deserialize_4_ (bytes: t_Slice u8) =
-  { f_elements = Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_4_ bytes } <: t_SIMD256Vector
-
-#pop-options
-
-#push-options "--admit_smt_queries true"
-
-let serialize_1_ (vector: t_SIMD256Vector) =
-  Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_1_ vector.f_elements
-
-#pop-options
-
-let vec_from_i16_array (array: t_Slice i16) =
-  let result:t_SIMD256Vector =
-    { f_elements = Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_i16 array } <: t_SIMD256Vector
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+let impl_2 = impl_2'
 
 let vec_zero (_: Prims.unit) =
   let result:t_SIMD256Vector =
@@ -44,15 +28,26 @@ let vec_zero (_: Prims.unit) =
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+let vec_to_i16_array (v: t_SIMD256Vector) =
+  let output:t_Array i16 (sz 16) = Rust_primitives.Hax.repeat 0s (sz 16) in
+  let output:t_Array i16 (sz 16) =
+    Libcrux_intrinsics.Avx2_extract.mm256_storeu_si256_i16 output v.f_elements
+  in
+  let result:t_Array i16 (sz 16) = output in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
+
+let vec_from_i16_array (array: t_Slice i16) =
+  let result:t_SIMD256Vector =
+    { f_elements = Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_i16 array } <: t_SIMD256Vector
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
+
 #push-options "--admit_smt_queries true"
 
-let compress (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) =
-  {
-    f_elements
-    =
-    Libcrux_ml_kem.Vector.Avx2.Compress.compress_ciphertext_coefficient v_COEFFICIENT_BITS
-      vector.f_elements
-  }
+let cond_subtract_3329_ (vector: t_SIMD256Vector) =
+  { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.cond_subtract_3329_ vector.f_elements }
   <:
   t_SIMD256Vector
 
@@ -71,39 +66,13 @@ let compress_1_ (vector: t_SIMD256Vector) =
 
 #push-options "--admit_smt_queries true"
 
-let cond_subtract_3329_ (vector: t_SIMD256Vector) =
-  { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.cond_subtract_3329_ vector.f_elements }
-  <:
-  t_SIMD256Vector
-
-#pop-options
-
-#push-options "--admit_smt_queries true"
-
-let inv_ntt_layer_1_step (vector: t_SIMD256Vector) (zeta0 zeta1 zeta2 zeta3: i16) =
+let compress (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) =
   {
     f_elements
     =
-    Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_1_step vector.f_elements zeta0 zeta1 zeta2 zeta3
+    Libcrux_ml_kem.Vector.Avx2.Compress.compress_ciphertext_coefficient v_COEFFICIENT_BITS
+      vector.f_elements
   }
-  <:
-  t_SIMD256Vector
-
-#pop-options
-
-#push-options "--admit_smt_queries true"
-
-let inv_ntt_layer_2_step (vector: t_SIMD256Vector) (zeta0 zeta1: i16) =
-  { f_elements = Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_2_step vector.f_elements zeta0 zeta1 }
-  <:
-  t_SIMD256Vector
-
-#pop-options
-
-#push-options "--admit_smt_queries true"
-
-let inv_ntt_layer_3_step (vector: t_SIMD256Vector) (zeta: i16) =
-  { f_elements = Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_3_step vector.f_elements zeta }
   <:
   t_SIMD256Vector
 
@@ -142,6 +111,37 @@ let ntt_layer_3_step (vector: t_SIMD256Vector) (zeta: i16) =
 
 #push-options "--admit_smt_queries true"
 
+let inv_ntt_layer_1_step (vector: t_SIMD256Vector) (zeta0 zeta1 zeta2 zeta3: i16) =
+  {
+    f_elements
+    =
+    Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_1_step vector.f_elements zeta0 zeta1 zeta2 zeta3
+  }
+  <:
+  t_SIMD256Vector
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
+let inv_ntt_layer_2_step (vector: t_SIMD256Vector) (zeta0 zeta1: i16) =
+  { f_elements = Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_2_step vector.f_elements zeta0 zeta1 }
+  <:
+  t_SIMD256Vector
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
+let inv_ntt_layer_3_step (vector: t_SIMD256Vector) (zeta: i16) =
+  { f_elements = Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_3_step vector.f_elements zeta }
+  <:
+  t_SIMD256Vector
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let ntt_multiply (lhs rhs: t_SIMD256Vector) (zeta0 zeta1 zeta2 zeta3: i16) =
   {
     f_elements
@@ -158,22 +158,45 @@ let ntt_multiply (lhs rhs: t_SIMD256Vector) (zeta0 zeta1 zeta2 zeta3: i16) =
 
 #pop-options
 
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-assume
-val impl_1': Core.Clone.t_Clone t_SIMD256Vector
+#push-options "--admit_smt_queries true"
 
-let impl_1 = impl_1'
+let serialize_1_ (vector: t_SIMD256Vector) =
+  Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_1_ vector.f_elements
 
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-assume
-val impl_2': Core.Marker.t_Copy t_SIMD256Vector
+#pop-options
 
-let impl_2 = impl_2'
+#push-options "--admit_smt_queries true"
+
+let deserialize_1_ (bytes: t_Slice u8) =
+  { f_elements = Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_1_ bytes } <: t_SIMD256Vector
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
+let serialize_4_ (vector: t_SIMD256Vector) =
+  Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_4_ vector.f_elements
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
+let deserialize_4_ (bytes: t_Slice u8) =
+  { f_elements = Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_4_ bytes } <: t_SIMD256Vector
+
+#pop-options
 
 #push-options "--admit_smt_queries true"
 
 let serialize_10_ (vector: t_SIMD256Vector) =
   Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_10_ vector.f_elements
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
+let deserialize_10_ (bytes: t_Slice u8) =
+  { f_elements = Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_10_ bytes } <: t_SIMD256Vector
 
 #pop-options
 
@@ -186,19 +209,10 @@ let serialize_12_ (vector: t_SIMD256Vector) =
 
 #push-options "--admit_smt_queries true"
 
-let serialize_4_ (vector: t_SIMD256Vector) =
-  Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_4_ vector.f_elements
+let deserialize_12_ (bytes: t_Slice u8) =
+  { f_elements = Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_12_ bytes } <: t_SIMD256Vector
 
 #pop-options
-
-let vec_to_i16_array (v: t_SIMD256Vector) =
-  let output:t_Array i16 (sz 16) = Rust_primitives.Hax.repeat 0s (sz 16) in
-  let output:t_Array i16 (sz 16) =
-    Libcrux_intrinsics.Avx2_extract.mm256_storeu_si256_i16 output v.f_elements
-  in
-  let result:t_Array i16 (sz 16) = output in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector =
@@ -209,20 +223,6 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector =
     f_repr_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> true);
     f_repr = fun (x: t_SIMD256Vector) -> vec_to_i16_array x
   }
-
-#push-options "--admit_smt_queries true"
-
-let deserialize_10_ (bytes: t_Slice u8) =
-  { f_elements = Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_10_ bytes } <: t_SIMD256Vector
-
-#pop-options
-
-#push-options "--admit_smt_queries true"
-
-let deserialize_12_ (bytes: t_Slice u8) =
-  { f_elements = Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_12_ bytes } <: t_SIMD256Vector
-
-#pop-options
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =

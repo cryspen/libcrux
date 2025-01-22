@@ -137,101 +137,6 @@ let sample_matrix_A
   let _:Prims.unit = result in
   v_A_transpose
 
-let compute_As_plus_e
-      (v_K: usize)
-      (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      (matrix_A:
-          t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
-      (s_as_ntt error_as_ntt:
-          t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-     =
-  let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Rust_primitives.Hax.Folds.fold_enumerated_slice (matrix_A
-        <:
-        t_Slice (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
-      (fun tt_as_ntt temp_1_ ->
-          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-            tt_as_ntt
-          in
-          let _:usize = temp_1_ in
-          true)
-      tt_as_ntt
-      (fun tt_as_ntt temp_1_ ->
-          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-            tt_as_ntt
-          in
-          let i, row:(usize &
-            t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) =
-            temp_1_
-          in
-          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tt_as_ntt
-              i
-              (Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
-                <:
-                Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-          in
-          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-            Rust_primitives.Hax.Folds.fold_enumerated_slice (row
-                <:
-                t_Slice (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
-              (fun tt_as_ntt temp_1_ ->
-                  let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                    v_K =
-                    tt_as_ntt
-                  in
-                  let _:usize = temp_1_ in
-                  true)
-              tt_as_ntt
-              (fun tt_as_ntt temp_1_ ->
-                  let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                    v_K =
-                    tt_as_ntt
-                  in
-                  let j, matrix_element:(usize &
-                    Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-                    temp_1_
-                  in
-                  let product:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
-                    Libcrux_ml_kem.Polynomial.impl_2__ntt_multiply #v_Vector
-                      matrix_element
-                      (s_as_ntt.[ j ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                  in
-                  let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                    v_K =
-                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tt_as_ntt
-                      i
-                      (Libcrux_ml_kem.Polynomial.impl_2__add_to_ring_element #v_Vector
-                          v_K
-                          (tt_as_ntt.[ i ]
-                            <:
-                            Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                          product
-                        <:
-                        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                  in
-                  tt_as_ntt)
-          in
-          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tt_as_ntt
-              i
-              (Libcrux_ml_kem.Polynomial.impl_2__add_standard_error_reduce #v_Vector
-                  (tt_as_ntt.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                  (error_as_ntt.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-                <:
-                Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-          in
-          tt_as_ntt)
-  in
-  let result:Prims.unit = () <: Prims.unit in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  let _:Prims.unit = result in
-  tt_as_ntt
-
 #push-options "--admit_smt_queries true"
 
 let compute_message
@@ -427,3 +332,98 @@ let compute_vector_u
   result
 
 #pop-options
+
+let compute_As_plus_e
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (matrix_A:
+          t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
+      (s_as_ntt error_as_ntt:
+          t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+     =
+  let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+    Rust_primitives.Hax.Folds.fold_enumerated_slice (matrix_A
+        <:
+        t_Slice (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
+      (fun tt_as_ntt temp_1_ ->
+          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            tt_as_ntt
+          in
+          let _:usize = temp_1_ in
+          true)
+      tt_as_ntt
+      (fun tt_as_ntt temp_1_ ->
+          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            tt_as_ntt
+          in
+          let i, row:(usize &
+            t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) =
+            temp_1_
+          in
+          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tt_as_ntt
+              i
+              (Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
+                <:
+                Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+          in
+          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            Rust_primitives.Hax.Folds.fold_enumerated_slice (row
+                <:
+                t_Slice (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
+              (fun tt_as_ntt temp_1_ ->
+                  let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                    v_K =
+                    tt_as_ntt
+                  in
+                  let _:usize = temp_1_ in
+                  true)
+              tt_as_ntt
+              (fun tt_as_ntt temp_1_ ->
+                  let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                    v_K =
+                    tt_as_ntt
+                  in
+                  let j, matrix_element:(usize &
+                    Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
+                    temp_1_
+                  in
+                  let product:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+                    Libcrux_ml_kem.Polynomial.impl_2__ntt_multiply #v_Vector
+                      matrix_element
+                      (s_as_ntt.[ j ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                  in
+                  let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                    v_K =
+                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tt_as_ntt
+                      i
+                      (Libcrux_ml_kem.Polynomial.impl_2__add_to_ring_element #v_Vector
+                          v_K
+                          (tt_as_ntt.[ i ]
+                            <:
+                            Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                          product
+                        <:
+                        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                  in
+                  tt_as_ntt)
+          in
+          let tt_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tt_as_ntt
+              i
+              (Libcrux_ml_kem.Polynomial.impl_2__add_standard_error_reduce #v_Vector
+                  (tt_as_ntt.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                  (error_as_ntt.[ i ] <: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+                <:
+                Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+          in
+          tt_as_ntt)
+  in
+  let result:Prims.unit = () <: Prims.unit in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  let _:Prims.unit = result in
+  tt_as_ntt
