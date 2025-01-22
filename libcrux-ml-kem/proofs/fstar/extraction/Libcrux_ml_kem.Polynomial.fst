@@ -14,30 +14,6 @@ let zeta (i: usize) =
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
-[@@ "opaque_to_smt"]
-
-let add_vector
-      (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (lhs rhs: v_Vector)
-     =
-  let _:Prims.unit = reveal_opaque (`%add_vector_pre) (add_vector_pre #v_Vector) in
-  let _:Prims.unit = reveal_opaque (`%add_vector_post) (add_vector_post #v_Vector) in
-  Libcrux_ml_kem.Vector.Traits.f_add #v_Vector #FStar.Tactics.Typeclasses.solve lhs rhs
-
-let sub_vector
-      (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (lhs rhs: v_Vector)
-     =
-  let _:Prims.unit = reveal_opaque (`%sub_vector_pre) (sub_vector_pre #v_Vector) in
-  let _:Prims.unit = reveal_opaque (`%sub_vector_post) (sub_vector_post #v_Vector) in
-  Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector #FStar.Tactics.Typeclasses.solve lhs rhs
-
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 assume
 val impl':
@@ -70,39 +46,75 @@ let impl_1
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
      = impl_1' #v_Vector #i1 #i2
 
-#push-options "--max_fuel 3 --z3rlimit 200 --ext context_pruning --z3refresh"
+#push-options "--ext context_pruning"
+
+let add_error_reduce_helper_1 (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (myself: t_Array v_Vector (sz 16))
+    (coefficient_normal_form: v_Vector) : Lemma
+    (requires (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1)
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
+            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j)))))
+    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre coefficient_normal_form myself.[ sz i ]))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_pre) Libcrux_ml_kem.Vector.Traits.add_opaque_pre;
+    assert_norm (pow2 15 == 32768)
+
+#pop-options
+
+#push-options "--z3rlimit 500 --ext context_pruning --split_queries always"
+
+let add_error_reduce_helper_2 (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (myself: t_Array v_Vector (sz 16))
+    (coefficient_normal_form: v_Vector) : Lemma
+    (requires (forall (i:nat). i < 16 ==> 
+      Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre coefficient_normal_form myself.[ sz i ] /\
+      (forall j. j < 16 ==> Spec.Utils.is_intb 28296
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
+            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j)))))
+    (ensures (forall (i:nat). i < 16 ==>
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (Libcrux_ml_kem.Vector.Traits.f_add_opaque coefficient_normal_form myself.[ sz i ]))))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_post) Libcrux_ml_kem.Vector.Traits.add_opaque_post;
+    assert (forall (i:nat). i < 16 ==>
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (Libcrux_ml_kem.Vector.Traits.f_add_opaque coefficient_normal_form myself.[ sz i ])))
+
+#pop-options
 
 let add_error_reduce_helper (#v_Vector: Type0)
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (error: t_Array v_Vector (sz 16))
+    (myself: t_Array v_Vector (sz 16))
     (coefficient_normal_form: v_Vector) : Lemma
     (requires (forall (i:nat). i < 16 ==>
         Spec.Utils.is_i16b_array_opaque (28296 - 3328)
-        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.[ sz i ])) /\
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ])) /\
         Spec.Utils.is_i16b_array_opaque 3328
         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form))
-    (ensures (forall (i:nat). i < 16 ==> add_vector_pre coefficient_normal_form error.[ sz i ] /\
+    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre coefficient_normal_form myself.[ sz i ] /\
         Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-        (add_vector coefficient_normal_form error.[ sz i ]))))
+        (Libcrux_ml_kem.Vector.Traits.f_add_opaque coefficient_normal_form myself.[ sz i ]))))
     =
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
-    reveal_opaque (`%add_vector_pre) (add_vector_pre #v_Vector);
-    reveal_opaque (`%add_vector_post) (add_vector_post #v_Vector);
-    reveal_opaque (`%add_vector) (add_vector #v_Vector);
     assert_norm (pow2 15 == 32768);
     assert (forall (i:nat). i < 16 ==>
             Spec.Utils.is_i16b_array (28296 - 3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.[ sz i ]));
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]));
     assert (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
             Spec.Utils.is_intb 28296
             (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
-                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.[ sz i ]) j))));
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j))));
     assert (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
             Spec.Utils.is_intb (pow2 15 - 1)
             (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
-                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.[ sz i ]) j))))
-
-#pop-options
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j))));
+    add_error_reduce_helper_1 myself coefficient_normal_form;
+    add_error_reduce_helper_2 myself coefficient_normal_form
 
 let add_error_reduce
       (#v_Vector: Type0)
@@ -138,7 +150,8 @@ let add_error_reduce
                 j
                 (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
                     #FStar.Tactics.Typeclasses.solve
-                    (add_vector #v_Vector
+                    (Libcrux_ml_kem.Vector.Traits.f_add_opaque #v_Vector
+                        #FStar.Tactics.Typeclasses.solve
                         coefficient_normal_form
                         (error.f_coefficients.[ j ] <: v_Vector)
                       <:
@@ -170,13 +183,13 @@ let add_message_error_reduce_helper (#v_Vector: Type0)
           (Libcrux_ml_kem.Vector.Traits.f_to_i16_array result) /\
         Spec.Utils.is_i16b_array_opaque 3328
           (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form)))
-    (ensures (add_vector_pre coefficient_normal_form result /\
+    (ensures (Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre coefficient_normal_form result /\
         Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-          (add_vector coefficient_normal_form result))))
+          (Libcrux_ml_kem.Vector.Traits.f_add_opaque coefficient_normal_form result))))
     =
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
-    reveal_opaque (`%add_vector_pre) (add_vector_pre #v_Vector);
-    reveal_opaque (`%add_vector_post) (add_vector_post #v_Vector);
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_pre) Libcrux_ml_kem.Vector.Traits.add_opaque_pre;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_post) Libcrux_ml_kem.Vector.Traits.add_opaque_post;
     assert_norm (pow2 15 == 32768)
 
 let add_message_error_reduce
@@ -204,12 +217,18 @@ let add_message_error_reduce
               1441s
           in
           let tmp:v_Vector =
-            add_vector #v_Vector
+            Libcrux_ml_kem.Vector.Traits.f_add_opaque #v_Vector
+              #FStar.Tactics.Typeclasses.solve
               (myself.f_coefficients.[ i ] <: v_Vector)
               (message.f_coefficients.[ i ] <: v_Vector)
           in
           let _:Prims.unit = add_message_error_reduce_helper tmp coefficient_normal_form in
-          let tmp:v_Vector = add_vector #v_Vector coefficient_normal_form tmp in
+          let tmp:v_Vector =
+            Libcrux_ml_kem.Vector.Traits.f_add_opaque #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              coefficient_normal_form
+              tmp
+          in
           let result:t_PolynomialRingElement v_Vector =
             {
               result with
@@ -270,7 +289,8 @@ let add_standard_error_reduce
                 j
                 (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
                     #FStar.Tactics.Typeclasses.solve
-                    (add_vector #v_Vector
+                    (Libcrux_ml_kem.Vector.Traits.f_add_opaque #v_Vector
+                        #FStar.Tactics.Typeclasses.solve
                         coefficient_normal_form
                         (error.f_coefficients.[ j ] <: v_Vector)
                       <:
@@ -347,7 +367,46 @@ let impl_2__poly_barrett_reduce
   let self:t_PolynomialRingElement v_Vector = poly_barrett_reduce #v_Vector self in
   self
 
-#push-options "--z3rlimit 200 --ext context_pruning"
+#push-options "--ext context_pruning"
+
+let subtract_reduce_helper_1 (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (myself: t_Array v_Vector (sz 16))
+    (coefficient_normal_form: v_Vector) : Lemma
+    (requires (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1)
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j) -
+            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j)))))
+    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_sub_opaque_pre myself.[ sz i ] coefficient_normal_form))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_opaque_pre) Libcrux_ml_kem.Vector.Traits.sub_opaque_pre;
+    assert_norm (pow2 15 == 32768)
+
+#pop-options
+
+#push-options " --z3rlimit 500 --ext context_pruning"
+
+let subtract_reduce_helper_2 (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (myself: t_Array v_Vector (sz 16))
+    (coefficient_normal_form: v_Vector) : Lemma
+    (requires (forall (i:nat). i < 16 ==> 
+      Libcrux_ml_kem.Vector.Traits.f_sub_opaque_pre myself.[ sz i ] coefficient_normal_form /\
+      (forall j. j < 16 ==> Spec.Utils.is_intb 28296
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j) -
+            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j)))))
+    (ensures (forall (i:nat). i < 16 ==>
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (Libcrux_ml_kem.Vector.Traits.f_sub_opaque myself.[ sz i ] coefficient_normal_form))))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_opaque_post) Libcrux_ml_kem.Vector.Traits.sub_opaque_post;
+    assert (forall (i:nat). i < 16 ==>
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (Libcrux_ml_kem.Vector.Traits.f_sub_opaque myself.[ sz i ] coefficient_normal_form)))
+
+#pop-options
 
 let subtract_reduce_helper (#v_Vector: Type0)
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -358,13 +417,11 @@ let subtract_reduce_helper (#v_Vector: Type0)
         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ])) /\
         Spec.Utils.is_i16b_array_opaque 3328
         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form))
-    (ensures (forall (i:nat). i < 16 ==> sub_vector_pre myself.[ sz i ] coefficient_normal_form /\
+    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_sub_opaque_pre myself.[ sz i ] coefficient_normal_form /\
         Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-        (sub_vector myself.[ sz i ] coefficient_normal_form))))
+        (Libcrux_ml_kem.Vector.Traits.f_sub_opaque myself.[ sz i ] coefficient_normal_form))))
     =
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
-    reveal_opaque (`%sub_vector_pre) (sub_vector_pre #v_Vector);
-    reveal_opaque (`%sub_vector_post) (sub_vector_post #v_Vector);
     assert_norm (pow2 15 == 32768);
     assert (forall (i:nat). i < 16 ==>
             Spec.Utils.is_i16b_array (28296 - 3328)
@@ -376,9 +433,9 @@ let subtract_reduce_helper (#v_Vector: Type0)
     assert (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
             Spec.Utils.is_intb (pow2 15 - 1)
             (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j) -
-                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j))))
-
-#pop-options
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j))));
+    subtract_reduce_helper_1 myself coefficient_normal_form;
+    subtract_reduce_helper_2 myself coefficient_normal_form
 
 let subtract_reduce
       (#v_Vector: Type0)
@@ -414,7 +471,8 @@ let subtract_reduce
                 i
                 (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
                     #FStar.Tactics.Typeclasses.solve
-                    (sub_vector #v_Vector
+                    (Libcrux_ml_kem.Vector.Traits.f_sub_opaque #v_Vector
+                        #FStar.Tactics.Typeclasses.solve
                         (myself.f_coefficients.[ i ] <: v_Vector)
                         coefficient_normal_form
                       <:
@@ -604,12 +662,13 @@ let add_to_ring_element
             (forall (j: nat).
                 (j >= v i /\ j < v (Core.Slice.impl__len myself.f_coefficients)) ==>
                 myself.f_coefficients.[ sz j ] == v__myself.[ sz j ] /\
-                add_vector_pre myself.f_coefficients.[ sz j ] rhs.f_coefficients.[ sz j ])) /\
+                Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre myself.f_coefficients.[ sz j ]
+                  rhs.f_coefficients.[ sz j ])) /\
           (forall (j: nat).
               j < v i ==>
-              add_vector_post myself.f_coefficients.[ sz j ]
-                v__myself.[ sz j ]
-                rhs.f_coefficients.[ sz j ]))
+              Libcrux_ml_kem.Vector.Traits.f_add_opaque_post v__myself.[ sz j ]
+                rhs.f_coefficients.[ sz j ]
+                myself.f_coefficients.[ sz j ]))
       myself
       (fun myself i ->
           let myself:t_PolynomialRingElement v_Vector = myself in
@@ -621,7 +680,8 @@ let add_to_ring_element
               =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize myself.f_coefficients
                 i
-                (add_vector #v_Vector
+                (Libcrux_ml_kem.Vector.Traits.f_add_opaque #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     (myself.f_coefficients.[ i ] <: v_Vector)
                     (rhs.f_coefficients.[ i ] <: v_Vector)
                   <:

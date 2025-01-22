@@ -267,6 +267,28 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.add lhs.f_elements rhs.f_elements }
         <:
         t_SIMD256Vector);
+    f_add_opaque_pre
+    =
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
+        Libcrux_ml_kem.Vector.Traits.add_opaque_pre (impl.f_repr lhs) (impl.f_repr rhs));
+    f_add_opaque_post
+    =
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (result: t_SIMD256Vector) ->
+        Libcrux_ml_kem.Vector.Traits.add_opaque_post (impl.f_repr lhs)
+          (impl.f_repr rhs)
+          (impl.f_repr result));
+    f_add_opaque
+    =
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
+        let _:Prims.unit =
+          reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_pre)
+            Libcrux_ml_kem.Vector.Traits.add_opaque_pre;
+          reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_post)
+            Libcrux_ml_kem.Vector.Traits.add_opaque_post
+        in
+        { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.add lhs.f_elements rhs.f_elements }
+        <:
+        t_SIMD256Vector);
     f_sub_pre
     =
     (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
@@ -284,6 +306,28 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_sub
     =
     (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
+        { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.sub lhs.f_elements rhs.f_elements }
+        <:
+        t_SIMD256Vector);
+    f_sub_opaque_pre
+    =
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
+        Libcrux_ml_kem.Vector.Traits.sub_opaque_pre (impl.f_repr lhs) (impl.f_repr rhs));
+    f_sub_opaque_post
+    =
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (result: t_SIMD256Vector) ->
+        Libcrux_ml_kem.Vector.Traits.sub_opaque_post (impl.f_repr lhs)
+          (impl.f_repr rhs)
+          (impl.f_repr result));
+    f_sub_opaque
+    =
+    (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) ->
+        let _:Prims.unit =
+          reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_opaque_pre)
+            Libcrux_ml_kem.Vector.Traits.sub_opaque_pre;
+          reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_opaque_post)
+            Libcrux_ml_kem.Vector.Traits.sub_opaque_post
+        in
         { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.sub lhs.f_elements rhs.f_elements }
         <:
         t_SIMD256Vector);

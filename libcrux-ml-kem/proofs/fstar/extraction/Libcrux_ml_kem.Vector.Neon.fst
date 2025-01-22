@@ -118,6 +118,28 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
         (rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
         ->
         Libcrux_ml_kem.Vector.Neon.Arithmetic.add lhs rhs);
+    f_add_opaque_pre
+    =
+    (fun
+        (lhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        ->
+        true);
+    f_add_opaque_post
+    =
+    (fun
+        (lhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        ->
+        true);
+    f_add_opaque
+    =
+    (fun
+        (lhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        ->
+        Libcrux_ml_kem.Vector.Neon.Arithmetic.add lhs rhs);
     f_sub_pre
     =
     (fun
@@ -134,6 +156,28 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
         ->
         true);
     f_sub
+    =
+    (fun
+        (lhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        ->
+        Libcrux_ml_kem.Vector.Neon.Arithmetic.sub lhs rhs);
+    f_sub_opaque_pre
+    =
+    (fun
+        (lhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        ->
+        true);
+    f_sub_opaque_post
+    =
+    (fun
+        (lhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        ->
+        true);
+    f_sub_opaque
     =
     (fun
         (lhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)

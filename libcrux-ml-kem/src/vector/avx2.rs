@@ -293,6 +293,19 @@ impl Operations for SIMD256Vector {
         }
     }
 
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.add_opaque_pre (impl.f_repr ${lhs}) (impl.f_repr ${rhs})"#))]
+    #[ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.add_opaque_post
+        (impl.f_repr ${lhs}) (impl.f_repr ${rhs}) (impl.f_repr ${result})"#))]
+    fn add_opaque(lhs: Self, rhs: &Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_pre) Libcrux_ml_kem.Vector.Traits.add_opaque_pre;
+            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_post) Libcrux_ml_kem.Vector.Traits.add_opaque_post"#
+        );
+        Self {
+            elements: arithmetic::add(lhs.elements, rhs.elements),
+        }
+    }
+
     #[requires(fstar!(r#"forall i. i < 16 ==> 
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"#))]
     #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
@@ -300,6 +313,19 @@ impl Operations for SIMD256Vector {
          v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"#))]
     #[inline(always)]
     fn sub(lhs: Self, rhs: &Self) -> Self {
+        Self {
+            elements: arithmetic::sub(lhs.elements, rhs.elements),
+        }
+    }
+
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.sub_opaque_pre (impl.f_repr ${lhs}) (impl.f_repr ${rhs})"#))]
+    #[ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.sub_opaque_post
+        (impl.f_repr ${lhs}) (impl.f_repr ${rhs}) (impl.f_repr ${result})"#))]
+    fn sub_opaque(lhs: Self, rhs: &Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_opaque_pre) Libcrux_ml_kem.Vector.Traits.sub_opaque_pre;
+            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_opaque_post) Libcrux_ml_kem.Vector.Traits.sub_opaque_post"#
+        );
         Self {
             elements: arithmetic::sub(lhs.elements, rhs.elements),
         }

@@ -134,12 +134,34 @@ impl Operations for PortableVector {
         add(lhs, rhs)
     }
 
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.add_opaque_pre ${lhs}.f_elements ${rhs}.f_elements"#))]
+    #[ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.add_opaque_post
+        ${lhs}.f_elements ${rhs}.f_elements ${result}.f_elements"#))]
+    fn add_opaque(lhs: Self, rhs: &Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_pre) Libcrux_ml_kem.Vector.Traits.add_opaque_pre;
+            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_post) Libcrux_ml_kem.Vector.Traits.add_opaque_post"#
+        );
+        add(lhs, rhs)
+    }
+
     #[requires(fstar!(r#"forall i. i < 16 ==> 
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"#))]
     #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
         (v (Seq.index ${result}.f_elements i) == 
          v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"#))]
     fn sub(lhs: Self, rhs: &Self) -> Self {
+        sub(lhs, rhs)
+    }
+
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.sub_opaque_pre ${lhs}.f_elements ${rhs}.f_elements"#))]
+    #[ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.sub_opaque_post
+        ${lhs}.f_elements ${rhs}.f_elements ${result}.f_elements"#))]
+    fn sub_opaque(lhs: Self, rhs: &Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_opaque_pre) Libcrux_ml_kem.Vector.Traits.sub_opaque_pre;
+            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_opaque_post) Libcrux_ml_kem.Vector.Traits.sub_opaque_post"#
+        );
         sub(lhs, rhs)
     }
 
