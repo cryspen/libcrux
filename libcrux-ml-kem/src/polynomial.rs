@@ -148,7 +148,7 @@ let subtract_reduce_helper_1 (#v_Vector: Type0)
 
 #pop-options
 
-#push-options " --z3rlimit 500 --ext context_pruning"
+#push-options " --z3rlimit 500 --ext context_pruning --split_queries always"
 
 let subtract_reduce_helper_2 (#v_Vector: Type0)
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -309,7 +309,7 @@ let add_error_reduce_helper_2 (#v_Vector: Type0)
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
     reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_post) Libcrux_ml_kem.Vector.Traits.add_opaque_post;
     assert (forall (i:nat). i < 16 ==>
-        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        Spec.Utils.is_i16b_ array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
         (Libcrux_ml_kem.Vector.Traits.f_add_opaque coefficient_normal_form myself.[ sz i ])))
 
 #pop-options

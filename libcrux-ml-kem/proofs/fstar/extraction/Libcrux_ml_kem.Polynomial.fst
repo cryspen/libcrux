@@ -385,7 +385,7 @@ let subtract_reduce_helper_1 (#v_Vector: Type0)
 
 #pop-options
 
-#push-options " --z3rlimit 500 --ext context_pruning"
+#push-options " --z3rlimit 500 --ext context_pruning --split_queries always"
 
 let subtract_reduce_helper_2 (#v_Vector: Type0)
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
