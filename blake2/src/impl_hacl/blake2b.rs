@@ -1,3 +1,8 @@
+extern crate alloc;
+
+use alloc::boxed::Box;
+use core::marker::PhantomData;
+
 use libcrux_hacl_rs::streaming_types::error_code;
 
 use crate::hacl::hash_blake2b::{
@@ -5,82 +10,142 @@ use crate::hacl::hash_blake2b::{
     update0,
 };
 
-use crate::impl_hacl::Error;
+use super::{ConstsDynamic, ConstsStaticKey, ConstsStaticKeyStaticOut, ConstsStaticOut, Error};
 
 const PARAM_LEN: usize = 16;
 const MAX_LEN: usize = 64;
 
-/// A builder for [`Blake2b`]. `KEY_LEN`` must be in the range `0..=64``, `OUT_LEN`` must be in the
-/// range `1..=64`.
-pub struct Blake2bBuilder<'a, const KEY_LEN: usize, const OUT_LEN: usize> {
-    key: &'a [u8; KEY_LEN],
+/// A builder for [`Blake2b`]. `T` determines whether
+pub struct Blake2bBuilder<'a, T> {
+    key: T,
     personal: &'a [u8; PARAM_LEN],
     salt: &'a [u8; PARAM_LEN],
 }
 
-impl<const OUT_LEN: usize> Blake2bBuilder<'_, 0, OUT_LEN> {
-    /// Creates the builder for an unkeyed hasher and returns an error if the digest length
-    /// `OUT_LEN` is not in the allowed range.
-    pub fn new_unkeyed() -> Result<Self, Error> {
-        if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
+impl<'a> Blake2bBuilder<'a, &'a ()> {
+    /// Creates the builder for an unkeyed hasher.
+    pub fn new_unkeyed() -> Self {
+        Self {
+            key: &(),
+            personal: &[0; PARAM_LEN],
+            salt: &[0; PARAM_LEN],
+        }
+    }
+
+    /// Constructs the [`Blake2b`] hasher for unkeyed hashes and dynamic digest length.
+    pub fn build_var_digest_len(
+        self,
+        digest_length: u8,
+    ) -> Result<Blake2b<ConstsStaticKey<0>>, Error> {
+        if digest_length < 1 || digest_length as usize > MAX_LEN {
             return Err(Error::InvalidDigestLength);
         }
 
-        Ok(Self {
-            key: &[],
-            personal: &[0; PARAM_LEN],
-            salt: &[0; PARAM_LEN],
-        })
-    }
-}
-impl<'a, const KEY_LEN: usize, const OUT_LEN: usize> Blake2bBuilder<'a, KEY_LEN, OUT_LEN> {
-    /// Creates the builder and returns an error if the lengths `KEY_LEN` or `OUT_LEN` are not in
-    /// the allowed range.
-    pub fn new() -> Result<Self, Error> {
-        if KEY_LEN > MAX_LEN {
-            return Err(Error::InvalidKeyLength);
-        }
-
-        if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
-            return Err(Error::InvalidDigestLength);
-        }
-        Ok(Self {
-            key: &[0; KEY_LEN],
-            personal: &[0; PARAM_LEN],
-            salt: &[0; PARAM_LEN],
-        })
-    }
-
-    /// Sets the key to be used in the hasher.
-    pub fn with_key(self, key: &'a [u8; KEY_LEN]) -> Self {
-        Self { key, ..self }
-    }
-
-    /// Sets the personalization bytes to be used in the hasher.
-    pub fn with_personalization(self, personal: &'a [u8; PARAM_LEN]) -> Self {
-        Self { personal, ..self }
-    }
-
-    /// Sets the salt to be used in the hasher.
-    pub fn with_salt(self, salt: &'a [u8; PARAM_LEN]) -> Self {
-        Self { salt, ..self }
-    }
-
-    /// Constructs the [`Blake2b`] hasher.
-    pub fn build(self) -> Blake2b<KEY_LEN, OUT_LEN> {
-        // these are safe because they bot are at most 64
-        let key_length = KEY_LEN as u8;
-        let digest_length = OUT_LEN as u8;
-
-        // NOTE: I am not entirely sure that this is the correct value. From reading the spec I
-        // think it should be `true`, but when comparing with other implementations I only get the
-        // same values when using `false`.
-        let last_node = false;
+        let key_length = 0;
 
         let kk = index {
             key_length,
             digest_length,
-            last_node,
+            last_node: false,
+        };
+
+        let params = blake2_params {
+            digest_length,
+            key_length,
+            fanout: 1,
+            depth: 1,
+            leaf_length: 0,
+            node_offset: 0,
+            node_depth: 0,
+            inner_length: 0,
+            salt: self.salt,
+            personal: self.personal,
+        };
+
+        let key = params_and_key {
+            fst: &[params],
+            snd: &[],
+        };
+
+        Ok(Blake2b {
+            state: malloc_raw(kk, key),
+            _phantom: PhantomData,
+        })
+    }
+
+    /// Constructs the [`Blake2b`] hasher for unkeyed hashes and static digest length.
+    pub fn build_const_digest_len<const OUT_LEN: usize>(
+        self,
+    ) -> Result<Blake2b<ConstsStaticKeyStaticOut<0, OUT_LEN>>, Error> {
+        if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
+            return Err(Error::InvalidDigestLength);
+        }
+
+        let digest_length = OUT_LEN as u8;
+        let key_length = 0;
+
+        let kk = index {
+            key_length,
+            digest_length,
+            last_node: false,
+        };
+
+        let params = blake2_params {
+            digest_length,
+            key_length,
+            fanout: 1,
+            depth: 1,
+            leaf_length: 0,
+            node_offset: 0,
+            node_depth: 0,
+            inner_length: 0,
+            salt: self.salt,
+            personal: self.personal,
+        };
+
+        let key = params_and_key {
+            fst: &[params],
+            snd: &[],
+        };
+
+        Ok(Blake2b {
+            state: malloc_raw(kk, key),
+            _phantom: PhantomData,
+        })
+    }
+}
+
+impl<'a, const KEY_LEN: usize> Blake2bBuilder<'a, &'a [u8; KEY_LEN]> {
+    /// Creates the builder for an keyed hasher for keys where the length is known at compile
+    /// time.
+    pub fn new_keyed_static(key: &'a [u8; KEY_LEN]) -> Result<Self, Error> {
+        if KEY_LEN > MAX_LEN {
+            return Err(Error::InvalidKeyLength);
+        }
+
+        Ok(Self {
+            key,
+            personal: &[0; PARAM_LEN],
+            salt: &[0; PARAM_LEN],
+        })
+    }
+
+    /// Constructs the [`Blake2b`] hasher for hashes with static key length and dynamic digest length.
+    pub fn build_var_digest_len(
+        self,
+        digest_length: u8,
+    ) -> Result<Blake2b<ConstsStaticKey<KEY_LEN>>, Error> {
+        if digest_length < 1 || digest_length as usize > MAX_LEN {
+            return Err(Error::InvalidDigestLength);
+        }
+
+        // This is safe because it's at most 64, enforced in the constructor.
+        let key_length = KEY_LEN as u8;
+
+        let kk = index {
+            key_length,
+            digest_length,
+            last_node: false,
         };
 
         let params = blake2_params {
@@ -101,18 +166,172 @@ impl<'a, const KEY_LEN: usize, const OUT_LEN: usize> Blake2bBuilder<'a, KEY_LEN,
             snd: self.key,
         };
 
-        Blake2b {
+        Ok(Blake2b::<ConstsStaticKey<KEY_LEN>> {
             state: malloc_raw(kk, key),
+            _phantom: PhantomData,
+        })
+    }
+
+    /// Constructs the [`Blake2b`] hasher for hashes with static key length and static digest length.
+    pub fn build_const_digest_len<const OUT_LEN: usize>(
+        self,
+    ) -> Result<Blake2b<ConstsStaticKeyStaticOut<KEY_LEN, OUT_LEN>>, Error> {
+        if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
+            return Err(Error::InvalidDigestLength);
         }
+
+        // These are safe because they both are at most 64, enforced either above or in the
+        // constructor.
+        let key_length = KEY_LEN as u8;
+        let digest_length = OUT_LEN as u8;
+
+        let kk = index {
+            key_length,
+            digest_length,
+            last_node: false,
+        };
+
+        let params = blake2_params {
+            digest_length,
+            key_length,
+            fanout: 1,
+            depth: 1,
+            leaf_length: 0,
+            node_offset: 0,
+            node_depth: 0,
+            inner_length: 0,
+            salt: self.salt,
+            personal: self.personal,
+        };
+
+        let key = params_and_key {
+            fst: &[params],
+            snd: self.key,
+        };
+
+        Ok(Blake2b::<ConstsStaticKeyStaticOut<KEY_LEN, OUT_LEN>> {
+            state: malloc_raw(kk, key),
+            _phantom: PhantomData,
+        })
+    }
+}
+
+impl<'a> Blake2bBuilder<'a, &'a [u8]> {
+    /// Creates the builder for an keyed hasher for keys where the length is not known at compile
+    /// time.
+    pub fn new_keyed_dynamic(key: &'a [u8]) -> Result<Self, Error> {
+        if key.len() > MAX_LEN {
+            return Err(Error::InvalidKeyLength);
+        }
+
+        Ok(Self {
+            key,
+            personal: &[0; PARAM_LEN],
+            salt: &[0; PARAM_LEN],
+        })
+    }
+
+    /// Constructs the fully dynamic [`Blake2b`] hasher.
+    pub fn build_var_digest_len(self, digest_length: u8) -> Result<Blake2b<ConstsDynamic>, Error> {
+        if digest_length < 1 || digest_length as usize > MAX_LEN {
+            return Err(Error::InvalidDigestLength);
+        }
+
+        // This is safe because it's at most 64, enforced in the constructor.
+        let key_length = self.key.len() as u8;
+
+        let kk = index {
+            key_length,
+            digest_length,
+            last_node: false,
+        };
+
+        let params = blake2_params {
+            digest_length,
+            key_length,
+            fanout: 1,
+            depth: 1,
+            leaf_length: 0,
+            node_offset: 0,
+            node_depth: 0,
+            inner_length: 0,
+            salt: self.salt,
+            personal: self.personal,
+        };
+
+        let key = params_and_key {
+            fst: &[params],
+            snd: self.key,
+        };
+
+        Ok(Blake2b {
+            state: malloc_raw(kk, key),
+            _phantom: PhantomData,
+        })
+    }
+
+    /// Constructs the [`Blake2b`] hasher with dynamic key length and static digest length.
+    pub fn build_const_digest_len<const OUT_LEN: usize>(
+        self,
+    ) -> Result<Blake2b<ConstsStaticOut<OUT_LEN>>, Error> {
+        if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
+            return Err(Error::InvalidDigestLength);
+        }
+
+        // these are safe because they both are at most 64
+        let key_length = self.key.len() as u8;
+        let digest_length = OUT_LEN as u8;
+
+        let kk = index {
+            key_length,
+            digest_length,
+            last_node: false,
+        };
+
+        let params = blake2_params {
+            digest_length,
+            key_length,
+            fanout: 1,
+            depth: 1,
+            leaf_length: 0,
+            node_offset: 0,
+            node_depth: 0,
+            inner_length: 0,
+            salt: self.salt,
+            personal: self.personal,
+        };
+
+        let key = params_and_key {
+            fst: &[params],
+            snd: self.key,
+        };
+
+        Ok(Blake2b {
+            state: malloc_raw(kk, key),
+            _phantom: PhantomData,
+        })
+    }
+}
+
+impl<'a, T> Blake2bBuilder<'a, T> {
+    /// Sets the personalization bytes to be used in the hasher.
+    pub fn with_personalization(self, personal: &'a [u8; PARAM_LEN]) -> Self {
+        Self { personal, ..self }
+    }
+
+    /// Sets the salt to be used in the hasher.
+    pub fn with_salt(self, salt: &'a [u8; PARAM_LEN]) -> Self {
+        Self { salt, ..self }
     }
 }
 
 /// A hasher struct for the Blake2b (optionally keyed) hash function.
-pub struct Blake2b<const KEY_LEN: usize, const OUT_LEN: usize> {
+pub struct Blake2b<T> {
     state: Box<[state_t]>,
+    _phantom: PhantomData<T>,
 }
 
-impl<const KEY_LEN: usize, const OUT_LEN: usize> Blake2b<KEY_LEN, OUT_LEN> {
+impl<T> Blake2b<T> {
     /// Updates the hash state by adding the bytes from `chunk` to the hashed data.
     pub fn update(&mut self, chunk: &[u8]) -> Result<(), Error> {
         if chunk.len() > (u32::MAX as usize) {
@@ -125,21 +344,130 @@ impl<const KEY_LEN: usize, const OUT_LEN: usize> Blake2b<KEY_LEN, OUT_LEN> {
             _ => Err(Error::Unexpected),
         }
     }
+}
 
+impl<const KEY_LEN: usize> Blake2b<ConstsStaticKey<KEY_LEN>> {
+    /// Compute the hash for the current hash state and write it to `dst`.
+    ///
+    /// Returns a `Result` that contains the length of the digest on success.
+    pub fn finalize(&self, dst: &mut [u8]) -> Result<usize, Error> {
+        let digest_len = self.state[0].block_state.snd;
+        if dst.len() < digest_len as usize {
+            return Err(Error::InvalidDigestLength);
+        }
+
+        Ok(digest(&self.state, dst) as usize)
+    }
+}
+
+impl Blake2b<ConstsDynamic> {
+    /// Compute the hash for the current hash state and write it to `dst`.
+    ///
+    /// Returns a `Result` that contains the length of the digest on success.
+    pub fn finalize(&self, dst: &mut [u8]) -> Result<usize, Error> {
+        let digest_len = self.state[0].block_state.snd;
+        if dst.len() < digest_len as usize {
+            return Err(Error::InvalidDigestLength);
+        }
+
+        Ok(digest(&self.state, dst) as usize)
+    }
+}
+
+impl<const KEY_LEN: usize, const OUT_LEN: usize>
+    Blake2b<ConstsStaticKeyStaticOut<KEY_LEN, OUT_LEN>>
+{
     /// Compute the hash for the current hash state and write it to `dst`.
     pub fn finalize(&self, dst: &mut [u8; OUT_LEN]) {
         digest(&self.state, dst);
     }
+}
 
+impl<const OUT_LEN: usize> Blake2b<ConstsStaticOut<OUT_LEN>> {
+    /// Compute the hash for the current hash state and write it to `dst`.
+    pub fn finalize(&self, dst: &mut [u8; OUT_LEN]) {
+        digest(&self.state, dst);
+    }
+}
+
+impl<const KEY_LEN: usize, const OUT_LEN: usize>
+    Blake2b<ConstsStaticKeyStaticOut<KEY_LEN, OUT_LEN>>
+{
     /// Reset the hash state and update the key to the contents of `key`.
     pub fn reset_with_key(&mut self, key: &[u8; KEY_LEN]) {
         reset_with_key(&mut self.state, key);
     }
 }
 
-impl<const OUT_LEN: usize> Blake2b<0, OUT_LEN> {
+impl<const KEY_LEN: usize> Blake2b<ConstsStaticKey<KEY_LEN>> {
+    /// Reset the hash state and update the key to the contents of `key`.
+    pub fn reset_with_key(&mut self, key: &[u8; KEY_LEN]) {
+        reset_with_key(&mut self.state, key);
+    }
+}
+
+impl<const OUT_LEN: usize> Blake2b<ConstsStaticOut<OUT_LEN>> {
+    /// Reset the hash state and update the key to the contents of `key`.
+    pub fn reset_with_key(&mut self, key: &[u8]) -> Result<(), Error> {
+        // check that the key length matches
+        if self.state.as_ref()[0].block_state.fst as usize != key.len() {
+            return Err(Error::InvalidKeyLength);
+        }
+
+        reset_with_key(&mut self.state, key);
+        Ok(())
+    }
+}
+
+impl Blake2b<ConstsDynamic> {
+    /// Reset the hash state and update the key to the contents of `key`.
+    pub fn reset_with_key(&mut self, key: &[u8]) -> Result<(), Error> {
+        // check that the key length matches
+        if self.state[0].block_state.fst as usize != key.len() {
+            return Err(Error::InvalidKeyLength);
+        }
+
+        reset_with_key(&mut self.state, key);
+        Ok(())
+    }
+}
+
+impl Blake2b<ConstsStaticKey<0>> {
     /// Reset the hash state.
     pub fn reset(&mut self) {
         reset(&mut self.state)
+    }
+}
+
+impl<const OUT_LEN: usize> Blake2b<ConstsStaticKeyStaticOut<0, OUT_LEN>> {
+    /// Reset the hash state.
+    pub fn reset(&mut self) {
+        reset(&mut self.state)
+    }
+}
+
+impl<const OUT_LEN: usize> Blake2b<ConstsStaticOut<OUT_LEN>> {
+    /// Reset the hash state.
+    pub fn reset(&mut self) -> Result<(), Error> {
+        // check that the key length matches
+        if self.state.as_ref()[0].block_state.fst != 0 {
+            return Err(Error::InvalidKeyLength);
+        }
+
+        reset(&mut self.state);
+        Ok(())
+    }
+}
+
+impl Blake2b<ConstsDynamic> {
+    /// Reset the hash state.
+    pub fn reset(&mut self) -> Result<(), Error> {
+        // check that the key length matches
+        if self.state.as_ref()[0].block_state.fst != 0 {
+            return Err(Error::InvalidKeyLength);
+        }
+
+        reset(&mut self.state);
+        Ok(())
     }
 }

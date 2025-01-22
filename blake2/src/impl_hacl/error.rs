@@ -16,7 +16,7 @@ pub enum Error {
 }
 
 impl alloc::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut alloc::fmt::Formatter<'_>) -> alloc::fmt::Result {
         let text = match self {
             Error::InvalidKeyLength => "The used key length is invalid.",
             Error::InvalidDigestLength => "The used digest length is invalid.",

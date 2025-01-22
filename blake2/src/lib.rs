@@ -1,4 +1,4 @@
-//#![no_std]
+#![no_std]
 
 mod hacl {
     //! This module contains generated hacl code.
@@ -10,4 +10,4 @@ mod hacl {
 
 mod impl_hacl;
 
-pub use impl_hacl::*;
+pub use impl_hacl::{Blake2b, Blake2bBuilder, Blake2s, Blake2sBuilder, Error};
