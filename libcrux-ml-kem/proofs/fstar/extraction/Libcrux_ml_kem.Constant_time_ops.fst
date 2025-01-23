@@ -97,9 +97,6 @@ let compare (lhs rhs: t_Slice u8) =
   in
   is_non_zero r
 
-let compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8) =
-  Core.Hint.black_box #u8 (compare lhs rhs <: u8)
-
 #push-options "--ifuel 0 --z3rlimit 50"
 
 let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
@@ -185,6 +182,9 @@ let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
   out
 
 #pop-options
+
+let compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8) =
+  Core.Hint.black_box #u8 (compare lhs rhs <: u8)
 
 let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
   Core.Hint.black_box #(t_Array u8 (sz 32)) (select_ct lhs rhs selector <: t_Array u8 (sz 32))

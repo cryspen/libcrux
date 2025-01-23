@@ -10,11 +10,11 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-val rej_sample (a: t_Slice u8) (result: t_Slice i16)
-    : Prims.Pure (t_Slice i16 & usize) Prims.l_True (fun _ -> Prims.l_True)
-
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl:Libcrux_ml_kem.Vector.Traits.t_Repr Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+
+val rej_sample (a: t_Slice u8) (result: t_Slice i16)
+    : Prims.Pure (t_Slice i16 & usize) Prims.l_True (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl_1:Libcrux_ml_kem.Vector.Traits.t_Operations

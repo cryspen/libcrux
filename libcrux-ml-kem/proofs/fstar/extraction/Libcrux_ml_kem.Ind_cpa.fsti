@@ -12,91 +12,71 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-/// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
-val deserialize_secret_key
-      (v_K: usize)
+/// Call [`serialize_uncompressed_ring_element`] for each ring element.
+val serialize_secret_key
+      (v_K v_OUT_LEN: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (secret_key: t_Slice u8)
-    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (key: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+    : Prims.Pure (t_Array u8 v_OUT_LEN)
       (requires
-        Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
-        v (Core.Slice.impl__len #u8 secret_key) /
-        v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <=
-        v v_K)
+        Spec.MLKEM.is_rank v_K /\ v_OUT_LEN == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        (forall (i: nat).
+            i < v v_K ==>
+            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key i)))
       (ensures
         fun res ->
-          let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
-          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
-          Spec.MLKEM.vector_decode_12 #v_K secret_key)
+          let res:t_Array u8 v_OUT_LEN = res in
+          res ==
+          Spec.MLKEM.vector_encode_12 #v_K
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key))
 
-val build_unpacked_public_key_mut
-      (v_K v_T_AS_NTT_ENCODED_SIZE: usize)
-      (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      (public_key: t_Slice u8)
-      (unpacked_public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
-    : Prims.Pure (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
-      (requires
-        Spec.MLKEM.is_rank v_K /\ v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K /\
-        length public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K)
-      (ensures
-        fun unpacked_public_key_future ->
-          let unpacked_public_key_future:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked
-            v_K v_Vector =
-            unpacked_public_key_future
-          in
-          let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
-          let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
-          let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
-          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
-              #v_Vector
-              unpacked_public_key_future.f_t_as_ntt ==
-            t_as_ntt /\ valid ==>
-            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector unpacked_public_key_future.f_A ==
-            Spec.MLKEM.matrix_transpose matrix_A_as_ntt))
-
-val build_unpacked_public_key
-      (v_K v_T_AS_NTT_ENCODED_SIZE: usize)
-      (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      (public_key: t_Slice u8)
-    : Prims.Pure (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
-      (requires
-        Spec.MLKEM.is_rank v_K /\ v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K /\
-        length public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K)
-      (ensures
-        fun result ->
-          let result:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector =
-            result
-          in
-          let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
-          let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
-          let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
-          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector result.f_t_as_ntt == t_as_ntt /\
-            valid ==>
-            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector result.f_A ==
-            Spec.MLKEM.matrix_transpose matrix_A_as_ntt))
-
-/// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
-/// in the `ciphertext`.
-val deserialize_then_decompress_u
-      (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
+/// Concatenate `t` and `ρ` into the public key.
+val serialize_public_key_mut
+      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (seed_for_a: t_Slice u8)
+      (serialized: t_Array u8 v_PUBLIC_KEY_SIZE)
+    : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE)
       (requires
-        Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
-        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K)
+        Spec.MLKEM.is_rank v_K /\
+        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\ length seed_for_a == sz 32 /\
+        (forall (i: nat).
+            i < v v_K ==>
+            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index tt_as_ntt i)))
+      (ensures
+        fun serialized_future ->
+          let serialized_future:t_Array u8 v_PUBLIC_KEY_SIZE = serialized_future in
+          serialized_future ==
+          Seq.append (Spec.MLKEM.vector_encode_12 #v_K
+                (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector tt_as_ntt))
+            seed_for_a)
+
+/// Concatenate `t` and `ρ` into the public key.
+val serialize_public_key
+      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (seed_for_a: t_Slice u8)
+    : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE)
+      (requires
+        Spec.MLKEM.is_rank v_K /\
+        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\ length seed_for_a == sz 32 /\
+        (forall (i: nat).
+            i < v v_K ==>
+            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index tt_as_ntt i)))
       (ensures
         fun res ->
-          let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
-          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
-          Spec.MLKEM.(vector_ntt (decode_then_decompress_u #v_K
-                  (Seq.slice ciphertext 0 (v (Spec.MLKEM.v_C1_SIZE v_K))))))
+          let res:t_Array u8 v_PUBLIC_KEY_SIZE = res in
+          res ==
+          Seq.append (Spec.MLKEM.vector_encode_12 #v_K
+                (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector tt_as_ntt))
+            seed_for_a)
 
 /// Sample a vector of ring elements from a centered binomial distribution.
 val sample_ring_element_cbd
@@ -256,63 +236,38 @@ val generate_keypair_unpacked
                       .f_t_as_ntt
                     i)))
 
-/// This function implements <strong>Algorithm 14</strong> of the
-/// NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
-/// Algorithm 14 is reproduced below:
-/// ```plaintext
-/// Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
-/// Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
-/// Output: message m ∈ 𝔹^{32}.
-/// c₁ ← c[0 : 32dᵤk]
-/// c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
-/// u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
-/// v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
-/// ŝ ← ByteDecode₁₂(dkₚₖₑ)
-/// w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
-/// m ← ByteEncode₁(Compress₁(w))
-/// return m
-/// ```
-/// The NIST FIPS 203 standard can be found at
-/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-val decrypt_unpacked
-      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
-          usize)
+/// Serialize the secret key from the unpacked key pair generation.
+val serialize_unpacked_secret_key
+      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (secret_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
-      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32))
-      (requires
-        Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
-        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
-        v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
-        v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K)
-      (ensures
-        fun result ->
-          let result:t_Array u8 (sz 32) = result in
-          result ==
-          Spec.MLKEM.ind_cpa_decrypt_unpacked v_K
-            ciphertext
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector secret_key.f_secret_as_ntt))
+      (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      (private_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
+    : Prims.Pure (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
-val decrypt
-      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
+val generate_keypair
+      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (secret_key: t_Slice u8)
-      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32))
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
+      {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      {| i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme |}
+      (key_generation_seed: t_Slice u8)
+    : Prims.Pure (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
       (requires
-        Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
-        v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
-        v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K /\
-        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
-        v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K)
+        Spec.MLKEM.is_rank v_K /\ v_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+        v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
+        v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
+        length key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE)
       (ensures
         fun result ->
-          let result:t_Array u8 (sz 32) = result in
-          result == Spec.MLKEM.ind_cpa_decrypt v_K secret_key ciphertext)
+          let result:(t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE) = result in
+          let expected, valid = Spec.MLKEM.ind_cpa_generate_keypair v_K key_generation_seed in
+          valid ==> result == expected)
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
 val compress_then_serialize_u
@@ -402,6 +357,56 @@ val encrypt_unpacked
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector public_key.f_t_as_ntt)
             (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector public_key.f_A))
 
+val build_unpacked_public_key_mut
+      (v_K v_T_AS_NTT_ENCODED_SIZE: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (public_key: t_Slice u8)
+      (unpacked_public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+    : Prims.Pure (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K /\
+        length public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K)
+      (ensures
+        fun unpacked_public_key_future ->
+          let unpacked_public_key_future:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked
+            v_K v_Vector =
+            unpacked_public_key_future
+          in
+          let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
+          let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
+          let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
+          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+              #v_Vector
+              unpacked_public_key_future.f_t_as_ntt ==
+            t_as_ntt /\ valid ==>
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector unpacked_public_key_future.f_A ==
+            Spec.MLKEM.matrix_transpose matrix_A_as_ntt))
+
+val build_unpacked_public_key
+      (v_K v_T_AS_NTT_ENCODED_SIZE: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (public_key: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      (requires
+        Spec.MLKEM.is_rank v_K /\ v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K /\
+        length public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector =
+            result
+          in
+          let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
+          let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
+          let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
+          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector result.f_t_as_ntt == t_as_ntt /\
+            valid ==>
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector result.f_A ==
+            Spec.MLKEM.matrix_transpose matrix_A_as_ntt))
+
 val encrypt
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
@@ -430,101 +435,96 @@ val encrypt
           let expected, valid = Spec.MLKEM.ind_cpa_encrypt v_K public_key message randomness in
           valid ==> result == expected)
 
-/// Call [`serialize_uncompressed_ring_element`] for each ring element.
-val serialize_secret_key
-      (v_K v_OUT_LEN: usize)
+/// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
+/// in the `ciphertext`.
+val deserialize_then_decompress_u
+      (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (key: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-    : Prims.Pure (t_Array u8 v_OUT_LEN)
+      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
+    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (requires
-        Spec.MLKEM.is_rank v_K /\ v_OUT_LEN == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
-        (forall (i: nat).
-            i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key i)))
+        Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
+        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K)
       (ensures
         fun res ->
-          let res:t_Array u8 v_OUT_LEN = res in
-          res ==
-          Spec.MLKEM.vector_encode_12 #v_K
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key))
+          let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
+          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
+          Spec.MLKEM.(vector_ntt (decode_then_decompress_u #v_K
+                  (Seq.slice ciphertext 0 (v (Spec.MLKEM.v_C1_SIZE v_K))))))
 
-/// Concatenate `t` and `ρ` into the public key.
-val serialize_public_key_mut
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+/// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
+val deserialize_secret_key
+      (v_K: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      (seed_for_a: t_Slice u8)
-      (serialized: t_Array u8 v_PUBLIC_KEY_SIZE)
-    : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE)
+      (secret_key: t_Slice u8)
+    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (requires
-        Spec.MLKEM.is_rank v_K /\
-        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
-        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\ length seed_for_a == sz 32 /\
-        (forall (i: nat).
-            i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index tt_as_ntt i)))
-      (ensures
-        fun serialized_future ->
-          let serialized_future:t_Array u8 v_PUBLIC_KEY_SIZE = serialized_future in
-          serialized_future ==
-          Seq.append (Spec.MLKEM.vector_encode_12 #v_K
-                (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector tt_as_ntt))
-            seed_for_a)
-
-/// Concatenate `t` and `ρ` into the public key.
-val serialize_public_key
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      (seed_for_a: t_Slice u8)
-    : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE)
-      (requires
-        Spec.MLKEM.is_rank v_K /\
-        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
-        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\ length seed_for_a == sz 32 /\
-        (forall (i: nat).
-            i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index tt_as_ntt i)))
+        Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v (Core.Slice.impl__len #u8 secret_key) /
+        v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <=
+        v v_K)
       (ensures
         fun res ->
-          let res:t_Array u8 v_PUBLIC_KEY_SIZE = res in
-          res ==
-          Seq.append (Spec.MLKEM.vector_encode_12 #v_K
-                (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector tt_as_ntt))
-            seed_for_a)
+          let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
+          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
+          Spec.MLKEM.vector_decode_12 #v_K secret_key)
 
-/// Serialize the secret key from the unpacked key pair generation.
-val serialize_unpacked_secret_key
-      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT: usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
-      (private_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
-    : Prims.Pure (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val generate_keypair
-      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
+/// This function implements <strong>Algorithm 14</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
+/// Algorithm 14 is reproduced below:
+/// ```plaintext
+/// Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+/// Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+/// Output: message m ∈ 𝔹^{32}.
+/// c₁ ← c[0 : 32dᵤk]
+/// c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
+/// u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
+/// v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
+/// ŝ ← ByteDecode₁₂(dkₚₖₑ)
+/// w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
+/// m ← ByteEncode₁(Compress₁(w))
+/// return m
+/// ```
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+val decrypt_unpacked
+      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
           usize)
-      (#v_Vector #v_Hasher #v_Scheme: Type0)
-      {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      {| i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme |}
-      (key_generation_seed: t_Slice u8)
-    : Prims.Pure (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (secret_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
+      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
+    : Prims.Pure (t_Array u8 (sz 32))
       (requires
-        Spec.MLKEM.is_rank v_K /\ v_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
-        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
-        v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
-        v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
-        length key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE)
+        Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
+        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
+        v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
+        v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K)
       (ensures
         fun result ->
-          let result:(t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE) = result in
-          let expected, valid = Spec.MLKEM.ind_cpa_generate_keypair v_K key_generation_seed in
-          valid ==> result == expected)
+          let result:t_Array u8 (sz 32) = result in
+          result ==
+          Spec.MLKEM.ind_cpa_decrypt_unpacked v_K
+            ciphertext
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector secret_key.f_secret_as_ntt))
+
+val decrypt
+      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
+          usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (secret_key: t_Slice u8)
+      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
+    : Prims.Pure (t_Array u8 (sz 32))
+      (requires
+        Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+        v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
+        v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K /\
+        v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
+        v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K)
+      (ensures
+        fun result ->
+          let result:t_Array u8 (sz 32) = result in
+          result == Spec.MLKEM.ind_cpa_decrypt v_K secret_key ciphertext)

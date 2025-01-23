@@ -36,34 +36,6 @@ val sample_matrix_A
               Libcrux_ml_kem.Polynomial.to_spec_matrix_t v_A_transpose_future ==
               Spec.MLKEM.matrix_transpose matrix_A))
 
-/// Compute Â ◦ ŝ + ê
-val compute_As_plus_e
-      (v_K: usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      (matrix_A:
-          t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
-      (s_as_ntt error_as_ntt:
-          t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      (requires Spec.MLKEM.is_rank v_K)
-      (ensures
-        fun tt_as_ntt_future ->
-          let tt_as_ntt_future:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-            v_K =
-            tt_as_ntt_future
-          in
-          let open Libcrux_ml_kem.Polynomial in
-          to_spec_vector_t tt_as_ntt_future =
-          Spec.MLKEM.compute_As_plus_e_ntt (to_spec_matrix_t matrix_A)
-            (to_spec_vector_t s_as_ntt)
-            (to_spec_vector_t error_as_ntt) /\
-          (forall (i: nat).
-              i < v v_K ==>
-              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index tt_as_ntt_future
-                    i)))
-
 /// The following functions compute various expressions involving
 /// vectors and matrices. The computation of these expressions has been
 /// abstracted away into these functions in order to save on loop iterations.
@@ -134,3 +106,31 @@ val compute_vector_u
           (forall (i: nat).
               i < v v_K ==>
               Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index res i)))
+
+/// Compute Â ◦ ŝ + ê
+val compute_As_plus_e
+      (v_K: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (matrix_A:
+          t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
+      (s_as_ntt error_as_ntt:
+          t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (requires Spec.MLKEM.is_rank v_K)
+      (ensures
+        fun tt_as_ntt_future ->
+          let tt_as_ntt_future:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+            v_K =
+            tt_as_ntt_future
+          in
+          let open Libcrux_ml_kem.Polynomial in
+          to_spec_vector_t tt_as_ntt_future =
+          Spec.MLKEM.compute_As_plus_e_ntt (to_spec_matrix_t matrix_A)
+            (to_spec_vector_t s_as_ntt)
+            (to_spec_vector_t error_as_ntt) /\
+          (forall (i: nat).
+              i < v v_K ==>
+              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index tt_as_ntt_future
+                    i)))

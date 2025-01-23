@@ -9,26 +9,6 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-let inv_ntt_layer_int_vec_step_reduce
-      (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (a b: v_Vector)
-      (zeta_r: i16)
-     =
-  let a_minus_b:v_Vector =
-    Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector #FStar.Tactics.Typeclasses.solve b a
-  in
-  let a:v_Vector =
-    Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
-      #FStar.Tactics.Typeclasses.solve
-      (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector #FStar.Tactics.Typeclasses.solve a b <: v_Vector
-      )
-  in
-  let b:v_Vector = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe #v_Vector a_minus_b zeta_r in
-  a, b <: (v_Vector & v_Vector)
-
 #push-options "--z3rlimit 200 --ext context_pruning"
 
 let invert_ntt_at_layer_1_
@@ -260,6 +240,26 @@ let invert_ntt_at_layer_3_
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
 #pop-options
+
+let inv_ntt_layer_int_vec_step_reduce
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (a b: v_Vector)
+      (zeta_r: i16)
+     =
+  let a_minus_b:v_Vector =
+    Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector #FStar.Tactics.Typeclasses.solve b a
+  in
+  let a:v_Vector =
+    Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
+      #FStar.Tactics.Typeclasses.solve
+      (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector #FStar.Tactics.Typeclasses.solve a b <: v_Vector
+      )
+  in
+  let b:v_Vector = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe #v_Vector a_minus_b zeta_r in
+  a, b <: (v_Vector & v_Vector)
 
 #push-options "--admit_smt_queries true"
 

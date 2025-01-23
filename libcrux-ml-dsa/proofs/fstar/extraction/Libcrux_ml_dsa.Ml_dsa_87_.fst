@@ -37,6 +37,20 @@ let sign
     context
     randomness
 
+let verify
+      (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (sz 2592))
+      (message context: t_Slice u8)
+      (signature: Libcrux_ml_dsa.Types.t_MLDSASignature (sz 4627))
+     =
+  Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.Ml_dsa_87_.verify (Libcrux_ml_dsa.Types.impl_2__as_ref (
+          sz 2592)
+        verification_key
+      <:
+      t_Array u8 (sz 2592))
+    message
+    context
+    (Libcrux_ml_dsa.Types.impl_4__as_ref (sz 4627) signature <: t_Array u8 (sz 4627))
+
 let sign_pre_hashed_shake128
       (signing_key: Libcrux_ml_dsa.Types.t_MLDSASigningKey (sz 4896))
       (message context: t_Slice u8)
@@ -58,20 +72,6 @@ let sign_pre_hashed_shake128
   in
   let pre_hash_buffer:t_Array u8 (sz 256) = tmp0 in
   out
-
-let verify
-      (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (sz 2592))
-      (message context: t_Slice u8)
-      (signature: Libcrux_ml_dsa.Types.t_MLDSASignature (sz 4627))
-     =
-  Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.Ml_dsa_87_.verify (Libcrux_ml_dsa.Types.impl_2__as_ref (
-          sz 2592)
-        verification_key
-      <:
-      t_Array u8 (sz 2592))
-    message
-    context
-    (Libcrux_ml_dsa.Types.impl_4__as_ref (sz 4627) signature <: t_Array u8 (sz 4627))
 
 let verify_pre_hashed_shake128
       (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (sz 2592))

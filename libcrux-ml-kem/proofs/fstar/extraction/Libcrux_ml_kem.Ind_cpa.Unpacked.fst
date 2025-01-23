@@ -10,24 +10,6 @@ let _ =
   ()
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-assume
-val impl_2':
-    v_K: usize ->
-    #v_Vector: Type0 ->
-    {| i1: Core.Clone.t_Clone v_Vector |} ->
-    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-  -> Core.Clone.t_Clone (t_IndCpaPublicKeyUnpacked v_K v_Vector)
-
-let impl_2
-      (v_K: usize)
-      (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Core.Clone.t_Clone v_Vector)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-     = impl_2' v_K #v_Vector #i1 #i2
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl
       (v_K: usize)
       (#v_Vector: Type0)
@@ -52,6 +34,24 @@ let impl
       <:
       t_IndCpaPrivateKeyUnpacked v_K v_Vector
   }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl_2':
+    v_K: usize ->
+    #v_Vector: Type0 ->
+    {| i1: Core.Clone.t_Clone v_Vector |} ->
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+  -> Core.Clone.t_Clone (t_IndCpaPublicKeyUnpacked v_K v_Vector)
+
+let impl_2
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Core.Clone.t_Clone v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+     = impl_2' v_K #v_Vector #i1 #i2
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_1

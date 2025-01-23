@@ -3,6 +3,15 @@ module Libcrux_ml_dsa.Simd.Traits
 open Core
 open FStar.Mul
 
+let v_COEFFICIENTS_IN_SIMD_UNIT: usize = sz 8
+
+let v_SIMD_UNITS_IN_RING_ELEMENT: usize =
+  Libcrux_ml_dsa.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! v_COEFFICIENTS_IN_SIMD_UNIT
+
+let v_FIELD_MODULUS: i32 = 8380417l
+
+let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58728449uL
+
 class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
@@ -156,12 +165,3 @@ class t_Operations (v_Self: Type0) = {
         (f_invert_ntt_montgomery_pre x0)
         (fun result -> f_invert_ntt_montgomery_post x0 result)
 }
-
-let v_COEFFICIENTS_IN_SIMD_UNIT: usize = sz 8
-
-let v_FIELD_MODULUS: i32 = 8380417l
-
-let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58728449uL
-
-let v_SIMD_UNITS_IN_RING_ELEMENT: usize =
-  Libcrux_ml_dsa.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! v_COEFFICIENTS_IN_SIMD_UNIT

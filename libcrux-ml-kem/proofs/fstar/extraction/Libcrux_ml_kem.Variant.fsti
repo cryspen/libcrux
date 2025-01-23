@@ -9,14 +9,6 @@ let _ =
   let open Libcrux_ml_kem.Hash_functions in
   ()
 
-/// Implements [`Variant`], to perform the ML-KEM-specific actions
-/// during encapsulation and decapsulation.
-/// Specifically,
-/// * during key generation, the seed hash is domain separated (this is a difference from the FIPS 203 IPD and Kyber)
-/// * during encapsulation, the initial randomness is used without prior hashing,
-/// * the derivation of the shared secret does not include a hash of the ML-KEM ciphertext.
-type t_MlKem = | MlKem : t_MlKem
-
 /// This trait collects differences in specification between ML-KEM
 /// (FIPS 203) and the Round 3 CRYSTALS-Kyber submission in the
 /// NIST PQ competition.
@@ -96,6 +88,14 @@ class t_Variant (v_Self: Type0) = {
         (f_cpa_keygen_seed_pre v_K #v_Hasher #i3 x0)
         (fun result -> f_cpa_keygen_seed_post v_K #v_Hasher #i3 x0 result)
 }
+
+/// Implements [`Variant`], to perform the ML-KEM-specific actions
+/// during encapsulation and decapsulation.
+/// Specifically,
+/// * during key generation, the seed hash is domain separated (this is a difference from the FIPS 203 IPD and Kyber)
+/// * during encapsulation, the initial randomness is used without prior hashing,
+/// * the derivation of the shared secret does not include a hash of the ML-KEM ciphertext.
+type t_MlKem = | MlKem : t_MlKem
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl:t_Variant t_MlKem

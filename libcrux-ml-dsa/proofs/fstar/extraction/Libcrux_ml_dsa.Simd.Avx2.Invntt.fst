@@ -68,6 +68,105 @@ let simd_unit_invert_ntt_at_layer_0_
   <:
   (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
 
+let simd_unit_invert_ntt_at_layer_1_
+      (simd_unit0 simd_unit1: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (zeta00 zeta01 zeta10 zeta11: i32)
+     =
+  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 simd_unit0 simd_unit1
+  in
+  let hi_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 simd_unit0 simd_unit1
+  in
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 = hi_values in
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract differences lo_values
+  in
+  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lo_values hi_values
+  in
+  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 = lo_values in
+  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta11
+      zeta11
+      zeta01
+      zeta01
+      zeta10
+      zeta10
+      zeta00
+      zeta00
+  in
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply differences zetas
+  in
+  let a:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+    {
+      Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+      =
+      Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 sums differences
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
+  in
+  let b:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+    {
+      Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+      =
+      Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 sums differences
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
+  in
+  a, b
+  <:
+  (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+
+let simd_unit_invert_ntt_at_layer_2_
+      (simd_unit0 simd_unit1: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (zeta0 zeta1: i32)
+     =
+  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 32l simd_unit0 simd_unit1
+  in
+  let hi_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 49l simd_unit0 simd_unit1
+  in
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 = hi_values in
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract differences lo_values
+  in
+  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lo_values hi_values
+  in
+  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 = lo_values in
+  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta1 zeta1 zeta1 zeta1 zeta0 zeta0 zeta0 zeta0
+  in
+  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply differences zetas
+  in
+  let a:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+    {
+      Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+      =
+      Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 32l sums differences
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
+  in
+  let b:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+    {
+      Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+      =
+      Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 49l sums differences
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
+  in
+  a, b
+  <:
+  (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+
 let invert_ntt_at_layer_0___round
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
       (index: usize)
@@ -157,59 +256,6 @@ let invert_ntt_at_layer_0_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_V
   in
   re
 
-let simd_unit_invert_ntt_at_layer_1_
-      (simd_unit0 simd_unit1: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (zeta00 zeta01 zeta10 zeta11: i32)
-     =
-  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 simd_unit0 simd_unit1
-  in
-  let hi_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 simd_unit0 simd_unit1
-  in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 = hi_values in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract differences lo_values
-  in
-  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lo_values hi_values
-  in
-  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 = lo_values in
-  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta11
-      zeta11
-      zeta01
-      zeta01
-      zeta10
-      zeta10
-      zeta00
-      zeta00
-  in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply differences zetas
-  in
-  let a:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
-    {
-      Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-      =
-      Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 sums differences
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
-  in
-  let b:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
-    {
-      Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-      =
-      Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 sums differences
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
-  in
-  a, b
-  <:
-  (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-
 let invert_ntt_at_layer_1___round
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
       (index: usize)
@@ -285,52 +331,6 @@ let invert_ntt_at_layer_1_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_V
     invert_ntt_at_layer_1___round re (sz 30) (-3041255l) (-3677745l) (-1528703l) (-3930395l)
   in
   re
-
-let simd_unit_invert_ntt_at_layer_2_
-      (simd_unit0 simd_unit1: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (zeta0 zeta1: i32)
-     =
-  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 32l simd_unit0 simd_unit1
-  in
-  let hi_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 49l simd_unit0 simd_unit1
-  in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 = hi_values in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract differences lo_values
-  in
-  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lo_values hi_values
-  in
-  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 = lo_values in
-  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta1 zeta1 zeta1 zeta1 zeta0 zeta0 zeta0 zeta0
-  in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply differences zetas
-  in
-  let a:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
-    {
-      Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-      =
-      Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 32l sums differences
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
-  in
-  let b:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
-    {
-      Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-      =
-      Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 49l sums differences
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
-  in
-  a, b
-  <:
-  (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
 
 let invert_ntt_at_layer_2___round
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))

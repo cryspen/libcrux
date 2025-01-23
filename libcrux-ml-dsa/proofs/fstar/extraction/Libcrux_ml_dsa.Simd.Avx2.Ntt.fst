@@ -3,98 +3,6 @@ module Libcrux_ml_dsa.Simd.Avx2.Ntt
 open Core
 open FStar.Mul
 
-let ntt_at_layer_7_and_6___mul
-      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
-      (index: usize)
-      (zeta: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (step_by: usize)
-      (field_modulus inverse_of_modulus_mod_montgomery_r: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-     =
-  let prod02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 (re.[ index +! step_by <: usize ]
-        <:
-        Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-      zeta
-  in
-  let prod13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32
-          245l
-          (re.[ index +! step_by <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-            .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 245l zeta
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  let k02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod02 inverse_of_modulus_mod_montgomery_r
-  in
-  let k13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod13 inverse_of_modulus_mod_montgomery_r
-  in
-  let c02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k02 field_modulus
-  in
-  let c13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k13 field_modulus
-  in
-  let res02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod02 c02
-  in
-  let res13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod13 c13
-  in
-  let res02_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 245l res02
-  in
-  let t:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 170l res02_shifted res13
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
-      (index +! step_by <: usize)
-      (re.[ index ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
-      (index +! step_by <: usize)
-      ({
-          (re.[ index +! step_by <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) with
-          Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-          =
-          Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract (re.[ index +! step_by <: usize ]
-              <:
-              Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-              .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-            t
-          <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256
-        }
-        <:
-        Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
-      index
-      ({
-          (re.[ index ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) with
-          Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-          =
-          Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add (re.[ index ]
-              <:
-              Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-              .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-            t
-          <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256
-        }
-        <:
-        Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-  in
-  re
-
 let butterfly_2_
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
       (index: usize)
@@ -473,6 +381,98 @@ let ntt_at_layer_2_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (
   in
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
     butterfly_8_ re (sz 30) 2071892l (-2797779l)
+  in
+  re
+
+let ntt_at_layer_7_and_6___mul
+      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
+      (index: usize)
+      (zeta: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (step_by: usize)
+      (field_modulus inverse_of_modulus_mod_montgomery_r: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+     =
+  let prod02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 (re.[ index +! step_by <: usize ]
+        <:
+        Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+      zeta
+  in
+  let prod13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32
+          245l
+          (re.[ index +! step_by <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+            .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 245l zeta
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let k02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod02 inverse_of_modulus_mod_montgomery_r
+  in
+  let k13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod13 inverse_of_modulus_mod_montgomery_r
+  in
+  let c02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k02 field_modulus
+  in
+  let c13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k13 field_modulus
+  in
+  let res02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod02 c02
+  in
+  let res13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod13 c13
+  in
+  let res02_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 245l res02
+  in
+  let t:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 170l res02_shifted res13
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+      (index +! step_by <: usize)
+      (re.[ index ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+      (index +! step_by <: usize)
+      ({
+          (re.[ index +! step_by <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) with
+          Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+          =
+          Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract (re.[ index +! step_by <: usize ]
+              <:
+              Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+              .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+            t
+          <:
+          Libcrux_intrinsics.Avx2_extract.t_Vec256
+        }
+        <:
+        Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+      index
+      ({
+          (re.[ index ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) with
+          Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+          =
+          Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add (re.[ index ]
+              <:
+              Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+              .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+            t
+          <:
+          Libcrux_intrinsics.Avx2_extract.t_Vec256
+        }
+        <:
+        Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
   in
   re
 

@@ -3,6 +3,67 @@ module Libcrux_ml_dsa.Simd.Portable.Encoding.T1
 open Core
 open FStar.Mul
 
+let serialize
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (serialized: t_Slice u8)
+     =
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        Hax_lib.v_assert ((Core.Slice.impl__len #u8 serialized <: usize) =. sz 10 <: bool)
+      in
+      ()
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 4)
+      (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
+      (fun serialized temp_1_ ->
+          let serialized:t_Slice u8 = serialized in
+          let _:usize = temp_1_ in
+          true)
+      serialized
+      (fun serialized temp_1_ ->
+          let serialized:t_Slice u8 = serialized in
+          let i, coefficients:(usize & t_Slice i32) = temp_1_ in
+          let serialized:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+              (sz 5 *! i <: usize)
+              (cast ((coefficients.[ sz 0 ] <: i32) &. 255l <: i32) <: u8)
+          in
+          let serialized:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+              ((sz 5 *! i <: usize) +! sz 1 <: usize)
+              (((cast ((coefficients.[ sz 1 ] <: i32) &. 63l <: i32) <: u8) <<! 2l <: u8) |.
+                (cast (((coefficients.[ sz 0 ] <: i32) >>! 8l <: i32) &. 3l <: i32) <: u8)
+                <:
+                u8)
+          in
+          let serialized:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+              ((sz 5 *! i <: usize) +! sz 2 <: usize)
+              (((cast ((coefficients.[ sz 2 ] <: i32) &. 15l <: i32) <: u8) <<! 4l <: u8) |.
+                (cast (((coefficients.[ sz 1 ] <: i32) >>! 6l <: i32) &. 15l <: i32) <: u8)
+                <:
+                u8)
+          in
+          let serialized:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+              ((sz 5 *! i <: usize) +! sz 3 <: usize)
+              (((cast ((coefficients.[ sz 3 ] <: i32) &. 3l <: i32) <: u8) <<! 6l <: u8) |.
+                (cast (((coefficients.[ sz 2 ] <: i32) >>! 4l <: i32) &. 63l <: i32) <: u8)
+                <:
+                u8)
+          in
+          let serialized:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+              ((sz 5 *! i <: usize) +! sz 4 <: usize)
+              (cast (((coefficients.[ sz 3 ] <: i32) >>! 2l <: i32) &. 255l <: i32) <: u8)
+          in
+          serialized)
+  in
+  serialized
+
 let deserialize
       (serialized: t_Slice u8)
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
@@ -87,64 +148,3 @@ let deserialize
           simd_unit)
   in
   simd_unit
-
-let serialize
-      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-      (serialized: t_Slice u8)
-     =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        Hax_lib.v_assert ((Core.Slice.impl__len #u8 serialized <: usize) =. sz 10 <: bool)
-      in
-      ()
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (sz 4)
-      (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
-      (fun serialized temp_1_ ->
-          let serialized:t_Slice u8 = serialized in
-          let _:usize = temp_1_ in
-          true)
-      serialized
-      (fun serialized temp_1_ ->
-          let serialized:t_Slice u8 = serialized in
-          let i, coefficients:(usize & t_Slice i32) = temp_1_ in
-          let serialized:t_Slice u8 =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              (sz 5 *! i <: usize)
-              (cast ((coefficients.[ sz 0 ] <: i32) &. 255l <: i32) <: u8)
-          in
-          let serialized:t_Slice u8 =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 5 *! i <: usize) +! sz 1 <: usize)
-              (((cast ((coefficients.[ sz 1 ] <: i32) &. 63l <: i32) <: u8) <<! 2l <: u8) |.
-                (cast (((coefficients.[ sz 0 ] <: i32) >>! 8l <: i32) &. 3l <: i32) <: u8)
-                <:
-                u8)
-          in
-          let serialized:t_Slice u8 =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 5 *! i <: usize) +! sz 2 <: usize)
-              (((cast ((coefficients.[ sz 2 ] <: i32) &. 15l <: i32) <: u8) <<! 4l <: u8) |.
-                (cast (((coefficients.[ sz 1 ] <: i32) >>! 6l <: i32) &. 15l <: i32) <: u8)
-                <:
-                u8)
-          in
-          let serialized:t_Slice u8 =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 5 *! i <: usize) +! sz 3 <: usize)
-              (((cast ((coefficients.[ sz 3 ] <: i32) &. 3l <: i32) <: u8) <<! 6l <: u8) |.
-                (cast (((coefficients.[ sz 2 ] <: i32) >>! 4l <: i32) &. 63l <: i32) <: u8)
-                <:
-                u8)
-          in
-          let serialized:t_Slice u8 =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 5 *! i <: usize) +! sz 4 <: usize)
-              (cast (((coefficients.[ sz 3 ] <: i32) >>! 2l <: i32) &. 255l <: i32) <: u8)
-          in
-          serialized)
-  in
-  serialized

@@ -29,6 +29,58 @@ let add (lhs rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
   in
   lhs
 
+let sub (lhs rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
+  let lhs:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      lhs with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 lhs.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+        rhs.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  let lhs:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      lhs with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 lhs
+          .Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+        rhs.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  lhs
+
+let multiply_by_constant (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) =
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vmulq_n_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+        c
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vmulq_n_s16 v
+          .Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+        c
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  v
+
 let bitwise_and_with_constant (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) =
   let c:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 c in
   let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
@@ -48,6 +100,31 @@ let bitwise_and_with_constant (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD1
       =
       Libcrux_intrinsics.Arm64_extract.v__vandq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
         c
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  v
+
+let shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 v_SHIFT_BY
+        v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 v_SHIFT_BY
+        v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
     }
     <:
     Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
@@ -93,83 +170,6 @@ let cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vect
     Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
   in
   v
-
-let multiply_by_constant (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) =
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vmulq_n_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-        c
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vmulq_n_s16 v
-          .Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-        c
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  v
-
-let shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 v_SHIFT_BY
-        v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 v_SHIFT_BY
-        v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  v
-
-let sub (lhs rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
-  let lhs:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      lhs with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 lhs.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-        rhs.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  let lhs:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      lhs with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 lhs
-          .Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-        rhs.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  lhs
 
 let barrett_reduce_int16x8_t (v: u8) =
   let adder:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 1024s in
@@ -230,6 +230,14 @@ let montgomery_multiply_by_constant_int16x8_t (v: u8) (c: i16) =
   in
   montgomery_reduce_int16x8_t vv_low vv_high
 
+let montgomery_multiply_int16x8_t (v c: u8) =
+  let vv_low:u8 = Libcrux_intrinsics.Arm64_extract.v__vmulq_s16 v c in
+  let vv_high:u8 =
+    Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 1l
+      (Libcrux_intrinsics.Arm64_extract.v__vqdmulhq_s16 v c <: u8)
+  in
+  montgomery_reduce_int16x8_t vv_low vv_high
+
 let montgomery_multiply_by_constant
       (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (c: i16)
@@ -255,11 +263,3 @@ let montgomery_multiply_by_constant
     Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
   in
   v
-
-let montgomery_multiply_int16x8_t (v c: u8) =
-  let vv_low:u8 = Libcrux_intrinsics.Arm64_extract.v__vmulq_s16 v c in
-  let vv_high:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 1l
-      (Libcrux_intrinsics.Arm64_extract.v__vqdmulhq_s16 v c <: u8)
-  in
-  montgomery_reduce_int16x8_t vv_low vv_high

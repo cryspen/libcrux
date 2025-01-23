@@ -3,25 +3,25 @@ module Libcrux_ml_dsa.Constants.Ml_dsa_44_
 open Core
 open FStar.Mul
 
-let v_BITS_PER_COMMITMENT_COEFFICIENT: usize = sz 6
-
-let v_BITS_PER_ERROR_COEFFICIENT: usize = sz 3
-
-let v_BITS_PER_GAMMA1_COEFFICIENT: usize = sz 18
+let v_ROWS_IN_A: usize = sz 4
 
 let v_COLUMNS_IN_A: usize = sz 4
-
-let v_COMMITMENT_HASH_SIZE: usize = sz 32
 
 let v_ETA: Libcrux_ml_dsa.Constants.t_Eta =
   Libcrux_ml_dsa.Constants.Eta_Two <: Libcrux_ml_dsa.Constants.t_Eta
 
+let v_BITS_PER_ERROR_COEFFICIENT: usize = sz 3
+
 let v_GAMMA1_EXPONENT: usize = sz 17
+
+let v_GAMMA2: i32 = (Libcrux_ml_dsa.Constants.v_FIELD_MODULUS -! 1l <: i32) /! 88l
+
+let v_BITS_PER_GAMMA1_COEFFICIENT: usize = sz 18
 
 let v_MAX_ONES_IN_HINT: usize = sz 80
 
 let v_ONES_IN_VERIFIER_CHALLENGE: usize = sz 39
 
-let v_ROWS_IN_A: usize = sz 4
+let v_COMMITMENT_HASH_SIZE: usize = sz 32
 
-let v_GAMMA2: i32 = (Libcrux_ml_dsa.Constants.v_FIELD_MODULUS -! 1l <: i32) /! 88l
+let v_BITS_PER_COMMITMENT_COEFFICIENT: usize = sz 6

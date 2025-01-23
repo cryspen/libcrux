@@ -44,8 +44,8 @@ val impl:Core.Clone.t_Clone t_Feature
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl_1:Core.Marker.t_Copy t_Feature
 
-/// Initialize CPU detection.
-val init: Prims.unit -> Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
-
 /// Check hardware [`Feature`] support.
 val supported (feature: t_Feature) : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
+/// Initialize CPU detection.
+val init: Prims.unit -> Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)

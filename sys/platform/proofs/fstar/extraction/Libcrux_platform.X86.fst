@@ -50,11 +50,11 @@ val impl_1': Core.Marker.t_Copy t_Feature
 let impl_1 = impl_1'
 
 assume
-val init': Prims.unit -> Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
-
-let init = init'
-
-assume
 val supported': feature: t_Feature -> Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 let supported = supported'
+
+assume
+val init': Prims.unit -> Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
+
+let init = init'

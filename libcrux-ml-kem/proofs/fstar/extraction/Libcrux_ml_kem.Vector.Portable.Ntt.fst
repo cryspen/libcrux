@@ -3,6 +3,194 @@ module Libcrux_ml_kem.Vector.Portable.Ntt
 open Core
 open FStar.Mul
 
+let ntt_step
+      (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (zeta: i16)
+      (i j: usize)
+     =
+  let t:i16 =
+    Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_fe_by_fer (vec
+          .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ]
+        <:
+        i16)
+      zeta
+  in
+  let _:Prims.unit =
+    assert (v t % 3329 == ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329))
+  in
+  let a_minus_t:i16 =
+    (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) -! t
+  in
+  let _:Prims.unit =
+    calc ( == ) {
+      v a_minus_t % 3329;
+      ( == ) { () }
+      (v (Seq.index vec.f_elements (v i)) - v t) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_sub_distr (v (Seq.index vec.f_elements (v i))) (v t) 3329 }
+      (v (Seq.index vec.f_elements (v i)) - (v t % 3329)) % 3329;
+      ( == ) { () }
+      (v (Seq.index vec.f_elements (v i)) -
+        ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329)) %
+      3329;
+      ( == ) { Math.Lemmas.lemma_mod_sub_distr (v (Seq.index vec.f_elements (v i)))
+        (v (Seq.index vec.f_elements (v j)) * v zeta * 169)
+        3329 }
+      (v (Seq.index vec.f_elements (v i)) - (v (Seq.index vec.f_elements (v j)) * v zeta * 169)) %
+      3329;
+    }
+  in
+  let a_plus_t:i16 =
+    (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) +! t
+  in
+  let _:Prims.unit =
+    calc ( == ) {
+      v a_plus_t % 3329;
+      ( == ) { () }
+      (v (Seq.index vec.f_elements (v i)) + v t) % 3329;
+      ( == ) { Math.Lemmas.lemma_mod_add_distr (v (Seq.index vec.f_elements (v i))) (v t) 3329 }
+      (v (Seq.index vec.f_elements (v i)) + (v t % 3329)) % 3329;
+      ( == ) { () }
+      (v (Seq.index vec.f_elements (v i)) +
+        ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329)) %
+      3329;
+      ( == ) { Math.Lemmas.lemma_mod_add_distr (v (Seq.index vec.f_elements (v i)))
+        (v (Seq.index vec.f_elements (v j)) * v zeta * 169)
+        3329 }
+      (v (Seq.index vec.f_elements (v i)) + (v (Seq.index vec.f_elements (v j)) * v zeta * 169)) %
+      3329;
+    }
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    {
+      vec with
+      Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
+          .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+        j
+        a_minus_t
+    }
+    <:
+    Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    {
+      vec with
+      Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
+          .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+        i
+        a_plus_t
+    }
+    <:
+    Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+  in
+  let _:Prims.unit =
+    assert (Seq.index vec.f_elements (v i) == a_plus_t);
+    assert (Seq.index vec.f_elements (v j) == a_minus_t)
+  in
+  vec
+
+#push-options "--z3rlimit 100"
+
+let ntt_layer_1_step
+      (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (zeta0 zeta1 zeta2 zeta3: i16)
+     =
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta0 (sz 0) (sz 2)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta0 (sz 1) (sz 3)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta1 (sz 4) (sz 6)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta1 (sz 5) (sz 7)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta2 (sz 8) (sz 10)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta2 (sz 9) (sz 11)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta3 (sz 12) (sz 14)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta3 (sz 13) (sz 15)
+  in
+  vec
+
+#pop-options
+
+#push-options "--z3rlimit 100"
+
+let ntt_layer_2_step
+      (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (zeta0 zeta1: i16)
+     =
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta0 (sz 0) (sz 4)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta0 (sz 1) (sz 5)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta0 (sz 2) (sz 6)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta0 (sz 3) (sz 7)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta1 (sz 8) (sz 12)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta1 (sz 9) (sz 13)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta1 (sz 10) (sz 14)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta1 (sz 11) (sz 15)
+  in
+  vec
+
+#pop-options
+
+#push-options "--z3rlimit 100"
+
+let ntt_layer_3_step (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16) =
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta (sz 0) (sz 8)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta (sz 1) (sz 9)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta (sz 2) (sz 10)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta (sz 3) (sz 11)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta (sz 4) (sz 12)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta (sz 5) (sz 13)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta (sz 6) (sz 14)
+  in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    ntt_step vec zeta (sz 7) (sz 15)
+  in
+  vec
+
+#pop-options
+
 let inv_ntt_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta: i16)
@@ -319,194 +507,6 @@ let ntt_multiply_binomials
   in
   let _:Prims.unit = admit () (* Panic freedom *) in
   out
-
-#pop-options
-
-let ntt_step
-      (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (zeta: i16)
-      (i j: usize)
-     =
-  let t:i16 =
-    Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_fe_by_fer (vec
-          .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ]
-        <:
-        i16)
-      zeta
-  in
-  let _:Prims.unit =
-    assert (v t % 3329 == ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329))
-  in
-  let a_minus_t:i16 =
-    (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) -! t
-  in
-  let _:Prims.unit =
-    calc ( == ) {
-      v a_minus_t % 3329;
-      ( == ) { () }
-      (v (Seq.index vec.f_elements (v i)) - v t) % 3329;
-      ( == ) { Math.Lemmas.lemma_mod_sub_distr (v (Seq.index vec.f_elements (v i))) (v t) 3329 }
-      (v (Seq.index vec.f_elements (v i)) - (v t % 3329)) % 3329;
-      ( == ) { () }
-      (v (Seq.index vec.f_elements (v i)) -
-        ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329)) %
-      3329;
-      ( == ) { Math.Lemmas.lemma_mod_sub_distr (v (Seq.index vec.f_elements (v i)))
-        (v (Seq.index vec.f_elements (v j)) * v zeta * 169)
-        3329 }
-      (v (Seq.index vec.f_elements (v i)) - (v (Seq.index vec.f_elements (v j)) * v zeta * 169)) %
-      3329;
-    }
-  in
-  let a_plus_t:i16 =
-    (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) +! t
-  in
-  let _:Prims.unit =
-    calc ( == ) {
-      v a_plus_t % 3329;
-      ( == ) { () }
-      (v (Seq.index vec.f_elements (v i)) + v t) % 3329;
-      ( == ) { Math.Lemmas.lemma_mod_add_distr (v (Seq.index vec.f_elements (v i))) (v t) 3329 }
-      (v (Seq.index vec.f_elements (v i)) + (v t % 3329)) % 3329;
-      ( == ) { () }
-      (v (Seq.index vec.f_elements (v i)) +
-        ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329)) %
-      3329;
-      ( == ) { Math.Lemmas.lemma_mod_add_distr (v (Seq.index vec.f_elements (v i)))
-        (v (Seq.index vec.f_elements (v j)) * v zeta * 169)
-        3329 }
-      (v (Seq.index vec.f_elements (v i)) + (v (Seq.index vec.f_elements (v j)) * v zeta * 169)) %
-      3329;
-    }
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    {
-      vec with
-      Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
-          .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-        j
-        a_minus_t
-    }
-    <:
-    Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    {
-      vec with
-      Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
-          .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-        i
-        a_plus_t
-    }
-    <:
-    Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-  in
-  let _:Prims.unit =
-    assert (Seq.index vec.f_elements (v i) == a_plus_t);
-    assert (Seq.index vec.f_elements (v j) == a_minus_t)
-  in
-  vec
-
-#push-options "--z3rlimit 100"
-
-let ntt_layer_1_step
-      (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (zeta0 zeta1 zeta2 zeta3: i16)
-     =
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta0 (sz 0) (sz 2)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta0 (sz 1) (sz 3)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta1 (sz 4) (sz 6)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta1 (sz 5) (sz 7)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta2 (sz 8) (sz 10)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta2 (sz 9) (sz 11)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta3 (sz 12) (sz 14)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta3 (sz 13) (sz 15)
-  in
-  vec
-
-#pop-options
-
-#push-options "--z3rlimit 100"
-
-let ntt_layer_2_step
-      (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (zeta0 zeta1: i16)
-     =
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta0 (sz 0) (sz 4)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta0 (sz 1) (sz 5)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta0 (sz 2) (sz 6)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta0 (sz 3) (sz 7)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta1 (sz 8) (sz 12)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta1 (sz 9) (sz 13)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta1 (sz 10) (sz 14)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta1 (sz 11) (sz 15)
-  in
-  vec
-
-#pop-options
-
-#push-options "--z3rlimit 100"
-
-let ntt_layer_3_step (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (zeta: i16) =
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (sz 0) (sz 8)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (sz 1) (sz 9)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (sz 2) (sz 10)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (sz 3) (sz 11)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (sz 4) (sz 12)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (sz 5) (sz 13)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (sz 6) (sz 14)
-  in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_step vec zeta (sz 7) (sz 15)
-  in
-  vec
 
 #pop-options
 
