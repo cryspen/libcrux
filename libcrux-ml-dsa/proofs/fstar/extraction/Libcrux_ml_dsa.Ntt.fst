@@ -9,27 +9,6 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let invert_ntt_montgomery
-      (#v_SIMDUnit: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
-  let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-    {
-      re with
-      Libcrux_ml_dsa.Polynomial.f_simd_units
-      =
-      Libcrux_ml_dsa.Simd.Traits.f_invert_ntt_montgomery #v_SIMDUnit
-        #FStar.Tactics.Typeclasses.solve
-        re.Libcrux_ml_dsa.Polynomial.f_simd_units
-    }
-    <:
-    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit
-  in
-  re
-
 let ntt
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -43,6 +22,27 @@ let ntt
       Libcrux_ml_dsa.Polynomial.f_simd_units
       =
       Libcrux_ml_dsa.Simd.Traits.f_ntt #v_SIMDUnit
+        #FStar.Tactics.Typeclasses.solve
+        re.Libcrux_ml_dsa.Polynomial.f_simd_units
+    }
+    <:
+    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit
+  in
+  re
+
+let invert_ntt_montgomery
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+     =
+  let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
+    {
+      re with
+      Libcrux_ml_dsa.Polynomial.f_simd_units
+      =
+      Libcrux_ml_dsa.Simd.Traits.f_invert_ntt_montgomery #v_SIMDUnit
         #FStar.Tactics.Typeclasses.solve
         re.Libcrux_ml_dsa.Polynomial.f_simd_units
     }

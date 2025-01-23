@@ -3,97 +3,6 @@ module Libcrux_ml_dsa.Simd.Avx2.Encoding.Error
 open Core
 open FStar.Mul
 
-let deserialize_to_unsigned_when_eta_is_2_ (bytes: t_Slice u8) =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        Hax_lib.v_assert ((Core.Slice.impl__len #u8 bytes <: usize) =. sz 3 <: bool)
-      in
-      ()
-  in
-  let bytes_in_simd_unit:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (cast (bytes.[ sz 2 ] <: u8) <: i32)
-      (cast (bytes.[ sz 2 ] <: u8) <: i32)
-      (((cast (bytes.[ sz 2 ] <: u8) <: i32) <<! 8l <: i32) |. (cast (bytes.[ sz 1 ] <: u8) <: i32)
-        <:
-        i32)
-      (cast (bytes.[ sz 1 ] <: u8) <: i32)
-      (cast (bytes.[ sz 1 ] <: u8) <: i32)
-      (((cast (bytes.[ sz 1 ] <: u8) <: i32) <<! 8l <: i32) |. (cast (bytes.[ sz 0 ] <: u8) <: i32)
-        <:
-        i32)
-      (cast (bytes.[ sz 0 ] <: u8) <: i32)
-      (cast (bytes.[ sz 0 ] <: u8) <: i32)
-  in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 bytes_in_simd_unit
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 5l 2l 7l 4l 1l 6l 3l 0l
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
-    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_to_unsigned_when_eta_is_2___COEFFICIENT_MASK
-
-      <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
-
-let deserialize_to_unsigned_when_eta_is_4_ (bytes: t_Slice u8) =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        Hax_lib.v_assert ((Core.Slice.impl__len #u8 bytes <: usize) =. sz 4 <: bool)
-      in
-      ()
-  in
-  let bytes_in_simd_unit:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (cast (bytes.[ sz 3 ] <: u8) <: i32)
-      (cast (bytes.[ sz 3 ] <: u8) <: i32)
-      (cast (bytes.[ sz 2 ] <: u8) <: i32)
-      (cast (bytes.[ sz 2 ] <: u8) <: i32)
-      (cast (bytes.[ sz 1 ] <: u8) <: i32)
-      (cast (bytes.[ sz 1 ] <: u8) <: i32)
-      (cast (bytes.[ sz 0 ] <: u8) <: i32)
-      (cast (bytes.[ sz 0 ] <: u8) <: i32)
-  in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 bytes_in_simd_unit
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 4l 0l 4l 0l 4l 0l 4l 0l
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
-    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_to_unsigned_when_eta_is_4___COEFFICIENT_MASK
-
-      <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
-
-let deserialize_to_unsigned (eta: Libcrux_ml_dsa.Constants.t_Eta) (serialized: t_Slice u8) =
-  match eta <: Libcrux_ml_dsa.Constants.t_Eta with
-  | Libcrux_ml_dsa.Constants.Eta_Two  -> deserialize_to_unsigned_when_eta_is_2_ serialized
-  | Libcrux_ml_dsa.Constants.Eta_Four  -> deserialize_to_unsigned_when_eta_is_4_ serialized
-
-let deserialize
-      (eta: Libcrux_ml_dsa.Constants.t_Eta)
-      (serialized: t_Slice u8)
-      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-     =
-  let unsigned:Libcrux_intrinsics.Avx2_extract.t_Vec256 = deserialize_to_unsigned eta serialized in
-  let eta:i32 =
-    match eta <: Libcrux_ml_dsa.Constants.t_Eta with
-    | Libcrux_ml_dsa.Constants.Eta_Two  -> 2l
-    | Libcrux_ml_dsa.Constants.Eta_Four  -> 4l
-  in
-  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
-          eta
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      unsigned
-  in
-  out
-
 let serialize_when_eta_is_2_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8) =
   let serialized:t_Array u8 (sz 16) = Rust_primitives.Hax.repeat 0uy (sz 16) in
   let simd_unit_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -246,3 +155,94 @@ let serialize
     | Libcrux_ml_dsa.Constants.Eta_Four  -> serialize_when_eta_is_4_ simd_unit serialized
   in
   serialized
+
+let deserialize_to_unsigned_when_eta_is_2_ (bytes: t_Slice u8) =
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        Hax_lib.v_assert ((Core.Slice.impl__len #u8 bytes <: usize) =. sz 3 <: bool)
+      in
+      ()
+  in
+  let bytes_in_simd_unit:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (cast (bytes.[ sz 2 ] <: u8) <: i32)
+      (cast (bytes.[ sz 2 ] <: u8) <: i32)
+      (((cast (bytes.[ sz 2 ] <: u8) <: i32) <<! 8l <: i32) |. (cast (bytes.[ sz 1 ] <: u8) <: i32)
+        <:
+        i32)
+      (cast (bytes.[ sz 1 ] <: u8) <: i32)
+      (cast (bytes.[ sz 1 ] <: u8) <: i32)
+      (((cast (bytes.[ sz 1 ] <: u8) <: i32) <<! 8l <: i32) |. (cast (bytes.[ sz 0 ] <: u8) <: i32)
+        <:
+        i32)
+      (cast (bytes.[ sz 0 ] <: u8) <: i32)
+      (cast (bytes.[ sz 0 ] <: u8) <: i32)
+  in
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 bytes_in_simd_unit
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 5l 2l 7l 4l 1l 6l 3l 0l
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
+    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_to_unsigned_when_eta_is_2___COEFFICIENT_MASK
+
+      <:
+      Libcrux_intrinsics.Avx2_extract.t_Vec256)
+
+let deserialize_to_unsigned_when_eta_is_4_ (bytes: t_Slice u8) =
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        Hax_lib.v_assert ((Core.Slice.impl__len #u8 bytes <: usize) =. sz 4 <: bool)
+      in
+      ()
+  in
+  let bytes_in_simd_unit:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (cast (bytes.[ sz 3 ] <: u8) <: i32)
+      (cast (bytes.[ sz 3 ] <: u8) <: i32)
+      (cast (bytes.[ sz 2 ] <: u8) <: i32)
+      (cast (bytes.[ sz 2 ] <: u8) <: i32)
+      (cast (bytes.[ sz 1 ] <: u8) <: i32)
+      (cast (bytes.[ sz 1 ] <: u8) <: i32)
+      (cast (bytes.[ sz 0 ] <: u8) <: i32)
+      (cast (bytes.[ sz 0 ] <: u8) <: i32)
+  in
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 bytes_in_simd_unit
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 4l 0l 4l 0l 4l 0l 4l 0l
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
+    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_to_unsigned_when_eta_is_4___COEFFICIENT_MASK
+
+      <:
+      Libcrux_intrinsics.Avx2_extract.t_Vec256)
+
+let deserialize_to_unsigned (eta: Libcrux_ml_dsa.Constants.t_Eta) (serialized: t_Slice u8) =
+  match eta <: Libcrux_ml_dsa.Constants.t_Eta with
+  | Libcrux_ml_dsa.Constants.Eta_Two  -> deserialize_to_unsigned_when_eta_is_2_ serialized
+  | Libcrux_ml_dsa.Constants.Eta_Four  -> deserialize_to_unsigned_when_eta_is_4_ serialized
+
+let deserialize
+      (eta: Libcrux_ml_dsa.Constants.t_Eta)
+      (serialized: t_Slice u8)
+      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+     =
+  let unsigned:Libcrux_intrinsics.Avx2_extract.t_Vec256 = deserialize_to_unsigned eta serialized in
+  let eta:i32 =
+    match eta <: Libcrux_ml_dsa.Constants.t_Eta with
+    | Libcrux_ml_dsa.Constants.Eta_Two  -> 2l
+    | Libcrux_ml_dsa.Constants.Eta_Four  -> 4l
+  in
+  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
+          eta
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      unsigned
+  in
+  out

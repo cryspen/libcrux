@@ -8,9 +8,6 @@ open FStar.Mul
 /// All other functions don\'t actually use any members.
 val t_PortableHash (v_K: usize) : eqtype
 
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K) v_K
-
 val v_G (input: t_Slice u8)
     : Prims.Pure (t_Array u8 (sz 64))
       Prims.l_True
@@ -55,3 +52,6 @@ val shake128_squeeze_next_block (v_K: usize) (st: t_PortableHash v_K)
     : Prims.Pure (t_PortableHash v_K & t_Array (t_Array u8 (sz 168)) v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K) v_K
