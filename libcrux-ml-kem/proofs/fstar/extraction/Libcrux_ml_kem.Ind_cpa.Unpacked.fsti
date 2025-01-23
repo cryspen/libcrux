@@ -14,6 +14,13 @@ type t_IndCpaPrivateKeyUnpacked
   (v_K: usize) (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
   = { f_secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K }
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl
+      (v_K: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    : Core.Default.t_Default (t_IndCpaPrivateKeyUnpacked v_K v_Vector)
+
 /// An unpacked ML-KEM IND-CPA Private Key
 type t_IndCpaPublicKeyUnpacked
   (v_K: usize) (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -30,13 +37,6 @@ val impl_2
       {| i1: Core.Clone.t_Clone v_Vector |}
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     : Core.Clone.t_Clone (t_IndCpaPublicKeyUnpacked v_K v_Vector)
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl
-      (v_K: usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    : Core.Default.t_Default (t_IndCpaPrivateKeyUnpacked v_K v_Vector)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl_1

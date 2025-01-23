@@ -9,6 +9,122 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
+let serialize
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (commitment_hash: t_Slice u8)
+      (signer_response: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+      (hint: t_Slice (t_Array i32 (sz 256)))
+      (commitment_hash_size columns_in_a rows_in_a gamma1_exponent gamma1_ring_element_size max_ones_in_hint:
+          usize)
+      (signature: t_Slice u8)
+     =
+  let offset:usize = sz 0 in
+  let signature:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range signature
+      ({
+          Core.Ops.Range.f_start = offset;
+          Core.Ops.Range.f_end = offset +! commitment_hash_size <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice #u8
+          (signature.[ {
+                Core.Ops.Range.f_start = offset;
+                Core.Ops.Range.f_end = offset +! commitment_hash_size <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          commitment_hash
+        <:
+        t_Slice u8)
+  in
+  let offset:usize = offset +! commitment_hash_size in
+  let offset, signature:(usize & t_Slice u8) =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      columns_in_a
+      (fun temp_0_ temp_1_ ->
+          let offset, signature:(usize & t_Slice u8) = temp_0_ in
+          let _:usize = temp_1_ in
+          true)
+      (offset, signature <: (usize & t_Slice u8))
+      (fun temp_0_ i ->
+          let offset, signature:(usize & t_Slice u8) = temp_0_ in
+          let i:usize = i in
+          let signature:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range signature
+              ({
+                  Core.Ops.Range.f_start = offset;
+                  Core.Ops.Range.f_end = offset +! gamma1_ring_element_size <: usize
+                }
+                <:
+                Core.Ops.Range.t_Range usize)
+              (Libcrux_ml_dsa.Encoding.Gamma1.serialize #v_SIMDUnit
+                  (signer_response.[ i ]
+                    <:
+                    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+                  (signature.[ {
+                        Core.Ops.Range.f_start = offset;
+                        Core.Ops.Range.f_end = offset +! gamma1_ring_element_size <: usize
+                      }
+                      <:
+                      Core.Ops.Range.t_Range usize ]
+                    <:
+                    t_Slice u8)
+                  gamma1_exponent
+                <:
+                t_Slice u8)
+          in
+          let offset:usize = offset +! gamma1_ring_element_size in
+          offset, signature <: (usize & t_Slice u8))
+  in
+  let true_hints_seen:usize = sz 0 in
+  let signature, true_hints_seen:(t_Slice u8 & usize) =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      rows_in_a
+      (fun temp_0_ temp_1_ ->
+          let signature, true_hints_seen:(t_Slice u8 & usize) = temp_0_ in
+          let _:usize = temp_1_ in
+          true)
+      (signature, true_hints_seen <: (t_Slice u8 & usize))
+      (fun temp_0_ i ->
+          let signature, true_hints_seen:(t_Slice u8 & usize) = temp_0_ in
+          let i:usize = i in
+          let signature, true_hints_seen:(t_Slice u8 & usize) =
+            Rust_primitives.Hax.Folds.fold_range (sz 0)
+              (Core.Slice.impl__len #i32 (hint.[ i ] <: t_Slice i32) <: usize)
+              (fun temp_0_ temp_1_ ->
+                  let signature, true_hints_seen:(t_Slice u8 & usize) = temp_0_ in
+                  let _:usize = temp_1_ in
+                  true)
+              (signature, true_hints_seen <: (t_Slice u8 & usize))
+              (fun temp_0_ j ->
+                  let signature, true_hints_seen:(t_Slice u8 & usize) = temp_0_ in
+                  let j:usize = j in
+                  if ((hint.[ i ] <: t_Array i32 (sz 256)).[ j ] <: i32) =. 1l <: bool
+                  then
+                    let signature:t_Slice u8 =
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize signature
+                        (offset +! true_hints_seen <: usize)
+                        (cast (j <: usize) <: u8)
+                    in
+                    let true_hints_seen:usize = true_hints_seen +! sz 1 in
+                    signature, true_hints_seen <: (t_Slice u8 & usize)
+                  else signature, true_hints_seen <: (t_Slice u8 & usize))
+          in
+          let signature:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize signature
+              ((offset +! max_ones_in_hint <: usize) +! i <: usize)
+              (cast (true_hints_seen <: usize) <: u8)
+          in
+          signature, true_hints_seen <: (t_Slice u8 & usize))
+  in
+  signature
+
 let set_hint (out_hint: t_Slice (t_Array i32 (sz 256))) (i j: usize) =
   let out_hint:t_Slice (t_Array i32 (sz 256)) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out_hint
@@ -349,119 +465,3 @@ let deserialize
       (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
         t_Slice (t_Array i32 (sz 256)) &
         Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
-
-let serialize
-      (#v_SIMDUnit: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (commitment_hash: t_Slice u8)
-      (signer_response: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-      (hint: t_Slice (t_Array i32 (sz 256)))
-      (commitment_hash_size columns_in_a rows_in_a gamma1_exponent gamma1_ring_element_size max_ones_in_hint:
-          usize)
-      (signature: t_Slice u8)
-     =
-  let offset:usize = sz 0 in
-  let signature:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_range signature
-      ({
-          Core.Ops.Range.f_start = offset;
-          Core.Ops.Range.f_end = offset +! commitment_hash_size <: usize
-        }
-        <:
-        Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice #u8
-          (signature.[ {
-                Core.Ops.Range.f_start = offset;
-                Core.Ops.Range.f_end = offset +! commitment_hash_size <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-          commitment_hash
-        <:
-        t_Slice u8)
-  in
-  let offset:usize = offset +! commitment_hash_size in
-  let offset, signature:(usize & t_Slice u8) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
-      columns_in_a
-      (fun temp_0_ temp_1_ ->
-          let offset, signature:(usize & t_Slice u8) = temp_0_ in
-          let _:usize = temp_1_ in
-          true)
-      (offset, signature <: (usize & t_Slice u8))
-      (fun temp_0_ i ->
-          let offset, signature:(usize & t_Slice u8) = temp_0_ in
-          let i:usize = i in
-          let signature:t_Slice u8 =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_range signature
-              ({
-                  Core.Ops.Range.f_start = offset;
-                  Core.Ops.Range.f_end = offset +! gamma1_ring_element_size <: usize
-                }
-                <:
-                Core.Ops.Range.t_Range usize)
-              (Libcrux_ml_dsa.Encoding.Gamma1.serialize #v_SIMDUnit
-                  (signer_response.[ i ]
-                    <:
-                    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-                  (signature.[ {
-                        Core.Ops.Range.f_start = offset;
-                        Core.Ops.Range.f_end = offset +! gamma1_ring_element_size <: usize
-                      }
-                      <:
-                      Core.Ops.Range.t_Range usize ]
-                    <:
-                    t_Slice u8)
-                  gamma1_exponent
-                <:
-                t_Slice u8)
-          in
-          let offset:usize = offset +! gamma1_ring_element_size in
-          offset, signature <: (usize & t_Slice u8))
-  in
-  let true_hints_seen:usize = sz 0 in
-  let signature, true_hints_seen:(t_Slice u8 & usize) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
-      rows_in_a
-      (fun temp_0_ temp_1_ ->
-          let signature, true_hints_seen:(t_Slice u8 & usize) = temp_0_ in
-          let _:usize = temp_1_ in
-          true)
-      (signature, true_hints_seen <: (t_Slice u8 & usize))
-      (fun temp_0_ i ->
-          let signature, true_hints_seen:(t_Slice u8 & usize) = temp_0_ in
-          let i:usize = i in
-          let signature, true_hints_seen:(t_Slice u8 & usize) =
-            Rust_primitives.Hax.Folds.fold_range (sz 0)
-              (Core.Slice.impl__len #i32 (hint.[ i ] <: t_Slice i32) <: usize)
-              (fun temp_0_ temp_1_ ->
-                  let signature, true_hints_seen:(t_Slice u8 & usize) = temp_0_ in
-                  let _:usize = temp_1_ in
-                  true)
-              (signature, true_hints_seen <: (t_Slice u8 & usize))
-              (fun temp_0_ j ->
-                  let signature, true_hints_seen:(t_Slice u8 & usize) = temp_0_ in
-                  let j:usize = j in
-                  if ((hint.[ i ] <: t_Array i32 (sz 256)).[ j ] <: i32) =. 1l <: bool
-                  then
-                    let signature:t_Slice u8 =
-                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize signature
-                        (offset +! true_hints_seen <: usize)
-                        (cast (j <: usize) <: u8)
-                    in
-                    let true_hints_seen:usize = true_hints_seen +! sz 1 in
-                    signature, true_hints_seen <: (t_Slice u8 & usize)
-                  else signature, true_hints_seen <: (t_Slice u8 & usize))
-          in
-          let signature:t_Slice u8 =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize signature
-              ((offset +! max_ones_in_hint <: usize) +! i <: usize)
-              (cast (true_hints_seen <: usize) <: u8)
-          in
-          signature, true_hints_seen <: (t_Slice u8 & usize))
-  in
-  signature

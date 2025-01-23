@@ -3,6 +3,8 @@ module Libcrux_ml_dsa.Hash_functions.Shake256
 open Core
 open FStar.Mul
 
+let v_BLOCK_SIZE: usize = sz 136
+
 /// An ML-DSA specific Xof trait
 /// This trait is not actually a full Xof implementation but opererates only
 /// on multiple of blocks. The only real Xof API for SHAKE256 is [`Xof`].
@@ -36,27 +38,6 @@ class t_DsaXof (v_Self: Type0) = {
     -> Prims.Pure (v_Self & t_Array u8 (sz 136))
         (f_squeeze_next_block_pre x0)
         (fun result -> f_squeeze_next_block_post x0 result)
-}
-
-/// A generic Xof trait
-class t_Xof (v_Self: Type0) = {
-  f_init_pre:Prims.unit -> Type0;
-  f_init_post:Prims.unit -> v_Self -> Type0;
-  f_init:x0: Prims.unit -> Prims.Pure v_Self (f_init_pre x0) (fun result -> f_init_post x0 result);
-  f_absorb_pre:v_Self -> t_Slice u8 -> Type0;
-  f_absorb_post:v_Self -> t_Slice u8 -> v_Self -> Type0;
-  f_absorb:x0: v_Self -> x1: t_Slice u8
-    -> Prims.Pure v_Self (f_absorb_pre x0 x1) (fun result -> f_absorb_post x0 x1 result);
-  f_absorb_final_pre:v_Self -> t_Slice u8 -> Type0;
-  f_absorb_final_post:v_Self -> t_Slice u8 -> v_Self -> Type0;
-  f_absorb_final:x0: v_Self -> x1: t_Slice u8
-    -> Prims.Pure v_Self (f_absorb_final_pre x0 x1) (fun result -> f_absorb_final_post x0 x1 result);
-  f_squeeze_pre:v_Self -> t_Slice u8 -> Type0;
-  f_squeeze_post:v_Self -> t_Slice u8 -> (v_Self & t_Slice u8) -> Type0;
-  f_squeeze:x0: v_Self -> x1: t_Slice u8
-    -> Prims.Pure (v_Self & t_Slice u8)
-        (f_squeeze_pre x0 x1)
-        (fun result -> f_squeeze_post x0 x1 result)
 }
 
 class t_XofX4 (v_Self: Type0) = {
@@ -129,4 +110,23 @@ class t_XofX4 (v_Self: Type0) = {
         (fun result -> f_shake256_x4_post v_OUT_LEN x0 x1 x2 x3 x4 x5 x6 x7 result)
 }
 
-let v_BLOCK_SIZE: usize = sz 136
+/// A generic Xof trait
+class t_Xof (v_Self: Type0) = {
+  f_init_pre:Prims.unit -> Type0;
+  f_init_post:Prims.unit -> v_Self -> Type0;
+  f_init:x0: Prims.unit -> Prims.Pure v_Self (f_init_pre x0) (fun result -> f_init_post x0 result);
+  f_absorb_pre:v_Self -> t_Slice u8 -> Type0;
+  f_absorb_post:v_Self -> t_Slice u8 -> v_Self -> Type0;
+  f_absorb:x0: v_Self -> x1: t_Slice u8
+    -> Prims.Pure v_Self (f_absorb_pre x0 x1) (fun result -> f_absorb_post x0 x1 result);
+  f_absorb_final_pre:v_Self -> t_Slice u8 -> Type0;
+  f_absorb_final_post:v_Self -> t_Slice u8 -> v_Self -> Type0;
+  f_absorb_final:x0: v_Self -> x1: t_Slice u8
+    -> Prims.Pure v_Self (f_absorb_final_pre x0 x1) (fun result -> f_absorb_final_post x0 x1 result);
+  f_squeeze_pre:v_Self -> t_Slice u8 -> Type0;
+  f_squeeze_post:v_Self -> t_Slice u8 -> (v_Self & t_Slice u8) -> Type0;
+  f_squeeze:x0: v_Self -> x1: t_Slice u8
+    -> Prims.Pure (v_Self & t_Slice u8)
+        (f_squeeze_pre x0 x1)
+        (fun result -> f_squeeze_post x0 x1 result)
+}
