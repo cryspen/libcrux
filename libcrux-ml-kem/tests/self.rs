@@ -142,6 +142,8 @@ macro_rules! impl_consistency_incremental {
 
             // Generate key pair.
             let key_pair = generate_key_pair(key_gen_randomness);
+            let mut key_pair_bytes = vec![0u8; key_pair_len()];
+            generate_key_pair_bytes(key_gen_randomness, &mut key_pair_bytes);
 
             // Get pk1 and pk2 to send out.
             let mut pk1_bytes = [0u8; 64];
@@ -149,6 +151,10 @@ macro_rules! impl_consistency_incremental {
 
             let mut pk2_bytes = [0u8; pk2_len()];
             key_pair.pk2_bytes(&mut pk2_bytes);
+
+            // Check that the keys are the same
+            assert_eq!(pk1_bytes, &key_pair_bytes[0..64]);
+            assert_eq!(pk2_bytes, &key_pair_bytes[64..64 + pk2_len()]);
 
             // The other party encapsulates to pk1 ...
             let encaps_randomness = random_array();
@@ -169,8 +175,11 @@ macro_rules! impl_consistency_incremental {
             // The initiator decapsulates the two ciphertexts.
             let shared_secret_decaps = decapsulate(key_pair.as_ref(), &ct1, &ct2);
 
+            let shared_secret_decaps2 = decapsulate_incremental_key(&key_pair_bytes, &ct1, &ct2);
+
             // Check the shared secret.
             assert_eq!(shared_secret_decaps, shared_secret);
+            assert_eq!(shared_secret_decaps2, shared_secret);
 
             // Compute comparison shared secrets and ciphertexts with the other APIs
             let key_pair = unpacked::generate_key_pair(key_gen_randomness);

@@ -46,6 +46,28 @@ pub(crate) mod unpacked {
         pub(crate) A: [[PolynomialRingElement<Vector>; K]; K],
     }
 
+    impl<const K: usize, Vector: Operations> IndCpaPublicKeyUnpacked<K, Vector> {
+        /// The length in bytes of this unpacked public key.
+        pub const fn len() -> usize {
+            Self::vector_len() + Self::matrix_len() + Self::seed_len()
+        }
+
+        /// The length in bytes of a vector.
+        pub const fn vector_len() -> usize {
+            K * 16 * 32
+        }
+
+        /// The length in bytes of a matrix.
+        pub const fn matrix_len() -> usize {
+            K * K * 16 * 32
+        }
+
+        /// The length of the seed.
+        pub const fn seed_len() -> usize {
+            32
+        }
+    }
+
     impl<const K: usize, Vector: Operations> Default for IndCpaPublicKeyUnpacked<K, Vector> {
         fn default() -> Self {
             Self {

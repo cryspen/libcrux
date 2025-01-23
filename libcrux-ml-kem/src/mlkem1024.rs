@@ -693,6 +693,20 @@ pub mod incremental {
         RANK_1024 * 16 * 32
     }
 
+    /// The size of the key pair in bytes.
+    pub const fn key_pair_len() -> usize {
+        // Because const generics are too limited, we compute it here from scratch.
+
+        // PK1
+        64
+        // PK2
+        + RANK_1024 * 16 * 32
+        // SK
+        + RANK_1024 * 16 * 32 + 32
+        // Matrix
+        + RANK_1024 * RANK_1024 * 16 * 32
+    }
+
     /// Generate a new key pair for incremental encapsulation.
     pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> Box<dyn Keys> {
         incremental::multiplexing::generate_keypair::<
@@ -704,6 +718,24 @@ pub mod incremental {
             ETA1,
             ETA1_RANDOMNESS_SIZE,
         >(randomness)
+    }
+
+    /// Generate a key pair and write it into `key_pair`.
+    ///
+    /// `key_pair.len()` must be of size `key_pair_len()`.
+    pub fn generate_key_pair_bytes(
+        randomness: [u8; KEY_GENERATION_SEED_SIZE],
+        key_pair: &mut [u8],
+    ) {
+        incremental::multiplexing::generate_keypair_serialized::<
+            RANK_1024,
+            CPA_PKE_SECRET_KEY_SIZE_1024,
+            SECRET_KEY_SIZE_1024,
+            CPA_PKE_PUBLIC_KEY_SIZE_1024,
+            RANKED_BYTES_PER_RING_ELEMENT_1024,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness, key_pair)
     }
 
     /// Encapsulate the first part of the ciphertext.
@@ -747,6 +779,32 @@ pub mod incremental {
         ciphertext2: &Ciphertext2<C2_SIZE_1024>,
     ) -> MlKemSharedSecret {
         incremental::multiplexing::decapsulate::<
+            RANK_1024,
+            SECRET_KEY_SIZE_1024,
+            CPA_PKE_SECRET_KEY_SIZE_1024,
+            CPA_PKE_PUBLIC_KEY_SIZE_1024,
+            CPA_PKE_CIPHERTEXT_SIZE_1024,
+            T_AS_NTT_ENCODED_SIZE_1024,
+            C1_SIZE_1024,
+            C2_SIZE_1024,
+            VECTOR_U_COMPRESSION_FACTOR_1024,
+            VECTOR_V_COMPRESSION_FACTOR_1024,
+            C1_BLOCK_SIZE_1024,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+        >(private_key, ciphertext1, ciphertext2)
+    }
+
+    /// Decapsulate incremental ciphertexts.
+    pub fn decapsulate_incremental_key(
+        private_key: &[u8],
+        ciphertext1: &Ciphertext1<C1_SIZE_1024>,
+        ciphertext2: &Ciphertext2<C2_SIZE_1024>,
+    ) -> MlKemSharedSecret {
+        incremental::multiplexing::decapsulate_incremental_key::<
             RANK_1024,
             SECRET_KEY_SIZE_1024,
             CPA_PKE_SECRET_KEY_SIZE_1024,

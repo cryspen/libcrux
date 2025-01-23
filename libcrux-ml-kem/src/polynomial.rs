@@ -49,6 +49,7 @@ let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
 )]
 // XXX: We don't want to copy this. But for eurydice we have to have this.
 #[derive(Clone, Copy)]
+#[repr(transparent)]
 pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
@@ -70,6 +71,62 @@ fn from_i16_array<Vector: Operations>(a: &[i16]) -> PolynomialRingElement<Vector
         result.coefficients[i] = Vector::from_i16_array(&a[i * 16..(i + 1) * 16]);
     }
     result
+}
+
+#[inline(always)]
+#[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 <= out.len())]
+fn to_i16_array<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut [i16]) {
+    for i in 0..re.coefficients.len() {
+        out[i * 16..(i + 1) * 16].copy_from_slice(&Vector::to_i16_array(re.coefficients[i]));
+    }
+}
+
+#[inline(always)]
+#[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 *2 <= a.len())]
+fn from_bytes<Vector: Operations>(bytes: &[u8]) -> PolynomialRingElement<Vector> {
+    let mut result = ZERO();
+    for i in 0..VECTORS_IN_RING_ELEMENT {
+        result.coefficients[i] = Vector::from_bytes(&bytes[i * 32..(i + 1) * 32]);
+    }
+    result
+}
+
+#[inline(always)]
+#[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 * 2 <= out.len())]
+fn to_bytes<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut [u8]) {
+    for i in 0..re.coefficients.len() {
+        Vector::to_bytes(re.coefficients[i], &mut out[i * 32..(i + 1) * 32]);
+    }
+}
+
+/// Get the bytes of the vector of ring elements in `re` and write them to `out`.
+#[inline(always)]
+#[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 * 2 <= out.len())]
+pub(crate) fn vec_to_bytes<Vector: Operations>(
+    re: &[PolynomialRingElement<Vector>],
+    out: &mut [u8],
+) {
+    let re_bytes = PolynomialRingElement::<Vector>::num_bytes();
+    for i in 0..re.len() {
+        PolynomialRingElement::<Vector>::to_bytes(re[i], &mut out[i * re_bytes..]);
+    }
+}
+
+/// Build a vector of ring elements from `bytes`.
+#[inline(always)]
+pub(crate) fn vec_from_bytes<Vector: Operations>(
+    bytes: &[u8],
+    out: &mut [PolynomialRingElement<Vector>],
+) {
+    let re_bytes = PolynomialRingElement::<Vector>::num_bytes();
+    for i in 0..out.len() {
+        out[i] = PolynomialRingElement::<Vector>::from_bytes(&bytes[i * re_bytes..]);
+    }
+}
+
+/// The length of a vector of ring elements in bytes
+pub(crate) const fn vec_len_bytes<const K: usize, Vector: Operations>() -> usize {
+    K * PolynomialRingElement::<Vector>::num_bytes()
 }
 
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
@@ -251,10 +308,33 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         }
     }
 
+    /// Size of a ring element in bytes.
+    pub(crate) const fn num_bytes() -> usize {
+        VECTORS_IN_RING_ELEMENT * 32
+    }
+
     #[inline(always)]
     #[requires(VECTORS_IN_RING_ELEMENT * 16 <= a.len())]
     pub(crate) fn from_i16_array(a: &[i16]) -> Self {
         from_i16_array(a)
+    }
+
+    #[inline(always)]
+    #[requires(VECTORS_IN_RING_ELEMENT * 16 <= out.len())]
+    pub(crate) fn to_i16_array(self, out: &mut [i16]) {
+        to_i16_array(self, out)
+    }
+
+    #[inline(always)]
+    #[requires(VECTORS_IN_RING_ELEMENT * 16 * 2 <= a.len())]
+    pub(crate) fn from_bytes(bytes: &[u8]) -> Self {
+        from_bytes(bytes)
+    }
+
+    #[inline(always)]
+    #[requires(VECTORS_IN_RING_ELEMENT * 16 * 2 <= out.len())]
+    pub(crate) fn to_bytes(self, out: &mut [u8]) {
+        to_bytes(self, out)
     }
 
     /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
@@ -292,5 +372,62 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     pub(crate) fn ntt_multiply(&self, rhs: &Self) -> Self {
         ntt_multiply(self, rhs)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::vector::portable::PortableVector;
+
+    use super::PolynomialRingElement;
+
+    #[test]
+    fn encoding_portable() {
+        type RingElement = PolynomialRingElement<PortableVector>;
+        let mut re = RingElement::ZERO();
+        re.coefficients[0].elements = [0xAB; 16];
+        re.coefficients[15].elements = [0xCD; 16];
+
+        let mut bytes = [0u8; RingElement::num_bytes()];
+        re.to_bytes(&mut bytes);
+
+        let re_decoded = RingElement::from_bytes(&bytes);
+
+        // Compare
+        let mut i16s = [0; RingElement::num_bytes() / 2];
+        re.to_i16_array(&mut i16s);
+
+        let mut i16s2 = [0; RingElement::num_bytes() / 2];
+        re_decoded.to_i16_array(&mut i16s2);
+
+        assert_eq!(i16s, i16s2);
+    }
+
+    #[cfg(feature = "simd128")]
+    #[test]
+    fn encoding_neon() {
+        use std::eprintln;
+
+        use crate::vector::{Operations, SIMD128Vector};
+
+        type RingElement = PolynomialRingElement<SIMD128Vector>;
+        let mut re = RingElement::ZERO();
+        re.coefficients[0] = SIMD128Vector::from_i16_array(&[0xAB; 32]);
+        re.coefficients[15] = SIMD128Vector::from_i16_array(&[0xCD; 32]);
+
+        let mut bytes = [0u8; RingElement::num_bytes()];
+        re.to_bytes(&mut bytes);
+        eprintln!("bytes: {:x?}", bytes);
+
+        let re_decoded = RingElement::from_bytes(&bytes);
+
+        // Compare
+        let mut i16s = [0; RingElement::num_bytes() / 2];
+        re.to_i16_array(&mut i16s);
+
+        let mut i16s2 = [0; RingElement::num_bytes() / 2];
+        re_decoded.to_i16_array(&mut i16s2);
+
+        assert_eq!(i16s, i16s2);
     }
 }

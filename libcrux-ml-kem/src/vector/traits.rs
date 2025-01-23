@@ -29,6 +29,12 @@ pub trait Operations: Copy + Clone + Repr {
     #[ensures(|result| fstar!(r#"f_repr $x == $result"#))]
     fn to_i16_array(x: Self) -> [i16; 16];
 
+    #[requires(array.len() >= 32)]
+    fn from_bytes(array: &[u8]) -> Self;
+
+    #[requires(bytes.len() >= 32)]
+    fn to_bytes(x: Self, bytes: &mut [u8]);
+
     // Basic arithmetic
     #[requires(fstar!(r#"forall i. i < 16 ==> 
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (f_repr ${lhs}) i) + v (Seq.index (f_repr ${rhs}) i))"#))]
