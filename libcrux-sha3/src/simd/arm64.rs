@@ -58,8 +58,8 @@ fn _vbcaxq_u64(a: uint64x2_t, b: uint64x2_t, c: uint64x2_t) -> uint64x2_t {
 }
 
 #[inline(always)]
-fn _veorq_n_u64(a: uint64x2_t, c: u64) -> uint64x2_t {
-    let c = _vdupq_n_u64(c);
+fn _veorq_n_u64(a: uint64x2_t, c: U64) -> uint64x2_t {
+    let c = _vdupq_n_u64(c.declassify());
     _veorq_u64(a, c)
 }
 
@@ -160,7 +160,7 @@ impl KeccakItem<2> for uint64x2_t {
         _vbcaxq_u64(a, b, c)
     }
     #[inline(always)]
-    fn xor_constant(a: Self, c: u64) -> Self {
+    fn xor_constant(a: Self, c: U64) -> Self {
         _veorq_n_u64(a, c)
     }
     #[inline(always)]

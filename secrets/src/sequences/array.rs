@@ -1,4 +1,4 @@
-use std::ops::Index;
+use std::ops::{Index, Range};
 
 use crate::{
     traits::{Classify, Declassify, Zeroize},
@@ -133,5 +133,13 @@ impl<T: SecretArrayElement, const N: usize> Index<usize> for SecretArray<T, N> {
 
     fn index(&self, index: usize) -> &Self::Output {
         self.0[index].classify_ref()
+    }
+}
+
+impl<T: SecretArrayElement, const N: usize> Index<Range<usize>> for SecretArray<T, N> {
+    type Output = [<T as Classify>::Classified];
+
+    fn index(&self, index: Range<usize>) -> &Self::Output {
+        &self.as_slice()[index]
     }
 }

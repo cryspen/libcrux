@@ -1,4 +1,4 @@
-use crate::{Declassify, Scalar, Secret};
+use crate::{Declassify, Scalar, Secret, U8};
 
 /// Converts a slice of native scalars into a slice of classified scalars.
 /// Note that this will not provide the added protection of an owned [`SecretArray`].
@@ -14,6 +14,23 @@ pub trait AsSecretRef<const N: usize> {
     type Item: Declassify;
 
     fn as_secret(&self) -> &[Self::Item; N];
+}
+
+#[inline(always)]
+pub fn special_bytes_as_secret<'a>(val: &'a [&'a mut [u8]]) -> &'a [&'a mut [U8]] {
+    unsafe { core::mem::transmute(val) }
+}
+
+#[inline(always)]
+pub fn special_bytes_as_secret4(val: [&mut [u8]; 4]) -> [&mut [U8]; 4] {
+    unsafe { core::mem::transmute(val) }
+}
+
+// #[inline(always)]h
+
+#[inline(always)]
+pub fn special_bytes_as_secret1(val: [&mut [u8]; 1]) -> [&mut [U8]; 1] {
+    unsafe { core::mem::transmute(val) }
 }
 
 impl<T: Scalar> AsSecret for &[T] {

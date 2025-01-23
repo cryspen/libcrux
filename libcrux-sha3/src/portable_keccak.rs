@@ -5,13 +5,13 @@ use libcrux_secrets::{Declassify, EncodeOps, U64, U8};
 use crate::traits::internal::*;
 
 #[inline(always)]
-fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {
+fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: U64) -> U64 {
     debug_assert!(LEFT + RIGHT == 64);
     (x << LEFT) | (x >> RIGHT)
 }
 
 #[inline(always)]
-fn _veor5q_u64(a: u64, b: u64, c: u64, d: u64, e: u64) -> u64 {
+fn _veor5q_u64(a: U64, b: U64, c: U64, d: U64, e: U64) -> U64 {
     let ab = a ^ b;
     let cd = c ^ d;
     let abcd = ab ^ cd;
@@ -19,51 +19,53 @@ fn _veor5q_u64(a: u64, b: u64, c: u64, d: u64, e: u64) -> u64 {
 }
 
 #[inline(always)]
-fn _vrax1q_u64(a: u64, b: u64) -> u64 {
+fn _vrax1q_u64(a: U64, b: U64) -> U64 {
     a ^ rotate_left::<1, 63>(b)
 }
 
 #[inline(always)]
-fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: u64, b: u64) -> u64 {
+fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: U64, b: U64) -> U64 {
     let ab = a ^ b;
     rotate_left::<LEFT, RIGHT>(ab)
 }
 
 #[inline(always)]
-fn _vbcaxq_u64(a: u64, b: u64, c: u64) -> u64 {
+fn _vbcaxq_u64(a: U64, b: U64, c: U64) -> U64 {
     a ^ (b & !c)
 }
 
 #[inline(always)]
-fn _veorq_n_u64(a: u64, c: u64) -> u64 {
+fn _veorq_n_u64(a: U64, c: U64) -> U64 {
     a ^ c
 }
 
 #[inline(always)]
-pub(crate) fn load_block<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: [&[U8]; 1]) {
+pub(crate) fn load_block<const RATE: usize>(s: &mut [[U64; 5]; 5], blocks: [&[U8]; 1]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0);
     for i in 0..RATE / 8 {
-        // FIXME: make everything secret integers.
-        s[i / 5][i % 5] ^=
-            u64::from_le_bytes(blocks[0][8 * i..8 * i + 8].declassify().try_into().unwrap());
+        s[i / 5][i % 5] ^= U64::from_le_bytes(blocks[0][8 * i..8 * i + 8].try_into().unwrap());
     }
 }
 
 #[inline(always)]
-pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: [[U8; 200]; 1]) {
+pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[U64; 5]; 5], blocks: [[U8; 200]; 1]) {
     load_block::<RATE>(s, [&blocks[0] as &[U8]]);
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE: usize>(s: &[[u64; 5]; 5], out: [&mut [u8]; 1]) {
+pub(crate) fn store_block<const RATE: usize>(s: &[[U64; 5]; 5], out: [&mut [u8]; 1]) {
     for i in 0..RATE / 8 {
-        out[0][8 * i..8 * i + 8].copy_from_slice(&s[i / 5][i % 5].to_le_bytes());
+        out[0][8 * i..8 * i + 8].copy_from_slice(
+            &u64::try_from(s[i / 5][i % 5].declassify())
+                .unwrap()
+                .to_le_bytes(),
+        );
     }
 }
 
 #[inline(always)]
-pub(crate) fn store_block_full<const RATE: usize>(s: &[[u64; 5]; 5]) -> [[u8; 200]; 1] {
-    let mut out = [0u8; 200];
+pub(crate) fn store_block_full<const RATE: usize>(s: &[[U64; 5]; 5]) -> [[u8; 200]; 1] {
+    let mut out = [0; 200];
     store_block::<RATE>(s, [&mut out]);
     [out]
 }
@@ -79,10 +81,10 @@ fn split_at_mut_1(out: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8
     ([out00], [out01])
 }
 
-impl KeccakItem<1> for u64 {
+impl KeccakItem<1> for U64 {
     #[inline(always)]
     fn zero() -> Self {
-        0
+        U64(0)
     }
     #[inline(always)]
     fn xor5(a: Self, b: Self, c: Self, d: Self, e: Self) -> Self {
@@ -101,7 +103,7 @@ impl KeccakItem<1> for u64 {
         _vbcaxq_u64(a, b, c)
     }
     #[inline(always)]
-    fn xor_constant(a: Self, c: u64) -> Self {
+    fn xor_constant(a: Self, c: U64) -> Self {
         _veorq_n_u64(a, c)
     }
     #[inline(always)]
@@ -113,8 +115,8 @@ impl KeccakItem<1> for u64 {
         load_block::<RATE>(a, b)
     }
     #[inline(always)]
-    fn store_block<const RATE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 1]) {
-        store_block::<RATE>(a, b)
+    fn store_block<const RATE: usize>(a: &[[Self; 5]; 5], out: [&mut [u8]; 1]) {
+        store_block::<RATE>(a, out)
     }
     #[inline(always)]
     fn load_block_full<const RATE: usize>(a: &mut [[Self; 5]; 5], b: [[U8; 200]; 1]) {
@@ -142,11 +144,13 @@ impl KeccakItem<1> for u64 {
         let last_block_len = out[0].len() % 8;
 
         for i in 0..num_full_blocks {
-            out[0][i * 8..i * 8 + 8].copy_from_slice(&state[i / 5][i % 5].to_le_bytes());
+            out[0][i * 8..i * 8 + 8]
+                .copy_from_slice(state[i / 5][i % 5].to_le_bytes().as_slice().declassify());
         }
         if last_block_len != 0 {
             out[0][num_full_blocks * 8..num_full_blocks * 8 + last_block_len].copy_from_slice(
-                &state[num_full_blocks / 5][num_full_blocks % 5].to_le_bytes()[0..last_block_len],
+                state[num_full_blocks / 5][num_full_blocks % 5].to_le_bytes()[0..last_block_len]
+                    .declassify(),
             );
         }
     }

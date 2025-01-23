@@ -5,15 +5,20 @@ use core::ops::*;
 #[repr(transparent)]
 pub struct Secret<T>(T);
 
+#[inline(always)]
 pub const fn secret<T>(x: T) -> Secret<T> {
     Secret(x)
 }
+
+#[inline(always)]
 fn unwrap<T>(x: Secret<T>) -> T {
     x.0
 }
 
 impl<T: Scalar> Classify for T {
     type Classified = Secret<T>;
+
+    #[inline(always)]
     fn classify(self) -> Secret<Self> {
         secret(self)
     }
@@ -22,6 +27,7 @@ impl<T: Scalar> Classify for T {
 impl<T: Scalar> ClassifyRef for T {
     type Classified = Secret<T>;
 
+    #[inline(always)]
     fn classify_ref(&self) -> &Self::Classified {
         unsafe { core::mem::transmute(self) }
     }
@@ -42,6 +48,7 @@ impl<T: Scalar> Declassify for Secret<T> {
 }
 
 impl<T: Scalar> From<T> for Secret<T> {
+    #[inline(always)]
     fn from(x: T) -> Secret<T> {
         x.classify()
     }
@@ -201,81 +208,110 @@ impl_new!(U32, u32, U32);
 impl_new!(U64, u64, U64);
 
 impl IntOps for Secret<u32> {
+    #[inline(always)]
     fn wrapping_add<T: Into<Secret<u32>>>(self, rhs: T) -> Self {
         self.declassify()
             .wrapping_add(rhs.into().declassify())
             .classify()
     }
+
+    #[inline(always)]
     fn wrapping_sub<T: Into<Secret<u32>>>(self, rhs: T) -> Self {
         self.declassify()
             .wrapping_sub(rhs.into().declassify())
             .classify()
     }
+
+    #[inline(always)]
     fn wrapping_mul<T: Into<Secret<u32>>>(self, rhs: T) -> Self {
         self.declassify()
             .wrapping_mul(rhs.into().declassify())
             .classify()
     }
+
+    #[inline(always)]
     fn rotate_left(self, rhs: u32) -> Self {
         self.declassify().rotate_left(rhs).classify()
     }
+
+    #[inline(always)]
     fn rotate_right(self, rhs: u32) -> Self {
         self.declassify().rotate_right(rhs).classify()
     }
 }
 
 impl EncodeOps<U8, 4> for U32 {
+    #[inline(always)]
     fn to_le_bytes(&self) -> SecretArray<u8, 4> {
         self.declassify().to_le_bytes().classify()
     }
+
+    #[inline(always)]
     fn to_be_bytes(&self) -> SecretArray<u8, 4> {
         self.declassify().to_be_bytes().classify()
     }
+
+    #[inline(always)]
     fn from_le_bytes(x: SecretArray<u8, 4>) -> Self {
         u32::from_le_bytes(x.declassify()).classify()
     }
+
+    #[inline(always)]
     fn from_be_bytes(x: SecretArray<u8, 4>) -> Self {
         u32::from_be_bytes(x.declassify()).classify()
     }
 }
 
 impl IntOps for Secret<u64> {
+    #[inline(always)]
     fn wrapping_add<T: Into<Secret<u64>>>(self, rhs: T) -> Self {
         self.declassify()
             .wrapping_add(rhs.into().declassify())
             .classify()
     }
+
+    #[inline(always)]
     fn wrapping_sub<T: Into<Secret<u64>>>(self, rhs: T) -> Self {
         self.declassify()
             .wrapping_sub(rhs.into().declassify())
             .classify()
     }
+
+    #[inline(always)]
     fn wrapping_mul<T: Into<Secret<u64>>>(self, rhs: T) -> Self {
         self.declassify()
             .wrapping_mul(rhs.into().declassify())
             .classify()
     }
+
+    #[inline(always)]
     fn rotate_left(self, rhs: u32) -> Self {
         self.declassify().rotate_left(rhs).classify()
     }
+
+    #[inline(always)]
     fn rotate_right(self, rhs: u32) -> Self {
         self.declassify().rotate_right(rhs).classify()
     }
 }
 
 impl EncodeOps<U8, 8> for U64 {
+    #[inline(always)]
     fn to_le_bytes(&self) -> SecretArray<u8, 8> {
         self.declassify().to_le_bytes().classify()
     }
 
+    #[inline(always)]
     fn to_be_bytes(&self) -> SecretArray<u8, 8> {
         self.declassify().to_be_bytes().classify()
     }
 
+    #[inline(always)]
     fn from_le_bytes(x: SecretArray<u8, 8>) -> Self {
         u64::from_le_bytes(x.declassify()).classify()
     }
 
+    #[inline(always)]
     fn from_be_bytes(x: SecretArray<u8, 8>) -> Self {
         u64::from_be_bytes(x.declassify()).classify()
     }
