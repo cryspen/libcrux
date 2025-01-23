@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: hacspec/hax-actions@fstar-version
+      - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
           fstar: v2024.12.03
@@ -71,7 +71,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: hacspec/hax-actions@fstar-version
+      - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
           fstar: v2024.12.03
@@ -85,7 +85,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: hacspec/hax-actions@fstar-version
+      - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
           fstar: v2024.12.03
@@ -126,7 +126,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: hacspec/hax-actions@fstar-version
+      - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
           fstar: v2024.12.03
