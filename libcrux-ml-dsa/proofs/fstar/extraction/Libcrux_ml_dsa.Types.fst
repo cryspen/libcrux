@@ -26,15 +26,15 @@ let impl_2__new (v_SIZE: usize) (value: t_Array u8 v_SIZE) =
 
 let t_SigningError_cast_to_repr (x: t_SigningError) =
   match x <: t_SigningError with
-  | SigningError_RejectionSamplingError  -> isz 0
-  | SigningError_ContextTooLongError  -> isz 1
+  | SigningError_RejectionSamplingError  -> mk_isize 0
+  | SigningError_ContextTooLongError  -> mk_isize 1
 
 let t_VerificationError_cast_to_repr (x: t_VerificationError) =
   match x <: t_VerificationError with
-  | VerificationError_MalformedHintError  -> isz 0
-  | VerificationError_SignerResponseExceedsBoundError  -> isz 1
-  | VerificationError_CommitmentHashesDontMatchError  -> isz 3
-  | VerificationError_VerificationContextTooLongError  -> isz 6
+  | VerificationError_MalformedHintError  -> mk_isize 0
+  | VerificationError_SignerResponseExceedsBoundError  -> mk_isize 1
+  | VerificationError_CommitmentHashesDontMatchError  -> mk_isize 3
+  | VerificationError_VerificationContextTooLongError  -> mk_isize 6
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 assume
@@ -67,13 +67,13 @@ val impl_7': Core.Fmt.t_Debug t_SigningError
 let impl_7 = impl_7'
 
 let impl__zero (v_SIZE: usize) (_: Prims.unit) =
-  { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MLDSASigningKey v_SIZE
+  { f_value = Rust_primitives.Hax.repeat (mk_u8 0) v_SIZE } <: t_MLDSASigningKey v_SIZE
 
 let impl_2__zero (v_SIZE: usize) (_: Prims.unit) =
-  { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MLDSAVerificationKey v_SIZE
+  { f_value = Rust_primitives.Hax.repeat (mk_u8 0) v_SIZE } <: t_MLDSAVerificationKey v_SIZE
 
 let impl_4__zero (v_SIZE: usize) (_: Prims.unit) =
-  { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MLDSASignature v_SIZE
+  { f_value = Rust_primitives.Hax.repeat (mk_u8 0) v_SIZE } <: t_MLDSASignature v_SIZE
 
 let impl__as_slice (v_SIZE: usize) (self: t_MLDSASigningKey v_SIZE) = self.f_value <: t_Slice u8
 

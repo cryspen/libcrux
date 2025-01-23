@@ -9,7 +9,7 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let v_OUTPUT_BYTES_PER_SIMD_UNIT: usize = sz 13
+let v_OUTPUT_BYTES_PER_SIMD_UNIT: usize = mk_usize 13
 
 val deserialize
       (#v_SIMDUnit: Type0)

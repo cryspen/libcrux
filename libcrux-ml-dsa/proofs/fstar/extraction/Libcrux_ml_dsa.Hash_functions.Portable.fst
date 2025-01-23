@@ -98,7 +98,7 @@ let shake256 (v_OUTPUT_LENGTH: usize) = shake256' v_OUTPUT_LENGTH
 
 assume
 val squeeze_first_block_shake256': state: t_Shake256
-  -> Prims.Pure (t_Shake256 & t_Array u8 (sz 136)) Prims.l_True (fun _ -> Prims.l_True)
+  -> Prims.Pure (t_Shake256 & t_Array u8 (mk_usize 136)) Prims.l_True (fun _ -> Prims.l_True)
 
 let squeeze_first_block_shake256 = squeeze_first_block_shake256'
 
@@ -106,22 +106,22 @@ assume
 val squeeze_first_block_x4': state: t_Shake256X4
   -> Prims.Pure
       (t_Shake256X4 &
-        (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+        (t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) &
+          t_Array u8 (mk_usize 136))) Prims.l_True (fun _ -> Prims.l_True)
 
 let squeeze_first_block_x4 = squeeze_first_block_x4'
 
 assume
 val squeeze_first_five_blocks':
     state: t_Shake128X4 ->
-    out0: t_Array u8 (sz 840) ->
-    out1: t_Array u8 (sz 840) ->
-    out2: t_Array u8 (sz 840) ->
-    out3: t_Array u8 (sz 840)
+    out0: t_Array u8 (mk_usize 840) ->
+    out1: t_Array u8 (mk_usize 840) ->
+    out2: t_Array u8 (mk_usize 840) ->
+    out3: t_Array u8 (mk_usize 840)
   -> Prims.Pure
-      (t_Shake128X4 & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-        t_Array u8 (sz 840)) Prims.l_True (fun _ -> Prims.l_True)
+      (t_Shake128X4 & t_Array u8 (mk_usize 840) & t_Array u8 (mk_usize 840) &
+        t_Array u8 (mk_usize 840) &
+        t_Array u8 (mk_usize 840)) Prims.l_True (fun _ -> Prims.l_True)
 
 let squeeze_first_five_blocks = squeeze_first_five_blocks'
 
@@ -129,15 +129,14 @@ assume
 val squeeze_next_block': state: t_Shake128X4
   -> Prims.Pure
       (t_Shake128X4 &
-        (t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+        (t_Array u8 (mk_usize 168) & t_Array u8 (mk_usize 168) & t_Array u8 (mk_usize 168) &
+          t_Array u8 (mk_usize 168))) Prims.l_True (fun _ -> Prims.l_True)
 
 let squeeze_next_block = squeeze_next_block'
 
 assume
 val squeeze_next_block_shake256': state: t_Shake256
-  -> Prims.Pure (t_Shake256 & t_Array u8 (sz 136)) Prims.l_True (fun _ -> Prims.l_True)
+  -> Prims.Pure (t_Shake256 & t_Array u8 (mk_usize 136)) Prims.l_True (fun _ -> Prims.l_True)
 
 let squeeze_next_block_shake256 = squeeze_next_block_shake256'
 
@@ -145,8 +144,7 @@ assume
 val squeeze_next_block_x4': state: t_Shake256X4
   -> Prims.Pure
       (t_Shake256X4 &
-        (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+        (t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) &
+          t_Array u8 (mk_usize 136))) Prims.l_True (fun _ -> Prims.l_True)
 
 let squeeze_next_block_x4 = squeeze_next_block_x4'

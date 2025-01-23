@@ -3,19 +3,19 @@ module Libcrux_ml_dsa.Simd.Portable.Encoding.Gamma1
 open Core
 open FStar.Mul
 
-let deserialize_when_gamma1_is_2_pow_17___GAMMA1: i32 = 1l <<! 17l
+let deserialize_when_gamma1_is_2_pow_17___GAMMA1: i32 = mk_i32 1 <<! mk_i32 17
 
 let deserialize_when_gamma1_is_2_pow_17___GAMMA1_TIMES_2_BITMASK: i32 =
-  (deserialize_when_gamma1_is_2_pow_17___GAMMA1 <<! 1l <: i32) -! 1l
+  (deserialize_when_gamma1_is_2_pow_17___GAMMA1 <<! mk_i32 1 <: i32) -! mk_i32 1
 
-let deserialize_when_gamma1_is_2_pow_19___GAMMA1: i32 = 1l <<! 19l
+let deserialize_when_gamma1_is_2_pow_19___GAMMA1: i32 = mk_i32 1 <<! mk_i32 19
 
 let deserialize_when_gamma1_is_2_pow_19___GAMMA1_TIMES_2_BITMASK: i32 =
-  (deserialize_when_gamma1_is_2_pow_19___GAMMA1 <<! 1l <: i32) -! 1l
+  (deserialize_when_gamma1_is_2_pow_19___GAMMA1 <<! mk_i32 1 <: i32) -! mk_i32 1
 
-let serialize_when_gamma1_is_2_pow_17___GAMMA1: i32 = 1l <<! 17l
+let serialize_when_gamma1_is_2_pow_17___GAMMA1: i32 = mk_i32 1 <<! mk_i32 17
 
-let serialize_when_gamma1_is_2_pow_19___GAMMA1: i32 = 1l <<! 19l
+let serialize_when_gamma1_is_2_pow_19___GAMMA1: i32 = mk_i32 1 <<! mk_i32 19
 
 val deserialize_when_gamma1_is_2_pow_17_
       (serialized: t_Slice u8)

@@ -138,7 +138,7 @@ include BitVec.Intrinsics {mm256_sllv_epi32}
 
 val mm256_srai_epi16 (v_SHIFT_BY: i32) (vector: t_Vec256)
     : Prims.Pure t_Vec256
-      (requires v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l)
+      (requires v_SHIFT_BY >=. mk_i32 0 && v_SHIFT_BY <. mk_i32 16)
       (ensures
         fun result ->
           let result:t_Vec256 = result in

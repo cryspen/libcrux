@@ -6,7 +6,7 @@ open FStar.Mul
 val change_interval (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
 
-let deserialize__COEFFICIENT_MASK: i32 = (1l <<! 13l <: i32) -! 1l
+let deserialize__COEFFICIENT_MASK: i32 = (mk_i32 1 <<! mk_i32 13 <: i32) -! mk_i32 1
 
 val deserialize (serialized: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)

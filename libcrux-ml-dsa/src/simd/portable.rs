@@ -1,6 +1,6 @@
 use crate::{
     constants::{Eta, Gamma2},
-    simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT},
+    simd::traits::{Repr, Operations, SIMD_UNITS_IN_RING_ELEMENT},
 };
 
 mod arithmetic;
@@ -15,6 +15,14 @@ mod sample;
 /// Portable SIMD coefficients
 pub(crate) use vector_type::Coefficients as PortableSIMDUnit;
 use vector_type::Coefficients;
+
+use super::traits::COEFFICIENTS_IN_SIMD_UNIT;
+
+impl Repr for Coefficients {
+    fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT] {
+        self.values
+    }
+}
 
 impl Operations for Coefficients {
     fn zero() -> Coefficients {

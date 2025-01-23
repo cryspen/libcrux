@@ -1,6 +1,6 @@
 use crate::{
     constants::{Eta, Gamma2},
-    simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT},
+    simd::traits::{Repr, Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT},
 };
 
 mod arithmetic;
@@ -11,6 +11,14 @@ mod rejection_sample;
 mod vector_type;
 
 pub(crate) use vector_type::{AVX2RingElement, Vec256 as AVX2SIMDUnit};
+
+impl Repr for AVX2SIMDUnit {
+    fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT] {
+        let mut result = [0i32; COEFFICIENTS_IN_SIMD_UNIT];
+        vector_type::to_coefficient_array(self, &mut result);
+        result
+    }
+}
 
 /// Implementing the [`Operations`] for AVX2.
 impl Operations for AVX2SIMDUnit {
