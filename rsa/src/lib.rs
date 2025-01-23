@@ -56,6 +56,13 @@ pub enum Error {
 
     /// Indicates that signing a message failed.
     SigningFailed,
+
+    /// The lengths of the public and private parts of the key do not match
+    KeyLengthMismatch,
+
+    InvalidKeyLength,
+
+    InvalidSignatureLength,
 }
 
 mod impl_hacl;
