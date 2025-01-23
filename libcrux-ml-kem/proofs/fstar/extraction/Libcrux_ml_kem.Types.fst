@@ -267,7 +267,7 @@ let impl (v_SIZE: usize) : Core.Default.t_Default (t_MlKemCiphertext v_SIZE) =
     f_default
     =
     fun (_: Prims.unit) ->
-      { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MlKemCiphertext v_SIZE
+      { f_value = Rust_primitives.Hax.repeat (mk_u8 0) v_SIZE } <: t_MlKemCiphertext v_SIZE
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -278,7 +278,7 @@ let impl_7 (v_SIZE: usize) : Core.Default.t_Default (t_MlKemPrivateKey v_SIZE) =
     f_default
     =
     fun (_: Prims.unit) ->
-      { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MlKemPrivateKey v_SIZE
+      { f_value = Rust_primitives.Hax.repeat (mk_u8 0) v_SIZE } <: t_MlKemPrivateKey v_SIZE
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -289,7 +289,7 @@ let impl_14 (v_SIZE: usize) : Core.Default.t_Default (t_MlKemPublicKey v_SIZE) =
     f_default
     =
     fun (_: Prims.unit) ->
-      { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MlKemPublicKey v_SIZE
+      { f_value = Rust_primitives.Hax.repeat (mk_u8 0) v_SIZE } <: t_MlKemPublicKey v_SIZE
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]

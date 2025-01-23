@@ -12,7 +12,7 @@ val compress_ciphertext_coefficient
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
       (requires
         v v_COEFFICIENT_BITS >= 0 /\ v v_COEFFICIENT_BITS < bits i32_inttype /\
-        range (v (1l <<! v_COEFFICIENT_BITS) - 1) i32_inttype)
+        range (v ((mk_i32 1) <<! v_COEFFICIENT_BITS) - 1) i32_inttype)
       (fun _ -> Prims.l_True)
 
 val compress_message_coefficient (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)

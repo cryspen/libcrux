@@ -17,7 +17,7 @@ val sample_matrix_A
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (v_A_transpose:
           t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
-      (seed: t_Array u8 (sz 34))
+      (seed: t_Array u8 (mk_usize 34))
       (transpose: bool)
     : Prims.Pure
       (t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)

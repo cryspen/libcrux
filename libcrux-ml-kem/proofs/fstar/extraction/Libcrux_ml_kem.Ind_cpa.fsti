@@ -104,7 +104,7 @@ val sample_ring_element_cbd
       (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      (prf_input: t_Array u8 (sz 33))
+      (prf_input: t_Array u8 (mk_usize 33))
       (domain_separator: u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
       (requires
@@ -129,7 +129,7 @@ val sample_vector_cbd_then_ntt
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (re_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      (prf_input: t_Array u8 (sz 33))
+      (prf_input: t_Array u8 (mk_usize 33))
       (domain_separator: u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
       (requires
@@ -158,7 +158,7 @@ val sample_vector_cbd_then_ntt_out
       (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      (prf_input: t_Array u8 (sz 33))
+      (prf_input: t_Array u8 (mk_usize 33))
       (domain_separator: u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
       (requires
@@ -281,7 +281,7 @@ val decrypt_unpacked
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (secret_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32))
+    : Prims.Pure (t_Array u8 (mk_usize 32))
       (requires
         Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
         v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
@@ -289,7 +289,7 @@ val decrypt_unpacked
         v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K)
       (ensures
         fun result ->
-          let result:t_Array u8 (sz 32) = result in
+          let result:t_Array u8 (mk_usize 32) = result in
           result ==
           Spec.MLKEM.ind_cpa_decrypt_unpacked v_K
             ciphertext
@@ -302,7 +302,7 @@ val decrypt
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (secret_key: t_Slice u8)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32))
+    : Prims.Pure (t_Array u8 (mk_usize 32))
       (requires
         Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
         v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
@@ -311,7 +311,7 @@ val decrypt
         v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K)
       (ensures
         fun result ->
-          let result:t_Array u8 (sz 32) = result in
+          let result:t_Array u8 (mk_usize 32) = result in
           result == Spec.MLKEM.ind_cpa_decrypt v_K secret_key ciphertext)
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
@@ -378,7 +378,7 @@ val encrypt_unpacked
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
-      (message: t_Array u8 (sz 32))
+      (message: t_Array u8 (mk_usize 32))
       (randomness: t_Slice u8)
     : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE)
       (requires
@@ -409,7 +409,7 @@ val encrypt
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (public_key: t_Slice u8)
-      (message: t_Array u8 (sz 32))
+      (message: t_Array u8 (mk_usize 32))
       (randomness: t_Slice u8)
     : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE)
       (requires

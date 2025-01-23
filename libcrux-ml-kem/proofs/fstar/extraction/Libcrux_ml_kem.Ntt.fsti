@@ -133,8 +133,8 @@ val ntt_at_layer_4_plus
         (re_0 re_1: v_Vector) =
     (forall i. i < 16 ==>
       Spec.Utils.is_intb (pow2 15 - 1)
-      (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_1) i) * v (-1600s))) /\
-    (let t = Libcrux_ml_kem.Vector.Traits.f_multiply_by_constant re_1 (-1600s) in
+      (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_1) i) * v ((mk_i16 (-1600))))) /\
+    (let t = Libcrux_ml_kem.Vector.Traits.f_multiply_by_constant re_1 ((mk_i16 (-1600))) in
     (forall i. i < 16 ==> 
       Spec.Utils.is_intb (pow2 15 - 1) 
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_0) i) - 

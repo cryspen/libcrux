@@ -5,8 +5,8 @@ open FStar.Mul
 open Core
 open Spec.Utils
 
-let v_FIELD_MODULUS: i32 = 3329l
-let is_rank (r:usize) = v r == 2 \/ v r == 3 \/ v r == 4
+let v_FIELD_MODULUS: i32 = mk_i32 3329
+let is_rank (r:usize) = r == sz 2 \/ r == sz 3 \/ r == sz 4
 
 type rank = r:usize{is_rank r}
 

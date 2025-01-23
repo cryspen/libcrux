@@ -38,7 +38,11 @@ class t_Operations (v_Self: Type0) = {
     -> pred:
       Type0{(Core.Slice.impl__len #i32 array <: usize) =. v_COEFFICIENTS_IN_SIMD_UNIT ==> pred};
   f_from_coefficient_array_post:array: t_Slice i32 -> out: v_Self -> out_future: v_Self
-    -> pred: Type0{pred ==> f_repr out_future == array};
+    -> pred:
+      Type0
+        { pred ==>
+          (f_repr #v_Self #FStar.Tactics.Typeclasses.solve out_future <: t_Array i32 (mk_usize 8)) =.
+          array };
   f_from_coefficient_array:x0: t_Slice i32 -> x1: v_Self
     -> Prims.Pure v_Self
         (f_from_coefficient_array_pre x0 x1)
