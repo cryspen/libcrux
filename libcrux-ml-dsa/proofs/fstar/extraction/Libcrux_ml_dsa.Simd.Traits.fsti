@@ -21,9 +21,6 @@ class t_Repr (v_Self: Type0) = {
     -> Prims.Pure (t_Array i32 (mk_usize 8)) (f_repr_pre x0) (fun result -> f_repr_post x0 result)
 }
 
-val vv_zero: Prims.unit
-  -> Prims.Pure (t_Array i32 (mk_usize 8)) Prims.l_True (fun _ -> Prims.l_True)
-
 class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
@@ -35,7 +32,7 @@ class t_Operations (v_Self: Type0) = {
         { pred ==>
           (let _:Prims.unit = x in
             (f_repr #v_Self #FStar.Tactics.Typeclasses.solve result <: t_Array i32 (mk_usize 8)) =.
-            (vv_zero () <: t_Array i32 (mk_usize 8))) };
+            (Rust_primitives.Hax.repeat (mk_i32 0) (mk_usize 8) <: t_Array i32 (mk_usize 8))) };
   f_zero:x0: Prims.unit -> Prims.Pure v_Self (f_zero_pre x0) (fun result -> f_zero_post x0 result);
   f_from_coefficient_array_pre:array: t_Slice i32 -> out: v_Self
     -> pred:

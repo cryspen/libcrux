@@ -24,14 +24,11 @@ pub(crate) trait Repr: Copy + Clone {
     fn repr(&self) -> SIMDContent;
 }
 
-fn v_zero() -> SIMDContent {
-    [0i32; COEFFICIENTS_IN_SIMD_UNIT]
-}
 
 #[cfg(not(eurydice))]
 #[hax_lib::attributes]
 pub(crate) trait Operations: Copy + Clone + Repr {
-    #[hax_lib::ensures(|result| result.repr() == v_zero())]
+    #[hax_lib::ensures(|result| result.repr() == [0i32; COEFFICIENTS_IN_SIMD_UNIT])]
     fn zero() -> Self;
 
     #[hax_lib::requires(array.len() == COEFFICIENTS_IN_SIMD_UNIT)]
