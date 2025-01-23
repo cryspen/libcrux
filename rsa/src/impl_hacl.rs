@@ -12,7 +12,17 @@ pub struct PrivateKey<const LEN: usize> {
     d: [u8; LEN],
 }
 
+impl<const LEN: usize> alloc::fmt::Debug for PrivateKey<LEN> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("PrivateKey")
+            .field("pk", &self.pk)
+            .field("d", &"****")
+            .finish()
+    }
+}
+
 /// An RSA Public Key backed by a slice. Use if the length is not known at compile time.
+#[derive(Debug, Clone)]
 pub struct VarLenPublicKey<'a> {
     n: &'a [u8],
 }
@@ -32,6 +42,14 @@ impl VarLenPublicKey<'_> {
     /// Returns the length of the key
     pub fn key_len(&self) -> usize {
         self.n.len()
+    }
+}
+impl alloc::fmt::Debug for VarLenPrivateKey<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("PrivateKey")
+            .field("pk", &self.pk)
+            .field("d", &"****")
+            .finish()
     }
 }
 
@@ -91,6 +109,11 @@ macro_rules! impl_rsapss {
             pub fn as_var_len(&self) -> VarLenPublicKey<'_> {
                 VarLenPublicKey { n: &self.n }
             }
+
+            /// Returns the modulus as bytes.
+            pub fn n(&self) -> &[u8; $bytes] {
+                &self.n
+            }
         }
 
         impl PrivateKey<$bytes> {
@@ -110,6 +133,11 @@ macro_rules! impl_rsapss {
                     pk: self.pk.as_var_len(),
                     d: &self.d,
                 }
+            }
+
+            /// Returns the private exponent as bytes.
+            pub fn d(&self) -> &[u8; $bytes] {
+                &self.d
             }
         }
 
@@ -132,19 +160,6 @@ macro_rules! impl_rsapss {
         /// - the secret key is invalid
         /// - the length of `msg` exceeds `u32::MAX`
         /// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
-        ///
-        /// Ensures that the preconditions to hacl functions hold:
-        ///
-        /// - `sLen + Hash.hash_length a + 8 <= max_size_t`
-        ///   - checked explicitly
-        /// - `(sLen + Hash.hash_length a + 8) less_than_max_input_length a`
-        ///   - `max_input_length` is at least `2^62 - 1`, can't be reached since everyting
-        ///     is less than `u32::MAX`.
-        /// - `sLen + Hash.hash_length a + 2 <= blocks (modBits - 1) 8`
-        ///   - `blocks a b = (a - 1) / b + 1`, i.e. `ceil(div(a, b))`
-        ///   - checked explicitly
-        /// - `msgLen `less_than_max_input_length` a`
-        ///   - follows from the check that messages are shorter than `u32::MAX`.
         pub fn $sign_fn(
             alg: crate::DigestAlgorithm,
             sk: &PrivateKey<$bytes>,
@@ -162,16 +177,6 @@ macro_rules! impl_rsapss {
         /// - the signature verification fails
         /// - the length of `msg` exceeds `u32::MAX`
         /// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
-        ///
-        /// Ensures that the preconditions to hacl functions hold:
-        ///
-        /// - `sLen + Hash.hash_length a + 8 <= max_size_t`
-        ///   - checked explicitly
-        /// - `(sLen + Hash.hash_length a + 8) less_than_max_input_length a`
-        ///   - `max_input_length` is at least `2^62 - 1`, can't be reached since everyting
-        ///     is less than `u32::MAX`.
-        /// - `msgLen less_than_max_input_length a`
-        ///   - follows from the check that messages are shorter than `u32::MAX`.
         pub fn $verify_fn(
             alg: crate::DigestAlgorithm,
             pk: &PublicKey<$bytes>,
@@ -190,6 +195,13 @@ impl_rsapss!(sign_4096, verify_4096, 4096, 512);
 impl_rsapss!(sign_6144, verify_6144, 6144, 768);
 impl_rsapss!(sign_8192, verify_8192, 8192, 1024);
 
+/// Computes a signature over `msg` using `sk` and writes it to `sig`.
+/// Returns `Ok(())` on success.
+///
+/// Returns an error in any of the following cases:
+/// - the secret key is invalid
+/// - the length of `msg` exceeds `u32::MAX`
+/// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
 pub fn sign(
     alg: crate::DigestAlgorithm,
     sk: &VarLenPrivateKey<'_>,
@@ -204,6 +216,13 @@ pub fn sign(
     sign_varlen(alg, sk, msg, salt, sig)
 }
 
+/// Returns `Ok(())` if the provided signature is valid.
+///
+/// Returns an error in any of the following cases:
+/// - the public key is invalid
+/// - the signature verification fails
+/// - the length of `msg` exceeds `u32::MAX`
+/// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
 pub fn verify(
     alg: crate::DigestAlgorithm,
     pk: &VarLenPublicKey<'_>,
@@ -218,6 +237,26 @@ pub fn verify(
     verify_varlen(alg, pk, msg, salt_len, sig)
 }
 
+/// Computes a signature over `msg` using `sk` and writes it to `sig`.
+/// Returns `Ok(())` on success.
+///
+/// Returns an error in any of the following cases:
+/// - the secret key is invalid
+/// - the length of `msg` exceeds `u32::MAX`
+/// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
+///
+/// Ensures that the preconditions to hacl functions hold:
+///
+/// - `sLen + Hash.hash_length a + 8 <= max_size_t`
+///   - checked explicitly
+/// - `(sLen + Hash.hash_length a + 8) less_than_max_input_length a`
+///   - `max_input_length` is at least `2^62 - 1`, can't be reached since everyting
+///     is less than `u32::MAX`.
+/// - `sLen + Hash.hash_length a + 2 <= blocks (modBits - 1) 8`
+///   - `blocks a b = (a - 1) / b + 1`, i.e. `ceil(div(a, b))`
+///   - checked explicitly
+/// - `msgLen `less_than_max_input_length` a`
+///   - follows from the check that messages are shorter than `u32::MAX`.
 fn sign_varlen(
     alg: crate::DigestAlgorithm,
     sk: &VarLenPrivateKey<'_>,
@@ -255,6 +294,23 @@ fn sign_varlen(
     }
 }
 
+/// Returns `Ok(())` if the provided signature is valid.
+///
+/// Returns an error in any of the following cases:
+/// - the public key is invalid
+/// - the signature verification fails
+/// - the length of `msg` exceeds `u32::MAX`
+/// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
+///
+/// Ensures that the preconditions to hacl functions hold:
+///
+/// - `sLen + Hash.hash_length a + 8 <= max_size_t`
+///   - checked explicitly
+/// - `(sLen + Hash.hash_length a + 8) less_than_max_input_length a`
+///   - `max_input_length` is at least `2^62 - 1`, can't be reached since everyting
+///     is less than `u32::MAX`.
+/// - `msgLen less_than_max_input_length a`
+///   - follows from the check that messages are shorter than `u32::MAX`.
 fn verify_varlen(
     alg: crate::DigestAlgorithm,
     pk: &VarLenPublicKey<'_>,

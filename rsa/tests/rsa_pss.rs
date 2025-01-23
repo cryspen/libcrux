@@ -1,4 +1,7 @@
-use libcrux_rsa::{sign, sign_2048, verify, verify_2048, DigestAlgorithm, PrivateKey, PublicKey};
+use libcrux_rsa::{
+    sign, sign_2048, verify, verify_2048, DigestAlgorithm, Error, PrivateKey, PublicKey,
+    VarLenPrivateKey,
+};
 
 const MODULUS: [u8; 256] = [
     0xd2, 0x78, 0x16, 0xcb, 0x72, 0xbb, 0x6e, 0x27, 0xdb, 0x10, 0x1a, 0x6f, 0x3e, 0x64, 0x62, 0x93,
@@ -73,7 +76,29 @@ fn self_test_rsa_pss() {
         salt.len() as u32,
         &signature[..256],
     )
-    .expect("error verifying signature using variable length api")
+    .expect("error verifying signature using variable length api");
+
+    // test the variable length signing fails if the length is wrong
+    let mut signature = [0u8; 257];
+    let err = sign(
+        DigestAlgorithm::Sha2_256,
+        &sk.as_var_len(),
+        &msg,
+        &salt,
+        &mut signature[..],
+    )
+    .expect_err("expected singing with wrong length to fail");
+    assert_eq!(err, Error::InvalidSignatureLength);
+
+    // test the variable length key parsing fails if length is wrong
+    let err = VarLenPrivateKey::from_components(sk.pk().n().as_slice(), &sk.d().as_slice()[0..255])
+        .expect_err("from_components should fail if wrong length is supplied");
+    assert_eq!(err, Error::KeyLengthMismatch);
+
+    // test the variable length key parsing fails if length is wrong
+    let err = VarLenPrivateKey::from_components(&sk.pk().n()[0..255], &sk.d()[0..255])
+        .expect_err("from_components should fail if wrong length is supplied");
+    assert_eq!(err, Error::InvalidKeyLength);
 }
 
 const N: [u8; 256] = [

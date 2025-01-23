@@ -1,5 +1,7 @@
 #![no_std]
 
+extern crate alloc;
+
 #[cfg(not(feature = "expose-hacl"))]
 mod hacl {
     pub(crate) mod rsapss;
@@ -43,7 +45,7 @@ impl DigestAlgorithm {
 }
 
 /// Represents errors that occurred during signing or verifying.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Error {
     /// Indicates that the salt is too large.
     SaltTooLarge,
@@ -60,10 +62,32 @@ pub enum Error {
     /// The lengths of the public and private parts of the key do not match
     KeyLengthMismatch,
 
+    /// The length of the provided key is invalid
     InvalidKeyLength,
 
+    /// The length of the provided signature is invalid
     InvalidSignatureLength,
 }
+
+impl alloc::fmt::Display for Error {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            Error::SaltTooLarge => "Indicates that the salt is too large.",
+            Error::MessageTooLarge => "Indicates that the message is too large.",
+            Error::VerificationFailed => "Indicates that the verification of a signature failed.",
+            Error::SigningFailed => "Indicates that signing a message failed.",
+            Error::KeyLengthMismatch => {
+                "The lengths of the public and private parts of the key do not match"
+            }
+            Error::InvalidKeyLength => "The length of the provided key is invalid",
+            Error::InvalidSignatureLength => "The length of the provided signature is invalid",
+        };
+
+        f.write_str(text)
+    }
+}
+
+impl core::error::Error for Error {}
 
 mod impl_hacl;
 
