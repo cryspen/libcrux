@@ -21,6 +21,8 @@ class t_Repr (v_Self: Type0) = {
     -> Prims.Pure (t_Array i32 (mk_usize 8)) (f_repr_pre x0) (fun result -> f_repr_post x0 result)
 }
 
+val int_in_i32_range (i: Hax_lib.Int.t_Int) : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
 class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
@@ -62,18 +64,80 @@ class t_Operations (v_Self: Type0) = {
   f_add_pre:lhs: v_Self -> rhs: v_Self
     -> pred:
       Type0
-        { (forall i.
-              i < v v_COEFFICIENTS_IN_SIMD_UNIT ==>
-              (range (v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i)) i32_inttype)) ==>
+        { Hax_lib.v_forall #usize
+            (fun i ->
+                let i:usize = i in
+                Hax_lib.implies (i <. v_COEFFICIENTS_IN_SIMD_UNIT <: bool)
+                  (fun temp_0_ ->
+                      let _:Prims.unit = temp_0_ in
+                      int_in_i32_range ((Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                    #FStar.Tactics.Typeclasses.solve
+                                    lhs
+                                  <:
+                                  t_Array i32 (mk_usize 8)).[ i ]
+                                <:
+                                i32)
+                            <:
+                            Hax_lib.Int.t_Int) +
+                          (Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                    #FStar.Tactics.Typeclasses.solve
+                                    rhs
+                                  <:
+                                  t_Array i32 (mk_usize 8)).[ i ]
+                                <:
+                                i32)
+                            <:
+                            Hax_lib.Int.t_Int)
+                          <:
+                          Hax_lib.Int.t_Int)
+                      <:
+                      bool)
+                <:
+                bool) ==>
           pred };
   f_add_post:lhs: v_Self -> rhs: v_Self -> lhs_future: v_Self
     -> pred:
       Type0
         { pred ==>
-          (forall i.
-              i < v v_COEFFICIENTS_IN_SIMD_UNIT ==>
-              (v (Seq.index (f_repr lhs_future) i) ==
-                (v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i)))) };
+          Hax_lib.v_forall #usize
+            (fun i ->
+                let i:usize = i in
+                Hax_lib.implies (i <. v_COEFFICIENTS_IN_SIMD_UNIT <: bool)
+                  (fun temp_0_ ->
+                      let _:Prims.unit = temp_0_ in
+                      (Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                #FStar.Tactics.Typeclasses.solve
+                                lhs_future
+                              <:
+                              t_Array i32 (mk_usize 8)).[ i ]
+                            <:
+                            i32)
+                        <:
+                        Hax_lib.Int.t_Int) =
+                      ((Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                  #FStar.Tactics.Typeclasses.solve
+                                  lhs
+                                <:
+                                t_Array i32 (mk_usize 8)).[ i ]
+                              <:
+                              i32)
+                          <:
+                          Hax_lib.Int.t_Int) +
+                        (Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                  #FStar.Tactics.Typeclasses.solve
+                                  rhs
+                                <:
+                                t_Array i32 (mk_usize 8)).[ i ]
+                              <:
+                              i32)
+                          <:
+                          Hax_lib.Int.t_Int)
+                        <:
+                        Hax_lib.Int.t_Int)
+                      <:
+                      bool)
+                <:
+                bool) };
   f_add:x0: v_Self -> x1: v_Self
     -> Prims.Pure v_Self (f_add_pre x0 x1) (fun result -> f_add_post x0 x1 result);
   f_subtract_pre:v_Self -> v_Self -> Type0;

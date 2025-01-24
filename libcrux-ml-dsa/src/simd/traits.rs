@@ -1,4 +1,5 @@
 use crate::constants::{Eta, Gamma2};
+use hax_lib::int::*;
 
 // Each field element occupies 32 bits and the size of a simd_unit is 256 bits.
 pub(crate) const COEFFICIENTS_IN_SIMD_UNIT: usize = 8;
@@ -24,6 +25,9 @@ pub(crate) trait Repr: Copy + Clone {
     fn repr(&self) -> SIMDContent;
 }
 
+fn int_in_i32_range(i:hax_lib::int::Int) -> bool {
+    i <= i32::MAX.lift() && i >= i32::MIN.lift()
+}
 
 #[cfg(not(eurydice))]
 #[hax_lib::attributes]
@@ -32,8 +36,7 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn zero() -> Self;
 
     #[hax_lib::requires(array.len() == COEFFICIENTS_IN_SIMD_UNIT)]
-//  https://github.com/cryspen/hax/issues/1266
-    #[hax_lib::ensures(|result| fstar!("f_repr out_future == array"))]
+    #[hax_lib::ensures(|result| future(out).repr() == array)]
     fn from_coefficient_array(array: &[i32], out: &mut Self);
 
     #[hax_lib::requires(out.len() == COEFFICIENTS_IN_SIMD_UNIT)]
@@ -41,10 +44,14 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn to_coefficient_array(value: &Self, out: &mut [i32]);
 
     // Arithmetic
-    #[hax_lib::requires(fstar!("forall i. i < v ${COEFFICIENTS_IN_SIMD_UNIT} ==> (range (v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i)) i32_inttype)"))]
-    #[hax_lib::ensures(|_| fstar!("forall i. i < v ${COEFFICIENTS_IN_SIMD_UNIT} ==> (v (Seq.index (f_repr lhs_future) i) == (v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i)))"))]
+    #[hax_lib::requires(hax_lib::forall(|i:usize| hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || int_in_i32_range (lhs.repr()[i].lift() + rhs.repr()[i].lift()))))]
+    #[hax_lib::ensures(|_| hax_lib::forall(|i:usize| hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || future(lhs).repr()[i].lift() == (lhs.repr()[i].lift() + rhs.repr()[i].lift()))))]
     fn add(lhs: &mut Self, rhs: &Self);
+    
+    #[hax_lib::requires(hax_lib::forall(|i:usize| hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || int_in_i32_range (lhs.repr()[i].lift() - rhs.repr()[i].lift()))))]
+    #[hax_lib::ensures(|_| hax_lib::forall(|i:usize| hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || future(lhs).repr()[i].lift() == (lhs.repr()[i].lift() - rhs.repr()[i].lift()))))]
     fn subtract(lhs: &mut Self, rhs: &Self);
+    
     fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool;
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self);
     fn compute_hint(low: &Self, high: &Self, gamma2: i32, hint: &mut Self) -> usize;

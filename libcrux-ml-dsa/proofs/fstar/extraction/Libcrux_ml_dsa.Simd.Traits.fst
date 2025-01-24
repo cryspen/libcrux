@@ -3,4 +3,6 @@ module Libcrux_ml_dsa.Simd.Traits
 open Core
 open FStar.Mul
 
-let vv_zero (_: Prims.unit) = Rust_primitives.Hax.repeat (mk_i32 0) (mk_usize 8)
+let int_in_i32_range (i: Hax_lib.Int.t_Int) =
+  i <= (Rust_primitives.Hax.Int.from_machine Core.Num.impl__i32__MAX <: Hax_lib.Int.t_Int) &&
+  i >= (Rust_primitives.Hax.Int.from_machine Core.Num.impl__i32__MIN <: Hax_lib.Int.t_Int)
