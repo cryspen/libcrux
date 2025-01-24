@@ -80,6 +80,24 @@ jobs:
         working-directory: libcrux-ml-kem
         run: ./hax.py prove --admit
 
+  mlkem-verify:
+    runs-on: ubuntu-latest
+    needs:
+      - mlkem-extract
+      - mlkem-diff
+      - mlkem-lax
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hacspec/hax-actions@main
+        with:
+          hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
+          fstar: v2024.12.03
+
+      - name: 🏃 Verify ML-KEM crate
+        working-directory: libcrux-ml-kem
+        run: ./hax.py prove
+
   mldsa-extract:
     runs-on: ubuntu-latest
 
