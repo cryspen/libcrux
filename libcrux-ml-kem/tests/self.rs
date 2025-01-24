@@ -162,10 +162,19 @@ macro_rules! impl_consistency_incremental {
                 let pk1 = PublicKey1::try_from(&pk1_bytes as &[u8]).unwrap();
                 let (ct1, state) = encapsulate1(&pk1, encaps_randomness);
 
+                // encaps1 with serialized state
+                let mut serialized_state = vec![0u8; encaps_state_len()];
+                let ct12 = encapsulate1_serialized(&pk1, encaps_randomness, &mut serialized_state);
+                assert_eq!(ct1.value, ct12.value);
+
                 // ... and then to pk2.
                 // pk2 is passed in as bytes because the deserializaiton is runtime
                 // platform dependent.
                 let ct2 = encapsulate2(state.as_ref(), &pk2_bytes).unwrap();
+
+                // encaps2 with serialized state
+                let ct22 = encapsulate2_serialized(&serialized_state, &pk2_bytes).unwrap();
+                assert_eq!(ct2.value, ct22.value);
 
                 let mut shared_secret = [0u8; 32];
                 shared_secret.copy_from_slice(state.shared_secret());

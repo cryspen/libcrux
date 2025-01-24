@@ -23,7 +23,7 @@ use super::{
 
 pub mod types {
     use core::array::from_fn;
-    use std::eprintln;
+    use std::{eprintln, vec::Vec};
 
     use ind_cpa::unpacked::IndCpaPublicKeyUnpacked;
 
@@ -155,6 +155,58 @@ pub mod types {
         pub(super) r_as_ntt: [PolynomialRingElement<Vector>; K],
         pub(super) error2: PolynomialRingElement<Vector>,
         pub(super) randomness: [u8; 32],
+    }
+
+    impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
+        /// Get the number of bytes, required for the state.
+        pub const fn num_bytes() -> usize {
+            SHARED_SECRET_SIZE
+                + vec_len_bytes::<K, Vector>()
+                + PolynomialRingElement::<Vector>::num_bytes()
+                + 32
+        }
+
+        /// Get the state as bytes
+        pub fn to_bytes(self, out: &mut [u8]) {
+            debug_assert!(out.len() >= Self::num_bytes());
+
+            out[..SHARED_SECRET_SIZE].copy_from_slice(&self.shared_secret);
+            let mut offset = SHARED_SECRET_SIZE;
+
+            vec_to_bytes(&self.r_as_ntt, &mut out[offset..]);
+            offset += vec_len_bytes::<K, Vector>();
+
+            self.error2.to_bytes(&mut out[offset..]);
+            offset += PolynomialRingElement::<Vector>::num_bytes();
+
+            out[offset..offset + 32].copy_from_slice(&self.randomness);
+        }
+
+        /// Build a state from bytes
+        pub fn from_bytes(bytes: &[u8]) -> Self {
+            debug_assert!(bytes.len() >= Self::num_bytes());
+
+            let mut shared_secret = [0u8; SHARED_SECRET_SIZE];
+            shared_secret.copy_from_slice(&bytes[..SHARED_SECRET_SIZE]);
+            let mut offset = SHARED_SECRET_SIZE;
+
+            let mut r_as_ntt = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
+            vec_from_bytes(&bytes[offset..], &mut r_as_ntt);
+            offset += vec_len_bytes::<K, Vector>();
+
+            let error2 = PolynomialRingElement::<Vector>::from_bytes(&bytes[offset..]);
+            offset += PolynomialRingElement::<Vector>::num_bytes();
+
+            let mut randomness = [0u8; 32];
+            randomness.copy_from_slice(&bytes[offset..offset + 32]);
+
+            Self {
+                shared_secret,
+                r_as_ntt,
+                error2,
+                randomness,
+            }
+        }
     }
 
     /// Trait container for multiplexing over platform dependent [`EncapsState`].
@@ -455,6 +507,36 @@ pub(crate) mod portable {
         >(public_key_part, randomness)
     }
 
+    pub(crate) fn encapsulate1_serialized<
+        const K: usize,
+        const CIPHERTEXT_SIZE: usize,
+        const C1_SIZE: usize,
+        const VECTOR_U_COMPRESSION_FACTOR: usize,
+        const VECTOR_U_BLOCK_LEN: usize,
+        const ETA1: usize,
+        const ETA1_RANDOMNESS_SIZE: usize,
+        const ETA2: usize,
+        const ETA2_RANDOMNESS_SIZE: usize,
+    >(
+        public_key_part: &PublicKey1,
+        randomness: [u8; SHARED_SECRET_SIZE],
+        state: &mut [u8],
+    ) -> Ciphertext1<C1_SIZE> {
+        super::encapsulate1_serialized::<
+            K,
+            CIPHERTEXT_SIZE,
+            C1_SIZE,
+            VECTOR_U_COMPRESSION_FACTOR,
+            VECTOR_U_BLOCK_LEN,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            Vector,
+            Hash<K>,
+        >(public_key_part, randomness, state)
+    }
+
     pub(crate) fn encapsulate2<
         const K: usize,
         const C2_SIZE: usize,
@@ -464,6 +546,20 @@ pub(crate) mod portable {
         public_key_part: &PublicKey2<K, Vector>,
     ) -> Ciphertext2<C2_SIZE> {
         super::encapsulate2::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(
+            state,
+            public_key_part,
+        )
+    }
+
+    pub(crate) fn encapsulate2_serialized<
+        const K: usize,
+        const C2_SIZE: usize,
+        const VECTOR_V_COMPRESSION_FACTOR: usize,
+    >(
+        state: &[u8],
+        public_key_part: &PublicKey2<K, Vector>,
+    ) -> Ciphertext2<C2_SIZE> {
+        super::encapsulate2_serialized::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(
             state,
             public_key_part,
         )
@@ -656,6 +752,36 @@ pub(crate) mod neon {
         >(public_key_part, randomness)
     }
 
+    pub(crate) fn encapsulate1_serialized<
+        const K: usize,
+        const CIPHERTEXT_SIZE: usize,
+        const C1_SIZE: usize,
+        const VECTOR_U_COMPRESSION_FACTOR: usize,
+        const VECTOR_U_BLOCK_LEN: usize,
+        const ETA1: usize,
+        const ETA1_RANDOMNESS_SIZE: usize,
+        const ETA2: usize,
+        const ETA2_RANDOMNESS_SIZE: usize,
+    >(
+        public_key_part: &PublicKey1,
+        randomness: [u8; SHARED_SECRET_SIZE],
+        state: &mut [u8],
+    ) -> Ciphertext1<C1_SIZE> {
+        super::encapsulate1_serialized::<
+            K,
+            CIPHERTEXT_SIZE,
+            C1_SIZE,
+            VECTOR_U_COMPRESSION_FACTOR,
+            VECTOR_U_BLOCK_LEN,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            Vector,
+            Hash,
+        >(public_key_part, randomness, state)
+    }
+
     pub(crate) fn encapsulate2<
         const K: usize,
         const C2_SIZE: usize,
@@ -665,6 +791,20 @@ pub(crate) mod neon {
         public_key_part: &PublicKey2<K, Vector>,
     ) -> Ciphertext2<C2_SIZE> {
         super::encapsulate2::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(
+            state,
+            public_key_part,
+        )
+    }
+
+    pub(crate) fn encapsulate2_serialized<
+        const K: usize,
+        const C2_SIZE: usize,
+        const VECTOR_V_COMPRESSION_FACTOR: usize,
+    >(
+        state: &[u8],
+        public_key_part: &PublicKey2<K, Vector>,
+    ) -> Ciphertext2<C2_SIZE> {
+        super::encapsulate2_serialized::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(
             state,
             public_key_part,
         )
@@ -912,7 +1052,8 @@ pub(crate) mod multiplexing {
     use neon::{
         as_neon_keypair, as_neon_state, decapsulate as decapsulate_neon,
         decapsulate_incremental_key as decapsulate_incremental_key_neon,
-        encapsulate1 as encapsulate1_neon, encapsulate2 as encapsulate2_neon,
+        encapsulate1 as encapsulate1_neon, encapsulate1_serialized as encapsulate1_serialized_neon,
+        encapsulate2 as encapsulate2_neon, encapsulate2_serialized as encapsulate2_serialized_neon,
         generate_keypair as generate_keypair_neon,
         generate_keypair_serialized as generate_keypair_serialized_neon,
     };
@@ -922,7 +1063,8 @@ pub(crate) mod multiplexing {
         as_portable_keypair as as_avx2_keypair, as_portable_state as as_avx2_state,
         decapsulate as decapsulate_avx2,
         decapsulate_incremental_key as decapsulate_incremental_key_avx2,
-        encapsulate1 as encapsulate1_avx2, encapsulate2 as encapsulate2_avx2,
+        encapsulate1 as encapsulate1_avx2, encapsulate1_serialized as encapsulate1_serialized_avx2,
+        encapsulate2 as encapsulate2_avx2, encapsulate2_serialized as encapsulate2_serialized_avx2,
         generate_keypair as generate_keypair_avx2,
         generate_keypair_serialized as generate_keypair_serialized_avx2,
     };
@@ -1079,6 +1221,60 @@ pub(crate) mod multiplexing {
         }
     }
 
+    pub(crate) fn encapsulate1_serialized<
+        const K: usize,
+        const CIPHERTEXT_SIZE: usize,
+        const C1_SIZE: usize,
+        const VECTOR_U_COMPRESSION_FACTOR: usize,
+        const VECTOR_U_BLOCK_LEN: usize,
+        const ETA1: usize,
+        const ETA1_RANDOMNESS_SIZE: usize,
+        const ETA2: usize,
+        const ETA2_RANDOMNESS_SIZE: usize,
+    >(
+        public_key_part: &PublicKey1,
+        randomness: [u8; SHARED_SECRET_SIZE],
+        state: &mut [u8],
+    ) -> Ciphertext1<C1_SIZE> {
+        if libcrux_platform::simd256_support() {
+            encapsulate1_serialized_avx2::<
+                K,
+                CIPHERTEXT_SIZE,
+                C1_SIZE,
+                VECTOR_U_COMPRESSION_FACTOR,
+                VECTOR_U_BLOCK_LEN,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                ETA2,
+                ETA2_RANDOMNESS_SIZE,
+            >(public_key_part, randomness, state)
+        } else if libcrux_platform::simd128_support() {
+            encapsulate1_serialized_neon::<
+                K,
+                CIPHERTEXT_SIZE,
+                C1_SIZE,
+                VECTOR_U_COMPRESSION_FACTOR,
+                VECTOR_U_BLOCK_LEN,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                ETA2,
+                ETA2_RANDOMNESS_SIZE,
+            >(public_key_part, randomness, state)
+        } else {
+            portable::encapsulate1_serialized::<
+                K,
+                CIPHERTEXT_SIZE,
+                C1_SIZE,
+                VECTOR_U_COMPRESSION_FACTOR,
+                VECTOR_U_BLOCK_LEN,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                ETA2,
+                ETA2_RANDOMNESS_SIZE,
+            >(public_key_part, randomness, state)
+        }
+    }
+
     pub(crate) fn encapsulate2<
         const K: usize,
         const C2_SIZE: usize,
@@ -1099,6 +1295,37 @@ pub(crate) mod multiplexing {
             let state = portable::as_portable_state(state.as_any());
             let pk2 = PublicKey2::try_from(public_key_part)?;
             Ok(portable::encapsulate2::<
+                K,
+                C2_SIZE,
+                VECTOR_V_COMPRESSION_FACTOR,
+            >(state, &pk2))
+        }
+    }
+    pub(crate) fn encapsulate2_serialized<
+        const K: usize,
+        const C2_SIZE: usize,
+        const VECTOR_V_COMPRESSION_FACTOR: usize,
+    >(
+        state: &[u8],
+        public_key_part: &[u8],
+    ) -> Result<Ciphertext2<C2_SIZE>, Error> {
+        if libcrux_platform::simd256_support() {
+            let pk2 = PublicKey2::try_from(public_key_part)?;
+            Ok(encapsulate2_serialized_avx2::<
+                K,
+                C2_SIZE,
+                VECTOR_V_COMPRESSION_FACTOR,
+            >(state, &pk2))
+        } else if libcrux_platform::simd128_support() {
+            let pk2 = PublicKey2::try_from(public_key_part)?;
+            Ok(encapsulate2_serialized_neon::<
+                K,
+                C2_SIZE,
+                VECTOR_V_COMPRESSION_FACTOR,
+            >(state, &pk2))
+        } else {
+            let pk2 = PublicKey2::try_from(public_key_part)?;
+            Ok(portable::encapsulate2_serialized::<
                 K,
                 C2_SIZE,
                 VECTOR_V_COMPRESSION_FACTOR,
@@ -1432,6 +1659,44 @@ pub(crate) fn encapsulate1<
     (Ciphertext1 { value: ciphertext }, state)
 }
 
+pub(crate) fn encapsulate1_serialized<
+    const K: usize,
+    const CIPHERTEXT_SIZE: usize,
+    const C1_SIZE: usize,
+    const VECTOR_U_COMPRESSION_FACTOR: usize,
+    const VECTOR_U_BLOCK_LEN: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+    const ETA2: usize,
+    const ETA2_RANDOMNESS_SIZE: usize,
+    Vector: Operations,
+    Hasher: Hash<K>,
+>(
+    public_key_part: &PublicKey1,
+    randomness: [u8; SHARED_SECRET_SIZE],
+    state: &mut [u8],
+) -> Ciphertext1<C1_SIZE> {
+    let (ct1, encaps_state) = encapsulate1::<
+        K,
+        CIPHERTEXT_SIZE,
+        C1_SIZE,
+        VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_U_BLOCK_LEN,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        Vector,
+        Hasher,
+    >(public_key_part, randomness);
+
+    // Write out the state
+    encaps_state.to_bytes(state);
+
+    // Return the ciphertext
+    ct1
+}
+
 pub(crate) fn encapsulate2<
     const K: usize,
     const C2_SIZE: usize,
@@ -1451,6 +1716,19 @@ pub(crate) fn encapsulate2<
     );
 
     Ciphertext2 { value: ciphertext }
+}
+
+pub(crate) fn encapsulate2_serialized<
+    const K: usize,
+    const C2_SIZE: usize,
+    const VECTOR_V_COMPRESSION_FACTOR: usize,
+    Vector: Operations,
+>(
+    state: &[u8],
+    public_key_part: &PublicKey2<K, Vector>,
+) -> Ciphertext2<C2_SIZE> {
+    let state = EncapsState::from_bytes(state);
+    encapsulate2::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(&state, public_key_part)
 }
 
 pub(crate) fn decapsulate<

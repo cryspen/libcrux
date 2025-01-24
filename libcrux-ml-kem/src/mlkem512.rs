@@ -665,7 +665,7 @@ pub(crate) mod kyber {
 /// **NOTE:** This is a non-standard API. Use with caution!
 pub mod incremental {
     use self::incremental::types::{Ciphertext1, Ciphertext2, Error, State};
-    pub use self::incremental::types::{PublicKey1, PublicKey2};
+    pub use self::incremental::types::{EncapsState, PublicKey1, PublicKey2};
 
     use super::*;
     extern crate alloc;
@@ -689,6 +689,20 @@ pub mod incremental {
         + RANK_512 * 16 * 32 + 32
         // Matrix
         + RANK_512 * RANK_512 * 16 * 32
+    }
+
+    /// The size of the encaps state in bytes.
+    pub const fn encaps_state_len() -> usize {
+        // Because const generics are too limited, we compute it here from scratch.
+
+        // shared secret
+        SHARED_SECRET_SIZE 
+        // r_as_ntt
+        + RANK_512 * 16 * 32
+        // error2
+        + 16 * 32
+        // randomness
+        + 32
     }
 
     /// Generate a new key pair for incremental encapsulation.
@@ -740,6 +754,25 @@ pub mod incremental {
         >(public_key_part, randomness)
     }
 
+    /// Encapsulate the first part of the ciphertext.
+    pub fn encapsulate1_serialized(
+        public_key_part: &PublicKey1,
+        randomness: [u8; SHARED_SECRET_SIZE],
+        state: &mut [u8],
+    ) -> Ciphertext1<C1_SIZE_512> {
+        incremental::multiplexing::encapsulate1_serialized::<
+            RANK_512,
+            CPA_PKE_CIPHERTEXT_SIZE_512,
+            C1_SIZE_512,
+            VECTOR_U_COMPRESSION_FACTOR_512,
+            C1_BLOCK_SIZE_512,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+        >(public_key_part, randomness, state)
+    }
+
     /// Encapsulate the second part of the ciphertext.
     ///
     /// The second part of the public key is passed in as byte slice.
@@ -750,6 +783,22 @@ pub mod incremental {
         public_key_part: &[u8],
     ) -> Result<Ciphertext2<C2_SIZE_512>, Error> {
         incremental::multiplexing::encapsulate2::<
+            RANK_512,
+            C2_SIZE_512,
+            VECTOR_V_COMPRESSION_FACTOR_512,
+        >(state, public_key_part)
+    }
+
+    /// Encapsulate the second part of the ciphertext.
+    ///
+    /// The second part of the public key is passed in as byte slice.
+    /// [`Error::InvalidInputLength`] is returned if `public_key_part` is too
+    /// short.
+    pub fn encapsulate2_serialized(
+        state: &[u8],
+        public_key_part: &[u8],
+    ) -> Result<Ciphertext2<C2_SIZE_512>, Error> {
+        incremental::multiplexing::encapsulate2_serialized::<
             RANK_512,
             C2_SIZE_512,
             VECTOR_V_COMPRESSION_FACTOR_512,
