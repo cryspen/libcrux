@@ -3,14 +3,14 @@ module Libcrux_ml_dsa.Simd.Traits
 open Core
 open FStar.Mul
 
-let v_COEFFICIENTS_IN_SIMD_UNIT: usize = sz 8
+let v_COEFFICIENTS_IN_SIMD_UNIT: usize = mk_usize 8
 
 let v_SIMD_UNITS_IN_RING_ELEMENT: usize =
   Libcrux_ml_dsa.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! v_COEFFICIENTS_IN_SIMD_UNIT
 
-let v_FIELD_MODULUS: i32 = 8380417l
+let v_FIELD_MODULUS: i32 = mk_i32 8380417
 
-let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58728449uL
+let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = mk_u64 58728449
 
 class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
@@ -154,14 +154,14 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_t1_deserialize_pre x0 x1)
         (fun result -> f_t1_deserialize_post x0 x1 result);
-  f_ntt_pre:t_Array v_Self (sz 32) -> Type0;
-  f_ntt_post:t_Array v_Self (sz 32) -> t_Array v_Self (sz 32) -> Type0;
-  f_ntt:x0: t_Array v_Self (sz 32)
-    -> Prims.Pure (t_Array v_Self (sz 32)) (f_ntt_pre x0) (fun result -> f_ntt_post x0 result);
-  f_invert_ntt_montgomery_pre:t_Array v_Self (sz 32) -> Type0;
-  f_invert_ntt_montgomery_post:t_Array v_Self (sz 32) -> t_Array v_Self (sz 32) -> Type0;
-  f_invert_ntt_montgomery:x0: t_Array v_Self (sz 32)
-    -> Prims.Pure (t_Array v_Self (sz 32))
+  f_ntt_pre:t_Array v_Self (mk_usize 32) -> Type0;
+  f_ntt_post:t_Array v_Self (mk_usize 32) -> t_Array v_Self (mk_usize 32) -> Type0;
+  f_ntt:x0: t_Array v_Self (mk_usize 32)
+    -> Prims.Pure (t_Array v_Self (mk_usize 32)) (f_ntt_pre x0) (fun result -> f_ntt_post x0 result);
+  f_invert_ntt_montgomery_pre:t_Array v_Self (mk_usize 32) -> Type0;
+  f_invert_ntt_montgomery_post:t_Array v_Self (mk_usize 32) -> t_Array v_Self (mk_usize 32) -> Type0;
+  f_invert_ntt_montgomery:x0: t_Array v_Self (mk_usize 32)
+    -> Prims.Pure (t_Array v_Self (mk_usize 32))
         (f_invert_ntt_montgomery_pre x0)
         (fun result -> f_invert_ntt_montgomery_post x0 result)
 }

@@ -21,14 +21,14 @@ let generate_serialized
   let verification_key_serialized:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range verification_key_serialized
       ({
-          Core.Ops.Range.f_start = sz 0;
+          Core.Ops.Range.f_start = mk_usize 0;
           Core.Ops.Range.f_end = Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE
         }
         <:
         Core.Ops.Range.t_Range usize)
       (Core.Slice.impl__copy_from_slice #u8
           (verification_key_serialized.[ {
-                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_start = mk_usize 0;
                 Core.Ops.Range.f_end = Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE
               }
               <:
@@ -106,7 +106,7 @@ let deserialize
       ()
   in
   let t1:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       rows_in_a
       (fun t1 temp_1_ ->
           let t1:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) = t1 in
@@ -125,7 +125,8 @@ let deserialize
                       i *! Libcrux_ml_dsa.Constants.v_RING_ELEMENT_OF_T1S_SIZE <: usize;
                       Core.Ops.Range.f_end
                       =
-                      (i +! sz 1 <: usize) *! Libcrux_ml_dsa.Constants.v_RING_ELEMENT_OF_T1S_SIZE
+                      (i +! mk_usize 1 <: usize) *!
+                      Libcrux_ml_dsa.Constants.v_RING_ELEMENT_OF_T1S_SIZE
                       <:
                       usize
                     }

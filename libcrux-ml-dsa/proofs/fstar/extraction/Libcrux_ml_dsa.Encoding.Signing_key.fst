@@ -24,7 +24,7 @@ let generate_serialized
       (s1_2_ t0: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       (signing_key_serialized: t_Slice u8)
      =
-  let offset:usize = sz 0 in
+  let offset:usize = mk_usize 0 in
   let signing_key_serialized:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range signing_key_serialized
       ({
@@ -71,11 +71,13 @@ let generate_serialized
         t_Slice u8)
   in
   let offset:usize = offset +! Libcrux_ml_dsa.Constants.v_SEED_FOR_SIGNING_SIZE in
-  let verification_key_hash:t_Array u8 (sz 64) = Rust_primitives.Hax.repeat 0uy (sz 64) in
-  let verification_key_hash:t_Array u8 (sz 64) =
+  let verification_key_hash:t_Array u8 (mk_usize 64) =
+    Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 64)
+  in
+  let verification_key_hash:t_Array u8 (mk_usize 64) =
     Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256 #v_Shake256
       #FStar.Tactics.Typeclasses.solve
-      (sz 64)
+      (mk_usize 64)
       verification_key
       verification_key_hash
   in
@@ -106,7 +108,7 @@ let generate_serialized
   in
   let offset:usize = offset +! Libcrux_ml_dsa.Constants.v_BYTES_FOR_VERIFICATION_KEY_HASH in
   let offset, signing_key_serialized:(usize & t_Slice u8) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) s1_2_
         <:
         usize)

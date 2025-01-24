@@ -52,14 +52,14 @@ val make_hint
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (low high: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       (gamma2: i32)
-      (hint: t_Slice (t_Array i32 (sz 256)))
-    : Prims.Pure (t_Slice (t_Array i32 (sz 256)) & usize) Prims.l_True (fun _ -> Prims.l_True)
+      (hint: t_Slice (t_Array i32 (mk_usize 256)))
+    : Prims.Pure (t_Slice (t_Array i32 (mk_usize 256)) & usize) Prims.l_True (fun _ -> Prims.l_True)
 
 val use_hint
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (gamma2: i32)
-      (hint: t_Slice (t_Array i32 (sz 256)))
+      (hint: t_Slice (t_Array i32 (mk_usize 256)))
       (re_vector: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
     : Prims.Pure (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       Prims.l_True

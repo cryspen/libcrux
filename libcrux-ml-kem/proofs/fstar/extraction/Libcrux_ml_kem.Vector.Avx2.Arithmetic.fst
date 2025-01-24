@@ -99,7 +99,7 @@ let cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
     assert (forall i. get_lane vv_minus_field_modulus i == get_lane vector i -. (mk_i16 3329))
   in
   let sign_mask:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 15l vv_minus_field_modulus
+    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 (mk_i32 15) vv_minus_field_modulus
   in
   let _:Prims.unit =
     assert (forall i. get_lane sign_mask i == (get_lane vv_minus_field_modulus i >>! (mk_i32 15)))
@@ -148,7 +148,7 @@ let barrett_reduce (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
             i16))
   in
   let t512:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 512s
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 (mk_i16 512)
   in
   let _:Prims.unit = assert (forall i. get_lane t512 i == (mk_i16 512)) in
   let t1:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -156,7 +156,7 @@ let barrett_reduce (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   in
   let _:Prims.unit = assert (forall i. get_lane t1 i == get_lane t0 i +. (mk_i16 512)) in
   let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 10l t1
+    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 (mk_i32 10) t1
   in
   let _:Prims.unit =
     assert (forall i. get_lane quotient i == (((get_lane t1 i) <: i16) >>! ((mk_i32 10) <: i32)))
@@ -363,16 +363,16 @@ let montgomery_reduce_i32s (vec: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   let value_high:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi32 16l vec
+    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi32 (mk_i32 16) vec
   in
   let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 value_high k_times_modulus
   in
   let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_slli_epi32 16l result
+    Libcrux_intrinsics.Avx2_extract.mm256_slli_epi32 (mk_i32 16) result
   in
   let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 16l result
+    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 (mk_i32 16) result
   in
   let _:Prims.unit = admit () (* Panic freedom *) in
   result

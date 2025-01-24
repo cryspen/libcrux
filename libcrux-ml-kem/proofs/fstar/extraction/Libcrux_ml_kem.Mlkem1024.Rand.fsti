@@ -18,7 +18,8 @@ val generate_key_pair
       {| i1: Rand_core.t_RngCore impl_277843321_ |}
       {| i2: Rand_core.t_CryptoRng impl_277843321_ |}
       (rng: impl_277843321_)
-    : Prims.Pure (impl_277843321_ & Libcrux_ml_kem.Types.t_MlKemKeyPair (sz 3168) (sz 1568))
+    : Prims.Pure
+      (impl_277843321_ & Libcrux_ml_kem.Types.t_MlKemKeyPair (mk_usize 3168) (mk_usize 1568))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
@@ -31,9 +32,10 @@ val encapsulate
       (#impl_277843321_: Type0)
       {| i1: Rand_core.t_RngCore impl_277843321_ |}
       {| i2: Rand_core.t_CryptoRng impl_277843321_ |}
-      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1568))
+      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 1568))
       (rng: impl_277843321_)
     : Prims.Pure
-      (impl_277843321_ & (Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1568) & t_Array u8 (sz 32)))
+      (impl_277843321_ &
+        (Libcrux_ml_kem.Types.t_MlKemCiphertext (mk_usize 1568) & t_Array u8 (mk_usize 32)))
       Prims.l_True
       (fun _ -> Prims.l_True)

@@ -3,7 +3,7 @@ module Libcrux_ml_dsa.Hash_functions.Shake256
 open Core
 open FStar.Mul
 
-let v_BLOCK_SIZE: usize = sz 136
+let v_BLOCK_SIZE: usize = mk_usize 136
 
 /// An ML-DSA specific Xof trait
 /// This trait is not actually a full Xof implementation but opererates only
@@ -27,15 +27,15 @@ class t_DsaXof (v_Self: Type0) = {
         (f_init_absorb_final_pre x0)
         (fun result -> f_init_absorb_final_post x0 result);
   f_squeeze_first_block_pre:v_Self -> Type0;
-  f_squeeze_first_block_post:v_Self -> (v_Self & t_Array u8 (sz 136)) -> Type0;
+  f_squeeze_first_block_post:v_Self -> (v_Self & t_Array u8 (mk_usize 136)) -> Type0;
   f_squeeze_first_block:x0: v_Self
-    -> Prims.Pure (v_Self & t_Array u8 (sz 136))
+    -> Prims.Pure (v_Self & t_Array u8 (mk_usize 136))
         (f_squeeze_first_block_pre x0)
         (fun result -> f_squeeze_first_block_post x0 result);
   f_squeeze_next_block_pre:v_Self -> Type0;
-  f_squeeze_next_block_post:v_Self -> (v_Self & t_Array u8 (sz 136)) -> Type0;
+  f_squeeze_next_block_post:v_Self -> (v_Self & t_Array u8 (mk_usize 136)) -> Type0;
   f_squeeze_next_block:x0: v_Self
-    -> Prims.Pure (v_Self & t_Array u8 (sz 136))
+    -> Prims.Pure (v_Self & t_Array u8 (mk_usize 136))
         (f_squeeze_next_block_pre x0)
         (fun result -> f_squeeze_next_block_post x0 result)
 }
@@ -51,24 +51,28 @@ class t_XofX4 (v_Self: Type0) = {
   f_squeeze_first_block_x4_post:
       v_Self ->
       (v_Self &
-          (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
+          (t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) &
+            t_Array u8 (mk_usize 136)))
     -> Type0;
   f_squeeze_first_block_x4:x0: v_Self
     -> Prims.Pure
         (v_Self &
-          (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
+          (t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) &
+            t_Array u8 (mk_usize 136)))
         (f_squeeze_first_block_x4_pre x0)
         (fun result -> f_squeeze_first_block_x4_post x0 result);
   f_squeeze_next_block_x4_pre:v_Self -> Type0;
   f_squeeze_next_block_x4_post:
       v_Self ->
       (v_Self &
-          (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
+          (t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) &
+            t_Array u8 (mk_usize 136)))
     -> Type0;
   f_squeeze_next_block_x4:x0: v_Self
     -> Prims.Pure
         (v_Self &
-          (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
+          (t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) &
+            t_Array u8 (mk_usize 136)))
         (f_squeeze_next_block_x4_pre x0)
         (fun result -> f_squeeze_next_block_x4_post x0 result);
   f_shake256_x4_pre:

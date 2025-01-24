@@ -46,7 +46,7 @@ val bitwise_and_with_constant (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
 val shift_right (v_SHIFT_BY: i32) (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
-      (requires v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l)
+      (requires v_SHIFT_BY >=. mk_i32 0 && v_SHIFT_BY <. mk_i32 16)
       (ensures
         fun result ->
           let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
@@ -70,7 +70,7 @@ val cond_subtract_3329_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
               then get_lane vector i -! (mk_i16 3329)
               else get_lane vector i))
 
-let v_BARRETT_MULTIPLIER: i16 = 20159s
+let v_BARRETT_MULTIPLIER: i16 = mk_i16 20159
 
 /// See Section 3.2 of the implementation notes document for an explanation
 /// of this code.

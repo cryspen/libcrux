@@ -563,37 +563,46 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         out);
     f_ntt_pre
     =
-    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) ->
+    (fun
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+        ->
         true);
     f_ntt_post
     =
     (fun
-        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
-        (out: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+        (out: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
         ->
         true);
     f_ntt
     =
-    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) ->
-        let simd_units:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32) =
+    (fun
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+        ->
+        let simd_units:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32)
+        =
           Libcrux_ml_dsa.Simd.Portable.Ntt.ntt simd_units
         in
         simd_units);
     f_invert_ntt_montgomery_pre
     =
-    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) ->
+    (fun
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+        ->
         true);
     f_invert_ntt_montgomery_post
     =
     (fun
-        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
-        (out: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+        (out: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
         ->
         true);
     f_invert_ntt_montgomery
     =
-    fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) ->
-      let simd_units:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32) =
+    fun
+      (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+      ->
+      let simd_units:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
         Libcrux_ml_dsa.Simd.Portable.Invntt.invert_ntt_montgomery simd_units
       in
       simd_units

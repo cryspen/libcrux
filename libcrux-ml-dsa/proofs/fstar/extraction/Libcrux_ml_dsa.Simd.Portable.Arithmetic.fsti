@@ -3,7 +3,7 @@ module Libcrux_ml_dsa.Simd.Portable.Arithmetic
 open Core
 open FStar.Mul
 
-let v_MONTGOMERY_SHIFT: u8 = 32uy
+let v_MONTGOMERY_SHIFT: u8 = mk_u8 32
 
 val add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients

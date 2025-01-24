@@ -19,7 +19,7 @@ let compute_as1_plus_s2
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
      =
   let result:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       rows_in_a
       (fun result temp_1_ ->
           let result:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
@@ -33,7 +33,7 @@ let compute_as1_plus_s2
             result
           in
           let i:usize = i in
-          Rust_primitives.Hax.Folds.fold_range (sz 0)
+          Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
             columns_in_a
             (fun result temp_1_ ->
                 let result:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
@@ -71,7 +71,7 @@ let compute_as1_plus_s2
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
   in
   let result:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) result
         <:
         usize)
@@ -119,7 +119,7 @@ let compute_matrix_x_mask
       (matrix mask result: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
      =
   let result:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       rows_in_a
       (fun result temp_1_ ->
           let result:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
@@ -134,7 +134,7 @@ let compute_matrix_x_mask
           in
           let i:usize = i in
           let result:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-            Rust_primitives.Hax.Folds.fold_range (sz 0)
+            Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
               columns_in_a
               (fun result temp_1_ ->
                   let result:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
@@ -195,7 +195,7 @@ let vector_times_ring_element
       (ring_element: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
   let vector:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) vector
         <:
         usize)
@@ -241,7 +241,7 @@ let add_vectors
       (lhs rhs: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
      =
   let lhs:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       dimension
       (fun lhs temp_1_ ->
           let lhs:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) = lhs in
@@ -272,7 +272,7 @@ let subtract_vectors
       (lhs rhs: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
      =
   let lhs:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       dimension
       (fun lhs temp_1_ ->
           let lhs:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) = lhs in
@@ -306,7 +306,7 @@ let compute_w_approx
       (t1: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
      =
   let t1:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       rows_in_a
       (fun t1 temp_1_ ->
           let t1:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) = t1 in
@@ -320,7 +320,7 @@ let compute_w_approx
             Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
           in
           let inner_result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-            Rust_primitives.Hax.Folds.fold_range (sz 0)
+            Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
               columns_in_a
               (fun inner_result temp_1_ ->
                   let inner_result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
@@ -353,7 +353,7 @@ let compute_w_approx
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize t1
               i
               (Libcrux_ml_dsa.Arithmetic.shift_left_then_reduce #v_SIMDUnit
-                  13l
+                  (mk_i32 13)
                   (t1.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                 <:
                 Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
