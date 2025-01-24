@@ -9,6 +9,58 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
+let serialize
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      (serialized: t_Slice u8)
+      (gamma1_exponent: usize)
+     =
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Folds.fold_enumerated_slice (re.Libcrux_ml_dsa.Polynomial.f_simd_units
+        <:
+        t_Slice v_SIMDUnit)
+      (fun serialized temp_1_ ->
+          let serialized:t_Slice u8 = serialized in
+          let _:usize = temp_1_ in
+          true)
+      serialized
+      (fun serialized temp_1_ ->
+          let serialized:t_Slice u8 = serialized in
+          let i, simd_unit:(usize & v_SIMDUnit) = temp_1_ in
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+            ({
+                Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
+                Core.Ops.Range.f_end
+                =
+                (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize)
+            (Libcrux_ml_dsa.Simd.Traits.f_gamma1_serialize #v_SIMDUnit
+                #FStar.Tactics.Typeclasses.solve
+                simd_unit
+                (serialized.[ {
+                      Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
+                      Core.Ops.Range.f_end
+                      =
+                      (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize ]
+                  <:
+                  t_Slice u8)
+                gamma1_exponent
+              <:
+              t_Slice u8)
+          <:
+          t_Slice u8)
+  in
+  let _:Prims.unit = () <: Prims.unit in
+  serialized
+
 let deserialize
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -63,55 +115,3 @@ let deserialize
   in
   let _:Prims.unit = () <: Prims.unit in
   result
-
-let serialize
-      (#v_SIMDUnit: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (serialized: t_Slice u8)
-      (gamma1_exponent: usize)
-     =
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Folds.fold_enumerated_slice (re.Libcrux_ml_dsa.Polynomial.f_simd_units
-        <:
-        t_Slice v_SIMDUnit)
-      (fun serialized temp_1_ ->
-          let serialized:t_Slice u8 = serialized in
-          let _:usize = temp_1_ in
-          true)
-      serialized
-      (fun serialized temp_1_ ->
-          let serialized:t_Slice u8 = serialized in
-          let i, simd_unit:(usize & v_SIMDUnit) = temp_1_ in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
-            ({
-                Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
-                Core.Ops.Range.f_end
-                =
-                (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize)
-            (Libcrux_ml_dsa.Simd.Traits.f_gamma1_serialize #v_SIMDUnit
-                #FStar.Tactics.Typeclasses.solve
-                simd_unit
-                (serialized.[ {
-                      Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
-                      Core.Ops.Range.f_end
-                      =
-                      (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
-                    }
-                    <:
-                    Core.Ops.Range.t_Range usize ]
-                  <:
-                  t_Slice u8)
-                gamma1_exponent
-              <:
-              t_Slice u8)
-          <:
-          t_Slice u8)
-  in
-  let _:Prims.unit = () <: Prims.unit in
-  serialized

@@ -3,100 +3,6 @@ module Libcrux_ml_dsa.Simd.Avx2.Arithmetic
 open Core
 open FStar.Mul
 
-let add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 lhs rhs
-  in
-  lhs
-
-let compute_hint
-      (low high: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (gamma2: i32)
-      (hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-     =
-  let minus_gamma2:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (Core.Ops.Arith.Neg.neg gamma2 <: i32)
-  in
-  let gamma2:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 gamma2
-  in
-  let low_within_bound:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_cmpgt_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_abs_epi32
-          low
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      gamma2
-  in
-  let low_equals_minus_gamma2:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_cmpeq_epi32 low minus_gamma2
-  in
-  let low_equals_minus_gamma2_and_high_is_nonzero:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sign_epi32 low_equals_minus_gamma2 high
-  in
-  let hint:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_or_si256 low_within_bound
-      low_equals_minus_gamma2_and_high_is_nonzero
-  in
-  let hints_mask:i32 =
-    Libcrux_intrinsics.Avx2_extract.mm256_movemask_ps (Libcrux_intrinsics.Avx2_extract.mm256_castsi256_ps
-          hint
-        <:
-        u8)
-  in
-  let hint:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_and_si256 hint
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 1l
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  let hax_temp_output:usize = cast (Core.Num.impl__i32__count_ones hints_mask <: u32) <: usize in
-  hint, hax_temp_output <: (Libcrux_intrinsics.Avx2_extract.t_Vec256 & usize)
-
-let infinity_norm_exceeds (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (bound: i32) =
-  let absolute_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_abs_epi32 simd_unit
-  in
-  let bound:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (bound -! 1l <: i32)
-  in
-  let compare_with_bound:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_cmpgt_epi32 absolute_values bound
-  in
-  let result:i32 =
-    Libcrux_intrinsics.Avx2_extract.mm256_testz_si256 compare_with_bound compare_with_bound
-  in
-  result <>. 1l
-
-let subtract (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 lhs rhs
-  in
-  lhs
-
-let shift_left_then_reduce (v_SHIFT_BY: i32) (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_slli_epi32 v_SHIFT_BY simd_unit
-  in
-  let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 shifted
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (1l <<! 22l <: i32)
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 23l quotient
-  in
-  let quotient_times_field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 quotient
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  let simd_unit:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 shifted quotient_times_field_modulus
-  in
-  simd_unit
-
 let to_unsigned_representatives_ret (t: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let signs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 31l t
@@ -113,78 +19,15 @@ let to_unsigned_representatives (t: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let t:Libcrux_intrinsics.Avx2_extract.t_Vec256 = to_unsigned_representatives_ret t in
   t
 
-let power2round (r0 r1: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let r0:Libcrux_intrinsics.Avx2_extract.t_Vec256 = to_unsigned_representatives r0 in
-  let r1:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 r0
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 ((1l <<!
-              (Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T -! sz 1 <: usize)
-              <:
-              i32) -!
-            1l
-            <:
-            i32)
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  let r1:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 13l r1
-  in
-  let tmp:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_slli_epi32 13l r1
-  in
-  let r0:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 r0 tmp
-  in
-  r0, r1 <: (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)
-
-let montgomery_multiply (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
-  in
-  let inverse_of_modulus_mod_montgomery_r:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (cast (Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R
-            <:
-            u64)
-        <:
-        i32)
-  in
-  let prod02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 lhs rhs
-  in
-  let prod13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32
-          245l
-          lhs
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 245l rhs
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  let k02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod02 inverse_of_modulus_mod_montgomery_r
-  in
-  let k13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod13 inverse_of_modulus_mod_montgomery_r
-  in
-  let c02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k02 field_modulus
-  in
-  let c13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k13 field_modulus
-  in
-  let res02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod02 c02
-  in
-  let res13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod13 c13
-  in
-  let res02_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 245l res02
-  in
+let add (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 170l res02_shifted res13
+    Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 lhs rhs
+  in
+  lhs
+
+let subtract (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+  let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 lhs rhs
   in
   lhs
 
@@ -237,6 +80,120 @@ let montgomery_multiply_by_constant (lhs: Libcrux_intrinsics.Avx2_extract.t_Vec2
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 245l res02
   in
   Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 170l res02_shifted res13
+
+let montgomery_multiply (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+  let field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
+  in
+  let inverse_of_modulus_mod_montgomery_r:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (cast (Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R
+            <:
+            u64)
+        <:
+        i32)
+  in
+  let prod02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 lhs rhs
+  in
+  let prod13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32
+          245l
+          lhs
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 245l rhs
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let k02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod02 inverse_of_modulus_mod_montgomery_r
+  in
+  let k13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod13 inverse_of_modulus_mod_montgomery_r
+  in
+  let c02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k02 field_modulus
+  in
+  let c13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k13 field_modulus
+  in
+  let res02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod02 c02
+  in
+  let res13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod13 c13
+  in
+  let res02_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 245l res02
+  in
+  let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 170l res02_shifted res13
+  in
+  lhs
+
+let shift_left_then_reduce (v_SHIFT_BY: i32) (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+  let shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_slli_epi32 v_SHIFT_BY simd_unit
+  in
+  let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 shifted
+      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (1l <<! 22l <: i32)
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 23l quotient
+  in
+  let quotient_times_field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 quotient
+      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let simd_unit:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 shifted quotient_times_field_modulus
+  in
+  simd_unit
+
+let infinity_norm_exceeds (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (bound: i32) =
+  let absolute_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_abs_epi32 simd_unit
+  in
+  let bound:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (bound -! 1l <: i32)
+  in
+  let compare_with_bound:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_cmpgt_epi32 absolute_values bound
+  in
+  let result:i32 =
+    Libcrux_intrinsics.Avx2_extract.mm256_testz_si256 compare_with_bound compare_with_bound
+  in
+  result <>. 1l
+
+let power2round (r0 r1: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+  let r0:Libcrux_intrinsics.Avx2_extract.t_Vec256 = to_unsigned_representatives r0 in
+  let r1:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 r0
+      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 ((1l <<!
+              (Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T -! sz 1 <: usize)
+              <:
+              i32) -!
+            1l
+            <:
+            i32)
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let r1:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 13l r1
+  in
+  let tmp:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_slli_epi32 13l r1
+  in
+  let r0:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 r0 tmp
+  in
+  r0, r1 <: (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
 let decompose (gamma2: i32) (r r0 r1: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let r:Libcrux_intrinsics.Avx2_extract.t_Vec256 = to_unsigned_representatives_ret r in
@@ -344,6 +301,49 @@ let decompose (gamma2: i32) (r r0 r1: Libcrux_intrinsics.Avx2_extract.t_Vec256) 
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 r0_tmp field_modulus_and_mask
   in
   r0, r1 <: (Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256)
+
+let compute_hint
+      (low high: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (gamma2: i32)
+      (hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+     =
+  let minus_gamma2:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (Core.Ops.Arith.Neg.neg gamma2 <: i32)
+  in
+  let gamma2:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 gamma2
+  in
+  let low_within_bound:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_cmpgt_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_abs_epi32
+          low
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      gamma2
+  in
+  let low_equals_minus_gamma2:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_cmpeq_epi32 low minus_gamma2
+  in
+  let low_equals_minus_gamma2_and_high_is_nonzero:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sign_epi32 low_equals_minus_gamma2 high
+  in
+  let hint:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_or_si256 low_within_bound
+      low_equals_minus_gamma2_and_high_is_nonzero
+  in
+  let hints_mask:i32 =
+    Libcrux_intrinsics.Avx2_extract.mm256_movemask_ps (Libcrux_intrinsics.Avx2_extract.mm256_castsi256_ps
+          hint
+        <:
+        u8)
+  in
+  let hint:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_and_si256 hint
+      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 1l
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let hax_temp_output:usize = cast (Core.Num.impl__i32__count_ones hints_mask <: u32) <: usize in
+  hint, hax_temp_output <: (Libcrux_intrinsics.Avx2_extract.t_Vec256 & usize)
 
 let use_hint (gamma2: i32) (r hint: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let r0, r1:(Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256) =

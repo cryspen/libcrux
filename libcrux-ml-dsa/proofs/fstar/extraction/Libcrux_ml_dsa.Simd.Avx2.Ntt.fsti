@@ -3,39 +3,6 @@ module Libcrux_ml_dsa.Simd.Avx2.Ntt
 open Core
 open FStar.Mul
 
-let butterfly_2___SHUFFLE: i32 = 216l
-
-let ntt_at_layer_5_to_3___STEP: usize = sz 1 <<! 5l
-
-let ntt_at_layer_5_to_3___STEP_1: usize = sz 1 <<! 4l
-
-let ntt_at_layer_5_to_3___STEP_2: usize = sz 1 <<! 3l
-
-val ntt_at_layer_7_and_6___mul
-      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
-      (index: usize)
-      (zeta: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (step_by: usize)
-      (field_modulus inverse_of_modulus_mod_montgomery_r: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure (t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-let ntt_at_layer_5_to_3___STEP_BY: usize =
-  ntt_at_layer_5_to_3___STEP /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
-
-let ntt_at_layer_5_to_3___STEP_BY_1: usize =
-  ntt_at_layer_5_to_3___STEP_1 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
-
-let ntt_at_layer_5_to_3___STEP_BY_2: usize =
-  ntt_at_layer_5_to_3___STEP_2 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
-
-let ntt_at_layer_7_and_6___STEP_BY_6_: usize =
-  (sz 1 <<! 6l <: usize) /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
-
-let ntt_at_layer_7_and_6___STEP_BY_7_: usize =
-  sz 2 *! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
-
 val butterfly_2_
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
       (index: usize)
@@ -43,6 +10,8 @@ val butterfly_2_
     : Prims.Pure (t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
+
+let butterfly_2___SHUFFLE: i32 = 216l
 
 val butterfly_4_
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
@@ -75,6 +44,22 @@ val ntt_at_layer_2_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+val ntt_at_layer_7_and_6___mul
+      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
+      (index: usize)
+      (zeta: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (step_by: usize)
+      (field_modulus inverse_of_modulus_mod_montgomery_r: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+    : Prims.Pure (t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+let ntt_at_layer_7_and_6___STEP_BY_7_: usize =
+  sz 2 *! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+
+let ntt_at_layer_7_and_6___STEP_BY_6_: usize =
+  (sz 1 <<! 6l <: usize) /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+
 /// This is equivalent to the pqclean 0 and 1
 /// This does 32 Montgomery multiplications (192 multiplications).
 /// This is the same as in pqclean. The only difference is locality of registers.
@@ -99,6 +84,21 @@ val ntt_at_layer_5_to_3_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec
     : Prims.Pure (t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
+
+let ntt_at_layer_5_to_3___STEP: usize = sz 1 <<! 5l
+
+let ntt_at_layer_5_to_3___STEP_BY: usize =
+  ntt_at_layer_5_to_3___STEP /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+
+let ntt_at_layer_5_to_3___STEP_1: usize = sz 1 <<! 4l
+
+let ntt_at_layer_5_to_3___STEP_BY_1: usize =
+  ntt_at_layer_5_to_3___STEP_1 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+
+let ntt_at_layer_5_to_3___STEP_2: usize = sz 1 <<! 3l
+
+let ntt_at_layer_5_to_3___STEP_BY_2: usize =
+  ntt_at_layer_5_to_3___STEP_2 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
 
 val ntt__avx2_ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
     : Prims.Pure (t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
