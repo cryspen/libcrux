@@ -690,7 +690,7 @@ pub mod incremental {
         // Because const generics are too limited, we compute it here from scratch.
 
         // shared secret
-        SHARED_SECRET_SIZE 
+        SHARED_SECRET_SIZE
         // r_as_ntt
         + RANK_768 * 16 * 32
         // error2

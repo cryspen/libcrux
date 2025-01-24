@@ -943,6 +943,31 @@ pub(crate) mod avx2 {
         >(randomness)
     }
 
+    pub(crate) fn generate_keypair_serialized<
+        const K: usize,
+        const CPA_PRIVATE_KEY_SIZE: usize,
+        const PRIVATE_KEY_SIZE: usize,
+        const PUBLIC_KEY_SIZE: usize,
+        const BYTES_PER_RING_ELEMENT: usize,
+        const ETA1: usize,
+        const ETA1_RANDOMNESS_SIZE: usize,
+    >(
+        randomness: [u8; KEY_GENERATION_SEED_SIZE],
+        key_pair: &mut [u8],
+    ) {
+        super::generate_keypair_serialized::<
+            K,
+            CPA_PRIVATE_KEY_SIZE,
+            PRIVATE_KEY_SIZE,
+            PUBLIC_KEY_SIZE,
+            BYTES_PER_RING_ELEMENT,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            Vector,
+            Hash,
+        >(randomness, key_pair)
+    }
+
     pub(crate) fn encapsulate1<
         const K: usize,
         const CIPHERTEXT_SIZE: usize,
@@ -972,6 +997,36 @@ pub(crate) mod avx2 {
         >(public_key_part, randomness)
     }
 
+    pub(crate) fn encapsulate1_serialized<
+        const K: usize,
+        const CIPHERTEXT_SIZE: usize,
+        const C1_SIZE: usize,
+        const VECTOR_U_COMPRESSION_FACTOR: usize,
+        const VECTOR_U_BLOCK_LEN: usize,
+        const ETA1: usize,
+        const ETA1_RANDOMNESS_SIZE: usize,
+        const ETA2: usize,
+        const ETA2_RANDOMNESS_SIZE: usize,
+    >(
+        public_key_part: &PublicKey1,
+        randomness: [u8; SHARED_SECRET_SIZE],
+        state: &mut [u8],
+    ) -> Ciphertext1<C1_SIZE> {
+        super::encapsulate1_serialized::<
+            K,
+            CIPHERTEXT_SIZE,
+            C1_SIZE,
+            VECTOR_U_COMPRESSION_FACTOR,
+            VECTOR_U_BLOCK_LEN,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            Vector,
+            Hash,
+        >(public_key_part, randomness, state)
+    }
+
     pub(crate) fn encapsulate2<
         const K: usize,
         const C2_SIZE: usize,
@@ -981,6 +1036,20 @@ pub(crate) mod avx2 {
         public_key_part: &PublicKey2<K, Vector>,
     ) -> Ciphertext2<C2_SIZE> {
         super::encapsulate2::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(
+            state,
+            public_key_part,
+        )
+    }
+
+    pub(crate) fn encapsulate2_serialized<
+        const K: usize,
+        const C2_SIZE: usize,
+        const VECTOR_V_COMPRESSION_FACTOR: usize,
+    >(
+        state: &[u8],
+        public_key_part: &PublicKey2<K, Vector>,
+    ) -> Ciphertext2<C2_SIZE> {
+        super::encapsulate2_serialized::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(
             state,
             public_key_part,
         )
@@ -1029,6 +1098,50 @@ pub(crate) mod avx2 {
             Hash,
         >(private_key, ciphertext1, ciphertext2)
     }
+
+    pub(crate) fn decapsulate_incremental_key<
+        const K: usize,
+        const SECRET_KEY_SIZE: usize,
+        const CPA_SECRET_KEY_SIZE: usize,
+        const PUBLIC_KEY_SIZE: usize,
+        const CIPHERTEXT_SIZE: usize,
+        const T_AS_NTT_ENCODED_SIZE: usize,
+        const C1_SIZE: usize,
+        const C2_SIZE: usize,
+        const VECTOR_U_COMPRESSION_FACTOR: usize,
+        const VECTOR_V_COMPRESSION_FACTOR: usize,
+        const C1_BLOCK_SIZE: usize,
+        const ETA1: usize,
+        const ETA1_RANDOMNESS_SIZE: usize,
+        const ETA2: usize,
+        const ETA2_RANDOMNESS_SIZE: usize,
+        const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
+    >(
+        private_key: &[u8],
+        ciphertext1: &Ciphertext1<C1_SIZE>,
+        ciphertext2: &Ciphertext2<C2_SIZE>,
+    ) -> MlKemSharedSecret {
+        super::decapsulate_incremental_key::<
+            K,
+            SECRET_KEY_SIZE,
+            CPA_SECRET_KEY_SIZE,
+            PUBLIC_KEY_SIZE,
+            CIPHERTEXT_SIZE,
+            T_AS_NTT_ENCODED_SIZE,
+            C1_SIZE,
+            C2_SIZE,
+            VECTOR_U_COMPRESSION_FACTOR,
+            VECTOR_V_COMPRESSION_FACTOR,
+            C1_BLOCK_SIZE,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+            Vector,
+            Hash,
+        >(private_key, ciphertext1, ciphertext2)
+    }
 }
 
 /// Multiplexing incremental API.
@@ -1044,8 +1157,11 @@ pub(crate) mod multiplexing {
     #[cfg(feature = "simd256")]
     use avx2::{
         as_avx2_keypair, as_avx2_state, decapsulate as decapsulate_avx2,
-        encapsulate1 as encapsulate1_avx2, encapsulate2 as encapsulate2_avx2,
+        decapsulate_incremental_key as decapsulate_incremental_key_avx2,
+        encapsulate1 as encapsulate1_avx2, encapsulate1_serialized as encapsulate1_serialized_avx2,
+        encapsulate2 as encapsulate2_avx2, encapsulate2_serialized as encapsulate2_serialized_avx2,
         generate_keypair as generate_keypair_avx2,
+        generate_keypair_serialized as generate_keypair_serialized_avx2,
     };
 
     #[cfg(feature = "simd128")]
@@ -1072,8 +1188,12 @@ pub(crate) mod multiplexing {
     #[cfg(not(feature = "simd128"))]
     use portable::{
         as_portable_keypair as as_neon_keypair, as_portable_state as as_neon_state,
-        decapsulate as decapsulate_neon, encapsulate1 as encapsulate1_neon,
-        encapsulate2 as encapsulate2_neon, generate_keypair as generate_keypair_neon,
+        decapsulate as decapsulate_neon,
+        decapsulate_incremental_key as decapsulate_incremental_key_neon,
+        encapsulate1 as encapsulate1_neon, encapsulate1_serialized as encapsulate1_serialized_neon,
+        encapsulate2 as encapsulate2_neon, encapsulate2_serialized as encapsulate2_serialized_neon,
+        generate_keypair as generate_keypair_neon,
+        generate_keypair_serialized as generate_keypair_serialized_neon,
     };
 
     pub(crate) fn generate_keypair<
